@@ -1,8 +1,8 @@
 package com.hbm.config;
 
 /**
- * 1.7 {@code StructureConfig}: the NBT structure generator's switches and weights, as plain constants (the port has
- * no file-backed config). The values are the ones 1.7 actually generated with, i.e. the <b>defaults of its config
+ * 1.7 {@code StructureConfig}: the NBT structure generator's switches and weights. {@link #loadFromConfig} reads the
+ * run-time keys from {@code hbm.cfg} (History §19ej-8); the rest are build-time constants. The values are the ones 1.7 actually generated with, i.e. the <b>defaults of its config
  * file</b> ({@code loadFromConfig}), not the field initialisers it overwrote on load: those differ for
  * {@code structureMaxChunks} (12 vs 16), lighthouse (4 vs 1), dish (20 vs 10), radio (30 vs 25) and the two null
  * weights (plains 4 vs 20, ocean 15 vs 35).
@@ -70,4 +70,27 @@ public final class StructureConfig {
     public static int towerBaseSpawnWeight = 30;
     public static int waterPumpSpawnWeight = 15;
     public static int deadDishSmallSpawnWeight = 15;
+
+    /** 1.7 {@code 5.04_debugStructures}: written by 1.7, read by nothing there (ServerConfig.STRUCTURE_DEBUG is live). */
+    public static boolean debugStructures = false;
+
+    /**
+     * 1.7 {@code loadFromConfig}, category {@code 15_structures}. Only the keys read at run time are written:
+     * {@code 5.00_enableStructures}, {@code 5.03_lootAmountFactor} and the dead {@code 5.04_debugStructures}. The
+     * spacing ({@code 5.01}/{@code 5.02}), the ruin and ocean toggles ({@code 5.05}/{@code 5.06}) and every spawn weight
+     * ({@code 5.07}..{@code 5.43}) are the {@code hbm:ntm_structures} structure set, fixed in the data pack at build time;
+     * they are left out rather than written as keys that would do nothing (History §19ej-8).
+     */
+    public static void loadFromConfig(Configuration config) {
+
+        final String CATEGORY_STRUCTURES = CommonConfig.CATEGORY_STRUCTURES;
+
+        String unparsedStructureFlag = CommonConfig.createConfigString(config, CATEGORY_STRUCTURES, "5.00_enableStructures", "Flag for whether modern NTM structures will spawn. Valid values are true|false|flag - flag will respect the \"Generate Structures\" world flag.", "flag");
+
+        enableStructures = CommonConfig.parseStructureFlag(unparsedStructureFlag);
+
+        lootAmountFactor = CommonConfig.createConfigDouble(config, CATEGORY_STRUCTURES, "5.03_lootAmountFactor", "General factor for loot spawns. Applies to spawned IInventories, not loot blocks.", 1D);
+
+        debugStructures = CommonConfig.createConfigBool(config, CATEGORY_STRUCTURES, "5.04_debugStructures", "If enabled, special structure blocks like jigsaw blocks will not be transformed after generating", false);
+    }
 }

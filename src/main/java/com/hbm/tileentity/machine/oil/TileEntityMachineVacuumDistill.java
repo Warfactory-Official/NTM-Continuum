@@ -37,8 +37,10 @@ import net.minecraft.sounds.SoundSource;
 
 /**
  * Vacuum Distiller — 1:1 port of the 1.12.2 {@code TileEntityMachineVacuumDistill}: a 3×3×9 tower that
- * splits OIL/OIL_DS into four vacuum fractions. 10 slots (0 battery, 1→2/3→4/5→6/7→8 four output-unload
- * pairs, 9 fluid identifier). Tanks: {@code [0] OIL 64k p2} input (pipe-fed) + 4×24k outputs conformed to
+ * splits OIL/OIL_DS into four vacuum fractions. 12 slots as in 1.7.10 (0 battery, 1→2 input canister
+ * load — deprecated in the 1.7 menu because the input tank is pressurised, so loading only accepts the
+ * infinite barrel — 3→4/5→6/7→8/9→10 four output-unload pairs, 11 fluid identifier). 1.7 exposes no
+ * automation sides. Tanks: {@code [0] OIL 64k p2} input (pipe-fed) + 4×24k outputs conformed to
  * {@link RefineryRecipes#getVacuum}. Each op needs {@code power ≥ 10k} and {@code tank0 ≥ 100}, drains
  * 100 mB + 10k HE. maxPower 1M.
  *
@@ -55,10 +57,10 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
     private int audioTime;
     public FluidTankNTM[] tanks;
 
-    private static final int[] IO_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    public static final int SLOT_COUNT = 12;
 
     public TileEntityMachineVacuumDistill(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MACHINE_VACUUM_DISTILL.get(), pos, state, 10);
+        super(ModBlockEntities.MACHINE_VACUUM_DISTILL.get(), pos, state, SLOT_COUNT);
         tanks = new FluidTankNTM[5];
         tanks[0] = new FluidTankNTM(Fluids.OIL, 64_000).withPressure(2);
         tanks[1] = new FluidTankNTM(Fluids.HEAVYOIL_VACUUM, 24_000);
@@ -82,12 +84,13 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
+        te.loadInput();
         te.refine();
 
-        te.unloadTank(1, 1, 2);
-        te.unloadTank(2, 3, 4);
-        te.unloadTank(3, 5, 6);
-        te.unloadTank(4, 7, 8);
+        te.unloadTank(1, 3, 4);
+        te.unloadTank(2, 5, 6);
+        te.unloadTank(3, 7, 8);
+        te.unloadTank(4, 9, 10);
 
         for (DirPos dp : te.getConPos()) {
             for (int i = 1; i < 5; i++) {
@@ -134,12 +137,33 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
         for (int i = 0; i < stacks.length; i++) tanks[i + 1].setFill(tanks[i + 1].getFill() + stacks[i].fill);
     }
 
+    /** 1.7 {@code tanks[0].setType(11, slots)}: a different identifier switches the type and empties the tank. */
     private void setTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(9);
+        ItemStack id = inventory.getStackInSlot(11);
         if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         if (t != tanks[0].getTankType()) {
             tanks[0].setTankType(t);
+            tanks[0].setFill(0);
+            setChanged();
+        }
+    }
+
+    /**
+     * 1.7 {@code tanks[0].loadTank(1, 2, slots)}. The input tank is pressurised (2), and 1.7's loadTank
+     * refuses every container on a pressurised tank except the infinite barrel.
+     */
+    private void loadInput() {
+        ItemStack in = inventory.getStackInSlot(1);
+        if (in.isEmpty() || !in.is(com.hbm.items.ModFluidNetItems.fluid_barrel_infinite.get())) return;
+        if (!(in.getItem() instanceof IFillableItem fillable)) return;
+        FluidTankNTM tank = tanks[0];
+        FluidType type = tank.getTankType();
+        int space = tank.getMaxFill() - tank.getFill();
+        if (type == Fluids.NONE || space <= 0) return;
+        int taken = fillable.tryEmpty(type, space, in);
+        if (taken > 0) {
+            tank.setFill(tank.getFill() + taken);
             setChanged();
         }
     }
@@ -178,15 +202,14 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return Library.isBattery(stack);
-        if (slot == 9) return stack.getItem() instanceof IItemFluidId;
+        if (slot == 11) return stack.getItem() instanceof IItemFluidId;
         return true;
     }
 
-    @Override public int[] getSlotsForFace(Direction side) { return IO_SLOTS; }
-    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return isItemValidForSlot(slot, stack); }
-    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return slot == 2 || slot == 4 || slot == 6 || slot == 8;
-    }
+    // 1.7: TileEntityMachineBase exposes no sides.
+    @Override public int[] getSlotsForFace(Direction side) { return new int[0]; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long i) { power = i; }

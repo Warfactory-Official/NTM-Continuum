@@ -39,7 +39,7 @@ public final class UtilityToolDeclarations {
                 "V", "hbm:circuit_vacuum_tube", "C", "hbm:circuit_capacitor", "S", "hbm:circuit_controller_chassis",
                 "G", "#c:plates/gold");
         shaped(NS, "coltan_tool", "hbm:coltan_tool", rows("ACA", "CXC", "ACA"),
-                "A", "#c:ingots/copper", "C", "#c:crystals/cinnabar", "X", "minecraft:compass");
+                "A", "#c:ingots/copper", "C", "#c:gems/cinnabar", "X", "minecraft:compass");
         shaped(NS, "settings_tool", "hbm:settings_tool", rows(" P ", "PCP", "III"),
                 "P", "#c:plates/iron", "C", "hbm:circuit_analog", "I", "hbm:plate_polymer");
         shaped(NS, "pipette", "hbm:pipette", rows("  L", " G ", "G  "),

@@ -205,12 +205,22 @@ public class TileEntityMachineAmmoPress extends TileEntityMachineBase
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("recipe", selectedRecipe);
+        // the chosen recipe by its output, never its list index (History section 19ej-ids)
+        output.putString("recipe", com.hbm.util.SavedIds.listKey(signatures(), selectedRecipe));
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        selectedRecipe = input.getIntOr("recipe", -1);
+        if (input.getIntOr("recipe", Integer.MIN_VALUE) != Integer.MIN_VALUE) com.hbm.util.SavedIds.warnNumeric("recipe index", "recipe");
+        selectedRecipe = com.hbm.util.SavedIds.fromListKey(signatures(), input.getStringOr("recipe", ""));
+    }
+
+    private static java.util.List<String> signatures() {
+        java.util.List<String> keys = new java.util.ArrayList<>();
+        for (AmmoPressRecipes.AmmoPressRecipe recipe : AmmoPressRecipes.recipes) {
+            keys.add(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(recipe.output.getItem()) + "x" + recipe.output.getCount());
+        }
+        return keys;
     }
 }

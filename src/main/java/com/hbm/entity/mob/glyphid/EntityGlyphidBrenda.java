@@ -102,7 +102,7 @@ public class EntityGlyphidBrenda extends EntityGlyphid {
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
-        if (random.nextInt(3) == 0) spawnAtLocation(level, glandStack(Fluids.PHEROMONE));
+        if (random.nextInt(3) == 0) spawnAtLocation(level, glandStack(Fluids.PHEROMONE), 1F); // 1.7 entityDropItem(stack, 1)
     }
 
     private static ItemStack glandStack(FluidType fluid) {

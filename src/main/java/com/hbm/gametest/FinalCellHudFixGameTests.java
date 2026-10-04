@@ -84,7 +84,7 @@ public final class FinalCellHudFixGameTests {
                     "cell_" + name + " selects model variant " + ModDataComponents.ITEM_VARIANT.getOr(stack, 0)
                             + ", expected " + variant);
             if (fluid != null) {
-                helper.assertTrue(ItemCell.isFullCell(stack, fluid) && ModDataComponents.fluidId(stack) == fluid.getID(),
+                helper.assertTrue(ItemCell.isFullCell(stack, fluid) && ModDataComponents.fluid(stack) == fluid,
                         "cell_" + name + " does not hold its fluid");
             }
             Component display = stack.getHoverName();

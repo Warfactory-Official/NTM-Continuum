@@ -79,7 +79,9 @@ public final class ModTurretBlocks {
 
     public static final RegistryObject<TurretHowardDamaged> turret_howard_damaged = REG.block(
             "turret_howard_damaged", TurretHowardDamaged::new, ModTurretBlocks::turretProperties)
-            .transform(TURRET)
+            // 1.7 TurretHowardDamaged.getItemDropped returns null: the wreck drops nothing (TURRET would add a self drop)
+            .transform(Presets.rendered(Variants.uniform("facing", "north", "east", "south", "west")))
+            .loot(Loot.nothing())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 

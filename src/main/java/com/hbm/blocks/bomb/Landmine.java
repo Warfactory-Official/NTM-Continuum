@@ -208,12 +208,10 @@ public class Landmine extends CompatBlock implements TickingBlock, IBomb, IToola
                 vnt.setSFX(new ExplosionEffectWeapon(10, 1F, 0.5F));
                 vnt.explode();
 
-                // 1.7: spawnParticlesRadial(30) + spawnFoam(60) when water is above. The radial and
-                // foam-splash smoke modes are not on this port's particle bus; the plain cloud stands in.
-                ExplosionLarge.spawnParticles(level, x + 0.5, y + 2, z + 0.5, 30);
+                ExplosionLarge.spawnParticlesRadial(level, x + 0.5, y + 2, z + 0.5, 30);
                 ExplosionLarge.spawnRubble(level, x + 0.5, y + 0.5, z + 0.5, 5);
                 if (isWaterAbove(level, pos)) {
-                    ExplosionLarge.spawnParticles(level, x + 0.5, y + 0.5, z + 0.5, 60);
+                    ExplosionLarge.spawnFoam(level, x + 0.5, y + 0.5, z + 0.5, 60);
                 }
             }
             case FAT -> {

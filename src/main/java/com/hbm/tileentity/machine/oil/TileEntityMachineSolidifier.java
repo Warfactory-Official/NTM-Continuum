@@ -44,7 +44,7 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IUpgradeInfoProvider, WorldlyContainer {
 
     public static final long maxPower = 100000;
-    public static final int usageBase = 500;
+    public static final int usageBase = 250; // 1.7.10 value
     public static final int processTimeBase = 100;
 
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);

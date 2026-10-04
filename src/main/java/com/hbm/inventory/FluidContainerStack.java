@@ -25,6 +25,11 @@ public class FluidContainerStack extends RecipesCommon.AStack {
     }
 
     @Override
+    public String toString() {
+        return "fluid_container:" + fluid + "/" + amount;
+    }
+
+    @Override
     public List<ItemStack> getDisplayStacks() {
         return FluidContainerRegistry.INSTANCE.examples(fluid, amount).stream()
                 .map(stack -> dev.golem.core.world.ItemStacks.copyWithCount(stack, stacksize)).toList();

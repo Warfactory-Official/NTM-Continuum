@@ -63,6 +63,16 @@ public final class XFactory12ga {
     public static BulletConfig g12_shredder_explosive;
     public static BulletConfig g12_shredder_phosphorus;
 
+    /** 1.7 {@code LAMBDA_BOAT}: the Duchess Gambit spawned 50 blocks above the hit, with the boat sound. */
+    public static final BiConsumer<EntityBulletBaseMK4, HitResult> LAMBDA_BOAT = (bullet, hit) -> {
+        Entity pippo = XFactory44.dropFromSky(bullet, hit, new com.hbm.entity.projectile.EntityDuchessGambit(
+                com.hbm.entity.ModNtmEntities.DUCHESS_GAMBIT.get(), bullet.level()));
+        // 1.7 plays it at the boat's y + 50 (100 above the hit); kept as written. 1.7 category "player".
+        bullet.level().playSound(null, pippo.getX(), pippo.getY() + 50, pippo.getZ(),
+                com.hbm.sound.ModGunSounds.BOAT.get(), net.minecraft.sounds.SoundSource.PLAYERS, 100F, 1F);
+        bullet.discard();
+    };
+
     public static final BiConsumer<EntityBulletBaseMK4, HitResult> LAMBDA_STANDARD_EXPLODE = (bullet, hit) -> {
         Lego.standardExplode(bullet, hit, 2F);
         bullet.discard();
@@ -340,9 +350,9 @@ public final class XFactory12ga {
                     }
                 }));
 
-        // Both source secret variants share the same flattened ammo item. The missing Duchess entity is not invented.
+        // Both 1.7 secret variants share the same flattened ammo item; only BJ drops the Duchess Gambit (LAMBDA_BOAT).
         g12_equestrian_bj = BulletConfigs.register("g12_equestrian_bj", new BulletConfig()
-                .setItem(ModAmmoItems.g12_equestrian).setDamage(0F));
+                .setItem(ModAmmoItems.g12_equestrian).setDamage(0F).setOnImpact(LAMBDA_BOAT));
         g12_equestrian_tkr = BulletConfigs.register("g12_equestrian_tkr", new BulletConfig()
                 .setItem(ModAmmoItems.g12_equestrian).setDamage(0F));
 
@@ -364,4 +374,11 @@ public final class XFactory12ga {
         return new BulletConfig[] {g12_bp, g12_bp_magnum, g12_bp_slug, g12, g12_slug, g12_flechette,
                 g12_magnum, g12_explosive, g12_phosphorus};
     }
+
+    /** The mutated name's translation key: 1.7 returned {@code getUnlocalizedName() + suffix}. */
+    static String mutated(ItemStack stack, String suffix) { return stack.getItem().getDescriptionId() + suffix; }
+
+    /** 1.7 {@code LAMBDA_NAME_MARESLEG}. */
+    public static final java.util.function.Function<ItemStack, String> LAMBDA_NAME_MARESLEG = stack ->
+            com.hbm.items.weapon.sedna.mods.XWeaponModManager.hasUpgrade(stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SAWED_OFF) ? mutated(stack, "_short") : null;
 }

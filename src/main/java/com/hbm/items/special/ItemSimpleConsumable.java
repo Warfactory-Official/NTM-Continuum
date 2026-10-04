@@ -37,19 +37,16 @@ public final class ItemSimpleConsumable extends CompatItem {
             return InteractionResult.SUCCESS;
         }
         if (level instanceof ServerLevel serverLevel) {
+            // 1.7 ItemSimpleConsumable.doRadaway: RadAway I (1 RAD a tick) for 140 / 350 / 500 ticks, added to any
+            // RadAway already running. The port had compensated a 20x-too-weak effect with amplifiers 24/99/399.
             int duration = switch (id) {
-                case "radaway" -> 200;
-                case "radaway_strong" -> 100;
-                case "radaway_flush" -> 50;
+                case "radaway" -> 140;
+                case "radaway_strong" -> 350;
+                case "radaway_flush" -> 500;
                 default -> 0;
             };
             if (duration > 0) {
-                int amplifier = switch (id) {
-                    case "radaway" -> 24;
-                    case "radaway_strong" -> 99;
-                    default -> 399;
-                };
-                addStacking(player, ModEffects.RADAWAY.get(), duration, amplifier);
+                addStacking(player, ModEffects.RADAWAY.get(), duration, 0);
                 serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.RADAWAY.get(),
                         SoundSource.PLAYERS, 1.0F, 1.0F);
                 shrinkAndReplace(player, hand, ModMedicineItems.iv_empty.get());
@@ -104,8 +101,9 @@ public final class ItemSimpleConsumable extends CompatItem {
     }
 
     private static void addStacking(Player player, MobEffect effect, int duration, int amplifier) {
+        // 1.7 addPotionEffect: an active effect's remaining duration is added, whatever its level
         var active = Effects.getRegistered(player, effect);
-        if (active != null && active.getAmplifier() == amplifier) duration += active.getDuration();
+        if (active != null) duration += active.getDuration();
         Effects.addRegistered(player, effect, duration, amplifier);
     }
 

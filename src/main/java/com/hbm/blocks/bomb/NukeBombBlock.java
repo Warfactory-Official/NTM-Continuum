@@ -137,15 +137,14 @@ public abstract class NukeBombBlock extends dev.golem.core.world.CompatBlock imp
         if (level.addFreshEntity(mk5)) mk5.startChunkLoading();
 
         if (BombConfig.enableNukeClouds) {
-            EntityNukeTorex torex = EntityNukeTorex.statFac(level,
-                    pos.getX() + cloudOffset(), pos.getY() + cloudOffset(), pos.getZ() + cloudOffset(), radius);
+            EntityNukeTorex torex = createCloud(level, pos, radius);
             if (level.addFreshEntity(torex)) torex.startChunkLoading();
         }
     }
 
-    /** Little Boy alone used the integer block origin for its old Torex call; all other bombs use the centre. */
-    protected double cloudOffset() {
-        return 0.5D;
+    /** 1.7 {@code EntityNukeTorex.statFacStandard(world, x + 0.5, y + 0.5, z + 0.5, r)}. */
+    protected EntityNukeTorex createCloud(Level level, BlockPos pos, int radius) {
+        return EntityNukeTorex.statFac(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, radius);
     }
 
     @Override

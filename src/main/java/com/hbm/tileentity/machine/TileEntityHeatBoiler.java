@@ -31,20 +31,20 @@ import com.hbm.sound.AudioWrapper;
  * Heat Boiler — 1:1 port of the 1.12.2 {@code TileEntityHeatBoiler} ({@code heat_boiler}): the
  * OIL→HOTOIL (and water→steam) converter. No GUI/inventory — readouts via the block's look-overlay,
  * typing via a fluid identifier right-click. Pulls heat from the {@link IHeatSource} below (diffusion
- * 0.1, cap 12.8M TU, passive cooling otherwise), converts via {@link HeatRecipes} first-step data
+ * 0.1, cap 3.2M TU as in 1.7.10, passive cooling otherwise), converts via {@link HeatRecipes} first-step data
  * (output tank auto-resized to {@code inMax·produced/req}), and — old boiler-burst behavior — when the
  * output tank is completely full ({@code outputOps == 0}) it explodes: the 3×3×2 upper body is cleared
  * and a strength-5 explosion fires ({@code level.explode} stands in for the unported ExplosionVNT;
  * the burst husk renders via {@code boiler_burst.obj}).
  *
- * <p>Skips (§20): TomSaveData sun-fire heating, the boilerGroan ambience, the boiler audio loop,
- * IPersistentNBT/IConfigurableMachine. IFluidCopiable (water/steam ids) is back, as 1.7. Port seam: heat is polled through a
+ * <p>1.7's Tom-impact fire heating ({@code +0.0005%} of the remaining buffer per tick under open sky) is
+ * ported. Skips (§20): IPersistentNBT/IConfigurableMachine. IFluidCopiable (water/steam ids) is back, as 1.7. Port seam: heat is polled through a
  * multiblock cell below by resolving its core (old used proxy TEs).
  */
 public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IRORValueProvider,
         com.hbm.tileentity.IFluidCopiable {
 
-    public static final int maxHeat = 12_800_000;
+    public static final int maxHeat = 3_200_000; // 1.7.10 (1.12.2 raised it to 12.8M)
     public static final double diffusion = 0.1D;
     public static final boolean canExplode = true;
 
@@ -156,7 +156,6 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
     }
 
     protected void tryPullHeat() {
-        if (this.heat >= maxHeat) return;
         BlockPos below = worldPosition.below();
         BlockEntity con = level.getBlockEntity(below);
 
@@ -171,6 +170,7 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
 
             if (diff > 0) {
                 diff = (int) Math.ceil(diff * diffusion);
+                diff = Math.min(diff, maxHeat - this.heat); // 1.7: never pull more than the headroom
                 source.useUpHeat(diff);
                 this.heat += diff;
                 if (this.heat > maxHeat) this.heat = maxHeat;

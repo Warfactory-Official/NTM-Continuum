@@ -59,7 +59,7 @@ public class TileEntityPneumoTubePaintable extends TileEntityPneumoTube {
     public CompoundTag getSettings(Level level, BlockPos pos) {
         CompoundTag nbt = super.getSettings(level, pos);
         if (nbt == null) nbt = new CompoundTag();
-        if (camo != null) nbt.putInt("paintblock", Block.getId(camo));
+        if (camo != null) com.hbm.util.SavedIds.putState(nbt, "paintblock", camo);
         return nbt;
     }
 
@@ -67,7 +67,7 @@ public class TileEntityPneumoTubePaintable extends TileEntityPneumoTube {
     public void pasteSettings(CompoundTag nbt, int index, Level level, Player player, BlockPos pos) {
         super.pasteSettings(nbt, index, level, player, pos);
         if (Tags.contains(nbt, "paintblock")) {
-            setCamo(Block.stateById(Tags.getIntOr(nbt, "paintblock", 0)));
+            setCamo(com.hbm.util.SavedIds.getState(nbt, "paintblock", camo));
         }
     }
 

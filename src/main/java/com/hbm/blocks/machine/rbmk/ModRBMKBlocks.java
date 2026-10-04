@@ -158,11 +158,12 @@ public final class ModRBMKBlocks {
                     .register())
             .loot(Loot.selfAlways())
             .tag(BlockTag.PICKAXE);
-    /** Its block model is authored; the item is the 1.7 inventory icon (slab + terminal OBJ). No loot table (as before). */
+    /** Its block model is authored; the item is the 1.7 inventory icon (slab + terminal OBJ). 1.7 RBMKTerminal has no drop override, so it drops itself. */
     public static final RegistryObject<RBMKTerminal> rbmk_terminal = nonColumn("rbmk_terminal", RBMKTerminal::new)
             .transform(Presets.statesOnly(Variants.facing()))
             // 1.7 RBMKTerminal.renderInventoryBlock: the mini-panel slab plus terminal.obj (icon-P2 2026-10-01)
             .transform(panelItem("terminal", "hbm:textures/models/network/terminal.png", "rbmk_terminal"))
+            .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     // Console peripherals (1.7 ModBlocks 2120-2130): mini panels share the gauge's 3/30 iron block.
     public static final RegistryObject<RBMKMiniPanelBase> rbmk_display_blank = nonColumn("rbmk_display_blank", RBMKMiniPanelBase::new)
@@ -215,7 +216,7 @@ public final class ModRBMKBlocks {
             p -> new BlockLayering(p, true), p -> p.strength(0.1F).sound(net.minecraft.world.level.block.SoundType.SNOW).noOcclusion().randomTicks())
             .transform(layers("foam_layer", "hbm:block/block_foam"))
             .icon(d -> d.shares("hbm:item/foam_layer_height2"))
-            .loot(Loot.selfAlways())
+            .loot(Loot.nothing()) // 1.7 BlockLayering drops nothing (BlockLayering.getDrops)
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockLayering> sand_boron_layer = REG.block("sand_boron_layer",
             BlockLayering::new, p -> p.strength(0.1F).sound(net.minecraft.world.level.block.SoundType.SAND).noOcclusion().randomTicks())

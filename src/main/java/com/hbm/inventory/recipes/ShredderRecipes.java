@@ -60,6 +60,8 @@ public final class ShredderRecipes {
     public static ItemStack getShredderResult(ItemStack stack) {
         register();
         if (stack.isEmpty()) return new ItemStack(ModItems.scrap.get());
+        ItemStack bobble = DecoCrateMachineRecipes.bobbleScrap(stack);
+        if (bobble != null) return bobble;
         ItemStack result = recipes.get(stack.getItem());
         return result != null ? result.copy() : new ItemStack(ModItems.scrap.get());
     }
@@ -80,11 +82,40 @@ public final class ShredderRecipes {
         initialized = true;
 
         ShredderRecipesGenerated.registerAll(ShredderRecipes::set);   // explicit entries win
+        registerRestored17();
         DecoCrateMachineRecipes.shredder(ShredderRecipes::set); // tungsten crate, bobbleheads
         BedrockOreChainRecipes.shredder(ShredderRecipes::set); // every bedrock ore grade -> gravel
         registerModernParity();
         registerVanillaSweeps();
         registerTagSweep();
+    }
+
+    /**
+     * 1.7 {@code registerDefaults} entries the generated table lacks (fix phase 3, History §19ej-3): the limestone
+     * stone resource (:174), the five skulls (:235), the steel scaffold (:272), the chain (:283, registered as
+     * {@code dungeon_chain}) and the six sellafite stages (:290-295).
+     */
+    private static void registerRestored17() {
+        set(id("stone_resource_limestone"), stack("powder_limestone", 4));
+        for (Item skull : new Item[]{Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.ZOMBIE_HEAD,
+                Items.PLAYER_HEAD, Items.CREEPER_HEAD}) {
+            set(skull, stack("biomass", 4)); // 1.7 Items.skull metas 0-4
+        }
+        set(id("steel_scaffold"), stack("powder_steel_tiny", 4));
+        set(id("dungeon_chain"), stack("powder_steel_tiny", 1));
+        int[] scrap = {1, 2, 3, 5, 7, 15};
+        for (int level = 0; level < scrap.length; level++) {
+            set(id("sellafield_" + level), stack("scrap_nuclear", scrap[level]));
+        }
+    }
+
+    private static Item id(String path) {
+        return firstOfId(path).orElse(null);
+    }
+
+    private static ItemStack stack(String path, int count) {
+        Item item = id(path);
+        return item == null ? ItemStack.EMPTY : new ItemStack(item, count);
     }
 
     /**
@@ -159,19 +190,20 @@ public final class ShredderRecipes {
                     if (shapes.containsKey(two)) for (Item item : itemsOf(shapes.get(two))) set(item, new ItemStack(d, 2));
                 }
                 if (shapes.containsKey("storage_blocks")) {
-                    for (Item item : itemsOf(shapes.get("storage_blocks"))) set(item, new ItemStack(d, 9));
+                    // 1.7: 9 dust, but 4 when the material has no ingot or gem (redstone, sulfur, niter, ...)
+                    int count = shapes.containsKey("ingots") || shapes.containsKey("gems") ? 9 : 4;
+                    for (Item item : itemsOf(shapes.get("storage_blocks"))) set(item, new ItemStack(d, count));
                 }
             }
-            if (shapes.containsKey("nuggets")) {
-                Optional<Item> tiny = firstOf(cTag("dusts_tiny/" + mat));
-                if (tiny.isEmpty()) tiny = firstOfId("powder_" + mat + "_tiny");
-                if (tiny.isPresent()) {
-                    for (Item item : itemsOf(shapes.get("nuggets"))) set(item, new ItemStack(tiny.get(), 1));
-                }
+            // (1.7 has no nugget branch: nuggets fall through to scrap. The port's nugget -> tiny dust sweep was removed.)
+            // 1.7: "dustTiny*" grinds to generic tiny dust, any other "dust*" to generic dust. A few tiny dusts are
+            // also tagged as c:dusts/<x>_tiny; they count as tiny dusts here.
+            if (shapes.containsKey("dusts_tiny")) {
+                for (Item item : itemsOf(shapes.get("dusts_tiny"))) set(item, new ItemStack(ModItems.dust_tiny.get(), 1));
             }
-            // any material dust grinds down into generic dust (the old `name.startsWith("dust")` branch)
             if (shapes.containsKey("dusts")) {
-                for (Item item : itemsOf(shapes.get("dusts"))) set(item, new ItemStack(ModItems.dust.get(), 1));
+                Item generic = mat.endsWith("_tiny") ? ModItems.dust_tiny.get() : ModItems.dust.get();
+                for (Item item : itemsOf(shapes.get("dusts"))) set(item, new ItemStack(generic, 1));
             }
         }
     }
@@ -189,10 +221,29 @@ public final class ShredderRecipes {
         return items;
     }
 
-    /** The first item in a tag — the tag-system equivalent of {@code OreDictionary.getOres(name).get(0)}. */
+    /**
+     * 1.7 {@code Compat.getPreferredOreOutput}: the tag member from the earliest namespace in {@code hbm.cfg}
+     * {@code 1.42_preferredOutputMod}, else the first member ({@code OreDictionary.getOres(name).get(0)}).
+     */
     private static Optional<Item> firstOf(TagKey<Item> tag) {
-        for (Item item : itemsOf(tag)) return Optional.of(item);
-        return Optional.empty();
+        Item first = null;
+        Item preferred = null;
+        int lowestPref = -1;
+        String[] mods = com.hbm.config.GeneralConfig.preferredOutputMod;
+        for (Item item : itemsOf(tag)) {
+            if (first == null) first = item;
+            String modid = BuiltInRegistries.ITEM.getKey(item).getNamespace();
+            for (int i = 0; i < mods.length; i++) {
+                if (modid.equals(mods[i])) {
+                    if (lowestPref < 0 || i < lowestPref) {
+                        preferred = item;
+                        lowestPref = i;
+                    }
+                    break;
+                }
+            }
+        }
+        return Optional.ofNullable(preferred != null ? preferred : first);
     }
 
     /** A direct {@code hbm:<id>} lookup (the tiny dusts have no {@code c:} tag). */

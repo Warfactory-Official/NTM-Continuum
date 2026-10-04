@@ -98,8 +98,8 @@ public final class AmmoParityGameTests {
                 "sand must place the boron layer/full block family");
         helper.assertTrue(ModRBMKBlocks.sand_boron_layer.get().getDrops(
                         ModRBMKBlocks.sand_boron_layer.get().defaultBlockState()
-                                .setValue(SnowLayerBlock.LAYERS, 7), null).get(0).getCount() == 7,
-                "a boron-sand layer must drop one item per visible legacy layer");
+                                .setValue(SnowLayerBlock.LAYERS, 7), null).isEmpty(),
+                "a boron-sand layer drops nothing (1.7 BlockLayering.getItemDropped is null; fix wave 4)");
         helper.succeed();
     }
 

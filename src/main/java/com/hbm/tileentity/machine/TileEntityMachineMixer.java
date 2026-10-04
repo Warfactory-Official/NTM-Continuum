@@ -231,6 +231,17 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         }
     }
 
+    private static java.util.List<String> signatures(FluidType output) {
+        java.util.List<String> keys = new java.util.ArrayList<>();
+        MixerRecipe[] recipes = MixerRecipes.getOutput(output);
+        if (recipes == null) return keys;
+        for (MixerRecipe recipe : recipes) {
+            keys.add((recipe.input1 == null ? "-" : recipe.input1.type.getRegistryName()) + "+"
+                    + (recipe.input2 == null ? "-" : recipe.input2.type.getRegistryName()) + "+" + (recipe.solidInput != null));
+        }
+        return keys;
+    }
+
     /** Resolves and immediately normalizes the persisted selector, matching the old modulo behavior. */
     private MixerRecipe selectedRecipe() {
         MixerRecipe[] recipes = MixerRecipes.getOutput(tanks[2].getTankType());
@@ -318,7 +329,8 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         output.putLong("power", power);
         output.putInt("progress", progress);
         output.putInt("processTime", processTime);
-        output.putInt("recipe", recipeIndex);
+        // the chosen alternative by its inputs, never its index (History section 19ej-ids)
+        output.putString("recipe", com.hbm.util.SavedIds.listKey(signatures(tanks[2].getTankType()), recipeIndex));
         for (int i = 0; i < tanks.length; i++) tanks[i].writeToNBT(output, "tank" + i);
     }
 
@@ -328,7 +340,8 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         power = input.getLongOr("power", 0L);
         progress = input.getIntOr("progress", 0);
         processTime = input.getIntOr("processTime", 0);
-        recipeIndex = input.getIntOr("recipe", 0);
         for (int i = 0; i < tanks.length; i++) tanks[i].readFromNBT(input, "tank" + i);
+        if (input.getIntOr("recipe", Integer.MIN_VALUE) != Integer.MIN_VALUE) com.hbm.util.SavedIds.warnNumeric("recipe index", "recipe");
+        recipeIndex = Math.max(0, com.hbm.util.SavedIds.fromListKey(signatures(tanks[2].getTankType()), input.getStringOr("recipe", "")));
     }
 }

@@ -270,16 +270,14 @@ public final class LegacyDungeonDeclarations {
         JsonObject[] onSurface = {inSquare(), heightmap("MOTION_BLOCKING"), biome()};
         List<String> overworld = new ArrayList<>();
 
-        String safe = gated("locked_safe", DungeonConfig.vaultfreq, onSurface);
-        if (DungeonConfig.enableVaults && DungeonConfig.vaultfreq > 0) overworld.add(safe);
-        String mine = gated("landmine_ap", DungeonConfig.minefreq, onSurface);
-        if (DungeonConfig.enableMines && DungeonConfig.minefreq > 0) overworld.add(mine);
-        String lantern = gated("broken_lantern", DungeonConfig.lanternStructure, onSurface);
-        overworld.add(lantern);
-        String bosnia = gated("landmine_he", 16, onSurface);
-        if (DungeonConfig.enable528BosniaSimulator) overworld.add(bosnia);
-        String broadcaster = gated("corrupted_broadcaster", DungeonConfig.broadcaster, onSurface);
-        if (DungeonConfig.broadcaster > 0) overworld.add(broadcaster);
+        // every feature is listed; hbm:config reads the hbm.cfg switch and chance when the chunk generates (§19ej-8)
+        overworld.add(gated("locked_safe", onSurface, ModBiomeModifiers.cfgSwitch(WorldgenKeys.VAULTS),
+                ModBiomeModifiers.cfgChance(WorldgenKeys.VAULT)));
+        overworld.add(gated("landmine_ap", onSurface, ModBiomeModifiers.cfgSwitch(WorldgenKeys.MINES),
+                ModBiomeModifiers.cfgChance(WorldgenKeys.LANDMINE)));
+        overworld.add(gated("broken_lantern", onSurface, rarity(Math.max(1, DungeonConfig.lanternStructure))));
+        overworld.add(gated("landmine_he", onSurface, ModBiomeModifiers.cfgSwitch(WorldgenKeys.BOSNIA), rarity(16)));
+        overworld.add(gated("corrupted_broadcaster", onSurface, ModBiomeModifiers.cfgChance(WorldgenKeys.BROADCASTER)));
         // 1.7 genBlueprintChest ran in every chunk; the grid test is the feature's (origin: the chunk corner)
         Features.configured(NS, "blueprint_chest", NS + ":blueprint_chest", null);
         Features.placed(NS, "blueprint_chest", NS + ":blueprint_chest", biome());
@@ -287,15 +285,15 @@ public final class LegacyDungeonDeclarations {
         addFeatures(NS, "legacy_dungeon_blocks", "#minecraft:is_overworld", overworld, VEGETAL_DECORATION);
 
         // 1.7: biome == BiomeGenBase.beach (not the cold or stone beach)
-        String capsule = gated("landed_capsule", Math.max(1, DungeonConfig.capsuleStructure), onSurface);
-        if (DungeonConfig.capsuleStructure > 0) addFeatures(NS, "landed_capsule", "minecraft:beach", List.of(capsule), VEGETAL_DECORATION);
+        String capsule = gated("landed_capsule", onSurface, ModBiomeModifiers.cfgChance(WorldgenKeys.CAPSULE));
+        addFeatures(NS, "landed_capsule", "minecraft:beach", List.of(capsule), VEGETAL_DECORATION);
     }
 
-    private static String gated(String name, int chance, JsonObject[] onSurface) {
+    private static String gated(String name, JsonObject[] onSurface, JsonObject... gates) {
         Features.configured(NS, name, NS + ":" + name, null);
-        JsonObject[] placement = new JsonObject[onSurface.length + 1];
-        placement[0] = rarity(Math.max(1, chance));
-        System.arraycopy(onSurface, 0, placement, 1, onSurface.length);
+        JsonObject[] placement = new JsonObject[gates.length + onSurface.length];
+        System.arraycopy(gates, 0, placement, 0, gates.length);
+        System.arraycopy(onSurface, 0, placement, gates.length, onSurface.length);
         Features.placed(NS, name, NS + ":" + name, placement);
         return NS + ":" + name;
     }

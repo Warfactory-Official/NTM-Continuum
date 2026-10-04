@@ -51,8 +51,9 @@ import dev.golem.core.data.DataOut;
  * conforms} them to its fluids, then the {@link #serverTick} feeds the input tanks from the fluid network
  * (and from buckets) and pushes the output tanks back out.
  *
- * <p>Slim port (deferred): battery-item charging, the canister/Forge fluid container I/O (only HBM
- * buckets + the network are wired). Upgrades (slots 2–3: SPEED/POWER/OVERDRIVE) use the 1.12.2 formulas.
+ * <p>As 1.7.10: a battery in slot 0 charges the machine and the buffer is {@code max(power, recipe.power ×
+ * 100, 100,000)}. Container I/O covers HBM/vanilla buckets and {@code IFillableItem} tanks. Upgrades
+ * (slots 2–3: SPEED/POWER/OVERDRIVE) use the 1.7 formulas.
  */
 public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IControlReceiver, WorldlyContainer, IUpgradeInfoProvider, IRORValueProvider, IRORInteractive {
@@ -95,6 +96,14 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     // --- server: power + fluids + processing ---
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalPlant te) {
+        if (te.maxPower <= 0) te.maxPower = 1_000_000;
+        // 1.7: the buffer floats to the selected recipe's power x100, never below the stored power or 100k,
+        // and a battery in slot 0 charges the machine.
+        com.hbm.inventory.recipes.loader.GenericRecipe recipe = te.chemplantModule.getRecipe();
+        if (recipe != null) te.maxPower = recipe.power * 100;
+        te.maxPower = com.hbm.util.BobMathUtil.max(te.power, te.maxPower, 100_000);
+        te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.maxPower);
+
         // Fluid network: subscribe input tanks to matching nets, push output tanks out, plus bucket I/O.
         for (DirPos dp : te.getConPos()) {
             for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, dp);
@@ -234,7 +243,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        if (slot == 0) return true;                                       // battery slot (charging deferred)
+        if (slot == 0) return true;                                       // battery slot (1.7 accepts anything)
         if (slot == 1) return stack.getItem() instanceof ItemBlueprints;  // template
         if (slot >= 2 && slot <= 3) return Library.isMachineUpgrade(stack); // upgrades (any type, like SlotUpgrade)
         if (slot >= 7 && slot <= 9) return false;                         // item outputs (module writes via setStackInSlot)
@@ -388,6 +397,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
             outputTanks[i].writeToNBT(output, "o" + i);
         }
         output.putLong("power", power);
+        output.putLong("maxPower", maxPower);
         chemplantModule.save(output);
     }
 
@@ -399,6 +409,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
             outputTanks[i].readFromNBT(input, "o" + i);
         }
         power = input.getLongOr("power", 0L);
+        maxPower = input.getLongOr("maxPower", 100_000L);
         chemplantModule.load(input);
     }
 }

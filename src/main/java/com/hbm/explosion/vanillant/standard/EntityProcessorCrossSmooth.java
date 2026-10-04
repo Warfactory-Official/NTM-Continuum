@@ -3,7 +3,6 @@ package com.hbm.explosion.vanillant.standard;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.lib.ModDamageSources.DamageClass;
-import com.hbm.util.DamageResistanceHandler;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -40,6 +39,11 @@ public class EntityProcessorCrossSmooth extends EntityProcessorCross {
         return this;
     }
 
+    /**
+     * 1.7 :39-49: half damage to the exploder; a non-living target takes a plain hurt, a living one
+     * {@code attackEntityFromNT(..., ignoreIFrame true, allowSpecialCancel false, knockback 0, pierceDT,
+     * pierceDR)} and is gibbed by {@code ConfettiUtil} if that killed it.
+     */
     @Override
     public void attackEntity(Entity entity, ExplosionVNT source, float amount) {
         if (!entity.isAlive()) return;
@@ -48,15 +52,21 @@ public class EntityProcessorCrossSmooth extends EntityProcessorCross {
         float damage = source.exploder == entity ? amount * 0.5F : amount;
         DamageSource dmg = ModDamageSources.bullet(level, clazz.type(), null,
                 source.exploder instanceof net.minecraft.world.entity.LivingEntity living ? living : null);
-        DamageResistanceHandler.hurt(level, entity, dmg, damage, pierceDT, pierceDR);
+        if (!(entity instanceof net.minecraft.world.entity.LivingEntity living)) {
+            dev.golem.core.world.Compat.hurt(entity, level, dmg, damage);
+        } else {
+            com.hbm.util.EntityDamageUtil.attackEntityFromNT(living, dmg, damage, true, false, 0F, pierceDT, pierceDR);
+            if (!living.isAlive()) com.hbm.items.weapon.sedna.factory.ConfettiUtil.decideConfetti(living, dmg);
+        }
     }
 
     /**
-     * 1.7's density gate, which 1.12.2 dropped. Kept: without it a blast behind cover still lands its
-     * full linear falloff, which is the whole point of sampling exposure.
+     * 1.7 :51-54. The density gate (an entity less than 12.5% exposed takes nothing) is 1.7's "shitty
+     * hack"; 1.12.2 dropped it, 1.7 is the specification.
      */
     @Override
     public float calculateDamage(double distanceScaled, double density, double knockback, float size) {
+        if (density < 0.125) return 0;
         return (float) (fixedDamage * (1 - distanceScaled));
     }
 }

@@ -8,22 +8,14 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Ore cluster — the 1.12.2 {@code BlockCluster}. A rich, blast-resistant (35) ore that yields exactly
- * <b>one</b> crystal however it is mined.
+ * Ore cluster — original-hbm (1.7.10) {@code BlockCluster}. A rich, blast-resistant (35) ore that yields
+ * exactly <b>one</b> crystal: {@code getItemDropped} names the crystal and the default
+ * {@code quantityDropped} of 1 is never raised by Fortune (plain {@code Block}). It is an ordinary opaque
+ * cube without a tile entity, so 1.7's default {@code canSilkHarvest} lets Silk Touch return the block.
+ * (1.12.2's {@code harvestBlock} override, which ignored silk touch, is not 1.7.)
  *
- * <p>Two upstream details that look like bugs but are load-bearing, both preserved:
- * <ul>
- *   <li>{@code getItemDropped} returns AIR and {@code harvestBlock} is overridden to spawn a single
- *       {@code getDrop(...)} item directly — so the {@code OreEnum}'s {@code vanillaFortune} quantity
- *       function is <b>never consulted</b> and Fortune does nothing. One crystal, always.</li>
- *   <li>Because that override ignores the silk-touch branch entirely, <b>Silk Touch does not return
- *       the block</b>; it still gives one crystal.</li>
- * </ul>
- *
- * <p>Experience: {@code BlockNTMOre.getExpDrop} pays out when the block drops something other than
- * itself, which is always true here. The amount is the infamous {@code static int xp} field, which
- * every ore constructor overwrote — it settles at 2 by the last registration, so clusters give 2.
- * (Same reasoning as the Wave-2b ore xp decision, IMPLEMENTATION.md §20.)
+ * <p>Experience: none — 1.7 {@code BlockCluster} is a plain {@code Block} without {@code getExpDrop}. (1.12.2's
+ * {@code BlockNTMOre} paid the clobbered static {@code xp} of 2.)
  *
  * <p><b>Deferred:</b> {@code IDrillInteraction} (mining drills of rating &ge; 30 extract the crystal
  * without breaking the block) — no such drill is ported.
@@ -33,12 +25,13 @@ public class BlockCluster extends dev.golem.core.world.CompatDropExperienceBlock
     private final Supplier<ItemStack> drop;
 
     public BlockCluster(Properties properties, Supplier<ItemStack> drop) {
-        super(net.minecraft.util.valueproviders.ConstantInt.of(2), properties);
+        super(net.minecraft.util.valueproviders.ConstantInt.of(0), properties); // 1.7 plain Block: no experience
         this.drop = drop;
     }
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+        if (OreDrops.silkTouch(params)) return List.of(new ItemStack(this));
         ItemStack stack = drop.get();
         return stack.isEmpty() ? List.of() : List.of(stack);
     }

@@ -134,7 +134,7 @@ public final class FinalArmorSetsB implements Scenario {
         Expect.that(fuel1 - fuel2 >= 100, "a hit burnt fuel: " + fuel1 + " -> " + fuel2);
 
         // refuel standing on a refueler holding 100 mB of steam, three top-ups
-        int steam = state(c).get("steam_id").getAsInt();
+        String steam = state(c).get("steam_id").getAsString(); // the registry name
         int rx = X + 3, rz = Z;
         Fixtures.setBlock(c, rx, Y + 1, rz, "hbm:refueler");
         c.teleport(rx + 0.5, Y + 1.1, rz + 0.5);
@@ -144,7 +144,7 @@ public final class FinalArmorSetsB implements Scenario {
         for (int i = 0; i < 3; i++) {
             // the pad's 12-pixel shape lifts a standing player out of its half-block sweep box: stand inside it
             c.teleport(rx + 0.5, Y + 1.1, rz + 0.5);
-            c.cmd("data merge block " + rx + " " + (Y + 1) + " " + rz + " {t:100,t_max:100,t_type:" + steam + "}");
+            c.cmd("data merge block " + rx + " " + (Y + 1) + " " + rz + " {t:100,t_max:100,t_type:\"" + steam + "\"}");
             c.waitTicks(5);
         }
         int after = suitFuel(state(c));

@@ -20,8 +20,10 @@ public class HazardTypeHot implements IHazardType {
 
         final boolean wetOrReacher = HazardHelper.isHoldingReacher(target) || target.isInWaterOrRain();
         if (RadiationConfig.disableHot || wetOrReacher) return;
-        if (target instanceof Player player && player.isCreative()) return;
-        Effects.ignite(target, (int) Math.ceil(level) * hazardRate);
+        // 1.7 setFire(ceil(level)) every tick: a duration in seconds that only ever raises the remaining burn, so
+        // one application per hazardRate ticks keeps it identical; multiplying it by the rate made a nugget burn 5x
+        // longer after being dropped. 1.7 exempted no creative player either (they burn without taking damage).
+        if (level > 0) Effects.ignite(target, (int) Math.ceil(level));
     }
 
     @Override

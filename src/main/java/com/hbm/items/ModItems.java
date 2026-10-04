@@ -171,7 +171,7 @@ public final class ModItems {
     public static final RegistryObject<Item> nitra_small = item("nitra_small", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> niter = item("niter", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> fluorite = item("fluorite", HbmTab.MATERIALS).transform(Presets.sprite());
-    public static final RegistryObject<Item> scrap_plastic = item("scrap_plastic", HbmTab.CONTROL).transform(Presets.sprite());
+    // scrap_plastic: 1.7 ItemPlasticScrap (ScrapType metadata) is flattened to scrap_plastic_<type> in ModFinalConsumableItems.
     public static final RegistryObject<Item> scrap = item("scrap", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> scrap_oil = item("scrap_oil", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> scrap_nuclear = item("scrap_nuclear", HbmTab.MATERIALS).transform(Presets.sprite());

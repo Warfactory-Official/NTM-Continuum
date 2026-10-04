@@ -1146,6 +1146,22 @@ public final class HbmGameTestFunctions {
             TESTS.function("nuke_ray_resume_equivalence", 20 * 90,
                     () -> NukePerfGameTests::rayResumeEquivalence);
 
+    // --- fix wave 1D: explosion values from 1.7 (Fix1DGameTests) ---
+    public static final GameTests.Function FIX1D_SMALL_NUKE_RADIATION =
+            TESTS.function("fix1d_small_nuke_radiation", 20, () -> Fix1DGameTests::smallNukeRadiation);
+    public static final GameTests.Function FIX1D_CROSS_SMOOTH_DENSITY =
+            TESTS.function("fix1d_cross_smooth_density", 20, () -> Fix1DGameTests::crossSmoothDensityGate);
+    public static final GameTests.Function FIX1D_NUKE_DAMAGE_SOURCE =
+            TESTS.function("fix1d_nuke_damage_source", 40, () -> Fix1DGameTests::nukeDamageSource);
+    public static final GameTests.Function FIX1D_WASTE_CONVERSIONS =
+            TESTS.function("fix1d_waste_conversions", 20, () -> Fix1DGameTests::wasteConversions);
+    public static final GameTests.Function FIX1D_CLOUD_FUNCTION =
+            TESTS.function("fix1d_cloud_function", 20, () -> Fix1DGameTests::cloudFunction);
+    public static final GameTests.Function FIX1D_CUSTOM_NUCLEAR_CLOUD =
+            TESTS.function("fix1d_custom_nuclear_cloud", 40, () -> Fix1DGameTests::customNuclearCloud);
+    public static final GameTests.Function FIX1D_TOREX_SCALE =
+            TESTS.function("fix1d_torex_scale", 20, () -> Fix1DGameTests::torexScale);
+
     /** setBlock vs direct section write — the number behind the destruction-phase design. */
     public static final GameTests.Function NUKE_WRITE_THROUGHPUT =
             TESTS.function("nuke_write_throughput", 20 * 90, () -> NukePerfGameTests::writeThroughput);
@@ -1793,8 +1809,9 @@ public final class HbmGameTestFunctions {
         reactor.inventory.setStackInSlot(0, new net.minecraft.world.item.ItemStack(ModZirnoxItems.active(ZirnoxFuel.NATURAL_URANIUM)));
         TileEntityReactorZirnox.serverTick(helper.getLevel(), helper.absolutePos(pos), reactor.getBlockState(), reactor);
         helper.assertTrue(reactor.pressure == 71_776, "ZIRNOX pressure formula regressed");
-        helper.assertTrue(reactor.steam.getFill() == 49 && reactor.water.getFill() == 31_951,
-                "ZIRNOX steam conversion regressed");
+        // 1.7.10 factor 25 * 7.5: (50,030 - 10,256) / 100,000 * 187.5 = 74.6 -> 74 mB per tick
+        helper.assertTrue(reactor.steam.getFill() == 74 && reactor.water.getFill() == 31_926,
+                "ZIRNOX steam conversion regressed: steam " + reactor.steam.getFill() + ", water " + reactor.water.getFill());
         helper.assertTrue(reactor.heat == 46_440, "ZIRNOX cooling order regressed");
         helper.succeed();
     }
@@ -2325,9 +2342,10 @@ public final class HbmGameTestFunctions {
         var recipes = com.hbm.inventory.recipes.PlasmaForgeRecipes.INSTANCE;
         recipes.registerRecipes();
         // 20 before the final-content wave; +12 ICF parts (plsm.icf*) and plsm.schrabhammer make 33 of
-        // the original's 34; plsm.gerald (the construction satellite, §19ec-satellites) completes them.
-        helper.assertTrue(recipes.recipeOrderedList.size() == 34,
-                "Expected 34 feasible plasma-forge recipes, found " + recipes.recipeOrderedList.size());
+        // the original's 34; plsm.gerald (the construction satellite, §19ec-satellites) completes them; 1.7's 35th,
+        // ass.fensusan (the REDD), was restored in fix phase 3.
+        helper.assertTrue(recipes.recipeOrderedList.size() == 35,
+                "Expected 35 plasma-forge recipes, found " + recipes.recipeOrderedList.size());
         helper.assertTrue(recipes.autoSwitchGroups.getOrDefault("autoswitch.weldPlates", java.util.List.of()).size() == 11,
                 "Expected 11 welded-plate variants in the auto-switch group");
 

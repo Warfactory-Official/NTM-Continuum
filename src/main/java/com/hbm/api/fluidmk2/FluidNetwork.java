@@ -58,7 +58,7 @@ public final class FluidNetwork {
     private static final LevelNodeGraph.FaceProbe<DuctData> FACE_PROBE =
             (level, graph, cellPos, faces, faceOrdinal) -> {
                 DuctData data = graph.dataAt(cellPos);
-                if (data == null || data.typeId() == Fluids.NONE.getID()) return LevelNodeGraph.Probe.ABSENT;
+                if (data == null || data.isNone()) return LevelNodeGraph.Probe.ABSENT;
                 BlockPos neighbour = neighbourOf(cellPos, faceOrdinal);
                 if (!resident(level, neighbour)) return LevelNodeGraph.Probe.ABSENT;
                 // An exhaust cell carries every smoke, so its face is present for a machine taking any one of them.
@@ -212,7 +212,7 @@ public final class FluidNetwork {
                 if (first == null) first = segment.data;
             }
         }
-        if (types == NO_TYPES && first != null && first.typeId() != Fluids.NONE.getID()) types = first.types();
+        if (types == NO_TYPES && first != null && !first.isNone()) types = first.types();
         net.attachment = types;
         return types;
     }

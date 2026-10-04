@@ -72,6 +72,10 @@ public enum HbmEffectNT {
     Smoke_Cloud,
     /** The large explosion's radial shock smoke. */
     Smoke_Shock,
+    /** 1.7 smoke mode {@code radial}: ExSmoke thrown on a gaussian in all three axes (the naval mine). */
+    Smoke_Radial,
+    /** 1.7 smoke mode {@code foamSplash}: rising foam bubbles (the naval mine under water). */
+    Smoke_FoamSplash,
     /** Direct client-side block dust used by the three legacy extinguisher streams. */
     VanillaExt_BlockDust,
     /**
@@ -115,7 +119,14 @@ public enum HbmEffectNT {
      * old-hbm {@code VanillaBurst_BlockDust}: {@code count} block-dust particles of block id {@code block}, each with
      * motion {@code gaussian * motion} (+0.2 up) and a 50..99 tick life. The crucible's killing hit.
      */
-    VanillaBurst_BlockDust;
+    VanillaBurst_BlockDust,
+    /** 1.7 {@code deadleaf}: one {@code ParticleDeadLeaf} drifting down from {@code waste_leaves}. Client-side only. */
+    DeadLeaf,
+    /**
+     * 1.7 {@code radFog}: one {@code ParticleRadiationFog}, rolled once a second over chunks holding more than
+     * {@code fogRad} (History §19ej-6, {@code RadiationFog}).
+     */
+    RadFog;
 
     /** 1.7 {@code createSendToThreadedPacket}: this effect for one player only. */
     public void sendTo(ServerPlayer player, double x, double y, double z, @Nullable CompoundTag data) {

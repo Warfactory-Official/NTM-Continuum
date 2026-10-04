@@ -45,7 +45,8 @@ public final class FinalConsumableGameTests {
         for (String id : ModFinalConsumableItems.IDS) {
             helper.assertTrue(BuiltInRegistries.ITEM.containsKey(Ids.of(Constants.MOD_ID, id)), "hbm:" + id + " is registered");
         }
-        helper.assertTrue(ModFinalConsumableItems.IDS.size() == 128, "128 ids, got " + ModFinalConsumableItems.IDS.size());
+        // 128 + the 23 flattened plastic scraps (fix phase 3)
+        helper.assertTrue(ModFinalConsumableItems.IDS.size() == 151, "151 ids, got " + ModFinalConsumableItems.IDS.size());
         helper.succeed();
     }
 

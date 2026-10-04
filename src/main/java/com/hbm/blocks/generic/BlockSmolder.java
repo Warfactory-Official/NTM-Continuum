@@ -30,6 +30,8 @@ public class BlockSmolder extends dev.golem.core.world.CompatBlock {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+        // 1.7 plain Block: one powder_fire, no fortune; an opaque cube without a tile entity, so silk touch works.
+        if (OreDrops.silkTouch(params)) return List.of(new ItemStack(this));
         return List.of(new ItemStack(ModFuelItems.powder_fire.get()));
     }
 

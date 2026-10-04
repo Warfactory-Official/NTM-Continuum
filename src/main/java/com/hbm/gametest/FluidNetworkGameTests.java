@@ -65,7 +65,7 @@ public final class FluidNetworkGameTests {
     private static void join(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         TileEntityMachineFluidTank tank = tank(helper, new BlockPos(4, Y, JOIN_Z), (short) 0);
-        DirPos port = tank.getConPos()[0];
+        DirPos port = openPort(helper, tank);
         BlockPos ductPos = port.getPos();
         duct(helper, ductPos);
         level.setBlock(ductPos.offset(port.getDir().offsetX, port.getDir().offsetY, port.getDir().offsetZ),
@@ -82,7 +82,7 @@ public final class FluidNetworkGameTests {
     private static void split(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         TileEntityMachineFluidTank tank = tank(helper, new BlockPos(4, Y, SPLIT_Z), (short) 0);
-        DirPos port = tank.getConPos()[0];
+        DirPos port = openPort(helper, tank);
         BlockPos first = port.getPos();
         ForgeDirection out = port.getDir();
         BlockPos second = first.offset(out.offsetX, out.offsetY, out.offsetZ);
@@ -219,7 +219,7 @@ public final class FluidNetworkGameTests {
     private static void identifierTint(GameTestHelper helper) {
         net.minecraft.world.item.ItemStack bare = new net.minecraft.world.item.ItemStack(
                 com.hbm.items.ModMachineItems.fluid_identifier.get());
-        com.hbm.items.ModDataComponents.fluidId(bare, Fluids.KEROSENE.getID());
+        com.hbm.items.ModDataComponents.fluid(bare, Fluids.KEROSENE);
         helper.assertTrue(dev.golem.core.data.ModelData.color(bare, -1) == -1, "a bare identifier starts without a colour");
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
         ((com.hbm.items.machine.ItemFluidId) bare.getItem()).tickInventoryCompat(bare, helper.getLevel(), player,
@@ -289,6 +289,14 @@ public final class FluidNetworkGameTests {
     private static void duct(GameTestHelper helper, BlockPos pos) {
         helper.getLevel().setBlock(pos, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
         ((TileEntityFluidDuctNT) helper.getLevel().getBlockEntity(pos)).setFluidType(Fluids.WATER);
+    }
+
+    /** 1.7's fixed getConPos: half of the eight sit inside the footprint for any facing; use a free one. */
+    private static DirPos openPort(GameTestHelper helper, TileEntityMachineFluidTank tank) {
+        for (DirPos port : tank.getConPos()) {
+            if (helper.getLevel().getBlockState(port.getPos()).isAir()) return port;
+        }
+        throw new IllegalStateException("fluid tank exposes no free port");
     }
 
     private static TileEntityMachineFluidTank tank(GameTestHelper helper, BlockPos relative, short mode) {

@@ -7,7 +7,7 @@ import net.minecraft.sounds.SoundSource;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
 import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
-import com.hbm.explosion.vanillant.standard.EntityProcessorCross;
+import com.hbm.explosion.vanillant.standard.EntityProcessorStandard;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import com.hbm.items.ModItems;
 import com.hbm.particle.helper.ExplosionCreator;
@@ -39,7 +39,7 @@ public class EntityMissileShuttle extends EntityMissileBaseNT {
         new ExplosionVNT(level(), getX() + 0.5F, getY() + 0.5F, getZ() + 0.5F, 20.0F)
                 .setBlockAllocator(new BlockAllocatorStandard(64))
                 .setBlockProcessor(new BlockProcessorStandard())
-                .setEntityProcessor(new EntityProcessorCross(7.5D).withRangeMod(2F))
+                .setEntityProcessor(new EntityProcessorStandard()) // 1.7 ExplosionNT: vanilla entity damage
                 .setPlayerProcessor(new PlayerProcessorStandard())
                 .explode(); // no setSFX: NOSOUND | NOPARTICLE
 

@@ -8,7 +8,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import com.hbm.registration.Reg;
 
-/** HBM status effects, matching the 1.12.2 {@code HbmPotion} registry. */
+/** HBM status effects, matching the 1.7.10 {@code HbmPotion} registry. */
 public final class ModEffects {
 
     private ModEffects() {}
@@ -25,18 +25,20 @@ public final class ModEffects {
             HbmEffect.Kind.TAINT);
     public static final RegistryObject<MobEffect> BANG = effect("bang", MobEffectCategory.HARMFUL, 1118481,
             HbmEffect.Kind.BANG);
+    // Colours are 1.7 HbmPotion.init's (mutation shares taint's purple; radx and radaway share 0xBB4B00).
     public static final RegistryObject<MobEffect> MUTATION = effect("mutation", MobEffectCategory.BENEFICIAL,
-            0xFF8132, null);
-    public static final RegistryObject<MobEffect> RADX = effect("radx", MobEffectCategory.BENEFICIAL, 0x225900,
+            0x800080, null);
+    public static final RegistryObject<MobEffect> RADX = effect("radx", MobEffectCategory.BENEFICIAL, 0xBB4B00,
             null);
     public static final RegistryObject<MobEffect> LEAD = effect("lead", MobEffectCategory.HARMFUL, 0x767682,
             HbmEffect.Kind.LEAD);
     public static final RegistryObject<MobEffect> RADAWAY = effect("radaway", MobEffectCategory.BENEFICIAL,
-            0xFFE400, HbmEffect.Kind.RADAWAY);
+            0xBB4B00, HbmEffect.Kind.RADAWAY);
+    /** Commented out in 1.7 HbmPotion; kept registered here (its id may already be in worlds), never applied by 1.7 content. */
     public static final RegistryObject<MobEffect> TELEKINESIS = effect("telekinesis", MobEffectCategory.HARMFUL,
             0x00F3FF, HbmEffect.Kind.TELEKINESIS);
     public static final RegistryObject<MobEffect> PHOSPHORUS = effect("phosphorus", MobEffectCategory.HARMFUL,
-            0xFF3A00, HbmEffect.Kind.PHOSPHORUS);
+            0xFFFF00, HbmEffect.Kind.PHOSPHORUS);
     public static final RegistryObject<MobEffect> STABILITY = effect("stability", MobEffectCategory.BENEFICIAL,
             0xD0D0D0, null);
     public static final RegistryObject<MobEffect> POTION_SICKNESS = effect("potionsickness",

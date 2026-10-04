@@ -31,13 +31,19 @@ public final class PollutionSavedData extends CompatSavedData<PollutionSavedData
     /** 1.7's {@code x >> 6}: a pollution region is 64 blocks, four chunks, on a side. */
     public static final int REGION_BITS = 6;
 
-    private record Entry(int chunkX, int chunkZ, List<Float> values) {}
+    /**
+     * One region: its pollution keyed by {@link PollutionType} name ({@code "soot"}). 1.7 saved one float per type in
+     * ordinal order; an ordinal-indexed list breaks the moment the enum changes, so it is never saved (History section
+     * 19ej-ids). A pre-2026-10-03 {@code values} list is ignored with one WARN.
+     */
+    private record Entry(int chunkX, int chunkZ, Map<String, Float> values, boolean legacyList) {}
 
     private static final Codec<Entry> ENTRY_CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.fieldOf("chunkX").forGetter(Entry::chunkX),
             Codec.INT.fieldOf("chunkZ").forGetter(Entry::chunkZ),
-            Codec.FLOAT.listOf().fieldOf("values").forGetter(Entry::values)
-    ).apply(i, Entry::new));
+            Codec.unboundedMap(Codec.STRING, Codec.FLOAT).optionalFieldOf("pollution", Map.of()).forGetter(Entry::values),
+            Codec.FLOAT.listOf().optionalFieldOf("values", List.of()).forGetter(e -> List.of())
+    ).apply(i, (x, z, values, legacy) -> new Entry(x, z, values, !legacy.isEmpty())));
 
     public static final Codec<PollutionSavedData> CODEC = RecordCodecBuilder.create(i -> i.group(
             ENTRY_CODEC.listOf().optionalFieldOf("entries", List.of()).forGetter(PollutionSavedData::toEntries)
@@ -68,8 +74,11 @@ public final class PollutionSavedData extends CompatSavedData<PollutionSavedData
         PollutionSavedData data = new PollutionSavedData();
         for (Entry e : entries) {
             PollutionData pd = new PollutionData();
-            int n = Math.min(e.values().size(), pd.pollution.length);
-            for (int i = 0; i < n; i++) pd.pollution[i] = e.values().get(i);
+            if (e.legacyList()) com.hbm.util.SavedIds.warnNumeric("ordinal-indexed pollution list", "values");
+            for (Map.Entry<String, Float> value : e.values().entrySet()) {
+                PollutionType type = com.hbm.util.SavedIds.byName(PollutionType.class, value.getKey(), null);
+                if (type != null) pd.pollution[type.ordinal()] = value.getValue();
+            }
             data.pollution.put(new ChunkPos(e.chunkX(), e.chunkZ()), pd);
         }
         return data;
@@ -78,14 +87,17 @@ public final class PollutionSavedData extends CompatSavedData<PollutionSavedData
     private List<Entry> toEntries() {
         List<Entry> entries = new ArrayList<>(pollution.size());
         for (Map.Entry<ChunkPos, PollutionData> e : pollution.entrySet()) {
-            List<Float> values = new ArrayList<>(PollutionType.VALUES.length);
-            for (float f : e.getValue().pollution) values.add(f);
-            entries.add(new Entry(Chunks.chunkX(e.getKey()), Chunks.chunkZ(e.getKey()), values));
+            Map<String, Float> values = new java.util.LinkedHashMap<>();
+            for (PollutionType type : PollutionType.VALUES) {
+                float f = e.getValue().pollution[type.ordinal()];
+                if (f != 0F) values.put(type.name().toLowerCase(java.util.Locale.ROOT), f);
+            }
+            entries.add(new Entry(Chunks.chunkX(e.getKey()), Chunks.chunkZ(e.getKey()), values, false));
         }
         return entries;
     }
 
-    /** One float per {@link PollutionType}, by ordinal (1.7). */
+    /** One float per {@link PollutionType}, by ordinal (1.7) - in memory only; saved by name. */
     public static final class PollutionData {
         public float[] pollution = new float[PollutionType.VALUES.length];
 

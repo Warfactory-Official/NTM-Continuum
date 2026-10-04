@@ -8,6 +8,8 @@ import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import com.hbm.registration.BlockTag;
+import com.hbm.registration.Loot;
 import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Variants;
@@ -23,8 +25,11 @@ public final class ModArmorTableBlocks {
 
     public static final RegistryObject<BlockArmorTable> ARMOR_TABLE = REG.<BlockArmorTable>block(
             "machine_armor_table", BlockArmorTable::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
-            .model(d -> d.models(Models.cubeBottomTop("hbm:blocks/armor_table_bottom", "hbm:blocks/armor_table_side", "hbm:blocks/armor_table_top")).states(Variants.simple()).blockItemDirect());
+            // 1.7 BlockArmorTable(Material.iron) has no drop override: it drops itself, pickaxe-harvested.
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            .model(d -> d.models(Models.cubeBottomTop("hbm:blocks/armor_table_bottom", "hbm:blocks/armor_table_side", "hbm:blocks/armor_table_top")).states(Variants.simple()).blockItemDirect())
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockItem> ARMOR_TABLE_ITEM = REG.blockItem(ARMOR_TABLE);
 
     static {

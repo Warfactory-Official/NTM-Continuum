@@ -62,8 +62,31 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase
         return "container.radGen";
     }
 
+    /**
+     * 1.7.10's fuel table: every waste class of {@code nuclear_waste_short} (1,500 HE/t, 30 min),
+     * {@code _short_tiny} (150, 3 min), {@code _long} (500, 2 h) and {@code _long_tiny} (50, 12 min), each
+     * leaving its depleted counterpart of the same class, plus scrap and gem_rad.
+     */
     private static Fuel getFuel(ItemStack stack) {
-        return stack.isEmpty() ? null : FUELS.get(stack.getItem());
+        if (stack.isEmpty()) return null;
+        Item item = stack.getItem();
+        if (item instanceof com.hbm.items.special.ItemWasteStorage waste) {
+            int variant = waste.variant(stack);
+            if (item == com.hbm.items.ModStorageDrumItems.nuclear_waste_short.get())
+                return wasteFuel(1500, 30 * 60 * 20, com.hbm.items.ModStorageDrumItems.nuclear_waste_short_depleted.get(), variant);
+            if (item == com.hbm.items.ModStorageDrumItems.nuclear_waste_short_tiny.get())
+                return wasteFuel(150, 3 * 60 * 20, com.hbm.items.ModStorageDrumItems.nuclear_waste_short_depleted_tiny.get(), variant);
+            if (item == com.hbm.items.ModStorageDrumItems.nuclear_waste_long.get())
+                return wasteFuel(500, 2 * 60 * 60 * 20, com.hbm.items.ModStorageDrumItems.nuclear_waste_long_depleted.get(), variant);
+            if (item == com.hbm.items.ModStorageDrumItems.nuclear_waste_long_tiny.get())
+                return wasteFuel(50, 12 * 60 * 20, com.hbm.items.ModStorageDrumItems.nuclear_waste_long_depleted_tiny.get(), variant);
+            return null;
+        }
+        return FUELS.get(item);
+    }
+
+    private static Fuel wasteFuel(int production, int duration, Item depleted, int variant) {
+        return new Fuel(production, duration, com.hbm.items.special.ItemWasteStorage.make(depleted, variant));
     }
 
     public int getProgressScaled(int channel, int scale) {
@@ -151,7 +174,7 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase
         for (int i = 0; i < CHANNELS; i++) {
             ItemStack existing = inventory.getStackInSlot(i);
             if (existing.isEmpty()) return false;
-            if (existing.getItem() == stack.getItem() && existing.getCount() < size) return false;
+            if (ItemStacks.sameItemAndData(existing, stack) && existing.getCount() < size) return false;
         }
         return true;
     }

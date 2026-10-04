@@ -86,7 +86,8 @@ public final class MedicineGameTests {
                 "RadAway must return an IV bag");
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModMedicineItems.radaway.get()));
         ModMedicineItems.radaway.get().use(player.level(), player, InteractionHand.MAIN_HAND);
-        assertEffect(helper, player, ModEffects.RADAWAY.get(), 400, 24, "stacked RadAway");
+        // 1.7 doRadaway: 140 ticks of RadAway I, the second bag's 140 added to the first
+        assertEffect(helper, player, ModEffects.RADAWAY.get(), 280, 0, "stacked RadAway");
 
         player.setHealth(10F);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModMedicineItems.syringe_metal_stimpak.get()));

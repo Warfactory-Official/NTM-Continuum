@@ -283,7 +283,7 @@ public class TileEntityPASource extends TileEntityCooledBase
         child.putInt("x", particle.pos.getX());
         child.putInt("y", particle.pos.getY());
         child.putInt("z", particle.pos.getZ());
-        child.putByte("dir", (byte) particle.dir.ordinal());
+        com.hbm.util.SavedIds.putEnum(child, "dir", particle.dir);
         child.putInt("momentum", particle.momentum);
         child.putInt("defocus", particle.defocus);
         child.putInt("dist", particle.distanceTraveled);
@@ -298,7 +298,7 @@ public class TileEntityPASource extends TileEntityCooledBase
 
         DataIn child = input.childOrEmpty("particle");
         BlockPos pos = new BlockPos(child.getIntOr("x", 0), child.getIntOr("y", 0), child.getIntOr("z", 0));
-        ForgeDirection dir = ForgeDirection.getOrientation(child.getByteOr("dir", (byte) 0));
+        ForgeDirection dir = com.hbm.util.SavedIds.getEnum(child, "dir", ForgeDirection.DOWN);
         this.particle = new Particle(this, pos, dir,
                 child.read("input1", ItemStack.CODEC).orElse(ItemStack.EMPTY),
                 child.read("input2", ItemStack.CODEC).orElse(ItemStack.EMPTY));

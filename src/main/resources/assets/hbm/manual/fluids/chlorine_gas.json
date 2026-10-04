@@ -3,13 +3,13 @@
 	"icon": [
 		"hbm:fluid_icon",
 		1,
-		90
+		"hbm:chlorine"
 	],
 	"trigger": [
 		[
 			"hbm:fluid_icon",
 			1,
-			90
+			"hbm:chlorine"
 		]
 	],
 	"title": {

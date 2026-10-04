@@ -6,7 +6,10 @@ import com.hbm.tileentity.bomb.TileEntityNukeN2;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** N² mine: each of the twelve one-charge slots contributes one twelfth of the configured radius. */
+/**
+ * N² mine. 1.7 NukeN2 (:113, :171) detonates only with all twelve charges loaded and always at the
+ * configured {@code n2Radius} (1.12.2 scaled the radius by the charge count).
+ */
 public class NukeN2 extends NukeBombBlock {
 
     public NukeN2(Properties properties) {
@@ -20,7 +23,7 @@ public class NukeN2 extends NukeBombBlock {
 
     @Override
     protected int radiusFor(TileEntityNukeBomb bomb) {
-        return radiusForCharges(((TileEntityNukeN2) bomb).countCharges());
+        return BombConfig.n2Radius;
     }
 
     @Override
@@ -28,8 +31,4 @@ public class NukeN2 extends NukeBombBlock {
         return true;
     }
 
-    /** Exposed for the exact arithmetic GameTest and for tooltip/render diagnostics. */
-    public static int radiusForCharges(int charges) {
-        return (int) (BombConfig.n2Radius * charges / 12F);
-    }
 }

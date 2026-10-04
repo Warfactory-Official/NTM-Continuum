@@ -8,7 +8,6 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityLoadedBase;
-import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -17,22 +16,22 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** The sunlight-fed 1.12.2 solar boiler, including its intentionally lossy heat conversion. */
+/**
+ * The sunlight-fed solar boiler, a straight port of 1.7.10's {@code TileEntitySolarBoiler}: 100 mB of
+ * water and 10,000 mB of steam. Mirrors add their sun value straight to {@link #heat}; every tick the boiler
+ * turns {@code heat / 50} operations of 1 mB water into 100 mB steam and then discards all heat. (The
+ * 1.12.2 16,000 / 1,600,000 tanks and its heat-accumulation/decay model are not the spec.)
+ */
 public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2 {
 
-    public static final int maxHeat = 320_000;
-    /** Retained legacy constant; the old solar boiler declared it but did not use diffusion in its tick. */
-    public static final double diffusion = 0.1D;
-
     public final FluidTankNTM[] tanks = {
-            new FluidTankNTM(Fluids.WATER, 16_000),
-            new FluidTankNTM(Fluids.STEAM, 1_600_000)
+            new FluidTankNTM(Fluids.WATER, 100),
+            new FluidTankNTM(Fluids.STEAM, 10_000)
     };
+    /** Heat delivered by mirrors since the last boiler tick (1.7: {@code boiler.heat += sun}). */
     public int heat;
-    public int heatInput;
-
-    private int heatSync;
-    private int heatInputSync;
+    /** Operations this tick before the water/steam clamps ({@code heat / 50}); the look overlay's "Too cold!". */
+    public int display;
 
     public TileEntitySolarBoiler(BlockPos pos, BlockState state) {
         super(ModSolarBlockEntities.SOLAR_BOILER.get(), pos, state);
@@ -41,16 +40,8 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFlui
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntitySolarBoiler te) {
         te.tryConvert();
         te.sendFluid(level);
-
-        te.heat += te.heatInput;
-        if (te.heat > maxHeat) te.heat = maxHeat;
-        te.heatSync = te.heat;
-        te.heatInputSync = te.heatInput;
-        if (TickPhase.every(level, pos, 25L)) te.networkPackNT();
-
-        // This is compound-assignment integer truncation, matching old TileEntitySolarBoiler.update().
-        te.heat *= 0.999D;
-        te.heatInput = 0;
+        // 1.7 networkPackNT(15) every tick
+        te.networkPackNT();
         te.setChanged();
     }
 
@@ -70,8 +61,10 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFlui
 
     private void tryConvert() {
         int process = heat / 50;
+        display = process;
         process = Math.min(process, tanks[0].getFill());
         process = Math.min(process, (tanks[1].getMaxFill() - tanks[1].getFill()) / 100);
+        if (process < 0) process = 0;
 
         tanks[0].setFill(tanks[0].getFill() - process);
         tanks[1].fill(Fluids.STEAM, process * 100, true);
@@ -97,8 +90,7 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFlui
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
-        buf.writeInt(heatSync);
-        buf.writeInt(heatInputSync);
+        buf.writeInt(display);
         tanks[0].serialize(buf);
         tanks[1].serialize(buf);
     }
@@ -106,8 +98,7 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFlui
     @Override
     public void deserialize(RegistryFriendlyByteBuf buf) {
         super.deserialize(buf);
-        heat = buf.readInt();
-        heatInput = buf.readInt();
+        display = buf.readInt();
         tanks[0].deserialize(buf);
         tanks[1].deserialize(buf);
     }
@@ -115,7 +106,6 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFlui
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("heat", heat);
         tanks[0].writeToNBT(output, "tank0");
         tanks[1].writeToNBT(output, "tank1");
     }
@@ -123,7 +113,6 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFlui
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        heat = input.getIntOr("heat", 0);
         tanks[0].readFromNBT(input, "tank0");
         tanks[1].readFromNBT(input, "tank1");
     }

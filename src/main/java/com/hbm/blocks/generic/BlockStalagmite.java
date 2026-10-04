@@ -64,7 +64,7 @@ public class BlockStalagmite extends dev.golem.core.world.CompatBlock {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
-        if (OreDrops.silkTouch(params)) return List.of(new ItemStack(this));
+        // 1.7 BlockStalagmite.renderAsNormalBlock() is false, so it can never be silk-harvested.
         ItemStack stack = drop.get();
         return stack.isEmpty() ? List.of() : List.of(stack);
     }

@@ -262,7 +262,7 @@ public final class XFactoryTool {
                 .setOnUpdate(blockDust(ModFallingBlocks.sand_boron, 0.1D)).setOnRicochet(LAMBDA_SAND_HIT)
                 .setOnEntityHit(GunProjectilePayloads::extinguishEntity));
         ct_hook = BulletConfigs.register("ct_hook", new BulletConfig()
-                .setItem(NtmToolGunCatalog.standardAmmo("ct_hook")).setLife(6000).setVel(3F)
+                .setItem(NtmToolGunCatalog.standardAmmo("ct_hook")).setRenderRotations(false).setLife(6000).setVel(3F)
                 .setGrav(0.035F).setDoesPenetrate(true).setDamageFalloffByPen(false)
                 .setOnUpdate(LAMBDA_SET_HOOK).setOnImpact(LAMBDA_HOOK));
         ct_mortar = BulletConfigs.register("ct_mortar", new BulletConfig()
@@ -288,7 +288,7 @@ public final class XFactoryTool {
                 props -> (ItemGunChargeThrower) new ItemGunChargeThrower(props, WeaponQuality.UTILITY,
                         new GunConfig().dura(3_000).draw(10).inspect(55).reloadChangeType(true)
                                 .hideCrosshair(false).crosshair(Crosshair.L_CIRCUMFLEX)
-                                .rec(new Receiver(0).dmg(10F).delay(4).dry(10).auto(true).reload(60).jam(0)
+                                .rec(new Receiver(0).dmg(10F).delay(4).dry(10).auto(true).spread(0F).spreadHipfire(0F).reload(60).jam(0)
                                         .sound(com.hbm.sound.ModGunSounds.FIRE_CHARGE::get, 1F, 1F)
                                         .mag(new MagazineFullReload(0, 1).addConfigs(ct_hook, ct_mortar, ct_mortar_charge))
                                         .offset(1, -0.0625 * 2.5, -0.25D).setupStandardFire()

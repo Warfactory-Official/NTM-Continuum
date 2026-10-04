@@ -150,7 +150,7 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
         super.saveData(output);
         output.putBoolean("invert", this.invertRedstone);
         output.putBoolean("invertFilter", this.invertFilter);
-        output.putInt("filter", this.filter == null ? -1 : this.filter.id);
+        Mats.write(output, "filter", this.filter); // by name, never the numeric id
     }
 
     @Override
@@ -158,7 +158,6 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
         super.loadData(input);
         this.invertRedstone = input.getBooleanOr("invert", false);
         this.invertFilter = input.getBooleanOr("invertFilter", false);
-        int id = input.getIntOr("filter", -1);
-        this.filter = id < 0 ? null : Mats.matById.get(id);
+        this.filter = Mats.read(input, "filter");
     }
 }

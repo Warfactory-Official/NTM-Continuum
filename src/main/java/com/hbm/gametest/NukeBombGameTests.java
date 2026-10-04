@@ -62,20 +62,21 @@ public final class NukeBombGameTests {
     }
 
     public static void n2RadiusAndEffects(GameTestHelper helper) {
-        helper.assertTrue(NukeN2.radiusForCharges(1) == 16
-                        && NukeN2.radiusForCharges(6) == 100
-                        && NukeN2.radiusForCharges(12) == BombConfig.n2Radius,
-                "N2 radius is not int(n2Radius * charges / 12F)");
-
         TileEntityNukeN2 n2 = placeN2(helper, new BlockPos(2, 2, 6));
-        n2.setItem(0, new ItemStack(ModBombItems.n2_charge.get()));
+        // 1.7 TileEntityNukeN2.isReady: eleven charges are not enough
+        for (int i = 0; i < 11; i++) n2.setItem(i, new ItemStack(ModBombItems.n2_charge.get()));
         BlockPos origin = n2.getBlockPos();
+        helper.assertTrue(!n2.isReady() && ModBombBlocks.nuke_n2.get().explode(helper.getLevel(), origin, null)
+                        == IBomb.BombReturnCode.ERROR_MISSING_COMPONENT
+                        && !helper.getLevel().getBlockState(origin).isAir(),
+                "N2 armed with 11 of 12 charges (1.7 needs all twelve)");
+        n2.setItem(11, new ItemStack(ModBombItems.n2_charge.get()));
         try {
             IBomb.BombReturnCode result = ModBombBlocks.nuke_n2.get().explode(helper.getLevel(), origin, null);
             helper.assertTrue(result == IBomb.BombReturnCode.DETONATED, "armed N2 did not detonate");
             EntityNukeExplosionMK5 blast = onlyBlast(helper, origin);
-            helper.assertTrue(blast.getRadius() == 16 && !blast.hasFallout(),
-                    "N2 did not use its one-charge radius and statFacNoRad");
+            helper.assertTrue(blast.getRadius() == BombConfig.n2Radius && !blast.hasFallout(),
+                    "N2 did not use the fixed 1.7 n2Radius and statFacNoRad");
             helper.assertTrue(blast.isChunkLoading(),
                     "N2 did not hand source-chunk ownership to MK5 at spawn time");
             var clouds = helper.getLevel().getEntitiesOfClass(EntityNukeTorex.class,
@@ -133,10 +134,10 @@ public final class NukeBombGameTests {
 
     public static void redstoneAndDetonator(GameTestHelper helper) {
         TileEntityNukeN2 n2 = placeN2(helper, new BlockPos(2, 2, 18));
-        n2.setItem(0, new ItemStack(ModBombItems.n2_charge.get()));
+        armN2(n2);
         Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         TileEntityNukeN2 redstone = placeN2(helper, new BlockPos(8, 2, 18));
-        redstone.setItem(0, new ItemStack(ModBombItems.n2_charge.get()));
+        armN2(redstone);
         BlockPos directOrigin = n2.getBlockPos();
         BlockPos redstoneOrigin = redstone.getBlockPos();
         try {
@@ -163,7 +164,7 @@ public final class NukeBombGameTests {
 
     public static void consumptionAndChunkLifecycle(GameTestHelper helper) {
         TileEntityNukeN2 n2 = placeN2(helper, new BlockPos(2, 2, 22));
-        n2.setItem(0, new ItemStack(ModBombItems.n2_charge.get()));
+        armN2(n2);
         BlockPos origin = n2.getBlockPos();
         try {
             ModBombBlocks.nuke_n2.get().explode(helper.getLevel(), origin, null);
@@ -235,7 +236,7 @@ public final class NukeBombGameTests {
 
     private static void verifyNukeHandoff(GameTestHelper helper) {
         TileEntityNukeN2 n2 = placeN2(helper, new BlockPos(2, 2, 2));
-        n2.setItem(0, new ItemStack(ModBombItems.n2_charge.get()));
+        armN2(n2);
         BlockPos origin = n2.getBlockPos();
         try {
             UUID offlineDetonator = UUID.randomUUID();
@@ -280,6 +281,11 @@ public final class NukeBombGameTests {
         helper.assertTrue(cloud.getTerrainChangeAge() == cloud.tickCount,
                 "Torex did not retain the crater-completion age for faithful late-client replay");
         helper.succeed();
+    }
+
+    /** 1.7: N2 fires only with all twelve slots holding a charge. */
+    private static void armN2(TileEntityNukeN2 n2) {
+        for (int i = 0; i < 12; i++) n2.setItem(i, new ItemStack(ModBombItems.n2_charge.get()));
     }
 
     private static TileEntityNukeN2 placeN2(GameTestHelper helper, BlockPos relative) {

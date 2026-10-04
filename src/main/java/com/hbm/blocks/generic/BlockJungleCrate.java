@@ -21,6 +21,8 @@ public class BlockJungleCrate extends Block {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+        // 1.7 harvestBlock checks silk touch before getDrops, and this is a plain cube without a tile entity, so silk touch keeps the crate.
+        if (OreDrops.silkTouch(params)) return List.of(new ItemStack(this));
         List<ItemStack> ret = new ArrayList<>();
         ret.add(new ItemStack(Items.GOLD_INGOT, 4 + rand.nextInt(4)));
         ret.add(new ItemStack(Items.GOLD_NUGGET, 8 + rand.nextInt(10)));

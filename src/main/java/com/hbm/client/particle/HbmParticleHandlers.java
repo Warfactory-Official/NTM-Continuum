@@ -68,6 +68,18 @@ public final class HbmParticleHandlers {
                 Tags.getFloatOr(data, "scale", 1F)));
         HbmEffectNT.ProperJolt.setHandler((level, x, y, z, data) -> properJolt(
                 Tags.getIntOr(data, "time", 0), Tags.getIntOr(data, "maxTime", 0)));
+        // 1.7 ClientProxy "deadleaf": every leaf on "all" particles, half of them on "decreased", none on "minimal"
+        HbmEffectNT.DeadLeaf.setHandler((level, x, y, z, data) -> {
+            if (!(level instanceof ClientLevel clientLevel)) return;
+            Particles.Quality quality = Particles.quality();
+            if (quality == Particles.Quality.ALL
+                    || (quality == Particles.Quality.DECREASED && level.getRandom().nextBoolean())) {
+                Particles.add(new ParticleDeadLeaf(clientLevel, x, y, z));
+            }
+        });
+        HbmEffectNT.RadFog.setHandler((level, x, y, z, data) -> {
+            if (level instanceof ClientLevel clientLevel) Particles.add(new ParticleRadiationFog(clientLevel, x, y, z));
+        });
         HbmEffectNT.DeconAura.setHandler((level, x, y, z, data) -> {
             var particle = Minecraft.getInstance().particleEngine.createParticle(
                     ParticleTypes.MYCELIUM, x, y, z, 0, 0, 0);

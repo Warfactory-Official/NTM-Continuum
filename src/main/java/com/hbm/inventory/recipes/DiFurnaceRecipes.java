@@ -53,16 +53,45 @@ public final class DiFurnaceRecipes extends GenericRecipes {
 
         register(recipe("difurnace.redCopper", shapes(Mats.MAT_COPPER), shapes(Mats.MAT_REDSTONE),
                 new ItemStack(ModItems.ingot_red_copper.get(), 2)));
-        register(recipe("difurnace.neutronReflectorCoal", shapes(Mats.MAT_TUNGSTEN), shapes(Mats.MAT_COAL),
-                new ItemStack(ModItems.neutron_reflector.get(), 2)));
-        register(recipe("difurnace.neutronReflectorCoke", shapes(Mats.MAT_TUNGSTEN), new TagStack(ANY_COKE),
-                new ItemStack(ModItems.neutron_reflector.get(), 2)));
+        // 1.7 BlastFurnaceRecipes:55: a gasoline canister (any fill, like 1.7's canister_full meta match) and a slimeball
+        register(recipe("difurnace.napalm", canister(com.hbm.inventory.fluid.Fluids.GASOLINE),
+                new ComparableStack(Items.SLIME_BALL), // 1.7 "slimeball" (no shared conventional tag on every node)
+                new ItemStack(ModItems.canister_napalm.get())));
         register(recipe("difurnace.magnetizedTungsten", shapes(Mats.MAT_TUNGSTEN), Mats.MAT_SCHRABIDIUM.nugget(),
                 new ItemStack(ModItems.ingot_magnetized_tungsten.get())));
         register(recipe("difurnace.tcalloy", shapes(Mats.MAT_STEEL), Mats.MAT_TECHNETIUM.nugget(),
                 new ItemStack(ModItems.ingot_tcalloy.get())));
         register(recipe("difurnace.paa", Mats.MAT_GOLD.plate(), new ComparableStack(ModItems.plate_mixed.get()),
                 new ItemStack(ModItems.plate_paa.get(), 2)));
+        // 1.7 BlastFurnaceRecipes:59-61
+        register(recipe("difurnace.starmetal", shapes(Mats.MAT_SATURNITE),
+                new ComparableStack(com.hbm.items.ModAbilityToolItems.ingot_meteorite.get()),
+                new ItemStack(ModItems.ingot_starmetal.get(), 2)));
+        register(recipe("difurnace.meteorite", shapes(Mats.MAT_COBALT), new ComparableStack(ModItems.powder_meteorite.get()),
+                new ItemStack(com.hbm.items.ModAbilityToolItems.ingot_meteorite.get())));
+        register(recipe(HIDDEN_METEOR_SWORD, new ComparableStack(com.hbm.items.ModAbilityToolItems.meteorite_sword_hardened.get()),
+                shapes(Mats.MAT_COBALT), new ItemStack(com.hbm.items.ModAbilityToolItems.meteorite_sword_alloyed.get())));
+    }
+
+    /** 1.7 hid this one from NEI ({@code hiddenRecipes}); the JEI handler skips it. */
+    public static final String HIDDEN_METEOR_SWORD = "difurnace.meteorSword";
+
+    /** A full canister of {@code type}, any fill: 1.7 matched {@code canister_full} by its fluid metadata only. */
+    private static AStack canister(com.hbm.inventory.fluid.FluidType type) {
+        return new AStack() {
+            @Override
+            public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
+                return !stack.isEmpty() && stack.getItem() == com.hbm.items.ModFluidNetItems.canister_full.get()
+                        && com.hbm.items.machine.ItemFluidTank.getType(stack) == type
+                        && (ignoreSize || stack.getCount() >= stacksize);
+            }
+
+            @Override
+            public List<ItemStack> getDisplayStacks() {
+                com.hbm.items.machine.ItemFluidContainerNT can = com.hbm.items.ModFluidNetItems.canister_full.get();
+                return List.of(can.make(type, can.capacity));
+            }
+        };
     }
 
     private static GenericRecipe recipe(String id, AStack first, AStack second, ItemStack output) {
@@ -114,22 +143,22 @@ public final class DiFurnaceRecipes extends GenericRecipes {
     private static List<FuelEntry> fuels() {
         if (fuelEntries != null) return fuelEntries;
 
+        // 1.7.10 TileEntityDiFurnace.getItemPower, item-exact: no charcoal, lignite block, infernal coal or
+        // presto fuels, and coal dust is 200 like coal (the 1.12.2 ore-dictionary table differed).
         List<FuelEntry> entries = new ArrayList<>();
-        entries.add(new FuelEntry(Mats.MAT_COAL.gem(), 200));
-        entries.add(new FuelEntry(Mats.MAT_COAL.dust(), 220));
-        entries.add(new FuelEntry(Mats.MAT_COAL.block(), 2_000));
-        entries.add(new FuelEntry(Mats.MAT_LIGNITE.gem(), 150));
-        entries.add(new FuelEntry(Mats.MAT_LIGNITE.dust(), 150));
-        entries.add(new FuelEntry(Mats.MAT_LIGNITE.block(), 1_500));
-        entries.add(new FuelEntry(new ComparableStack(Items.CHARCOAL), 200));
-        entries.add(new FuelEntry(new TagStack(ANY_COKE), 400));
+        entries.add(new FuelEntry(new ComparableStack(Items.COAL), 200));
+        entries.add(new FuelEntry(new ComparableStack(Items.COAL_BLOCK), 2_000));
+        for (String coke : new String[]{"coal", "lignite", "petroleum"}) {
+            entries.add(new FuelEntry(new ComparableStack(com.hbm.blocks.ModTerrainBlocks.block_coke(coke).asItem()), 4_000));
+        }
         entries.add(new FuelEntry(new ComparableStack(Items.LAVA_BUCKET), 12_800));
         entries.add(new FuelEntry(new ComparableStack(Items.BLAZE_ROD), 1_000));
         entries.add(new FuelEntry(new ComparableStack(Items.BLAZE_POWDER), 300));
-        entries.add(new FuelEntry(new ComparableStack(ModFuelItems.coal_infernal.get()), 300));
+        entries.add(new FuelEntry(new ComparableStack(ModFuelItems.lignite.get()), 150));
+        entries.add(new FuelEntry(new ComparableStack(ModFuelItems.powder_lignite.get()), 150));
+        entries.add(new FuelEntry(new ComparableStack(ModFuelItems.powder_coal.get()), 200));
+        entries.add(new FuelEntry(new TagStack(ANY_COKE), 400));
         entries.add(new FuelEntry(new ComparableStack(ModFuelItems.solid_fuel.get()), 400));
-        entries.add(new FuelEntry(new ComparableStack(ModFuelItems.solid_fuel_presto.get()), 800));
-        entries.add(new FuelEntry(new ComparableStack(ModFuelItems.solid_fuel_presto_triplet.get()), 2_400));
         FinalConsumableMachineRecipes.diFurnaceFuels(entries); // briquettes, 200 each
         fuelEntries = entries;
         return entries;

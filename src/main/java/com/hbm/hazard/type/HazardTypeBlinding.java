@@ -25,7 +25,10 @@ public class HazardTypeBlinding implements IHazardType {
             return;
 
         if (!ArmorRegistry.hasProtection(target, EquipmentSlot.HEAD, HazardClass.LIGHT)) {
-            Effects.add(target, MobEffects.BLINDNESS, (int) level * hazardRate, 0);
+            // 1.7 re-applied blindness for ceil(level) ticks every tick, so it lasts ceil(level) ticks after the item
+            // is gone. Applied every hazardRate ticks here, the duration is padded by one interval so it never lapses
+            // while carried; a duration is not a dose, so it is not multiplied by the rate.
+            Effects.add(target, MobEffects.BLINDNESS, (int) Math.ceil(level) + hazardRate, 0);
         }
     }
 

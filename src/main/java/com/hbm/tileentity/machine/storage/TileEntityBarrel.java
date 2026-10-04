@@ -261,7 +261,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         if (tank.getFill() == 0) return null;
         CompoundTag data = new CompoundTag();
         data.putInt("fill", tank.getFill());
-        data.putInt("type", tank.getTankType().getID());
+        Fluids.write(data, "type", tank.getTankType());
         data.putInt("max", tank.getMaxFill());
         data.putShort("mode", mode);
         return data;
@@ -269,7 +269,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
 
     @Override
     protected void applyCarriedData(CompoundTag data) {
-        tank.setTankType(Fluids.fromID(Tags.getIntOr(data, "type", Fluids.NONE.getID())));
+        tank.setTankType(Fluids.read(data, "type"));
         tank.setFill(Math.min(Tags.getIntOr(data, "fill", 0), tank.getMaxFill()));
         mode = (short) Tags.getIntOr(data, "mode", 0);
     }

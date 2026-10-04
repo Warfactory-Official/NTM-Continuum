@@ -60,9 +60,8 @@ public final class HeatRecipes {
 
         BOILER.put(Fluids.AIR, new HeatStep(5, 1, Fluids.AIRBLAST, 1));
         BOILER.put(Fluids.WATER, new HeatStep(200, 1, Fluids.STEAM, 100));
-        BOILER.put(Fluids.STEAM, new HeatStep(2, 10, Fluids.HOTSTEAM, 1));
-        BOILER.put(Fluids.HOTSTEAM, new HeatStep(18, 10, Fluids.SUPERHOTSTEAM, 1));
-        BOILER.put(Fluids.SUPERHOTSTEAM, new HeatStep(120, 10, Fluids.ULTRAHOTSTEAM, 1));
+        // 1.7 Fluids.init has no FT_Heatable on STEAM/HOTSTEAM/SUPERHOTSTEAM, so the 1.7 boiler cannot upgrade steam
+        // (the three steam steps were 1.12.2 data; removed 2026-10-03).
         BOILER.put(Fluids.OIL, new HeatStep(10, 1, Fluids.HOTOIL, 1));
         BOILER.put(Fluids.OIL_DS, new HeatStep(10, 1, Fluids.HOTOIL_DS, 1));
         BOILER.put(Fluids.CRACKOIL, new HeatStep(10, 1, Fluids.HOTCRACKOIL, 1));

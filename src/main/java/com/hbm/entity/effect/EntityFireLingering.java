@@ -40,6 +40,8 @@ public class EntityFireLingering extends CompatEntity {
     public static final int TYPE_BALEFIRE = 1;
     public static final int TYPE_PHOSPHORUS = 2;
     public static final int TYPE_OXY = 3;
+    /** 1.7 TYPE_BLACK: the 358.00 BL's black flame (HbmLivingProps blackFire). */
+    public static final int TYPE_BLACK = 4;
 
     private static final EntityDataAccessor<Integer> TYPE =
             SynchedEntityData.defineId(EntityFireLingering.class, EntityDataSerializers.INT);
@@ -114,6 +116,7 @@ public class EntityFireLingering extends CompatEntity {
                 case TYPE_DIESEL -> HbmLivingProps.setFireAtLeast(living, 60);
                 case TYPE_PHOSPHORUS -> HbmLivingProps.setFireAtLeast(living, 300);
                 case TYPE_BALEFIRE -> HbmLivingProps.setBalefireAtLeast(living, 100);
+                case TYPE_BLACK -> HbmLivingProps.igniteBlackFire(living);
                 default -> { }
             }
         }
@@ -135,6 +138,7 @@ public class EntityFireLingering extends CompatEntity {
             switch (getFireType()) {
                 case TYPE_DIESEL, TYPE_PHOSPHORUS -> meta = FlameCreator.META_NORMAL;
                 case TYPE_BALEFIRE -> meta = FlameCreator.META_BALEFIRE;
+                case TYPE_BLACK -> meta = com.hbm.particle.helper.FlameCreator.META_BLACK; // drawn with the normal hue: the port particle has no black band yet
                 default -> { continue; }
             }
             FireLingeringClientEffects.flame(this.level(), x, down.y, z, meta);

@@ -44,20 +44,31 @@ public interface Loot {
         return Drops::silkTouchOnly;
     }
 
-    static Loot ore(String drop) {
-        return (namespace, block) -> Drops.ore(namespace, block, drop);
-    }
-
-    static Loot ore(String drop, int min, int max) {
-        return (namespace, block) -> Drops.ore(namespace, block, drop, min, max);
-    }
-
+    /**
+     * Silk touch gives the block, otherwise {@code min..max} of {@code drop} with no fortune. (The additive
+     * {@code uniform_bonus_count} ore shape was 1.12.2's curve; 1.7 ores use {@link #oreMultiplied}.)
+     */
     static Loot oreNoFortune(String drop, int min, int max) {
         return (namespace, block) -> Drops.oreNoFortune(namespace, block, drop, min, max);
     }
 
-    static Loot oreDrops(String drop) {
-        return (namespace, block) -> Drops.oreDrops(namespace, block, drop);
+    /**
+     * The 1.7 {@code BlockOre} shape: silk touch gives the block, otherwise {@code min..max} of {@code drop}
+     * multiplied by fortune ({@code quantityDropped * (max(0, rand(fortune + 2) - 1) + 1)}, vanilla's
+     * {@code ore_drops}). For 1.7 ores without {@code noFortune()}.
+     */
+    static Loot oreMultiplied(String drop, int min, int max) {
+        return (namespace, block) -> Drops.oreMultiplied(namespace, block, drop, min, max);
+    }
+
+    /** {@link #oreMultiplied} for a block 1.7 could not silk-harvest ({@code ore_oil}). */
+    static Loot dropsMultiplied(String drop, int min, int max) {
+        return (namespace, block) -> Drops.dropsMultiplied(namespace, block, drop, min, max);
+    }
+
+    /** Silk touch gives the block; else {@code rare} with {@code chance}; else {@code min..max} {@code drop}. */
+    static Loot oreOrRare(String drop, int min, int max, String rare, double chance) {
+        return (namespace, block) -> Drops.oreOrRare(namespace, block, drop, min, max, rare, chance);
     }
 
     static Loot selfWhen(String property, String value) {

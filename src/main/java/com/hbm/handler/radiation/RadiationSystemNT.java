@@ -111,6 +111,26 @@ public final class RadiationSystemNT {
         get(level).incrementDensity(pos, -amount, Double.MAX_VALUE);
     }
 
+    /** Receives a live chunk and the highest pocket density among its sections. */
+    @FunctionalInterface
+    public interface ChunkMaxConsumer {
+        void accept(int chunkX, int chunkZ, double maxDensity);
+    }
+
+    /**
+     * Read-only view for {@link RadiationFog}: every live chunk of the level with its highest pocket density.
+     * Server thread only; changes nothing in the simulation.
+     */
+    public static void forEachChunkMax(ServerLevel level, ChunkMaxConsumer consumer) {
+        WorldRadiationData data = worldMap.get(level);
+        if (data == null) return;
+        for (ChunkRad cr : data.chunks.values()) {
+            double max = 0D;
+            for (SectionRad sr : cr.sections) if (sr != null && sr.maxDensity > max) max = sr.maxDensity;
+            if (max > 0D) consumer.accept(cr.cx, cr.cz, max);
+        }
+    }
+
     /** A rad-resistant block was placed/removed: rebuild that section's pockets on next access. */
     public static void markSectionForRebuild(ServerLevel level, BlockPos pos) {
         WorldRadiationData data = worldMap.get(level);
@@ -126,7 +146,9 @@ public final class RadiationSystemNT {
      * parallel phase).
      */
     public static void tickServer(MinecraftServer server) {
-        if (!com.hbm.config.GeneralConfig.enableRads) return;
+        // 1.7 RADIATION_01_enableChunkRads gated the chunk system's tick (ChunkRadiationManager); only the switch is
+        // ported, the engine is unchanged (History §19ej-8)
+        if (!com.hbm.config.GeneralConfig.enableRads || !RadiationConfig.enableChunkRads) return;
         ticks++;
 
         // World block decay: drain ONE queued high-radiation pocket per level per tick — like the fork,
@@ -895,8 +917,8 @@ public final class RadiationSystemNT {
                 // 1-in-100 chance per executed decay step to be queued for surface destruction (the
                 // hardcoded fork threshold; RadiationConfig.worldRadThreshold is unused in the NT path
                 // there too). Runs on a pool worker — only queues a numeric key, no MC access.
-                // TODO(rad-fog): the fork also rolled fogRad/fogCh ambient rad-fog spawns here — needs
-                // the HBM particle system.
+                // The fork also rolled fogRad/fogCh rad-fog spawns here; the port's fog is RadiationFog (1.7
+                // cadence, read-only, §19ej-6), so this numeric pass stays free of MC access.
                 if (d >= 5.0D && RadiationConfig.worldRadEffects
                         && java.util.concurrent.ThreadLocalRandom.current().nextInt(100) == 0) {
                     world.queueDestruction(cx, sy, cz, i);

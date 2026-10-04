@@ -15,7 +15,9 @@ import com.hbm.items.weapon.sedna.Crosshair;
 import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
+import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
+import net.minecraft.world.item.ItemStack;
 import com.hbm.mixin.FireBlockAccessor;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.lib.ModDamageSources.DamageClass;
@@ -129,8 +131,13 @@ public final class XFactoryRocket {
         Entity victim = entityHit.getEntity();
         DamageSource source = ModDamageSources.bullet(level, DamageClass.EXPLOSIVE.type(), bullet,
                 bullet.getThrower());
-        victim.invulnerableTime = 0;
-        DamageResistanceHandler.hurt(level, victim, source, bullet.damage * 3F, 5F, 0.2F);
+        if (victim instanceof net.minecraft.world.entity.LivingEntity living) {
+            // 1.7: attackEntityFromNT(living, source, dmg * 3, true, true, 0.5, 5, 0.2) - knockback multiplier 0.5
+            com.hbm.util.EntityDamageUtil.attackEntityFromNT(living, source, bullet.damage * 3F, true, true, 0.5D, 5F, 0.2F);
+        } else {
+            // 1.7: plain attackEntityFrom for non-living targets
+            com.hbm.util.EntityDamageUtil.attackEntityFromIgnoreIFrame(victim, source, bullet.damage * 3F);
+        }
     };
 
     /** The demolition load is the only one that takes the terrain with it. */
@@ -238,23 +245,46 @@ public final class XFactoryRocket {
         return copy;
     }
 
-    /** Shared configuration constructor used by the catalog and by turret consumers. */
-    public static GunConfig rocketConfig(int family, int capacity, int rounds, float damage,
-            int delay, int reload, int jam) {
-        BulletConfig[] roundsForGun = family == 0 ? rocket_rpzb
-                : family == 1 ? rocket_qd : family == 2 ? rocket_ml : rocket_ncrpa;
+    /** 1.7 {@code LAMBDA_RECOIL_ROCKET}: deliberately empty in the source. */
+    public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_ROCKET = (stack, ctx) -> { };
+
+    private static Receiver rocketReceiver(float damage, int delay, int reload, int jam,
+            com.hbm.items.weapon.sedna.mags.IMagazine<?> mag) {
+        return new Receiver(0).dmg(damage).delay(delay).reload(reload).jam(jam)
+                .sound(com.hbm.sound.ModGunSounds.FIRE_ROCKET::get, 1F, 1F)
+                .mag(mag).offset(1, -0.0625 * 1.5, -0.1875D);
+    }
+
+    /** 1.7 {@code XFactoryRocket} gun_panzerschreck. */
+    public static GunConfig panzerschreckConfig() {
         return new GunConfig().dura(300).draw(7).inspect(40).crosshair(Crosshair.L_CIRCUMFLEX)
-                .rec(new Receiver(0).dmg(damage).delay(delay).reload(reload).jam(jam)
-                        .sound(com.hbm.sound.ModGunSounds.FIRE_ROCKET::get, 1F, 1F)
-                        .mag(new MagazineSingleReload(0, capacity).addConfigs(roundsForGun))
-                        .offset(1, -0.0625 * 1.5, -0.1875D).setupStandardFire())
+                .rec(rocketReceiver(25F, 5, 50, 40, new MagazineSingleReload(0, 1).addConfigs(rocket_rpzb))
+                        .setupStandardFire().recoil(LAMBDA_RECOIL_ROCKET))
                 .setupStandardConfiguration();
     }
 
-    public static GunConfig lockonRocketConfig(int family, int capacity, int rounds, float damage,
-            int delay, int reload, int jam) {
-        GunConfig config = rocketConfig(family, capacity, rounds, damage, delay, reload, jam);
-        config.getReceivers(null)[0].setupLockonFire();
-        return config;
+    /** 1.7 gun_stinger: lock-on fire and the box-outline crosshair. */
+    public static GunConfig stingerConfig() {
+        return new GunConfig().dura(300).draw(7).inspect(40).crosshair(Crosshair.L_BOX_OUTLINE)
+                .rec(rocketReceiver(35F, 5, 50, 40, new MagazineSingleReload(0, 1).addConfigs(rocket_rpzb))
+                        .setupLockonFire().recoil(LAMBDA_RECOIL_ROCKET))
+                .setupStandardConfiguration()
+                .ps(LAMBDA_STINGER_SECONDARY_PRESS).rs(LAMBDA_STINGER_SECONDARY_RELEASE);
+    }
+
+    /** 1.7 gun_quadro: durability 400, all four tubes reloaded at once, visible crosshair, no hipfire spread. */
+    public static GunConfig quadroConfig() {
+        return new GunConfig().dura(400).draw(7).inspect(40).crosshair(Crosshair.L_CIRCUMFLEX).hideCrosshair(false)
+                .rec(rocketReceiver(40F, 10, 55, 40, new MagazineFullReload(0, 4).addConfigs(rocket_qd))
+                        .spreadHipfire(0F).setupStandardFire().recoil(LAMBDA_RECOIL_ROCKET))
+                .setupStandardConfiguration();
+    }
+
+    /** 1.7 gun_missile_launcher: durability 500, draw 20, visible crosshair, no hipfire spread. */
+    public static GunConfig missileLauncherConfig() {
+        return new GunConfig().dura(500).draw(20).inspect(40).crosshair(Crosshair.L_CIRCUMFLEX).hideCrosshair(false)
+                .rec(rocketReceiver(50F, 5, 48, 33, new MagazineSingleReload(0, 1).addConfigs(rocket_ml))
+                        .spreadHipfire(0F).setupStandardFire().recoil(LAMBDA_RECOIL_ROCKET))
+                .setupStandardConfiguration().pp(LAMBDA_MISSILE_LAUNCHER_PRIMARY_PRESS);
     }
 }

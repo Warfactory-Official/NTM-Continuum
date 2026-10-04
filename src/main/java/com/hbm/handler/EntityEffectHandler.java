@@ -39,20 +39,20 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.animal.cow.MushroomCow;
-import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 /**
- * Per-living-entity tick logic (radiation sickness, contamination effects, digamma, lung disease),
- * ported from 1.12.2's {@code EntityEffectHandler}. Driven by the {@code MixinLivingEntity} tick
- * injection — the cross-loader stand-in for Forge's {@code LivingUpdateEvent} (runs on both sides).
+ * Per-living-entity tick logic (radiation sickness, contamination effects, digamma, lung disease, oil,
+ * pollution, HBM's own burns, the time bomb), ported from 1.7.10's {@code EntityEffectHandler}. Driven by the
+ * {@code MixinLivingEntity} tick injection — the cross-loader stand-in for Forge's {@code LivingUpdateEvent}
+ * (runs on both sides).
  *
- * <p>Deferred vs the original: all particle effects (vomit/sweat/radiation-flash — the HBM particle
- * system isn't ported), the crater-biome ambient radiation, oil/pollution/temperature
- * handlers (fields persist but the loops are stubbed), and the un-ported mob transforms (nuclear
- * creeper / quackos / RAD beast).
+ * <p>Deferred vs 1.7 (History §19ej-1C): the vomit / sweat / radiation-flash / cough-smoke / oil-drip particle
+ * bursts, which need a client particle path with 1.7's block-dust lifetimes that the port does not have (their
+ * sounds and gameplay effects are here). The nuclear creeper and Quackos transforms landed in §19ej-7, the crater-biome
+ * and nether ambient radiation in §19ej-6.
  */
 public class EntityEffectHandler {
 
@@ -70,12 +70,33 @@ public class EntityEffectHandler {
         // drain is server-side; this is the port's stand-in for 1.12's PlayerTickEvent + onArmorTick.
         if (entity instanceof Player player) handleArmor(player);
 
+        if (entity.level().isClientSide() && entity instanceof Player player && player.isLocalPlayer()) {
+            craterAura(player);
+        }
+
         if (!entity.level().isClientSide()) {
 
             if (entity.tickCount % 20 == 0) {
                 HbmLivingProps.setRadBuf(entity, HbmLivingProps.getRadEnv(entity));
                 HbmLivingProps.setRadEnv(entity, 0);
             }
+
+            // 1.7 onUpdate: the time bomb (HbmLivingProps timer) goes off as a medium mini-nuke when it runs out.
+            int timer = HbmLivingProps.getTimer(entity);
+            if (timer > 0) {
+                HbmLivingProps.setTimer(entity, timer - 1);
+                if (timer == 1) {
+                    com.hbm.explosion.ExplosionNukeSmall.explode(entity.level(), entity.getX(), entity.getY(), entity.getZ(),
+                            com.hbm.explosion.ExplosionNukeSmall.PARAMS_MEDIUM);
+                }
+            }
+            // 1.7 X528_enable528NetherBurn (forced off without 528 mode): players burn in the nether, 1.7 setFire(5)
+            if (com.hbm.config.GeneralConfig.enable528NetherBurn && entity instanceof net.minecraft.world.entity.player.Player
+                    && !entity.fireImmune() && entity.level().dimension() == Level.NETHER) {
+                entity.setRemainingFireTicks(Math.max(entity.getRemainingFireTicks(), 5 * 20));
+            }
+
+            craterBiomeRadiation(entity);
 
             HazardSystem.tickEntity(entity);
 
@@ -84,6 +105,8 @@ public class EntityEffectHandler {
             handleDigamma(entity);
             handleLungDisease(entity);
             handleContagion(entity);
+            handleOil(entity);
+            handlePollution(entity);
             handleFire(entity);
 
             if (entity instanceof ServerPlayer player && entity.tickCount % SYNC_INTERVAL == 0) {
@@ -139,6 +162,7 @@ public class EntityEffectHandler {
      */
     private static void handleFire(LivingEntity entity) {
         if (!(entity.level() instanceof ServerLevel server)) return;
+        if (!entity.isAlive()) return; // 1.7 handleTemperature: isEntityAlive
 
         EntityHbmProps props = HbmLivingProps.getData(entity);
         if (entity.fireImmune()) {
@@ -148,19 +172,103 @@ public class EntityEffectHandler {
         if (entity.isInWaterOrRain()) props.setFire(0);
 
         DamageSource source = server.damageSources().onFire();
+        int stagger = entity.tickCount + entity.getId();
         if (props.getFire() > 0) {
             props.setFire(props.getFire() - 1);
-            if ((entity.tickCount + entity.getId()) % 40 == 0) Compat.hurt(entity, server, source, 2F);
+            if (stagger % 15 == 0) fizz(server, entity);
+            if (stagger % 40 == 0) Compat.hurt(entity, server, source, 2F);
+            flame(server, entity, com.hbm.particle.helper.FlameCreator.META_FIRE);
         }
         if (props.getPhosphorus() > 0) {
             props.setPhosphorus(props.getPhosphorus() - 1);
-            if ((entity.tickCount + entity.getId()) % 40 == 0) Compat.hurt(entity, server, source, 5F);
+            if (stagger % 15 == 0) fizz(server, entity);
+            if (stagger % 40 == 0) Compat.hurt(entity, server, source, 5F);
+            flame(server, entity, com.hbm.particle.helper.FlameCreator.META_FIRE);
         }
         if (props.getBalefire() > 0) {
             props.setBalefire(props.getBalefire() - 1);
+            if (stagger % 15 == 0) fizz(server, entity);
             ContaminationUtil.contaminate(entity, HazardType.RADIATION,
                     ContaminationType.CREATIVE, 5F);
-            if ((entity.tickCount + entity.getId()) % 20 == 0) Compat.hurt(entity, server, source, 5F);
+            if (stagger % 20 == 0) Compat.hurt(entity, server, source, 5F);
+            flame(server, entity, com.hbm.particle.helper.FlameCreator.META_BALEFIRE);
+        }
+        // 1.7 blackFire (the 358.00 "BL" black flame): 5 RAD a tick and 10 fire damage every 10 ticks
+        if (props.getBlackFire() > 0) {
+            props.setBlackFire(props.getBlackFire() - 1);
+            if (stagger % 10 == 0) fizz(server, entity);
+            ContaminationUtil.contaminate(entity, HazardType.RADIATION,
+                    ContaminationType.CREATIVE, 5F);
+            if (stagger % 10 == 0) Compat.hurt(entity, server, source, 10F);
+            flame(server, entity, com.hbm.particle.helper.FlameCreator.META_BLACK);
+        }
+        if ((props.getFire() > 0 || props.getPhosphorus() > 0 || props.getBalefire() > 0 || props.getBlackFire() > 0)
+                && !entity.isAlive()) {
+            com.hbm.items.weapon.sedna.factory.ConfettiUtil.decideConfetti(entity, source);
+        }
+    }
+
+    /** 1.7 "random.fizz" at the entity's middle, pitch 1.5..2. */
+    private static void fizz(ServerLevel level, LivingEntity entity) {
+        level.playSound(null, entity.getX(), entity.getY() + entity.getBbHeight() / 2, entity.getZ(),
+                net.minecraft.sounds.SoundEvents.FIRE_EXTINGUISH, SoundSource.NEUTRAL, 1F,
+                1.5F + entity.getRandom().nextFloat() * 0.5F);
+    }
+
+    /** 1.7 {@code FlameCreator.composeEffect} at a random point inside the entity's box. */
+    private static void flame(ServerLevel level, LivingEntity entity, int meta) {
+        net.minecraft.util.RandomSource rand = entity.getRandom();
+        float width = entity.getBbWidth();
+        com.hbm.particle.helper.FlameCreator.composeEffect(level,
+                entity.getX() - width / 2 + width * rand.nextDouble(),
+                entity.getY() + rand.nextDouble() * entity.getBbHeight(),
+                entity.getZ() - width / 2 + width * rand.nextDouble(), meta);
+    }
+
+    /**
+     * 1.7 {@code handleOil}: a doused entity counts the oil down, and if it catches fire the oil goes up in a
+     * strength-3 block-breaking explosion at its middle. The coal-dust drip particle is deferred with the others.
+     */
+    private static void handleOil(LivingEntity entity) {
+        int oil = HbmLivingProps.getOil(entity);
+        if (oil <= 0) return;
+        if (entity.isOnFire()) {
+            HbmLivingProps.setOil(entity, 0);
+            entity.level().explode(null, entity.getX(), entity.getY() + entity.getBbHeight() / 2, entity.getZ(), 3F,
+                    false, Level.ExplosionInteraction.TNT);
+        } else {
+            HbmLivingProps.setOil(entity, oil - 1);
+        }
+    }
+
+    /**
+     * 1.7 {@code handlePollution}, every 60 ticks at eye level: poison above 10 (poison I below 25, II below 50,
+     * wither III above) unless the helmet stops blistering gas; heavy metal above 25 gives the lead effect (I below
+     * 50, III above; 1.7 gives III twice) unless it stops fine particles.
+     */
+    private static void handlePollution(LivingEntity entity) {
+        if (!RadiationConfig.enablePollution) return;
+        if (entity.tickCount % 60 != 0) return;
+        BlockPos eye = BlockPos.containing(entity.getX(), entity.getY() + entity.getEyeHeight(), entity.getZ());
+
+        if (RadiationConfig.enablePoison && !com.hbm.util.ArmorRegistry.hasProtection(entity, EquipmentSlot.HEAD,
+                com.hbm.util.ArmorRegistry.HazardClass.GAS_BLISTERING)) {
+            float poison = com.hbm.handler.pollution.PollutionHandler.getPollution(entity.level(), eye,
+                    com.hbm.handler.pollution.PollutionType.POISON);
+            if (poison > 10) {
+                if (poison < 25) Effects.add(entity, MobEffects.POISON, 100, 0);
+                else if (poison < 50) Effects.add(entity, MobEffects.POISON, 100, 1);
+                else Effects.add(entity, MobEffects.WITHER, 100, 2);
+            }
+        }
+
+        if (RadiationConfig.enableLeadPoisoning && !com.hbm.util.ArmorRegistry.hasProtection(entity, EquipmentSlot.HEAD,
+                com.hbm.util.ArmorRegistry.HazardClass.PARTICLE_FINE)) {
+            float metal = com.hbm.handler.pollution.PollutionHandler.getPollution(entity.level(), eye,
+                    com.hbm.handler.pollution.PollutionType.HEAVYMETAL);
+            if (metal > 25) {
+                Effects.addRegistered(entity, com.hbm.potion.ModEffects.LEAD.get(), 100, metal < 50 ? 0 : 2);
+            }
         }
     }
 
@@ -176,6 +284,42 @@ public class EntityEffectHandler {
         }
     }
 
+    /**
+     * 1.7 {@code onUpdate}: an entity standing in a crater biome takes the biome's ambient radiation (outer 0.5,
+     * crater 5, inner 25 RAD/s; times 5 when wet) as {@code CREATIVE} contamination, so immune and creative
+     * entities are skipped by {@code contaminate} itself. A direct dose, not a chunk-radiation source, as in 1.7.
+     * 1.7 read the 2D biome at the feet; the port reads the biome at the entity's block.
+     */
+    private static void craterBiomeRadiation(LivingEntity entity) {
+        float radiation = craterBiomeRad(entity.level().getBiome(entity.blockPosition()), entity.isInWaterOrRain()); // 1.7 isWet
+
+        if (radiation > 0) {
+            ContaminationUtil.contaminate(entity, HazardType.RADIATION, ContaminationType.CREATIVE, radiation / 20F);
+        }
+    }
+
+    /** The crater-biome RAD/s at a biome, 0 elsewhere (1.7 {@code EntityEffectHandler.onUpdate}). */
+    public static float craterBiomeRad(net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> biome, boolean wet) {
+        float radiation = 0;
+        if (biome.is(com.hbm.world.biome.ModBiomes.crater_outer)) radiation = com.hbm.config.WorldConfig.craterBiomeOuterRad;
+        if (biome.is(com.hbm.world.biome.ModBiomes.crater)) radiation = com.hbm.config.WorldConfig.craterBiomeRad;
+        if (biome.is(com.hbm.world.biome.ModBiomes.crater_inner)) radiation = com.hbm.config.WorldConfig.craterBiomeInnerRad;
+        if (wet) radiation *= com.hbm.config.WorldConfig.craterBiomeWaterMult;
+        return radiation;
+    }
+
+    /** 1.7 {@code onUpdate}, client: three {@code townaura} (mycelium) motes a tick around the local player in a crater or inner crater. */
+    private static void craterAura(Player player) {
+        var biome = player.level().getBiome(player.blockPosition());
+        if (!biome.is(com.hbm.world.biome.ModBiomes.crater) && !biome.is(com.hbm.world.biome.ModBiomes.crater_inner)) return;
+        var rand = player.getRandom();
+        for (int i = 0; i < 3; i++) {
+            player.level().addParticle(net.minecraft.core.particles.ParticleTypes.MYCELIUM,
+                    player.getX() + rand.nextGaussian() * 3, player.getY() + rand.nextGaussian() * 2,
+                    player.getZ() + rand.nextGaussian() * 3, 0, 0, 0);
+        }
+    }
+
     private static void handleRadiation(LivingEntity entity) {
 
         if (ContaminationUtil.isRadImmune(entity))
@@ -184,6 +328,9 @@ public class EntityEffectHandler {
         Level level = entity.level();
         BlockPos pos = entity.blockPosition();
         double offset = com.hbm.handler.radiation.ChunkRadiationManager.proxy.getRadiation(level, pos);
+        // 1.7 handleRadiationFX: the nether's ambient floor (hellRad, 0.1 RAD/s) under the chunk value
+        if (level.dimension() == Level.NETHER && RadiationConfig.hellRad > 0 && offset < RadiationConfig.hellRad)
+            offset = RadiationConfig.hellRad;
         double radD = Math.max(0D, offset);
         if (radD > 0D) {
             ContaminationUtil.contaminate(entity, HazardType.RADIATION, ContaminationType.CREATIVE, radD / 20D);
@@ -214,8 +361,9 @@ public class EntityEffectHandler {
         }
     }
 
+    /** 1.7 {@code canVomit}: everything but water creatures. */
     private static boolean canVomit(LivingEntity entity) {
-        return true; // old check excluded skeletons/etc via a mouth flag; kept simple
+        return entity.getType().getCategory() != net.minecraft.world.entity.MobCategory.WATER_CREATURE;
     }
 
     private static void handleRadiationEffect(LivingEntity entity) {
@@ -223,28 +371,43 @@ public class EntityEffectHandler {
         if (level.isClientSide()) return;
         if (!(level instanceof ServerLevel serverLevel)) return;
         if (!GeneralConfig.enableRads) return;
-        if (entity instanceof ServerPlayer player && player.isSpectator()) return;
+        if (!entity.isAlive()) return;
+        // 1.7: creative players are skipped entirely (the port also skips spectators)
+        if (entity instanceof Player player && (player.isCreative() || player.isSpectator())) return;
 
         double eRad = HbmLivingProps.getRadiation(entity);
         if (eRad < 50) return;
-        int rng = level.getRandom().nextInt(21000);
         DamageSource radiation = ModDamageSources.radiation(serverLevel);
+        net.minecraft.util.RandomSource rand = level.getRandom();
 
-        // Mob transforms (only those whose target mob is vanilla / ported)
-        if (eRad >= 50 && entity instanceof Cow cow && !(entity instanceof MushroomCow)) {
+        // 1.7 EntityEffectHandler.handleRadiationEffect transformations, in 1.7's else-if order. The creeper and duck
+        // checks are exact-class checks in 1.7 (getClass().equals), so the HBM creeper/duck subclasses never convert.
+        if (entity.getType() == EntityType.CREEPER && eRad >= 200 && entity.getHealth() > 0) {
+            if (rand.nextInt(3) == 0) {
+                convert((Mob) entity, com.hbm.entity.ModNtmEntities.CREEPER_NUCLEAR.get(), serverLevel);
+            } else {
+                Compat.hurt(entity, serverLevel, radiation, 100F);
+            }
+            return;
+        } else if (eRad >= 50 && entity instanceof Cow cow && !(entity instanceof MushroomCow)) {
             convert(cow, EntityType.MOOSHROOM, serverLevel);
             return;
         } else if (eRad >= 500 && entity instanceof Villager villager) {
-            convert(villager, EntityType.ZOMBIE_VILLAGER, serverLevel);
+            // 1.7 spawns a plain EntityZombie, not a zombie villager. (The 1.12.2 fork's zombie horse at 800 RAD
+            // is not 1.7 and is gone.)
+            convert(villager, EntityType.ZOMBIE, serverLevel);
             return;
-        } else if (eRad >= 800 && entity instanceof Horse horse) {
-            convert(horse, EntityType.ZOMBIE_HORSE, serverLevel);
+        } else if (entity.getType() == com.hbm.entity.ModNtmEntities.DUCK.get() && eRad >= 200) {
+            convert((Mob) entity, com.hbm.entity.ModNtmEntities.QUACKOS.get(), serverLevel);
             return;
         }
 
-        if (eRad < 200) return;
-        if (eRad > 2500000) HbmLivingProps.setRadiation(entity, 2500000);
+        if (eRad < 200 || ContaminationUtil.isRadImmune(entity)) return;
+        // 1.7 caps a sick entity at 2500 (the 1.12.2 fork had raised this to 2,500,000)
+        if (eRad > 2500) HbmLivingProps.setRadiation(entity, 2500);
 
+        // 1.7 EntityEffectHandler:234-269: an independent world.rand roll per effect, and no hunger or mining
+        // fatigue (the 1.12.2 fork had added both to every band).
         if (eRad >= 1000) {
             Compat.hurt(entity, serverLevel, radiation, 1000F);
             HbmLivingProps.setRadiation(entity, 0);
@@ -255,31 +418,23 @@ public class EntityEffectHandler {
             // 1.7 achRadDeath
             if (entity instanceof net.minecraft.server.level.ServerPlayer player) com.hbm.advancement.HbmCriteria.RADIATION.fire(player, "death");
         } else if (eRad >= 800) {
-            if (rng % 300 == 0) Effects.add(entity, MobEffects.NAUSEA, 5 * 30, 0);
-            if (rng % 300 == 50) Effects.add(entity, MobEffects.SLOWNESS, 10 * 20, 2);
-            if (rng % 300 == 100) Effects.add(entity, MobEffects.WEAKNESS, 10 * 20, 2);
-            if (rng % 500 == 0) Effects.add(entity, MobEffects.POISON, 3 * 20, 2);
-            if (rng % 700 == 0) Effects.add(entity, MobEffects.WITHER, 3 * 20, 1);
-            if (rng % 300 == 150) Effects.add(entity, MobEffects.HUNGER, 5 * 20, 3);
-            if (rng % 300 == 200) Effects.add(entity, MobEffects.MINING_FATIGUE, 5 * 20, 3);
+            if (rand.nextInt(300) == 0) Effects.add(entity, MobEffects.NAUSEA, 5 * 30, 0);
+            if (rand.nextInt(300) == 0) Effects.add(entity, MobEffects.SLOWNESS, 10 * 20, 2);
+            if (rand.nextInt(300) == 0) Effects.add(entity, MobEffects.WEAKNESS, 10 * 20, 2);
+            if (rand.nextInt(500) == 0) Effects.add(entity, MobEffects.POISON, 3 * 20, 2);
+            if (rand.nextInt(700) == 0) Effects.add(entity, MobEffects.WITHER, 3 * 20, 1);
         } else if (eRad >= 600) {
-            if (rng % 300 == 0) Effects.add(entity, MobEffects.NAUSEA, 5 * 30, 0);
-            if (rng % 300 == 50) Effects.add(entity, MobEffects.SLOWNESS, 10 * 20, 2);
-            if (rng % 300 == 100) Effects.add(entity, MobEffects.WEAKNESS, 10 * 20, 2);
-            if (rng % 500 == 0) Effects.add(entity, MobEffects.POISON, 3 * 20, 1);
-            if (rng % 300 == 150) Effects.add(entity, MobEffects.HUNGER, 3 * 20, 3);
-            if (rng % 400 == 0) Effects.add(entity, MobEffects.MINING_FATIGUE, 6 * 20, 2);
+            if (rand.nextInt(300) == 0) Effects.add(entity, MobEffects.NAUSEA, 5 * 30, 0);
+            if (rand.nextInt(300) == 0) Effects.add(entity, MobEffects.SLOWNESS, 10 * 20, 2);
+            if (rand.nextInt(300) == 0) Effects.add(entity, MobEffects.WEAKNESS, 10 * 20, 2);
+            if (rand.nextInt(500) == 0) Effects.add(entity, MobEffects.POISON, 3 * 20, 1);
         } else if (eRad >= 400) {
-            if (rng % 300 == 0) Effects.add(entity, MobEffects.NAUSEA, 5 * 30, 0);
-            if (rng % 500 == 50) Effects.add(entity, MobEffects.SLOWNESS, 5 * 20, 0);
-            if (rng % 300 == 100) Effects.add(entity, MobEffects.WEAKNESS, 5 * 20, 1);
-            if (rng % 500 == 150) Effects.add(entity, MobEffects.HUNGER, 3 * 20, 2);
-            if (rng % 600 == 0) Effects.add(entity, MobEffects.MINING_FATIGUE, 4 * 20, 1);
-        } else if (eRad >= 200) {
-            if (rng % 300 == 0) Effects.add(entity, MobEffects.NAUSEA, 5 * 20, 0);
-            if (rng % 500 == 0) Effects.add(entity, MobEffects.WEAKNESS, 5 * 20, 0);
-            if (rng % 700 == 0) Effects.add(entity, MobEffects.HUNGER, 3 * 20, 2);
-            if (rng % 800 == 0) Effects.add(entity, MobEffects.MINING_FATIGUE, 4 * 20, 0);
+            if (rand.nextInt(300) == 0) Effects.add(entity, MobEffects.NAUSEA, 5 * 30, 0);
+            if (rand.nextInt(500) == 0) Effects.add(entity, MobEffects.SLOWNESS, 5 * 20, 0);
+            if (rand.nextInt(300) == 0) Effects.add(entity, MobEffects.WEAKNESS, 5 * 20, 1);
+        } else {
+            if (rand.nextInt(300) == 0) Effects.add(entity, MobEffects.NAUSEA, 5 * 20, 0);
+            if (rand.nextInt(500) == 0) Effects.add(entity, MobEffects.WEAKNESS, 5 * 20, 0);
             // 1.7 achRadPoison: only the 200-400 band grants it, exactly as 1.7's else-if chain did
             if (entity instanceof net.minecraft.server.level.ServerPlayer player) com.hbm.advancement.HbmCriteria.RADIATION.fire(player, "poison");
         }
@@ -390,6 +545,12 @@ public class EntityEffectHandler {
                 net.minecraft.world.entity.EquipmentSlot.HEAD, com.hbm.util.ArmorRegistry.HazardClass.BACTERIA);
     }
 
+    /**
+     * 1.7 {@code handleLungDisease}. Black lung below half the maximum heals a tick at a time; the effects follow the
+     * combined lung damage (weakness III above 75%, nausea above 95%), and the cough frequency also follows a
+     * player's soot at eye level (above 30 soot a player coughs even with healthy lungs) unless the helmet stops
+     * coarse particles. The coughed-blood and coughed-coal particles are deferred with the other particle bursts.
+     */
     private static void handleLungDisease(LivingEntity entity) {
 
         if (entity instanceof Player player && player.isCreative()) {
@@ -399,36 +560,32 @@ public class EntityEffectHandler {
         }
 
         int bl = HbmLivingProps.getBlackLung(entity);
-        if (bl > 0 && bl < EntityHbmProps.MAX_BLACKLUNG * 0.25)
+        if (bl > 0 && bl < EntityHbmProps.MAX_BLACKLUNG * 0.5)
             HbmLivingProps.setBlackLung(entity, HbmLivingProps.getBlackLung(entity) - 1);
 
         double blacklung = Math.min(HbmLivingProps.getBlackLung(entity), EntityHbmProps.MAX_BLACKLUNG);
         double asbestos = Math.min(HbmLivingProps.getAsbestos(entity), EntityHbmProps.MAX_ASBESTOS);
+        double soot = 0;
+        if (entity instanceof Player && !com.hbm.util.ArmorRegistry.hasProtection(entity, EquipmentSlot.HEAD,
+                com.hbm.util.ArmorRegistry.HazardClass.PARTICLE_COARSE)) {
+            soot = com.hbm.handler.pollution.PollutionHandler.getPollution(entity.level(),
+                    BlockPos.containing(entity.getX(), entity.getY() + entity.getEyeHeight(), entity.getZ()),
+                    com.hbm.handler.pollution.PollutionType.SOOT);
+        }
 
-        boolean coughs = blacklung / EntityHbmProps.MAX_BLACKLUNG > 0.25D || asbestos / EntityHbmProps.MAX_ASBESTOS > 0.25D;
+        boolean coughs = blacklung / EntityHbmProps.MAX_BLACKLUNG > 0.25D || asbestos / EntityHbmProps.MAX_ASBESTOS > 0.25D
+                || soot > 30;
         if (!coughs) return;
 
         double blacklungDelta = 1D - (blacklung / (double) EntityHbmProps.MAX_BLACKLUNG);
         double asbestosDelta = 1D - (asbestos / (double) EntityHbmProps.MAX_ASBESTOS);
+        double sootDelta = 1D - Math.min(soot / 100, 1D);
         double total = 1 - (blacklungDelta * asbestosDelta);
 
-        if (total > 0.8D) {
-            Effects.add(entity, MobEffects.WEAKNESS, 100, 6);
-            Effects.add(entity, MobEffects.NAUSEA, 100, 0);
-            Effects.add(entity, MobEffects.SLOWNESS, 100, 3);
-            if (entity.getRandom().nextInt(250) == 0) Effects.add(entity, MobEffects.POISON, 100, 2);
-        } else if (total > 0.65D) {
-            Effects.add(entity, MobEffects.WEAKNESS, 100, 2);
-            Effects.add(entity, MobEffects.SLOWNESS, 100, 2);
-            if (entity.getRandom().nextInt(500) == 0) Effects.add(entity, MobEffects.POISON, 100, 0);
-        } else if (total > 0.45D) {
-            Effects.add(entity, MobEffects.WEAKNESS, 100, 1);
-            Effects.add(entity, MobEffects.SLOWNESS, 100, 1);
-        } else if (total > 0.25D) {
-            Effects.add(entity, MobEffects.SLOWNESS, 100, 0);
-        }
+        if (total > 0.75D) Effects.add(entity, MobEffects.WEAKNESS, 100, 2);
+        if (total > 0.95D) Effects.add(entity, MobEffects.NAUSEA, 100, 0);
 
-        // Coughing-blood and coughing-coal particle bursts stay deferred with the particle system.
+        total = 1 - (blacklungDelta * asbestosDelta * sootDelta);
         Level level = entity.level();
         int freq = Math.max((int) (1000 - 950 * total), 20);
         if (level instanceof ServerLevel && level.getGameTime() % freq == entity.getId() % freq) {

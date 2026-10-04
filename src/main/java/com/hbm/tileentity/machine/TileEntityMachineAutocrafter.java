@@ -51,6 +51,8 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase
     public long power;
     public List<Recipes.CraftingMatch> recipes = new ArrayList<>();
     public int recipeIndex;
+    /** The chosen recipe as loaded: saved by recipe id, never by its index in the match list (History 19ej-ids). */
+    private String savedRecipe = "";
     public int recipeCount;
     /** The template grid is re-matched on the first server tick after loading: no level exists at load time. */
     private boolean templateDirty = true;
@@ -93,6 +95,11 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase
             te.templateDirty = false;
             int keep = te.recipeIndex;
             te.updateTemplateGrid();
+            if (!te.savedRecipe.isEmpty()) {
+                // after a load: find the saved recipe again among this grid's matches (the list order is not stable)
+                for (int i = 0; i < te.recipes.size(); i++) if (te.recipes.get(i).id().equals(te.savedRecipe)) keep = i;
+                te.savedRecipe = "";
+            }
             if (keep < te.recipes.size()) {
                 te.recipeIndex = keep;
                 te.refreshTemplateOutput();
@@ -254,7 +261,8 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase
         super.loadData(input);
         this.power = input.getLongOr("power", 0L);
         matcher.load(input);
-        this.recipeIndex = input.getIntOr("rec", 0);
+        this.recipeIndex = 0;
+        this.savedRecipe = input.getStringOr("recipe", "");
         this.templateDirty = true;
     }
 
@@ -263,7 +271,8 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase
         super.saveData(output);
         output.putLong("power", power);
         matcher.save(output);
-        output.putInt("rec", this.recipeIndex);
+        if (!savedRecipe.isEmpty()) output.putString("recipe", savedRecipe);
+        else if (recipeIndex < recipes.size()) output.putString("recipe", recipes.get(recipeIndex).id());
     }
 
     @Override public Component getDisplayName() { return Component.translatable(getName()); }

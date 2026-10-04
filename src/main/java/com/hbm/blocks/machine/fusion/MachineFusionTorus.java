@@ -28,7 +28,8 @@ import org.jspecify.annotations.Nullable;
  * ring, plus the centre-top cell — which is upstream's own comment-worthy quantity ("is that enough
  * ports?"). Power, coolant and the three fuel fluids all arrive through them.
  *
- * <p>Like the Watz, the torus has no block item: it exists only by assembling a {@code struct_torus_core}.
+ * <p>It can be assembled from a {@code struct_torus_core} or placed from its block item (1.7 gives it the machine
+ * tab), and breaking it drops the block itself, as 1.7's {@code BlockDummyable} harvest does.
  */
 public class MachineFusionTorus extends BlockMultiblockMachine
         implements IFluidConnectorBlockMK2, IEnergyConnectorBlock, WorldlyContainerHolder {

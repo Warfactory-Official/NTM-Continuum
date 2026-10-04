@@ -36,14 +36,14 @@ import java.util.List;
 /**
  * Liquefactor — 1:1 port of the 1.12.2 {@code TileEntityMachineLiquefactor}: turns items into fluid.
  * 4 slots (0 input, 1 battery, 2/3 upgrades), a NONE 24k send tank. maxPower 100k; per progressing tick
- * drains {@code usage = (500 + 500·speed)/(power+1)} HE, completes after {@code 100 − 25·speed} ticks,
+ * drains {@code usage = (250 + 250·speed)/(power+1)} HE, completes after {@code 100 − 25·speed} ticks,
  * then the tank adopts the recipe's output type/fill and the input shrinks by 1.
  */
 public class TileEntityMachineLiquefactor extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardSenderMK2, IUpgradeInfoProvider, WorldlyContainer {
 
     public static final long maxPower = 100000;
-    public static final int usageBase = 500;
+    public static final int usageBase = 250; // 1.7.10 value
     public static final int processTimeBase = 100;
 
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);

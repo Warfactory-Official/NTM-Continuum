@@ -58,7 +58,8 @@ import net.minecraft.world.item.Item;
  * suppliers here are resolved. Registry suppliers are only called during registration, which is well
  * after mod bootstrap calls it.
  *
-     * <p>Smoke and the dynamic weapon-mod/name-mutation system remain deferred. The server-safe orchestra
+     * <p>Weapon mods apply through {@code XWeaponModManager.eval}, and the 1.7 name mutators are set on their guns
+     * (fix wave 5). The server-safe orchestra
      * timelines are attached below; their client loop/casing/muzzle effects are intentionally separate.
      * The item JSONs point at the shared OBJ renderer instead of inventing sprite placeholders.
  */
@@ -81,13 +82,13 @@ public final class ModGunItems {
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(new Receiver(0)
                             .dmg(10F).delay(14).reload(46).jam(23)
-                            .sound(ModSounds.FIRE_PISTOL, 1.0F, 1.0F)
+                            .sound(ModSounds.SHOOT_44, 1.0F, 1.0F) // 1.7 "hbm:weapon.44Shoot"
                             .mag(new MagazineFullReload(0, 12).addConfigs(GunFactory.ammo_debug))
                             .offset(0.75, -0.0625, -0.3125D)
                             .canFire(Lego.LAMBDA_STANDARD_CAN_FIRE).fire(Lego.LAMBDA_STANDARD_FIRE),
                     new Receiver(1)
                             .dmg(5F).delay(14).reload(46).jam(23)
-                            .sound(ModSounds.FIRE_PISTOL, 1.0F, 1.0F)
+                            .sound(ModSounds.SHOOT_44, 1.0F, 1.0F)
                             .mag(new MagazineFullReload(1, 12).addConfigs(GunFactory.ammo_debug_shot))
                             .offset(0.75, -0.0625, -0.3125D)
                             .canFire(Lego.LAMBDA_SECOND_CAN_FIRE).fire(Lego.LAMBDA_SECOND_FIRE))
@@ -123,7 +124,7 @@ public final class ModGunItems {
                     .dura(300).draw(4).inspect(23).crosshair(Crosshair.CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(new Receiver(0)
-                            .dmg(12.5F).delay(16).reload(55).jam(45)
+                            .dmg(12.5F).delay(11).reload(55).jam(45)
                             .sound(ModSounds.FIRE_PISTOL, 1.0F, 1.0F)
                             .mag(new MagazineFullReload(0, 6).addConfigs(XFactory357.all()))
                             .offset(0.75, -0.0625, -0.3125D)
@@ -185,7 +186,7 @@ public final class ModGunItems {
                             .setupStandardFire().recoil(XFactory556mm.LAMBDA_RECOIL_G3))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_G3)
                        .ps(Lego.LAMBDA_STANDARD_CLICK_SECONDARY))
-                .setDefaultAmmo(ModAmmoItems.r556_sp, 30), p -> p);
+                .setDefaultAmmo(ModAmmoItems.r556_sp, 30).setNameMutator(XFactory556mm.LAMBDA_NAME_G3), p -> p);
 
     // The remaining ordinary factory declarations are owned by the real ballistic catalogue.
     public static final RegistryObject<ItemGunBaseNT> gun_g3_zebra = BallisticGunCatalog.gun_g3_zebra;
@@ -261,7 +262,7 @@ public final class ModGunItems {
                             .offset(1, -0.0625 * 1.5, -0.1875D)
                             .setupStandardFire().recoil(XFactory22lr.LAMBDA_RECOIL_AM180))
                        .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_AM180))
-                .setDefaultAmmo(ModAmmoItems.p22_sp, 35), p -> p);
+                .setDefaultAmmo(ModAmmoItems.p22_sp, 35).setNameMutator(XFactory22lr.LAMBDA_NAME_SILENCED), p -> p);
 
     /** The M3 Grease Gun, ported from upstream's Gen-3 9 mm declaration. */
     public static final RegistryObject<ItemGunBaseNT> gun_greasegun = REG.item("gun_greasegun", props ->
@@ -275,7 +276,7 @@ public final class ModGunItems {
                             .offset(1, -0.0625 * 2.5, -0.25D)
                             .setupStandardFire().recoil(XFactory9mm.LAMBDA_RECOIL_GREASEGUN))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_GREASEGUN))
-                .setDefaultAmmo(ModAmmoItems.p9_sp, 30), p -> p);
+                .setDefaultAmmo(ModAmmoItems.p9_sp, 30).setNameMutator(XFactory9mm.LAMBDA_NAME_GREASEGUN), p -> p);
 
     /** The Comically Long Pistol, ported from upstream's Gen-3 9 mm declaration. */
     public static final RegistryObject<ItemGunBaseNT> gun_lag = REG.item("gun_lag", props ->
@@ -304,7 +305,7 @@ public final class ModGunItems {
                             .offset(1, -0.0625 * 2.5, -0.25D)
                             .setupStandardFire().recoil(XFactory9mm.LAMBDA_RECOIL_UZI))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_UZI))
-                .setDefaultAmmo(ModAmmoItems.p9_sp, 30), p -> p);
+                .setDefaultAmmo(ModAmmoItems.p9_sp, 30).setNameMutator(XFactory9mm.LAMBDA_NAME_UZI), p -> p);
 
     /** Two independently animated Uzis, each with its own thirty-round magazine. */
     public static final RegistryObject<ItemGunBaseNT> gun_uzi_akimbo = REG.item("gun_uzi_akimbo", props ->
@@ -340,7 +341,7 @@ public final class ModGunItems {
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(starReceiver(0, -0.1875D))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_STAR_F))
-                .setDefaultAmmo(ModAmmoItems.p22_sp, 15), p -> p);
+                .setDefaultAmmo(ModAmmoItems.p22_sp, 15).setNameMutator(XFactory22lr.LAMBDA_NAME_SILENCED), p -> p);
 
     /** Two target pistols in one stack, with independent magazines and triggers. */
     public static final RegistryObject<ItemGunBaseNT> gun_star_f_akimbo = REG.item("gun_star_f_akimbo", props ->
@@ -401,7 +402,7 @@ public final class ModGunItems {
                             .offset(0.75, -0.0625, -0.3125D)
                              .setupStandardFire().recoil(XFactory44.LAMBDA_RECOIL_NOPIP))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_NOPIP))
-                .setDefaultAmmo(ModAmmoItems.m44_sp, 12), p -> p);
+                .setDefaultAmmo(ModAmmoItems.m44_sp, 12).setNameMutator(XFactory44.LAMBDA_NAME_NOPIP), p -> p);
 
     /** Little Macintosh, the scoped legendary heavy revolver. */
     public static final RegistryObject<ItemGunBaseNT> gun_heavy_revolver_lilmac = REG.item("gun_heavy_revolver_lilmac", props ->

@@ -361,7 +361,8 @@ public class EntityGlyphidScout extends EntityGlyphid {
     protected @Nullable Vec3 getPlayerTargetDirection() {
         Player player = level().getNearestPlayer(getX(), getY(), getZ(), 300D, false);
         if (player != null) return player.position();
-        return PollutionHandler.targetCoords == null ? null : net.minecraft.world.phys.Vec3.atCenterOf(PollutionHandler.targetCoords);
+        // 1.7 Vec3.createVectorHelper(event.x, event.y, event.z): the bed block corner, not its centre
+        return PollutionHandler.targetCoords == null ? null : net.minecraft.world.phys.Vec3.atLowerCornerOf(PollutionHandler.targetCoords);
     }
 
     public boolean isValidLightLevel() {

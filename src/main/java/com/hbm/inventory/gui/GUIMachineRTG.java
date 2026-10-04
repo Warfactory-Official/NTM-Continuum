@@ -58,7 +58,7 @@ public final class GUIMachineRTG extends dev.golem.core.gui.CompatContainerScree
         } else if (isHovering(RtgGuiLayout.HEAT_X, RtgGuiLayout.GAUGE_Y,
                 RtgGuiLayout.GAUGE_WIDTH, RtgGuiLayout.GAUGE_HEIGHT, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, font, List.of(
-                    Component.literal("RTG Heat " + rtg.heat + "/" + TileEntityMachineRTG.HEAT_MAX),
+                    Component.literal("RTG Heat " + rtg.heat + "/" + TileEntityMachineRTG.heatMax()),
                     Component.literal("RTG Power " + Library.getShortNumber(rtg.heat * 100L) + "HE/s")),
                     Optional.empty(), mouseX, mouseY);
         } else if (mouseX >= leftPos - 16 && mouseX < leftPos && mouseY >= topPos + 36 && mouseY < topPos + 52) {

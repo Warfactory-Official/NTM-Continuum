@@ -3,13 +3,13 @@
 	"icon": [
 		"hbm:fluid_icon",
 		1,
-		61
+		"hbm:crackoil"
 	],
 	"trigger": [
 		[
 			"hbm:fluid_icon",
 			1,
-			61
+			"hbm:crackoil"
 		]
 	],
 	"title": {

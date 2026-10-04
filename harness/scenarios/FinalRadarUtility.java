@@ -255,7 +255,7 @@ public final class FinalRadarUtility implements Scenario {
         c.screenshot("50-gui-orbus");
         close(c);
         c.cmd("data merge block " + orbusCore[0] + " " + orbusCore[1] + " " + orbusCore[2]
-                + " {tank:384000,tank_type:" + waterId() + ",tank_max:512000}");
+                + " {tank:384000,tank_type:\"" + waterId() + "\",tank_max:512000}");
         c.waitTicks(10);
         openAt(c, orbusCore[0] + 4.5, orbusCore[2] + 0.5, orbusCore[0] + 0.5, orbusCore[2] + 0.5, "Antimatter");
         c.waitTicks(5);
@@ -306,7 +306,7 @@ public final class FinalRadarUtility implements Scenario {
     // --- helpers -------------------------------------------------------------------------------------------
 
     private static String waterId() {
-        return "1"; // Fluids.WATER's stable id; checked visually by the filled orbus GUI
+        return "hbm:water"; // Fluids.WATER's registry name; checked visually by the filled orbus GUI
     }
 
     private static void inventory(Client c) {

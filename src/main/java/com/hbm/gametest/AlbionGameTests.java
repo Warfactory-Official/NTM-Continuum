@@ -430,8 +430,8 @@ public final class AlbionGameTests {
 
     public static void recipes(GameTestHelper helper) {
         ParticleAcceleratorRecipes.register();
-        helper.assertTrue(ParticleAcceleratorRecipes.recipes.size() == 10,
-                "The accelerator must retain its ten ported collision recipes; got "
+        helper.assertTrue(ParticleAcceleratorRecipes.recipes.size() == 11,
+                "The accelerator must hold 1.7's eleven collision recipes (chicken nuggets included); got "
                         + ParticleAcceleratorRecipes.recipes.size());
 
         var amat = ParticleAcceleratorRecipes.getOutput(new ItemStack(ModItems.particle_hydrogen.get()),

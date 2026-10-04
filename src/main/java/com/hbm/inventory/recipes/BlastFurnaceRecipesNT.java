@@ -32,7 +32,7 @@ public final class BlastFurnaceRecipesNT extends GenericRecipes {
     public void registerRecipes() {
         if (!recipeOrderedList.isEmpty()) return;
 
-        // The slag item is the modern one-item-per-material replacement for old ingot_raw[slag].
+        // 1.7 new ItemStack(ModItems.ingot_raw, n, MAT_SLAG.id): the autogen slag ingot (hbm:ingot_raw_slag).
         ItemStack slag = slag(1);
         ItemStack slagTwo = slag(2);
 
@@ -56,10 +56,10 @@ public final class BlastFurnaceRecipesNT extends GenericRecipes {
                 .inputItems(CU.dust(), Mats.MAT_REDSTONE.dust())
                 .outputItems(new ItemStack(ModItems.ingot_red_copper.get(), 2)));
         register(new GenericRecipe("blast.mingradeIngot").setup(400, 0)
-                .inputItems(CU.ingot(), redstoneIngot())
+                .inputItems(CU.ingot(), Mats.MAT_REDSTONE.ingot()) // 1.7 REDSTONE.ingot() = ingot_raw[redstone]
                 .outputItems(new ItemStack(ModItems.ingot_red_copper.get(), 2)));
         register(new GenericRecipe("blast.mingradeCursed").setup(400, 0)
-                .inputItems(CU.dust(), redstoneIngot())
+                .inputItems(CU.dust(), Mats.MAT_REDSTONE.ingot())
                 .outputItems(new ItemStack(ModItems.ingot_red_copper.get(), 2)));
         register(new GenericRecipe("blast.mingradeOre").setup(1_200, 0)
                 .inputItems(CU.ore(), Mats.MAT_REDSTONE.dust().count(6))
@@ -92,25 +92,6 @@ public final class BlastFurnaceRecipesNT extends GenericRecipes {
     }
 
     private static ItemStack slag(int count) {
-        ItemStack stack = ItemScraps.create(new Mats.MaterialStack(Mats.MAT_SLAG, MaterialShapes.INGOT.quantity));
-        stack.setCount(count);
-        return stack;
-    }
-
-    private static AStack redstoneIngot() {
-        return new AStack() {
-            @Override
-            public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
-                Mats.MaterialStack contents = ItemScraps.getMats(stack);
-                return contents != null && contents.material == Mats.MAT_REDSTONE
-                        && (ignoreSize || contents.amount >= MaterialShapes.INGOT.quantity);
-            }
-
-            @Override
-            public java.util.List<ItemStack> getDisplayStacks() {
-                return java.util.List.of(ItemScraps.create(
-                        new Mats.MaterialStack(Mats.MAT_REDSTONE, MaterialShapes.INGOT.quantity)));
-            }
-        };
+        return new ItemStack(com.hbm.items.ModAutogenItems.get(MaterialShapes.INGOT, Mats.MAT_SLAG), count);
     }
 }

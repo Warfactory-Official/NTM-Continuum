@@ -77,15 +77,14 @@ public class DungeonSpawner extends CompatBlock implements TickingBlock {
         protected void saveData(DataOut out) {
             super.saveData(out);
             out.putInt("phase", phase);
-            out.putByte("type", (byte) type.ordinal());
+            com.hbm.util.SavedIds.putEnum(out, "type", type); // by name, never an ordinal (History 19ej-ids)
         }
 
         @Override
         protected void loadData(DataIn in) {
             super.loadData(in);
             this.phase = in.getIntOr("phase", 0);
-            int t = in.getByteOr("type", (byte) 0);
-            this.type = EnumSpawnerType.values()[Math.floorMod(t, EnumSpawnerType.values().length)];
+            this.type = com.hbm.util.SavedIds.getEnum(in, "type", EnumSpawnerType.values()[0]);
         }
     }
 

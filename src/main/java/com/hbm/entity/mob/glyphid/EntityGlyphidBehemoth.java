@@ -124,7 +124,7 @@ public class EntityGlyphidBehemoth extends EntityGlyphid {
 
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
-        spawnAtLocation(level, glandStack(Fluids.SULFURIC_ACID));
+        spawnAtLocation(level, glandStack(Fluids.SULFURIC_ACID), 1F); // 1.7 entityDropItem(stack, 1)
         super.dropCustomDeathLoot(level, source, killedByPlayer);
     }
 

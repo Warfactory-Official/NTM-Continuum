@@ -34,7 +34,12 @@ public interface IWeaponAbility extends IBaseAbility {
 
     /** 1.7 {@code entityDropItem(stack, 0F)}: at the entity's feet, with the default pickup delay. */
     static void drop(LivingEntity living, ItemStack stack) {
-        ItemEntity item = new ItemEntity(living.level(), living.getX(), living.getY(), living.getZ(), stack);
+        drop(living, stack, 0F);
+    }
+
+    /** 1.7 {@code entityDropItem(stack, yOffset)}. */
+    static void drop(LivingEntity living, ItemStack stack, float yOffset) {
+        ItemEntity item = new ItemEntity(living.level(), living.getX(), living.getY() + yOffset, living.getZ(), stack);
         item.setDefaultPickUpDelay();
         living.level().addFreshEntity(item);
     }
@@ -160,7 +165,7 @@ public interface IWeaponAbility extends IBaseAbility {
                     int count = Math.min((int) Math.ceil(living.getMaxHealth() / divider), 250);
 
                     for (int i = 0; i < count; i++) {
-                        drop(living, new ItemStack(ModItems.nitra_small.get()));
+                        drop(living, new ItemStack(ModItems.nitra_small.get()), 1F); // 1.7 entityDropItem(stack, 1)
                         world.addFreshEntity(new ExperienceOrb(world, living.getX(), living.getY(), living.getZ(), 1));
                     }
 

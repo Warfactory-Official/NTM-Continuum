@@ -572,9 +572,10 @@ public final class ModAbilityToolItems {
 
     public static final RegistryObject<RedstoneSword> redstone_sword = reg("redstone_sword", T, RedstoneSword::new, held("redstone_sword", "redstone_sword").and(tag("swords")));
 
-    /** old-hbm {@code ModItems.crucible = new ItemCrucible(500, 1F, matCrucible, "crucible")}; the tab holds it charged. */
+    /** original-hbm 1.7 {@code ModItems.crucible = new ItemCrucible(5000, 1F, matCrucible)} (old-hbm 1.12 used 500; user chose
+     *  the 1.7 damage on 2026-10-03, everything else stays 1.12); the tab holds it charged. */
     public static final RegistryObject<ItemCrucible> crucible = reg("crucible", null,
-            p -> new ItemCrucible(p, 500, 1F, matCrucible), rendered("crucible", "teisr").and(tag("swords")));
+            p -> new ItemCrucible(p, 5000, 1F, matCrucible), rendered("crucible", "teisr").and(tag("swords")));
 
     static {
         ModTabs.addStacksTo(HbmTab.WEAPONS, () -> List.of(crucible.get().creativeStack()));

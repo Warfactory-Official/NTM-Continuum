@@ -114,12 +114,19 @@ public abstract class BlockGraphiteDrilledBase extends dev.golem.core.world.Comp
         return shell != null && stack.getItem() == shell;
     }
 
-    /** The old drilled-block drop: it never dropped itself. */
+    /**
+     * The 1.7 drilled-block drop (also on explosions): {@link #getDrops(BlockState)}. 1.7 checks silk touch before
+     * {@code getDrops}, and the drilled, rod and tritium blocks are plain cubes without a tile entity, so silk touch
+     * keeps those three whole; the tile-entity variants (fuel, source, detector, breeding fuel) cannot be silk-harvested.
+     */
     @Override
-    protected void onPlayerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        if (level instanceof ServerLevel && !playerPreventsBlockDrops(player)) {
-            for (ItemStack drop : getDrops(state)) Block.popResource(level, pos, drop);
+    public List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder params) {
+        if (!(this instanceof net.minecraft.world.level.block.EntityBlock) && com.hbm.blocks.generic.OreDrops.silkTouch(params)) {
+            return List.of(new ItemStack(this));
         }
+        List<ItemStack> drops = getDrops(state);
+        drops.removeIf(ItemStack::isEmpty);
+        return drops;
     }
 
     /** 1.7 {@code getDrops}: eight graphite ingots, the shroud if any, and whatever rod is inside. */

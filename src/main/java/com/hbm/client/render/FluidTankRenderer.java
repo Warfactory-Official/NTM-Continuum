@@ -40,7 +40,7 @@ public class FluidTankRenderer extends GemBER<TileEntityMachineFluidTank, FluidT
 
     /**
      * The body skin for a fluid, falling back to {@code tank_none} when that fluid ships no
-     * {@code tank_<name>.png} (many of the ~157 ported fluids — plasmas, smokes, intermediates — have no
+     * {@code tank_<name>.png} (many of the 156 ported fluids — plasmas, smokes, intermediates — have no
      * dedicated tank texture; without this they'd render the missing-texture sprite). Existence is
      * checked once per fluid against the client resource manager and cached.
      */

@@ -35,10 +35,11 @@ public final class ModGlassBlocks {
      * {@code doesDrop = true}), unlike vanilla glass. Not rad-resistant.
      */
     public static final RegistryObject<BlockNTMGlass> glass_quartz = REG.block("glass_quartz",
-            p -> new BlockNTMGlass(p, true, false),
+            p -> new BlockNTMGlass(p, false),
             p -> p.strength(1.0F, 40.0F).sound(SoundType.GLASS).noOcclusion().isSuffocating((s, l, pos) -> false)
-                    .isViewBlocking((s, l, pos) -> false).noLootTable())
+                    .isViewBlocking((s, l, pos) -> false))
             .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/glass_quartz"))).states(Variants.simple()).blockItem())
+            .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     /** Boron and lead glass are radiation-sealing, silk-touch-only panes in current ntm-next. */
@@ -52,7 +53,7 @@ public final class ModGlassBlocks {
     public static final RegistryObject<BlockNTMGlass> reinforced_glass = glass("reinforced_glass", false, true,
             0.3F, 25.0F, () -> SoundType.GLASS, 0, HbmTab.BLOCKS)
             .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/reinforced_glass"))).states(Variants.simple()).blockItem())
-            .loot(Loot.nothing())
+            .loot(Loot.silkTouchOnly()) // 1.7 BlockNTMGlass: doesDrop = false, canSilkHarvest() = true
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> reinforced_laminate = glass("reinforced_laminate", true, true,
             15.0F, 300.0F, () -> SoundType.GLASS, 0, HbmTab.BLOCKS)
@@ -62,37 +63,37 @@ public final class ModGlassBlocks {
     public static final RegistryObject<BlockNTMGlass> glass_uranium = glass("glass_uranium", false, false,
             0.3F, 0.3F, () -> SoundType.GLASS, 5, HbmTab.BLOCKS)
             .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/glass_uranium"))).states(Variants.simple()).blockItem())
-            .loot(Loot.nothing())
+            .loot(Loot.silkTouchOnly()) // 1.7 BlockNTMGlass: doesDrop = false, canSilkHarvest() = true
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> glass_trinitite = glass("glass_trinitite", false, false,
             0.3F, 0.3F, () -> SoundType.GLASS, 5, HbmTab.BLOCKS)
             .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/glass_trinitite"))).states(Variants.simple()).blockItem())
-            .loot(Loot.nothing())
+            .loot(Loot.silkTouchOnly()) // 1.7 BlockNTMGlass: doesDrop = false, canSilkHarvest() = true
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> glass_polonium = glass("glass_polonium", false, false,
             0.3F, 0.3F, () -> SoundType.GLASS, 5, HbmTab.BLOCKS)
             .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/glass_polonium"))).states(Variants.simple()).blockItem())
-            .loot(Loot.nothing())
+            .loot(Loot.silkTouchOnly()) // 1.7 BlockNTMGlass: doesDrop = false, canSilkHarvest() = true
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> glass_ash = glass("glass_ash", false, false,
             3.0F, 3.0F, () -> SoundType.GLASS, 0, HbmTab.BLOCKS)
             .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/glass_ash"))).states(Variants.simple()).blockItem())
-            .loot(Loot.nothing())
+            .loot(Loot.silkTouchOnly()) // 1.7 BlockNTMGlass: doesDrop = false, canSilkHarvest() = true
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> glass_polarized = glass("glass_polarized", false, false,
             0.3F, 0.3F, () -> SoundType.GLASS, 0, HbmTab.BLOCKS)
             .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/glass_polarized"))).states(Variants.simple()).blockItem())
-            .loot(Loot.nothing())
+            .loot(Loot.silkTouchOnly()) // 1.7 BlockNTMGlass: doesDrop = false, canSilkHarvest() = true
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> hadron_plating_glass = glass("hadron_plating_glass", false, false,
             5.0F, 10.0F, () -> SoundType.METAL, 0, HbmTab.MACHINES)
             .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/hadron_plating_glass"))).states(Variants.simple()).blockItem())
-            .loot(Loot.nothing())
+            .loot(Loot.silkTouchOnly()) // 1.7 BlockNTMGlass: doesDrop = false, canSilkHarvest() = true
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> hadron_analysis_glass = glass("hadron_analysis_glass", false, false,
             5.0F, 10.0F, () -> SoundType.METAL, 0, HbmTab.MACHINES)
             .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/hadron_analysis_glass"))).states(Variants.simple()).blockItem())
-            .loot(Loot.nothing())
+            .loot(Loot.silkTouchOnly()) // 1.7 BlockNTMGlass: doesDrop = false, canSilkHarvest() = true
             .tag(BlockTag.PICKAXE);
 
     static {
@@ -112,7 +113,7 @@ public final class ModGlassBlocks {
     private static Reg.Handle<BlockNTMGlass> glass(String id, boolean drops, boolean radResistant,
                                                         float hardness, float resistance, java.util.function.Supplier<SoundType> sound, int light,
                                                         HbmTab tab) {
-        Reg.Handle<BlockNTMGlass> block = REG.block(id, p -> new BlockNTMGlass(p, drops, radResistant),
+        Reg.Handle<BlockNTMGlass> block = REG.block(id, p -> new BlockNTMGlass(p, radResistant),
                 p -> p.strength(hardness, resistance).sound(sound.get()).lightLevel(s -> light).noOcclusion()
                         .isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false));
         blockItem(id, block, tab);

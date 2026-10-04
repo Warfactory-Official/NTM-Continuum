@@ -149,7 +149,7 @@ public class BlockCrate extends CompatBlock {
         add(METAL, "machine_diesel", 8);
         add(METAL, "machine_rtg_grey", 4); // 1.7 field machine_rtg, registry id machine_rtg_grey
         add(METAL, "red_pylon", 9);
-        add(METAL, "battery_pack_lead", 10); // 1.7: battery_pack sub-item BATTERY_LEAD
+        add(METAL, "battery_lead", 10); // 1.7: battery_pack sub-item BATTERY_LEAD (the port registers it as battery_lead)
         add(METAL, "machine_electric_furnace_off", 8);
         add(METAL, "machine_assembly_machine", 10);
         add(METAL, "machine_fluidtank", 7);

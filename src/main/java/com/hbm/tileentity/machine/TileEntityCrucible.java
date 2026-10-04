@@ -564,12 +564,9 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         super.saveData(output);
         output.putString("recipe", this.recipe);
 
-        int[] rec = new int[recipeStack.size() * 2];
-        int[] was = new int[wasteStack.size() * 2];
-        for (int i = 0; i < recipeStack.size(); i++) { Mats.MaterialStack sta = recipeStack.get(i); rec[i * 2] = sta.material.id; rec[i * 2 + 1] = sta.amount; }
-        for (int i = 0; i < wasteStack.size(); i++) { Mats.MaterialStack sta = wasteStack.get(i); was[i * 2] = sta.material.id; was[i * 2 + 1] = sta.amount; }
-        output.putIntArray("rec", rec);
-        output.putIntArray("was", was);
+        // 1.7 kept (material id, amount) int pairs; materials are saved by name here (History section 19ej-ids)
+        Mats.writeStacks(output, "rec", recipeStack);
+        Mats.writeStacks(output, "was", wasteStack);
         output.putInt("progress", progress);
         output.putInt("heat", heat);
     }
@@ -582,17 +579,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         this.recipeStack.clear();
         this.wasteStack.clear();
 
-        int[] rec = input.getIntArray("rec").orElse(new int[0]);
-        for (int i = 0; i < rec.length / 2; i++) {
-            NTMMaterial mat = Mats.matById.get(rec[i * 2]);
-            if (mat != null) recipeStack.add(new Mats.MaterialStack(mat, rec[i * 2 + 1]));
-        }
-
-        int[] was = input.getIntArray("was").orElse(new int[0]);
-        for (int i = 0; i < was.length / 2; i++) {
-            NTMMaterial mat = Mats.matById.get(was[i * 2]);
-            if (mat != null) wasteStack.add(new Mats.MaterialStack(mat, was[i * 2 + 1]));
-        }
+        recipeStack.addAll(Mats.readStacks(input, "rec"));
+        wasteStack.addAll(Mats.readStacks(input, "was"));
 
         this.progress = input.getIntOr("progress", 0);
         this.heat = input.getIntOr("heat", 0);

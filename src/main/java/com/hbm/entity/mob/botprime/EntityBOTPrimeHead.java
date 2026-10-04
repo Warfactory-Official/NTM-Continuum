@@ -37,7 +37,8 @@ public class EntityBOTPrimeHead extends EntityBOTPrimeBase {
     private static final int BODY_SEGMENTS = 74;
 
     private final ServerBossEvent bossEvent = dev.golem.core.world.Compat.bossEvent(this, getDisplayName(),
-            BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS);
+            // 1.7 BossStatus drew the one vanilla bar, which is 26.2's PINK
+            BossEvent.BossBarColor.PINK, BossEvent.BossBarOverlay.PROGRESS);
 
     public EntityBOTPrimeHead(EntityType<? extends EntityBOTPrimeHead> type, Level level) {
         super(type, level);
@@ -82,7 +83,7 @@ public class EntityBOTPrimeHead extends EntityBOTPrimeBase {
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
                                                   EntitySpawnReason reason, @Nullable SpawnGroupData data) {
 
-        setHeadID(getId());
+        setHeadEntity(this);
 
         BlockPos at = blockPosition();
 
@@ -91,7 +92,7 @@ public class EntityBOTPrimeHead extends EntityBOTPrimeBase {
             if (segment == null) continue;
             segment.setPartNumber(i);
             segment.setPos(at.getX(), at.getY(), at.getZ());
-            segment.setHeadID(getId());
+            segment.setHeadEntity(this);
             level.addFreshEntity(segment);
         }
 
@@ -169,10 +170,11 @@ public class EntityBOTPrimeHead extends EntityBOTPrimeBase {
 
         HbmCriteria.bossKilled(this, BossKilledTrigger.Kind.WORM, 200D);
 
-        // 1.7 pushed the coin straight into the inventory rather than dropping it
+        // 1.7 pushed the coin straight into the inventory rather than dropping it (addItemStackToInventory: a
+        // full inventory loses it), for every player in boundingBox.expand(200)
         if (level() instanceof ServerLevel server) {
-            for (Player player : server.getPlayers(p -> p.distanceToSqr(this) <= 200D * 200D)) {
-                player.getInventory().placeItemBackInInventory(new ItemStack(ModItems.coin_worm.get()));
+            for (Player player : server.getEntitiesOfClass(Player.class, getBoundingBox().inflate(200D))) {
+                player.getInventory().add(new ItemStack(ModItems.coin_worm.get()));
             }
         }
     }

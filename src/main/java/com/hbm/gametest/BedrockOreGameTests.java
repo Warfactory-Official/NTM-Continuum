@@ -216,15 +216,16 @@ public final class BedrockOreGameTests {
                         && depth.getDestroyProgress(player, helper.getLevel(), pos) == 0F,
                 "Ordinary top-tier tools must not mine depth rock");
 
-        helper.assertTrue(com.hbm.blocks.generic.BlockDepth.DEPTH_TOOL_PROGRESS == 1F / 100F,
-                "An accepted IDepthRockTool must receive the exact 1/100 relative progress");
+        helper.assertTrue(com.hbm.blocks.generic.BlockDepth.DEPTH_TOOL_PROGRESS == (float) (1D / 50D),
+                "An accepted IDepthRockTool must receive 1.7's exact 1/50 relative progress");
 
+        // 1.7 BlockDepthOre.quantityDroppedWithBonus: quantity * (max(rand(fortune + 2) - 1, 0) + 1)
         int fortune = 3;
         RandomSource expectedRandom = RandomSource.create(0xBEEFL);
-        int expected = 2 + expectedRandom.nextInt(2) + fortune;
-        int actual = OreDrops.base2Rand2Fortune(fortune, RandomSource.create(0xBEEFL));
-        helper.assertTrue(actual == expected && actual >= 5 && actual <= 6,
-                "Nether depth neodymium must use exactly 2 + rand(2) + fortune fragments");
+        int expected = Math.max(expectedRandom.nextInt(fortune + 2) - 1, 0) + 1;
+        int actual = OreDrops.fortuneMultiplier(fortune, RandomSource.create(0xBEEFL));
+        helper.assertTrue(actual == expected && actual >= 1 && actual <= 4,
+                "The 1.7 depth-ore fortune multiplier must be max(rand(fortune + 2) - 1, 0) + 1");
         List<ItemStack> drops = ModOreBlocks.ore_depth_nether_neodymium.get().getDrops(
                 ModOreBlocks.ore_depth_nether_neodymium.get().defaultBlockState(),
                 new LootParams.Builder(helper.getLevel())

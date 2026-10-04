@@ -2,13 +2,15 @@ package com.hbm.config;
 
 /**
  * 1.7 {@code WorldConfig}'s {@code CATEGORY_DUNGEON} chances and the {@code GeneralConfig} switches that gate
- * {@code HbmWorldGen.generateSurface}'s legacy dungeons and scattered world blocks, as plain constants (the port has no
- * file-backed config). Every value is the 1.7 config-file default ({@code loadFromConfig}); a chance is the {@code n}
- * in {@code rand.nextInt(n) == 0}, i.e. one per {@code n} chunks, and 0 turns the spawn off.
+ * {@code HbmWorldGen.generateSurface}'s legacy dungeons and scattered world blocks. Every initialiser is the 1.7
+ * config-file default; a chance is the {@code n} in {@code rand.nextInt(n) == 0}, i.e. one per {@code n} chunks, and 0
+ * turns the spawn off.
  *
- * <p>The chances are data in this port: {@code LegacyDungeonDeclarations} writes them into each structure's
- * {@code structure_set} and each feature's {@code rarity_filter} at build time. This class must not touch a Minecraft
- * class (the Dejson generator reads it in a plain JVM).
+ * <p>{@code hbm.cfg} (History §19ej-8): the switches and the scattered-block chances (vault, landmine, broadcaster,
+ * capsule) are read by {@code GeneralConfig}/{@code WorldConfig.loadFromConfig} and reach the placed features through
+ * {@code hbm:config} at generation time. The legacy dungeon chances are each structure's {@code structure_set} spacing,
+ * written by {@code LegacyDungeonDeclarations} at build time, and are not {@code hbm.cfg} keys. This class must not
+ * touch a Minecraft class (the Dejson generator reads it in a plain JVM).
  */
 public final class DungeonConfig {
 

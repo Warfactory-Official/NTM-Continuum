@@ -79,6 +79,8 @@ public final class EntityUndeadSoldier extends CompatMonster {
 
     public boolean canSpawnAtCurrentPosition() {
         return level().getDifficulty() != Difficulty.PEACEFUL
+                // 1.7 checkNoEntityCollision: no other spawn-blocking entity in the box
+                && level().isUnobstructed(this)
                 && level().noCollision(this, getBoundingBox())
                 && !level().containsAnyLiquid(getBoundingBox());
     }
@@ -111,13 +113,16 @@ public final class EntityUndeadSoldier extends CompatMonster {
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        entityData.set(TYPE, input.getByteOr("type", TYPE_ZOMBIE) == TYPE_SKELETON ? TYPE_SKELETON : TYPE_ZOMBIE);
+        // saved by name (1.7 kept the byte; History section 19ej-ids); an old byte reads as the default zombie
+        String type = input.getStringOr("type", "zombie");
+        if (input.getIntOr("type", Integer.MIN_VALUE) != Integer.MIN_VALUE) com.hbm.util.SavedIds.warnNumeric("undead soldier type", "type");
+        entityData.set(TYPE, "skeleton".equals(type) ? TYPE_SKELETON : TYPE_ZOMBIE);
     }
 
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putByte("type", soldierType());
+        output.putString("type", soldierType() == TYPE_SKELETON ? "skeleton" : "zombie");
     }
 
     @Override

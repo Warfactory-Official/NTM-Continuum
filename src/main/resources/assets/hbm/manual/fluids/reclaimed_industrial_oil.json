@@ -3,13 +3,13 @@
 	"icon": [
 		"hbm:fluid_icon",
 		1,
-		16
+		"hbm:reclaimed"
 	],
 	"trigger": [
 		[
 			"hbm:fluid_icon",
 			1,
-			16
+			"hbm:reclaimed"
 		]
 	],
 	"title": {

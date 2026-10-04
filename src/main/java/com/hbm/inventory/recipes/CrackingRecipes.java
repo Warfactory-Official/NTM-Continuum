@@ -65,5 +65,6 @@ public final class CrackingRecipes {
         cracking.put(Fluids.XYLENE, new CrackingRecipe(new FluidStack(Fluids.AROMATICS, xyl_crack_aroma), new FluidStack(Fluids.PETROLEUM, xyl_crack_petro)));
         cracking.put(Fluids.HEATINGOIL_VACUUM, new CrackingRecipe(new FluidStack(Fluids.HEATINGOIL, 80), new FluidStack(Fluids.REFORMGAS, 20)));
         cracking.put(Fluids.REFORMATE, new CrackingRecipe(new FluidStack(Fluids.UNSATURATEDS, 40), new FluidStack(Fluids.REFORMGAS, 60)));
+        cracking.put(Fluids.BIOGAS, new CrackingRecipe(new FluidStack(Fluids.PETROLEUM, 20), new FluidStack(Fluids.AROMATICS, 20)));
     }
 }

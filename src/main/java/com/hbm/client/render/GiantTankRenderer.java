@@ -208,7 +208,6 @@ public abstract class GiantTankRenderer<T extends TileEntityMachineGiantTank>
             case "SYNGAS" -> h(1, 4, 2, Symbol.NONE);
             case "OXYHYDROGEN" -> h(0, 4, 2, Symbol.NONE);
             case "RADIOSOLVENT" -> h(3, 3, 0, Symbol.NONE);
-            case "HYDRAZINE" -> h(2, 3, 2, Symbol.NONE);
             case "CHLORINE" -> h(3, 0, 0, Symbol.OXIDIZER);
             case "AIRBLAST" -> h(0, 3, 0, Symbol.NONE);
             case "HEAVYOIL_VACUUM" -> h(2, 1, 0, Symbol.NONE);

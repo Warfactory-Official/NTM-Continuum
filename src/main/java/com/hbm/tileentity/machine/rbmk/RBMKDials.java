@@ -99,7 +99,8 @@ public final class RBMKDials {
     }
 
     public static boolean getReasimBoilers(Level world) {
-        return reasimBoilers;
+        // 1.7: the gamerule OR hbm.cfg X528_forceReasimBoilers (forced off outside 528 mode)
+        return reasimBoilers || com.hbm.config.GeneralConfig.enable528ReasimBoilers;
     }
 
     public static double getReaSimBoilerSpeed(Level world) {

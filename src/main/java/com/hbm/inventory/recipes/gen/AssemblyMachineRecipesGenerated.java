@@ -153,7 +153,7 @@ public final class AssemblyMachineRecipesGenerated {
                 .inputFluids(new FluidStack(Fluids.XENON, 8_000))
                 .outputItems(new ItemStack(ModItems.entanglement_kit.get())));
         reg.registerGenerated(new GenericRecipe("ass.protoreactor").setup(200, 100)
-                .inputItems(STEEL.shell().count(4), PB.plateCast().count(4), new ComparableStack(ModItems.rod_quad_empty.get(), 10), new ComparableStack(Items.BROWN_DYE, 3))
+                .inputItems(STEEL.shell().count(4), PB.plateCast().count(4), new ComparableStack(ModItems.rod_quad_empty.get(), 10), new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/brown")), 3))
                 .outputItems(new ItemStack(ModItems.dysfunctional_reactor.get())));
         reg.registerGenerated(new GenericRecipe("ass.partlith").setup(40, 100)
                 .inputItems(LI.dust())
@@ -367,10 +367,10 @@ public final class AssemblyMachineRecipesGenerated {
                 .inputItems(STAR.ingot().count(24), RUBBER.ingot().count(16), BIGMT.plate().count(24), NB.ingot().count(16), DURA.pipe().count(4))
                 .outputItems(new ItemStack(item("piston_set_starmetal"))));
         reg.registerGenerated(new GenericRecipe("ass.radgen").setup(400, 100)
-                .inputItems(STEEL.ingot().count(8), STEEL.plate().count(32), new ComparableStack(ModItems.coil_magnetized_tungsten.get(), 6), MAGTUNG.wire().count(24), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 16), new ComparableStack(ModItems.reactor_core.get(), 3), STAR.ingot(), new ComparableStack(Items.RED_DYE))
+                .inputItems(STEEL.ingot().count(8), STEEL.plate().count(32), new ComparableStack(ModItems.coil_magnetized_tungsten.get(), 6), MAGTUNG.wire().count(24), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 16), new ComparableStack(ModItems.reactor_core.get(), 3), STAR.ingot(), new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/red")), 1))
                 .outputItems(new ItemStack(ModMachineBlocks.machine_radgen.get()))
                 .setPools("discover.radgen")
-                .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.HEAVY_FRAME), 4), new ComparableStack(ModItems.coil_magnetized_tungsten.get(), 16), new ComparableStack(ModItems.reactor_core.get(), 3), STAR.ingot(), new ComparableStack(Items.RED_DYE), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.CIRCUIT), 3)));
+                .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.HEAVY_FRAME), 4), new ComparableStack(ModItems.coil_magnetized_tungsten.get(), 16), new ComparableStack(ModItems.reactor_core.get(), 3), STAR.ingot(), new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/red")), 1), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.CIRCUIT), 3)));
         reg.registerGenerated(new GenericRecipe("ass.hpcondenser").setup(600, 100)
                 .inputItems(STEEL.plateWelded().count(8), ANY_RESISTANTALLOY.plateWelded().count(4), CU.plate().count(16), new ComparableStack(ModItems.motor_desh.get(), 3), STEEL.pipe().count(24), new FluidContainerStack("LUBRICANT", 1_000).count(4))
                 .outputItems(new ItemStack(ModMachineBlocks.machine_condenser_powered.get()))
@@ -479,23 +479,23 @@ public final class AssemblyMachineRecipesGenerated {
                 .inputItems(PB.nugget().count(6))
                 .outputItems(new ItemStack(ModItems.pellet_buckshot.get())));
         reg.registerGenerated(new GenericRecipe("ass.gadget").setup(300, 100)
-                .inputItems(new ComparableStack(ModItems.sphere_steel.get()), new ComparableStack(ModItems.fins_flat.get(), 2), new ComparableStack(ModItems.pedestal_steel.get()), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER), 3), new ComparableStack(Items.GRAY_DYE, 8))
+                .inputItems(new ComparableStack(ModItems.sphere_steel.get()), new ComparableStack(ModItems.fins_flat.get(), 2), new ComparableStack(ModItems.pedestal_steel.get()), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER), 3), new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/gray")), 8))
                 .outputItems(new ItemStack(ModBombBlocks.nuke_gadget.get()))
                 .setPools528("528.controller"));
         reg.registerGenerated(new GenericRecipe("ass.littleboy").setup(300, 100)
-                .inputItems(STEEL.shell().count(2), new ComparableStack(ModItems.fins_small_steel.get()), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER), 2), new ComparableStack(Items.BLUE_DYE, 4))
+                .inputItems(STEEL.shell().count(2), new ComparableStack(ModItems.fins_small_steel.get()), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER), 2), new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/blue")), 4))
                 .outputItems(new ItemStack(ModBombBlocks.nuke_boy.get()))
                 .setPools528("528.controller"));
         reg.registerGenerated(new GenericRecipe("ass.fatman").setup(300, 100)
-                .inputItems(new ComparableStack(ModItems.sphere_steel.get()), STEEL.shell().count(2), new ComparableStack(ModItems.fins_big_steel.get()), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER), 3), new ComparableStack(Items.YELLOW_DYE, 6))
+                .inputItems(new ComparableStack(ModItems.sphere_steel.get()), STEEL.shell().count(2), new ComparableStack(ModItems.fins_big_steel.get()), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER), 3), new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/yellow")), 6))
                 .outputItems(new ItemStack(ModBombBlocks.nuke_man.get()))
                 .setPools528("528.controller"));
         reg.registerGenerated(new GenericRecipe("ass.tsarbomba").setup(1_200, 100)
-                .inputItems(new ComparableStack(ModItems.sphere_steel.get()), TI.shell().count(6), STEEL.shell().count(2), new ComparableStack(ModItems.fins_tri_steel.get()), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 16), new ComparableStack(Items.BLACK_DYE, 8))
+                .inputItems(new ComparableStack(ModItems.sphere_steel.get()), TI.shell().count(6), STEEL.shell().count(2), new ComparableStack(ModItems.fins_tri_steel.get()), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 16), new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/black")), 8))
                 .outputItems(new ItemStack(ModBombBlocks.nuke_tsar.get()))
                 .setPools528("528.controller"));
         reg.registerGenerated(new GenericRecipe("ass.n2mine").setup(200, 100)
-                .inputItems(STEEL.shell().count(6), MAGTUNG.wire().count(12), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER), 2), new ComparableStack(Items.GREEN_DYE, 8))
+                .inputItems(STEEL.shell().count(6), MAGTUNG.wire().count(12), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER), 2), new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/green")), 8))
                 .outputItems(new ItemStack(ModBombBlocks.nuke_n2.get()))
                 .setPools528("528.controller"));
         reg.registerGenerated(new GenericRecipe("ass.explosivelenses1").setup(400, 100)
@@ -653,7 +653,7 @@ public final class AssemblyMachineRecipesGenerated {
                 .inputItems(DURA.ingot().count(32), B.ingot().count(8), PB.plate().count(16), STEEL.pipe().count(4))
                 .outputItems(new ItemStack(ModItems.thruster_nuclear.get())));
         reg.registerGenerated(new GenericRecipe("ass.shuttlemissile").setup(200, 100)
-                .inputItems(new ComparableStack(ModMissileItems.missile_generic.get()), new ComparableStack(ModMissileItems.missile_strong.get()), new ComparableStack(Items.ORANGE_DYE, 5), new ComparableStack(ModFluidNetItems.canister_full.get().make(Fluids.GASOLINE_LEADED, ModFluidNetItems.canister_full.get().capacity)).count(24), tag("c", "ingots/fiberglass", 12), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 3), tag("c", "ingots/any_plasticexplosive", 8), tag("c", "glass_panes", 6), STEEL.plate().count(4))
+                .inputItems(new ComparableStack(ModMissileItems.missile_generic.get()), new ComparableStack(ModMissileItems.missile_strong.get()), new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/orange")), 5), new ComparableStack(ModFluidNetItems.canister_full.get().make(Fluids.GASOLINE_LEADED, ModFluidNetItems.canister_full.get().capacity)).count(24), tag("c", "ingots/fiberglass", 12), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 3), tag("c", "ingots/any_plasticexplosive", 8), tag("c", "glass_panes", 6), STEEL.plate().count(4))
                 .outputItems(new ItemStack(ModMissileItems.missile_shuttle.get())));
     }
 

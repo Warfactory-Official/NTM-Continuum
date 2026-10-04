@@ -30,7 +30,11 @@ public class BlockNetherCoal extends BlockOutgas {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
-        return List.of(new ItemStack(ModFuelItems.coal_infernal.get()));
+        // 1.7 BlockNetherCoal extends BlockOutgas extends BlockOre: silk touch gives the block, otherwise one
+        // coal_infernal multiplied by BlockOre's fortune curve (it is not marked noFortune).
+        if (OreDrops.silkTouch(params)) return List.of(new ItemStack(this));
+        int count = OreDrops.fortuneMultiplier(OreDrops.fortune(params), params.getLevel().getRandom());
+        return OreDrops.roll(count, () -> new ItemStack(ModFuelItems.coal_infernal.get()));
     }
 
     @Override

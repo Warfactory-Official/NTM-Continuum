@@ -44,6 +44,7 @@ public final class HbmPackets {
         });
         GolemNetwork.declarePlayToClient(BlockEntitySyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(EntityPropsSyncPayload.CODEC);
+        GolemNetwork.declarePlayToClient(ImpactSyncPayload.CODEC);
         GolemNetwork.registerPlayToServer(ControlEventPayload.CODEC,
                 (payload, player) -> handleControl(player, payload));
         GolemNetwork.registerPlayToServer(AnvilCraftPayload.CODEC,
@@ -145,6 +146,13 @@ public final class HbmPackets {
                 (payload, context) -> handleSync(context.level(), payload));
         GolemNetwork.registerPlayToClient(EntityPropsSyncPayload.CODEC,
                 (payload, context) -> handlePropsSync(context.player(), payload));
+        GolemNetwork.registerPlayToClient(ImpactSyncPayload.CODEC, (payload, context) -> {
+            // 1.7 PermaSyncHandler.readPacket: the values belong to the level the player is in
+            com.hbm.handler.ImpactWorldHandler.lastSyncWorld = context.level();
+            com.hbm.handler.ImpactWorldHandler.fire = payload.fire();
+            com.hbm.handler.ImpactWorldHandler.dust = payload.dust();
+            com.hbm.handler.ImpactWorldHandler.impact = payload.impact();
+        });
         GolemNetwork.registerPlayToClient(GunAnimationPayload.CODEC,
                 (payload, context) -> com.hbm.client.anim.GunAnimationHandler.handle(payload));
         GolemNetwork.registerPlayToClient(PlasmaBlastPayload.CODEC,

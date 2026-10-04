@@ -113,13 +113,13 @@ public class TileEntityFluidValve extends CompatBlockEntity implements IFluidPip
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("type", type.getID());
+        Fluids.write(output, "type", type);
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        type = Fluids.fromID(input.getIntOr("type", Fluids.NONE.getID()));
+        type = Fluids.read(input, "type");
     }
 
     @Override

@@ -47,19 +47,18 @@ public class MachineFluidTank extends BlockMultiblockMachine implements IFluidCo
     }
 
     /**
-     * Whether tank cell {@code (x,y,z)} exposes a fluid port on face {@code dir}. The tank's network node
-     * occupies the boundary cells {@code (±2, 0, ±1)} or {@code (±1, 0, ±2)} relative to the core
-     * (= each {@code getConPos} entry's {@code pos − dir}); a duct sits one block beyond that boundary
-     * and the port face points outward from it.
+     * Whether tank cell {@code (x,y,z)} exposes a fluid port on face {@code dir}. 1.7.10: the ports face
+     * the four inner-corner proxy cells {@code (±1, 0, ±1)} (= each {@code getConPos} entry's
+     * {@code pos − dir}); on any facing only the long-side faces of those cells can meet a duct.
      */
     private static boolean isPort(BlockPos c, int x, int y, int z, ForgeDirection dir) {
         int dx = x - c.getX(), dy = y - c.getY(), dz = z - c.getZ();
         if (dy != 0) return false;
         return switch (dir) {
-            case EAST -> dx == 2 && (dz == -1 || dz == 1);   // +X (Library.POS_X)
-            case WEST -> dx == -2 && (dz == -1 || dz == 1);  // -X (Library.NEG_X)
-            case SOUTH -> dz == 2 && (dx == -1 || dx == 1);  // +Z (Library.POS_Z)
-            case NORTH -> dz == -2 && (dx == -1 || dx == 1); // -Z (Library.NEG_Z)
+            case EAST -> dx == 1 && (dz == -1 || dz == 1);   // +X (Library.POS_X)
+            case WEST -> dx == -1 && (dz == -1 || dz == 1);  // -X (Library.NEG_X)
+            case SOUTH -> dz == 1 && (dx == -1 || dx == 1);  // +Z (Library.POS_Z)
+            case NORTH -> dz == -1 && (dx == -1 || dx == 1); // -Z (Library.NEG_Z)
             default -> false;
         };
     }
@@ -93,25 +92,24 @@ public class MachineFluidTank extends BlockMultiblockMachine implements IFluidCo
     }
 
     /**
-     * Four ports two out along the tank's long axis and one to each side. ntm-next puts them at the
-     * corners instead; this machine's own getConPos is what Continuum answers to, and it says otherwise.
+     * 1.7.10 {@code fillSpace}: the four inner corners (core ± 1, ± 1) are the proxy extras, and the tile's
+     * fixed getConPos points at them from two blocks out. Opening their horizontal faces gives exactly
+     * 1.7's reachable set for either orientation: the faces toward the tank's own body are covered by
+     * dummy cells, so only the long-side faces can meet a duct.
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-
-        visitor.cell(core.offset(2, 0, -1), MASK_EAST);
-        visitor.cell(core.offset(2, 0, 1), MASK_EAST);
-        visitor.cell(core.offset(-2, 0, -1), MASK_WEST);
-        visitor.cell(core.offset(-2, 0, 1), MASK_WEST);
+        for (int i = -1; i <= 1; i += 2) {
+            for (int j = -1; j <= 1; j += 2) visitor.cell(core.offset(i, 0, j), MASK_HORIZONTAL);
+        }
     }
 
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
-        visitor.passiveCell(core.offset(2, 0, -1), MASK_ALL, PASSIVE_FLUID_IN);
-        visitor.passiveCell(core.offset(2, 0, 1), MASK_ALL, PASSIVE_FLUID_IN);
-        visitor.passiveCell(core.offset(-2, 0, -1), MASK_ALL, PASSIVE_FLUID_IN);
-        visitor.passiveCell(core.offset(-2, 0, 1), MASK_ALL, PASSIVE_FLUID_IN);
+        for (int i = -1; i <= 1; i += 2) {
+            for (int j = -1; j <= 1; j += 2) visitor.passiveCell(core.offset(i, 0, j), MASK_ALL, PASSIVE_FLUID_IN);
+        }
     }
 
     // --- 1.7 explosion damage and blowtorch repair (MachineExplosionDamage) ---

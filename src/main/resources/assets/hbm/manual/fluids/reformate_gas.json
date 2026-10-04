@@ -3,13 +3,13 @@
 	"icon": [
 		"hbm:fluid_icon",
 		1,
-		100
+		"hbm:reformgas"
 	],
 	"trigger": [
 		[
 			"hbm:fluid_icon",
 			1,
-			100
+			"hbm:reformgas"
 		]
 	],
 	"title": {

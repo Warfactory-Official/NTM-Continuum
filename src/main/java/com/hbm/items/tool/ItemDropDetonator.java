@@ -31,9 +31,6 @@ public class ItemDropDetonator extends CompatItem {
 
     public enum Kind { DEADMAN, DE }
 
-    /** 1.7 {@code WeaponConfig.dropDead} default; that config entry is not ported. */
-    public static final boolean DROP_DEAD = true;
-
     public final Kind kind;
 
     public ItemDropDetonator(Properties properties, Kind kind) {
@@ -93,7 +90,7 @@ public class ItemDropDetonator extends CompatItem {
             level.explode(entity, entity.getX(), entity.getY(), entity.getZ(), 0.0F, Level.ExplosionInteraction.TNT);
             entity.discard();
         } else {
-            if (DROP_DEAD) {
+            if (com.hbm.config.WeaponConfig.dropDead) { // 1.7 10.05_dropDead
                 level.explode(entity, entity.getX(), entity.getY(), entity.getZ(), 15.0F, Level.ExplosionInteraction.TNT);
                 if (GeneralConfig.enableExtendedLogging) {
                     Constants.LOG.info("[DET] Detonated dead man's explosive at {} / {} / {}!",

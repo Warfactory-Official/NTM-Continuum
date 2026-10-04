@@ -137,8 +137,11 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<GeigerCounter> geiger = REG.<GeigerCounter>block(
             "geiger", GeigerCounter::new,
-            p -> p.strength(15.0F, 0.25F).sound(SoundType.METAL).noOcclusion())
-            .transform(RENDERED_FACING);
+            // 1.7 GeigerCounter(Material.iron): no drop override, so it drops itself, pickaxe-harvested.
+            p -> p.strength(15.0F, 0.25F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            .transform(RENDERED_FACING)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
 
 
 
@@ -178,16 +181,19 @@ public final class ModMachineBlocks {
             "machine_turbine_gas", MachineTurbineGas::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY)).states(Variants.simple()))
+            .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineTurbofan> machine_turbofan = REG.<MachineTurbofan>block(
             "machine_turbofan", MachineTurbofan::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY)).states(Variants.simple()))
+            .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineSteamEngine> machine_steam_engine = REG.<MachineSteamEngine>block(
             "machine_steam_engine", MachineSteamEngine::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY)).states(Variants.simple()))
+            .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachinePump> machine_pump_electric = REG.<MachinePump>block(
             "machine_pump_electric", MachinePump::new,
@@ -337,12 +343,15 @@ public final class ModMachineBlocks {
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
-    /** The fusion torus, like the Watz, exists only by assembling its struct core. */
+    /**
+     * The fusion torus. 1.7 registers it with a creative tab and {@code MachineFusionTorus} has no drop override,
+     * so the {@code BlockDummyable} harvest drops the block itself (it is not a Watz-style "struct core only" block).
+     */
     public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionTorus> fusion_torus = REG.<com.hbm.blocks.machine.fusion.MachineFusionTorus>block(
             "fusion_torus", com.hbm.blocks.machine.fusion.MachineFusionTorus::new,
             p -> dummyable(p.strength(5.0F, 60.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
-            .loot(Loot.nothing())
+            .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
@@ -386,6 +395,7 @@ public final class ModMachineBlocks {
             "fusion_breeder", com.hbm.blocks.machine.fusion.MachineFusionBreeder::new,
             p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
+            .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionMHDT> fusion_mhdt = REG.<com.hbm.blocks.machine.fusion.MachineFusionMHDT>block(
             "fusion_mhdt", com.hbm.blocks.machine.fusion.MachineFusionMHDT::new,
@@ -398,6 +408,7 @@ public final class ModMachineBlocks {
             "fusion_plasma_forge", com.hbm.blocks.machine.fusion.MachineFusionPlasmaForge::new,
             p -> dummyable(p.strength(5.0F, 60.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
+            .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     /** Seed blocks for the hand-built multiblocks. */
@@ -439,13 +450,13 @@ public final class ModMachineBlocks {
             "machine_uf6_tank", MachineUF6Tank::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
-            .loot(Loot.self())
+            .loot(Loot.nothing()) // 1.7 MachineUF6Tank.getItemDropped returns null
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachinePuF6Tank> machine_puf6_tank = REG.<MachinePuF6Tank>block(
             "machine_puf6_tank", MachinePuF6Tank::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
-            .loot(Loot.self())
+            .loot(Loot.nothing()) // 1.7 MachinePuF6Tank.getItemDropped returns null
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineBigAssTank> machine_bigasstank = REG.<MachineBigAssTank>block(
             "machine_bigasstank", MachineBigAssTank::new,
@@ -498,7 +509,9 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineFurnaceBrick> machine_furnace_brick_off = REG.<MachineFurnaceBrick>block(
             "machine_furnace_brick_off", MachineFurnaceBrick::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.STONE))
+            // 1.7 MachineBrickFurnace(Material.iron) has no drop override: it drops itself (the lit 1.7 block
+            // dropped the lit item; the port folds both into one block with a lit state, so it drops this one).
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.STONE).requiresCorrectToolForDrops())
             .andThen(h -> States.variants(h.namespace(), h.path())
                     .variant("facing=north,lit=false", new Variant("hbm:block/machine_furnace_brick_off"))
                     .variant("facing=east,lit=false", new Variant("hbm:block/machine_furnace_brick_off", 0, 90, false))
@@ -509,16 +522,20 @@ public final class ModMachineBlocks {
                     .variant("facing=south,lit=true", new Variant("hbm:block/machine_furnace_brick_on", 0, 180, false))
                     .variant("facing=west,lit=true", new Variant("hbm:block/machine_furnace_brick_on", 0, 270, false))
                     .register())
-            .icon(d -> d.shares("hbm:block/machine_furnace_brick_off"));
+            .icon(d -> d.shares("hbm:block/machine_furnace_brick_off"))
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineFurnaceIron> furnace_iron = REG.<MachineFurnaceIron>block(
             "furnace_iron", MachineFurnaceIron::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
+            .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineFurnaceSteel> furnace_steel = REG.<MachineFurnaceSteel>block(
             "furnace_steel", MachineFurnaceSteel::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
+            .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     /** Shredder — a plain JSON-model cube (no BER), unlike the multiblocks below. */
@@ -588,6 +605,7 @@ public final class ModMachineBlocks {
             "machine_electrolyser", MachineElectrolyser::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
+            .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineMixer> machine_mixer = REG.<MachineMixer>block(
             "machine_mixer", MachineMixer::new,
@@ -683,6 +701,7 @@ public final class ModMachineBlocks {
             "machine_industrial_boiler", MachineHeatBoilerIndustrial::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
+            .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     /** Fluid Burner — burns flammable fluids into an IHeatSource reservoir. */
@@ -698,6 +717,7 @@ public final class ModMachineBlocks {
             "machine_wood_burner", MachineWoodBurner::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
+            .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     // --- oil wave: extraction drills ---
@@ -880,6 +900,7 @@ public final class ModMachineBlocks {
             "machine_gascent", MachineGasCent::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
+            .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineDeuteriumExtractor> machine_deuterium_extractor = REG.<MachineDeuteriumExtractor>block(

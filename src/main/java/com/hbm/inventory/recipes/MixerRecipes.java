@@ -32,6 +32,9 @@ import java.util.Map;
 public final class MixerRecipes extends GenericRecipes {
 
     public static final MixerRecipes INSTANCE = new MixerRecipes();
+    /** 1.7 {@code Items.fish} at any meta: the four raw fish (see ModTagDeclarations). */
+    public static final net.minecraft.tags.TagKey<net.minecraft.world.item.Item> RAW_FISHES = net.minecraft.tags.TagKey.create(
+            net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("hbm", "raw_fishes"));
     public static final Map<FluidType, MixerRecipe[]> recipes = new LinkedHashMap<>();
 
     private MixerRecipes() {}
@@ -57,7 +60,7 @@ public final class MixerRecipes extends GenericRecipes {
         register(Fluids.IONGEL, recipe(1_000, 50).fluid1(Fluids.WATER, 1_000).fluid2(Fluids.HYDROGEN, 200)
                 .solid(item(ModItems.pellet_charged.get())));
         register(Fluids.EGG, recipe(1_000, 50).fluid1(Fluids.RADIOSOLVENT, 500).solid(item(Items.EGG)));
-        register(Fluids.FISHOIL, recipe(100, 50).solid(new TagStack(ItemTags.FISHES)));
+        register(Fluids.FISHOIL, recipe(100, 50).solid(new TagStack(RAW_FISHES)));
         register(Fluids.SUNFLOWEROIL, recipe(100, 50).solid(item(Blocks.SUNFLOWER.asItem())));
         register(Fluids.FULLERENE, recipe(250, 50).fluid1(Fluids.RADIOSOLVENT, 500)
                 .solid(item(ModIngredientItems.ash(EnumAshType.SOOT))));
@@ -102,7 +105,7 @@ public final class MixerRecipes extends GenericRecipes {
                 .solid(item(ModMedicineItems.pill_herbal.get())));
         register(Fluids.BAUXITE_SOLUTION, recipe(300, 80).fluid1(Fluids.LYE, 50)
                 .solid(item(ModOreBlocks.stone_resource_bauxite.get().asItem())));
-        register(Fluids.LYE, recipe(50, 100).fluid1(Fluids.WATER, 500).solid(item(ModIngredientItems.ash(EnumAshType.WOOD), 2)));
+        register(Fluids.LYE, recipe(100, 100).fluid1(Fluids.WATER, 100).solid(item(ModIngredientItems.ash(EnumAshType.WOOD))));
         register(Fluids.ALUMINA,
                 recipe(200, 40).fluid1(Fluids.SODIUM_ALUMINATE, 150).solid(OreDictManager.F.dust().count(3)),
                 recipe(300, 40).fluid1(Fluids.SODIUM_ALUMINATE, 150).solid(item(ModIntermediateItems.chunk(EnumChunkType.CRYOLITE))));

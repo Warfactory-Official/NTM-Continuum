@@ -21,7 +21,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** The legacy FEnSU storage BE, built on the current reusable battery-network base. */
+/**
+ * The legacy FEnSU storage BE, built on the current reusable battery-network base. Items as 1.7.10 (where it
+ * extends the energy storage block and uses its menu): slot 0 discharges a battery into the FEnSU, slot 1
+ * charges one from it; top face slot 0, bottom both, sides slot 1.
+ */
 public class TileEntityMachineFENSU extends TileEntityBatteryBase implements MenuProvider, WorldlyContainer {
 
     public static final long MAX_POWER = Long.MAX_VALUE;
@@ -37,7 +41,7 @@ public class TileEntityMachineFENSU extends TileEntityBatteryBase implements Men
     private final long[] log = new long[20];
 
     public TileEntityMachineFENSU(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.FENSU.get(), pos, state, 4);
+        super(ModBlockEntities.FENSU.get(), pos, state, 2);
     }
 
     @Override
@@ -48,11 +52,9 @@ public class TileEntityMachineFENSU extends TileEntityBatteryBase implements Men
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineFENSU fensu) {
         long previous = fensu.power;
 
-        // These are the inherited battery's two item-transfer slots. Keep their old ordering around the
-        // network update: charge the outgoing item first, then pull from the input item.
-        fensu.power = Library.chargeItemsFromTE(fensu.inventory, 2, fensu.power, MAX_POWER);
+        // 1.7 order around the network update: charge the item in slot 1 first, then drain slot 0.
+        fensu.power = Library.chargeItemsFromTE(fensu.inventory, 1, fensu.power, MAX_POWER);
         fensu.serverTickBattery(level);
-        fensu.tryMoveItems();
         fensu.power = Library.chargeTEFromItems(fensu.inventory, 0, fensu.power, MAX_POWER);
 
         long average = average(previous, fensu.power);
@@ -79,33 +81,6 @@ public class TileEntityMachineFENSU extends TileEntityBatteryBase implements Men
 
     public float getSpeed() {
         return (float) Math.pow(Math.log(power * 0.75D + 1D) * 0.05F, 5);
-    }
-
-    private void tryMoveItems() {
-        ItemStack drain = inventory.getStackInSlot(0);
-        if (Library.isEmptyBattery(drain) && inventory.getStackInSlot(1).isEmpty()) {
-            inventory.setStackInSlot(1, drain);
-            inventory.setStackInSlot(0, ItemStack.EMPTY);
-        }
-
-        ItemStack fill = inventory.getStackInSlot(2);
-        if (isFullBattery(fill) && inventory.getStackInSlot(3).isEmpty()) {
-            inventory.setStackInSlot(3, fill);
-            inventory.setStackInSlot(2, ItemStack.EMPTY);
-        }
-    }
-
-    private static boolean isChargeableBattery(ItemStack stack) {
-        return Library.isBattery(stack)
-                && stack.getItem() instanceof com.hbm.api.energymk2.IBatteryItem battery
-                && battery.getChargeRate(stack) > 0
-                && battery.getCharge(stack) < battery.getMaxCharge(stack);
-    }
-
-    private static boolean isFullBattery(ItemStack stack) {
-        return Library.isBattery(stack)
-                && stack.getItem() instanceof com.hbm.api.energymk2.IBatteryItem battery
-                && battery.getCharge(stack) >= battery.getMaxCharge(stack);
     }
 
     @Override
@@ -173,23 +148,20 @@ public class TileEntityMachineFENSU extends TileEntityBatteryBase implements Men
         return new DirPos[]{new DirPos(pos.below(), Library.NEG_Y)};
     }
 
+    /** 1.7 (inherited from the storage block): every item is accepted. */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        return switch (slot) {
-            case 0 -> Library.isDischargeableBattery(stack);
-            case 2 -> isChargeableBattery(stack);
-            default -> false;
-        };
+        return slot == 0 || slot == 1;
     }
 
     @Override
     public int[] getSlotsForFace(Direction side) {
-        return new int[]{0, 1, 2, 3};
+        return getAccessibleSlotsFromSide(side.ordinal());
     }
 
     @Override
     public int[] getAccessibleSlotsFromSide(int side) {
-        return new int[]{0, 1, 2, 3};
+        return side == 0 ? new int[]{0, 1} : side == 1 ? new int[]{0} : new int[]{1};
     }
 
     @Override
@@ -199,7 +171,11 @@ public class TileEntityMachineFENSU extends TileEntityBatteryBase implements Men
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return slot == 1 || slot == 3;
+        if (stack.getItem() instanceof com.hbm.api.energymk2.IBatteryItem battery) {
+            if (slot == 0 && battery.getCharge(stack) == 0) return true;
+            if (slot == 1 && battery.getCharge(stack) == battery.getMaxCharge(stack)) return true;
+        }
+        return false;
     }
 
     @Override
@@ -233,7 +209,7 @@ public class TileEntityMachineFENSU extends TileEntityBatteryBase implements Men
         super.saveData(output);
         output.putLong("power", power);
         output.putLong("prevPowerState", prevPowerState);
-        output.putByte("color", (byte) color.ordinal());
+        com.hbm.util.SavedIds.putEnum(output, "color", color); // by name, never an ordinal
     }
 
     @Override
@@ -241,7 +217,6 @@ public class TileEntityMachineFENSU extends TileEntityBatteryBase implements Men
         super.loadData(input);
         power = Math.max(0L, Math.min(input.getLongOr("power", 0L), MAX_POWER));
         prevPowerState = input.getLongOr("prevPowerState", 0L);
-        int id = input.getByteOr("color", (byte) DyeColor.LIGHT_BLUE.ordinal());
-        color = DyeColor.values()[Math.max(0, Math.min(id, DyeColor.values().length - 1))];
+        color = com.hbm.util.SavedIds.getEnum(input, "color", DyeColor.LIGHT_BLUE);
     }
 }

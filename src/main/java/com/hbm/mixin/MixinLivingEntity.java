@@ -39,6 +39,7 @@ public class MixinLivingEntity {
     @Inject(method = "tick", at = @At("TAIL"))
     private void hbm$tick(CallbackInfo ci) {
         EntityEffectHandler.onUpdate((LivingEntity) (Object) this);
+        com.hbm.main.ModEventHandlerMobs.onLivingUpdate((LivingEntity) (Object) this);
     }
 
     /** Power armour's jump sound — the stand-in for 1.12's {@code LivingJumpEvent}. */

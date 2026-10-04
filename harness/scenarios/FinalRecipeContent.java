@@ -26,7 +26,7 @@ public final class FinalRecipeContent implements Scenario {
 
     private static final int X = 0, Y = 100, Z = 0, L = 101;
     private static final int ASM_X = 0, CHEM_X = 8, SOLDER_X = 16, ANVIL_X = -6, DRUM_X = -11;
-    private static final int WATER = 1, PERFLUOROMETHYL = 145;
+    private static final String WATER = "hbm:water", PERFLUOROMETHYL = "hbm:perfluoromethyl";
 
     @Override
     public void run(Client c) throws Exception {
@@ -84,7 +84,7 @@ public final class FinalRecipeContent implements Scenario {
         placeSouth(c, "hbm:machine_chemical_plant", CHEM_X, Z);
         Expect.block(c, CHEM_X, L, Z, "hbm:machine_chemical_plant");
         selectRecipe(c, CHEM_X, Z + 1, 0, 2.5, "GUIMachineChemicalPlant", "glyphid", "chem.meatprocessing", CHEM_X, Z);
-        c.cmd("data merge block " + CHEM_X + " " + L + " " + Z + " {power:100000L,i0:4000,i0_type:" + WATER + "}");
+        c.cmd("data merge block " + CHEM_X + " " + L + " " + Z + " {power:100000L,i0:4000,i0_type:\"" + WATER + "\"}");
         put(c, CHEM_X, L, Z, 4, "hbm:glyphid_meat", 3);
         open(c, CHEM_X, L + 1, Z + 1, 0, 2.5, "GUIMachineChemicalPlant");
         c.waitTicks(20);
@@ -103,7 +103,7 @@ public final class FinalRecipeContent implements Scenario {
         Fixtures.placeOnTop(c, "hbm:machine_soldering_station", SOLDER_X, Y, Z);
         int[] core = findCore(c, SOLDER_X, L, Z, "maxPower");
         int sx = core[0], sy = core[1], sz = core[2];
-        c.cmd("data merge block " + sx + " " + sy + " " + sz + " {tank:4000,tank_type:" + PERFLUOROMETHYL + "}");
+        c.cmd("data merge block " + sx + " " + sy + " " + sz + " {tank:4000,tank_type:\"" + PERFLUOROMETHYL + "\"}");
         put(c, sx, sy, sz, 0, "hbm:circuit_chip", 32);
         put(c, sx, sy, sz, 1, "hbm:circuit_capacitor", 32);
         put(c, sx, sy, sz, 2, "hbm:circuit_capacitor_tantalium", 16);

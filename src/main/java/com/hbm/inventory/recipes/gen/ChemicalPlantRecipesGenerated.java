@@ -162,7 +162,7 @@ public final class ChemicalPlantRecipesGenerated {
                 .inputFluids(new FluidStack(Fluids.AROMATICS, 200), new FluidStack(Fluids.NITRIC_ACID, 100), new FluidStack(Fluids.CHLORINE, 100))
                 .outputItems(new ItemStack(ModItems.plate_kevlar.get(), 4)));
         reg.registerGenerated(new GenericRecipe("chem.meth").setup(60, 300)
-                .inputItems(new ComparableStack(Items.WHEAT), new ComparableStack(Items.BROWN_DYE, 2))
+                .inputItems(new ComparableStack(Items.WHEAT), new ComparableStack(Items.COCOA_BEANS, 2)) // 1.7 Items.dye meta 3 = cocoa beans
                 .inputFluids(new FluidStack(Fluids.LUBRICANT, 400), new FluidStack(Fluids.PEROXIDE, 500))
                 .outputItems(new ItemStack(ModMedicineItems.chocolate.get(), 4)));
         reg.registerGenerated(new GenericRecipe("chem.epearl").setup(100, 300)
@@ -263,7 +263,7 @@ public final class ChemicalPlantRecipesGenerated {
                 .inputFluids(new FluidStack(Fluids.GASOLINE, 100), new FluidStack(Fluids.AROMATICS, 50))
                 .outputItems(new ItemStack(ModItems.canister_napalm.get())));
         reg.registerGenerated(new GenericRecipe("chem.laminate").setup(20, 100)
-                .inputItems(new ComparableStack(Items.GLASS), STEEL.bolt().count(4))
+                .inputItems(new TagStack(TagKey.create(Registries.ITEM, Ids.of("c", "glass_blocks"))), STEEL.bolt().count(4)) // 1.7 KEY_ANYGLASS
                 .inputFluids(new FluidStack(Fluids.XYLENE, 50), new FluidStack(Fluids.PHOSGENE, 50))
                 .outputItems(new ItemStack(ModGlassBlocks.reinforced_laminate.get())));
         reg.registerGenerated(new GenericRecipe("chem.polarized").setup(100, 500)

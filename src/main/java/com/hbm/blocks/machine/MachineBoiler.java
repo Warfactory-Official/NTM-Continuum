@@ -78,14 +78,16 @@ public final class MachineBoiler extends CompatBlock {
         if (facing != state.getValue(FACING)) level.setBlock(pos, state.setValue(FACING, facing), 2);
     }
 
-    /** 1.7 {@code getDrops}: 3 + rand(4) steel scraps. Player breaks only; the loot table is empty. */
+    /**
+     * 1.7 {@code getDrops}: one stack of 3 + rand(4) steel scraps, for every break that drops (explosions too).
+     * {@code MachineBoiler} is a plain opaque cube without a tile entity, so silk touch keeps the boiler.
+     */
     @Override
-    protected void onPlayerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        if (level.isClientSide() || playerPreventsBlockDrops(player)) return;
-        int count = 3 + level.getRandom().nextInt(4);
-        for (int i = 0; i < count; i++) {
-            Block.popResource(level, pos, ItemScraps.create(new Mats.MaterialStack(Mats.MAT_STEEL, MaterialShapes.INGOT.quantity)));
-        }
+    public java.util.List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder params) {
+        if (com.hbm.blocks.generic.OreDrops.silkTouch(params)) return java.util.List.of(new ItemStack(this));
+        ItemStack scraps = ItemScraps.create(new Mats.MaterialStack(Mats.MAT_STEEL, MaterialShapes.INGOT.quantity));
+        scraps.setCount(3 + params.getLevel().getRandom().nextInt(4));
+        return java.util.List.of(scraps);
     }
 
     @Override

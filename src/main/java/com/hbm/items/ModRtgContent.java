@@ -56,9 +56,9 @@ public final class ModRtgContent {
             3_786_072_000L, 2, DepletedRTGMaterial.NEPTUNIUM, "Americium-241 RTG Pellet");
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG_POLONIUM = pellet("pellet_rtg_polonium", 50,
             3_321_024L, 3, DepletedRTGMaterial.LEAD, "Polonium-210 RTG Pellet");
-    public static final RegistryObject<ItemRTGPellet> PELLET_RTG_GOLD = pellet("pellet_rtg_gold", 200,
+    public static final RegistryObject<ItemRTGPellet> PELLET_RTG_GOLD = pellet("pellet_rtg_gold", com.hbm.config.MachineConfig.rtgDecay() ? 200 : 100,
             64_728L, 4, DepletedRTGMaterial.MERCURY, "Gold-198 RTG Pellet");
-    public static final RegistryObject<ItemRTGPellet> PELLET_RTG_LEAD = pellet("pellet_rtg_lead", 600,
+    public static final RegistryObject<ItemRTGPellet> PELLET_RTG_LEAD = pellet("pellet_rtg_lead", com.hbm.config.MachineConfig.rtgDecay() ? 600 : 200,
             3_253L, 6, DepletedRTGMaterial.BISMUTH, "Lead-209 RTG Pellet");
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG_BALEFIRE = pellet("pellet_rtg_balefire", 6_000,
             1_000L, 12, DepletedRTGMaterial.NEPTUNIUM, "Balefire-XXX RTG Pellet");

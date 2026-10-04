@@ -64,12 +64,13 @@ public final class EntityRubble extends CompatFallingEntity {
 
     @Override
     protected void loadData(DataIn input) {
-        entityData.set(BLOCK_STATE, input.getIntOr("blockState", Block.getId(Blocks.STONE.defaultBlockState())));
+        // saved by state name; the synched int is a same-session id only (History section 19ej-ids)
+        setBlockState(com.hbm.util.SavedIds.getState(input, "blockState", Blocks.STONE.defaultBlockState()));
     }
 
     @Override
     protected void saveData(DataOut output) {
-        output.putInt("blockState", entityData.get(BLOCK_STATE));
+        com.hbm.util.SavedIds.putState(output, "blockState", getBlockState());
     }
 
     @Override

@@ -290,8 +290,9 @@ public class BlockWandStructure extends CompatBlock implements TickingBlock, ILo
             out.putInt("sizeY", sizeY);
             out.putInt("sizeZ", sizeZ);
 
-            out.putIntArray("blocks", blacklist.stream().mapToInt(Block::getId).toArray());
-            out.putIntArray("metas", new int[blacklist.size()]);
+            // block-state names, never global state ids (History section 19ej-ids)
+            DataOut.ChildList blocks = out.childrenList("blacklist");
+            for (BlockState state : blacklist) com.hbm.util.SavedIds.putState(blocks.addChild(), "state", state);
         }
 
         @Override
@@ -304,7 +305,11 @@ public class BlockWandStructure extends CompatBlock implements TickingBlock, ILo
             sizeZ = in.getIntOr("sizeZ", 0);
 
             blacklist = new LinkedHashSet<>();
-            for (int id : in.getIntArrayOr("blocks", new int[0])) blacklist.add(Block.stateById(id));
+            if (in.getIntArray("blocks").isPresent()) com.hbm.util.SavedIds.warnNumeric("block state id array", "blocks");
+            for (DataIn entry : in.childrenListOrEmpty("blacklist")) {
+                BlockState state = com.hbm.util.SavedIds.getState(entry, "state", null);
+                if (state != null) blacklist.add(state);
+            }
         }
 
         @Override

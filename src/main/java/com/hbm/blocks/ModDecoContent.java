@@ -285,7 +285,7 @@ public final class ModDecoContent {
      * set only by the keyhole rooms.
      */
     public static final RegistryObject<BlockRedBrick> brick_red = REG.block("brick_red", BlockRedBrick::new,
-                    p -> p.strength(0.0F, 10_000.0F).noLootTable())
+                    p -> p.strength(0.0F, 10_000.0F))
             .model(d -> d.models(Models.group()
                             .and("", Models.parented("minecraft:block/cube", Slots.of("particle", "hbm:blocks/brick_base")
                                     .and("down", "hbm:blocks/brick_base").and("up", "hbm:blocks/brick_base")
@@ -295,7 +295,8 @@ public final class ModDecoContent {
                             .and("_plain", Models.cubeAll("hbm:blocks/brick_base")))
                     .states(Variants.of(Set.of("facing", "plain"), redBrickStates()))
                     .blockItemDirect())
-            .loot(Loot.nothing());
+            // 1.7: drops nothing, but a plain cube without a tile entity, so silk touch keeps it
+            .loot(Loot.silkTouchOnly());
     public static final RegistryObject<BlockWriting> brick_concrete_marked = plain("brick_concrete_marked", BlockWriting::new,
             p -> p.strength(15.0F, 160.0F).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(Presets.cubeBottomTop("hbm:blocks/brick_concrete", "hbm:blocks/brick_concrete_marked", "hbm:blocks/brick_concrete"))
@@ -386,15 +387,17 @@ public final class ModDecoContent {
             .tag(BlockTag.PICKAXE);
     // panes: multipart blockstates and models are authored; only the flat item and the loot are declared
     public static final RegistryObject<BlockNTMGlassPane> reinforced_glass_pane = plain("reinforced_glass_pane", BlockNTMGlassPane::new,
-            p -> p.strength(2.0F, 25.0F).sound(SoundType.GLASS).noOcclusion().noLootTable(), HbmTab.BLOCKS)
+            p -> p.strength(2.0F, 25.0F).sound(SoundType.GLASS).noOcclusion(), HbmTab.BLOCKS)
             .transform(Presets.sprite("hbm:blocks/reinforced_glass_pane"))
-            .loot(Loot.nothing()) // 1.7 doesDrop = false
+            // 1.7 BlockNTMGlassPane passes "drops itself = false" to BlockPane, whose getItemDropped is then null
+            // (doesDrop only fed quantityDropped); BlockPane.canSilkHarvest() is true. Same for the laminate pane.
+            .loot(Loot.silkTouchOnly())
             .tag(BlockTag.PICKAXE)
             .andThen(handle -> glassPaneStates());
     public static final RegistryObject<BlockNTMGlassPane> reinforced_laminate_pane = plain("reinforced_laminate_pane", BlockNTMGlassPane::new,
             p -> p.strength(15.0F, 300.0F).sound(SoundType.GLASS).noOcclusion().requiresCorrectToolForDrops(), HbmTab.BLOCKS) // 1.7 Material.rock
             .transform(Presets.sprite("hbm:blocks/reinforced_laminate_pane"))
-            .loot(Loot.self())
+            .loot(Loot.silkTouchOnly())
             .tag(BlockTag.PICKAXE)
             .andThen(handle -> laminatePaneStates());
     /** Chain: hanging cross or flat wall plane, "end" icon when nothing holds it from below. */
@@ -416,12 +419,14 @@ public final class ModDecoContent {
     public static final RegistryObject<BlockNTMDirt> ntm_dirt = REG.block("ntm_dirt", BlockNTMDirt::new,
                     p -> p.strength(0.5F).sound(SoundType.GRAVEL))
             .transform(Presets.cubeAll("minecraft:block/dirt"))
-            .loot(Loot.only("minecraft:dirt"))
+            // 1.7 BlockDirt: one dirt, no fortune; silk touch keeps the block
+            .loot(Loot.oreNoFortune("minecraft:dirt", 1, 1))
             .tag(BlockTag.SHOVEL);
     public static final RegistryObject<BlockImpactDirt> impact_dirt = plain("impact_dirt", BlockImpactDirt::new,
             p -> p.strength(0.5F).sound(SoundType.GRAVEL).randomTicks(), HbmTab.BLOCKS)
             .transform(Presets.cubeAll("hbm:blocks/waste_earth_bottom"))
-            .loot(Loot.only("minecraft:dirt"))
+            // 1.7 BlockDirt: one dirt, no fortune; silk touch keeps the block
+            .loot(Loot.oreNoFortune("minecraft:dirt", 1, 1))
             .tag(BlockTag.SHOVEL);
     /** The two {@code sand_mix} subtypes the earlier waves did not carry (boron/lead/quartz already exist). */
     public static final RegistryObject<BlockFallingBase> sand_uranium = plain("sand_uranium", BlockFallingBase::new,
@@ -597,10 +602,11 @@ public final class ModDecoContent {
 
     /** Unbreakable, so no loot (like stone_depth). */
     private static Reg.Handle<BlockDepth> depth(String id, float resistance) {
+        // 1.7 BlockDepth has no drop override: a depth-rock tool (or an explosion) gets the block back.
         return plain(id, BlockDepth::new, p -> p.strength(-1.0F, resistance).sound(SoundType.STONE)
-                .requiresCorrectToolForDrops().noLootTable(), HbmTab.BLOCKS, DEPTH)
+                .requiresCorrectToolForDrops(), HbmTab.BLOCKS, DEPTH)
                 .transform(Presets.cubeAll())
-                .loot(Loot.nothing())
+                .loot(Loot.self())
                 .tag(BlockTag.PICKAXE);
     }
 

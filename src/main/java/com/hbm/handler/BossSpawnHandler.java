@@ -172,7 +172,9 @@ public final class BossSpawnHandler {
     /** The three mask man conditions of 1.7 {@code rollTheDice} for one player. */
     public static boolean maskManConditions(ServerLevel level, ServerPlayer player) {
         Item acidizer = ModMachineBlocks.machine_crystallizer.get().asItem();
-        boolean acidizerStat = player.getStats().getValue(Stats.ITEM_CRAFTED.get(acidizer)) > 0
+        // 1.7: 1.33_enableStatReRegistering off skips the stat condition (the stats were unreliable without the fix)
+        boolean acidizerStat = !com.hbm.config.GeneralConfig.enableStatReRegistering
+                || player.getStats().getValue(Stats.ITEM_CRAFTED.get(acidizer)) > 0
                 || player.getStats().getValue(Stats.ITEM_USED.get(acidizer)) > 0;
         boolean hasRads = HbmLivingProps.getRadiation(player) >= MobConfig.maskmanMinRad;
         boolean underground = heightValue(level, player.getX(), player.getZ()) > player.getY() + 3 || !MobConfig.maskmanUnderground;

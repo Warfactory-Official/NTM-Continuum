@@ -23,12 +23,22 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** The legacy grey RTG's 15 fuel cells, 6,000-heat cap, and one-MHE output buffer. */
+/**
+ * The legacy grey RTG's 15 fuel cells. 1.7.10 spec (original-hbm TileEntityMachineRTG): heatMax is
+ * {@code VersatileConfig.rtgDecay() ? 600 : 200}; pellets always decay in the port (the 1.7 default
+ * {@code doRTGsDecay = true}), so the cap is 600. The output buffer is 100,000 HE. (The previous 6,000 /
+ * 1,000,000 values were not in the 1.7 source.)
+ */
 public class TileEntityMachineRTG extends TileEntityInventoryBase
         implements MenuProvider, IEnergyProviderMK2, IEnergyConnectorMK2 {
     public static final int SLOT_COUNT = 15;
-    public static final int HEAT_MAX = 6_000;
-    public static final long MAX_POWER = 1_000_000L;
+    public static final int HEAT_MAX = 600;
+
+    /** 1.7 {@code heatMax = VersatileConfig.rtgDecay() ? 600 : 200}: the cap drops to 200 when pellets do not decay. */
+    public static int heatMax() {
+        return com.hbm.config.MachineConfig.rtgDecay() ? HEAT_MAX : 200;
+    }
+    public static final long MAX_POWER = 100_000L;
     private static final int[] FUEL_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
 
     public int heat;
@@ -42,7 +52,7 @@ public class TileEntityMachineRTG extends TileEntityInventoryBase
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
             rtg.tryProvide(level, pos.offset(direction.offsetX, direction.offsetY, direction.offsetZ), direction);
         }
-        rtg.heat = Math.min(RTGUtil.updateRTGs(rtg.inventory, FUEL_SLOTS), HEAT_MAX);
+        rtg.heat = Math.min(RTGUtil.updateRTGs(rtg.inventory, FUEL_SLOTS), heatMax());
         rtg.power = Math.min(rtg.power + rtg.heat * 5L, MAX_POWER);
         rtg.setChanged();
         rtg.networkPackNT();
@@ -53,7 +63,7 @@ public class TileEntityMachineRTG extends TileEntityInventoryBase
         return stack.getItem() instanceof ItemRTGPellet;
     }
 
-    public int getHeatScaled(int pixels) { return heat * pixels / HEAT_MAX; }
+    public int getHeatScaled(int pixels) { return heat * pixels / heatMax(); }
     public long getPowerScaled(long pixels) { return power * pixels / MAX_POWER; }
     public boolean hasHeat() { return heat > 0; }
     public boolean hasPower() { return power > 0; }

@@ -24,22 +24,22 @@ public final class FinalCellHudFix implements Scenario {
 
     /** fluid id (the port's Fluids order), CellVariants index, expected English name. */
     private static final Object[][] CELLS = {
-            {29, 1, "Uranium Hexafluoride Cell"},
-            {30, 2, "Plutonium Hexafluoride Cell"},
-            {33, 3, "Antimatter Cell"},
-            {8, 4, "Deuterium Cell"},
-            {9, 5, "Tritium Cell"},
-            {34, 7, "Antischrabidium Cell"},
+            {"hbm:uf6", 1, "Uranium Hexafluoride Cell"},
+            {"hbm:puf6", 2, "Plutonium Hexafluoride Cell"},
+            {"hbm:amat", 3, "Antimatter Cell"},
+            {"hbm:deuterium", 4, "Deuterium Cell"},
+            {"hbm:tritium", 5, "Tritium Cell"},
+            {"hbm:aschrab", 7, "Antischrabidium Cell"},
     };
 
     private static boolean legacy(Client c) {
         return c.node().startsWith("1.20.");
     }
 
-    private static String cell(Client c, int fluid, int variant) {
+    private static String cell(Client c, String fluid, int variant) {
         return legacy(c)
-                ? "hbm:cell{\"hbm:fluid_id\":" + fluid + ",\"hbm:fluid_amount\":1000,\"hbm:item_variant\":" + variant + "}"
-                : "hbm:cell[hbm:fluid_id=" + fluid + ",hbm:fluid_amount=1000,hbm:item_variant=" + variant + "]";
+                ? "hbm:cell{\"hbm:fluid\":\"" + fluid + "\",\"hbm:fluid_amount\":1000,\"hbm:item_variant\":" + variant + "}"
+                : "hbm:cell[hbm:fluid=\"" + fluid + "\",hbm:fluid_amount=1000,hbm:item_variant=" + variant + "]";
     }
 
     @Override
@@ -81,7 +81,7 @@ public final class FinalCellHudFix implements Scenario {
                 "prototype kit gave four cells named Schrabidium Trisulfide Cell: " + c.inventory());
 
         c.cmd("give @s hbm:cell 1");
-        for (Object[] row : CELLS) c.cmd("give @s " + cell(c, (Integer) row[0], (Integer) row[1]) + " 1");
+        for (Object[] row : CELLS) c.cmd("give @s " + cell(c, (String) row[0], (Integer) row[1]) + " 1");
         c.waitTicks(5);
         Expect.that(count(c, "hbm:cell", "Empty Cell") == 1, "a bare cell is named Empty Cell");
         for (Object[] row : CELLS) {

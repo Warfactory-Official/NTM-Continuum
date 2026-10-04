@@ -59,6 +59,22 @@ public final class ModTagDeclarations {
         Tags.entityType("hbm", "bosses",
                 "hbm:entity_elder_one", "hbm:entity_mob_mask_man", "hbm:entity_ufo", "hbm:entity_balls_o_tron",
                 "hbm:entity_mob_hunter_chopper");
+        // every ScrapType of 1.7 scrap_plastic (the wildcard smelting input); literal ids, because this class runs in
+        // DejsonMain's plain JVM, where the item classes must not initialise
+        Tags.item("hbm", "scrap_plastic",
+                "hbm:scrap_plastic_board_blank", "hbm:scrap_plastic_board_transistor",
+                "hbm:scrap_plastic_board_converter", "hbm:scrap_plastic_bridge_north",
+                "hbm:scrap_plastic_bridge_south", "hbm:scrap_plastic_bridge_io", "hbm:scrap_plastic_bridge_bus",
+                "hbm:scrap_plastic_bridge_chipset", "hbm:scrap_plastic_bridge_cmos", "hbm:scrap_plastic_bridge_bios",
+                "hbm:scrap_plastic_cpu_register", "hbm:scrap_plastic_cpu_clock", "hbm:scrap_plastic_cpu_logic",
+                "hbm:scrap_plastic_cpu_cache", "hbm:scrap_plastic_cpu_ext", "hbm:scrap_plastic_cpu_socket",
+                "hbm:scrap_plastic_mem_socket", "hbm:scrap_plastic_mem_16k_a", "hbm:scrap_plastic_mem_16k_b",
+                "hbm:scrap_plastic_mem_16k_c", "hbm:scrap_plastic_mem_16k_d", "hbm:scrap_plastic_card_board",
+                "hbm:scrap_plastic_card_processor");
+        // 1.7 Items.fish with the wildcard meta: raw cod, salmon, clownfish and pufferfish, not the cooked fish
+        // (Mixer FISHOIL, Liquefaction FISHOIL). Vanilla's fishes tag also holds the cooked ones.
+        Tags.item("hbm", "raw_fishes",
+                "minecraft:cod", "minecraft:salmon", "minecraft:tropical_fish", "minecraft:pufferfish");
         Tags.item("hbm", "zirnox_rods",
                 "hbm:rod_zirnox_natural_uranium_fuel", "hbm:rod_zirnox_uranium_fuel", "hbm:rod_zirnox_th232_fuel",
                 "hbm:rod_zirnox_thorium_fuel", "hbm:rod_zirnox_mox_fuel", "hbm:rod_zirnox_plutonium_fuel",

@@ -29,6 +29,8 @@ public class PinkTreeFeature extends Feature<NoneFeatureConfiguration> {
     @Override
     public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
         WorldGenLevel level = context.level();
+        // 1.7 HbmWorldGen: the pink tree sits inside the enableDungeons block (History §19ej-6)
+        if (!DungeonBlockFeature.dungeonsEnabled(level)) return false;
         BlockPos origin = context.origin();
         BlockState pink = ModDecoCrateBlocks.pink_log.get().defaultBlockState();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();

@@ -130,9 +130,9 @@ public final class GapsAHarnessQueries {
             if (give[0].equals("oldcell")) {
                 var fluid = Fluids.fromName(give[1]);
                 ItemStack cell = new ItemStack(ModSingularityItems.cell.get());
-                ModDataComponents.fluidId(cell, fluid.getID());
+                ModDataComponents.fluid(cell, fluid);
                 ModDataComponents.fluidAmount(cell, ItemCell.CAPACITY);
-                ModDataComponents.ITEM_VARIANT.set(cell, fluid.getID());
+                ModDataComponents.ITEM_VARIANT.set(cell, Fluids.legacyId(fluid)); // the pre-2026-09-25 variant numbering
                 json.addProperty("given", player.getInventory().add(cell));
                 player.inventoryMenu.broadcastChanges();
             }
@@ -162,7 +162,7 @@ public final class GapsAHarnessQueries {
             JsonObject c = new JsonObject();
             c.addProperty("slot", i);
             c.addProperty("count", stack.getCount());
-            c.addProperty("fluid", ModDataComponents.fluidId(stack));
+            c.addProperty("fluid", ModDataComponents.fluid(stack).getRegistryName());
             c.addProperty("variant", ModDataComponents.ITEM_VARIANT.getOr(stack, -1));
             c.addProperty("name", stack.getHoverName().getString());
             cells.add(c);

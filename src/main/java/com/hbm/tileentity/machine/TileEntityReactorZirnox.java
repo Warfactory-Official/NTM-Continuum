@@ -129,15 +129,18 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
                 + (int) ((float) te.heat * ((float) te.carbonDioxide.getFill() / te.carbonDioxide.getMaxFill()));
         if (te.heat > 0 && te.heat < MAX_HEAT) {
             if (te.water.getFill() > 0 && te.carbonDioxide.getFill() > 0 && te.steam.getFill() < te.steam.getMaxFill()) {
-                int cycle = (int) (((te.heat - 10_256F) / MAX_HEAT)
-                        * Math.min(te.carbonDioxide.getFill() / 14_000F, 1F) * 125F);
-                if (cycle > 0) {
+                // 1.7.10 generateSteam: only above 10,256 heat, factor 25 * mult with mult = 7.5F ("was 5
+                // originally" — the 125 factor the port carried was the pre-7.5 value).
+                if (te.heat > 10_256) {
+                    float mult = 7.5F;
+                    int cycle = (int) (((te.heat - 10_256F) / MAX_HEAT)
+                            * Math.min(te.carbonDioxide.getFill() / 14_000F, 1F) * 25F * mult);
                     te.water.setFill(Math.max(0, te.water.getFill() - cycle));
                     te.steam.setFill(Math.min(te.steam.getMaxFill(), te.steam.getFill() + cycle));
                 }
                 te.heat -= (int) ((float) te.heat * te.pressure / 1_000_000F);
             } else {
-                te.heat = Math.max(0, te.heat - 10);
+                te.heat -= 10; // 1.7: no clamp; heat may dip below 0, which ends this branch until reheated
             }
 
             if (level.getGameTime() % 100 == 0)
@@ -248,7 +251,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
         spawnDebris(level, pos, DebrisType.ELEMENT, 10);
         spawnDebris(level, pos, DebrisType.GRAPHITE, 10);
         spawnDebris(level, pos, DebrisType.SHRAPNEL, 10);
-        ExplosionNukeGeneric.transformWaste(level, pos, 12);
+        ExplosionNukeGeneric.waste(level, pos, 35); // 1.7 TileEntityReactorZirnox.meltdown:398
         grantMeltdownAdvancement(level, pos);
     }
 

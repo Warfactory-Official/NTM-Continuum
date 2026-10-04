@@ -59,35 +59,50 @@ public final class ModFalloutBlocks {
     // ---- waste terrain ----
     public static final RegistryObject<BlockWasteEarth> waste_earth = block("waste_earth",
             p -> new BlockWasteEarth(p, false),
-            p -> p.strength(0.5F, 1.0F).sound(SoundType.GRAVEL)
+            // 1.7: Material.ground, soundTypeGrass, setHardness(0.6F) (explosion resistance 0.6 with no setResistance)
+            p -> p.strength(0.6F).sound(SoundType.GRASS)
                     .isValidSpawn((state, level, pos, type) -> false))
             .model(d -> d.models(Models.cubeBottomTop("minecraft:block/dirt", "hbm:blocks/contamination/waste_grass_side_0", "hbm:blocks/contamination/waste_grass_top_0")).states(Variants.simple()).blockItem())
-            .loot(Loot.self())
+            // 1.7 WasteEarth.getItemDropped: dirt, quantity 1, no fortune; silk touch keeps the block
+            .loot(Loot.oreNoFortune("minecraft:dirt", 1, 1))
             .tag(BlockTag.SHOVEL);
     public static final RegistryObject<BlockWasteEarth> waste_mycelium = block("waste_mycelium",
             p -> new BlockWasteEarth(p, true),
-            p -> p.strength(0.5F, 1.0F).sound(SoundType.GRAVEL).lightLevel(s -> 3)
+            // 1.7: as waste_earth plus setLightLevel(1F), i.e. light 15
+            p -> p.strength(0.6F).sound(SoundType.GRASS).lightLevel(s -> 15)
                     .isValidSpawn((state, level, pos, type) -> false))
             .model(d -> d.models(Models.cubeBottomTop("minecraft:block/dirt", "hbm:blocks/contamination/waste_mycelium_side_0", "hbm:blocks/contamination/waste_mycelium_top")).states(Variants.simple()).blockItem())
-            .loot(Loot.self())
+            .loot(Loot.oreNoFortune("minecraft:dirt", 1, 1))
             .tag(BlockTag.SHOVEL);
     public static final RegistryObject<Block> waste_trinitite = block("waste_trinitite", Block::new,
             p -> p.strength(0.5F, 2.5F).sound(SoundType.SAND))
-            .transform(Presets.cubeAll("hbm:blocks/contamination/waste_trinitite_0").viaItemModel())
-            .loot(Loot.self())
+            // 1.7 BlockTrinitite: four icons picked per position (getIcon(world, x, y, z) hashes the coordinates);
+            // the modern spelling of a position-picked texture is a four-model weighted variant pool.
+            .model(d -> d.models(Models.group().and("_0", Models.cubeAll("hbm:blocks/waste_trinitite_0")).and("_1", Models.cubeAll("hbm:blocks/waste_trinitite_1")).and("_2", Models.cubeAll("hbm:blocks/waste_trinitite_2")).and("_3", Models.cubeAll("hbm:blocks/waste_trinitite_3"))).states(Variants.pool(4)))
+            .icon(d -> d.models(Models.blockItem("hbm:block/waste_trinitite_0")))
+            // 1.7 BlockOre (noFortune): one trinitite; silk touch keeps the block
+            .loot(Loot.oreNoFortune("hbm:trinitite", 1, 1))
             .tag(BlockTag.SHOVEL);
     public static final RegistryObject<Block> waste_trinitite_red = block("waste_trinitite_red", Block::new,
             p -> p.strength(0.5F, 2.5F).sound(SoundType.SAND))
-            .transform(Presets.cubeAll("hbm:blocks/contamination/waste_trinitite_red_0").viaItemModel())
-            .loot(Loot.self())
+            // 1.7 BlockTrinitite: four icons picked per position (getIcon(world, x, y, z) hashes the coordinates);
+            // the modern spelling of a position-picked texture is a four-model weighted variant pool.
+            .model(d -> d.models(Models.group().and("_0", Models.cubeAll("hbm:blocks/waste_trinitite_red_0")).and("_1", Models.cubeAll("hbm:blocks/waste_trinitite_red_1")).and("_2", Models.cubeAll("hbm:blocks/waste_trinitite_red_2")).and("_3", Models.cubeAll("hbm:blocks/waste_trinitite_red_3"))).states(Variants.pool(4)))
+            .icon(d -> d.models(Models.blockItem("hbm:block/waste_trinitite_red_0")))
+            // 1.7 BlockOre (noFortune): one trinitite; silk touch keeps the block
+            .loot(Loot.oreNoFortune("hbm:trinitite", 1, 1))
             .tag(BlockTag.SHOVEL);
     public static final RegistryObject<RotatedPillarBlock> waste_log = block("waste_log", RotatedPillarBlock::new,
             p -> p.strength(5.0F, 2.5F).sound(SoundType.WOOD))
             .model(d -> d.models(Models.column("hbm:blocks/waste_log_top", "hbm:blocks/waste_log_side")).states(Variants.axis()).blockItem())
-            .loot(Loot.self())
+            // 1.7 WasteLog: 2-4 charcoal (Items.coal, damageDropped 1), no fortune; one break in 1,000 drops a single
+            // burnt_bark instead; silk touch keeps the log
+            .loot(Loot.oreOrRare("minecraft:charcoal", 2, 4, "hbm:burnt_bark", 0.001))
             .tag(BlockTag.AXE);
-    public static final RegistryObject<Block> waste_leaves = block("waste_leaves", Block::new,
-            p -> p.strength(0.3F, 0.3F).sound(SoundType.GRASS).noOcclusion())
+    /** 1.7 {@code WasteLeaves}: decays into falling leaf layers, sheds dead leaves, drops nothing (no silk touch). */
+    public static final RegistryObject<com.hbm.blocks.generic.BlockWasteLeaves> waste_leaves = block("waste_leaves",
+            com.hbm.blocks.generic.BlockWasteLeaves::new,
+            p -> p.strength(0.3F, 0.3F).sound(SoundType.GRASS).noOcclusion().randomTicks())
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.nothing())
             .tag(BlockTag.HOE);
@@ -103,23 +118,25 @@ public final class ModFalloutBlocks {
             0, p -> p.strength(-1.0F, 6_000_000.0F))
             .model(d -> d.models(Models.group().and("_0", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked"))).and("_1", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked_1"))).and("_2", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked_2"))).and("_3", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked_3")))).states(Variants.product(Variants.uniformRange("shade", 0, 9), Variants.pool(4))))
             .icon(d -> d.models(Models.blockItem("hbm:block/sellafield_bedrock_0")));
+    // 1.7 BlockSellafieldOre: diamond / emerald / radgem x1 on the multiplying fortune curve; a plain cube without
+    // a tile entity, so silk touch gives the ore back. The other two drop themselves.
     public static final RegistryObject<BlockSellafieldSlaked> ore_sellafield_diamond = sellafield("ore_sellafield_diamond",
             3, p -> p.strength(5.0F, 6.0F))
             .model(d -> d.models(Models.group().and("_0", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/ore_sellafield_diamond_0"))).and("_1", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/ore_sellafield_diamond_1"))).and("_2", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/ore_sellafield_diamond_2"))).and("_3", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/ore_sellafield_diamond_3")))).states(Variants.product(Variants.uniformRange("shade", 0, 9), Variants.pool(4))))
             .icon(d -> d.models(Models.blockItem("hbm:block/ore_sellafield_diamond_0")))
-            .loot(Loot.oreDrops("minecraft:diamond"))
+            .loot(Loot.oreMultiplied("minecraft:diamond", 1, 1))
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockSellafieldSlaked> ore_sellafield_emerald = sellafield("ore_sellafield_emerald",
             3, p -> p.strength(5.0F, 6.0F))
             .model(d -> d.models(Models.group().and("_0", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/ore_sellafield_emerald_0"))).and("_1", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/ore_sellafield_emerald_1"))).and("_2", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/ore_sellafield_emerald_2"))).and("_3", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/ore_sellafield_emerald_3")))).states(Variants.product(Variants.uniformRange("shade", 0, 9), Variants.pool(4))))
             .icon(d -> d.models(Models.blockItem("hbm:block/ore_sellafield_emerald_0")))
-            .loot(Loot.oreDrops("minecraft:emerald"))
+            .loot(Loot.oreMultiplied("minecraft:emerald", 1, 1))
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockSellafieldSlaked> ore_sellafield_radgem = sellafield("ore_sellafield_radgem",
             3, p -> p.strength(5.0F, 6.0F))
             .model(d -> d.models(Models.group().and("_0", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/ore_sellafield_radgem_0"))).and("_1", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/ore_sellafield_radgem_1"))).and("_2", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/ore_sellafield_radgem_2"))).and("_3", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/ore_sellafield_radgem_3")))).states(Variants.product(Variants.uniformRange("shade", 0, 9), Variants.pool(4))))
             .icon(d -> d.models(Models.blockItem("hbm:block/ore_sellafield_radgem_0")))
-            .loot(Loot.oreDrops("hbm:gem_rad"))
+            .loot(Loot.oreMultiplied("hbm:gem_rad", 1, 1))
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockSellafieldSlaked> ore_sellafield_schrabidium = sellafield("ore_sellafield_schrabidium",
             0, p -> p.strength(5.0F, 6.0F))

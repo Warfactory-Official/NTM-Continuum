@@ -172,7 +172,8 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 playBoom(shell);
                 standardExplosion(shell, hit, 10F, 3F, false);
                 ExplosionLarge.spawnShrapnels(level, where.x, where.y, where.z, 15);
-                ExplosionChaos.burn(level, BlockPos.containing(where.x, where.y, where.z), 12);
+                if (level instanceof net.minecraft.server.level.ServerLevel server) // 1.7: (int)-truncated hit vector
+                    ExplosionChaos.igniteAllBlocks(server, (int) where.x, (int) where.y, (int) where.z, 12);
 
                 int radius = 15;
                 for (Entity e : level.getEntities((Entity) null,

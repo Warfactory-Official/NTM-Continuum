@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -8,39 +9,46 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Depth rock carrying an ore — the 1.12.2 {@code BlockDepthOre}. Identical to {@link BlockDepth}
- * (unbreakable, explosion resistance 10) except that it yields a material instead of itself, using
- * the old {@code OreEnum} quantity/drop function pair (see {@link OreDrops}).
+ * Depth rock carrying an ore — original-hbm (1.7.10) {@code BlockDepthOre}. Identical to {@link BlockDepth}
+ * (unbreakable except by a depth-rock tool, explosion resistance 10) except for what it drops.
  *
- * <p>Upstream grants <b>no experience</b>: {@code BlockDepth} extends plain {@code Block}, not
- * {@code BlockOre}, so it never overrode {@code getExpDrop}. Preserved.
+ * <p>1.7 {@code quantityDropped} is {@code base + rand(spread)} (cinnabar 2-4, zirconium and neodymium 2-3,
+ * everything else 1), and {@code quantityDroppedWithBonus} multiplies it by
+ * {@link OreDrops#fortuneMultiplier} for <i>every</i> depth ore and cluster, capping alexandrite at 2.
+ * {@code BlockDepth} is a plain opaque cube without a tile entity, so 1.7's default {@code canSilkHarvest}
+ * holds and silk touch gives the block. ({@code ore_depth_borax} drops {@code powder_borax} in 1.7; the
+ * 1.12.2 "null OreEnum, drops itself" path is not 1.7.)
  *
- * <p>{@code ore_depth_borax} passes a {@code null} OreEnum upstream, which falls through to the
- * vanilla "drop the block item" path — here that is expressed by giving it {@link #dropSelf}.
+ * <p>No experience: {@code BlockDepth} extends plain {@code Block}, not {@code BlockOre}.
  */
 public class BlockDepthOre extends BlockDepth {
 
-    private final OreDrops.Quantity quantity;
+    private final int base;
+    private final int spread;
+    private final int cap;
+    private final boolean fortune;
     private final Supplier<ItemStack> drop;
-    private final boolean dropSelf;
 
-    public BlockDepthOre(Properties properties, OreDrops.Quantity quantity, Supplier<ItemStack> drop) {
+    /**
+     * @param base   the guaranteed count
+     * @param spread {@code rand.nextInt(spread)} is added when positive
+     * @param cap    the 1.7 alexandrite clamp, or {@code Integer.MAX_VALUE}
+     */
+    public BlockDepthOre(Properties properties, int base, int spread, int cap, boolean fortune, Supplier<ItemStack> drop) {
         super(properties);
-        this.quantity = quantity;
+        this.base = base;
+        this.spread = spread;
+        this.cap = cap;
+        this.fortune = fortune;
         this.drop = drop;
-        this.dropSelf = false;
-    }
-
-    /** The upstream {@code oreEnum == null} case: one of the block itself, no fortune scaling. */
-    public BlockDepthOre(Properties properties) {
-        super(properties);
-        this.quantity = OreDrops::const1;
-        this.drop = null;
-        this.dropSelf = true;
     }
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
-        return OreDrops.roll(params, quantity, dropSelf ? () -> new ItemStack(this) : drop);
+        if (OreDrops.silkTouch(params)) return List.of(new ItemStack(this));
+        RandomSource rand = params.getLevel().getRandom();
+        int quantity = base + (spread > 0 ? rand.nextInt(spread) : 0);
+        if (fortune) quantity *= OreDrops.fortuneMultiplier(OreDrops.fortune(params), rand);
+        return OreDrops.roll(Math.min(quantity, cap), drop);
     }
 }

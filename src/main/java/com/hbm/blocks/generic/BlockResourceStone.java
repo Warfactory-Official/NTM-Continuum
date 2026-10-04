@@ -23,18 +23,39 @@ import java.util.List;
 public class BlockResourceStone extends dev.golem.core.world.CompatBlock {
 
     private final boolean malachite;
+    private final boolean asbestos;
 
-    public BlockResourceStone(Properties properties, boolean malachite) {
+    public BlockResourceStone(Properties properties, String variant) {
         super(properties);
-        this.malachite = malachite;
+        this.malachite = "malachite".equals(variant);
+        this.asbestos = "asbestos".equals(variant);
     }
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
-        if (!malachite) return List.of(new ItemStack(this));
+        // 1.7 harvestBlock takes the silk-touch branch before getDrops, so silk touch keeps the malachite block.
+        boolean silk = OreDrops.silkTouch(params);
+        if (asbestos && !silk) releaseAsbestos(params);
+        if (!malachite || silk) return List.of(new ItemStack(this));
         RandomSource rand = params.getLevel().getRandom();
         int fortune = OreDrops.fortune(params);
         int count = 3 + fortune + rand.nextInt(fortune + 2);
         return List.of(ModIntermediateItems.chunk(EnumChunkType.MALACHITE, count));
+    }
+
+    /**
+     * 1.7 {@code dropBlockAsItemWithChance}: breaking the asbestos meta leaves an asbestos gas cloud where it
+     * stood (that method is skipped by the silk-touch branch of {@code harvestBlock}, and an explosion clears
+     * the gas again right after). Here it runs from the drop computation, which is called after the block
+     * was removed, so it only fills the space if it is still empty.
+     */
+    private static void releaseAsbestos(LootParams.Builder params) {
+        net.minecraft.world.phys.Vec3 origin = params.getOptionalParameter(
+                net.minecraft.world.level.storage.loot.parameters.LootContextParams.ORIGIN);
+        if (origin == null) return;
+        net.minecraft.core.BlockPos pos = net.minecraft.core.BlockPos.containing(origin);
+        if (params.getLevel().getBlockState(pos).isAir()) {
+            params.getLevel().setBlock(pos, com.hbm.blocks.ModNuclearBlocks.gas_asbestos.get().defaultBlockState(), 3);
+        }
     }
 }

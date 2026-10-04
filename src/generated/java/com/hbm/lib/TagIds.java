@@ -489,6 +489,7 @@ public final class TagIds {
     public static final String hbm_crowbar = "#hbm:crowbar";
     public static final String hbm_melee_kit_swords = "#hbm:melee_kit_swords";
     public static final String hbm_music_discs = "#hbm:music_discs";
+    public static final String hbm_raw_fishes = "#hbm:raw_fishes";
     public static final String hbm_red_flowers = "#hbm:red_flowers";
     public static final String hbm_repairs_ajr = "#hbm:repairs/ajr";
     public static final String hbm_repairs_asbestos = "#hbm:repairs/asbestos";
@@ -523,6 +524,7 @@ public final class TagIds {
     public static final String hbm_repairs_taurun = "#hbm:repairs/taurun";
     public static final String hbm_repairs_titanium = "#hbm:repairs/titanium";
     public static final String hbm_repairs_zirconium = "#hbm:repairs/zirconium";
+    public static final String hbm_scrap_plastic = "#hbm:scrap_plastic";
     public static final String hbm_zirnox_depleted_rods = "#hbm:zirnox_depleted_rods";
     public static final String hbm_zirnox_rods = "#hbm:zirnox_rods";
     public static final String ingots = "#c:ingots";

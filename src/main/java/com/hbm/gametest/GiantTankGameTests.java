@@ -210,7 +210,7 @@ public final class GiantTankGameTests {
     private static void assertDrop(GameTestHelper helper, ItemStack drop, Block block, int amount, int pressure,
                                    int mode) {
         helper.assertTrue(drop.getItem() == block.asItem()
-                        && ModDataComponents.fluidId(drop) == Fluids.WATER.getID()
+                        && ModDataComponents.fluid(drop) == Fluids.WATER
                         && ModDataComponents.fluidAmount(drop) == amount
                         && ModDataComponents.fluidPressure(drop) == pressure
                         && ModDataComponents.GIANT_TANK_MODE.getOr(drop, -1) == mode,

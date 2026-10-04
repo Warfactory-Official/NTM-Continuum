@@ -30,7 +30,7 @@ public final class ICFRecipes {
     public static void registerPlasmaForge(PlasmaForgeRecipes recipes) {
         recipes.registerGenerated(new PlasmaForgeRecipe("plsm.icfcell").setInputEnergy(1_000_000).setup(800, 10_000_000)
                 .outputItems(stack(ModIcfBlocks.icf_laser_component_cell.get()))
-                .inputItems(new ComparableStack(ModItems.ingot_cft.get(), 2), BBRONZE.plateCast().count(4),
+                .inputItems(new ComparableStack(ModItems.ingot_cft.get(), 2), ANY_BISMOIDBRONZE.plateCast().count(4),
                         new ComparableStack(ModGlassBlocks.glass_quartz.get().asItem(), 16))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.BRONZE_TUBES), 2), new ComparableStack(ModItems.ingot_cft.get(), 8), new ComparableStack(ModGlassBlocks.glass_quartz.get().asItem(), 16))
                 .setPools528(GenericRecipes.POOL_PREFIX_528 + "chlorophyte"));
@@ -52,17 +52,17 @@ public final class ICFRecipes {
                 .setPools528(GenericRecipes.POOL_PREFIX_528 + "chlorophyte"));
         recipes.registerGenerated(new PlasmaForgeRecipe("plsm.icfcasing").setInputEnergy(1_000_000).setup(800, 10_000_000)
                 .outputItems(stack(ModIcfBlocks.icf_laser_component_casing.get()))
-                .inputItems(BBRONZE.plateCast().count(4), BIGMT.plateCast().count(4), ANY_HARDPLASTIC.ingot().count(16))
+                .inputItems(ANY_BISMOIDBRONZE.plateCast().count(4), BIGMT.plateCast().count(4), ANY_HARDPLASTIC.ingot().count(16))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.BRONZE_TUBES), 4), BIGMT.plateCast().count(4), ANY_HARDPLASTIC.ingot().count(16))
                 .setPools528(GenericRecipes.POOL_PREFIX_528 + "chlorophyte"));
         recipes.registerGenerated(new PlasmaForgeRecipe("plsm.icfport").setInputEnergy(1_000_000).setup(800, 10_000_000)
                 .outputItems(stack(ModIcfBlocks.icf_laser_component_port.get()))
-                .inputItems(BBRONZE.plateCast().count(4), ANY_HARDPLASTIC.ingot().count(16), ND.wireDense().count(16))
+                .inputItems(ANY_BISMOIDBRONZE.plateCast().count(4), ANY_HARDPLASTIC.ingot().count(16), ND.wireDense().count(16))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.BRONZE_TUBES), 4), ANY_HARDPLASTIC.ingot().count(16), ND.wireDense().count(16))
                 .setPools528(GenericRecipes.POOL_PREFIX_528 + "chlorophyte"));
         recipes.registerGenerated(new PlasmaForgeRecipe("plsm.icfcontroller").setInputEnergy(1_000_000).setup(800, 10_000_000)
                 .outputItems(stack(ModIcfBlocks.icf_controller.get()))
-                .inputItems(new ComparableStack(ModItems.ingot_cft.get(), 16), BBRONZE.plateCast().count(4),
+                .inputItems(new ComparableStack(ModItems.ingot_cft.get(), 16), ANY_BISMOIDBRONZE.plateCast().count(4),
                         ANY_HARDPLASTIC.ingot().count(16),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BISMOID), 16))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.BRONZE_TUBES), 4), new ComparableStack(ModItems.ingot_cft.get(), 16), ANY_HARDPLASTIC.ingot().count(16), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BISMOID), 32), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.COMPUTER), 4))
@@ -78,13 +78,13 @@ public final class ICFRecipes {
                 .setPools528(GenericRecipes.POOL_PREFIX_528 + "chlorophyte"));
         recipes.registerGenerated(new PlasmaForgeRecipe("plsm.icfstructural").setInputEnergy(1_000_000).setup(800, 10_000_000)
                 .outputItems(stack(ModIcfBlocks.icf_component_structure.get()))
-                .inputItems(STEEL.plateWelded().count(2), CU.plateWelded().count(2), BBRONZE.plateCast().count(1))
+                .inputItems(STEEL.plateWelded().count(2), CU.plateWelded().count(2), ANY_BISMOIDBRONZE.plateCast().count(1))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.BRONZE_TUBES), 1), STEEL.plateWelded().count(8))
                 .setPools528(GenericRecipes.POOL_PREFIX_528 + "chlorophyte"));
         recipes.registerGenerated(new PlasmaForgeRecipe("plsm.icfcore").setInputEnergy(1_000_000).setup(3_000, 10_000_000)
                 .outputItems(stack(ModIcfBlocks.struct_icf_core.get()))
                 .inputItems(CMB.plateWelded().count(16), ANY_RESISTANTALLOY.plateWelded().count(16),
-                        BBRONZE.plateCast().count(16), SBD.wireDense().count(32),
+                        ANY_BISMOIDBRONZE.plateCast().count(16), SBD.wireDense().count(32),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BISMOID), 32),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.QUANTUM), 16))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.BRONZE_TUBES), 16), CMB.plateWelded().count(16), SBD.wireDense().count(32), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.QUANTUM), 32), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.COMPUTER), 16))

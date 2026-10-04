@@ -26,7 +26,8 @@ import dev.golem.core.data.DataOut;
 public class EntityHbmProps {
 
     public static final int MAX_ASBESTOS = 60 * 60 * 20;
-    public static final int MAX_BLACKLUNG = 60 * 60 * 20;
+    /** 1.7 {@code HbmLivingProps.maxBlacklung}: two hours of exposure (1.12.2 halved it; 1.7 is the spec). */
+    public static final int MAX_BLACKLUNG = 2 * 60 * 60 * 20;
 
     private double rads = 0D;
     private double neutrons = 0D;
@@ -41,6 +42,8 @@ public class EntityHbmProps {
     public int phosphorus = 0;
     public int fire = 0;
     public int balefire = 0;
+    /** 1.7 HbmLivingProps.blackFire (saved as "blackfire"): the 358.00 BL black flame. */
+    public int blackFire = 0;
     /** 1.7 HbmPlayerProps.grenadeDeployment: the universal grenade's pin state, kept out of every persistence path. */
     public int grenadeDeployment = 0;
     private final List<ContaminationEffect> contamination = new ArrayList<>();
@@ -82,7 +85,7 @@ public class EntityHbmProps {
     }
 
     public double getRads() { return rads; }
-    /** Clamped to [0, 2500] exactly like the old capability setter. */
+    /** Clamped to [0, 2500]; 2500 is 1.7's cap ({@code incrementRadiation} and the sickness handler). */
     public void setRads(double rads) { this.rads = Mth.clamp(rads, 0D, 2500D); }
 
     public double getNeutrons() { return neutrons; }
@@ -121,6 +124,9 @@ public class EntityHbmProps {
     public int getBalefire() { return balefire; }
     public void setBalefire(int time) { this.balefire = time; }
 
+    public int getBlackFire() { return blackFire; }
+    public void setBlackFire(int time) { this.blackFire = time; }
+
     public List<ContaminationEffect> getContaminationEffectList() { return contamination; }
 
     public boolean isCraneKeyPressed(EnumCraneKey key) { return craneKeysPressed[key.ordinal()]; }
@@ -149,6 +155,7 @@ public class EntityHbmProps {
         out.putInt("fire", fire);
         out.putInt("phosphorus", phosphorus);
         out.putInt("balefire", balefire);
+        out.putInt("blackfire", blackFire);
         out.putBoolean("enableBackpack", enableBackpack);
         out.putBoolean("enableHUD", enableHUD);
         out.putFloat("shield", shield);
@@ -176,6 +183,7 @@ public class EntityHbmProps {
         this.fire = in.getIntOr("fire", 0);
         this.phosphorus = in.getIntOr("phosphorus", 0);
         this.balefire = in.getIntOr("balefire", 0);
+        this.blackFire = in.getIntOr("blackfire", 0);
         this.enableBackpack = in.getBooleanOr("enableBackpack", true);
         this.enableHUD = in.getBooleanOr("enableHUD", true);
         this.shield = in.getFloatOr("shield", 0F);

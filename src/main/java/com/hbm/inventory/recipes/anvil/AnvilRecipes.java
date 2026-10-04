@@ -38,8 +38,8 @@ import static com.hbm.inventory.OreDictManager.*;
  * {@code AnvilRecipes}. Two independent families:
  * <ul>
  *   <li><b>Smithing</b> — two input slots in the anvil GUI, matched live by the container: the anvil
- *       tier-up matrix (iron/lead anvil + 10 ingots → higher anvil) and the gunmetal recipe. The Mold /
- *       Hot / Cyanide / Rename specials are deferred with their items.</li>
+ *       tier-up matrix, dusted steel, meteorite/cobalt, murky wings, the flask, gunmetal, the molds and the
+ *       Rename special. 1.7's Cyanide special is not ported (no food-eaten hook, History §19ej-3).</li>
  *   <li><b>Construction</b> — the browsable recipe grid: crafts straight from the player's inventory via
  *       {@link com.hbm.packet.AnvilCraftPayload}. Ported subset: the 13 metal→plate conversions (t3), the
  *       {@code Mats.orderedList} autogen loops (shell / pipe t1, fine wire t4) gated on the autogen item
@@ -117,6 +117,8 @@ public final class AnvilRecipes {
                 new ComparableStack(ItemSteelDusted.stack(9)),
                 new ComparableStack(ItemSteelDusted.stack(9))));
         com.hbm.inventory.recipes.AbilityToolMachineRecipes.smithing(smithingRecipes); // meteorite + decorated cobalt
+        smithingRecipes.add(new AnvilSmithingRecipe(com.hbm.blocks.machine.NTMAnvil.TIER_MURKY, idStack("wings_murk", 1),
+                new ComparableStack(idItem("wings_limp")), new ComparableStack(idItem("particle_tachyon")))); // 1.7 :93
         com.hbm.inventory.recipes.FinalConsumableMachineRecipes.smithing(smithingRecipes); // shield infusion flask
 
         smithingRecipes.add(new AnvilSmithingRecipe(1, new ItemStack(ModItems.ingot_gunmetal.get()), CU.ingot(), AL.ingot()));
@@ -143,10 +145,11 @@ public final class AnvilRecipes {
         smithingRecipes.add(new AnvilSmithingMold(new ItemStack(com.hbm.items.machine.ModMoldItems.mold_ingots.get()), IRON.ingot().count(9), MaterialShapes.INGOT, 9));
         smithingRecipes.add(new AnvilSmithingMold(new ItemStack(com.hbm.items.machine.ModMoldItems.mold_plates.get()), IRON.plate().count(9), MaterialShapes.PLATE, 9));
         smithingRecipes.add(new AnvilSmithingMold(new ItemStack(com.hbm.items.machine.ModMoldItems.mold_block.get()), IRON.block(), MaterialShapes.BLOCK, 1));
-        smithingRecipes.add(new AnvilSmithingMold(new ItemStack(com.hbm.items.machine.ModMoldItems.mold_pipes.get()),
-                new ComparableStack(ModItems.pipes_steel.get()), ModItems.pipes_steel.get()));
+        // (no mold_pipes smithing: 1.7 ItemMold registers no "pipes" mold; a 1.12.2 addition, removed in fix phase 3)
         smithingRecipes.add(new AnvilSmithingMold(new ItemStack(com.hbm.items.machine.ModMoldItems.mold_wire_dense.get()), MINGRADE.wireDense(), MaterialShapes.DENSEWIRE, 1));
         smithingRecipes.add(new AnvilSmithingMold(new ItemStack(com.hbm.items.machine.ModMoldItems.mold_wires_dense.get()), MINGRADE.wireDense().count(9), MaterialShapes.DENSEWIRE, 9));
+        // 1.7 :128 AnvilSmithingCyanideRecipe is not ported (needs a food-eaten hook, see History §19ej-3); :129 rename:
+        smithingRecipes.add(new AnvilSmithingRenameRecipe());
     }
 
     /** 1.7 {@code registerConstructionSirens}: every siren track from a steel plate and a polymer plate, tier 2. */
@@ -183,11 +186,12 @@ public final class AnvilRecipes {
             }
         }
 
-        // -------- dust -> gem (tier 3; coal is skipped — powder_coal isn't ported) --------
-        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.powder_quartz.get()), out(Items.QUARTZ)).setTier(3));
-        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.powder_lapis.get()), out(Items.LAPIS_LAZULI)).setTier(3));
-        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.powder_diamond.get()), out(Items.DIAMOND)).setTier(3));
-        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.powder_emerald.get()), out(Items.EMERALD)).setTier(3));
+        // -------- dust -> gem (tier 3, 1.7 AnvilRecipes:161-165, ore-dict dust inputs) --------
+        add(new AnvilConstructionRecipe(Mats.MAT_COAL.dust(), out(Items.COAL)).setTier(3));
+        add(new AnvilConstructionRecipe(new TagStack(TagKey.create(Registries.ITEM, Ids.of("c", "dusts/quartz"))), out(Items.QUARTZ)).setTier(3));
+        add(new AnvilConstructionRecipe(new TagStack(TagKey.create(Registries.ITEM, Ids.of("c", "dusts/lapis"))), out(Items.LAPIS_LAZULI)).setTier(3));
+        add(new AnvilConstructionRecipe(DIAMOND.dust(), out(Items.DIAMOND)).setTier(3));
+        add(new AnvilConstructionRecipe(EMERALD.dust(), out(Items.EMERALD)).setTier(3));
 
         // -------- ingot -> 4x decorative metal block (tier 1) --------
         add(new AnvilConstructionRecipe(AL.ingot(), new AnvilOutput(new ItemStack(com.hbm.blocks.ModBlocks.deco_aluminium.get(), 4))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
@@ -227,7 +231,7 @@ public final class AnvilRecipes {
                 new AnvilOutput(new ItemStack(ModItems.coil_gold_torus.get()))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
 
         add(new AnvilConstructionRecipe(
-                new AStack[] {IRON.plate().count(2), new ComparableStack(ModItems.motor.get()), new ComparableStack(ModItems.coil_copper_torus.get())},
+                new AStack[] {IRON.plate().count(2), new ComparableStack(ModItems.coil_copper.get()), new ComparableStack(ModItems.coil_copper_torus.get())},
                 new AnvilOutput(new ItemStack(ModItems.motor.get(), 2))).setTier(1));
         add(new AnvilConstructionRecipe(
                 new AStack[] {new ComparableStack(ModItems.motor.get()), ANY_PLASTIC.ingot().count(2), DESH.ingot().count(2), GOLD.wireDense()},
@@ -316,8 +320,8 @@ public final class AnvilRecipes {
                 new AStack[] {
                         STEEL.plate().count(16),
                         BE.ingot().count(6),
-                        CU.ingot().count(8),
-                        new ComparableStack(ModItems.coil_gold.get(), 16),
+                        CU.ingot().count(4),
+                        new ComparableStack(ModItems.coil_gold.get(), 8),
                         new ComparableStack(com.hbm.items.ModGearItems.gear_large.get().of(1))
                 }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_stirling_steel.get()))).setTier(2));
 
@@ -330,41 +334,7 @@ public final class AnvilRecipes {
                         new ComparableStack(com.hbm.items.ModGearItems.gear_large.get().of(0))
                 }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_steam_engine.get()))).setTier(2));
 
-        add(new AnvilConstructionRecipe(
-                new ComparableStack(com.hbm.blocks.machine.ModMachineBlocks.machine_stirling.get().asItem()),
-                new AnvilOutput[]{
-                        new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 6)),
-                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 8)),
-                        new AnvilOutput(new ItemStack(ModItems.coil_copper.get(), 4)),
-                        new AnvilOutput(com.hbm.items.ModGearItems.gear_large.get().of(0))
-                }).setTier(2));
-
-        add(new AnvilConstructionRecipe(
-                new ComparableStack(stirlingItemVariant(com.hbm.blocks.machine.ModMachineBlocks.machine_stirling.get(), 1)),
-                new AnvilOutput[]{
-                        new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 6)),
-                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 8)),
-                        new AnvilOutput(new ItemStack(ModItems.coil_copper.get(), 4))
-                }).setTier(2));
-
-        add(new AnvilConstructionRecipe(
-                new ComparableStack(com.hbm.blocks.machine.ModMachineBlocks.machine_stirling_steel.get().asItem()),
-                new AnvilOutput[]{
-                        new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 16)),
-                        new AnvilOutput(new ItemStack(ModItems.ingot_beryllium.get(), 6)),
-                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 8)),
-                        new AnvilOutput(new ItemStack(ModItems.coil_gold.get(), 16)),
-                        new AnvilOutput(com.hbm.items.ModGearItems.gear_large.get().of(1))
-                }).setTier(2));
-
-        add(new AnvilConstructionRecipe(
-                new ComparableStack(stirlingItemVariant(com.hbm.blocks.machine.ModMachineBlocks.machine_stirling_steel.get(), 1)),
-                new AnvilOutput[]{
-                        new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 16)),
-                        new AnvilOutput(new ItemStack(ModItems.ingot_beryllium.get(), 6)),
-                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 8)),
-                        new AnvilOutput(new ItemStack(ModItems.coil_gold.get(), 16))
-                }).setTier(2));
+        // (stirling dismantling: AnvilRecyclingRecipes, 1.7 registerConstructionRecycling)
 
         // -------- special plates whose items exist --------
         add(new AnvilConstructionRecipe(
@@ -374,21 +344,7 @@ public final class AnvilRecipes {
                 new AStack[] {new ComparableStack(ModItems.nugget_bismuth.get(), 2), U238.billet().count(2), NB.dust()},
                 new AnvilOutput(new ItemStack(ModItems.plate_bismuth.get()))).setTier(4));
 
-        // -------- research-reactor plate fuel (old AnvilRecipes L543-549) --------
-        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.ingot_u233.get()),
-                out(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.U233))).setTier(4));
-        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.ingot_u235.get()),
-                out(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.U235))).setTier(4));
-        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.ingot_mox_fuel.get()),
-                out(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.MOX))).setTier(4));
-        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.ingot_pu239.get()),
-                out(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.PU239))).setTier(4));
-        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.ingot_schrabidium.get()),
-                out(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.SA326))).setTier(4));
-        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.billet_ra226be.get()),
-                out(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.RA226BE))).setTier(4));
-        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.billet_pu238be.get()),
-                out(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.PU238BE))).setTier(4));
+        // (no plate_fuel recipes: 1.7 has none, they were 1.12.2 additions; removed in fix phase 3)
 
         // -------- stamp conversions (flat -> plate/wire/circuit) --------
         stampSet(ModStampItems.stamp_stone_flat.get(), 1, ModStampItems.stamp_stone_plate.get(), ModStampItems.stamp_stone_wire.get(), ModStampItems.stamp_stone_circuit.get());
@@ -418,7 +374,7 @@ public final class AnvilRecipes {
                         new ComparableStack(Blocks.STONE_BRICKS.asItem(), 8),
                         new TagStack(ItemTags.LOGS, 16),
                         CU.plateCast().count(2),
-                        new TagStack(TagKey.create(Registries.ITEM, Ids.of("c", "ingots/firebrick")), 16)
+                        new ComparableStack(Items.BRICK, 16) // 1.7 KEY_BRICK = "ingotBrick", the vanilla brick
                 }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_furnace_combination.get()))).setTier(2));
 
         add(new AnvilConstructionRecipe(
@@ -510,16 +466,100 @@ public final class AnvilRecipes {
         add(new AnvilConstructionRecipe(new AStack[]{new ComparableStack(ModStampItems.stamp_desh_flat.get()), WEAPONSTEEL.ingot().count(4)}, new AnvilOutput(new ItemStack(ModStampItems.stamp_desh_9.get()))).setTier(4));
         add(new AnvilConstructionRecipe(new AStack[]{new ComparableStack(ModStampItems.stamp_desh_flat.get()), WEAPONSTEEL.ingot().count(4)}, new AnvilOutput(new ItemStack(ModStampItems.stamp_desh_50.get()))).setTier(4));
 
-        // -------- BAT-9000 salvage (old AnvilRecipes L722-727) --------
-        Item tcalloyWelded = ModAutogenItems.get(MaterialShapes.WELDEDPLATE, TCALLOY);
-        if (tcalloyWelded != null) {
-            add(new AnvilConstructionRecipe(
-                    new ComparableStack(com.hbm.blocks.machine.ModMachineBlocks.machine_bat9000.get().asItem()),
-                    new AnvilOutput[]{
-                            new AnvilOutput(new ItemStack(tcalloyWelded, 4)),
-                            new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 16))
-                    }).setTier(3));
+        // (BAT-9000 dismantling: AnvilRecyclingRecipes)
+        registerConstructionRestored17();
+    }
+
+    /**
+     * 1.7 {@code registerConstructionRecipes} entries the port lacked (fix phase 3, History §19ej-3), in 1.7 order. They
+     * sit at the end of the port's list; the browser order is still deterministic on client and server.
+     */
+    private static void registerConstructionRestored17() {
+        TagStack concrete = new TagStack(TagKey.create(Registries.ITEM, Ids.of("c", "concretes")), 64);
+        add(new AnvilConstructionRecipe(new AStack[]{new ComparableStack(Items.STONE_BRICKS, 16), idIn("ingot_firebrick", 16),
+                IRON.ingot().count(8), CU.ingot().count(8)}, idOut("machine_annihilator", 1)).setTier(2));                // :177
+        add(new AnvilConstructionRecipe(IRON.plate(), idOut("platemetal_base", 4)).setTier(1).setOverlay(OverlayType.CONSTRUCTION)); // :181
+        add(new AnvilConstructionRecipe(new AStack[]{DNT.ingot().count(4), idIn("depth_brick", 1)}, idOut("depth_dnt", 1))
+                .setTier(com.hbm.blocks.machine.NTMAnvil.TIER_MURKY));                                                  // :190
+        add(new AnvilConstructionRecipe(new AStack[]{new ComparableStack(Items.STONE_BRICKS, 4), idIn("ingot_firebrick", 32),
+                CU.plate().count(8)}, idOut("machine_blast_furnace", 1)).setTier(1));                                      // :219
+        add(new AnvilConstructionRecipe(new AStack[]{new ComparableStack(Items.STONE, 8), STEEL.plate().count(2),
+                IRON.ingot().count(4)}, idOut("machine_ashpit", 1)).setTier(2));                                           // :268
+        add(new AnvilConstructionRecipe(new AStack[]{STEEL.plateCast().count(4), W.ingot().count(8), idIn("machine_transformer", 1),
+                idIn("arc_electrode", 2)}, idOut("machine_arc_welder", 1)).setTier(2));                                    // :383
+        add(new AnvilConstructionRecipe(new AStack[]{STEEL.plate().count(4), IRON.ingot().count(12), CU.ingot().count(2),
+                cir(EnumCircuitType.VACUUM_TUBE, 2), idIn("sawblade", 1)}, idOut("machine_autosaw", 1)).setTier(2));       // :398
+        add(new AnvilConstructionRecipe(new AStack[]{idIn("brick_concrete", 64), new ComparableStack(Items.IRON_BARS, 128),
+                idIn("machine_condenser", 4)}, idOut("machine_tower_small", 1)).setTier(3));                               // :426
+        add(new AnvilConstructionRecipe(new AStack[]{idIn("concrete_smooth", 128), idIn("steel_scaffold", 32),
+                idIn("machine_condenser", 16), STEEL.pipe().count(8)}, idOut("machine_tower_large", 1)).setTier(4));       // :432
+        add(new AnvilConstructionRecipe(new AStack[]{new ComparableStack(Items.BONE, 16), new ComparableStack(Items.LEATHER, 4),
+                new ComparableStack(Items.FEATHER, 24)}, idOut("wings_limp", 1)).setTier(2));                              // :440
+        add(new AnvilConstructionRecipe(new AStack[]{idIn("sulfur", 12), STEEL.shell().count(4), CU.plateCast().count(6),
+                cir(EnumCircuitType.BASIC, 2)}, idOut("machine_deuterium_extractor", 1)).setTier(2));                      // :447
+        AStack sourgas = new com.hbm.inventory.FluidContainerStack("SOURGAS", 1_000).count(8);                            // :463
+        add(new AnvilConstructionRecipe(new AStack[]{idIn("deuterium_filter", 2), STEEL.shell().count(5), STEEL.pipe().count(12),
+                idIn("concrete_asbestos", 8), idIn("steel_scaffold", 16), sourgas}, idOut("machine_deuterium_tower", 1)).setTier(4));
+        add(new AnvilConstructionRecipe(new AStack[]{STEEL.plate().count(4), new ComparableStack(Items.BRICKS, 16),
+                idIn("steel_grate", 2)}, idOut("chimney_brick", 1)).setTier(2));                                           // :485
+        add(new AnvilConstructionRecipe(new AStack[]{STEEL.plate().count(16), concrete, idIn("steel_grate", 4),
+                idIn("filter_coal", 4)}, idOut("chimney_industrial", 1)).setTier(3));                                      // :493
+        add(new AnvilConstructionRecipe(new AStack[]{idIn("tank_steel", 1), PB.plate().count(2), idIn("nuclear_waste", 10)},
+                idOut("yellow_barrel", 1)).setTier(3));                                                                     // :502
+        add(new AnvilConstructionRecipe(new AStack[]{idIn("tank_steel", 1), PB.plate().count(2), idIn("nuclear_waste_vitrified", 10)},
+                idOut("vitrified_barrel", 1)).setTier(3));                                                                  // :508
+        // armor plates :529-546
+        add(new AnvilConstructionRecipe(new AStack[]{TI.plate().count(2), STEEL.ingot(), STEEL.bolt().count(4)},
+                idOut("plate_armor_titanium", 1)).setTier(2));
+        add(new AnvilConstructionRecipe(new AStack[]{IRON.plate().count(6), NB.ingot(), idIn("plate_armor_titanium", 1)},
+                idOut("plate_armor_ajr", 2)).setTier(3));
+        add(new AnvilConstructionRecipe(new AStack[]{DURA.plate().count(4), idIn("plate_armor_titanium", 1), W.wire().count(8)},
+                idOut("plate_armor_hev", 1)).setTier(4));
+        add(new AnvilConstructionRecipe(new AStack[]{WEAPONSTEEL.plate().count(4), STAR.ingot(), MAGTUNG.wire().count(8)},
+                idOut("plate_armor_lunar", 1)).setTier(4));
+        add(new AnvilConstructionRecipe(new AStack[]{idIn("ingot_meteorite_forged", 4), DESH.ingot(), idIn("billet_yharonite", 1)},
+                idOut("plate_armor_fau", 1)).setTier(6));
+        add(new AnvilConstructionRecipe(new AStack[]{idIn("plate_dineutronium", 4), idIn("particle_sparkticle", 1),
+                idIn("plate_armor_fau", 6)}, idOut("plate_armor_dnt", 1)).setTier(7));
+        add(new AnvilConstructionRecipe(new AStack[]{idIn("missile_doomsday_rusted", 1), ANY_HARDPLASTIC.ingot().count(8),
+                AL.plateWelded().count(2), PU239.billet().count(3)}, idOut("missile_doomsday", 1)).setTier(5));             // :548
+        // :556-566, 1.7 metadata m = 3 * size + material (silver/iron, copper, white/aluminium)
+        String[] boxes = {"silver", "copper", "white"};
+        AStack[] boxPlates = {IRON.plate(), CU.plate(), AL.plate()};
+        String[] plateIds = {"plate_iron", "plate_copper", "plate_aluminium"};
+        for (int size = 0; size < 5; size++) {
+            for (int m = 0; m < 3; m++) {
+                add(new AnvilConstructionRecipe(boxPlates[m], idOut("fluid_duct_box_" + boxes[m] + "_" + size, 1))
+                        .setTier(2).setOverlay(OverlayType.CONSTRUCTION));
+            }
+            for (int m = 0; m < 3; m++) {
+                add(new AnvilConstructionRecipe(idIn("fluid_duct_box_" + boxes[m] + "_" + size, 1), idOut(plateIds[m], 1))
+                        .setTier(2).setOverlay(OverlayType.RECYCLING));
+            }
+            add(new AnvilConstructionRecipe(new AStack[]{IRON.plate(), new ComparableStack(ModItems.plate_polymer.get())},
+                    idOut("fluid_duct_exhaust_" + size, 8)).setTier(2).setOverlay(OverlayType.CONSTRUCTION));
+            add(new AnvilConstructionRecipe(idIn("fluid_duct_exhaust_" + size, 8),
+                    new AnvilOutput[]{idOut("plate_iron", 1), idOut("plate_polymer", 1)}).setTier(2));
         }
+    }
+
+    /** An {@code hbm:} item by id; a missing id fails loudly when the (lazy) anvil list is built. */
+    private static Item idItem(String path) {
+        Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(Ids.of("hbm", path));
+        if (item == null || item == Items.AIR) throw new IllegalStateException("anvil recipe item hbm:" + path + " is not registered");
+        return item;
+    }
+
+    private static ItemStack idStack(String path, int count) {
+        return new ItemStack(idItem(path), count);
+    }
+
+    private static ComparableStack idIn(String path, int count) {
+        return new ComparableStack(idItem(path), count);
+    }
+
+    private static AnvilOutput idOut(String path, int count) {
+        return new AnvilOutput(idStack(path, count));
     }
 
     private static void stampSet(Item flat, int tier, Item... outputs) {
@@ -579,14 +619,21 @@ public final class AnvilRecipes {
             this.setOverlay(OverlayType.NONE);
         }
 
+        /** 1.7 {@code enableLBSM && enableLBSMUnlockAnvil}: every anvil recipe at tier 1 (History §19ej-8). */
+        static boolean lbsmUnlock() {
+            return com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMUnlockAnvil;
+        }
+
         public AnvilConstructionRecipe setTier(int tier) {
             this.tierLower = tier;
+            if (lbsmUnlock()) this.tierLower = 1; // 1.7 LBSM_recipeUnlockAnvil
             return this;
         }
 
         public AnvilConstructionRecipe setTierRange(int lower, int upper) {
             this.tierLower = lower;
             this.tierUpper = upper;
+            if (lbsmUnlock()) this.tierLower = this.tierUpper = 1;
             return this;
         }
 

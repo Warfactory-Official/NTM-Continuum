@@ -87,12 +87,12 @@ public abstract class EntityMinecartNTM extends CompatMinecart implements ICartC
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("base", entityData.get(BASE));
+        com.hbm.util.SavedIds.putEnum(output, "base", getBase()); // by name; the synched int is session-only
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        entityData.set(BASE, input.getIntOr("base", 0));
+        setBase(com.hbm.util.SavedIds.getEnum(input, "base", EnumCartBase.values()[0]));
     }
 }

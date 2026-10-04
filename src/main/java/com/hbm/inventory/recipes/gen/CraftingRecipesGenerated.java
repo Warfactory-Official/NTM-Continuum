@@ -96,7 +96,7 @@ public final class CraftingRecipesGenerated {
                 "D", VanillaIds.diamond_block, "G", ItemIds.reinforced_glass, "P", ItemIds.plate_dineutronium);
         shaped(NS, "struct_watz_core", ItemIds.struct_watz_core, rows("CBC", "BHB", "CBC"),
                 "B", TagIds.plates_cast_any_resistant_alloy, "C", ItemIds.circuit_advanced, "H", ItemIds.watz_cooler);
-        componentShaped(NS, "upgrade_crystallizer", stack(ItemIds.upgrade_crystallizer), rows("PHP", "CUC", "DTD"), key("C", item(ItemIds.barrel_steel)), key("D", item(ItemIds.motor)), key("H", item(ItemIds.circuit_advanced)), key("P", item(ItemIds.fluid_barrel).with(ComponentIds.fluid_amount, 16000).with(ComponentIds.fluid_id, 35).remainder(ItemIds.fluid_barrel)), key("T", item(ItemIds.machine_transformer)), key("U", item(ItemIds.upgrade_centrifuge)));
+        componentShaped(NS, "upgrade_crystallizer", stack(ItemIds.upgrade_crystallizer), rows("PHP", "CUC", "DTD"), key("C", item(ItemIds.barrel_steel)), key("D", item(ItemIds.motor)), key("H", item(ItemIds.circuit_advanced)), key("P", item(ItemIds.fluid_barrel).with(ComponentIds.fluid_amount, 16000).with(ComponentIds.fluid, "hbm:peroxide").remainder(ItemIds.fluid_barrel)), key("T", item(ItemIds.machine_transformer)), key("U", item(ItemIds.upgrade_centrifuge)));
         shaped(NS, "mech_key", ItemIds.mech_key, rows("MCM", "MKM", "MMM"),
                 "C", ItemIds.coin_maskman, "K", ItemIds.key, "M", ItemIds.ingot_meteorite_forged);
         shaped(NS, "spawn_ufo", ItemIds.spawn_ufo, rows("MMM", "DCD", "MMM"),
@@ -109,10 +109,10 @@ public final class CraftingRecipesGenerated {
                 "B", TagIds.shells_steel, "C", ItemIds.circuit_vacuum_tube, "H", TagIds.pipes_steel, "P", TagIds.ingots_any_plastic);
         shaped(NS, "drone_patrol_chunkloading", ItemIds.drone_patrol_chunkloading, rows("E", "D"),
                 "D", ItemIds.drone_patrol, "E", VanillaIds.ender_pearl);
-        componentShaped(NS, "drone_patrol_express", stack(ItemIds.drone_patrol_express), rows(" P ", "KDK", " P "), key("D", item(ItemIds.drone_patrol)), key("K", item(ItemIds.fluid_tank).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.fluid_id, 22).remainder(ItemIds.fluid_tank)), key("P", item(ItemIds.plate_welded_titanium)));
+        componentShaped(NS, "drone_patrol_express", stack(ItemIds.drone_patrol_express), rows(" P ", "KDK", " P "), key("D", item(ItemIds.drone_patrol)), key("K", item(ItemIds.fluid_tank).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.fluid, "hbm:kerosene").remainder(ItemIds.fluid_tank)), key("P", item(ItemIds.plate_welded_titanium)));
         shaped(NS, "drone_patrol_express_chunkloading", ItemIds.drone_patrol_express_chunkloading, rows("E", "D"),
                 "D", ItemIds.drone_patrol_express, "E", VanillaIds.ender_pearl);
-        componentShaped(NS, "drone_patrol_express_chunkloading_1", stack(ItemIds.drone_patrol_express_chunkloading), rows(" P ", "KDK", " P "), key("D", item(ItemIds.drone_patrol_chunkloading)), key("K", item(ItemIds.fluid_tank).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.fluid_id, 22).remainder(ItemIds.fluid_tank)), key("P", item(ItemIds.plate_welded_titanium)));
+        componentShaped(NS, "drone_patrol_express_chunkloading_1", stack(ItemIds.drone_patrol_express_chunkloading), rows(" P ", "KDK", " P "), key("D", item(ItemIds.drone_patrol_chunkloading)), key("K", item(ItemIds.fluid_tank).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.fluid, "hbm:kerosene").remainder(ItemIds.fluid_tank)), key("P", item(ItemIds.plate_welded_titanium)));
         shapeless(NS, "drone_patrol_1", ItemIds.drone_patrol, ItemIds.drone_patrol_chunkloading);
         shapeless(NS, "drone_patrol_express_1", ItemIds.drone_patrol_express, ItemIds.drone_patrol_express_chunkloading);
         shaped(NS, "drone_request", ItemIds.drone_request, rows("E", "D"),
@@ -257,7 +257,7 @@ public final class CraftingRecipesGenerated {
         componentShaped(NS, "ammo_arty_3_g1", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 5), rows("D", "S", "D"), key("D", item(ItemIds.ingot_phosphorus)), key("S", item(ItemIds.ammo_arty).with(ComponentIds.item_variant, 0)));
         componentShaped(NS, "ammo_arty_4_g1", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 7), rows("DSD", "SCS", "DSD"), key("C", item(ItemIds.det_cord)), key("D", item(ItemIds.ingot_phosphorus)), key("S", item(ItemIds.ammo_arty).with(ComponentIds.item_variant, 5)));
         componentShaped(NS, "ammo_arty_6", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 6), rows("DSD", "SCS", "DSD"), key("C", item(ItemIds.det_cord)), key("D", item(ItemIds.neutron_reflector)), key("S", item(ItemIds.ammo_arty).with(ComponentIds.item_variant, 3)));
-        componentShaped(NS, "ammo_fireext", stack(ItemIds.ammo_fireext), rows(" P ", "BDB", " P "), key("B", item(ItemIds.bolt_steel)), key("D", item(ItemIds.fluid_tank).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.fluid_id, 1).remainder(ItemIds.fluid_tank)), key("P", item(ItemIds.plate_steel)));
+        componentShaped(NS, "ammo_fireext", stack(ItemIds.ammo_fireext), rows(" P ", "BDB", " P "), key("B", item(ItemIds.bolt_steel)), key("D", item(ItemIds.fluid_tank).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.fluid, "hbm:water").remainder(ItemIds.fluid_tank)), key("P", item(ItemIds.plate_steel)));
         shaped(NS, "ammo_fireext_foam", ItemIds.ammo_fireext_foam, rows(" N ", "NFN", " N "),
                 "F", ItemIds.ammo_fireext, "N", TagIds.dusts_niter);
         shaped(NS, "grenade_shell_frag", ItemIds.grenade_shell_frag, 4, rows("B", "P", "S"),

@@ -21,6 +21,8 @@ public final class MeleeKitHarnessQueries {
     public static void register() {
         dev.golem.core.harness.HarnessQueryRegistry.register("hbm_living", (mc, params) -> query(mc));
         dev.golem.core.harness.HarnessQueryRegistry.register("hbm_props", MeleeKitHarnessQueries::props);
+        ImpactHarnessQueries.register(); // fix wave phase 6
+        MobHarnessQueries.register(); // fix wave phase 7
     }
 
     /**

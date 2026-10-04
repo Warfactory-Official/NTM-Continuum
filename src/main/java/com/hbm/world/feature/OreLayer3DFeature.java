@@ -28,9 +28,15 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
  *
  * <pre>
  *   nX = noiseX(y · scaleV, z · scaleH)
- *   nZ = noiseZ(x · scaleH, y · scaleV)
  *   nY = noiseY(x · scaleH, z · scaleH)
+ *   nZ = noiseX(y · scaleV, (chunkZ + 8 + xOff) · scaleH)     // sic, see below
  * </pre>
+ *
+ * <p><b>The 1.7 sampling bug, ported on purpose.</b> 1.7.10 fills {@code cacheX[o][y]} from noiseX at the
+ * column's z and {@code cacheZ[o][y]} from noiseZ at its x, then reads {@code nz = cacheX[ox][y]}: the
+ * "z" factor is noiseX again, taken at the z-coordinate the x offset indexes, and noiseZ is built but never
+ * read. The ore bodies of every 1.7 world come from that product, so the port reproduces it
+ * (AGENTS.md section 3); the noiseZ generator is still constructed so nothing else shifts. History §19ej-6.
  *
  * <p>The layers span y 6–64 over the chunk's +8 decoration offset, and only replace solid rock that
  * passes the standard stone predicate.
@@ -94,6 +100,21 @@ public class OreLayer3DFeature extends Feature<NoneFeatureConfiguration> {
         return true;
     }
 
+    /**
+     * Test seam: the noise product 1.7 compares against the threshold for one cell of the chunk at block
+     * {@code (cx, cz)}, offsets {@code xOff, zOff}, layer {@code 0..2} (hematite, bauxite, malachite).
+     */
+    public static double cellProduct17(long seed, int layerId, int cx, int cz, int xOff, int zOff, int y) {
+        Layer layer = layerId == 0 ? HEMATITE : layerId == 1 ? BAUXITE : MALACHITE;
+        Noises noise = noisesFor(seed, layer);
+        int x = cx + 8 + xOff;
+        int z = cz + 8 + zOff;
+        double nY = noise.y().getValue(x * layer.scaleH(), z * layer.scaleH());
+        double nX = noise.x().getValue(y * layer.scaleV(), z * layer.scaleH());
+        double nZ = noise.x().getValue(y * layer.scaleV(), (cz + 8 + xOff) * layer.scaleH());
+        return nX * nY * nZ;
+    }
+
     private static void generate(WorldGenLevel level, int cx, int cz, Layer layer, Noises noise, BlockState ore) {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int startX = cx + 8;   // the old +8 decoration offset
@@ -111,7 +132,8 @@ public class OreLayer3DFeature extends Feature<NoneFeatureConfiguration> {
                 for (int y = MAX_Y; y >= MIN_Y; y--) {
                     if (y < floor || y > ceiling) continue;
                     double nX = noise.x().getValue(y * layer.scaleV(), z * layer.scaleH());
-                    double nZ = noise.z().getValue(x * layer.scaleH(), y * layer.scaleV());
+                    // 1.7: nz = cacheX[ox][y], i.e. noiseX at z = chunkZ + 8 + xOff (see the class comment)
+                    double nZ = noise.x().getValue(y * layer.scaleV(), (startZ + xOff) * layer.scaleH());
                     if (nX * nY * nZ <= layer.threshold()) continue;
 
                     pos.set(x, y, z);

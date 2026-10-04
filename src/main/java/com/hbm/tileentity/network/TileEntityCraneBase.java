@@ -101,8 +101,8 @@ public abstract class TileEntityCraneBase extends TileEntityMachineBase implemen
     @Override
     public @Nullable CompoundTag getSettings(Level level, BlockPos pos) {
         CompoundTag nbt = new CompoundTag();
-        nbt.putInt("inputSide", getInputSide().ordinal());
-        nbt.putInt("outputSide", getOutputSide().ordinal());
+        com.hbm.util.SavedIds.putEnum(nbt, "inputSide", getInputSide()); // copied settings: by name
+        com.hbm.util.SavedIds.putEnum(nbt, "outputSide", getOutputSide());
 
         if (this instanceof IControlReceiverFilter filter) {
             ListTag tags = new ListTag();
@@ -127,10 +127,10 @@ public abstract class TileEntityCraneBase extends TileEntityMachineBase implemen
         if (index == PASTE_ORIENTATION) {
             BlockState state = getBlockState();
             if (nbt.contains("outputSide")) {
-                state = state.setValue(BlockCraneBase.OUTPUT, Direction.from3DDataValue(Tags.getIntOr(nbt, "outputSide", 1)));
+                state = state.setValue(BlockCraneBase.OUTPUT, com.hbm.util.SavedIds.getEnum(nbt, "outputSide", Direction.UP));
             }
             if (nbt.contains("inputSide")) {
-                state = state.setValue(BlockCraneBase.INPUT, Direction.from3DDataValue(Tags.getIntOr(nbt, "inputSide", 0)));
+                state = state.setValue(BlockCraneBase.INPUT, com.hbm.util.SavedIds.getEnum(nbt, "inputSide", Direction.DOWN));
             }
             level.setBlockAndUpdate(pos, state);
             return;

@@ -81,7 +81,7 @@ public final class FinalRecipeGapGameTests {
     }
 
     public static void fluidContainer(GameTestHelper helper) {
-        helper.assertTrue(Fluids.PEROXIDE.getID() == 35 && Fluids.LUBRICANT.getID() == 18,
+        helper.assertTrue(Fluids.legacyId(Fluids.PEROXIDE) == 35 && Fluids.legacyId(Fluids.LUBRICANT) == 18,
                 "the declared fluid ids are 1.7's (peroxide 35, lubricant 18)");
 
         // chocolate milk: pane, cocoa, milk bucket, 1,000 mB nitroglycerin in a universal tank

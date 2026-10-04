@@ -16,9 +16,8 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>Ported from 1.12.2 {@code com.hbm.items.weapon.sedna.Receiver}. Upstream routes every getter
  * through {@code XWeaponModManager.eval(field, stack, KEY, this, index)} so weapon mods can override
- * any stat per stack; the weapon-mod system is not ported yet, so the getters return the field directly.
- * The {@code (ItemStack stack)} parameter and the {@code *_DNA} field naming are kept exactly so the
- * manager can be reintroduced without touching a single call site.
+ * any stat per stack; every getter here does the same, so installed weapon mods apply (verified by the
+ * {@code fix5_weapon_mods_and_names} GameTest, fix wave 5).
  */
 public class Receiver {
 

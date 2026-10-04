@@ -108,13 +108,14 @@ public final class IngredientGameTests {
         helper.succeed();
     }
 
+    /** 1.7 has no plate-fuel recipe at all (the anvil ones were 1.12.2 additions, removed in fix phase 3). */
     public static void plateFuelAnvilRecipes(GameTestHelper helper) {
         var recipes = AnvilRecipes.getConstruction();
         for (ModIngredientItems.PlateFuelType type : ModIngredientItems.PlateFuelType.values()) {
             Item item = ModIngredientItems.plateFuel(type);
-            boolean found = recipes.stream().anyMatch(recipe -> recipe.tierLower == 4 && recipe.output.stream()
+            boolean found = recipes.stream().anyMatch(recipe -> recipe.output.stream()
                     .anyMatch(output -> output.stack.is(item)));
-            helper.assertTrue(found, "Tier-4 anvil recipe is missing for " + type.id);
+            helper.assertTrue(!found, "1.7 has no anvil recipe for " + type.id);
         }
         helper.succeed();
     }

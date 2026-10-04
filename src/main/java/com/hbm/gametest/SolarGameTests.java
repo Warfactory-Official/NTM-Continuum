@@ -142,18 +142,18 @@ public final class SolarGameTests {
         int firstSun = TileEntitySolarMirror.getSun(helper.getLevel(), first.getBlockPos());
         int secondSun = TileEntitySolarMirror.getSun(helper.getLevel(), second.getBlockPos());
         int expected = (firstSun > 0 ? firstSun : 0) + (secondSun > 0 ? secondSun : 0);
-        helper.assertTrue(boiler.heatInput == expected,
-                "Multiple active mirrors must accumulate their exact heat contributions");
-        helper.assertTrue(TileEntitySolarBoiler.maxHeat == 320_000,
-                "Solar boiler heat cap changed");
-        helper.assertTrue(TileEntitySolarBoiler.diffusion == 0.1D,
-                "Solar boiler diffusion constant changed");
+        helper.assertTrue(boiler.heat == expected,
+                "Multiple active mirrors must add their exact sun values to the boiler's heat (1.7)");
 
-        boiler.heat = 0;
-        boiler.heatInput = 10;
+        // 1.7.10 tanks: 100 mB water, 10,000 mB steam; a tick converts heat/50 ops and discards all heat.
+        helper.assertTrue(boiler.tanks[0].getMaxFill() == 100 && boiler.tanks[1].getMaxFill() == 10_000,
+                "Solar boiler tanks must be the 1.7 100 / 10,000 mB");
+        boiler.tanks[0].setFill(100);
+        boiler.heat = 50 * 7 + 49;
         TileEntitySolarBoiler.serverTick(helper.getLevel(), core, boiler.getBlockState(), boiler);
-        helper.assertTrue(boiler.heat == 9,
-                "Solar boiler heat must retain old compound-assignment decay truncation");
+        helper.assertTrue(boiler.heat == 0 && boiler.display == 7 && boiler.tanks[0].getFill() == 93
+                        && boiler.tanks[1].getFill() == 700,
+                "399 TU must make 7 operations (7 water -> 700 steam) and discard the remainder");
         helper.succeed();
     }
 
@@ -165,7 +165,6 @@ public final class SolarGameTests {
 
         boiler.tanks[0].setFill(1);
         boiler.heat = 50;
-        boiler.heatInput = 0;
         TileEntitySolarBoiler.serverTick(helper.getLevel(), core, boiler.getBlockState(), boiler);
         helper.assertTrue(boiler.tanks[0].getFill() == 0 && boiler.tanks[1].getFill() == 100 && boiler.heat == 0,
                 "One water operation must consume 50 TU and produce 100 steam");
@@ -189,15 +188,15 @@ public final class SolarGameTests {
 
         // serialize/deserialize is the cross-target packet contract; disk persistence uses the same fields
         // through TileEntityLoadedBase's DataIn/DataOut bridge.
-        boiler.heatInput = 1234;
+        boiler.heat = 50 * 12;
         TileEntitySolarBoiler.serverTick(helper.getLevel(), core, boiler.getBlockState(), boiler);
         var boilerBuffer = dev.golem.core.net.GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         boiler.serialize(boilerBuffer);
         boilerBuffer.readerIndex(0);
         TileEntitySolarBoiler boilerCopy = new TileEntitySolarBoiler(core.east(), boiler.getBlockState());
         boilerCopy.deserialize(boilerBuffer);
-        helper.assertTrue(boilerCopy.heat == 1234 && boilerCopy.heatInput == 1234,
-                "Solar boiler heat sync did not preserve the pre-decay state");
+        helper.assertTrue(boilerCopy.display == 12,
+                "Solar boiler sync must carry the 1.7 display value (heat / 50)");
         boilerBuffer.release();
 
         BlockPos mirrorRelative = new BlockPos(8, 1, 3);

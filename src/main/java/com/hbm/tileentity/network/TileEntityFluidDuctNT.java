@@ -103,13 +103,13 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("type", this.type.getID());
+        Fluids.write(output, "type", this.type);
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        this.type = Fluids.fromID(input.getIntOr("type", Fluids.NONE.getID()));
+        this.type = Fluids.read(input, "type");
     }
 
     @Override
@@ -121,8 +121,8 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
     // into it; with the copy tool's Ctrl key held the paste retypes the whole run of the duct's old type (64).
 
     @Override
-    public int[] getFluidIDToCopy() {
-        return new int[]{type.getID()};
+    public FluidType[] getFluidsToCopy() {
+        return new FluidType[]{type};
     }
 
     @Override
@@ -133,9 +133,9 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
     @Override
     public void pasteSettings(net.minecraft.nbt.CompoundTag nbt, int index, net.minecraft.world.level.Level level,
                               net.minecraft.world.entity.player.Player player, BlockPos pos) {
-        int[] ids = dev.golem.core.data.Tags.getIntArrayOr(nbt, "fluidID", new int[0]);
-        if (ids.length == 0) return;
-        FluidType fluid = Fluids.fromID(index < ids.length ? ids[index] : 0);
+        FluidType[] fluids = Fluids.readList(nbt, "fluids");
+        if (fluids.length == 0) return;
+        FluidType fluid = index < fluids.length ? fluids[index] : Fluids.NONE;
         boolean ctrl = com.hbm.handler.ToolKeybinds.getKeyPressed(player,
                 com.hbm.handler.ToolKeybinds.EnumToolKey.TOOL_CTRL);
         // spreadType also refreshes the retyped ducts' connections, which a bare setFluidType would not.

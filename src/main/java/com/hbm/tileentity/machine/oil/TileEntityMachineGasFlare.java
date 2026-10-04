@@ -47,7 +47,7 @@ import java.util.List;
  * Gas Flare (Flare Stack) — 1:1 port of the 1.12.2 {@code TileEntityMachineGasFlare}: a 12-tall 3×3
  * chimney that either <b>vents</b> gaseous fluids (no power) or <b>burns</b> flammable fluids for power.
  * 6 slots (0 battery-to-charge, 1→2 fluid container drain, 3 fluid identifier, 4/5 upgrades: SPEED = rate,
- * EFFECT = yield). maxPower 1M. {@code isOn}/{@code doesBurn} toggle via GUI buttons.
+ * EFFECT = yield). maxPower 100k (1.7.10; 1.12.2 raised it to 1M). {@code isOn}/{@code doesBurn} toggle via GUI buttons.
  *
  * <p>Vent: {@code min(50·(1+speed), fill)} mB, no power. Burn: {@code min(10·(1+speed), fill)} mB →
  * {@code power += flammableEnergy·eject/1000/penalty · (1 + yield/3)}, penalty 5 gaseous / 10 liquid.
@@ -59,7 +59,7 @@ import java.util.List;
 public class TileEntityMachineGasFlare extends TileEntityMachineBase
         implements MenuProvider, IEnergyProviderMK2, IFluidStandardReceiverMK2, IUpgradeInfoProvider {
 
-    public static final long maxPower = 1000000;
+    public static final long maxPower = 100000;
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     public long power;
     public FluidTankNTM tank;

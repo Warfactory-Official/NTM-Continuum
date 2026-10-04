@@ -94,7 +94,8 @@ public class EntityGlyphidNuclear extends EntityGlyphid {
                 setCurrentTask(TASK_IDLE, null);
             }
 
-            if (getCurrentTask() == TASK_BUILD_HIVE && getTarget() == null) {
+            // 1.7 getAITarget() is the revenge target (entityLivingToAttack, the last attacker), not entityToAttack
+            if (getCurrentTask() == TASK_BUILD_HIVE && getLastHurtByMob() == null) {
                 addEffect(new MobEffectInstance(MobEffects.SPEED, 10 * 20, 3));
             }
 
@@ -174,7 +175,9 @@ public class EntityGlyphidNuclear extends EntityGlyphid {
                 } else {
                     vnt.setBlockAllocator(new BlockAllocatorStandard(24));
                     vnt.setBlockProcessor(new BlockProcessorStandard()
-                            .withBlockEffect(new BlockMutatorDebris(net.minecraft.world.level.block.Blocks.LAVA.defaultBlockState()) /* 1.7 ModBlocks.volcanic_lava_block: unported, vanilla lava stands in */)
+                            // 1.7 BlockMutatorDebris(ModBlocks.volcanic_lava_block, 0)
+                            .withBlockEffect(new BlockMutatorDebris(
+                                    () -> com.hbm.blocks.ModFluidNetBlocks.volcanic_lava_block.get().defaultBlockState()))
                             .setNoDrop());
                 }
 

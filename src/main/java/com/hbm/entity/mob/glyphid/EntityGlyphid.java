@@ -45,6 +45,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
@@ -108,6 +109,12 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
     protected boolean hasWaypoint = false;
     protected @Nullable EntityWaypoint taskWaypoint = null;
 
+    /** 1.7 {@code EntityCreature.fleeingTick}: set to 80 by {@link #onBlinded}; while above 0 a wander path is re-rolled each tick. */
+    protected int fleeingTick = 0;
+
+    /** 1.7 {@code EntityLivingBase.getAIMoveSpeed()} for a mob whose {@code isAIEnabled()} is false. */
+    public static final float LEGACY_AI_MOVE_SPEED = 0.1F;
+
     public EntityGlyphid(EntityType<? extends EntityGlyphid> type, Level level) {
         super(type, level);
         applyEntityAttributes();
@@ -137,6 +144,8 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
     }
 
     protected void applyEntityAttributes() {
+        // 1.7 quirk, kept: this runs from the constructor, before any spawner sets the subtype, and is never
+        // re-run, so the radioactive x2 speed / x5 damage below is dead code in 1.7 and here alike
         byte variant = subtype();
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(GlyphidStats.getStats().getGrunt().health);
         getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(
@@ -161,6 +170,21 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
     @Override
     public HumanoidArm getMainArm() {
         return HumanoidArm.RIGHT;
+    }
+
+    /**
+     * 1.7 glyphids run the old (non-task) AI. For such a mob {@code EntityLivingBase.getAIMoveSpeed()} is the
+     * constant 0.1, while {@code EntityCreature} feeds the movementSpeed attribute in as {@code moveForward}, and
+     * {@code moveFlying} normalises any input of length 1 or more. So the attribute (1.0 grunt, 1.5 scout, 0.8
+     * behemoth...) only matters below 1: a scout or Brenda is no faster than a grunt, speed potions do nothing to
+     * most glyphids, slowness does. Modern {@code Mob.setSpeed} uses one number for both, which made the 1.7
+     * attribute value a walk ten times too fast; split it back into the two 1.7 quantities. Water and air movement
+     * come out identical to 1.7 too (0.02 times the normalised input).
+     */
+    @Override
+    public void setSpeed(float speed) {
+        super.setSpeed(LEGACY_AI_MOVE_SPEED);
+        setZza(speed);
     }
 
     @Override
@@ -212,6 +236,8 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
             onBlinded();
         }
 
+        tickFleeing();
+
         if (getCurrentTask() == TASK_FOLLOW) {
 
             if (isAtDestination() && !hasWaypoint) {
@@ -236,8 +262,11 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
             swing(InteractionHand.MAIN_HAND);
         }
 
+        // 1.7 updateEntityActionState: with extended targeting and a target the bug paths to the target (here
+        // MeleeAttackGoal's job) and the task branch is only the else-if, so a waypoint never pulls it off a chase
         if (!hasEffect(MobEffects.BLINDNESS) && getNavigation().isDone()
-                && getCurrentTask() != TASK_IDLE && !isAtDestination()) {
+                && getCurrentTask() != TASK_IDLE && !isAtDestination()
+                && !(getTarget() != null && useExtendedTargeting())) {
 
             if (taskWaypoint != null) {
 
@@ -308,9 +337,28 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
     // 1.7 getCreatureAttribute() == ARTHROPOD for all nine glyphids: data/minecraft/tags/entity_type/arthropod.json
     // (1.20.1 reads the same tag through CompatMonster.getMobType).
 
+    /**
+     * 1.7 {@code EntityCreature.updateEntityActionState}: while {@code fleeingTick} counts down, an old-AI mob picks
+     * a fresh {@code updateWanderPath} every tick (best of ten spots within 6/3/6, darker preferred), so a blinded
+     * glyphid staggers about instead of standing still, and keeps doing so for 79 ticks after the blindness ends.
+     * The glyphid override only wanders while idle; the branch is an else-if behind "has a target and (no path or
+     * 1 in 20)", so a bug with a target still wanders 19 ticks in 20; and it needs {@code entityAge < 100}, a player
+     * within 32 blocks recently, which is the same counter as modern {@code noActionTime}.
+     */
+    private void tickFleeing() {
+        if (fleeingTick <= 0) return;
+        fleeingTick--;
+        if (fleeingTick <= 0 || getCurrentTask() != TASK_IDLE || getNoActionTime() >= 100) return;
+        if (getTarget() != null && random.nextInt(20) == 0) return;
+
+        Vec3 spot = DefaultRandomPos.getPos(this, 6, 3);
+        if (spot != null) dev.golem.core.world.Navigations.navigateTo(getNavigation(), spot.x, spot.y, spot.z, 1.0D);
+    }
+
     public void onBlinded() {
         setTarget(null);
         getNavigation().stop();
+        fleeingTick = 80;
 
         if (getGlyphidScale() >= 1.25) {
             if (tickCount % 20 == 0) {

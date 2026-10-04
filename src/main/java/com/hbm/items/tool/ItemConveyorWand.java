@@ -105,7 +105,7 @@ public class ItemConveyorWand extends CompatItem implements IItemLookOverlay {
         CompoundTag run = run(stack);
         if (run == null) return null;
         return new Run(new BlockPos(Tags.getIntOr(run, "run_x", 0), Tags.getIntOr(run, "run_y", 0), Tags.getIntOr(run, "run_z", 0)),
-                Direction.from3DDataValue(Tags.getIntOr(run, "run_side", 1)), Tags.getIntOr(run, "run_count", 0));
+                com.hbm.util.SavedIds.getEnum(run, "run_side", Direction.UP), Tags.getIntOr(run, "run_count", 0));
     }
 
     private static final String[] RUN_KEYS = {"run_x", "run_y", "run_z", "run_side", "run_count"};
@@ -191,7 +191,7 @@ public class ItemConveyorWand extends CompatItem implements IItemLookOverlay {
             nbt.putInt("run_x", pos.getX());
             nbt.putInt("run_y", pos.getY());
             nbt.putInt("run_z", pos.getZ());
-            nbt.putInt("run_side", side.ordinal());
+            com.hbm.util.SavedIds.putEnum(nbt, "run_side", side);
             nbt.putInt("run_count", budget(player, stack));
             setRun(stack, nbt);
             return InteractionResult.SUCCESS;

@@ -221,11 +221,10 @@ public final class AmmoPressRecipes {
         return new TagStack(ANY_SMOKELESS);
     }
 
+    /** 1.7 {@code new OreDictStack(Fluids.X.getDict(amount))}: any full container of that fluid and amount. */
     private static AStack fluid(String name, int amount) {
-        FluidType type = Fluids.fromName(name);
-        Item container = BuiltInRegistries.ITEM.getOptional(Ids.of("hbm", "fluid_tank")).orElse(null);
-        if (type == Fluids.NONE || !(container instanceof ItemFluidTank tank)) return MISSING;
-        return new ComparableStack(tank.make(type, amount));
+        if (Fluids.fromName(name) == Fluids.NONE) return MISSING;
+        return new com.hbm.inventory.FluidContainerStack(name, amount);
     }
 
     private static AStack silicon() {

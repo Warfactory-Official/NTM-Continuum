@@ -28,14 +28,15 @@ import net.minecraft.world.level.Level;
  * <p>This is intentionally not a Sedna gun. The source weapon stores charge in its own two integer
  * values, reloads by holding right click, and creates one explosive beam per stored charge.
  */
-public final class GunB92 extends CompatItem {
+public final class GunB92 extends dev.golem.core.world.CompatWeaponItem {
 
     private static final String ANIMATION = "b92_animation";
     private static final String ENERGY = "b92_energy";
     private static final Random RANDOM = new Random();
 
     public GunB92(Properties properties) {
-        super(properties.stacksTo(1).rarity(Rarity.UNCOMMON));
+        // 1.7 getItemAttributeModifiers: a +3.5 attack-damage "Weapon modifier"; sword speed is the port's convention.
+        super(properties.stacksTo(1).rarity(Rarity.UNCOMMON), 3.5F, dev.golem.core.world.Tools.SWORD_SPEED);
     }
 
     @Override
@@ -99,12 +100,17 @@ public final class GunB92 extends CompatItem {
             setPower(stack, power);
             if (power > 10) {
                 setPower(stack, 0);
-                EntityNukeExplosionMK5 blast = EntityNukeExplosionMK5.statFac(
-                        level, 50, owner.getX(), owner.getY(), owner.getZ());
-                if (level.addFreshEntity(blast)) blast.startChunkLoading();
-                level.playSound(null, owner.getX(), owner.getY(), owner.getZ(),
-                        SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 100.0F,
-                        level.getRandom().nextFloat() * 0.1F + 0.9F);
+                // 1.7 GunB92: an overcharged B92 sets off a radius-50 F.L.E.I.J.A. field with the rainbow cloud.
+                com.hbm.entity.logic.EntityNukeExplosionMK3 blast = com.hbm.entity.logic.EntityNukeExplosionMK3
+                        .statFacFleija(level, owner.getX(), owner.getY(), owner.getZ(), 50);
+                if (!blast.isRemoved()) {
+                    level.playSound(null, owner.getX(), owner.getY(), owner.getZ(),
+                            SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 100.0F,
+                            level.getRandom().nextFloat() * 0.1F + 0.9F);
+                    level.addFreshEntity(blast);
+                    level.addFreshEntity(com.hbm.entity.effect.EntityCloudFleijaRainbow.statFac(level, 50,
+                            owner.getX(), owner.getY(), owner.getZ()));
+                }
             }
         }
 

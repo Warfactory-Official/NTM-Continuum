@@ -58,9 +58,9 @@ public final class AdvancementCommandGameTests {
         helper.assertTrue(IDS.length == 63, "the tree lost a row: " + IDS.length);
         helper.assertTrue(missing.isEmpty(), "advancements not loaded: " + missing);
         // the root completes on the first tick, so the tab is open for everyone
-        helper.assertTrue(Fluids.ASCHRAB.getID() == HbmAdvancementDeclarations.ASCHRAB_ID,
+        helper.assertTrue(Fluids.ASCHRAB.getRegistryName().equals(HbmAdvancementDeclarations.ASCHRAB_ID),
                 "Taste of Blood icon names fluid " + HbmAdvancementDeclarations.ASCHRAB_ID + " but ASCHRAB is "
-                        + Fluids.ASCHRAB.getID());
+                        + Fluids.ASCHRAB.getRegistryName());
         for (BobmazonOfferFactory.Requirement requirement : BobmazonOfferFactory.Requirement.values()) {
             if (requirement.advancement == null) continue;
             helper.assertTrue(Advancements.isDone(player, requirement.advancement) != null,

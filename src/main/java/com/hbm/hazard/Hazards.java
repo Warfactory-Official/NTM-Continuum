@@ -26,6 +26,7 @@ public final class Hazards {
         com.hbm.items.ModArmorModItems.configure();   // PaA/liquidator suits, gas-mask attachment hazard class
         com.hbm.items.ModArmorSetBItems.configure();  // final armor B: steam/diesel/env suits, masks, jackets
         com.hbm.items.ModArmorSetItems.configure();   // final armor sets A: alloy, cmb, bismuth, euphemium, AJR/AJRO, HEV, Fau, trenchmaster
+        com.hbm.handler.HazmatRegistry.registerHazmats(); // 1.7 hbmRadResist.json override (or its template)
         com.hbm.util.DamageResistanceHandler.init();  // threshold/resistance profiles + damage event seam
         com.hbm.blocks.ModHazardBlocks.initHazards(); // block radiation values (reads block-item RADIATION hazard)
         com.hbm.hazard.TerrainHazards.register(); // nuclear waste blocks, yellowcake/fallout blocks, hot sellafite

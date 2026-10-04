@@ -26,19 +26,24 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Toroidal-convection mushroom-cloud effect entity (<b>Tor</b>oidal Convection Simulation <b>Ex</b>plosion).
- * A faithful port of 1.12.2's {@code EntityNukeTorex}: the entity is invisible server-side (it only ages
- * out at {@link #maxAge}); the whole visual simulation runs <em>client-side</em> in {@link #tick()},
- * spawning thousands of {@link Cloudlet} billboards that the {@code TorexRenderer} draws.
+ * Toroidal-convection mushroom-cloud effect entity (<b>Tor</b>oidal Convection Simulation <b>Ex</b>plosion),
+ * 1.7's {@code EntityNukeTorex}: the entity is invisible server-side (it only ages out at
+ * {@link #getMaxAge}); the visual simulation runs <em>client-side</em> in {@link #tick()}, spawning the
+ * {@link Cloudlet} billboards that {@code TorexRenderer} draws.
  *
  * <p>Cloudlet kinds ({@link TorexType}): STANDARD (the rising torus of convection cells), SHOCK (the
- * ground shockwave ring, first 150 ticks), RING (the collar around the core, first 200 ticks), and
- * CONDENSATION (the Wilson-cloud rings at heights 130/170, gated by biome humidity, first 220 ticks).
+ * ground shockwave ring, first 150 ticks), RING (the collar, first 195 ticks), and CONDENSATION (the two
+ * condensation shells, ticks 195..900 and 300..900).
  *
- * <p>Client-only interactions (the sky flash, the detonation sound, biome humidity) are routed through
+ * <p><b>1.7, not 1.12.2.</b> 1.7 simulates every cloud at the fixed scale 1.5 and maps the cloudlets out
+ * by the synced scale when drawing; the scale is {@code clamp(squirt(r * 0.01) * 1.5, 0.5, 5)} ({@link #scaleFor}). 1.12.2 scaled
+ * the simulation itself by {@code clamp(r * 0.01, 0.25, 5)} and reworked spawning, colours, the shockwave and
+ * the humidity-gated condensation; that version is gone (History section 19ej-1d).
+ *
+ * <p>Client-only interactions (the sky flash, the detonation sound) are routed through
  * {@link TorexClientEffects} so a dedicated server never resolves {@code net.minecraft.client} symbols.
- * The scale, colour type and server animation age ride {@link SynchedEntityData}. Not saved to disk
- * ({@link #shouldBeSaved()}).
+ * The scale, colour type, server animation age and visual seed ride {@link SynchedEntityData}. Not saved to
+ * disk ({@link #shouldBeSaved()}).
  */
 public class EntityNukeTorex extends CompatEntity {
 
@@ -75,27 +80,6 @@ public class EntityNukeTorex extends CompatEntity {
     public static final EntityDataAccessor<Integer> RANDOM_SEED_HIGH = SynchedEntityData.defineId(EntityNukeTorex.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> START_TIME_LOW = SynchedEntityData.defineId(EntityNukeTorex.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> START_TIME_HIGH = SynchedEntityData.defineId(EntityNukeTorex.class, EntityDataSerializers.INT);
-
-    public static final int firstCondenseHeight = 130;
-    public static final int secondCondenseHeight = 170;
-    public static final int blastWaveHeadstart = 5;
-    public static final int maxCloudlets = 20_000;
-
-    // Nuke colors
-    public static final double nr1 = 2.5;
-    public static final double ng1 = 1.3;
-    public static final double nb1 = 0.4;
-    public static final double nr2 = 0.1;
-    public static final double ng2 = 0.075;
-    public static final double nb2 = 0.05;
-
-    // Balefire colors
-    public static final double br1 = 1;
-    public static final double bg1 = 2;
-    public static final double bb1 = 0.5;
-    public static final double br2 = 0.1;
-    public static final double bg2 = 0.1;
-    public static final double bb2 = 0.1;
 
     public double coreHeight = 3;
     public double convectionHeight = 3;
@@ -204,85 +188,111 @@ public class EntityNukeTorex extends CompatEntity {
         if (!level().isClientSide()) this.entityData.set(ANIMATION_AGE, this.tickCount);
     }
 
+    /**
+     * 1.7 EntityNukeTorex.onUpdate, client half. The simulation always runs at a fixed scale of 1.5
+     * ({@code s = cs = 1.5}; 1.7 commented out {@code this.getScale()} there); the synced scale only sets
+     * the lifetime and maps cloudlets out at render time.
+     */
     private void simulateClientTick(boolean playEffects) {
-        double s = this.getScale();
+        double s = 1.5; // 1.7: "1.5; //this.getScale();"
         double cs = 1.5;
-        if (this.tickCount == 1 && !clientScaleInitialized) {
-            this.setScale((float) s);
-            clientScaleInitialized = true;
-        }
+        this.maxAge = getMaxAge();
 
-        if (humidity == -1) humidity = this.entityData.get(HUMIDITY);
         if (lastSpawnY == -1) lastSpawnY = getY() - 3;
+
+        if (playEffects && this.tickCount < 100) TorexClientEffects.skyFlash(level());
 
         int spawnTarget = replaySpawnTarget();
         double moveSpeed = 0.5D;
         if (Math.abs(spawnTarget - lastSpawnY) < moveSpeed) lastSpawnY = spawnTarget;
         else lastSpawnY += moveSpeed * Math.signum(spawnTarget - lastSpawnY);
 
-        double range = (torusWidth - rollerSize) * 0.5;
+        // spawn mush clouds
+        double range = (torusWidth - rollerSize) * 0.25;
         double simSpeed = getSimulationSpeed();
+        int toSpawn = (int) Math.ceil(10 * simSpeed * simSpeed);
         int lifetime = Math.min((this.tickCount * this.tickCount) + 200, maxAge - this.tickCount + 200);
-        int toSpawn = (int) (0.6 * Math.min(Math.max(0, maxCloudlets - cloudlets.size()),
-                Math.ceil(10 * simSpeed * simSpeed * Math.min(1, 1200 / (double) lifetime))));
+
         for (int i = 0; i < toSpawn; i++) {
             double x = getX() + visualRandom.nextGaussian() * range;
             double z = getZ() + visualRandom.nextGaussian() * range;
-            Cloudlet cloud = new Cloudlet(x, lastSpawnY, z,
-                    (float) (visualRandom.nextDouble() * 2D * Math.PI), 0, lifetime);
-            cloud.setScale((float) (StrictMath.sqrt(s) * 3 + this.tickCount * 0.0025 * s),
-                    (float) (StrictMath.sqrt(s) * 3 + this.tickCount * 0.0025 * 6 * cs * s));
+            Cloudlet cloud = new Cloudlet(x, lastSpawnY, z, (float) (visualRandom.nextDouble() * 2D * Math.PI), 0, lifetime);
+            cloud.setScale(1F + this.tickCount * 0.005F * (float) cs, 5F * (float) cs);
             cloudlets.add(cloud);
         }
 
-        if (playEffects && this.tickCount < 120 * s) TorexClientEffects.skyFlash(level());
-
+        // spawn shock clouds
         if (this.tickCount < 150) {
-            int cloudCount = Math.min(this.tickCount * 2, 100);
-            int shockLife = Math.max(400 - this.tickCount * 20, 50);
+            int cloudCount = this.tickCount * 5;
+            int shockLife = Math.max(300 - this.tickCount * 20, 50);
+
             for (int i = 0; i < cloudCount; i++) {
-                double vx = (this.tickCount + visualRandom.nextDouble() * 2) * 1.5;
+                double vx = (this.tickCount * 1.5 + visualRandom.nextDouble()) * 1.5;
                 float rot = (float) (Math.PI * 2 * visualRandom.nextDouble());
-                double cos = StrictMath.cos(rot);
-                double sin = StrictMath.sin(rot);
-                double rx = vx * cos;
-                double rz = -vx * sin;
-                this.cloudlets.add(new Cloudlet(rx + getX(), replaySurfaceHeight(
-                        (int) (rx + getX()) + 1, (int) (rz + getZ())), rz + getZ(), rot, 0,
-                        shockLife, TorexType.SHOCK).setScale((float) s * 5F, (float) s * 2F)
-                        .setMotion(Mth.clamp(0.25 * this.tickCount - 5, 0, 1)));
+                double[] vec = rotateAroundY(vx, 0, 0, rot);
+                this.cloudlets.add(new Cloudlet(vec[0] + getX(),
+                        replaySurfaceHeight((int) (vec[0] + getX()) + 1, (int) (vec[2] + getZ())),
+                        vec[2] + getZ(), rot, 0, shockLife, TorexType.SHOCK)
+                        .setScale(7F, 2F)
+                        .setMotion(this.tickCount > 15 ? 0.75 : 0));
             }
+
             if (playEffects && !didPlaySound) didPlaySound = TorexClientEffects.tryPlayDetonationSound(this);
         }
 
-        if (this.tickCount < 200) {
+        // spawn ring clouds
+        if (this.tickCount < 130 * s) {
             lifetime *= s;
             for (int i = 0; i < 2; i++) {
                 Cloudlet cloud = new Cloudlet(getX(), getY() + coreHeight, getZ(),
                         (float) (visualRandom.nextDouble() * 2D * Math.PI), 0, lifetime, TorexType.RING);
-                cloud.setScale((float) (StrictMath.sqrt(s) * cs + this.tickCount * 0.0015 * s),
-                        (float) (StrictMath.sqrt(s) * cs + this.tickCount * 0.0015 * 6 * cs * s));
+                cloud.setScale(1F + this.tickCount * 0.0025F * (float) (cs * cs), 3F * (float) (cs * cs));
                 cloudlets.add(cloud);
             }
         }
 
-        if (this.humidity > 0 && this.tickCount < 220) {
-            spawnCondensationClouds(this.tickCount, this.humidity, firstCondenseHeight, 80, 4, s, cs);
-            spawnCondensationClouds(this.tickCount, this.humidity, secondCondenseHeight, 80, 2, s, cs);
+        // spawn condensation clouds
+        if (this.tickCount > 130 * s && this.tickCount < 600 * s) {
+            spawnCondensation(5, 1, -5, s, cs);
+        }
+        if (this.tickCount > 200 * s && this.tickCount < 600 * s) {
+            spawnCondensation(3, 0.5, 25, cs, cs);
         }
 
-        for (int i = cloudlets.size() - 1; i >= 0; i--) {
-            Cloudlet cloud = cloudlets.get(i);
-            if (cloud.isDead) cloudlets.remove(i);
-            else cloud.update();
+        for (Cloudlet cloud : cloudlets) {
+            cloud.update();
         }
-
-        coreHeight += 0.15;
-        torusWidth += 0.05;
+        coreHeight += 0.15 / s;
+        torusWidth += 0.05 / s;
         rollerSize = torusWidth * 0.35;
         convectionHeight = coreHeight + rollerSize;
-        int maxHeat = (int) (50 * s * s);
-        heat = maxHeat - StrictMath.pow((maxHeat * this.tickCount) / maxAge, 0.6);
+
+        int maxHeat = (int) (50 * cs);
+        // 1.7: Math.pow((maxHeat * ticksExisted) / maxAge, 1), an INT division, so the heat falls in steps
+        heat = maxHeat - Math.pow((maxHeat * this.tickCount) / maxAge, 1);
+
+        cloudlets.removeIf(x -> x.isDead);
+    }
+
+    /**
+     * 1.7's two condensation shells: 20 x 4 cloudlets per tick on a ring {@code rollerBase} roller sizes
+     * (plus up to {@code rollerRandom}) outside the torus, tilted pi/45 per row, {@code yOffset} above the
+     * core head with each row {@code rowStep} higher.
+     */
+    private void spawnCondensation(double rollerBase, double rollerRandom, double yOffset, double rowStep, double cs) {
+        for (int i = 0; i < 20; i++) {
+            for (int j = 0; j < 4; j++) {
+                float angle = (float) (Math.PI * 2 * visualRandom.nextDouble());
+                double[] vec = rotateAroundZ(torusWidth + rollerSize * (rollerBase + visualRandom.nextDouble() * rollerRandom),
+                        0, 0, (float) (Math.PI / 45 * j));
+                vec = rotateAroundY(vec[0], vec[1], vec[2], angle);
+                Cloudlet cloud = new Cloudlet(getX() + vec[0], getY() + coreHeight + yOffset + j * rowStep,
+                        getZ() + vec[2], angle, 0,
+                        (int) ((20 + this.tickCount / 10) * (1 + visualRandom.nextDouble() * 0.1)), TorexType.CONDENSATION);
+                cloud.setScale(0.125F * (float) (cs), 3F * (float) (cs));
+                cloudlets.add(cloud);
+            }
+        }
     }
 
     private int replaySpawnTarget() {
@@ -520,44 +530,21 @@ public class EntityNukeTorex extends CompatEntity {
         return (hash ^ this.entityData.get(START_TIME_HIGH)) * 0x100000001b3L;
     }
 
-    public void spawnCondensationClouds(int age, float humidity, int height, int count, int spreadAngle, double s, double cs) {
-        if ((getY() + age) > height) {
-
-            for (int i = 0; i < (int) (5 * humidity * count / (double) spreadAngle); i++) {
-                for (int j = 1; j < spreadAngle; j++) {
-                    float angle = (float) (Math.PI * 2 * visualRandom.nextDouble());
-                    // vec = (0, age, 0) rotated around Z then around Y
-                    double vy = age;
-                    double vx = 0;
-                    float zRot = (float) StrictMath.acos((height - getY()) / (age)) + (float) StrictMath.toRadians(humidity * humidity * 90 * j * (0.1 * visualRandom.nextDouble() - 0.05));
-                    // rotateAroundZ(zRot): x' = x*cos + y*sin ; y' = y*cos - x*sin
-                    double zc = StrictMath.cos(zRot);
-                    double zs = StrictMath.sin(zRot);
-                    double rx = vx * zc + vy * zs;
-                    double ry = vy * zc - vx * zs;
-                    double rz = 0;
-                    // rotateAroundY(angle): x' = x*cos + z*sin ; z' = z*cos - x*sin
-                    double yc = StrictMath.cos(angle);
-                    double ys = StrictMath.sin(angle);
-                    double fx = rx * yc + rz * ys;
-                    double fz = rz * yc - rx * ys;
-                    Cloudlet cloud = new Cloudlet(getX() + fx, getY() + ry, getZ() + fz, angle, 0, (int) ((20 + age / 10) * (1 + visualRandom.nextDouble() * 0.1)), TorexType.CONDENSATION);
-                    cloud.setScale(3F * (float) (cs * s), 4F * (float) (cs * s));
-                    cloudlets.add(cloud);
-                }
-            }
-        }
-    }
-
+    /**
+     * 1.7 setScale also rescaled the geometry by {@code scale / 1.5}, but only on the side that called it:
+     * the server, whose geometry nothing reads. The client simulation never rescales (its tick-1
+     * {@code setScale(1.5)} is a no-op), so here only the synced value and the lifetime change.
+     */
     public EntityNukeTorex setScale(float scale) {
         if (!level().isClientSide())
             this.entityData.set(SCALE, scale);
-        this.coreHeight = this.coreHeight * scale;
-        this.convectionHeight = this.convectionHeight * scale;
-        this.torusWidth = this.torusWidth * scale;
-        this.rollerSize = this.rollerSize * scale;
         this.maxAge = (int) (45 * 20 * scale);
         return this;
+    }
+
+    /** 1.7 getMaxAge: 45 seconds per unit of synced scale. */
+    public int getMaxAge() {
+        return (int) (45 * 20 * getScale());
     }
 
     public EntityNukeTorex setType(int type) {
@@ -574,35 +561,56 @@ public class EntityNukeTorex extends CompatEntity {
         return this.entityData.get(TYPE);
     }
 
+    /** 1.7 getSimulationSpeed: full speed for a quarter of the life, slowing to a stop at half. */
     public double getSimulationSpeed() {
 
-        int simSlow = maxAge / 4;
+        int lifetime = getMaxAge();
+        int simSlow = lifetime / 4;
+        int simStop = lifetime / 2;
         int life = this.tickCount;
 
-        if (life > maxAge) {
+        if (life > simStop) {
             return 0D;
         }
 
         if (life > simSlow) {
-            return 1D - ((double) (life - simSlow) / (double) (maxAge - simSlow));
+            return 1D - ((double) (life - simSlow) / (double) (simStop - simSlow));
         }
 
         return 1.0D;
     }
 
+    /** 1.7 getGreying: 1 until three quarters of the life, then rising to 2. */
+    public double getGreying() {
+
+        int lifetime = getMaxAge();
+        int greying = lifetime * 3 / 4;
+
+        if (this.tickCount > greying) {
+            return 1 + ((double) (this.tickCount - greying) / (double) (lifetime - greying));
+        }
+
+        return 1D;
+    }
+
     public float getAlpha() {
 
-        int fadeOut = maxAge * 3 / 4;
+        int lifetime = getMaxAge();
+        int fadeOut = lifetime * 3 / 4;
         int life = this.tickCount;
 
         if (life > fadeOut) {
-            float fac = (float) (life - fadeOut) / (float) (maxAge - fadeOut);
+            float fac = (float) (life - fadeOut) / (float) (lifetime - fadeOut);
             return 1F - fac;
         }
 
         return 1.0F;
     }
 
+    /**
+     * 1.7 {@code EntityNukeTorex.Cloudlet}. Positions live in the fixed scale-1.5 simulation space; the
+     * renderer maps them out by the synced scale ({@link #getInterpX}), except the ground shockwave.
+     */
     public class Cloudlet {
 
         public double posX;
@@ -628,12 +636,10 @@ public class EntityNukeTorex extends CompatEntity {
         public double prevColorB;
         public double renderSortDistanceSq;
         public TorexType type;
-        public float startingScale = 3F;
+        public float startingScale = 1F;
         public float growingScale = 5F;
         private long creationOrdinal;
-        private double computedMotionX;
-        private double computedMotionY;
-        private double computedMotionZ;
+        private double motionMult = 1F;
 
         public Cloudlet(double posX, double posY, double posZ, float angle, int age, int maxAge) {
             this(posX, posY, posZ, angle, age, maxAge, TorexType.STANDARD);
@@ -652,6 +658,10 @@ public class EntityNukeTorex extends CompatEntity {
             this.creationOrdinal = nextCloudletOrdinal++;
 
             this.updateColor();
+            // 1.7 leaves prevColor null until the first update; the renderer never sees a cloudlet before it
+            this.prevColorR = this.colorR;
+            this.prevColorG = this.colorG;
+            this.prevColorB = this.colorB;
         }
 
         private Cloudlet(CloudletState state) {
@@ -687,13 +697,6 @@ public class EntityNukeTorex extends CompatEntity {
             return creationOrdinal;
         }
 
-        private double motionMult = 1F;
-        private double motionConvectionMult = 0.5F;
-        private double motionLiftMult = 0.625F;
-        private double motionRingMult = 0.5F;
-        private double motionCondensationMult = 1F;
-        private double motionShockwaveMult = 1F;
-
         private void update() {
             age++;
 
@@ -707,35 +710,34 @@ public class EntityNukeTorex extends CompatEntity {
 
             double simDeltaX = EntityNukeTorex.this.getX() - this.posX;
             double simDeltaZ = EntityNukeTorex.this.getZ() - this.posZ;
-            double simPosX = EntityNukeTorex.this.getX() + StrictMath.sqrt(simDeltaX * simDeltaX + simDeltaZ * simDeltaZ);
+            double simPosX = EntityNukeTorex.this.getX() + length(simDeltaX, 0D, simDeltaZ);
+            double simPosZ = EntityNukeTorex.this.getZ();
 
             if (this.type == TorexType.STANDARD) {
-                getConvectionMotion(simPosX);
-                double convectionX = this.computedMotionX;
-                double convectionY = this.computedMotionY;
-                double convectionZ = this.computedMotionZ;
-                getLiftMotion(simPosX);
+                double[] convection = getConvectionMotion(simPosX, simPosZ);
+                double[] lift = getLiftMotion(simPosX);
 
                 double factor = Mth.clamp((this.posY - EntityNukeTorex.this.getY()) / EntityNukeTorex.this.coreHeight, 0, 1);
-                double inverseFactor = 1D - factor;
-                this.motionX = convectionX * factor + this.computedMotionX * inverseFactor;
-                this.motionY = convectionY * factor + this.computedMotionY * inverseFactor;
-                this.motionZ = convectionZ * factor + this.computedMotionZ * inverseFactor;
-            } else if (this.type == TorexType.RING) {
-                getRingMotion(simPosX);
-                this.motionX = this.computedMotionX;
-                this.motionY = this.computedMotionY;
-                this.motionZ = this.computedMotionZ;
-            } else if (this.type == TorexType.CONDENSATION) {
-                getCondensationMotion();
-                this.motionX = this.computedMotionX;
-                this.motionY = this.computedMotionY;
-                this.motionZ = this.computedMotionZ;
+                this.motionX = convection[0] * factor + lift[0] * (1D - factor);
+                this.motionY = convection[1] * factor + lift[1] * (1D - factor);
+                this.motionZ = convection[2] * factor + lift[2] * (1D - factor);
             } else if (this.type == TorexType.SHOCK) {
-                getShockwaveMotion();
-                this.motionX = this.computedMotionX;
-                this.motionY = this.computedMotionY;
-                this.motionZ = this.computedMotionZ;
+                double factor = Mth.clamp((this.posY - EntityNukeTorex.this.getY()) / EntityNukeTorex.this.coreHeight, 0, 1);
+                double[] motion = rotateAroundY(1, 0, 0, this.angle);
+                this.motionX = motion[0] * factor;
+                this.motionY = motion[1] * factor;
+                this.motionZ = motion[2] * factor;
+            } else if (this.type == TorexType.RING) {
+                double[] motion = getRingMotion(simPosX, simPosZ);
+                this.motionX = motion[0];
+                this.motionY = motion[1];
+                this.motionZ = motion[2];
+            } else if (this.type == TorexType.CONDENSATION) {
+                // 1.7 getCondensationMotion: the horizontal offset, scaled (not normalized) by 0.00002 * age
+                double speed = 0.00002 * EntityNukeTorex.this.tickCount;
+                this.motionX = (posX - EntityNukeTorex.this.getX()) * speed;
+                this.motionY = 0;
+                this.motionZ = (posZ - EntityNukeTorex.this.getZ()) * speed;
             }
 
             double mult = this.motionMult * getSimulationSpeed();
@@ -747,113 +749,70 @@ public class EntityNukeTorex extends CompatEntity {
             this.updateColor();
         }
 
-        private void getCondensationMotion() {
-            double speed = motionCondensationMult * EntityNukeTorex.this.getScale() * 0.125D;
-            setNormalizedMotion(this.posX - EntityNukeTorex.this.getX(), 0D, this.posZ - EntityNukeTorex.this.getZ(), speed);
+        /** 1.7 getRingMotion: steer toward the torus' half-height ring; beyond twice the torus width, rest. */
+        private double[] getRingMotion(double simPosX, double simPosZ) {
+
+            if (simPosX > EntityNukeTorex.this.getX() + torusWidth * 2) return new double[3];
+
+            double torusX = EntityNukeTorex.this.getX() + torusWidth;
+            double torusY = EntityNukeTorex.this.getY() + coreHeight * 0.5;
+            double torusZ = EntityNukeTorex.this.getZ();
+
+            double[] motion = torusTarget(torusX, torusY, torusZ, simPosX, simPosZ,
+                    EntityNukeTorex.this.rollerSize * this.rangeMod * 0.25);
+            // 1.7 scales by 0.001 and then normalizes, so only the direction survives
+            motion = normalize(motion[0] * 0.001D, motion[1] * 0.001D, motion[2] * 0.001D);
+            return rotateAroundY(motion[0], motion[1], motion[2], this.angle);
         }
 
-        private void getShockwaveMotion() {
-            double speed = motionShockwaveMult * EntityNukeTorex.this.getScale() * 0.25D;
-            setNormalizedMotion(this.posX - EntityNukeTorex.this.getX(), 0D, this.posZ - EntityNukeTorex.this.getZ(), speed);
+        /** 1.7 getConvectionMotion, simulated on the X/Y plane and rotated back by the cloudlet's angle. */
+        private double[] getConvectionMotion(double simPosX, double simPosZ) {
+
+            double torusX = EntityNukeTorex.this.getX() + torusWidth;
+            double torusY = EntityNukeTorex.this.getY() + coreHeight;
+            double torusZ = EntityNukeTorex.this.getZ();
+
+            double[] motion = torusTarget(torusX, torusY, torusZ, simPosX, simPosZ,
+                    EntityNukeTorex.this.rollerSize * this.rangeMod);
+            motion = normalize(motion[0], motion[1], motion[2]);
+            return rotateAroundY(motion[0], motion[1], motion[2], this.angle);
         }
 
-        private void getRingMotion(double simPosX) {
+        /**
+         * The shared middle of 1.7's two torus motions: the vector from the cloudlet to the point on the
+         * roller's perimeter it is steering for. {@code rot} is {@code -delta / dist}, divided rather than
+         * normalized, exactly as 1.7.
+         */
+        private double[] torusTarget(double torusX, double torusY, double torusZ, double simPosX, double simPosZ,
+                                     double roller) {
+            double deltaX = torusX - simPosX;
+            double deltaY = torusY - this.posY;
+            double deltaZ = torusZ - simPosZ;
 
-            if (simPosX > EntityNukeTorex.this.getX() + torusWidth * 2) {
-                setComputedMotion(0D, 0D, 0D);
-                return;
-            }
+            double dist = length(deltaX, deltaY, deltaZ) / roller - 1D;
 
-            double torusPosX = EntityNukeTorex.this.getX() + torusWidth;
-            double torusPosY = EntityNukeTorex.this.getY() + coreHeight * 0.5D;
+            double func = 1D - Math.pow(Math.E, -dist); // [0;1]
+            float angle = (float) (func * Math.PI * 0.5D); // [0;90 degrees]
 
-            double deltaX = torusPosX - simPosX;
-            double deltaY = torusPosY - this.posY;
+            double[] rot = rotateAroundZ(-deltaX / dist, -deltaY / dist, -deltaZ / dist, angle);
 
-            double roller = EntityNukeTorex.this.rollerSize * this.rangeMod * 0.25D;
-            double dist = StrictMath.sqrt(deltaX * deltaX + deltaY * deltaY) / roller - 1D;
-
-            double func = 1D - StrictMath.exp(-dist);
-            float angle = (float) (func * Math.PI * 0.5D); // [0;90°]
-
-            double rotX = -deltaX / dist;
-            double rotY = -deltaY / dist;
-            float sin = Mth.sin(angle);
-            float cos = Mth.cos(angle);
-            double rotatedX = rotX * cos + rotY * sin;
-            double rotatedY = rotY * cos - rotX * sin;
-
-            setNormalizedMotion(torusPosX + rotatedX - simPosX, torusPosY + rotatedY - this.posY, 0D, motionRingMult * 0.5D);
-            rotateComputedMotionAroundY();
+            return new double[] {
+                    torusX + rot[0] - simPosX,
+                    torusY + rot[1] - this.posY,
+                    torusZ + rot[2] - simPosZ};
         }
 
-        /* simulated on a 2D-plane along the X/Y axis */
-        private void getConvectionMotion(double simPosX) {
+        /** 1.7 getLiftMotion: straight at the convection point, fading out past the torus. */
+        private double[] getLiftMotion(double simPosX) {
+            double scale = Mth.clamp(1D - (simPosX - (EntityNukeTorex.this.getX() + torusWidth)), 0, 1);
 
-            if (simPosX > EntityNukeTorex.this.getX() + torusWidth * 2) {
-                setComputedMotion(0D, 0D, 0D);
-                return;
-            }
-
-            double torusPosX = EntityNukeTorex.this.getX() + torusWidth;
-            double torusPosY = EntityNukeTorex.this.getY() + coreHeight;
-
-            double deltaX = torusPosX - simPosX;
-            double deltaY = torusPosY - this.posY;
-
-            double roller = EntityNukeTorex.this.rollerSize * this.rangeMod;
-            double dist = StrictMath.sqrt(deltaX * deltaX + deltaY * deltaY) / roller - 1D;
-
-            double func = 1D - StrictMath.exp(-dist);
-            float angle = (float) (func * Math.PI * 0.5D); // [0;90°]
-
-            double rotX = -deltaX / dist;
-            double rotY = -deltaY / dist;
-            float sin = Mth.sin(angle);
-            float cos = Mth.cos(angle);
-            double rotatedX = rotX * cos + rotY * sin;
-            double rotatedY = rotY * cos - rotX * sin;
-
-            setNormalizedMotion(torusPosX + rotatedX - simPosX, torusPosY + rotatedY - this.posY, 0D, motionConvectionMult);
-            rotateComputedMotionAroundY();
-        }
-
-        private void getLiftMotion(double simPosX) {
-            double scale = Mth.clamp(1D - (simPosX - (EntityNukeTorex.this.getX() + torusWidth)), 0, 1) * motionLiftMult;
-
-            setNormalizedMotion(
-                    EntityNukeTorex.this.getX() - this.posX,
+            double[] motion = normalize(EntityNukeTorex.this.getX() - this.posX,
                     (EntityNukeTorex.this.getY() + convectionHeight) - this.posY,
-                    EntityNukeTorex.this.getZ() - this.posZ,
-                    scale);
+                    EntityNukeTorex.this.getZ() - this.posZ);
+            return new double[] {motion[0] * scale, motion[1] * scale, motion[2] * scale};
         }
 
-        private void setComputedMotion(double x, double y, double z) {
-            this.computedMotionX = x;
-            this.computedMotionY = y;
-            this.computedMotionZ = z;
-        }
-
-        private void setNormalizedMotion(double x, double y, double z, double speed) {
-            double lengthSq = x * x + y * y + z * z;
-            if (lengthSq < 1.0E-8D) {
-                setComputedMotion(0D, 0D, 0D);
-                return;
-            }
-
-            double scale = speed / StrictMath.sqrt(lengthSq);
-            setComputedMotion(x * scale, y * scale, z * scale);
-        }
-
-        private void rotateComputedMotionAroundY() {
-            float cos = Mth.cos(this.angle);
-            float sin = Mth.sin(this.angle);
-            double motionX = this.computedMotionX;
-            double motionZ = this.computedMotionZ;
-            this.computedMotionX = motionX * cos + motionZ * sin;
-            this.computedMotionZ = motionZ * cos - motionX * sin;
-        }
-
+        /** 1.7 updateColor: the heat-scaled distance to the core head, as orange or balefire green. */
         private void updateColor() {
             this.prevColorR = this.colorR;
             this.prevColorG = this.colorG;
@@ -868,21 +827,49 @@ public class EntityNukeTorex extends CompatEntity {
             double distZ = exZ - posZ;
 
             double distSq = distX * distX + distY * distY + distZ * distZ;
-            distSq /= this.type == TorexType.SHOCK ? EntityNukeTorex.this.heat * 3 : EntityNukeTorex.this.heat;
+            distSq /= EntityNukeTorex.this.heat;
+            double dist = Math.sqrt(distSq);
 
-            double col = 2D / Math.max(distSq, 1); // col goes from 2-0
+            dist = Math.max(dist, 1);
+            double col = 2D / dist;
 
-            byte type = EntityNukeTorex.this.getTorexType();
-            if (type == 0) {
-                this.colorR = nr2 + (nr1 - nr2) * col;
-                this.colorG = ng2 + (ng1 - ng2) * col;
-                this.colorB = nb2 + (nb1 - nb2) * col;
-                return;
+            if (EntityNukeTorex.this.getTorexType() == 1) {
+                this.colorR = Math.max(col * 1, 0.25);
+                this.colorG = Math.max(col * 2, 0.25);
+                this.colorB = Math.max(col * 0.5, 0.25);
+            } else {
+                this.colorR = Math.max(col * 2, 0.25);
+                this.colorG = Math.max(col * 1.5, 0.25);
+                this.colorB = Math.max(col * 0.5, 0.25);
             }
+        }
 
-            this.colorR = br2 + (br1 - br2) * col;
-            this.colorG = bg2 + (bg1 - bg2) * col;
-            this.colorB = bb2 + (bb1 - bb2) * col;
+        /** 1.7 getInterpPos: simulation space mapped out by the synced scale, the shockwave excepted. */
+        public double getInterpX(float interp) {
+            return mapOut(prevPosX + (posX - prevPosX) * interp, EntityNukeTorex.this.getX());
+        }
+
+        public double getInterpY(float interp) {
+            return mapOut(prevPosY + (posY - prevPosY) * interp, EntityNukeTorex.this.getY());
+        }
+
+        public double getInterpZ(float interp) {
+            return mapOut(prevPosZ + (posZ - prevPosZ) * interp, EntityNukeTorex.this.getZ());
+        }
+
+        private double mapOut(double base, double origin) {
+            if (this.type == TorexType.SHOCK) return base; // 1.7: rescaling would move the ground ring
+            return (base - origin) * (float) EntityNukeTorex.this.getScale() + origin;
+        }
+
+        /** 1.7 getInterpColor, one channel: white condensation, otherwise colour times the greying ramp. */
+        public double getInterpColor(int channel, float interp) {
+            if (this.type == TorexType.CONDENSATION) return 1D;
+            double greying = EntityNukeTorex.this.getGreying();
+            if (this.type == TorexType.RING) greying += 1;
+            double prev = channel == 0 ? prevColorR : channel == 1 ? prevColorG : prevColorB;
+            double now = channel == 0 ? colorR : channel == 1 ? colorG : colorB;
+            return (prev + (now - prev) * interp) * greying;
         }
 
         public float getAlpha() {
@@ -891,8 +878,11 @@ public class EntityNukeTorex extends CompatEntity {
             return Mth.clamp(alpha, 0.0001F, 1F);
         }
 
+        /** 1.7 getScale: grows over the cloudlet's life, times the synced scale except for the shockwave. */
         public float getScale() {
-            return startingScale + ((float) age / (float) cloudletLife) * growingScale;
+            float base = startingScale + ((float) age / (float) cloudletLife) * growingScale;
+            if (this.type != TorexType.SHOCK) base *= (float) EntityNukeTorex.this.getScale();
+            return base;
         }
 
         public Cloudlet setScale(float start, float grow) {
@@ -907,6 +897,31 @@ public class EntityNukeTorex extends CompatEntity {
         }
     }
 
+    /** 1.7 Vec3.rotateAroundY (MathHelper float trig). */
+    private static double[] rotateAroundY(double x, double y, double z, float angle) {
+        float cos = Mth.cos(angle);
+        float sin = Mth.sin(angle);
+        return new double[] {x * cos + z * sin, y, z * cos - x * sin};
+    }
+
+    /** 1.7 Vec3.rotateAroundZ (MathHelper float trig). */
+    private static double[] rotateAroundZ(double x, double y, double z, float angle) {
+        float cos = Mth.cos(angle);
+        float sin = Mth.sin(angle);
+        return new double[] {x * cos + y * sin, y * cos - x * sin, z};
+    }
+
+    /** 1.7 Vec3.lengthVector: MathHelper.sqrt_double, a FLOAT square root. */
+    private static double length(double x, double y, double z) {
+        return (double) (float) Math.sqrt(x * x + y * y + z * z);
+    }
+
+    /** 1.7 Vec3.normalize: the zero vector below a length of 1e-4, float square root. */
+    private static double[] normalize(double x, double y, double z) {
+        double length = length(x, y, z);
+        return length < 1.0E-4D ? new double[3] : new double[] {x / length, y / length, z / length};
+    }
+
     public enum TorexType {
         STANDARD,
         RING,
@@ -914,9 +929,22 @@ public class EntityNukeTorex extends CompatEntity {
         SHOCK
     }
 
+    /**
+     * 1.7 statFac: {@code clamp((float) squirt(r * 0.01) * 1.5F, 0.5F, 5F)} with BobMathUtil.squirt, a
+     * smoothed square root ({@code sqrt(x + 1 / (x + 2)^2) - 1 / (x + 2)}): 1.081 for r = 100.
+     */
+    public static float scaleFor(float radius) {
+        return Mth.clamp((float) squirt(radius * 0.01) * 1.5F, 0.5F, 5F);
+    }
+
+    /** 1.7 BobMathUtil.squirt. */
+    public static double squirt(double x) {
+        return Math.sqrt(x + 1D / ((x + 2D) * (x + 2D))) - 1D / (x + 2D);
+    }
+
     /** Builds (but does not spawn) a standard Torex; the caller adds it to the level. */
     public static EntityNukeTorex statFac(Level level, double x, double y, double z, float scale) {
-        EntityNukeTorex torex = new EntityNukeTorex(ModEntities.NUKE_TOREX.get(), level).setScale(Mth.clamp(scale * 0.01F, 0.25F, 5F));
+        EntityNukeTorex torex = new EntityNukeTorex(ModEntities.NUKE_TOREX.get(), level).setScale(scaleFor(scale));
         torex.setPos(x, y, z);
         if (!level.isClientSide()) {
             torex.captureEnvironment(level, x, y, z);
@@ -927,7 +955,18 @@ public class EntityNukeTorex extends CompatEntity {
 
     /** Builds (but does not spawn) a balefire Torex; the caller adds it to the level. */
     public static EntityNukeTorex statFacBale(Level level, double x, double y, double z, float scale) {
-        EntityNukeTorex torex = new EntityNukeTorex(ModEntities.NUKE_TOREX.get(), level).setScale(Mth.clamp(scale * 0.01F, 0.25F, 5F)).setType(1);
+        EntityNukeTorex torex = new EntityNukeTorex(ModEntities.NUKE_TOREX.get(), level).setScale(scaleFor(scale)).setType(1);
+        torex.setPos(x, y, z);
+        if (!level.isClientSide()) {
+            torex.captureEnvironment(level, x, y, z);
+            torex.setVisualSeed(level.getRandom().nextLong());
+        }
+        return torex;
+    }
+
+    /** Builds (but does not spawn) a Torex with an exact synced scale, as 1.7's hand-built Little Boy cloud. */
+    public static EntityNukeTorex statFacExact(Level level, double x, double y, double z, float scale, int type) {
+        EntityNukeTorex torex = new EntityNukeTorex(ModEntities.NUKE_TOREX.get(), level).setScale(scale).setType(type);
         torex.setPos(x, y, z);
         if (!level.isClientSide()) {
             torex.captureEnvironment(level, x, y, z);

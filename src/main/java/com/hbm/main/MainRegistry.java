@@ -46,7 +46,35 @@ public final class MainRegistry {
         } while (polaroidID == 4 || polaroidID == 9);
     }
 
+    /** {@code config/hbm.cfg}, 1.7's {@code event.getSuggestedConfigurationFile()}. */
+    public static java.nio.file.Path configFile() {
+        return dev.golem.core.platform.ConfigFiles.configDir().resolve("hbm.cfg");
+    }
+
+    /**
+     * 1.7 {@code MainRegistry.loadConfig}: every {@code loadFromConfig} in 1.7's order, then {@code config.save()}, which
+     * writes the file with any missing key at its default. Runs first in {@link #bootstrap}, before anything is
+     * registered, as 1.7's ran in pre-init (History §19ej-8).
+     */
+    public static void loadConfig(com.hbm.config.Configuration config) {
+        config.load();
+
+        com.hbm.config.GeneralConfig.loadFromConfig(config);
+        com.hbm.config.WorldConfig.loadFromConfig(config);
+        com.hbm.config.MachineConfig.loadFromConfig(config);
+        com.hbm.config.BombConfig.loadFromConfig(config);
+        com.hbm.config.RadiationConfig.loadFromConfig(config);
+        com.hbm.config.PotionConfig.loadFromConfig(config);
+        com.hbm.config.ToolConfig.loadFromConfig(config);
+        com.hbm.config.WeaponConfig.loadFromConfig(config);
+        com.hbm.config.MobConfig.loadFromConfig(config);
+        com.hbm.config.StructureConfig.loadFromConfig(config);
+
+        config.save();
+    }
+
     public static void bootstrap() {
+        loadConfig(new com.hbm.config.Configuration(configFile()));
         // The fluid registry is a plain static map (not an MC registry); populate it first so any
         // fluid tile/recipe that references Fluids.* during registration finds the types ready.
         rollPolaroid();
@@ -59,6 +87,7 @@ public final class MainRegistry {
         com.hbm.lib.ModDamageTypes.declare();
         com.hbm.world.gen.ModBiomeModifiers.declare();
         com.hbm.world.gen.LegacyDungeonDeclarations.declare(); // WG-D: legacy dungeon structures + scattered-block features (before BiomeFeatures.install)
+        com.hbm.entity.ModMobSpawns.init(); // 1.7 EntityMappings natural spawns + placements (§19ej-7; before BiomeFeatures.install)
         dev.golem.core.world.BiomeFeatures.install(); // Fabric: the same biome modifiers through BiomeModifications (no-op elsewhere)
         com.hbm.inventory.recipes.ModCraftingRecipes.declare();
         com.hbm.blocks.machine.ModArmorTableBlocks.init();
@@ -137,6 +166,7 @@ public final class MainRegistry {
         com.hbm.items.ModBatterySCItems.init(); // 1.7 ItemBatterySC radiovoltaic batteries (battery_sc_<variant>)
         com.hbm.items.ModRtgContent.init(); // RTG pellet state, block entity, and menu registrations
         com.hbm.items.ModChemicalDyeItems.init(); // flattened chemical-dye and crayon variants
+        com.hbm.items.ModSpawnEggs.init(); // spawn eggs for the 29 1.7 addMob mobs (§19ej-7)
         com.hbm.items.ModStorageDrumItems.init();
         com.hbm.items.ModFoodItems.init();
         com.hbm.items.ModConsumableTailItems.init();
@@ -200,6 +230,10 @@ public final class MainRegistry {
         ModTabs.init();
         com.hbm.handler.neutron.NeutronLifecycle.init();
         com.hbm.handler.pollution.PollutionLifecycle.init();   // soot/poison field: diffusion, decay and blight
+        com.hbm.main.ModEventHandlerMobs.init();     // 1.7 ModEventHandler mob death drops, decorateMob, addAITasks (§19ej-7)
+        com.hbm.main.ModEventHandlerImpact.init();   // Tom impact aftermath: dust/fire decay, burning, spawns (§19ej-6)
+        com.hbm.handler.ImpactSky.register();         // Tom impact sky darkening (1.7 WorldProviderNTM)
+        com.hbm.handler.radiation.RadiationFog.init(); // 1.7 radFog, read from the chunk radiation (§19ej-6)
         com.hbm.world.chunk.ChunkLoadingManager.init();   // forced-chunk bookkeeping + restart reconciliation
         dev.golem.core.platform.Lifecycle.onLevelUnload((server, level) -> com.hbm.handler.JetpackHandler.clear(level));
         dev.golem.core.platform.Lifecycle.onServerTick(server ->

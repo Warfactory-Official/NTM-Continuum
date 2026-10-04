@@ -50,14 +50,29 @@ public class TileEntityStirling extends TileEntityMachineBase implements IEnergy
             if (stirling.warnCooldown > 0) stirling.warnCooldown--;
             if (stirling.heat > stirling.maxHeat() && !stirling.isCreative()) {
                 stirling.overspeed++;
-                // The legacy warning sound and flying EntityCog are deferred; the destructive threshold
-                // and the missing-gear state remain identical until that entity is ported.
+
+                if (stirling.overspeed > 60 && stirling.warnCooldown == 0) {
+                    stirling.warnCooldown = 100;
+                    level.playSound(null, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D,
+                            com.hbm.sound.ModSounds.WARN_OVERSPEED.get(), net.minecraft.sounds.SoundSource.BLOCKS, 2.0F, 1.0F);
+                }
+
                 if (stirling.overspeed > overspeedLimit) {
                     stirling.hasCog = false;
                     level.explode(null, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D,
                             5F, false, Level.ExplosionInteraction.NONE);
+
+                    // 1.7: the gear flies off sideways (facing rotated DOWN) and upward with the excess heat.
+                    int orientation = com.hbm.tileentity.MachineCore.facingOrdinal(state, 2);
+                    com.hbm.lib.ForgeDirection dir = com.hbm.lib.ForgeDirection.getOrientation(orientation);
+                    com.hbm.entity.projectile.EntityCog cog = new com.hbm.entity.projectile.EntityCog(level,
+                            pos.getX() + 0.5D + dir.offsetX, pos.getY() + 1D, pos.getZ() + 0.5D + dir.offsetZ)
+                            .setOrientation(orientation).setMeta(stirling.getGearVariant());
+                    com.hbm.lib.ForgeDirection rot = dir.getRotation(com.hbm.lib.ForgeDirection.DOWN);
+                    cog.setDeltaMovement(rot.offsetX, 1D + (stirling.heat - stirling.maxHeat()) * 0.0001D, rot.offsetZ);
+                    level.addFreshEntity(cog);
+
                     stirling.setChanged();
-                    stirling.overspeed = 0;
                 }
             } else {
                 stirling.overspeed = 0;

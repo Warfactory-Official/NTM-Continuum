@@ -26,9 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ntm-next {@code BlockEntityTesla.zap}, lifted out of the (unported) tesla coil block entity so the tesla
- * and taint crabs share the 1.7 arc logic. When the coil is ported it should call this rather than carry
- * its own copy.
+ * 1.7 {@code TileEntityTesla.zap} (via ntm-next {@code BlockEntityTesla.zap}), shared by the tesla coil, the
+ * tesla and taint crabs and the tesla armor mod.
  */
 public final class TeslaZap {
 
@@ -55,7 +54,9 @@ public final class TeslaZap {
 
             double eyeY = e.getY() + e.getBbHeight() / 2D;
             double len = Math.sqrt(Math.pow(e.getX() - x, 2) + Math.pow(eyeY - y, 2) + Math.pow(e.getZ() - z, 2));
-            if (len > range) continue;
+            // 1.7 compared against the coil's static TileEntityTesla.range (10), not the radius argument, so the
+            // crabs' 3-block cube still reaches its corners (up to 3 * sqrt(3) away)
+            if (len > com.hbm.tileentity.machine.TileEntityTesla.range) continue;
             if (isObstructed(level, x, y, z, e.getX(), eyeY, e.getZ())) continue;
 
             if (e instanceof EntityTaintCrab) {

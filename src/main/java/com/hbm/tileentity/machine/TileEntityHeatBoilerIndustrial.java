@@ -46,6 +46,12 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeatBoilerIndustrial te) {
         te.setupTanks();
         te.tryPullHeat(level);
+        // 1.7 Tom-impact fire heating: +0.0005% of the remaining buffer per tick under sky light > 7.
+        if (level instanceof net.minecraft.server.level.ServerLevel server
+                && level.getBrightness(net.minecraft.world.level.LightLayer.SKY, pos) > 7) {
+            com.hbm.saveddata.TomSaveData tom = com.hbm.saveddata.TomSaveData.published(server);
+            if (tom != null && tom.fire > 1e-5) te.heat += (int) ((maxHeat - te.heat) * 0.000005D);
+        }
         te.isOn = false;
         te.tryConvert(level);
 
@@ -93,8 +99,8 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
         isOn = ops > 0;
     }
 
+    /** 1.7.10 {@code tryPullHeat}: an equal source neither feeds nor cools; no source (or a cooler one) cools. */
     private void tryPullHeat(Level level) {
-        if (heat >= maxHeat) return;
         BlockPos below = worldPosition.below();
         BlockEntity sourceEntity = level.getBlockEntity(below);
         if (!(sourceEntity instanceof IHeatSource)) {
@@ -102,6 +108,7 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
         }
         if (sourceEntity instanceof IHeatSource source) {
             int diff = source.getHeatStored() - heat;
+            if (diff == 0) return;
             if (diff > 0) {
                 diff = Math.min((int) Math.ceil(diff * diffusion), maxHeat - heat);
                 source.useUpHeat(diff);

@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.hbm.Constants;
+import com.hbm.inventory.fluid.Fluids;
 import com.mojang.serialization.JsonOps;
 import dev.golem.core.Ids;
 import dev.golem.core.world.ItemStacks;
@@ -106,14 +107,30 @@ public class ItemPool {
         }
         Item item = BuiltInRegistries.ITEM.getValue(id);
         ItemStack template = new ItemStack(item);
+        if (row.has("fluid")) {
+            // 1.7 metadata fluid containers (canister_full meta = fluid id, cell_deuterium ...): the port keeps the
+            // fluid in components, which only the item itself knows how to write (fill, cell variant, tint).
+            template = filled(template, Fluids.fromName(row.get("fluid").getAsString()));
+            if (template == null) {
+                Constants.LOG.warn("{} fills {} with {}, which it cannot hold; entry skipped", RESOURCE, id, row.get("fluid"));
+                return null;
+            }
+        }
         if (row.has("components")) {
-            JsonObject stack = new JsonObject();
-            stack.addProperty("id", id.toString());
-            stack.addProperty("count", 1);
-            stack.add("components", row.get("components"));
-            template = ItemStacks.optionalCodec().parse(ops, stack).result().orElse(template);
+            ItemStack base = template;
+            template = ItemStacks.withComponents(template, row.getAsJsonObject("components"), ops).orElseGet(() -> {
+                Constants.LOG.warn("{}: the components of {} do not decode; using the bare item", RESOURCE, id);
+                return base;
+            });
         }
         return new Entry(template, min, max, weight);
+    }
+
+    private static @Nullable ItemStack filled(ItemStack stack, com.hbm.inventory.fluid.@Nullable FluidType fluid) {
+        if (fluid == null || fluid == Fluids.NONE) return null;
+        if (stack.getItem() instanceof com.hbm.items.special.ItemCell) return com.hbm.items.special.ItemCell.getFullCell(fluid);
+        if (stack.getItem() instanceof com.hbm.items.machine.ItemFluidTank tank) return tank.make(fluid, tank.capacity);
+        return null;
     }
 
     /**

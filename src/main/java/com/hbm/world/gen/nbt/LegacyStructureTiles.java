@@ -2,6 +2,7 @@ package com.hbm.world.gen.nbt;
 
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockSkeletonHolder;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
 import dev.golem.core.data.NbtFiles;
@@ -102,6 +103,7 @@ public final class LegacyStructureTiles {
         } else {
             return false;
         }
+        legacyFluidIds(id, data);
         data.remove("items");
         data.remove("Items");
         data.remove("x");
@@ -122,6 +124,33 @@ public final class LegacyStructureTiles {
             }
         }
         return true;
+    }
+
+    /**
+     * The bundled files are verbatim 1.7 data, so their fluids are 1.7 numbers: every tank's {@code <name>_type}
+     * (1.7 {@code FluidTank.writeToNBT}, recognised by its {@code <name>_max} sibling) and a pipe's {@code type}. The
+     * port saves a fluid only by registry name (History section 19ej-ids), so they are translated here through the
+     * frozen 1.7 table ({@link Fluids#byLegacyId}) - the one place a 1.7 fluid number is still read.
+     */
+    private static void legacyFluidIds(String id, CompoundTag data) {
+        for (String key : Tags.keys(data)) {
+            if (key.endsWith("_type") && Tags.hasInt(data, key)
+                    && Tags.contains(data, key.substring(0, key.length() - "_type".length()) + "_max")) {
+                Fluids.write(data, key, Fluids.byLegacyId(Tags.getIntOr(data, key, 0)));
+            }
+        }
+        if ((id.equals("tileentity_pipe_base") || id.equals("tileentity_pipe_gauge")) && Tags.hasInt(data, "type")) {
+            Fluids.write(data, "type", Fluids.byLegacyId(Tags.getIntOr(data, "type", 0)));
+        }
+        // 1.7 enum ordinals the port now saves by name: the battery's ConnectionPriority, the dungeon spawner's type
+        if (id.equals("tileentity_battery") && Tags.hasInt(data, "priority")) {
+            com.hbm.util.SavedIds.putEnum(data, "priority", com.hbm.util.EnumUtil.grabEnumSafely(
+                    com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority.class, Tags.getIntOr(data, "priority", 0)));
+        }
+        if (id.equals("tileentity_ntm_dungeon_spawner") && Tags.hasInt(data, "type")) {
+            com.hbm.util.SavedIds.putEnum(data, "type", com.hbm.util.EnumUtil.grabEnumSafely(
+                    com.hbm.blocks.generic.DungeonSpawner.EnumSpawnerType.class, Tags.getIntOr(data, "type", 0)));
+        }
     }
 
     /** A 1.7 item compound ({@code id} numeric, {@code Count}, {@code Damage}, {@code tag}) as a port stack. */

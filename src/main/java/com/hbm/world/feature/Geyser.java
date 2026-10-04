@@ -43,6 +43,8 @@ public class Geyser extends Feature<NoneFeatureConfiguration> {
     @Override
     public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
         WorldGenLevel level = context.level();
+        // 1.7 HbmWorldGen: the chlorine geyser sits inside the enableDungeons block (History §19ej-6)
+        if (!DungeonBlockFeature.dungeonsEnabled(level)) return false;
         BlockPos top = context.origin();
         if (!level.getBlockState(top.below()).is(Blocks.GRASS_BLOCK)) return false;
         generate(level, top.getX(), top.getY(), top.getZ());

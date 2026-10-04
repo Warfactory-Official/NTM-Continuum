@@ -5,6 +5,8 @@ import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
 import com.hbm.lib.VanillaIds;
 
+import static dev.golem.core.dejson.Crafting.rows;
+import static dev.golem.core.dejson.Crafting.shaped;
 import static dev.golem.core.dejson.Crafting.shapeless;
 import static dev.golem.core.dejson.Crafting.stack;
 
@@ -37,6 +39,47 @@ public final class ModShapelessRecipes {
         shapeless2();
         shapeless3();
         shapeless4();
+        billets();
+    }
+
+    /**
+     * The 41 materials original-hbm (1.7.10) passes to the three-item {@code MineralRecipes.addBillet(billet, ingot,
+     * nugget)} (MineralRecipes.java:112-154), as {@code {material, ingot id, nugget id}}. Only nuclear waste breaks
+     * the {@code ingot_X}/{@code nugget_X} spelling. The two-item {@code addBillet(billet, nugget)} materials
+     * (australium greater/lesser) have no ingot and are declared above as plain lines.
+     */
+    private static final String[][] BILLETS = {
+            {"cobalt"}, {"co60"}, {"sr90"}, {"uranium"}, {"u233"}, {"u235"}, {"u238"}, {"th232"},
+            {"plutonium"}, {"pu238"}, {"pu239"}, {"pu240"}, {"pu241"}, {"pu_mix"}, {"am241"}, {"am242"},
+            {"am_mix"}, {"neptunium"}, {"polonium"}, {"technetium"}, {"au198"}, {"pb209"}, {"ra226"},
+            {"actinium"}, {"schrabidium"}, {"solinium"}, {"gh336"}, {"uranium_fuel"}, {"thorium_fuel"},
+            {"plutonium_fuel"}, {"neptunium_fuel"}, {"mox_fuel"}, {"les"}, {"schrabidium_fuel"}, {"hes"},
+            {"australium"}, {"nuclear_waste", "hbm:nuclear_waste", "hbm:nuclear_waste_tiny"}, {"beryllium"},
+            {"zirconium"}, {"bismuth"}, {"silicon"},
+    };
+
+    /**
+     * 1.7 {@code addBillet(billet, ingot, nugget)} minus its first line (six nuggets to a billet, declared in
+     * {@link ModShapedRecipes} as {@code billet_X} together with the ore-dictionary variants):
+     * <ul>
+     *   <li>{@code addShapelessRecipe(new ItemStack(nugget, 6), billet)} &mdash; one billet back to six nuggets;</li>
+     *   <li>{@code addBilletToIngot}: three billets to two ingots, shapeless, and {@code "##"} of ingots to three
+     *       billets.</li>
+     * </ul>
+     * A billet is six nuggets and an ingot nine, so both directions conserve material. The port used to read the
+     * call as {@code addBillet(billet, nugget)} with the ingot as the nugget, making one billet from six ingots
+     * and six ingots from one billet (a 9x duplication loop); fixed 2026-10-03 (History section 19ej-1a).
+     */
+    private static void billets() {
+        for (String[] row : BILLETS) {
+            String material = row[0];
+            String billet = "hbm:billet_" + material;
+            String ingot = row.length > 1 ? row[1] : "hbm:ingot_" + material;
+            String nugget = row.length > 2 ? row[2] : "hbm:nugget_" + material;
+            shapeless(NS, "billet_" + material + "_to_nuggets", nugget, 6, billet);
+            shapeless(NS, "billet_" + material + "_to_ingots", ingot, 2, billet, billet, billet);
+            shaped(NS, "billet_" + material + "_from_ingots", billet, 3, rows("##"), "#", ingot);
+        }
     }
 
     private static void shapeless0() {
@@ -526,88 +569,39 @@ public final class ModShapelessRecipes {
                 TagIds.dusts_sulfur, TagIds.dusts_niter, TagIds.gems_coal);
         shapeless(NS, "gunpowder_3", VanillaIds.gunpowder, 3,
                 TagIds.dusts_sulfur, TagIds.dusts_niter, VanillaIds.charcoal);
-        shapeless(NS, "ingot_actinium_3", ItemIds.ingot_actinium, 6, ItemIds.billet_actinium);
-        shapeless(NS, "ingot_am241_1", ItemIds.ingot_am241, 6, ItemIds.billet_am241);
-        shapeless(NS, "ingot_am242_1", ItemIds.ingot_am242, 6, ItemIds.billet_am242);
-        shapeless(NS, "ingot_am_mix_1", ItemIds.ingot_am_mix, 6, ItemIds.billet_am_mix);
         shapeless(NS, "ingot_am_mix_2", ItemIds.ingot_am_mix,
                 TagIds.nuggets_am241, TagIds.nuggets_am241, TagIds.nuggets_am241, TagIds.nuggets_am242,
                 TagIds.nuggets_am242, TagIds.nuggets_am242, TagIds.nuggets_am242, TagIds.nuggets_am242,
                 TagIds.nuggets_am242);
-        shapeless(NS, "ingot_au198_2", ItemIds.ingot_au198, 6, ItemIds.billet_au198);
-        shapeless(NS, "ingot_australium_1", ItemIds.ingot_australium, 6, ItemIds.billet_australium);
-        shapeless(NS, "ingot_beryllium_3", ItemIds.ingot_beryllium, 6, ItemIds.billet_beryllium);
-        shapeless(NS, "ingot_bismuth_3", ItemIds.ingot_bismuth, 6, ItemIds.billet_bismuth);
-        shapeless(NS, "ingot_co60_1", ItemIds.ingot_co60, 6, ItemIds.billet_co60);
-        shapeless(NS, "ingot_cobalt_4", ItemIds.ingot_cobalt, 6, ItemIds.billet_cobalt);
         shapeless(NS, "ingot_firebrick", ItemIds.ingot_firebrick, 4, ItemIds.brick_fire);
-        shapeless(NS, "ingot_gh336_1", ItemIds.ingot_gh336, 6, ItemIds.billet_gh336);
-        shapeless(NS, "ingot_hes", ItemIds.ingot_hes, 6, ItemIds.billet_hes);
         shapeless(NS, "ingot_hes_2", ItemIds.ingot_hes,
                 TagIds.nuggets_schrabidium, TagIds.nuggets_schrabidium, TagIds.nuggets_schrabidium,
                 TagIds.nuggets_schrabidium, TagIds.nuggets_schrabidium, TagIds.nuggets_neptunium,
                 TagIds.nuggets_neptunium, ItemIds.nugget_beryllium, ItemIds.nugget_beryllium);
-        shapeless(NS, "ingot_les", ItemIds.ingot_les, 6, ItemIds.billet_les);
         shapeless(NS, "ingot_les_2", ItemIds.ingot_les,
                 TagIds.nuggets_schrabidium, TagIds.nuggets_neptunium, TagIds.nuggets_neptunium, TagIds.nuggets_neptunium,
                 TagIds.nuggets_neptunium, ItemIds.nugget_beryllium, ItemIds.nugget_beryllium, ItemIds.nugget_beryllium,
                 ItemIds.nugget_beryllium);
-        shapeless(NS, "ingot_mox_fuel", ItemIds.ingot_mox_fuel, 6, ItemIds.billet_mox_fuel);
-        shapeless(NS, "ingot_neptunium_1", ItemIds.ingot_neptunium, 6, ItemIds.billet_neptunium);
-        shapeless(NS, "ingot_neptunium_fuel_1", ItemIds.ingot_neptunium_fuel, 6, ItemIds.billet_neptunium_fuel);
-        shapeless(NS, "ingot_pb209_1", ItemIds.ingot_pb209, 6, ItemIds.billet_pb209);
-        shapeless(NS, "ingot_plutonium_4", ItemIds.ingot_plutonium, 6, ItemIds.billet_plutonium);
-        shapeless(NS, "ingot_plutonium_fuel", ItemIds.ingot_plutonium_fuel, 6, ItemIds.billet_plutonium_fuel);
-        shapeless(NS, "ingot_polonium_1", ItemIds.ingot_polonium, 6, ItemIds.billet_polonium);
-        shapeless(NS, "ingot_pu238", ItemIds.ingot_pu238, 6, ItemIds.billet_pu238);
-        shapeless(NS, "ingot_pu239", ItemIds.ingot_pu239, 6, ItemIds.billet_pu239);
-        shapeless(NS, "ingot_pu240", ItemIds.ingot_pu240, 6, ItemIds.billet_pu240);
-        shapeless(NS, "ingot_pu241_1", ItemIds.ingot_pu241, 6, ItemIds.billet_pu241);
-        shapeless(NS, "ingot_pu_mix_2", ItemIds.ingot_pu_mix, 6, ItemIds.billet_pu_mix);
     }
 
     private static void shapeless2() {
-        shapeless(NS, "ingot_ra226_3", ItemIds.ingot_ra226, 6, ItemIds.billet_ra226);
-        shapeless(NS, "ingot_schrabidium_6", ItemIds.ingot_schrabidium, 6, ItemIds.billet_schrabidium);
-        shapeless(NS, "ingot_schrabidium_fuel", ItemIds.ingot_schrabidium_fuel, 6, ItemIds.billet_schrabidium_fuel);
         shapeless(NS, "ingot_schrabidium_fuel_3", ItemIds.ingot_schrabidium_fuel,
                 TagIds.nuggets_schrabidium, TagIds.nuggets_schrabidium, TagIds.nuggets_schrabidium,
                 TagIds.nuggets_neptunium, TagIds.nuggets_neptunium, TagIds.nuggets_neptunium, ItemIds.nugget_beryllium,
                 ItemIds.nugget_beryllium, ItemIds.nugget_beryllium);
-        shapeless(NS, "ingot_silicon_1", ItemIds.ingot_silicon, 6, ItemIds.billet_silicon);
-        shapeless(NS, "ingot_solinium", ItemIds.ingot_solinium, 6, ItemIds.billet_solinium);
-        shapeless(NS, "ingot_sr90_2", ItemIds.ingot_sr90, 6, ItemIds.billet_sr90);
         shapeless(NS, "ingot_steel_dusted_10", ItemIds.ingot_steel_dusted, TagIds.ingots_steel, TagIds.dusts_coal);
-        shapeless(NS, "ingot_technetium_1", ItemIds.ingot_technetium, 6, ItemIds.billet_technetium);
-        shapeless(NS, "ingot_th232_3", ItemIds.ingot_th232, 6, ItemIds.billet_th232);
-        shapeless(NS, "ingot_thorium_fuel", ItemIds.ingot_thorium_fuel, 6, ItemIds.billet_thorium_fuel);
-        shapeless(NS, "ingot_u233", ItemIds.ingot_u233, 6, ItemIds.billet_u233);
-        shapeless(NS, "ingot_u235", ItemIds.ingot_u235, 6, ItemIds.billet_u235);
-        shapeless(NS, "ingot_u238", ItemIds.ingot_u238, 6, ItemIds.billet_u238);
-        shapeless(NS, "ingot_uranium_8", ItemIds.ingot_uranium, 6, ItemIds.billet_uranium);
-        shapeless(NS, "ingot_uranium_fuel", ItemIds.ingot_uranium_fuel, 6, ItemIds.billet_uranium_fuel);
-        shapeless(NS, "ingot_zirconium_3", ItemIds.ingot_zirconium, 6, ItemIds.billet_zirconium);
         shapeless(NS, "launch_code", ItemIds.launch_code,
                 ItemIds.launch_code_piece, ItemIds.launch_code_piece, ItemIds.launch_code_piece,
                 ItemIds.launch_code_piece, ItemIds.launch_code_piece, ItemIds.launch_code_piece,
                 ItemIds.launch_code_piece, ItemIds.launch_code_piece, ItemIds.circuit_advanced);
         shapeless(NS, "lightstone", stack(ItemIds.lightstone, 4).with(ComponentIds.item_variant, 0),
                 VanillaIds.stone, VanillaIds.stone, VanillaIds.stone, ItemIds.powder_limestone);
-        shapeless(NS, "lightstone_bricks_stairs_from_stairs",
-                stack(ItemIds.lightstone, 3).with(ComponentIds.item_variant, 2),
-                ItemIds.lightstone_bricks_stairs, ItemIds.lightstone_bricks_stairs, ItemIds.lightstone_bricks_stairs,
-                ItemIds.lightstone_bricks_stairs);
-        shapeless(NS, "lightstone_tile_stairs_from_stairs",
-                stack(ItemIds.lightstone, 3).with(ComponentIds.item_variant, 1),
-                ItemIds.lightstone_tile_stairs, ItemIds.lightstone_tile_stairs, ItemIds.lightstone_tile_stairs,
-                ItemIds.lightstone_tile_stairs);
         shapeless(NS, "loops", ItemIds.loops, ItemIds.flame_pony, VanillaIds.wheat, VanillaIds.sugar);
         shapeless(NS, "machine_industrial_turbine", ItemIds.machine_industrial_turbine, ItemIds.machine_large_turbine);
         shapeless(NS, "marshmallow", ItemIds.marshmallow, VanillaIds.stick, VanillaIds.sugar, VanillaIds.wheat_seeds);
         shapeless(NS, "med_ipecac", ItemIds.med_ipecac, VanillaIds.glass_bottle, VanillaIds.nether_wart);
         shapeless(NS, "med_ptsd", ItemIds.med_ptsd, ItemIds.med_ipecac);
         shapeless(NS, "missile_emp", ItemIds.missile_emp, ItemIds.missile_assembly, ItemIds.ducttape, ItemIds.emp_bomb);
-        shapeless(NS, "nuclear_waste", ItemIds.nuclear_waste, 6, ItemIds.billet_nuclear_waste);
         shapeless(NS, "nugget_australium_greater", ItemIds.nugget_australium_greater, 6,
                 ItemIds.billet_australium_greater);
         shapeless(NS, "nugget_australium_lesser", ItemIds.nugget_australium_lesser, 6,
@@ -988,6 +982,8 @@ public final class ModShapelessRecipes {
                 ItemIds.billet_u238, ItemIds.billet_u238, ItemIds.billet_pu238, TagIds.plates_iron);
         shapeless(NS, "rtg_recover_bismuth", ItemIds.billet_bismuth, 3, ItemIds.pellet_rtg_depleted_bismuth);
         shapeless(NS, "rtg_recover_lead", ItemIds.ingot_lead, 2, ItemIds.pellet_rtg_depleted_lead);
+        // 1.7 MineralRecipes:247 gives new ItemStack(ModItems.ingot_mercury, 2); that field is hbm:nugget_mercury.
+        shapeless(NS, "rtg_recover_mercury", ItemIds.nugget_mercury, 2, ItemIds.pellet_rtg_depleted_mercury);
         shapeless(NS, "rtg_recover_neptunium", ItemIds.billet_neptunium, 3, ItemIds.pellet_rtg_depleted_neptunium);
         shapeless(NS, "rtg_recover_zirconium", ItemIds.billet_zirconium, 3, ItemIds.pellet_rtg_depleted_zirconium);
         shapeless(NS, "rune_dagaz", ItemIds.rune_dagaz,

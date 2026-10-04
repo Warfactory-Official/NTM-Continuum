@@ -74,6 +74,7 @@ public final class ItemRTGPellet extends CompatItem {
     }
 
     public static ItemStack handleDecay(ItemStack stack, ItemRTGPellet pellet) {
+        if (!com.hbm.config.MachineConfig.rtgDecay()) return stack; // 1.7 9.01_doRTGsDecay
         if (pellet.getLifespan(stack) <= 0L) {
             return new ItemStack(pellet.getDecayItem());
         }
@@ -116,7 +117,8 @@ public final class ItemRTGPellet extends CompatItem {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                           List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal("Power Level: " + getScaledPower(this, stack)).withStyle(ChatFormatting.RED));
+        tooltip.add(Component.literal("Power Level: " + (com.hbm.config.MachineConfig.scaleRTGPowerActive() ? getScaledPower(this, stack) : getHeat()))
+                .withStyle(ChatFormatting.RED));
         double percentage = ((int) (getDecay(this, stack) * 100_000_000D)) / 1_000_000D;
         tooltip.add(Component.literal("Fuel left: " + percentage + "%").withStyle(ChatFormatting.GREEN));
         tooltip.add(Component.literal("Decays to: " + getDecayItem().getName(new ItemStack(getDecayItem())).getString()));

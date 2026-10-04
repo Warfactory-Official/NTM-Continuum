@@ -33,14 +33,14 @@ public final class PlasmaForgeRecipes extends GenericRecipes {
 
         register(new PlasmaForgeRecipe("plsm.plateeuphemium").setInputEnergy(1_000_000).setup(600, 10_000_000)
                 .outputItems(new ItemStack(ModItems.plate_euphemium.get(), 4))
-                .inputItems(new ComparableStack(ModItems.ingot_euphemium.get(), 4), new ComparableStack(ModItems.powder_astatine.get(), 3), BI.dust(),
-                        new ComparableStack(ModItems.gem_volcanic.get()), OSMIRIDIUM.ingot()));
+                .inputItems(new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "ingots/euphemium")), 4), new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dusts/astatine")), 3), BI.dust(),
+                        new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "gems/volcanic")), 1), OSMIRIDIUM.ingot())); // 1.7 EUPH.ingot, AT.dust, VOLCANIC.gem
         register(new PlasmaForgeRecipe("plsm.platednt").setInputEnergy(1_000_000).setup(600, 10_000_000)
                 .outputItems(new ItemStack(ModItems.plate_dineutronium.get(), 4))
                 .inputItems(DNT.ingot().count(4), new ComparableStack(ModItems.powder_spark_mix.get(), 2), DESH.ingot()));
         register(new PlasmaForgeRecipe("plsm.hde").setInputEnergy(10_000_000).setup(600, 25_000_000L)
                 .outputItems(ModIngredientItems.part(EnumPartType.HDE, 1))
-                .inputItems(BBRONZE.plateCast().count(2), CMB.plateWelded(), new ComparableStack(ModItems.ingot_cft.get()))
+                .inputItems(ANY_BISMOIDBRONZE.plateCast().count(2), CMB.plateWelded(), new ComparableStack(ModItems.ingot_cft.get()))
                 .inputFluids(new FluidStack(Fluids.STELLAR_FLUX, 4_000)));
 
         weld("iron", Mats.MAT_IRON, 50, 100, null);
@@ -64,13 +64,57 @@ public final class PlasmaForgeRecipes extends GenericRecipes {
                         new ComparableStack(ModMachineBlocks.fusion_component.get().asItem(), 64),
                         new ComparableStack(ModMachineBlocks.fusion_component.get().asItem(), 64),
                         new ComparableStack(ModMachineBlocks.fusion_component.get().asItem(), 64),
-                        new ComparableStack(ModMachineBlocks.fusion_component_bscco_welded.get().asItem(), 64),
-                        new ComparableStack(ModMachineBlocks.fusion_component_bscco_welded.get().asItem(), 64),
-                        new ComparableStack(ModMachineBlocks.fusion_component_bscco_welded.get().asItem(), 64),
+                        // 1.7 fusion_component meta 3 = motor (BlockFusionComponent variants: 1 bscco_welded, 2 blanket, 3 motor)
+                        new ComparableStack(ModMachineBlocks.fusion_component_motor.get().asItem(), 64),
+                        new ComparableStack(ModMachineBlocks.fusion_component_motor.get().asItem(), 64),
+                        new ComparableStack(ModMachineBlocks.fusion_component_motor.get().asItem(), 64),
                         new ComparableStack(ModMachineBlocks.fusion_component_blanket.get().asItem(), 64),
                         new ComparableStack(ModMachineBlocks.fusion_component_blanket.get().asItem(), 64),
                          new ComparableStack(com.hbm.items.ModIntermediateItems.circuit(EnumCircuitType.QUANTUM), 4))
                 .setPools528(GenericRecipes.POOL_PREFIX_528 + "chlorophyte"));
+
+        // 1.7 order: ICF parts, schrabhammer, fensusan, gerald, DFC (the order is the selector/JEI order)
+        ICFRecipes.registerPlasmaForge(this); // 1.7 "// ICF": the laser parts, vessel components, seed and pellet maker
+
+        // weapons: 1.7 plsm.schrabhammer, 35 schrabidium blocks, 128 yharonite, a UFO coin and 512 meteorite fragments
+        register(new PlasmaForgeRecipe("plsm.schrabhammer").setInputEnergy(25_000_000).setup(6_000, 10_000_000)
+                .outputItems(new ItemStack(com.hbm.items.ModMeleeKitItems.schrabidium_hammer.get()))
+                .inputItems(SA326.block().count(35),
+                        new ComparableStack(ModItems.billet_yharonite.get(), 64),
+                        new ComparableStack(ModItems.billet_yharonite.get(), 64),
+                        new ComparableStack(ModItems.coin_ufo.get(), 1),
+                        new ComparableStack(ModItems.fragment_meteorite.get(), 64),
+                        new ComparableStack(ModItems.fragment_meteorite.get(), 64),
+                        new ComparableStack(ModItems.fragment_meteorite.get(), 64),
+                        new ComparableStack(ModItems.fragment_meteorite.get(), 64),
+                        new ComparableStack(ModItems.fragment_meteorite.get(), 64),
+                        new ComparableStack(ModItems.fragment_meteorite.get(), 64),
+                        new ComparableStack(ModItems.fragment_meteorite.get(), 64),
+                        new ComparableStack(ModItems.fragment_meteorite.get(), 64)));
+
+        // 1.7 PlasmaForgeRecipes:183, the REDD (expensive-mode list in inputItemsEx)
+        register(new PlasmaForgeRecipe("ass.fensusan").setInputEnergy(50_000_000).setup(6_000, 50_000_000)
+                .outputItems(new ItemStack(com.hbm.blocks.machine.storage.ModBatteryBlocks.machine_battery_redd.get()))
+                .inputItems(new ComparableStack(com.hbm.items.ModFinalConsumableItems.ingot_electronium.get(), 64),
+                        new ComparableStack(com.hbm.items.ModBatteryItems.PACKS.get(com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack.BATTERY_QUANTUM).get()),
+                        OSMIRIDIUM.plateWelded().count(64),
+                        OSMIRIDIUM.plateWelded().count(64),
+                        ANY_BISMOIDBRONZE.plateCast().count(64),
+                        CMB.plateCast().count(32),
+                        MAGTUNG.wireDense().count(32),
+                        new ComparableStack(ModItems.plate_dineutronium.get(), 64),
+                        new ComparableStack(ModItems.powder_magic.get(), 64),
+                        new ComparableStack(new ItemStack(com.hbm.items.ModNuclearMiscItems.INGOT_U238M2.get())), // meta 0 only
+                        new ComparableStack(ModItems.ingot_cft.get(), 64),
+                        new ComparableStack(ModItems.ingot_cft.get(), 64))
+                .inputItemsEx(new ComparableStack(com.hbm.items.ModFinalConsumableItems.ingot_electronium.get(), 64),
+                        new ComparableStack(com.hbm.items.ModBatteryItems.PACKS.get(com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack.BATTERY_QUANTUM).get()),
+                        new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.BRONZE_TUBES), 64),
+                        new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.FERRO_PLATING), 64),
+                        OSMIRIDIUM.plateWelded().count(64), OSMIRIDIUM.plateWelded().count(64), OSMIRIDIUM.plateWelded().count(64),
+                        ANY_BISMOIDBRONZE.plateCast().count(64), CMB.plateCast().count(64),
+                        new ComparableStack(new ItemStack(com.hbm.items.ModNuclearMiscItems.INGOT_U238M2.get())),
+                        new ComparableStack(ModItems.ingot_cft.get(), 64), new ComparableStack(ModItems.ingot_cft.get(), 64)));
 
         // 1.7 plsm.gerald: its inputItemsEx list (bronze tubes and computers) applies in expensive mode
         register(new PlasmaForgeRecipe("plsm.gerald").setInputEnergy(25_000_000).setup(12_000, 50_000_000)
@@ -116,26 +160,6 @@ public final class PlasmaForgeRecipes extends GenericRecipes {
                         new ComparableStack(com.hbm.items.ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_QUANTUM), 8))
                 .inputFluids(new FluidStack(Fluids.STELLAR_FLUX, 4_000)));
 
-        ICFRecipes.registerPlasmaForge(this); // 1.7 "// ICF": the laser parts, vessel components, seed and pellet maker
-
-        // weapons: 1.7 plsm.schrabhammer, 35 schrabidium blocks, 128 yharonite, a UFO coin and 512 meteorite fragments
-        register(new PlasmaForgeRecipe("plsm.schrabhammer").setInputEnergy(25_000_000).setup(6_000, 10_000_000)
-                .outputItems(new ItemStack(com.hbm.items.ModMeleeKitItems.schrabidium_hammer.get()))
-                .inputItems(SA326.block().count(35),
-                        new ComparableStack(ModItems.billet_yharonite.get(), 64),
-                        new ComparableStack(ModItems.billet_yharonite.get(), 64),
-                        new ComparableStack(ModItems.coin_ufo.get(), 1),
-                        new ComparableStack(ModItems.fragment_meteorite.get(), 64),
-                        new ComparableStack(ModItems.fragment_meteorite.get(), 64),
-                        new ComparableStack(ModItems.fragment_meteorite.get(), 64),
-                        new ComparableStack(ModItems.fragment_meteorite.get(), 64),
-                        new ComparableStack(ModItems.fragment_meteorite.get(), 64),
-                        new ComparableStack(ModItems.fragment_meteorite.get(), 64),
-                        new ComparableStack(ModItems.fragment_meteorite.get(), 64),
-                        new ComparableStack(ModItems.fragment_meteorite.get(), 64)));
-
-        // ass.fensusan is intentionally deferred: its exact old inputs require the unregistered
-        // ingot_electronium and ingot_u238m2. Do not replace either with a similar material.
     }
 
     private void weld(String name, com.hbm.inventory.material.NTMMaterial material,

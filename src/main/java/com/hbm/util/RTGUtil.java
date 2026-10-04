@@ -9,7 +9,8 @@ public final class RTGUtil {
     private RTGUtil() {}
 
     public static short getPower(ItemRTGPellet fuel, ItemStack stack) {
-        return ItemRTGPellet.getScaledPower(fuel, stack);
+        // 1.7: the output only falls with decay when 9.00_scaleRTGPower (or 528 mode) is on; the default is flat heat
+        return com.hbm.config.MachineConfig.scaleRTGPowerActive() ? ItemRTGPellet.getScaledPower(fuel, stack) : fuel.getHeat();
     }
 
     public static boolean hasHeat(NTMItemHandler inventory) {

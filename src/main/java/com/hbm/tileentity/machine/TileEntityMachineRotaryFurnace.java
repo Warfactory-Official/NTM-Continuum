@@ -426,9 +426,9 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         this.burnTime = input.getIntOr("burn", 0);
         this.burnHeat = input.getDoubleOr("heat", 1D);
         this.maxBurnTime = input.getIntOr("maxBurn", 0);
-        int outType = input.getIntOr("outType", -1);
-        if (outType >= 0 && Mats.matById.get(outType) != null) {
-            this.output = new MaterialStack(Mats.matById.get(outType), input.getIntOr("outAmount", 0));
+        com.hbm.inventory.material.NTMMaterial outType = Mats.read(input, "outType");
+        if (outType != null) {
+            this.output = new MaterialStack(outType, input.getIntOr("outAmount", 0));
         } else {
             this.output = null;
         }
@@ -448,7 +448,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         output.putDouble("heat", burnHeat);
         output.putInt("maxBurn", maxBurnTime);
         if (this.output != null) {
-            output.putInt("outType", this.output.material.id);
+            Mats.write(output, "outType", this.output.material); // by name, never the numeric id
             output.putInt("outAmount", this.output.amount);
         }
     }

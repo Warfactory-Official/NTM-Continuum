@@ -101,7 +101,7 @@ public abstract class GlyphidStats {
                 amount *= 0.7F;
             } else if (source.is(DamageTypes.PLAYER_ATTACK)) {
                 amount *= glyphid.getGlyphidScale() < 1.25 ? 1.5 : glyphid.getGlyphidScale() < 1.3 ? 0.8 : 0.5;
-            } else if (source.is(ModDamageSources.ACID)) {
+            } else if (source.is(ModDamageSources.ACID) || source.is(ModDamageSources.ACID_PLAYER)) { // 1.7 acid || s_acid
                 amount = 0;
             } else if (source.is(DamageTypes.IN_WALL)) {
                 amount *= 15F;
@@ -131,7 +131,9 @@ public abstract class GlyphidStats {
 
         @Override
         public boolean handleAttack(EntityGlyphid glyphid, DamageSource source, float amount) {
-            if (source.is(ModDamageSources.ACID_PLAYER) && source.getEntity() instanceof EntityGlyphid) return false;
+            // 1.7 tested getSourceOfDamage(), the direct entity; the causing entity is already refused in hurtServer.
+            // (1.7's "source == ModDamageSource.acid" arm never passes: the shared acid source has no entity.)
+            if (source.is(ModDamageSources.ACID_PLAYER) && source.getDirectEntity() instanceof EntityGlyphid) return false;
             return glyphid.attackSuperclass(source, amount);
         }
     }

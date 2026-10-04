@@ -23,19 +23,34 @@ import net.minecraft.world.effect.MobEffects;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import dev.golem.core.data.DataIn;
+import dev.golem.core.data.DataOut;
+import dev.golem.core.data.Tags;
+import net.minecraft.nbt.CompoundTag;
+import org.jspecify.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The fluid registry: HBM's own list of {@link FluidType}s, keyed by a stable numeric ID and by name.
- * NOT a vanilla/Forge registry — it's a plain static map populated by {@link #init()}.
+ * The fluid registry: HBM's own list of {@link FluidType}s, keyed by registry name ({@code hbm:water}), which is
+ * the only form a fluid is saved in. NOT a vanilla/Forge registry - it's a plain static map populated by
+ * {@link #init()}; see History section 19ej-ids for why (b) a name-keyed HBM registry was chosen over registering
+ * 156 vanilla {@code Fluid}s. The 1.7 numbers remain as the read-only {@link #legacyId}/{@link #networkId} views.
  *
  * <p>26.1 slim port: the 1.12.2 original carried a full trait/pollution/potion subsystem plus Forge-fluid
- * compat on each type. This port keeps the registry mechanics ({@code registerSelf}/{@code fromID}/
+ * compat on each type. This port keeps the registry mechanics ({@code registerSelf}/{@code byRegistryName}/
  * {@code fromName}) and the identity (name/color/temperature) of <b>the full base set</b> — every fluid
- * the 1.12.2 {@code Fluids.init()} hardcodes, in the same order so the IDs match 1:1 (the JSON-dump
- * custom-fluid demo is dropped). The declarations are generated; thermal traits are maintained below.
+ * the 1.7.10 {@code Fluids.init()} hardcodes, in the same order so the IDs match 1:1 (0..155, FLUE last; the
+ * JSON-dump custom-fluid demo is dropped). 1.12.2 inserted a HYDRAZINE at 89 that 1.7 never had, which shifted
+ * CHLORINE..FLUE by one; it was removed 2026-10-03 (nothing made or consumed it, History section 19ej-1a), so
+ * structure NBT, QMAW pages and 1.7 data that store a fluid id resolve to the 1.7 fluid again. The declarations are generated; thermal traits are maintained below.
  *
  * @author hbm, mlbv
  */
@@ -43,6 +58,7 @@ public class Fluids {
 
     private static final HashMap<Integer, FluidType> idMapping = new HashMap<>();
     private static final HashMap<String, FluidType> nameMapping = new HashMap<>();
+    private static final HashMap<String, FluidType> registryMapping = new HashMap<>();
     private static final List<FluidType> registerOrder = new ArrayList<>();
     private static boolean initialized = false;
 
@@ -135,7 +151,6 @@ public class Fluids {
     public static FluidType SYNGAS;
     public static FluidType OXYHYDROGEN;
     public static FluidType RADIOSOLVENT;
-    public static FluidType HYDRAZINE;
     public static FluidType CHLORINE;
     public static FluidType HEAVYOIL_VACUUM;
     public static FluidType REFORMATE;
@@ -206,7 +221,7 @@ public class Fluids {
 
     /**
      * Populate the registry. Idempotent; safe to call from common bootstrap. IDs are assigned
-     * sequentially in declaration order (NONE = 0), matching the 1.12.2 mod.
+     * sequentially in declaration order (NONE = 0), matching the 1.7.10 mod.
      */
     public static void init() {
         if (initialized) return;
@@ -302,7 +317,6 @@ public class Fluids {
         SYNGAS = new FluidType("SYNGAS", 0x131313);
         OXYHYDROGEN = new FluidType("OXYHYDROGEN", 0x483FC1);
         RADIOSOLVENT = new FluidType("RADIOSOLVENT", 0xA4D7DD);
-        HYDRAZINE = new FluidType("HYDRAZINE", 0x31517D);
         CHLORINE = new FluidType("CHLORINE", 0xBAB572);
         HEAVYOIL_VACUUM = new FluidType("HEAVYOIL_VACUUM", 0x131214);
         REFORMATE = new FluidType("REFORMATE", 0x835472);
@@ -367,9 +381,9 @@ public class Fluids {
         ALUMINA = new FluidType("ALUMINA", 0xDDFFFF);
         AIR = new FluidType("AIR", 0xE7EAEB);
         CONCRETE = new FluidType("CONCRETE", 0xA2A2A2);
-        DHC = new FluidType(154, "DHC", 0xD2AFFF);
-        AIRBLAST = new FluidType("AIRBLAST", 0xFFDADA);
-        FLUE = new FluidType("FLUE", 0x131313);
+        DHC = new FluidType(153, "DHC", 0xD2AFFF);
+        AIRBLAST = new FluidType("AIRBLAST", 0xFFDADA).setTemp(1_200); // 1.7 Fluids.java:414
+        FLUE = new FluidType(155, "FLUE", 0x131313); // 1.7 asserts id 155 here
 
         registerHeatableTraits();
         registerCoolableTraits();
@@ -399,7 +413,6 @@ public class Fluids {
         NITRIC_ACID.addTraits(new FT_Corrosive(60));
         SOLVENT.addTraits(new FT_Corrosive(30));
         RADIOSOLVENT.addTraits(new FT_Corrosive(50));
-        HYDRAZINE.addTraits(new FT_Corrosive(30));
         CHLORINE.addTraits(new FT_Corrosive(25));
         SOURGAS.addTraits(new FT_Corrosive(10));
         REDMUD.addTraits(new FT_Corrosive(60));
@@ -419,9 +432,8 @@ public class Fluids {
 
         AIR.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).addStep(5, 1, AIRBLAST, 1));
         WATER.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).setEff(HeatingType.HEATEXCHANGER, 0.25D).addStep(200, 1, STEAM, 100).addStep(220, 1, HOTSTEAM, 10).addStep(238, 1, SUPERHOTSTEAM, 1).addStep(2500, 10, ULTRAHOTSTEAM, 1));
-        STEAM.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).setEff(HeatingType.HEATEXCHANGER, 0.25D).addStep(2, 10, HOTSTEAM, 1));
-        HOTSTEAM.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).setEff(HeatingType.HEATEXCHANGER, 0.25D).addStep(18, 10, SUPERHOTSTEAM, 1));
-        SUPERHOTSTEAM.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).setEff(HeatingType.HEATEXCHANGER, 0.25D).addStep(120, 10, ULTRAHOTSTEAM, 1));
+        // 1.7 gives STEAM/HOTSTEAM/SUPERHOTSTEAM no FT_Heatable (only FT_Coolable); the steam-upgrading steps are
+        // 1.12.2 additions, so a boiler, heater column or Hephaestus refuses steam as an input, as in 1.7.
         OIL.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).setEff(HeatingType.HEATEXCHANGER, 1.0D).addStep(10, 1, HOTOIL, 1));
         OIL_DS.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).setEff(HeatingType.HEATEXCHANGER, 1.0D).addStep(10, 1, HOTOIL_DS, 1));
         CRACKOIL.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).setEff(HeatingType.HEATEXCHANGER, 1.0D).addStep(10, 1, HOTCRACKOIL, 1));
@@ -619,6 +631,7 @@ public class Fluids {
         int id = idMapping.size();
         idMapping.put(id, fluid);
         nameMapping.put(fluid.getName(), fluid);
+        registryMapping.put(fluid.getRegistryName(), fluid);
         registerOrder.add(fluid);
         return id;
     }
@@ -627,23 +640,111 @@ public class Fluids {
     static void register(FluidType fluid, int id) {
         idMapping.put(id, fluid);
         nameMapping.put(fluid.getName(), fluid);
+        registryMapping.put(fluid.getRegistryName(), fluid);
         registerOrder.add(fluid);
         fluid.setID(id);
     }
 
-    public static FluidType fromID(int id) {
+    // ------------------------------------------------------------------------------------------------------------
+    // Identity. A fluid is SAVED by its registry name ("hbm:water") and nothing else (user rule 2026-10-03, History
+    // section 19ej-ids). The 1.7 number survives only as two read-only views: networkId (same-session packets and
+    // synched entity data, never written to disk) and legacyId (places where 1.7 showed the number to a player or to
+    // a computer, and 1.7 data files that carry it). Both are the frozen 1.7 registration order.
+    // ------------------------------------------------------------------------------------------------------------
+
+    /** The fluid saved under {@code name} ({@code hbm:water}; a bare {@code water} is read as {@code hbm:}). NONE if unknown. */
+    public static FluidType byRegistryName(@Nullable String name) {
+        if (name == null || name.isEmpty()) return NONE;
+        FluidType fluid = registryMapping.get(name.indexOf(':') < 0 ? Constants.MOD_ID + ":" + name.toLowerCase(Locale.ROOT) : name);
+        if (fluid == null) {
+            warnOnce("unknown:" + name, "Unknown fluid id '{}' in saved data - reading it as hbm:none", name);
+            return NONE;
+        }
+        return fluid;
+    }
+
+    /** Runtime id for packets and synched entity data only. Never persist it. */
+    public static int networkId(FluidType fluid) { return fluid.numericId(); }
+
+    /** Inverse of {@link #networkId}. */
+    public static FluidType byNetworkId(int id) {
         FluidType fluid = idMapping.get(id);
         return fluid == null ? NONE : fluid;
+    }
+
+    /** The 1.7 {@code FluidType.getID()} number, for places 1.7 exposed it (RBMK console, computers, 1.7 data files). */
+    public static int legacyId(FluidType fluid) { return fluid.numericId(); }
+
+    /** The fluid 1.7 numbered {@code id}; NONE if 1.7 had no such fluid. */
+    public static FluidType byLegacyId(int id) {
+        FluidType fluid = idMapping.get(id);
+        return fluid == null ? NONE : fluid;
+    }
+
+    /**
+     * The fluid as a saved value: its registry name. Decoding is tolerant - an unknown name, or an int from a
+     * pre-2026-10-03 save, reads as NONE with one WARN instead of failing the whole item stack or block entity.
+     */
+    public static final Codec<FluidType> CODEC = Codec.either(Codec.STRING, Codec.INT).xmap(
+            either -> either.map(Fluids::byRegistryName, Fluids::fromOldNumericSave),
+            fluid -> Either.left(fluid.getRegistryName()));
+
+    /** What an old int-keyed save reads as: NONE, with one WARN per session. Public for codecs that wrap {@link #CODEC}. */
+    public static FluidType fromOldNumericSave(int id) {
+        warnOnce("int", "Found a numeric fluid id ({}) in saved data; numeric ids are no longer read (hbm:none)", id);
+        return NONE;
+    }
+
+    /** Writes {@code fluid}'s registry name under {@code key}. */
+    public static void write(DataOut out, String key, FluidType fluid) {
+        out.putString(key, (fluid == null ? NONE : fluid).getRegistryName());
+    }
+
+    /** Writes {@code fluid}'s registry name under {@code key}. */
+    public static void write(CompoundTag tag, String key, FluidType fluid) {
+        tag.putString(key, (fluid == null ? NONE : fluid).getRegistryName());
+    }
+
+    /** Reads a fluid written by {@link #write}; absent reads as NONE, an old numeric value as NONE with one WARN. */
+    public static FluidType read(DataIn in, String key) {
+        String name = in.getStringOr(key, null);
+        if (name != null) return byRegistryName(name);
+        if (in.getIntOr(key, Integer.MIN_VALUE) != Integer.MIN_VALUE) return fromOldNumericSave(in.getIntOr(key, 0));
+        return NONE;
+    }
+
+    /** Reads a fluid written by {@link #write}; absent reads as NONE, an old numeric value as NONE with one WARN. */
+    public static FluidType read(CompoundTag tag, String key) {
+        String name = Tags.getStringOr(tag, key, null);
+        if (name != null) return byRegistryName(name);
+        if (Tags.hasInt(tag, key)) return fromOldNumericSave(Tags.getIntOr(tag, key, 0));
+        return NONE;
+    }
+
+    /** Writes {@code fluids} as a list of registry names under {@code key}. */
+    public static void writeList(CompoundTag tag, String key, FluidType[] fluids) {
+        net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
+        for (FluidType fluid : fluids) list.add(net.minecraft.nbt.StringTag.valueOf((fluid == null ? NONE : fluid).getRegistryName()));
+        tag.put(key, list);
+    }
+
+    /** Reads a list written by {@link #writeList}; absent (or an old numeric array) reads as empty. */
+    public static FluidType[] readList(CompoundTag tag, String key) {
+        net.minecraft.nbt.ListTag list = dev.golem.core.data.NbtFiles.list(tag, key);
+        FluidType[] fluids = new FluidType[list.size()];
+        for (int i = 0; i < fluids.length; i++) fluids[i] = byRegistryName(dev.golem.core.data.NbtFiles.stringAt(list, i));
+        return fluids;
+    }
+
+    private static final Set<String> WARNED = ConcurrentHashMap.newKeySet();
+
+    private static void warnOnce(String key, String message, Object arg) {
+        if (WARNED.add(key)) Constants.LOG.warn("[HBM fluids] " + message, arg);
     }
 
     public static FluidType fromName(String name) {
         FluidType fluid = nameMapping.get(name);
         return fluid == null ? NONE : fluid;
-    }
-
-    /** For old worlds with types saved as name. No rename table yet, so this is just {@link #fromName}. */
-    public static FluidType fromNameCompat(String name) {
-        return fromName(name);
     }
 
     public static FluidType[] getAll() {

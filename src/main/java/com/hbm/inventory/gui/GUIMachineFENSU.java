@@ -25,59 +25,33 @@ public class GUIMachineFENSU extends dev.golem.core.gui.CompatContainerScreen<Co
 
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        GuiDraw.blit(graphics, TEXTURE, leftPos, topPos, 0F, 0F, imageWidth, imageHeight, 256, 256);
-
-        int fill = (int) menu.getPowerScaled(52L);
-        if (fill > 0) {
-            GuiDraw.blit(graphics, TEXTURE, leftPos + 71, topPos + 69 - fill,
-                    176F, 52F - fill, 34, fill, 256, 256);
-        }
-        GuiDraw.blit(graphics, TEXTURE, leftPos + 7, topPos + 34,
-                176F, 52F + menu.getRedLow() * 18, 18, 18, 256, 256);
-        GuiDraw.blit(graphics, TEXTURE, leftPos + 151, topPos + 34,
-                176F, 52F + menu.getRedHigh() * 18, 18, 18, 256, 256);
-        GuiDraw.blit(graphics, TEXTURE, leftPos + 152, topPos + 17,
-                194F, 52F + (menu.getPriorityOrdinal() - 1) * 16, 16, 16, 256, 256);
-        GuiUtil.drawInfoPanel(graphics, leftPos - 16, topPos + 36, 2);
+        // 1.7: the FEnSU uses the energy storage block's screen (GUIMachineBattery).
+        GUIMachineBattery.drawBattery(graphics, TEXTURE, leftPos, topPos, imageWidth, imageHeight,
+                (int) menu.getPowerScaled(52L), menu.getRedLow(), menu.getRedHigh(), menu.getPriorityOrdinal());
     }
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        Component title = Component.literal(this.title.getString() + " ("
-                + Library.getShortNumber(menu.getPower()) + " HE)");
-        GuiDraw.text(graphics, font, title, (imageWidth - font.width(title)) / 2, titleLabelY, -12566464, false);
-        GuiDraw.text(graphics, font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, -12566464, false);
+        Component title = Component.literal(this.title.getString() + " (" + menu.getPower() + " HE)");
+        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 6, 0xFF404040, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 0xFF404040, false);
     }
 
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        if (isHovering(71, 17, 34, 52, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.energyTooltip(menu.getPower(), menu.getMaxPower(), menu.getDelta()),
+        if (isHovering(62, 17, 52, 52, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, font, GUIMachineBattery.barInfo(menu.getPower(), menu.getMaxPower(), menu.getDelta()),
                     Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(6, 33, 18, 18, mouseX, mouseY)) {
-            tooltip(graphics, "No redstone: ", MODES, menu.getRedLow(), mouseX, mouseY);
-        } else if (isHovering(150, 33, 18, 18, mouseX, mouseY)) {
-            tooltip(graphics, "Redstone on: ", MODES, menu.getRedHigh(), mouseX, mouseY);
-        } else if (isHovering(151, 16, 16, 16, mouseX, mouseY)) {
-            tooltip(graphics, "Priority: ", PRIORITIES, menu.getPriorityOrdinal(), mouseX, mouseY);
+        } else if (isHovering(152, 35, 16, 16, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, font, GUIMachineBattery.priorityInfo(menu.getPriorityOrdinal()), Optional.empty(), mouseX, mouseY);
         }
-    }
-
-    private static void tooltip(GuiGraphicsExtractor graphics, String prefix, String[] names, int index,
-                                int mouseX, int mouseY) {
-        String value = index >= 0 && index < names.length ? names[index] : "?";
-        GuiDraw.tooltip(graphics, Minecraft.getInstance().font, List.of(Component.literal(prefix + value)),
-                Optional.empty(), mouseX, mouseY);
     }
 
     @Override
     protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
-        int button = -1;
-        if (isHovering(6, 33, 18, 18, event.x(), event.y())) button = 0;
-        else if (isHovering(150, 33, 18, 18, event.x(), event.y())) button = 1;
-        else if (isHovering(151, 16, 16, 16, event.x(), event.y())) button = 2;
-
+        int button = GUIMachineBattery.button(event.x(), event.y(), leftPos, topPos);
         if (button >= 0 && Minecraft.getInstance().gameMode != null) {
+            Minecraft.getInstance().getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
             Minecraft.getInstance().gameMode.handleInventoryButtonClick(menu.containerId, button);
             return true;
         }

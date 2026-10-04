@@ -41,6 +41,8 @@ public class BlockTerrainEarth extends dev.golem.core.world.CompatBlock {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+        // 1.7 WasteEarth: one dirt; 1.7 harvestBlock checks silk touch before getDrops, and this is a plain cube without a tile entity, so silk touch keeps it.
+        if (OreDrops.silkTouch(params)) return List.of(new ItemStack(this));
         return List.of(new ItemStack(Blocks.DIRT));
     }
 

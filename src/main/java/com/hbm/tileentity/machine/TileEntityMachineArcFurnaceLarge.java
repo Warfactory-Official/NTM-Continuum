@@ -222,7 +222,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         for (int queue = 25; queue < 30; queue++) {
             ItemStack queued = inventory.getStackInSlot(queue);
             if (queued.isEmpty()) continue;
-            ArcFurnaceRecipes.ArcFurnaceRecipe recipe = ArcFurnaceRecipes.getOutput(queued, liquidMode);
+            ArcFurnaceRecipes.ArcFurnaceRecipe recipe = ArcFurnaceRecipes.getOutput(queued, liquidMode, level);
             if (recipe == null) continue;
 
             int max = getMaxInputSize();
@@ -273,7 +273,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         for (int slot = 5; slot < 25; slot++) {
             ItemStack input = inventory.getStackInSlot(slot);
             if (input.isEmpty()) continue;
-            ArcFurnaceRecipes.ArcFurnaceRecipe recipe = ArcFurnaceRecipes.getOutput(input, liquidMode);
+            ArcFurnaceRecipes.ArcFurnaceRecipe recipe = ArcFurnaceRecipes.getOutput(input, liquidMode, level);
             if (recipe == null) continue;
 
             if (!liquidMode && recipe.solidOutput != null) {
@@ -305,7 +305,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         for (int slot = 5; slot < 25; slot++) {
             ItemStack stack = inventory.getStackInSlot(slot);
             if (stack.isEmpty()) continue;
-            ArcFurnaceRecipes.ArcFurnaceRecipe recipe = ArcFurnaceRecipes.getOutput(stack, liquidMode);
+            ArcFurnaceRecipes.ArcFurnaceRecipe recipe = ArcFurnaceRecipes.getOutput(stack, liquidMode, level);
             if (recipe != null && (liquidMode ? recipe.fluidOutput.length > 0 : recipe.solidOutput != null)) return true;
         }
         return false;
@@ -387,8 +387,8 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
 
     @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         if (slot < 3) return lid >= 1F && !(stack.getItem() instanceof ItemArcElectrode);
-        if (slot > 4 && slot < 25) return lid > 0F && ArcFurnaceRecipes.getOutput(stack, liquidMode) == null;
-        if (slot >= 25) return ArcFurnaceRecipes.getOutput(stack, liquidMode) == null;
+        if (slot > 4 && slot < 25) return lid > 0F && ArcFurnaceRecipes.getOutput(stack, liquidMode, level) == null;
+        if (slot >= 25) return ArcFurnaceRecipes.getOutput(stack, liquidMode, level) == null;
         return false;
     }
 
@@ -397,7 +397,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         if (slot == 3) return Library.isBattery(stack);
         if (slot == 4) return Library.isMachineUpgrade(stack);
         if (slot > 4) {
-            ArcFurnaceRecipes.ArcFurnaceRecipe recipe = ArcFurnaceRecipes.getOutput(stack, liquidMode);
+            ArcFurnaceRecipes.ArcFurnaceRecipe recipe = ArcFurnaceRecipes.getOutput(stack, liquidMode, level);
             return recipe != null && (liquidMode ? recipe.fluidOutput.length > 0 : recipe.solidOutput != null);
         }
         return false;
@@ -485,7 +485,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         output.putInt("delay", delay);
         output.putInt("count", liquids.size());
         for (int i = 0; i < liquids.size(); i++) {
-            output.putInt("m" + i, liquids.get(i).material.id);
+            Mats.write(output, "m" + i, liquids.get(i).material); // by name, never the numeric id
             output.putInt("a" + i, liquids.get(i).amount);
         }
     }
@@ -501,7 +501,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         liquids.clear();
         int count = input.getIntOr("count", 0);
         for (int i = 0; i < count; i++) {
-            NTMMaterial material = Mats.matById.get(input.getIntOr("m" + i, -1));
+            NTMMaterial material = Mats.read(input, "m" + i);
             if (material != null) liquids.add(new Mats.MaterialStack(material, input.getIntOr("a" + i, 0)));
         }
     }

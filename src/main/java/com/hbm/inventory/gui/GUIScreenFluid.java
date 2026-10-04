@@ -91,11 +91,11 @@ public class GUIScreenFluid extends CompatScreen {
                 if (event.button() == 0) {
                     click();
                     this.primary = this.searchArray[k];
-                    data.putInt("primary", this.primary.getID());
+                    Fluids.write(data, "primary", this.primary);
                 } else if (event.button() == 1) {
                     click();
                     this.secondary = this.searchArray[k];
-                    data.putInt("secondary", this.secondary.getID());
+                    Fluids.write(data, "secondary", this.secondary);
                 } else {
                     return false;
                 }

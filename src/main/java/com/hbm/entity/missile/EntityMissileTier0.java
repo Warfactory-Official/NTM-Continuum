@@ -77,12 +77,16 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
         public void onMissileImpact(HitResult hit) {
             if (level().isClientSide()) return;
 
-            level().explode(this, getX(), getY(), getZ(), 10.0F, Level.ExplosionInteraction.TNT);
+            // 1.7 Tier0:127-131: a 5F blast at the hit vector, taint scattered around the hit BLOCK
+            net.minecraft.world.phys.Vec3 at = hit != null ? hit.getLocation() : position();
+            BlockPos block = hit instanceof net.minecraft.world.phys.BlockHitResult blockHit
+                    ? blockHit.getBlockPos() : BlockPos.containing(at);
+            level().explode(this, at.x, at.y, at.z, 5.0F, Level.ExplosionInteraction.TNT);
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (int i = 0; i < 100; i++) {
-                int x = random.nextInt(11) + (int) getX() - 5;
-                int y = random.nextInt(11) + (int) getY() - 5;
-                int z = random.nextInt(11) + (int) getZ() - 5;
+                int x = random.nextInt(11) + block.getX() - 5;
+                int y = random.nextInt(11) + block.getY() - 5;
+                int z = random.nextInt(11) + block.getZ() - 5;
                 pos.set(x, y, z);
                 BlockState state = level().getBlockState(pos);
                 if (state.isCollisionShapeFullBlock(level(), pos) && !state.isAir()) {

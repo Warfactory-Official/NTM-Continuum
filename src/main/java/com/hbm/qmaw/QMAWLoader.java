@@ -125,7 +125,7 @@ public final class QMAWLoader {
         // every other flattened item family.
         if (trigger.getItem() == ModFluidItems.fluid_icon.get()
                 || trigger.getItem() == ModMachineItems.fluid_identifier.get()) {
-            return ModDataComponents.fluidId(trigger) == ModDataComponents.fluidId(candidate);
+            return ModDataComponents.fluid(trigger) == ModDataComponents.fluid(candidate);
         }
         return ItemStacks.sameItemAndData(trigger, candidate);
     }
@@ -225,7 +225,12 @@ public final class QMAWLoader {
 
         String oldId = array.get(0).getAsString();
         int count = array.size() > 1 ? array.get(1).getAsInt() : 1;
-        int metadata = array.size() > 2 ? array.get(2).getAsInt() : 0;
+        // A fluid page names its fluid by registry name ("hbm:chlorine"); a number is read as the 1.7 fluid id
+        // (the frozen legacy table), which is what the 1.7 manual files carried.
+        JsonElement third = array.size() > 2 ? array.get(2) : null;
+        String fluidName = third != null && third.isJsonPrimitive() && third.getAsJsonPrimitive().isString()
+                ? third.getAsString() : null;
+        int metadata = third == null || fluidName != null ? 0 : third.getAsInt();
         if (count <= 0) return null;
         Identifier oldLocation;
         try {
@@ -236,14 +241,14 @@ public final class QMAWLoader {
 
         if (oldLocation.equals(Ids.of("hbm", "fluid_icon"))) {
             if (wildcard) return stack(Ids.of("hbm", "fluid_icon"), count);
-            FluidType fluid = Fluids.fromID(metadata);
-            if (fluid == Fluids.NONE && metadata != 0) return null;
+            FluidType fluid = fluidName != null ? Fluids.byRegistryName(fluidName) : Fluids.byLegacyId(metadata);
+            if (fluid == Fluids.NONE && (metadata != 0 || fluidName != null)) return null;
             return ItemStacks.copyWithCount(ItemFluidIcon.make(fluid), count);
         }
         if (oldLocation.equals(Ids.of("hbm", "fluid_identifier_multi"))) {
             if (wildcard) return stack(Ids.of("hbm", "fluid_identifier"), count);
-            FluidType fluid = Fluids.fromID(metadata);
-            if (fluid == Fluids.NONE && metadata != 0) return null;
+            FluidType fluid = fluidName != null ? Fluids.byRegistryName(fluidName) : Fluids.byLegacyId(metadata);
+            if (fluid == Fluids.NONE && (metadata != 0 || fluidName != null)) return null;
             return ItemStacks.copyWithCount(ItemFluidId.make(fluid), count);
         }
 

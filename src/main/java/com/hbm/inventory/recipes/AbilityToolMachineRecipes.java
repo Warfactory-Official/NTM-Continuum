@@ -64,7 +64,7 @@ public final class AbilityToolMachineRecipes {
     /** 1.7 CrystallizerRecipes:123: peroxide, base time, the default 500 mB. */
     public static void crystallizer(List<CrystallizerRecipe> recipes, int baseTime) {
         recipes.add(new CrystallizerRecipe(item(ModAbilityToolItems.meteorite_sword_treated.get()), Fluids.PEROXIDE, 500,
-                baseTime, 0.05F, new ItemStack(ModAbilityToolItems.meteorite_sword_etched.get())));
+                baseTime, 0F, new ItemStack(ModAbilityToolItems.meteorite_sword_etched.get()))); // 1.7: no .prod(), so 0
     }
 
     /** 1.7 BlastFurnaceRecipesNT: the meteor sword, meteorite ingot and starmetal recipes. */

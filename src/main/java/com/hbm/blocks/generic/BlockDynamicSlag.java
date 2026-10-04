@@ -170,15 +170,14 @@ public class BlockDynamicSlag extends dev.golem.core.world.CompatBlock implement
         @Override
         protected void saveData(DataOut output) {
             super.saveData(output);
-            output.putInt("mat", mat == null ? -1 : mat.id);
+            Mats.write(output, "mat", mat); // by name, never the numeric id (History 19ej-ids)
             output.putInt("amount", amount);
         }
 
         @Override
         protected void loadData(DataIn input) {
             super.loadData(input);
-            int id = input.getIntOr("mat", -1);
-            mat = id < 0 ? null : Mats.matById.get(id);
+            mat = Mats.read(input, "mat");
             amount = input.getIntOr("amount", 0);
         }
     }

@@ -52,6 +52,8 @@ public abstract class BlockBarrelDeco extends BlockTNTBase implements EntityBloc
         this.texture = texture;
         this.kind = kind;
         this.flammable = flammable;
+        // 1.7 RedBarrel/YellowBarrel -> BlockFlammable(en, flam): (2, 15) when flammable, else (0, 0)
+        dev.golem.core.world.Fires.setFlammable(this, flammable ? 2 : 0, flammable ? 15 : 0);
     }
 
     public String barrelTexture() {

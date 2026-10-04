@@ -3,13 +3,13 @@
 	"icon": [
 		"hbm:fluid_icon",
 		1,
-		66
+		"hbm:diesel_crack"
 	],
 	"trigger": [
 		[
 			"hbm:fluid_icon",
 			1,
-			66
+			"hbm:diesel_crack"
 		]
 	],
 	"title": {

@@ -153,6 +153,26 @@ public class BulletConfig {
     public BulletConfig setOnBeamImpact(BiConsumer<EntityBulletBeamBase, HitResult> lambda) { this.onImpactBeam = lambda; return this; }
     public BulletConfig setOnEntityHit(BiConsumer<EntityBulletBaseMK4, HitResult> lambda) { this.onEntityHit = lambda; return this; }
 
+    /**
+     * 1.7 {@code BulletConfig.clone()}: a field-for-field copy of this config as it stands now, with no registry id
+     * (register the copy under its own name). Later setters on either config do not affect the other.
+     */
+    public BulletConfig copy() {
+        BulletConfig c = new BulletConfig();
+        c.ammo = ammo; c.casingItem = casingItem; c.casingSupplier = casingSupplier; c.casingAmount = casingAmount;
+        c.casingProfile = casingProfile; c.casing = casing; c.ammoReloadCount = ammoReloadCount;
+        c.velocity = velocity; c.spread = spread; c.wear = wear; c.projectilesMin = projectilesMin;
+        c.projectilesMax = projectilesMax; c.pType = pType; c.damageMult = damageMult;
+        c.armorThresholdNegation = armorThresholdNegation; c.armorPiercingPercent = armorPiercingPercent;
+        c.knockbackMult = knockbackMult; c.headshotMult = headshotMult; c.dmgClass = dmgClass;
+        c.ricochetAngle = ricochetAngle; c.maxRicochetCount = maxRicochetCount; c.damageFalloffByPen = damageFalloffByPen;
+        c.onUpdate = onUpdate; c.onImpact = onImpact; c.onImpactBeam = onImpactBeam; c.onRicochet = onRicochet;
+        c.onEntityHit = onEntityHit; c.gravity = gravity; c.expires = expires; c.impactsEntities = impactsEntities;
+        c.doesPenetrate = doesPenetrate; c.isSpectral = isSpectral; c.selfDamageDelay = selfDamageDelay;
+        c.blackPowder = blackPowder; c.renderRotations = renderRotations;
+        return c;
+    }
+
     /** The item one round is loaded from, or null before item registration has run. */
     public net.minecraft.world.item.Item ammoItem() {
         return ammo == null ? null : ammo.get();

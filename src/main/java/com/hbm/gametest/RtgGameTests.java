@@ -85,13 +85,24 @@ public final class RtgGameTests {
         lead.setLifespan(terminal, 1L);
         com.hbm.inventory.NTMItemHandler inventory = new com.hbm.inventory.NTMItemHandler(1);
         inventory.setStackInSlot(0, terminal);
-        helper.assertTrue(RTGUtil.updateRTGs(inventory, new int[]{0}) == 10
+        // 1.7 9.00_scaleRTGPower defaults off: the output is the flat 600 heat until the pellet is replaced (§19ej-8)
+        helper.assertTrue(RTGUtil.updateRTGs(inventory, new int[]{0}) == 600
                         && inventory.getStackInSlot(0).is(lead)
                         && lead.getLifespan(inventory.getStackInSlot(0)) == 0L,
                 "The final positive-life tick must output before decrement and remain a fuel pellet");
-        helper.assertTrue(RTGUtil.updateRTGs(inventory, new int[]{0}) == 10
+        helper.assertTrue(RTGUtil.updateRTGs(inventory, new int[]{0}) == 600
                         && inventory.getStackInSlot(0).is(ModRtgContent.PELLET_RTG_DEPLETED_BISMUTH.get()),
                 "The zero-life tick must output once, then replace the pellet");
+        // with scaleRTGPower on, the same nearly spent pellet gives ceil(600 / 2^6) = 10
+        boolean scale = com.hbm.config.MachineConfig.scaleRTGPower;
+        try {
+            com.hbm.config.MachineConfig.scaleRTGPower = true;
+            ItemStack spent = new ItemStack(lead);
+            lead.setLifespan(spent, 1L);
+            helper.assertTrue(RTGUtil.getPower(lead, spent) == 10, "scaleRTGPower on: a spent lead pellet must give 10 heat");
+        } finally {
+            com.hbm.config.MachineConfig.scaleRTGPower = scale;
+        }
         helper.succeed();
     }
 
@@ -107,8 +118,13 @@ public final class RtgGameTests {
             rtg.inventory.setStackInSlot(slot, new ItemStack(ModRtgContent.PELLET_RTG_BALEFIRE.get()));
         }
         TileEntityMachineRTG.serverTick(helper.getLevel(), rtg.getBlockPos(), rtg.getBlockState(), rtg);
-        helper.assertTrue(rtg.heat == 6_000 && rtg.power == 30_000L,
-                "Fifteen 6,000-heat pellets must clamp to 6,000 heat and generate 30,000 HE/t");
+        // 1.7.10: heatMax = rtgDecay ? 600 : 200 (decay always on), powerMax 100,000.
+        helper.assertTrue(TileEntityMachineRTG.HEAT_MAX == 600 && TileEntityMachineRTG.MAX_POWER == 100_000L,
+                "Grey RTG caps must be the 1.7 600 heat / 100,000 HE");
+        helper.assertTrue(rtg.heat == 600 && rtg.power == 3_000L,
+                "Fifteen 6,000-heat pellets must clamp to 600 heat and generate 3,000 HE/t, got " + rtg.heat + " / " + rtg.power);
+        for (int i = 0; i < 40; i++) TileEntityMachineRTG.serverTick(helper.getLevel(), rtg.getBlockPos(), rtg.getBlockState(), rtg);
+        helper.assertTrue(rtg.power == 100_000L, "Grey RTG buffer must clamp at 100,000 HE, got " + rtg.power);
         helper.succeed();
     }
 

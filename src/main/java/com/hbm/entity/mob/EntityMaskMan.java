@@ -25,7 +25,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
@@ -63,14 +63,15 @@ public class EntityMaskMan extends CompatMonster implements IRadiationImmune {
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new EntityAIMaskmanCasualApproach(this, 1.0D, false));
+        this.goalSelector.addGoal(2, new EntityAIMaskmanCasualApproach(this, Player.class, 1.0D, false));
         this.goalSelector.addGoal(2, new EntityAIMaskmanMinigun(this, 3));
         this.goalSelector.addGoal(3, new EntityAIMaskmanLasergun(this));
-        this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+        this.goalSelector.addGoal(3, new RandomStrollGoal(this, 1.0D)); // 1.7 EntityAIWander
         this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
         this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        // 1.7 targetChance 0: re-acquire on every check, not one in ten
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 0, true, false, null));
     }
 
     @Override
@@ -110,7 +111,8 @@ public class EntityMaskMan extends CompatMonster implements IRadiationImmune {
 
             if (this.lastHealth >= getMaxHealth() / 2F && getHealth() < getMaxHealth() / 2F && isAlive()) {
                 this.lastHealth = getHealth();
-                server.explode(this, getX(), getY() + 4, getZ(), 2.5F, Level.ExplosionInteraction.MOB);
+                // 1.7 createExplosion(..., true) broke blocks without consulting mobGriefing, so not MOB
+                server.explode(this, getX(), getY() + 4, getZ(), 2.5F, Level.ExplosionInteraction.BLOCK);
             }
 
             this.lastHealth = getHealth();

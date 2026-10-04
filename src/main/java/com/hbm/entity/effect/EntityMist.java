@@ -88,12 +88,12 @@ public class EntityMist extends CompatEntity {
     }
 
     public EntityMist setType(FluidType fluid) {
-        this.entityData.set(TYPE, fluid.getID());
+        this.entityData.set(TYPE, Fluids.networkId(fluid));
         return this;
     }
 
     public FluidType getFluid() {
-        return Fluids.fromID(this.entityData.get(TYPE));
+        return Fluids.byNetworkId(this.entityData.get(TYPE));
     }
 
     public int getMaxAge() {
@@ -294,14 +294,14 @@ public class EntityMist extends CompatEntity {
 
     @Override
     protected void saveData(DataOut output) {
-        output.putInt("type", this.entityData.get(TYPE));
+        Fluids.write(output, "type", getFluid()); // registry name; the synched int is session-only
         output.putFloat("width", this.entityData.get(WIDTH));
         output.putFloat("height", this.entityData.get(HEIGHT));
     }
 
     @Override
     protected void loadData(DataIn input) {
-        this.entityData.set(TYPE, input.getIntOr("type", 0));
+        this.entityData.set(TYPE, Fluids.networkId(Fluids.read(input, "type")));
         setArea(input.getFloatOr("width", 0F), input.getFloatOr("height", 0F));
     }
 }

@@ -100,10 +100,6 @@ public class CrucibleRecipes extends GenericRecipes {
                 .inputs(new Mats.MaterialStack(Mats.MAT_MALACHITE, i * 2), new Mats.MaterialStack(Mats.MAT_FLUX, n * 2))
                 .outputs(new Mats.MaterialStack(Mats.MAT_COPPER, i), new Mats.MaterialStack(Mats.MAT_SLAG, n * 3)));
 
-        register(new CrucibleRecipe("crucible.cmb").crucibleSetup(3, new ItemStack(ModItems.ingot_combine_steel.get()))
-                .inputs(new Mats.MaterialStack(Mats.MAT_MAGTUNG, n * 6), new Mats.MaterialStack(Mats.MAT_MUD, n * 3))
-                .outputs(new Mats.MaterialStack(Mats.MAT_CMB, i)));
-
         register(new CrucibleRecipe("crucible.redcopper").crucibleSetup(2, new ItemStack(ModItems.ingot_red_copper.get()))
                 .inputs(new Mats.MaterialStack(Mats.MAT_COPPER, n), new Mats.MaterialStack(Mats.MAT_REDSTONE, n))
                 .outputs(new Mats.MaterialStack(Mats.MAT_RED_COPPER, n * 2)));
@@ -131,6 +127,11 @@ public class CrucibleRecipes extends GenericRecipes {
         register(new CrucibleRecipe("crucible.abronze").crucibleSetup(9, new ItemStack(ModItems.ingot_arsenic_bronze.get()))
                 .inputs(new Mats.MaterialStack(Mats.MAT_COPPER, n * 8), new Mats.MaterialStack(Mats.MAT_ARSENIC, n), new Mats.MaterialStack(Mats.MAT_FLUX, n * 3))
                 .outputs(new Mats.MaterialStack(Mats.MAT_ABRONZE, i), new Mats.MaterialStack(Mats.MAT_SLAG, n * 3)));
+
+        // 1.7 order (the display order): cmb after abronze
+        register(new CrucibleRecipe("crucible.cmb").crucibleSetup(3, new ItemStack(ModItems.ingot_combine_steel.get()))
+                .inputs(new Mats.MaterialStack(Mats.MAT_MAGTUNG, n * 6), new Mats.MaterialStack(Mats.MAT_MUD, n * 3))
+                .outputs(new Mats.MaterialStack(Mats.MAT_CMB, i)));
 
         register(new CrucibleRecipe("crucible.magtung").crucibleSetup(3, new ItemStack(ModItems.ingot_magnetized_tungsten.get()))
                 .inputs(new Mats.MaterialStack(Mats.MAT_TUNGSTEN, i), new Mats.MaterialStack(Mats.MAT_SCHRABIDIUM, n))

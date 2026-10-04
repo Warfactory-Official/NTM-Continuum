@@ -20,7 +20,7 @@ public final class TileEntityTowerSmall extends TileEntityCondenser {
 
     public static void clientTick(net.minecraft.world.level.Level level, BlockPos pos, BlockState state,
                                   TileEntityTowerSmall tower) {
-        if (tower.waterTimer > 0 && level.getGameTime() % 2L == 0L)
+        if (com.hbm.config.ClientConfig.COOLING_TOWER_PARTICLES && tower.waterTimer > 0 && level.getGameTime() % 2L == 0L)
             tower.spawnSmoke(level, pos, 18D, 1F, 0.5F, 4F, 250 + level.getRandom().nextInt(250));
     }
 

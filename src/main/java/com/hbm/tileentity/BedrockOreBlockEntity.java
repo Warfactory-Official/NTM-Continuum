@@ -98,7 +98,7 @@ public class BedrockOreBlockEntity extends CompatBlockEntity {
     public void saveDeposit(DataOut output) {
         if (!resource.isEmpty()) output.store("resource", ItemStack.CODEC, resource);
         if (acidRequirement != null) {
-            output.putString("fluid", acidRequirement.type.getName());
+            Fluids.write(output, "fluid", acidRequirement.type); // registry name (History 19ej-ids)
             output.putInt("amount", acidRequirement.fill);
         }
         output.putInt("tier", tier);
@@ -111,7 +111,7 @@ public class BedrockOreBlockEntity extends CompatBlockEntity {
         resource = input.read("resource", ItemStack.CODEC)
                 .filter(stack -> !stack.isEmpty())
                 .orElseGet(() -> new ItemStack(ModItems.powder_iron.get()));
-        FluidType fluid = Fluids.fromNameCompat(input.getStringOr("fluid", "NONE"));
+        FluidType fluid = Fluids.byRegistryName(input.getStringOr("fluid", "hbm:none"));
         acidRequirement = fluid == Fluids.NONE ? null : new FluidStack(fluid, input.getIntOr("amount", 0));
         tier = input.getIntOr("tier", 0);
         color = input.getIntOr("color", 0);

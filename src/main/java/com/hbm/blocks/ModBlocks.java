@@ -62,6 +62,11 @@ public final class ModBlocks {
     }
 
     /** Ore that grants mining XP and (typically) drops a material item via its loot table. */
+    /**
+     * An ore block with an experience drop. Every 1.7 caller passes 0: original-hbm (1.7.10) {@code BlockOre} never
+     * overrides {@code getExpDrop}, so its ores give no experience (the per-ore xp values were 1.12.2's
+     * {@code BlockNTMOre}; fix wave 4, 2026-10-03). Only {@code BlockSellafieldOre}'s gems pay 3-7 in 1.7.
+     */
     private static Reg.Handle<Block> oreXp(String name, HbmTab tab, int xp, UnaryOperator<BlockBehaviour.Properties> props) {
         Reg.Handle<Block> ro = REG.<Block>block(name, p -> new CompatDropExperienceBlock(ConstantInt.of(xp), p), props);
         ALL.add(new BlockEntry(ro, tab));
@@ -267,34 +272,34 @@ public final class ModBlocks {
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_titanium = block("ore_titanium", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_sulfur = oreXp("ore_sulfur", HbmTab.RESOURCES, 2, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.ore("hbm:sulfur", 2, 4)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_niter = oreXp("ore_niter", HbmTab.RESOURCES, 2, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.ore("hbm:niter", 1, 2)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ore_sulfur = oreXp("ore_sulfur", HbmTab.RESOURCES, 0, p -> p.strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:sulfur", 2, 4)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ore_niter = oreXp("ore_niter", HbmTab.RESOURCES, 0, p -> p.strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:niter", 2, 4)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_copper = block("ore_copper", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_tungsten = block("ore_tungsten", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_aluminium = block("ore_aluminium", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_fluorite = oreXp("ore_fluorite", HbmTab.RESOURCES, 2, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.ore("hbm:fluorite", 2, 4)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ore_fluorite = oreXp("ore_fluorite", HbmTab.RESOURCES, 0, p -> p.strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:fluorite", 2, 4)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_lead = block("ore_lead", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_beryllium = block("ore_beryllium", HbmTab.RESOURCES, p -> p.strength(5.0F, 15.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_lignite = block("ore_lignite", HbmTab.RESOURCES, p -> p.strength(5.0F, 15.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_asbestos = oreXp("ore_asbestos", HbmTab.RESOURCES, 6, p -> p.strength(5.0F, 15.0F))
-            .transform(Presets.cubeAll()).loot(Loot.ore("hbm:ingot_asbestos")).tag(BlockTag.PICKAXE);
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:lignite", 1, 1)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ore_asbestos = oreXp("ore_asbestos", HbmTab.RESOURCES, 0, p -> p.strength(5.0F, 15.0F))
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:ingot_asbestos", 1, 1)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_rare = block("ore_rare", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_cobalt = oreXp("ore_cobalt", HbmTab.RESOURCES, 15, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.oreNoFortune("hbm:fragment_cobalt", 4, 9)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_cinnabar = oreXp("ore_cinnabar", HbmTab.RESOURCES, 2, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.ore("hbm:cinnabar", 1, 2)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_coltan = oreXp("ore_coltan", HbmTab.RESOURCES, 20, p -> p.strength(15.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.ore("hbm:fragment_coltan")).tag(BlockTag.PICKAXE);
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:chunk_ore_rare", 1, 1)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ore_cobalt = oreXp("ore_cobalt", HbmTab.RESOURCES, 0, p -> p.strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:fragment_cobalt", 4, 9)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ore_cinnabar = oreXp("ore_cinnabar", HbmTab.RESOURCES, 0, p -> p.strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:cinnabar", 1, 1)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ore_coltan = oreXp("ore_coltan", HbmTab.RESOURCES, 0, p -> p.strength(15.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:fragment_coltan", 1, 1)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_australium = block("ore_australium", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     // ore_oil: hand-registered functional block (see ModOilBlocks), assets still generated
@@ -304,26 +309,26 @@ public final class ModBlocks {
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_gneiss_copper = block("ore_gneiss_copper", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_gneiss_asbestos = oreXp("ore_gneiss_asbestos", HbmTab.RESOURCES, 2, p -> p.strength(1.5F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.ore("hbm:ingot_asbestos")).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ore_gneiss_asbestos = oreXp("ore_gneiss_asbestos", HbmTab.RESOURCES, 0, p -> p.strength(1.5F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:ingot_asbestos", 1, 1)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_gneiss_lithium = block("ore_gneiss_lithium", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_gneiss_schrabidium = block("ore_gneiss_schrabidium", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_gneiss_rare = block("ore_gneiss_rare", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:chunk_ore_rare", 1, 1)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_gneiss_gas = block("ore_gneiss_gas", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_tikite = block("ore_tikite", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
             .transform(Presets.cubeAll("hbm:blocks/ore_tikite_alt")).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_nether_cobalt = block("ore_nether_cobalt", HbmTab.RESOURCES, p -> p.strength(0.4F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:fragment_cobalt", 5, 12)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_nether_tungsten = block("ore_nether_tungsten", HbmTab.RESOURCES, p -> p.strength(0.4F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_nether_sulfur = oreXp("ore_nether_sulfur", HbmTab.RESOURCES, 2, p -> p.strength(0.4F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.ore("hbm:sulfur", 2, 4)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_nether_fire = block("ore_nether_fire", HbmTab.RESOURCES, p -> p.strength(0.4F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ore_nether_sulfur = oreXp("ore_nether_sulfur", HbmTab.RESOURCES, 0, p -> p.strength(0.4F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:sulfur", 2, 4)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ore_nether_fire = block("ore_nether_fire", HbmTab.RESOURCES, com.hbm.blocks.generic.BlockNetherFireOre::new, p -> p.strength(0.4F, 10.0F).noLootTable())
+            .transform(Presets.cubeAll()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_nether_plutonium = block("ore_nether_plutonium", HbmTab.RESOURCES, p -> p.strength(0.4F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_nether_schrabidium = block("ore_nether_schrabidium", HbmTab.RESOURCES, p -> p.strength(15.0F, 600.0F))
@@ -331,13 +336,13 @@ public final class ModBlocks {
     public static final RegistryObject<Block> block_meteor = block("block_meteor", HbmTab.RESOURCES, p -> p.strength(15.0F, 360.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> block_meteor_cobble = oreXp("block_meteor_cobble", HbmTab.RESOURCES, 0, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.cubeAll()).loot(Loot.oreNoFortune("hbm:fragment_meteorite", 1, 3)).tag(BlockTag.PICKAXE);
+            .transform(Presets.cubeAll()).loot(Loot.oreNoFortune("hbm:fragment_meteorite", 1, 1)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> block_meteor_broken = oreXp("block_meteor_broken", HbmTab.RESOURCES, 0, p -> p.strength(15.0F, 360.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreNoFortune("hbm:fragment_meteorite", 1, 3)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> block_meteor_treasure = block("block_meteor_treasure", HbmTab.RESOURCES, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_meteor_treasure = block("block_meteor_treasure", HbmTab.RESOURCES, com.hbm.blocks.generic.BlockMeteoriteTreasure::new, p -> p.strength(15.0F, 360.0F).noLootTable())
+            .transform(Presets.cubeAll()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> waste_planks = block("waste_planks", HbmTab.RESOURCES, p -> p.strength(0.5F, 2.5F).sound(SoundType.WOOD))
-            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("minecraft:charcoal", 1, 1)).tag(BlockTag.PICKAXE);
 
     // --- slabs (Wave 2c); vanilla SlabBlock (TYPE=bottom/top/double replaces the old *_double_slab) ---
     public static final RegistryObject<Block> reinforced_stone_slab = slab("reinforced_stone_slab", HbmTab.BLOCKS, "hbm:blocks/reinforced_stone", p -> p.strength(15.0F, 60.0F)).tag(BlockTag.PICKAXE);
@@ -345,6 +350,8 @@ public final class ModBlocks {
     public static final RegistryObject<Block> brick_concrete_mossy_slab = slab("brick_concrete_mossy_slab", HbmTab.BLOCKS, "hbm:blocks/brick_concrete_mossy", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> brick_concrete_cracked_slab = slab("brick_concrete_cracked_slab", HbmTab.BLOCKS, "hbm:blocks/brick_concrete_cracked", p -> p.strength(15.0F, 30.0F)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> brick_concrete_broken_slab = slab("brick_concrete_broken_slab", HbmTab.BLOCKS, "hbm:blocks/brick_concrete_broken", p -> p.strength(15.0F, 22.0F)).tag(BlockTag.PICKAXE);
+    /** 1.7 concrete_brick_slab meta 4 (BlockMultiSlab takes the brick's own hardness/resistance); History §19ej-1b. */
+    public static final RegistryObject<Block> brick_ducrete_slab = slab("brick_ducrete_slab", HbmTab.BLOCKS, "hbm:blocks/brick_ducrete", p -> p.strength(15.0F, 750.0F)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> reinforced_brick_slab = slab("reinforced_brick_slab", HbmTab.BLOCKS, "hbm:blocks/reinforced_brick", p -> p.strength(15.0F, 150.0F)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> brick_light_slab = slab("brick_light_slab", null, "hbm:blocks/brick_light", p -> p.strength(15.0F, 20.0F)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> brick_compound_slab = slab("brick_compound_slab", HbmTab.BLOCKS, "hbm:blocks/brick_compound", p -> p.strength(15.0F, 200.0F)).tag(BlockTag.PICKAXE);

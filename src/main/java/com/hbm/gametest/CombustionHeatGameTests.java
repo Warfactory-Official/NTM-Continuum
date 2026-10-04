@@ -158,8 +158,11 @@ public final class CombustionHeatGameTests {
 
         helper.assertTrue(boiler.tanks[0].getFill() == 0 && boiler.tanks[1].getFill() == 100,
                 "Industrial boiler consumed or produced the wrong water/steam amount");
-        helper.assertTrue(boiler.heat == TileEntityHeatBoilerIndustrial.maxHeat - 200 && boiler.isOn,
-                "Industrial boiler consumed the wrong heat amount");
+        // 1.7 tryPullHeat: with no heat source below, the buffer first cools by heat / 1000, then one
+        // water operation costs 200 TU.
+        int expected = TileEntityHeatBoilerIndustrial.maxHeat - TileEntityHeatBoilerIndustrial.maxHeat / 1000 - 200;
+        helper.assertTrue(boiler.heat == expected && boiler.isOn,
+                "Industrial boiler consumed the wrong heat amount: " + boiler.heat + " != " + expected);
         helper.succeed();
     }
 }

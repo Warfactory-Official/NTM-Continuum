@@ -38,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *       drawn: {@code doSpecialClick}) and every cut that hits something spends one. The tooltip bar and the
  *       durability bar show it. The creative tab holds a charged crucible; the recipe makes an empty one (item damage
  *       3 of the CRUCIBLE material's 10,000). The tungsten crate's laser recharges one holding fewer than three.</li>
- *   <li>Charged: 500 attack damage and +100% movement; empty: 5 damage and +80% movement. The stack-sensitive
+ *   <li>Charged: 5000 attack damage (1.7 value; effective in full because CommonClass raises vanilla's 2048 ATTACK_DAMAGE bound) and +100% movement; empty: 5 damage and +80% movement. The stack-sensitive
  *       {@code getAttributeModifiers} override named no attack speed, so the player's base speed applies.</li>
  *   <li>Every hit also wears the sword by two (1.12 {@code ItemSwordAbility.hitEntity} and {@code ItemSword.hitEntity}
  *       each damaged it by one); the durability bar shows the charge instead, as in old-hbm.</li>

@@ -119,7 +119,8 @@ public final class PressRecipes {
         // output is the autogen wire item; the ingot input is the c:ingots/<mat> tag. ---
         for (NTMMaterial mat : Mats.orderedList) {
             Item wire = ModAutogenItems.get(MaterialShapes.WIRE, mat);
-            if (wire != null && AssemblyMachineRecipes.hasItem(MaterialShapes.INGOT, mat)) {
+            // 1.7 gates on the "ingot<Mat>" ore name; carbon's ingot is ingot_graphite (c:ingots/carbon), not ingot_carbon
+            if (wire != null && (AssemblyMachineRecipes.hasItem(MaterialShapes.INGOT, mat) || mat == Mats.MAT_CARBON)) {
                 makeRecipe(StampType.WIRE, mat.ingot(), new ItemStack(wire, 8));
             }
         }

@@ -54,6 +54,15 @@ public final class ModFluidItems {
             .transform(Presets.sprite("hbm:items/fluid_barrel", "hbm:items/fluid_barrel_overlay")
                     .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
 
+    /**
+     * 1.7 {@code ModItems.fluid_duct} (templateTab): a duct pre-typed to one fluid, placed as a typed
+     * {@code fluid_duct_neo}; pass 1 tinted with the fluid colour. One creative stack per fluid.
+     */
+    public static final RegistryObject<com.hbm.items.machine.ItemFluidDuct> fluid_duct =
+            REG.item("fluid_duct", com.hbm.items.machine.ItemFluidDuct::new, p -> p)
+            .transform(Presets.sprite("hbm:items/duct", "hbm:items/duct_overlay")
+                    .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
+
     static {
         // One full bucket per fluid in the creative menu, so any fluid can be grabbed and poured into a
         // tank. Skip NONE, and WATER/LAVA (vanilla already provides those buckets). Resolved lazily at
@@ -66,6 +75,7 @@ public final class ModFluidItems {
             }
             return list;
         });
+        ModTabs.addStacksTo(HbmTab.TEMPLATES, () -> com.hbm.items.machine.ItemFluidDuct.creativeStacks(fluid_duct.get()));
         // The universal tank + barrel: an empty one plus one full of each fluid (1.12.2 controlTab).
         ModTabs.addStacksTo(HbmTab.CONTROL, () -> fluidContainerVariants(fluid_tank.get()));
         ModTabs.addStacksTo(HbmTab.CONTROL, () -> fluidContainerVariants(fluid_barrel.get()));

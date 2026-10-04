@@ -35,6 +35,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Enemy;
@@ -63,7 +64,8 @@ public class EntityUFO extends CompatMob implements Enemy, IRadiationImmune {
             SynchedEntityData.defineId(EntityUFO.class, EntityDataSerializers.INT);
 
     private final ServerBossEvent bossEvent = dev.golem.core.world.Compat.bossEvent(this, getDisplayName(),
-            BossEvent.BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
+            // 1.7 BossStatus drew the one vanilla bar, which is 26.2's PINK
+            BossEvent.BossBarColor.PINK, BossEvent.BossBarOverlay.PROGRESS);
 
     private final List<Entity> secondaries = new ArrayList<>();
 
@@ -98,6 +100,16 @@ public class EntityUFO extends CompatMob implements Enemy, IRadiationImmune {
     @Override
     protected void checkFallDamage(double ya, boolean onGround, BlockState onState, BlockPos pos) {
         // 1.7 EntityFlying.fall() was empty
+    }
+
+    /**
+     * 1.7 {@code EntityFlying.moveEntityWithHeading}: no gravity, move, then a flat 0.91 drag (0.546 on the
+     * ground). The AI rewrites motion every live tick, so the drag only shapes the death fall.
+     */
+    @Override
+    public void travel(Vec3 input) {
+        move(MoverType.SELF, getDeltaMovement());
+        setDeltaMovement(getDeltaMovement().scale(onGround() ? 0.6D * 0.91D : 0.91D));
     }
 
     @Override
@@ -399,8 +411,9 @@ public class EntityUFO extends CompatMob implements Enemy, IRadiationImmune {
 
             HbmCriteria.bossKilled(this, BossKilledTrigger.Kind.UFO, 200D);
 
-            for (Player player : server.getPlayers(p -> p.distanceToSqr(this) <= 200D * 200D)) {
-                player.getInventory().placeItemBackInInventory(new ItemStack(ModItems.coin_ufo.get()));
+            // 1.7: boundingBox.expand(200) box, and addItemStackToInventory - a full inventory loses the coin
+            for (Player player : server.getEntitiesOfClass(Player.class, getBoundingBox().inflate(200D))) {
+                player.getInventory().add(new ItemStack(ModItems.coin_ufo.get()));
             }
         }
 

@@ -24,9 +24,8 @@ public final class BedrockOreFeature {
 
     private BedrockOreFeature() {}
 
-    public static final int NETHER_GLOWSTONE_WEIGHT = 100;
-    public static final int NETHER_PHOSPHORUS_WEIGHT = 50;
-    public static final int NETHER_QUARTZ_WEIGHT = 100;
+    // 1.7 BedrockOre.weightedOresNether weights: hbm.cfg 2.BN00_bedrockGlowstoneWeight, 2.BN01_bedrockPhosphorusWeight and
+    // 2.BN01_bedrockQuartzWeight (WorldConfig; History §19ej-8)
 
     public static int tierForDensity(double density) {
         if (density > 1.5D) return 4;
@@ -74,14 +73,16 @@ public final class BedrockOreFeature {
     }
 
     public static Deposit weightedNetherDeposit(long worldSeed, int chunkX, int chunkZ) {
-        int total = NETHER_GLOWSTONE_WEIGHT + NETHER_PHOSPHORUS_WEIGHT + NETHER_QUARTZ_WEIGHT;
+        int glowstone = Math.max(0, com.hbm.config.WorldConfig.bedrockGlowstoneSpawn);
+        int phosphorus = Math.max(0, com.hbm.config.WorldConfig.bedrockPhosphorusSpawn);
+        int total = Math.max(1, glowstone + phosphorus + Math.max(0, com.hbm.config.WorldConfig.bedrockQuartzSpawn));
         int roll = nextIntDeterministic(worldSeed, chunkX, chunkZ, total);
-        if (roll < NETHER_GLOWSTONE_WEIGHT) {
+        if (roll < glowstone) {
             return new Deposit(() -> new ItemStack(Items.GLOWSTONE_DUST, 4), null,
                     0xF9FF4D, 1, ModOreBlocks.stone_depth_nether.get());
         }
-        roll -= NETHER_GLOWSTONE_WEIGHT;
-        if (roll < NETHER_PHOSPHORUS_WEIGHT) {
+        roll -= glowstone;
+        if (roll < phosphorus) {
             return new Deposit(() -> new ItemStack(ModFuelItems.powder_fire.get(), 4), null,
                     0xD7341F, 1, ModOreBlocks.stone_depth_nether.get());
         }
@@ -116,8 +117,9 @@ public final class BedrockOreFeature {
                 for (int dy = 1; dy < 7; dy++) {
                     pos.set(x, origin.getY() + dy, z);
                     BlockState state = level.getBlockState(pos);
+                    // 1.7 replaced stone here; at the modern world floor that stone is deepslate (History §19ej-6)
                     if ((dy < 3 || state.is(Blocks.BEDROCK))
-                            && (state.is(Blocks.STONE) || state.is(Blocks.BEDROCK))) {
+                            && (state.is(Blocks.STONE) || state.is(Blocks.DEEPSLATE) || state.is(Blocks.BEDROCK))) {
                         level.setBlock(pos, deposit.depthRock().defaultBlockState(), 2);
                     }
                 }

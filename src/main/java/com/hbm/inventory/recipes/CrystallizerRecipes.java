@@ -48,8 +48,7 @@ import static com.hbm.inventory.OreDictManager.*;
  * registered as {@code nugget_mercury}), the mustard-willow cadmium leach and the three external-mod
  * compatibility recipes, which — as in 1.7 — only register when another mod fills their tag. Not ported:
  * the legacy {@code ore_centrifuged/separated/nitrocrystalline} bedrock chain (those creative-tab-less
- * items are not in the port) and plastic scrap to circuit-star pieces (the port's {@code scrap_plastic}
- * has no {@code ScrapType} subtypes to map piece by piece).
+ * items are not in the port).
  *
  * <p>{@code productivity} is carried for parity but unused: in the 1.12.2 tile the free-item chance
  * came only from EFFECT machine upgrades (unported), never from the recipe field.
@@ -151,6 +150,11 @@ public final class CrystallizerRecipes {
         peroxide(item(ModItems.powder_desh_ready.get()), stack(ModItems.ingot_desh.get()),         baseTime,    0F);
         peroxide(item(ModItems.powder_meteorite.get()),  stack(ModItems.fragment_meteorite.get()), utilityTime, 0F);
         AbilityToolMachineRecipes.crystallizer(recipes, baseTime); // treated -> etched meteorite sword
+        // 1.7 CrystallizerRecipes:126-128: each plastic scrap type into its circuit-star piece
+        for (String s : com.hbm.items.ModFinalConsumableItems.SCRAPS) {
+            peroxide(item(com.hbm.items.ModFinalConsumableItems.flat("scrap_plastic_" + s)),
+                    stack(com.hbm.items.ModFinalConsumableItems.flat("circuit_star_piece_" + s)), baseTime, 0F);
+        }
         BedrockOreChainRecipes.crystallizer(recipes); // bedrock ore washing / acid grades
         add(CD.dust(),                 stack(ModItems.ingot_rubber.get(), 16), utilityTime, 0F, Fluids.FISHOIL, 4_000);
         add(item(ModItems.ingot_biorubber.get()), stack(ModItems.ingot_rubber.get()), mixingTime, 0.15F,

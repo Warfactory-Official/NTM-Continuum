@@ -29,7 +29,8 @@ import java.util.Map;
  * <p>The pools name items by registry id and are resolved at draw time; an entry naming an item this port has not
  * registered draws nothing, keeping its weight (1.7 would have dressed the mob in it). 1.7's slot keys are kept:
  * 0 the held item, 1 boots, 2 leggings, 3 chestplate, 4 helmet. The soot-mob pools ({@code slotPoolCommonS},
- * {@code slotPoolRangedS}, {@code slotPoolGuns}) belong to the soot system, which is not in the port.
+ * {@code slotPoolRangedS}, {@code slotPoolGuns}) are drawn by {@link com.hbm.main.ModEventHandlerMobs} (1.7
+ * {@code ModEventHandler.decorateMob}).
  */
 public final class MobUtil {
 
@@ -45,10 +46,46 @@ public final class MobUtil {
     public static final Map<Integer, List<Choice>> slotPoolGunsTier1 = new HashMap<>();
     public static final Map<Integer, List<Choice>> slotPoolGunsTier2 = new HashMap<>();
     public static final Map<Integer, List<Choice>> slotPoolGunsTier3 = new HashMap<>();
+    /** Soot mobs (1.7 {@code slotPoolCommonS}/{@code slotPoolRangedS}); key order is 1.7's HashMap order, 0..4. */
+    public static final Map<Integer, List<Choice>> slotPoolCommonS = new java.util.TreeMap<>();
+    public static final Map<Integer, List<Choice>> slotPoolRangedS = new java.util.TreeMap<>();
+    /** 1.7 {@code slotPoolGuns}: keyed by the minimum soot level, not by slot. */
+    public static final Map<Double, List<Choice>> slotPoolGuns = new HashMap<>();
     /** Declared in 1.7 and never filled; drawing from it does nothing, as there. */
     public static final Map<Integer, List<Choice>> slotPoolMasks = new HashMap<>();
 
     static {
+        // soot mobs
+        slotPoolCommonS.put(4, pool(8000, "gas_mask_m65", 16, "gas_mask_olde", 12, "mask_of_infamy", 8, "gas_mask_mono", 8,
+                "robes_helmet", 32, "no9", 16, "cobalt_helmet", 2, "rag_piss", 1, "nossy_hat", 1, "alloy_helmet", 2,
+                "titanium_helmet", 4, "steel_helmet", 8));
+        slotPoolCommonS.put(3, pool(7000, "starmetal_plate", 1, "cobalt_plate", 2, "robes_plate", 32, "jackt", 32,
+                "jackt2", 32, "alloy_plate", 2, "steel_plate", 2));
+        slotPoolCommonS.put(2, pool(7000, "zirconium_legs", 1, "cobalt_legs", 2, "steel_legs", 16, "titanium_legs", 8,
+                "robes_legs", 32, "alloy_legs", 2));
+        slotPoolCommonS.put(1, pool(7000, "robes_boots", 32, "steel_boots", 16, "cobalt_boots", 2, "alloy_boots", 2));
+        slotPoolCommonS.put(0, pool(10000, "weapon_pipe_lead", 30, "crowbar", 25, "geiger_counter", 20, "reer_graar", 16,
+                "steel_pickaxe", 12, "stopsign", 10, "sopsign", 8, "chernobylsign", 6, "steel_sword", 15,
+                "titanium_sword", 8, "lead_gavel", 4, "wrench_flipped", 2, "wrench", 20));
+
+        slotPoolRangedS.put(4, pool(8000, "gas_mask_m65", 16, "gas_mask_olde", 12, "mask_of_infamy", 8, "gas_mask_mono", 8,
+                "robes_helmet", 32, "no9", 16, "rag_piss", 1, "goggles", 1, "alloy_helmet", 2, "titanium_helmet", 4,
+                "steel_helmet", 8));
+        slotPoolRangedS.put(3, pool(7000, "starmetal_plate", 1, "cobalt_plate", 2, "alloy_plate", 2, "steel_plate", 8,
+                "titanium_plate", 4));
+        slotPoolRangedS.put(2, pool(7000, "zirconium_legs", 1, "cobalt_legs", 2, "steel_legs", 16, "titanium_legs", 8,
+                "robes_legs", 32, "alloy_legs", 2));
+        slotPoolRangedS.put(1, pool(10000, "robes_boots", 32, "steel_boots", 16, "cobalt_boots", 2, "alloy_boots", 2,
+                "titanium_boots", 6));
+
+        // soot guns (1.7 createSlotPool(Object[][]): no null entry)
+        slotPoolGuns.put(0.3, pool(-1, "gun_light_revolver", 16, "gun_greasegun", 8, "gun_maresleg", 2));
+        slotPoolGuns.put(1D, pool(-1, "gun_light_revolver", 6, "gun_greasegun", 8, "gun_maresleg", 4, "gun_henry", 6));
+        slotPoolGuns.put(3D, pool(-1, "gun_uzi", 10, "gun_maresleg", 8, "gun_henry", 12, "gun_heavy_revolver", 4,
+                "gun_flaregun", 2));
+        slotPoolGuns.put(5D, pool(-1, "gun_am180", 6, "gun_uzi", 10, "gun_spas12", 8, "gun_henry_lincoln", 2,
+                "gun_heavy_revolver", 12, "gun_flaregun", 4, "gun_flamer", 2));
+
         // gob block
         slotPoolCommon.put(4, pool(0, "gas_mask_m65", 16, "gas_mask_olde", 12, "mask_of_infamy", 8, "gas_mask_mono", 8,
                 "robes_helmet", 32, "no9", 16, "cobalt_helmet", 2, "rag_piss", 1, "nossy_hat", 1, "alloy_helmet", 2,
@@ -98,7 +135,7 @@ public final class MobUtil {
     }
 
     /** 1.7 {@code createSlotPool}: a null choice of {@code nullWeight} first (none if negative), then the items. */
-    private static List<Choice> pool(int nullWeight, Object... idsAndWeights) {
+    public static List<Choice> pool(int nullWeight, Object... idsAndWeights) {
         List<Choice> pool = new ArrayList<>();
         if (nullWeight >= 0) pool.add(new Choice(null, nullWeight));
         for (int i = 0; i < idsAndWeights.length; i += 2) {
@@ -118,7 +155,7 @@ public final class MobUtil {
     }
 
     /** 1.7 {@code WeightedRandom.getRandomItem}. */
-    private static @Nullable Choice draw(List<Choice> pool, RandomSource rand) {
+    public static @Nullable Choice draw(List<Choice> pool, RandomSource rand) {
         int total = 0;
         for (Choice c : pool) total += c.weight();
         if (total <= 0) return null;
@@ -128,6 +165,23 @@ public final class MobUtil {
             if (roll < 0) return c;
         }
         return null;
+    }
+
+    /** 1.7 {@code equipFullSet}: helmet, chestplate, leggings and boots by registry id. */
+    public static void equipFullSet(LivingEntity entity, String helmet, String chest, String legs, String boots) {
+        String[] ids = {boots, legs, chest, helmet};
+        for (int i = 0; i < 4; i++) {
+            ItemStack stack = stack(ids[i]);
+            if (!stack.isEmpty()) entity.setItemSlot(slot(i + 1), stack);
+        }
+    }
+
+    /** The stack a pool id names, or empty when this port has no such item. */
+    public static ItemStack stack(@Nullable String id) {
+        if (id == null) return ItemStack.EMPTY;
+        Identifier key = Ids.parse(id.contains(":") ? id : "hbm:" + id);
+        if (!BuiltInRegistries.ITEM.containsKey(key)) return ItemStack.EMPTY;
+        return new ItemStack(BuiltInRegistries.ITEM.getValue(key));
     }
 
     public static void assignItemsToEntity(LivingEntity entity, Map<Integer, List<Choice>> slotPools, RandomSource rand) {

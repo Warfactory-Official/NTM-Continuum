@@ -31,7 +31,8 @@ public final class HbmAdvancementDeclarations {
     private static boolean declared;
 
     /** 1.7 {@code Fluids.ASCHRAB} id, the Taste of Blood icon's fluid; held against the registry by a GameTest. */
-    public static final int ASCHRAB_ID = 34;
+    /** The icon's fluid, by registry name (never a numeric fluid id, History section 19ej-ids). */
+    public static final String ASCHRAB_ID = "hbm:aschrab";
     public static final int ASCHRAB_COLOR = 0xb50000;
 
     private HbmAdvancementDeclarations() {}
@@ -205,9 +206,9 @@ public final class HbmAdvancementDeclarations {
     }
 
     /** The {@code fluid_icon} droplet for one fluid, in 26.1 component spelling. */
-    private static JsonObject fluidIcon(int fluid, int color) {
+    private static JsonObject fluidIcon(String fluid, int color) {
         JsonObject components = new JsonObject();
-        components.addProperty("hbm:fluid_id", fluid);
+        components.addProperty("hbm:fluid", fluid);
         JsonObject modelData = new JsonObject();
         JsonArray colors = new JsonArray();
         colors.add(color);

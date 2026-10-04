@@ -178,6 +178,18 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
         }
     }
 
+    /**
+     * 1.7's Torex factories spawned the cloud themselves; the port's only build it. 1.7's custom missile
+     * did not consult enableNukeClouds. Each child claims its chunk before this missile's ticket goes.
+     */
+    private void spawnCloud(EntityNukeTorex torex) {
+        if (level().addFreshEntity(torex)) torex.startChunkLoading();
+    }
+
+    private void spawnBlast(EntityNukeExplosionMK5 blast) {
+        if (level().addFreshEntity(blast)) blast.startChunkLoading();
+    }
+
     // 1.7 EntityMissileCustom:165, verbatim:
     @Override
     public void onMissileImpact(HitResult mop) { //TODO: demolish this steaming pile of shit
@@ -195,11 +207,11 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
         switch(type) {
         case HE:
             ExplosionLarge.explode(level(), getX(), getY(), getZ(), strength, true, false, true);
-            ExplosionLarge.jolt(level(), getX(), getY(), getZ(), (int) strength, (int) (strength * 50), 0.25);
+            ExplosionLarge.jolt(level(), getX(), getY(), getZ(), strength, (int) (strength * 50), 0.25);
             break;
         case INC:
             ExplosionLarge.explodeFire(level(), getX(), getY(), getZ(), strength, true, false, true);
-            ExplosionLarge.jolt(level(), getX(), getY(), getZ(), (int) (strength * 1.5F), (int) (strength * 50), 0.25);
+            ExplosionLarge.jolt(level(), getX(), getY(), getZ(), strength * 1.5, (int) (strength * 50), 0.25);
             break;
         case CLUSTER:
             break;
@@ -210,20 +222,19 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
             break;
         case NUCLEAR:
         case TX:
-            level().addFreshEntity(EntityNukeExplosionMK5.statFac(level(), (int) strength, getX(), getY(), getZ()));
-            EntityNukeTorex.statFac(level(), getX(), getY(), getZ(), strength);
+            spawnBlast(EntityNukeExplosionMK5.statFac(level(), (int) strength, getX(), getY(), getZ()));
+            spawnCloud(EntityNukeTorex.statFac(level(), getX(), getY(), getZ(), strength));
             break;
         case BALEFIRE:
             EntityBalefire bf = new EntityBalefire(ModNtmEntities.BALEFIRE.get(), level());
             bf.setPos(getX(), getY(), getZ());
             bf.destructionRange = (int) strength;
             level().addFreshEntity(bf);
-            EntityNukeTorex.statFacBale(level(), getX(), getY(), getZ(), strength);
+            spawnCloud(EntityNukeTorex.statFacBale(level(), getX(), getY(), getZ(), strength));
             break;
         case N2:
-            level().addFreshEntity(
-                    EntityNukeExplosionMK5.statFacNoRad(level(), (int) strength, getX(), getY(), getZ()));
-            EntityNukeTorex.statFac(level(), getX(), getY(), getZ(), strength);
+            spawnBlast(EntityNukeExplosionMK5.statFacNoRad(level(), (int) strength, getX(), getY(), getZ()));
+            spawnCloud(EntityNukeTorex.statFac(level(), getX(), getY(), getZ(), strength));
             break;
         case TAINT:
             int r = (int) strength;

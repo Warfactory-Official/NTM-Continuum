@@ -21,7 +21,7 @@ import net.minecraft.core.BlockPos;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The "big dumb boom" helpers — 1.12.2's {@code ExplosionLarge}. A missile's own payload is a VNT
+ * The "big dumb boom" helpers, 1.7's {@code ExplosionLarge}. A missile's own payload is a VNT
  * explosion or a nuclear entity; this class is the garnish around it: the vanilla blast a small
  * warhead makes, and the wreckage a destroyed missile leaves behind.
  *
@@ -37,31 +37,12 @@ public final class ExplosionLarge {
     private ExplosionLarge() {}
 
     /**
-     * A vanilla blast plus optional debris. Upstream's booleans are kept even though two of the three
-     * effects are stubs — a caller passing {@code (true, false, true)} is stating what the warhead is
-     * supposed to look like, and that statement should survive the port.
+     * 1.7 {@code explode(..., Entity exploder)} (:165): a vanilla smoking blast by {@code detonator}, then the
+     * smoke cloud, rubble and shrapnel at the blast centre itself.
      */
     public static void explode(Level world, @Nullable Entity detonator, double x, double y, double z,
                                float strength, boolean cloud, boolean rubble, boolean shrapnel) {
-        world.explode(detonator, x, y, z, strength, Level.ExplosionInteraction.TNT);
-        if (cloud) spawnParticles(world, x, y + 2, z, cloudFunction((int) strength));
-        if (rubble) spawnRubble(world, x, y + 2, z, rubbleFunction((int) strength));
-        if (shrapnel) spawnShrapnels(world, x, y + 2, z, shrapnelFunction((int) strength));
-    }
-
-    /** Old antimatter-cell dirty blast: a no-fallout radius-100 nuke plus the configured radiation pulse. */
-    public static void explodeFire(Level world, @Nullable Entity detonator, double x, double y, double z,
-                                   float strength, boolean cloud, boolean rubble, boolean shrapnel) {
-        if (CompatibilityConfig.isWarDim(world)) {
-            EntityNukeExplosionMK5 blast = EntityNukeExplosionMK5.statFacNoRad(
-                    world, (int) strength, x, y, z).setDetonator(detonator);
-            world.addFreshEntity(blast);
-            ContaminationUtil.radiate(world, x, y, z, strength, 0F, 0F,
-                    strength * 20F, strength * 5F);
-        }
-        if (cloud) spawnParticles(world, x, y + 2, z, cloudFunction((int) strength));
-        if (rubble) spawnRubble(world, x, y + 2, z, rubbleFunction((int) strength));
-        if (shrapnel) spawnShrapnels(world, x, y + 2, z, shrapnelFunction((int) strength));
+        explode(world, detonator, x, y, z, strength, false, cloud, rubble, shrapnel);
     }
 
     /**
@@ -111,8 +92,12 @@ public final class ExplosionLarge {
 
     // --- upstream's debris counts ---
 
+    /**
+     * 1.7 :256-258. {@code -i/15} divides as INTs, so the exponent is a whole number: strength 10 yields 15
+     * particles, strength 15 yields 552. 1.12.2 rescaled the base to 545; 1.7 is the specification.
+     */
     public static int cloudFunction(int i) {
-        return (int) (545 * (1 - Math.pow(Math.E, -i / 15D)) + 15);
+        return (int) (850 * (1 - Math.pow(Math.E, -i / 15)) + 15);
     }
 
     public static int rubbleFunction(int i) {
@@ -123,8 +108,6 @@ public final class ExplosionLarge {
         return i / 3;
     }
 
-    // --- deferred: waiting on EntityRubble / EntityShrapnel and the smoke particle families ---
-
     /** Sends the legacy expanding smoke cloud to tracking clients. */
     public static void spawnParticles(Level world, double x, double y, double z, int count) {
         net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
@@ -132,21 +115,26 @@ public final class ExplosionLarge {
         com.hbm.particle.helper.HbmEffectNT.Smoke_Cloud.send(world, x, y, z, data);
     }
 
-    /** Sends the legacy radial shock smoke to tracking clients. */
-    private static int rubbleCount(float strength) {
-        return (int) (strength / 10F);
+    /** 1.7 spawnParticlesRadial (:34): smoke mode "radial". */
+    public static void spawnParticlesRadial(Level world, double x, double y, double z, int count) {
+        net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+        data.putInt("count", count);
+        com.hbm.particle.helper.HbmEffectNT.Smoke_Radial.send(world, x, y, z, data);
     }
 
-    private static int shrapnelCount(float strength) {
-        return (int) (strength / 3F);
+    /** 1.7 spawnFoam (:43): smoke mode "foamSplash". 1.7 sends no "range", so every bubble starts at the centre. */
+    public static void spawnFoam(Level world, double x, double y, double z, int count) {
+        net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+        data.putInt("count", count);
+        com.hbm.particle.helper.HbmEffectNT.Smoke_FoamSplash.send(world, x, y, z, data);
     }
 
-    // 1.7 spawnShock/spawnParticles: "smoke" broadcasts.
+    /** 1.7 spawnShock (:52): smoke mode "shock", sent half a block up. */
     public static void spawnShock(Level world, double x, double y, double z, int count, double strength) {
         net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
         data.putInt("count", count);
         data.putDouble("strength", strength);
-        com.hbm.particle.helper.HbmEffectNT.Smoke_Shock.send(world, x, y, z, data);
+        com.hbm.particle.helper.HbmEffectNT.Smoke_Shock.send(world, x, y + 0.5, z, data);
     }
 
     /** Spawns the legacy stone fragments used by dirty blasts. */
@@ -264,13 +252,17 @@ public final class ExplosionLarge {
     }
 
 
-    private static void explode(Level level, Entity detonator, double x, double y, double z, float strength,
+    /**
+     * 1.7 explode / explodeFire (:165-193): createExplosion / newExplosion (smoking, fire for the
+     * incendiary form), then the legacy smoke cloud, rubble and shrapnel counted by the 1.7 functions,
+     * all at the blast centre. 1.12.2 moved the garnish two blocks up and swapped in composeEffect.
+     */
+    private static void explode(Level level, @Nullable Entity detonator, double x, double y, double z, float strength,
                                 boolean fire, boolean cloud, boolean rubble, boolean shrapnel) {
         level.explode(detonator, null, null, x, y, z, strength, fire, Level.ExplosionInteraction.TNT);
-        // 1.12.2: cosmetic +2 Y.
-        if (cloud) ExplosionCreator.composeEffectStandard(level, x, y + 2, z);
-        if (rubble) spawnRubble(level, x, y + 2, z, rubbleCount(strength));
-        if (shrapnel) spawnShrapnels(level, x, y + 2, z, shrapnelCount(strength));
+        if (cloud) spawnParticles(level, x, y, z, cloudFunction((int) strength));
+        if (rubble) spawnRubble(level, x, y, z, rubbleFunction((int) strength));
+        if (shrapnel) spawnShrapnels(level, x, y, z, shrapnelFunction((int) strength));
     }
 
     public static void spawnBurst(Level level, double x, double y, double z, int count, double strength) {
@@ -292,7 +284,7 @@ public final class ExplosionLarge {
 /**
      * Uniform-sphere-sampled rays that yank the first low-resistance block on each ray into a flying EntityRubble.
      */
-    public static void jolt(Level level, double x, double y, double z, int strength, int count, double vel) {
+    public static void jolt(Level level, double x, double y, double z, double strength, int count, double vel) {
         RandomSource rand = level.getRandom();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int n = 0; n < count; n++) {
@@ -303,9 +295,10 @@ public final class ExplosionLarge {
             double dy = cosTheta;
             double dz = sinTheta * Math.sin(phi);
             for (int i = 0; i < strength; i++) {
-                int bx = (int) Math.floor(x + dx * i);
-                int by = (int) Math.floor(y + dy * i);
-                int bz = (int) Math.floor(z + dz * i);
+                // 1.7 :224 casts with (int): truncation toward zero, not floor
+                int bx = (int) (x + dx * i);
+                int by = (int) (y + dy * i);
+                int bz = (int) (z + dz * i);
                 pos.set(bx, by, bz);
                 BlockState state = level.getBlockState(pos);
                 if (state.liquid()) {

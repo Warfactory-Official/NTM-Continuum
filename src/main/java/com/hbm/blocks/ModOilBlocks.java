@@ -37,14 +37,18 @@ public final class ModOilBlocks {
     public static final RegistryObject<BlockOilDeposit> ore_oil = REG.block("ore_oil",
             BlockOilDeposit::new, p -> p.strength(5.0F, 10.0F).requiresCorrectToolForDrops())
             .transform(Presets.cubeAll())
-            .loot(Loot.only("hbm:oil_tar_crude"))
+            // 1.7 BlockOre: one oil_tar (crude) on the multiplying fortune curve; canSilkHarvest is false for ore_oil
+            .loot(Loot.dropsMultiplied("hbm:oil_tar_crude", 1, 1))
             .tag(BlockTag.PICKAXE);
 
-    /** Drill bore casing — old {@code BlockNoDrop}, Material.IRON, no creative tab, drops nothing. */
+    /**
+     * Drill bore casing — old {@code BlockNoDrop}, Material.IRON, no creative tab. It drops nothing, but it is a
+     * plain opaque cube without a tile entity, so 1.7's default {@code canSilkHarvest} lets silk touch keep it.
+     */
     public static final RegistryObject<Block> oil_pipe = REG.block("oil_pipe",
             Block::new, p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
             .transform(Presets.cubeAll())
-            .loot(Loot.nothing())
+            .loot(Loot.silkTouchOnly())
             .tag(BlockTag.PICKAXE);
 
     /** Surface oil puddle (worldgen vents) — old {@code BlockLayering}, hardness 0.1, snow sound. */

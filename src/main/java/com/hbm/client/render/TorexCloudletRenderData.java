@@ -3,8 +3,6 @@ package com.hbm.client.render;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.effect.EntityNukeTorex.Cloudlet;
 import dev.golem.core.render.Billboards;
-import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import java.util.Comparator;
 
@@ -51,64 +49,48 @@ public final class TorexCloudletRenderData {
         writeFlare(cloud, frame.partialTick(), layers.layer(1));
     }
 
+    /** 1.7 FULLBRIGHT: the entity's getBrightnessForRender (15728880) lights every cloudlet and flare. */
+    private static final int FULLBRIGHT = 0x00F000F0;
+
+    /**
+     * 1.7 RenderTorex.tessellateCloudlet: the interpolated, scale-mapped position; the cloudlet's own
+     * scale as the half edge; colour times 0.9 (condensation) or 0.75 * colorMod, clamped as the 1.7
+     * tessellator clamped; the cloudlet alpha; fullbright.
+     */
     public static void write(EntityNukeTorex cloud, float partialTicks, Billboards.RowWriter writer) {
-        float cloudAlphaBase = cloud.getAlpha();
         for (Cloudlet c : cloud.cloudlets) {
-            float lifeFrac = (float) c.age / (float) c.cloudletLife;
-            float alpha = (1F - lifeFrac) * cloudAlphaBase;
-            if (c.type == EntityNukeTorex.TorexType.CONDENSATION) alpha *= 0.25F;
-            alpha = Mth.clamp(alpha, 0.0001F, 1F);
-
-            float size = c.startingScale + lifeFrac * c.growingScale;
             float brightness = c.type == EntityNukeTorex.TorexType.CONDENSATION ? 0.9F : 0.75F * c.colorMod;
-            double greying = c.type == EntityNukeTorex.TorexType.RING ? 0.05D : 0D;
-            float red = clampColor(color(c, c.prevColorR, c.colorR, partialTicks, greying), brightness);
-            float green = clampColor(color(c, c.prevColorG, c.colorG, partialTicks, greying), brightness);
-            float blue = clampColor(color(c, c.prevColorB, c.colorB, partialTicks, greying), brightness);
-            int br = lightmap(red, green, blue);
-
-            writer.row(
-                    c.prevPosX + (c.posX - c.prevPosX) * partialTicks,
-                    c.prevPosY + (c.posY - c.prevPosY) * partialTicks,
-                    c.prevPosZ + (c.posZ - c.prevPosZ) * partialTicks,
-                    size, red, green, blue, alpha, br | (br << 16));
+            writer.row(c.getInterpX(partialTicks), c.getInterpY(partialTicks), c.getInterpZ(partialTicks),
+                    c.getScale(),
+                    channel(c.getInterpColor(0, partialTicks), brightness),
+                    channel(c.getInterpColor(1, partialTicks), brightness),
+                    channel(c.getInterpColor(2, partialTicks), brightness),
+                    c.getAlpha(), FULLBRIGHT);
         }
     }
 
+    /**
+     * 1.7 RenderTorex.flashWrapper: for the first 100 ticks, three white additive billboards of half edge
+     * {@code 25 * rollerSize} scattered around the core head by a {@code new Random(entityId)} gaussian, fading
+     * linearly to nothing. Simulation-space values, not mapped by the scale, as 1.7 drew them.
+     */
     public static void writeFlare(EntityNukeTorex cloud, float partialTicks, Billboards.RowWriter writer) {
-        float flareDuration = (float) cloud.getScale() * TorexRenderer.flareBaseDuration;
-        double age = Math.min(cloud.tickCount + partialTicks, flareDuration);
-        float fade = (float) Math.min(1, (flareDuration - age) / flareDuration);
-        if (fade <= 0F) return;
+        if (cloud.tickCount >= 101) return;
+        double age = Math.min(cloud.tickCount + partialTicks, 100);
+        float alpha = (float) ((100D - age) / 100F);
 
-        float size = (float) (10 * cloud.rollerSize);
-        int brightness = (int) (fade * 240F);
-        int packedLight = brightness | (brightness << 16);
-        RandomSource random = RandomSource.create(cloud.getId());
+        java.util.Random rand = new java.util.Random(cloud.getId());
         for (int i = 0; i < 3; i++) {
-            double x = cloud.getX() + random.nextGaussian() * 0.5F * cloud.rollerSize;
-            double y = cloud.getY() + cloud.coreHeight + random.nextGaussian() * 0.5F * cloud.rollerSize;
-            double z = cloud.getZ() + random.nextGaussian() * 0.5F * cloud.rollerSize;
-            writer.row(x, y, z, size, 1F, 1F, 1F, fade, packedLight);
+            float x = (float) (rand.nextGaussian() * 0.5F * cloud.rollerSize);
+            float y = (float) (rand.nextGaussian() * 0.5F * cloud.rollerSize);
+            float z = (float) (rand.nextGaussian() * 0.5F * cloud.rollerSize);
+            writer.row(cloud.getX() + x, cloud.getY() + y + cloud.coreHeight, cloud.getZ() + z,
+                    (float) (25 * cloud.rollerSize), 1F, 1F, 1F, alpha, FULLBRIGHT);
         }
     }
 
-    private static double color(Cloudlet cloudlet, double previous, double current,
-                                float partialTicks, double greying) {
-        if (cloudlet.type == EntityNukeTorex.TorexType.CONDENSATION) return 1D;
-        return previous + (current - previous) * partialTicks + greying;
-    }
-
-    private static float clampColor(double color, float brightness) {
-        float channel = (float) color * brightness;
-        if (channel < 0.15F) return 0.15F;
-        return channel > 1F ? 1F : channel;
-    }
-
-    private static int lightmap(float red, float green, float blue) {
-        float average = (red + green + blue) / 3F;
-        if (average > 1F) average = 1F;
-        int brightness = (int) (average * 240F);
-        return brightness < 48 ? 48 : brightness;
+    private static float channel(double color, float brightness) {
+        float value = (float) color * brightness;
+        return value < 0F ? 0F : value > 1F ? 1F : value;
     }
 }

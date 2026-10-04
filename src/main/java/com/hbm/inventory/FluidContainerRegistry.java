@@ -74,7 +74,7 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
             new Fixed(ItemIds.ore_oil, "", "OIL", 250),
             new Fixed(ItemIds.ore_gneiss_gas, "", "PETROLEUM", 250), // 50 with enable528, off by default
             new Fixed(ItemIds.bottle_mercury, "minecraft:glass_bottle", "MERCURY", 1000),
-            new Fixed("hbm:ingot_mercury", "", "MERCURY", 125),
+            new Fixed(ItemIds.nugget_mercury, "", "MERCURY", 125), // 1.7 ingot_mercury, registered as "nugget_mercury"
             new Fixed(ItemIds.rod_zirnox_tritium, ItemIds.rod_zirnox_empty, "TRITIUM", 2000),
             new Fixed(ItemIds.particle_hydrogen, ItemIds.particle_empty, "HYDROGEN", 1000),
             new Fixed(ItemIds.particle_amat, ItemIds.particle_empty, "AMAT", 1000),

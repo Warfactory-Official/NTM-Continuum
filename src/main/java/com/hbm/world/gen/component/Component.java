@@ -227,9 +227,20 @@ public abstract class Component extends StructurePiece {
         return total / iterations;
     }
 
-    /** 1.7 {@code World.getTopSolidOrLiquidBlock}: above the highest movement-blocking block, liquids and leaves ignored. */
-    protected static int topSolid(WorldGenLevel world, int x, int z) {
-        return world.getHeight(Heightmap.Types.OCEAN_FLOOR, x, z);
+    /**
+     * 1.7 {@code World.getTopSolidOrLiquidBlock}: above the highest block whose material blocks movement and is not
+     * leaves (water does not block movement, so liquids are skipped too). The {@code OCEAN_FLOOR} heightmap is the
+     * movement-blocking part, but modern leaves block movement, so a canopy that reached the chunk first (a
+     * neighbour's tree) is stepped through here as 1.7 did. Returns -1 like 1.7 when the column is empty.
+     */
+    public static int topSolid(net.minecraft.world.level.LevelAccessor world, int x, int z) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        int min = world.getMinY();
+        for (int y = world.getHeight(Heightmap.Types.OCEAN_FLOOR, x, z) - 1; y >= min; y--) {
+            BlockState state = world.getBlockState(pos.set(x, y, z));
+            if (state.blocksMotion() && !state.is(BlockTags.LEAVES)) return y + 1;
+        }
+        return -1;
     }
 
     // ------------------------------------------------------------------------------------------------------------

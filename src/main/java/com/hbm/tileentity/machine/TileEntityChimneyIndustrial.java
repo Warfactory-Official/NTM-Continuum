@@ -18,7 +18,8 @@ public final class TileEntityChimneyIndustrial extends TileEntityChimneyBase {
 
     @Override
     public double getPollutionMod() {
-        return 0.1D;
+        // 1.7: rampant mode swaps in half of 12.R06_rampantSmokeStackOverride
+        return com.hbm.config.MobConfig.rampantMode ? com.hbm.config.MobConfig.rampantSmokeStackOverride / 2 : 0.1D;
     }
 
     @Override

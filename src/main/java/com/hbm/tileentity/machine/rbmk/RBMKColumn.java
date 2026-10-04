@@ -34,14 +34,14 @@ public abstract class RBMKColumn {
 
     protected static String fluidName(int fluidId) {
         if (fluidId < 0) return "";
-        return Fluids.fromID(fluidId).getDisplayName().getString();
+        return Fluids.byLegacyId(fluidId).getDisplayName().getString();
     }
 
     /**
      * A tank's fluid type as its registry id for the DTO (-1 = empty).
      */
     public static int fluidId(FluidType fluid) {
-        return fluid == null ? -1 : fluid.getID();
+        return fluid == null ? -1 : Fluids.legacyId(fluid); // 1.7 exposed this number to the console and to computers
     }
 
     public static RBMKColumn readFromBuf(ByteBuf buf) {

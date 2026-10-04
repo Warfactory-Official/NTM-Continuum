@@ -41,9 +41,9 @@ public final class ModToolItems {
     public static final RegistryObject<ItemTooling> hand_drill =
             REG.item("hand_drill", p -> new ItemTooling(p, ToolType.HAND_DRILL),
                     p -> p.stacksTo(1).durability(100)).transform(Presets.handheld());
-    /** Mk.V crate opening device; the old steel ModSword had 750 durability. */
+    /** Mk.V crate opening device: 1.7 ModSword(tMatSteel), 750 uses and a 4 + 2 = 6 attack modifier. */
     public static final RegistryObject<dev.golem.core.world.CompatSwordItem> crowbar =
-            REG.item("crowbar", p -> new dev.golem.core.world.CompatSwordItem(p, 750, 3.0F, -2.4F,
+            REG.item("crowbar", p -> new dev.golem.core.world.CompatSwordItem(p, 750, 4.0F, -2.4F,
                     net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM,
                             dev.golem.core.Ids.of(Constants.MOD_ID, "repairs/steel"))), p -> p)
                     .transform(Presets.handheld());

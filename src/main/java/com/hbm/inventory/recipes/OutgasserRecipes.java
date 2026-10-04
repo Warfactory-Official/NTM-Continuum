@@ -52,7 +52,13 @@ public final class OutgasserRecipes extends GenericRecipes {
         register(new OutgasserRecipe("outgasser.thorium_fuel_billet").inputItems(MAT_THORIUM.billet())
                 .outputItems(new ItemStack(ModItems.billet_thorium_fuel.get())).setup(DURATION, 0));
 
-        // 1.7 OutgasserRecipes:53, mushroom stew to glowing mushroom stew.
+        // 1.7 OutgasserRecipes:51-53, mushrooms to glowing mushrooms.
+        register(new OutgasserRecipe("outgasser.mush_brown").inputItems(
+                        new com.hbm.inventory.RecipesCommon.ComparableStack(net.minecraft.world.item.Items.BROWN_MUSHROOM))
+                .outputItems(new ItemStack(com.hbm.blocks.ModTerrainBlocks.mush.get())).setup(DURATION, 0));
+        register(new OutgasserRecipe("outgasser.mush_red").inputItems(
+                        new com.hbm.inventory.RecipesCommon.ComparableStack(net.minecraft.world.item.Items.RED_MUSHROOM))
+                .outputItems(new ItemStack(com.hbm.blocks.ModTerrainBlocks.mush.get())).setup(DURATION, 0));
         register(new OutgasserRecipe("outgasser.glowing_stew").inputItems(
                         new com.hbm.inventory.RecipesCommon.ComparableStack(net.minecraft.world.item.Items.MUSHROOM_STEW))
                 .outputItems(new ItemStack(com.hbm.items.ModFinalConsumableItems.glowing_stew.get())).setup(DURATION, 0));
@@ -66,6 +72,10 @@ public final class OutgasserRecipes extends GenericRecipes {
         register(new OutgasserRecipe("outgasser.coal_block").inputItems(MAT_COAL.block())
                 .outputItems(ModOilItems.tar(EnumTarType.COAL, 9))
                 .outputFluids(new FluidStack(Fluids.SYNGAS, 500)).setup(DURATION, 0));
+        // 1.7 OutgasserRecipes:59, PVC to C4 plus colloid.
+        register(new OutgasserRecipe("outgasser.pvc").inputItems(com.hbm.inventory.OreDictManager.PVC.ingot())
+                .outputItems(new ItemStack(com.hbm.items.ModFuelItems.ingot_c4.get()))
+                .outputFluids(new FluidStack(Fluids.COLLOID, 250)).setup(DURATION, 0));
         register(new OutgasserRecipe("outgasser.coal_tar").inputItems(
                         new com.hbm.inventory.RecipesCommon.ComparableStack(ModOilItems.tar(EnumTarType.COAL)))
                 .outputFluids(new FluidStack(Fluids.COALOIL, 100)).setup(DURATION, 0));

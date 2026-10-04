@@ -82,7 +82,7 @@ public final class SingularityGameTests {
         helper.assertTrue(ItemCell.isEmptyCell(empty), "new cell is not empty");
         helper.assertTrue(ItemCell.isFullCell(antimatter, Fluids.AMAT)
                         && ModDataComponents.fluidAmount(antimatter) == ItemCell.CAPACITY
-                        && ModDataComponents.fluidId(antimatter) == Fluids.AMAT.getID(),
+                        && ModDataComponents.fluid(antimatter) == Fluids.AMAT,
                 "AMAT cell did not retain its legacy fluid id");
         helper.assertTrue(ItemCell.remainder(antimatter).is(ModSingularityItems.cell.get()),
                 "full AMAT cell did not return an empty cell");
@@ -130,15 +130,15 @@ public final class SingularityGameTests {
                 "cell allowed a partial drain");
         helper.assertTrue(cell.tryEmpty(Fluids.AMAT, 1_250, full) == ItemCell.CAPACITY
                         && ItemCell.isEmptyCell(full)
-                        && ModDataComponents.fluidId(full) == 0
+                        && ModDataComponents.fluid(full) == Fluids.NONE
                         && ModDataComponents.fluidAmount(full) == 0
                         && !ModDataComponents.ITEM_VARIANT.has(full),
                 "whole-cell drain did not clear fluid components");
 
         ItemStack partial = new ItemStack(ModSingularityItems.cell.get());
-        ModDataComponents.fluidId(partial, Fluids.AMAT.getID());
+        ModDataComponents.fluid(partial, Fluids.AMAT);
         ModDataComponents.fluidAmount(partial, 1);
-        ModDataComponents.ITEM_VARIANT.set(partial, Fluids.AMAT.getID());
+        ModDataComponents.ITEM_VARIANT.set(partial, Fluids.legacyId(Fluids.AMAT));
         helper.assertTrue(!ItemCell.isFullCell(partial, Fluids.AMAT)
                         && !cell.providesFluid(Fluids.AMAT, partial)
                         && cell.tryFill(Fluids.AMAT, ItemCell.CAPACITY, partial) == ItemCell.CAPACITY
@@ -148,7 +148,7 @@ public final class SingularityGameTests {
                         .orElse(ItemStack.EMPTY).isEmpty(),
                 "component singularity recipe matched a partial AMAT cell");
         ItemStack partialAschrab = new ItemStack(ModSingularityItems.cell.get());
-        ModDataComponents.fluidId(partialAschrab, Fluids.ASCHRAB.getID());
+        ModDataComponents.fluid(partialAschrab, Fluids.ASCHRAB);
         ModDataComponents.fluidAmount(partialAschrab, 1);
         ModDataComponents.ITEM_VARIANT.set(partialAschrab, com.hbm.items.special.CellVariants.ANTI_SCHRABIDIUM);
         helper.assertTrue(Recipes.craftingResult(helper.getLevel(), 3, 3, singularityGrid(partialAschrab))

@@ -39,6 +39,8 @@ public abstract class BlockTNTBase extends dev.golem.core.world.CompatBlock impl
     protected BlockTNTBase(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(ARMED, false));
+        // 1.7 BlockTNTBase: super(Material.tnt, 15, 100, ...) - BlockFlammable encouragement 15, flammability 100
+        dev.golem.core.world.Fires.setFlammable(this, 15, 100);
     }
 
     @Override

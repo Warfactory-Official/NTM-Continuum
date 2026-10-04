@@ -53,10 +53,14 @@ public final class XFactory50 {
                 .setWear(5F).setDoesPenetrate(true).setDamageFalloffByPen(false)
                 .setSpectral(true).setDamage(1.5F).setHeadshot(3F)
                 .setThresholdNegation(30F).setArmorPiercing(0.35F));
-        // The original spawns EntityBuilding here. That entity is outside this shared gun slice.
+        // 1.7 LAMBDA_BUILDING: a falling building spawned 50 blocks above the hit.
         bmg50_equestrian = BulletConfigs.register("bmg50_equestrian", new BulletConfig()
                 .setItem(BallisticGunCatalog.ammo("ammo_secret_bmg50_equestrian"))
-                .setDamage(0F));
+                .setDamage(0F).setOnImpact((bullet, mop) -> {
+                    XFactory44.dropFromSky(bullet, mop, new com.hbm.entity.projectile.EntityBuilding(
+                            com.hbm.entity.ModNtmEntities.FALLING_BUILDING.get(), bullet.level()));
+                    bullet.discard();
+                }));
     }
 
     public static BulletConfig[] all() {

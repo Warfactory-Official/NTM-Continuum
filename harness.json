@@ -9,6 +9,7 @@
   "defaultNodes": ["1.21.1-neoforge", "1.21.1-fabric"],
   "maxClients": 2,
   "retentionHours": 10,
+  "allNodesMaxClients": 6,
   "nodes": [
     {"name": "26.1-neoforge", "minecraft": "26.1", "loader": "neoforge", "port": 47601, "packFormat": 84, "java": 25},
     {"name": "26.1-fabric", "minecraft": "26.1", "loader": "fabric", "port": 47602, "packFormat": 84, "java": 25},

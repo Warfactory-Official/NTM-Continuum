@@ -45,7 +45,7 @@ public class TileEntitySolarMirror extends TileEntityLoadedBase {
         te.isOn = true;
         BlockEntity target = level.getBlockEntity(new BlockPos(te.tX, te.tY - 1, te.tZ));
         if (target instanceof TileEntitySolarBoiler boiler) {
-            boiler.heatInput += sun;
+            boiler.heat += sun;
         }
     }
 

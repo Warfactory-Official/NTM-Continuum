@@ -251,7 +251,8 @@ public final class ArmorModEvents {
     /** The module items' share of 1.7 {@code onEntityDeath}'s player-kill mob loot. */
     private static void onDeath(LivingEntity entity, DamageSource source) {
         if (!(entity.level() instanceof ServerLevel level) || !Compat.mobLoot(level)) return;
-        if (!(source.getEntity() instanceof Player)) return;
+        // 1.7 excludes Forge's FakePlayer
+        if (!(source.getEntity() instanceof Player killer) || dev.golem.core.platform.Platform.isFakePlayer(killer)) return;
         RandomSource rng = entity.getRandom();
 
         // 1.7's cave spider extended its spider, so both roll the milk. Compared by entity type because

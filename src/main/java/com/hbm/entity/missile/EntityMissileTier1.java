@@ -42,7 +42,7 @@ public abstract class EntityMissileTier1 extends EntityMissileBaseNT {
         public EntityMissileGeneric(Level world, float x, float y, float z, int a, int b) {
             super(ModMissileEntities.MISSILE_GENERIC.get(), world, x, y, z, a, b);
         }
-        @Override public void onMissileImpact(HitResult hit) { this.explodeStandard(15F, 24, false); }
+        @Override public void onMissileImpact(HitResult hit) { this.explodeStandard(15F, 24, false); com.hbm.particle.helper.ExplosionCreator.composeEffectSmall(level(), getX(), getY(), getZ()); }
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_generic_small.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_generic.get()); }
     }
@@ -71,7 +71,7 @@ public abstract class EntityMissileTier1 extends EntityMissileBaseNT {
         public EntityMissileIncendiary(Level world, float x, float y, float z, int a, int b) {
             super(ModMissileEntities.MISSILE_INCENDIARY.get(), world, x, y, z, a, b);
         }
-        @Override public void onMissileImpact(HitResult hit) { this.explodeStandard(15F, 24, true); }
+        @Override public void onMissileImpact(HitResult hit) { this.explodeStandard(15F, 24, true); com.hbm.particle.helper.ExplosionCreator.composeEffectSmall(level(), getX(), getY(), getZ()); }
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_incendiary_small.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_incendiary.get()); }
     }

@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
 
 public class ContainerMachineBattery extends AbstractContainerMenu {
 
-    private static final int MACHINE_SLOTS = 4;
+    private static final int MACHINE_SLOTS = 2;
 
     private final Container machine;
     private final ContainerLevelAccess access;
@@ -42,11 +42,9 @@ public class ContainerMachineBattery extends AbstractContainerMenu {
         this.machine = battery != null ? battery : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
-        // Match the original battery layout: charge slots top, discharge slots bottom, left & right.
-        this.addSlot(new Slot(machine, 0, 35, 17));
-        this.addSlot(new Slot(machine, 1, 35, 53));
-        this.addSlot(new Slot(machine, 2, 125, 17));
-        this.addSlot(new Slot(machine, 3, 125, 53));
+        // 1.7.10 layout: slot 0 (discharge into the block) at (26,17), slot 1 (charge from it) at (26,53).
+        this.addSlot(new Slot(machine, 0, 26, 17));
+        this.addSlot(new Slot(machine, 1, 26, 53));
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
     }
 
@@ -95,7 +93,8 @@ public class ContainerMachineBattery extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModMachineBlocks.machine_battery.get());
+        // Any battery tier shares this menu, so validate against the block entity rather than one block.
+        return this.machine.stillValid(player);
     }
 
     @Override

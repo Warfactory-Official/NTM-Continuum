@@ -33,8 +33,14 @@ import java.util.Map;
  */
 public class FluidType {
 
-    /** The numeric ID of the fluid (assigned by {@link Fluids} on registration). */
+    /**
+     * The 1.7 numeric id (registration order, assigned by {@link Fluids}). Never persisted: saves, item components,
+     * recipe/loot data and copied settings use {@link #getRegistryName()}. Read it only through
+     * {@link Fluids#legacyId}/{@link Fluids#networkId}.
+     */
     private int id;
+    /** The stable namespaced id this fluid is saved under ({@code hbm:<lowercase name>}). */
+    private final String registryName;
     /** The internal/string name (e.g. {@code "water"}). */
     private final String stringId;
     /** Approximate HEX colour of the fluid, used for pipe/GUI rendering. */
@@ -68,6 +74,7 @@ public class FluidType {
         this.color = color;
         this.guiTint = color;
         this.key = name.toLowerCase(Locale.US);
+        this.registryName = Constants.MOD_ID + ":" + this.key;
         this.unlocalized = "hbmfluid." + this.key;
         this.fallbackName = titleCase(name);
         this.texture = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/gui/fluids/" + this.key + ".png");
@@ -93,7 +100,19 @@ public class FluidType {
         return this;
     }
 
-    public int getID() { return this.id; }
+    /** The 1.7 number; package-private so no caller outside {@link Fluids} can persist it by accident. */
+    int numericId() { return this.id; }
+
+    /** The stable namespaced id, e.g. {@code hbm:water}: the only form in which a fluid is ever saved. */
+    public String getRegistryName() { return this.registryName; }
+
+    // A FluidType is a data component value (ModDataComponents.FLUID), and 26.1 refuses component values that do not
+    // declare value equality. One instance exists per fluid, so identity is the value equality.
+    @Override
+    public boolean equals(Object other) { return this == other; }
+
+    @Override
+    public int hashCode() { return this.registryName.hashCode(); }
 
     /** Used internally by {@link Fluids} when (re)assigning IDs. */
     void setID(int id) { this.id = id; }
@@ -105,7 +124,7 @@ public class FluidType {
      * The fluid's name as the player should see it — the localised {@code hbmfluid.*} entry.
      *
      * <p>Every display of a fluid name must come through here. Title-casing the internal id is
-     * <b>not</b> a substitute: it agrees with the real name for only 39 of the 157 fluids, and
+     * <b>not</b> a substitute: it agrees with the real name for only 39 of the 156 fluids, and
      * silently disagrees for the rest ({@code HEAVYOIL} is "Heavy Oil", {@code OIL} is "Crude Oil",
      * {@code SMEAR} is "Industrial Oil", {@code WATZ} is "Poisonous Mud"). The title-cased id survives
      * only as the fallback for a fluid that has no lang entry yet.
@@ -312,6 +331,6 @@ public class FluidType {
 
     @Override
     public String toString() {
-        return "FluidType[" + stringId + "#" + id + "]";
+        return "FluidType[" + registryName + "]";
     }
 }

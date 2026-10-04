@@ -132,9 +132,12 @@ public final class NukePerfGameTests {
                     Constants.LOG.info("[NUKE-BENCH] r={} finished in {} ms wall over {} ticks "
                                     + "({} filled blocks, budget {} ms/tick)",
                             RADIUS, wall, blast.tickCount, filledBlocks, BombConfig.mk5);
-                    helper.assertTrue(blast.getBlocksDestroyed() == 313_350,
+                    // 549,876: 1.7's collectTip (res = 2r, res -= pow(0.5, 7.5 - fac), samples 0 .. r - 1) on this dirt
+                    // block, matched exactly by an independent re-implementation (fix wave 1D, History 19ej-1d).
+                    // 1.12.2's formula carved 313,350.
+                    helper.assertTrue(blast.getBlocksDestroyed() == 549_876,
                             "the deterministic r=64 crater destroyed " + blast.getBlocksDestroyed()
-                                    + " blocks instead of 313350; ray geometry or resistance changed");
+                                    + " blocks instead of 549876; ray geometry or resistance changed");
                     helper.succeed();
                 });
     }

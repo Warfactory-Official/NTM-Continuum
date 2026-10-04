@@ -114,10 +114,11 @@ public final class BlastFurnaceGameTests {
         helper.assertTrue(furnace.inventory.getStackInSlot(3).is(ModItems.ingot_steel.get())
                         && furnace.inventory.getStackInSlot(3).getCount() == 2,
                 "Blast furnace did not produce two steel ingots");
-        Mats.MaterialStack slag = ItemScraps.getMats(furnace.inventory.getStackInSlot(4));
-        helper.assertTrue(slag != null && slag.material == Mats.MAT_SLAG
-                        && slag.amount == MaterialShapes.INGOT.quantity,
-                "Blast furnace did not produce its slag byproduct");
+        // 1.7 BlastFurnaceRecipesNT: the byproduct is ingot_raw[slag], the autogen slag ingot
+        ItemStack slag = furnace.inventory.getStackInSlot(4);
+        helper.assertTrue(slag.getItem() == com.hbm.items.ModAutogenItems.get(MaterialShapes.INGOT, Mats.MAT_SLAG)
+                        && slag.getCount() == 1,
+                "Blast furnace did not produce its slag ingot byproduct");
         helper.assertTrue(furnace.fuel == TileEntityMachineBlastFurnace.FUEL_RATE,
                 "One coal must leave exactly half a coal's fuel after one operation");
         helper.assertTrue(furnace.tanks[1].getFill() == TileEntityMachineBlastFurnace.FLUE_GAS,

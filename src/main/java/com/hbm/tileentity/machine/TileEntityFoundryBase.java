@@ -115,15 +115,14 @@ public abstract class TileEntityFoundryBase extends TileEntityLoadedBase {
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("type", this.type == null ? -1 : this.type.id);
+        Mats.write(output, "type", this.type); // by name, never the numeric id (History 19ej-ids)
         output.putInt("amount", this.amount);
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        int id = input.getIntOr("type", -1);
-        this.type = id < 0 ? null : Mats.matById.get(id);
+        this.type = Mats.read(input, "type");
         this.amount = input.getIntOr("amount", 0);
     }
 }

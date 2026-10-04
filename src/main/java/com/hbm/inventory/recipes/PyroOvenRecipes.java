@@ -97,20 +97,24 @@ public final class PyroOvenRecipes {
 
         BedrockOreChainRecipes.pyroOven(recipes); // bedrock-ore roast loops
 
+        // 1.7 PyroOvenRecipes:80 -- steam to syngas is 1:2, syngas to LPS here is 2:1, so it can be cycled
+        recipes.add(new PyroOvenRecipe(300).in(new FluidStack(Fluids.SYNGAS, 2_000)).in(Mats.MAT_TUNGSTEN.dust())
+                .out(new FluidStack(Fluids.SPENTSTEAM, 1_000)).out(new ItemStack(ModItems.ingot_tungsten_carbide.get())));
+
         // syngas from coal
         recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.STEAM, 500)).in(Mats.MAT_COAL.gem()).out(new FluidStack(Fluids.SYNGAS, 1_000)));
         recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.STEAM, 500)).in(Mats.MAT_COAL.dust()).out(new FluidStack(Fluids.SYNGAS, 1_000)));
         recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.STEAM, 250)).in(new TagStack(COKES)).out(new FluidStack(Fluids.SYNGAS, 1_000)));
         // syngas from biomass
         recipes.add(new PyroOvenRecipe(100).in(new ComparableStack(ModFuelItems.biomass.get(), 4)).out(new FluidStack(Fluids.SYNGAS, 1_000)).out(new ItemStack(Items.CHARCOAL, 1)));
-        // soot from tar
-        recipes.add(new PyroOvenRecipe(40).in(new FluidStack(Fluids.HYDROGEN, 250))
+        // soot from tar. 1.7 (PyroOvenRecipes:97) writes .out(HYDROGEN 250) and then .out(CARBONDIOXIDE 1000), and the
+        // second call overwrites the first: the recipe has no fluid input and only the CO2 output. Ported as it behaves.
+        recipes.add(new PyroOvenRecipe(40)
                 .in(new TagStack(TARS, 4)).out(new FluidStack(Fluids.CARBONDIOXIDE, 1_000))
                 .out(new ItemStack(ModIngredientItems.ash(EnumAshType.SOOT))));
         // heavyoil from coal
         recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.HYDROGEN, 500)).in(Mats.MAT_COAL.gem()).out(new FluidStack(Fluids.HEAVYOIL, 1_000)));
         recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.HYDROGEN, 500)).in(Mats.MAT_COAL.dust()).out(new FluidStack(Fluids.HEAVYOIL, 1_000)));
-        recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.HYDROGEN, 250)).in(new TagStack(COKES)).out(new FluidStack(Fluids.HEAVYOIL, 1_000)));
         // coalgas from coal
         recipes.add(new PyroOvenRecipe(50).in(new FluidStack(Fluids.HEAVYOIL, 500)).in(Mats.MAT_COAL.gem()).out(new FluidStack(Fluids.COALGAS, 1_000)));
         recipes.add(new PyroOvenRecipe(50).in(new FluidStack(Fluids.HEAVYOIL, 500)).in(Mats.MAT_COAL.dust()).out(new FluidStack(Fluids.COALGAS, 1_000)));

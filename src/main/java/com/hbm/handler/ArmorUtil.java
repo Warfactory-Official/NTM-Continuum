@@ -22,8 +22,8 @@ import net.minecraft.world.item.ItemStack;
  * counts for {@code checkForHaz2} (and implies hazmat).</li>
  * </ul>
  *
- * <p>Deferred vs the original:
- * the mutation-potion hazmat bypass (no potions yet), and asbestos suit.
+ * <p>The 1.7 set checks that name one fixed suit ({@link #checkForDigamma}, {@link #checkForDigamma2},
+ * {@link #checkForAsbestos}, {@link #checkForFiend}) reference their items directly.
  */
 public class ArmorUtil {
 
@@ -44,7 +44,7 @@ public class ArmorUtil {
     public static final String[] metals = new String[] {
             "chainmail", "iron", "silver", "gold", "platinum", "tin", "lead", "liquidator",
             "schrabidium", "euphemium", "steel", "cmb", "titanium", "alloy", "copper", "bronze",
-            "electrum", "t45", "bj", "starmetal", "hazmat" /* rubber is insulating */, "rubber",
+            "electrum", "t45", "t51", "bj", "starmetal", "hazmat" /* rubber is insulating */, "rubber",
             "hev", "ajr", "rpa", "spacesuit"
     };
 
@@ -81,9 +81,10 @@ public class ArmorUtil {
         return false;
     }
 
-    /** Any full hazmat set (basic or heavy). Old also passed with the mutation potion — deferred. */
+    /** Any full hazmat set (basic or heavy), or the mutation effect (1.7 {@code checkForHazmat}). */
     public static boolean checkForHazmat(LivingEntity entity) {
-        return checkAnySet(entity, hazmatSets) || checkForHaz2(entity);
+        if (checkAnySet(entity, hazmatSets) || checkForHaz2(entity)) return true;
+        return dev.golem.core.world.Effects.hasRegistered(entity, com.hbm.potion.ModEffects.MUTATION.get());
     }
 
     /** Only the true hazmat suits (yellow/red/grey/paa/liquidator), not the metal power armors. */
@@ -103,6 +104,47 @@ public class ArmorUtil {
         if (checkArmor(entity, com.hbm.items.ModArmorItems.dns_helmet.get(), com.hbm.items.ModArmorItems.dns_plate.get(),
                 com.hbm.items.ModArmorItems.dns_legs.get(), com.hbm.items.ModArmorItems.dns_boots.get())) return true;
         return dev.golem.core.world.Effects.hasRegistered(entity, com.hbm.potion.ModEffects.STABILITY.get());
+    }
+
+    /**
+     * 1.7 {@code checkForDigamma2}: the full robes, the stability effect, iron cladding on every worn piece that has
+     * modules at all, and a maximum health already below 3. The only protection from the Spear of Light.
+     */
+    public static boolean checkForDigamma2(LivingEntity entity) {
+        if (!checkArmor(entity, com.hbm.items.ModArmorItems.robes_helmet.get(), com.hbm.items.ModArmorItems.robes_plate.get(),
+                com.hbm.items.ModArmorItems.robes_legs.get(), com.hbm.items.ModArmorItems.robes_boots.get())) return false;
+        if (!dev.golem.core.world.Effects.hasRegistered(entity, com.hbm.potion.ModEffects.STABILITY.get())) return false;
+
+        for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD}) {
+            ItemStack armor = entity.getItemBySlot(slot);
+            if (!armor.isEmpty() && ArmorModHandler.hasMods(armor)) {
+                ItemStack cladding = ArmorModHandler.pryMod(armor, ArmorModHandler.cladding);
+                if (cladding.getItem() != com.hbm.items.ModArmorModItems.cladding_iron.get()) return false;
+            }
+        }
+
+        return entity.getMaxHealth() < 3;
+    }
+
+    /** 1.7 {@code checkForAsbestos}: the full asbestos suit. */
+    public static boolean checkForAsbestos(LivingEntity entity) {
+        return checkArmor(entity, com.hbm.items.ModArmorItems.asbestos_helmet.get(), com.hbm.items.ModArmorItems.asbestos_plate.get(),
+                com.hbm.items.ModArmorItems.asbestos_legs.get(), com.hbm.items.ModArmorItems.asbestos_boots.get());
+    }
+
+    /**
+     * 1.7 {@code checkForFiend}: the jacket worn and the shimmer sledge in the main hand. 1.7 used it only for the
+     * Fiend achievement, which the port states as an advancement criterion of the same shape.
+     */
+    public static boolean checkForFiend(LivingEntity entity) {
+        return entity.getItemBySlot(EquipmentSlot.CHEST).getItem() == com.hbm.items.ModArmorSetBItems.jackt.get()
+                && entity.getMainHandItem().getItem() == com.hbm.items.ModMeleeKitItems.shimmer_sledge.get();
+    }
+
+    /** 1.7 {@code checkForFiend2}: the second jacket and the shimmer axe. */
+    public static boolean checkForFiend2(LivingEntity entity) {
+        return entity.getItemBySlot(EquipmentSlot.CHEST).getItem() == com.hbm.items.ModArmorSetBItems.jackt2.get()
+                && entity.getMainHandItem().getItem() == com.hbm.items.ModMeleeKitItems.shimmer_axe.get();
     }
 
     /**

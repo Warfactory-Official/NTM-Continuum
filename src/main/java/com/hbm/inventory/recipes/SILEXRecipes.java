@@ -644,7 +644,7 @@ public final class SILEXRecipes {
      *
      * <p>Needs its own {@link AStack} because {@link ComparableStack} matches on the {@link Item}
      * alone, and every fluid shares the one {@code fluid_icon} item — in 1.12.2 they were separated by
-     * metadata, here by the {@code FLUID_ID} data component. A plain ComparableStack would make UF6,
+     * metadata, here by the {@code FLUID} data component (the fluid's registry name). A plain ComparableStack would make UF6,
      * PUF6, DEATH, VITRIOL and REDMUD all resolve to whichever recipe was registered first.
      */
     public static final class FluidIconStack extends AStack {

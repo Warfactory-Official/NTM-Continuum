@@ -85,7 +85,7 @@ public final class Gen3SednaGameTests {
 
     public static void gunConfigs(GameTestHelper helper) {
         assertReceiver(helper, ModGunItems.gun_light_revolver_atlas.get(), 0,
-                12.5F, 16, 16, 55, 45, 6,
+                12.5F, 11, 11, 55, 45, 6, // 1.7.10 delay 11 (fix wave 5; 16 was 1.12.2)
                 com.hbm.items.weapon.sedna.factory.XFactory357.m357_bp, false);
         assertReceiver(helper, ModGunItems.gun_pepperbox.get(), 0,
                 5F, 27, 27, 67, 58, 6, XFactoryBlackPowder.stone, false);

@@ -45,8 +45,10 @@ public final class ModBombBlocks {
     /** Taint residue: a hard, spreading block with a shallow collision box. */
     public static final RegistryObject<BlockTaint> taint = REG.block("taint", BlockTaint::new,
                     p -> p.mapColor(MapColor.COLOR_GRAY).strength(15.0F, 10.0F).sound(SoundType.METAL)
-                            .randomTicks().noLootTable())
-            .transform(Presets.cubeAll().states(Variants.uniformRange("taintage", 0, 15)).viaItemModel());
+                            .randomTicks())
+            .transform(Presets.cubeAll().states(Variants.uniformRange("taintage", 0, 15)).viaItemModel())
+            // 1.7: drops nothing, but a plain cube without a tile entity, so silk touch keeps it
+            .loot(Loot.silkTouchOnly());
 
     // --- the DRX/GAMMA burn products. No creative tab upstream (setCreativeTab(null)) and no block
     // item: these exist only to be PLACED by a balefire detonation or an FEL beam. ---

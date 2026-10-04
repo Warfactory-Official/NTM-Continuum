@@ -64,10 +64,13 @@ public final class ArcFurnaceRecipes {
                 new ItemStack(ModItems.nugget_silicon.get(), 12),
                 new Mats.MaterialStack(Mats.MAT_SILICON, n * 12));
 
-        // The fiberglass ingot exists, but its old fiberglass storage block does not.
+        // 1.7 ArcFurnaceRecipes:58-59, FIBER.ingot() and FIBER.block()
         register(new RecipesCommon.ComparableStack(ModItems.ingot_fiberglass.get()),
                 new ItemStack(ModItems.nugget_silicon.get(), 4),
                 new Mats.MaterialStack(Mats.MAT_SILICON, i / 2));
+        register(new RecipesCommon.ComparableStack(com.hbm.blocks.ModDecoContent.block_fiberglass.get().asItem()),
+                new ItemStack(ModItems.nugget_silicon.get(), 40),
+                new Mats.MaterialStack(Mats.MAT_SILICON, i * 9 / 2));
         register(Mats.MAT_ASBESTOS.ingot(), new ItemStack(ModItems.nugget_silicon.get(), 4),
                 new Mats.MaterialStack(Mats.MAT_SILICON, i / 2));
         register(Mats.MAT_ASBESTOS.dust(), new ItemStack(ModItems.nugget_silicon.get(), 4),
@@ -159,6 +162,49 @@ public final class ArcFurnaceRecipes {
                     && (liquid ? recipe.fluidOutput.length > 0 : recipe.solidOutput != null)) return recipe;
         }
         return null;
+    }
+
+    /**
+     * {@link #getOutput(ItemStack, boolean)} plus 1.7's {@code registerFurnaceSmeltables}: in solid mode, any item whose
+     * furnace result exists and which (or whose result) is "arc smeltable" (any ingot / ore / plate / storage-block
+     * ore-dict member, plus 1.7's vanilla list) smelts to its furnace result. The furnace recipes live in the level's
+     * recipe manager, so this pass needs the level and is not listed in JEI.
+     */
+    public static @org.jspecify.annotations.Nullable ArcFurnaceRecipe getOutput(ItemStack stack, boolean liquid,
+            net.minecraft.world.level.@org.jspecify.annotations.Nullable Level level) {
+        ArcFurnaceRecipe explicit = getOutput(stack, liquid);
+        if (explicit != null || liquid || level == null || stack.isEmpty()) return explicit;
+        ItemStack result = dev.golem.core.world.Recipes.smeltingResult(level,
+                dev.golem.core.world.ItemStacks.copyWithCount(stack, 1)).orElse(ItemStack.EMPTY);
+        if (result.isEmpty()) return null;
+        Set<Item> smeltable = arcSmeltable();
+        if (!smeltable.contains(stack.getItem()) && !smeltable.contains(result.getItem())) return null;
+        return new ArcFurnaceRecipe(new RecipesCommon.ComparableStack(stack.getItem()), result, new Mats.MaterialStack[0]);
+    }
+
+    private static Set<Item> arcSmeltable;
+
+    /** 1.7 {@code OreDictManager.arcSmeltable}: every ingot/ore/plate/block ore-dict member, plus the vanilla list. */
+    private static synchronized Set<Item> arcSmeltable() {
+        if (arcSmeltable != null) return arcSmeltable;
+        Set<Item> set = new HashSet<>();
+        dev.golem.core.world.Compat.itemTagKeys().forEach(tag -> {
+            if (!tag.location().getNamespace().equals("c")) return;
+            String path = tag.location().getPath();
+            if (path.startsWith("ingots/") || path.startsWith("ores/") || path.startsWith("plates/")
+                    || path.startsWith("storage_blocks/")) {
+                for (var holder : BuiltInRegistries.ITEM.getTagOrEmpty(tag)) set.add(holder.value());
+            }
+        });
+        // OreDictManager.compensateMojangSpaghettiBullshit
+        for (Item item : new Item[]{Items.GOLD_ORE, Items.IRON_ORE, Items.LAPIS_ORE, Items.DIAMOND_ORE, Items.REDSTONE_ORE,
+                Items.EMERALD_ORE, Items.NETHER_QUARTZ_ORE, Items.GOLD_BLOCK, Items.IRON_BLOCK, Items.LAPIS_BLOCK,
+                Items.DIAMOND_BLOCK, Items.REDSTONE_BLOCK, Items.EMERALD_BLOCK, Items.QUARTZ_BLOCK, Items.IRON_INGOT,
+                Items.GOLD_INGOT, Items.BRICK, Items.NETHER_BRICK}) {
+            set.add(item);
+        }
+        if (!set.isEmpty()) arcSmeltable = set; // tags may not be bound yet on the first call; retry until they are
+        return set;
     }
 
     public static List<ArcFurnaceRecipe> solidRecipes() {

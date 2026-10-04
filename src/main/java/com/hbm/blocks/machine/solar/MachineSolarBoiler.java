@@ -47,15 +47,13 @@ public class MachineSolarBoiler extends BlockMultiblockMachine implements IFluid
         if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntitySolarBoiler boiler)) return null;
 
         List<String> text = new ArrayList<>();
-        text.add(String.format("%,d", boiler.heat) + " TU");
-        text.add("§a-> §r" + String.format("%,d", boiler.heatInput) + " TU/t");
-        if (boiler.tanks[0].getTankType() != com.hbm.inventory.fluid.Fluids.NONE) {
-            text.add("§a-> §r" + boiler.tanks[0].getTankType().getDisplayNameString() + ": "
-                    + boiler.tanks[0].getFill() + "/" + boiler.tanks[0].getMaxFill() + "mB");
-        }
-        if (boiler.tanks[1].getTankType() != com.hbm.inventory.fluid.Fluids.NONE) {
-            text.add("§c<- §r" + boiler.tanks[1].getTankType().getDisplayNameString() + ": "
-                    + boiler.tanks[1].getFill() + "/" + boiler.tanks[1].getMaxFill() + "mB");
+        // 1.7 printHook: both tanks unconditionally, then a blinking "Too cold!" when no operation is possible.
+        text.add("§a-> §r" + boiler.tanks[0].getTankType().getDisplayNameString() + ": "
+                + boiler.tanks[0].getFill() + "/" + boiler.tanks[0].getMaxFill() + "mB");
+        text.add("§c<- §r" + boiler.tanks[1].getTankType().getDisplayNameString() + ": "
+                + boiler.tanks[1].getFill() + "/" + boiler.tanks[1].getMaxFill() + "mB");
+        if (boiler.display < 1) {
+            text.add("&[" + (com.hbm.util.BobMathUtil.getBlink() ? 0xff0000 : 0xffff00) + "&]Too cold!");
         }
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }

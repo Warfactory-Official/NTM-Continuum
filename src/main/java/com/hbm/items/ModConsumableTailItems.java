@@ -39,8 +39,12 @@ public final class ModConsumableTailItems {
         return item;
     }
 
-    public static final RegistryObject<Item> bottle_opener = REG.simpleItem("bottle_opener", p -> p.stacksTo(1))
-            .transform(Presets.handheld());
+    /** 1.7 MainRegistry.enumToolMaterialBottleOpener ("OPENER"): level 1, 250 uses, 1.5 speed, 0.5 damage, ench 200. */
+    public static final dev.golem.core.world.ToolTier OPENER = new dev.golem.core.world.ToolTier(1, 250, 1.5F, 0.5F, 200, null);
+    /** 1.7: a {@code WeaponSpecial} sword whose hits roll one of four debuffs, not a plain item. */
+    public static final RegistryObject<com.hbm.items.tool.WeaponSpecial> bottle_opener = REG.item("bottle_opener",
+            p -> new com.hbm.items.tool.WeaponSpecial(p, OPENER, com.hbm.items.tool.WeaponSpecial.Kind.BOTTLE_OPENER),
+            p -> p.stacksTo(1)).transform(Presets.handheld());
     static { ModTabs.addTo(HbmTab.CONSUMABLES, bottle_opener); }
     public static final RegistryObject<ItemEnergy> can_smart = can("can_smart");
     public static final RegistryObject<ItemEnergy> can_creature = can("can_creature");

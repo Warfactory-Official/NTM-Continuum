@@ -60,12 +60,12 @@ public class EntityRBMKDebris extends CompatEntity {
 
     @Override
     protected void loadData(DataIn input) {
-        setDebrisType(DebrisType.byId(input.getIntOr("debtype", 0)));
+        setDebrisType(com.hbm.util.SavedIds.getEnum(input, "debtype", DebrisType.BLANK));
     }
 
     @Override
     protected void saveData(DataOut output) {
-        output.putInt("debtype", entityData.get(TYPE));
+        com.hbm.util.SavedIds.putEnum(output, "debtype", getDebrisType()); // by name; the synched int is session-only
     }
 
     @Override

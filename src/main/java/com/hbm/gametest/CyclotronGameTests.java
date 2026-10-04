@@ -164,7 +164,7 @@ public final class CyclotronGameTests {
         AssemblyMachineRecipes.INSTANCE.registerRecipes();
         GenericRecipe recipe = AssemblyMachineRecipes.INSTANCE.getRecipe("ass.cyclotron");
         helper.assertTrue(recipe != null && recipe.duration == 600 && recipe.power == 100
-                        && recipe.inputItem != null && recipe.inputItem.length == 9
+                        && recipe.inputItem != null && recipe.inputItem.length == 6 // 1.7 AssemblyMachineRecipes:472
                         && recipe.outputItem != null && recipe.outputItem.length == 1
                         && recipe.outputItem[0].is(ModMachineBlocks.machine_cyclotron.get().asItem()),
                 "cyclotron assembly recipe is missing or not faithful");

@@ -13,7 +13,7 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.List;
 import java.util.Optional;
 
-/** Screen for the vacuum distiller — 1.12.2 {@code GUIMachineVacuumDistill} ({@code gui_vacuum_distill.png},
+/** Screen for the vacuum distiller — 1.7.10 {@code GUIMachineVacuumDistill} (texture copied from 1.7) ({@code gui_vacuum_distill.png},
  * 176×238 panel on a 256×256 texture). Power bar at x=26, 5 tank bars at x=44/80/98/116/134 (bottom y=70). */
 public class GUIMachineVacuumDistill extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineVacuumDistill> {
 
@@ -29,7 +29,14 @@ public class GUIMachineVacuumDistill extends dev.golem.core.gui.CompatContainerS
         super.init();
         this.titleLabelX = this.imageWidth / 2 - this.font.width(this.title) / 2;
         this.titleLabelY = 5;
-        this.inventoryLabelY = 500; // old GUI drew only the centred title
+        this.inventoryLabelY = 500; // labels are drawn by extractLabels (1.7 foreground)
+    }
+
+    /** 1.7 foreground: the name centred in white at y 5, then the inventory caption. */
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 5, 0xFFFFFFFF, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 0xFF404040, false);
     }
 
     @Override

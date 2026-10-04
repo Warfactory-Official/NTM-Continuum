@@ -211,7 +211,7 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
         output.putShort("redLow", redLow);
         output.putShort("redHigh", redHigh);
         output.putByte("lastRedstone", lastRedstone);
-        output.putByte("priority", (byte) priority.ordinal());
+        com.hbm.util.SavedIds.putEnum(output, "priority", priority); // by name, never an ordinal
     }
 
     @Override
@@ -220,6 +220,6 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
         redLow = (short) input.getShortOr("redLow", (short) mode_input);
         redHigh = (short) input.getShortOr("redHigh", (short) mode_output);
         lastRedstone = input.getByteOr("lastRedstone", (byte) 0);
-        priority = ConnectionPriority.VALUES[input.getByteOr("priority", (byte) ConnectionPriority.LOW.ordinal())];
+        priority = com.hbm.util.SavedIds.getEnum(input, "priority", ConnectionPriority.LOW);
     }
 }

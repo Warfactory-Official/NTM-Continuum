@@ -341,14 +341,18 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         return entity.getBoundingBox().intersects(getLadderAABB());
     }
 
-    /** The 8 network-connection positions just outside the 5×3×5 footprint edges. */
+    /**
+     * 1.7.10's eight fixed (unrotated) positions two blocks out, all facing the four inner-corner proxy
+     * cells (core ± 1, ± 1). Whatever the facing, the four along the long axis fall inside the 5×3
+     * footprint and are dead; the other four sit against the long sides, which is where 1.7 connects.
+     */
     public DirPos[] getConPos() {
         int x = getBlockPos().getX(), y = getBlockPos().getY(), z = getBlockPos().getZ();
         return new DirPos[]{
-                new DirPos(x + 3, y, z - 1, Library.POS_X), new DirPos(x + 3, y, z + 1, Library.POS_X),
-                new DirPos(x - 3, y, z - 1, Library.NEG_X), new DirPos(x - 3, y, z + 1, Library.NEG_X),
-                new DirPos(x - 1, y, z + 3, Library.POS_Z), new DirPos(x + 1, y, z + 3, Library.POS_Z),
-                new DirPos(x - 1, y, z - 3, Library.NEG_Z), new DirPos(x + 1, y, z - 3, Library.NEG_Z)};
+                new DirPos(x + 2, y, z - 1, Library.POS_X), new DirPos(x + 2, y, z + 1, Library.POS_X),
+                new DirPos(x - 2, y, z - 1, Library.NEG_X), new DirPos(x - 2, y, z + 1, Library.NEG_X),
+                new DirPos(x - 1, y, z + 2, Library.POS_Z), new DirPos(x + 1, y, z + 2, Library.POS_Z),
+                new DirPos(x - 1, y, z - 2, Library.NEG_Z), new DirPos(x + 1, y, z - 2, Library.NEG_Z)};
     }
 
     /**

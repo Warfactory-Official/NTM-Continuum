@@ -141,8 +141,7 @@ public class BombMulti extends CompatBlock implements TickingBlock, IBomb {
             ExplosionChaos.igniteAllBlocks(server, x, y, z, fireRadius);
         }
         if (poisonRadius > 0) {
-            // 1.7 ExplosionNukeGeneric.wasteNoSchrab; this port's terrain sweep is transformWaste.
-            ExplosionNukeGeneric.transformWaste(level, pos, poisonRadius);
+            ExplosionNukeGeneric.wasteNoSchrab(level, pos, poisonRadius); // 1.7 BombMulti:170
         }
         if (gasCloud > 0) {
             EntityMist mist = new EntityMist(ModEntities.MIST.get(), level);

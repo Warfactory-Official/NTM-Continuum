@@ -129,7 +129,7 @@ public class TileEntityDiode extends TileEntityLoadedBase implements IEnergyRece
     protected void saveData(DataOut output) {
         super.saveData(output);
         output.putLong("limit", limit);
-        output.putByte("p", (byte) priority.ordinal());
+        com.hbm.util.SavedIds.putEnum(output, "p", priority); // by name, never an ordinal
     }
 
     @Override
@@ -137,7 +137,6 @@ public class TileEntityDiode extends TileEntityLoadedBase implements IEnergyRece
         super.loadData(input);
         int levelKey = input.getIntOr("level", -1);
         limit = levelKey >= 0 ? (long) Math.pow(10, levelKey) : input.getLongOr("limit", 1_000L);
-        int p = input.getByteOr("p", (byte) ConnectionPriority.NORMAL.ordinal());
-        priority = ConnectionPriority.VALUES[Math.max(0, Math.min(p, ConnectionPriority.VALUES.length - 1))];
+        priority = com.hbm.util.SavedIds.getEnum(input, "p", ConnectionPriority.NORMAL);
     }
 }

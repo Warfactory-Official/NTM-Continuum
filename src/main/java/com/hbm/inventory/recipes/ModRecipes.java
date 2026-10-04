@@ -32,6 +32,22 @@ public final class ModRecipes {
     public static final RegistryObject<RecipeSerializer<ComponentShapelessRecipe>> COMPONENT_SHAPELESS =
             REG.register(Registries.RECIPE_SERIALIZER, "component_shapeless", () -> ComponentShapelessRecipe.SERIALIZER);
 
+    // 1.7 IRecipe handlers and the Java-decided crafting recipes (History §19ej-1b)
+    public static final RegistryObject<RecipeSerializer<GrenadeCraftingRecipe>> GRENADE_UNIVERSAL =
+            REG.register(Registries.RECIPE_SERIALIZER, "grenade_universal", () -> GrenadeCraftingRecipe.SERIALIZER);
+    public static final RegistryObject<RecipeSerializer<CargoShellCraftingRecipe>> AMMO_ARTY_CARGO =
+            REG.register(Registries.RECIPE_SERIALIZER, "ammo_arty_cargo", () -> CargoShellCraftingRecipe.SERIALIZER);
+    public static final RegistryObject<RecipeSerializer<ScrapsCraftingRecipe>> SCRAPS_SPLIT =
+            REG.register(Registries.RECIPE_SERIALIZER, "scraps_split", () -> ScrapsCraftingRecipe.SERIALIZER);
+    public static final RegistryObject<RecipeSerializer<ScrapsPowderRecipe>> SCRAPS_FROM_POWDERS =
+            REG.register(Registries.RECIPE_SERIALIZER, "scraps_from_powders", () -> ScrapsPowderRecipe.SERIALIZER);
+    public static final RegistryObject<RecipeSerializer<MKUCraftingRecipe>> SYRINGE_MKUNICORN =
+            REG.register(Registries.RECIPE_SERIALIZER, "syringe_mkunicorn", () -> MKUCraftingRecipe.SERIALIZER);
+    public static final RegistryObject<RecipeSerializer<ZirnoxWasteRecipe>> ZIRNOX_WASTE =
+            REG.register(Registries.RECIPE_SERIALIZER, "zirnox_waste", () -> ZirnoxWasteRecipe.SERIALIZER);
+    public static final RegistryObject<RecipeSerializer<FluidDuctRetypeRecipe>> FLUID_DUCT_RETYPE =
+            REG.register(Registries.RECIPE_SERIALIZER, "fluid_duct_retype", () -> FluidDuctRetypeRecipe.SERIALIZER);
+
     public static void init() {
         // the container<amount><fluid> dictionary behind every fluid ingredient
         com.hbm.inventory.FluidContainerRegistry.register();

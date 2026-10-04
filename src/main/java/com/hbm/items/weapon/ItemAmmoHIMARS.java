@@ -116,7 +116,8 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
                 playBoom(rocket);
                 standardExplosion(rocket, hit, 20F, 3F, false, SLAG_CRACKED);
                 ExplosionLarge.spawnShrapnels(level, where.x, where.y, where.z, 30);
-                ExplosionChaos.burn(level, BlockPos.containing(where.x, where.y, where.z), 20);
+                if (level instanceof net.minecraft.server.level.ServerLevel server) // 1.7: (int)-truncated hit vector
+                    ExplosionChaos.igniteAllBlocks(server, (int) where.x, (int) where.y, (int) where.z, 20);
 
                 int radius = 30;
                 for (Entity e : level.getEntities((Entity) null,

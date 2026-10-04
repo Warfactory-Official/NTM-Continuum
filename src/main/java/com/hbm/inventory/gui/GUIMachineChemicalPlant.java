@@ -53,7 +53,7 @@ public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerS
         double progress = te.chemplantModule.progress;
         if (progress > 0) {
             int j = (int) Math.ceil(70 * progress);
-            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 62, this.topPos + 126, 176.0F, 61.0F, j, 16, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 62, this.topPos + 126, 176.0F, te.chemplantModule.restrictedMode ? 77.0F : 61.0F, j, 16, 256, 256); // 1.7: restricted-mode bar below
         }
 
         // Fluid tank bars: 3 input (x=8,26,44) + 3 output (x=80,98,116).

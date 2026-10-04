@@ -13,7 +13,7 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.List;
 import java.util.Optional;
 
-/** Screen for the hydrotreater — 1.12.2 {@code GUIMachineHydrotreater} (176×238 panel on a 256×256
+/** Screen for the hydrotreater — 1.7.10 {@code GUIMachineHydrotreater} (texture copied from 1.7) (176×238 panel on a 256×256
  * texture). Power bar at x=17; 4 tank bars at x=35/53/125/143 (bottom y=70). */
 public class GUIMachineHydrotreater extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineHydrotreater> {
 
@@ -30,6 +30,13 @@ public class GUIMachineHydrotreater extends dev.golem.core.gui.CompatContainerSc
         this.titleLabelX = this.imageWidth / 2 - this.font.width(this.title) / 2;
         this.titleLabelY = 5;
         this.inventoryLabelY = 500;
+    }
+
+    /** 1.7 foreground: the name centred in white at y 5, then the inventory caption. */
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 5, 0xFFFFFFFF, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 0xFF404040, false);
     }
 
     @Override
@@ -71,6 +78,13 @@ public class GUIMachineHydrotreater extends dev.golem.core.gui.CompatContainerSc
 
         if (this.isHovering(17, 18, 16, 52, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, TileEntityMachineHydrotreater.maxPower), Optional.empty(), mouseX, mouseY);
+            return;
+        }
+        // 1.7: hovering the empty catalyst slot (10) with nothing carried names the catalytic converter.
+        if (this.menu.getCarried().isEmpty() && !this.menu.getSlot(10).hasItem() && this.isHovering(89, 36, 16, 16, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, this.font, List.of(
+                    new net.minecraft.world.item.ItemStack(com.hbm.items.ModItems.catalytic_converter.get()).getHoverName()),
+                    Optional.empty(), mouseX, mouseY);
             return;
         }
         for (int i = 0; i < 4; i++) {

@@ -186,7 +186,7 @@ public final class TileEntityReactorControl extends TileEntityMachineBase implem
         output.putDouble("levelUpper", levelUpper);
         output.putDouble("heatLower", heatLower);
         output.putDouble("heatUpper", heatUpper);
-        output.putInt("function", function.ordinal());
+        com.hbm.util.SavedIds.putEnum(output, "function", function); // by name, never an ordinal
     }
 
     @Override
@@ -197,6 +197,6 @@ public final class TileEntityReactorControl extends TileEntityMachineBase implem
         levelUpper = input.getDoubleOr("levelUpper", 0D);
         heatLower = input.getDoubleOr("heatLower", 0D);
         heatUpper = input.getDoubleOr("heatUpper", 0D);
-        function = RodFunction.values()[Mth.clamp(input.getIntOr("function", 0), 0, RodFunction.values().length - 1)];
+        function = com.hbm.util.SavedIds.getEnum(input, "function", RodFunction.values()[0]);
     }
 }

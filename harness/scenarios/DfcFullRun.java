@@ -56,13 +56,13 @@ public class DfcFullRun implements Scenario {
         insert(c, CX, STABILIZER_Z, "GUICoreStabilizer", "hbm:ams_lens", 0);
 
         // --- prime: fuel in the injector, HE and cryogel where they are spent ---
-        merge(c, CX, INJECTOR_Z, "{fuel1_type:8,fuel1:50000,fuel2_type:9,fuel2:50000}");
+        merge(c, CX, INJECTOR_Z, "{fuel1_type:\"hbm:deuterium\",fuel1:50000,fuel2_type:\"hbm:tritium\",fuel2:50000}");
         merge(c, CX, STABILIZER_Z, "{power:2500000000L,watts:50}");
         merge(c, RECEIVER_X, CZ, "{tank:64000}");
         c.waitTicks(10);
 
         String injector = nbt(c, CX, INJECTOR_Z);
-        Expect.that(injector.contains("fuel1_type:8") && injector.contains("fuel2_type:9"),
+        Expect.that(injector.contains("fuel1_type:\"hbm:deuterium\"") && injector.contains("fuel2_type:\"hbm:tritium\""),
                 "injector tanks retyped to deuterium and tritium; nbt " + injector);
         String chamber = nbt(c, CX, CZ);
         Expect.that(chamber.contains("fuel1:50000") && chamber.contains("fuel2:50000"),

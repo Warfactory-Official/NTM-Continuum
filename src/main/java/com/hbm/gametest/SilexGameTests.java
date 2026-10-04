@@ -18,7 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 
 /**
- * GameTests pinning the SILEX to the 1.12.2 behaviour: the wavelength speed formula, the two solution
+ * GameTests pinning the SILEX to the 1.7.10 behaviour: the wavelength speed formula, the two solution
  * loading paths, the weighted output distribution, the queue, the slot matrix, the menu layout, and
  * the "mode resets every tick" invariant that makes the FEL link work.
  */
@@ -159,8 +159,9 @@ public final class SilexGameTests {
     // ---------------------------------------------------------------- weights
 
     /**
-     * The weighted output roll. Uranium separates 1:11 into U-235 : U-238 (natural abundance), so a
-     * large sample must land near 1/12 U-235 — a mistyped weight moves this well outside tolerance.
+     * 1.7.10 output selection is deterministic: {@code recipeIndex} walks the weighted table in steps of
+     * 137, so over 12 outputs of the 1:11 uranium table (gcd(137,12) = 1) exactly one U-235 appears. Also
+     * pins the 1.7 process time of 100 (1.12.2 used 80).
      */
     public static void silexOutputWeights(GameTestHelper helper) {
         SILEXRecipes.register();
@@ -168,16 +169,26 @@ public final class SilexGameTests {
         helper.assertTrue(uranium.outputs.size() == 2, "Uranium should have exactly 2 weighted outputs");
         helper.assertTrue(uranium.totalWeight() == 12, "Uranium weights should total 12, got " + uranium.totalWeight());
 
-        var rand = net.minecraft.util.RandomSource.create(0x5EEDL);
-        int u235 = 0, samples = 12_000;
-        for (int i = 0; i < samples; i++) {
-            if (uranium.roll(rand).is(ModItems.nugget_u235.get())) u235++;
-        }
-        double share = u235 / (double) samples;
-        helper.assertTrue(Math.abs(share - 1.0 / 12.0) < 0.02,
-                "U-235 should come out around 1-in-12 of rolls (weights 1:11), measured "
-                        + String.format("%.4f", share));
+        BlockPos pos = new BlockPos(1, 1, 1);
+        TileEntitySILEX te = place(helper, pos);
+        helper.assertTrue(te.processTime == 100, "1.7 SILEX processTime is 100, was " + te.processTime);
+        helper.assertTrue(TileEntitySILEX.PRIME == 137, "1.7 SILEX output step is 137");
 
+        int u235 = 0;
+        for (int i = 0; i < 12; i++) {
+            primePool(te, uranium);
+            for (int q = 4; q <= 10; q++) te.inventory.setStackInSlot(q, ItemStack.EMPTY);
+            te.progress = te.processTime - 1;
+            run(helper, te, pos, EnumWavelengths.VISIBLE, 1);
+            boolean found = false;
+            for (int q = 4; q <= 10; q++) {
+                ItemStack out = te.inventory.getStackInSlot(q);
+                if (out.is(ModItems.nugget_u235.get())) u235++;
+                if (!out.isEmpty()) found = true;
+            }
+            helper.assertTrue(found, "Output " + i + " was not produced at progress 100");
+        }
+        helper.assertTrue(u235 == 1, "12 cycled outputs of a 1:11 table must give exactly 1 U-235, got " + u235);
         helper.succeed();
     }
 

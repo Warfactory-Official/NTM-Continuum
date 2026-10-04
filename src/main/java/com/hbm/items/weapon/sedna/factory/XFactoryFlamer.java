@@ -75,8 +75,20 @@ public final class XFactoryFlamer {
 
     public static final BiConsumer<EntityBulletBaseMK4, HitResult> LAMBDA_LINGER_GAS =
             (bullet, mop) -> igniteIfPossible(bullet, mop);
-    public static final BiConsumer<EntityBulletBaseMK4, HitResult> LAMBDA_LINGER_NAPALM =
-            (bullet, mop) -> spawnFire(bullet, mop, 2.5F, 1F, 200, EntityFireLingering.TYPE_DIESEL);
+    public static final BiConsumer<EntityBulletBaseMK4, HitResult> LAMBDA_LINGER_NAPALM = (bullet, mop) -> {
+        if (!igniteIfPossible(bullet, mop)) spawnFire(bullet, mop, 2.5F, 1F, 200, EntityFireLingering.TYPE_DIESEL);
+    };
+
+    /** 1.7 {@code LAMBDA_FIRE}: the client-side flame trail of a flamer round. */
+    public static final java.util.function.Consumer<net.minecraft.world.entity.Entity> LAMBDA_FIRE = bullet -> {
+        if (bullet.level().isClientSide())
+            com.hbm.client.FlamerTrailClientEffects.trail(bullet, com.hbm.particle.helper.FlameCreator.META_FIRE);
+    };
+    /** 1.7 {@code LAMBDA_BALEFIRE}: the balefire round's green client-side trail. */
+    public static final java.util.function.Consumer<net.minecraft.world.entity.Entity> LAMBDA_BALEFIRE = bullet -> {
+        if (bullet.level().isClientSide())
+            com.hbm.client.FlamerTrailClientEffects.trail(bullet, com.hbm.particle.helper.FlameCreator.META_BALEFIRE);
+    };
 
     private XFactoryFlamer() {}
 
@@ -124,67 +136,73 @@ public final class XFactoryFlamer {
         bullet.discard();
     }
 
+    /** 1.7 flamer canister base: two steel plates back per 500 rounds, fire damage, no knockback. */
+    private static BulletConfig flame(java.util.function.Supplier<net.minecraft.world.item.Item> item) {
+        return new BulletConfig().setItem(item)
+                .setCasing(() -> new net.minecraft.world.item.ItemStack(com.hbm.items.ModItems.plate_steel.get(), 2), 500)
+                .setupDamageClass(DamageClass.FIRE).setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F);
+    }
+
+    /** 1.7 {@code XFactoryFlamer.init}, clone for clone. */
     public static void init() {
-        flame_nograv = BulletConfigs.register("flame_nograv", new BulletConfig()
-                .setItem(com.hbm.items.ModAmmoItems.flame_diesel).setupDamageClass(DamageClass.FIRE).setLife(100).setVel(1F).setGrav(0F)
-                .setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F)
-                .setOnImpact(LAMBDA_IGNITE_FIRE).setOnRicochet(LAMBDA_LINGER_DIESEL));
+        if (flame_diesel != null) return;
+        BulletConfig diesel = flame(com.hbm.items.ModAmmoItems.flame_diesel).setLife(100).setVel(1F).setGrav(0.02F)
+                .setOnImpact(LAMBDA_IGNITE_FIRE).setOnUpdate(LAMBDA_FIRE).setOnRicochet(LAMBDA_LINGER_DIESEL);
+        BulletConfig gas = flame(SpecialGunCatalog.standardAmmo("flame_gas")).setLife(10).setSpread(0.05F).setVel(1F)
+                .setGrav(0F).setOnImpact(LAMBDA_IGNITE_FIRE).setOnUpdate(LAMBDA_FIRE).setOnRicochet(LAMBDA_LINGER_GAS);
+        BulletConfig napalm = flame(SpecialGunCatalog.standardAmmo("flame_napalm")).setLife(200).setVel(1F).setGrav(0.02F)
+                .setOnImpact(LAMBDA_IGNITE_FIRE).setOnUpdate(LAMBDA_FIRE).setOnRicochet(LAMBDA_LINGER_NAPALM);
+        BulletConfig balefire = flame(SpecialGunCatalog.standardAmmo("flame_balefire")).setLife(200).setVel(1F).setGrav(0.02F)
+                .setOnImpact(LAMBDA_IGNITE_BALEFIRE).setOnUpdate(LAMBDA_BALEFIRE).setOnRicochet(LAMBDA_LINGER_BALEFIRE);
+        flame_diesel = BulletConfigs.register("flame_diesel", diesel);
+        flame_gas = BulletConfigs.register("flame_gas", gas);
+        flame_napalm = BulletConfigs.register("flame_napalm", napalm);
+        flame_balefire = BulletConfigs.register("flame_balefire", balefire);
 
-        flame_nograv_bf = BulletConfigs.register("flame_nograv_bf", new BulletConfig()
-                .setItem(SpecialGunCatalog.standardAmmo("flame_balefire")).setupDamageClass(DamageClass.FIRE).setLife(100).setVel(1F).setGrav(0F)
-                .setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F)
-                .setOnImpact(LAMBDA_IGNITE_BALEFIRE).setOnRicochet(LAMBDA_LINGER_BALEFIRE));
+        flame_nograv = BulletConfigs.register("flame_nograv", diesel.copy().setGrav(0F));
+        flame_nograv_bf = BulletConfigs.register("flame_nograv_bf", balefire.copy().setGrav(0F).setLife(100));
 
-        flame_diesel = BulletConfigs.register("flame_diesel", new BulletConfig().setItem(com.hbm.items.ModAmmoItems.flame_diesel)
-                .setupDamageClass(DamageClass.FIRE).setLife(100).setVel(1F).setGrav(0.02F)
-                .setReloadCount(500).setSelfDamageDelay(20).setOnImpact(LAMBDA_IGNITE_FIRE)
-                .setOnRicochet(LAMBDA_LINGER_DIESEL));
-        flame_gas = BulletConfigs.register("flame_gas", new BulletConfig().setItem(SpecialGunCatalog.standardAmmo("flame_gas"))
-                .setupDamageClass(DamageClass.FIRE).setLife(10).setVel(1F).setSpread(0.05F)
-                .setReloadCount(500).setSelfDamageDelay(20).setOnImpact(LAMBDA_IGNITE_FIRE)
-                .setOnRicochet(LAMBDA_LINGER_GAS));
-        flame_napalm = BulletConfigs.register("flame_napalm", new BulletConfig().setItem(SpecialGunCatalog.standardAmmo("flame_napalm"))
-                .setupDamageClass(DamageClass.FIRE).setLife(200).setVel(1F).setGrav(0.02F)
-                .setReloadCount(500).setSelfDamageDelay(20).setOnImpact(LAMBDA_IGNITE_FIRE)
-                .setOnRicochet(LAMBDA_LINGER_NAPALM));
-        flame_balefire = BulletConfigs.register("flame_balefire", new BulletConfig().setItem(SpecialGunCatalog.standardAmmo("flame_balefire"))
-                .setupDamageClass(DamageClass.FIRE).setLife(200).setVel(1F).setGrav(0.02F)
-                .setReloadCount(500).setSelfDamageDelay(20).setOnImpact(LAMBDA_IGNITE_BALEFIRE)
-                .setOnRicochet(LAMBDA_LINGER_BALEFIRE));
-        flame_topaz_diesel = BulletConfigs.register("flame_topaz_diesel", new BulletConfig().setItem(com.hbm.items.ModAmmoItems.flame_diesel)
-                .setupDamageClass(DamageClass.FIRE).setProjectiles(2).setLife(60).setVel(1F).setGrav(0F).setSpread(0.05F)
-                .setOnImpact(LAMBDA_IGNITE_FIRE).setOnRicochet(LAMBDA_LINGER_DIESEL));
-        flame_topaz_gas = BulletConfigs.register("flame_topaz_gas", flame_gasLike("flame_topaz_gas", LAMBDA_LINGER_GAS)
-                .setLife(10).setVel(1F).setGrav(0F));
-        flame_topaz_napalm = BulletConfigs.register("flame_topaz_napalm", flame_gasLike("flame_topaz_napalm", LAMBDA_LINGER_NAPALM)
-                .setLife(60).setVel(1F).setGrav(0F));
-        flame_topaz_balefire = BulletConfigs.register("flame_topaz_balefire", flame_gasLike("flame_topaz_balefire", LAMBDA_LINGER_BALEFIRE)
-                .setLife(60).setVel(1F).setGrav(0F)
-                .setOnImpact(LAMBDA_IGNITE_BALEFIRE));
-        flame_daybreaker_diesel = BulletConfigs.register("flame_daybreaker_diesel", flame_dieselLike("flame_daybreaker_diesel", LAMBDA_LINGER_DIESEL));
-        flame_daybreaker_gas = BulletConfigs.register("flame_daybreaker_gas", flame_dieselLike("flame_daybreaker_gas", LAMBDA_LINGER_GAS));
-        flame_daybreaker_napalm = BulletConfigs.register("flame_daybreaker_napalm", flame_dieselLike("flame_daybreaker_napalm", LAMBDA_LINGER_NAPALM));
-        flame_daybreaker_balefire = BulletConfigs.register("flame_daybreaker_balefire", flame_dieselLike("flame_daybreaker_balefire", LAMBDA_LINGER_BALEFIRE)
-                .setOnImpact(LAMBDA_IGNITE_BALEFIRE));
+        flame_topaz_diesel = BulletConfigs.register("flame_topaz_diesel",
+                diesel.copy().setProjectiles(2).setSpread(0.05F).setLife(60).setGrav(0F));
+        flame_topaz_gas = BulletConfigs.register("flame_topaz_gas", gas.copy().setProjectiles(2).setSpread(0.05F));
+        flame_topaz_napalm = BulletConfigs.register("flame_topaz_napalm",
+                napalm.copy().setProjectiles(2).setSpread(0.05F).setLife(60).setGrav(0F));
+        flame_topaz_balefire = BulletConfigs.register("flame_topaz_balefire",
+                balefire.copy().setProjectiles(2).setSpread(0.05F).setLife(60).setGrav(0F));
 
+        // The Daybreaker's canisters are mortar shells: an explosion plus a wide lingering fire patch.
+        flame_daybreaker_diesel = BulletConfigs.register("flame_daybreaker_diesel",
+                diesel.copy().setLife(200).setVel(2F).setGrav(0.035F).setOnImpact((bullet, mop) -> {
+                    Lego.standardExplode(bullet, mop, 5F);
+                    spawnFire(bullet, mop, 6F, 2F, 200, EntityFireLingering.TYPE_DIESEL);
+                    bullet.discard();
+                }));
+        flame_daybreaker_gas = BulletConfigs.register("flame_daybreaker_gas",
+                gas.copy().setLife(200).setVel(2F).setGrav(0.035F).setOnImpact((bullet, mop) -> {
+                    Lego.standardExplode(bullet, mop, 5F);
+                    bullet.discard();
+                }));
+        flame_daybreaker_napalm = BulletConfigs.register("flame_daybreaker_napalm",
+                napalm.copy().setLife(200).setVel(2F).setGrav(0.035F).setOnImpact((bullet, mop) -> {
+                    Lego.standardExplode(bullet, mop, 7.5F);
+                    spawnFire(bullet, mop, 6F, 2F, 300, EntityFireLingering.TYPE_DIESEL);
+                    bullet.discard();
+                }));
+        flame_daybreaker_balefire = BulletConfigs.register("flame_daybreaker_balefire",
+                balefire.copy().setLife(200).setVel(2F).setGrav(0.035F).setOnImpact((bullet, mop) -> {
+                    Lego.standardExplode(bullet, mop, 5F);
+                    spawnFire(bullet, mop, 7.5F, 2.5F, 400, EntityFireLingering.TYPE_BALEFIRE);
+                    bullet.discard();
+                }));
     }
 
-    private static BulletConfig flame_gasLike(String id, BiConsumer<EntityBulletBaseMK4, HitResult> ricochet) {
-        return new BulletConfig().setItem(SpecialGunCatalog.standardAmmo(id)).setupDamageClass(DamageClass.FIRE)
-                .setProjectiles(2).setSpread(0.05F).setOnImpact(LAMBDA_IGNITE_FIRE).setOnRicochet(ricochet);
-    }
-
-    private static BulletConfig flame_dieselLike(String id, BiConsumer<EntityBulletBaseMK4, HitResult> ricochet) {
-        return new BulletConfig().setItem(SpecialGunCatalog.standardAmmo(id)).setupDamageClass(DamageClass.FIRE)
-                .setLife(200).setVel(2F).setGrav(0.035F).setOnImpact(LAMBDA_IGNITE_FIRE).setOnRicochet(ricochet);
-    }
-
+    /** 1.7 gun_flamer (0), gun_flamer_topaz (1) and gun_flamer_daybreaker (2). */
     public static GunConfig gunConfig(int variant) {
         BulletConfig[] rounds = variant == 0 ? new BulletConfig[]{flame_diesel, flame_gas, flame_napalm, flame_balefire}
                 : variant == 1 ? new BulletConfig[]{flame_topaz_diesel, flame_topaz_gas, flame_topaz_napalm, flame_topaz_balefire}
                 : new BulletConfig[]{flame_daybreaker_diesel, flame_daybreaker_gas, flame_daybreaker_napalm, flame_daybreaker_balefire};
-        Receiver receiver = new Receiver(0).dmg(variant == 2 ? 25F : variant == 1 ? 1.5F : 1F).delay(1)
-                .auto(true).reload(90).jam(17)
+        Receiver receiver = new Receiver(0).dmg(variant == 2 ? 25F : variant == 1 ? 1.5F : 1F).spreadHipfire(0F)
+                .delay(variant == 2 ? 10 : 1).auto(true).reload(90).jam(17)
                 .mag(new MagazineFullReload(0, variant == 1 ? 500 : variant == 2 ? 50 : 300)
                         .addConfigs(rounds)).offset(0.75, -0.0625, -0.25D).setupStandardFire();
         if (variant == 2) receiver.sound(com.hbm.sound.ModGunSounds.FIRE_BLACK_POWDER::get, 1F, 1F);
@@ -199,6 +217,8 @@ public final class XFactoryFlamer {
                         .mag(new MagazineFluid(0, ItemGunChemthrower.CAPACITY))
                         .canFire(ItemGunChemthrower.LAMBDA_CAN_FIRE)
                         .fire(ItemGunChemthrower.LAMBDA_FIRE).offset(0.75, -0.0625, -0.25D))
-                .setupStandardConfiguration();
+                .smoke(com.hbm.items.weapon.sedna.factory.Lego.LAMBDA_STANDARD_SMOKE)
+                // 1.7: primary click and the decider only - no reload key and no aim toggle on the chemthrower.
+                .pp(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).decider(GunStateDecider.LAMBDA_STANDARD_DECIDER);
     }
 }

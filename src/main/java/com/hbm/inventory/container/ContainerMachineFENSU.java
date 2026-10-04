@@ -17,10 +17,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
-/** The old four-slot battery menu, bound to the FEnSU multiblock core. */
+/** The 1.7.10 two-slot energy-storage menu, bound to the FEnSU multiblock core. */
 public class ContainerMachineFENSU extends AbstractContainerMenu {
 
-    public static final int MACHINE_SLOTS = 4;
+    public static final int MACHINE_SLOTS = 2;
 
     private final Container machine;
     private final ContainerLevelAccess access;
@@ -43,10 +43,8 @@ public class ContainerMachineFENSU extends AbstractContainerMenu {
         this.machine = fensu != null ? fensu : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
-        this.addSlot(new FensuSlot(machine, 0, 35, 17));
-        this.addSlot(new FensuSlot(machine, 1, 35, 53));
-        this.addSlot(new FensuSlot(machine, 2, 125, 17));
-        this.addSlot(new FensuSlot(machine, 3, 125, 53));
+        this.addSlot(new FensuSlot(machine, 0, 26, 17));
+        this.addSlot(new FensuSlot(machine, 1, 26, 53));
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
     }
 
@@ -91,10 +89,7 @@ public class ContainerMachineFENSU extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
-            } else if (Library.isBattery(stack)) {
-                if (!moveItemStackTo(stack, 0, 1, false)
-                        && !moveItemStackTo(stack, 2, 3, false)) return ItemStack.EMPTY;
-            } else {
+            } else if (!moveItemStackTo(stack, 0, 2, false)) {
                 return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);

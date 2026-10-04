@@ -25,7 +25,8 @@ public class EntityFBIDrone extends EntityUFOBase {
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 35.0D).add(Attributes.FOLLOW_RANGE, 100.0D);
+        // 1.7 set only maxHealth; the 100-block reach is getScanRange, not followRange
+        return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 35.0D);
     }
 
     @Override

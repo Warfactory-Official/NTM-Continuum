@@ -3,13 +3,13 @@
 	"icon": [
 		"hbm:fluid_icon",
 		1,
-		18
+		"hbm:lubricant"
 	],
 	"trigger": [
 		[
 			"hbm:fluid_icon",
 			1,
-			18
+			"hbm:lubricant"
 		]
 	],
 	"title": {

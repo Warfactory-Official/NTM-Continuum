@@ -52,8 +52,15 @@ public final class FurnaceGameTests {
 
         helper.assertTrue(furnace.inventory.getStackInSlot(3).is(Items.IRON_INGOT),
                 "Iron furnace did not smelt iron ore");
-        helper.assertTrue(furnace.processingTime == TileEntityFurnaceIron.baseTime,
-                "Iron furnace base processing time changed");
+        helper.assertTrue(furnace.processingTime == TileEntityFurnaceIron.baseTime && TileEntityFurnaceIron.baseTime == 160,
+                "Iron furnace base processing time must be the 1.7 160 ticks, was " + furnace.processingTime);
+        // 1.7: 160 - (160 / 2) * speed / 3 -> speed 2 = 107, speed 3 = 80
+        furnace.inventory.setStackInSlot(4, new ItemStack(com.hbm.items.ModUpgradeItems.upgrade_speed_2.get()));
+        TileEntityFurnaceIron.serverTick(helper.getLevel(), helper.absolutePos(pos), furnace.getBlockState(), furnace);
+        helper.assertTrue(furnace.processingTime == 107, "Speed 2 iron furnace time must be 107, was " + furnace.processingTime);
+        furnace.inventory.setStackInSlot(4, new ItemStack(com.hbm.items.ModUpgradeItems.upgrade_speed_3.get()));
+        TileEntityFurnaceIron.serverTick(helper.getLevel(), helper.absolutePos(pos), furnace.getBlockState(), furnace);
+        helper.assertTrue(furnace.processingTime == 80, "Speed 3 iron furnace time must be 80, was " + furnace.processingTime);
         helper.assertBlockProperty(pos, BlockMultiblockCore.FACING, net.minecraft.core.Direction.NORTH);
         helper.succeed();
     }

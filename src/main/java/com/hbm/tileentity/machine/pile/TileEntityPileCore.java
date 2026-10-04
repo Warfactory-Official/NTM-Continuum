@@ -426,7 +426,7 @@ public class TileEntityPileCore extends TileEntityLoadedBase {
         output.putInt("left", left);
         output.putInt("right", right);
         output.putInt("up", up);
-        output.putInt("orientation", orientation.ordinal());
+        com.hbm.util.SavedIds.putEnum(output, "orientation", orientation); // by name, never an ordinal
 
         writeChannels(output, "fuelChannels", fuelChannels);
         writeChannels(output, "ventChannels", ventilationChannels);
@@ -447,8 +447,7 @@ public class TileEntityPileCore extends TileEntityLoadedBase {
         left = input.getIntOr("left", 0);
         right = input.getIntOr("right", 0);
         up = input.getIntOr("up", 0);
-        orientation = PileOrientation.VALUES[Mth.clamp(input.getIntOr("orientation",
-                PileOrientation.NEITHER.ordinal()), 0, PileOrientation.VALUES.length - 1)];
+        orientation = com.hbm.util.SavedIds.getEnum(input, "orientation", PileOrientation.NEITHER);
 
         segments = new PileSegment[width];
         fuelChannels.clear();
@@ -471,7 +470,7 @@ public class TileEntityPileCore extends TileEntityLoadedBase {
     private PileChannel readChannel(DataIn input) {
         PileChannel chan = new PileChannel(
                 input.getIntOr("x", 0), input.getIntOr("y", 0), input.getIntOr("z", 0),
-                ForgeDirection.getOrientation(input.getIntOr("dir", 0)));
+                com.hbm.util.SavedIds.getEnum(input, "dir", ForgeDirection.DOWN));
 
         if (chan.type == PileChannelType.FUEL) {
             for (DataIn rod : input.childrenListOrEmpty("rods")) {
@@ -523,7 +522,7 @@ public class TileEntityPileCore extends TileEntityLoadedBase {
             output.putInt("x", entry.getPos().getX());
             output.putInt("y", entry.getPos().getY());
             output.putInt("z", entry.getPos().getZ());
-            output.putInt("dir", entry.getDir().ordinal());
+            com.hbm.util.SavedIds.putEnum(output, "dir", entry.getDir());
 
             if (type == PileChannelType.FUEL) {
                 DataOut.ChildList list = output.childrenList("rods");

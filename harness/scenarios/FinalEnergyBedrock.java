@@ -177,7 +177,7 @@ public final class FinalEnergyBedrock implements dev.golem.harness.api.Scenario 
         int[] acid = findCore(c, ax, G, az, "TileEntityMachineCrystallizer");
         Expect.that(acid != null, "the ore acidizer was placed");
         // 1.7 WATER is fluid id 1
-        c.cmd("data merge block " + acid[0] + " " + acid[1] + " " + acid[2] + " {power:1000000L,tankNew:8000,tankNew_type:1}");
+        c.cmd("data merge block " + acid[0] + " " + acid[1] + " " + acid[2] + " {power:1000000L,tankNew:8000,tankNew_type:\"hbm:water\"}");
         placeMachine(c, "hbm:machine_centrifuge", cx, cz);
         int[] cent = findCore(c, cx, G, cz, "TileEntityMachineCentrifuge");
         Expect.that(cent != null, "the centrifuge was placed");

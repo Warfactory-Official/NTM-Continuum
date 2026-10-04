@@ -97,7 +97,15 @@ public final class ModMaterialTags {
         tag("dyes/white", "hbm:chemical_dye_white", "hbm:crayon_white", "hbm:fluorite", "hbm:oil_tar_paraffin",
                 "minecraft:white_dye");
         tag("dyes/yellow", "hbm:chemical_dye_yellow", "hbm:crayon_yellow", "hbm:sulfur", "minecraft:yellow_dye");
-        tag("glass_blocks", "hbm:glass_boron", "hbm:glass_lead");
+        // 1.7 KEY_ANYGLASS "blockGlass": vanilla glass and every stained glass (stated here, like glass_panes, so 1.20.1
+        // Forge, which has no conventional c:glass_blocks, matches the same items as the newer loaders)
+        tag("glass_blocks", "hbm:glass_boron", "hbm:glass_lead",
+                "minecraft:glass", "minecraft:white_stained_glass", "minecraft:orange_stained_glass",
+                "minecraft:magenta_stained_glass", "minecraft:light_blue_stained_glass",
+                "minecraft:yellow_stained_glass", "minecraft:lime_stained_glass", "minecraft:pink_stained_glass",
+                "minecraft:gray_stained_glass", "minecraft:light_gray_stained_glass", "minecraft:cyan_stained_glass",
+                "minecraft:purple_stained_glass", "minecraft:blue_stained_glass", "minecraft:brown_stained_glass",
+                "minecraft:green_stained_glass", "minecraft:red_stained_glass", "minecraft:black_stained_glass");
         tag("glass_panes", "minecraft:glass_pane", "minecraft:white_stained_glass_pane",
                 "minecraft:orange_stained_glass_pane", "minecraft:magenta_stained_glass_pane",
                 "minecraft:light_blue_stained_glass_pane", "minecraft:yellow_stained_glass_pane",

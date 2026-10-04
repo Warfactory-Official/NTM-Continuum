@@ -32,7 +32,8 @@ public class BlockMeteorMolten extends CompatBlock {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
-        return List.of();
+        // 1.7 BlockOre: getItemDropped is null, but 1.7 harvestBlock checks silk touch before getDrops, and this is a plain cube without a tile entity, so silk touch keeps it.
+        return OreDrops.silkTouch(params) ? List.of(new ItemStack(this)) : List.of();
     }
 
     @Override

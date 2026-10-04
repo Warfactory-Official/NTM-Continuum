@@ -89,6 +89,29 @@ public class MachineHeatBoiler extends BlockMultiblockMachine implements IFluidC
         return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 
+    /**
+     * 1.7 {@code MachineHeatBoiler.getDrops}: a boiler that has blown its top ({@code hasExploded}) breaks into
+     * 4 steel ingots and 8 copper plates instead of dropping itself.
+     */
+    @Override
+    public List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder params) {
+        TileEntityHeatBoiler boiler = null;
+        if (params.getOptionalParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.BLOCK_ENTITY)
+                instanceof TileEntityHeatBoiler direct) {
+            boiler = direct;
+        } else {
+            net.minecraft.world.phys.Vec3 origin = params.getOptionalParameter(
+                    net.minecraft.world.level.storage.loot.parameters.LootContextParams.ORIGIN);
+            BlockPos core = origin == null ? null : MultiblockSurface.coreOfAny(params.getLevel(), BlockPos.containing(origin));
+            if (core != null && params.getLevel().getBlockEntity(core) instanceof TileEntityHeatBoiler found) boiler = found;
+        }
+        if (boiler != null && boiler.hasExploded) {
+            return List.of(new ItemStack(com.hbm.items.ModItems.ingot_steel.get(), 4),
+                    new ItemStack(com.hbm.items.ModItems.plate_copper.get(), 8));
+        }
+        return super.getDrops(state, params);
+    }
+
     @Override
     public int coreMask() {
         return MASK_NONE;

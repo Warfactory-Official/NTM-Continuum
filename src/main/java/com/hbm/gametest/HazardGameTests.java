@@ -62,7 +62,9 @@ public final class HazardGameTests {
     public static final GameTests.Function CUSTOM_HAZARD_HOOKS =
             TESTS.function("custom_hazard_hooks", 40, () -> HazardGameTests::customHazardHooks);
 
-    public static void init() {}
+    public static void init() {
+        Hazard17GameTests.init(); // the 1.7.10 value contracts share this suite
+    }
 
     public static void droppedHazardTick(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();

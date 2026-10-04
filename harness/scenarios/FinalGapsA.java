@@ -39,7 +39,7 @@ public final class FinalGapsA implements Scenario {
     private static final int X = 0;
     private static final int Y = 100;
     private static final int Z = 0;
-    private static final int WATER = 1;
+    private static final String WATER = "hbm:water";
 
     private interface Step { void run() throws Exception; }
 
@@ -194,7 +194,7 @@ public final class FinalGapsA implements Scenario {
     private static void amatDrop(Client c) {
         int ax = X + 20, az = Z;
         c.cmd("gamemode creative");
-        Fixtures.giveOnly(c, cell(c, 33, 3), 1);
+        Fixtures.giveOnly(c, cell(c, "hbm:amat", 3), 1);
         c.teleport(ax + 0.5, Y + 1, az + 0.5);
         c.look(0, 20);
         c.waitTicks(5);
@@ -224,7 +224,7 @@ public final class FinalGapsA implements Scenario {
         Fixtures.platform(c, fx, Y, fz, 6);
         c.waitTicks(40);
         Fixtures.platform(c, fx, Y, fz, 6);
-        Fixtures.giveOnly(c, cell(c, 34, 7), 1);
+        Fixtures.giveOnly(c, cell(c, "hbm:aschrab", 7), 1);
         c.teleport(fx + 0.5, Y + 1, fz + 0.5);
         c.look(0, 20);
         c.waitTicks(5);
@@ -262,14 +262,14 @@ public final class FinalGapsA implements Scenario {
         give.addProperty("give", "oldcell:SAS3");
         c.query("hbm_gapsa", give);
         c.waitTicks(5); // one inventory tick migrates both; a new antimatter cell must then stack onto the old one
-        c.cmd("give @s " + cell(c, 33, 3) + " 1");
+        c.cmd("give @s " + cell(c, "hbm:amat", 3) + " 1");
         c.waitTicks(10);
         JsonObject q = gapsa(c);
         int amat = 0;
         for (JsonElement e : q.getAsJsonArray("cells")) {
             JsonObject cell = e.getAsJsonObject();
             Expect.that(cell.get("variant").getAsInt() < 8, "every cell carries a CellVariants model variant: " + q);
-            if (cell.get("fluid").getAsInt() == 33) amat += cell.get("count").getAsInt();
+            if (cell.get("fluid").getAsString().equals("hbm:amat")) amat += cell.get("count").getAsInt();
         }
         Expect.that(amat == 2 && q.getAsJsonArray("cells").size() == 2,
                 "the migrated antimatter cell stacked with a new one (one stack of 2, one SAS3): " + q);
@@ -290,7 +290,7 @@ public final class FinalGapsA implements Scenario {
         // creative: four anti-schrabidium cells and a schrabidium block kill a survival player within seconds (1.7 hazards)
         c.cmd("gamemode creative");
         c.cmd("clear");
-        c.cmd("give @s " + cell(c, 34, 7) + " 4");
+        c.cmd("give @s " + cell(c, "hbm:aschrab", 7) + " 4");
         c.cmd("give @s hbm:nugget_euphemium 4");
         c.cmd("give @s hbm:block_schrabidium 1");
         c.waitTicks(4);
@@ -298,7 +298,7 @@ public final class FinalGapsA implements Scenario {
         Fixtures.interact(c, tx, Y + 1, tz);
         c.waitScreen("Crafting", 5000);
         c.waitTicks(3);
-        fillSingularity(c, 34);
+        fillSingularity(c, "hbm:aschrab");
         c.waitTicks(5);
         JsonObject result = c.slot(0);
         c.screenshot("20-singularity-aschrab");
@@ -318,14 +318,14 @@ public final class FinalGapsA implements Scenario {
         c.waitTicks(5);
 
         c.cmd("clear");
-        c.cmd("give @s " + cell(c, 33, 3) + " 4");
+        c.cmd("give @s " + cell(c, "hbm:amat", 3) + " 4");
         c.cmd("give @s hbm:nugget_euphemium 4");
         c.cmd("give @s hbm:block_schrabidium 1");
         c.waitTicks(4);
         Fixtures.interact(c, tx, Y + 1, tz);
         c.waitScreen("Crafting", 5000);
         c.waitTicks(3);
-        fillSingularity(c, 33);
+        fillSingularity(c, "hbm:amat");
         c.waitTicks(5);
         c.screenshot("21-singularity-amat-refused");
         Expect.that(c.slot(0).get("empty").getAsBoolean(), "antimatter cells no longer make the singularity");
@@ -335,7 +335,7 @@ public final class FinalGapsA implements Scenario {
         c.cmd("gamemode creative");
     }
 
-    private static void fillSingularity(Client c, int fluid) {
+    private static void fillSingularity(Client c, String fluid) {
         int cells = playerSlot(c, "hbm:cell");
         c.clickSlot(cells);
         c.waitTicks(1);
@@ -438,7 +438,7 @@ public final class FinalGapsA implements Scenario {
         int[] core = findCore(c, ox, Y + 1, oz, "machine_orbus", 3);
         Expect.that(core != null, "the orbus formed a core");
         c.cmd("data merge block " + core[0] + " " + core[1] + " " + core[2]
-                + " {tank:384000,tank_type:" + WATER + ",tank_max:512000}");
+                + " {tank:384000,tank_type:\"" + WATER + "\",tank_max:512000}");
         c.waitTicks(10);
         c.cmd("clear");
         c.cmd("gamemode survival");
@@ -518,8 +518,8 @@ public final class FinalGapsA implements Scenario {
         c.cmd("give @s " + crucible(c, 16) + " 1");
         c.waitTicks(25);
         q = gapsa(c);
-        Expect.that(q.get("crucible_charges").getAsInt() == 16 && Math.abs(q.get("attack_damage").getAsDouble() - 501.0) < 1.0E-3,
-                "a charged crucible hits for 1 + 500: " + q);
+        Expect.that(q.get("crucible_charges").getAsInt() == 16 && Math.abs(q.get("attack_damage").getAsDouble() - 5001.0) < 1.0E-3,
+                "a charged crucible hits for 1 + 5000 (1.7 value, vanilla's 2048 bound raised, History 19ej-caps): " + q);
         c.cmd("kill @e[type=!player]");
         c.cmd("clear");
         c.cmd("gamemode creative");
@@ -916,7 +916,9 @@ public final class FinalGapsA implements Scenario {
         c.keyUp("key.sneak");
         c.waitTicks(10);
         String settings = held(c).toString();
-        Expect.that(settings.contains("fluidID") && settings.contains("copyIndex:0"), "copied the boiler's two tanks: " + settings);
+        // fluids are saved by registry name since History 19ej-ids (was the numeric fluidID array)
+        Expect.that(settings.contains("fluids:[") && settings.contains("hbm:water") && settings.contains("hbm:steam")
+                && settings.contains("copyIndex:0"), "copied the boiler's two tanks: " + settings);
         JsonObject keys = holdAltUntil(c, 1);
         settings = held(c).toString();
         Expect.that(keys.get("client_alt_down").getAsBoolean(), "the client saw Alt held: " + keys);
@@ -931,7 +933,7 @@ public final class FinalGapsA implements Scenario {
         c.waitTicks(1);
         c.use(2);
         c.waitTicks(5);
-        Expect.that(ductType(c, dx, dz) == 2 && ductType(c, dx + 1, dz) == 0, "a plain paste retypes one duct to steam");
+        Expect.that(ductType(c, dx, dz).equals("hbm:steam") && ductType(c, dx + 1, dz).equals("hbm:none"), "a plain paste retypes one duct to steam");
 
         // Alt back to water (the index wraps), then Ctrl-paste into the untyped run
         holdAltUntil(c, 0);
@@ -948,8 +950,8 @@ public final class FinalGapsA implements Scenario {
         StringBuilder types = new StringBuilder();
         for (int i = 0; i < 6; i++) types.append(ductType(c, dx + i, dz)).append(' ');
         worldShot(c, "B1-ducts-ctrl-pasted", dx + 3, Y + 4, dz + 5.5, dx + 3, Y + 1, dz + 0.5);
-        Expect.that(ductType(c, dx, dz) == 2, "the steam duct kept its type (a different type ends the run): " + types);
-        for (int i = 1; i < 6; i++) Expect.that(ductType(c, dx + i, dz) == WATER, "Ctrl pasted water along the run: " + types);
+        Expect.that(ductType(c, dx, dz).equals("hbm:steam"), "the steam duct kept its type (a different type ends the run): " + types);
+        for (int i = 1; i < 6; i++) Expect.that(ductType(c, dx + i, dz).equals(WATER), "Ctrl pasted water along the run: " + types);
         c.cmd("clear");
     }
 
@@ -975,10 +977,10 @@ public final class FinalGapsA implements Scenario {
         return keys;
     }
 
-    private static int ductType(Client c, int x, int z) {
-        String nbt = c.blockEntity(x, Y + 1, z).toString().replaceAll("\\s", "");
-        java.util.regex.Matcher m = java.util.regex.Pattern.compile("type:(-?\\d+)").matcher(nbt);
-        return m.find() ? Integer.parseInt(m.group(1)) : -1;
+    private static String ductType(Client c, int x, int z) {
+        String nbt = c.blockEntity(x, Y + 1, z).toString().replaceAll("\\s", "").replace("\\\"", "\"");
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("type:\"([^\"]+)\"").matcher(nbt);
+        return m.find() ? m.group(1) : "?";
     }
 
     private static JsonObject held(Client c) {
@@ -1160,10 +1162,10 @@ public final class FinalGapsA implements Scenario {
         return c.node().startsWith("1.20.");
     }
 
-    private static String cell(Client c, int fluid, int variant) {
+    private static String cell(Client c, String fluid, int variant) {
         return legacy(c)
-                ? "hbm:cell{\"hbm:fluid_id\":" + fluid + ",\"hbm:fluid_amount\":1000,\"hbm:item_variant\":" + variant + "}"
-                : "hbm:cell[hbm:fluid_id=" + fluid + ",hbm:fluid_amount=1000,hbm:item_variant=" + variant + "]";
+                ? "hbm:cell{\"hbm:fluid\":\"" + fluid + "\",\"hbm:fluid_amount\":1000,\"hbm:item_variant\":" + variant + "}"
+                : "hbm:cell[hbm:fluid=\"" + fluid + "\",hbm:fluid_amount=1000,hbm:item_variant=" + variant + "]";
     }
 
     private static String crucible(Client c, int charges) {

@@ -54,7 +54,7 @@ public class EntityBurningFOEQ extends CompatThrowableProjectile {
                     ExplosionLarge.explode(level(), getX() + 0.5F + random.nextGaussian() * 5,
                             getY() + 0.5F + random.nextGaussian() * 5, getZ() + 0.5F + random.nextGaussian() * 5,
                             10.0F, random.nextBoolean(), false, false);
-                ExplosionNukeGeneric.transformWaste(level(), pos, 35); // 1.7 waste(): this port's own terrain sweep
+                ExplosionNukeGeneric.waste(level(), pos, 35); // 1.7 EntityBurningFOEQ:48
             }
             this.discard();
         }

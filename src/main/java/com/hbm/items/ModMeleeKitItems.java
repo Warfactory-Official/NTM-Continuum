@@ -199,7 +199,7 @@ public final class ModMeleeKitItems {
     public static final RegistryObject<ItemMS> mysteryshovel = reg("mysteryshovel", null,
             ItemMS::new, p -> p.stacksTo(1), Presets.handheld("hbm:items/cursed_shovel"));
     public static final RegistryObject<ItemGrenadeFishing> stick_dynamite_fishing = reg("stick_dynamite_fishing",
-            HbmTab.WEAPONS, p -> new ItemGrenadeFishing(p, 3), p -> p, Presets.sprite());
+            HbmTab.WEAPONS, p -> new ItemGrenadeFishing(p, 3), p -> p.stacksTo(16), Presets.sprite()); // 1.7 ItemGrenade: stacks to 16
     /** 1.7 {@code ItemBook}: no creative tab. */
     public static final RegistryObject<ItemBook> book_of_ = reg("book_of_", null, ItemBook::new, p -> p.stacksTo(1), Presets.sprite());
 

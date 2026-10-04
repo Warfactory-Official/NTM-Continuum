@@ -27,6 +27,14 @@ import com.hbm.sound.MachineAudio;
 
 public class EntityChopperMine extends CompatEntity {
 
+    /**
+     * 1.7 quirk, kept: the mine never calls setPosition, so the proximity sweep searched the box the Entity
+     * constructor left at the origin - setPosition(0, 0, 0) at the default 0.6 x 1.8 size, then setSize(12, 12)
+     * growing max from min. Away from the origin a mine therefore only detonates on its 100-tick timer or on
+     * touching a non-air block, never by flying into a player.
+     */
+    private static final AABB STALE_BOX = new AABB(-0.3D, 0D, -0.3D, 11.7D, 12D, 11.7D);
+
     public int timer = 0;
     private AudioWrapper loop;
     // 1.7: plain field - neither synced nor persisted
@@ -78,7 +86,7 @@ public class EntityChopperMine extends CompatEntity {
             // 1.7: sweep the motion segment against nearby collidable boxes, nearest intercept wins
             Entity hit = null;
             List<Entity> list = level().getEntities(this,
-                    this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0D, 1.0D, 1.0D));
+                    STALE_BOX.expandTowards(this.getDeltaMovement()).inflate(1.0D, 1.0D, 1.0D));
             double nearest = 0.0D;
 
             for (int i = 0; i < list.size(); ++i) {
@@ -120,9 +128,9 @@ public class EntityChopperMine extends CompatEntity {
         motion = new Vec3(motion.x * 0.9D, motion.y, motion.z * 0.9D);
         this.setDeltaMovement(motion);
 
-        // 1.7:135-137 assigns posX/Y/Z directly and never calls setPosition, so the AABB stays where the
-        // ctor left it - at the world origin - and the proximity sweep at 1.7:80-103 never finds a player.
-        // Deliberate divergence: setPos keeps the box on the mine, so proximity detonation works.
+        // 1.7 assigns posX/Y/Z directly and never calls setPosition, so its AABB stays at the world origin
+        // (STALE_BOX); the proximity sweep above reproduces that. setPos here only keeps tracking and
+        // rendering on the mine.
         // 1.7: raw integration, no collision resolution - flies through geometry until the air check fires
         this.setPos(getX() + motion.x, getY() + motion.y, getZ() + motion.z);
 

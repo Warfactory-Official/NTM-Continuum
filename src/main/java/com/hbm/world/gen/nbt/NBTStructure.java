@@ -470,9 +470,9 @@ public class NBTStructure {
                 int rx = rotateX(bx, bz, coordBaseMode) + totalBounds.minX();
                 int rz = rotateZ(bx, bz, coordBaseMode) + totalBounds.minZ();
                 // 1.7 getTopSolidOrLiquidBlock, despite its name, skips liquids (water does not block movement) and
-                // leaves: the block above the highest movement-blocking block, i.e. the OCEAN_FLOOR heightmap
+                // leaves; a neighbour's canopy may already overhang this column at placement time (History §19ej-6)
                 int oy = piece.conformToTerrain
-                        ? level.getHeight(Heightmap.Types.OCEAN_FLOOR, rx, rz) + piece.heightOffset
+                        ? com.hbm.world.gen.component.Component.topSolid(level, rx, rz) + piece.heightOffset
                         : totalBounds.minY();
 
                 for (int by = 0; by < sizeY; by++) {
@@ -1173,8 +1173,9 @@ public class NBTStructure {
         }
 
         private static int getDistanceTo(BoundingBox box, net.minecraft.world.level.ChunkPos origin) {
-            int x = (box.minX() + box.maxX()) / 2;
-            int z = (box.minZ() + box.maxZ()) / 2;
+            // 1.7 StructureBoundingBox.getCenterX/Z: min + (max - min + 1) / 2
+            int x = box.minX() + (box.maxX() - box.minX() + 1) / 2;
+            int z = box.minZ() + (box.maxZ() - box.minZ() + 1) / 2;
 
             return Math.max(Math.abs(x - origin.getMinBlockX()), Math.abs(z - origin.getMinBlockZ()));
         }

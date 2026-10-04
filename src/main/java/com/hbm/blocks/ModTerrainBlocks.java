@@ -189,7 +189,7 @@ public final class ModTerrainBlocks {
                     .states(Variants.select("layers", "1", "_height2", "2", "_height4", "3", "_height6", "4", "_height8",
                             "5", "_height10", "6", "_height12", "7", "_height14", "8", "_full")))
             .icon(d -> d.models(Models.blockItem("hbm:block/leaves_layer_height2")))
-            .loot(Loot.self());
+            .loot(Loot.nothing()); // 1.7 BlockLayering drops nothing (BlockLayering.getDrops)
 
     private static Models.Group leafLayers() {
         String leaves = "hbm:blocks/waste_leaves";

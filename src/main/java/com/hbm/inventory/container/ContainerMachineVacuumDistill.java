@@ -1,8 +1,6 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.ModMenus;
-import com.hbm.items.machine.IItemFluidId;
-import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.oil.TileEntityMachineVacuumDistill;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -15,10 +13,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
-/** Menu for the vacuum distiller — 1.12.2 {@code ContainerMachineVacuumDistill} layout (176×238). */
+/**
+ * Menu for the vacuum distiller — 1.7.10 {@code ContainerMachineVacuumDistill} layout (176×238), 12 machine
+ * slots. Slots 1/2 (input canisters) are 1.7's {@code SlotDeprecated} (input requires pressurisation):
+ * they accept nothing and are neither drawn nor hoverable.
+ */
 public class ContainerMachineVacuumDistill extends AbstractContainerMenu {
 
-    public static final int MACHINE_SLOTS = 10;
+    public static final int MACHINE_SLOTS = 12;
 
     private final Container machine;
     private final @Nullable TileEntityMachineVacuumDistill te;
@@ -32,16 +34,18 @@ public class ContainerMachineVacuumDistill extends AbstractContainerMenu {
         this.te = te;
         this.machine = te != null ? te : new SimpleContainer(MACHINE_SLOTS);
 
-        this.addSlot(validated(0, 26, 90));   // battery
-        this.addSlot(validated(1, 80, 90));   // heavy load
-        this.addSlot(takeOnly(2, 80, 108));
-        this.addSlot(validated(3, 98, 90));   // reformate load
-        this.addSlot(takeOnly(4, 98, 108));
-        this.addSlot(validated(5, 116, 90));  // light load
-        this.addSlot(takeOnly(6, 116, 108));
-        this.addSlot(validated(7, 134, 90));  // sourgas load
-        this.addSlot(takeOnly(8, 134, 108));
-        this.addSlot(validated(9, 26, 108));  // fluid identifier
+        this.addSlot(validated(0, 26, 90));    // battery
+        this.addSlot(deprecated(1, 44, 90));   // canister input (removed, requires pressurization)
+        this.addSlot(deprecated(2, 44, 108));  // canister output (same as above)
+        this.addSlot(validated(3, 80, 90));    // heavy oil load
+        this.addSlot(takeOnly(4, 80, 108));
+        this.addSlot(validated(5, 98, 90));    // reformate load
+        this.addSlot(takeOnly(6, 98, 108));
+        this.addSlot(validated(7, 116, 90));   // light oil load
+        this.addSlot(takeOnly(8, 116, 108));
+        this.addSlot(validated(9, 134, 90));   // sour gas load
+        this.addSlot(takeOnly(10, 134, 108));
+        this.addSlot(validated(11, 26, 108));  // fluid identifier
 
         for (int i = 0; i < 3; i++) for (int j = 0; j < 9; j++)
             this.addSlot(new Slot(playerInv, j + i * 9 + 9, 8 + j * 18, 156 + i * 18));
@@ -57,6 +61,14 @@ public class ContainerMachineVacuumDistill extends AbstractContainerMenu {
     private Slot takeOnly(int index, int x, int y) {
         return new Slot(this.machine, index, x, y) {
             @Override public boolean mayPlace(ItemStack stack) { return false; }
+        };
+    }
+
+    /** 1.7 {@code SlotDeprecated}: holds legacy items, otherwise uninteractable and invisible. */
+    private Slot deprecated(int index, int x, int y) {
+        return new Slot(this.machine, index, x, y) {
+            @Override public boolean mayPlace(ItemStack stack) { return false; }
+            @Override public boolean isActive() { return false; }
         };
     }
 
@@ -81,15 +93,14 @@ public class ContainerMachineVacuumDistill extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
-            } else if (Library.isBattery(stack)) {
-                if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof IItemFluidId) {
-                if (!this.moveItemStackTo(stack, 9, 10, false)) return ItemStack.EMPTY;
             } else {
-                if (!this.moveItemStackTo(stack, 1, 2, false)
+                // 1.7 order: 0, 1 (deprecated, refuses), 3, 5, 7, 9; the identifier slot is not a target.
+                if (!this.moveItemStackTo(stack, 0, 1, false)
+                        && !this.moveItemStackTo(stack, 1, 2, false)
                         && !this.moveItemStackTo(stack, 3, 4, false)
                         && !this.moveItemStackTo(stack, 5, 6, false)
-                        && !this.moveItemStackTo(stack, 7, 8, false)) return ItemStack.EMPTY;
+                        && !this.moveItemStackTo(stack, 7, 8, false)
+                        && !this.moveItemStackTo(stack, 9, 10, false)) return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();

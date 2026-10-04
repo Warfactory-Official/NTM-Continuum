@@ -1,5 +1,7 @@
 package com.hbm.blocks;
 
+import com.hbm.registration.BlockTag;
+import com.hbm.registration.Loot;
 import com.hbm.registration.Preset;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
@@ -66,7 +68,11 @@ public final class ModRailBlocks {
             java.util.function.Function<BlockBehaviour.Properties, B> factory) {
         RegistryObject<B> block = REG.block(name, factory,
                         p -> p.strength(5.0F, 6.0F).noOcclusion().requiresCorrectToolForDrops())
-                .transform(RAIL);
+                .transform(RAIL)
+                // 1.7 rails are BlockDummyable(Material.iron) with no drop override: BlockDummyable.onBlockHarvested
+                // drops the block itself once per break, whichever part was mined (pickaxe needed).
+                .loot(Loot.self())
+                .tag(BlockTag.PICKAXE);
         REG.blockItem(block).tab(HbmTab.MACHINES);
         RAILS.add(block);
         return block;

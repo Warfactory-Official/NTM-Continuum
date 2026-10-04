@@ -24,6 +24,9 @@ public final class HazardTransformerZirnox implements IHazardTransformer {
             entries.add(new HazardEntry(HazardRegistry.RADIATION, radiation));
         }
         if (stack.getItem() instanceof ItemZirnoxWaste && ItemZirnoxWaste.isHot(stack)) {
+            // 1.7 registerOtherWaste: the cold waste (meta 0) is 7.5% of the base radiation, the hot one (meta 1) the
+            // full base plus HOT 5. The registry holds the cold value, so the hot stack scales it back up.
+            entries.replaceAll(entry -> entry.type == HazardRegistry.RADIATION ? entry.clone(1D / 0.075D) : entry);
             entries.add(new HazardEntry(HazardRegistry.HOT, 5F));
         }
     }

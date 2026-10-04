@@ -325,6 +325,7 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
      */
     public void handleKeybind(LivingEntity entity, Container inventory, ItemStack stack,
             EnumKeybind keybind, boolean newState) {
+        if (!com.hbm.config.GeneralConfig.enableGuns) return; // 1.7 1.20_enableGuns
         for (int i = 0; i < configs_DNA.length; i++) {
             GunConfig config = getConfig(stack, i);
             LambdaContext ctx = new LambdaContext(config, entity, inventory, handOf(entity, stack), i);
@@ -561,8 +562,9 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
 
     public static int getTimer(ItemStack stack, int index) { return getValueInt(stack, KEY_TIMER + index); }
     public static void setTimer(ItemStack stack, int index, int value) { setValueInt(stack, KEY_TIMER + index, value); }
-    public static GunState getState(ItemStack stack, int index) { return GunState.byOrdinal(getValueInt(stack, KEY_STATE + index)); }
-    public static void setState(ItemStack stack, int index, GunState value) { setValueInt(stack, KEY_STATE + index, value.ordinal()); }
+    // state and last animation are saved by enum name, never by ordinal (History section 19ej-ids); absent = first constant
+    public static GunState getState(ItemStack stack, int index) { return savedEnum(GunState.class, getValueString(stack, KEY_STATE + index)); }
+    public static void setState(ItemStack stack, int index, GunState value) { setValueString(stack, KEY_STATE + index, value.name()); }
     public static int getMode(ItemStack stack, int index) { return getValueInt(stack, KEY_MODE + index); }
     public static void setMode(ItemStack stack, int index, int value) { setValueInt(stack, KEY_MODE + index, value); }
     public static boolean getIsAiming(ItemStack stack) { return getValueBool(stack, KEY_AIMING); }
@@ -573,8 +575,12 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     public static void setLockonTarget(ItemStack stack, int value) { setValueInt(stack, KEY_LOCKONTARGET, value); }
     public static boolean getIsLockedOn(ItemStack stack) { return getValueBool(stack, KEY_LOCKEDON); }
     public static void setIsLockedOn(ItemStack stack, boolean value) { setValueBool(stack, KEY_LOCKEDON, value); }
-    public static GunAnimation getLastAnim(ItemStack stack, int index) { return GunAnimation.byOrdinal(getValueInt(stack, KEY_LASTANIM + index)); }
-    public static void setLastAnim(ItemStack stack, int index, GunAnimation value) { setValueInt(stack, KEY_LASTANIM + index, value.ordinal()); }
+    public static GunAnimation getLastAnim(ItemStack stack, int index) { return savedEnum(GunAnimation.class, getValueString(stack, KEY_LASTANIM + index)); }
+    public static void setLastAnim(ItemStack stack, int index, GunAnimation value) { setValueString(stack, KEY_LASTANIM + index, value.name()); }
+    private static <E extends Enum<E>> E savedEnum(Class<E> type, String name) {
+        E first = type.getEnumConstants()[0];
+        return name.isEmpty() ? first : com.hbm.util.SavedIds.byName(type, name, first);
+    }
     public static int getAnimTimer(ItemStack stack, int index) { return getValueInt(stack, KEY_ANIMTIMER + index); }
     public static void setAnimTimer(ItemStack stack, int index, int value) { setValueInt(stack, KEY_ANIMTIMER + index, value); }
 

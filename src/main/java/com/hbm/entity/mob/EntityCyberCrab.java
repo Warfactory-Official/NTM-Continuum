@@ -61,6 +61,12 @@ public class EntityCyberCrab extends CompatMonster implements RangedAttackMob, I
         return new RangedAttackGoal(this, 0.5D, 60, 80, 15.0F);
     }
 
+    /** 1.7 {@code getMaxSafePointTries}: three blocks idle, plus one per heart point above 1 while hunting. */
+    @Override
+    public int getMaxFallDistance() {
+        return getTarget() == null ? 3 : 3 + (int) (getHealth() - 1.0F);
+    }
+
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         if (source.is(ModDamageSources.TAU)) return false;

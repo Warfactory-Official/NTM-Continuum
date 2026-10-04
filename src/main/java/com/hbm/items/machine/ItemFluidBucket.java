@@ -14,7 +14,7 @@ import net.minecraft.world.item.TooltipFlag;
 
 /**
  * A full fluid bucket — 1000&nbsp;mB of one {@link FluidType}, used to fill a fluid tank for testing.
- * A single registered item carries the fluid in the {@link ModDataComponents#FLUID_ID} component; its
+ * A single registered item carries the fluid in the {@link ModDataComponents#FLUID} component; its
  * icon is the vanilla {@code minecraft:item/bucket} with a {@code fluid_bucket_overlay} fill tinted by
  * the fluid colour (stored in the vanilla {@code custom_model_data} colour list, read by the model's
  * {@code minecraft:custom_model_data} tint source — no per-fluid model or client colour handler needed).
@@ -29,16 +29,16 @@ public class ItemFluidBucket extends CompatItem {
         super(properties);
     }
 
-    /** Builds a full bucket stack for {@code fluid} (FLUID_ID for logic + the tint colour for rendering). */
+    /** Builds a full bucket stack for {@code fluid} (FLUID for logic + the tint colour for rendering). */
     public static ItemStack make(FluidType fluid) {
         ItemStack stack = new ItemStack(ModFluidItems.fluid_bucket.get());
-        ModDataComponents.fluidId(stack, fluid.getID());
+        ModDataComponents.fluid(stack, fluid);
         ModelData.setColor(stack, fluid.getColor());
         return stack;
     }
 
     public static FluidType getFluid(ItemStack stack) {
-        return Fluids.fromID(ModDataComponents.fluidId(stack));
+        return ModDataComponents.fluid(stack);
     }
 
     @Override

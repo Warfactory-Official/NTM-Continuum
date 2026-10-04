@@ -514,7 +514,7 @@ public class TileEntityWatz extends TileEntityMachineBase
         output.putDouble("lastFluxR", fluxLastReaction);
         output.putBoolean("isLocked", isLocked);
         for (int i = 0; i < SLOTS; i++) {
-            output.putInt("lock" + i, locks[i] == null ? -1 : locks[i].ordinal());
+            if (locks[i] != null) com.hbm.util.SavedIds.putEnum(output, "lock" + i, locks[i]); // by name, never an ordinal
         }
     }
 
@@ -527,8 +527,7 @@ public class TileEntityWatz extends TileEntityMachineBase
         fluxLastReaction = input.getDoubleOr("lastFluxR", 0D);
         isLocked = input.getBooleanOr("isLocked", false);
         for (int i = 0; i < SLOTS; i++) {
-            int ordinal = input.getIntOr("lock" + i, -1);
-            locks[i] = ordinal >= 0 && ordinal < EnumWatzType.VALUES.length ? EnumWatzType.VALUES[ordinal] : null;
+            locks[i] = com.hbm.util.SavedIds.getEnumOrNull(input, "lock" + i, EnumWatzType.class);
         }
         resetSharedTanks();
     }

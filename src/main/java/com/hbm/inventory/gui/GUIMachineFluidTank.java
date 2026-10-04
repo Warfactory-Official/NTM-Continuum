@@ -64,7 +64,7 @@ public class GUIMachineFluidTank extends dev.golem.core.gui.CompatContainerScree
                     }
                     graphics.disableScissor();
                 } else {
-                    // A few of the ~157 fluids ship no GUI sprite — fall back to a solid colour bar.
+                    // A few of the 156 fluids ship no GUI sprite — fall back to a solid colour bar.
                     graphics.fill(x0, yTop, x0 + BAR_W, yBottom, 0xFF000000 | (ft.getTankType().getColor() & 0xFFFFFF));
                 }
             }

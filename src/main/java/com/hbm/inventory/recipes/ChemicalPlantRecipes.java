@@ -10,7 +10,7 @@ import net.minecraft.world.item.Items;
 
 /**
  * Chemical plant recipes — a faithful but <b>feasibility-limited</b> slice of the 1.12.2 catalogue, picked
- * in the in-GUI recipe selector. Because all 157 fluids are ported, the feasible set here is mostly
+ * in the in-GUI recipe selector. Because all 156 fluids are ported, the feasible set here is mostly
  * fluid-driven: pure fluid→fluid conversions plus a few using only vanilla items. The recipe's icon is
  * the {@link com.hbm.items.machine.ItemFluidIcon fluid droplet} of its output fluid (no item output).
  *

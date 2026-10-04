@@ -51,12 +51,12 @@ public class EntityDisperserCanister extends EntityGrenadeBase {
     }
 
     public FluidType getFluid() {
-        FluidType fluid = Fluids.fromID(entityData.get(FLUID));
+        FluidType fluid = Fluids.byNetworkId(entityData.get(FLUID));
         return fluid == null ? Fluids.NONE : fluid;
     }
 
     public EntityDisperserCanister setFluid(FluidType fluid) {
-        entityData.set(FLUID, fluid == null ? 0 : fluid.getID());
+        entityData.set(FLUID, Fluids.networkId(fluid == null ? Fluids.NONE : fluid));
         return this;
     }
 
@@ -88,14 +88,14 @@ public class EntityDisperserCanister extends EntityGrenadeBase {
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("fluid", entityData.get(FLUID));
+        Fluids.write(output, "fluid", getFluid()); // registry name; the synched int is session-only
         output.store("item", dev.golem.core.world.ItemStacks.optionalCodec(), entityData.get(TYPE));
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        entityData.set(FLUID, input.getIntOr("fluid", 0));
+        setFluid(Fluids.read(input, "fluid"));
         input.read("item", dev.golem.core.world.ItemStacks.optionalCodec()).ifPresent(stack -> entityData.set(TYPE, stack));
     }
 }

@@ -25,8 +25,9 @@ public final class ElectrolyserFluidRecipes {
         add(Fluids.HEAVYWATER, 2_000, new FluidStack(Fluids.DEUTERIUM, 200), new FluidStack(Fluids.OXYGEN, 200), 10);
         add(Fluids.VITRIOL, 1_000, new FluidStack(Fluids.SULFURIC_ACID, 500), new FluidStack(Fluids.CHLORINE, 500), 20,
                 new net.minecraft.world.item.ItemStack(ModItems.powder_iron.get()),
-                // The 1.12.2 ingot has no modern item; its nine-nugget material equivalent is retained.
-                new net.minecraft.world.item.ItemStack(ModItems.nugget_mercury.get(), 9));
+                // 1.7 new ItemStack(ModItems.ingot_mercury): that field is registered as "nugget_mercury", so one
+                // 1.7 mercury "ingot" is exactly one hbm:nugget_mercury (not nine).
+                new net.minecraft.world.item.ItemStack(ModItems.nugget_mercury.get(), 1));
         add(Fluids.SLOP, 1_000, new FluidStack(Fluids.MERCURY, 250), new FluidStack(Fluids.NONE, 0), 20,
                 new net.minecraft.world.item.ItemStack(ModItems.niter.get(), 2),
                 new net.minecraft.world.item.ItemStack(ModItems.powder_limestone.get(), 2),

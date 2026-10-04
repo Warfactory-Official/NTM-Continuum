@@ -28,7 +28,7 @@ public final class BombAssemblyRecipes {
         recipes.registerGenerated(new GenericRecipe("ass.ivymike").setup(600, 100)
                 .inputItems(new ComparableStack(ModItems.sphere_steel.get()), AL.shell().count(4),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 8),
-                        new ComparableStack(Items.LIGHT_GRAY_DYE, 16))
+                        new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/light_gray")), 16))
                 .outputItems(new ItemStack(ModBombBlocks.nuke_mike.get()))
                 .setPools528("528.controller"));
         recipes.registerGenerated(new GenericRecipe("ass.mikecore").setup(1_200, 100)

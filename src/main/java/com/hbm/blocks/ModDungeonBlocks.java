@@ -140,7 +140,7 @@ public final class ModDungeonBlocks {
 
     // ---- jungle temple (Material.rock, 15 / 360, block tab) ----
     public static final RegistryObject<FragileBrick> brick_jungle_fragile = block("brick_jungle_fragile", FragileBrick::new, rock(15.0F, 360.0F), HbmTab.BLOCKS)
-            .transform(cube("brick_jungle_fragile")).loot(Loot.nothing()).tag(BlockTag.PICKAXE);
+            .transform(cube("brick_jungle_fragile")).loot(Loot.silkTouchOnly()).tag(BlockTag.PICKAXE); // 1.7 FragileBrick: nothing, silk keeps it
     public static final RegistryObject<Block> brick_jungle_lava = block("brick_jungle_lava", Block::new,
             p -> rock(15.0F, 360.0F).apply(p).lightLevel(s -> 5), HbmTab.BLOCKS)
             .transform(cube("brick_jungle_lava")).loot(Loot.self()).tag(BlockTag.PICKAXE);
@@ -200,7 +200,8 @@ public final class ModDungeonBlocks {
                             .and("_top", Models.cubeBottomTop("hbm:blocks/brick_base", "hbm:blocks/brick_base", "hbm:blocks/brick_red_top")))
                     .states(Variants.of(Set.of("facing"), keyholeStates()))
                     .blockItemDirect())
-            .loot(Loot.nothing());
+            // 1.7: drops nothing, but a plain cube without a tile entity, so silk touch keeps it
+            .loot(Loot.silkTouchOnly());
     /** 1.7 RenderPedestal: foot 0..0.25, head 0.75..1, column 0.125..0.875 between. */
     public static final RegistryObject<BlockPedestal> pedestal = block("pedestal", BlockPedestal::new,
             p -> rock(2.0F, 10.0F).apply(p).noOcclusion(), null)

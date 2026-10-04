@@ -124,9 +124,8 @@ public final class FluidCombustion {
         flam(Fluids.PETROIL_LEADED, 125_000); comb(Fluids.PETROIL_LEADED, FuelGrade.MEDIUM, 450_000);
         flam(Fluids.GASOLINE_LEADED, 400_000); comb(Fluids.GASOLINE_LEADED, FuelGrade.HIGH, 1_500_000);
         flam(Fluids.COALGAS_LEADED, 75_000);  comb(Fluids.COALGAS_LEADED, FuelGrade.MEDIUM, 250_000);
-        flam(Fluids.HYDRAZINE, 500_000);      comb(Fluids.HYDRAZINE, FuelGrade.HIGH, 1_250_000);
         flam(Fluids.REDMUD, 1_000);
-        flam(Fluids.FLUE, 10_000);
+        flam(Fluids.FLUE, 25_000); // 1.7 Fluids.java:415 FT_Flammable(25_000)
 
         // --- "the almighty excel spreadsheet has spoken!" (old Fluids.init L701-790) ---
         long baseline = 100_000L;

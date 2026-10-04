@@ -49,7 +49,8 @@ public final class DiFurnaceRecipeHandler extends AbstractRecipeCategory<Generic
 
     public static List<GenericRecipe> buildRecipes() {
         DiFurnaceRecipes.INSTANCE.registerRecipes();
-        return List.copyOf(DiFurnaceRecipes.INSTANCE.recipeOrderedList);
+        return DiFurnaceRecipes.INSTANCE.recipeOrderedList.stream()
+                .filter(r -> !DiFurnaceRecipes.HIDDEN_METEOR_SWORD.equals(r.getInternalName())).toList();
     }
 
     @Override

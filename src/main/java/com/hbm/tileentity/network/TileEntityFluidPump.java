@@ -125,7 +125,7 @@ public class TileEntityFluidPump extends TileEntityLoadedBase implements IFluidS
     protected void saveData(DataOut output) {
         super.saveData(output);
         tank[0].writeToNBT(output, "t");
-        output.putByte("p", (byte) priority.ordinal());
+        com.hbm.util.SavedIds.putEnum(output, "p", priority); // by name, never an ordinal
         output.putInt("buffer", bufferSize);
     }
 
@@ -133,9 +133,7 @@ public class TileEntityFluidPump extends TileEntityLoadedBase implements IFluidS
     protected void loadData(DataIn input) {
         super.loadData(input);
         tank[0].readFromNBT(input, "t");
-        int p = input.getByteOr("p", (byte) ConnectionPriority.NORMAL.ordinal());
-        ConnectionPriority[] values = ConnectionPriority.values();
-        priority = p >= 0 && p < values.length ? values[p] : ConnectionPriority.NORMAL;
+        priority = com.hbm.util.SavedIds.getEnum(input, "p", ConnectionPriority.NORMAL);
         bufferSize = input.getIntOr("buffer", 100);
     }
 }

@@ -53,26 +53,26 @@ public final class Bombs2AssemblyRecipes {
         recipes.registerGenerated(new GenericRecipe("ass.fleija").setup(300, 100)
                 .inputItems(AL.shell(), new ComparableStack(ModItems.fins_quad_titanium.get()),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER)),
-                        new ComparableStack(Items.WHITE_DYE, 4))
+                        new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/white")), 4))
                 .outputItems(new ItemStack(ModBombs2Blocks.nuke_fleija.get()))
                 .setPools528("528.controller"));
         recipes.registerGenerated(new GenericRecipe("ass.solinium").setup(300, 100)
                 .inputItems(STEEL.shell().count(2), new ComparableStack(ModItems.fins_quad_titanium.get()),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER)),
-                        new ComparableStack(Items.GRAY_DYE, 8))
+                        new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/gray")), 8))
                 .outputItems(new ItemStack(ModBombs2Blocks.nuke_solinium.get()))
                 .setPools528("528.controller"));
         recipes.registerGenerated(new GenericRecipe("ass.balefirebomb").setup(400, 100)
                 .inputItems(new ComparableStack(ModItems.sphere_steel.get()), TI.shell().count(6),
                         new ComparableStack(ModItems.fins_big_steel.get()), new ComparableStack(ModItems.powder_magic.get(), 8),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 4),
-                        new ComparableStack(Items.GRAY_DYE, 8))
+                        new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/gray")), 8))
                 .outputItems(new ItemStack(ModBombs2Blocks.nuke_fstbmb.get()))
                 .setPools528("528.controller"));
         recipes.registerGenerated(new GenericRecipe("ass.customnuke").setup(300, 100)
                 .inputItems(STEEL.shell().count(2), new ComparableStack(ModItems.fins_small_steel.get()),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 8),
-                        new ComparableStack(Items.GRAY_DYE, 4))
+                        new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/gray")), 4))
                 .outputItems(new ItemStack(ModBombs2Blocks.nuke_custom.get()))
                 .setPools528("528.controller"));
         recipes.registerGenerated(new GenericRecipe("ass.levibomb").setup(200, 100)
@@ -108,7 +108,7 @@ public final class Bombs2AssemblyRecipes {
                         new ComparableStack(ModItems.coil_gold.get()))
                 .outputItems(new ItemStack(ModBombs2Items.solinium_igniter.get())));
         recipes.registerGenerated(new GenericRecipe("ass.soliniumcore").setup(600, 100)
-                .inputItems(SA327.nugget().count(9), new ComparableStack(ModItems.nugget_euphemium.get()))
+                .inputItems(SA327.nugget().count(9), new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "nuggets/euphemium")), 1)) // 1.7 EUPH.nugget()
                 .outputItems(new ItemStack(ModBombs2Items.solinium_core.get())));
         recipes.registerGenerated(new GenericRecipe("ass.soliniumcharge").setup(300, 100)
                 .inputItems(tag("ingots/any_highexplosive", 3), new ComparableStack(ModItems.neutron_reflector.get(), 2),

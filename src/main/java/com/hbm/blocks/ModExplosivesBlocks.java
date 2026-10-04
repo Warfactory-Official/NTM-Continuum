@@ -98,7 +98,7 @@ public final class ModExplosivesBlocks {
     public static final RegistryObject<DetMiner> det_miner = REG.block("det_miner", DetMiner::new,
                     ModExplosivesBlocks::det)
             .transform(Presets.column("hbm:blocks/det_miner_top", "hbm:blocks/det_miner_side"))
-            .loot(Loot.nothing())
+            .loot(Loot.silkTouchOnly()) // 1.7: drops nothing, but a plain cube without a tile entity, so silk touch keeps it
             .tag(BlockTag.PICKAXE);
 
     // --- solid plastic explosive: Material.tnt, metal sound, hardness 2, resistance 2 ---

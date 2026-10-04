@@ -23,9 +23,9 @@ public class MagazineFluid implements IMagazine<FluidType> {
         this.capacity = capacity;
         this.acceptedTypes = acceptedTypes;
     }
-    @Override public FluidType getType(ItemStack stack, Container inventory) { return Fluids.fromID(getMagType(stack, index)); }
+    @Override public FluidType getType(ItemStack stack, Container inventory) { return getMagType(stack, index); }
     @Override public void setType(ItemStack stack, FluidType type) {
-        if (type != null) setMagType(stack, index, type.getID());
+        if (type != null) setMagType(stack, index, type);
     }
     @Override public int getCapacity(ItemStack stack) { return capacity; }
     @Override public int getAmount(ItemStack stack, Container inventory) { return getMagCount(stack, index); }
@@ -45,8 +45,9 @@ public class MagazineFluid implements IMagazine<FluidType> {
     @Override public int getAmountBeforeReload(ItemStack stack) { return ItemGunBaseNT.getValueInt(stack, KEY_MAG_PREV + index); }
     @Override public void setAmountAfterReload(ItemStack stack, int amount) { ItemGunBaseNT.setValueInt(stack, KEY_MAG_AFTER + index, amount); }
     @Override public int getAmountAfterReload(ItemStack stack) { return ItemGunBaseNT.getValueInt(stack, KEY_MAG_AFTER + index); }
-    public static int getMagType(ItemStack stack, int index) { return ItemGunBaseNT.getValueInt(stack, KEY_MAG_TYPE + index); }
-    public static void setMagType(ItemStack stack, int index, int value) { ItemGunBaseNT.setValueInt(stack, KEY_MAG_TYPE + index, value); }
+    /** The loaded fluid, saved by registry name (never the numeric fluid id, History section 19ej-ids). */
+    public static FluidType getMagType(ItemStack stack, int index) { return Fluids.byRegistryName(ItemGunBaseNT.getValueString(stack, KEY_MAG_TYPE + index)); }
+    public static void setMagType(ItemStack stack, int index, FluidType value) { ItemGunBaseNT.setValueString(stack, KEY_MAG_TYPE + index, value.getRegistryName()); }
     public static int getMagCount(ItemStack stack, int index) { return ItemGunBaseNT.getValueInt(stack, KEY_MAG_COUNT + index); }
     public static void setMagCount(ItemStack stack, int index, int value) { ItemGunBaseNT.setValueInt(stack, KEY_MAG_COUNT + index, value); }
 }

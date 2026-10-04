@@ -37,8 +37,8 @@ public final class ItemCell extends CompatItem implements IFillableItem {
 
     public static FluidType getFluidType(ItemStack stack) {
         if (!(stack.getItem() instanceof ItemCell)) return null;
-        int id = ModDataComponents.fluidId(stack);
-        return id == 0 ? null : Fluids.fromID(id);
+        FluidType fluid = ModDataComponents.fluid(stack);
+        return fluid == Fluids.NONE ? null : fluid;
     }
 
     public static ItemStack getFullCell(FluidType fluid) {
@@ -55,12 +55,12 @@ public final class ItemCell extends CompatItem implements IFillableItem {
 
     private static void setFluid(ItemStack stack, FluidType fluid, int amount) {
         if (!isCellFluid(fluid) || amount <= 0) {
-            ModDataComponents.removeFluidId(stack);
+            ModDataComponents.removeFluid(stack);
             ModDataComponents.removeFluidAmount(stack);
             ModDataComponents.ITEM_VARIANT.remove(stack);
             return;
         }
-        ModDataComponents.fluidId(stack, fluid.getID());
+        ModDataComponents.fluid(stack, fluid);
         ModDataComponents.fluidAmount(stack, Math.min(CAPACITY, amount));
         ModDataComponents.ITEM_VARIANT.set(stack, variantOf(fluid));
     }

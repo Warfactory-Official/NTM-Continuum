@@ -138,12 +138,10 @@ public final class FusionRecipes extends GenericRecipes {
         }
     }
 
-    /**
-     * The recipe's display icon. Upstream used a filled gas canister for the bottled gases and a bare
-     * fluid icon for the rest; the port has one fluid-icon item, so both collapse onto it.
-     */
+    /** The recipe's display icon: 1.7 used a filled gas tank ({@code gas_full}) for the bottled gases. */
     private static ItemStack gas(com.hbm.inventory.fluid.FluidType fluid) {
-        return ItemFluidIcon.make(fluid);
+        com.hbm.items.machine.ItemFluidContainerNT tank = com.hbm.items.ModFluidNetItems.gas_full.get();
+        return tank.make(fluid, tank.capacity);
     }
 
     private static ItemStack icon(com.hbm.inventory.fluid.FluidType fluid) {

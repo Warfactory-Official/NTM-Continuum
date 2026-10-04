@@ -68,7 +68,7 @@ public class YellowBarrel extends BlockBarrelDeco {
         } else {
             level.explode(primed, x, y, z, 12.0F, Level.ExplosionInteraction.TNT);
         }
-        ExplosionNukeGeneric.transformWaste(level, center, 35);
+        ExplosionNukeGeneric.waste(level, center, 35); // 1.7 YellowBarrel:103
         for (int i = -5; i <= 5; i++) {
             for (int j = -5; j <= 5; j++) {
                 for (int k = -5; k <= 5; k++) {

@@ -38,6 +38,8 @@ public final class HbmKeybindsClient {
     public static KeyMappings.Mapping jetpackHudKey;
     public static KeyMappings.Mapping toggleJetpackKey;
     public static KeyMappings.Mapping toggleHeadKey;
+    /** 1.7 {@code calculatorKey} (N): opens {@link com.hbm.inventory.gui.GUICalculator} from the world. */
+    public static KeyMappings.Mapping calculatorKey;
 
     private static boolean lastJetpack;
     private static boolean lastJetpackHover;
@@ -62,6 +64,7 @@ public final class HbmKeybindsClient {
         jetpackHudKey = KeyMappings.register(CATEGORY, "key.jetpack_hud", InputConstants.KEY_U, CATEGORY);
         toggleJetpackKey = KeyMappings.register(CATEGORY, "key.hbm.toggleBack", InputConstants.KEY_C, CATEGORY);
         toggleHeadKey = KeyMappings.register(CATEGORY, "key.hbm.toggleHUD", InputConstants.KEY_V, CATEGORY);
+        calculatorKey = KeyMappings.register(CATEGORY, "key.hbm.calculator", InputConstants.KEY_N, CATEGORY);
 
         MouseInput.onButton(HbmKeybindsClient::onMouseButton);
         ClientTicks.onEndTick(HbmKeybindsClient::onEndTick);
@@ -77,6 +80,11 @@ public final class HbmKeybindsClient {
             lastJetpack = lastJetpackHover = lastJetpackHud = false;
             lastToggleJetpack = lastToggleHead = false;
             return;
+        }
+
+        // 1.7 KeyInputEvent: only fires with no screen open; the calculator replaces the (absent) screen.
+        while (calculatorKey.consumeClick()) {
+            if (mc.screen == null) mc.setScreen(new com.hbm.inventory.gui.GUICalculator());
         }
 
         dev.golem.core.client.PlayerInputs.State input = dev.golem.core.client.PlayerInputs.read(player);
@@ -138,6 +146,8 @@ public final class HbmKeybindsClient {
         drain(mc.options.keyAttack);
         // Clear other vanilla actions only while they actually overlap a gun binding. This preserves
         // user rebindings while retaining the old mod's "gun action wins" behavior.
+        // 1.7 1.34_enableKeybindOverlap gates the overlap handling
+        if (!com.hbm.config.GeneralConfig.enableKeybindOverlap) return;
         if (overlapsGunBinding(mc.options.keyUse, mc)) drain(mc.options.keyUse);
         if (overlapsGunBinding(mc.options.keyPickItem, mc)) drain(mc.options.keyPickItem);
     }

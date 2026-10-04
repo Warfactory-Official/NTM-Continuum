@@ -2,8 +2,6 @@ package com.hbm.inventory.container;
 
 import dev.golem.core.world.Compat;
 import com.hbm.inventory.ModMenus;
-import com.hbm.items.machine.IItemFluidId;
-import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineDiesel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -17,13 +15,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the diesel generator — 1.12.2 {@code ContainerMachineDiesel}: fuel container in (44,17),
- * emptied out (44,53), battery (116,53), fluid identifier (8,17), identifier-out (8,53); 176×166 with
- * the player inventory at 84/142.
+ * Menu for the diesel generator — 1.7.10 {@code ContainerMachineDiesel}: fuel container in (17,17),
+ * emptied out (17,53), battery (141,71), fluid identifier (35,71); 176×203 with the player inventory at
+ * 121/179. Button 0 is the on/off switch.
  */
 public class ContainerMachineDiesel extends AbstractContainerMenu {
 
-    public static final int MACHINE_SLOTS = 5;
+    public static final int MACHINE_SLOTS = 4;
     private final Container machine;
     private final @Nullable TileEntityMachineDiesel diesel;
 
@@ -36,13 +34,12 @@ public class ContainerMachineDiesel extends AbstractContainerMenu {
         this.diesel = diesel;
         this.machine = diesel != null ? diesel : new SimpleContainer(MACHINE_SLOTS);
 
-        this.addSlot(validated(0, 44, 17));   // fuel container in
-        this.addSlot(takeOnly(1, 44, 53));    // emptied container out
-        this.addSlot(validated(2, 116, 53));  // battery (charged from the TE)
-        this.addSlot(validated(3, 8, 17));    // fluid identifier
-        this.addSlot(takeOnly(4, 8, 53));     // identifier out
+        this.addSlot(validated(0, 17, 17));   // fuel container in
+        this.addSlot(takeOnly(1, 17, 53));    // emptied container out
+        this.addSlot(validated(2, 141, 71));  // battery (charged from the TE)
+        this.addSlot(validated(3, 35, 71));   // fluid identifier
 
-        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 121);
     }
 
     private Slot validated(int index, int x, int y) {
@@ -67,6 +64,19 @@ public class ContainerMachineDiesel extends AbstractContainerMenu {
     @Override
     public boolean stillValid(Player player) { return this.machine.stillValid(player); }
 
+    /** Button 0: the 1.7 "turnOn" control. */
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        if (diesel == null || id != 0) return false;
+        diesel.handleButtonPacket(0, 0);
+        return true;
+    }
+
+    /**
+     * 1.7 {@code transferStackInSlot}, odd bounds kept: indices up to 4 (the four machine slots AND the
+     * first player-inventory slot) go to the player inventory from index 5; anything else tries slot 0,
+     * then the battery slot 2, then index 4.
+     */
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         ItemStack result = ItemStack.EMPTY;
@@ -74,15 +84,12 @@ public class ContainerMachineDiesel extends AbstractContainerMenu {
         if (slot != null && slot.hasItem()) {
             ItemStack stack = slot.getItem();
             result = stack.copy();
-            int invStart = MACHINE_SLOTS, invEnd = MACHINE_SLOTS + 36;
-            if (index < invStart) {
-                if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
-            } else if (Library.isBattery(stack)) {
-                if (!this.moveItemStackTo(stack, 2, 3, false)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof IItemFluidId) {
-                if (!this.moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
-            } else {
-                if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
+            if (index <= 4) {
+                if (!this.moveItemStackTo(stack, 5, this.slots.size(), true)) return ItemStack.EMPTY;
+            } else if (!this.moveItemStackTo(stack, 0, 1, false)) {
+                if (!this.moveItemStackTo(stack, 2, 3, false))
+                    if (!this.moveItemStackTo(stack, 4, 5, false))
+                        return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY); else slot.setChanged();
         }

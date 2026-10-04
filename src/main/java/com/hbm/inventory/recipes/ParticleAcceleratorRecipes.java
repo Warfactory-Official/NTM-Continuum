@@ -16,10 +16,8 @@ import static com.hbm.inventory.OreDictManager.SBD;
 
 /**
  * The particle accelerator's collision table: two particles and a minimum momentum in, one or two
- * items out. Ported from 1.12.2's {@code ParticleAcceleratorRecipes}.
- *
- * <p>Deviation from CE: the chicken-into-chicken-nugget joke recipe is left out, because its output
- * item ({@code nugget}) is not ported.
+ * items out. Ported from 1.7's {@code ParticleAcceleratorRecipes}, all 11 entries including the
+ * chicken-into-chicken-nugget joke recipe.
  */
 public final class ParticleAcceleratorRecipes {
 
@@ -52,6 +50,8 @@ public final class ParticleAcceleratorRecipes {
                 new ItemStack(ModRBMKItems.particle_digamma.get()), null);
         add(exact(ModIntermediateItems.expensive(EnumExpensiveType.GOLD_DUST)), SBD.ingot(), 10_000,
                 ModIntermediateItems.expensive(EnumExpensiveType.DEGENERATE_MATTER, 1), null);
+        add(exact(net.minecraft.world.item.Items.CHICKEN), exact(net.minecraft.world.item.Items.CHICKEN), 100,
+                new ItemStack(com.hbm.items.ModFoodItems.nugget.get()), new ItemStack(com.hbm.items.ModFoodItems.nugget.get()));
     }
 
     private static ComparableStack exact(net.minecraft.world.item.Item item) {

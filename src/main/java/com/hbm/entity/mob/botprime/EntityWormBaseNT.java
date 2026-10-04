@@ -55,6 +55,13 @@ public abstract class EntityWormBaseNT extends CompatPathfinderMob {
     protected float dragInGround;
 
     private int headID;
+    /**
+     * The head's UUID: what is saved. 1.7 saved {@code wormID} = the head's runtime entity id, which the next load
+     * hands out to some other entity, so a reloaded worm fell apart (History section 19ej-ids). The int stays as the
+     * session-only comparison key and is re-resolved from the UUID after a load.
+     */
+    private java.util.@Nullable UUID headUUID;
+    private static final int UNRESOLVED = Integer.MIN_VALUE;
     private int partNum;
 
     protected EntityWormBaseNT(EntityType<? extends EntityWormBaseNT> type, Level level) {
@@ -70,15 +77,25 @@ public abstract class EntityWormBaseNT extends CompatPathfinderMob {
     }
 
     public @Nullable Entity getHead() {
-        return level().getEntity(this.headID);
+        return level().getEntity(getHeadID());
     }
 
     public int getHeadID() {
+        if (this.headID == UNRESOLVED && this.headUUID != null && level() instanceof ServerLevel server) {
+            Entity head = server.getEntity(this.headUUID);
+            if (head != null) this.headID = head.getId();
+        }
         return this.headID;
     }
 
     public void setHeadID(int id) {
         this.headID = id;
+    }
+
+    /** Joins this segment to {@code head}'s worm (the head passes itself). */
+    public void setHeadEntity(Entity head) {
+        this.headID = head.getId();
+        this.headUUID = head.getUUID();
     }
 
     public boolean getIsHead() {
@@ -88,6 +105,7 @@ public abstract class EntityWormBaseNT extends CompatPathfinderMob {
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
 
+        // CRAMMING is modern-only: 75 overlapping segments would otherwise grind each other down
         if (isInvulnerableToBase(source) || source.is(DamageTypes.DROWN) || source.is(DamageTypes.IN_WALL)
                 || source.is(DamageTypes.CRAMMING)) {
             return false;
@@ -211,12 +229,17 @@ public abstract class EntityWormBaseNT extends CompatPathfinderMob {
         return 5.0F;
     }
 
-    /** 1.7 {@code setDead}: every removal plays the death sound, not only an actual death. */
+    /**
+     * 1.7 {@code setDead}: every removal plays the death sound, not only an actual death. Chunk unloading never
+     * called setDead in 1.7 (the entity was just dropped from the loaded list), so unloads stay silent; a
+     * dimension change did, so it still plays.
+     */
     @Override
     public void remove(RemovalReason reason) {
         SoundEvent sound = getDeathSound();
+        boolean unload = reason == RemovalReason.UNLOADED_TO_CHUNK || reason == RemovalReason.UNLOADED_WITH_PLAYER;
 
-        if (sound != null && level() instanceof ServerLevel server) {
+        if (sound != null && !unload && level() instanceof ServerLevel server) {
             server.playSound(null, getX(), getY(), getZ(), sound, getSoundSource(), getSoundVolume(),
                     getVoicePitch());
         }
@@ -227,13 +250,14 @@ public abstract class EntityWormBaseNT extends CompatPathfinderMob {
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("wormID", getHeadID());
+        if (headUUID != null) output.store("worm", net.minecraft.core.UUIDUtil.CODEC, headUUID); // never the entity id
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        setHeadID(input.getIntOr("wormID", 0));
+        this.headUUID = input.read("worm", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
+        this.headID = this.headUUID == null ? 0 : UNRESOLVED;
     }
 
 

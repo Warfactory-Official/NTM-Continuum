@@ -265,8 +265,11 @@ public class ContaminationUtil {
     public static boolean isRadImmune(Entity e) {
         if (e instanceof LivingEntity living &&
                 dev.golem.core.world.Effects.hasRegistered(living, ModEffects.MUTATION.get())) return true;
-        // Old list minus un-ported HBM mobs (nuclear creeper, quackos)
-        return e instanceof MushroomCow
+        // 1.7 immuneEntities (nuclear creeper, mooshroom, zombie, skeleton, quackos, ocelot, IRadiationImmune); the
+        // cat (1.7's tamed ocelot), the undead horses and armour stands are the port's additions.
+        return e instanceof com.hbm.entity.mob.EntityCreeperNuclear
+                || e instanceof com.hbm.entity.mob.EntityQuackos
+                || e instanceof MushroomCow
                 || e instanceof Zombie
                 || e instanceof AbstractSkeleton
                 || e instanceof Ocelot
@@ -338,7 +341,7 @@ public class ContaminationUtil {
         if (!(e instanceof LivingEntity entity))
             return;
 
-        if (e instanceof Ocelot || e instanceof Cat)
+        if (e instanceof com.hbm.entity.mob.EntityDuck || e instanceof Ocelot || e instanceof Cat)
             return;
 
         if (entity instanceof Player player && (player.isCreative() || player.isSpectator()))
@@ -472,11 +475,13 @@ public class ContaminationUtil {
                 case FARADAY: if (ArmorUtil.checkForFaraday(player)) return false; break;
                 case HAZMAT: if (ArmorUtil.checkForHazmat(player)) return false; break;
                 case HAZMAT2: if (ArmorUtil.checkForHaz2(player)) return false; break;
-                case DIGAMMA: if (ArmorUtil.checkForDigamma(player)) return false; break;
+                case DIGAMMA: if (ArmorUtil.checkForDigamma(player)) return false; if (ArmorUtil.checkForDigamma2(player)) return false; break;
+                case DIGAMMA2: if (ArmorUtil.checkForDigamma2(player)) return false; break;
                 default: break;
             }
 
-            if (player.isCreative() && cont != ContaminationType.NONE) {
+            // 1.7: creative mode protects from everything but NONE and DIGAMMA2 (the Spear reaches creative players)
+            if (player.isCreative() && cont != ContaminationType.NONE && cont != ContaminationType.DIGAMMA2) {
                 if (hazard == HazardType.NEUTRON)
                     HbmLivingProps.setNeutron(entity, amount);
                 return false;
@@ -501,7 +506,8 @@ public class ContaminationUtil {
                 HbmLivingProps.incrementRadiation(entity, amount * (cont == ContaminationType.RAD_BYPASS ? 1D : calculateRadiationMod(entity)));
                 HbmLivingProps.setNeutron(entity, amount);
             }
-            case DIGAMMA -> applyDigammaData(entity, amount);
+            // 1.7 contaminate: straight to incrementDigamma; the gates above are the contamination type's
+            case DIGAMMA -> HbmLivingProps.incrementDigamma(entity, amount);
         }
 
         return true;

@@ -177,7 +177,7 @@ public final class FinalCustomMachine implements Scenario {
     }
 
     private static String identifier(Client c) {
-        return legacy(c) ? "hbm:fluid_identifier{\"hbm:fluid_id\":1}" : "hbm:fluid_identifier[hbm:fluid_id=1]";
+        return legacy(c) ? "hbm:fluid_identifier{\"hbm:fluid\":\"hbm:water\"}" : "hbm:fluid_identifier[hbm:fluid=\"hbm:water\"]";
     }
 
     /** 1.7 wrote hbmConfig/hbmCustomMachines.json with the Paper Press on first start; the port does too. */

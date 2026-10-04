@@ -116,19 +116,19 @@ public class ItemICFPellet extends CompatItem {
     }
 
     public static ItemStack setup(ItemStack stack, EnumICFFuel type1, EnumICFFuel type2, boolean muon) {
-        ModIcfItems.PELLET_TYPE1.set(stack, type1.ordinal());
-        ModIcfItems.PELLET_TYPE2.set(stack, type2.ordinal());
+        ModIcfItems.PELLET_TYPE1.set(stack, type1.name().toLowerCase(java.util.Locale.ROOT));
+        ModIcfItems.PELLET_TYPE2.set(stack, type2.name().toLowerCase(java.util.Locale.ROOT));
         ModIcfItems.PELLET_MUON.set(stack, muon);
         ModelData.setColor(stack, mixedColor(type1, type2));
         return stack;
     }
 
-    /** 1.7 with no NBT: deuterium and tritium. A stored ordinal wraps like {@code EnumUtil.grabEnumSafely}. */
+    /** 1.7 with no NBT: deuterium and tritium. The fuel is saved by name; an unknown name reads as the default. */
     public static EnumICFFuel getType(ItemStack stack, boolean first) {
         var component = first ? ModIcfItems.PELLET_TYPE1 : ModIcfItems.PELLET_TYPE2;
         if (!component.has(stack)) return first ? EnumICFFuel.DEUTERIUM : EnumICFFuel.TRITIUM;
-        EnumICFFuel[] values = EnumICFFuel.values();
-        return values[Math.abs(component.getOr(stack, 0)) % values.length];
+        EnumICFFuel fallback = first ? EnumICFFuel.DEUTERIUM : EnumICFFuel.TRITIUM;
+        return com.hbm.util.SavedIds.byName(EnumICFFuel.class, component.getOr(stack, ""), fallback);
     }
 
     /** 1.7 {@code getColorFromItemStack} pass 0: the per-channel average of both fuels. */

@@ -311,6 +311,9 @@ public final class ModFinalConsumableItems {
                 .transform(Presets.sprite("hbm:items/item_secret." + s)));
         for (String s : SCRAPS) FLAT.put("circuit_star_piece_" + s, plain("circuit_star_piece_" + s, null, p -> p)
                 .transform(Presets.sprite("hbm:items/circuit_star_piece." + s)));
+        // 1.7 ItemPlasticScrap: ScrapType metadata, one sprite, one name ("Plastic Scraps"), no creative tab
+        for (String s : SCRAPS) FLAT.put("scrap_plastic_" + s, plain("scrap_plastic_" + s, null, p -> p)
+                .transform(Presets.sprite("hbm:items/scrap_plastic")));
         for (String s : STAR_COMPONENTS) {
             FLAT.put("circuit_star_component_" + s, plain("circuit_star_component_" + s, null, p -> p)
                     .transform(Presets.sprite("hbm:items/circuit_star_component." + s)));

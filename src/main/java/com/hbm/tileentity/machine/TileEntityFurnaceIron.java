@@ -6,7 +6,6 @@ import com.hbm.inventory.container.ContainerFurnaceIron;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.util.TickPhase;
-import com.hbm.items.ModUpgradeItems;
 import com.hbm.modules.ModuleBurnTime;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
@@ -32,10 +31,16 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Iron furnace: vanilla smelting with two fuel slots and the old speed upgrades. */
-public class TileEntityFurnaceIron extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
+/**
+ * Iron furnace: vanilla smelting with two fuel slots and speed upgrades. 1.7.10 timing:
+ * {@code baseTime 160}, {@code processingTime = 160 - (160 / 2) * speed / 3} with SPEED capped at 3 by the
+ * upgrade manager (so 160 / 134 / 107 / 80 ticks). The 1.12.2 {@code 200 - 15 * speed} is not the spec.
+ */
+public class TileEntityFurnaceIron extends TileEntityMachineBase implements MenuProvider, WorldlyContainer,
+        com.hbm.tileentity.IUpgradeInfoProvider {
 
-    public static final int baseTime = 200;
+    public static final int baseTime = 160;
+    public final com.hbm.inventory.UpgradeManagerNT upgradeManager = new com.hbm.inventory.UpgradeManagerNT(this);
     public int maxBurnTime;
     public int burnTime;
     public boolean wasOn;
@@ -57,7 +62,8 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements Menu
     @Override public String getDefaultName() { return "container.furnaceIron"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFurnaceIron furnace) {
-        furnace.processingTime = baseTime - 15 * getSpeed(furnace.inventory.getStackInSlot(4));
+        furnace.upgradeManager.checkSlots(furnace.inventory, 4, 4);
+        furnace.processingTime = baseTime - ((baseTime / 2) * furnace.upgradeManager.getLevel(com.hbm.items.machine.ItemMachineUpgrade.UpgradeType.SPEED) / 3);
         furnace.wasOn = false;
 
         if (furnace.burnTime <= 0) {
@@ -116,16 +122,24 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements Menu
         }
     }
 
-    public static int getSpeed(ItemStack stack) {
-        if (stack.isEmpty()) return 0;
-        if (stack.is(ModUpgradeItems.upgrade_speed_1.get())) return 1;
-        if (stack.is(ModUpgradeItems.upgrade_speed_2.get())) return 2;
-        if (stack.is(ModUpgradeItems.upgrade_speed_3.get())) return 3;
-        if (stack.is(ModUpgradeItems.upgrade_overdrive_1.get())) return 4;
-        if (stack.is(ModUpgradeItems.upgrade_overdrive_2.get())) return 6;
-        if (stack.is(ModUpgradeItems.upgrade_overdrive_3.get())) return 8;
-        if (stack.is(ModUpgradeItems.upgrade_screm.get())) return 10;
-        return 0;
+    @Override
+    public boolean canProvideInfo(com.hbm.items.machine.ItemMachineUpgrade.UpgradeType type, int level, boolean extendedInfo) {
+        return type == com.hbm.items.machine.ItemMachineUpgrade.UpgradeType.SPEED;
+    }
+
+    @Override
+    public void provideInfo(com.hbm.items.machine.ItemMachineUpgrade.UpgradeType type, int level, java.util.List<Component> info, boolean extendedInfo) {
+        info.add(com.hbm.tileentity.IUpgradeInfoProvider.getStandardLabel(com.hbm.blocks.machine.ModMachineBlocks.furnace_iron.get()));
+        if (type == com.hbm.items.machine.ItemMachineUpgrade.UpgradeType.SPEED) {
+            info.add(Component.translatable(KEY_DELAY, "-" + (level * 50 / 3) + "%").withStyle(net.minecraft.ChatFormatting.GREEN));
+        }
+    }
+
+    @Override
+    public java.util.HashMap<com.hbm.items.machine.ItemMachineUpgrade.UpgradeType, Integer> getValidUpgrades() {
+        java.util.HashMap<com.hbm.items.machine.ItemMachineUpgrade.UpgradeType, Integer> upgrades = new java.util.HashMap<>();
+        upgrades.put(com.hbm.items.machine.ItemMachineUpgrade.UpgradeType.SPEED, 3);
+        return upgrades;
     }
 
     public boolean canSmelt(Level level) {

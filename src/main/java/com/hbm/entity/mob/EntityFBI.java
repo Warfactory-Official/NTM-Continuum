@@ -39,6 +39,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -75,7 +76,8 @@ public class EntityFBI extends CompatMonster implements RangedAttackMob {
         goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
         goalSelector.addGoal(8, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false));
+        // 1.7 targetChance 0: re-acquire on every check, not one in ten
+        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 0, false, false, null));
     }
 
 
@@ -194,9 +196,10 @@ public class EntityFBI extends CompatMonster implements RangedAttackMob {
             breakNearbyMachine();
         }
 
+        // 1.7 expanded a zero-size box at the feet, not the hitbox
         double range = 1.5;
         List<ItemEntity> items = level().getEntitiesOfClass(ItemEntity.class,
-                getBoundingBox().inflate(range, range, range));
+                new AABB(getX(), getY(), getZ(), getX(), getY(), getZ()).inflate(range, range, range));
 
         for (ItemEntity item : items) dev.golem.core.world.Effects.ignite(item, 10);
     }

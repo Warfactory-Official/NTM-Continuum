@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.Blocks;
 
 /**
  * GameTests pinning the FEL: the beam's SILEX handshake (including the destructive punishment for
- * mis-aiming), the {@code 4^ordinal} power curve, the per-wavelength burn table, the entity effects,
+ * mis-aiming), the 1.7 {@code 1250 * 3^ordinal} power curve, the 1.7 burn rule, the entity effects,
  * the layout, and the slot/menu matrix.
  */
 public final class FelGameTests {
@@ -129,25 +129,24 @@ public final class FelGameTests {
     // ---------------------------------------------------------------- power
 
     /**
-     * The {@code powerReq * 4^ordinal} curve: 4,000 HE/t on IR up to 1,024,000 on DRX, and a buffer
-     * that cannot cover the draw blanks the mode <b>and zeroes the buffer</b>.
+     * The 1.7.10 {@code 1250 * 3^ordinal} curve: 3,750 HE/t on IR up to 303,750 on DRX, out of a 20 MHE
+     * buffer; a buffer that cannot cover the draw is <b>zeroed</b> (1.7 keeps the mode set).
      */
     public static void felPower(GameTestHelper helper) {
         BlockPos pos = new BlockPos(2, 1, 8);
         TileEntityFEL te = placeFel(helper, pos);
+        helper.assertTrue(TileEntityFEL.maxPower == 20_000_000L, "1.7 FEL buffer is 20,000,000 HE");
 
-        assertDrain(helper, te, pos, EnumWavelengths.IR, 4_000L);
-        assertDrain(helper, te, pos, EnumWavelengths.VISIBLE, 16_000L);
-        assertDrain(helper, te, pos, EnumWavelengths.UV, 64_000L);
-        assertDrain(helper, te, pos, EnumWavelengths.GAMMA, 256_000L);
-        assertDrain(helper, te, pos, EnumWavelengths.DRX, 1_024_000L);
+        assertDrain(helper, te, pos, EnumWavelengths.IR, 3_750L);
+        assertDrain(helper, te, pos, EnumWavelengths.VISIBLE, 11_250L);
+        assertDrain(helper, te, pos, EnumWavelengths.UV, 33_750L);
+        assertDrain(helper, te, pos, EnumWavelengths.GAMMA, 101_250L);
+        assertDrain(helper, te, pos, EnumWavelengths.DRX, 303_750L);
 
-        // Starved: below the gate the laser blanks itself and dumps whatever is left.
+        // Starved: below the gate the laser dumps whatever is left.
         arm(te, EnumWavelengths.DRX);
         te.power = 1_000L;
         tick(helper, te, pos);
-        helper.assertTrue(te.mode == EnumWavelengths.NULL,
-                "A starved FEL must blank its mode, but it is " + te.mode);
         helper.assertTrue(te.power == 0L,
                 "A starved FEL must zero its buffer (upstream behaviour), but it holds " + te.power);
 
@@ -164,59 +163,60 @@ public final class FelGameTests {
                 mode + " should draw " + expected + " HE/t, but drew " + drained);
     }
 
-    // ---------------------------------------------------------------- burn table
+    // ---------------------------------------------------------------- burn rule
 
     /**
-     * GAMMA burns through soft blocks into <b>balefire</b> (1-in-5 per tick under a hardness limit of
-     * 3000), and DRX always burns, leaving {@code fire_digamma} with {@code ash_digamma} beneath it.
+     * 1.7: the first opaque block stops the beam and, under explosion resistance 75, catches fire 1-in-5
+     * per tick. DRX leaves {@code fire_digamma} (or digamma matter on the polaroid world) with
+     * {@code ash_digamma} beneath; every other wavelength leaves vanilla fire.
      */
     public static void felBurn(GameTestHelper helper) {
         BlockPos fel = new BlockPos(2, 1, 8);
         TileEntityFEL te = placeFel(helper, fel);
         BlockPos target = new BlockPos(2, 2, 2); // on the beam line (y+1), 6 blocks out
 
-        // --- DRX: deterministic, it always burns ---
         helper.setBlock(target, Blocks.STONE.defaultBlockState());
         helper.setBlock(target.below(), Blocks.STONE.defaultBlockState());
         arm(te, EnumWavelengths.DRX);
-        tick(helper, te, fel);
-        helper.assertTrue(helper.getBlockState(target).is(ModBombBlocks.fire_digamma.get())
-                        || helper.getBlockState(target).is(ModBombBlocks.digamma_matter.get()),
-                "A DRX beam must always burn through, leaving digamma flame (or matter on the polaroid "
-                        + "easter-egg world); found " + helper.getBlockState(target).getBlock());
-        helper.assertTrue(helper.getBlockState(target.below()).is(ModFallingBlocks.ash_digamma.get()),
-                "A DRX burn must leave digamma ash in the cell below");
-
-        // --- GAMMA: chance-gated, so drive it until it fires ---
-        helper.setBlock(target, Blocks.STONE.defaultBlockState());
-        helper.setBlock(target.below(), Blocks.STONE.defaultBlockState());
-        arm(te, EnumWavelengths.GAMMA);
         boolean burned = false;
         for (int i = 0; i < 400 && !burned; i++) {
             te.power = TileEntityFEL.maxPower;
             tick(helper, te, fel);
-            burned = helper.getBlockState(target).is(ModBombBlocks.balefire.get());
+            burned = helper.getBlockState(target).is(ModBombBlocks.fire_digamma.get())
+                    || helper.getBlockState(target).is(ModBombBlocks.digamma_matter.get());
         }
-        helper.assertTrue(burned,
-                "A GAMMA beam must eventually burn stone into balefire (1-in-5 under hardness 3000)");
+        helper.assertTrue(burned, "A DRX beam must eventually burn stone into digamma flame (or matter)");
+        helper.assertTrue(helper.getBlockState(target.below()).is(ModFallingBlocks.ash_digamma.get()),
+                "A DRX burn must leave digamma ash in the cell below");
 
+        helper.setBlock(target, Blocks.STONE.defaultBlockState());
+        helper.setBlock(target.below(), Blocks.STONE.defaultBlockState());
+        arm(te, EnumWavelengths.GAMMA);
+        burned = false;
+        for (int i = 0; i < 400 && !burned; i++) {
+            te.power = TileEntityFEL.maxPower;
+            tick(helper, te, fel);
+            burned = helper.getBlockState(target).is(Blocks.FIRE);
+        }
+        helper.assertTrue(burned, "A GAMMA beam must eventually set stone alight (1.7: vanilla fire, 1-in-5 under 75)");
         helper.succeed();
     }
 
-    /** IR is the one wavelength that does nothing at all — it neither burns blocks nor hurts entities. */
+    /** 1.7: even IR burns soft blocks, but a block at or above resistance 75 (obsidian-class) never burns. */
     public static void felBurnInfrared(GameTestHelper helper) {
         BlockPos fel = new BlockPos(2, 1, 8);
         TileEntityFEL te = placeFel(helper, fel);
         BlockPos target = new BlockPos(2, 2, 2);
-        helper.setBlock(target, Blocks.STONE.defaultBlockState());
+        helper.setBlock(target, Blocks.OBSIDIAN.defaultBlockState());
 
         arm(te, EnumWavelengths.IR);
         for (int i = 0; i < 100; i++) {
             te.power = TileEntityFEL.maxPower;
             tick(helper, te, fel);
         }
-        helper.assertTrue(helper.getBlockState(target).is(Blocks.STONE),
-                "An IR beam is blocked by opaque blocks and must never burn them");
+        helper.assertTrue(helper.getBlockState(target).is(Blocks.OBSIDIAN),
+                "A beam must never burn a block with explosion resistance >= 75");
+        helper.assertTrue(te.distance == 6, "The beam must stop at the opaque block (distance 6), was " + te.distance);
         helper.succeed();
     }
 

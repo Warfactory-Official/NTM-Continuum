@@ -70,12 +70,16 @@ public final class XFactory40mm {
                 && entityHit.getEntity() == bullet.getThrower()) return;
         Lego.standardExplode(bullet, hit, 3.5F);
         bullet.discard();
-        if (hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity living
-                && bullet.level() instanceof ServerLevel level) {
-            com.hbm.util.DamageResistanceHandler.hurt(level, living,
-                    com.hbm.lib.ModDamageSources.bullet(level,
-                            com.hbm.lib.ModDamageSources.DamageClass.EXPLOSIVE.type(), bullet,
-                            bullet.getThrower()), bullet.damage * 3F, 5F, 0.2F);
+        if (hit instanceof EntityHitResult entityHit && bullet.level() instanceof ServerLevel level) {
+            var source = com.hbm.lib.ModDamageSources.bullet(level,
+                    com.hbm.lib.ModDamageSources.DamageClass.EXPLOSIVE.type(), bullet, bullet.getThrower());
+            if (entityHit.getEntity() instanceof LivingEntity living) {
+                // 1.7 XFactory40mm: attackEntityFromNT(living, source, dmg * 3, true, true, 0.5, 3, 0.15) - the 40 mm
+                // shaped charge pierces less than the rocket's (5, 0.2).
+                com.hbm.util.EntityDamageUtil.attackEntityFromNT(living, source, bullet.damage * 3F, true, true, 0.5D, 3F, 0.15F);
+            } else {
+                com.hbm.util.EntityDamageUtil.attackEntityFromIgnoreIFrame(entityHit.getEntity(), source, bullet.damage * 3F);
+            }
         }
     };
 
@@ -111,6 +115,38 @@ public final class XFactory40mm {
         }
     }
 
+    /** 1.7 {@code LAMBDA_SPAWN_C130_SUPPLIESS} (sic). */
+    public static final java.util.function.Consumer<net.minecraft.world.entity.Entity> LAMBDA_SPAWN_C130_SUPPLIES =
+            entity -> spawnPlane(entity, com.hbm.entity.logic.EntityC130.C130PayloadType.SUPPLIES);
+    /** 1.7 {@code LAMBDA_SPAWN_C130_WEAPONS}. */
+    public static final java.util.function.Consumer<net.minecraft.world.entity.Entity> LAMBDA_SPAWN_C130_WEAPONS =
+            entity -> spawnPlane(entity, com.hbm.entity.logic.EntityC130.C130PayloadType.WEAPONS);
+
+    /**
+     * 1.7 {@code XFactory40mm.spawnPlane}: 40 ticks after firing, the airdrop flare bleeps at its shooter and calls a
+     * C-130 that overflies the flare's column at the terrain height and drops a crate of the requested payload.
+     */
+    public static void spawnPlane(net.minecraft.world.entity.Entity entity,
+                                  com.hbm.entity.logic.EntityC130.C130PayloadType payload) {
+        if (!(entity.level() instanceof ServerLevel level) || entity.tickCount != 40) return;
+        com.hbm.entity.projectile.EntityBulletBaseMK4 bullet = (com.hbm.entity.projectile.EntityBulletBaseMK4) entity;
+        net.minecraft.world.entity.Entity thrower = bullet.getThrower();
+        if (thrower != null) {
+            level.playSound(null, thrower.getX(), thrower.getY(), thrower.getZ(), com.hbm.sound.ModSounds.TECH_BLEEP.get(),
+                    net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+        }
+        com.hbm.entity.logic.EntityC130 c130 = new com.hbm.entity.logic.EntityC130(
+                com.hbm.entity.ModNtmEntities.C130.get(), level);
+        int x = (int) Math.floor(bullet.getX());
+        int z = (int) Math.floor(bullet.getZ());
+        // 1.7 World.getHeightValue: the column's surface height.
+        int y = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, x, z);
+        c130.fac(level, x, y, z, payload);
+        // 1.7 WorldUtil.loadAndSpawnEntityInWorld + TrackerUtil.setTrackingRange(250): fac() force-loads the spawn
+        // chunk and the C130 entity type already tracks far beyond 250 blocks.
+        level.addFreshEntity(c130);
+    }
+
     public static void init() {
         if (g26_flare != null) return;
         g26_flare = BulletConfigs.register("g26_flare", new BulletConfig()
@@ -120,11 +156,13 @@ public final class XFactory40mm {
         g26_flare_supply = BulletConfigs.register("g26_flare_supply", new BulletConfig()
                 .setItem(BallisticGunCatalog.ammo("ammo_standard_g26_flare_supply"))
                 .setLife(100).setVel(2F).setGrav(0.015F).setRenderRotations(false)
-                .setOnImpact(LAMBDA_STANDARD_IGNITE));
+                .setOnImpact(LAMBDA_STANDARD_IGNITE)
+                .setOnUpdate(LAMBDA_SPAWN_C130_SUPPLIES));
         g26_flare_weapon = BulletConfigs.register("g26_flare_weapon", new BulletConfig()
                 .setItem(BallisticGunCatalog.ammo("ammo_standard_g26_flare_weapon"))
                 .setLife(100).setVel(2F).setGrav(0.015F).setRenderRotations(false)
-                .setOnImpact(LAMBDA_STANDARD_IGNITE));
+                .setOnImpact(LAMBDA_STANDARD_IGNITE)
+                .setOnUpdate(LAMBDA_SPAWN_C130_WEAPONS));
 
         g40_he = BulletConfigs.register("g40_he", base().setItem(
                 BallisticGunCatalog.ammo("ammo_standard_g40_he")).setOnImpact(LAMBDA_STANDARD_EXPLODE));

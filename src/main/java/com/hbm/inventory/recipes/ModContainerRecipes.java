@@ -25,8 +25,8 @@ import static dev.golem.core.dejson.Crafting.tag;
  * crate upgrades that carry the old crate's contents into the new one.
  *
  * <p>Sources: {@code CraftingManager}, {@code ConsumableRecipes}, {@code PowderRecipes}, {@code WeaponRecipes}.
- * Not declared, with the reason: the patrol-drone express upgrades (no drone item in the port), the destroyer
- * minecart (its chassis is an enum component, not an integer one), and {@code enable528}/config-gated recipes.
+ * Not declared, with the reason: the patrol-drone express upgrades (no drone item in the port) and
+ * {@code enable528}/config-gated recipes. The minecarts are in {@link RestoredCraftingRecipes} (History §19ej-1b).
  * Touches no Minecraft class.
  */
 public final class ModContainerRecipes {
@@ -47,8 +47,8 @@ public final class ModContainerRecipes {
     private static final String MASS_STORAGE = "hbm:mass_storage";
 
     /** 1.7 Fluids ids of the component-matched containers below (fluid_tank_full meta = fluid id). */
-    private static final int FLUID_LUBRICANT = 18;
-    private static final int FLUID_PEROXIDE = 35;
+    private static final String FLUID_LUBRICANT = "hbm:lubricant";
+    private static final String FLUID_PEROXIDE = "hbm:peroxide";
 
     private ModContainerRecipes() {}
 
@@ -96,7 +96,7 @@ public final class ModContainerRecipes {
         componentShapeless(NS, "solid_fuel_from_heatingoil", stack(ItemIds.solid_fuel, 3),
                 fluid("HEATINGOIL", 16_000), chemistrySet());
         componentShapeless(NS, "canister_full_lubricant", stack(ItemIds.canister_full, 2)
-                        .with(ComponentIds.fluid_id, FLUID_LUBRICANT).with(ComponentIds.fluid_amount, 1_000),
+                        .with(ComponentIds.fluid, FLUID_LUBRICANT).with(ComponentIds.fluid_amount, 1_000),
                 fluid("HEATINGOIL", 1_000), fluid("UNSATURATEDS", 1_000), item(ItemIds.canister_empty),
                 item(ItemIds.canister_empty), chemistrySet());
         // 1.7 infinite water barrels (gated on !enable528, which defaults to off)
@@ -143,7 +143,7 @@ public final class ModContainerRecipes {
         // WeaponRecipes: fluid_tank_full meta PEROXIDE (the tank itself, not any container), the full B92
         // cell (meta 1; 1.7 matched item and meta only, so the charge NBT is not checked) and fine copper wire
         componentShapeless(NS, "weaponized_starblaster_cell", stack(STARBLASTER_CELL),
-                item(ItemIds.fluid_tank).with(ComponentIds.fluid_id, FLUID_PEROXIDE)
+                item(ItemIds.fluid_tank).with(ComponentIds.fluid, FLUID_PEROXIDE)
                         .with(ComponentIds.fluid_amount, 1_000).remainder(ItemIds.fluid_tank),
                 item(ItemIds.gun_b92_ammo).with(VARIANT, 1), tag(TagIds.wires_copper));
         componentShapeless(NS, "missile_taint", stack(ItemIds.missile_taint),

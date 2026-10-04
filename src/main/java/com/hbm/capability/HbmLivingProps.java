@@ -29,7 +29,7 @@ public class HbmLivingProps {
     /** Identifier-keyed replacement for the old digamma AttributeModifier UUID. */
     public static final Identifier DIGAMMA_ID = dev.golem.core.Ids.of(Constants.MOD_ID, "digamma");
     public static final int maxAsbestos = 60 * 60 * 20;
-    public static final int maxBlacklung = 2 * 60 * 60 * 20;
+    public static final int maxBlacklung = EntityHbmProps.MAX_BLACKLUNG;
 
     /**
      * Every living entity's HBM state, in the loader's own per-entity storage (NeoForge/Fabric data attachment,
@@ -63,8 +63,9 @@ public class HbmLivingProps {
         if (!RadiationConfig.enableContamination) return;
         double radiation = getRadiation(entity) + rad;
 
-        if (radiation > 25000000)
-            radiation = 25000000;
+        // 1.7 HbmLivingProps.incrementRadiation caps at 2500 (the 25,000,000 here came from the 1.12.2 fork).
+        if (radiation > 2500)
+            radiation = 2500;
         if (radiation < 0)
             radiation = 0;
 
@@ -152,10 +153,12 @@ public class HbmLivingProps {
 
     /// ASBESTOS ///
     public static int getAsbestos(LivingEntity entity) {
+        if (RadiationConfig.disableAsbestos) return 0;
         return getData(entity).getAsbestos();
     }
 
     public static void setAsbestos(LivingEntity entity, int asbestos) {
+        if (RadiationConfig.disableAsbestos) return;
         EntityHbmProps props = getData(entity);
         props.setAsbestos(asbestos);
 
@@ -198,16 +201,38 @@ public class HbmLivingProps {
         if (props.getBalefire() < ticks) props.setBalefire(ticks);
     }
 
+    public static int getBlackFire(LivingEntity entity) {
+        return getData(entity).getBlackFire();
+    }
+
+    /**
+     * 1.7 {@code EntityFireLingering} TYPE_BLACK: a fresh burn starts at 200 ticks, an existing one of at least 200
+     * is extended by 5 (bullets of the 358.00 BL add 200 directly through {@link #addBlackFire}).
+     */
+    public static void igniteBlackFire(LivingEntity entity) {
+        EntityHbmProps props = getData(entity);
+        if (props.getBlackFire() < 200) props.setBlackFire(200);
+        else props.setBlackFire(props.getBlackFire() + 5);
+    }
+
+    /** 1.7 {@code XFactory35800}: {@code blackFire += ticks}. */
+    public static void addBlackFire(LivingEntity entity, int ticks) {
+        EntityHbmProps props = getData(entity);
+        props.setBlackFire(props.getBlackFire() + ticks);
+    }
+
     public static void addCont(LivingEntity entity, ContaminationEffect cont) {
         getData(entity).getContaminationEffectList().add(cont);
     }
 
     /// BLACK LUNG DISEASE ///
     public static int getBlackLung(LivingEntity entity) {
+        if (RadiationConfig.disableCoal) return 0;
         return getData(entity).getBlacklung();
     }
 
     public static void setBlackLung(LivingEntity entity, int blacklung) {
+        if (RadiationConfig.disableCoal) return;
         EntityHbmProps props = getData(entity);
         props.setBlacklung(blacklung);
 

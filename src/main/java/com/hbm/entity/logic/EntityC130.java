@@ -77,13 +77,13 @@ public class EntityC130 extends EntityPlaneBase {
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        this.payload = EnumUtil.grabEnumSafely(C130PayloadType.class, input.getIntOr("payload", 0));
+        this.payload = com.hbm.util.SavedIds.getEnum(input, "payload", C130PayloadType.values()[0]);
     }
 
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("payload", this.payload.ordinal());
+        com.hbm.util.SavedIds.putEnum(output, "payload", this.payload); // by name, never an ordinal
     }
 
     /**

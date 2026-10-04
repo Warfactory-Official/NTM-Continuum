@@ -55,7 +55,7 @@ public class GUIFEL extends dev.golem.core.gui.CompatContainerScreen<ContainerFE
                     this.topPos + POWER_Y + POWER_H - k, 203.0F, (float) (17 + POWER_H - k), POWER_W, k, 256, 256);
         }
 
-        // The in-GUI beam. NOTE the pow(2) gate: upstream's server cut uses pow(4), so the GUI can show
+        // The in-GUI beam. NOTE the pow(2) gate: 1.7's server cost is 3^ordinal, so the GUI can show
         // a beam for one tick after the real one has already stopped. Preserved.
         boolean beam = te.power > TileEntityFEL.powerReq * Math.pow(2, te.mode.ordinal())
                 && te.isOn && te.mode != EnumWavelengths.NULL && te.distance > 0;

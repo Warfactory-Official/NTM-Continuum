@@ -11,7 +11,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 
 /**
  * HBM's output policy for component shapeless crafting: a crafted fluid container (1.7's
- * {@code new ItemStack(ModItems.canister_full, 2, Fluids.LUBRICANT.getID())}) gets its fluid written the way
+ * {@code new ItemStack(ModItems.canister_full, 2, Fluids.LUBRICANT.getID())}) gets its fluid (now the {@code hbm:fluid} registry name) written the way
  * every other filled container does, tint included, so it looks and stacks like a machine-filled one.
  */
 public final class ComponentShapelessRecipe extends dev.golem.core.world.ComponentShapelessRecipe {

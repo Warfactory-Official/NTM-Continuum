@@ -18,10 +18,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Screen for the assembly machine. Reads the live (client) BlockEntity for the power and progress bars
- * (synced via the BufPacket). The recipe is chosen automatically from the inserted template + ingredient,
- * so there's no in-GUI recipe picker yet (the 1.12.2 selector popup + ghost slots + fluid tanks are
- * deferred — see IMPLEMENTATION.md §18).
+ * Screen for the assembly machine (1.7.10 {@code GUIMachineAssemblyMachine}). Reads the live (client)
+ * BlockEntity for the power and progress bars and the two horizontal 52×16 fluid tanks (input at (8,99),
+ * output at (80,99)); the recipe selector button opens the shared selector popup.
  */
 public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineAssemblyMachine> implements IUpgradeInfoProviderSource {
 
@@ -29,6 +28,13 @@ public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContaine
 
     public GUIMachineAssemblyMachine(ContainerMachineAssemblyMachine menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 256);
+    }
+
+    /** 1.7 foreground: the name centred on x 70 at y 6, then the inventory caption. */
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, font, title, 70 - font.width(title) / 2, 6, 0xFF404040, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 0xFF404040, false);
     }
 
     @Override
@@ -49,7 +55,7 @@ public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContaine
         double progress = te.assemblerModule.progress;
         if (progress > 0) {
             int j = (int) Math.ceil(70 * progress);
-            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 62, this.topPos + 126, 176.0F, 61.0F, j, 16, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 62, this.topPos + 126, 176.0F, te.assemblerModule.restrictedMode ? 77.0F : 61.0F, j, 16, 256, 256); // 1.7: restricted-mode bar below
         }
 
         // Status LEDs (3×6 each): LEFT = a recipe is configured, RIGHT = enough power for it; each turns
@@ -95,6 +101,23 @@ public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContaine
             }
         }
 
+        drawHorizontalTank(graphics, te.inputTank, 8, 99);
+        drawHorizontalTank(graphics, te.outputTank, 80, 99);
+    }
+
+    /** 1.7 {@code renderTank(x, y + 16, z, 52, 16, 1)}: a horizontal tank filling left to right, tinted. */
+    private void drawHorizontalTank(GuiGraphicsExtractor graphics, com.hbm.inventory.fluid.tank.FluidTankNTM tank, int x, int y) {
+        int max = tank.getMaxFill();
+        int w = max <= 0 ? 0 : tank.getFill() * 52 / max;
+        if (w <= 0) return;
+        int x0 = this.leftPos + x, y0 = this.topPos + y;
+        Identifier fluidTex = tank.getTankType().getTexture();
+        int tint = TankDisplay.tint(tank);
+        graphics.enableScissor(x0, y0, x0 + w, y0 + 16);
+        for (int tx = x0; tx < x0 + w; tx += 16) {
+            GuiDraw.blit(graphics, fluidTex, tx, y0, 0F, 0F, 16, 16, 16, 16, tint);
+        }
+        graphics.disableScissor();
     }
 
     /** The selector button hot-zone (GUI-relative), matching the 1.12.2 layout. */
@@ -124,6 +147,10 @@ public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContaine
         if (this.isHovering(152, 18, 16, 61, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, te.maxPower),
                     Optional.empty(), mouseX, mouseY);
+        } else if (this.isHovering(8, 99, 52, 16, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.tankTooltip(te.inputTank), Optional.empty(), mouseX, mouseY);
+        } else if (this.isHovering(80, 99, 52, 16, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.tankTooltip(te.outputTank), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, mouseX, mouseY)) {
             // Selector button: show the active recipe, or a hint to pick one.
             GenericRecipe recipe = AssemblyMachineRecipes.INSTANCE.getRecipe(te.assemblerModule.recipe);

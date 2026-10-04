@@ -65,7 +65,10 @@ public final class WorldFeatureGameTests {
                 "hbm:cluster_copper", "hbm:bedrock_ore", "hbm:coltan_deposit", "hbm:stone_keyhole", "hbm:cluster_depth_iron")) {
             helper.assertTrue(ores.contains(id), "underground_ores lacks " + id + ": " + ores);
         }
-        helper.assertTrue(!ores.contains("hbm:gas_bubble_explosive"), "1.7's explosive bubble rate is 0");
+        // listed since §19ej-8 (hbm:config reads hbm.cfg at generation); 1.7's explosive bubble rate 0 places nothing
+        helper.assertTrue(ores.contains("hbm:gas_bubble_explosive")
+                && com.hbm.world.gen.ConfigPlacement.value(com.hbm.world.gen.WorldgenKeys.EXPLOSIVE_BUBBLE) == 0,
+                "1.7's explosive bubble rate is 0");
         helper.assertTrue(ores.indexOf("hbm:ore_gneiss_iron") < ores.indexOf("hbm:ore_uranium")
                 && ores.indexOf("hbm:ore_uranium") < ores.indexOf("hbm:limestone"), "1.7 vein order: " + ores);
         helper.assertTrue(steps.get(9).contains("hbm:weed") && steps.get(9).contains("hbm:fallen_meteorite")

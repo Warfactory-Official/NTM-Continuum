@@ -32,7 +32,7 @@ public final class FluidGraphProvider implements IGraphProvider<DuctData> {
      */
     @Override
     public boolean dataCompatible(DuctData a, DuctData b) {
-        if (a.typeId() == b.typeId()) return true;
+        if (a.equals(b)) return true;
         if (a.isSmokeAny()) return DuctData.isSmoke(b.type());
         if (b.isSmokeAny()) return DuctData.isSmoke(a.type());
         return false;

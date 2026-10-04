@@ -25,8 +25,7 @@ import net.minecraft.world.level.Level;
  * storage roll that adds nothing falls through to bones, and so on to the final {@code default}).
  *
  * <p>Gaps: {@code LOOT_METEOR} needs 1.7's {@code MKUCraftingHandler} (the per-world MKU recipe book), which is not
- * ported, so it adds nothing and falls through; {@code POOL_PILE_SUPPLIES} is not in the baked pool file, so
- * {@code LOOT_SUPPLIES} draws from the backup pool.
+ * ported, so it adds nothing and falls through. ({@code POOL_PILE_SUPPLIES} is baked since fix wave 4, 2026-10-03.)
  */
 public final class LootGenerator {
 
@@ -47,7 +46,7 @@ public final class LootGenerator {
     public static final String LOOT_GEAR = "LOOT_GEAR";
     public static final String LOOT_SUPPLIES = "LOOT_SUPPLIES";
 
-    private static final String POOL_PILE_SUPPLIES = "POOL_PILE_SUPPLIES";
+    private static final String POOL_PILE_SUPPLIES = ItemPools.POOL_PILE_SUPPLIES;
 
     @SuppressWarnings("fallthrough")
     public static void applyLoot(Level level, BlockPos pos, String name) {
@@ -203,10 +202,15 @@ public final class LootGenerator {
         scattered(level, pos, ItemPools.POOL_PILE_HIVE, 3, 3);
     }
 
-    /** 1.7 put the world's MKU item and its recipe book here; {@code MKUCraftingHandler} is not ported. */
+    /** 1.7 lootBookMeteor: one random MKU ingredient and the book naming its slot in this world's MKU recipe. */
     public static void lootBookMeteor(Level level, BlockPos pos) {
-        if (emptyPile(level, pos) != null) {
-            Constants.LOG.debug("[LootGenerator] LOOT_METEOR needs the unported MKU recipe book; the pile is left to the next generator");
+        TileEntityLoot loot = emptyPile(level, pos);
+        if (loot != null && level instanceof net.minecraft.server.level.ServerLevel server) {
+            RandomSource rand = level.getRandom();
+            String ingredient = com.hbm.inventory.recipes.MKUCraftingRecipe.randomIngredient(rand);
+            addItemWithDeviation(loot, rand, com.hbm.inventory.recipes.MKUCraftingRecipe.ingredientStack(ingredient), 0, 0, 0.25);
+            addItemWithDeviation(loot, rand,
+                    com.hbm.inventory.recipes.MKUCraftingRecipe.generateBook(server.getSeed(), ingredient), 0, 0, -0.25);
         }
     }
 

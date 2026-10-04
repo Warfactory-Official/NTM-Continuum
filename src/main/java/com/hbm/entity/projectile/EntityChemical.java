@@ -93,15 +93,15 @@ public class EntityChemical extends EntityThrowableNT {
     }
 
     public EntityChemical setFluid(FluidType fluid) {
-        entityData.set(FLUID_TYPE, fluid == null ? Fluids.NONE.getID() : fluid.getID());
+        entityData.set(FLUID_TYPE, Fluids.networkId(fluid == null ? Fluids.NONE : fluid));
         return this;
     }
 
-    public FluidType getFluid() { return Fluids.fromID(entityData.get(FLUID_TYPE)); }
+    public FluidType getFluid() { return Fluids.byNetworkId(entityData.get(FLUID_TYPE)); }
 
     @Override protected void defineData(SynchedData data) {
         super.defineData(data);
-        data.define(FLUID_TYPE, Fluids.NONE.getID());
+        data.define(FLUID_TYPE, 0); // Fluids.NONE's network id
     }
 
     @Override public int selfDamageDelay() { return 2; }
@@ -475,12 +475,12 @@ public class EntityChemical extends EntityThrowableNT {
 
     @Override protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("fluid", entityData.get(FLUID_TYPE));
+        Fluids.write(output, "fluid", getFluid()); // registry name; the synched int is session-only
     }
 
     @Override protected void loadData(DataIn input) {
         super.loadData(input);
-        entityData.set(FLUID_TYPE, input.getIntOr("fluid", Fluids.NONE.getID()));
+        entityData.set(FLUID_TYPE, Fluids.networkId(Fluids.read(input, "fluid")));
     }
 
     public enum ChemicalStyle { AMAT, LIGHTNING, LIQUID, GAS, GASFLAME, BURNING, NULL }

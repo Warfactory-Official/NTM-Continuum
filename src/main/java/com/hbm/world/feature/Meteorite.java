@@ -107,7 +107,7 @@ public class Meteorite {
                     List<BlockState> list7 = new ArrayList<>();
                     list7.add(bs(ModBlocks.block_meteor_treasure));
                     List<BlockState> list8 = new ArrayList<>();
-                    list8.add(bs(ModBlocks.block_meteor_broken) /* 1.7 toxic_block: unregistered here */);
+                    list8.add(bs(com.hbm.blocks.ModFluidNetBlocks.toxic_block));
                     generateSphere7x7(level, rand, pos, list7);
                     generateSphere5x5(level, rand, pos, list8);
                     return;
@@ -268,14 +268,14 @@ public class Meteorite {
     private List<BlockState> hullList(int hull) {
         List<BlockState> l = new ArrayList<>();
         switch (hull) {
-            case 0 -> l.add(bs(ModBlocks.block_meteor) /* 1.7 block_meteor_molten: unregistered here */);
+            case 0 -> l.add(bs(com.hbm.blocks.ModTerrainBlocks.block_meteor_molten));
             case 1 -> l.add(bs(ModBlocks.block_meteor_cobble));
             case 2 -> {
                 for (int i = 0; i < 99; i++) l.add(bs(ModBlocks.block_meteor_broken));
                 l.add(bs(ModBlocks.block_meteor_treasure));
             }
             case 3 -> {
-                l.add(bs(ModBlocks.block_meteor) /* 1.7 block_meteor_molten: unregistered here */);
+                l.add(bs(com.hbm.blocks.ModTerrainBlocks.block_meteor_molten));
                 l.add(bs(ModBlocks.block_meteor_broken));
             }
             default -> throw new IllegalStateException();
@@ -339,9 +339,12 @@ public class Meteorite {
     }
 
     private List<BlockState> getRandomOre() {
-        return List.of(bs(ModBlocks.block_meteor) /* 1.7 ore_meteor_iron: unregistered here */, bs(ModBlocks.block_meteor) /* 1.7 ore_meteor_copper: unregistered here */,
-                bs(ModBlocks.block_meteor) /* 1.7 ore_meteor_aluminium: unregistered here */, bs(ModBlocks.block_meteor) /* 1.7 ore_meteor_rareearth: unregistered here */,
-                bs(ModBlocks.block_meteor) /* 1.7 ore_meteor_cobalt: unregistered here */);
+        // 1.7: one ore_meteor of each EnumMeteorType, in enum order
+        List<BlockState> ores = new ArrayList<>();
+        for (String type : new String[] {"iron", "copper", "aluminium", "rareearth", "cobalt"}) {
+            ores.add(com.hbm.blocks.ModTerrainBlocks.ore_meteor(type).defaultBlockState());
+        }
+        return ores;
     }
 
     private void generateSphere9x9(WorldGenLevel level, RandomSource rand, BlockPos o, List<BlockState> set) {

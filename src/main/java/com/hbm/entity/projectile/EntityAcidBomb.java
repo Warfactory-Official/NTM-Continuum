@@ -65,8 +65,9 @@ public class EntityAcidBomb extends EntityThrowableInterp {
     private DamageSource acidDamageSource() {
         Holder<DamageType> holder = level().registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE)
                                             .getOrThrow(ModDamageSources.ACID_PLAYER); // 1.7: s_acid = "acidPlayer"
+        // 1.7 EntityDamageSourceIndirect(s_acid, this, thrower): the bomb is the direct source even without a thrower
         LivingEntity thrower = getThrower();
-        return thrower != null ? new DamageSource(holder, this, thrower) : new DamageSource(holder);
+        return new DamageSource(holder, this, thrower);
     }
 
     @Override

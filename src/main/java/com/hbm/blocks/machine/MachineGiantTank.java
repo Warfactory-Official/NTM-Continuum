@@ -39,7 +39,7 @@ public abstract class MachineGiantTank extends BlockMultiblockMachine
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineGiantTank tank)) return;
 
-        tank.setTankType(Fluids.fromID(ModDataComponents.fluidId(stack)));
+        tank.setTankType(ModDataComponents.fluid(stack));
         tank.tankNew.withPressure(ModDataComponents.fluidPressure(stack));
         tank.tankNew.setFill(Math.max(0, Math.min(tank.tankNew.getMaxFill(), ModDataComponents.fluidAmount(stack))));
         tank.mode = (short) Math.max(0, Math.min(3, ModDataComponents.GIANT_TANK_MODE.getOr(stack, 0)));
@@ -53,7 +53,7 @@ public abstract class MachineGiantTank extends BlockMultiblockMachine
         BlockPos core = MultiblockSurface.coreOfAny(params.getLevel(), origin);
         if (core != null && params.getLevel().getBlockEntity(core) instanceof TileEntityMachineGiantTank tank
                 && tank.tankNew.getFill() > 0) {
-            ModDataComponents.fluidId(stack, tank.tankNew.getTankType().getID());
+            ModDataComponents.fluid(stack, tank.tankNew.getTankType());
             ModDataComponents.fluidAmount(stack, tank.tankNew.getFill());
             if (tank.tankNew.getPressure() != 0) ModDataComponents.fluidPressure(stack, tank.tankNew.getPressure());
             ModDataComponents.GIANT_TANK_MODE.set(stack, (int) tank.mode);

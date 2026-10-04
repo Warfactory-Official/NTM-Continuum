@@ -71,7 +71,7 @@ public final class ModProduction2Blocks {
             // 1.7 MachineBoiler icons: top/bottom = machine_boiler_base, front = machine_boiler_front, else machine_boiler_side.
             .transform(Presets.orientable("hbm:blocks/machine_boiler_front", "hbm:blocks/machine_boiler_side",
                     "hbm:blocks/machine_boiler_base").states(Variants.facing()))
-            // 1.7 MachineBoiler.getDrops: 3-6 steel scraps, spawned in Java; the table itself is empty.
+            // 1.7 MachineBoiler.getDrops: 3-6 steel scraps, computed in MachineBoiler.getDrops (the table is unused).
             .loot(Loot.nothing())
             .tag(BlockTag.PICKAXE);
     /** 1.7: the deprecated RTG furnace; the {@code _on} block becomes {@code LIT} (light level 1.0F = 15 when lit). */

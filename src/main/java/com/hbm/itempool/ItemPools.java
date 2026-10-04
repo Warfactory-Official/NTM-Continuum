@@ -61,6 +61,8 @@ public final class ItemPools {
     public static final String POOL_PILE_MAKESHIFT_PLATES = "POOL_PILE_MAKESHIFT_PLATES";
     public static final String POOL_PILE_MAKESHIFT_WIRE = "POOL_PILE_MAKESHIFT_WIRE";
     public static final String POOL_PILE_NUKE_STORAGE = "POOL_PILE_NUKE_STORAGE";
+    /** 1.7 ItemPoolsPile.java:178: the supply pile's grenades, stimpaks, psycho, antidote and ammo container. */
+    public static final String POOL_PILE_SUPPLIES = "POOL_PILE_SUPPLIES";
     public static final String POOL_PILE_OF_GARBAGE = "POOL_PILE_OF_GARBAGE";
     public static final String POOL_PILE_MECHANICAL = "POOL_PILE_MECHANICAL";
     public static final String POOL_PILE_GEAR = "POOL_PILE_GEAR";

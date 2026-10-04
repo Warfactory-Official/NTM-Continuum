@@ -53,7 +53,8 @@ public class BlockGlyphid extends CompatBlock {
     /** 1.7 {@code getItemDropped} null. */
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
-        return List.of();
+        // 1.7 getItemDropped is null, but 1.7 harvestBlock checks silk touch before getDrops, and this is a plain cube without a tile entity, so silk touch keeps it (with its hive type).
+        return OreDrops.silkTouch(params) ? List.of(stackFor(state)) : List.of();
     }
 
     @Override

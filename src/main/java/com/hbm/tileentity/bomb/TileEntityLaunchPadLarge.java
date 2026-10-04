@@ -241,7 +241,7 @@ public class TileEntityLaunchPadLarge extends TileEntityLaunchPadBase implements
         output.putBoolean("readyToLoad", readyToLoad);
         output.putFloat("lift", lift);
         output.putFloat("erector", erector);
-        output.putInt("formFactor", formFactor);
+        if (formFactor >= 0) com.hbm.util.SavedIds.putEnum(output, "formFactor", MissileFormFactor.values()[formFactor]); // by name
     }
 
     @Override
@@ -251,7 +251,8 @@ public class TileEntityLaunchPadLarge extends TileEntityLaunchPadBase implements
         readyToLoad = input.getBooleanOr("readyToLoad", false);
         lift = input.getFloatOr("lift", 1F);
         erector = input.getFloatOr("erector", 90F);
-        formFactor = input.getIntOr("formFactor", -1);
+        MissileFormFactor savedForm = com.hbm.util.SavedIds.getEnumOrNull(input, "formFactor", MissileFormFactor.class);
+        formFactor = savedForm == null ? -1 : savedForm.ordinal();
         syncLift = prevLift = lift;
         syncErector = prevErector = erector;
     }

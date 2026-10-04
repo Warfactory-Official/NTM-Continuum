@@ -2,6 +2,8 @@ package com.hbm.items.tool;
 
 import com.hbm.blocks.generic.ModStructureWandBlocks;
 import com.hbm.items.ModDataComponents;
+import com.hbm.util.SavedIds;
+import net.minecraft.world.level.block.Blocks;
 import dev.golem.core.data.Tags;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
@@ -46,8 +48,13 @@ public class ItemWand extends CompatItem {
         return ModDataComponents.PERSISTENT_DATA.get(stack).map(CompoundTag::copy).orElse(new CompoundTag());
     }
 
-    private static String blockName(int stateId) {
-        return Block.stateById(stateId).getBlock().getDescriptionId();
+    private static String blockName(BlockState state) {
+        return state.getBlock().getDescriptionId();
+    }
+
+    /** The saved block, by state name (1.7 kept a block id + meta; a numeric state id is never saved, History 19ej-ids). */
+    private static BlockState savedBlock(CompoundTag tag) {
+        return SavedIds.getState(tag, "block", Blocks.AIR.defaultBlockState());
     }
 
     @Override
@@ -68,7 +75,7 @@ public class ItemWand extends CompatItem {
             list.add(Component.literal("Positions not set!"));
         }
         if (tag != null) {
-            list.add(Component.literal("Block saved: " + blockName(Tags.getIntOr(tag, "block", 0))));
+            list.add(Component.literal("Block saved: " + blockName(savedBlock(tag))));
         }
     }
 
@@ -85,9 +92,9 @@ public class ItemWand extends CompatItem {
         CompoundTag tag = data(stack);
 
         if (player.isShiftKeyDown()) {
-            tag.putInt("block", Block.getId(level.getBlockState(pos)));
+            SavedIds.putState(tag, "block", level.getBlockState(pos));
             tag.putInt("meta", 0);
-            player.sendSystemMessage(Component.literal("Set block " + blockName(Tags.getIntOr(tag, "block", 0))));
+            player.sendSystemMessage(Component.literal("Set block " + blockName(savedBlock(tag))));
         } else {
             if (Tags.getIntOr(tag, "x", 0) == 0 && Tags.getIntOr(tag, "y", 0) == 0 && Tags.getIntOr(tag, "z", 0) == 0) {
                 tag.putInt("x", x);
@@ -103,7 +110,7 @@ public class ItemWand extends CompatItem {
                 tag.putInt("y", 0);
                 tag.putInt("z", 0);
 
-                BlockState state = Block.stateById(Tags.getIntOr(tag, "block", 0));
+                BlockState state = savedBlock(tag);
                 // 1.7: block == ModBlocks.wand_air only fills air
                 boolean replaceAir = state.is(ModStructureWandBlocks.wand_air.get());
                 BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
@@ -131,9 +138,9 @@ public class ItemWand extends CompatItem {
         CompoundTag tag = data(stack);
 
         if (player.isShiftKeyDown() && !level.isClientSide()) {
-            tag.putInt("block", 0);
+            SavedIds.putState(tag, "block", Blocks.AIR.defaultBlockState()); // 1.7 block id 0 = air
             tag.putInt("meta", 0);
-            player.sendSystemMessage(Component.literal("Set block " + blockName(0)));
+            player.sendSystemMessage(Component.literal("Set block " + blockName(Blocks.AIR.defaultBlockState())));
         }
         // 1.7 created an empty tag on any right-click, which makes the "Block saved" tooltip line appear.
         if (!level.isClientSide()) ModDataComponents.PERSISTENT_DATA.set(stack, tag);

@@ -5,18 +5,23 @@ import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.CompatSquid;
 import com.hbm.entity.item.EntityItemBuoyant;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.squid.Squid;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.ServerLevelAccessor;
 import org.jspecify.annotations.Nullable;
 
 // 1.7: EntityPlasticBag keeps the bag's pop, drop and spawn rules on the current squid.
@@ -27,7 +32,40 @@ public class EntityPlasticBag extends CompatSquid {
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return Squid.createAttributes();
+        // 1.7 extended EntityWaterMob, not EntitySquid, so it kept the 20 HP default instead of the squid's 10
+        return Squid.createAttributes().add(Attributes.MAX_HEALTH, 20.0D);
+    }
+
+    // 1.7 getLivingSound/getHurtSound/getDeathSound all returned null: a bag is silent, the squid base is not.
+    @Override
+    protected @Nullable SoundEvent getAmbientSound() {
+        return null;
+    }
+
+    @Override
+    protected @Nullable SoundEvent getHurtSound(DamageSource source) {
+        return null;
+    }
+
+    @Override
+    protected @Nullable SoundEvent getDeathSound() {
+        return null;
+    }
+
+    /** 1.7 {@code canTriggerWalking() = false}. */
+    @Override
+    protected MovementEmission getMovementEmission() {
+        return MovementEmission.NONE;
+    }
+
+    /**
+     * 1.7's bag had no age. 26.1's squid base rolls a 5% baby on spawn when it is handed no group data, so hand it
+     * a group that never spawns babies (below 1.21.2 the squid is not ageable and ignores the group data).
+     */
+    @Override
+    public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
+                                                  EntitySpawnReason reason, @Nullable SpawnGroupData data) {
+        return super.finalizeSpawn(level, difficulty, reason, data != null ? data : new AgeableMob.AgeableMobGroupData(false));
     }
 
     @Override

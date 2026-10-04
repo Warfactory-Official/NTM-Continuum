@@ -2,11 +2,8 @@ package com.hbm.entity.effect;
 
 import dev.golem.core.data.Tags;
 
-import com.hbm.capability.HbmLivingProps;
-import com.hbm.lib.ModDamageSources;
 import com.hbm.util.ContaminationUtil;
 import dev.golem.core.data.CompatEntity;
-import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -61,11 +58,10 @@ public class EntitySpear extends CompatEntity {
                 java.util.List<Entity> entities = new java.util.ArrayList<>();
                 server.getAllEntities().forEach(entities::add);
                 for (Entity entity : entities) if (entity instanceof LivingEntity living) {
+                    // 1.7: only the DIGAMMA2 contamination (10 DRX, the lethal cap); the robes set
+                    // (ArmorUtil.checkForDigamma2) is the one thing that stops it, creative mode does not.
                     ContaminationUtil.contaminate(living, ContaminationUtil.HazardType.DIGAMMA,
                             ContaminationUtil.ContaminationType.DIGAMMA2, 10D);
-                    HbmLivingProps.setDigamma(living, 10D);
-                    DamageSource source = ModDamageSources.digamma(server);
-                    Compat.hurt(living, server, source, living.getMaxHealth());
                 }
                 discard();
             }

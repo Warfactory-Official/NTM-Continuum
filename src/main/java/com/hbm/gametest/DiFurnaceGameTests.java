@@ -39,7 +39,9 @@ public final class DiFurnaceGameTests {
 
     public static void recipes(GameTestHelper helper) {
         DiFurnaceRecipes.INSTANCE.registerRecipes();
-        helper.assertTrue(DiFurnaceRecipes.INSTANCE.recipeOrderedList.size() == 11,
+        // 1.7 BlastFurnaceRecipes: 13 default entries (fix phase 3 added napalm, starmetal, meteorite ingot and the alloyed
+        // sword and removed the 1.12.2 neutron reflectors)
+        helper.assertTrue(DiFurnaceRecipes.INSTANCE.recipeOrderedList.size() == 13,
                 "Legacy DiFurnace dependency-complete recipe count changed");
         DiFurnaceRecipes.Match match = DiFurnaceRecipes.INSTANCE.getMatch(
                 new ItemStack(Items.IRON_INGOT), new ItemStack(Items.COAL));

@@ -37,34 +37,34 @@ public class ItemGunChemthrower extends ItemGunBaseNT implements IFillableItem {
         ItemGunBaseNT.playAnimation(context.getPlayer(), stack, GunAnimation.CYCLE, context.configIndex);
         var offset = receiver.getProjectileOffset(stack);
         EntityChemical chemical = new EntityChemical(context.entity.level(), context.entity,
-                offset.z, offset.y, offset.x).setFluid(Fluids.fromID(type(stack)));
+                offset.z, offset.y, offset.x).setFluid(type(stack));
         context.entity.level().addFreshEntity(chemical);
         count(stack, count(stack) - CONSUMPTION);
     };
 
-    private static int type(ItemStack stack) { return MagazineFluid.getMagType(stack, MAG_INDEX); }
+    private static FluidType type(ItemStack stack) { return MagazineFluid.getMagType(stack, MAG_INDEX); }
     private static int count(ItemStack stack) { return MagazineFluid.getMagCount(stack, MAG_INDEX); }
-    private static void type(ItemStack stack, int value) { MagazineFluid.setMagType(stack, MAG_INDEX, value); }
+    private static void type(ItemStack stack, FluidType value) { MagazineFluid.setMagType(stack, MAG_INDEX, value); }
     private static void count(ItemStack stack, int value) { MagazineFluid.setMagCount(stack, MAG_INDEX, value); }
 
     private int capacity(ItemStack stack) {
         return getConfig(stack, 0).getReceivers(stack)[MAG_INDEX].getMagazine(stack).getCapacity(stack);
     }
 
-    @Override public boolean acceptsFluid(FluidType fluid, ItemStack stack) { return count(stack) == 0 || Fluids.fromID(type(stack)) == fluid; }
+    @Override public boolean acceptsFluid(FluidType fluid, ItemStack stack) { return count(stack) == 0 || type(stack) == fluid; }
     @Override public int tryFill(FluidType fluid, int amount, ItemStack stack) {
         if (!acceptsFluid(fluid, stack)) return amount;
-        if (count(stack) == 0) type(stack, fluid.getID());
+        if (count(stack) == 0) type(stack, fluid);
         int moved = Math.min(Math.min(amount, TRANSFER_SPEED), capacity(stack) - count(stack));
         count(stack, count(stack) + moved);
         return amount - moved;
     }
-    @Override public boolean providesFluid(FluidType fluid, ItemStack stack) { return Fluids.fromID(type(stack)) == fluid; }
+    @Override public boolean providesFluid(FluidType fluid, ItemStack stack) { return type(stack) == fluid; }
     @Override public int tryEmpty(FluidType fluid, int amount, ItemStack stack) {
         int moved = Math.min(Math.min(amount, TRANSFER_SPEED), count(stack));
         count(stack, count(stack) - moved);
         return moved;
     }
-    @Override public FluidType getFirstFluidType(ItemStack stack) { return Fluids.fromID(type(stack)); }
+    @Override public FluidType getFirstFluidType(ItemStack stack) { return type(stack); }
     @Override public int getFill(ItemStack stack) { return count(stack); }
 }

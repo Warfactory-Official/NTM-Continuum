@@ -520,7 +520,8 @@ public class TileEntityPWRController extends TileEntityMachineBase
         this.flux = input.getDoubleOr("flux", 0);
         this.rodLevel = input.getDoubleOr("rodLevel", 0);
         this.rodTarget = input.getDoubleOr("rodTarget", 0);
-        this.typeLoaded = input.getIntOr("typeLoaded", 0);
+        EnumPWRFuel savedFuel = com.hbm.util.SavedIds.getEnumOrNull(input, "typeLoaded", EnumPWRFuel.class);
+        this.typeLoaded = savedFuel == null ? -1 : savedFuel.ordinal(); // saved by name, never the ordinal
         this.amountLoaded = input.getIntOr("amountLoaded", 0);
         this.progress = input.getDoubleOr("progress", 0);
         this.processTime = input.getDoubleOr("processTime", 0);
@@ -563,7 +564,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
         output.putDouble("flux", flux);
         output.putDouble("rodLevel", rodLevel);
         output.putDouble("rodTarget", rodTarget);
-        output.putInt("typeLoaded", typeLoaded);
+        if (typeLoaded >= 0) com.hbm.util.SavedIds.putEnum(output, "typeLoaded", EnumPWRFuel.VALUES[typeLoaded % EnumPWRFuel.VALUES.length]);
         output.putInt("amountLoaded", amountLoaded);
         output.putDouble("progress", progress);
         output.putDouble("processTime", processTime);

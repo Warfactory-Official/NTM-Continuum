@@ -68,14 +68,13 @@ public class TileEntityLaunchTable extends TileEntityCustomMissileLauncher imple
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("padSize", padSize.ordinal());
+        com.hbm.util.SavedIds.putEnum(output, "padSize", padSize); // by name, never an ordinal
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        int ordinal = input.getIntOr("padSize", PartSize.SIZE_10.ordinal());
-        padSize = PartSize.values()[Math.max(0, Math.min(ordinal, PartSize.values().length - 1))];
+        padSize = com.hbm.util.SavedIds.getEnum(input, "padSize", PartSize.SIZE_10);
     }
 
     @Override

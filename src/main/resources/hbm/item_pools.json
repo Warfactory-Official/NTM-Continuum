@@ -1,82 +1,55 @@
 {
   "POOL_AMMO": [
     {
-      "components": {
-        "hbm:item_variant": 5
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_m357_sp",
       "max": 12,
       "min": 12,
       "weight": 10
     },
     {
-      "components": {
-        "hbm:item_variant": 6
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_m357_fmj",
       "max": 6,
       "min": 6,
       "weight": 10
     },
     {
-      "components": {
-        "hbm:item_variant": 11
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_m44_sp",
       "max": 12,
       "min": 12,
       "weight": 5
     },
     {
-      "components": {
-        "hbm:item_variant": 12
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_m44_fmj",
       "max": 6,
       "min": 6,
       "weight": 5
     },
     {
-      "components": {
-        "hbm:item_variant": 20
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_p9_sp",
       "max": 12,
       "min": 12,
       "weight": 10
     },
     {
-      "components": {
-        "hbm:item_variant": 21
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_p9_fmj",
       "max": 6,
       "min": 6,
       "weight": 10
     },
     {
-      "components": {
-        "hbm:item_variant": 28
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_r762_sp",
       "max": 6,
       "min": 6,
       "weight": 5
     },
     {
-      "components": {
-        "hbm:item_variant": 41
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_g12_bp",
       "max": 6,
       "min": 6,
       "weight": 10
     },
     {
-      "components": {
-        "hbm:item_variant": 58
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_rocket_he",
       "max": 1,
       "min": 1,
       "weight": 3
@@ -117,7 +90,7 @@
       "weight": 5
     },
     {
-      "item": "hbm:wire_fine_mingrade",
+      "item": "hbm:wire_fine_red_copper",
       "max": 3,
       "min": 2,
       "weight": 7
@@ -135,7 +108,7 @@
       "weight": 2
     },
     {
-      "item": "hbm:battery_pack_battery_redstone",
+      "item": "hbm:battery_redstone",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -219,10 +192,7 @@
       "weight": 7
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
-      "item": "hbm:bomb_caller",
+      "item": "hbm:bomb_caller_carpet",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -347,28 +317,19 @@
       "weight": 4
     },
     {
-      "components": {
-        "hbm:item_variant": 58
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_rocket_he",
       "max": 4,
       "min": 1,
       "weight": 5
     },
     {
-      "components": {
-        "hbm:item_variant": 51
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_g26_flare_supply",
       "max": 1,
       "min": 1,
       "weight": 5
     },
     {
-      "components": {
-        "hbm:item_variant": 52
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_g26_flare_weapon",
       "max": 1,
       "min": 1,
       "weight": 3
@@ -402,10 +363,7 @@
       "weight": 3
     },
     {
-      "components": {
-        "hbm:item_variant": 3
-      },
-      "item": "hbm:grenade_extra",
+      "item": "hbm:grenade_extra_triplex",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -417,17 +375,19 @@
       "weight": 2
     },
     {
-      "item": "hbm:battery_pack_battery_lithium",
+      "item": "hbm:battery_lithium",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
+      "item": "hbm:syringe_awesome",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
+      "item": "hbm:fusion_core",
       "max": 1,
       "min": 1,
       "weight": 4
@@ -451,27 +411,15 @@
       "weight": 6
     },
     {
-      "components": {
-        "hbm:fluid_content": {
-          "type": "hbm:diesel",
-          "amount": 1000,
-          "pressure": 0
-        }
-      },
-      "item": "hbm:canister",
+      "fluid": "DIESEL",
+      "item": "hbm:canister_full",
       "max": 2,
       "min": 1,
       "weight": 2
     },
     {
-      "components": {
-        "hbm:fluid_content": {
-          "type": "hbm:biofuel",
-          "amount": 1000,
-          "pressure": 0
-        }
-      },
-      "item": "hbm:canister",
+      "fluid": "BIOFUEL",
+      "item": "hbm:canister_full",
       "max": 2,
       "min": 1,
       "weight": 3
@@ -486,28 +434,19 @@
       "weight": 5
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
-      "item": "hbm:bomb_caller",
+      "item": "hbm:bomb_caller_carpet",
       "max": 1,
       "min": 1,
       "weight": 2
     },
     {
-      "components": {
-        "hbm:item_variant": 1
-      },
-      "item": "hbm:bomb_caller",
+      "item": "hbm:bomb_caller_napalm",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 2
-      },
-      "item": "hbm:bomb_caller",
+      "item": "hbm:bomb_caller_chlorine",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -661,28 +600,19 @@
       "weight": 3
     },
     {
-      "components": {
-        "hbm:item_variant": 5
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_m357_sp",
       "max": 6,
       "min": 2,
       "weight": 4
     },
     {
-      "components": {
-        "hbm:item_variant": 41
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_g12_bp",
       "max": 6,
       "min": 3,
       "weight": 3
     },
     {
-      "components": {
-        "hbm:item_variant": 51
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_g26_flare_supply",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -700,19 +630,13 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
-      "item": "hbm:casing",
+      "item": "hbm:casing_small",
       "max": 10,
       "min": 4,
       "weight": 3
     },
     {
-      "components": {
-        "hbm:item_variant": 4
-      },
-      "item": "hbm:casing",
+      "item": "hbm:casing_shotshell",
       "max": 10,
       "min": 4,
       "weight": 3
@@ -724,7 +648,7 @@
       "weight": 5
     },
     {
-      "item": "hbm:battery_pack_battery_redstone",
+      "item": "hbm:battery_redstone",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -772,27 +696,15 @@
       "weight": 7
     },
     {
-      "components": {
-        "hbm:fluid_content": {
-          "type": "hbm:diesel",
-          "amount": 1000,
-          "pressure": 0
-        }
-      },
-      "item": "hbm:canister",
+      "fluid": "DIESEL",
+      "item": "hbm:canister_full",
       "max": 2,
       "min": 1,
       "weight": 2
     },
     {
-      "components": {
-        "hbm:fluid_content": {
-          "type": "hbm:biofuel",
-          "amount": 1000,
-          "pressure": 0
-        }
-      },
-      "item": "hbm:canister",
+      "fluid": "BIOFUEL",
+      "item": "hbm:canister_full",
       "max": 2,
       "min": 1,
       "weight": 3
@@ -892,7 +804,7 @@
       "weight": 3
     },
     {
-      "item": "hbm:wire_fine_mingrade",
+      "item": "hbm:wire_fine_red_copper",
       "max": 8,
       "min": 1,
       "weight": 5
@@ -904,7 +816,7 @@
       "weight": 3
     },
     {
-      "item": "hbm:battery_pack_battery_lead",
+      "item": "hbm:battery_lead",
       "max": 1,
       "min": 1,
       "weight": 3
@@ -945,6 +857,7 @@
   ],
   "POOL_METEORITE_TREASURE": [
     {
+      "item": "hbm:cobalt_pickaxe",
       "max": 1,
       "min": 1,
       "weight": 10
@@ -1229,28 +1142,19 @@
       "weight": 5
     },
     {
-      "components": {
-        "hbm:item_variant": 6
-      },
-      "item": "hbm:rod",
+      "item": "hbm:rod_u235",
       "max": 1,
       "min": 1,
       "weight": 3
     },
     {
-      "components": {
-        "hbm:item_variant": 6
-      },
-      "item": "hbm:rod_dual",
+      "item": "hbm:rod_dual_u235",
       "max": 1,
       "min": 1,
       "weight": 3
     },
     {
-      "components": {
-        "hbm:item_variant": 6
-      },
-      "item": "hbm:rod_quad",
+      "item": "hbm:rod_quad_u235",
       "max": 1,
       "min": 1,
       "weight": 3
@@ -1280,10 +1184,7 @@
       "weight": 3
     },
     {
-      "components": {
-        "hbm:item_variant": 5
-      },
-      "item": "hbm:rod_dual",
+      "item": "hbm:rod_dual_thf",
       "max": 1,
       "min": 1,
       "weight": 3
@@ -1352,6 +1253,7 @@
       "weight": 5
     },
     {
+      "item": "hbm:hazmat_kit",
       "max": 1,
       "min": 1,
       "weight": 2
@@ -1389,28 +1291,19 @@
       "weight": 3
     },
     {
-      "components": {
-        "hbm:item_variant": 8
-      },
-      "item": "hbm:rod",
+      "item": "hbm:rod_u238",
       "max": 1,
       "min": 1,
       "weight": 3
     },
     {
-      "components": {
-        "hbm:item_variant": 8
-      },
-      "item": "hbm:rod_dual",
+      "item": "hbm:rod_dual_u238",
       "max": 1,
       "min": 1,
       "weight": 3
     },
     {
-      "components": {
-        "hbm:item_variant": 8
-      },
-      "item": "hbm:rod_quad",
+      "item": "hbm:rod_quad_u238",
       "max": 1,
       "min": 1,
       "weight": 3
@@ -1431,6 +1324,7 @@
       "weight": 5
     },
     {
+      "item": "hbm:hazmat_kit",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -1516,12 +1410,16 @@
       "weight": 2
     },
     {
+      "components": {
+        "hbm:item_variant": 3
+      },
+      "item": "hbm:book_guide",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "item": "hbm:deco_computer",
+      "item": "hbm:deco_computer_ibm_300pl",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -1550,20 +1448,14 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:fluid_content": {
-          "type": "hbm:oil",
-          "amount": 1000,
-          "pressure": 0
-        }
-      },
-      "item": "hbm:canister",
+      "fluid": "OIL",
+      "item": "hbm:canister_full",
       "max": 4,
       "min": 1,
       "weight": 5
     },
     {
-      "item": "hbm:canister",
+      "item": "hbm:canister_empty",
       "max": 16,
       "min": 4,
       "weight": 10
@@ -1635,33 +1527,25 @@
       "weight": 30
     },
     {
+      "item": "hbm:canteen_vodka",
       "max": 1,
       "min": 1,
       "weight": 40
     },
     {
-      "components": {
-        "hbm:item_variant": 2
-      },
-      "item": "hbm:casing",
+      "item": "hbm:casing_small_steel",
       "max": 4,
       "min": 1,
       "weight": 30
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
-      "item": "hbm:casing",
+      "item": "hbm:casing_small",
       "max": 8,
       "min": 3,
       "weight": 40
     },
     {
-      "components": {
-        "hbm:item_variant": 5
-      },
-      "item": "hbm:casing",
+      "item": "hbm:casing_buckshot",
       "max": 8,
       "min": 3,
       "weight": 40
@@ -1741,11 +1625,13 @@
       "weight": 5
     },
     {
+      "item": "hbm:steel_pickaxe",
       "max": 1,
       "min": 1,
       "weight": 5
     },
     {
+      "item": "hbm:steel_shovel",
       "max": 1,
       "min": 1,
       "weight": 5
@@ -1792,28 +1678,19 @@
       "weight": 3
     },
     {
-      "components": {
-        "hbm:item_variant": 44
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_g12",
       "max": 4,
       "min": 4,
       "weight": 10
     },
     {
-      "components": {
-        "hbm:item_variant": 5
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_m357_sp",
       "max": 12,
       "min": 6,
       "weight": 10
     },
     {
-      "components": {
-        "hbm:item_variant": 53
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_g40_he",
       "max": 1,
       "min": 1,
       "weight": 2
@@ -1879,7 +1756,7 @@
   ],
   "POOL_PILE_MAKESHIFT_WIRE": [
     {
-      "item": "hbm:wire_fine_aluminum",
+      "item": "hbm:wire_fine_aluminium",
       "max": 1,
       "min": 1,
       "weight": 10
@@ -1945,6 +1822,7 @@
       "weight": 10
     },
     {
+      "item": "hbm:radx",
       "max": 1,
       "min": 1,
       "weight": 10
@@ -1956,6 +1834,7 @@
       "weight": 15
     },
     {
+      "item": "hbm:siox",
       "max": 1,
       "min": 1,
       "weight": 5
@@ -1969,11 +1848,13 @@
       "weight": 10
     },
     {
+      "item": "hbm:syringe_metal_medx",
       "max": 1,
       "min": 1,
       "weight": 5
     },
     {
+      "item": "hbm:syringe_metal_psycho",
       "max": 1,
       "min": 1,
       "weight": 5
@@ -1981,20 +1862,19 @@
   ],
   "POOL_PILE_NUKE_STORAGE": [
     {
-      "components": {
-        "hbm:item_variant": 73
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_nuke_standard",
       "max": 1,
       "min": 1,
       "weight": 50
     },
     {
+      "item": "hbm:ammo_standard_nuke_high",
       "max": 1,
       "min": 1,
       "weight": 10
     },
     {
+      "item": "hbm:ammo_standard_nuke_tots",
       "max": 1,
       "min": 1,
       "weight": 10
@@ -2026,6 +1906,7 @@
       "weight": 40
     },
     {
+      "item": "hbm:powder_cement",
       "max": 6,
       "min": 1,
       "weight": 40
@@ -2043,10 +1924,7 @@
       "weight": 20
     },
     {
-      "components": {
-        "hbm:item_variant": 2
-      },
-      "item": "hbm:powder_ash",
+      "item": "hbm:powder_ash_wood",
       "max": 1,
       "min": 0,
       "weight": 15
@@ -2142,8 +2020,83 @@
       "weight": 5
     }
   ],
+  "POOL_PILE_SUPPLIES": [
+    {
+      "components": {
+        "hbm:grenade": {
+          "extra": "frag_sleeve",
+          "filling": "he",
+          "fuze": "s3",
+          "shell": "frag"
+        },
+        "minecraft:max_stack_size": 4
+      },
+      "item": "hbm:grenade_universal",
+      "max": 5,
+      "min": 3,
+      "weight": 10
+    },
+    {
+      "components": {
+        "hbm:grenade": {
+          "extra": "frag_sleeve",
+          "filling": "he",
+          "fuze": "s3",
+          "shell": "frag"
+        },
+        "minecraft:max_stack_size": 4
+      },
+      "item": "hbm:grenade_universal",
+      "max": 5,
+      "min": 3,
+      "weight": 10
+    },
+    {
+      "components": {
+        "hbm:grenade": {
+          "extra": "frag_sleeve",
+          "filling": "he",
+          "fuze": "s3",
+          "shell": "frag"
+        },
+        "minecraft:max_stack_size": 4
+      },
+      "item": "hbm:grenade_universal",
+      "max": 5,
+      "min": 3,
+      "weight": 10
+    },
+    {
+      "item": "hbm:syringe_metal_stimpak",
+      "max": 5,
+      "min": 3,
+      "weight": 30
+    },
+    {
+      "item": "hbm:syringe_metal_psycho",
+      "max": 5,
+      "min": 3,
+      "weight": 30
+    },
+    {
+      "item": "hbm:syringe_antidote",
+      "max": 2,
+      "min": 1,
+      "weight": 30
+    },
+    {
+      "components": {
+        "hbm:item_variant": 0
+      },
+      "item": "hbm:ammo_container",
+      "max": 3,
+      "min": 2,
+      "weight": 40
+    }
+  ],
   "POOL_RED_PEDESTAL": [
     {
+      "item": "hbm:ballistic_gauntlet",
       "max": 1,
       "min": 1,
       "weight": 10
@@ -2197,6 +2150,7 @@
       "weight": 10
     },
     {
+      "item": "hbm:black_diamond",
       "max": 1,
       "min": 1,
       "weight": 10
@@ -2214,11 +2168,13 @@
       "weight": 5
     },
     {
+      "item": "hbm:card_aos",
       "max": 1,
       "min": 1,
       "weight": 5
     },
     {
+      "item": "hbm:card_qos",
       "max": 1,
       "min": 1,
       "weight": 5
@@ -2242,6 +2198,7 @@
       "weight": 5
     },
     {
+      "item": "hbm:flask_infusion_shield",
       "max": 1,
       "min": 1,
       "weight": 5
@@ -2617,7 +2574,7 @@
       "weight": 5
     },
     {
-      "item": "hbm:battery_pack_battery_lead",
+      "item": "hbm:battery_lead",
       "max": 1,
       "min": 1,
       "weight": 3
@@ -2653,19 +2610,13 @@
       "weight": 4
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
-      "item": "hbm:bomb_caller",
+      "item": "hbm:bomb_caller_carpet",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 3
-      },
-      "item": "hbm:bomb_caller",
+      "item": "hbm:bomb_caller_orange",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -2675,6 +2626,82 @@
       "max": 3,
       "min": 1,
       "weight": 10
+    }
+  ],
+  "POOL_SNACKS": [
+    {
+      "item": "hbm:definitelyfood",
+      "max": 1,
+      "min": 1,
+      "weight": 10
+    },
+    {
+      "item": "hbm:canned_conserve_beef",
+      "max": 1,
+      "min": 1,
+      "weight": 5
+    },
+    {
+      "item": "hbm:canned_conserve_tube",
+      "max": 1,
+      "min": 1,
+      "weight": 5
+    },
+    {
+      "item": "hbm:twinkie",
+      "max": 1,
+      "min": 1,
+      "weight": 10
+    },
+    {
+      "item": "hbm:chocolate",
+      "max": 1,
+      "min": 1,
+      "weight": 10
+    }
+  ],
+  "POOL_SODA": [
+    {
+      "item": "hbm:bottle_nuka",
+      "max": 1,
+      "min": 1,
+      "weight": 10
+    },
+    {
+      "item": "hbm:bottle_cherry",
+      "max": 1,
+      "min": 1,
+      "weight": 5
+    },
+    {
+      "item": "hbm:bottle_quantum",
+      "max": 1,
+      "min": 1,
+      "weight": 1
+    },
+    {
+      "item": "hbm:can_bepis",
+      "max": 1,
+      "min": 1,
+      "weight": 10
+    },
+    {
+      "item": "hbm:can_luna",
+      "max": 1,
+      "min": 1,
+      "weight": 10
+    },
+    {
+      "item": "hbm:can_mug",
+      "max": 1,
+      "min": 1,
+      "weight": 10
+    },
+    {
+      "item": "hbm:can_breen",
+      "max": 1,
+      "min": 1,
+      "weight": 1
     }
   ],
   "POOL_SOLID_FUEL": [
@@ -2697,10 +2724,7 @@
       "weight": 2
     },
     {
-      "components": {
-        "hbm:item_variant": 2
-      },
-      "item": "hbm:coke",
+      "item": "hbm:coke_petroleum",
       "max": 3,
       "min": 1,
       "weight": 1
@@ -2720,7 +2744,7 @@
   ],
   "POOL_SPACESHIP": [
     {
-      "item": "hbm:battery_pack_battery_lead",
+      "item": "hbm:battery_lead",
       "max": 1,
       "min": 1,
       "weight": 2
@@ -2732,25 +2756,28 @@
       "weight": 5
     },
     {
-      "item": "hbm:wire_fine_mingrade",
+      "item": "hbm:wire_fine_red_copper",
       "max": 32,
       "min": 8,
       "weight": 5
     },
     {
-      "item": "hbm:cell_deuterium",
+      "fluid": "DEUTERIUM",
+      "item": "hbm:cell",
       "max": 8,
       "min": 1,
       "weight": 5
     },
     {
-      "item": "hbm:cell_tritium",
+      "fluid": "TRITIUM",
+      "item": "hbm:cell",
       "max": 8,
       "min": 1,
       "weight": 5
     },
     {
-      "item": "hbm:cell_antimatter",
+      "fluid": "AMAT",
+      "item": "hbm:cell",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -2768,7 +2795,7 @@
       "weight": 1
     },
     {
-      "item": "hbm:wire_dense_mingrade",
+      "item": "hbm:wire_dense_red_copper",
       "max": 4,
       "min": 2,
       "weight": 5
@@ -2798,6 +2825,7 @@
       "weight": 5
     },
     {
+      "item": "hbm:red_cable",
       "max": 16,
       "min": 8,
       "weight": 5
@@ -2823,14 +2851,8 @@
       "weight": 2
     },
     {
-      "components": {
-        "hbm:fluid_content": {
-          "type": "hbm:diesel",
-          "amount": 1000,
-          "pressure": 0
-        }
-      },
-      "item": "hbm:canister",
+      "fluid": "DIESEL",
+      "item": "hbm:canister_full",
       "max": 4,
       "min": 1,
       "weight": 5
@@ -2863,11 +2885,7 @@
   "POOL_VAULT_LAB": [
     {
       "components": {
-        "hbm:fluid_content": {
-          "type": "hbm:gas",
-          "amount": 0,
-          "pressure": 0
-        }
+        "hbm:fluid_amount": 0
       },
       "item": "hbm:blowtorch",
       "max": 1,
@@ -2875,6 +2893,7 @@
       "weight": 4
     },
     {
+      "item": "hbm:chemistry_set",
       "max": 1,
       "min": 1,
       "weight": 15
@@ -2886,7 +2905,7 @@
       "weight": 10
     },
     {
-      "item": "hbm:nugget_mercury",
+      "item": "hbm:nugget_mercury_tiny",
       "max": 1,
       "min": 1,
       "weight": 3
@@ -2916,7 +2935,7 @@
       "weight": 15
     },
     {
-      "item": "hbm:cell_empty",
+      "item": "hbm:cell",
       "max": 1,
       "min": 1,
       "weight": 5
@@ -3160,10 +3179,7 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 73
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_nuke_standard",
       "max": 3,
       "min": 1,
       "weight": 1
@@ -3269,19 +3285,13 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 34
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_bmg50_fmj",
       "max": 48,
       "min": 24,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 22
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_p9_jhp",
       "max": 64,
       "min": 48,
       "weight": 2
@@ -3353,10 +3363,7 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 73
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_nuke_standard",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -3434,10 +3441,7 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 74
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_nuke_demo",
       "max": 3,
       "min": 2,
       "weight": 1
@@ -3449,10 +3453,7 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 32
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_r762_du",
       "max": 32,
       "min": 16,
       "weight": 1
@@ -3496,6 +3497,7 @@
       "weight": 15
     },
     {
+      "item": "hbm:fusion_core",
       "max": 1,
       "min": 1,
       "weight": 10
@@ -3513,37 +3515,25 @@
       "weight": 4
     },
     {
-      "components": {
-        "hbm:item_variant": 6
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_m357_fmj",
       "max": 24,
       "min": 1,
       "weight": 4
     },
     {
-      "components": {
-        "hbm:item_variant": 53
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_g40_he",
       "max": 6,
       "min": 1,
       "weight": 3
     },
     {
-      "components": {
-        "hbm:item_variant": 52
-      },
-      "item": "hbm:ammo_standard",
+      "item": "hbm:ammo_standard_g26_flare_weapon",
       "max": 1,
       "min": 1,
       "weight": 5
     },
     {
-      "components": {
-        "hbm:item_variant": 6
-      },
-      "item": "hbm:rod",
+      "item": "hbm:rod_u235",
       "max": 1,
       "min": 1,
       "weight": 2
@@ -3605,28 +3595,19 @@
       "weight": 2
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
-      "item": "hbm:bomb_caller",
+      "item": "hbm:bomb_caller_carpet",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 1
-      },
-      "item": "hbm:bomb_caller",
+      "item": "hbm:bomb_caller_napalm",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 2
-      },
-      "item": "hbm:bomb_caller",
+      "item": "hbm:bomb_caller_chlorine",
       "max": 1,
       "min": 1,
       "weight": 2
@@ -3686,82 +3667,6 @@
       "max": 1,
       "min": 1,
       "weight": 1
-    }
-  ],
-  "POOL_SODA": [
-    {
-      "item": "hbm:bottle_nuka",
-      "max": 1,
-      "min": 1,
-      "weight": 10
-    },
-    {
-      "item": "hbm:bottle_cherry",
-      "max": 1,
-      "min": 1,
-      "weight": 5
-    },
-    {
-      "item": "hbm:bottle_quantum",
-      "max": 1,
-      "min": 1,
-      "weight": 1
-    },
-    {
-      "item": "hbm:can_bepis",
-      "max": 1,
-      "min": 1,
-      "weight": 10
-    },
-    {
-      "item": "hbm:can_luna",
-      "max": 1,
-      "min": 1,
-      "weight": 10
-    },
-    {
-      "item": "hbm:can_mug",
-      "max": 1,
-      "min": 1,
-      "weight": 10
-    },
-    {
-      "item": "hbm:can_breen",
-      "max": 1,
-      "min": 1,
-      "weight": 1
-    }
-  ],
-  "POOL_SNACKS": [
-    {
-      "item": "hbm:definitelyfood",
-      "max": 1,
-      "min": 1,
-      "weight": 10
-    },
-    {
-      "item": "hbm:canned_conserve_beef",
-      "max": 1,
-      "min": 1,
-      "weight": 5
-    },
-    {
-      "item": "hbm:canned_conserve_tube",
-      "max": 1,
-      "min": 1,
-      "weight": 5
-    },
-    {
-      "item": "hbm:twinkie",
-      "max": 1,
-      "min": 1,
-      "weight": 10
-    },
-    {
-      "item": "hbm:chocolate",
-      "max": 1,
-      "min": 1,
-      "weight": 10
     }
   ]
 }

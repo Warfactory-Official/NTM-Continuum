@@ -30,7 +30,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
@@ -53,6 +53,15 @@ public class EntityRADBeast extends CompatMonster implements IRadiationImmune {
 
     private static final double LEADER_HEALTH = 360.0D;
 
+    /**
+     * 1.7 left movementSpeed at its 0.7 default, but the beast ran the pre-goal ("old") AI: EntityCreature set
+     * moveForward = 0.7 while getAIMoveSpeed() answered a flat 0.1 for non-AI mobs, so it walked 0.7 * 0.1 = 0.07
+     * per tick of ground friction. Goal AI walks speed * speed (the input vector is scaled by the speed it holds),
+     * so the same pace is sqrt(0.07). Vanilla made the same conversion when its old-AI mobs moved to goals
+     * (spider 0.8 to 0.3, zombie pigman 0.5 to 0.23).
+     */
+    private static final double OLD_AI_SPEED = Math.sqrt(0.7D * 0.1D);
+
     private float heightOffset = 0.5F;
     private int heightOffsetUpdateTime;
     /** 1.7 {@code EntityLiving.attackTime}: 20 after every hit, and the beam's own visibility window. */
@@ -60,7 +69,7 @@ public class EntityRADBeast extends CompatMonster implements IRadiationImmune {
 
     public EntityRADBeast(EntityType<? extends EntityRADBeast> type, Level level) {
         super(type, level);
-        dev.golem.core.world.Compat.avoidWater(this); // 1.7 drowns itself in water
+        // 1.7 did not avoid water even though water hurts it: its old-AI paths used avoidWater=false
         this.xpReward = 30;
     }
 
@@ -68,6 +77,7 @@ public class EntityRADBeast extends CompatMonster implements IRadiationImmune {
         return Monster.createMonsterAttributes()
                       .add(Attributes.MAX_HEALTH, 120.0D)
                       .add(Attributes.ATTACK_DAMAGE, 16.0D)
+                      .add(Attributes.MOVEMENT_SPEED, OLD_AI_SPEED)
                       // 1.7 hardcoded getTotalArmorValue() = 8
                       .add(Attributes.ARMOR, 8.0D);
     }
@@ -81,11 +91,12 @@ public class EntityRADBeast extends CompatMonster implements IRadiationImmune {
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(4, new RadiationAttackGoal(this));
-        goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+        goalSelector.addGoal(5, new RandomStrollGoal(this, 1.0D));
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 8.0F));
         goalSelector.addGoal(8, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        // 1.7 EntityMob.findPlayerToAttack: nearest visible player, re-asked every tick while it has none
+        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 0, true, false, null));
     }
 
     /** 1.7 makeLeader: the tripled-health variant that carries the boss coin. */
@@ -124,6 +135,9 @@ public class EntityRADBeast extends CompatMonster implements IRadiationImmune {
     @Override
     public void aiStep() {
         if (level() instanceof ServerLevel server) {
+            // 1.7 EntityLivingBase counted attackTime down every tick in onEntityUpdate, target or not
+            if (this.attackDelay > 0) this.attackDelay--;
+
             if (isInWaterOrRain()) hurtServer(server, damageSources().drown(), 1.0F);
 
             if (--this.heightOffsetUpdateTime <= 0) {
@@ -271,38 +285,50 @@ public class EntityRADBeast extends CompatMonster implements IRadiationImmune {
             LivingEntity target = this.beast.getTarget();
             if (target == null) return;
 
-            if (this.beast.attackDelay > 0) this.beast.attackDelay--;
-
             this.beast.getLookControl().setLookAt(target, 30F, 30F);
 
-            // 1.7 repathed on a finished path or one tick in twenty
-            if (this.beast.getNavigation().isDone() || this.beast.getRandom().nextInt(20) == 0) {
+            // 1.7 EntityCreature only called attackEntity when canEntityBeSeen(target): no melee or pulse through walls
+            boolean hasAttacked = this.beast.getSensing().hasLineOfSight(target) && attackEntity(target);
+
+            // 1.7 repathed on a missing path or one tick in twenty, but not on a tick attackEntity set hasAttacked:
+            // inside pulse range it keeps walking the path it has and then stands its ground
+            if (!hasAttacked && (this.beast.getNavigation().isDone() || this.beast.getRandom().nextInt(20) == 0)) {
                 dev.golem.core.world.Navigations.navigateTo(this.beast.getNavigation(), target, 1.0D);
             }
 
-            if (this.beast.attackDelay > 0) return;
-            // 1.7 EntityCreature only called attackEntity when canEntityBeSeen(target): no melee or pulse through walls
-            if (!this.beast.getSensing().hasLineOfSight(target)) return;
+            // 1.7 dropped its path one tick in a hundred
+            if (this.beast.getRandom().nextInt(100) == 0) this.beast.getNavigation().stop();
+        }
 
+        /** 1.7 {@code attackEntity}; answers its {@code hasAttacked} write. */
+        private boolean attackEntity(LivingEntity target) {
             double distance = this.beast.distanceTo(target);
             AABB self = this.beast.getBoundingBox();
             AABB other = target.getBoundingBox();
 
             // 1.7 required vertical overlap for the melee, else the radiation branch runs at any height
-            if (distance < MELEE_RANGE && other.maxY > self.minY && other.minY < self.maxY) {
+            if (this.beast.attackDelay <= 0 && distance < MELEE_RANGE && other.maxY > self.minY && other.minY < self.maxY) {
                 if (this.beast.level() instanceof ServerLevel server) this.beast.doHurtTarget(server, target);
                 this.beast.attackDelay = 20;
-                return;
+                return false;
             }
 
-            if (distance >= PULSE_RANGE || !(this.beast.level() instanceof ServerLevel server)) return;
+            if (distance >= PULSE_RANGE) return false;
 
-            // 1.7 ChunkRadiationManager.incrementRad(x, y, z, 100): an unbounded add, so no cap here
-            RadiationSystemNT.incrementRad(server, this.beast.blockPosition(), 100, Double.MAX_VALUE);
-            Compat.hurt(target, server, ModDamageSources.source(server, ModDamageSources.RADIATION), 16.0F);
-            this.beast.swing(InteractionHand.MAIN_HAND);
-            this.beast.playAmbientSound();
-            this.beast.attackDelay = 20;
+            if (this.beast.attackDelay == 0 && this.beast.level() instanceof ServerLevel server) {
+                // 1.7 ChunkRadiationManager.incrementRad(x, y, z, 100): an unbounded add, so no cap here
+                RadiationSystemNT.incrementRad(server, this.beast.blockPosition(), 100, Double.MAX_VALUE);
+                Compat.hurt(target, server, ModDamageSources.source(server, ModDamageSources.RADIATION), 16.0F);
+                this.beast.swing(InteractionHand.MAIN_HAND);
+                this.beast.playAmbientSound();
+                this.beast.attackDelay = 20;
+            }
+
+            // 1.7 turned the body square to the target
+            float yaw = (float) (Math.atan2(target.getZ() - this.beast.getZ(), target.getX() - this.beast.getX())
+                    * 180.0D / Math.PI) - 90.0F;
+            this.beast.setYRot(yaw);
+            return true;
         }
     }
 }

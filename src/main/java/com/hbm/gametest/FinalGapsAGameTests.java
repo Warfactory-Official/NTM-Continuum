@@ -236,7 +236,7 @@ public final class FinalGapsAGameTests {
 
     /**
      * old-hbm ItemCrucible charge and modifiers: a fresh (crafted) crucible holds no charge and carries the empty
-     * modifiers (5 damage); a charged one (the creative stack) its own 500; the tungsten crate's laser recharges one
+     * modifiers (5 damage); a charged one (the creative stack) its own 5000 (the 1.7 value); the tungsten crate's laser recharges one
      * holding fewer than three charges, and only over 10 MHE.
      */
     public static void crucible(GameTestHelper helper) {
@@ -258,7 +258,9 @@ public final class FinalGapsAGameTests {
         double fullSpeed = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
         double base = player.getAttributeBaseValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
         helper.assertTrue(Math.abs(empty - 6.0D) < 1.0E-4, "an empty crucible hits for 1 + 5: " + empty);
-        helper.assertTrue(Math.abs(full - 501.0D) < 1.0E-4, "a charged crucible hits for 1 + 500: " + full);
+        // 1.7 damage 5000, effective: CommonClass raises vanilla's ATTACK_DAMAGE bound (2048) through Golem Core
+        // Attributes.raiseMax, as 1.7's SharedMonsterAttributes had none.
+        helper.assertTrue(Math.abs(full - 5001.0D) < 1.0E-4, "a charged crucible hits for 1 + 5000: " + full);
         helper.assertTrue(Math.abs(fullSpeed - base * 2.0D) < 1.0E-4 && Math.abs(emptySpeed - base * 1.8D) < 1.0E-4,
                 "movement +100% charged, +80% empty: " + fullSpeed + " / " + emptySpeed + " of " + base);
 
@@ -724,9 +726,9 @@ public final class FinalGapsAGameTests {
 
     public static void cellMigration(GameTestHelper helper) {
         ItemStack old = new ItemStack(ModSingularityItems.cell.get());
-        ModDataComponents.fluidId(old, Fluids.AMAT.getID());
+        ModDataComponents.fluid(old, Fluids.AMAT);
         ModDataComponents.fluidAmount(old, ItemCell.CAPACITY);
-        ModDataComponents.ITEM_VARIANT.set(old, Fluids.AMAT.getID()); // the pre-2026-09-25 variant (fluid id 33)
+        ModDataComponents.ITEM_VARIANT.set(old, Fluids.legacyId(Fluids.AMAT)); // the pre-2026-09-25 variant (fluid id 33)
         ItemCell.migrateVariant(old);
         helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(old, -1) == CellVariants.ANTIMATTER,
                 "an old antimatter cell is rewritten to variant 3");
@@ -734,9 +736,9 @@ public final class FinalGapsAGameTests {
                 "a migrated cell stacks with a new one");
         ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ItemStack held = new ItemStack(ModSingularityItems.cell.get());
-        ModDataComponents.fluidId(held, Fluids.SAS3.getID());
+        ModDataComponents.fluid(held, Fluids.SAS3);
         ModDataComponents.fluidAmount(held, ItemCell.CAPACITY);
-        ModDataComponents.ITEM_VARIANT.set(held, Fluids.SAS3.getID());
+        ModDataComponents.ITEM_VARIANT.set(held, Fluids.legacyId(Fluids.SAS3));
         player.getInventory().setItem(5, held);
         player.getInventory().tick();
         helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(player.getInventory().getItem(5), -1) == CellVariants.SAS3,

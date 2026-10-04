@@ -81,9 +81,11 @@ public final class ModBombs2Blocks {
             .transform(Presets.cubeAll()).transform(BOMB_DROP);
 
     // 1.7: Material.ground / wood, soundTypeGlass, hardness 0.5, resistance 2.5, block tab.
+    // 1.7 BlockOre: frozen_dirt and frozen_planks drop one snowball on the multiplying fortune curve; silk touch
+    // keeps the block.
     public static final RegistryObject<Block> frozen_dirt = REG.<Block>block("frozen_dirt", Block::new,
                     p -> p.strength(0.5F, 2.5F).sound(SoundType.GLASS))
-            .transform(Presets.cubeAll()).loot(Loot.self());
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("minecraft:snowball", 1, 1));
     // 1.7 WasteEarth icons: the block's own top, frozen dirt underneath, the grass side around.
     // 1.7 WasteEarth.getItemDropped: frozen_grass drops one snowball (silk touch keeps the block).
     public static final RegistryObject<BlockFrozenGrass> frozen_grass = REG.block("frozen_grass", BlockFrozenGrass::new,
@@ -98,7 +100,7 @@ public final class ModBombs2Blocks {
             .loot(Loot.oreNoFortune("minecraft:snowball", 2, 4));
     public static final RegistryObject<Block> frozen_planks = REG.<Block>block("frozen_planks", Block::new,
                     p -> p.strength(0.5F, 2.5F).sound(SoundType.GLASS))
-            .transform(Presets.cubeAll()).loot(Loot.self());
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("minecraft:snowball", 1, 1));
 
     static {
         REG.blockItem(nuke_custom).tab(HbmTab.BOMBS);

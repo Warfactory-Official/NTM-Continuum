@@ -47,8 +47,8 @@ public final class RadCounterOverlay {
         int length = 74;
         int bar = getScaled(in, 1000, length);
 
-        int posX = 16;
-        int posY = mc.getWindow().getGuiScaledHeight() - 20;
+        int posX = 16 + com.hbm.config.ClientConfig.GEIGER_OFFSET_HORIZONTAL;
+        int posY = mc.getWindow().getGuiScaledHeight() - 20 - com.hbm.config.ClientConfig.GEIGER_OFFSET_VERTICAL;
 
         // frame + fill
         GuiDraw.blit(graphics, MISC, posX, posY, 0, 0, 94, 18, 256, 256);

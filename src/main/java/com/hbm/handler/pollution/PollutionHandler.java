@@ -264,7 +264,8 @@ public final class PollutionHandler {
     }
 
     private static boolean canSpawnHere(ServerLevel level, EntityGlyphid glyphid) {
-        return level.getDifficulty() != Difficulty.PEACEFUL
+        // 1.7 EntityGlyphid.getCanSpawnHere, including checkNoEntityCollision
+        return level.getDifficulty() != Difficulty.PEACEFUL && level.isUnobstructed(glyphid)
                 && level.noCollision(glyphid, glyphid.getBoundingBox())
                 && !level.containsAnyLiquid(glyphid.getBoundingBox());
     }

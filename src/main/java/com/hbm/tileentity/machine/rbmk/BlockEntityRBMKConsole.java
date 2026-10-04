@@ -245,7 +245,7 @@ public class BlockEntityRBMKConsole extends TileEntityMachineBase implements ICo
         targetZ = input.getIntOr("tZ", 0);
         rotation = (byte) input.getIntOr("rotation", 0);
         for (int i = 0; i < screens.length; i++) {
-            screens[i].type = ScreenType.VALUES[Mth.clamp(input.getIntOr("t" + i, 0), 0, ScreenType.VALUES.length - 1)];
+            screens[i].type = com.hbm.util.SavedIds.getEnum(input, "t" + i, ScreenType.VALUES[0]);
             screens[i].columns = boxed(input.getIntArrayOr("s" + i, EMPTY_INT));
         }
     }
@@ -258,7 +258,7 @@ public class BlockEntityRBMKConsole extends TileEntityMachineBase implements ICo
         output.putInt("tZ", targetZ);
         output.putInt("rotation", rotation);
         for (int i = 0; i < screens.length; i++) {
-            output.putInt("t" + i, screens[i].type.ordinal());
+            com.hbm.util.SavedIds.putEnum(output, "t" + i, screens[i].type); // by name, never an ordinal
             int[] values = new int[screens[i].columns.length];
             for (int j = 0; j < values.length; j++) {
                 values[j] = screens[i].columns[j];

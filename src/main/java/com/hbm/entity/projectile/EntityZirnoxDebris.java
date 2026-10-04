@@ -53,12 +53,12 @@ public class EntityZirnoxDebris extends CompatEntity {
 
     @Override
     protected void loadData(DataIn input) {
-        setDebrisType(DebrisType.byId(input.getIntOr("type", DebrisType.BLANK.ordinal())));
+        setDebrisType(com.hbm.util.SavedIds.getEnum(input, "type", DebrisType.BLANK));
     }
 
     @Override
     protected void saveData(DataOut output) {
-        output.putInt("type", entityData.get(TYPE));
+        com.hbm.util.SavedIds.putEnum(output, "type", getDebrisType()); // by name; the synched int is session-only
     }
 
     @Override

@@ -28,7 +28,8 @@ public class GlyphidHiveFeature extends Feature<NoneFeatureConfiguration> {
     public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
         if (!MobConfig.enableHives) return false;
         WorldGenLevel level = context.level();
-        if (!dev.golem.core.world.GenerationOptions.structures(level.getLevel().getServer())) return false;
+        // 1.7 HbmWorldGen enableDungeons (config 2 = the world's Generate Structures option)
+        if (!DungeonBlockFeature.dungeonsEnabled(level)) return false;
         RandomSource rand = context.random();
         BlockPos top = context.origin();
         for (int k = 3; k >= -1; k--) {

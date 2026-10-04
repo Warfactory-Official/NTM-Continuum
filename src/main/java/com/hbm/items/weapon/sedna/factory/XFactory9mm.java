@@ -81,7 +81,7 @@ public final class XFactory9mm {
         p9_ap = BulletConfigs.register("p9_ap", new BulletConfig()
                 .setItem(ModAmmoItems.p9_ap)
                 .setDoesPenetrate(true).setDamageFalloffByPen(false)
-                .setDamage(1.5F).setThresholdNegation(5F).setArmorPiercing(0.15F));
+                .setDamage(1.25F).setThresholdNegation(5F).setArmorPiercing(0.15F));
     }
 
     /** Upstream declaration order, which is also magazine reload priority. */
@@ -99,4 +99,11 @@ public final class XFactory9mm {
         GunStateDecider.deciderAutoRefire(stack, ctx, lastState, 0, index,
                 () -> ItemGunBaseNT.getSecondary(stack, index) && ItemGunBaseNT.getMode(stack, index) == 0);
     };
+
+    /** 1.7 {@code LAMBDA_NAME_GREASEGUN}. */
+    public static final java.util.function.Function<ItemStack, String> LAMBDA_NAME_GREASEGUN = stack ->
+            com.hbm.items.weapon.sedna.mods.XWeaponModManager.hasUpgrade(stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_GREASEGUN_CLEAN) ? XFactory12ga.mutated(stack, "_m3") : null;
+    /** 1.7 {@code LAMBDA_NAME_UZI}. */
+    public static final java.util.function.Function<ItemStack, String> LAMBDA_NAME_UZI = stack ->
+            com.hbm.items.weapon.sedna.mods.XWeaponModManager.hasUpgrade(stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SILENCER) ? XFactory12ga.mutated(stack, "_richter") : null;
 }

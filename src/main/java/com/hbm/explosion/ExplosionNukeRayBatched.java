@@ -28,10 +28,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 /**
- * The Fat Man / mk5 crater raytracer, ported from 1.12.2's {@code ExplosionNukeRayBatched} — with the
- * ray phase parallelized to match the wall-clock of the fork's <b>default</b> algorithm
- * ({@code explosionAlgorithm = 2} = the threaded DDA {@code ExplosionNukeRayParallelized}; only this
- * batched spiral is ported, but its compute now fans out the same way).
+ * The MK5 crater raytracer: 1.7's {@code ExplosionNukeRayBatched} spiral (2.5&pi;&middot;strength&sup2; rays,
+ * each starting with {@code res = strength} and losing {@code pow(masqueradeResistance, 7.5 - fac)} per
+ * sample), with the ray phase parallelized.
  *
  * <p><b>Phases:</b>
  * <ol>
@@ -47,15 +46,15 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
  *       nearest-chunk-first and clear the blocks — unchanged from the old code.</li>
  * </ol>
  *
- * <p><b>The origin blind spot ("a few blocks always survive under the bomb"):</b> the spiral march
- * samples r = 0, 2, 3, … (the resistance expression rewrites r=0→1, then the loop increments), and no
- * unit ray can floor-sample the cell directly below the origin at r=2 (it needs vx,vz ∈ [0,0.5) and
- * |vy| ≤ 0.5 — impossible for a unit vector). The old mod's default DDA sampled every cell and had no
- * such hole, so the port seeds the 3×3×3 cube around the origin into the destruction set explicitly
- * ({@link #seedOriginClear}).
+ * <p><b>1.7, not 1.12.2:</b> 1.12.2 started rays at 0.3 &times; strength, attenuated by
+ * {@code pow(res + 1, 3r / radius) - 1}, rated liquids 0.1 and sandstone 4, rewrote the r = 0 sample to
+ * r = 1 (leaving a blind spot under the bomb that the port used to patch with a seeded 3&times;3&times;3
+ * cube) and put the spiral's pole on Z. All of that is gone; 1.7 samples i = 0 .. radius - 1 along a
+ * vertical-pole spiral. 1.7 destroyed by re-marching from the origin to each ray's last solid cell; the
+ * bitsets here mark the same cells (every solid sample while the ray still had strength).
  *
  * <p>The bit-packing was generalised from the old hard-coded 0..255 column to the level's real height.
- * Deferrals vs 1.12.2: the {@code isWarDim} gate, the DDA algorithms themselves, and the mid-explosion
+ * Not carried: the 1.12.2 {@code isWarDim} gate and DDA algorithms (neither is 1.7) and the mid-explosion
  * NBT save of in-flight state (a blast interrupted by a save restarts).
  */
 public class ExplosionNukeRayBatched implements IExplosionRay {
@@ -199,7 +198,6 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
             long t0 = System.currentTimeMillis();
             seedResidentChunks();
             prefetchMs += System.currentTimeMillis() - t0;
-            seedOriginClear();
             rayStartedAt = System.currentTimeMillis();
             startInitialRayJob();
             return;
@@ -410,26 +408,6 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     }
 
     /**
-     * Marks the 3×3×3 cube around the detonation point for destruction — the cells the spiral march
-     * can never sample (see the class doc). Runs on the server thread before the ray job starts.
-     */
-    private void seedOriginClear() {
-        MutableBlockPos pos = new MutableBlockPos();
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                int y = posY + dy;
-                if (y < minY || y > maxY) continue;
-                for (int dz = -1; dz <= 1; dz++) {
-                    BlockState state = world.getBlockState(pos.set(posX + dx, y, posZ + dz));
-                    if (!state.isAir() && state.getBlock().getExplosionResistance() < 2_000_000) {
-                        setBit(perChunk, posX + dx, y, posZ + dz);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * The ray-phase coordinator (runs on a pool thread): walks the gsp recurrence sequentially (the
      * longitude is a running prefix sum, so it cannot be split), batching directions for pool tasks and
      * merging their worker-local hit maps into {@link #perChunk}. Sets {@link #isAusf3Complete} last —
@@ -448,10 +426,15 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
                 int count = Math.min(RAY_BATCH, gspNumMax - gspNum + 1);
                 double[] dirs = new double[count * 3];
                 for (int i = 0; i < count; i++) {
+                    // 1.7 getSpherical2cartesian: dx = sin X cos Y, dy = cos X, dz = sin X sin Y (the spiral's
+                    // pole is vertical; 1.12.2 put it on Z)
+                    // The spiral's last point has gspY = NaN (1 / sqrt(1 - hk^2) at hk = 1) and sin X = 0; 1.7
+                    // multiplied 0 * NaN = NaN and floored it to 0, so its last ray marched up the world's
+                    // x = 0, z = 0 column, however far away the bomb was. Here that ray stays vertical over the blast.
                     double sinX = Math.sin(gspX);
                     dirs[i * 3] = sinX == 0.0D ? 0.0D : sinX * Math.cos(gspY);
-                    dirs[i * 3 + 1] = sinX == 0.0D ? 0.0D : sinX * Math.sin(gspY);
-                    dirs[i * 3 + 2] = Math.cos(gspX);
+                    dirs[i * 3 + 1] = Math.cos(gspX);
+                    dirs[i * 3 + 2] = sinX == 0.0D ? 0.0D : sinX * Math.sin(gspY);
 
                     // Advance the recurrence (verbatim old generateGspUp).
                     if (gspNum < gspNumMax) {
@@ -496,7 +479,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
                                Long2ObjectOpenHashMap<it.unimi.dsi.fastutil.doubles.DoubleArrayList> waiters,
                                int maxPass) {}
 
-    private record AttenuationTable(int resistanceBits, float[] values) {}
+    private record AttenuationTable(int resistanceBits, double[] values) {}
 
     private synchronized void mergeResult(BatchResult result) {
         if (cancelled) return;
@@ -648,7 +631,8 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         int[] maxPass = {1};
 
         for (int i = 0; i < count && !cancelled && !failed; i++) {
-            marchOne(dirs[i * 3], dirs[i * 3 + 1], dirs[i * 3 + 2], strength * 0.3F, 0, 1,
+            // 1.7 collectTip: float res = strength
+            marchOne(dirs[i * 3], dirs[i * 3 + 1], dirs[i * 3 + 2], strength, 0, 1,
                     hits, waiters, maxPass, pos);
         }
         return new BatchResult(hits, waiters, maxPass[0]);
@@ -683,10 +667,13 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
             long lastKey = Long.MIN_VALUE;
             LevelChunk lastChunk = null;
             int lastResistanceBits = 0;
-            float[] lastAttenuation = null;
+            double[] lastAttenuation = null;
 
-            // Find the end of the ray (verbatim old march, including the r = 0,2,3,… sampling).
-            for (int r = startR; r < radius + 1 && !cancelled && !failed; r++) {
+            // 1.7 collectTip: samples i = 0, 1, 2, ... and stops after i = length - 1 (its
+            // "i + 1 >= this.length" break). 1.7 also cast each sample point to float before flooring,
+            // which only moves samples far from the world origin (a float's step is 1/64 block beyond
+            // 131,072); the port keeps doubles so a crater does not depend on where it was dropped.
+            for (int r = startR; r < radius && !cancelled && !failed; r++) {
 
                 int iY = (int) Math.floor(posY + (vy * r));
                 if (iY < minY || iY > maxY) {
@@ -732,35 +719,34 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
                 }
                 BlockState blockState = chunk.getBlockState(pos.set(iX, iY, iZ));
 
-                // The r = 0 -> 1 rewrite, hoisted out of the attenuation expression it used to hide in.
-                // It has to happen on EVERY step, air included: it is what produces upstream's r = 0, 2,
-                // 3, ... sampling, so skipping it below would change which cells a ray visits.
-                if (r == 0) r = 1;
-
                 boolean air = blockState.isAir();
                 if (!air) {
                     // One resistance read, used for both the indestructible test and the attenuation.
                     float resistance = blockState.getBlock().getExplosionResistance();
                     if (resistance >= 2_000_000) break;
 
-                    float effectiveResistance = nukeResistance(blockState, resistance);
-                    int resistanceBits = Float.floatToRawIntBits(effectiveResistance);
-                    if (lastAttenuation == null || resistanceBits != lastResistanceBits) {
-                        lastResistanceBits = resistanceBits;
-                        lastAttenuation = attenuationTable(resistanceBits).values();
+                    // 1.7: liquids are not attenuated at all (but are still destroyed)
+                    if (!blockState.liquid()) {
+                        float effectiveResistance = nukeResistance(blockState, resistance);
+                        int resistanceBits = Float.floatToRawIntBits(effectiveResistance);
+                        if (lastAttenuation == null || resistanceBits != lastResistanceBits) {
+                            lastResistanceBits = resistanceBits;
+                            lastAttenuation = attenuationTable(resistanceBits).values();
+                        }
+                        // float -= double, exactly 1.7's "res -= Math.pow(...)"
+                        rayStrength -= lastAttenuation[r];
                     }
-                    rayStrength -= lastAttenuation[r];
                 }
                 // Air is skipped above rather than run through the maths: its resistance is 0, so the
-                // attenuation term is pow(1, k) - 1 = 0 exactly. Most cells a big blast samples are air,
-                // and this is a Math.pow plus two virtual calls per cell.
+                // attenuation term is pow(0, k) = 0 exactly (k >= 0.5). Most cells a big blast samples
+                // are air, and this is a Math.pow plus two virtual calls per cell.
 
                 if (rayStrength > 0) {
                     if (!air) {
                         // All-air chunks don't need to be buffered at all.
                         setBit(hits, iX, iY, iZ);
                     }
-                    if (r >= radius) {
+                    if (r >= radius - 1) {
                         isContained = false;
                     }
                 } else {
@@ -781,9 +767,9 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     }
 
     /**
-     * The old resistance table, special cases included: liquids are nearly transparent to the blast,
-     * and the old mod deliberately rated sandstone at 4 and obsidian at 18 (vanilla resistance 1200 —
-     * without this, obsidian blast-bunkers survive a direct nuke, which the old mod did not allow).
+     * 1.7 {@code masqueradeResistance}: sandstone (all three 1.7 metas) counts as stone, obsidian as
+     * three stones (vanilla obsidian resists 1200, and obsidian blast-bunkers would survive a direct
+     * nuke). Liquids never reach this: 1.7 does not attenuate them.
      */
     public static float getNukeResistance(BlockState blockState) {
         return nukeResistance(blockState, blockState.getBlock().getExplosionResistance());
@@ -791,10 +777,11 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
 
     /** As above, for callers that already read the block's resistance and should not read it twice. */
     private static float nukeResistance(BlockState blockState, float resistance) {
-        if (blockState.liquid()) return 0.1F;
         Block b = blockState.getBlock();
-        if (b == Blocks.SANDSTONE) return 4F;
-        if (b == Blocks.OBSIDIAN) return 18F;
+        if (b == Blocks.SANDSTONE || b == Blocks.CHISELED_SANDSTONE || b == Blocks.CUT_SANDSTONE) {
+            return Blocks.STONE.getExplosionResistance();
+        }
+        if (b == Blocks.OBSIDIAN) return Blocks.STONE.getExplosionResistance() * 3;
         return resistance;
     }
 
@@ -817,37 +804,52 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         }
         float resistance = Float.intBitsToFloat(resistanceBits);
         AttenuationTable table = new AttenuationTable(resistanceBits,
-                buildAttenuationTable(resistance, radius));
+                buildAttenuationTable(resistance, strength, radius));
         AttenuationTable[] expanded = java.util.Arrays.copyOf(attenuationTables, attenuationTables.length + 1);
         expanded[expanded.length - 1] = table;
         attenuationTables = expanded;
         return table;
     }
 
-    private static float[] buildAttenuationTable(float resistance, int radius) {
-        float[] values = new float[radius + 1];
-        for (int r = 1; r <= radius; r++) {
-            values[r] = (float) (StrictMath.pow(resistance + 1,
-                    3 * ((float) r) / ((float) radius)) - 1);
+    /**
+     * 1.7 collectTip's per-sample term, {@code Math.pow(masqueradeResistance(block), 7.5D - fac)} with
+     * {@code fac = (100 - i / length * 100) * 0.07} and {@code length = ceil(strength)} (twice the radius
+     * for an MK5, so the exponent runs 0.5 .. 4). Kept as doubles so {@code float -= double} rounds once,
+     * as 1.7 did.
+     */
+    private static double[] buildAttenuationTable(float resistance, int strength, int radius) {
+        double[] values = new double[radius];
+        int length = (int) Math.ceil(strength);
+        for (int i = 0; i < radius; i++) {
+            values[i] = StrictMath.pow(resistance, 7.5D - attenuationFactor(i, length));
         }
-        if (radius > 0) values[0] = values[1];
         return values;
     }
 
-    /** Pins cached attenuation to the exact former per-sample expression. */
+    private static double attenuationFactor(int i, int length) {
+        double fac = 100 - ((double) i) / ((double) length) * 100;
+        fac *= 0.07D;
+        return fac;
+    }
+
+    /** Pins cached attenuation to the exact 1.7 per-sample expression. */
     public static boolean attenuationTableContractForTest() {
         int radius = 500;
-        float[] resistances = {0.1F, 0.5F, 4F, 18F, 1200F};
-        int[] samples = {1, 2, 17, 249, 500};
+        int strength = radius * 2;
+        float[] resistances = {0F, 0.5F, 6F, 18F, 1200F};
+        int[] samples = {0, 1, 2, 17, 249, 499};
         for (float resistance : resistances) {
-            float[] table = buildAttenuationTable(resistance, radius);
-            for (int r : samples) {
-                float direct = (float) (StrictMath.pow(resistance + 1,
-                        3 * ((float) r) / ((float) radius)) - 1);
-                if (Float.floatToRawIntBits(table[r]) != Float.floatToRawIntBits(direct)) return false;
+            double[] table = buildAttenuationTable(resistance, strength, radius);
+            for (int i : samples) {
+                double fac = 100 - ((double) i) / ((double) strength) * 100;
+                fac *= 0.07D;
+                double direct = StrictMath.pow(resistance, 7.5D - fac);
+                if (Double.doubleToRawLongBits(table[i]) != Double.doubleToRawLongBits(direct)) return false;
             }
         }
-        return true;
+        // 1.7's exponent for an MK5 (length = 2 * radius) starts at 0.5: stone's first sample costs sqrt(6)
+        return Math.abs(attenuationFactor(0, strength) - 7.0D) < 1e-12
+                && Math.abs(StrictMath.pow(6F, 7.5D - attenuationFactor(0, strength)) - Math.sqrt(6D)) < 1e-9;
     }
 
 

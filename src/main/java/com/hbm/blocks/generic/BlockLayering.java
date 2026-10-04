@@ -45,8 +45,9 @@ public class BlockLayering extends SnowLayerBlock {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
-        // The legacy metadata block dropped one item per visible layer, not one stack per block.
-        return List.of(new ItemStack(this, state.getValue(SnowLayerBlock.LAYERS)));
+        // original-hbm (1.7.10) BlockLayering.getItemDropped returns null, and renderAsNormalBlock() is false so
+        // silk touch is impossible too: foam, boron sand, leaf and oil layers drop nothing at all.
+        return List.of();
     }
 
     @Override

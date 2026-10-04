@@ -221,17 +221,16 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("flow", this.lastFlow);
-        output.putInt("nType", this.neighborType != null ? this.neighborType.id : -1);
+        com.hbm.util.SavedIds.putEnum(output, "flow", ForgeDirection.getOrientation(this.lastFlow)); // by name, never an ordinal
+        Mats.write(output, "nType", this.neighborType);
         output.putBoolean("init", hasCheckedNeighbors);
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        this.lastFlow = input.getIntOr("flow", 0);
-        int nType = input.getIntOr("nType", -1);
-        this.neighborType = nType < 0 ? null : Mats.matById.get(nType);
+        this.lastFlow = com.hbm.util.SavedIds.getEnum(input, "flow", ForgeDirection.DOWN).ordinal();
+        this.neighborType = Mats.read(input, "nType");
         this.hasCheckedNeighbors = input.getBooleanOr("init", false);
     }
 }

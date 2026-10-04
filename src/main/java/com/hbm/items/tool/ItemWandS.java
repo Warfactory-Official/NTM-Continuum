@@ -17,7 +17,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.util.SavedIds;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,8 +30,9 @@ import java.util.Set;
  * save blacklist; crouch-clicking air clears the blacklist. The custom machine controller also builds its
  * structure when clicked with this wand ({@code BlockCustomMachine}).
  *
- * <p>The blacklist keeps 1.7's {@code blocks}/{@code metas} int arrays. A 1.7 (block, meta) pair is one flattened
- * block state, so {@code blocks} holds global block-state ids ({@link Block#getId}) and {@code metas} is all zero.
+ * <p>The blacklist is 1.7's {@code blocks}/{@code metas} int arrays. A 1.7 (block, meta) pair is one flattened
+ * block state, so {@code blocks} is a list of block-state names ({@code namespace:block[prop=value]}); a global
+ * block-state id is never saved (History section 19ej-ids).
  *
  * <p>The second click places a {@code wand_structure} saving block one below the box's minimum corner and hands it
  * the box size and this wand's blacklist; its screen then saves the box as an {@code NBTStructure} file.
@@ -45,8 +47,8 @@ public class ItemWandS extends CompatItem {
         return ModDataComponents.PERSISTENT_DATA.get(stack).map(CompoundTag::copy).orElse(new CompoundTag());
     }
 
-    private static String blockName(int stateId) {
-        return Block.stateById(stateId).getBlock().getDescriptionId();
+    private static String blockName(BlockState state) {
+        return state.getBlock().getDescriptionId();
     }
 
     @Override
@@ -69,10 +71,10 @@ public class ItemWandS extends CompatItem {
             list.add(Component.literal("No start position set").withStyle(ChatFormatting.AQUA));
         }
 
-        Set<Integer> blocks = getBlocks(tag);
+        Set<BlockState> blocks = getBlocks(tag);
         if (!blocks.isEmpty()) {
             list.add(Component.literal("Blacklist:"));
-            for (int block : blocks) {
+            for (BlockState block : blocks) {
                 list.add(Component.literal("- " + blockName(block)).withStyle(ChatFormatting.RED));
             }
         }
@@ -91,8 +93,8 @@ public class ItemWandS extends CompatItem {
         CompoundTag tag = data(stack);
 
         if (player.isShiftKeyDown()) {
-            int target = Block.getId(level.getBlockState(pos));
-            Set<Integer> blocks = getBlocks(tag);
+            BlockState target = level.getBlockState(pos);
+            Set<BlockState> blocks = getBlocks(tag);
 
             if (blocks.contains(target)) {
                 blocks.remove(target);
@@ -131,7 +133,7 @@ public class ItemWandS extends CompatItem {
                     structure.sizeZ = sizeZ;
 
                     structure.blacklist = new LinkedHashSet<>();
-                    for (int id : getBlocks(tag)) structure.blacklist.add(Block.stateById(id));
+                    structure.blacklist.addAll(getBlocks(tag));
                     structure.setChanged();
                 } else {
                     player.sendSystemMessage(Component.literal("Could not add a structure block!"));
@@ -154,15 +156,13 @@ public class ItemWandS extends CompatItem {
         tag.putInt("z", z);
     }
 
-    private static Set<Integer> getBlocks(CompoundTag tag) {
-        Set<Integer> blocks = new LinkedHashSet<>();
-        for (int id : Tags.getIntArrayOr(tag, "blocks", new int[0])) blocks.add(id);
-        return blocks;
+    private static Set<BlockState> getBlocks(CompoundTag tag) {
+        return new LinkedHashSet<>(SavedIds.readStateList(tag, "blocks"));
     }
 
-    private static void setBlocks(CompoundTag tag, Set<Integer> blocks) {
-        tag.putIntArray("blocks", blocks.stream().mapToInt(Integer::intValue).toArray());
-        tag.putIntArray("metas", new int[blocks.size()]);
+    private static void setBlocks(CompoundTag tag, Set<BlockState> blocks) {
+        tag.put("blocks", SavedIds.stateList(blocks));
+        tag.remove("metas");
     }
 
     @Override
@@ -172,8 +172,8 @@ public class ItemWandS extends CompatItem {
 
         CompoundTag tag = data(stack);
         if (player.isShiftKeyDown()) {
-            tag.putIntArray("blocks", new int[0]);
-            tag.putIntArray("metas", new int[0]);
+            tag.put("blocks", SavedIds.stateList(java.util.List.of()));
+            tag.remove("metas");
             player.sendSystemMessage(Component.literal("Cleared blacklist"));
         }
         ModDataComponents.PERSISTENT_DATA.set(stack, tag);

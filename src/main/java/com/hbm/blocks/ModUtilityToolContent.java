@@ -71,7 +71,9 @@ public final class ModUtilityToolContent {
                 ToolKeybinds.setKeyPressed(player, payload.key(), payload.pressed()));
         Lifecycle.onServerStopping(server -> ToolKeybinds.clear());
 
-        HazardSystem.trafos.add(new HazardTransformerRadiationContainer());
+        // 1.7 HazardRegistry: LBSM_safeCrates (in LBSM mode) keeps crates from becoming radioactive
+        if (!(com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMSafeCrates))
+            HazardSystem.trafos.add(new HazardTransformerRadiationContainer());
         ItemFirstUse.register(ItemSettingsTool::useFirst);
     }
 }

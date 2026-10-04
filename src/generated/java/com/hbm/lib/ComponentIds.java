@@ -50,8 +50,8 @@ public final class ComponentIds {
     public static final String fensu_priority = "hbm:fensu_priority";
     public static final String fensu_red_high = "hbm:fensu_red_high";
     public static final String fensu_red_low = "hbm:fensu_red_low";
+    public static final String fluid = "hbm:fluid";
     public static final String fluid_amount = "hbm:fluid_amount";
-    public static final String fluid_id = "hbm:fluid_id";
     public static final String fluid_multi = "hbm:fluid_multi";
     public static final String fluid_pressure = "hbm:fluid_pressure";
     public static final String fuel_waste_hot = "hbm:fuel_waste_hot";

@@ -46,7 +46,7 @@ public class ItemPipette extends CompatItem implements IFillableItem {
         CompoundTag tag = ModUtilityToolItems.PIPETTE.getOr(stack, null);
         if (tag == null) {
             tag = new CompoundTag();
-            tag.putInt("type", Fluids.NONE.getID());
+            Fluids.write(tag, "type", Fluids.NONE);
             tag.putInt("fill", 0);
             tag.putInt("capacity", getMaxFill());
         }
@@ -54,7 +54,7 @@ public class ItemPipette extends CompatItem implements IFillableItem {
     }
 
     public FluidType getType(ItemStack stack) {
-        return Fluids.fromID(Tags.getIntOr(tag(stack), "type", 0));
+        return Fluids.read(tag(stack), "type");
     }
 
     public short getCapacity(ItemStack stack) {
@@ -63,7 +63,7 @@ public class ItemPipette extends CompatItem implements IFillableItem {
 
     public void setFill(ItemStack stack, FluidType type, short fill) {
         CompoundTag tag = tag(stack).copy();
-        tag.putInt("type", type.getID());
+        Fluids.write(tag, "type", type);
         tag.putInt("fill", fill);
         ModUtilityToolItems.PIPETTE.set(stack, tag);
         // 1.7 getIcon/getColorFromItemStack: pass 1 is the empty sprite at fill 0, else the tinted overlay.

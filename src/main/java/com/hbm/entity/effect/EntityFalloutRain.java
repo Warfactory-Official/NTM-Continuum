@@ -960,6 +960,9 @@ public class EntityFalloutRain extends CompatEntity {
         // emits writes, so it carries the cell it last processed forward instead of re-reading the chunk.
         int lastY = Integer.MIN_VALUE;
         BlockState lastEffective = null;
+        // The column as the sweep has left it, for the cells above y that the collapse re-reads.
+        BlockState[] effectiveAbove = new BlockState[MAX_SOLID_DEPTH + 1];
+        int effectiveTopY = Integer.MIN_VALUE;
         for (int y = top; y >= bottomY; y--) {
             if (solidDepth >= MAX_SOLID_DEPTH) return;
 
@@ -967,6 +970,14 @@ public class EntityFalloutRain extends CompatEntity {
             BlockState state = chunk.getBlockState(pos);
             Block block = state.getBlock();
             if (state.isAir() || block == ModFalloutBlocks.fallout.get()) continue;
+
+            // 1.7 stomp:164-167: a volcano core turns into its radioactive twin (same behaviour) and the
+            // column walk carries on below it without counting it
+            if (block instanceof com.hbm.blocks.bomb.BlockVolcano volcano && !volcano.radioactive) {
+                scan.addStateWrite(pos.asLong(),
+                        com.hbm.blocks.ModTerrainBlocks.volcanoCore(volcano.mode.id(true)).defaultBlockState());
+                continue;
+            }
 
             // fallout ash layer on the surface — chance peaks (0.1) at 70% of the scale
             BlockState stateUp = null;
@@ -1004,19 +1015,29 @@ public class EntityFalloutRain extends CompatEntity {
             }
             lastY = y;
             lastEffective = effective;
+            // shift the remembered column down one cell
+            if (effectiveTopY != y + 1) java.util.Arrays.fill(effectiveAbove, null);
+            System.arraycopy(effectiveAbove, 0, effectiveAbove, 1, effectiveAbove.length - 1);
+            effectiveAbove[0] = effective;
+            effectiveTopY = y;
             boolean collapses = false;
 
-            // untransformed soft blocks over air collapse as falling blocks (no drops)
-            if (!transformed && distPercent < 65 && y > bottomY) {
-                BlockState below = chunk.getBlockState(posUp.set(x, y - 1, z));
-                if (below.isAir()) {
-                    float hardnessHere = state.getDestroySpeed(chunk, pos);
-                    if (hardnessHere >= 0.0F && hardnessHere <= stonebrickRes) {
+            // 1.7 stomp:201-214: a soft block over air collapses, with the solid cells above it, as
+            // falling blocks (no drops). 1.7 tests the ORIGINAL block's hardness (stone bricks' 6
+            // resistance as the bar) and skips multiblock parts, then drops what is now in the world at
+            // y .. y + depth, i.e. the transformed cells. The port had restricted this to untransformed cells.
+            if (distPercent < 65 && y > bottomY && !(block instanceof com.hbm.blocks.multiblock.BlockMultiblockCore)
+                    && !(block instanceof com.hbm.blocks.multiblock.BlockMultiblockCell)) {
+                float hardnessHere = state.getDestroySpeed(chunk, pos);
+                if (hardnessHere >= 0.0F && hardnessHere <= stonebrickRes) {
+                    BlockState below = chunk.getBlockState(posUp.set(x, y - 1, z));
+                    if (below.isAir()) {
                         for (int i = 0; i <= solidDepth; i++) {
                             int yy = y + i;
                             if (yy > maxY) break;
                             BlockPos p = new BlockPos(x, yy, z);
-                            BlockState sAt = chunk.getBlockState(p);
+                            BlockState sAt = i < effectiveAbove.length && effectiveAbove[i] != null
+                                    ? effectiveAbove[i] : chunk.getBlockState(p);
                             if (sAt.isAir()) continue;
                             float h = sAt.getDestroySpeed(chunk, p);
                             if (h >= 0.0F && h <= stonebrickRes) {

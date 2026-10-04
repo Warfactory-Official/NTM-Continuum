@@ -456,7 +456,7 @@ public final class GunGameTests {
                 "JHP .22 stats must match upstream");
         helper.assertTrue(XFactory22lr.p22_ap.doesPenetrate
                         && !XFactory22lr.p22_ap.damageFalloffByPen
-                        && XFactory22lr.p22_ap.damageMult == 1.5F
+                        && XFactory22lr.p22_ap.damageMult == 1.25F // 1.7.10 value (fix wave 5; 1.5 was 1.12.2)
                         && XFactory22lr.p22_ap.armorThresholdNegation == 2.5F
                         && XFactory22lr.p22_ap.armorPiercingPercent == 0.15F,
                 "AP .22 stats must match upstream");
@@ -477,7 +477,7 @@ public final class GunGameTests {
                 "JHP 9 mm stats must match upstream");
         helper.assertTrue(XFactory9mm.p9_ap.doesPenetrate
                         && !XFactory9mm.p9_ap.damageFalloffByPen
-                        && XFactory9mm.p9_ap.damageMult == 1.5F
+                        && XFactory9mm.p9_ap.damageMult == 1.25F // 1.7.10 value (fix wave 5; 1.5 was 1.12.2)
                         && XFactory9mm.p9_ap.armorThresholdNegation == 5F
                         && XFactory9mm.p9_ap.armorPiercingPercent == 0.15F,
                 "AP 9 mm stats must match upstream");
@@ -498,7 +498,7 @@ public final class GunGameTests {
                 "JHP .44 stats must match upstream");
         helper.assertTrue(XFactory44.m44_ap.doesPenetrate
                         && !XFactory44.m44_ap.damageFalloffByPen
-                        && XFactory44.m44_ap.damageMult == 1.5F
+                        && XFactory44.m44_ap.damageMult == 1.25F // 1.7.10 value (fix wave 5; 1.5 was 1.12.2)
                         && XFactory44.m44_ap.armorThresholdNegation == 7.5F
                         && XFactory44.m44_ap.armorPiercingPercent == 0.15F,
                 "AP .44 stats must match upstream");

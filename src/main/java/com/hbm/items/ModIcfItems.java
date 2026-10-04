@@ -30,10 +30,10 @@ public final class ModIcfItems {
     /** 1.7 {@code ItemICFPellet.getColorFromItemStack} for a pellet with no NBT: the deuterium/tritium average. */
     private static final int DEFAULT_PELLET_TINT = 0x1414AE;
 
-    /** 1.7 {@code type1}: the first fuel's {@link EnumICFFuel} ordinal. */
-    public static final GolemComponent<Integer> PELLET_TYPE1 = GolemComponent.integer(Constants.MOD_ID, "icf_type1");
-    /** 1.7 {@code type2}: the second fuel's ordinal. */
-    public static final GolemComponent<Integer> PELLET_TYPE2 = GolemComponent.integer(Constants.MOD_ID, "icf_type2");
+    /** 1.7 {@code type1} (an ordinal there): the first fuel's {@link EnumICFFuel} name - never an ordinal (History 19ej-ids). */
+    public static final GolemComponent<String> PELLET_TYPE1 = GolemComponent.of(Constants.MOD_ID, "icf_type1", () -> com.hbm.util.SavedIds.NAME_CODEC);
+    /** 1.7 {@code type2}: the second fuel's name. */
+    public static final GolemComponent<String> PELLET_TYPE2 = GolemComponent.of(Constants.MOD_ID, "icf_type2", () -> com.hbm.util.SavedIds.NAME_CODEC);
     /** 1.7 {@code muon}: muon-catalysed, a quarter of the fusing difficulty. */
     public static final GolemComponent<Boolean> PELLET_MUON = GolemComponent.of(Constants.MOD_ID, "icf_muon", Codec.BOOL);
     /** 1.7 {@code depletion}: the TU of laser heat the pellet has absorbed. */

@@ -3,7 +3,12 @@ package com.hbm.items.weapon.sedna.factory;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
+import com.hbm.explosion.vanillant.standard.BlockMutatorBalefire;
+import com.hbm.explosion.vanillant.standard.BlockMutatorFire;
+import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
 import com.hbm.explosion.vanillant.standard.EntityProcessorCrossSmooth;
+import com.hbm.explosion.vanillant.standard.ExplosionEffectWeapon;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
@@ -40,24 +45,67 @@ public final class XFactoryCatapult {
                 && entityHit.getEntity() == bullet.getThrower();
     }
 
+    /** 1.7 shell terrain behaviour: none, standard blocks + fire (demo), or standard blocks + balefire. */
+    private enum Terrain { NONE, FIRE, BALEFIRE }
+
+    /**
+     * 1.7 LAMBDA_NUKE_STANDARD / _DEMO / _BALEFIRE / _TINYTOT: a VNT with a cross-smooth entity pass
+     * (and, for demo and balefire, a 64-ray standard block allocator whose cleared cells catch fire or
+     * balefire), the radiation ring, then the LOW satellite burst, the mini-nuke report and the cloud.
+     */
     private static BiConsumer<EntityBulletBaseMK4, HitResult> blast(float radius, float rad,
-            HbmEffectNT effect, int balefireMode) {
+            HbmEffectNT effect, int balefireMode, Terrain terrain) {
         return (bullet, hit) -> {
             if (selfHit(bullet, hit) || bullet.isRemoved()) return;
             bullet.discard();
             var pos = hit.getLocation();
-            ExplosionVNT vnt = new ExplosionVNT(bullet.level(), pos.x, pos.y, pos.z, radius,
-                    bullet.getThrower());
+            ExplosionVNT vnt = new ExplosionVNT(bullet.level(), pos.x, pos.y, pos.z, radius); // 1.7: no exploder
+            if (terrain != Terrain.NONE) {
+                vnt.setBlockAllocator(new BlockAllocatorStandard(64));
+                vnt.setBlockProcessor(new BlockProcessorStandard().withBlockEffect(
+                        terrain == Terrain.FIRE ? new BlockMutatorFire() : new BlockMutatorBalefire()));
+            }
             vnt.setEntityProcessor(new EntityProcessorCrossSmooth(2, bullet.damage).withRangeMod(1.5F));
             vnt.setPlayerProcessor(new PlayerProcessorStandard());
             vnt.explode();
             irradiate(bullet.level(), pos.x, pos.y, pos.z, rad);
-            // 1.7: every mushroom-cloud lambda (standard, demo, high, balefire, tiny tot) reports a LOW burst
-            if (effect != null) com.hbm.saveddata.satellites.SatelliteDetector.reportEvent(bullet.level(), com.hbm.saveddata.satellites.SatelliteDetector.DURATION_LOW,
-                    com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity.LOW, bullet.getX(), bullet.getZ());
-            if (effect != null) mushroom(bullet.level(), pos, effect,
+            spawnMush(bullet, pos, effect,
                     balefireMode == 2 || (balefireMode == 1 && (MainRegistry.polaroidID == 11
                             || bullet.level().getRandom().nextInt(100) == 0)));
+        };
+    }
+
+    /** 1.7 spawnMush: the LOW satellite burst, the mini-nuke report at y + 0.5, and the cloud effect. */
+    private static void spawnMush(EntityBulletBaseMK4 bullet, net.minecraft.world.phys.Vec3 pos, HbmEffectNT effect,
+            boolean balefire) {
+        com.hbm.saveddata.satellites.SatelliteDetector.reportEvent(bullet.level(), com.hbm.saveddata.satellites.SatelliteDetector.DURATION_LOW,
+                com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity.LOW, bullet.getX(), bullet.getZ());
+        bullet.level().playSound(null, pos.x, pos.y + 0.5, pos.z, com.hbm.sound.ModSounds.MUKE_EXPLOSION.get(),
+                net.minecraft.sounds.SoundSource.BLOCKS, 15.0F, 1.0F);
+        mushroom(bullet.level(), pos, effect, balefire);
+    }
+
+    /**
+     * 1.7 LAMBDA_NUKE_HIVE (cross-smooth 1, weapon SFX, no blocks) and LAMBDA_SUBMUNITION (standard
+     * blocks, cross-smooth 1, weapon SFX).
+     */
+    private static BiConsumer<EntityBulletBaseMK4, HitResult> smallBlast(float radius, boolean blocks, boolean guardSelf) {
+        return (bullet, hit) -> {
+            if (guardSelf && (selfHit(bullet, hit) || bullet.isRemoved())) return;
+            if (guardSelf) bullet.discard();
+            var pos = hit.getLocation();
+            ExplosionVNT vnt = new ExplosionVNT(bullet.level(), pos.x, pos.y, pos.z, radius,
+                    blocks ? bullet.getThrower() : null);
+            if (blocks) {
+                vnt.setBlockAllocator(new BlockAllocatorStandard());
+                vnt.setBlockProcessor(new BlockProcessorStandard());
+            }
+            EntityProcessorCrossSmooth entities = new EntityProcessorCrossSmooth(1, bullet.damage);
+            vnt.setEntityProcessor(blocks ? entities : entities.withRangeMod(1.5F));
+            vnt.setPlayerProcessor(new PlayerProcessorStandard());
+            vnt.setSFX(new ExplosionEffectWeapon(10, 2.5F, 1F));
+            vnt.explode();
+            if (!guardSelf) bullet.discard();
         };
     }
 
@@ -82,10 +130,10 @@ public final class XFactoryCatapult {
     public static void init() {
         nuke_standard = BulletConfigs.register("nuke_standard", new BulletConfig()
                 .setItem(SpecialGunCatalog.standardAmmo("nuke_standard")).setLife(300).setVel(3F)
-                .setGrav(0.025F).setOnImpact(blast(10F, 1F, HbmEffectNT.Muke, 1)));
+                .setGrav(0.025F).setOnImpact(blast(10F, 1F, HbmEffectNT.Muke, 1, Terrain.NONE)));
         nuke_demo = BulletConfigs.register("nuke_demo", new BulletConfig()
                 .setItem(SpecialGunCatalog.standardAmmo("nuke_demo")).setLife(300).setVel(3F)
-                .setGrav(0.025F).setOnImpact(blast(15F, 1.5F, HbmEffectNT.Muke, 1)));
+                .setGrav(0.025F).setOnImpact(blast(15F, 1.5F, HbmEffectNT.Muke, 1, Terrain.FIRE)));
         nuke_high = BulletConfigs.register("nuke_high", new BulletConfig()
                 .setItem(com.hbm.items.ModAmmoItems.ammo_standard_nuke_high).setLife(300).setVel(3F)
                 .setGrav(0.025F).setOnImpact((bullet, hit) -> {
@@ -94,32 +142,39 @@ public final class XFactoryCatapult {
                     var pos = hit.getLocation();
                     bullet.level().addFreshEntity(EntityNukeExplosionMK5.statFac(bullet.level(), 35,
                             pos.x, pos.y, pos.z));
-                    mushroom(bullet.level(), pos, HbmEffectNT.Muke,
+                    spawnMush(bullet, pos, HbmEffectNT.Muke,
                             MainRegistry.polaroidID == 11 || bullet.level().getRandom().nextInt(100) == 0);
                 }));
         nuke_tots = BulletConfigs.register("nuke_tots", new BulletConfig()
                 .setItem(SpecialGunCatalog.standardAmmo("nuke_tots")).setProjectiles(8).setLife(300)
                 .setVel(3F).setGrav(0.025F).setSpread(0.1F).setDamage(0.35F)
-                .setOnImpact(blast(5F, 0.25F, HbmEffectNT.TinyTot, 1)));
+                .setOnImpact(blast(5F, 0.25F, HbmEffectNT.TinyTot, 1, Terrain.NONE)));
         nuke_hive = BulletConfigs.register("nuke_hive", new BulletConfig()
                 .setItem(SpecialGunCatalog.standardAmmo("nuke_hive")).setProjectiles(12).setLife(300)
                 .setVel(1F).setGrav(0.025F).setSpread(0.15F).setDamage(0.25F)
-                .setOnImpact(blast(5F, 0F, null, 0)));
+                .setOnImpact(smallBlast(5F, false, true)));
         nuke_balefire = BulletConfigs.register("nuke_balefire", new BulletConfig()
                 .setItem(SpecialGunCatalog.standardAmmo("nuke_balefire")).setLife(300).setVel(3F)
                 .setGrav(0.025F).setDamage(2.5F)
-                .setOnImpact(blast(10F, 1.5F, HbmEffectNT.Muke, 2)));
+                .setOnImpact(blast(10F, 1.5F, HbmEffectNT.Muke, 2, Terrain.BALEFIRE)));
         cluster_submunition = BulletConfigs.register("cluster_submunition", new BulletConfig()
-                .setLife(1200).setGrav(0.025F).setOnImpact(blast(7.5F, 0F, null, 0)));
+                .setLife(1200).setGrav(0.025F).setOnImpact(smallBlast(7.5F, true, false)));
     }
 
+    /** 1.7 {@code LAMBDA_RECOIL_FATMAN}: deliberately empty in the source. */
+    public static final BiConsumer<net.minecraft.world.item.ItemStack, com.hbm.items.weapon.sedna.ItemGunBaseNT.LambdaContext>
+            LAMBDA_RECOIL_FATMAN = (stack, ctx) -> { };
+
+    /** 1.7 gun_fatman (fix wave 5: reload changes type, crosshair shown, no hipfire spread, own scoped offset). */
     public static GunConfig gunConfig() {
-        return new GunConfig().dura(300).draw(20).inspect(30).crosshair(Crosshair.L_CIRCUMFLEX)
-                .rec(new Receiver(0).dmg(100F).delay(10).reload(57).jam(40)
+        return new GunConfig().dura(300).draw(20).inspect(30).reloadChangeType(true).crosshair(Crosshair.L_CIRCUMFLEX)
+                .hideCrosshair(false)
+                .rec(new Receiver(0).dmg(100F).spreadHipfire(0F).delay(10).reload(57).jam(40)
                         .sound(com.hbm.sound.ModGunSounds.FIRE_FATMAN::get, 1F, 1F)
                         .mag(new MagazineSingleReload(0, 1).addConfigs(nuke_standard, nuke_demo, nuke_high,
                                 nuke_tots, nuke_hive, nuke_balefire))
-                        .offset(1, -0.0625 * 1.5, -0.1875D).setupStandardFire())
+                        .offset(1, -0.0625 * 1.5, -0.1875D).offsetScoped(1, -0.0625 * 1.5, -0.125D)
+                        .setupStandardFire().recoil(LAMBDA_RECOIL_FATMAN))
                 .setupStandardConfiguration();
     }
 }

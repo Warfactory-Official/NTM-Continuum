@@ -73,8 +73,8 @@ public final class ArmorSetBClient {
                 server.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE));
         json.addProperty("in_water", server.isInWater());
         json.addProperty("camera", mc.options.getCameraType().name());
-        json.addProperty("steam_id", com.hbm.inventory.fluid.Fluids.STEAM.getID());
-        json.addProperty("diesel_crack_id", com.hbm.inventory.fluid.Fluids.DIESEL_CRACK.getID());
+        json.addProperty("steam_id", com.hbm.inventory.fluid.Fluids.STEAM.getRegistryName());
+        json.addProperty("diesel_crack_id", com.hbm.inventory.fluid.Fluids.DIESEL_CRACK.getRegistryName());
         json.addProperty("night_vision", server.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION));
         json.addProperty("sprinting", server.isSprinting());
         JsonArray effects = new JsonArray();

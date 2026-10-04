@@ -43,6 +43,7 @@ public class FabricInit implements ModInitializer {
         // Living entity attribute sets (ModNtmEntities and the self-registering mobs); Forge-like loaders
         // deliver these through EntityAttributeCreationEvent, Fabric writes them once the types exist.
         dev.golem.core.registry.LivingAttributes.flushFabric();
+        dev.golem.core.world.Spawns.flushFabricPlacements(); // ModMobSpawns placements, once the types exist
 
         // Furnace burn times for the ItemFuel family. NeoForge reads these from the `neoforge:furnace_fuels`
         // data map (plain JSON in common resources, ignored by Fabric); Fabric has no data map for fuels, so

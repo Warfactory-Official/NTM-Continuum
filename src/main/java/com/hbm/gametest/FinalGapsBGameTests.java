@@ -438,7 +438,7 @@ public final class FinalGapsBGameTests {
         barrelNbt.putInt("tank_type", 20);
         barrelNbt.putShort("mode", (short) 2);
         LegacyStructureTiles.apply(level, helper.absolutePos(barrelPos), barrel, barrelNbt, palette, 0);
-        helper.assertTrue(barrel.tank.getTankType() == Fluids.fromID(20) && barrel.tank.getFill() == 500,
+        helper.assertTrue(barrel.tank.getTankType() == Fluids.byLegacyId(20) && barrel.tank.getFill() == 500,
                 "the barrel keeps its 1.7 fluid (" + barrel.tank.getTankType().getName() + " " + barrel.tank.getFill() + ")");
 
         // bobblehead type

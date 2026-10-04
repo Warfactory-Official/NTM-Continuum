@@ -39,7 +39,7 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
         public EntityMissileStrong(Level world, float x, float y, float z, int a, int b) {
             super(ModMissileEntities.MISSILE_STRONG.get(), world, x, y, z, a, b);
         }
-        @Override public void onMissileImpact(HitResult hit) { this.explodeStandard(30F, 32, false); }
+        @Override public void onMissileImpact(HitResult hit) { this.explodeStandard(30F, 32, false); com.hbm.particle.helper.ExplosionCreator.composeEffectStandard(level(), getX(), getY(), getZ()); }
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_generic_medium.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_strong.get()); }
     }
@@ -52,7 +52,10 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
         }
         @Override public void onMissileImpact(HitResult hit) {
             this.explodeStandard(30F, 32, true);
-            ExplosionChaos.flameDeath(level(), blockPosition(), 25);
+            com.hbm.particle.helper.ExplosionCreator.composeEffectStandard(level(), getX(), getY(), getZ());
+            // 1.7 Tier2:57 - the float-truncated centre is 1.7's
+            if (level() instanceof net.minecraft.server.level.ServerLevel server) ExplosionChaos.igniteFlammableBlocks(server,
+                    (int) ((float) getX() + 0.5F), (int) ((float) getY() + 0.5F), (int) ((float) getZ() + 0.5F), 25);
         }
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_incendiary_medium.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_incendiary_strong.get()); }

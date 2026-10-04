@@ -17,8 +17,8 @@ import dev.golem.core.world.Effects;
  *
  * <p>Coefficients copied verbatim: hazmat yellow 0.6, red 1.0, grey 2.0 (per set — split over the 4
  * slots by the {@code helmet .2 / chest .4 / legs .3 / boots .1} weights); vanilla iron/gold 0.0225.
- * Registration happens where the armor items are created ({@code ModGearItems}). Deferred: cladding
- * armor mods, the rad-x potion bonus, the JSON config override.
+ * Registration happens where the armor items are created ({@code ModGearItems}). The cladding modules and the
+ * Rad-X bonus are below; {@link #registerHazmats} is 1.7's {@code hbmRadResist.json} override.
  */
 public class HazmatRegistry {
 
@@ -60,6 +60,72 @@ public class HazmatRegistry {
     public static double getCladding(ItemStack stack) {
         ItemStack mod = ArmorModHandler.pryMod(stack, ArmorModHandler.cladding);
         return mod.getItem() instanceof com.hbm.items.armor.ItemModCladding cladding ? cladding.rad : 0D;
+    }
+
+    /**
+     * 1.7 {@code HazmatRegistry.registerHazmats}, run once every default is registered: with no
+     * {@code config/hbmConfig/hbmRadResist.json} it writes the defaults to {@code _hbmRadResist.json} as a template;
+     * with one, that file's entries replace the whole table (an item it leaves out has no resistance).
+     */
+    public static void registerHazmats() {
+        java.nio.file.Path folder = com.hbm.config.CustomMachineConfigJSON.configHbmDir();
+        java.nio.file.Path config = folder.resolve("hbmRadResist.json");
+        if (!java.nio.file.Files.exists(config)) {
+            writeDefault(folder.resolve("_hbmRadResist.json"));
+        } else {
+            HashMap<Item, Double> conf = readConfig(config);
+            if (conf != null) {
+                entries.clear();
+                entries.putAll(conf);
+            }
+        }
+    }
+
+    private static void writeDefault(java.nio.file.Path file) {
+        try (java.io.Writer out = java.nio.file.Files.newBufferedWriter(file, java.nio.charset.StandardCharsets.UTF_8);
+             com.google.gson.stream.JsonWriter writer = new com.google.gson.stream.JsonWriter(out)) {
+            writer.setIndent("  ");
+            writer.beginObject();
+            writer.name("comment").value("Template file, remove the underscore ('_') from the name to enable the config.");
+            writer.name("entries").beginArray();
+            for (java.util.Map.Entry<Item, Double> entry : entries.entrySet()) {
+                writer.beginObject();
+                writer.name("item").value(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(entry.getKey()).toString());
+                writer.name("resistance").value(entry.getValue());
+                writer.endObject();
+            }
+            writer.endArray();
+            writer.endObject();
+        } catch (java.io.IOException e) {
+            com.hbm.Constants.LOG.error("Unable to write {}", file, e);
+        }
+    }
+
+    private static HashMap<Item, Double> readConfig(java.nio.file.Path config) {
+        try (java.io.Reader reader = java.nio.file.Files.newBufferedReader(config, java.nio.charset.StandardCharsets.UTF_8)) {
+            com.google.gson.JsonObject json = new com.google.gson.Gson().fromJson(reader, com.google.gson.JsonObject.class);
+            HashMap<Item, Double> conf = new HashMap<>();
+            for (com.google.gson.JsonElement element : json.get("entries").getAsJsonArray()) {
+                try {
+                    com.google.gson.JsonObject object = element.getAsJsonObject();
+                    String name = object.get("item").getAsString();
+                    // 1.7 names were "hbm:x" / "minecraft:x" as well; a bare name is read as minecraft's.
+                    Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.parse(name));
+                    double resistance = object.get("resistance").getAsDouble();
+                    if (item != null && item != net.minecraft.world.item.Items.AIR) {
+                        conf.put(item, resistance);
+                    } else {
+                        com.hbm.Constants.LOG.error("Tried loading unknown item {} for hazmat entry.", name);
+                    }
+                } catch (Exception ex) {
+                    com.hbm.Constants.LOG.error("Encountered {} trying to read hazmat entry {}", ex, element);
+                }
+            }
+            return conf;
+        } catch (Exception ex) {
+            com.hbm.Constants.LOG.error("Unable to read {}", config, ex);
+        }
+        return null;
     }
 
     public static float getResistance(LivingEntity entity) {

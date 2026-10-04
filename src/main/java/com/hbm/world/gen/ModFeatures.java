@@ -80,6 +80,11 @@ public final class ModFeatures {
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> FALLEN_METEORITE =
             REG.register(Registries.FEATURE, "fallen_meteorite", () -> new FallenMeteoriteFeature(NoneFeatureConfiguration.CODEC));
 
+    /** 1.7 ModEventHandlerImpact's worldgen half: impact dirt and denied decorations after Tom's impact. */
+    public static final RegistryObject<Feature<NoneFeatureConfiguration>> IMPACT_AFTERMATH =
+            REG.register(Registries.FEATURE, "impact_aftermath",
+                    () -> new com.hbm.world.feature.ImpactAftermathFeature(NoneFeatureConfiguration.CODEC));
+
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> PINK_TREE =
             REG.register(Registries.FEATURE, "pink_tree", () -> new PinkTreeFeature(NoneFeatureConfiguration.CODEC));
 
@@ -117,6 +122,20 @@ public final class ModFeatures {
     /** The hematite / bauxite / malachite 3D-noise layers (the old {@code OreLayer3D} trio). */
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> ORE_LAYERS =
             REG.register(Registries.FEATURE, "ore_layers", () -> new OreLayer3DFeature(NoneFeatureConfiguration.CODEC));
+
+    // ---------------------------------------------------------------- hbm.cfg in the placed features (§19ej-8)
+
+    public static final DeferredRegister<net.minecraft.world.level.levelgen.placement.PlacementModifierType<?>> PLACEMENT_TYPES =
+            DeferredRegister.create(Registries.PLACEMENT_MODIFIER_TYPE, Constants.MOD_ID);
+
+    /** {@code hbm:config}: reads an {@code hbm.cfg} count, chance or switch when the chunk generates. */
+    public static final RegistryObject<net.minecraft.world.level.levelgen.placement.PlacementModifierType<ConfigPlacement>> CONFIG_PLACEMENT =
+            Reg.of(PLACEMENT_TYPES).register(Registries.PLACEMENT_MODIFIER_TYPE, "config",
+                    () -> dev.golem.core.world.Placements.type(ConfigPlacement.CODEC));
+
+    static {
+        ConfigPlacement.TYPE = CONFIG_PLACEMENT::get;
+    }
 
     public static void init() {}
 }

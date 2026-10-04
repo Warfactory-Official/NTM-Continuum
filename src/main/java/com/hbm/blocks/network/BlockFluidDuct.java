@@ -125,6 +125,17 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
         return level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct ? duct.getFluidType() : Fluids.NONE;
     }
 
+    /**
+     * Types a freshly placed duct and connects its arms for that type: 1.7 {@code ItemFluidDuct.onItemUse} placed
+     * {@code fluid_duct_neo} and then called {@code setType} on its tile entity.
+     */
+    public static void typePlaced(Level level, BlockPos pos, FluidType type) {
+        if (!(level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct)) return;
+        duct.setFluidType(type);
+        BlockState state = level.getBlockState(pos);
+        level.setBlock(pos, recomputeConnections(state, level, pos), 3);
+    }
+
     /** Recomputes all six connection flags from the duct's current type (after the type changes). */
     private static BlockState recomputeConnections(BlockState state, BlockGetter level, BlockPos pos) {
         for (Map.Entry<Direction, BooleanProperty> e : PROPERTY_BY_DIRECTION.entrySet()) {

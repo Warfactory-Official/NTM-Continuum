@@ -78,7 +78,7 @@ public final class MachineAssemblyFactory extends BlockMultiblockMachine
     }
 
     /**
-     * The 5x5 ring at ground level and the two upper strips. Every cell on the ring's ends is open
+     * The 5x5 ring at ground level (the upper strips are passive proxies only). Every cell on the ring's ends is open
      * outward; the two odd cells on each end are the coolant anchors, and the two on each flank are
      * the recipe-field proxies, which 1.7 subscribes on as well as reading items through.
      */
@@ -99,10 +99,8 @@ public final class MachineAssemblyFactory extends BlockMultiblockMachine
             visitor.cell(core.relative(rot, 2).relative(facing, side), MASK_WEST);
             visitor.cell(core.relative(rot, -2).relative(facing, side), MASK_EAST);
         }
-        for (int along = -2; along <= 2; along++) {
-            visitor.cell(core.relative(facing, along).relative(rot, 2).above(2), MASK_UP);
-            visitor.cell(core.relative(facing, along).relative(rot, -2).above(2), MASK_UP);
-        }
+        // 1.7.10: the two upper strips are proxy extras only (passive plane below); unlike the chemical
+        // factory, the assembly factory subscribes on no y+3 port.
     }
 
     @Override

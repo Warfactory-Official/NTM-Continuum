@@ -25,8 +25,8 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Old yaw map N0/S180/W90/E270 — the standard facing map, so no base offset.
  *
- * <p>The beam gate here uses {@code pow(4)}, matching the server. (The GUI and the audio ramp use
- * {@code pow(2)} — an upstream inconsistency, preserved on all three sides.)
+ * <p>The beam gate here uses {@code pow(2)}, exactly as 1.7.10's {@code RenderFEL} (and the GUI and audio
+ * ramp), while the server cost is {@code 3^ordinal} — an upstream inconsistency, preserved.
  */
 public class FELRenderer extends GemBER<TileEntityFEL, FELRenderState> {
 
@@ -61,7 +61,7 @@ public class FELRenderer extends GemBER<TileEntityFEL, FELRenderState> {
         // The visible beam runs from the aperture (3 blocks in) to whatever it hit.
         state.length = be.distance - 3;
         state.beam = be.isOn && be.mode != EnumWavelengths.NULL && state.length > 0
-                && be.power > TileEntityFEL.powerReq * Math.pow(4, be.mode.ordinal());
+                && be.power > TileEntityFEL.powerReq * Math.pow(2, be.mode.ordinal());
         state.color = be.mode.renderedBeamColor == 0
                 // VISIBLE has no fixed colour: the original cycles the hue very slowly (÷2000) at low
                 // brightness (0.1), giving a dim shifting glow rather than a rainbow strobe.

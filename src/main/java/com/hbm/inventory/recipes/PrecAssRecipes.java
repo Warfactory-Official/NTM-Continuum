@@ -98,7 +98,7 @@ public final class PrecAssRecipes extends GenericRecipes {
                     new ItemStack(ModUpgradeItems.upgrade_overdrive_2.get()), 50, GeneralConfig.enableExpensiveMode ? 50 : 75);
             registerPair(new GenericRecipe("precass.upgrade_overdive_iii").setup(1_200, 100_000)
                             .inputItems(new ComparableStack(ModUpgradeItems.upgrade_overdrive_2.get()), new ComparableStack(ModUpgradeItems.upgrade_speed_3.get()),
-                                    new ComparableStack(ModUpgradeItems.upgrade_effect_3.get()), BBRONZE.ingot().count(16), new ComparableStack(ModItems.ingot_cft.get(), 16),
+                                    new ComparableStack(ModUpgradeItems.upgrade_effect_3.get()), ANY_BISMOIDBRONZE.ingot().count(16), new ComparableStack(ModItems.ingot_cft.get(), 16),
                                     cir(BISMOID, 16)),
                     new ItemStack(ModUpgradeItems.upgrade_overdrive_3.get()), 25, GeneralConfig.enableExpensiveMode ? 50 : 75);
         }

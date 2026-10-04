@@ -74,10 +74,12 @@ public class FactoryShowcase implements Scenario {
     // the RTG power station on grid A: two RTG furnaces at z = RTG_Z, 15 polonium pellets each
     private static final int[] RTGS = {24, 26};
     private static final int RTG_Z = 24;
-    // fluid ids (declaration order in Fluids.java)
-    private static final int WATER = 1, OIL = 10, HOTOIL = 11, HEAVY = 12, HEATING = 15, NAPHTHA = 19, LIGHT = 21,
-            KERO = 22, PETRO = 24, PEROX = 35, H2 = 38, AROM = 67, UNSAT = 68, CHLOR = 90, REFORMATE = 92, XYLENE = 95,
-            REFGAS = 100, DIESEL = 20;
+    // fluid registry names - a fluid is saved by name, never by its numeric id (History section 19ej-ids)
+    private static final String WATER = "hbm:water", OIL = "hbm:oil", HOTOIL = "hbm:hotoil", HEAVY = "hbm:heavyoil",
+            HEATING = "hbm:heatingoil", NAPHTHA = "hbm:naphtha", LIGHT = "hbm:lightoil", KERO = "hbm:kerosene",
+            PETRO = "hbm:petroleum", PEROX = "hbm:peroxide", H2 = "hbm:hydrogen", AROM = "hbm:aromatics",
+            UNSAT = "hbm:unsaturateds", CHLOR = "hbm:chlorine", REFORMATE = "hbm:reformate", XYLENE = "hbm:xylene",
+            REFGAS = "hbm:reformgas", DIESEL = "hbm:diesel";
 
     /** Server tick rate during the long waits; 20 is normal. */
     private static final int FAST_TICKS = 60;
@@ -367,7 +369,7 @@ public class FactoryShowcase implements Scenario {
         // ---- single blocks: generators, storage, sinks, cranes -------------------------------------
         fill(TL_X + 3, L, TL_Z - 1, TL_X + 5, L, TL_Z - 1, "hbm:machine_diesel");    // 3 on the light-oil diesel
         fill(-8, L, 34, -3, L, 34, "hbm:machine_diesel");                           // 6 on the naphtha diesel
-        c.cmd("setblock " + TL_X + " " + L + " " + (TL_Z - 2) + " hbm:barrel_steel{mode:0s,tank_type:" + KERO + "}");
+        c.cmd("setblock " + TL_X + " " + L + " " + (TL_Z - 2) + " hbm:barrel_steel{mode:0s,tank_type:\"" + KERO + "\"}");
         sink(REF_X - 2, L, REF_Z - 1, HEAVY);                                        // heavy oil
         sink(RP_X - 1, L, RP_Z - 2, H2);
         sink(RP_X + 1, L, RP_Z - 2, REFGAS);
@@ -375,8 +377,8 @@ public class FactoryShowcase implements Scenario {
         sink(RN_X + 1, L, CHEM_Z - 2, H2);
         sink(TN_X, L, CHEM_Z - 2, HEATING);
         sink(TR_X, L, CHEM_Z - 2, XYLENE);
-        c.cmd("setblock 20 " + L + " " + CHEM_Z + " hbm:barrel_steel{mode:2s,tank:16000,tank_type:" + CHLOR + "}");
-        c.cmd("setblock " + (PEROX_X + 4) + " " + L + " " + PEROX_Z + " hbm:barrel_steel{mode:2s,tank_type:" + WATER
+        c.cmd("setblock 20 " + L + " " + CHEM_Z + " hbm:barrel_steel{mode:2s,tank:16000,tank_type:\"" + CHLOR + "\"}");
+        c.cmd("setblock " + (PEROX_X + 4) + " " + L + " " + PEROX_Z + " hbm:barrel_steel{mode:2s,tank_type:\"" + WATER + "\""
                 + ",inventory:{Items:[{Slot:2b,id:\"hbm:inf_water_mk2\",count:1}]}}");
         crane("extractor", TNT_X, L, CHEM_Z + 2, "south", "north");
         crane("extractor", PVC_X, L, CHEM_Z + 2, "south", "north");
@@ -406,14 +408,14 @@ public class FactoryShowcase implements Scenario {
         title(c, "Fluid types", "identifiers on boilers and towers, menus for reformers");
         for (int x : new int[]{FA_X, FB_X}) {
             identify(c, OIL, x + 0.5, L + 2.5, HEAT_Z + 1.98, x + 0.5, L + 1, HEAT_Z + 4.5);   // boiler south face
-            Expect.that(nbt(c, x, L + 1, HEAT_Z).contains("water_type:" + OIL), "boiler at x=" + x + " takes crude oil");
+            Expect.that(nbt(c, x, L + 1, HEAT_Z).contains("water_type:\"" + OIL + "\""), "boiler at x=" + x + " takes crude oil");
         }
         identify(c, LIGHT, TL_X + 0.5, L + 0.5, TL_Z + 0.5, TL_X + 0.5, L + 1, TL_Z + 3.5);
         identify(c, NAPHTHA, TN_X + 0.5, L + 0.5, CHEM_Z + 0.5, TN_X + 0.5, L + 1, CHEM_Z + 3.5);
         identify(c, REFORMATE, TR_X + 0.5, L + 0.5, CHEM_Z + 0.5, TR_X + 0.5, L + 1, CHEM_Z + 3.5);
-        Expect.that(nbt(c, TL_X, L, TL_Z).contains("tank0_type:" + LIGHT), "light-oil tower typed; " + nbt(c, TL_X, L, TL_Z));
-        Expect.that(nbt(c, TN_X, L, CHEM_Z).contains("tank0_type:" + NAPHTHA), "naphtha tower typed");
-        Expect.that(nbt(c, TR_X, L, CHEM_Z).contains("tank0_type:" + REFORMATE), "reformate tower typed");
+        Expect.that(nbt(c, TL_X, L, TL_Z).contains("tank0_type:\"" + LIGHT + "\""), "light-oil tower typed; " + nbt(c, TL_X, L, TL_Z));
+        Expect.that(nbt(c, TN_X, L, CHEM_Z).contains("tank0_type:\"" + NAPHTHA + "\""), "naphtha tower typed");
+        Expect.that(nbt(c, TR_X, L, CHEM_Z).contains("tank0_type:\"" + REFORMATE + "\""), "reformate tower typed");
         // Reformers: the fluid identifier and the catalytic converter go in through the menu.
         reformer(c, RP_X, RP_Z, PETRO);
         reformer(c, RN_X, CHEM_Z, NAPHTHA);
@@ -902,8 +904,8 @@ public class FactoryShowcase implements Scenario {
     }
 
     /** A plain right-click with a fluid identifier at a face point, from a stand point. */
-    private static void identify(Client c, int fluid, double tx, double ty, double tz, double px, double py, double pz) {
-        giveOnly(c, "hbm:fluid_identifier[hbm:fluid_id=" + fluid + "]", 1);
+    private static void identify(Client c, String fluid, double tx, double ty, double tz, double px, double py, double pz) {
+        giveOnly(c, "hbm:fluid_identifier[hbm:fluid=\"" + fluid + "\"]", 1);
         standAt(c, px, py, pz);
         c.lookAt(tx, ty, tz);
         c.waitTicks(2);
@@ -913,9 +915,9 @@ public class FactoryShowcase implements Scenario {
     }
 
     /** Reformer through its menu: the fluid identifier into slot 9, the catalytic converter into slot 10. */
-    private static void reformer(Client c, int x, int z, int fluid) {
+    private static void reformer(Client c, int x, int z, String fluid) {
         clearInventory(c);
-        Fixtures.give(c, "hbm:fluid_identifier[hbm:fluid_id=" + fluid + "]", 1);
+        Fixtures.give(c, "hbm:fluid_identifier[hbm:fluid=\"" + fluid + "\"]", 1);
         Fixtures.give(c, "hbm:catalytic_converter", 1);
         open(c, x, L, z + 1, 0, 2.5, "GUIMachineCatalyticReformer");
         moveTo(c, "hbm:fluid_identifier", 9);
@@ -923,7 +925,7 @@ public class FactoryShowcase implements Scenario {
         pause(c, 10);
         close(c);
         c.waitTicks(3);
-        Expect.that(nbt(c, x, L, z).contains("input_type:" + fluid), "reformer at x=" + x + " reads its identifier; " + nbt(c, x, L, z));
+        Expect.that(nbt(c, x, L, z).contains("input_type:\"" + fluid + "\""), "reformer at x=" + x + " reads its identifier; " + nbt(c, x, L, z));
     }
 
     /** Real clicks: pick the stack up from the player inventory, put it down in {@code slot}. */
@@ -938,7 +940,7 @@ public class FactoryShowcase implements Scenario {
     }
 
     /** Fills each box with ducts, then types every duct with one identifier click. */
-    private static void pipe(Client c, int fluid, int[][] boxes) {
+    private static void pipe(Client c, String fluid, int[][] boxes) {
         for (int[] b : boxes) fill(b[0], b[1], b[2], b[3], b[4], b[5], "hbm:fluid_duct_neo");
         c.waitTicks(2);
         typeDucts(c, fluid, boxes);
@@ -951,8 +953,8 @@ public class FactoryShowcase implements Scenario {
      * connected run, then a plain click on any duct still untyped. The player hovers above or beside a duct at a
      * free spot and aims at its centre; every duct is checked at the end.
      */
-    private static void typeDucts(Client c, int fluid, int[][] boxes) {
-        giveOnly(c, "hbm:fluid_identifier[hbm:fluid_id=" + fluid + "]", 1);
+    private static void typeDucts(Client c, String fluid, int[][] boxes) {
+        giveOnly(c, "hbm:fluid_identifier[hbm:fluid=\"" + fluid + "\"]", 1);
         // One sneak-click on the first duct retypes the whole connected run.
         int[] b0 = boxes[0];
         for (int[] o : CLICK_FROM) {
@@ -960,14 +962,14 @@ public class FactoryShowcase implements Scenario {
             if (!air(c, sx, sy, sz) || !air(c, sx, sy + 1, sz)) continue;
             standAt(c, sx + 0.5, sy, sz + 0.5);
             sneakUse(c, b0[0] + 0.5, b0[1] + 0.5, b0[2] + 0.5);
-            if (ductType(c, b0[0], b0[1], b0[2]) == fluid) break;
+            if (ductType(c, b0[0], b0[1], b0[2]).equals(fluid)) break;
         }
         // Plain clicks for anything the spread did not reach (a separate run, or a missed aim).
         for (int[] b : boxes) {
             for (int x = Math.min(b[0], b[3]); x <= Math.max(b[0], b[3]); x++)
                 for (int y = Math.min(b[1], b[4]); y <= Math.max(b[1], b[4]); y++)
                     for (int z = Math.min(b[2], b[5]); z <= Math.max(b[2], b[5]); z++) {
-                        if (ductType(c, x, y, z) != 0) continue;
+                        if (!ductType(c, x, y, z).equals("hbm:none")) continue;
                         for (int[] o : CLICK_FROM) {
                             int sx = x + o[0], sy = y + o[1], sz = z + o[2];
                             if (!air(c, sx, sy, sz) || !air(c, sx, sy + 1, sz)) continue;
@@ -976,17 +978,19 @@ public class FactoryShowcase implements Scenario {
                             c.waitTicks(1);
                             c.use(1);
                             c.waitTicks(2);
-                            if (ductType(c, x, y, z) == fluid) break;
+                            if (ductType(c, x, y, z).equals(fluid)) break;
                         }
                         Expect.equal(fluid, ductType(c, x, y, z), "duct at " + x + "," + y + "," + z + " typed");
                     }
         }
     }
 
-    private static int ductType(Client c, int x, int y, int z) {
+    private static String ductType(Client c, int x, int y, int z) {
         JsonObject be = c.blockEntity(x, y, z);
         Expect.equal("hbm:fluid_duct_neo", be.get("block").getAsString(), "a duct at " + x + "," + y + "," + z);
-        return (int) longOf(be.get("nbt").getAsString().replaceAll("\\s+", ""), "type");
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("type:\"([^\"]+)\"")
+                .matcher(be.get("nbt").getAsString().replaceAll("\\s+", ""));
+        return m.find() ? m.group(1) : "hbm:none";
     }
 
     private static boolean air(Client c, int x, int y, int z) {
@@ -994,14 +998,14 @@ public class FactoryShowcase implements Scenario {
     }
 
     /** An infinite drain: a barrel of one fluid with a bottomless barrel in its unload slot. */
-    private static void sink(int x, int y, int z, int fluid) {
-        C.cmd("setblock " + x + " " + y + " " + z + " hbm:barrel_steel{mode:0s,tank_type:" + fluid
+    private static void sink(int x, int y, int z, String fluid) {
+        C.cmd("setblock " + x + " " + y + " " + z + " hbm:barrel_steel{mode:0s,tank_type:\"" + fluid + "\""
                 + ",inventory:{Items:[{Slot:4b,id:\"hbm:fluid_barrel_infinite\",count:1}]}}");
     }
 
     /** A low-priority overflow drain beside a pipe: buffer mode (LOW priority) plus a bottomless barrel. */
-    private static void overflow(int x, int y, int z, int fluid) {
-        C.cmd("setblock " + x + " " + y + " " + z + " hbm:barrel_steel{mode:1s,tank_type:" + fluid
+    private static void overflow(int x, int y, int z, String fluid) {
+        C.cmd("setblock " + x + " " + y + " " + z + " hbm:barrel_steel{mode:1s,tank_type:\"" + fluid + "\""
                 + ",inventory:{Items:[{Slot:4b,id:\"hbm:fluid_barrel_infinite\",count:1}]}}");
     }
 
@@ -1150,7 +1154,8 @@ public class FactoryShowcase implements Scenario {
             pause(c, 10);
             if (x == RTGS[0]) c.screenshot("32-rtg-menu");
             close(c);
-            Expect.equal(750L, longOf(nbt(c, x, L, RTG_Z), "heat"), "RTG heat at x=" + x + " (15 pellets x 50)");
+            // 15 pellets x 50 = 750, capped at 1.7 heatMax 600 (decaying pellets; History 19ej-8)
+            Expect.equal(600L, longOf(nbt(c, x, L, RTG_Z), "heat"), "RTG heat at x=" + x + " (15 pellets x 50, capped at heatMax 600)");
         }
     }
 
@@ -1284,7 +1289,7 @@ public class FactoryShowcase implements Scenario {
         c.screenshot("86-pad-loaded");
         close(c);
         String pad = nbt(c, PAD_X, L, PAD_Z);
-        Expect.that(pad.contains("t0_type:" + KERO) && pad.contains("t1_type:" + PEROX), "the missile typed the pad tanks; " + pad);
+        Expect.that(pad.contains("t0_type:\"" + KERO + "\"") && pad.contains("t1_type:\"" + PEROX + "\""), "the missile typed the pad tanks; " + pad);
 
         // Now the pad accepts kerosene and peroxide. The kerosene tank goes from RECEIVE to SEND in its menu, and
         // only then are the fuel lines laid: a pipe finds its sources and receivers when it is typed, so both

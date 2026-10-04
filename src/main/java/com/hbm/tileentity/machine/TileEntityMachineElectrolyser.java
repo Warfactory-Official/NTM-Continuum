@@ -435,10 +435,10 @@ public final class TileEntityMachineElectrolyser extends TileEntityMachineBase
         lastSelectedGUI = input.getIntOr("lastSelectedGUI", 0); leftStack = loadMaterial(input, "left"); rightStack = loadMaterial(input, "right");
     }
     private static void saveMaterial(DataOut out, String key, Mats.@Nullable MaterialStack stack) {
-        if (stack != null) { out.putInt(key + "Type", stack.material.id); out.putInt(key + "Amount", stack.amount); }
+        if (stack != null) { Mats.write(out, key + "Type", stack.material); out.putInt(key + "Amount", stack.amount); } // by name
     }
     private static Mats.@Nullable MaterialStack loadMaterial(DataIn in, String key) {
-        int id = in.getIntOr(key + "Type", -1);
-        return id < 0 ? null : new Mats.MaterialStack(Mats.matById.get(id), in.getIntOr(key + "Amount", 0));
+        com.hbm.inventory.material.NTMMaterial mat = Mats.read(in, key + "Type");
+        return mat == null ? null : new Mats.MaterialStack(mat, in.getIntOr(key + "Amount", 0));
     }
 }

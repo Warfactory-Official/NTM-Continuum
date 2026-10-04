@@ -59,8 +59,11 @@ public class TileEntitySILEX extends TileEntityMachineBase
 
     /** Maximum solution held, in mB. */
     public static final int maxFill = 16_000;
-    /** Ticks of progress needed per output roll (at an exactly-matched wavelength: 80 ticks). */
-    public final int processTime = 80;
+    /** Ticks of progress needed per output (1.7.10: 100; at an exactly-matched wavelength 100 ticks). */
+    public final int processTime = 100;
+    /** 1.7.10 deterministic output cycling: the index advances by {@link #PRIME} per output. */
+    public static final int PRIME = 137;
+    public int recipeIndex = 0;
 
     /** Sided access: the input plus the whole queue. Note slot 4 (the staging output) is NOT exposed. */
     private static final int[] IO_SLOTS = {0, 5, 6, 7, 8, 9, 10};
@@ -185,9 +188,20 @@ public class TileEntitySILEX extends TileEntityMachineBase
 
         if (progress >= processTime) {
             currentFill -= recipe.fluidConsumed;
-            inventory.setStackInSlot(4, recipe.roll(level.getRandom()));
+            // 1.7.10 does not roll randomly: it walks the weighted table with recipeIndex (+137 per output).
+            int totalWeight = recipe.totalWeight();
+            recipeIndex %= Math.max(totalWeight, 1);
+            int weight = 0;
+            for (SILEXRecipes.WeightedOutput weighted : recipe.outputs) {
+                weight += weighted.weight();
+                if (recipeIndex < weight) {
+                    inventory.setStackInSlot(4, weighted.stack().copy());
+                    break;
+                }
+            }
             progress = 0;
             setChanged();
+            recipeIndex += PRIME;
         }
         return true;
     }
@@ -381,7 +395,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         buf.writeBoolean(hasCurrent);
         if (hasCurrent) {
             buf.writeUtf(BuiltInRegistries.ITEM.getKey(current.getItem()).toString());
-            buf.writeInt(current.getItem() instanceof ItemFluidIcon ? ItemFluidIcon.getFluid(current).getID() : -1);
+            buf.writeInt(current.getItem() instanceof ItemFluidIcon ? Fluids.networkId(ItemFluidIcon.getFluid(current)) : -1);
         }
     }
 
@@ -398,19 +412,20 @@ public class TileEntitySILEX extends TileEntityMachineBase
     private static @Nullable ItemStack readSubstance(String itemId, int fluidId) {
         Item item = BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.parse(itemId)).orElse(null);
         if (item == null) return null;
-        return fluidId >= 0 ? ItemFluidIcon.make(Fluids.fromID(fluidId)) : new ItemStack(item);
+        return fluidId >= 0 ? ItemFluidIcon.make(Fluids.byNetworkId(fluidId)) : new ItemStack(item);
     }
 
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
         output.putInt("fill", currentFill);
+        output.putInt("recipeIndex", recipeIndex);
         output.putString("mode", mode.name());
         tank.writeToNBT(output, "tankNew"); // the 1.12.2 key
         if (current != null && !current.isEmpty()) {
             output.putString("item", BuiltInRegistries.ITEM.getKey(current.getItem()).toString());
             output.putInt("meta", current.getItem() instanceof ItemFluidIcon
-                    ? ItemFluidIcon.getFluid(current).getID() : -1);
+                    ? Fluids.networkId(ItemFluidIcon.getFluid(current)) : -1);
         }
     }
 
@@ -418,6 +433,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
     protected void loadData(DataIn input) {
         super.loadData(input);
         currentFill = input.getIntOr("fill", 0);
+        recipeIndex = input.getIntOr("recipeIndex", 0);
         mode = EnumWavelengths.byName(input.getStringOr("mode", EnumWavelengths.NULL.name()));
         tank.readFromNBT(input, "tankNew");
         String item = input.getStringOr("item", "");

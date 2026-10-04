@@ -51,7 +51,7 @@ public final class IndustrialTurbineRenderer
             case EAST -> 270F;
             default -> 0F;
         };
-        state.gauge = 135F - (be.tanks[0].getTankType().getID() - Fluids.STEAM.getID()) * 90F;
+        state.gauge = 135F - (Fluids.legacyId(be.tanks[0].getTankType()) - Fluids.legacyId(Fluids.STEAM)) * 90F;
         state.rotor = be.lastRotor + (be.rotor - be.lastRotor) * partialTicks;
     }
 }

@@ -114,6 +114,22 @@ public final class ModGearItems {
                 HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.BACTERIA, HazardClass.GAS_MONOXIDE);
         ArmorRegistry.registerHazard(gas_mask.get(), HazardClass.SAND, HazardClass.LIGHT);
         ArmorRegistry.registerHazard(gas_mask_m65.get(), HazardClass.SAND);
+        // 1.7 ArmorUtil.register: the three hazmat hoods keep sand out (and nothing else without a filter)
+        ArmorRegistry.registerHazard(hazmat_helmet.get(), HazardClass.SAND);
+        ArmorRegistry.registerHazard(hazmat_helmet_red.get(), HazardClass.SAND);
+        ArmorRegistry.registerHazard(hazmat_helmet_grey.get(), HazardClass.SAND);
+
+        // 1.7 HazmatRegistry.initDefault: the two gas masks and vanilla iron/gold armour (5% each set)
+        HazmatRegistry.registerHazmat(gas_mask.get(), 0.07);
+        HazmatRegistry.registerHazmat(gas_mask_m65.get(), 0.095);
+        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.IRON_HELMET, HazmatRegistry.iron * HazmatRegistry.helmet);
+        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.IRON_CHESTPLATE, HazmatRegistry.iron * HazmatRegistry.chest);
+        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.IRON_LEGGINGS, HazmatRegistry.iron * HazmatRegistry.legs);
+        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.IRON_BOOTS, HazmatRegistry.iron * HazmatRegistry.boots);
+        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.GOLDEN_HELMET, HazmatRegistry.gold * HazmatRegistry.helmet);
+        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.GOLDEN_CHESTPLATE, HazmatRegistry.gold * HazmatRegistry.chest);
+        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.GOLDEN_LEGGINGS, HazmatRegistry.gold * HazmatRegistry.legs);
+        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.GOLDEN_BOOTS, HazmatRegistry.gold * HazmatRegistry.boots);
     }
 
     private static void registerSet(double koeff, RegistryObject<Item> helmet, RegistryObject<Item> chest,

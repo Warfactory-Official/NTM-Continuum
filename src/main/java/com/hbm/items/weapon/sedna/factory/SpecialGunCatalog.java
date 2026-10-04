@@ -60,20 +60,17 @@ public final class SpecialGunCatalog {
         gunsRegistered = true;
 
         gun_panzerschreck = REG.item("gun_panzerschreck", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
-                XFactoryRocket.rocketConfig(0, 1, 1, 25F, 5, 50, 40).orchestra(Orchestras.ORCHESTRA_PANERSCHRECK))
+                XFactoryRocket.panzerschreckConfig().orchestra(Orchestras.ORCHESTRA_PANERSCHRECK))
                 .setDefaultAmmo(ModAmmoItems.rocket_he, 3), p -> p);
         gun_stinger = REG.item("gun_stinger", p -> new ItemGunStinger(p, WeaponQuality.SPECIAL,
-                XFactoryRocket.lockonRocketConfig(0, 1, 1, 35F, 5, 50, 40)
-                        .ps(XFactoryRocket.LAMBDA_STINGER_SECONDARY_PRESS)
-                        .rs(XFactoryRocket.LAMBDA_STINGER_SECONDARY_RELEASE)
+                XFactoryRocket.stingerConfig()
                         .orchestra(Orchestras.ORCHESTRA_STINGER))
                 .setDefaultAmmo(ModAmmoItems.rocket_heat, 3), p -> p);
         gun_quadro = REG.item("gun_quadro", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
-                XFactoryRocket.rocketConfig(1, 4, 4, 40F, 10, 55, 40).orchestra(Orchestras.ORCHESTRA_QUADRO))
+                XFactoryRocket.quadroConfig().orchestra(Orchestras.ORCHESTRA_QUADRO))
                 .setDefaultAmmo(ModAmmoItems.rocket_he, 4), p -> p);
         gun_missile_launcher = REG.item("gun_missile_launcher", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
-                XFactoryRocket.rocketConfig(2, 1, 1, 50F, 5, 48, 33)
-                        .pp(XFactoryRocket.LAMBDA_MISSILE_LAUNCHER_PRIMARY_PRESS)
+                XFactoryRocket.missileLauncherConfig()
                         .orchestra(Orchestras.ORCHESTRA_MISSILE_LAUNCHER))
                 .setDefaultAmmo(ModAmmoItems.rocket_heat, 5), p -> p);
         gun_fatman = REG.item("gun_fatman", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,

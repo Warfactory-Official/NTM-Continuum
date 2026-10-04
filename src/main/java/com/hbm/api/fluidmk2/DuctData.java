@@ -2,6 +2,7 @@ package com.hbm.api.fluidmk2;
 
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 
 /**
@@ -17,21 +18,29 @@ import com.mojang.serialization.Codec;
  * run carried {@code SMOKE}, {@code SMOKE_LEADED} and {@code SMOKE_POISON} at once. The graph keys a
  * cell by position, so the exhaust is instead one cell whose datum is compatible with all three smokes
  * and whose net {@link FluidNetwork} rounds once per smoke (see {@link #types()}).
+ *
+ * <p>The datum is part of the level's saved graph, so it is saved by the fluid's registry name
+ * ({@code "hbm:water"}), or {@link #SMOKE_ANY_NAME} for the exhaust - never by a numeric fluid id (History
+ * section 19ej-ids). An int left by a pre-2026-10-03 save reads as NONE with one WARN.
  */
-public record DuctData(int typeId) {
+public record DuctData(FluidType fluid, boolean smokeAny) {
 
-    /** A reserved id no {@link FluidType} is ever registered under ({@code Fluids.fromID} answers NONE for it). */
-    public static final int SMOKE_ANY_ID = -2;
+    /** What {@link #SMOKE_ANY} is saved as; no fluid has this name ({@code #} is not a valid id character). */
+    public static final String SMOKE_ANY_NAME = "#smoke_any";
 
-    public static final DuctData NONE = new DuctData(Fluids.NONE.getID());
+    public static final DuctData NONE = new DuctData(Fluids.NONE, false);
 
     /** The exhaust duct's datum: every smoke at once. */
-    public static final DuctData SMOKE_ANY = new DuctData(SMOKE_ANY_ID);
+    public static final DuctData SMOKE_ANY = new DuctData(Fluids.NONE, true);
 
-    public static final Codec<DuctData> CODEC = Codec.INT.xmap(DuctData::new, DuctData::typeId);
+    public static final Codec<DuctData> CODEC = Codec.either(Codec.STRING, Codec.INT).xmap(
+            either -> either.map(
+                    name -> SMOKE_ANY_NAME.equals(name) ? SMOKE_ANY : of(Fluids.byRegistryName(name)),
+                    number -> of(Fluids.fromOldNumericSave(number))),
+            data -> Either.left(data.smokeAny ? SMOKE_ANY_NAME : data.fluid.getRegistryName()));
 
     public static DuctData of(FluidType type) {
-        return type == Fluids.NONE ? NONE : new DuctData(type.getID());
+        return type == null || type == Fluids.NONE ? NONE : new DuctData(type, false);
     }
 
     /** Is this fluid one of the three 1.7 exhaust smokes? */
@@ -40,22 +49,27 @@ public record DuctData(int typeId) {
     }
 
     public boolean isSmokeAny() {
-        return typeId == SMOKE_ANY_ID;
+        return smokeAny;
+    }
+
+    /** A duct carrying nothing (not the exhaust, which carries every smoke). */
+    public boolean isNone() {
+        return !smokeAny && fluid == Fluids.NONE;
     }
 
     /** The one fluid carried; for {@link #SMOKE_ANY} the representative {@code SMOKE} (the exhaust's default skin). */
     public FluidType type() {
-        return isSmokeAny() ? Fluids.SMOKE : Fluids.fromID(typeId);
+        return smokeAny ? Fluids.SMOKE : fluid;
     }
 
     /** Every fluid this datum carries: one for a typed duct, the three smokes for {@link #SMOKE_ANY}. */
     public FluidType[] types() {
-        return isSmokeAny() ? new FluidType[]{Fluids.SMOKE, Fluids.SMOKE_LEADED, Fluids.SMOKE_POISON}
-                : new FluidType[]{type()};
+        return smokeAny ? new FluidType[]{Fluids.SMOKE, Fluids.SMOKE_LEADED, Fluids.SMOKE_POISON}
+                : new FluidType[]{fluid};
     }
 
     /** Does this datum carry {@code type}? A typed duct carries its one fluid; the exhaust carries any smoke. */
     public boolean carries(FluidType type) {
-        return isSmokeAny() ? isSmoke(type) : typeId == type.getID();
+        return smokeAny ? isSmoke(type) : fluid == type;
     }
 }

@@ -52,16 +52,25 @@ public final class HbmEffect extends CompatMobEffect {
                     }
                 }
             }
-            case RADAWAY -> HbmLivingProps.incrementRadiation(entity, -(amplifier + 1) * 0.05F);
+            // 1.7 HbmPotion.performEffect: level + 1 RAD removed every tick (RadAway I: 1 RAD/t = 20 RAD/s)
+            case RADAWAY -> HbmLivingProps.incrementRadiation(entity, -(amplifier + 1));
             case BANG -> {
-                Compat.hurt(entity, level, ModDamageSources.bang(level), 10_000F * (amplifier + 1));
-                if (!(entity instanceof Player)) {
-                    entity.die(ModDamageSources.bang(level));
-                    entity.setHealth(0);
-                }
+                // 1.7: 1000 bang damage, health forced to 0, any non-player removed outright; a cow drops cheese
+                // (10 for a calf, 3 for an adult) on its way out.
+                Compat.hurt(entity, level, ModDamageSources.bang(level), 1000F);
+                entity.setHealth(0.0F);
                 level.playSound(null, entity.blockPosition(), ModSounds.LASER_BANG.get(),
                         SoundSource.AMBIENT, 100.0F, 1.0F);
                 ExplosionLarge.spawnParticles(level, entity.getX(), entity.getY(), entity.getZ(), 10);
+                if (entity instanceof net.minecraft.world.entity.animal.cow.Cow cow) {
+                    // 1.7 entityDropItem(stack, 1.0F): one block up, the default pickup delay
+                    net.minecraft.world.entity.item.ItemEntity drop = new net.minecraft.world.entity.item.ItemEntity(level,
+                            cow.getX(), cow.getY() + 1.0D, cow.getZ(), new net.minecraft.world.item.ItemStack(
+                            com.hbm.items.ModFoodItems.cheese.get(), cow.isBaby() ? 10 : 3));
+                    drop.setDefaultPickUpDelay();
+                    level.addFreshEntity(drop);
+                }
+                if (!(entity instanceof Player)) entity.discard();
             }
             case LEAD -> Compat.hurt(entity, level, ModDamageSources.lead(level), amplifier + 1);
             case TELEKINESIS -> {
@@ -73,12 +82,10 @@ public final class HbmEffect extends CompatMobEffect {
                             motion.z + (entity.getRandom().nextFloat() - 0.5D) * (amplifier + 1) * 0.5D);
                 }
             }
-            case PHOSPHORUS -> Effects.ignite(entity, amplifier + 1);
-            case POTION_SICKNESS -> {
-                if (level.getRandom().nextInt(128) == 0) {
-                    Effects.add(entity, net.minecraft.world.effect.MobEffects.NAUSEA, 8 * 20, 0);
-                }
-            }
+            // 1.7: setFire(1) every tick, whatever the level
+            case PHOSPHORUS -> Effects.ignite(entity, 1);
+            // 1.7 potionsickness has no tick action at all (isReady false): it only blocks pills and syringes.
+            case POTION_SICKNESS -> { }
         }
         return true;
     }
@@ -86,7 +93,8 @@ public final class HbmEffect extends CompatMobEffect {
     @Override
     protected boolean shouldApplyTick(int duration, int amplifier) {
         return switch (kind) {
-            case TAINT, POTION_SICKNESS -> duration % 2 == 0;
+            case TAINT -> duration % 2 == 0;
+            case POTION_SICKNESS -> false;
             case RADAWAY, TELEKINESIS, PHOSPHORUS -> true;
             case BANG -> duration <= 10;
             case LEAD -> duration % 60 == 0;

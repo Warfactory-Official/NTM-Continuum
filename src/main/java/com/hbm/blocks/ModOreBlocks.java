@@ -3,6 +3,7 @@ package com.hbm.blocks;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Variants;
 import com.hbm.registration.BlockTag;
+import com.hbm.registration.Loot;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import dev.golem.core.world.Compat;
@@ -117,49 +118,53 @@ public final class ModOreBlocks {
             REG.blockEntity("bedrock_ore", () -> BlockEntities.type(
                     BedrockOreBlockEntity::new, ore_bedrock_block.get()));
 
-    /** {@code OreEnum.CINNABAR}: {@code 1 + rand(2) + fortune} cinnabar. */
+    /** 1.7 {@code BlockDepthOre}: {@code 2 + rand(3)} cinnabar, fortune-multiplied (applies to every depth ore). */
     public static final RegistryObject<BlockDepthOre> ore_depth_cinnabar =
-            depthOre("ore_depth_cinnabar", OreDrops::base1Rand2Fortune, () -> ModItems.cinnabar.get())
+            depthOre("ore_depth_cinnabar", 2, 3, () -> ModItems.cinnabar.get())
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
-    /** {@code OreEnum.ZIRCON}: {@code 2 + rand(2) + fortune} zirconium nuggets. */
+    /** 1.7: {@code 2 + rand(2)} zirconium nuggets. */
     public static final RegistryObject<BlockDepthOre> ore_depth_zirconium =
-            depthOre("ore_depth_zirconium", OreDrops::base2Rand2Fortune, () -> ModItems.nugget_zirconium.get())
+            depthOre("ore_depth_zirconium", 2, 2, () -> ModItems.nugget_zirconium.get())
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
-    /** Upstream passes a {@code null} OreEnum — falls through to dropping the block itself. */
+    /** 1.7 {@code BlockDepthOre.getItemDropped}: one {@code powder_borax} (1.12.2 dropped the block itself). */
     public static final RegistryObject<BlockDepthOre> ore_depth_borax =
-            reg("ore_depth_borax", BlockDepthOre::new, ModOreBlocks::depthProps)
+            depthOre("ore_depth_borax", 1, 0, () -> ModItems.powder_borax.get())
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
-    /** {@code OreEnum.ALEXANDRITE}: {@code min(1 + rand(2) + fortune, 2)} gems — hard-capped at 2. */
+    /** 1.7: one gem, fortune-multiplied, then clamped to 2. */
     public static final RegistryObject<BlockDepthOre> ore_alexandrite =
-            depthOre("ore_alexandrite", OreDrops::alexandriteAmount, () -> ModItems.gem_alexandrite.get())
+            reg("ore_alexandrite", p -> new BlockDepthOre(p, 1, 0, 2, true, () -> new ItemStack(ModItems.gem_alexandrite.get())),
+                    ModOreBlocks::depthProps)
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
 
-    /** Depth-rock clusters use {@code vanillaFortune} — unlike the surface {@link BlockCluster}s. */
+    /** Depth-rock clusters: one crystal, fortune-multiplied like every 1.7 depth ore (surface clusters ignore fortune). */
     public static final RegistryObject<BlockDepthOre> cluster_depth_iron =
-            depthOre("cluster_depth_iron", OreDrops::vanillaFortune, () -> ModItems.crystal_iron.get())
+            depthOre("cluster_depth_iron", 1, 0, () -> ModItems.crystal_iron.get())
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockDepthOre> cluster_depth_titanium =
-            depthOre("cluster_depth_titanium", OreDrops::vanillaFortune, () -> ModItems.crystal_titanium.get())
+            depthOre("cluster_depth_titanium", 1, 0, () -> ModItems.crystal_titanium.get())
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockDepthOre> cluster_depth_tungsten =
-            depthOre("cluster_depth_tungsten", OreDrops::vanillaFortune, () -> ModItems.crystal_tungsten.get())
+            depthOre("cluster_depth_tungsten", 1, 0, () -> ModItems.crystal_tungsten.get())
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
 
-    /** {@code OreEnum.NEODYMIUM}: {@code 2 + rand(2) + fortune} neodymium fragments. */
+    /** 1.7: {@code 2 + rand(2)} neodymium fragments. */
     public static final RegistryObject<BlockDepthOre> ore_depth_nether_neodymium =
-            depthOre("ore_depth_nether_neodymium", OreDrops::base2Rand2Fortune, () -> ModItems.fragment_neodymium.get())
+            depthOre("ore_depth_nether_neodymium", 2, 2, () -> ModItems.fragment_neodymium.get())
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
-    /** {@code OreEnum.NITAN}: exactly one nitan mix, fortune ignored. */
+    /**
+     * Not in original-hbm (1.7.10); a 1.12.2 addition kept as it was: exactly one nitan mix, fortune ignored.
+     */
     public static final RegistryObject<BlockDepthOre> ore_depth_nether_nitan =
-            depthOre("ore_depth_nether_nitan", OreDrops::const1, () -> ModItems.powder_nitan_mix.get())
+            reg("ore_depth_nether_nitan", p -> new BlockDepthOre(p, 1, 0, Integer.MAX_VALUE, false,
+                    () -> new ItemStack(ModItems.powder_nitan_mix.get())), ModOreBlocks::depthProps)
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
 
@@ -231,12 +236,15 @@ public final class ModOreBlocks {
                 p -> p.strength(5.0F, 35.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noLootTable());
     }
 
+    /** 1.7 {@code BlockDepth} has no drop override: broken by a depth-rock tool (or blown up) it drops itself. */
     private static Reg.Handle<BlockDepth> depth(String id) {
-        return reg(id, BlockDepth::new, p -> depthProps(p).noLootTable());
+        return reg(id, BlockDepth::new, p -> p.strength(-1.0F, 10.0F).sound(SoundType.STONE).requiresCorrectToolForDrops())
+                .loot(Loot.self());
     }
 
-    private static Reg.Handle<BlockDepthOre> depthOre(String id, OreDrops.Quantity quantity, Supplier<Item> drop) {
-        return reg(id, p -> new BlockDepthOre(p, quantity, () -> new ItemStack(drop.get())), ModOreBlocks::depthProps);
+    private static Reg.Handle<BlockDepthOre> depthOre(String id, int base, int spread, Supplier<Item> drop) {
+        return reg(id, p -> new BlockDepthOre(p, base, spread, Integer.MAX_VALUE, true, () -> new ItemStack(drop.get())),
+                ModOreBlocks::depthProps);
     }
 
     /**
@@ -248,8 +256,7 @@ public final class ModOreBlocks {
     }
 
     private static Reg.Handle<BlockResourceStone> resourceStone(String variant) {
-        boolean malachite = "malachite".equals(variant);
-        return reg("stone_resource_" + variant, p -> new BlockResourceStone(p, malachite),
+        return reg("stone_resource_" + variant, p -> new BlockResourceStone(p, variant),
                         p -> p.strength(5.0F, 10.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noLootTable())
                 .transform(Presets.cubeAll("hbm:blocks/stone_resource." + variant).viaItemModel())
                 .tag(BlockTag.PICKAXE);

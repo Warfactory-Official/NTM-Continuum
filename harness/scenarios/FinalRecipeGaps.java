@@ -23,8 +23,8 @@ public final class FinalRecipeGaps implements Scenario {
     private static final int X = 0;
     private static final int Y = 100;
     private static final int Z = 0;
-    private static final int NITROGLYCERIN = 113;
-    private static final int WOODOIL = 79;
+    private static final String NITROGLYCERIN = "hbm:nitroglycerin";
+    private static final String WOODOIL = "hbm:woodoil";
 
     /** Per client: one scenario instance runs on both nodes in parallel, so no per-node field. */
     private static boolean legacy(Client c) {
@@ -49,9 +49,9 @@ public final class FinalRecipeGaps implements Scenario {
         Expect.logCleanSinceMark(c, "(?i)(exception|Failed to parse|Couldn't parse).*(recipe|hbm)");
     }
 
-    private static String tank(Client c, int fluid) {
-        return legacy(c) ? "hbm:fluid_tank{\"hbm:fluid_id\":" + fluid + ",\"hbm:fluid_amount\":1000}"
-                : "hbm:fluid_tank[hbm:fluid_id=" + fluid + ",hbm:fluid_amount=1000]";
+    private static String tank(Client c, String fluid) {
+        return legacy(c) ? "hbm:fluid_tank{\"hbm:fluid\":\"" + fluid + "\",\"hbm:fluid_amount\":1000}"
+                : "hbm:fluid_tank[hbm:fluid=\"" + fluid + "\",hbm:fluid_amount=1000]";
     }
 
     private static String variant(Client c, String id, int variant) {

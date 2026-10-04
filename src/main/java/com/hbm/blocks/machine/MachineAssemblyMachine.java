@@ -17,8 +17,9 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/** Assembly Machine: a 3×3×3 dummyable multiblock (core + 8 ringed "extra" dummies + fill). */
-public class MachineAssemblyMachine extends BlockMultiblockMachine implements WorldlyContainerHolder, IEnergyConnectorBlock {
+/** Assembly Machine: a 3×3×3 dummyable multiblock (core + 8 ringed "extra" dummies + fill); power and fluid ports on the ring, as 1.7. */
+public class MachineAssemblyMachine extends BlockMultiblockMachine implements WorldlyContainerHolder, IEnergyConnectorBlock,
+        com.hbm.api.fluidmk2.IFluidConnectorBlockMK2 {
 
     public MachineAssemblyMachine(Properties properties) {
         super(properties);

@@ -88,7 +88,6 @@ public final class CombustionEngineRenderer
             case "COALCREOSOTE" -> 0x285A3F;
             case "SEEDSLURRY" -> 0x7CC35E;
             case "SOLVENT" -> 0xE4E3EF;
-            case "HYDRAZINE" -> 0x31517D;
             case "REFORMATE" -> 0xD180D6;
             case "XYLENE" -> 0xA380D6;
             case "DIESEL_REFORM", "DIESEL_CRACK_REFORM" -> 0xFFC500;

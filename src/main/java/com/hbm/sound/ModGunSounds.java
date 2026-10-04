@@ -22,6 +22,8 @@ public final class ModGunSounds {
     public static final RegistryObject<SoundEvent> CASING_MEDIUM = register("weapon.casing.medium");
     public static final RegistryObject<SoundEvent> CASING_LARGE = register("weapon.casing.large");
     public static final RegistryObject<SoundEvent> FIRE_ASSAULT = register("weapon.fire.assault");
+    /** 1.7 NTMSounds.GUN_SOLDIER_TF2_BOAT_EXE_WAV_MP3, played by the 12 gauge equestrian round. */
+    public static final RegistryObject<SoundEvent> BOAT = register("weapon.boat");
     public static final RegistryObject<SoundEvent> SWITCH_MODE_1 = register("weapon.switchmode1");
     public static final RegistryObject<SoundEvent> SWITCH_MODE_2 = register("weapon.switchmode2");
     public static final RegistryObject<SoundEvent> B92_RELOAD = register("weapon.b92reload");

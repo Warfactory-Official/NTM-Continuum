@@ -38,14 +38,15 @@ import java.util.List;
  *
  * <p>1.7's {@code hitEntity} returned {@code false} without calling {@code ItemSword}'s, so none of these
  * wear on an ordinary hit (only the caber's explicit 505). The sword's attack modifier is 1.7
- * {@code ItemSword}'s {@code 4 + material damage}. The Fiend achievement check in {@code onUpdate} has no
- * counterpart: the port has no achievement for it.
+ * {@code ItemSword}'s {@code 4 + material damage}. The Fiend achievement check in {@code onUpdate} is the
+ * {@code fiend}/{@code fiend2} advancements' equipment criterion ({@code HbmAdvancementDeclarations}; the same test
+ * as {@code ArmorUtil.checkForFiend}).
  */
 public class WeaponSpecial extends CompatSwordItem {
 
     public enum Kind {
         SCHRABIDIUM_HAMMER, ULLAPOOL_CABER, SHIMMER_SLEDGE, SHIMMER_AXE, WOOD_GAVEL, LEAD_GAVEL, DIAMOND_GAVEL,
-        MEMESPOON, STOPSIGN, SOPSIGN, CHERNOBYLSIGN, WRENCH_FLIPPED
+        MEMESPOON, STOPSIGN, SOPSIGN, CHERNOBYLSIGN, WRENCH_FLIPPED, BOTTLE_OPENER
     }
 
     private final Kind kind;
@@ -108,6 +109,16 @@ public class WeaponSpecial extends CompatSwordItem {
             }
             case MEMESPOON -> memespoon(server, entity, attacker);
             case STOPSIGN, SOPSIGN -> playAt(world, entity, ModMeleeKitItems.STOP.get(), 1.0F, 1.0F);
+            case BOTTLE_OPENER -> {
+                // 1.7: one in seven hits blinds (5 min), slows III (5 min), fatigues III (5 min) or nauseates (1 min)
+                int i = world.getRandom().nextInt(7);
+                if (i == 0) dev.golem.core.world.Effects.add(entity, net.minecraft.world.effect.MobEffects.BLINDNESS, 5 * 60 * 20, 0);
+                if (i == 1) dev.golem.core.world.Effects.add(entity, net.minecraft.world.effect.MobEffects.SLOWNESS, 5 * 60 * 20, 2);
+                if (i == 2) dev.golem.core.world.Effects.add(entity, net.minecraft.world.effect.MobEffects.MINING_FATIGUE, 5 * 60 * 20, 2);
+                if (i == 3) dev.golem.core.world.Effects.add(entity, net.minecraft.world.effect.MobEffects.NAUSEA, 1 * 60 * 20, 0);
+                // 1.7 NTMSounds.VANILLA_ANVIL ("random.anvil_land")
+                playAt(world, entity, net.minecraft.sounds.SoundEvents.ANVIL_LAND, 3.0F, 1.0F);
+            }
             default -> { }
         }
     }
@@ -185,6 +196,10 @@ public class WeaponSpecial extends CompatSwordItem {
             case SCHRABIDIUM_HAMMER -> {
                 list.add(Component.literal("Even though it says \"+1000000000"));
                 list.add(Component.literal("damage\", it's actually \"onehit anything\""));
+            }
+            case BOTTLE_OPENER -> {
+                list.add(Component.literal("My very own bottle opener."));
+                list.add(Component.literal("Use with caution!"));
             }
             case ULLAPOOL_CABER -> {
                 list.add(Component.literal("High-yield Scottish face removal."));

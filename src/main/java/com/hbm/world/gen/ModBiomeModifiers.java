@@ -1,8 +1,6 @@
 package com.hbm.world.gen;
 
 import com.google.gson.JsonObject;
-import com.hbm.config.GeneralConfig;
-import com.hbm.config.MobConfig;
 import com.hbm.config.WorldConfig;
 import dev.golem.core.dejson.Features;
 
@@ -71,9 +69,10 @@ public final class ModBiomeModifiers {
 
         // ------------------------------------------------ chain-loaded terrain (1.7 HbmWorld.registerNTMTerrain)
         List<String> terrain = new ArrayList<>();
-        if (GeneralConfig.enableRad && WorldConfig.radfreq > 0) terrain.add(once("sellafield_crater", "sellafield_crater"));
-        if (WorldConfig.oilSpawn > 0) terrain.add(once("oil_bubble", "oil_bubble"));
-        if (WorldConfig.bedrockOilSpawn > 0) terrain.add(once("bedrock_oil", "bedrock_oil"));
+        // the MapGen origins read their own chance; hbm:config only keeps 1.7's "> 0" and enableRad guards
+        terrain.add(once("sellafield_crater", "sellafield_crater", cfgSwitch(WorldgenKeys.RAD_HOTSPOT), cfgSwitch(WorldgenKeys.RAD_HOTSPOT_RATE)));
+        terrain.add(once("oil_bubble", "oil_bubble", cfgSwitch(WorldgenKeys.OIL)));
+        terrain.add(once("bedrock_oil", "bedrock_oil", cfgSwitch(WorldgenKeys.BEDROCK_OIL)));
         terrain.add(once("oil_sand_bubble", "oil_sand_bubble"));
         addFeatures(NS, "terrain", "#minecraft:is_overworld", terrain, RAW_GENERATION);
 
@@ -84,9 +83,10 @@ public final class ModBiomeModifiers {
 
         addFeatures(NS, "overworld_ores", "#minecraft:is_overworld", overworldOres(), UNDERGROUND_ORES);
         addFeatures(NS, "nether_ores", "#minecraft:is_nether", netherOres(), UNDERGROUND_ORES);
-        addFeatures(NS, "end_ores", "#minecraft:is_end",
-                new Generated(vein("ore_tikite", WorldConfig.endTikiteSpawn, 6, 0, 127, blockHost("minecraft:end_stone"))),
-                UNDERGROUND_ORES);
+        // 1.7 2.D02_endOres gates the trixite
+        String tikite = vein("ore_tikite", "hbm:ore_tikite", List.of(cfgSwitch(WorldgenKeys.END_ORES)), cfgCount(WorldgenKeys.END_TIKITE, 1), 6, 0, 127,
+                blockHost("minecraft:end_stone"));
+        addFeatures(NS, "end_ores", "#minecraft:is_end", List.of(tikite), UNDERGROUND_ORES);
 
         surface();
     }
@@ -103,77 +103,85 @@ public final class ModBiomeModifiers {
 
     /** 1.7 {@code HbmWorldGen.generateSurface}, the ore half, in 1.7's order. */
     private static List<String> overworldOres() {
-        List<String> out = new Generated();
+        List<String> out = new ArrayList<>();
         JsonObject stone = stoneHost();
         JsonObject gneiss = blockHost("hbm:stone_gneiss");
 
         // chance-gated pockets: generateOre(world, rand, i, j, 1, size, minY, variance, block) behind nextInt(n) == 0
-        if (WorldConfig.gasBubbleChance > 0) out.add(vein("gas_bubble_flammable", "hbm:gas_flammable", 1, WorldConfig.gasBubbleChance, 32, 30, 10, stone));
-        if (WorldConfig.explosiveBubbleChance > 0) out.add(vein("gas_bubble_explosive", "hbm:gas_explosive", 1, WorldConfig.explosiveBubbleChance, 32, 30, 10, stone));
-        if (WorldConfig.alexandriteChance > 0) out.add(vein("ore_alexandrite", "hbm:ore_alexandrite", 1, WorldConfig.alexandriteChance, 3, 10, 5, stone));
+        out.add(vein("gas_bubble_flammable", "hbm:gas_flammable", List.of(cfgChance(WorldgenKeys.GAS_BUBBLE)), null, 32, 30, 10, stone));
+        out.add(vein("gas_bubble_explosive", "hbm:gas_explosive", List.of(cfgChance(WorldgenKeys.EXPLOSIVE_BUBBLE)), null, 32, 30, 10, stone));
+        out.add(vein("ore_alexandrite", "hbm:ore_alexandrite", List.of(cfgChance(WorldgenKeys.ALEXANDRITE)), null, 3, 10, 5, stone));
+
+        // 1.7 2.D00_overworldOres gates everything from the depth deposits to australium (not the bubbles,
+        // alexandrite or the keyhole): each of these placed features starts with that switch
+        List<JsonObject> on = List.of(cfgSwitch(WorldgenKeys.OVERWORLD_ORES));
 
         // DepthDeposit.generateConditionOverworld(world, i, 0, 3, j, 5, fill, block, rand, chance)
-        out.add(depth("cluster_depth_iron", 24, 0.6, false, false));
-        out.add(depth("cluster_depth_titanium", 32, 0.6, false, false));
-        out.add(depth("cluster_depth_tungsten", 32, 0.6, false, false));
-        out.add(depth("ore_depth_cinnabar", 16, 0.8, false, false));
-        out.add(depth("ore_depth_zirconium", 16, 0.8, false, false));
-        out.add(depth("ore_depth_borax", 16, 0.8, false, false));
+        out.add(depth("cluster_depth_iron", 24, 0.6, false, false, on));
+        out.add(depth("cluster_depth_titanium", 32, 0.6, false, false, on));
+        out.add(depth("cluster_depth_tungsten", 32, 0.6, false, false, on));
+        out.add(depth("ore_depth_cinnabar", 16, 0.8, false, false, on));
+        out.add(depth("ore_depth_zirconium", 16, 0.8, false, false, on));
+        out.add(depth("ore_depth_borax", 16, 0.8, false, false, on));
 
         // the schist family; the band itself is schist_stratum at local_modifications
-        out.add(vein("ore_gneiss_iron", 25, 6, 30, 10, gneiss));
-        out.add(vein("ore_gneiss_gold", 10, 6, 30, 10, gneiss));
-        out.add(vein("ore_gneiss_uranium", WorldConfig.uraniumSpawn * 3, 6, 30, 10, gneiss));
-        out.add(vein("ore_gneiss_copper", WorldConfig.copperSpawn * 3, 6, 30, 10, gneiss));
-        out.add(vein("ore_gneiss_asbestos", WorldConfig.asbestosSpawn * 3, 6, 30, 10, gneiss));
-        out.add(vein("ore_gneiss_lithium", WorldConfig.lithiumSpawn, 6, 30, 10, gneiss));
+        out.add(vein("ore_gneiss_iron", "hbm:ore_gneiss_iron", on, count(25), 6, 30, 10, gneiss));
+        out.add(vein("ore_gneiss_gold", "hbm:ore_gneiss_gold", on, count(10), 6, 30, 10, gneiss));
+        out.add(vein("ore_gneiss_uranium", "hbm:ore_gneiss_uranium", on, cfgCount(WorldgenKeys.URANIUM, 3), 6, 30, 10, gneiss));
+        out.add(vein("ore_gneiss_copper", "hbm:ore_gneiss_copper", on, cfgCount(WorldgenKeys.COPPER, 3), 6, 30, 10, gneiss));
+        out.add(vein("ore_gneiss_asbestos", "hbm:ore_gneiss_asbestos", on, cfgCount(WorldgenKeys.ASBESTOS, 3), 6, 30, 10, gneiss));
+        out.add(vein("ore_gneiss_lithium", "hbm:ore_gneiss_lithium", on, cfgCount(WorldgenKeys.LITHIUM, 1), 6, 30, 10, gneiss));
         // 1.7 places rare earths here. (1.12 placed asbestos a second time, which the port copied until 2026-09-25.)
-        out.add(vein("ore_gneiss_rare", WorldConfig.rareSpawn, 6, 30, 10, gneiss));
-        out.add(vein("ore_gneiss_gas", WorldConfig.gasShaleSpawn * 3, 10, 30, 10, gneiss));
+        out.add(vein("ore_gneiss_rare", "hbm:ore_gneiss_rare", on, cfgCount(WorldgenKeys.RARE_EARTH, 1), 6, 30, 10, gneiss));
+        out.add(vein("ore_gneiss_gas", "hbm:ore_gneiss_gas", on, cfgCount(WorldgenKeys.GAS_SHALE, 3), 10, 30, 10, gneiss));
 
-        out.add(vein("ore_uranium", WorldConfig.uraniumSpawn, 5, 5, 20, stone));
-        out.add(vein("ore_thorium", WorldConfig.thoriumSpawn, 5, 5, 25, stone));
-        out.add(vein("ore_titanium", WorldConfig.titaniumSpawn, 6, 5, 30, stone));
-        out.add(vein("ore_sulfur", WorldConfig.sulfurSpawn, 8, 5, 30, stone));
-        out.add(vein("ore_aluminium", WorldConfig.aluminiumSpawn, 6, 5, 40, stone));
-        out.add(vein("ore_copper", WorldConfig.copperSpawn, 6, 5, 45, stone));
-        out.add(vein("ore_fluorite", WorldConfig.fluoriteSpawn, 4, 5, 45, stone));
-        out.add(vein("ore_niter", WorldConfig.niterSpawn, 6, 5, 30, stone));
-        out.add(vein("ore_tungsten", WorldConfig.tungstenSpawn, 8, 5, 30, stone));
-        out.add(vein("ore_lead", WorldConfig.leadSpawn, 9, 5, 30, stone));
-        out.add(vein("ore_beryllium", WorldConfig.berylliumSpawn, 4, 5, 30, stone));
-        out.add(vein("ore_rare", WorldConfig.rareSpawn, 5, 5, 20, stone));
-        out.add(vein("ore_lignite", WorldConfig.ligniteSpawn, 24, 35, 25, stone));
-        out.add(vein("ore_asbestos", WorldConfig.asbestosSpawn, 4, 16, 16, stone));
-        out.add(vein("ore_cinnabar", WorldConfig.cinnabarSpawn, 4, 8, 16, stone));
-        out.add(vein("ore_cobalt", WorldConfig.cobaltSpawn, 4, 4, 8, stone));
+        out.add(vein("ore_uranium", "hbm:ore_uranium", on, cfgCount(WorldgenKeys.URANIUM, 1), 5, 5, 20, stone));
+        out.add(vein("ore_thorium", "hbm:ore_thorium", on, cfgCount(WorldgenKeys.THORIUM, 1), 5, 5, 25, stone));
+        out.add(vein("ore_titanium", "hbm:ore_titanium", on, cfgCount(WorldgenKeys.TITANIUM, 1), 6, 5, 30, stone));
+        out.add(vein("ore_sulfur", "hbm:ore_sulfur", on, cfgCount(WorldgenKeys.SULFUR, 1), 8, 5, 30, stone));
+        out.add(vein("ore_aluminium", "hbm:ore_aluminium", on, cfgCount(WorldgenKeys.ALUMINIUM, 1), 6, 5, 40, stone));
+        out.add(vein("ore_copper", "hbm:ore_copper", on, cfgCount(WorldgenKeys.COPPER, 1), 6, 5, 45, stone));
+        out.add(vein("ore_fluorite", "hbm:ore_fluorite", on, cfgCount(WorldgenKeys.FLUORITE, 1), 4, 5, 45, stone));
+        out.add(vein("ore_niter", "hbm:ore_niter", on, cfgCount(WorldgenKeys.NITER, 1), 6, 5, 30, stone));
+        out.add(vein("ore_tungsten", "hbm:ore_tungsten", on, cfgCount(WorldgenKeys.TUNGSTEN, 1), 8, 5, 30, stone));
+        out.add(vein("ore_lead", "hbm:ore_lead", on, cfgCount(WorldgenKeys.LEAD, 1), 9, 5, 30, stone));
+        out.add(vein("ore_beryllium", "hbm:ore_beryllium", on, cfgCount(WorldgenKeys.BERYLLIUM, 1), 4, 5, 30, stone));
+        out.add(vein("ore_rare", "hbm:ore_rare", on, cfgCount(WorldgenKeys.RARE_EARTH, 1), 5, 5, 20, stone));
+        out.add(vein("ore_lignite", "hbm:ore_lignite", on, cfgCount(WorldgenKeys.LIGNITE, 1), 24, 35, 25, stone));
+        out.add(vein("ore_asbestos", "hbm:ore_asbestos", on, cfgCount(WorldgenKeys.ASBESTOS, 1), 4, 16, 16, stone));
+        out.add(vein("ore_cinnabar", "hbm:ore_cinnabar", on, cfgCount(WorldgenKeys.CINNABAR, 1), 4, 8, 16, stone));
+        out.add(vein("ore_cobalt", "hbm:ore_cobalt", on, cfgCount(WorldgenKeys.COBALT, 1), 4, 4, 8, stone));
 
-        out.add(vein("cluster_iron", WorldConfig.ironClusterSpawn, 6, 15, 45, stone));
-        out.add(vein("cluster_titanium", WorldConfig.titaniumClusterSpawn, 6, 15, 30, stone));
-        out.add(vein("cluster_aluminium", WorldConfig.aluminiumClusterSpawn, 6, 15, 35, stone));
-        out.add(vein("cluster_copper", WorldConfig.copperClusterSpawn, 6, 15, 20, stone));
+        out.add(vein("cluster_iron", "hbm:cluster_iron", on, cfgCount(WorldgenKeys.IRON_CLUSTER, 1), 6, 15, 45, stone));
+        out.add(vein("cluster_titanium", "hbm:cluster_titanium", on, cfgCount(WorldgenKeys.TITANIUM_CLUSTER, 1), 6, 15, 30, stone));
+        out.add(vein("cluster_aluminium", "hbm:cluster_aluminium", on, cfgCount(WorldgenKeys.ALUMINIUM_CLUSTER, 1), 6, 15, 35, stone));
+        out.add(vein("cluster_copper", "hbm:cluster_copper", on, cfgCount(WorldgenKeys.COPPER_CLUSTER, 1), 6, 15, 20, stone));
 
         // 1.7: stone_resource LIMESTONE, 16 blocks at y 25..54, overworld only
-        out.add(vein("limestone", "hbm:stone_resource_limestone", WorldConfig.limestoneSpawn, 0, 16, 25, 30, stone));
+        out.add(vein("limestone", "hbm:stone_resource_limestone", on, cfgCount(WorldgenKeys.LIMESTONE, 1), 16, 25, 30, stone));
 
         // BedrockOre.generateAuto behind rand.nextInt(10) == 0; the deposit picks its own column
         Features.configured(NS, "bedrock_ore", NS + ":bedrock_ore", null);
-        Features.placed(NS, "bedrock_ore", NS + ":bedrock_ore", rarity(10), biome());
+        placed("bedrock_ore", on, rarity(10), biome());
         out.add(NS + ":bedrock_ore");
 
-        // 528 coltan: the random scatter (declared for /place feature) is off by default, the deposit is on
-        String coltan = vein("ore_coltan", Math.max(1, GeneralConfig.coltanRate), 4, 15, 40, stone);
-        if (GeneralConfig.enable528ColtanSpawn && GeneralConfig.coltanRate > 0) out.add(coltan);
-        out.add(once("coltan_deposit", "coltan_deposit"));
-        out.add(once("australium", "australium"));
+        // 528 coltan: the random scatter (X528_enableColtanSpawning, off by default) and the deposit (its feature reads
+        // X528_enableColtanDeposit)
+        out.add(vein("ore_coltan", "hbm:ore_coltan", List.of(cfgSwitch(WorldgenKeys.OVERWORLD_ORES), cfgSwitch(WorldgenKeys.COLTAN_SPAWN)),
+                cfgCount(WorldgenKeys.COLTAN_RATE, 1), 4, 15, 40, stone));
+        out.add(once("coltan_deposit", "coltan_deposit", cfgSwitch(WorldgenKeys.OVERWORLD_ORES)));
+        out.add(once("australium", "australium", cfgSwitch(WorldgenKeys.OVERWORLD_ORES)));
 
-        // keyhole stone: rand.nextInt(4) == 0, y 6 + rand(13), only into plain stone (isReplaceableOreGen(stone))
+        // keyhole stone: rand.nextInt(4) == 0, y 6 + rand(13), only into plain stone (isReplaceableOreGen(stone));
+        // y 6..8 is the deepslate blend in a modern world, and deepslate is 1.7's stone at depth (History §19ej-6)
         JsonObject keyhole = new JsonObject();
-        JsonObject target = new JsonObject();
-        target.add("target", Features.blockMatch("minecraft:stone"));
-        target.add("state", state("hbm:stone_keyhole"));
         com.google.gson.JsonArray targets = new com.google.gson.JsonArray();
-        targets.add(target);
+        for (String host : new String[] {"minecraft:stone", "minecraft:deepslate"}) {
+            JsonObject target = new JsonObject();
+            target.add("target", Features.blockMatch(host));
+            target.add("state", state("hbm:stone_keyhole"));
+            targets.add(target);
+        }
         keyhole.add("targets", targets);
         Features.configured(NS, "stone_keyhole", "minecraft:replace_single_block", keyhole);
         Features.placed(NS, "stone_keyhole", NS + ":stone_keyhole", rarity(4), inSquare(),
@@ -184,26 +192,28 @@ public final class ModBiomeModifiers {
 
     /** 1.7 {@code HbmWorldGen.generateNether}, in 1.7's order. */
     private static List<String> netherOres() {
-        List<String> out = new Generated();
+        List<String> out = new ArrayList<>();
+        // 1.7 2.D01_netherOres gates the ores, bedrock ore and depth deposits, not the smoldering crust or geysers
+        List<JsonObject> on = List.of(cfgSwitch(WorldgenKeys.NETHER_ORES));
         JsonObject rack = blockHost("minecraft:netherrack");
-        out.add(vein("ore_nether_uranium", WorldConfig.netherUraniumSpawn, 6, 0, 127, rack));
-        out.add(vein("ore_nether_tungsten", WorldConfig.netherTungstenSpawn, 10, 0, 127, rack));
-        out.add(vein("ore_nether_sulfur", WorldConfig.netherSulfurSpawn, 12, 0, 127, rack));
-        out.add(vein("ore_nether_fire", WorldConfig.netherPhosphorusSpawn, 6, 0, 127, rack));
-        out.add(vein("ore_nether_coal", WorldConfig.netherCoalSpawn, 32, 16, 96, rack));
+        out.add(vein("ore_nether_uranium", "hbm:ore_nether_uranium", on, cfgCount(WorldgenKeys.NETHER_URANIUM, 1), 6, 0, 127, rack));
+        out.add(vein("ore_nether_tungsten", "hbm:ore_nether_tungsten", on, cfgCount(WorldgenKeys.NETHER_TUNGSTEN, 1), 10, 0, 127, rack));
+        out.add(vein("ore_nether_sulfur", "hbm:ore_nether_sulfur", on, cfgCount(WorldgenKeys.NETHER_SULFUR, 1), 12, 0, 127, rack));
+        out.add(vein("ore_nether_fire", "hbm:ore_nether_fire", on, cfgCount(WorldgenKeys.NETHER_PHOSPHORUS, 1), 6, 0, 127, rack));
+        out.add(vein("ore_nether_coal", "hbm:ore_nether_coal", on, cfgCount(WorldgenKeys.NETHER_COAL, 1), 32, 16, 96, rack));
         // 1.7 quirk, kept: (minHeight 100, variance 26) puts cobalt at y 100..125, up against the roof
-        out.add(vein("ore_nether_cobalt", WorldConfig.netherCobaltSpawn, 6, 100, 26, rack));
-        // declared either way (for /place feature), generated only with 1.02_enablePlutoniumNetherOre (off by default)
-        String plutonium = vein("ore_nether_plutonium", Math.max(1, WorldConfig.netherPlutoniumSpawn), 4, 0, 127, rack);
-        if (GeneralConfig.enablePlutoniumOre && WorldConfig.netherPlutoniumSpawn > 0) out.add(plutonium);
+        out.add(vein("ore_nether_cobalt", "hbm:ore_nether_cobalt", on, cfgCount(WorldgenKeys.NETHER_COBALT, 1), 6, 100, 26, rack));
+        // generated only with 1.02_enablePlutoniumNetherOre (off by default)
+        out.add(vein("ore_nether_plutonium", "hbm:ore_nether_plutonium", List.of(cfgSwitch(WorldgenKeys.NETHER_ORES), cfgSwitch(WorldgenKeys.PLUTONIUM_ORE)),
+                cfgCount(WorldgenKeys.NETHER_PLUTONIUM, 1), 4, 0, 127, rack));
 
         Features.configured(NS, "bedrock_ore_nether", NS + ":bedrock_ore_nether", null);
-        Features.placed(NS, "bedrock_ore_nether", NS + ":bedrock_ore_nether", rarity(10), biome());
+        placed("bedrock_ore_nether", on, rarity(10), biome());
         out.add(NS + ":bedrock_ore_nether");
 
         // DepthDeposit.generateConditionNether: neodymium only (no nitan in 1.7), at the floor and against the roof
-        out.add(depth("ore_depth_nether_neodymium", 16, 0.6, true, false));
-        out.add(depth("ore_depth_nether_neodymium", 16, 0.6, true, true));
+        out.add(depth("ore_depth_nether_neodymium", 16, 0.6, true, false, on));
+        out.add(depth("ore_depth_nether_neodymium", 16, 0.6, true, true, on));
 
         // 30 smoldering columns and one geyser column, d = 16 + rand(96), scanning d-5..d
         out.add(crust("nether_smoldering", "hbm:ore_nether_smoldering", 30));
@@ -211,42 +221,59 @@ public final class ModBiomeModifiers {
         return out;
     }
 
-    /** One vein family member whose feature name is its block. */
-    private static String vein(String block, int count, int size, int minY, int variance, JsonObject host) {
-        return vein(block, NS + ":" + block, count, 0, size, minY, variance, host);
-    }
-
     /**
-     * 1.7 {@code DungeonToolbox.generateOre(..., veinCount, amount, minHeight, variance, block, target)}, or with
-     * {@code chance > 0} the one-vein pocket behind {@code rand.nextInt(chance) == 0}. Always declared (so
-     * {@code /place feature} has it); returns null, i.e. not generated, when the config count is 0.
+     * 1.7 {@code DungeonToolbox.generateOre(..., veinCount, amount, minHeight, variance, block, target)}: {@code gates}
+     * (switches and chance gates, in 1.7's order) then {@code count} (null: one vein), a column in the chunk, a uniform
+     * height and the biome check. Always declared and always listed: a config value of 0 makes {@code hbm:config} place
+     * nothing, so {@code hbm.cfg} works without rebuilding the data pack (History §19ej-8).
      */
-    private static String vein(String name, String block, int count, int chance, int size, int minY, int variance, JsonObject host) {
+    private static String vein(String name, String block, List<JsonObject> gates, JsonObject count, int size, int minY, int variance,
+                               JsonObject host) {
         Features.configured(NS, name, NS + ":legacy_ore", Features.ore(host, state(block), size));
-        List<JsonObject> placement = new ArrayList<>();
-        if (chance > 0) placement.add(rarity(chance));
-        if (count > 1) placement.add(count(count));
+        List<JsonObject> placement = new ArrayList<>(gates);
+        if (count != null) placement.add(count);
         placement.add(inSquare());
         placement.add(uniformHeight(absolute(minY), absolute(minY + Math.max(variance, 1) - 1)));
         placement.add(biome());
         Features.placed(NS, name, NS + ":" + name, placement.toArray(new JsonObject[0]));
-        return count > 0 ? NS + ":" + name : null;
+        return NS + ":" + name;
     }
 
-    /** A feature list in generation order that skips what a config switch turned off (a null id). */
-    private static final class Generated extends ArrayList<String> {
-        Generated(String... ids) {
-            for (String id : ids) add(id);
-        }
+    /** {@code Features.placed} with {@code gates} in front of {@code placement}. */
+    private static void placed(String name, List<JsonObject> gates, JsonObject... placement) {
+        List<JsonObject> all = new ArrayList<>(gates);
+        all.addAll(List.of(placement));
+        Features.placed(NS, name, NS + ":" + name, all.toArray(new JsonObject[0]));
+    }
 
-        @Override
-        public boolean add(String id) {
-            return id != null && super.add(id);
-        }
+    /** {@code hbm:config} ({@code ConfigPlacement}): a step that reads {@code hbm.cfg} key {@code key} at generation. */
+    static JsonObject cfg(String key, String mode, int multiplier) {
+        if (WorldgenKeys.get(key) == null) throw new IllegalStateException("no WorldgenKeys binding for " + key);
+        JsonObject json = new JsonObject();
+        json.addProperty("type", NS + ":config");
+        json.addProperty("key", key);
+        json.addProperty("mode", mode);
+        if (multiplier != 1) json.addProperty("multiplier", multiplier);
+        return json;
+    }
+
+    /** {@code value * multiplier} veins (1.7 {@code for (k < veinCount)}). */
+    static JsonObject cfgCount(String key, int multiplier) {
+        return cfg(key, "count", multiplier);
+    }
+
+    /** Kept one time in {@code value} (1.7 {@code rand.nextInt(value) == 0}); 0 = off. */
+    static JsonObject cfgChance(String key) {
+        return cfg(key, "chance", 1);
+    }
+
+    /** Kept while the value is non-zero (a boolean key, or 1.7's {@code > 0} guard). */
+    static JsonObject cfgSwitch(String key) {
+        return cfg(key, "switch", 1);
     }
 
     /** 1.7 {@code DepthDeposit.generateCondition*}: size 5 (overworld) or 7 (nether), y floor + rand(3) or 125 + rand(3). */
-    private static String depth(String block, int chance, double fill, boolean nether, boolean roof) {
+    private static String depth(String block, int chance, double fill, boolean nether, boolean roof, List<JsonObject> gates) {
         String name = block + (nether ? (roof ? "_roof" : "_floor") : "");
         JsonObject config = new JsonObject();
         config.add("ore", state("hbm:" + block));
@@ -255,7 +282,7 @@ public final class ModBiomeModifiers {
         config.addProperty("size", nether ? 7 : 5);
         config.addProperty("fill", fill);
         Features.configured(NS, name, NS + ":depth_deposit", config);
-        Features.placed(NS, name, NS + ":" + name, rarity(chance), inSquare(),
+        placed(name, gates, rarity(chance), inSquare(),
                 roof ? uniformHeight(absolute(125), absolute(127)) : uniformHeight(aboveBottom(0), aboveBottom(2)), biome());
         return NS + ":" + name;
     }
@@ -272,9 +299,9 @@ public final class ModBiomeModifiers {
     }
 
     /** A feature that runs once per chunk at the chunk corner: the noise strata, the chain-loaded terrain, the deposits. */
-    private static String once(String name, String type) {
+    private static String once(String name, String type, JsonObject... gates) {
         Features.configured(NS, name, NS + ":" + type, null);
-        Features.placed(NS, name, NS + ":" + name);
+        Features.placed(NS, name, NS + ":" + name, gates);
         return NS + ":" + name;
     }
 
@@ -306,21 +333,24 @@ public final class ModBiomeModifiers {
 
         List<String> surface = new ArrayList<>();
         // glyphid hive: MobConfig.enableHives && rand.nextInt(hiveSpawn) == 0
-        if (MobConfig.enableHives && MobConfig.hiveSpawn > 0) surface.add(gated("glyphid_hive", "glyphid_hive", MobConfig.hiveSpawn, onSurface));
+        surface.add(gated("glyphid_hive", "glyphid_hive", List.of(cfgSwitch(WorldgenKeys.HIVES), cfgChance(WorldgenKeys.HIVE_SPAWN)), onSurface));
         // fallen meteorite: rand.nextInt(meteoriteSpawn) == 0
-        if (WorldConfig.meteoriteSpawn > 0) surface.add(gated("fallen_meteorite", "fallen_meteorite", WorldConfig.meteoriteSpawn, onSurface));
+        surface.add(gated("fallen_meteorite", "fallen_meteorite", List.of(cfgChance(WorldgenKeys.METEORITE)), onSurface));
         addFeatures(NS, "surface", "#minecraft:is_overworld", surface, VEGETAL_DECORATION);
 
         // chlorine geyser: biome == BiomeGenBase.plains (not its sunflower mutation), on grass
-        if (WorldConfig.geyserChlorine > 0) {
-            addFeatures(NS, "geyser_chlorine", "minecraft:plains",
-                    List.of(gated("geyser_chlorine", "geyser_chlorine", WorldConfig.geyserChlorine, onSurface)), VEGETAL_DECORATION);
-        }
+        addFeatures(NS, "geyser_chlorine", "minecraft:plains",
+                List.of(gated("geyser_chlorine", "geyser_chlorine", List.of(cfgChance(WorldgenKeys.GEYSER_CHLORINE)), onSurface)), VEGETAL_DECORATION);
 
         // pink tree: rand.nextInt(1000) == 0, a random column (no heightmap: the whole column is scanned)
         Features.configured(NS, "pink_tree", NS + ":pink_tree", null);
         Features.placed(NS, "pink_tree", NS + ":pink_tree", rarity(1000), inSquare(), biome());
         addFeatures(NS, "pink_tree", "#minecraft:is_overworld", List.of(NS + ":pink_tree"), TOP_LAYER_MODIFICATION);
+
+        // 1.7 ModEventHandlerImpact: after Tom's impact, new chunks lose their grass and decorations (does nothing
+        // until TomSaveData.impact is set); last, so it sees every decoration
+        addFeatures(NS, "impact_aftermath", "#minecraft:is_overworld",
+                List.of(once("impact_aftermath", "impact_aftermath")), TOP_LAYER_MODIFICATION);
     }
 
     private static void flowers(String name, String block, int chance, String biomes, JsonObject[] onSurface) {
@@ -332,12 +362,9 @@ public final class ModBiomeModifiers {
         addFeatures(NS, name, biomes, List.of(NS + ":" + name), VEGETAL_DECORATION);
     }
 
-    private static String gated(String name, String type, int chance, JsonObject[] onSurface) {
+    private static String gated(String name, String type, List<JsonObject> gates, JsonObject[] onSurface) {
         Features.configured(NS, name, NS + ":" + type, null);
-        JsonObject[] placement = new JsonObject[onSurface.length + 1];
-        placement[0] = rarity(chance);
-        System.arraycopy(onSurface, 0, placement, 1, onSurface.length);
-        Features.placed(NS, name, NS + ":" + name, placement);
+        placed(name, gates, onSurface);
         return NS + ":" + name;
     }
 }

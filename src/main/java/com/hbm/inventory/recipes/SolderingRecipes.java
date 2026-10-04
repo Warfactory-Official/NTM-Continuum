@@ -29,9 +29,9 @@ import static com.hbm.items.ItemEnums.EnumCircuitType.*;
  * {@link ModIntermediateItems intermediates} + lead fine-wire (autogen) + fluids: ANALOG, BASIC (the
  * canonical "Integrated Circuit Board"), ADVANCED, CAPACITOR_BOARD, BISMOID, QUANTUM — plus the
  * machine-upgrade chains (speed/effect/power/fortune tiers I→II→III, the 1.12.2 tier-1 recipes +
- * {@code addFirstUpgrade}/{@code addSecondUpgrade}). The CONTROLLER* circuits are in 1.7's {@code if(no528)}. <b>Deferred:</b> the
- * afterburn upgrade chain (its machines aren't ported), and the {@code enableLBSM} "simple crafting"
- * ingredient reductions (the non-default full-cost values are used).
+ * {@code addFirstUpgrade}/{@code addSecondUpgrade}) and the afterburn chain. The CONTROLLER* circuits are in 1.7's
+ * {@code if(no528)}. Not ported: the {@code enableLBSM} "simple crafting" ingredient reductions (the non-default
+ * full-cost values are used).
  */
 public final class SolderingRecipes {
 
@@ -114,6 +114,9 @@ public final class SolderingRecipes {
         add(new ItemStack(ModUpgradeItems.upgrade_fortune_1.get()), 200, 1_000, null,
                 a(cir(VACUUM_TUBE, 4), cir(CAPACITOR, 1)),
                 a(new ComparableStack(ModItems.upgrade_template.get()), NB.dust().count(4)),             a());
+        add(new ItemStack(ModUpgradeItems.upgrade_afterburn_1.get()), 200, 1_000, null,             // 1.7 :185
+                a(cir(VACUUM_TUBE, 4), cir(CAPACITOR, 1)),
+                a(new ComparableStack(ModItems.upgrade_template.get()), W.dust().count(4)),              a());
 
         // 1.7 `if(no528)`: in 528 mode the tier II/III upgrades come from the precision assembler instead
         if (!com.hbm.config.GeneralConfig.enable528) {
@@ -125,6 +128,8 @@ public final class SolderingRecipes {
         addSecondUpgrade(ModUpgradeItems.upgrade_power_2.get(), ModUpgradeItems.upgrade_power_3.get());
         addFirstUpgrade(ModUpgradeItems.upgrade_fortune_1.get(), ModUpgradeItems.upgrade_fortune_2.get());
         addSecondUpgrade(ModUpgradeItems.upgrade_fortune_2.get(), ModUpgradeItems.upgrade_fortune_3.get());
+        addFirstUpgrade(ModUpgradeItems.upgrade_afterburn_1.get(), ModUpgradeItems.upgrade_afterburn_2.get());
+        addSecondUpgrade(ModUpgradeItems.upgrade_afterburn_2.get(), ModUpgradeItems.upgrade_afterburn_3.get());
         }
         // 1.7 SolderingRecipes: the satellite ID chip
         add(new ItemStack(com.hbm.items.ModSatelliteItems.sat_chip.get()), 100, 100, null,

@@ -28,6 +28,7 @@ import dev.golem.core.world.Effects;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.Raycasts;
 import com.hbm.blocks.ModFalloutBlocks;
+import com.hbm.blocks.ModNuclearBlocks;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -41,9 +42,8 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 /**
- * Shared nuclear-explosion helpers, ported from 1.12.2. Only the blast-damage path used by the Fat Man
- * is ported here; the radiation/contamination, confetti gibbing, EMP and silk-block conversion paths
- * are deferred until the hazard system lands (see IMPLEMENTATION.md §18).
+ * Shared nuclear-explosion helpers, 1.7 {@code ExplosionNukeGeneric}: blast damage, EMP, solinium and
+ * the wasteland sweeps ({@link #waste}, {@link #wasteNoSchrab}).
  */
 public final class ExplosionNukeGeneric {
 
@@ -54,12 +54,16 @@ public final class ExplosionNukeGeneric {
     }
 
     /**
-     * Damages, ignites and knocks back every entity within {@code radius} of the centre, scaled linearly
-     * by distance and blocked by line-of-sight obstruction. Server-side only ({@code hurtServer}).
+     * 1.7 ExplosionNukeGeneric.dealDamage (:67-110) over a caller-supplied entity list (the MK5 and the
+     * small nukes already gathered one). Damages, ignites and knocks back every entity within
+     * {@code radius}, scaled linearly by distance and blocked by line of sight: {@code nuclearBlast}
+     * through {@code attackEntityFromNT(..., true, true, 0, 100F, 0)} (bypasses armor, pierces up to
+     * DT 100), creative players and the 1.7 exempt projectiles are skipped, and a living entity the
+     * blast killed is gibbed by {@code ConfettiUtil}. Server-side only.
      */
     public static void dealDamage(Level world, List<Entity> list, double x, double y, double z, double radius, float maxDamage) {
-        if (!(world instanceof ServerLevel serverLevel)) return;
-        DamageSource source = world.damageSources().explosion(null, null);
+        if (!(world instanceof ServerLevel server)) return;
+        DamageSource source = ModDamageSources.source(world, ModDamageSources.NUCLEAR_BLAST); // 1.7: ModDamageSource.nuclearBlast
 
         for (Entity e : list) {
             double dist = Math.sqrt(e.distanceToSqr(x, y, z));
@@ -69,16 +73,29 @@ public final class ExplosionNukeGeneric {
             double entY = e.getY() + e.getEyeHeight();
             double entZ = e.getZ();
 
-            if (isObstructed(world, x, y, z, entX, entY, entZ, e)) continue;
+            if (isExplosionExempt(e) || isObstructed(world, x, y, z, entX, entY, entZ, e)) continue;
 
+            boolean doKnockback = true;
             double damage = maxDamage * (radius - dist) / radius;
-            boolean doKnockback = Compat.hurt(e, serverLevel, source, (float) damage);
+            if (e instanceof LivingEntity living && living.isAlive()) {
+                doKnockback = EntityDamageUtil.attackEntityFromNT(living, source, (float) damage, true, true, 0, 100F, 0);
+                // 1.7:88 gores only what the blast KILLED; balefire/TOM re-damage every tick
+                if (!living.isAlive()) ConfettiUtil.decideConfetti(living, source);
+            } else {
+                Compat.hurt(e, server, source, (float) damage);
+            }
 
-            Effects.ignite(e, 5);
+            Effects.ignite(e, 5F);
 
             if (doKnockback) {
-                Vec3 knock = new Vec3(entX - x, entY - y, entZ - z).normalize();
-                e.setDeltaMovement(e.getDeltaMovement().add(knock.x * 0.2D, knock.y * 0.2D, knock.z * 0.2D));
+                double knockX = e.getX() - x;
+                double knockY = e.getY() + e.getEyeHeight() - y;
+                double knockZ = e.getZ() - z;
+                double len = Math.sqrt(knockX * knockX + knockY * knockY + knockZ * knockZ);
+                // 1.7 Vec3.normalize() returns the zero vector below 1e-4
+                if (len >= 1.0E-4D) {
+                    e.setDeltaMovement(e.getDeltaMovement().add(knockX / len * 0.2D, knockY / len * 0.2D, knockZ / len * 0.2D));
+                }
             }
         }
     }
@@ -103,8 +120,8 @@ public final class ExplosionNukeGeneric {
     }
 
     /**
-     * Small, server-only remnant of the old nuclear wasteland conversion. It deliberately changes only
-     * natural terrain and never creates fallout layers, weather, nuclear entities, or blast effects.
+     * Port-only reduced terrain sweep, used solely by the dropped-item contamination hazard (which has no
+     * 1.7 counterpart). Every 1.7 caller uses {@link #waste} or {@link #wasteNoSchrab}.
      */
     public static void transformWaste(Level level, BlockPos center, int radius) {
         if (!(level instanceof ServerLevel) || radius <= 0) return;
@@ -134,11 +151,145 @@ public final class ExplosionNukeGeneric {
         }
     }
 
-    // --- ntm-next entity port (merge_explosion_helpers.py) ---
-    // ntm-next's wasteDest/waste/wasteNoSchrab (the 1.7 ore/plank/schrabidium transmutation sweep) are not
-    // carried: they resolve against ntm-next's ore/waste block set, which this port lays out differently;
-    // transformWaste above is this port's own sweep and the burning FOEQ calls it instead.
+    /**
+     * 1.7 ExplosionNukeGeneric.waste (:216): the wasteland sweep of the yellow barrel, the burning FOEQ
+     * and the ZIRNOX meltdown. The sphere edge is jittered per block by {@code nextInt(r22 / 5)} and
+     * the half-open loop bounds ({@code -r <= d < r}) are 1.7's. 1.7 threw for radius below 4
+     * ({@code nextInt(0)}); the jitter bound is clamped to 1 there instead.
+     */
+    public static void waste(Level world, BlockPos center, int radius) {
+        sweep(world, center, radius, false);
+    }
 
+    /** 1.7 ExplosionNukeGeneric.wasteNoSchrab (:336), the multi-bomb's poison sweep. */
+    public static void wasteNoSchrab(Level world, BlockPos center, int radius) {
+        sweep(world, center, radius, true);
+    }
+
+    private static void sweep(Level world, BlockPos center, int radius, boolean noSchrab) {
+        if (!(world instanceof ServerLevel)) return;
+        int r = radius;
+        int r22 = r * r / 2;
+        int jitter = Math.max(1, r22 / 5);
+        RandomSource rand = world.getRandom();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int xx = -r; xx < r; xx++) {
+            int xs = xx * xx;
+            for (int yy = -r; yy < r; yy++) {
+                int ys = xs + yy * yy;
+                for (int zz = -r; zz < r; zz++) {
+                    int zs = ys + zz * zz;
+                    if (zs < r22 + rand.nextInt(jitter)) {
+                        pos.set(center.getX() + xx, center.getY() + yy, center.getZ() + zz);
+                        if (world.getBlockState(pos).isAir()) continue;
+                        if (noSchrab) wasteDestNoSchrab(world, pos);
+                        else wasteDest(world, pos);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void set(Level world, BlockPos pos, Block block) {
+        world.setBlock(pos, block.defaultBlockState(), Block.UPDATE_ALL); // 1.7 setBlock(x, y, z, b) is flag 3
+    }
+
+    private static void clear(Level world, BlockPos pos) {
+        world.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS); // 1.7 setBlock(..., air, 0, 2)
+    }
+
+    /** 1.7 wasteDest (:238). 1.7's sand meta 0/1 are sand and red sand; meta-10 mushroom blocks are stems. */
+    public static void wasteDest(Level world, BlockPos pos) {
+        if (world.isClientSide()) return;
+        BlockState state = world.getBlockState(pos);
+        Block b = state.getBlock();
+        RandomSource random = world.getRandom();
+        if (state.is(BlockTags.WOODEN_DOORS) || b == Blocks.IRON_DOOR) {
+            clear(world, pos);
+        } else if (b == Blocks.GRASS_BLOCK) {
+            set(world, pos, ModFalloutBlocks.waste_earth.get());
+        } else if (b == Blocks.MYCELIUM) {
+            set(world, pos, ModFalloutBlocks.waste_mycelium.get());
+        } else if (b == Blocks.SAND || b == Blocks.RED_SAND) {
+            if (random.nextInt(20) == 1) {
+                set(world, pos, b == Blocks.SAND ? ModFalloutBlocks.waste_trinitite.get() : ModFalloutBlocks.waste_trinitite_red.get());
+            }
+        } else if (b == Blocks.CLAY) {
+            set(world, pos, Blocks.TERRACOTTA);
+        } else if (b == Blocks.MOSSY_COBBLESTONE) {
+            set(world, pos, Blocks.COAL_ORE);
+        } else if (b == Blocks.COAL_ORE) {
+            int rand = random.nextInt(10);
+            if (rand == 1 || rand == 2 || rand == 3) set(world, pos, Blocks.DIAMOND_ORE);
+            if (rand == 9) set(world, pos, Blocks.EMERALD_ORE);
+        } else if (isLegacyLog(state)) {
+            set(world, pos, ModFalloutBlocks.waste_log.get());
+        } else if (b == Blocks.MUSHROOM_STEM) {
+            set(world, pos, ModFalloutBlocks.waste_log.get());
+        } else if (b == Blocks.BROWN_MUSHROOM_BLOCK || b == Blocks.RED_MUSHROOM_BLOCK) {
+            clear(world, pos);
+        } else if (state.instrument() == NoteBlockInstrument.BASS && Compat.isSolidRender(state)
+                && b != ModFalloutBlocks.waste_log.get()) {
+            // 1.7 Material.wood and isOpaqueCube; the bass instrument is the modern wood marker (as in solinium)
+            set(world, pos, ModBlocks.waste_planks.get());
+        } else if (b == ModNuclearBlocks.ore_uranium.get()) {
+            set(world, pos, random.nextInt(getSchrabOreChance()) == 1
+                    ? ModBlocks.ore_schrabidium.get() : ModNuclearBlocks.ore_uranium_scorched.get());
+        } else if (b == ModNuclearBlocks.ore_nether_uranium.get()) {
+            set(world, pos, random.nextInt(getSchrabOreChance()) == 1
+                    ? ModBlocks.ore_nether_schrabidium.get() : ModNuclearBlocks.ore_nether_uranium_scorched.get());
+        } else if (b == ModNuclearBlocks.ore_gneiss_uranium.get()) {
+            set(world, pos, random.nextInt(getSchrabOreChance()) == 1
+                    ? ModBlocks.ore_gneiss_schrabidium.get() : ModNuclearBlocks.ore_gneiss_uranium_scorched.get());
+        }
+    }
+
+    /** 1.7 wasteDestNoSchrab (:358). */
+    public static void wasteDestNoSchrab(Level world, BlockPos pos) {
+        if (world.isClientSide()) return;
+        BlockState state = world.getBlockState(pos);
+        Block b = state.getBlock();
+        RandomSource random = world.getRandom();
+        if (b == Blocks.GLASS || b instanceof StainedGlassBlock || state.is(BlockTags.WOODEN_DOORS)
+                || b == Blocks.IRON_DOOR || state.is(BlockTags.LEAVES)) {
+            set(world, pos, Blocks.AIR); // 1.7 setBlock(x, y, z, air) is flag 3 in this branch
+        } else if (b == Blocks.GRASS_BLOCK) {
+            set(world, pos, ModFalloutBlocks.waste_earth.get());
+        } else if (b == Blocks.MYCELIUM) {
+            set(world, pos, ModFalloutBlocks.waste_mycelium.get());
+        } else if (b == Blocks.SAND || b == Blocks.RED_SAND) {
+            if (random.nextInt(20) == 1) {
+                set(world, pos, b == Blocks.SAND ? ModFalloutBlocks.waste_trinitite.get() : ModFalloutBlocks.waste_trinitite_red.get());
+            }
+        } else if (b == Blocks.CLAY) {
+            set(world, pos, Blocks.TERRACOTTA);
+        } else if (b == Blocks.MOSSY_COBBLESTONE) {
+            set(world, pos, Blocks.COAL_ORE);
+        } else if (b == Blocks.COAL_ORE) {
+            int rand = random.nextInt(30);
+            if (rand == 1 || rand == 2 || rand == 3) set(world, pos, Blocks.DIAMOND_ORE);
+            if (rand == 29) set(world, pos, Blocks.EMERALD_ORE);
+        } else if (isLegacyLog(state)) {
+            set(world, pos, ModFalloutBlocks.waste_log.get());
+        } else if (state.is(BlockTags.PLANKS)) {
+            set(world, pos, ModBlocks.waste_planks.get());
+        } else if (b == Blocks.MUSHROOM_STEM) {
+            set(world, pos, ModFalloutBlocks.waste_log.get());
+        } else if (b == Blocks.BROWN_MUSHROOM_BLOCK || b == Blocks.RED_MUSHROOM_BLOCK) {
+            clear(world, pos);
+        }
+    }
+
+    /** 1.7 {@code Blocks.log || Blocks.log2}: the overworld logs (not nether stems, not this mod's logs). */
+    private static boolean isLegacyLog(BlockState state) {
+        return state.is(BlockTags.LOGS_THAT_BURN) && state.getBlock() != ModFalloutBlocks.waste_log.get();
+    }
+
+    /** 1.7 VersatileConfig.getSchrabOreChance: hbm.cfg LBSM_schrabOreRate (20) in LBSM mode, else 250. */
+    public static int getSchrabOreChance() {
+        if (com.hbm.config.GeneralConfig.enableLBSM) return com.hbm.config.GeneralConfig.schrabRate;
+        return 250;
+    }
 
     public static void empBlast(Level world, BlockPos center, int bombStartStrength) {
         if (world.isClientSide()) return;
@@ -239,44 +390,6 @@ public final class ExplosionNukeGeneric {
     public static void dealDamage(Level world, double x, double y, double z, double radius, float maxDamage) {
         AABB box = new AABB(x, y, z, x, y, z).inflate(radius);
         // 1.7: not just LivingEntity.
-        List<Entity> list = world.getEntities(null, box);
-        DamageSource source = ModDamageSources.source(world, ModDamageSources.NUCLEAR_BLAST); // 1.7: ModDamageSource.nuclearBlast
-
-        for (Entity e : list) {
-            double dist = Math.sqrt(e.distanceToSqr(x, y, z));
-            if (dist > radius) continue;
-
-            double entX = e.getX();
-            double entY = e.getY() + e.getEyeHeight();
-            double entZ = e.getZ();
-
-            if (isExplosionExempt(e) || isObstructed(world, x, y, z, entX, entY, entZ, e)) continue;
-
-            boolean doKnockback = true;
-            double damage = maxDamage * (radius - dist) / radius;
-            if (e instanceof LivingEntity living && living.isAlive()) {
-                doKnockback = EntityDamageUtil.attackEntityFromNT(living, source, (float) damage, true, true, 0, 100F,
-                        0);
-                // 1.7:88 gores only what the blast KILLED; balefire/TOM re-damage every tick
-                if (!living.isAlive()) ConfettiUtil.decideConfetti(living, source);
-            } else if (world instanceof ServerLevel server) {
-                Compat.hurt(e, server, source, (float) damage);
-            }
-
-            dev.golem.core.world.Effects.ignite(e, 5F);
-
-            if (doKnockback) {
-                double knockX = e.getX() - x;
-                double knockY = e.getY() + e.getEyeHeight() - y;
-                double knockZ = e.getZ() - z;
-                double len = Math.sqrt(knockX * knockX + knockY * knockY + knockZ * knockZ);
-                if (len != 0D) {
-                    knockX /= len;
-                    knockY /= len;
-                    knockZ /= len;
-                    e.setDeltaMovement(e.getDeltaMovement().add(knockX * 0.2D, knockY * 0.2D, knockZ * 0.2D));
-                }
-            }
-        }
+        dealDamage(world, world.getEntities(null, box), x, y, z, radius, maxDamage);
     }
 }

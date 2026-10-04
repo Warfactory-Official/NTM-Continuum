@@ -25,14 +25,16 @@ public final class StorageDrumRecipes {
 
     private StorageDrumRecipes() {}
 
-    /** 1.7 {@code VersatileConfig.getLongDecayChance}: 3 h, 15 h in 528 mode (the LBSM 15 min is not ported). */
+    /** 1.7 {@code VersatileConfig.getLongDecayChance}: 3 h, 15 h in 528 mode, 15 min with LBSM_shortDecay. */
     public static int longDecayChance() {
-        return com.hbm.config.GeneralConfig.enable528 ? 15 * HOUR : 3 * HOUR;
+        return com.hbm.config.GeneralConfig.enable528 ? 15 * HOUR
+                : (com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMShorterDecay) ? 15 * MINUTE : 3 * HOUR;
     }
 
-    /** 1.7 {@code VersatileConfig.getShortDecayChance}: 15 min, 3 h in 528 mode (the LBSM 3 min is not ported). */
+    /** 1.7 {@code VersatileConfig.getShortDecayChance}: 15 min, 3 h in 528 mode, 3 min with LBSM_shortDecay. */
     public static int shortDecayChance() {
-        return com.hbm.config.GeneralConfig.enable528 ? 3 * HOUR : 15 * MINUTE;
+        return com.hbm.config.GeneralConfig.enable528 ? 3 * HOUR
+                : (com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMShorterDecay) ? 3 * MINUTE : 15 * MINUTE;
     }
 
     private static final int MINUTE = 60 * 20;

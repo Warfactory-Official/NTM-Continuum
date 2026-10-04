@@ -62,7 +62,9 @@ public final class CombinationRecipes {
 
         add(Mats.MAT_CHLOROCALCITE.dust(), new ItemStack(ModItems.powder_calcium.get()), fluid(Fluids.CHLORINE, 250));
         add(Mats.MAT_MOLYSITE.dust(), new ItemStack(Items.IRON_INGOT), fluid(Fluids.CHLORINE, 250));
-        add(Mats.MAT_CINNABAR.crystal(), new ItemStack(ModItems.sulfur.get()), fluid(Fluids.MERCURY, 100));
+        // 1.7 CINNABAR.crystal() is the "crystalCinnabar" ore name, which 1.7 registers for the cinnabar gem (hbm:cinnabar),
+        // not for the acidizer crystal that the port's c:crystals/cinnabar tag holds
+        add(Mats.MAT_CINNABAR.gem(), new ItemStack(ModItems.sulfur.get()), fluid(Fluids.MERCURY, 100));
         add(new ComparableStack(Items.GLOWSTONE_DUST), new ItemStack(ModItems.sulfur.get()), fluid(Fluids.CHLORINE, 100));
         add(Mats.MAT_SODALITE.gem(), new ItemStack(ModItems.powder_sodium.get()), fluid(Fluids.CHLORINE, 100));
         add(new ComparableStack(ModIntermediateItems.chunk(com.hbm.items.ItemEnums.EnumChunkType.CRYOLITE)),

@@ -20,6 +20,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -35,25 +36,33 @@ import com.hbm.sound.ModSounds;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * Diesel Generator — 1:1 port of the 1.12.2 {@code TileEntityMachineDiesel} and the port's <b>first
- * real {@link IEnergyProviderMK2} machine generator</b>. Burns any {@code FT_Combustible} fluid at
- * 1 mB/tick into HE and pushes it to the 6 neighbours. Power per tick = {@code combustionEnergy/1000 ·
- * gradeEfficiency}, grade efficiency MEDIUM 0.5 / HIGH 0.75 / AERO 0.1 (LOW refuses); powerCap is
- * maxPower (50k) or ×10 (500k) when the fuel is NITAN. Redstone signal switches it off. 5 slots
- * (0→1 fuel container drain, 2 battery-to-charge, 3→4 fluid identifier + output).
+ * Diesel Generator — a straight port of 1.7.10's {@code TileEntityMachineDiesel} (original-hbm). Burns any
+ * {@code FT_Combustible} fluid at 1 mB/tick into HE and pushes it to the 6 neighbours. Power per tick =
+ * {@code combustionEnergy/1000 · gradeEfficiency}, grade efficiency MEDIUM 0.5 / HIGH 0.75 / AERO 0.1 (LOW
+ * refuses); buffer 50,000 HE, fuel tank 16,000 mB. It only runs while switched on with the GUI button
+ * ({@code isOn}) and no redstone signal. 4 slots: 0→1 fuel container drain, 2 battery-to-charge, 3 fluid
+ * identifier (changing the type empties the tank, as 1.7's {@code FluidTank.setType}).
+ * (1.12.2's 4,000 mB tank, ×10 NITAN power cap and identifier output slot are not in the 1.7 spec.)
  *
  * <p>Every fifth burning tick the fuel's {@code FT_Polluting} burn table goes into the 100 mB smoke tanks,
  * which it offers to all six neighbours with its power.
  */
 public class TileEntityMachineDiesel extends TileEntityMachinePolluting
-        implements MenuProvider, IEnergyProviderMK2, IFluidStandardTransceiverMK2 {
+        implements MenuProvider, IEnergyProviderMK2, IFluidStandardTransceiverMK2, WorldlyContainer {
 
+    public static final int SLOT_COUNT = 4;
+    public static final int FUEL_CAP = 16_000;
     public long power;
     public static final long maxPower = 50000;
-    public long powerCap = 50000;
+    public long powerCap = maxPower;
     public FluidTankNTM tank;
+    public boolean isOn = false;
     public boolean wasOn = false;
     private AudioWrapper audio;
+
+    private static final int[] SLOTS_TOP = {0};
+    private static final int[] SLOTS_BOTTOM = {1, 2};
+    private static final int[] SLOTS_SIDE = {2};
 
     /** Grade efficiency table (old {@code fuelEfficiency}); LOW/GAS absent → not burnable here. */
     private static double efficiency(FluidCombustion.FuelGrade grade) {
@@ -66,8 +75,8 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
     }
 
     public TileEntityMachineDiesel(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MACHINE_DIESEL.get(), pos, state, 5, 100);
-        tank = new FluidTankNTM(Fluids.DIESEL, 4_000);
+        super(ModBlockEntities.MACHINE_DIESEL.get(), pos, state, SLOT_COUNT, 100);
+        tank = new FluidTankNTM(Fluids.DIESEL, FUEL_CAP);
     }
 
     @Override
@@ -86,18 +95,17 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineDiesel te) {
         te.wasOn = false;
+
+        te.setTypeFromFluidId();
+        te.loadTank();
+
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             te.tryProvide(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
             te.sendSmoke(pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
         }
 
-        te.setTypeFromFluidId();
-        te.loadTank();
-
-        te.powerCap = te.tank.getTankType() == Fluids.NITAN ? maxPower * 10 : maxPower;
-
         te.power = Library.chargeItemsFromTE(te.inventory, 2, te.power, te.powerCap);
-        te.generate(level);
+        if (te.isOn) te.generate(level);
         te.networkPackNT();
     }
 
@@ -118,6 +126,7 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
     }
 
     private void generate(Level level) {
+        if (!this.isOn) return;
         if (level.hasNeighborSignal(worldPosition)) return;
         if (hasAcceptableFuel() && tank.getFill() > 0) {
             this.wasOn = true;
@@ -164,25 +173,56 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
         }
     }
 
+    /** 1.7 {@code tank.setType(3, slots)}: a different identifier switches the type and empties the tank. */
     private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(3);
         if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (t != tank.getTankType() && tank.getFill() == 0) {
+        if (t != tank.getTankType()) {
             tank.setTankType(t);
+            tank.setFill(0);
             setChanged();
         }
     }
 
+    /** The GUI on/off switch (1.7 {@code receiveControl("turnOn")}); button id 0. */
+    @Override
+    public void handleButtonPacket(int value, int meta) {
+        if (value == 0) {
+            this.isOn = !this.isOn;
+            setChanged();
+        }
+    }
+
+    /** 1.7 {@code isItemValidForSlot}: 0 fuel containers holding the tank's fluid, 2 batteries. */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
+        if (slot == 0) return true;
         if (slot == 2) return Library.isBattery(stack);
         if (slot == 3) return stack.getItem() instanceof IItemFluidId;
         // Slot 1 (emptied-container out) must stay TRUE: the machine writes it via inventory.insertItem,
-        // which validates against this method — false here silently kills loadTank (the chemplant
-        // convention: the MENU's take-only slot blocks the player, not the BE validity).
-        if (slot == 4) return false;
-        return true;
+        // which validates against this method; the MENU's take-only slot blocks the player.
+        return slot == 1;
+    }
+
+    @Override
+    public int[] getSlotsForFace(net.minecraft.core.Direction side) {
+        return side == net.minecraft.core.Direction.DOWN ? SLOTS_BOTTOM : side == net.minecraft.core.Direction.UP ? SLOTS_TOP : SLOTS_SIDE;
+    }
+
+    @Override
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+        return slot != 1 && isItemValidForSlot(slot, stack);
+    }
+
+    /** 1.7 {@code canExtractItem}: empty canisters/tanks from 1, fully charged batteries from 2. */
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+        if (slot == 1) return stack.getItem() == com.hbm.items.ModItems.canister_empty.get()
+                || stack.getItem() == com.hbm.items.ModItems.tank_steel.get();
+        if (slot == 2) return stack.getItem() instanceof com.hbm.api.energymk2.IBatteryItem battery
+                && battery.getCharge(stack) == battery.getMaxCharge(stack);
+        return false;
     }
 
     // --- IEnergyProviderMK2 ---
@@ -216,6 +256,7 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
         super.serialize(buf);
         buf.writeLong(power);
         buf.writeLong(powerCap);
+        buf.writeBoolean(isOn);
         buf.writeBoolean(wasOn);
         tank.serialize(buf);
     }
@@ -225,6 +266,7 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
         super.deserialize(buf);
         power = buf.readLong();
         powerCap = buf.readLong();
+        isOn = buf.readBoolean();
         wasOn = buf.readBoolean();
         tank.deserialize(buf);
     }
@@ -234,7 +276,8 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
         super.saveData(output);
         output.putLong("powerTime", power);
         output.putLong("powerCap", powerCap);
-        tank.writeToNBT(output, "tank");
+        output.putBoolean("isOn", isOn);
+        tank.writeToNBT(output, "fuel");
     }
 
     @Override
@@ -242,6 +285,7 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
         super.loadData(input);
         power = input.getLongOr("powerTime", 0L);
         powerCap = input.getLongOr("powerCap", maxPower);
-        tank.readFromNBT(input, "tank");
+        isOn = input.getBooleanOr("isOn", false);
+        tank.readFromNBT(input, "fuel");
     }
 }

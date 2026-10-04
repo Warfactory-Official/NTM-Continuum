@@ -43,11 +43,13 @@ import java.util.Random;
  * {@link ModuleMachineAssembler}. Its {@code didProcess} flag is synced to the client where it gates
  * the arm/ring {@link #clientTick animation} (so the machine only moves while actually assembling).
  *
- * <p>Functional now: item recipes (e.g. the plate templates), power from the network, the GUI, the
- * blueprint templates, and machine upgrades (slots 2–3: SPEED/POWER/OVERDRIVE, 1.12.2 formulas).
- * Deferred (see IMPLEMENTATION.md §18): fluids, battery-item charging and item auto-IO.
+ * <p>As 1.7.10: item and fluid recipes (one 4,000 mB input and one output tank, resized per recipe by the
+ * module), power from the network and from a battery in slot 0, a buffer of {@code max(power,
+ * recipe.power × 100, 100,000)}, the blueprint templates, machine upgrades (slots 2–3:
+ * SPEED/POWER/OVERDRIVE) and hopper/pipe access to the 12 inputs and the output.
  */
-public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, WorldlyContainer, IControlReceiver, IUpgradeInfoProvider, IRORValueProvider, IRORInteractive {
+public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2,
+        com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2, WorldlyContainer, IControlReceiver, IUpgradeInfoProvider, IRORValueProvider, IRORInteractive {
 
     /** Slots a hopper/pipe may touch: the 12 inputs (insert) + the output (extract). */
     private static final int[] IO_SLOTS = {4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
@@ -55,6 +57,10 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     public long power;
     public long maxPower = 100_000;
     public boolean didProcess = false;
+    public final com.hbm.inventory.fluid.tank.FluidTankNTM inputTank =
+            new com.hbm.inventory.fluid.tank.FluidTankNTM(com.hbm.inventory.fluid.Fluids.NONE, 4_000);
+    public final com.hbm.inventory.fluid.tank.FluidTankNTM outputTank =
+            new com.hbm.inventory.fluid.tank.FluidTankNTM(com.hbm.inventory.fluid.Fluids.NONE, 4_000);
 
     public final ModuleMachineAssembler assemblerModule;
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
@@ -73,7 +79,8 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     public TileEntityMachineAssemblyMachine(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_ASSEMBLY_MACHINE.get(), pos, state, 17);
         AssemblyMachineRecipes.INSTANCE.registerRecipes(); // idempotent; registries are flushed by now
-        this.assemblerModule = new ModuleMachineAssembler(0, this, this.inventory).itemInput(4).itemOutput(16);
+        this.assemblerModule = new ModuleMachineAssembler(0, this, this.inventory).itemInput(4).itemOutput(16)
+                .fluidInput(inputTank).fluidOutput(outputTank);
     }
 
     @Override
@@ -83,7 +90,7 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        if (slot == 0) return true;                                       // battery slot (charging deferred)
+        if (slot == 0) return true;                                       // battery slot (1.7 accepts anything)
         if (slot == 1) return stack.getItem() instanceof ItemBlueprints;  // template
         if (slot >= 2 && slot <= 3) return Library.isMachineUpgrade(stack); // upgrades (any type, like SlotUpgrade)
         if (slot == 16) return false;                                     // output
@@ -106,12 +113,23 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return slot == 16; // only the output may be extracted
+        return slot == 16 || assemblerModule.isSlotClogged(slot); // 1.7: the output, or a clogged input
     }
 
     // --- server: power + processing ---
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineAssemblyMachine te) {
+        if (te.maxPower <= 0) te.maxPower = 1_000_000;
+        // 1.7: the buffer floats to the selected recipe's power x100, never below the stored power or 100k.
+        com.hbm.inventory.recipes.loader.GenericRecipe recipe = te.assemblerModule.getRecipe();
+        if (recipe != null) te.maxPower = recipe.power * 100;
+        te.maxPower = com.hbm.util.BobMathUtil.max(te.power, te.maxPower, 100_000);
+        te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.maxPower);
+
+        for (DirPos dp : te.getConPos()) {
+            if (te.outputTank.getFill() > 0) te.tryProvide(te.outputTank, level, dp);
+        }
+
         // Upgrades (1.12.2 formulas): SPEED +1/3 progress & +100% power each, OVERDRIVE +1 progress &
         // +333% power each, POWER -25% power each; levels clamped by getValidUpgrades via the manager.
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
@@ -190,6 +208,10 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     @Override public long getMaxPower() { return maxPower; }
     @Override public long getReceiverSpeed() { return maxPower; }
 
+    @Override public com.hbm.inventory.fluid.tank.FluidTankNTM[] getReceivingTanks() { return new com.hbm.inventory.fluid.tank.FluidTankNTM[]{inputTank}; }
+    @Override public com.hbm.inventory.fluid.tank.FluidTankNTM[] getSendingTanks() { return new com.hbm.inventory.fluid.tank.FluidTankNTM[]{outputTank}; }
+    @Override public com.hbm.inventory.fluid.tank.FluidTankNTM[] getAllTanks() { return new com.hbm.inventory.fluid.tank.FluidTankNTM[]{inputTank, outputTank}; }
+
     // --- MenuProvider ---
 
     @Override
@@ -251,6 +273,8 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
+        inputTank.serialize(buf);
+        outputTank.serialize(buf);
         buf.writeLong(power);
         buf.writeLong(maxPower);
         buf.writeBoolean(didProcess);
@@ -260,6 +284,8 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     @Override
     public void deserialize(RegistryFriendlyByteBuf buf) {
         super.deserialize(buf);
+        inputTank.deserialize(buf);
+        outputTank.deserialize(buf);
         power = buf.readLong();
         maxPower = buf.readLong();
         didProcess = buf.readBoolean();
@@ -269,14 +295,20 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
+        inputTank.writeToNBT(output, "i");
+        outputTank.writeToNBT(output, "o");
         output.putLong("power", power);
+        output.putLong("maxPower", maxPower);
         assemblerModule.save(output);
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
+        inputTank.readFromNBT(input, "i");
+        outputTank.readFromNBT(input, "o");
         power = input.getLongOr("power", 0L);
+        maxPower = input.getLongOr("maxPower", 100_000L);
         assemblerModule.load(input);
     }
 

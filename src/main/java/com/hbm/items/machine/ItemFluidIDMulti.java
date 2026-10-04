@@ -85,8 +85,8 @@ public class ItemFluidIDMulti extends CompatItem implements IItemFluidId, IItemC
 
     @Override
     public void receiveControl(Player player, ItemStack stack, CompoundTag data) {
-        if (Tags.contains(data, "primary")) setType(stack, Fluids.fromID(Tags.getIntOr(data, "primary", 0)), true);
-        if (Tags.contains(data, "secondary")) setType(stack, Fluids.fromID(Tags.getIntOr(data, "secondary", 0)), false);
+        if (Tags.contains(data, "primary")) setType(stack, Fluids.read(data, "primary"), true);
+        if (Tags.contains(data, "secondary")) setType(stack, Fluids.read(data, "secondary"), false);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class ItemFluidIDMulti extends CompatItem implements IItemFluidId, IItemC
 
     public static void setType(ItemStack stack, FluidType type, boolean primary) {
         CompoundTag tag = ModUtilityToolItems.FLUID_MULTI.getOr(stack, new CompoundTag()).copy();
-        tag.putInt("fluid" + (primary ? 1 : 2), type.getID());
+        Fluids.write(tag, "fluid" + (primary ? 1 : 2), type);
         ModUtilityToolItems.FLUID_MULTI.set(stack, tag);
         // 1.7 updateMeta + getColorFromItemStack: the overlay follows the primary fluid.
         if (primary) ModelData.setColor(stack, type.getColor() < 0 ? 0xFFFFFF : type.getColor());
@@ -114,6 +114,6 @@ public class ItemFluidIDMulti extends CompatItem implements IItemFluidId, IItemC
     public static FluidType getType(ItemStack stack, boolean primary) {
         CompoundTag tag = ModUtilityToolItems.FLUID_MULTI.getOr(stack, null);
         if (tag == null) return Fluids.NONE;
-        return Fluids.fromID(Tags.getIntOr(tag, "fluid" + (primary ? 1 : 2), 0));
+        return Fluids.read(tag, "fluid" + (primary ? 1 : 2));
     }
 }

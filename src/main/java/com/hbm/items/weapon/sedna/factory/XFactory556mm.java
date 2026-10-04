@@ -67,4 +67,15 @@ public final class XFactory556mm {
     public static BulletConfig[] incendiary() {
         return new BulletConfig[] {r556_inc_sp, r556_inc_fmj, r556_inc_jhp, r556_inc_ap};
     }
+
+    /** 1.7 {@code LAMBDA_NAME_G3} (gun_g3, gun_g3_zebra). */
+    public static final java.util.function.Function<ItemStack, String> LAMBDA_NAME_G3 = stack -> {
+        if (com.hbm.items.weapon.sedna.mods.XWeaponModManager.hasUpgrade(stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SILENCER)
+                && com.hbm.items.weapon.sedna.mods.XWeaponModManager.hasUpgrade(stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_NO_STOCK)
+                && com.hbm.items.weapon.sedna.mods.XWeaponModManager.hasUpgrade(stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_FURNITURE_BLACK)
+                && com.hbm.items.weapon.sedna.mods.XWeaponModManager.hasUpgrade(stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SCOPE)) return XFactory12ga.mutated(stack, "_infiltrator");
+        if (!com.hbm.items.weapon.sedna.mods.XWeaponModManager.hasUpgrade(stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_NO_STOCK)
+                && com.hbm.items.weapon.sedna.mods.XWeaponModManager.hasUpgrade(stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_FURNITURE_GREEN)) return XFactory12ga.mutated(stack, "_a3");
+        return null;
+    };
 }

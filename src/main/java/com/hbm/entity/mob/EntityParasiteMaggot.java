@@ -17,7 +17,7 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
@@ -44,7 +44,10 @@ public class EntityParasiteMaggot extends CompatMonster {
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
                       .add(Attributes.MAX_HEALTH, 8.0D)
-                      .add(Attributes.MOVEMENT_SPEED, 1.0D)
+                      // 1.7 set 1.0, but the maggot ran the pre-goal ("old") AI, which walked moveForward = 1.0
+                      // times a flat getAIMoveSpeed() of 0.1. Goal AI walks speed * speed, so the same pace is
+                      // sqrt(0.1) (vanilla's silverfish went 1.0 to 0.25 in the same conversion).
+                      .add(Attributes.MOVEMENT_SPEED, Math.sqrt(1.0D * 0.1D))
                       .add(Attributes.ATTACK_DAMAGE, 2.0D)
                       .add(Attributes.FOLLOW_RANGE, 16.0D);
     }
@@ -58,12 +61,13 @@ public class EntityParasiteMaggot extends CompatMonster {
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, false));
-        goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+        goalSelector.addGoal(3, new RandomStrollGoal(this, 1.0D)); // 1.7 old-AI wander did not avoid water
         goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 8F));
         goalSelector.addGoal(5, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
         // 1.7 findPlayerToAttack -> getClosestVulnerablePlayerToEntity, which never checked sight
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false));
+        // 1.7 asked again every tick while it had no target, hence the 0 interval
+        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 0, false, false, null));
     }
 
     // 1.7 getCreatureAttribute() == ARTHROPOD: data/minecraft/tags/entity_type/arthropod.json

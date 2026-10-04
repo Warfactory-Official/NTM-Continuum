@@ -21,8 +21,8 @@ import java.util.function.BiConsumer;
  * The machine recipes of the crate/deco wave, each handed to its registry from one line in that registry's own
  * registration: 1.7 {@code AssemblyMachineRecipes} "ass.cap*" (two stacks of 64 caps into a cap block),
  * {@code AnvilRecipes} recycling of the FM radio and the filing cabinet, and {@code ShredderRecipes} for the
- * tungsten crate and the bobbleheads (1.7 gave each bobblehead its own {@code scrap_plastic} subtype; the port's
- * plastic scrap has none, so every figure shreds to the one item).
+ * tungsten crate and the bobbleheads (each figure shreds to its own {@code scrap_plastic_<type>}, see
+ * {@link #bobbleScrap}).
  */
 public final class DecoCrateMachineRecipes {
 
@@ -66,6 +66,17 @@ public final class DecoCrateMachineRecipes {
     /** 1.7 ShredderRecipes:281 and 337-341. */
     public static void shredder(BiConsumer<Item, ItemStack> set) {
         set.accept(ModDecoCrateBlocks.crate_tungsten.get().asItem(), stack("powder_tungsten", 36));
-        set.accept(ModDecoCrateBlocks.bobblehead.get().asItem(), stack("scrap_plastic", 1));
+        // the table entry is the plain (variant 0, NONE) figure; ShredderRecipes asks bobbleScrap for the others
+        set.accept(ModDecoCrateBlocks.bobblehead.get().asItem(), stack("scrap_plastic_board_blank", 1));
+    }
+
+    /** 1.7 ShredderRecipes:338-341: a bobblehead gives the plastic scrap of its {@code BobbleType.scrap}; else null. */
+    public static ItemStack bobbleScrap(ItemStack stack) {
+        if (stack.isEmpty() || stack.getItem() != ModDecoCrateBlocks.bobblehead.get().asItem()
+                || !(stack.getItem() instanceof com.hbm.items.block.ItemBlockDecoVariant item)) return null;
+        com.hbm.blocks.generic.BlockBobble.BobbleType type =
+                com.hbm.blocks.generic.BlockBobble.BobbleType.of(item.variant(stack));
+        ItemStack scrap = stack("scrap_plastic_" + type.scrap.toLowerCase(Locale.US), 1);
+        return scrap.isEmpty() ? null : scrap;
     }
 }

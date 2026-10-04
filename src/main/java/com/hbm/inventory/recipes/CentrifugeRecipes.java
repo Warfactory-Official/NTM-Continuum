@@ -91,6 +91,9 @@ public final class CentrifugeRecipes {
                 item(ModItems.powder_emerald, 1), stack(Items.GRAVEL));
         add(F.ore(), item(ModItems.fluorite, 3), item(ModItems.fluorite, 3),
                 item(ModItems.gem_sodalite, 1), stack(Items.GRAVEL));
+        // 1.7 CentrifugeRecipes:168 (default, non-LBSM count). 1.7 ModItems.ingot_mercury is registered as "nugget_mercury" (the droplet), so a 1.7 mercury "ingot" is one hbm:nugget_mercury.
+        add(oreTag("redstone"), stack(Items.REDSTONE, 3), stack(Items.REDSTONE, 3),
+                item(ModItems.nugget_mercury, 1), stack(Items.GRAVEL));
         add(oreTag("lapis"), item(ModItems.powder_lapis, 6), item(ModItems.powder_cobalt_tiny, 1),
                 item(ModItems.gem_sodalite, 1), stack(Items.GRAVEL));
         add(CO.ore(), item(ModItems.powder_cobalt, 2), item(ModItems.powder_iron, 1),
@@ -108,18 +111,23 @@ public final class CentrifugeRecipes {
                 item(ModItems.powder_boron_tiny, 1), item(ModItems.dust_tiny, 6));
         add(exact(Items.BLAZE_ROD), stack(Items.BLAZE_POWDER), stack(Items.BLAZE_POWDER),
                 fuel(ModFuelItems.powder_fire, 1), fuel(ModFuelItems.powder_fire, 1));
-        add(exact(ModFuelItems.ingot_schraranium), item(ModItems.nugget_schrabidium, 2),
-                item(ModItems.nugget_schrabidium, 1), item(ModItems.nugget_uranium, 3),
-                item(ModItems.nugget_neptunium, 2));
-        add(exact(ModItems.centrifuge_element), item(ModItems.powder_cobalt_tiny, 2),
-                item(ModItems.powder_boron_tiny, 2), item(ModItems.powder_niobium_tiny, 2),
-                item(ModItems.nugget_zirconium, 3));
+        // 1.7 CentrifugeRecipes:186 and :210. (The port's schraranium-ingot and centrifuge-element entries were
+        // 1.12.2 additions, absent from 1.7; removed in fix phase 3.)
+        add(exact(com.hbm.blocks.ModDecoContent.block_euphemium_cluster.get().asItem()), item(ModItems.nugget_euphemium, 7),
+                item(ModItems.powder_schrabidium, 4), item(ModItems.ingot_starmetal, 2), item(ModItems.nugget_solinium, 2));
+        add(exact(com.hbm.blocks.ModBlocks.block_slag.get().asItem()), stack(Items.GRAVEL), fuel(ModFuelItems.powder_fire, 1),
+                item(ModItems.powder_calcium, 1), item(ModItems.dust, 1));
 
         // Crystal processing.
         add(exact(ModFuelItems.crystal_coal), fuel(ModFuelItems.powder_coal, 3), fuel(ModFuelItems.powder_coal, 3),
                 fuel(ModFuelItems.powder_coal, 3), item(ModItems.powder_lithium_tiny, 1));
         add(exact(ModItems.crystal_iron), item(ModItems.powder_iron, 2), item(ModItems.powder_iron, 2),
                 item(ModItems.powder_titanium, 1), item(ModItems.powder_lithium_tiny, 1));
+        // 1.7 CentrifugeRecipes:307-308; mercury in 1.7 ingot_mercury units (= hbm:nugget_mercury).
+        add(exact(ModItems.crystal_gold), item(ModItems.powder_gold, 2), item(ModItems.powder_gold, 2),
+                item(ModItems.nugget_mercury, 1), item(ModItems.powder_lithium_tiny, 1));
+        add(exact(ModItems.crystal_redstone), stack(Items.REDSTONE, 3), stack(Items.REDSTONE, 3),
+                stack(Items.REDSTONE, 3), item(ModItems.nugget_mercury, 3));
         add(exact(ModItems.crystal_lapis), item(ModItems.powder_lapis, 4), item(ModItems.powder_lapis, 4),
                 item(ModItems.powder_cobalt, 1), item(ModItems.gem_sodalite, 2));
         add(exact(ModItems.crystal_diamond), item(ModItems.powder_diamond, 1), item(ModItems.powder_diamond, 1),
@@ -156,6 +164,11 @@ public final class CentrifugeRecipes {
                 item(ModItems.nugget_zirconium, 2), item(ModItems.nugget_zirconium, 2));
         add(exact(ModItems.crystal_phosphorus), fuel(ModFuelItems.powder_fire, 3), fuel(ModFuelItems.powder_fire, 3),
                 item(ModItems.ingot_phosphorus, 2), stack(Items.BLAZE_POWDER, 2));
+        // 1.7 CentrifugeRecipes:315 and :329; mercury in 1.7 ingot_mercury units (= hbm:nugget_mercury).
+        add(exact(ModItems.crystal_sulfur), item(ModItems.sulfur, 4), item(ModItems.sulfur, 4),
+                item(ModItems.powder_iron, 1), item(ModItems.nugget_mercury, 1));
+        add(exact(ModItems.crystal_starmetal), item(ModItems.powder_dura_steel, 3), item(ModItems.powder_cobalt, 3),
+                item(ModItems.powder_astatine, 2), item(ModItems.nugget_mercury, 5));
         add(exact(ModItems.crystal_trixite), item(ModItems.powder_plutonium, 2), item(ModItems.powder_cobalt, 3),
                 item(ModItems.powder_niobium, 2), item(ModItems.powder_nitan_mix, 1));
         add(exact(ModItems.crystal_lithium), item(ModItems.powder_lithium, 2), item(ModItems.powder_lithium, 2),

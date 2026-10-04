@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Fraction tower recipes — 1:1 port of the full 1.12.2 {@code FractionRecipes} table (all 19 entries).
  * Each input (100 mB per fractionate op) splits into two fluids (mB amounts as given). All output
- * fluids exist in the port's 157-fluid registry, so nothing is skipped.
+ * fluids exist in the port's 156-fluid registry, so nothing is skipped.
  */
 public final class FractionRecipes {
 

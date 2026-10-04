@@ -14,7 +14,12 @@ public final class ModDataComponents {
 
     private ModDataComponents() {}
 
-    public static final GolemComponent<Integer> FLUID_ID = GolemComponent.integer(Constants.MOD_ID, "fluid_id");
+    /**
+     * The fluid a container/identifier/icon item carries, saved as its registry name ({@code "hbm:water"}). Replaced
+     * the int {@code hbm:fluid_id} on 2026-10-03: numeric ids are never persisted (History section 19ej-ids).
+     */
+    public static final GolemComponent<com.hbm.inventory.fluid.FluidType> FLUID =
+            GolemComponent.of(Constants.MOD_ID, "fluid", () -> com.hbm.inventory.fluid.Fluids.CODEC);
     public static final GolemComponent<Integer> FLUID_AMOUNT = GolemComponent.integer(Constants.MOD_ID, "fluid_amount");
     public static final GolemComponent<Integer> FLUID_PRESSURE = GolemComponent.integer(Constants.MOD_ID, "fluid_pressure");
     /** Filled giant-tank block state carried when a giant tank is broken and picked up. */
@@ -50,8 +55,10 @@ public final class ModDataComponents {
     public static final GolemComponent<Integer> SAT_FREQUENCY =
             GolemComponent.integer(Constants.MOD_ID, "sat_frequency");
     /** What a cargo artillery shell is carrying. It survives the flight and comes back off the shell. */
+    // GolemComponent.itemStack, not a raw ItemStack codec: an ItemStack has no value equality, and 26.1 refused the
+    // first set ("Data components must implement equals and hashCode"), so no cargo shell could be loaded (§19ej-1b)
     public static final GolemComponent<ItemStack> ARTY_CARGO =
-            GolemComponent.of(Constants.MOD_ID, "arty_cargo", dev.golem.core.world.ItemStacks.optionalCodec());
+            GolemComponent.itemStack(Constants.MOD_ID, "arty_cargo");
     /** The old metadata value on the long/short storage-drum waste items. */
     public static final GolemComponent<Integer> STORAGE_WASTE_CLASS =
             GolemComponent.integer(Constants.MOD_ID, "storage_waste_class");
@@ -147,9 +154,12 @@ public final class ModDataComponents {
     public static final GolemComponent<net.minecraft.nbt.CompoundTag> CASING_PROGRESS =
             GolemComponent.compound(Constants.MOD_ID, "casing_progress");
 
-    public static int fluidId(ItemStack stack) { return FLUID_ID.getOr(stack, 0); }
-    public static void fluidId(ItemStack stack, int value) { FLUID_ID.set(stack, value); }
-    public static void removeFluidId(ItemStack stack) { FLUID_ID.remove(stack); }
+    /** The fluid {@code stack} carries; NONE when it carries none. */
+    public static com.hbm.inventory.fluid.FluidType fluid(ItemStack stack) {
+        return FLUID.getOr(stack, com.hbm.inventory.fluid.Fluids.NONE);
+    }
+    public static void fluid(ItemStack stack, com.hbm.inventory.fluid.FluidType value) { FLUID.set(stack, value); }
+    public static void removeFluid(ItemStack stack) { FLUID.remove(stack); }
     public static int fluidAmount(ItemStack stack) { return FLUID_AMOUNT.getOr(stack, 0); }
     public static void fluidAmount(ItemStack stack, int value) { FLUID_AMOUNT.set(stack, value); }
     public static void removeFluidAmount(ItemStack stack) { FLUID_AMOUNT.remove(stack); }

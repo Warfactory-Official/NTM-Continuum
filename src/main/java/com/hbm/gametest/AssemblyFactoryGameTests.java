@@ -44,7 +44,7 @@ public final class AssemblyFactoryGameTests {
         MachineAssemblyFactory block = AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get();
         BlockPos core = factory.getBlockPos();
 
-        helper.assertTrue(factory.getContainerSize() == 60 && factory.getConPos().length == 26
+        helper.assertTrue(factory.getContainerSize() == 60 && factory.getConPos().length == 16 // 1.7.10: 16 ports
                         && factory.getIOPos().length == 4 && factory.getCoolPos().length == 4
                         && factory.getReceivingTanks().length == 4 && factory.getSendingTanks().length == 4
                         && factory.getAllTanks().length == 10,

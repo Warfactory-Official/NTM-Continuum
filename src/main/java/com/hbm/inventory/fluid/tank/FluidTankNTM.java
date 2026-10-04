@@ -119,7 +119,7 @@ public class FluidTankNTM implements Cloneable {
     public void writeToNBT(DataOut nbt, String s) {
         nbt.putInt(s, fluid);
         nbt.putInt(s + "_max", maxFluid);
-        nbt.putInt(s + "_type", type.getID());
+        Fluids.write(nbt, s + "_type", type); // registry name, never the numeric id (History section 19ej-ids)
         nbt.putShort(s + "_p", (short) pressure);
     }
 
@@ -128,7 +128,7 @@ public class FluidTankNTM implements Cloneable {
         int max = nbt.getIntOr(s + "_max", 0);
         if (max > 0) maxFluid = max;
         fluid = Mth.clamp(fluid, 0, maxFluid);
-        type = Fluids.fromID(nbt.getIntOr(s + "_type", 0));
+        type = Fluids.read(nbt, s + "_type");
         this.pressure = nbt.getShortOr(s + "_p", (short) 0);
     }
 
@@ -142,14 +142,14 @@ public class FluidTankNTM implements Cloneable {
     public void serialize(RegistryFriendlyByteBuf buf, int fill) {
         buf.writeInt(fill);
         buf.writeInt(maxFluid);
-        buf.writeInt(type.getID());
+        buf.writeInt(Fluids.networkId(type));
         buf.writeShort(pressure);
     }
 
     public void deserialize(RegistryFriendlyByteBuf buf) {
         fluid = buf.readInt();
         maxFluid = buf.readInt();
-        type = Fluids.fromID(buf.readInt());
+        type = Fluids.byNetworkId(buf.readInt());
         pressure = buf.readShort();
     }
 

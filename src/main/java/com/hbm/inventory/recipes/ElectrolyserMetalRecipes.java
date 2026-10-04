@@ -29,7 +29,7 @@ public final class ElectrolyserMetalRecipes {
         add(ModItems.crystal_iron.get(), out(Mats.MAT_IRON, MaterialShapes.INGOT, 6), out(Mats.MAT_TITANIUM, MaterialShapes.INGOT, 2),
                 stack(ModItems.powder_lithium_tiny, 3));
         add(ModItems.crystal_gold.get(), out(Mats.MAT_GOLD, MaterialShapes.INGOT, 6), out(Mats.MAT_LEAD, MaterialShapes.INGOT, 2),
-                stack(ModItems.powder_lithium_tiny, 3), stack(ModItems.nugget_mercury, 18));
+                stack(ModItems.powder_lithium_tiny, 3), stack(ModItems.nugget_mercury, 2)); // 1.7 ingot_mercury x2 (= hbm:nugget_mercury)
         add(ModItems.crystal_uranium.get(), out(Mats.MAT_URANIUM, MaterialShapes.INGOT, 6), out(Mats.MAT_RADIUM, MaterialShapes.NUGGET, 4),
                 stack(ModItems.powder_lithium_tiny, 3));
         add(ModItems.crystal_thorium.get(), out(Mats.MAT_THORIUM, MaterialShapes.INGOT, 6), out(Mats.MAT_URANIUM, MaterialShapes.INGOT, 2),
@@ -59,7 +59,7 @@ public final class ElectrolyserMetalRecipes {
         add(ModItems.crystal_lithium.get(), out(Mats.MAT_LITHIUM, MaterialShapes.INGOT, 6), out(Mats.MAT_BORON, MaterialShapes.INGOT, 2),
                 stack(ModItems.powder_quartz, 2), stack(ModItems.fluorite, 2));
         add(ModItems.crystal_starmetal.get(), out(Mats.MAT_DURA, MaterialShapes.INGOT, 4), out(Mats.MAT_COBALT, MaterialShapes.INGOT, 4),
-                stack(ModItems.powder_astatine, 3), stack(ModItems.nugget_mercury, 72));
+                stack(ModItems.powder_astatine, 3), stack(ModItems.nugget_mercury, 8)); // 1.7 ingot_mercury x8 (= hbm:nugget_mercury)
         add(ModItems.crystal_cobalt.get(), out(Mats.MAT_COBALT, MaterialShapes.INGOT, 3), out(Mats.MAT_IRON, MaterialShapes.INGOT, 4),
                 stack(ModItems.powder_copper, 4), stack(ModItems.powder_lithium_tiny, 3));
         BedrockOreChainRecipes.electrolyser(ElectrolyserMetalRecipes::add); // weighted primaries and crumbs, 20 ticks

@@ -46,7 +46,7 @@ import net.minecraft.sounds.SoundSource;
  * output container pairs, 11 sulfur/byproduct out, 12 fluid identifier). Tanks: {@code [0] HOTOIL 64k}
  * input + 4×24k outputs conformed to the recipe. {@link #refine} needs {@code power ≥ 5} and
  * {@code tank0 ≥ 100} and all four outputs to fit; each op drains 100 mB + 5 HE and produces the
- * fractions, and every 100 ops emits one byproduct item. maxPower 1000.
+ * fractions, and every 10 ops (1.7.10) emits one byproduct item. maxPower 1000.
  *
  * <p>1.7's explosion damage is ported ({@link #hasExploded}: the first explosion that reaches it blows it open, it
  * burns off its tanks until extinguished and is repaired with a blowtorch, eight steel plates and four duct tape).
@@ -64,7 +64,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
     /** 1.7 {@code lastExplosion}: one explosion damages the refinery once. */
     public @org.jspecify.annotations.Nullable Object lastExplosion;
 
-    public static final int maxSulfur = 100;
+    public static final int maxSulfur = 10; // 1.7.10 (1.12.2 used 100)
     public static final long maxPower = 1000;
 
     public long power = 0;

@@ -29,6 +29,7 @@ import net.minecraft.world.BossEvent;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -36,6 +37,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -70,7 +72,8 @@ public class EntityHunterChopper extends CompatMob implements Enemy, IRadiationI
     private static final double GUN_RANGE = 64D;
 
     private final ServerBossEvent bossEvent = dev.golem.core.world.Compat.bossEvent(this, getDisplayName(),
-            BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.PROGRESS);
+            // 1.7 BossStatus drew the one vanilla bar, which is 26.2's PINK
+            BossEvent.BossBarColor.PINK, BossEvent.BossBarOverlay.PROGRESS);
 
     private double waypointX;
     private double waypointY;
@@ -143,9 +146,8 @@ public class EntityHunterChopper extends CompatMob implements Enemy, IRadiationI
         if (!exotic) amount *= 0.1F;
 
         // 1.7 rejected every EntityDamageSource, which is what made the chopper immune to guns and melee and
-        // killable only by explosives. 26.2 dropped that class; the equivalent is "delivered by something in
-        // person", exotic types included.
-        if (isInvulnerableTo(level, source) || source.getDirectEntity() != null || getHealth() <= 0.1F) {
+        // killable only by explosives. 26.2 dropped that class; see isEntitySource for the mapping.
+        if (isInvulnerableTo(level, source) || isEntitySource(source) || getHealth() <= 0.1F) {
             return false;
         }
 
@@ -156,17 +158,46 @@ public class EntityHunterChopper extends CompatMob implements Enemy, IRadiationI
             return false;
         }
 
-        if (!isDying() && random.nextInt(15) == 0) {
+        if (random.nextInt(15) == 0 && !isDying()) {
             level.explode(this, getX(), getY(), getZ(), 5F, Level.ExplosionInteraction.MOB);
             dropDamageItem(level);
         }
 
-        for (int i = 0; i < 8; i++) {
-            level.sendParticles(ParticleTypes.FIREWORK,
-                    getX(), getY(), getZ(), 3, i * 0.05D, i * 0.05D, i * 0.05D, 0.05D);
+        // 1.7 sprayed these sparks inside `if (worldObj.isRemote)`, i.e. only when attackEntityFrom ran on the
+        // client. Explosions and every other server-side source never reach that branch; the one client-side
+        // non-entity source a hovering chopper takes is the inWall suffocation tick, so only that sprays. The
+        // velocity is +-1 per axis because 1.7's `nextDouble() / 20 * nextInt(2) == 0 ? -1 : 1` binds the
+        // ternary last.
+        if (source.is(DamageTypes.IN_WALL)) {
+            for (int j = 0; j < 3; j++) {
+                double d0 = random.nextDouble() / 20 * random.nextInt(2) == 0 ? -1 : 1;
+                double d1 = random.nextDouble() / 20 * random.nextInt(2) == 0 ? -1 : 1;
+                double d2 = random.nextDouble() / 20 * random.nextInt(2) == 0 ? -1 : 1;
+
+                for (int i = 0; i < 8; i++) {
+                    level.sendParticles(ParticleTypes.FIREWORK, getX(), getY(), getZ(), 0,
+                            d0 * i * 0.25D, d1 * i * 0.25D, d2 * i * 0.25D, 1.0D);
+                }
+            }
         }
 
         return super.hurtServer(level, source, amount);
+    }
+
+    /**
+     * 1.7 {@code source instanceof EntityDamageSource}. Every projectile and melee source was one. An explosion
+     * was one only when {@code DamageSource.setExplosionSource} found a living "placer": the exploder itself when
+     * living (creeper, this chopper), or a primed TNT's igniter. Redstone TNT, dispensed TNT and HBM's own
+     * entity-less or projectile-borne blasts were plain sources and did full damage.
+     */
+    private static boolean isEntitySource(DamageSource source) {
+        if (source.is(DamageTypeTags.IS_EXPLOSION)) {
+            Entity direct = source.getDirectEntity();
+            return source.getEntity() instanceof LivingEntity
+                    && (direct == null || direct instanceof LivingEntity || direct instanceof PrimedTnt);
+        }
+
+        return source.getDirectEntity() != null || source.getEntity() != null;
     }
 
     @Override
@@ -296,7 +327,8 @@ public class EntityHunterChopper extends CompatMob implements Enemy, IRadiationI
      * sneaking target counting as 20% further away.
      */
     private @Nullable Entity findTarget() {
-        AABB box = getBoundingBox().inflate(TARGET_RANGE, TARGET_RANGE / 2D, TARGET_RANGE);
+        // 1.7 walked world.loadedEntityList with a spherical range test; a full-height box covers the same set
+        AABB box = getBoundingBox().inflate(TARGET_RANGE);
         Entity closest = null;
         double closestSq = -1D;
 

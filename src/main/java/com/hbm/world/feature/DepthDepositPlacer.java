@@ -20,6 +20,10 @@ import net.minecraft.world.level.block.state.BlockState;
  * original's comment on that line reads "yes you've heard right, bedrock", and it is what lets a
  * deposit chew a pocket out of the world floor. Preserved.
  *
+ * <p><b>Deepslate is 1.7's stone here.</b> 1.7 replaced plain stone at the world floor; a modern overworld floor is
+ * deepslate, so an overworld deposit takes deepslate as well (the same host {@code MapGenBedrockOil} and the bedrock
+ * ore's depth-rock cap use). Without it only the bedrock cells of the sphere were replaced. History §19ej-6.
+ *
  * <p><b>Y rebasing (deviation):</b> upstream clamped to {@code 1 <= y <= 126} and centred deposits at
  * {@code y = 0..2}, which were the floor and ceiling of a 1.12 world. 26.1's overworld floor is −64 and
  * the nether roof is still 127, so the y band is expressed relative to {@link WorldGenLevel#getMinY()}
@@ -61,6 +65,12 @@ public final class DepthDepositPlacer {
         generateSphere(level, rand, cx, cy, cz, size, fill, ore, genTarget, filler);
     }
 
+    /** The overworld host is stone, and at the world floor that is deepslate (see the class comment). */
+    public static boolean isHost(BlockState current, BlockState genTarget) {
+        if (current.is(genTarget.getBlock())) return true;
+        return genTarget.is(Blocks.STONE) && current.is(Blocks.DEEPSLATE);
+    }
+
     /** The sphere itself. Public only so {@code OreWorldgenGameTests} can drive it deterministically. */
     public static void generateSphere(WorldGenLevel level, RandomSource rand, int cx, int cy, int cz,
                                       int size, double fill, BlockState ore, BlockState genTarget, BlockState filler) {
@@ -80,7 +90,7 @@ public final class DepthDepositPlacer {
 
                     BlockState current = level.getBlockState(pos);
                     // "yes you've heard right, bedrock" — the deposit eats the world floor on purpose
-                    if (!current.is(Blocks.BEDROCK) && !current.is(genTarget.getBlock())) continue;
+                    if (!current.is(Blocks.BEDROCK) && !isHost(current, genTarget)) continue;
 
                     double len = Math.sqrt(dx * (double) dx + dy * (double) dy + dz * (double) dz);
                     if (len + rand.nextInt(2) < size * fill) {

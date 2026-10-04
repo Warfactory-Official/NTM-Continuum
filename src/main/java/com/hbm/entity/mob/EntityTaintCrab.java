@@ -75,7 +75,8 @@ public class EntityTaintCrab extends EntityCyberCrab {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
 
         int looting = 0;
-        if (source.getEntity() instanceof LivingEntity attacker) {
+        // 1.7 EntityLivingBase.onDeath only read looting off an EntityPlayer killer
+        if (source.getEntity() instanceof net.minecraft.world.entity.player.Player attacker) {
             looting = dev.golem.core.world.Compat.lootingLevel(level, attacker);
         }
 

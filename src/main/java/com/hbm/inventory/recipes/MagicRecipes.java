@@ -16,8 +16,8 @@ import java.util.List;
 /**
  * 1.7 {@code MagicRecipes}, the Book of Boxcars' "extended 4-slot crafting": the filled grid slots, read in slot
  * order and compacted, must match a recipe's inputs one for one, in order. Inputs are item ids (with the 1.7
- * metadata as {@code item_variant}) or {@code #tag}s; a recipe naming an item the port does not register never
- * matches and yields nothing (1.7's electronium and balefire-and-steel entries, for now).
+ * metadata as {@code item_variant}) or {@code #tag}s. All seven 1.7 recipes are live (the electronium ingot and the
+ * balefire-and-steel are registered).
  */
 public final class MagicRecipes {
 

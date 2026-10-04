@@ -32,7 +32,7 @@ public final class FinalDungeonRails implements Scenario {
 
     private static final int Y = 100;
     private static final int G = Y + 1;
-    private static final int CONCRETE_ID = 153;
+    private static final String CONCRETE_ID = "hbm:concrete"; // registry name, never the numeric id
 
     static final String[] TRAPS = {"falling_rocks", "fire", "arrow", "spikes", "mine", "web", "flaming_arrow", "pillar",
             "rad_conversion", "magic_converstion", "slowness", "weakness", "poison_dart", "zombie", "spiders"};
@@ -580,12 +580,12 @@ public final class FinalDungeonRails implements Scenario {
         worldShot(c, "83-rebar-placed", x + 1.5, G + 2.5, z - 2.5, x + 1.5, G, z + 1);
 
         // concrete: a full barrel on output, a duct typed for concrete, into the cage's west end
-        c.cmd("setblock " + (x - 2) + " " + G + " " + z + " hbm:barrel_steel{mode:2s,tank:16000,tank_type:" + CONCRETE_ID + "}");
+        c.cmd("setblock " + (x - 2) + " " + G + " " + z + " hbm:barrel_steel{mode:2s,tank:16000,tank_type:\"" + CONCRETE_ID + "\"}");
         c.cmd("setblock " + (x - 1) + " " + G + " " + z + " hbm:fluid_duct_neo");
         c.waitTicks(3);
         // a duct joins its net's fluid only when typed in game: one click with a concrete fluid identifier
-        String identifier = c.node().startsWith("1.20.") ? "hbm:fluid_identifier{\"hbm:fluid_id\":" + CONCRETE_ID + "}"
-                : "hbm:fluid_identifier[hbm:fluid_id=" + CONCRETE_ID + "]";
+        String identifier = c.node().startsWith("1.20.") ? "hbm:fluid_identifier{\"hbm:fluid\":\"" + CONCRETE_ID + "\"}"
+                : "hbm:fluid_identifier[hbm:fluid=\"" + CONCRETE_ID + "\"]";
         Fixtures.giveOnly(c, identifier, 1);
         c.teleport(x - 0.5, G, z - 2.5);
         c.waitTicks(3);

@@ -29,10 +29,11 @@ import net.minecraft.world.level.material.Fluids;
  * resource stone. Cells in that band that are <i>not</i> solid get a 1-in-5 chance of a stalactite or
  * stalagmite, whichever can anchor — this is where the cave spikes come from.
  *
- * <p><b>Deferred:</b> the sulfur variant's acid pool. Upstream, a cell with air above, solid below and
- * solid/acid on all four sides became {@code sulfuric_acid_block} with ore beneath and around it; that
- * block is not ported, so the sulfur cave currently takes the same dry path as asbestos. The pool
- * branch is marked below and is a drop-in once the acid block lands (IMPLEMENTATION.md §20).
+ * <p>The sulfur variant carries 1.7's acid pools ({@code withFluid(sulfuric_acid_block)}): a rock cell with air
+ * (or a spike) above, a full cube below and full cubes or acid on all four sides becomes
+ * {@code sulfuric_acid_block}, with the resource stone beneath it and in its solid horizontal neighbours,
+ * on half of the eligible cells (1.7's {@code canGenFluid = rand.nextBoolean()}, rolled for every rock cell
+ * of either variant). History §19ej-6.
  *
  * <p><b>Deviation:</b> the noise seed. Upstream salted the world seed with
  * {@code Block.getIdFromBlock(...) * 31 + yLevel} — a numeric block id that no longer exists in 26.1.
@@ -48,6 +49,10 @@ public class OreCaveFeature extends Feature<NoneFeatureConfiguration> {
     private static final Cave ASBESTOS = new Cave(1.75D, 20, 20, 25, 0xA5BL * 31 + 25);
 
     private static final double SCALE = 0.01D;
+
+    /** 1.7 {@code ForgeDirection.VALID_DIRECTIONS} order. */
+    private static final Direction[] DIRECTIONS_17 = {
+            Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
 
     private LegacyPerlinNoise sulfurNoise, asbestosNoise;
     private long noiseSeed = Long.MIN_VALUE;
@@ -76,19 +81,21 @@ public class OreCaveFeature extends Feature<NoneFeatureConfiguration> {
             generate(level, rand, cx, cz, sulfurNoise, SULFUR,
                     ModOreBlocks.stone_resource_sulfur.get().defaultBlockState(),
                     ModOreBlocks.stalactite_sulfur.get().defaultBlockState(),
-                    ModOreBlocks.stalagmite_sulfur.get().defaultBlockState());
+                    ModOreBlocks.stalagmite_sulfur.get().defaultBlockState(),
+                    com.hbm.blocks.ModFluidNetBlocks.sulfuric_acid_block.get().defaultBlockState());
         }
         if (WorldConfig.enableAsbestosCave) {
             generate(level, rand, cx, cz, asbestosNoise, ASBESTOS,
                     ModOreBlocks.stone_resource_asbestos.get().defaultBlockState(),
                     ModOreBlocks.stalactite_asbestos.get().defaultBlockState(),
-                    ModOreBlocks.stalagmite_asbestos.get().defaultBlockState());
+                    ModOreBlocks.stalagmite_asbestos.get().defaultBlockState(), null);
         }
         return true;
     }
 
     private static void generate(WorldGenLevel level, RandomSource rand, int cx, int cz, LegacyPerlinNoise noise,
-                                 Cave cave, BlockState ore, BlockState stalactite, BlockState stalagmite) {
+                                 Cave cave, BlockState ore, BlockState stalactite, BlockState stalagmite,
+                                 BlockState fluid) {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int floor = level.getMinY();
         int ceiling = level.getMaxY();
@@ -112,23 +119,46 @@ public class OreCaveFeature extends Feature<NoneFeatureConfiguration> {
                     boolean solidRock = Compat.isSolidRender(state) && OreVeinPlacer.STONE.test(state);
 
                     if (solidRock) {
-                        // TODO(acid pool): upstream additionally turned cells with air above, solid
-                        // below and solid/acid on all four sides into sulfuric_acid_block, with ore
-                        // beneath and in the solid horizontal neighbours. sulfuric_acid_block is not
-                        // ported, so only the dry branch runs.
-                        boolean touchesAir = false;
-                        for (Direction dir : Direction.values()) {
+                        // 1.7 OreCave.onDecorate, in its direction order (DOWN, UP, NORTH, SOUTH, WEST, EAST)
+                        boolean shouldGen = false;
+                        boolean canGenFluid = rand.nextBoolean();
+
+                        for (Direction dir : DIRECTIONS_17) {
                             BlockState neighbour = level.getBlockState(pos.relative(dir));
-                            if (neighbour.isAir() || neighbour.getBlock() instanceof com.hbm.blocks.generic.BlockStalagmite) {
-                                touchesAir = true;
-                                break;
+                            boolean open = neighbour.isAir() || neighbour.getBlock() instanceof com.hbm.blocks.generic.BlockStalagmite;
+                            if (open) shouldGen = true;
+
+                            if (shouldGen && (fluid == null || !canGenFluid)) break;
+
+                            if (fluid != null) {
+                                switch (dir) {
+                                    case UP -> { if (!open) canGenFluid = false; }
+                                    case DOWN -> { if (!Compat.isSolidRender(neighbour)) canGenFluid = false; }
+                                    default -> {
+                                        if (!Compat.isSolidRender(neighbour) && !neighbour.is(fluid.getBlock())) canGenFluid = false;
+                                    }
+                                }
                             }
                         }
-                        if (touchesAir) level.setBlock(pos, ore, 2 | 16);
+
+                        if (fluid != null && canGenFluid) {
+                            level.setBlock(pos, fluid, 2);
+                            level.setBlock(pos.below(), ore, 2);
+
+                            for (Direction dir : Direction.Plane.HORIZONTAL) {
+                                BlockPos side = pos.relative(dir);
+                                if (Compat.isSolidRender(level.getBlockState(side))) level.setBlock(side, ore, 2);
+                            }
+
+                        } else if (shouldGen) {
+                            level.setBlock(pos, ore, 2 | 16);
+                        }
                         continue;
                     }
 
-                    // Not solid rock: a 1-in-5 chance of a spike, hanging or standing, never in liquid.
+                    // 1.7: only air or a block that is not a full cube may get a spike (1 in 5), never liquid.
+                    // A solid block that is not stone (dirt, gravel, other ores) is left alone.
+                    if (!state.isAir() && Compat.isSolidRender(state)) continue;
                     if (!state.getFluidState().is(Fluids.EMPTY)) continue;
                     if (rand.nextInt(5) != 0) continue;
                     if (stalactite.canSurvive(level, pos)) {

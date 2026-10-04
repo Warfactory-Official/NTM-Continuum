@@ -412,12 +412,6 @@ public final class ModCraftingRecipes {
         smelt(NS, "nugget_schrabidium", ItemIds.ingot_schraranium, ItemIds.nugget_schrabidium, 2.0);
         smelt(NS, "nugget_schrabidium_1", ItemIds.crystal_schraranium, ItemIds.nugget_schrabidium, 2.0, 2);
         smelt(NS, "obsidian", ItemIds.gravel_obsidian, VanillaIds.obsidian, 0.0);
-        smelt(NS, "ore_gneiss_uranium_scorched_smelting", ItemIds.ore_gneiss_uranium_scorched, ItemIds.ingot_uranium, 0.7);
-        smelt(NS, "ore_gneiss_uranium_smelting", ItemIds.ore_gneiss_uranium, ItemIds.ingot_uranium, 0.7);
-        smelt(NS, "ore_nether_uranium_scorched_smelting", ItemIds.ore_nether_uranium_scorched, ItemIds.ingot_uranium, 0.7);
-        smelt(NS, "ore_nether_uranium_smelting", ItemIds.ore_nether_uranium, ItemIds.ingot_uranium, 0.7);
-        smelt(NS, "ore_uranium_scorched_smelting", ItemIds.ore_uranium_scorched, ItemIds.ingot_uranium, 0.7);
-        smelt(NS, "ore_uranium_smelting", ItemIds.ore_uranium, ItemIds.ingot_uranium, 0.7);
         smelt(NS, "powder_desh_mix", ItemIds.crystal_rare, ItemIds.powder_desh_mix, 2.0);
         smelt(NS, "powder_fire", ItemIds.crystal_phosphorus, ItemIds.powder_fire, 2.0, 6);
         smelt(NS, "redstone", ItemIds.crystal_redstone, VanillaIds.redstone, 2.0, 6);

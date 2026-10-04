@@ -38,24 +38,12 @@ import com.hbm.inventory.material.Mats;
 import com.hbm.items.machine.ItemPileRodMK2.EnumPileRod;
 
 /**
- * Assembly machine recipes — a faithful but <b>feasibility-limited</b> slice of the 1.12.2 catalogue.
- * Recipes are picked by the player in the in-GUI recipe selector ({@link com.hbm.inventory.gui
- * .GUIScreenRecipeSelector}); the {@code blueprint_plate} template still gates the pooled plate recipes.
- *
- * <p><b>What's ported:</b> every recipe whose items already exist in the port (see IMPLEMENTATION.md §18 —
- * "GUI selector + feasible recipes"):
- * <ul>
- *   <li>the metal-<b>plate</b> family (ingot → plate), pooled under {@code alt.plates} + the {@code plates}
- *       auto-switch group, for all metals whose ingot+plate are ported;</li>
- *   <li>a handful of always-available (non-pooled) part recipes: asbestos cloth, the centrifuge element,
- *       and the beryllium/copper cyclotron powders ({@code cyclotron} auto-switch group).</li>
- * </ul>
- *
- * <p><b>Deferred</b> (the bulk of the ~343 originals): every recipe needing an un-ported intermediate —
- * cast/welded plates, shells, pipes, fine/dense wires, the metal <i>dusts</i> that aren't ported, circuits
- * ({@code EnumCircuitType}), expensive parts ({@code EnumExpensiveType}), motor variants and the machine
- * blocks they build — plus all fluid/chance recipes (the engine is still item-only). These land as the
- * material/tag system ({@code OreDictManager}) and more items are ported.
+ * Assembly machine recipes: the 1.7 {@code AssemblyMachineRecipes} catalogue (all 343 default-config recipes plus the
+ * dynamic fluid package/unpackage pairs). Curated recipes live here, the mechanical bulk in
+ * {@code gen/AssemblyMachineRecipesGenerated} and a few helper classes. Recipes are picked in the in-GUI recipe selector
+ * ({@link com.hbm.inventory.gui.GUIScreenRecipeSelector}); the {@code blueprint_plate} template gates the pooled plates.
+ * Fix phase 3 (History §19ej-3) compared every recipe input-by-input (items, counts, fluids, setup) against 1.7 with a
+ * runtime dump ({@code gametest/RecipeTableDump}); the only absent 1.7 recipe is the Mekanism-gated {@code ass.digimemer}.
  */
 public class AssemblyMachineRecipes extends GenericRecipes {
 
@@ -123,12 +111,11 @@ public class AssemblyMachineRecipes extends GenericRecipes {
 
         // --- always-available (non-pooled) parts ---
         register(new GenericRecipe("ass.firecloth").setup(50, 100)
-                .inputItems(new ComparableStack(ModItems.ingot_asbestos.get(), 1), new ComparableStack(Items.STRING, 8))
+                .inputItems(ASBESTOS.ingot(), new ComparableStack(Items.STRING, 8))
                 .outputItems(new ItemStack(ModItems.asbestos_cloth.get(), 4)));
 
         register(new GenericRecipe("ass.centrifugetower").setup(100, 100)
-                .inputItems(new ComparableStack(ModItems.plate_dura_steel.get(), 4),
-                        new ComparableStack(ModItems.plate_titanium.get(), 4),
+                .inputItems(DURA.plate().count(4), TI.plate().count(4),
                         new ComparableStack(ModItems.motor.get(), 1))
                 .outputItems(new ItemStack(ModItems.centrifuge_element.get(), 1)));
 
@@ -140,12 +127,11 @@ public class AssemblyMachineRecipes extends GenericRecipes {
                 .inputItemsEx(new ComparableStack(ModItems.centrifuge_element.get(), 4), STEEL.plateWelded().count(4), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.HEAVY_FRAME)), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.CIRCUIT)))
                 .setPools528("528.gascent"));
 
-        // --- standard cyclotron (1.12.2 "ass.cyclotron") ---
+        // --- standard cyclotron (1.7 "ass.cyclotron", AssemblyMachineRecipes:472) ---
         register(new GenericRecipe("ass.cyclotron").setup(600, 100)
                 .inputItems(new ComparableStack(ModBatteryItems.PACKS.get(EnumBatteryPack.BATTERY_LITHIUM).get()),
-                        ND.wireDense().count(32), STEEL.plateCast().count(16), STEEL.plate().count(32),
-                        AL.plate().count(32), ANY_PLASTIC.ingot().count(24), RUBBER.ingot().count(24),
-                        CU.plateCast().count(8),
+                        ND.wireDense().count(32), STEEL.plateCast().count(16), ANY_PLASTIC.ingot().count(24),
+                        RUBBER.ingot().count(24),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 16))
                 .outputItems(new ItemStack(ModMachineBlocks.machine_cyclotron.get()))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.FERRO_PLATING), 8), ND.wireDense().count(32), AL.plateWelded().count(16), RUBBER.ingot().count(32), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.CIRCUIT), 8)));
@@ -160,33 +146,16 @@ public class AssemblyMachineRecipes extends GenericRecipes {
 
         // --- cyclotron powders (non-pooled; auto-switch by inserted powder) ---
         register(new GenericRecipe("ass.partberyl").setup(40, 100)
-                .inputItems(new ComparableStack(ModItems.powder_beryllium.get(), 1))
+                .inputItems(BE.dust())
                 .outputItems(new ItemStack(ModItems.part_beryllium.get(), 8))
                 .setGroup(GROUP_CYCLOTRON, this));
         register(new GenericRecipe("ass.partcop").setup(40, 100)
-                .inputItems(new ComparableStack(ModItems.powder_copper.get(), 1))
+                .inputItems(CU.dust())
                 .outputItems(new ItemStack(ModItems.part_copper.get(), 8))
                 .setGroup(GROUP_CYCLOTRON, this));
 
-        // --- autogen metal-shape items: cast plate (3 plates -> 1 cast) + welded plate (2 cast -> 1 welded),
-        // generated for EVERY material that auto-generates the shape (was hardcoded to steel/copper/titanium).
-        // Gated like the 1.12.2 Mats.orderedList loops: skip a material whose precursor item isn't ported so
-        // we never register an unmatchable recipe. Cast input is the c:plates/<mat> tag (needs a ported plate);
-        // welded input is the autogen cast plate (MaterialStack — no tag dependency). ---
-        for (NTMMaterial mat : Mats.orderedList) {
-            Item cast = ModAutogenItems.get(MaterialShapes.CASTPLATE, mat);
-            Item welded = ModAutogenItems.get(MaterialShapes.WELDEDPLATE, mat);
-            if (cast != null && hasItem(MaterialShapes.PLATE, mat)) {
-                register(new GenericRecipe("ass.cast." + mat.name).setup(80, 100)
-                        .inputItems(mat.plate().count(3))            // 3 plates in ONE stack (c:plates/<mat>)
-                        .outputItems(new ItemStack(cast, 1)));
-            }
-            if (welded != null && cast != null) {
-                register(new GenericRecipe("ass.weld." + mat.name).setup(120, 100)
-                        .inputItems(new MaterialStack(mat, MaterialShapes.CASTPLATE, 2))
-                        .outputItems(new ItemStack(welded, 1)));
-            }
-        }
+        // (The port used to add ass.cast.<mat> / ass.weld.<mat> here. 1.7 has no such assembly recipes: cast plates
+        // come from the foundry molds, welded plates from the arc welder. Removed in fix phase 3.)
 
         // --- "expensive mode" structural parts: canonical (unconditional) assembly recipes that CONSUME
         // the ported ItemEnumMulti intermediates (§14) + autogen shapes. NB: the BASIC circuit ("Integrated
@@ -194,26 +163,28 @@ public class AssemblyMachineRecipes extends GenericRecipes {
         // — here it is only ever an input — so producing it is deferred with the soldering machine. (The old
         // assembly "factorioChip" that output BASIC is a non-default `!GeneralConfig.enable528` alternate,
         // intentionally not ported.) Non-pooled; values are the 1.12.2 originals. ---
-        register(new GenericRecipe("ass.ex_steel_plating").setup(200, 400)
+        // 1.7 AssemblyMachineRecipes:90-99, ids and fluid inputs as 1.7
+        register(new GenericRecipe("ass.exsteelplating").setup(200, 400)
                 .inputItems(STEEL.plateCast().count(4), TI.plate().count(4), STEEL.bolt().count(16))
                 .outputItems(ModIntermediateItems.expensive(EnumExpensiveType.STEEL_PLATING, 1)));
-        register(new GenericRecipe("ass.ex_lead_plating").setup(400, 4_000)
-                .inputItems(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.STEEL_PLATING), 2),
-                        PB.plateCast().count(8), B.ingot().count(2), W.bolt().count(32))
-                .outputItems(ModIntermediateItems.expensive(EnumExpensiveType.LEAD_PLATING, 1)));
-        register(new GenericRecipe("ass.ex_circuit").setup(400, 4_000)
-                .inputItems(new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 12),
-                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CAPACITOR), 8),
-                        RUBBER.ingot().count(4))
-                .outputItems(ModIntermediateItems.expensive(EnumExpensiveType.CIRCUIT, 1)));
-        register(new GenericRecipe("ass.ex_heavy_frame").setup(600, 800)   // uses the new ANY_PLASTIC aggregate tag
+        register(new GenericRecipe("ass.exheavyframe").setup(600, 800)
                 .inputItems(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.STEEL_PLATING), 3),
                         ANY_PLASTIC.ingot().count(8), CU.plateWelded().count(4), DESH.ingot().count(1), DURA.bolt().count(32))
                 .outputItems(ModIntermediateItems.expensive(EnumExpensiveType.HEAVY_FRAME, 1)));
+        register(new GenericRecipe("ass.excircuit").setup(400, 4_000)
+                .inputItems(new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 12),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CAPACITOR), 8),
+                        RUBBER.ingot().count(4))
+                .inputFluids(new FluidStack(Fluids.SULFURIC_ACID, 1_000))
+                .outputItems(ModIntermediateItems.expensive(EnumExpensiveType.CIRCUIT, 1)));
+        register(new GenericRecipe("ass.exleadplating").setup(400, 4_000)
+                .inputItems(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.STEEL_PLATING), 2),
+                        PB.plateCast().count(8), B.ingot().count(2), W.bolt().count(32))
+                .inputFluids(new FluidStack(Fluids.LUBRICANT, 1_000))
+                .outputItems(ModIntermediateItems.expensive(EnumExpensiveType.LEAD_PLATING, 1)));
 
         // --- machine upgrades: the OVERDRIVE chain (1.7 "ass.overdrive1..3", inside `if(no528)`: in 528 mode the
-        // precision assembler makes them instead, PrecAssRecipes). Mk.III's ANY_BISMOIDBRONZE dict-group isn't
-        // ported; bismuth bronze (its primary member) stands in. ---
+        // precision assembler makes them instead, PrecAssRecipes). ---
         if (!com.hbm.config.GeneralConfig.enable528) {
         register(new GenericRecipe("ass.overdrive1").setup(200, 100)
                 .inputItems(new ComparableStack(ModUpgradeItems.upgrade_speed_3.get(), 1),
@@ -232,7 +203,7 @@ public class AssemblyMachineRecipes extends GenericRecipes {
                 .inputItems(new ComparableStack(ModUpgradeItems.upgrade_overdrive_2.get(), 1),
                         new ComparableStack(ModUpgradeItems.upgrade_speed_3.get(), 1),
                         new ComparableStack(ModUpgradeItems.upgrade_effect_3.get(), 1),
-                        BBRONZE.ingot().count(16), new ComparableStack(ModItems.ingot_cft.get(), 16),
+                        ANY_BISMOIDBRONZE.ingot().count(16), new ComparableStack(ModItems.ingot_cft.get(), 16),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BISMOID), 16))
                 .outputItems(new ItemStack(ModUpgradeItems.upgrade_overdrive_3.get(), 1)));
         }
@@ -265,11 +236,10 @@ public class AssemblyMachineRecipes extends GenericRecipes {
                 .outputItems(new ItemStack(ModMachineBlocks.machine_silex.get()))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.FERRO_PLATING), 2), new ComparableStack(com.hbm.blocks.ModGlassBlocks.glass_quartz.get().asItem(), 16), RUBBER.ingot().count(16)));
 
-        // --- fusion plasma forge (1.12.2 "ass.fusionplasmaforge"). The old ANY_BISMOIDBRONZE
-        // aggregate is represented by its ported primary member; the normal recipe remains feasible. ---
+        // --- fusion plasma forge (1.7 "ass.fusionplasmaforge") ---
         register(new GenericRecipe("ass.fusionplasmaforge").setup(1_200, 100)
                 .inputItems(ANY_RESISTANTALLOY.plateWelded().count(8), BSCCO.wireDense().count(32),
-                        BBRONZE.plateCast().count(16),
+                        ANY_BISMOIDBRONZE.plateCast().count(16),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BISMOID), 4))
                 .outputItems(new ItemStack(ModMachineBlocks.fusion_plasma_forge.get()))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.FERRO_PLATING), 16), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.PLASTIC), 16), BSCCO.wireDense().count(32), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.COMPUTER), 4))
@@ -282,12 +252,12 @@ public class AssemblyMachineRecipes extends GenericRecipes {
                 .outputItems(new ItemStack(ModMachineBlocks.fusion_breeder.get()))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.FERRO_PLATING), 4), B.ingot().count(64), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.PLASTIC), 4)));
 
-        // --- industrial steam turbine (1.12.2 "ass.iturbine") ---
+        // --- industrial steam turbine (1.7 "ass.iturbine", AssemblyMachineRecipes:423) ---
         register(new GenericRecipe("ass.iturbine").setup(200, 100)
-                .inputItems(STEEL.plate().count(12), RUBBER.ingot().count(4),
-                        new ComparableStack(ModItems.turbine_titanium.get(), 2), GOLD.wireDense().count(6),
-                        DURA.pipe().count(3), STEEL.pipe().count(4),
-                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 4))
+                .inputItems(STEEL.plate().count(16), RUBBER.ingot().count(4),
+                        new ComparableStack(ModItems.turbine_titanium.get(), 2), GOLD.wireDense().count(4),
+                        DURA.pipe().count(4),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 2))
                 .outputItems(new ItemStack(ModMachineBlocks.machine_industrial_turbine.get()))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.HEAVY_FRAME), 4), new ComparableStack(ModItems.turbine_titanium.get(), 3), GOLD.wireDense().count(16), DURA.pipe().count(16), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.CIRCUIT), 3)));
 
@@ -312,10 +282,6 @@ public class AssemblyMachineRecipes extends GenericRecipes {
         register(new GenericRecipe("ass.pilenu").setup(40, 200)
                 .inputItems(U.billet().count(3))
                 .outputItems(pileRod(EnumPileRod.NU, 1))
-                .setGroup(GROUP_PILE_ROD, this));
-        register(new GenericRecipe("ass.pilethorium").setup(40, 200)
-                .inputItems(TH232.billet().count(3))
-                .outputItems(pileRod(EnumPileRod.THORIUM, 1))
                 .setGroup(GROUP_PILE_ROD, this));
 
         // --- space: 1.7 AssemblyMachineRecipes "// space", ids, costs and inputs as 1.7 ---
@@ -428,7 +394,7 @@ public class AssemblyMachineRecipes extends GenericRecipes {
         register(new GenericRecipe("ass.gasturbine").setup(400, 100)
                 .inputItems(STEEL.shell().count(10), GOLD.wireDense().count(12), DURA.pipe().count(4),
                         STEEL.pipe().count(4), new ComparableStack(ModItems.turbine_tungsten.get()),
-                        new ComparableStack(ModItems.ingot_rubber.get(), 12),
+                        RUBBER.ingot().count(12),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 3))
                 .outputItems(new ItemStack(ModMachineBlocks.machine_turbine_gas.get()))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.HEAVY_FRAME), 4), GOLD.wireDense().count(16), DURA.pipe().count(16), new ComparableStack(ModItems.turbine_tungsten.get(), 2), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.CIRCUIT), 3)));
@@ -457,12 +423,7 @@ public class AssemblyMachineRecipes extends GenericRecipes {
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.HEAVY_FRAME), 8), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.FERRO_PLATING), 4), new ComparableStack(ModItems.turbine_tungsten.get(), 5), new ComparableStack(ModItems.turbine_titanium.get(), 12), new ComparableStack(ModItems.flywheel_beryllium.get()), GOLD.wireDense().count(64)));
 
         // --- giant fluid storage (1.12.2 "ass.bat9k" / "ass.bigasstank") ---
-        register(new GenericRecipe("ass.bat9k").setup(200, 100)
-                .inputItems(STEEL.plate().count(16), ANY_RESISTANTALLOY.plateWelded().count(2),
-                        new ComparableStack(ModSteelBlocks.steel_scaffold.get().asItem(), 16),
-                        new com.hbm.inventory.RecipesCommon.TagStack(
-                                com.hbm.inventory.recipes.PyroOvenRecipes.TARS, 16))
-                .outputItems(new ItemStack(ModMachineBlocks.machine_bat9000.get())));
+        // (no ass.bat9k: in 1.7 the BAT9000 has no construction recipe, only anvil recycling)
         register(new GenericRecipe("ass.bigasstank").setup(200, 100)
                 .inputItems(STEEL.plate().count(16), ANY_RESISTANTALLOY.plateWelded().count(4),
                         new ComparableStack(ModSteelBlocks.steel_scaffold.get().asItem(), 16))
@@ -488,7 +449,7 @@ public class AssemblyMachineRecipes extends GenericRecipes {
         // for it, which left the stealth missile creative-only. KEY_BLACK is black dye, as gen_recipes maps it
         // for the generated recipes.
         register(new GenericRecipe("ass.stealthmissile").setup(1_200, 100)
-                .inputItems(TI.plate().count(20), AL.plate().count(20), new ComparableStack(Items.BLACK_DYE, 16),
+                .inputItems(TI.plate().count(20), AL.plate().count(20), new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/black")), 16),
                         ANY_HARDPLASTIC.ingot().count(16), highExplosive(4),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 4),
                         STEEL.bolt().count(32))
@@ -595,7 +556,8 @@ public class AssemblyMachineRecipes extends GenericRecipes {
         int amount = com.hbm.items.ModFluidNetItems.FLUID_PACK_CAPACITY;
         for (FluidType type : Fluids.getAll()) {
             if (type == Fluids.NONE || !pack.allows(type)) continue;
-            String suffix = type.getName().toLowerCase(java.util.Locale.ROOT);
+            // 1.7 ids: "ass.package" + FluidType.getUnlocalizedName(), i.e. "hbmfluid.<name>"
+            String suffix = "hbmfluid." + type.getName().toLowerCase(java.util.Locale.ROOT);
             register(new GenericRecipe("ass.package" + suffix).setup(40, 100)
                     .inputItems(new ComparableStack(empty))
                     .inputFluids(new FluidStack(type, amount))

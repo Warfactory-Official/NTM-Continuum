@@ -682,4 +682,48 @@ public final class Mats {
     }
 
     public static void init() {}
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Saved form. A material is saved by its name ("iron", ntm-next's NTMMaterial.CODEC key), never by the 1.7 number
+    // (History section 19ej-ids). matById stays as the read-only 1.7 side table: packets and the bundled 1.7 structure
+    // files (a material item's damage) still use it.
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** Writes {@code mat}'s name under {@code key}; null writes nothing. */
+    public static void write(dev.golem.core.data.DataOut out, String key, @org.jspecify.annotations.Nullable NTMMaterial mat) {
+        if (mat != null) out.putString(key, mat.name);
+    }
+
+    /** Reads a material written by {@link #write}; absent, unknown or an old numeric id reads as null. */
+    public static @org.jspecify.annotations.Nullable NTMMaterial read(dev.golem.core.data.DataIn in, String key) {
+        String name = in.getStringOr(key, null);
+        if (name == null) {
+            if (in.getIntOr(key, Integer.MIN_VALUE) != Integer.MIN_VALUE) com.hbm.util.SavedIds.warnNumeric("material id", key);
+            return null;
+        }
+        NTMMaterial mat = matByName.get(name);
+        if (mat == null) com.hbm.util.SavedIds.warnNumeric("unknown material '" + name + "'", key);
+        return mat;
+    }
+
+    /** A material stack list as saved children ({@code mat} name + {@code amount}). */
+    public static void writeStacks(dev.golem.core.data.DataOut out, String key, List<MaterialStack> stacks) {
+        dev.golem.core.data.DataOut.ChildList list = out.childrenList(key);
+        for (MaterialStack stack : stacks) {
+            dev.golem.core.data.DataOut child = list.addChild();
+            write(child, "mat", stack.material);
+            child.putInt("amount", stack.amount);
+        }
+    }
+
+    /** Reads {@link #writeStacks}; entries whose material is unknown are dropped. */
+    public static List<MaterialStack> readStacks(dev.golem.core.data.DataIn in, String key) {
+        List<MaterialStack> stacks = new ArrayList<>();
+        if (in.getIntArray(key).isPresent()) com.hbm.util.SavedIds.warnNumeric("material id array", key);
+        for (dev.golem.core.data.DataIn child : in.childrenListOrEmpty(key)) {
+            NTMMaterial mat = read(child, "mat");
+            if (mat != null) stacks.add(new MaterialStack(mat, child.getIntOr("amount", 0)));
+        }
+        return stacks;
+    }
 }

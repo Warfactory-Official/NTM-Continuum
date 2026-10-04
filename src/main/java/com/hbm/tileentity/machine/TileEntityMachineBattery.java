@@ -11,6 +11,8 @@ import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.capability.MachineCaps;
 import com.hbm.inventory.container.ContainerMachineBattery;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.Library;
+import net.minecraft.world.item.ItemStack;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.uninos.graph.LevelNodeGraph;
@@ -32,15 +34,17 @@ import dev.golem.core.data.DataOut;
  * ({@link TileEntityMachineBase}). It stores power and, per its configurable I/O mode, draws from /
  * pushes to / buffers the adjacent power network.
  *
- * <p>Behaviour ported from 1.12.2: two mode slots — {@link #redLow} (used while <b>not</b>
+ * <p>Behaviour ported from 1.7.10 ({@code storage/TileEntityMachineBattery}): two mode slots — {@link #redLow} (used while <b>not</b>
  * redstone-powered) and {@link #redHigh} (used while powered) — each one of input / buffer / output /
  * none, plus a connection {@link #priority}. The three are toggled by the GUI buttons (via the vanilla
- * {@code clickMenuButton} path) and synced to the screen on the BufPacket. (Battery <em>item</em>
- * charge/discharge in the slots is still deferred — no battery items are ported yet.)
+ * {@code clickMenuButton} path) and synced to the screen on the BufPacket. Two item slots: slot 0
+ * discharges a battery item into the block, slot 1 charges a battery item from it (top face: slot 0,
+ * bottom: both, sides: slot 1; an empty battery leaves slot 0 and a full one slot 1).
  *
  * <p>Energy reaches the GUI via the BufPacket (a full {@code long}, not a 16-bit {@code ContainerData}).
  */
-public class TileEntityMachineBattery extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, IEnergyProviderMK2, IEnergyConductorMK2, IRORValueProvider, IRORInteractive {
+public class TileEntityMachineBattery extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, IEnergyProviderMK2, IEnergyConductorMK2, IRORValueProvider, IRORInteractive,
+        net.minecraft.world.WorldlyContainer {
 
     public static final long MAX_POWER = 1_000_000L;
     public long power = 0L;
@@ -58,8 +62,12 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
 
     private boolean indirectlyPowered = false;
 
-    private long lastPowerForDelta = 0L;
-    private int deltaTimer = 0;
+    /** 1.7's 20-tick log of averaged power; {@code delta = avg - log[0]}. */
+    public final long[] log = new long[20];
+    public static final int SLOT_COUNT = 2;
+    private static final int[] SLOTS_TOP = {0};
+    private static final int[] SLOTS_BOTTOM = {0, 1};
+    private static final int[] SLOTS_SIDE = {1};
 
     /** This block's capacity: {@link #MAX_POWER} for {@code machine_battery}, the tier's own for the others. */
     private final long maxPower;
@@ -74,15 +82,14 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
      */
     protected TileEntityMachineBattery(net.minecraft.world.level.block.entity.BlockEntityType<?> type,
                                        BlockPos pos, BlockState state, long maxPower) {
-        // 4 slots like the original: 0/2 = charge (top), 1/3 = discharge (bottom). The charge/discharge
-        // item logic arrives with the battery-item port; for now they are plain slots.
-        super(type, pos, state, 4);
+        // 1.7: 2 slots; 0 discharges an item into the block, 1 charges an item from it.
+        super(type, pos, state, SLOT_COUNT);
         this.maxPower = maxPower;
     }
 
     @Override
     public String getDefaultName() {
-        return "container.machine_battery";
+        return "container.battery";
     }
 
     /** The mode in effect right now, picked by the redstone state. */
@@ -102,8 +109,13 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineBattery battery) {
+        if (battery.priority == null || battery.priority.ordinal() == 0 || battery.priority.ordinal() == 4) {
+            battery.priority = ConnectionPriority.LOW; // 1.7: LOWEST/HIGHEST are not selectable here
+        }
         battery.indirectlyPowered = level.hasNeighborSignal(pos);
         int mode = battery.getRelevantMode();
+        long prevPower = battery.power;
+        battery.power = Library.chargeItemsFromTE(battery.inventory, 1, battery.power, battery.getMaxPower());
 
         if (level instanceof ServerLevel server) battery.updateBufferCell(server, state, mode);
 
@@ -113,12 +125,13 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
             }
         }
 
-        // Net throughput over the last second (HE/s), for the GUI bar tooltip.
-        if (++battery.deltaTimer >= 20) {
-            battery.delta = battery.power - battery.lastPowerForDelta;
-            battery.lastPowerForDelta = battery.power;
-            battery.deltaTimer = 0;
-        }
+        battery.power = Library.chargeTEFromItems(battery.inventory, 0, battery.power, battery.getMaxPower());
+
+        // 1.7: delta = this tick's averaged power minus the one logged 20 ticks ago (HE/s).
+        long avg = (battery.power + prevPower) / 2;
+        battery.delta = avg - battery.log[0];
+        System.arraycopy(battery.log, 1, battery.log, 0, battery.log.length - 1);
+        battery.log[19] = avg;
         battery.setChanged();
         battery.networkPackNT(); // broadcast power/mode/priority to tracking clients (deduped when unchanged)
     }
@@ -141,6 +154,29 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
             graph.addNode(key, PowerGraphProvider.INSTANCE.createData(state), MachineCaps.FACE_MASK_ALL);
         }
         graph.setSelfEndpoint(key, true);
+    }
+
+    // --- items (1.7 isItemValidForSlot accepts anything; sides as 1.7) ---
+
+    @Override public boolean isItemValidForSlot(int slot, ItemStack stack) { return true; }
+
+    @Override
+    public int[] getSlotsForFace(net.minecraft.core.Direction side) {
+        return side == net.minecraft.core.Direction.DOWN ? SLOTS_BOTTOM : side == net.minecraft.core.Direction.UP ? SLOTS_TOP : SLOTS_SIDE;
+    }
+
+    @Override
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+        return isItemValidForSlot(slot, stack);
+    }
+
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+        if (stack.getItem() instanceof com.hbm.api.energymk2.IBatteryItem item) {
+            if (slot == 0 && item.getCharge(stack) == 0) return true;
+            if (slot == 1 && item.getCharge(stack) == item.getMaxCharge(stack)) return true;
+        }
+        return false;
     }
 
     // --- IEnergyHandler / receiver / provider (isLoaded() inherited from the tower) ---
@@ -223,7 +259,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         output.putLong("power", power);
         output.putShort("redLow", redLow);
         output.putShort("redHigh", redHigh);
-        output.putByte("priority", (byte) priority.ordinal());
+        com.hbm.util.SavedIds.putEnum(output, "priority", priority); // by name, never an ordinal
     }
 
     @Override
@@ -232,14 +268,15 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         power = input.getLongOr("power", 0L);
         redLow = (short) input.getShortOr("redLow", (short) MODE_INPUT);
         redHigh = (short) input.getShortOr("redHigh", (short) MODE_OUTPUT);
-        priority = ConnectionPriority.VALUES[input.getByteOr("priority", (byte) ConnectionPriority.LOW.ordinal())];
+        priority = com.hbm.util.SavedIds.getEnum(input, "priority", ConnectionPriority.LOW);
     }
 
     // --- MenuProvider ---
 
     @Override
     public Component getDisplayName() {
-        return getBlockState().getBlock().getName();
+        // 1.7: the custom name, else "container.battery" for every tier
+        return hasCustomName() ? Component.literal(getName()) : Component.translatable("container.battery");
     }
 
     @Override

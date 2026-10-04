@@ -41,32 +41,34 @@ import net.minecraft.world.phys.AABB;
 import java.util.List;
 
 /**
- * Free Electron Laser (1.12.2 {@code TileEntityFEL}) — the machine that powers the SILEX.
+ * Free Electron Laser — a straight port of 1.7.10's {@code TileEntityFEL} (original-hbm), the machine that
+ * powers the SILEX.
  *
  * <p>Every tick, while switched on and holding a crystal, it traces a straight line up to <b>24 blocks</b>
- * along its facing at {@code y+1} and does three things with what it finds:
+ * along its facing at {@code y+1}:
  * <ol>
- *   <li><b>Nothing (a non-opaque block)</b> — the beam passes through and keeps going.</li>
+ *   <li><b>A non-opaque block</b> — the beam passes through and keeps going.</li>
  *   <li><b>A SILEX</b> — if that chamber is aligned on the same axis, sits at least 5 blocks away, and
- *       is the first one since the last gap, its {@code mode} is set to this laser's wavelength for the
- *       coming tick. Otherwise the chamber is <b>destroyed</b> and dropped as an item: mis-aiming a FEL
- *       is punished, not ignored.</li>
- *   <li><b>Anything else solid</b> — the beam stops there and tries to burn through, with a per-wavelength
- *       hardness limit and chance (see {@link #burn}).</li>
+ *       is the first one since the last gap, its {@code mode} is set to this laser's wavelength.
+ *       Otherwise the chamber is <b>destroyed</b> and dropped as an item.</li>
+ *   <li><b>Anything else opaque</b> (or TNT) — the beam stops there. Liquids are removed; any block with
+ *       explosion resistance below 75 catches fire 1-in-5 per tick, whatever the wavelength (DRX leaves
+ *       {@code fire_digamma}, or {@code digamma_matter} on the polaroid-11 world, with digamma ash below).</li>
  * </ol>
  *
- * <p><b>Power scales as {@code 4^ordinal}</b>: 4,000 HE/t on infrared up to 1,024,000 on digamma, and if
- * the buffer cannot cover the draw the laser blanks its mode and dumps the buffer to zero.
+ * <p><b>Power is {@code 1250 * 3^ordinal}</b> HE/t (3,750 on infrared up to 303,750 on digamma) out of a
+ * 20 MHE buffer. If the buffer cannot cover the draw it is dumped to zero (the mode itself stays set,
+ * as in 1.7). The 1.12.2 values (1000 * 4^ordinal, 2 GHE, a per-wavelength burn table) are not the spec.
  *
- * <p>Two upstream quirks preserved verbatim, both flagged at their sites: the server gate uses
- * {@code pow(4)} while the client audio/GUI gates use {@code pow(2)}, and {@code missingValidSilex} is
- * only ever cleared, never set back.
+ * <p>Upstream quirks preserved, flagged at their sites: the client audio, GUI and renderer gates use
+ * {@code pow(2)}, the VISIBLE entity case falls through into the IR/UV ignite case, and
+ * {@code missingValidSilex} is only ever cleared, never set back.
  */
 public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, WorldlyContainer {
 
-    public static final long maxPower = 2_000_000_000L;
-    /** Base draw; the real cost is {@code powerReq * 4^mode.ordinal()}. */
-    public static final int powerReq = 1000;
+    public static final long maxPower = 20_000_000L;
+    /** Base draw; the real cost is {@code powerReq * 3^mode.ordinal()} (0 for NULL). */
+    public static final int powerReq = 1250;
     /** Hard cap on beam length, in blocks. */
     public static final int RANGE = 24;
 
@@ -101,20 +103,24 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
         ItemStack crystal = te.inventory.getStackInSlot(1);
         te.mode = (te.isOn && crystal.getItem() instanceof ItemFELCrystal c) ? c.wavelength : EnumWavelengths.NULL;
 
-        if (te.isOn && te.mode != EnumWavelengths.NULL) {
-            // NOTE: pow(4) here. The client audio ramp and the in-GUI beam use pow(2) — an upstream
-            // inconsistency, so the GUI can show a beam the server has already cut. Kept as-is.
-            if (te.power < powerReq * Math.pow(4, te.mode.ordinal())) {
-                te.mode = EnumWavelengths.NULL;
-                te.power = 0;
-            } else {
-                te.hurtEntitiesInBeam(level, dir);
-                te.power -= (long) (powerReq * (te.mode.ordinal() == 0 ? 0 : Math.pow(4, te.mode.ordinal())));
-                te.trace(level, dir);
-            }
+        int req = requiredPower(te.mode);
+
+        if (te.isOn && te.mode != EnumWavelengths.NULL && te.power < req) {
+            te.power = 0;
+        }
+
+        if (te.isOn && te.power >= req && te.mode != EnumWavelengths.NULL) {
+            te.hurtEntitiesInBeam(level, dir);
+            te.power -= req;
+            te.trace(level, dir);
         }
 
         te.networkPackNT();
+    }
+
+    /** 1.7: {@code (int) (powerReq * (ordinal == 0 ? 0 : 3^ordinal))}. */
+    public static int requiredPower(EnumWavelengths mode) {
+        return (int) (powerReq * ((mode.ordinal() == 0) ? 0 : Math.pow(3, mode.ordinal())));
     }
 
     /** Everything living between the emitter and the beam's end takes the wavelength's effect. */
@@ -132,9 +138,12 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
         List<LivingEntity> list = level.getEntitiesOfClass(LivingEntity.class, new AABB(blx, bly, blz, bux, buy, buz));
         for (LivingEntity entity : list) {
             switch (mode) {
-                case IR -> { }                                          // infrared does nothing at all
-                case VISIBLE -> dev.golem.core.world.Effects.add(entity, MobEffects.BLINDNESS, 60 * 60 * 65536, 0);
-                case UV -> dev.golem.core.world.Effects.ignite(entity, 10);
+                // 1.7 switch fall-through, kept: VISIBLE blinds AND falls into the IR/UV ignite case.
+                case VISIBLE -> {
+                    dev.golem.core.world.Effects.add(entity, MobEffects.BLINDNESS, 60 * 60 * 65536, 0);
+                    dev.golem.core.world.Effects.ignite(entity, 10);
+                }
+                case IR, UV -> dev.golem.core.world.Effects.ignite(entity, 10);
                 case GAMMA -> ContaminationUtil.contaminate(entity, ContaminationUtil.HazardType.RADIATION,
                         ContaminationUtil.ContaminationType.CREATIVE, 25);
                 case DRX -> ContaminationUtil.applyDigammaData(entity, 0.1F);
@@ -191,83 +200,44 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
                 continue;
             }
 
-            if (!b.isAir()) {
-                this.distance = i;
-                if (burn(level, beam, b)) break;
-            }
+            // 1.7: the first opaque block (or TNT) stops the beam.
+            this.distance = i;
+            burn(level, beam, b);
+            break;
         }
     }
 
     /**
-     * The 26.1 stand-in for 1.12's {@code Material.isOpaque()}, which was "blocks movement AND is not
+     * The 26.1 stand-in for 1.7's {@code Material.isOpaque()}, which was "blocks movement AND is not
      * translucent": a full-cube collision shape that also occludes. Stone qualifies; glass, torches and
-     * air do not — so, exactly as upstream, the beam passes straight through glass and the IR case's
-     * explicit glass check is unreachable (kept for fidelity).
+     * air do not — so, exactly as upstream, the beam passes straight through glass and liquids (which
+     * makes 1.7's liquid branch in {@link #burn} unreachable; kept for fidelity).
      */
     private static boolean isOpaque(BlockState state, Level level, BlockPos pos) {
         return state.canOcclude() && state.isCollisionShapeFullBlock(level, pos);
     }
 
     /**
-     * The per-wavelength burn table. Returns whether the beam is <b>blocked</b> here.
-     *
-     * <pre>
-     *   IR       blocked by anything opaque, and by glass
-     *   VISIBLE  hardness &lt; 10   , 1-in-40 -> vanilla fire
-     *   UV       hardness &lt; 100  , 1-in-20 -> vanilla fire
-     *   GAMMA    hardness &lt; 3000 , 1-in-5  -> balefire
-     *   DRX      always burns: fire_digamma (or digamma_matter on the polaroid easter egg) + ash below
-     * </pre>
-     * "Hardness" is the block's <b>explosion resistance</b>, matching the old
-     * {@code getExplosionResistance(null)}.
+     * 1.7's single burn rule at the block that stopped the beam: a liquid is removed; otherwise a block
+     * with explosion resistance below 75 is set alight 1-in-5 (vanilla fire, or for DRX digamma fire /
+     * digamma matter on the polaroid-11 world plus digamma ash below). "Hardness" is the block's
+     * <b>explosion resistance</b>, matching the old {@code getExplosionResistance(null)}.
      */
-    private boolean burn(Level level, BlockPos pos, BlockState b) {
-        boolean opaque = isOpaque(b, level, pos);
-        float hardness = b.getBlock().getExplosionResistance();
-        var random = level.getRandom();
+    private void burn(Level level, BlockPos pos, BlockState b) {
+        if (!b.getFluidState().isEmpty() && b.getBlock() instanceof net.minecraft.world.level.block.LiquidBlock) {
+            lavaHiss(level, pos);
+            level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+            return;
+        }
 
-        switch (mode) {
-            case IR -> {
-                return opaque || b.is(Blocks.GLASS);
-            }
-            case VISIBLE -> {
-                if (!opaque) return false;
-                if (hardness < 10 && random.nextInt(40) == 0) {
-                    lavaHiss(level, pos);
-                    level.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState());
-                    return false;
-                }
-                return true;
-            }
-            case UV -> {
-                if (!opaque) return false;
-                if (hardness < 100 && random.nextInt(20) == 0) {
-                    lavaHiss(level, pos);
-                    level.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState());
-                    return false;
-                }
-                return true;
-            }
-            case GAMMA -> {
-                if (!opaque) return false;
-                if (hardness < 3000 && random.nextInt(5) == 0) {
-                    lavaHiss(level, pos);
-                    level.setBlockAndUpdate(pos, ModBombBlocks.balefire.get().defaultBlockState());
-                    return false;
-                }
-                return true;
-            }
-            case DRX -> {
-                lavaHiss(level, pos);
-                // polaroidID 11 is a 1-in-18 per-world roll; on that world the beam leaves spreading
-                // digamma MATTER instead of a flame.
-                level.setBlockAndUpdate(pos, (MainRegistry.polaroidID == 11
-                        ? ModBombBlocks.digamma_matter.get() : ModBombBlocks.fire_digamma.get()).defaultBlockState());
+        float hardness = b.getBlock().getExplosionResistance();
+        if (hardness < 75 && level.getRandom().nextInt(5) == 0) {
+            lavaHiss(level, pos);
+            BlockState fire = mode != EnumWavelengths.DRX ? Blocks.FIRE.defaultBlockState()
+                    : (MainRegistry.polaroidID == 11 ? ModBombBlocks.digamma_matter.get() : ModBombBlocks.fire_digamma.get()).defaultBlockState();
+            level.setBlockAndUpdate(pos, fire);
+            if (mode == EnumWavelengths.DRX) {
                 level.setBlockAndUpdate(pos.below(), ModFallingBlocks.ash_digamma.get().defaultBlockState());
-                return false;
-            }
-            default -> {
-                return true;
             }
         }
     }
@@ -323,7 +293,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
             level.setBlocksDirty(pos, state, state); // the beam length changed -> re-render
         }
 
-        // NOTE: pow(2), not the server's pow(4) — upstream's inconsistency, preserved.
+        // NOTE: pow(2), not the server's 3^ordinal — 1.7's inconsistency, preserved.
         boolean firing = te.power > powerReq * Math.pow(2, te.mode.ordinal())
                 && te.isOn && te.mode != EnumWavelengths.NULL && te.distance - 3 > 0;
         te.audioDuration = net.minecraft.util.Mth.clamp(te.audioDuration + (firing ? 2 : -3), 0, 60);

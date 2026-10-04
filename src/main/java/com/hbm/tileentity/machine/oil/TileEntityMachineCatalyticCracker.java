@@ -21,7 +21,7 @@ import dev.golem.core.data.DataOut;
  * Catalytic Cracker — 1:1 port of the 1.12.2 {@code TileEntityMachineCatalyticCracker}. A large
  * steam-driven tower (no power, no GUI). 5 tanks: {@code [0] BITUMEN 4k} input (settable via fluid-ID
  * right-click on the block), {@code [1] STEAM 8k}, {@code [2] OIL 4k}, {@code [3] PETROLEUM 4k},
- * {@code [4] SPENTSTEAM 4k}. {@link #crack()} runs every 5 ticks in 2 loops: −100 input −200 steam →
+ * {@code [4] SPENTSTEAM 800}. {@link #crack()} runs every 5 ticks in 2 loops: −100 input −200 steam →
  * +left +right +2 spentsteam; sends every 10 ticks.
  *
  * <p>Deferred (§20): the Forge fluid-capability wrapper ({@code NTMFluidHandlerWrapper}).
@@ -37,7 +37,7 @@ public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase impl
         tanks[1] = new FluidTankNTM(Fluids.STEAM, 8000);
         tanks[2] = new FluidTankNTM(Fluids.OIL, 4000);
         tanks[3] = new FluidTankNTM(Fluids.PETROLEUM, 4000);
-        tanks[4] = new FluidTankNTM(Fluids.SPENTSTEAM, 4000);
+        tanks[4] = new FluidTankNTM(Fluids.SPENTSTEAM, 800); // 1.7.10: 800 (1.12.2 used 4,000)
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCatalyticCracker te) {
@@ -82,7 +82,7 @@ public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase impl
             tanks[3].setTankType(rec.right().type);
             tanks[4].setTankType(Fluids.SPENTSTEAM);
         } else {
-            for (int i = 0; i < 5; i++) tanks[i].setTankType(Fluids.NONE);
+            for (int i = 2; i < 5; i++) tanks[i].setTankType(Fluids.NONE); // 1.7: only the output tanks
         }
     }
 

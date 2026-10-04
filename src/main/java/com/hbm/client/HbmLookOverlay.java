@@ -26,6 +26,7 @@ public final class HbmLookOverlay {
     public static void render(GuiGraphicsExtractor graphics) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null || mc.screen != null || mc.options.hideGui) return;
+        if (!com.hbm.config.ClientConfig.DODD_RBMK_DIAGNOSTIC) return; // 1.7: the whole hook sits behind this toggle
 
         HitResult hit = mc.hitResult;
         if (hit == null || hit.getType() != HitResult.Type.BLOCK) return;

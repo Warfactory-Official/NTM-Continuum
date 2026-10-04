@@ -33,11 +33,14 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Hydrotreater — 1:1 port of the 1.12.2 {@code TileEntityMachineHydrotreater}. 9 slots (0 battery,
- * 1→2 input container load, 3→4/5→6 two output-unload pairs, 7 fluid identifier, 8 catalyst). Tanks:
+ * Hydrotreater — port of 1.7.10's {@code TileEntityMachineHydrotreater}. 11 slots (0 battery, 1→2 input
+ * container load, 3→4 hydrogen container load — deprecated in the 1.7 menu, which hides them because
+ * hydrogen needs pressurisation, but still processed by the tile — 5→6/7→8 two output-unload pairs,
+ * 9 fluid identifier, 10 catalyst). Tanks:
  * {@code [0] OIL 64k} + {@code [1] HYDROGEN 64k p1} inputs (both pipe-fed) → {@code [2] OIL_DS 24k} /
  * {@code [3] SOURGAS 24k}. {@link #reform} runs every 2 ticks: needs {@code power ≥ 20k},
- * {@code tank0 ≥ 100}, enough hydrogen, and a {@code catalytic_converter} in slot 8. maxPower 1M.
+ * {@code tank0 ≥ 100}, enough hydrogen, and a {@code catalytic_converter} in slot 10. maxPower 1M.
+ * 1.7 has no automation access (the base tile exposes no sides).
  *
  * <p>Deferred (§20): IPersistentNBT/IFluidCopiable.
  */
@@ -49,10 +52,10 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
     public long power = 0;
     public FluidTankNTM[] tanks;
 
-    private static final int[] IO_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+    public static final int SLOT_COUNT = 11;
 
     public TileEntityMachineHydrotreater(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MACHINE_HYDROTREATER.get(), pos, state, 9);
+        super(ModBlockEntities.MACHINE_HYDROTREATER.get(), pos, state, SLOT_COUNT);
         tanks = new FluidTankNTM[4];
         tanks[0] = new FluidTankNTM(Fluids.OIL, 64_000);
         tanks[1] = new FluidTankNTM(Fluids.HYDROGEN, 64_000).withPressure(1);
@@ -65,12 +68,13 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineHydrotreater te) {
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
-        te.loadInput();
+        te.loadInput(0, 1, 2);
+        te.loadInput(1, 3, 4);
 
         if (TickPhase.every(level, pos, 2)) te.reform();
 
-        te.unloadTank(2, 3, 4);
-        te.unloadTank(3, 5, 6);
+        te.unloadTank(2, 5, 6);
+        te.unloadTank(3, 7, 8);
 
         for (DirPos dp : te.getConPos()) {
             for (int i = 2; i < 4; i++) {
@@ -104,13 +108,13 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
             return;
         }
 
-        tanks[1].setTankType(out.hydrogen().type);
+        tanks[1].withPressure(out.hydrogen().pressure).setTankType(out.hydrogen().type);
         tanks[2].setTankType(out.out1().type);
         tanks[3].setTankType(out.out2().type);
 
         if (power < 20_000 || tanks[0].getFill() < 100) return;
         if (tanks[1].getFill() < out.hydrogen().fill) return;
-        if (inventory.getStackInSlot(8).isEmpty() || inventory.getStackInSlot(8).getItem() != ModItems.catalytic_converter.get()) return;
+        if (inventory.getStackInSlot(10).isEmpty() || inventory.getStackInSlot(10).getItem() != ModItems.catalytic_converter.get()) return;
         if (tanks[2].getFill() + out.out1().fill > tanks[2].getMaxFill()) return;
         if (tanks[3].getFill() + out.out2().fill > tanks[3].getMaxFill()) return;
 
@@ -121,20 +125,24 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
         power -= 20_000;
     }
 
+    /** 1.7 {@code tanks[0].setType(9, slots)}: a different identifier switches the type and empties the tank. */
     private void setTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(7);
+        ItemStack id = inventory.getStackInSlot(9);
         if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         if (t != tanks[0].getTankType()) {
             tanks[0].setTankType(t);
+            tanks[0].setFill(0);
             setChanged();
         }
     }
 
-    private void loadInput() {
-        ItemStack in = inventory.getStackInSlot(1);
+    private void loadInput(int tankIndex, int inSlot, int outSlot) {
+        ItemStack in = inventory.getStackInSlot(inSlot);
         if (in.isEmpty()) return;
-        FluidTankNTM tank = tanks[0];
+        FluidTankNTM tank = tanks[tankIndex];
+        // 1.7 FluidTank.loadTank: a pressurised tank only accepts the infinite barrel.
+        if (tank.getPressure() != 0 && !in.is(com.hbm.items.ModFluidNetItems.fluid_barrel_infinite.get())) return;
 
         if (in.getItem() instanceof IFillableItem fillable) {
             int held = fillable.getFill(in);
@@ -145,20 +153,20 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
             ItemStack work = in.copy();
             work.setCount(1);
             int taken = fillable.tryEmpty(heldType, addable, work);
-            if (taken <= 0 || !inventory.insertItem(2, work.copy(), true).isEmpty()) return;
+            if (taken <= 0 || !inventory.insertItem(outSlot, work.copy(), true).isEmpty()) return;
             tank.fill(heldType, taken, true);
-            inventory.extractItem(1, 1, false);
-            inventory.insertItem(2, work, false);
+            inventory.extractItem(inSlot, 1, false);
+            inventory.insertItem(outSlot, work, false);
             setChanged();
         } else if (in.getItem() instanceof ItemFluidBucket) {
             FluidType fluid = ItemFluidBucket.getFluid(in);
             if (fluid == Fluids.NONE) return;
             if (tank.fill(fluid, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return;
             ItemStack empty = new ItemStack(Items.BUCKET);
-            if (!inventory.insertItem(2, empty.copy(), true).isEmpty()) return;
+            if (!inventory.insertItem(outSlot, empty.copy(), true).isEmpty()) return;
             tank.fill(fluid, ItemFluidBucket.VOLUME, true);
-            inventory.extractItem(1, 1, false);
-            inventory.insertItem(2, empty, false);
+            inventory.extractItem(inSlot, 1, false);
+            inventory.insertItem(outSlot, empty, false);
             setChanged();
         }
     }
@@ -196,16 +204,17 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return Library.isBattery(stack);
-        if (slot == 7) return stack.getItem() instanceof IItemFluidId;
-        if (slot == 8) return stack.getItem() == ModItems.catalytic_converter.get();
+        if (slot == 9) return stack.getItem() instanceof IItemFluidId;
+        if (slot == 10) return stack.getItem() == ModItems.catalytic_converter.get();
+        // Container-output slots stay TRUE: the tile writes them via inventory.insertItem, which validates
+        // here; the menu's take-only slots block the player.
         return true;
     }
 
-    @Override public int[] getSlotsForFace(Direction side) { return IO_SLOTS; }
-    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return isItemValidForSlot(slot, stack); }
-    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return slot == 2 || slot == 4 || slot == 6;
-    }
+    // 1.7: TileEntityMachineBase exposes no sides, so hoppers/pipes cannot reach the inventory.
+    @Override public int[] getSlotsForFace(Direction side) { return new int[0]; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long i) { power = i; }

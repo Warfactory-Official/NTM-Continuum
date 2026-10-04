@@ -64,18 +64,26 @@ public final class ExplosionNukeSmall {
         }
 
         if (params.miniNuke) {
-            float radMod = params.radiationLevel / 3F;
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (int i = -2; i <= 2; i++) {
                 for (int j = -2; j <= 2; j++) {
                     if (Math.abs(i) + Math.abs(j) < 4) {
                         ChunkRadiationManager.proxy.incrementRad(world,
                                 pos.set(Mth.floor(x + i * 16D), Mth.floor(y), Mth.floor(z + j * 16D)),
-                                (50F / (Math.abs(i) + Math.abs(j) + 1)) * radMod);
+                                radiationAt(i, j, params.radiationLevel));
                     }
                 }
             }
         }
+    }
+
+    /**
+     * 1.7 :45, {@code 50 / (|i| + |j| + 1) * radMod}: the 50 divides as an INT (50, 25, 16, 12, ...)
+     * before the float {@code radiationLevel / 3} multiplies it.
+     */
+    public static float radiationAt(int i, int j, float radiationLevel) {
+        float radMod = radiationLevel / 3F;
+        return 50 / (Math.abs(i) + Math.abs(j) + 1) * radMod;
     }
 
     public static final MukeParams PARAMS_SAFE = new MukeParams();
@@ -94,11 +102,14 @@ public final class ExplosionNukeSmall {
         PARAMS_TOTS.particle = HbmEffectNT.TinyTot;
         PARAMS_TOTS.shrapnelCount = 0;
         PARAMS_TOTS.resolution = 32;
+        PARAMS_TOTS.radiationLevel = 1F;
 
         PARAMS_LOW.blastRadius = 15F;
         PARAMS_LOW.killRadius = 45F;
+        PARAMS_LOW.radiationLevel = 2F; // 1.7 ExplosionNukeSmall:54
         PARAMS_MEDIUM.blastRadius = 20F;
         PARAMS_MEDIUM.killRadius = 55F;
+        PARAMS_MEDIUM.radiationLevel = 3F; // 1.7 ExplosionNukeSmall:55
 
         PARAMS_HIGH.miniNuke = false;
         PARAMS_HIGH.blastRadius = BombConfig.fatmanRadius;

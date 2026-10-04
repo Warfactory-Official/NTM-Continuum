@@ -68,7 +68,7 @@ public final class ModSecurityBlocks {
     public static final RegistryObject<Block> barricade = REG.block("barricade", Block::new,
                     p -> p.strength(1.0F, 2.5F).sound(SoundType.SAND))
             .transform(Presets.cubeAll())
-            .loot(Loot.nothing())
+            .loot(Loot.silkTouchOnly()) // 1.7: drops nothing, but a plain cube without a tile entity, so silk touch keeps it
             .tag(BlockTag.SHOVEL);
 
     /** 1.7.10 ItemBlockBase for the fence: a flat sprite of the block icon (fence_metal / fence_metal_post). */

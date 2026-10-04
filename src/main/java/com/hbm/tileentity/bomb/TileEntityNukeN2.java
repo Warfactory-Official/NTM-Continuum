@@ -42,9 +42,10 @@ public class TileEntityNukeN2 extends TileEntityNukeBomb {
         return charges;
     }
 
+    /** 1.7 TileEntityNukeN2.isReady (:184): every one of the twelve slots must hold a charge. */
     @Override
     public boolean isReady() {
-        return countCharges() > 0;
+        return countCharges() == 12;
     }
 
     @Override
