@@ -146,6 +146,10 @@ public final class FabricGameTests {
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.RtgGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.SingularityGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.TurretGameTests.TESTS);
+        // CC: Tweaked peripheral suites, present only when CC is loaded (their bodies name CC types)
+        for (dev.golem.core.gametest.GameTests.Suite suite : com.hbm.compat.computercraft.ComputerCraft.gameTestSuites()) {
+            dev.golem.core.gametest.GameTests.register(suite);
+        }
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.PowerNetworkGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.NetworkReachGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.FluidNetworkGameTests.TESTS);

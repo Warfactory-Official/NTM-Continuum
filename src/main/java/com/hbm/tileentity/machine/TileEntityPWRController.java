@@ -58,7 +58,8 @@ import com.hbm.tileentity.ModPwrBlockEntities;
  * core→hull through the heat exchangers, hull→coolant through the channels, both decay by 0.1 % a tick; the
  * core melts down past its capacity. Fission only runs once the area has been loaded for 40 ticks.
  *
- * <p>1.7 also exposed an OpenComputers component; that has no target here.
+ * <p>1.7's OpenComputers component is served to CC: Tweaked by
+ * {@code com.hbm.compat.computercraft.machine.PWRControllerPeripheral}.
  */
 public class TileEntityPWRController extends TileEntityMachineBase
         implements MenuProvider, IControlReceiver, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive {

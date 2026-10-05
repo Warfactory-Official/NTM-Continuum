@@ -256,5 +256,7 @@ public final class MainRegistry {
         com.hbm.handler.NTMToolHandler.register();
         // Machines and container items on the loaders' fluid capabilities (History section 19ek-fluids).
         com.hbm.capability.ForeignFluids.register();
+        // 1.7's OpenComputers components as CC: Tweaked peripherals, when CC is loaded (History section 19el-computers)
+        com.hbm.compat.computercraft.ComputerCraft.init();
     }
 }

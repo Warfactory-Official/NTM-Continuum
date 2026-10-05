@@ -50,7 +50,8 @@ import java.util.List;
  * {@code WorldlyContainer} port asks per <i>face</i>, not per <i>cell</i>, so CE's positional
  * {@code getAccessibleSlotsFromSide(side, pos)} has nowhere to hook. Insert/extract are still gated to
  * the correct slots, so only which cell of the machine a hopper may sit on changes. The OpenComputers
- * callbacks are dropped along with the rest of the mod-compat layer.
+ * component {@code ntm_pa_source} is served to CC: Tweaked by
+ * {@code com.hbm.compat.computercraft.albion.PASourcePeripheral}.
  */
 public class TileEntityPASource extends TileEntityCooledBase
         implements MenuProvider, IControlReceiver, WorldlyContainer, IRORValueProvider, IRORInteractive {

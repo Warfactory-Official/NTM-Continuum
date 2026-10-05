@@ -43,6 +43,9 @@ public class TileEntityFusionBoiler extends TileEntityLoadedBase
     public long plasmaEnergy;
     private long plasmaEnergySync;
 
+    /** Last tick's plasma, which 1.7's OpenComputers callbacks reported. */
+    public long plasmaEnergySync() { return plasmaEnergySync; }
+
 
     public TileEntityFusionBoiler(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUSION_BOILER.get(), pos, state);

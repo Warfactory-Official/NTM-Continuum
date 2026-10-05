@@ -42,8 +42,9 @@ import org.jspecify.annotations.Nullable;
  * tank of fuel, and the missile lands off target by the chip's inaccuracy times the fins'.
  *
  * <p>While a custom missile stands in the ten blocks above the pad, the client puffs fifteen {@code launchSmoke}
- * plumes a tick along one random horizontal axis ({@link #smokeSpread}: compact 0.5, table 0.65). Deferred: the
- * table's OpenComputers component.
+ * plumes a tick along one random horizontal axis ({@link #smokeSpread}: compact 0.5, table 0.65). The table's
+ * OpenComputers component {@code ntm_custom_launch_pad} is served to CC: Tweaked by
+ * {@code com.hbm.compat.computercraft.bomb.LaunchTablePeripheral}.
  */
 public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineBase
         implements IEnergyReceiverMK2, IFluidStandardReceiverMK2 {
@@ -193,7 +194,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
         return item == null ? ItemStack.EMPTY : new ItemStack(item);
     }
 
-    private boolean hasFuel() {
+    public boolean hasFuel() {
         return solidState() != 0 && liquidState() != 0 && oxidizerState() != 0;
     }
 

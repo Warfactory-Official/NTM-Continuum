@@ -215,6 +215,11 @@ public class BlockEntityRBMKConsole extends TileEntityMachineBase implements ICo
         setChanged();
     }
 
+    public int targetX() { return targetX; }
+    public int targetY() { return targetY; }
+    public int targetZ() { return targetZ; }
+    public byte rotation() { return rotation; }
+
     public int getXFromIndex(int index) {
         int x = index % 15 - 7;
         int z = index / 15 - 7;

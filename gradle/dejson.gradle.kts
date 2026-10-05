@@ -25,6 +25,7 @@ val DECLARATION_CLASSES = arrayOf(
     "com.hbm.inventory.recipes.ModShapelessRecipes",
     "com.hbm.inventory.recipes.ModComponentRecipes",
     "com.hbm.inventory.recipes.ModContainerRecipes",
+    "com.hbm.compat.computercraft.ComputerCraftRecipes",
     "com.hbm.inventory.recipes.RestoredCraftingRecipes",
     "com.hbm.inventory.recipes.gen.CraftingRecipesGenerated",
     "com.hbm.blocks.ModSecurityBlocks",

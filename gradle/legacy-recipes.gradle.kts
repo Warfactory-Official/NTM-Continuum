@@ -65,6 +65,20 @@ fun Project.applyLegacyRecipeCompatibility(mcVersion: String, conventionNamespac
                         val new = toLegacyIngredient(old)
                         if (new !== old) { json["copy_from"] = new; changed = true }
                     }
+                    // Dejson's Crafting.legacyResultTag: another mod's item whose pre-component NBT is not its
+                    // components under their ids (CC: Tweaked's treasure disk). Used in their place before 1.20.5,
+                    // dropped after.
+                    @Suppress("UNCHECKED_CAST")
+                    (json.remove("legacy_result_tag") as? Map<String, Any?>)?.let { legacyTag ->
+                        changed = true
+                        if (needsLegacyItemStacks(mcVersion)) {
+                            @Suppress("UNCHECKED_CAST")
+                            (json["result"] as? MutableMap<String, Any?>)?.let { result ->
+                                result.remove("components")
+                                result["tag"] = legacyTag.toMutableMap()
+                            }
+                        }
+                    }
                     (json["result"] as? MutableMap<String, Any?>)?.let { result ->
                         if (needsLegacyItemStacks(mcVersion)) {
                             @Suppress("UNCHECKED_CAST")

@@ -52,9 +52,9 @@ import java.util.List;
  * three blocks above it does nothing ({@link #updateLock}). This mirrors upstream exactly, including
  * the ordering, which is load-bearing: reaction flux propagates downward between segments.
  *
- * <p>Ported deviations, all recorded in IMPLEMENTATION.md §20: the OpenComputers component and the
- * redstone-over-radio value provider are dropped (neither subsystem is ported), and the meltdown's
- * shrapnel spray is currently the mud columns alone.
+ * <p>1.7's OpenComputers component is served to CC: Tweaked by
+ * {@code com.hbm.compat.computercraft.machine.WatzPeripheral}. Ported deviation, recorded in IMPLEMENTATION.md
+ * §20: the meltdown's shrapnel spray is currently the mud columns alone.
  */
 public class TileEntityWatz extends TileEntityMachineBase
         implements IFluidStandardTransceiverMK2, WorldlyContainer, MenuProvider, IControlReceiver, IRORValueProvider {
@@ -86,6 +86,11 @@ public class TileEntityWatz extends TileEntityMachineBase
      */
     public boolean isLocked = false;
     private final EnumWatzType[] locks = new EnumWatzType[SLOTS];
+
+    /** 1.7 {@code fluxLastBase + fluxLastReaction}, what its OpenComputers {@code getFlux} answered. */
+    public double getFluxLast() {
+        return fluxLastBase + fluxLastReaction;
+    }
 
     public TileEntityWatz(BlockPos pos, BlockState state) {
         super(ModBlockEntities.WATZ.get(), pos, state, SLOTS);

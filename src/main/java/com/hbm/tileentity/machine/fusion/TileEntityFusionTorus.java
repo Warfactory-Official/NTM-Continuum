@@ -54,7 +54,10 @@ import net.minecraft.sounds.SoundSource;
  * three fuel tanks — so a half-fed reactor runs at half rate rather than stalling. On top of that it
  * must be cryogenically cool ({@link TileEntityCooledBase}) and lit.
  *
- * <p>Not ported: the OpenComputers component, the redstone-over-radio provider, the tilt check (the
+ * <p>The OpenComputers component {@code ntm_fusion_torus} is served to CC: Tweaked by
+ * {@code com.hbm.compat.computercraft.fusion.FusionTorusPeripheral}.
+ *
+ * <p>Not ported: the redstone-over-radio provider, the tilt check (the
  * accelerator's structural-stress system, which no ported machine has yet), and the looping reactor
  * hum (no positional looped-audio facade). Recorded in IMPLEMENTATION.md §20.
  */

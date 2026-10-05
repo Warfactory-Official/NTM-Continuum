@@ -25,6 +25,8 @@ stonecutter parameters {
 
     // True only where the node declares JEI coordinates, so the integration compiles out elsewhere.
     constants["jei"] = !(node.project.findProperty("deps.jei") as String?).isNullOrBlank()
+    // True only where the node declares CC: Tweaked coordinates (an optional peer, like JEI).
+    constants["computercraft"] = !(node.project.findProperty("deps.cc") as String?).isNullOrBlank()
 
     // Same shape for Flywheel, and false on both 26.1 nodes because the engine publishes no 26.1
     // build. That is not the same as having no engine there: Golem Core vendors a port of it for

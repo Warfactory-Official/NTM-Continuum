@@ -62,7 +62,8 @@ import org.jspecify.annotations.Nullable;
  * item. A redstone rising edge on any block of the multiblock launches at the designator's target
  * ({@link #launchFromDesignator}); a radar or a detonator can launch at a coordinate or an entity.
  *
- * <p>Deferred: the OpenComputers component (no OC on any target), and the {@code IFluidCopiable} /
+ * <p>The OpenComputers component {@code ntm_launch_pad} is served to CC: Tweaked by
+ * {@code com.hbm.compat.computercraft.bomb.LaunchPadPeripheral}. Deferred: the {@code IFluidCopiable} /
  * connection-anchor conveniences.
  */
 public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase

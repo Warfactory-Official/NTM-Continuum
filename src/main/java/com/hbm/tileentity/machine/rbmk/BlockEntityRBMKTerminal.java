@@ -40,6 +40,8 @@ public class BlockEntityRBMKTerminal extends TileEntityLoadedBase
     public String channel = "";
     public String repeatCmd = "";
     public boolean doesRepeat;
+    /** 1.7: set by a computer ({@code enableOCMode}); the terminal then only echoes input and stops repeating. */
+    public boolean ocMode;
 
     public BlockEntityRBMKTerminal(BlockPos pos, BlockState state) {
         super(ModRBMKBlockEntities.RBMK_TERMINAL.get(), pos, state);
@@ -49,6 +51,11 @@ public class BlockEntityRBMKTerminal extends TileEntityLoadedBase
     public void serverTick() {
         if (level == null || level.isClientSide()) return;
 
+        if (ocMode) {
+            networkPackNT();
+            return;
+        }
+
         if (!channel.isEmpty() && !repeatCmd.isEmpty()) {
             RTTYSystem.broadcast(level, channel, repeatCmd);
         }
@@ -57,6 +64,12 @@ public class BlockEntityRBMKTerminal extends TileEntityLoadedBase
 
     public void eval(String cmd) {
         if (cmd == null || level == null) return;
+
+        if (ocMode) {
+            push(cmd);
+            markChanged();
+            return;
+        }
 
         push(cmd);
         if (cmd.isEmpty()) return;
@@ -148,6 +161,7 @@ public class BlockEntityRBMKTerminal extends TileEntityLoadedBase
         super.saveData(output);
         output.putString("channel", channel);
         output.putString("repeatCmd", repeatCmd);
+        output.putBoolean("ocMode", ocMode);
         for (int i = 0; i < history.length; i++) output.putString("history" + i, history[i]);
     }
 
@@ -156,6 +170,7 @@ public class BlockEntityRBMKTerminal extends TileEntityLoadedBase
         super.loadData(input);
         channel = input.getStringOr("channel", "");
         repeatCmd = input.getStringOr("repeatCmd", "");
+        ocMode = input.getBooleanOr("ocMode", false);
         for (int i = 0; i < history.length; i++) history[i] = input.getStringOr("history" + i, "");
     }
 

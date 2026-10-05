@@ -89,6 +89,10 @@ sourceSets["main"].resources.srcDir("src/generated/resources")
 repositories {
     mavenCentral()
     maven("https://maven.blamejared.com") { name = "BlameJared" }
+    maven("https://maven.squiddev.cc") {
+        name = "SquidDev"
+        content { includeGroup("cc.tweaked") }
+    }
     maven("https://maven.createmod.net") {
         name = "CreateMod"
         content { includeGroup("dev.engine-room.flywheel") }
@@ -127,6 +131,18 @@ val syncDevMods = tasks.register<Sync>("syncDevMods") {
 }
 
 tasks.matching { it.name == "runClient" }.configureEach { dependsOn(syncDevMods) }
+
+// CC: Tweaked for the server and GameTest runs (`-Pcomputercraft.run=true`); empty otherwise, so a run without
+// the flag also clears a jar an earlier flagged run left behind.
+val ccServerMod: Configuration by configurations.creating
+for ((run, task) in listOf("server" to "runServer", "gametest" to "runGameTestServer")) {
+    val sync = tasks.register<Sync>("syncComputerCraft${run.replaceFirstChar { it.uppercase() }}") {
+        description = "Places CC: Tweaked in the $run run's mods folder when -Pcomputercraft.run=true."
+        from(ccServerMod)
+        into(layout.projectDirectory.dir("runs/$run/mods"))
+    }
+    tasks.matching { it.name == task }.configureEach { dependsOn(sync) }
+}
 // ModDev writes run arguments to build/moddev/clientRunProgramArgs.txt. Without this input, a
 // one-off HBM_QUICKPLAY launch remains cached and every later normal client run keeps auto-joining it.
 tasks.matching { it.name == "prepareClientRun" }.configureEach {
@@ -171,6 +187,23 @@ dependencies {
     // server run and not only the client: it ships no mixins, so it needs no `mods` folder placement.
     // Nothing compiles against it — the tests that drive it reach its one public setter reflectively.
     propOrNull("deps.pipez")?.let { localRuntime("maven.modrinth:pipez:$it") }
+
+    // CC: Tweaked is an optional peer: HBM's 1.7 OpenComputers components are served to it as peripherals
+    // (com.hbm.compat.computercraft, guarded by the `computercraft` constant). Compiled against on every node,
+    // never shipped or required. `-Pcomputercraft.run=true` puts the mod in the dev runs as well; it is off by
+    // default so the recipe baselines stay CC-free.
+    // It carries mixins and nested jars, so the run takes it as a mod file (`devModJar`, and `ccServerMod` for
+    // the server and GameTest runs, whose mods folders nothing else syncs).
+    val ccMc = propOrNull("deps.cc_mc")
+    val ccVer = propOrNull("deps.cc")
+    if (ccMc != null && ccVer != null) {
+        // HBM's peripherals need the peripheral API alone (core-api, no Minecraft types); registration is Core's.
+        compileOnly("cc.tweaked:cc-tweaked-$ccMc-core-api:$ccVer") { isTransitive = false }
+        if (propOrNull("computercraft.run") == "true") {
+            devModJar("cc.tweaked:cc-tweaked-$ccMc-forge:$ccVer") { isTransitive = false }
+            ccServerMod("cc.tweaked:cc-tweaked-$ccMc-forge:$ccVer") { isTransitive = false }
+        }
+    }
 }
 
 tasks.processResources {

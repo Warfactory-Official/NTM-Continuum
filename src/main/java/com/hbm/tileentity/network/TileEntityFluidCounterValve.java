@@ -31,6 +31,12 @@ public class TileEntityFluidCounterValve extends TileEntityFluidSwitch implement
         return counter;
     }
 
+    /** 1.7 {@code resetCounter} (OpenComputers and RoR {@code reset}). */
+    public void resetCounter() {
+        counter = 0;
+        setChanged();
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFluidCounterValve valve) {
         if (!(level instanceof ServerLevel server)) return;
         if (valve.isOpen() && valve.getFluidType() != Fluids.NONE) {
@@ -44,7 +50,8 @@ public class TileEntityFluidCounterValve extends TileEntityFluidSwitch implement
         if (level.getGameTime() % 25 == 0) level.sendBlockUpdated(pos, state, state, 3);
     }
 
-    private void setState(int state) {
+    /** Opens (1) or closes (0) the valve; 1.7's private {@code setState}, public for the computer peripheral. */
+    public void setState(int state) {
         if (level == null) return;
         boolean open = state == 1;
         level.setBlock(getBlockPos(), getBlockState().setValue(FluidValve.OPEN, open), 3);

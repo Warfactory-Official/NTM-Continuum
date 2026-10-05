@@ -42,7 +42,8 @@ import com.hbm.tileentity.ModNuclearMiscBlockEntities;
 /**
  * The legacy research reactor: twelve plate-fuel slots in a hex layout, water cooling through the sides of
  * the column, a control-rod level with 0.04/tick travel, and flux that feeds adjacent breeders. 1:1 with the
- * 1.7 {@code TileEntityReactorResearch} (OpenComputers hooks aside).
+ * 1.7 {@code TileEntityReactorResearch}; its OpenComputers component is
+ * {@code com.hbm.compat.computercraft.machine.ResearchReactorPeripheral} on CC: Tweaked.
  */
 public final class TileEntityReactorResearch extends TileEntityMachineBase implements MenuProvider, IControlReceiver, WorldlyContainer {
 

@@ -70,6 +70,82 @@ public final class GasTurbineGameTests {
         helper.succeed();
     }
 
+    /**
+     * 1.7's start/stop counter sequence through the menu button, with a mirrored client turbine fed by the real
+     * sync packet: the GUI gate (client counter 0 or 579) must allow stop once running, because the client's counter
+     * freezes at 579 while state 1 syncs instantPowerOutput instead; the server parks the counter at 225 so stop
+     * plays the 225-tick shutdown ramp from idle.
+     */
+    public static void counterSequence(GameTestHelper helper) {
+        Fluids.init();
+        BlockPos core = new BlockPos(3, 1, 3);
+        TileEntityMachineTurbineGas turbine = place(helper, core);
+        turbine.tanks[0].setFill(50_000);
+        turbine.tanks[1].setFill(1_000);
+        turbine.tanks[2].setFill(1_000);
+        TileEntityMachineTurbineGas client = new TileEntityMachineTurbineGas(
+                helper.absolutePos(core.offset(0, 4, 0)), turbine.getBlockState());
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        var menu = new ContainerMachineTurbineGas(0, player.getInventory(), turbine);
+
+        sync(helper, turbine, client);
+        helper.assertTrue(client.state == 0 && guiAllowsIgnition(client), "Idle turbine GUI must allow start");
+        helper.assertTrue(menu.clickMenuButton(player, 0) && turbine.state == -1, "Start button must enter startup (-1)");
+
+        for (int i = 1; i <= 579; i++) {
+            tick(helper, core, turbine);
+            sync(helper, turbine, client);
+            if (i == 300) helper.assertFalse(guiAllowsIgnition(client), "GUI must block the button mid-startup");
+        }
+        helper.assertTrue(turbine.state == -1 && turbine.counter == 579, "Tick 579 must still be startup at counter 579");
+        tick(helper, core, turbine);
+        sync(helper, turbine, client);
+        helper.assertTrue(turbine.state == 1 && turbine.counter == 225 && turbine.rpm == turbine.rpmIdle
+                        && turbine.temp == turbine.tempIdle,
+                "Tick 580 must go online with counter 225 at idle, got state " + turbine.state + " counter " + turbine.counter
+                        + " rpm " + turbine.rpm + " temp " + turbine.temp);
+        for (int i = 0; i < 20; i++) {
+            tick(helper, core, turbine);
+            sync(helper, turbine, client);
+        }
+        helper.assertTrue(turbine.state == 1 && turbine.rpm == turbine.rpmIdle, "Turbine at throttle 0 must hold idle");
+        helper.assertTrue(client.state == 1 && client.counter == 579 && guiAllowsIgnition(client),
+                "Running turbine GUI must allow stop (client counter frozen at 579), got " + client.counter);
+        helper.assertTrue(menu.clickMenuButton(player, 0) && turbine.state == 0, "Stop button must set state 0");
+
+        tick(helper, core, turbine);
+        helper.assertTrue(turbine.counter == 224 && turbine.rpm == 10 * 224 / 225 && turbine.temp == 300 * 224 / 225,
+                "Stop at idle must start the 225-tick shutdown ramp, got counter " + turbine.counter
+                        + " rpm " + turbine.rpm + " temp " + turbine.temp);
+        for (int i = 0; i < 224; i++) {
+            tick(helper, core, turbine);
+            sync(helper, turbine, client);
+        }
+        helper.assertTrue(turbine.state == 0 && turbine.counter == 0 && turbine.rpm == 0 && turbine.temp == 0,
+                "Shutdown ramp must end at counter 0, rpm 0, temp 0 (1.7: tempLast * 0 / 225)");
+        tick(helper, core, turbine);
+        helper.assertTrue(turbine.counter == 0, "Counter must stay 0 once shut down");
+        sync(helper, turbine, client);
+        helper.assertTrue(guiAllowsIgnition(client), "Shut-down turbine GUI must allow start again");
+        helper.succeed();
+    }
+
+    /** 1.7 {@code GUIMachineTurbineGas.mouseClicked}: the ignition button only sends at counter 0 or 579. */
+    private static boolean guiAllowsIgnition(TileEntityMachineTurbineGas client) {
+        return client.counter == 0 || client.counter == 579;
+    }
+
+    private static void tick(GameTestHelper helper, BlockPos core, TileEntityMachineTurbineGas turbine) {
+        TileEntityMachineTurbineGas.serverTick(helper.getLevel(), helper.absolutePos(core), turbine.getBlockState(), turbine);
+    }
+
+    private static void sync(GameTestHelper helper, TileEntityMachineTurbineGas server, TileEntityMachineTurbineGas client) {
+        var buf = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
+        server.serialize(buf);
+        client.deserialize(buf);
+        buf.release();
+    }
+
     public static void sustainedRun(GameTestHelper helper) {
         Fluids.init();
         final int minimumRunTicks = 40;

@@ -48,6 +48,9 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase
 
     public double neutronEnergy;
     private double neutronEnergySync;
+
+    /** Last tick's neutron energy, which 1.7's OpenComputers callbacks reported. */
+    public double neutronEnergySync() { return neutronEnergySync; }
     public double progress;
 
 

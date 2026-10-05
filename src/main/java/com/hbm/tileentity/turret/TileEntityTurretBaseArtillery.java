@@ -107,6 +107,11 @@ public abstract class TileEntityTurretBaseArtillery extends TileEntityTurretBase
         return targetQueue.get(index);
     }
 
+    /** 1.7 {@code targetQueue.add}: a fire mission queued without {@link #enqueueTarget}'s range check. */
+    public void addQueuedTarget(Vec3 target) {
+        targetQueue.add(target);
+    }
+
     public void enqueueTarget(double x, double y, double z) {
         Vec3 pos = getTurretPos();
         if (new Vec3(x - pos.x, y - pos.y, z - pos.z).length() <= getDetectorRange()) {

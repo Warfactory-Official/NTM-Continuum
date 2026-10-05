@@ -1,3 +1,9 @@
+import java.util.jar.Attributes
+import java.util.jar.Manifest
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
+
 plugins {
     id("java-library")
     id("dev.kikugie.loom-back-compat")
@@ -5,6 +11,53 @@ plugins {
 
 fun prop(name: String): String = property(name) as String
 fun propOrNull(name: String): String? = (findProperty(name) as String?)?.takeIf { it.isNotBlank() }
+
+/**
+ * A dev-runtime copy of CC: Tweaked's Fabric jar without its `Fabric-Loom-Version` manifest line. Loom 1.16 refuses to
+ * remap a jar built by a newer Loom (CC's 1.20.1/1.21.1 jars name Loom 1.17); the jar itself needs nothing newer, its
+ * mixins being statically remapped (`Fabric-Loom-Mixin-Remap-Type: static`). Fetched straight from CC's maven into
+ * the build directory: resolving a configuration this early would disturb Loom's own repositories. Its nested
+ * libraries (`META-INF/jars`: Cobalt, NightConfig, ...) are unpacked beside it, because a mod given as a file is not
+ * searched for nested jars in a dev run; [computerCraftLibraries] lists them. Dev runs only, behind
+ * `-Pcomputercraft.run=true`; a jar that really needed the newer Loom fails loudly at client start.
+ */
+fun loomCompatibleComputerCraft(mc: String, version: String): File {
+    val name = "cc-tweaked-$mc-fabric-$version.jar"
+    val target = layout.buildDirectory.file("loom-compatible/$name").get().asFile
+    if (target.isFile) return target
+    target.parentFile.mkdirs()
+    val source = File(target.parentFile, "$name.download")
+    uri("https://maven.squiddev.cc/cc/tweaked/cc-tweaked-$mc-fabric/$version/$name").toURL().openStream().use { input ->
+        source.outputStream().use { input.copyTo(it) }
+    }
+    ZipFile(source).use { zip ->
+        ZipOutputStream(target.outputStream()).use { out ->
+            for (entry in zip.entries()) {
+                out.putNextEntry(ZipEntry(entry.name))
+                if (entry.name.startsWith("META-INF/jars/") && entry.name.endsWith(".jar")) {
+                    val nested = File(target.parentFile, "nested/" + entry.name.substringAfterLast('/'))
+                    nested.parentFile.mkdirs()
+                    zip.getInputStream(entry).use { input -> nested.outputStream().use { input.copyTo(it) } }
+                }
+                if (entry.name == "META-INF/MANIFEST.MF") {
+                    val manifest = Manifest(zip.getInputStream(entry))
+                    manifest.mainAttributes.remove(Attributes.Name("Fabric-Loom-Version"))
+                    manifest.write(out)
+                } else if (!entry.isDirectory) {
+                    zip.getInputStream(entry).use { it.copyTo(out) }
+                }
+                out.closeEntry()
+            }
+        }
+    }
+    source.delete()
+    return target
+}
+
+/** The nested libraries [loomCompatibleComputerCraft] unpacked; call it first. */
+fun computerCraftLibraries(): FileCollection =
+    files(layout.buildDirectory.dir("loom-compatible/nested").get().asFile.listFiles()?.filter { it.extension == "jar" }
+        ?: emptyList<File>())
 
 val mcVersion = stonecutter.current.version
 val javaVersion = prop("java_version").toInt()
@@ -25,6 +78,10 @@ sourceSets["main"].java {
 repositories {
     mavenCentral()
     maven("https://maven.blamejared.com") { name = "BlameJared" }
+    maven("https://maven.squiddev.cc") {
+        name = "SquidDev"
+        content { includeGroup("cc.tweaked") }
+    }
     maven("https://maven.createmod.net") {
         name = "CreateMod"
         content { includeGroup("dev.engine-room.flywheel") }
@@ -201,7 +258,10 @@ dependencies {
     if (jei != null && jeiVer != null) {
         "compileOnly"("mezz.jei:jei-$jei-common-api:$jeiVer")
         "compileOnly"("mezz.jei:jei-$jei-fabric-api:$jeiVer")
-        devRuntime("mezz.jei:jei-$jei-fabric:$jeiVer")
+        // JEI 29.43 (26.1.2) asks for Fabric Loader 0.19.4 at runtime; the node keeps its own loader, because Loom sets
+        // Mixin up from the declared one (a second loader's newer Mixin fails at launch), and code compiled against
+        // 0.19.4's Mixin (`Redirect.at` an array) breaks MixinExtras 0.5.4. JEI itself needs only >=0.17.
+        devRuntime("mezz.jei:jei-$jei-fabric:$jeiVer") { exclude(group = "net.fabricmc", module = "fabric-loader") }
     }
 
     // Published Flywheel supplies the older nodes. 26.1 Fabric has no published build and starts Golem
@@ -223,6 +283,24 @@ dependencies {
     // Team Reborn Energy is an optional peer of Core's energy facades; the dev game loads it so the RF
     // converters' Fabric exposure can be exercised (HBM never compiles against it).
     propOrNull("deps.tr_energy")?.let { devRuntime("teamreborn:energy:$it") }
+
+    // CC: Tweaked is an optional peer: HBM's 1.7 OpenComputers components are served to it as peripherals
+    // (com.hbm.compat.computercraft, guarded by the `computercraft` constant). Compiled against on every node,
+    // never shipped or required. `-Pcomputercraft.run=true` puts the mod in the dev runs as well; it is off by
+    // default so the recipe baselines stay CC-free.
+    val ccMc = propOrNull("deps.cc_mc")
+    val ccVer = propOrNull("deps.cc")
+    if (ccMc != null && ccVer != null) {
+        // HBM's peripherals need the peripheral API alone (core-api, no Minecraft types, so not remapped);
+        // registration is Core's.
+        "compileOnly"("cc.tweaked:cc-tweaked-$ccMc-core-api:$ccVer") { isTransitive = false }
+        if (propOrNull("computercraft.run") == "true") {
+            if (obfuscated) {
+                devRuntime(files(loomCompatibleComputerCraft(ccMc, ccVer)))
+                "runtimeOnly"(computerCraftLibraries())
+            } else devRuntime("cc.tweaked:cc-tweaked-$ccMc-fabric:$ccVer") { isTransitive = false }
+        }
+    }
 }
 
 loom {

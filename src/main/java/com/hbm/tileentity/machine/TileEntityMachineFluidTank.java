@@ -47,7 +47,8 @@ import dev.golem.core.data.DataOut;
  *
  * <p>1.7's hazards are ported: an explosion (first hit), antimatter or a highly corrosive fluid tears it open
  * ({@link #hasExploded}); it then leaves the network, leaks, burns if flammable, and is repaired with a blowtorch and
- * six steel plates. OpenComputers/control panel hooks are dropped. The side ladder ({@link IClimbable}) is kept. The tank defaults to {@code NONE}; drop a
+ * six steel plates. The 1.7 OpenComputers component is served to CC: Tweaked by
+ * {@code com.hbm.compat.computercraft.storage.MachineFluidTankPeripheral}; the control panel hooks are dropped. The side ladder ({@link IClimbable}) is kept. The tank defaults to {@code NONE}; drop a
  * {@code fluid_identifier} in slot 0 to set its type (it then passes to slot 1), like the 1.12.2 tank.
  */
 public class TileEntityMachineFluidTank extends TileEntityMachineBase implements MenuProvider, IFluidStandardTransceiverMK2, IClimbable, IRORValueProvider, IRORInteractive, com.hbm.interfaces.IRepairable {

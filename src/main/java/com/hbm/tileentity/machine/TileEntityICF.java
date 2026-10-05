@@ -45,7 +45,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * the pellet still heats the chamber by a quarter of its power. The coolant then takes away up to a quarter of
  * the heat per tick (scaled by the fluid's ICF efficiency), and the rest decays by 0.1 %.
  *
- * <p>1.7 also exposed OpenComputers and Energy Control readouts; neither target exists here.
+ * <p>1.7's OpenComputers component is served to CC: Tweaked by
+ * {@code com.hbm.compat.computercraft.machine.ICFPeripheral}; its Energy Control readout has no target here.
  */
 public class TileEntityICF extends TileEntityMachineBase
         implements MenuProvider, IFluidStandardTransceiverMK2, WorldlyContainer {

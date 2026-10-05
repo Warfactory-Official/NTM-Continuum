@@ -237,6 +237,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("gas_turbine_ports", 100, 8, () -> GasTurbineGameTests::ports);
     public static final GameTests.Function GAS_TURBINE_STARTUP =
             TESTS.function("gas_turbine_startup", 100, 8, () -> GasTurbineGameTests::startup);
+    public static final GameTests.Function GAS_TURBINE_COUNTER_SEQUENCE =
+            TESTS.function("gas_turbine_counter_sequence", 100, 8, () -> GasTurbineGameTests::counterSequence);
     public static final GameTests.Function GAS_TURBINE_SUSTAINED_RUN =
             TESTS.function("gas_turbine_sustained_run", 100, 8, () -> GasTurbineGameTests::sustainedRun);
     public static final GameTests.Function GAS_TURBINE_MENU_RECIPE =

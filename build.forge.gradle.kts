@@ -94,6 +94,10 @@ tasks.matching { it.name == "prepareClientRun" }.configureEach {
 repositories {
     mavenCentral()
     maven("https://maven.blamejared.com") { name = "BlameJared" }
+    maven("https://maven.squiddev.cc") {
+        name = "SquidDev"
+        content { includeGroup("cc.tweaked") }
+    }
     maven("https://maven.createmod.net") {
         name = "CreateMod"
         content { includeGroup("dev.engine-room.flywheel") }
@@ -135,6 +139,20 @@ dependencies {
     // Pipez: the real third-party energy peer the foreign-bridge gametests run against. `modRuntimeOnly`
     // so the production jar is remapped for this node's dev mappings; nothing compiles against it.
     propOrNull("deps.pipez")?.let { modRuntimeOnly("maven.modrinth:pipez:$it") }
+
+    // CC: Tweaked is an optional peer: HBM's 1.7 OpenComputers components are served to it as peripherals
+    // (com.hbm.compat.computercraft, guarded by the `computercraft` constant). Compiled against on every node,
+    // never shipped or required. `-Pcomputercraft.run=true` puts the mod in the dev runs as well; it is off by
+    // default so the recipe baselines stay CC-free.
+    val ccMc = propOrNull("deps.cc_mc")
+    val ccVer = propOrNull("deps.cc")
+    if (ccMc != null && ccVer != null) {
+        // HBM's peripherals need the peripheral API alone (core-api, no Minecraft types); registration is Core's.
+        compileOnly("cc.tweaked:cc-tweaked-$ccMc-core-api:$ccVer") { isTransitive = false }
+        if (propOrNull("computercraft.run") == "true") {
+            modRuntimeOnly("cc.tweaked:cc-tweaked-$ccMc-forge:$ccVer") { isTransitive = false }
+        }
+    }
 }
 
 mixin {

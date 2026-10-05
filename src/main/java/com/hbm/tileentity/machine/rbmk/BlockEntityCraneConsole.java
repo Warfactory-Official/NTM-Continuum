@@ -252,7 +252,12 @@ public class BlockEntityCraneConsole extends TileEntityMachineBase implements IR
         return max;
     }
 
-    private Direction coreDir() {
+    /** 1.7 OpenComputers {@code load()}: sets the hoist going down without {@link #beginLoad}'s loading check. */
+    public void requestLoad() {
+        goesDown = true;
+    }
+
+    public Direction coreDir() {
         return getBlockState().getValue(BlockMultiblockCore.FACING);
     }
 

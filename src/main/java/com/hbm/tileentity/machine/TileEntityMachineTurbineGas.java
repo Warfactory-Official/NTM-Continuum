@@ -88,7 +88,13 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
         turbine.updateFuelType();
 
         if (turbine.autoMode) {
-            int target = 60 - (int) (60D * turbine.power / MAX_POWER);
+            int target;
+            // 1.7: above 10% fuel the slider follows the power gauge; below it, consumption falls off linearly
+            if (turbine.tanks[0].getFill() * 10 > turbine.tanks[0].getMaxFill()) {
+                target = 60 - (int) (60D * turbine.power / MAX_POWER);
+            } else {
+                target = (int) (turbine.tanks[0].getFill() * 0.0001D * (60 - (int) (60D * turbine.power / MAX_POWER)));
+            }
             if (target > turbine.powerSliderPos) turbine.powerSliderPos++;
             else if (target < turbine.powerSliderPos) turbine.powerSliderPos--;
         }
@@ -138,9 +144,14 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
         return fuel != null && fuel.grade() == FluidCombustion.FuelGrade.GAS;
     }
 
-    /** Menu controls: 0 ignition, 1 automatic load-following, 1000..1060 slider position. */
+    /**
+     * Menu controls: 0 ignition, 1 automatic load-following, 1000..1060 slider position.
+     * 1.7 gated the ignition button on the client only ({@code GUIMachineTurbineGas.mouseClicked}: counter 0 or 579,
+     * where the client's counter freezes at 579 once state 1 stops syncing it); its {@code receiveControl} applied the
+     * state unconditionally. The server counter is 225 while running, so a server-side gate here would block stop.
+     */
     public void handleButton(int id) {
-        if (id == 0 && (counter == 0 || counter == 579)) state = state - 1;
+        if (id == 0) state = state - 1;
         else if (id == 1 && state == 1) autoMode = !autoMode;
         else if (id == 2 && state == 1) autoMode = false;
         else if (id >= 1000 && id <= 1060 && state == 1) {
@@ -160,7 +171,10 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
         }
         if (counter == 50) level.playSound(null, worldPosition.above(2), ModSounds.TURBINE_GAS_STARTUP.get(),
                 SoundSource.BLOCKS, 1F, 1F);
-        if (counter == 580) state = 1;
+        if (counter == 580) {
+            counter = 225; // 1.7: ensures it shuts down properly when stopped immediately after startup
+            state = 1;
+        }
     }
 
     private void shutdown() {

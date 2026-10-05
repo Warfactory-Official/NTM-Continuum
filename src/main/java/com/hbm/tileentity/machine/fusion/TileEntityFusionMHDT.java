@@ -47,6 +47,9 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
 
     public long plasmaEnergy;
     private long plasmaEnergySync;
+
+    /** Last tick's plasma, which 1.7's OpenComputers callbacks reported. */
+    public long plasmaEnergySync() { return plasmaEnergySync; }
     public long power;
 
     /** Client-side rotor spin. */
