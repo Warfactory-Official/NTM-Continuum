@@ -19,13 +19,11 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.BossEvent;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
@@ -71,9 +69,6 @@ public class EntityHunterChopper extends CompatMob implements Enemy, IRadiationI
     private static final double TARGET_RANGE = 250D;
     private static final double GUN_RANGE = 64D;
 
-    private final ServerBossEvent bossEvent = dev.golem.core.world.Compat.bossEvent(this, getDisplayName(),
-            // 1.7 BossStatus drew the one vanilla bar, which is 26.2's PINK
-            BossEvent.BossBarColor.PINK, BossEvent.BossBarOverlay.PROGRESS);
 
     private double waypointX;
     private double waypointY;
@@ -310,8 +305,12 @@ public class EntityHunterChopper extends CompatMob implements Enemy, IRadiationI
             level.explode(this, getX(), getY(), getZ(), 5F, Level.ExplosionInteraction.MOB);
         }
 
-        // 1.7 sent an AuxParticlePacketNT of type "exhaust"/mode "meteor"; LAUNCH_SMOKE is the port's plume
-        level.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE /* 1.7 "launchsmoke"; this port has no launch-smoke particle type yet */, getX(), getY(), getZ(), 10, 1D, 1D, 1D, 0.05D);
+        // 1.7 "exhaust" / "meteor": ten rocket-flame puffs spread 1 block in every axis, sent 100 blocks
+        net.minecraft.nbt.CompoundTag exhaust = new net.minecraft.nbt.CompoundTag();
+        exhaust.putString("mode", "meteor");
+        exhaust.putInt("count", 10);
+        exhaust.putDouble("width", 1D);
+        com.hbm.particle.helper.HbmEffectNT.Exhaust.send(level, getX(), getY(), getZ(), exhaust, 100D);
 
         setYRot(getYRot() + 20F);
 
@@ -426,7 +425,6 @@ public class EntityHunterChopper extends CompatMob implements Enemy, IRadiationI
             return;
         }
 
-        bossEvent.setProgress(getHealth() / getMaxHealth());
     }
 
     // 1.7: silent misc.nullChopper / misc.nullCrashing trigger, caught in ModEventHandlerClient.onPlaySound;
@@ -461,18 +459,7 @@ public class EntityHunterChopper extends CompatMob implements Enemy, IRadiationI
         this.crashingLoop = null;
     }
 
-    // 1.7: renderer-pushed BossStatus, self-expiring; 26.2 equivalent is the tracking pair.
-    @Override
-    public void startSeenByPlayer(ServerPlayer player) {
-        super.startSeenByPlayer(player);
-        this.bossEvent.addPlayer(player);
-    }
 
-    @Override
-    public void stopSeenByPlayer(ServerPlayer player) {
-        super.stopSeenByPlayer(player);
-        this.bossEvent.removePlayer(player);
-    }
 
     @Override
     protected @Nullable SoundEvent getHurtSound(DamageSource source) {

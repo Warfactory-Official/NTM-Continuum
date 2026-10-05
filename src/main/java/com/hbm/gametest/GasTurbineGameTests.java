@@ -116,16 +116,18 @@ public final class GasTurbineGameTests {
         tank.getTankType().addInfo(expectedFluidInfo);
         List<Component> tooltip = TankDisplay.tooltip(tank);
 
-        helper.assertTrue(tooltip.size() == expectedFluidInfo.size() + 3,
-                "Gas turbine tank tooltip must include name, fill, pressure, and fluid info");
+        // 1.7 FluidTank.renderTankInfo: name, fill, pressure, the blinking "Pressurized, use compressor!" line, fluid info
+        helper.assertTrue(tooltip.size() == expectedFluidInfo.size() + 4,
+                "Gas turbine tank tooltip must include name, fill, pressure, compressor warning and fluid info");
         helper.assertTrue(tooltip.get(0).equals(tank.getTankType().getDisplayName())
                         && tooltip.get(1).getString().equals("500/1000mB")
                         && tooltip.get(2).getString().equals("Pressure: 7 PU")
                         && tooltip.get(2).getStyle().getColor() != null
-                        && tooltip.get(2).getStyle().getColor().getValue() == ChatFormatting.RED.getColor(),
+                        && tooltip.get(2).getStyle().getColor().getValue() == ChatFormatting.RED.getColor()
+                        && tooltip.get(3).getString().equals("Pressurized, use compressor!"),
                 "Gas turbine tank tooltip header or pressure line regressed");
         for (int i = 0; i < expectedFluidInfo.size(); i++) {
-            helper.assertTrue(tooltip.get(i + 3).equals(expectedFluidInfo.get(i)),
+            helper.assertTrue(tooltip.get(i + 4).equals(expectedFluidInfo.get(i)),
                     "Gas turbine tank tooltip lost fluid metadata at line " + i);
         }
         helper.succeed();

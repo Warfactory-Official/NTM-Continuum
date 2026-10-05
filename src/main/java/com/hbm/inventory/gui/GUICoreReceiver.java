@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerCoreReceiver;
-import com.hbm.lib.Library;
+import com.hbm.util.BobMathUtil;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreReceiver;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-/** The receiver's panel: what came down the beam last tick, and what that is worth in HE. */
+/** The receiver's panel, ported from 1.7 {@code GUICoreReceiver}: what came down the beam last tick, and what that is worth in HE. */
 public class GUICoreReceiver extends GUIDFCBase<ContainerCoreReceiver> {
 
     private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/dfc/gui_receiver.png");
@@ -30,30 +30,32 @@ public class GUICoreReceiver extends GUIDFCBase<ContainerCoreReceiver> {
         TileEntityCoreReceiver receiver = menu.getReceiver();
         if (receiver == null) return;
 
-        drawTank(graphics, receiver.tank, 17, 17, 16, 52);
+        drawTank(graphics, receiver.tank, 8, 17, 16, 52);
     }
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        drawTitleAndInventory(graphics);
+        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 6, 4210752, false);
 
         TileEntityCoreReceiver receiver = menu.getReceiver();
-        if (receiver == null) return;
+        if (receiver != null) {
+            // 1.7 GUICoreReceiver: input in Spk, output as joules * 5000 HE, all in 0xFF7F7F.
+            GuiDraw.text(graphics, font, Component.literal("Input:"), 40, 25, 0xFF7F7F, false);
+            GuiDraw.text(graphics, font, Component.literal(BobMathUtil.getShortNumber(receiver.joules) + "Spk"),
+                    50, 35, 0xFF7F7F, false);
+            GuiDraw.text(graphics, font, Component.literal("Output:"), 40, 45, 0xFF7F7F, false);
+            GuiDraw.text(graphics, font, Component.literal(BobMathUtil.getShortNumber(receiver.joules * 5000) + "HE"),
+                    50, 55, 0xFF7F7F, false);
+        }
 
-        GuiDraw.text(graphics, font, Component.literal("Input:"), 54, 22, 0xFF404040, false);
-        Component sparks = Component.literal(Library.getShortNumber(receiver.joules) + "SPK");
-        GuiDraw.text(graphics, font, sparks, 161 - font.width(sparks), 22, 0xFF4EB3DB, false);
-
-        GuiDraw.text(graphics, font, Component.literal("Output:"), 54, 58, 0xFF404040, false);
-        Component power = Component.literal(Library.getShortNumber(receiver.power) + "HE/t");
-        GuiDraw.text(graphics, font, power, 161 - font.width(power), 58, 0xFF4EB3DB, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityCoreReceiver receiver = menu.getReceiver();
         if (receiver == null) return;
-        if (isHovering(17, 17, 16, 52, mouseX, mouseY)) {
+        if (isHovering(8, 17, 16, 52, mouseX, mouseY)) {
             tooltip(graphics, GuiUtil.tankTooltip(receiver.tank), mouseX, mouseY);
         }
     }

@@ -3,23 +3,17 @@ package com.hbm.inventory.gui;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineTurbine;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityMachineTurbine;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-import java.util.List;
-import java.util.Optional;
-
 /**
- * Screen for the steam turbine — 1.12.2 {@code GUIMachineTurbine} (texture {@code gui_turbine.png},
- * 176×<b>168</b>). Input tank 16×52 at (62,17) and output tank at (134,17) (both bottom-anchored at
- * y+69), the 7×34 power bar at (123,35) filling from (176,34), and the 14×14 steam-stage icon at (99,18)
- * whose source row picks STEAM / HOTSTEAM / SUPERHOTSTEAM / ULTRAHOTSTEAM. When the input fluid can't be
- * cooled the output tank goes NONE and the "large red !" panel appears left of the GUI.
+ * Screen for the steam turbine — 1.7.10 {@code GUIMachineTurbine} ({@code gui_turbine.png}, 176×168). Input tank
+ * 16×52 at x=62 and output tank at x=134 (bottom y=69), the 7×34 power bar at (123,35) filling from (176,34), and
+ * the 14×14 steam-stage icon at (99,18) whose source row picks STEAM / HOTSTEAM / SUPERHOTSTEAM / ULTRAHOTSTEAM.
+ * When the output tank is NONE the "large red !" panel appears left of the GUI with "Error: Invalid fluid!".
  */
 public class GUIMachineTurbine extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineTurbine> {
 
@@ -27,13 +21,13 @@ public class GUIMachineTurbine extends dev.golem.core.gui.CompatContainerScreen<
 
     public GUIMachineTurbine(ContainerMachineTurbine menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 168);
-        this.inventoryLabelY = this.imageHeight - 94; // the old ySize - 96 + 2
     }
 
+    /** 1.7: centred title at y=6, inventory at (8, ySize-96+2), both 4210752. */
     @Override
-    protected void init() {
-        super.init();
-        this.titleLabelX = this.imageWidth / 2 - this.font.width(this.title) / 2; // old GUI centred the name
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, this.font, this.title, this.imageWidth / 2 - this.font.width(this.title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, 8, this.imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
@@ -43,76 +37,36 @@ public class GUIMachineTurbine extends dev.golem.core.gui.CompatContainerScreen<
         TileEntityMachineTurbine te = this.menu.getTurbine();
         if (te == null) return;
 
-        int stage = stageRow(te);
+        var type = te.input.getTankType();
+        int stage = type == Fluids.STEAM ? 0 : type == Fluids.HOTSTEAM ? 1 : type == Fluids.SUPERHOTSTEAM ? 2 : type == Fluids.ULTRAHOTSTEAM ? 3 : -1;
         if (stage >= 0) {
-            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 99, this.topPos + 18,
-                    183.0F, (float) (stage * 14), 14, 14, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 99, this.topPos + 18, 183.0F, (float) (stage * 14), 14, 14, 256, 256);
         }
 
         int i = (int) te.getPowerScaled(34);
-        if (i > 0) {
-            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 123, this.topPos + 69 - i,
-                    176.0F, (float) (34 - i), 7, i, 256, 256);
-        }
+        if (i > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 123, this.topPos + 69 - i, 176.0F, (float) (34 - i), 7, i, 256, 256);
 
         if (te.output.getTankType() == Fluids.NONE) {
-            GuiUtil.drawWarningPanel(graphics, this.leftPos - 16, this.topPos + 68);
+            GuiUtil.drawInfoPanel(graphics, this.leftPos - 16, this.topPos + 36 + 32, 6);
         }
 
-        drawTank(graphics, te.input, 62, 17);
-        drawTank(graphics, te.output, 134, 17);
-    }
-
-    /** Row of the steam-stage icon strip for the current input fluid, or -1 when it isn't steam. */
-    private static int stageRow(TileEntityMachineTurbine te) {
-        var type = te.input.getTankType();
-        if (type == Fluids.STEAM) return 0;
-        if (type == Fluids.HOTSTEAM) return 1;
-        if (type == Fluids.SUPERHOTSTEAM) return 2;
-        if (type == Fluids.ULTRAHOTSTEAM) return 3;
-        return -1;
-    }
-
-    private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int barX, int barTop) {
-        int maxF = tank.getMaxFill();
-        int h = maxF <= 0 ? 0 : (int) ((long) tank.getFill() * 52 / maxF);
-        if (h <= 0) return;
-        int x0 = this.leftPos + barX;
-        int yBottom = this.topPos + barTop + 52;
-        int yTop = yBottom - h;
-        Identifier fluidTex = tank.getTankType().getTexture();
-        if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
-            graphics.enableScissor(x0, yTop, x0 + 16, yBottom);
-            for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                GuiDraw.blit(graphics, fluidTex, x0, ty, 0F, 0F, 16, 16, 16, 16);
-            }
-            graphics.disableScissor();
-        } else {
-            graphics.fill(x0, yTop, x0 + 16, yBottom, 0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
-        }
+        GuiUtil.tank(graphics, te.input, this.leftPos + 62, this.topPos + 69, 16, 52);
+        GuiUtil.tank(graphics, te.output, this.leftPos + 134, this.topPos + 69, 16, 52);
     }
 
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineTurbine te = this.menu.getTurbine();
         if (te == null) return;
-
-        if (this.isHovering(123, 35, 7, 34, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, te.getMaxPower()), Optional.empty(), mouseX, mouseY);
-            return;
+        int gl = this.leftPos, gt = this.topPos;
+        if (GuiUtil.hover(mouseX, mouseY, gl + 62, gt + 17, 16, 52)) {
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.tankTooltip(te.input), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, gl + 134, gt + 17, 16, 52)) {
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.tankTooltip(te.output), mouseX, mouseY);
+        } else if (te.output.getTankType() == Fluids.NONE && GuiUtil.hover(mouseX, mouseY, gl - 16, gt + 36 + 32, 16, 16)) {
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.lines("Error: Invalid fluid!"), gl - 8, gt + 36 + 16 + 32);
+        } else if (GuiUtil.hover(mouseX, mouseY, gl + 123, gt + 69 - 34, 7, 34)) {
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, te.getMaxPower()), mouseX, mouseY);
         }
-        if (this.isHovering(62, 17, 16, 52, mouseX, mouseY)) {
-            tankTooltip(graphics, te.input, mouseX, mouseY);
-            return;
-        }
-        if (this.isHovering(134, 17, 16, 52, mouseX, mouseY)) {
-            tankTooltip(graphics, te.output, mouseX, mouseY);
-        }
-    }
-
-    private void tankTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int mouseX, int mouseY) {
-        GuiDraw.tooltip(graphics, this.font, List.of(
-                tank.getTankType().getDisplayName(),
-                Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
     }
 }

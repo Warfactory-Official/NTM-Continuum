@@ -274,7 +274,8 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("type", getShellType());
+        // by enum name, never the ordinal (History section 19ek-small)
+        com.hbm.util.SavedIds.putEnum(output, "type", ItemAmmoArty.byIndex(getShellType()));
         output.putBoolean("shouldWhistle", this.shouldWhistle);
         output.putBoolean("didWhistle", this.didWhistle);
         output.putDouble("targetX", this.targetX);
@@ -286,7 +287,7 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        this.entityData.set(TYPE, input.getIntOr("type", 0));
+        this.entityData.set(TYPE, com.hbm.util.SavedIds.getEnum(input, "type", ItemAmmoArty.ArtilleryShellType.values()[0]).ordinal());
         this.shouldWhistle = input.getBooleanOr("shouldWhistle", false);
         this.didWhistle = input.getBooleanOr("didWhistle", false);
         this.targetX = input.getDoubleOr("targetX", 0D);

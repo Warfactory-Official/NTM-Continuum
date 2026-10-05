@@ -29,8 +29,8 @@ public class GUICoreInjector extends GUIDFCBase<ContainerCoreInjector> {
         TileEntityCoreInjector injector = menu.getInjector();
         if (injector == null) return;
 
-        drawTank(graphics, injector.tanks[0], 35, 16, 16, 52);
-        drawTank(graphics, injector.tanks[1], 125, 16, 16, 52);
+        drawTank(graphics, injector.tanks[0], 44, 17, 16, 52);
+        drawTank(graphics, injector.tanks[1], 116, 17, 16, 52);
     }
 
     @Override
@@ -43,9 +43,9 @@ public class GUICoreInjector extends GUIDFCBase<ContainerCoreInjector> {
         TileEntityCoreInjector injector = menu.getInjector();
         if (injector == null) return;
 
-        if (isHovering(35, 16, 16, 52, mouseX, mouseY)) {
+        if (isHovering(44, 17, 16, 52, mouseX, mouseY)) {
             tooltip(graphics, GuiUtil.tankTooltip(injector.tanks[0]), mouseX, mouseY);
-        } else if (isHovering(125, 16, 16, 52, mouseX, mouseY)) {
+        } else if (isHovering(116, 17, 16, 52, mouseX, mouseY)) {
             tooltip(graphics, GuiUtil.tankTooltip(injector.tanks[1]), mouseX, mouseY);
         }
     }

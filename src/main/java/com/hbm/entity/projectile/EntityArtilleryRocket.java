@@ -227,7 +227,8 @@ public class EntityArtilleryRocket extends EntityThrowableNT implements IChunkLo
         output.putDouble("targetX", aim.x);
         output.putDouble("targetY", aim.y);
         output.putDouble("targetZ", aim.z);
-        output.putInt("type", getTypeIndex());
+        // by enum name, never the ordinal (History section 19ek-small)
+        com.hbm.util.SavedIds.putEnum(output, "type", ItemAmmoHIMARS.byIndex(getTypeIndex()));
     }
 
     @Override
@@ -235,7 +236,7 @@ public class EntityArtilleryRocket extends EntityThrowableNT implements IChunkLo
         super.loadData(input);
         this.lastTargetPos = new Vec3(input.getDoubleOr("targetX", 0D), input.getDoubleOr("targetY", 0D),
                 input.getDoubleOr("targetZ", 0D));
-        this.entityData.set(ROCKET_TYPE, input.getIntOr("type", 0));
+        this.entityData.set(ROCKET_TYPE, com.hbm.util.SavedIds.getEnum(input, "type", ItemAmmoHIMARS.HIMARSRocketType.values()[0]).ordinal());
         chunkLoader.markRestoredFromNbt();
     }
 }

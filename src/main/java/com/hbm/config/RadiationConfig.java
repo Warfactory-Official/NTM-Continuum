@@ -86,10 +86,9 @@ public final class RadiationConfig {
     public static boolean disableFibrosis = false;
     /** 1.7 {@code POL_08_smokeStackSootMult}: written by 1.7, read by nothing (the chimneys use fixed factors). */
     public static double smokeStackSootMult = 0.8;
-    /*
-     * 1.7 POL_03..POL_07 smog: the client soot fog is not ported (no soot sync to the client), so the keys are not
-     * written. The fields stay because 1.7's rampant mode scales sootFogThreshold (MobConfig.loadFromConfig).
-     */
+    /** 1.7 {@code POL_01_enableLeadFromBlocks}: breaking blocks in heavy-metal pollution poisons (ModEventHandlerHooks). */
+    public static boolean enableLeadFromBlocks = true;
+    /** 1.7 {@code POL_03..POL_07}: the client smog (client {@code SmogFog}); rampant mode scales the threshold. */
     public static boolean enableSootFog = true;
     public static double sootFogThreshold = 35D;
     public static double sootFogDivisor = 120D;
@@ -97,8 +96,8 @@ public final class RadiationConfig {
     /**
      * 1.7 {@code loadFromConfig}, categories {@code 13_radiation}, {@code 14_hazard} and {@code 16_pollution}. Not
      * written: {@code RADIATION_99_enablePRISM} (the PRISM engine is not ported; the radiation engine stays
-     * RadiationSystemNT), {@code RADWORLD_03_regrow} (waste earth has no decay tick yet), {@code POL_01_enableLeadFromBlocks}
-     * (no block-break hook yet) and the smog keys {@code POL_03}, {@code POL_06}, {@code POL_07}.
+     * RadiationSystemNT). {@code RADWORLD_03_regrow}, {@code POL_01} and the smog keys {@code POL_03/06/07} are written
+     * since History §19ek-hooks.
      */
     public static void loadFromConfig(Configuration config) {
 
@@ -110,6 +109,7 @@ public final class RadiationConfig {
         worldRadEffects = CommonConfig.createConfigBool(config, CATEGORY_NUKE, "RADWORLD_00_toggle", "Whether high radiation levels should perform changes in the world", true);
         worldRad = CommonConfig.createConfigInt(config, CATEGORY_NUKE, "RADWORLD_01_amount", "How many block operations radiation can perform per tick", 10);
         worldRadThreshold = CommonConfig.createConfigInt(config, CATEGORY_NUKE, "RADWORLD_02_minimum", "The least amount of RADs required for block modification to happen", 20);
+        TerrainConfig.cleanupDeadDirt = CommonConfig.createConfigBool(config, CATEGORY_NUKE, "RADWORLD_03_regrow", "Whether dead grass and mycelium should decay into dirt", false);
 
         enableContamination = CommonConfig.createConfigBool(config, CATEGORY_NUKE, "RADIATION_00_enableContamination", "Toggles player contamination (and negative effects from radiation poisoning)", true);
         enableChunkRads = CommonConfig.createConfigBool(config, CATEGORY_NUKE, "RADIATION_01_enableChunkRads", "Toggles the world radiation system (chunk radiation only, some blocks use an AoE!)", true);
@@ -128,13 +128,13 @@ public final class RadiationConfig {
 
         final String CATEGORY_POL = CommonConfig.CATEGORY_POLLUTION;
         enablePollution = CommonConfig.createConfigBool(config, CATEGORY_POL, "POL_00_enablePollution", "If disabled, none of the polltuion related things will work", true);
+        enableLeadFromBlocks = CommonConfig.createConfigBool(config, CATEGORY_POL, "POL_01_enableLeadFromBlocks", "Whether breaking blocks in heavy metal polluted areas will poison the player", true);
         enableLeadPoisoning = CommonConfig.createConfigBool(config, CATEGORY_POL, "POL_02_enableLeadPoisoning", "Whether being in a heavy metal polluted area will poison the player", true);
+        enableSootFog = CommonConfig.createConfigBool(config, CATEGORY_POL, "POL_03_enableSootFog", "Whether smog should be visible", true);
         enablePoison = CommonConfig.createConfigBool(config, CATEGORY_POL, "POL_04_enablePoison", "Whether being in a poisoned area will affect the player", true);
         buffMobThreshold = CommonConfig.createConfigDouble(config, CATEGORY_POL, "POL_05_buffMobThreshold", "The amount of soot required to buff naturally spawning mobs", 15D);
+        sootFogThreshold = CommonConfig.createConfigDouble(config, CATEGORY_POL, "POL_06_sootFogThreshold", "How much soot is required for smog to become visible", 35D);
+        sootFogDivisor = CommonConfig.createConfigDouble(config, CATEGORY_POL, "POL_07_sootFogDivisor", "The divisor for smog, higher numbers will require more soot for the same smog density", 120D);
         smokeStackSootMult = CommonConfig.createConfigDouble(config, CATEGORY_POL, "POL_08_smokeStackSootMult", "How much does smokestack multiply soot by, with decimal values reducing the soot", 0.8);
-        // the unwritten smog keys at their 1.7 defaults, so rampant mode's *= pollutionMult starts from 35 on every load
-        enableSootFog = true;
-        sootFogThreshold = 35D;
-        sootFogDivisor = 120D;
     }
 }

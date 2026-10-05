@@ -41,10 +41,10 @@ public class ContainerCore extends AbstractContainerMenu {
         this.machineCore = tile;
         this.machine = tile != null ? tile : new SimpleContainer(Math.max(MACHINE_SLOTS, 1));
         this.access = access;
-        addSlot(validated(0, 80, 7));
-        addSlot(validated(1, 80, 39));
-        addSlot(validated(2, 80, 71));
-        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 122);
+        addSlot(validated(0, 62, 53));
+        addSlot(validated(1, 80, 53));
+        addSlot(validated(2, 98, 53));
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
     }
 
     private Slot validated(int machineSlot, int x, int y) {

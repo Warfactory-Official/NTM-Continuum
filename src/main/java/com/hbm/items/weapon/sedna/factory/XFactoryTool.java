@@ -68,7 +68,7 @@ public final class XFactoryTool {
         if (!bullet.level().isClientSide() && bullet.tickCount < 2
                 && bullet.getThrower() instanceof net.minecraft.world.entity.player.Player player
                 && player.getMainHandItem().getItem() instanceof ItemGunChargeThrower) {
-            ItemGunChargeThrower.setLastHook(player.getMainHandItem(), bullet.getId());
+            ItemGunChargeThrower.setLastHook(player.getMainHandItem(), bullet);
         }
         bullet.ignoreFrustum = true;
     };

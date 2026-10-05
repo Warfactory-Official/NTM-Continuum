@@ -9,6 +9,7 @@ import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilOutput;
 import com.hbm.packet.AnvilCraftPayload;
 import dev.golem.core.net.GolemNetwork;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Client screen for the {@link ContainerAnvil} — a faithful 26.1 port of the 1.12.2 {@code GUIAnvil}.
+ * Client screen for the {@link ContainerAnvil}, a port of 1.7 {@code GUIAnvil} ({@code processing/gui_anvil.png}, 176x222).
  * Left: the two smithing slots + output. Bottom: a paged 5×2 <b>construction-recipe browser</b> (mouse
  * wheel or the arrow buttons page by column, a search box filters), with a slide-out side panel listing
  * the selected recipe's inputs/outputs (drawn at half scale, like the original). The hammer button crafts
@@ -111,11 +112,10 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
             GuiDraw.blit(graphics, TEXTURE, leftPos + 8, topPos + 108, 168.0F, 222.0F, 88, 16, 256, 256);
         }
 
-        // Button hover highlights (page left/right, craft, apply-search).
+        // Button hover highlights (page left/right, craft). 1.7 has the apply-search button at (97,107) commented out.
         if (isOver(mouseX, mouseY, 7, 71, 9, 36)) GuiDraw.blit(graphics, TEXTURE, leftPos + 7, topPos + 71, 176.0F, 186.0F, 9, 36, 256, 256);
         if (isOver(mouseX, mouseY, 106, 71, 9, 36)) GuiDraw.blit(graphics, TEXTURE, leftPos + 106, topPos + 71, 185.0F, 186.0F, 9, 36, 256, 256);
         if (isOver(mouseX, mouseY, 52, 53, 18, 18)) GuiDraw.blit(graphics, TEXTURE, leftPos + 52, topPos + 53, 176.0F, 150.0F, 18, 18, 256, 256);
-        if (isOver(mouseX, mouseY, 97, 107, 18, 18)) GuiDraw.blit(graphics, TEXTURE, leftPos + 97, topPos + 107, 176.0F, 168.0F, 18, 18, 256, 256);
 
         // Recipe grid icons (5 columns × 2 rows, paged by column).
         for (int i = index * 2; i < index * 2 + 10 && i < recipes.size(); i++) {
@@ -139,22 +139,21 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         String name = Component.translatable("container.anvil", this.tier).getString();
-        GuiDraw.text(graphics, this.font, name, 61 - this.font.width(name) / 2, 8, 0xFF404040, false);
-        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF404040, false);
+        GuiDraw.text(graphics, this.font, name, 61 - this.font.width(name) / 2, 8, 4210752, false);
+        GuiDraw.text(graphics, this.font, Component.translatable("container.inventory"), 8, this.imageHeight - 96 + 2, 4210752, false);
 
         // The selected recipe's ingredient/output list on the slide-out panel, at half scale (gui-local
         // coordinates: pose is already translated to leftPos/topPos here).
         if (this.selection >= 0 && this.selection < this.recipes.size()) {
-            List<String> list = recipeToList(this.recipes.get(this.selection));
+            List<Component> list = recipeToList(this.recipes.get(this.selection));
             int longest = 0;
-            for (String s : list) longest = Math.max(longest, this.font.width(s));
+            for (Component s : list) longest = Math.max(longest, this.font.width(s));
 
             GuiDraw.pushMatrix(graphics);
             GuiDraw.scale(graphics, 0.5F, 0.5F);
             int offset = 0;
-            for (String s : list) {
-                boolean yellow = s.startsWith("§e");
-                GuiDraw.text(graphics, this.font, yellow ? s.substring(2) : s, 260, 50 + offset, yellow ? 0xFFFFFF55 : 0xFFFFFFFF, false);
+            for (Component s : list) {
+                GuiDraw.text(graphics, this.font, s, 260, 50 + offset, 0xffffff, false);
                 offset += 9;
             }
             GuiDraw.popMatrix(graphics);
@@ -164,20 +163,35 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
         }
     }
 
-    /** The structured input/output list shown on the side panel (yellow headers marked with §e). */
-    private List<String> recipeToList(AnvilConstructionRecipe recipe) {
-        List<String> list = new ArrayList<>();
-        list.add("§e" + Component.translatable("info.template_in_p").getString());
+    /**
+     * 1.7 {@code recipeToList}: yellow headers; an input line turns red when the player's main inventory
+     * (36 slots, as 1.7's {@code mainInventory}) holds fewer than the required amount.
+     */
+    private List<Component> recipeToList(AnvilConstructionRecipe recipe) {
+        List<Component> list = new ArrayList<>();
+        list.add(Component.translatable("info.template_in_p").withStyle(ChatFormatting.YELLOW));
+        Inventory inventory = Minecraft.getInstance().player != null ? Minecraft.getInstance().player.getInventory() : null;
         for (AStack stack : recipe.input) {
             ItemStack display = stack.getCyclingDisplayStack();
-            list.add(display.isEmpty() ? ">I AM ERROR"
-                    : ">" + stack.stacksize + "x " + display.getHoverName().getString());
+            if (display.isEmpty()) {
+                list.add(Component.literal("I AM ERROR"));
+                continue;
+            }
+            int amount = 0;
+            if (inventory != null) {
+                for (int i = 0; i < 36; i++) {
+                    ItemStack held = inventory.getItem(i);
+                    if (!held.isEmpty() && stack.matchesRecipe(held, true)) amount += held.getCount();
+                }
+            }
+            Component line = Component.literal(">" + stack.stacksize + "x " + display.getHoverName().getString());
+            list.add(amount > 0 && amount >= stack.stacksize ? line : line.copy().withStyle(ChatFormatting.RED));
         }
-        list.add("");
-        list.add("§e" + Component.translatable("info.template_out_p").getString());
+        list.add(Component.empty());
+        list.add(Component.translatable("info.template_out_p").withStyle(ChatFormatting.YELLOW));
         for (AnvilOutput out : recipe.output) {
-            list.add(">" + out.stack.getCount() + "x " + out.stack.getHoverName().getString()
-                    + (out.chance != 1F ? (" (" + (out.chance * 100) + "%)") : ""));
+            list.add(Component.literal(">" + out.stack.getCount() + "x " + out.stack.getHoverName().getString()
+                    + (out.chance != 1F ? (" (" + (out.chance * 100) + "%)") : "")));
         }
         return list;
     }
@@ -223,11 +237,6 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
             }
             return true;
         }
-        if (isOver(x, y, 97, 107, 18, 18)) { // (re-)apply the search
-            click();
-            if (this.search != null) search(this.search.getValue());
-            return true;
-        }
         for (int i = index * 2; i < index * 2 + 10 && i < recipes.size(); i++) {
             int ind = i - index * 2;
             if (isOver(x, y, 16 + 18 * (ind / 2), 71 + 18 * (ind % 2), 18, 18)) {
@@ -266,7 +275,8 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 
+    /** 1.7's hit test: {@code left <= x < left + w}, {@code top < y <= top + h}. */
     private boolean isOver(int mouseX, int mouseY, int x, int y, int w, int h) {
-        return mouseX >= leftPos + x && mouseX < leftPos + x + w && mouseY >= topPos + y && mouseY < topPos + y + h;
+        return GuiUtil.hover(mouseX, mouseY, leftPos + x, topPos + y, w, h);
     }
 }

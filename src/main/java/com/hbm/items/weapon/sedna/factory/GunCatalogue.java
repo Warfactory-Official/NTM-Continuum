@@ -9,8 +9,10 @@ import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 public final class GunCatalogue {
     public static final int EXPECTED_GUN_ITEMS = 70;
     public static final int EXPECTED_AMMO_ITEMS = 118;
-    // Original-hbm's complete GunFactory chain constructs 180 configs, including secret and helper rounds.
-    public static final int EXPECTED_BULLET_CONFIGS = 181;
+    // Original-hbm's complete GunFactory chain constructs 180 configs, including secret and helper rounds; 181 was the
+    // port's count before §19ek-hooks, which added 1.7's TileEntityBatterySocket.discharge (a static BulletConfig of the
+    // battery socket, registered beside the gun configs).
+    public static final int EXPECTED_BULLET_CONFIGS = 182;
 
     private static boolean initialized;
 

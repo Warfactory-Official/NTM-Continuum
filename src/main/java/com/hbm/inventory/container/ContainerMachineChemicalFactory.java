@@ -55,11 +55,11 @@ public class ContainerMachineChemicalFactory extends AbstractContainerMenu {
             int rowY = 20 + lane * 22;
             addSlot(validated(TileEntityMachineChemicalFactory.blueprintSlot(lane), 93, rowY));
             for (int i = 0; i < 3; i++) {
-                addSlot(validated(TileEntityMachineChemicalFactory.inputStart(lane) + i, 10 + i * 18, rowY));
+                addSlot(validated(TileEntityMachineChemicalFactory.inputStart(lane) + i, 10 + i * 16, rowY)); // 1.7 addSlots(..., 1, 3, 16): 16 px pitch
             }
             for (int i = 0; i < 3; i++) {
                 addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, TileEntityMachineChemicalFactory.outputStart(lane) + i,
-                        139 + i * 18, rowY)); // 1.7 addOutputSlots
+                        139 + i * 16, rowY)); // 1.7 addOutputSlots(..., 1, 3, 16): 16 px pitch
             }
         }
 

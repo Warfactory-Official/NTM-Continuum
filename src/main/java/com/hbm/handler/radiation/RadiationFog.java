@@ -24,6 +24,8 @@ public final class RadiationFog {
     private RadiationFog() {}
 
     private static int timer;
+    /** Fog effects sent since start (harness evidence only). */
+    public static int sent;
 
     public static void init() {
         dev.golem.core.platform.Lifecycle.onServerTick(RadiationFog::tick);
@@ -48,6 +50,7 @@ public final class RadiationFog {
                 int y = height + rand.nextInt(5);
                 if (RadiationSystemNT.getRadForCoord(level, new BlockPos(x, height, z)) <= RadiationConfig.fogRad) continue;
                 HbmEffectNT.RadFog.send(level, x, y, z, null);
+                sent++;
             }
         });
     }

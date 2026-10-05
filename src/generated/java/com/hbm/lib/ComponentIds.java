@@ -77,6 +77,8 @@ public final class ComponentIds {
     public static final String missile_custom_parts = "hbm:missile_custom_parts";
     public static final String neutron_activation = "hbm:neutron_activation";
     public static final String ntm_contagion = "hbm:ntm_contagion";
+    public static final String ntm_cyanide = "hbm:ntm_cyanide";
+    public static final String ntm_red_pill = "hbm:ntm_red_pill";
     public static final String pager_channel = "hbm:pager_channel";
     public static final String pellet_depletion = "hbm:pellet_depletion";
     public static final String persistent_data = "hbm:persistent_data";

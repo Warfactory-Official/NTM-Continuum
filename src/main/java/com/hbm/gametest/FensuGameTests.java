@@ -119,10 +119,10 @@ public final class FensuGameTests {
         ItemStack dropped = block.getDrops(original.getBlockState(), new LootParams.Builder((ServerLevel) helper.getLevel())
                 .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(original.getBlockPos()))).get(0);
         helper.assertTrue(ModDataComponents.fensuPower(dropped) == original.power
-                        && ModDataComponents.fensuColor(dropped, -1) == DyeColor.RED.ordinal()
+                        && ModDataComponents.FENSU_COLOR.getOr(dropped, "").equals("red")
                         && ModDataComponents.fensuRedLow(dropped, -1) == original.redLow
                         && ModDataComponents.fensuRedHigh(dropped, -1) == original.redHigh
-                        && ModDataComponents.fensuPriority(dropped, -1) == original.priority.ordinal(),
+                        && ModDataComponents.FENSU_PRIORITY.getOr(dropped, "").equals("high"),
                 "FEnSU power/color/modes were not carried by its dropped item");
 
         BlockPos clicked = helper.absolutePos(new BlockPos(10, 1, 3));

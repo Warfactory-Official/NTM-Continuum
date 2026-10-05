@@ -6,11 +6,9 @@ import com.hbm.particle.helper.FlameCreator;
 import com.hbm.sound.ModSounds;
 import com.hbm.util.DropHeight;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.BossEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -32,9 +30,6 @@ import org.jspecify.annotations.Nullable;
  */
 public class EntityQuackos extends EntityDuck {
 
-    private final ServerBossEvent bossEvent =
-            dev.golem.core.world.Compat.bossEvent(this, getDisplayName(), BossEvent.BossBarColor.YELLOW,
-                    BossEvent.BossBarOverlay.PROGRESS);
 
     public EntityQuackos(EntityType<? extends EntityQuackos> type, Level level) {
         super(type, level);
@@ -79,18 +74,7 @@ public class EntityQuackos extends EntityDuck {
         }
     }
 
-    // 1.7: renderer-pushed BossStatus, self-expiring; 26.2 equivalent is the tracking pair.
-    @Override
-    public void startSeenByPlayer(ServerPlayer player) {
-        super.startSeenByPlayer(player);
-        this.bossEvent.addPlayer(player);
-    }
 
-    @Override
-    public void stopSeenByPlayer(ServerPlayer player) {
-        super.stopSeenByPlayer(player);
-        this.bossEvent.removePlayer(player);
-    }
 
     @Override
     public void setHealth(float health) {
@@ -140,13 +124,6 @@ public class EntityQuackos extends EntityDuck {
             double respawnZ = getZ() + random.nextGaussian() * 30;
             setPos(respawnX, DropHeight.clearOfTerrain(level(), 256D, respawnX, respawnZ), respawnZ);
         }
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
-
-        if (!level().isClientSide()) bossEvent.setProgress(getHealth() / getMaxHealth());
     }
 
     @Override

@@ -168,7 +168,7 @@ public final class ArcFurnaceRecipes {
      * {@link #getOutput(ItemStack, boolean)} plus 1.7's {@code registerFurnaceSmeltables}: in solid mode, any item whose
      * furnace result exists and which (or whose result) is "arc smeltable" (any ingot / ore / plate / storage-block
      * ore-dict member, plus 1.7's vanilla list) smelts to its furnace result. The furnace recipes live in the level's
-     * recipe manager, so this pass needs the level and is not listed in JEI.
+     * recipe manager, so this pass needs the level; JEI lists it through {@link #furnacePass}.
      */
     public static @org.jspecify.annotations.Nullable ArcFurnaceRecipe getOutput(ItemStack stack, boolean liquid,
             net.minecraft.world.level.@org.jspecify.annotations.Nullable Level level) {
@@ -180,6 +180,26 @@ public final class ArcFurnaceRecipes {
         Set<Item> smeltable = arcSmeltable();
         if (!smeltable.contains(stack.getItem()) && !smeltable.contains(result.getItem())) return null;
         return new ArcFurnaceRecipe(new RecipesCommon.ComparableStack(stack.getItem()), result, new Mats.MaterialStack[0]);
+    }
+
+    /**
+     * 1.7 {@code registerFurnaceSmeltables} for a list of furnace recipes (input, result): the arc-smeltable ones whose
+     * input has no explicit solid recipe, first come first served per input item as 1.7's {@code occupiedSolid}. The
+     * JEI furnace-pass page (History §19ek-hooks) feeds it the furnace recipes JEI knows.
+     */
+    public static List<ArcFurnaceRecipe> furnacePass(List<java.util.Map.Entry<ItemStack, ItemStack>> smelting) {
+        register();
+        Set<Item> smeltable = arcSmeltable();
+        Set<Item> occupied = new HashSet<>();
+        List<ArcFurnaceRecipe> out = new ArrayList<>();
+        for (var entry : smelting) {
+            ItemStack in = entry.getKey(), result = entry.getValue();
+            if (in.isEmpty() || result.isEmpty()) continue;
+            if (!smeltable.contains(in.getItem()) && !smeltable.contains(result.getItem())) continue;
+            if (hasMatchingRecipe(in, false) || !occupied.add(in.getItem())) continue;
+            out.add(new ArcFurnaceRecipe(new RecipesCommon.ComparableStack(in.getItem()), result.copy(), new Mats.MaterialStack[0]));
+        }
+        return out;
     }
 
     private static Set<Item> arcSmeltable;

@@ -28,7 +28,7 @@ import static dev.golem.core.dejson.Features.rarity;
  * ({@code hbm:legacy_dungeon}), {@code worldgen/structure_set/<id>.json}, the biome tag
  * {@code hbm:has_structure/<id>}, and all of them in the structure tag {@code #hbm:legacy_dungeons}.
  *
- * <p><b>The 1/n chance.</b> 1.7 rolled {@code rand.nextInt(n) == 0} independently in every chunk. A modern structure
+ * <p><b>The 1/n chance</b> (read from {@code hbm.cfg} at generation by {@code hbm:config_spread}). 1.7 rolled {@code rand.nextInt(n) == 0} independently in every chunk. A modern structure
  * set offers one candidate chunk per {@code spacing x spacing} region ({@code random_spread}), kept with probability
  * {@code frequency}. With {@code spacing = floor(sqrt(n))}, {@code separation} 0 (the candidate may be any chunk of the
  * region, so neighbours are possible, as in 1.7) and {@code frequency = spacing^2 / n}, every chunk is a site with
@@ -234,17 +234,12 @@ public final class LegacyDungeonDeclarations {
             structure.addProperty("dungeon", id);
             Data.declare("data/" + NS + "/worldgen/structure/" + id + ".json", structure);
 
+            // hbm:config_spread "dungeon:<id>": spacing(n) / separation 0 / keep chance frequency(n), n read from
+            // hbm.cfg (4.xx_*Spawn) at generation (History §19ek-hooks)
             JsonObject placement = new JsonObject();
-            placement.addProperty("type", "minecraft:random_spread");
+            placement.addProperty("type", NS + ":config_spread");
             placement.addProperty("salt", dungeon.salt());
-            placement.addProperty("spacing", spacing(dungeon.chance()));
-            placement.addProperty("separation", 0);
-            placement.addProperty("spread_type", "linear");
-            double frequency = frequency(dungeon.chance());
-            if (frequency < 1.0D) {
-                placement.addProperty("frequency_reduction_method", "default");
-                placement.addProperty("frequency", frequency);
-            }
+            placement.addProperty("key", "dungeon:" + id);
             JsonObject member = new JsonObject();
             member.addProperty("structure", NS + ":" + id);
             member.addProperty("weight", 1);

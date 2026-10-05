@@ -22,12 +22,14 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * A single fluid kind in HBM's own fluid system (NOT a vanilla/Forge {@code Fluid}). Fluid networks are
+ * A single fluid kind in HBM's own fluid system: the data object (traits, temperature, colour) every HBM system
+ * works in. Each one is also registered as a vanilla {@code Fluid} ({@link #getFluid()}, History section
+ * 19ek-fluids) so other mods can name it; that registry entry carries no behaviour of its own. Fluid networks are
  * segregated by type — water pipes never mix with oil pipes — which the fluid graph gets from
  * {@link com.hbm.api.fluidmk2.FluidGraphProvider#dataCompatible} rather than from a nodespace per type.
  *
- * <p>The original also carried Forge-fluid interop, potion hooks, and client-side rendering. Those remain
- * outside this type; tooltip facts use the ported thermal, combustion and pollution data below.
+ * <p>The loader fluid capabilities (other mods moving HBM fluids) are {@link com.hbm.capability.ForeignFluids};
+ * tooltip facts use the ported thermal, combustion and pollution data below.
  *
  * @author hbm, mlbv
  */
@@ -131,6 +133,20 @@ public class FluidType {
      */
     public Component getDisplayName() {
         return Component.translatableWithFallback(this.unlocalized, this.fallbackName);
+    }
+
+    /** The title-cased id {@link #getDisplayName()} falls back on (also the fallback other mods show). */
+    public String getFallbackName() {
+        return this.fallbackName;
+    }
+
+    /**
+     * The vanilla {@code Fluid} this type is registered as, so other mods' tanks, pipes and recipe viewers can name
+     * it (History section 19ek-fluids): {@code hbm:<key>}, or vanilla water/lava/empty for WATER/LAVA/NONE. The two
+     * are 1:1; {@link Fluids#fromVanilla} is the inverse. Valid once the registries are flushed.
+     */
+    public net.minecraft.world.level.material.Fluid getFluid() {
+        return Fluids.toVanilla(this);
     }
 
     /** {@link #getDisplayName()} flattened, for the {@code &[colour]&]} look-overlay strings. */

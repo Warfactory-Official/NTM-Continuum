@@ -204,7 +204,7 @@ public final class ExplosionThermo {
             if (e instanceof LivingEntity living) {
                 living.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 15 * 20, 4));
             }
-            e.setRemainingFireTicks(Math.max(e.getRemainingFireTicks(), 10 * 20));
+            dev.golem.core.world.Effects.ignite(e, 10); // 1.7 setFire(10)
         }
     }
 

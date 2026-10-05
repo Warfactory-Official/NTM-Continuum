@@ -55,12 +55,15 @@ public final class BombConfig {
     /** Radius of the fallout area, as a percentage of the base radius. */
     public static int falloutRange = 100;
 
-    /**
-     * Port-only and unread. Not 1.7's {@code 6.04_falloutDelay} ({@code fDelay}, 4 ticks skipped between fallout batches):
-     * the port's fallout sweep (§19cf) applies a batch every tick within the {@link #mk5} budget, and the tick skip is
-     * deferred (History §19ej-8), so that key is not written to {@code hbm.cfg}.
-     */
+    /** Port-only and unread; not 1.7's {@code 6.04_falloutDelay}, which is {@link #fDelay}. */
     public static int falloutDelay = 30;
+
+    /**
+     * 1.7 {@code 6.04_falloutDelay} ({@code fDelay}): ticks the fallout sweep waits between two {@link #mk5}-ms apply
+     * bursts. 1.7 counts {@code tickDelay} down from this and applies when it reaches 0 (then resets and decrements in
+     * the same tick), so the default 4 applies on tick 5 and then every fourth tick (History §19ek-hooks).
+     */
+    public static int fDelay = 4;
 
     /**
      * On-demand fallout chunk requests retained per scan worker.
@@ -193,7 +196,9 @@ public final class BombConfig {
         Configuration.Property falloutRangeProp = config.get(CATEGORY_NUKE, "6.03_falloutRange", 100);
         falloutRangeProp.comment = "Radius of fallout area (base radius * value in percent)";
         falloutRange = falloutRangeProp.getInt();
-        // 6.04_falloutDelay (fDelay) is not written: see the note on falloutDelay above (History §19ej-8)
+        Configuration.Property falloutDelayProp = config.get(CATEGORY_NUKE, "6.04_falloutDelay", 4);
+        falloutDelayProp.comment = "How many ticks to wait for the next fallout chunk computation";
+        fDelay = falloutDelayProp.getInt();
 
         chunkloading = CommonConfig.createConfigBool(config, CATEGORY_NUKE, "6.05_enableChunkLoading", "Allows all types of procedural explosions to keep the central chunk loaded and to generate new chunks.", true);
         explosionAlgorithm = CommonConfig.createConfigInt(config, CATEGORY_NUKE, "6.06_explosionAlgorithm", "Configures the algorithm of mk5 explosion. \n0 = Legacy, 1 = Threaded DDA, 2 = Threaded DDA with damage accumulation.", 2);

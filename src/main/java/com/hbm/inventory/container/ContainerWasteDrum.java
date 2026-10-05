@@ -15,10 +15,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
-/** Twelve drum slots arranged like the original spent-fuel pool drum, plus the player inventory. */
+/** Twelve drum slots in 1.7's diamond layout, plus the player inventory. */
 public class ContainerWasteDrum extends AbstractContainerMenu {
 
     private static final int DRUM_SLOTS = 12;
+    private static final int[][] SLOT_POS = {
+            {71, 21}, {89, 21},
+            {53, 39}, {71, 39}, {89, 39}, {107, 39},
+            {53, 57}, {71, 57}, {89, 57}, {107, 57},
+            {71, 75}, {89, 75}};
     private final Container drum;
     private final ContainerLevelAccess access;
 
@@ -37,19 +42,17 @@ public class ContainerWasteDrum extends AbstractContainerMenu {
         this.drum = drum != null ? drum : new SimpleContainer(DRUM_SLOTS);
         this.access = access;
 
-        int slot = 0;
-        for (int row = 0; row < 2; row++) {
-            for (int column = 0; column < 6; column++) {
-                addSlot(new Slot(this.drum, slot++, 35 + column * 18, 21 + row * 18));
-            }
+        // 1.7 ContainerWasteDrum: a 2-4-4-2 diamond, player inventory at y=107/165 (176x189 GUI).
+        for (int slot = 0; slot < DRUM_SLOTS; slot++) {
+            addSlot(new Slot(this.drum, slot, SLOT_POS[slot][0], SLOT_POS[slot][1]));
         }
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
-                addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 140 + row * 18));
+                addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 84 + row * 18 + 23));
             }
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(playerInventory, column, 8 + column * 18, 198));
+            addSlot(new Slot(playerInventory, column, 8 + column * 18, 142 + 23));
         }
     }
 

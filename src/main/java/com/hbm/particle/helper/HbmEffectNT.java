@@ -126,7 +126,26 @@ public enum HbmEffectNT {
      * 1.7 {@code radFog}: one {@code ParticleRadiationFog}, rolled once a second over chunks holding more than
      * {@code fogRad} (History §19ej-6, {@code RadiationFog}).
      */
-    RadFog;
+    RadFog,
+    /**
+     * 1.7 {@code sweat}: {@code count} 150..199-tick block-dust particles of block {@code block} (runtime block id)
+     * scattered over entity {@code entity}'s box. Radiation, digamma, oil and the fat pigeon. Client:
+     * {@code LivingEffectParticles}.
+     */
+    Sweat,
+    /**
+     * 1.7 {@code vomit}: {@code count} particles from entity {@code entity}'s mouth along its look; {@code mode}
+     * {@code normal} (green clay dust), {@code blood} (redstone dust) or {@code smoke} (coughed coal).
+     */
+    Vomit,
+    /** 1.7 {@code radiation}: {@code count} cyan town-aura flashes around the local player. Client-side only. */
+    Radiation,
+    /** 1.7 {@code exhaust}: {@code count} rocket-flame puffs spread by {@code width}; {@code mode} soyuz or meteor. */
+    Exhaust,
+    /** 1.7 {@code haze}: one {@code ParticleHaze}, the white-phosphorus haze. */
+    Haze,
+    /** 1.7 {@code ufo}: one lone {@code ParticleMukeCloud} at the foot of the UFO's tractor beam. */
+    Ufo;
 
     /** 1.7 {@code createSendToThreadedPacket}: this effect for one player only. */
     public void sendTo(ServerPlayer player, double x, double y, double z, @Nullable CompoundTag data) {
@@ -178,6 +197,19 @@ public enum HbmEffectNT {
             // (NeoForge would otherwise throw - crashed the 2026-10-02 full run from a leaking fluid tank).
             if (player.distanceToSqr(x, y, z) <= radiusSquared)
                 GolemNetwork.sendToPlayer(player, ParticlePayload.CODEC, payload);
+        }
+    }
+
+    /**
+     * 1.7 {@code createAllAroundThreadedPacket} whose {@code TargetPoint} is not the effect's own position (e.g. the
+     * haze puffs scattered around a shell but sent to everyone within 150 of the shell).
+     */
+    public void sendAround(Level level, double x, double y, double z, @Nullable CompoundTag data,
+            double centreX, double centreY, double centreZ, double range) {
+        if (!(level instanceof ServerLevel serverLevel)) return;
+        double radiusSquared = range * range;
+        for (ServerPlayer player : serverLevel.players()) {
+            if (player.distanceToSqr(centreX, centreY, centreZ) <= radiusSquared) this.sendTo(player, x, y, z, data);
         }
     }
 

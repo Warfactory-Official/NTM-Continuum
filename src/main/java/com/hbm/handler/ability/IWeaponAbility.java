@@ -140,8 +140,8 @@ public interface IWeaponAbility extends IBaseAbility {
         @Override
         public void onHit(int level, ServerLevel world, Player player, Entity victim, Item tool) {
             if (victim instanceof LivingEntity) {
-                // 1.7 setFire(seconds): never shortens a longer burn.
-                victim.setRemainingFireTicks(Math.max(victim.getRemainingFireTicks(), durationAtLevel[level] * 20));
+                // 1.7 setFire(seconds): Fire Protection shortens it (vanilla dampener) and it never shortens a longer burn.
+                dev.golem.core.world.Effects.ignite(victim, durationAtLevel[level]);
             }
         }
     };

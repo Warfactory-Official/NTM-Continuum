@@ -2,6 +2,7 @@ package com.hbm.client.render;
 
 import com.hbm.Constants;
 import com.hbm.entity.effect.EntityBlackHole;
+import com.hbm.entity.effect.EntityQuasar;
 import com.hbm.entity.effect.EntityRagingVortex;
 import com.hbm.entity.effect.EntityVortex;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -25,6 +26,8 @@ public final class BlackHoleRenderer extends GemEntityRenderer<EntityBlackHole, 
             Ids.of(Constants.MOD_ID, "textures/models/explosion/blackhole.png");
     private static final Identifier SWIRL_TEXTURE = Ids.of(Constants.MOD_ID, "textures/entity/bhole.png");
     private static final Identifier DISC_TEXTURE = Ids.of(Constants.MOD_ID, "textures/entity/bholedisc.png");
+    /** 1.7 {@code RenderQuasar.quasar}: {@code textures/entity/bholeD.png}. */
+    private static final Identifier QUASAR_DISC_TEXTURE = Ids.of(Constants.MOD_ID, "textures/entity/bholed.png");
     private static final int RAGING_COLOR = 0xE8390D;
 
     private final com.hbm.client.model.WavefrontObj sphere;
@@ -101,16 +104,19 @@ public final class BlackHoleRenderer extends GemEntityRenderer<EntityBlackHole, 
         pose.pushPose();
         pose.mulPose(Axis.XP.rotationDegrees(entity.getId() % 90 - 45));
         pose.mulPose(Axis.YP.rotationDegrees(entity.getId() % 360));
+        // 1.7 RenderQuasar overrides discTex() and setColorFromIteration(); steps() stays 15.
+        boolean quasar = entity instanceof EntityQuasar;
+        Identifier discTexture = quasar ? QUASAR_DISC_TEXTURE : DISC_TEXTURE;
         for (int i = 0; i < 15; i++) {
             pose.pushPose();
             pose.mulPose(Axis.YP.rotationDegrees((entity.tickCount + partial % 360F)
                     * -(float) Math.pow(i + 1, 1.25D)));
             float inner = 3F - i * 0.175F;
-            int innerColor = iterationColor(i, 1F);
-            int outerColor = iterationColor(i, 0F);
-            sink.submitCustomGeometry(pose, CompatRenderTypes.entityTranslucent(DISC_TEXTURE),
+            int innerColor = quasar ? quasarColor(i, 1F) : iterationColor(i, 1F);
+            int outerColor = quasar ? quasarColor(i, 0F) : iterationColor(i, 0F);
+            sink.submitCustomGeometry(pose, CompatRenderTypes.entityTranslucent(discTexture),
                     (last, buffer) -> discRing(buffer, last, inner, inner * 2F, innerColor, outerColor));
-            sink.submitCustomGeometry(pose, CompatRenderTypes.plasmaGlow(DISC_TEXTURE),
+            sink.submitCustomGeometry(pose, CompatRenderTypes.plasmaGlow(discTexture),
                     (last, buffer) -> discRing(buffer, last, inner, inner * 2F,
                             argb(0.75F, 1F, 1F, 1F), argb(0F, 1F, 1F, 1F)));
             pose.popPose();
@@ -193,6 +199,12 @@ public final class BlackHoleRenderer extends GemEntityRenderer<EntityBlackHole, 
         if (iteration == 5) return argb(alpha, 1F, 1F, 1F);
         int i = iteration - 6;
         return argb(alpha, 1F - i / 9F, 1F - i / 9F, i / 5F);
+    }
+
+    /** 1.7 {@code RenderQuasar.setColorFromIteration}: red fading to white, {@code (1, (i/15)^2, (i/15)^2)}. */
+    private static int quasarColor(int iteration, float alpha) {
+        float gb = (float) Math.pow(iteration / 15F, 2);
+        return argb(alpha, 1F, gb, gb);
     }
 
     private static int fieldColor(EntityBlackHole entity, float alpha) {

@@ -23,6 +23,8 @@ public final class MeleeKitHarnessQueries {
         dev.golem.core.harness.HarnessQueryRegistry.register("hbm_props", MeleeKitHarnessQueries::props);
         ImpactHarnessQueries.register(); // fix wave phase 6
         MobHarnessQueries.register(); // fix wave phase 7
+        HooksHarnessQueries.register(); // wave 2 HOOKS
+        VisualHarnessQueries.register(); // wave 2 VISUAL
     }
 
     /**

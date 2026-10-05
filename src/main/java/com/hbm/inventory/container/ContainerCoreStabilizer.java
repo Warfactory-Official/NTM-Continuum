@@ -41,8 +41,8 @@ public class ContainerCoreStabilizer extends AbstractContainerMenu {
         this.machineStabilizer = tile;
         this.machine = tile != null ? tile : new SimpleContainer(Math.max(MACHINE_SLOTS, 1));
         this.access = access;
-        addSlot(validated(0, 47, 26));
-        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 88);
+        addSlot(validated(0, 80, 17));
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
     }
 
     private Slot validated(int machineSlot, int x, int y) {

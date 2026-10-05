@@ -475,8 +475,8 @@ public class HazardRegistry {
         // block_magnetized_tungsten has no hazard (0 radiation) — no entry.
 
         // fallout (the ash item + the layer block's item; old HazardRegistry lines 481-482).
-        // Note: the fallout LAYER's in-world emission is its own scheduled tick (BlockFallout), not
-        // the ModHazardBlocks initHazards pass — these entries are the held-item hazards only.
+        // Note: the fallout LAYER emits no chunk radiation in 1.7 (BlockFallout: walking on it applies the
+        // radiation effect, clicking it contaminates) — these entries are the held-item hazards only.
         regItem("falloutitem", makeData(RADIATION, fo * powder).addEntry(CONTAMINATING, fo));
         regItem("fallout", makeData(RADIATION, fo * powder * 2));
         // sellafite radgem ore (the one sellafield block with an item hazard in the old registry)

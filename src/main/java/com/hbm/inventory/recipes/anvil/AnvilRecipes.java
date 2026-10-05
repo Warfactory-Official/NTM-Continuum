@@ -148,7 +148,8 @@ public final class AnvilRecipes {
         // (no mold_pipes smithing: 1.7 ItemMold registers no "pipes" mold; a 1.12.2 addition, removed in fix phase 3)
         smithingRecipes.add(new AnvilSmithingMold(new ItemStack(com.hbm.items.machine.ModMoldItems.mold_wire_dense.get()), MINGRADE.wireDense(), MaterialShapes.DENSEWIRE, 1));
         smithingRecipes.add(new AnvilSmithingMold(new ItemStack(com.hbm.items.machine.ModMoldItems.mold_wires_dense.get()), MINGRADE.wireDense().count(9), MaterialShapes.DENSEWIRE, 9));
-        // 1.7 :128 AnvilSmithingCyanideRecipe is not ported (needs a food-eaten hook, see History §19ej-3); :129 rename:
+        // 1.7 :128 cyanide (eaten through Core ItemUses, History §19ek-hooks), :129 rename
+        smithingRecipes.add(new AnvilSmithingCyanideRecipe());
         smithingRecipes.add(new AnvilSmithingRenameRecipe());
     }
 

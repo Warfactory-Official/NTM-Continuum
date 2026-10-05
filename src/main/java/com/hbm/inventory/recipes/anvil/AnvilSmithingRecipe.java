@@ -8,8 +8,7 @@ import java.util.List;
 /**
  * A two-input anvil smithing recipe (left + right slot → output), ported from 1.12.2. Matching is by
  * {@link AStack} (exact item or tag); {@link #makeShapeless()} also accepts the mirrored arrangement.
- * In LBSM mode with {@code LBSM_recipeUnlockAnvil} every recipe is tier 1, as in 1.7. Subclasses: Mold, Hot, Rename;
- * 1.7's Cyanide special is not ported (it needs a food-eaten hook the port does not have, History §19ej-3).
+ * In LBSM mode with {@code LBSM_recipeUnlockAnvil} every recipe is tier 1, as in 1.7. Subclasses: Mold, Hot, Rename, Cyanide.
  */
 public class AnvilSmithingRecipe {
 

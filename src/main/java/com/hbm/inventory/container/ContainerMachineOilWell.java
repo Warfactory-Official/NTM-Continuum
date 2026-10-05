@@ -18,13 +18,15 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Menu shared by the oil derrick and the pumpjack (both are {@link TileEntityOilDrillBase}) — the
- * 1.12.2 {@code ContainerMachineOilWell} layout: battery (8,53), oil container pair (80,17)/(80,53),
- * gas container pair (125,17)/(125,53), 3 upgrade slots (152,17/35/53); 176×222 with the player
- * inventory at 84/142.
+ * 1.7 {@code ContainerMachineOilWell} layout: battery (8,58), oil container pair (94,22)/(94,58),
+ * gas container pair (130,22)/(130,58), 2 upgrade slots (156,36/54); 184x190 with the player
+ * inventory at x=12, y=108/166.
  */
 public class ContainerMachineOilWell extends AbstractContainerMenu {
 
     public static final int MACHINE_SLOTS = 8;
+    /** Machine slots the menu shows (1.7 leaves inventory slot 7 out). */
+    private static final int MENU_MACHINE_SLOTS = 7;
 
     private final Container machine;
     private final ContainerLevelAccess access;
@@ -46,17 +48,18 @@ public class ContainerMachineOilWell extends AbstractContainerMenu {
         this.machine = drill != null ? drill : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
-        this.addSlot(validated(0, 8, 53));    // battery
-        this.addSlot(validated(1, 80, 17));   // oil container in
-        this.addSlot(takeOnly(2, 80, 53));    // oil container out
-        this.addSlot(validated(3, 125, 17));  // gas container in
-        this.addSlot(takeOnly(4, 125, 53));   // gas container out
-        this.addSlot(validated(5, 152, 17));  // upgrades
-        this.addSlot(validated(6, 152, 35));
-        this.addSlot(validated(7, 152, 53));
+        // 1.7 ContainerMachineOilWell positions (184x190 GUI). 1.7 exposes only upgrade slots 5 and 6 even though
+        // the drill's upgrade check reads 5..7; slot 7 has no frame on the 1.7 texture and is left out as in 1.7.
+        this.addSlot(validated(0, 8, 58));    // battery
+        this.addSlot(validated(1, 94, 22));   // oil container in
+        this.addSlot(takeOnly(2, 94, 58));    // oil container out
+        this.addSlot(validated(3, 130, 22));  // gas container in
+        this.addSlot(takeOnly(4, 130, 58));   // gas container out
+        this.addSlot(validated(5, 156, 36));  // upgrades
+        this.addSlot(validated(6, 156, 54));
 
-        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
-        // rows 84/102/120, hotbar 142 (old layout)
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 12, 108);
+        // rows 108/126/144, hotbar 166 (1.7 layout)
     }
 
     private Slot validated(int index, int x, int y) {
@@ -93,12 +96,12 @@ public class ContainerMachineOilWell extends AbstractContainerMenu {
         if (slot != null && slot.hasItem()) {
             ItemStack stack = slot.getItem();
             result = stack.copy();
-            int invStart = MACHINE_SLOTS;
-            int invEnd = MACHINE_SLOTS + 36;
+            int invStart = MENU_MACHINE_SLOTS;
+            int invEnd = MENU_MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
             } else if (Library.isMachineUpgrade(stack)) {
-                if (!this.moveItemStackTo(stack, 5, 8, false)) return ItemStack.EMPTY;
+                if (!this.moveItemStackTo(stack, 5, 7, false)) return ItemStack.EMPTY;
             } else if (Library.isBattery(stack)) {
                 if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
             } else {

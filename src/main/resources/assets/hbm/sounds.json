@@ -601,7 +601,12 @@
   },
   "rbmk_shutdown": {
     "category": "block",
-    "sounds": []
+    "sounds": [
+      {
+        "name": "hbm:block/shutdown",
+        "stream": true
+      }
+    ]
   },
   "weapon.fire.blackpowder": {
     "category": "player",

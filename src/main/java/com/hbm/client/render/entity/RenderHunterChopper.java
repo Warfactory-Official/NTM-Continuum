@@ -48,6 +48,7 @@ public class RenderHunterChopper extends CompatEntityRenderer<EntityHunterChoppe
 
     @Override
     public void extract(EntityHunterChopper entity, State state, float partialTicks) {
+        com.hbm.client.BossStatus.set(entity, net.minecraft.world.BossEvent.BossBarColor.PINK); // 1.7 render-pushed BossStatus
         state.yaw = Mth.rotLerp(partialTicks, entity.yRotO, entity.getYRot());
         state.pitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
         state.age = entity.tickCount + partialTicks;

@@ -2,34 +2,28 @@ package com.hbm.inventory.gui;
 
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerPyroOven;
-import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePyroOven;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-import java.util.List;
-import java.util.Optional;
+/** Screen for the pyro oven — 1.7.10 {@code GUIPyroOven} ({@code processing/gui_pyrooven.png}, 176×204 on 256×256).
+ * Power bar x=152 (src u=176 v=64−i), progress arrow (57,47) src(176,0) 27 wide; tanks x=8/116 (bottom y=70);
+ * upgrade info panel at (108,76). */
+public class GUIPyroOven extends dev.golem.core.gui.CompatContainerScreen<ContainerPyroOven> implements IUpgradeInfoProviderSource {
 
-/** Screen for the pyro oven — 1.12.2 {@code GUIPyroOven} ({@code gui_pyrooven.png}, 176×204 on 256×256).
- * Power bar x=152 (src u=176 v=64−i), progress arrow (57,47) src(176,0) 27 wide; tanks x=8/116 (bottom y=70).
- * The upgrade info panel (old drawCustomInfoStat) is deferred — §20. */
-public class GUIPyroOven extends dev.golem.core.gui.CompatContainerScreen<ContainerPyroOven> {
-
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_pyrooven.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_pyrooven.png");
 
     public GUIPyroOven(ContainerPyroOven menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 204);
     }
 
+    /** 1.7: title centred 18 px left of the panel centre, inventory at (8, ySize-96+2), both 4210752. */
     @Override
-    protected void init() {
-        super.init();
-        this.titleLabelX = this.imageWidth / 2 - this.font.width(this.title) / 2 - 18;
-        this.titleLabelY = 6;
-        this.inventoryLabelY = this.imageHeight - 96 + 2;
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, this.font, this.title, this.imageWidth / 2 - this.font.width(this.title) / 2 - 18, 6, 4210752, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, 8, this.imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
@@ -39,53 +33,38 @@ public class GUIPyroOven extends dev.golem.core.gui.CompatContainerScreen<Contai
         TileEntityMachinePyroOven te = this.menu.getTile();
         if (te == null) return;
 
-        int i = (int) te.getPowerScaled(52);
+        int i = (int) (te.power * 52 / TileEntityMachinePyroOven.maxPower);
         if (i > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 152, this.topPos + 70 - i, 176.0F, (float) (64 - i), 16, i, 256, 256);
 
-        int p = te.getProgressScaled(27);
+        int p = (int) (te.progress * 27);
         if (p > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 57, this.topPos + 47, 176.0F, 0.0F, p, 12, 256, 256);
 
-        drawTank(graphics, te.tanks[0], 8, 18, 16, 52);
-        drawTank(graphics, te.tanks[1], 116, 18, 16, 52);
-    }
+        GuiUtil.tank(graphics, te.tanks[0], this.leftPos + 8, this.topPos + 70, 16, 52);
+        GuiUtil.tank(graphics, te.tanks[1], this.leftPos + 116, this.topPos + 70, 16, 52);
 
-    private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int barX, int barTop, int w, int h) {
-        int maxF = tank.getMaxFill();
-        int fh = maxF <= 0 ? 0 : (int) ((long) tank.getFill() * h / maxF);
-        if (fh <= 0) return;
-        int x0 = this.leftPos + barX;
-        int yBottom = this.topPos + barTop + h;
-        int yTop = yBottom - fh;
-        Identifier fluidTex = tank.getTankType().getTexture();
-        if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
-            graphics.enableScissor(x0, yTop, x0 + w, yBottom);
-            for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                GuiDraw.blit(graphics, fluidTex, x0, ty, 0F, 0F, w, 16, 16, 16);
-            }
-            graphics.disableScissor();
-        } else {
-            graphics.fill(x0, yTop, x0 + w, yBottom, 0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
-        }
+        GuiUtil.drawInfoPanel(graphics, this.leftPos + 108, this.topPos + 76, 8);
     }
 
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachinePyroOven te = this.menu.getTile();
         if (te == null) return;
+        int gl = this.leftPos, gt = this.topPos;
 
-        if (this.isHovering(152, 18, 16, 52, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, TileEntityMachinePyroOven.maxPower), Optional.empty(), mouseX, mouseY);
-            return;
+        if (GuiUtil.hover(mouseX, mouseY, gl + 8, gt + 18, 16, 52)) {
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.tankTooltip(te.tanks[0]), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, gl + 116, gt + 18, 16, 52)) {
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.tankTooltip(te.tanks[1]), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, gl + 152, gt + 18, 16, 52)) {
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, TileEntityMachinePyroOven.maxPower), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, gl + 108, gt + 76, 8, 8)) {
+            // 1.7 draws this list anchored at the panel (guiLeft + 108, guiTop + 76), not at the mouse.
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.upgradeInfo(te), gl + 108, gt + 76);
         }
-        int[] xs = {8, 116};
-        for (int k = 0; k < 2; k++) {
-            if (this.isHovering(xs[k], 18, 16, 52, mouseX, mouseY)) {
-                FluidTankNTM tank = te.tanks[k];
-                GuiDraw.tooltip(graphics, this.font, List.of(
-                        tank.getTankType().getDisplayName(),
-                        Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
-                return;
-            }
-        }
+    }
+
+    @Override
+    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+        return this.menu.getTile();
     }
 }

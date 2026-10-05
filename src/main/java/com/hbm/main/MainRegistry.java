@@ -79,6 +79,7 @@ public final class MainRegistry {
         // fluid tile/recipe that references Fluids.* during registration finds the types ready.
         rollPolaroid();
         Fluids.init();
+        Fluids.declareVanilla(); // every FluidType as a vanilla Fluid for other mods (History section 19ek-fluids)
         com.hbm.inventory.material.Mats.init(); // material registry (tag-based ore-dict replacement)
         // Order matters: blocks before items (block items reference blocks), tabs last.
         ModBlocks.init();
@@ -232,6 +233,7 @@ public final class MainRegistry {
         com.hbm.handler.pollution.PollutionLifecycle.init();   // soot/poison field: diffusion, decay and blight
         com.hbm.main.ModEventHandlerMobs.init();     // 1.7 ModEventHandler mob death drops, decorateMob, addAITasks (§19ej-7)
         com.hbm.main.ModEventHandlerImpact.init();   // Tom impact aftermath: dust/fire decay, burning, spawns (§19ej-6)
+        com.hbm.main.ModEventHandlerHooks.init();    // food eaten, block break, sleep, potential spawns (§19ek-hooks)
         com.hbm.handler.ImpactSky.register();         // Tom impact sky darkening (1.7 WorldProviderNTM)
         com.hbm.handler.radiation.RadiationFog.init(); // 1.7 radFog, read from the chunk radiation (§19ej-6)
         com.hbm.world.chunk.ChunkLoadingManager.init();   // forced-chunk bookkeeping + restart reconciliation
@@ -252,5 +254,7 @@ public final class MainRegistry {
         });
         // Needs both the tool items and the convertible blocks, so it runs after every registry.
         com.hbm.handler.NTMToolHandler.register();
+        // Machines and container items on the loaders' fluid capabilities (History section 19ek-fluids).
+        com.hbm.capability.ForeignFluids.register();
     }
 }

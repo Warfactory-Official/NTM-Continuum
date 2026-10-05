@@ -15,8 +15,8 @@ import com.hbm.registration.Reg;
  * SPEED / EFFECT (effectiveness) / POWER (power-saving) / OVERDRIVE chains, tiers Mk.I–III (the tier is
  * the level each item contributes; see {@link com.hbm.inventory.UpgradeManagerNT}). All stack size 1,
  * old {@code controlTab}. Kept out of the generated {@link ModItems} so codegen never clobbers them.
- * (Also hosts {@code crystal_xen}, a plain drop the
- * generator doesn't port, needed for the Scream upgrade recipe — kept here so it survives a regen.)
+ * (Also hosts {@code crystal_xen}, an {@code ItemDrop} the generator doesn't port, needed for the Scream upgrade
+ * recipe — kept here so it survives a regen.)
  */
 public final class ModUpgradeItems {
 
@@ -60,17 +60,15 @@ public final class ModUpgradeItems {
      * screams at the mined block each tick (1.12.2 {@code upgrade_screm}). */
     public static final RegistryObject<ItemMachineUpgrade> upgrade_screm = upgrade("upgrade_screm", UpgradeType.SCREAM, 1);
 
-    /** Artificial Xen Crystal — a plain drop item (old {@code ItemDrop}); the Scream upgrade's ingredient. */
-    public static final RegistryObject<Item> crystal_xen = plainItem("crystal_xen");
+    /** Artificial Xen Crystal: 1.7 {@code ItemDrop} (a dangerous drop that lifts the ground it lands on); the Scream upgrade's ingredient. */
+    public static final RegistryObject<com.hbm.items.special.ItemDrop> crystal_xen =
+            REG.<com.hbm.items.special.ItemDrop>item("crystal_xen",
+                            p -> new com.hbm.items.special.ItemDrop(p, com.hbm.items.special.ItemDrop.Kind.XEN_CRYSTAL), p -> p.stacksTo(1))
+                    .transform(Presets.sprite())
+                    .tab(HbmTab.CONTROL);
 
     private static RegistryObject<ItemMachineUpgrade> upgrade(String name, UpgradeType type, int tier) {
         return REG.<ItemMachineUpgrade>item(name, p -> new ItemMachineUpgrade(type, tier, p), p -> p.stacksTo(1))
-                .transform(Presets.sprite())
-                .tab(HbmTab.CONTROL);
-    }
-
-    private static RegistryObject<Item> plainItem(String name) {
-        return REG.<Item>item(name, Item::new, p -> p.stacksTo(1))
                 .transform(Presets.sprite())
                 .tab(HbmTab.CONTROL);
     }

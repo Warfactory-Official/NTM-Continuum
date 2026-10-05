@@ -20,7 +20,7 @@ public class ItemGasMask extends CompatArmorItem implements IGasMask {
     private final List<HazardClass> blacklist;
 
     public ItemGasMask(Properties properties, List<HazardClass> blacklist) {
-        super(HbmArmorMaterials.HAZMAT, ArmorSlot.HELMET, properties);
+        super(HbmArmorMaterials.GAS_MASK, ArmorSlot.HELMET, properties);
         this.blacklist = List.copyOf(blacklist);
     }
 

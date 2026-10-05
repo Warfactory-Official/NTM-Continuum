@@ -9,10 +9,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-import java.util.List;
-import java.util.Optional;
 
-/** Exposure Chamber screen, preserving the legacy power, particle and progress indicators. */
+/** Exposure Chamber screen — 1.7.10 {@code GUIMachineExposureChamber} ({@code processing/gui_exposure_chamber.png}, 176x186). */
 public class GUIMachineExposureChamber extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineExposureChamber>
         implements IUpgradeInfoProviderSource {
 
@@ -59,21 +57,18 @@ public class GUIMachineExposureChamber extends dev.golem.core.gui.CompatContaine
         TileEntityMachineExposureChamber chamber = menu.getChamber();
         if (chamber == null) return;
 
-        if (isHovering(152, 18, 16, 34, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.energyTooltip(chamber.power, chamber.getMaxPower()),
-                    Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(26, 36, 9, 16, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font,
-                    List.of(Component.literal(chamber.savedParticles + " / "
-                            + TileEntityMachineExposureChamber.MAX_PARTICLES)),
-                    Optional.empty(), mouseX, mouseY);
+        if (GuiUtil.hover(mouseX, mouseY, leftPos + 152, topPos + 18, 16, 34)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.energyTooltip(chamber.power, chamber.getMaxPower()), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 26, topPos + 36, 9, 16)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.lines(chamber.savedParticles + " / "
+                    + TileEntityMachineExposureChamber.MAX_PARTICLES), mouseX, mouseY);
         }
     }
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         GuiDraw.text(graphics, font, title, 70 - font.width(title) / 2, 6, 0x404040, false);
-        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 94, 0x404040, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 0x404040, false);
     }
 
     @Override

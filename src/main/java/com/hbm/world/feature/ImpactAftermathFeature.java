@@ -31,6 +31,13 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
  *       log, leaf, plant and bush is removed.</li>
  * </ul>
  *
+ * <p>{@code modifyVillageGen} ({@code BiomeEvent.GetVillageBlockID}): after an impact (dust and fire do not matter), the
+ * blocks a village places come out wrecked ({@link #villageBlock}). 1.7 asked per block as the village pieces placed
+ * them; modern villages are jigsaw structures with no per-block hook, so the same rule runs here over every block inside
+ * the bounding boxes of the {@code #minecraft:village} pieces that reach into the chunk (Core {@code Structures.startsIn}),
+ * once the pieces are placed: this step runs after {@code surface_structures}. A piece's box can also hold a little
+ * natural ground or a tree beside the house; those are rewritten by the same rule.
+ *
  * <p>Deviation: 1.7 vetoed the decoration events before they placed anything. Modern decorations are placed
  * features with no runtime veto, so this removes what a denied decoration placed in the chunk; it removes them in the
  * chunk being generated only, so a tree a neighbour grew across the border loses its part inside this chunk, as it
@@ -84,6 +91,72 @@ public class ImpactAftermathFeature extends Feature<NoneFeatureConfiguration> {
                 || state.is(Blocks.DEAD_BUSH) || state.is(Blocks.PUMPKIN) || state.is(Blocks.LILY_PAD);
     }
 
+    /**
+     * 1.7 {@code modifyVillageGen}: what a village block becomes after an impact, or null to keep it. Material.wood is
+     * the modern wood family (the note-block bass instrument every former wood block carries, and logs), Material.glass
+     * the glass sound minus ice (1.7 ice had its own material), BlockCrops every crop, Material.cloth wool and beds, and
+     * {@code Blocks.stone_slab} 1.7's eight stone-slab variants as half slabs.
+     */
+    public static BlockState villageBlock(BlockState state, RandomSource rand) {
+        if (state.isAir()) return null;
+        if (state.instrument() == net.minecraft.world.level.block.state.properties.NoteBlockInstrument.BASS
+                || state.is(BlockTags.LOGS)
+                || (state.getSoundType() == net.minecraft.world.level.block.SoundType.GLASS && !state.is(BlockTags.ICE))
+                || state.is(Blocks.LADDER) || state.getBlock() instanceof net.minecraft.world.level.block.CropBlock
+                || state.is(Blocks.CHEST) || state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock
+                || state.is(BlockTags.WOOL) || state.is(BlockTags.BEDS)
+                || state.is(Blocks.WATER)
+                || isStoneHalfSlab(state)) {
+            return AIR;
+        }
+        if (state.is(Blocks.COBBLESTONE) || state.is(Blocks.STONE_BRICKS) || state.is(Blocks.MOSSY_STONE_BRICKS)
+                || state.is(Blocks.CRACKED_STONE_BRICKS) || state.is(Blocks.CHISELED_STONE_BRICKS)) {
+            return rand.nextInt(3) == 1 ? Blocks.GRAVEL.defaultBlockState() : null;
+        }
+        if (state.is(Blocks.SANDSTONE) || state.is(Blocks.CHISELED_SANDSTONE) || state.is(Blocks.CUT_SANDSTONE)) {
+            return rand.nextInt(3) == 1 ? Blocks.SAND.defaultBlockState() : null;
+        }
+        if (state.is(Blocks.FARMLAND)) return Blocks.DIRT.defaultBlockState();
+        return null;
+    }
+
+    /** 1.7 {@code Blocks.stone_slab} (metas 0..7: stone, sandstone, wood, cobblestone, brick, stone brick, nether brick, quartz). */
+    static boolean isStoneHalfSlab(BlockState state) {
+        if (!(state.is(Blocks.SMOOTH_STONE_SLAB) || state.is(Blocks.SANDSTONE_SLAB) || state.is(Blocks.PETRIFIED_OAK_SLAB)
+                || state.is(Blocks.COBBLESTONE_SLAB) || state.is(Blocks.BRICK_SLAB) || state.is(Blocks.STONE_BRICK_SLAB)
+                || state.is(Blocks.NETHER_BRICK_SLAB) || state.is(Blocks.QUARTZ_SLAB))) return false;
+        return state.getValue(net.minecraft.world.level.block.SlabBlock.TYPE) != net.minecraft.world.level.block.state.properties.SlabType.DOUBLE;
+    }
+
+    /** Rewrites the village blocks of the chunk at {@code chunkPos}; true when anything changed. */
+    static boolean wreckVillages(WorldGenLevel level, net.minecraft.world.level.ChunkPos chunkPos, RandomSource rand) {
+        var starts = dev.golem.core.world.Structures.startsIn(level, chunkPos, net.minecraft.tags.StructureTags.VILLAGE);
+        if (starts.isEmpty()) return false;
+        int minX = chunkPos.getMinBlockX(), minZ = chunkPos.getMinBlockZ();
+        int maxX = minX + 15, maxZ = minZ + 15;
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        boolean changed = false;
+        for (var start : starts) {
+            for (var piece : start.getPieces()) {
+                var box = piece.getBoundingBox();
+                int x0 = Math.max(box.minX(), minX), x1 = Math.min(box.maxX(), maxX);
+                int z0 = Math.max(box.minZ(), minZ), z1 = Math.min(box.maxZ(), maxZ);
+                if (x0 > x1 || z0 > z1) continue;
+                for (int y = box.minY(); y <= box.maxY(); y++) {
+                    for (int z = z0; z <= z1; z++) {
+                        for (int x = x0; x <= x1; x++) {
+                            BlockState to = villageBlock(level.getBlockState(pos.set(x, y, z)), rand);
+                            if (to == null) continue;
+                            level.setBlock(pos, to, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+                            changed = true;
+                        }
+                    }
+                }
+            }
+        }
+        return changed;
+    }
+
     @Override
     public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
         WorldGenLevel level = context.level();
@@ -117,6 +190,8 @@ public class ImpactAftermathFeature extends Feature<NoneFeatureConfiguration> {
                 }
             }
         }
+        // 1.7 modifyVillageGen: only data.impact, whatever the dust and fire
+        if (wreckVillages(level, chunk.getPos(), context.random())) changed = true;
         return changed;
     }
 }

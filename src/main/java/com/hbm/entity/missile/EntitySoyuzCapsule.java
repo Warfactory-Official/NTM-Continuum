@@ -99,7 +99,7 @@ public class EntitySoyuzCapsule extends CompatThrowableProjectile implements Sto
     protected void loadData(DataIn input) {
         super.loadData(input);
 
-        soyuz = input.getIntOr("soyuz", soyuz);
+        soyuz = com.hbm.util.SavedIds.getEnum(input, "soyuz", com.hbm.items.ItemEnums.SoyuzSkinType.VALUES[Math.floorMod(soyuz, com.hbm.items.ItemEnums.SoyuzSkinType.VALUES.length)]).ordinal();
 
         input.read("items", SlotEntry.CODEC.listOf()).ifPresent(list -> {
             for (SlotEntry entry : list) {
@@ -115,7 +115,8 @@ public class EntitySoyuzCapsule extends CompatThrowableProjectile implements Sto
     protected void saveData(DataOut output) {
         super.saveData(output);
 
-        output.putInt("soyuz", soyuz);
+        // by enum name, never the ordinal (History section 19ek-small)
+        com.hbm.util.SavedIds.putEnum(output, "soyuz", com.hbm.items.ItemEnums.SoyuzSkinType.VALUES[Math.floorMod(soyuz, com.hbm.items.ItemEnums.SoyuzSkinType.VALUES.length)]);
 
         List<SlotEntry> list = new ArrayList<>();
         for (int i = 0; i < payload.length; i++) {

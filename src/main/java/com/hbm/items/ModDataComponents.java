@@ -71,14 +71,14 @@ public final class ModDataComponents {
     public static final GolemComponent<String> BROKEN_ITEM = GolemComponent.string(Constants.MOD_ID, "broken_item");
     /** Internal energy carried by a dropped FEnSU machine block. */
     public static final GolemComponent<Long> FENSU_POWER = GolemComponent.longValue(Constants.MOD_ID, "fensu_power");
-    /** Dye metadata carried by a dropped FEnSU machine block. */
-    public static final GolemComponent<Integer> FENSU_COLOR = GolemComponent.integer(Constants.MOD_ID, "fensu_color");
+    /** Dye colour carried by a dropped FEnSU machine block, by {@code DyeColor} name (never an ordinal, §19ek-small). */
+    public static final GolemComponent<String> FENSU_COLOR = GolemComponent.of(Constants.MOD_ID, "fensu_color", () -> com.hbm.util.SavedIds.NAME_CODEC);
     /** Unpowered redstone mode carried by a dropped FEnSU machine block. */
     public static final GolemComponent<Integer> FENSU_RED_LOW = GolemComponent.integer(Constants.MOD_ID, "fensu_red_low");
     /** Powered redstone mode carried by a dropped FEnSU machine block. */
     public static final GolemComponent<Integer> FENSU_RED_HIGH = GolemComponent.integer(Constants.MOD_ID, "fensu_red_high");
-    /** Network priority carried by a dropped FEnSU machine block. */
-    public static final GolemComponent<Integer> FENSU_PRIORITY = GolemComponent.integer(Constants.MOD_ID, "fensu_priority");
+    /** Network priority carried by a dropped FEnSU machine block, by enum name (never an ordinal, §19ek-small). */
+    public static final GolemComponent<String> FENSU_PRIORITY = GolemComponent.of(Constants.MOD_ID, "fensu_priority", () -> com.hbm.util.SavedIds.NAME_CODEC);
     /** Arbitrary power carried by a dropped machine_battery_redd block; decimal encoding avoids a long cap. */
     public static final GolemComponent<BigInteger> BATTERY_REDD_POWER = GolemComponent.of(
             Constants.MOD_ID, "battery_redd_power", Codec.STRING.xmap(BigInteger::new, BigInteger::toString));
@@ -92,6 +92,10 @@ public final class ModDataComponents {
     /** A Watz fuel pellet's remaining yield (the old NBT double {@code "yield"}). */
     public static final GolemComponent<Double> WATZ_YIELD = GolemComponent.of(Constants.MOD_ID, "watz_yield", Codec.DOUBLE);
     public static final GolemComponent<Boolean> FUEL_WASTE_HOT = GolemComponent.of(Constants.MOD_ID, "fuel_waste_hot", Codec.BOOL);
+    /** 1.7 root NBT {@code ntmCyanide}: food laced on the anvil with a Plan C (AnvilSmithingCyanideRecipe). */
+    public static final GolemComponent<Boolean> NTM_CYANIDE = GolemComponent.of(Constants.MOD_ID, "ntm_cyanide", Codec.BOOL);
+    /** 1.7 root NBT {@code ntmRedPill}: food laced on the anvil with a red pill (AnvilSmithingCyanideRecipe). */
+    public static final GolemComponent<Boolean> NTM_RED_PILL = GolemComponent.of(Constants.MOD_ID, "ntm_red_pill", Codec.BOOL);
     /** Player names a turret biometry card protects; the 1.12.2 NBT string list. */
     public static final GolemComponent<java.util.List<String>> TURRET_WHITELIST =
             GolemComponent.of(Constants.MOD_ID, "turret_whitelist", Codec.STRING.listOf());
@@ -194,14 +198,24 @@ public final class ModDataComponents {
     public static void brokenItem(ItemStack stack, String value) { BROKEN_ITEM.set(stack, value); }
     public static long fensuPower(ItemStack stack) { return FENSU_POWER.getOr(stack, 0L); }
     public static void fensuPower(ItemStack stack, long value) { FENSU_POWER.set(stack, value); }
-    public static int fensuColor(ItemStack stack, int defaultValue) { return FENSU_COLOR.getOr(stack, defaultValue); }
-    public static void setFensuColor(ItemStack stack, int value) { FENSU_COLOR.set(stack, value); }
+    public static net.minecraft.world.item.DyeColor fensuColor(ItemStack stack, net.minecraft.world.item.DyeColor defaultValue) {
+        return com.hbm.util.SavedIds.byName(net.minecraft.world.item.DyeColor.class, FENSU_COLOR.getOr(stack, defaultValue.name()), defaultValue);
+    }
+    public static void setFensuColor(ItemStack stack, net.minecraft.world.item.DyeColor value) {
+        FENSU_COLOR.set(stack, value.name().toLowerCase(java.util.Locale.ROOT));
+    }
     public static int fensuRedLow(ItemStack stack, int defaultValue) { return FENSU_RED_LOW.getOr(stack, defaultValue); }
     public static void setFensuRedLow(ItemStack stack, int value) { FENSU_RED_LOW.set(stack, value); }
     public static int fensuRedHigh(ItemStack stack, int defaultValue) { return FENSU_RED_HIGH.getOr(stack, defaultValue); }
     public static void setFensuRedHigh(ItemStack stack, int value) { FENSU_RED_HIGH.set(stack, value); }
-    public static int fensuPriority(ItemStack stack, int defaultValue) { return FENSU_PRIORITY.getOr(stack, defaultValue); }
-    public static void setFensuPriority(ItemStack stack, int value) { FENSU_PRIORITY.set(stack, value); }
+    public static com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority fensuPriority(ItemStack stack,
+            com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority defaultValue) {
+        return com.hbm.util.SavedIds.byName(com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority.class,
+                FENSU_PRIORITY.getOr(stack, defaultValue.name()), defaultValue);
+    }
+    public static void setFensuPriority(ItemStack stack, com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority value) {
+        FENSU_PRIORITY.set(stack, value.name().toLowerCase(java.util.Locale.ROOT));
+    }
     public static BigInteger batteryReddPower(ItemStack stack) {
         return BATTERY_REDD_POWER.getOr(stack, BigInteger.ZERO);
     }

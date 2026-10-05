@@ -47,6 +47,9 @@ public final class TankDisplay {
         if (tank.getPressure() != 0) {
             lines.add(Component.literal("Pressure: " + tank.getPressure() + " PU")
                     .withStyle(ChatFormatting.RED));
+            // 1.7 FluidTank.renderTankInfo: the blinking compressor warning under the pressure line.
+            lines.add(Component.literal("Pressurized, use compressor!").withStyle(
+                    com.hbm.util.BobMathUtil.getBlink() ? ChatFormatting.RED : ChatFormatting.DARK_RED));
         }
         tank.getTankType().addInfo(lines);
         return lines;

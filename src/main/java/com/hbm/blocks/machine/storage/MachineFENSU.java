@@ -83,17 +83,13 @@ public class MachineFENSU extends BlockMultiblockMachine implements IEnergyConne
 
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityMachineFENSU fensu) {
-            int color = ModDataComponents.fensuColor(stack, DyeColor.LIGHT_BLUE.ordinal());
-            fensu.color = DyeColor.values()[Math.max(0, Math.min(color, DyeColor.values().length - 1))];
+            fensu.color = ModDataComponents.fensuColor(stack, DyeColor.LIGHT_BLUE);
             fensu.setPower(ModDataComponents.fensuPower(stack));
             fensu.redLow = (short) Math.max(TileEntityMachineFENSU.mode_input,
                     Math.min(ModDataComponents.fensuRedLow(stack, TileEntityMachineFENSU.mode_input), TileEntityMachineFENSU.mode_none));
             fensu.redHigh = (short) Math.max(TileEntityMachineFENSU.mode_input,
                     Math.min(ModDataComponents.fensuRedHigh(stack, TileEntityMachineFENSU.mode_output), TileEntityMachineFENSU.mode_none));
-            int priority = Math.max(0, Math.min(ModDataComponents.fensuPriority(stack,
-                    IEnergyReceiverMK2.ConnectionPriority.LOW.ordinal()),
-                    IEnergyReceiverMK2.ConnectionPriority.HIGHEST.ordinal()));
-            fensu.priority = IEnergyReceiverMK2.ConnectionPriority.VALUES[priority];
+            fensu.priority = ModDataComponents.fensuPriority(stack, IEnergyReceiverMK2.ConnectionPriority.LOW);
             fensu.setChanged();
             fensu.networkPackNT();
         }
@@ -179,10 +175,10 @@ public class MachineFENSU extends BlockMultiblockMachine implements IEnergyConne
         ItemStack stack = new ItemStack(this);
         if (core != null && params.getLevel().getBlockEntity(core) instanceof TileEntityMachineFENSU fensu) {
             ModDataComponents.fensuPower(stack, fensu.power);
-            ModDataComponents.setFensuColor(stack, fensu.color.ordinal());
+            ModDataComponents.setFensuColor(stack, fensu.color);
             ModDataComponents.setFensuRedLow(stack, fensu.redLow);
             ModDataComponents.setFensuRedHigh(stack, fensu.redHigh);
-            ModDataComponents.setFensuPriority(stack, fensu.priority.ordinal());
+            ModDataComponents.setFensuPriority(stack, fensu.priority);
         }
         return List.of(stack);
     }
@@ -197,10 +193,10 @@ public class MachineFENSU extends BlockMultiblockMachine implements IEnergyConne
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityMachineFENSU fensu) {
             ModDataComponents.fensuPower(stack, fensu.power);
-            ModDataComponents.setFensuColor(stack, fensu.color.ordinal());
+            ModDataComponents.setFensuColor(stack, fensu.color);
             ModDataComponents.setFensuRedLow(stack, fensu.redLow);
             ModDataComponents.setFensuRedHigh(stack, fensu.redHigh);
-            ModDataComponents.setFensuPriority(stack, fensu.priority.ordinal());
+            ModDataComponents.setFensuPriority(stack, fensu.priority);
         }
         return stack;
     }

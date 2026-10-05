@@ -40,11 +40,13 @@ public final class FabricGameTests {
         com.hbm.gametest.FinalRecipeGapGameTests.init();
         com.hbm.gametest.Fix1AGameTests.init();
         com.hbm.gametest.IdsGameTests.init();
+        com.hbm.gametest.ForeignFluidGameTests.init();
         com.hbm.gametest.Fix4GameTests.init();
         com.hbm.gametest.Fix5GameTests.init();
         com.hbm.gametest.Fix1BGameTests.init();
         com.hbm.gametest.Fix3GameTests.init();
         com.hbm.gametest.Fix7GameTests.init();
+        com.hbm.gametest.SmallGameTests.init();
         com.hbm.gametest.Fix7GlyphidGameTests.init();
         com.hbm.gametest.Fix7BossGameTests.init();
         com.hbm.gametest.Fix7MobGameTests.init();
@@ -82,6 +84,7 @@ public final class FabricGameTests {
         com.hbm.gametest.RadiationPersistenceGameTests.init();
         com.hbm.gametest.WorldgenImpactGameTests.init();
         com.hbm.gametest.ConfigGameTests.init();
+        com.hbm.gametest.HooksGameTests.init();
         com.hbm.gametest.FoldedPortParityGameTests.init();
         com.hbm.gametest.WeaponTableGameTests.init();
         com.hbm.gametest.GunSupportGameTests.init();
@@ -111,11 +114,13 @@ public final class FabricGameTests {
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.FinalRecipeGapGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix1AGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.IdsGameTests.TESTS);
+        dev.golem.core.gametest.GameTests.register(com.hbm.gametest.ForeignFluidGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix4GameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix5GameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix1BGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix3GameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix7GameTests.TESTS);
+        dev.golem.core.gametest.GameTests.register(com.hbm.gametest.SmallGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix7GlyphidGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix7BossGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix7MobGameTests.TESTS);
@@ -153,6 +158,7 @@ public final class FabricGameTests {
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.RadiationPersistenceGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.WorldgenImpactGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.ConfigGameTests.TESTS);
+        dev.golem.core.gametest.GameTests.register(com.hbm.gametest.HooksGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.FoldedPortParityGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.WeaponTableGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.GunSupportGameTests.TESTS);

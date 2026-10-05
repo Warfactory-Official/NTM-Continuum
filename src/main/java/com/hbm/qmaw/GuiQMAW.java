@@ -17,9 +17,11 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-/** The old QMAW 340x224 manual screen, adapted to the shared screen facade. */
+/** 1.7 {@code GuiQMAW}: the 340x224 manual screen (gui_wiki.png, plus gui_wiki_flix.png on the last line). */
 public final class GuiQMAW extends CompatScreen {
     private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/gui_wiki.png");
+    /** 1.7 {@code the_man}: drawn instead of the text once the page is scrolled to its last line. */
+    private static final Identifier THE_MAN = Ids.of("hbm", "textures/gui/gui_wiki_flix.png");
     private static final int WIDTH = 340;
     private static final int HEIGHT = 224;
     private static final int CONTENT_WIDTH = WIDTH - 29;
@@ -184,7 +186,12 @@ public final class GuiQMAW extends CompatScreen {
 
     @Override
     protected void extractForegroundCompat(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        visitVisible((element, x, y) -> element.draw(graphics, font, x, y, over(x, y, element.width(font), element.height(font), mouseX, mouseY)));
+        if (showTheMan()) {
+            GuiDraw.blit(graphics, THE_MAN, left + 60, top + HEIGHT - 84, 0, 0, 80, 80, 256, 256);
+            GuiDraw.blit(graphics, THE_MAN, left + 140, top + HEIGHT - 60, 0, 80, 77, 39, 256, 256);
+        } else {
+            visitVisible((element, x, y) -> element.draw(graphics, font, x, y, over(x, y, element.width(font), element.height(font), mouseX, mouseY)));
+        }
 
         int x = 43;
         int y = 4;
@@ -194,7 +201,7 @@ public final class GuiQMAW extends CompatScreen {
             y += (16 - font.lineHeight) / 2;
         }
         y += 1;
-        GuiDraw.text(graphics, font, pageTitle, left + x, top + y, 0xFFFFFFFF, false);
+        GuiDraw.text(graphics, font, pageTitle, left + x, top + y, 0xFFFFFF, false);
     }
 
     private void updateDragging(int mouseY) {
@@ -207,6 +214,11 @@ public final class GuiQMAW extends CompatScreen {
         int max = top + 25 + 191 - 8;
         double progress = Mth.clamp((double) (mouseY - min) / (max - min), 0D, 1D);
         scrollProgress = Mth.clamp((int) Math.round((lines.size() - 1) * progress), 0, Math.max(0, lines.size() - 1));
+    }
+
+    /** 1.7: {@code lines.size() > 1 && scrollProgress == lines.size() - 1}. */
+    private boolean showTheMan() {
+        return lines.size() > 1 && scrollProgress == lines.size() - 1;
     }
 
     private int getSliderPosition() {
@@ -268,6 +280,14 @@ public final class GuiQMAW extends CompatScreen {
             dragging = true;
             updateDragging((int) event.y());
             return true;
+        }
+        if (showTheMan()) {
+            if (over(left + 60, top + HEIGHT - 84, 80, 80, event.x(), event.y())) {
+                Minecraft.getInstance().getSoundManager().play(
+                        SimpleSoundInstance.forUI(com.hbm.sound.ModSounds.ALARM_SINGER.get(), 1.0F));
+                return true;
+            }
+            return false;
         }
 
         final boolean[] clicked = {false};

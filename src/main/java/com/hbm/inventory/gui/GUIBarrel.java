@@ -2,7 +2,6 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerBarrel;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
-import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -12,7 +11,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -23,7 +21,6 @@ import java.util.Optional;
 public class GUIBarrel extends dev.golem.core.gui.CompatContainerScreen<ContainerBarrel> {
 
     private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_barrel.png");
-    private static final String[] MODE_NAMES = {"Input only", "Buffer (in+out)", "Output only", "Disabled"};
 
     private static final int BAR_X = 71, BAR_TOP = 17, BAR_W = 34, BAR_H = 52, BAR_BOTTOM = 69;
     private static final int BTN_X = 151, BTN_Y = 34, BTN_W = 18, BTN_H = 18;
@@ -38,51 +35,33 @@ public class GUIBarrel extends dev.golem.core.gui.CompatContainerScreen<Containe
         TileEntityBarrel barrel = this.menu.getBarrel();
         if (barrel == null) return;
 
-        FluidTankNTM ft = barrel.tank;
-        int max = ft.getMaxFill();
-        int h = max <= 0 ? 0 : (int) ((long) ft.getFill() * BAR_H / max);
-        if (h > 0) {
-            Identifier fluidTex = ft.getTankType().getTexture();
-            int x0 = this.leftPos + BAR_X;
-            int yBottom = this.topPos + BAR_BOTTOM;
-            int yTop = yBottom - h;
-            if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
-                graphics.enableScissor(x0, yTop, x0 + BAR_W, yBottom);
-                for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                    for (int tx = 0; tx < BAR_W; tx += 16) {
-                        int tw = Math.min(16, BAR_W - tx);
-                        GuiDraw.blit(graphics, fluidTex, x0 + tx, ty, 0F, 0F, tw, 16, 16, 16);
-                    }
-                }
-                graphics.disableScissor();
-            } else {
-                graphics.fill(x0, yTop, x0 + BAR_W, yBottom, 0xFF000000 | (ft.getTankType().getColor() & 0xFFFFFF));
-            }
-        }
+        // 1.7 order: mode icon, then tank.renderTank(guiLeft + 71, guiTop + 69, z, 34, 52) (tinted, bottom-anchored).
         int mode = barrel.mode;
         GuiDraw.blit(graphics, TEXTURE, this.leftPos + BTN_X, this.topPos + BTN_Y, 176.0F, (float) (mode * 18), BTN_W, BTN_H, 256, 256);
+        Production2Gui.drawTank(graphics, barrel.tank, this.leftPos + BAR_X, this.topPos + BAR_BOTTOM, BAR_W, BAR_H);
     }
 
+    /** 1.7 {@code GUIBarrel.drawGuiContainerForegroundLayer}: centred title at y 6, "Inventory" at (8, ySize - 94). */
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, this.font, this.title, this.imageWidth / 2 - this.font.width(this.title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, 8, this.imageHeight - 96 + 2, 4210752, false);
+    }
+
+    /** 1.7 draws only the tank tooltip ({@code renderTankInfo}); the mode button has none. */
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityBarrel barrel = this.menu.getBarrel();
         if (barrel == null) return;
-        if (this.isHovering(BAR_X, BAR_TOP, BAR_W, BAR_H, mouseX, mouseY)) {
-            FluidTankNTM ft = barrel.tank;
-            GuiDraw.tooltip(graphics, this.font, List.of(
-                    ft.getTankType().getDisplayName(),
-                    Component.literal(ft.getFill() + " / " + ft.getMaxFill() + " mB")
-            ), Optional.empty(), mouseX, mouseY);
-        } else if (this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, List.of(
-                    Component.literal("Mode: " + MODE_NAMES[barrel.mode % MODE_NAMES.length])
-            ), Optional.empty(), mouseX, mouseY);
+        if (in17(BAR_X, BAR_TOP, BAR_W, BAR_H, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.tankTooltip(barrel.tank), Optional.empty(), mouseX, mouseY);
         }
     }
 
     @Override
     protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
-        if (this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
+        // 1.7 hit box: guiLeft + 151 <= x < guiLeft + 169, guiTop + 35 < y <= guiTop + 53.
+        if (in17(BTN_X, BTN_Y + 1, BTN_W, BTN_H, event.x(), event.y())) {
             Minecraft mc = Minecraft.getInstance();
             mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             if (mc.gameMode != null) {
@@ -91,5 +70,11 @@ public class GUIBarrel extends dev.golem.core.gui.CompatContainerScreen<Containe
             }
         }
         return false;
+    }
+
+    /** The 1.7 GUI hit test ({@code drawCustomInfoStat}/{@code renderTankInfo}): x <= mouse < x + w, y < mouse <= y + h. */
+    private boolean in17(int x, int y, int w, int h, double mouseX, double mouseY) {
+        double mx = mouseX - this.leftPos, my = mouseY - this.topPos;
+        return x <= mx && x + w > mx && y < my && y + h >= my;
     }
 }

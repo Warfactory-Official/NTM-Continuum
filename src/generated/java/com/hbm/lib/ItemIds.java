@@ -3925,7 +3925,6 @@ public final class ItemIds {
     public static final String warhead_volcano = "hbm:warhead_volcano";
     public static final String waste_earth = "hbm:waste_earth";
     public static final String waste_leaves = "hbm:waste_leaves";
-    public static final String waste_les = "hbm:waste_les";
     public static final String waste_log = "hbm:waste_log";
     public static final String waste_mox = "hbm:waste_mox";
     public static final String waste_mycelium = "hbm:waste_mycelium";
@@ -3939,6 +3938,7 @@ public final class ItemIds {
     public static final String waste_plate_u233 = "hbm:waste_plate_u233";
     public static final String waste_plate_u235 = "hbm:waste_plate_u235";
     public static final String waste_plutonium = "hbm:waste_plutonium";
+    public static final String waste_schrabidium = "hbm:waste_schrabidium";
     public static final String waste_thorium = "hbm:waste_thorium";
     public static final String waste_trinitite = "hbm:waste_trinitite";
     public static final String waste_trinitite_red = "hbm:waste_trinitite_red";

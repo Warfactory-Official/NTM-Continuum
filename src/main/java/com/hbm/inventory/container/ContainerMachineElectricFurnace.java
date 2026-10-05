@@ -38,17 +38,17 @@ public class ContainerMachineElectricFurnace extends AbstractContainerMenu {
         this.machine = furnace != null ? furnace : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
-        this.addSlot(validated(0, 56, 53));    // battery
-        this.addSlot(validated(1, 56, 17));    // input
-        this.addSlot(new Slot(this.machine, 2, 116, 35) { // output (take only)
+        this.addSlot(validated(0, 152, 54));   // battery (1.7 ContainerElectricFurnace positions)
+        this.addSlot(validated(1, 20, 35));    // input
+        this.addSlot(new Slot(this.machine, 2, 80, 35) { // output (take only)
             @Override public boolean mayPlace(ItemStack stack) { return false; }
         });
-        this.addSlot(validated(3, 147, 34));   // upgrade
+        this.addSlot(validated(3, 111, 34));   // upgrade
 
         for (int row = 0; row < 3; row++) for (int col = 0; col < 9; col++) {
-            this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
+            this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 104 + row * 18));
         }
-        for (int col = 0; col < 9; col++) this.addSlot(new Slot(playerInventory, col, 8 + col * 18, 142));
+        for (int col = 0; col < 9; col++) this.addSlot(new Slot(playerInventory, col, 8 + col * 18, 162));
     }
 
     private Slot validated(int index, int x, int y) {

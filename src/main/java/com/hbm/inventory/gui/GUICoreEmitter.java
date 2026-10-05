@@ -1,9 +1,9 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerCoreEmitter;
-import com.hbm.lib.Library;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreEmitter;
+import com.hbm.util.BobMathUtil;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
@@ -15,12 +15,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 
-import java.util.List;
-
 /**
- * The emitter's panel. The field sets how hard it fires, from one to a hundred watts; the button beside it
- * commits that and the one after it switches the beam on. The green stripe across the top lights while the
- * emitter has the power to sustain what it has been asked for.
+ * The emitter's panel, ported from 1.7 {@code GUICoreEmitter}: coolant tank at (8,17), power column at (26,17),
+ * the watts field at (57,57) with its set button at (97,52) and the on/off button at (133,52).
  */
 public class GUICoreEmitter extends GUIDFCBase<ContainerCoreEmitter> {
 
@@ -41,8 +38,10 @@ public class GUICoreEmitter extends GUIDFCBase<ContainerCoreEmitter> {
     protected void init() {
         super.init();
         String previous = this.field == null ? null : this.field.getValue();
-        this.field = new EditBox(this.font, leftPos + 88, topPos + 62, 24, 10, Component.empty());
-        this.field.setTextColor(0xFF5BBC00);
+        // 1.7 GuiTextField(guiLeft + 57, guiTop + 57, 29, 12), no background, white text: an unbordered
+        // EditBox draws its text at its own x/y exactly like the background-less 1.7 field.
+        this.field = new EditBox(this.font, leftPos + 57, topPos + 57, 29, 12, Component.empty());
+        this.field.setTextColor(0xFFFFFFFF);
         this.field.setBordered(false);
         this.field.setMaxLength(3);
         TileEntityCoreEmitter emitter = menu.getEmitter();
@@ -58,25 +57,30 @@ public class GUICoreEmitter extends GUIDFCBase<ContainerCoreEmitter> {
         if (emitter == null) return;
 
         if (field != null && field.isFocused()) {
-            GuiDraw.blit(graphics, TEXTURE, leftPos + 81, topPos + 58, 210F, 0F, 32, 14, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, leftPos + 53, topPos + 53, 210F, 4F, 34, 16, 256, 256);
         }
         if (emitter.isOn) {
-            GuiDraw.blit(graphics, TEXTURE, leftPos + 151, topPos + 56, 192F, 0F, 18, 18, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, leftPos + 133, topPos + 52, 192F, 0F, 18, 18, 256, 256);
         }
 
-        drawWattsBar(graphics, 81, 17, emitter.getWattsScaled(35));
-        drawPowerBar(graphics, 49, 21, emitter.power, TileEntityCoreEmitter.maxPower);
+        int w = emitter.watts * 34 / 100;
+        if (w > 0) GuiDraw.blit(graphics, TEXTURE, leftPos + 53, topPos + 45, 210F, 0F, w, 4, 256, 256);
 
-        if (emitter.isOn && emitter.power > 500_000) {
-            GuiDraw.blit(graphics, TEXTURE, leftPos + 149, topPos + 33, 176F, 87F, 80, 3, 256, 256);
-        }
+        int i = (int) emitter.getPowerScaled(52);
+        if (i > 0) GuiDraw.blit(graphics, TEXTURE, leftPos + 26, topPos + 69 - i, 176F, 52 - i, 16, i, 256, 256);
 
-        drawTank(graphics, emitter.tank, 13, 21, 16, 52);
+        drawTank(graphics, emitter.tank, 8, 17, 16, 52);
     }
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        drawTitleAndInventory(graphics);
+        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 6, 4210752, false);
+        TileEntityCoreEmitter emitter = menu.getEmitter();
+        if (emitter != null) {
+            GuiDraw.text(graphics, font, Component.literal("Output: " + BobMathUtil.getShortNumber(emitter.prev) + "Spk"),
+                    50, 30, 0xFF7F7F, false);
+        }
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
@@ -84,13 +88,10 @@ public class GUICoreEmitter extends GUIDFCBase<ContainerCoreEmitter> {
         TileEntityCoreEmitter emitter = menu.getEmitter();
         if (emitter == null) return;
 
-        if (isHovering(13, 21, 16, 52, mouseX, mouseY)) {
+        if (isHovering(8, 17, 16, 52, mouseX, mouseY)) {
             tooltip(graphics, GuiUtil.tankTooltip(emitter.tank), mouseX, mouseY);
-        } else if (isHovering(49, 21, 16, 52, mouseX, mouseY)) {
+        } else if (isHovering(26, 17, 16, 52, mouseX, mouseY)) {
             tooltip(graphics, GuiUtil.energyTooltip(emitter.power, TileEntityCoreEmitter.maxPower), mouseX, mouseY);
-        } else if (isHovering(79, 14, 8, 39, mouseX, mouseY)) {
-            tooltip(graphics, List.of(Component.literal("Output: " + Library.getShortNumber(emitter.prev) + "SPK")),
-                    mouseX, mouseY);
         }
     }
 
@@ -102,10 +103,11 @@ public class GUICoreEmitter extends GUIDFCBase<ContainerCoreEmitter> {
         int x = (int) event.x() - leftPos;
         int y = (int) event.y() - topPos;
 
-        if (x >= 124 && x < 142 && y >= 56 && y < 74) {
+        // 1.7 hit boxes: x in [97, 115), y in (52, 70] (the y test is exclusive at the top, inclusive below).
+        if (x >= 97 && x < 115 && y > 52 && y <= 70) {
             int watts;
             try {
-                watts = Mth.clamp(Integer.parseInt(field.getValue().trim()), 1, 100);
+                watts = Mth.clamp((int) Double.parseDouble(field.getValue().trim()), 1, 100);
             } catch (NumberFormatException e) {
                 return false;
             }
@@ -116,7 +118,7 @@ public class GUICoreEmitter extends GUIDFCBase<ContainerCoreEmitter> {
             return true;
         }
 
-        if (x >= 151 && x < 169 && y >= 56 && y < 74) {
+        if (x >= 133 && x < 151 && y > 52 && y <= 70) {
             CompoundTag data = new CompoundTag();
             data.putBoolean("toggle", true);
             send(emitter, data);

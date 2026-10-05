@@ -208,6 +208,8 @@ public class Lego {
             if (config.pType == BulletConfig.ProjectileType.BULLET) {
                 EntityBulletBaseMK4 bullet = new EntityBulletBaseMK4(entity, config, damage, spread,
                         sideOffset, heightOffset, forwardOffset);
+                // 1.7 Lego.doStandardFire: a locked-on gun (Stinger, missile launcher) hands its target to the rocket
+                if (ItemGunBaseNT.getIsLockedOn(stack)) bullet.lockonTarget = ItemGunBaseNT.resolveLockonTarget(level, stack);
 
                 // Muzzle discharge, on the first pellet only: one puff per shot, not one per pellet.
                 // Position and heading come from the spawned bullet rather than the shooter, so the
@@ -224,6 +226,7 @@ public class Lego {
             } else if (config.pType == BulletConfig.ProjectileType.BULLET_CHUNKLOADING) {
                 EntityBulletBaseMK4CL bullet = new EntityBulletBaseMK4CL(entity, config, damage, spread,
                         sideOffset, heightOffset, forwardOffset);
+                if (ItemGunBaseNT.getIsLockedOn(stack)) bullet.lockonTarget = ItemGunBaseNT.resolveLockonTarget(level, stack);
                 level.addFreshEntity(bullet);
             } else if (config.pType == BulletConfig.ProjectileType.BEAM) {
                 EntityBulletBeamBase beam = new EntityBulletBeamBase(entity, config, damage, spread,

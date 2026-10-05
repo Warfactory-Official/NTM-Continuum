@@ -282,9 +282,14 @@ public final class WorldConfig {
         enableAsbestosCave = CommonConfig.createConfigBool(config, CATEGORY_OREGEN, "2.C01_enableAsbestosCave", "Toggles asbestos caves", true);
 
         final String CATEGORY_DUNGEON = CommonConfig.CATEGORY_DUNGEONS;
-        // 4.01, 4.02, 4.04, 4.10-4.12 and 4.22-4.24 (the legacy dungeon structures) are not written: their chances are the
-        // spacing of each dungeon's structure_set, fixed in the data pack at build time (History §19ej-8)
+        // the legacy dungeon chances are read at generation by hbm:config_spread (History §19ek-hooks)
+        DungeonConfig.antennaStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.01_antennaSpawn", "Spawn antenna on every nTH chunk", 250);
+        DungeonConfig.atomStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.02_atomSpawn", "Spawn power plant on every nTH chunk", 500);
+        DungeonConfig.dungeonStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.04_dungeonSpawn", "Spawn library dungeon on every nTH chunk", 64);
         satelliteStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.06_satelliteSpawn", "Spawn satellite dish on every nTH chunk", 500);
+        DungeonConfig.dudStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.10_dudSpawn", "Spawn dud on every nTH chunk", 500);
+        DungeonConfig.spaceshipStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.11_spaceshipSpawn", "Spawn spaceship on every nTH chunk", 1000);
+        DungeonConfig.barrelStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.12_barrelSpawn", "Spawn waste tank on every nTH chunk", 5000);
         DungeonConfig.broadcaster = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.13_broadcasterSpawn", "Spawn corrupt broadcaster on every nTH chunk", 5000);
         DungeonConfig.minefreq = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.14_landmineSpawn", "Spawn AP landmine on every nTH chunk", 64);
         radfreq = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.15_radHotspotSpawn", "Spawn radiation hotspot on every nTH chunk", 5000);
@@ -292,6 +297,9 @@ public final class WorldConfig {
         geyserChlorine = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.18_geyserChlorineSpawn", "Spawn poison geyser on every nTH chunk", 3000);
         geyserVapor = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.19_geyserVaporSpawn", "Spawn vapor geyser on every nTH chunk", 250);
         DungeonConfig.capsuleStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.21_capsuleSpawn", "Spawn landing capsule on every nTH chunk", 100);
+        DungeonConfig.arcticStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.22_arcticVaultSpawn", "Spawn arctic code vault on every nTH chunk", 500);
+        DungeonConfig.jungleStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.23_jungleDungeonSpawn", "Spawn jungle dungeon on every nTH chunk", 2000);
+        DungeonConfig.pyramidStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.24_pyramidSpawn", "Spawn pyramid on every nTH chunk", 4000);
 
         final String CATEGORY_METEOR = CommonConfig.CATEGORY_METEORS;
         enableMeteorStrikes = CommonConfig.createConfigBool(config, CATEGORY_METEOR, "5.00_enableMeteorStrikes", "Toggles the spawning of meteors", true);
@@ -310,14 +318,22 @@ public final class WorldConfig {
         craterBiomeOuterRad = (float) CommonConfig.createConfigDouble(config, CATEGORY_BIOMES, "17.R02_craterBiomeOuterRad", "RAD/s for the outer crater biome", 0.5D);
         craterBiomeWaterMult = (float) CommonConfig.createConfigDouble(config, CATEGORY_BIOMES, "17.R03_craterBiomeWaterMult", "Multiplier for RAD/s in crater biomes when in water", 5D);
 
+        DungeonConfig.antennaStructure = CommonConfig.setDefZero(DungeonConfig.antennaStructure, 1000);
+        DungeonConfig.atomStructure = CommonConfig.setDefZero(DungeonConfig.atomStructure, 1000);
+        DungeonConfig.dungeonStructure = CommonConfig.setDefZero(DungeonConfig.dungeonStructure, 1000);
         satelliteStructure = CommonConfig.setDefZero(satelliteStructure, 1000);
+        DungeonConfig.dudStructure = CommonConfig.setDefZero(DungeonConfig.dudStructure, 1000);
+        DungeonConfig.spaceshipStructure = CommonConfig.setDefZero(DungeonConfig.spaceshipStructure, 1000);
+        DungeonConfig.barrelStructure = CommonConfig.setDefZero(DungeonConfig.barrelStructure, 1000);
         geyserChlorine = CommonConfig.setDefZero(geyserChlorine, 1000);
         geyserVapor = CommonConfig.setDefZero(geyserVapor, 1000);
         DungeonConfig.broadcaster = CommonConfig.setDefZero(DungeonConfig.broadcaster, 1000);
         DungeonConfig.minefreq = CommonConfig.setDefZero(DungeonConfig.minefreq, 1000);
         radfreq = CommonConfig.setDefZero(radfreq, 1000);
         DungeonConfig.vaultfreq = CommonConfig.setDefZero(DungeonConfig.vaultfreq, 1000);
+        DungeonConfig.jungleStructure = CommonConfig.setDefZero(DungeonConfig.jungleStructure, 1000);
         DungeonConfig.capsuleStructure = CommonConfig.setDefZero(DungeonConfig.capsuleStructure, 100);
+        DungeonConfig.arcticStructure = CommonConfig.setDefZero(DungeonConfig.arcticStructure, 500);
 
         meteorStrikeChance = CommonConfig.setDef(meteorStrikeChance, 1000);
         meteorShowerChance = CommonConfig.setDef(meteorShowerChance, 1000);

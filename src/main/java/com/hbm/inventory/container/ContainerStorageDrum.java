@@ -54,11 +54,11 @@ public class ContainerStorageDrum extends AbstractContainerMenu {
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
                 addSlot(new Slot(playerInventory, column + row * 9 + 9,
-                        8 + column * 18, 155 + row * 18));
+                        8 + column * 18, 152 + row * 18)); // 1.7 ContainerStorageDrum
             }
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(playerInventory, column, 8 + column * 18, 213));
+            addSlot(new Slot(playerInventory, column, 8 + column * 18, 210));
         }
     }
 

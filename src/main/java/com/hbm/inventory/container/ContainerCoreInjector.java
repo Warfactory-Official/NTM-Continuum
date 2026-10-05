@@ -41,10 +41,10 @@ public class ContainerCoreInjector extends AbstractContainerMenu {
         this.machineInjector = tile;
         this.machine = tile != null ? tile : new SimpleContainer(Math.max(MACHINE_SLOTS, 1));
         this.access = access;
-        addSlot(validated(0, 15, 16));
-        addSlot(takeOnly(1, 15, 52));
-        addSlot(validated(2, 146, 17));
-        addSlot(takeOnly(3, 146, 53));
+        addSlot(validated(0, 26, 17));
+        addSlot(takeOnly(1, 26, 53));
+        addSlot(validated(2, 134, 17));
+        addSlot(takeOnly(3, 134, 53));
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
     }
 

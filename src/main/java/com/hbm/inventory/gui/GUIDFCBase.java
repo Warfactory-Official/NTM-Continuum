@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Shared chrome for the five dark fusion core panels: the vertical power column, the coolant and fuel
- * tanks, and the little watts gauge the emitter and stabiliser both carry. Consolidated here rather than
- * in each screen, the way {@link GUIPABase} serves the accelerator's panels.
+ * Shared helpers for the five dark fusion core panels (1.7 {@code GUICore}, {@code GUICoreEmitter},
+ * {@code GUICoreInjector}, {@code GUICoreReceiver}, {@code GUICoreStabilizer}): the 1.7 {@code FluidTank.renderTank}
+ * quad, tooltips, and the title/inventory labels every one of them draws the same way.
  */
 public abstract class GUIDFCBase<T extends AbstractContainerMenu> extends CompatContainerScreen<T> {
 
@@ -26,22 +26,7 @@ public abstract class GUIDFCBase<T extends AbstractContainerMenu> extends Compat
 
     protected abstract Identifier texture();
 
-    /** The 16x52 power column, filling upward from {@code y + 52}. */
-    protected void drawPowerBar(GuiGraphicsExtractor graphics, int x, int y, long power, long maxPower) {
-        int height = (int) (power * 52 / Math.max(1L, maxPower));
-        if (height <= 0) return;
-        GuiDraw.blit(graphics, texture(), leftPos + x, topPos + y + 52 - height,
-                176F, (float) (52 - height), 16, height, 256, 256);
-    }
-
-    /** The 4x35 watts gauge, filling upward from {@code y + 35}. */
-    protected void drawWattsBar(GuiGraphicsExtractor graphics, int x, int y, int wattsScaled) {
-        if (wattsScaled <= 0) return;
-        GuiDraw.blit(graphics, texture(), leftPos + x, topPos + y + 35 - wattsScaled,
-                176F, (float) (87 - wattsScaled), 4, wattsScaled, 256, 256);
-    }
-
-    /** Repeats the 16x16 fluid texture, matching the old GL_REPEAT tank quad. */
+    /** Repeats the 16x16 fluid texture, matching the old GL_REPEAT tank quad; {@code y} is the tank's top. */
     protected void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y, int width, int height) {
         int max = tank.getMaxFill();
         int filled = max <= 0 ? 0 : (int) ((long) tank.getFill() * height / max);
@@ -69,9 +54,9 @@ public abstract class GUIDFCBase<T extends AbstractContainerMenu> extends Compat
         GuiDraw.tooltip(graphics, font, text, Optional.empty(), mouseX, mouseY);
     }
 
+    /** 1.7 {@code drawGuiContainerForegroundLayer}: centred title at y 6, "Inventory" at (8, ySize - 94), 4210752. */
     protected void drawTitleAndInventory(GuiGraphicsExtractor graphics) {
-        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 6, 0xFF404040, false);
-        GuiDraw.text(graphics, font, playerInventoryTitle,
-                imageWidth - 8 - font.width(playerInventoryTitle), imageHeight - 96 + 2, 0xFF404040, false);
+        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 4210752, false);
     }
 }

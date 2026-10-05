@@ -49,9 +49,10 @@ import net.minecraft.world.level.Level;
  * {@code MixinLivingEntity} tick injection — the cross-loader stand-in for Forge's {@code LivingUpdateEvent}
  * (runs on both sides).
  *
- * <p>Deferred vs 1.7 (History §19ej-1C): the vomit / sweat / radiation-flash / cough-smoke / oil-drip particle
- * bursts, which need a client particle path with 1.7's block-dust lifetimes that the port does not have (their
- * sounds and gameplay effects are here). The nuclear creeper and Quackos transforms landed in §19ej-7, the crater-biome
+ * <p>The vomit / sweat / radiation-flash / cough / oil-drip / digamma particle bursts (deferred in History §19ej-1C)
+ * are sent as 1.7 sent them, through {@code LivingEffects} and the {@code HbmEffectNT} types {@code Sweat},
+ * {@code Vomit} and {@code Radiation} (client: {@code LivingEffectParticles}, 150..199-tick vanilla block dust as in
+ * 1.7). The nuclear creeper and Quackos transforms landed in §19ej-7, the crater-biome
  * and nether ambient radiation in §19ej-6.
  */
 public class EntityEffectHandler {
@@ -72,6 +73,7 @@ public class EntityEffectHandler {
 
         if (entity.level().isClientSide() && entity instanceof Player player && player.isLocalPlayer()) {
             craterAura(player);
+            radiationFlash(player);
         }
 
         if (!entity.level().isClientSide()) {
@@ -93,7 +95,7 @@ public class EntityEffectHandler {
             // 1.7 X528_enable528NetherBurn (forced off without 528 mode): players burn in the nether, 1.7 setFire(5)
             if (com.hbm.config.GeneralConfig.enable528NetherBurn && entity instanceof net.minecraft.world.entity.player.Player
                     && !entity.fireImmune() && entity.level().dimension() == Level.NETHER) {
-                entity.setRemainingFireTicks(Math.max(entity.getRemainingFireTicks(), 5 * 20));
+                dev.golem.core.world.Effects.ignite(entity, 5);
             }
 
             craterBiomeRadiation(entity);
@@ -227,7 +229,8 @@ public class EntityEffectHandler {
 
     /**
      * 1.7 {@code handleOil}: a doused entity counts the oil down, and if it catches fire the oil goes up in a
-     * strength-3 block-breaking explosion at its middle. The coal-dust drip particle is deferred with the others.
+     * strength-3 block-breaking explosion at its middle. Every fifth tick of its life it drips one coal-block dust
+     * particle (1.7 {@code sweat}, 25 blocks).
      */
     private static void handleOil(LivingEntity entity) {
         int oil = HbmLivingProps.getOil(entity);
@@ -238,6 +241,9 @@ public class EntityEffectHandler {
                     false, Level.ExplosionInteraction.TNT);
         } else {
             HbmLivingProps.setOil(entity, oil - 1);
+        }
+        if (entity.tickCount % 5 == 0) {
+            com.hbm.particle.helper.LivingEffects.sweat(entity, 1, net.minecraft.world.level.block.Blocks.COAL_BLOCK, 25D);
         }
     }
 
@@ -320,6 +326,20 @@ public class EntityEffectHandler {
         }
     }
 
+    /**
+     * 1.7 {@code handleRadiationFX}, client branch: a player above 600 RAD sees 1 (above 800: 2, above 900: 4) cyan
+     * flashes a tick ({@code effectNT} type {@code radiation}, played locally). The port syncs radiation only to the
+     * owning client, as 1.7 did, so this runs for the local player.
+     */
+    private static void radiationFlash(Player player) {
+        float radiation = (float) HbmLivingProps.getRadiation(player);
+        if (radiation <= 600) return;
+        net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+        data.putInt("count", radiation > 900 ? 4 : radiation > 800 ? 2 : 1);
+        com.hbm.particle.helper.HbmEffectNT.Radiation.summonParticle(player.level(), player.getX(), player.getY(),
+                player.getZ(), data);
+    }
+
     private static void handleRadiation(LivingEntity entity) {
 
         if (ContaminationUtil.isRadImmune(entity))
@@ -341,23 +361,33 @@ public class EntityEffectHandler {
         if (entity instanceof Player player && (player.isCreative() || player.isSpectator()))
             return;
 
-        // Vomit/sweat particle bursts (>600/>200/>900 rads) deferred with the particle system; the
-        // hunger + vomit-sound tick is kept.
+        // 1.7 handleRadiationFX: above 600 RAD a 20-tick blood-vomit burst every 600 ticks, else above 200 a normal
+        // one every 1200 (1.7 nests the 600 window inside "> 600", so a >600 entity never takes the 1200 branch);
+        // above 900 a redstone sweat particle on about one tick in ten. Hunger and the sound on the window's tick 1.
         Random rand = new Random(entity.getId());
         int r600 = rand.nextInt(600);
         int r1200 = rand.nextInt(1200);
         long time = level.getGameTime();
 
-        if (HbmLivingProps.getRadiation(entity) > 600 && (time + r600) % 600 < 20 && canVomit(entity)) {
-            if ((time + r600) % 600 == 1 && level instanceof ServerLevel) {
-                level.playSound(null, pos, ModSounds.VOMIT.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
-                Effects.add(entity, MobEffects.HUNGER, 60, 19);
+        if (HbmLivingProps.getRadiation(entity) > 600) {
+            if ((time + r600) % 600 < 20 && canVomit(entity)) {
+                com.hbm.particle.helper.LivingEffects.vomit(entity, "blood", 25);
+                if ((time + r600) % 600 == 1 && level instanceof ServerLevel) {
+                    level.playSound(null, pos, ModSounds.VOMIT.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
+                    Effects.add(entity, MobEffects.HUNGER, 60, 19);
+                }
             }
         } else if (HbmLivingProps.getRadiation(entity) > 200 && (time + r1200) % 1200 < 20 && canVomit(entity)) {
+            com.hbm.particle.helper.LivingEffects.vomit(entity, "normal", 15);
             if ((time + r1200) % 1200 == 1 && level instanceof ServerLevel) {
                 level.playSound(null, pos, ModSounds.VOMIT.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
                 Effects.add(entity, MobEffects.HUNGER, 60, 19);
             }
+        }
+
+        if (HbmLivingProps.getRadiation(entity) > 900 && (time + rand.nextInt(10)) % 10 == 0) {
+            com.hbm.particle.helper.LivingEffects.sweat(entity, 1,
+                    net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK, 25D);
         }
     }
 
@@ -452,7 +482,11 @@ public class EntityEffectHandler {
     private static void handleDigamma(LivingEntity entity) {
         double digamma = HbmLivingProps.getDigamma(entity);
         if (digamma < 0.01F) return;
-        // Sweat particle burst deferred (needs the HBM particle system).
+        // 1.7 handleDigamma: one soul-sand sweat particle, on every tick from 9 digamma up, else 1 in (10 - digamma)
+        int chance = Math.max(10 - (int) digamma, 1);
+        if (chance == 1 || entity.getRandom().nextInt(chance) == 0) {
+            com.hbm.particle.helper.LivingEffects.sweat(entity, 1, net.minecraft.world.level.block.Blocks.SOUL_SAND, 25D);
+        }
     }
 
     /**
@@ -461,7 +495,7 @@ public class EntityEffectHandler {
      * item catches it (3 hours) unless wearing hazmat 2 with a bacteria-proof helmet; from 2:55 left the infected
      * spread it once a second to every living within 2 blocks (16 when wet) and mark dropped items; from 2:00 rare
      * nausea, from 1:00 nausea and weakness V, from 0:30 1 damage (1 in 400), from 0:05 2 damage (1 in 100), and at
-     * 0 a 1000-damage death. The blood vomit particle waits for the particle system; its sound plays.
+     * 0 a 1000-damage death. From 0:30 a 20-tick blood-vomit burst every 200 ticks, with its sound on the last tick.
      */
     private static void handleContagion(LivingEntity entity) {
         if (!com.hbm.config.ServerConfig.ENABLE_MKU.get()) return;
@@ -525,8 +559,10 @@ public class EntityEffectHandler {
             if (contagion < 5 * minute && rand.nextInt(100) == 0) {
                 Compat.hurt(entity, level, ModDamageSources.mku(level), 2F);
             }
-            if (contagion < 30 * minute && (contagion + entity.getId()) % 200 == 19 && canVomit(entity)) {
-                level.playSound(null, entity.blockPosition(), ModSounds.VOMIT.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
+            if (contagion < 30 * minute && (contagion + entity.getId()) % 200 < 20 && canVomit(entity)) {
+                com.hbm.particle.helper.LivingEffects.vomit(entity, "blood", 25);
+                if ((contagion + entity.getId()) % 200 == 19)
+                    level.playSound(null, entity.blockPosition(), ModSounds.VOMIT.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
             }
             // end of contagion, drop dead
             if (contagion == 0) {
@@ -549,7 +585,7 @@ public class EntityEffectHandler {
      * 1.7 {@code handleLungDisease}. Black lung below half the maximum heals a tick at a time; the effects follow the
      * combined lung damage (weakness III above 75%, nausea above 95%), and the cough frequency also follows a
      * player's soot at eye level (above 30 soot a player coughs even with healthy lungs) unless the helmet stops
-     * coarse particles. The coughed-blood and coughed-coal particles are deferred with the other particle bursts.
+     * coarse particles. Each cough also sends 1.7's coughed-blood and coughed-coal-smoke bursts.
      */
     private static void handleLungDisease(LivingEntity entity) {
 
@@ -591,6 +627,15 @@ public class EntityEffectHandler {
         if (level instanceof ServerLevel && level.getGameTime() % freq == entity.getId() % freq) {
             level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), ModSounds.COUGH.get(),
                     SoundSource.PLAYERS, 1.0F, 1.0F);
+
+            // 1.7: blood above 75% asbestos or black lung, coal smoke above 50% black lung (50 puffs above 80%)
+            if (asbestos / EntityHbmProps.MAX_ASBESTOS > 0.75D || blacklung / EntityHbmProps.MAX_BLACKLUNG > 0.75D) {
+                com.hbm.particle.helper.LivingEffects.vomit(entity, "blood", 5);
+            }
+            if (blacklung / EntityHbmProps.MAX_BLACKLUNG > 0.5D) {
+                com.hbm.particle.helper.LivingEffects.vomit(entity, "smoke",
+                        blacklung / EntityHbmProps.MAX_BLACKLUNG > 0.8D ? 50 : 10);
+            }
         }
     }
 

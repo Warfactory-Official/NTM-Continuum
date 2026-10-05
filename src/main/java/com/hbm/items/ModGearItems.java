@@ -50,26 +50,26 @@ public final class ModGearItems {
     public static final RegistryObject<Item> hazmat_legs = armor("hazmat_legs", () -> HbmArmorMaterials.HAZMAT, ArmorSlot.LEGGINGS);
     public static final RegistryObject<Item> hazmat_boots = armor("hazmat_boots", () -> HbmArmorMaterials.HAZMAT, ArmorSlot.BOOTS);
 
-    public static final RegistryObject<Item> hazmat_helmet_red = armor("hazmat_helmet_red", () -> HbmArmorMaterials.HAZMAT_RED, ArmorSlot.HELMET);
+    public static final RegistryObject<Item> hazmat_helmet_red = armor("hazmat_helmet_red", () -> HbmArmorMaterials.HAZMAT_RED_HOOD, ArmorSlot.HELMET);
     public static final RegistryObject<Item> hazmat_plate_red = armor("hazmat_plate_red", () -> HbmArmorMaterials.HAZMAT_RED, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<Item> hazmat_legs_red = armor("hazmat_legs_red", () -> HbmArmorMaterials.HAZMAT_RED, ArmorSlot.LEGGINGS);
     public static final RegistryObject<Item> hazmat_boots_red = armor("hazmat_boots_red", () -> HbmArmorMaterials.HAZMAT_RED, ArmorSlot.BOOTS);
 
-    public static final RegistryObject<Item> hazmat_helmet_grey = armor("hazmat_helmet_grey", () -> HbmArmorMaterials.HAZMAT_GREY, ArmorSlot.HELMET);
+    public static final RegistryObject<Item> hazmat_helmet_grey = armor("hazmat_helmet_grey", () -> HbmArmorMaterials.HAZMAT_GREY_HOOD, ArmorSlot.HELMET);
     public static final RegistryObject<Item> hazmat_plate_grey = armor("hazmat_plate_grey", () -> HbmArmorMaterials.HAZMAT_GREY, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<Item> hazmat_legs_grey = armor("hazmat_legs_grey", () -> HbmArmorMaterials.HAZMAT_GREY, ArmorSlot.LEGGINGS);
     public static final RegistryObject<Item> hazmat_boots_grey = armor("hazmat_boots_grey", () -> HbmArmorMaterials.HAZMAT_GREY, ArmorSlot.BOOTS);
 
     // ---- gas masks and replaceable filters ----
-    public static final RegistryObject<ItemGasMask> gas_mask = gasMask("gas_mask", "hbm:items/hazmat_helmet", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
-    public static final RegistryObject<ItemGasMask> gas_mask_m65 = gasMask("gas_mask_m65", "hbm:items/hazmat_helmet", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
-    public static final RegistryObject<ItemGasMask> gas_mask_mono = gasMask("gas_mask_mono", "hbm:items/hazmat_helmet", List.of(HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT, HazardClass.BACTERIA));
-    public static final RegistryObject<ItemGasMask> gas_mask_olde = gasMask("gas_mask_olde", "hbm:items/hazmat_helmet", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
-    public static final RegistryObject<Item> gas_mask_filter_rag = filter("gas_mask_filter_rag", "hbm:items/rag_damp", 4_000);
-    public static final RegistryObject<Item> gas_mask_filter_piss = filter("gas_mask_filter_piss", "hbm:items/rag_piss", 4_000);
-    public static final RegistryObject<Item> gas_mask_filter_mono = filter("gas_mask_filter_mono", "hbm:items/catalyst_clay", 12_000);
-    public static final RegistryObject<Item> gas_mask_filter = filter("gas_mask_filter", "hbm:items/filter_coal", 18_000);
-    public static final RegistryObject<Item> gas_mask_filter_combo = filter("gas_mask_filter_combo", "hbm:items/filter_coal", 24_000);
+    public static final RegistryObject<ItemGasMask> gas_mask = gasMask("gas_mask", "hbm:items/gas_mask", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
+    public static final RegistryObject<ItemGasMask> gas_mask_m65 = gasMask("gas_mask_m65", "hbm:items/gas_mask_m65", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
+    public static final RegistryObject<ItemGasMask> gas_mask_mono = gasMask("gas_mask_mono", "hbm:items/gas_mask_mono", List.of(HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT, HazardClass.BACTERIA));
+    public static final RegistryObject<ItemGasMask> gas_mask_olde = gasMask("gas_mask_olde", "hbm:items/gas_mask_olde", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
+    public static final RegistryObject<Item> gas_mask_filter_rag = filter("gas_mask_filter_rag", "hbm:items/gas_mask_filter_rag", 4_000);
+    public static final RegistryObject<Item> gas_mask_filter_piss = filter("gas_mask_filter_piss", "hbm:items/gas_mask_filter_piss", 4_000);
+    public static final RegistryObject<Item> gas_mask_filter_mono = filter("gas_mask_filter_mono", "hbm:items/gas_mask_filter_mono", 12_000);
+    public static final RegistryObject<Item> gas_mask_filter = filter("gas_mask_filter", "hbm:items/gas_mask_filter", 18_000);
+    public static final RegistryObject<Item> gas_mask_filter_combo = filter("gas_mask_filter_combo", "hbm:items/gas_mask_filter_combo", 24_000);
 
     /** The material is read when the item is built: the materials are registry-backed (see {@link ModArmorItems}). */
     private static RegistryObject<Item> armor(String name, Supplier<GolemArmorMaterial> material, ArmorSlot slot) {

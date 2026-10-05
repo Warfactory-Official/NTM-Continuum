@@ -30,7 +30,7 @@ public class BlockCorium extends BlockStaticFluid {
     @Override
     protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         setInWeb(entity, state);
-        entity.setRemainingFireTicks(Math.max(entity.getRemainingFireTicks(), 3 * 20)); // setFire(3)
+        dev.golem.core.world.Effects.ignite(entity, 3); // 1.7 setFire(3), Fire Protection applies
         if (level.isClientSide()) return;
         entity.hurt(ModDamageSources.source(level, ModDamageSources.RADIATION), 2F);
         if (entity instanceof LivingEntity living) {

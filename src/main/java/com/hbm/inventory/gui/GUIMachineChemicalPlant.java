@@ -9,7 +9,6 @@ import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalPlant;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -64,10 +63,9 @@ public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerS
 
         // Status LEDs (recipe configured / enough power), like the assembly machine.
         GenericRecipe recipe = ChemicalPlantRecipes.INSTANCE.getRecipe(te.chemplantModule.recipe);
-        boolean configured = recipe != null || ItemBlueprints.grabPool(te.getItem(1)) != null;
-        boolean powered = recipe != null ? te.power >= recipe.power : te.power > 0;
-        if (te.didProcess) led(graphics, 51, 195); else if (configured) led(graphics, 51, 192);
-        if (te.didProcess) led(graphics, 56, 195); else if (configured && powered) led(graphics, 56, 192);
+        // 1.7: left LED lit by a set recipe, right LED by a set recipe with enough power for it.
+        if (te.didProcess) led(graphics, 51, 195); else if (recipe != null) led(graphics, 51, 192);
+        if (te.didProcess) led(graphics, 56, 195); else if (recipe != null && te.power >= recipe.power) led(graphics, 56, 192);
 
         // Selector button icon: the selected recipe's icon, or the template-folder fallback.
         GuiDraw.item(graphics, recipe != null ? recipe.getIcon() : new ItemStack(ModItems.template_folder.get()),
@@ -85,24 +83,9 @@ public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerS
         }
     }
 
-    /** Draws a fluid tank's fill bar at GUI x {@code barX}: tile the fluid's 16×16 sprite, or a solid colour. */
+    /** 1.7 {@code renderTank(guiLeft + barX, guiTop + 52, z, 16, 34)}: the tinted fluid column, bottom-anchored. */
     private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int barX) {
-        int maxF = tank.getMaxFill();
-        int h = maxF <= 0 ? 0 : (int) ((long) tank.getFill() * TANK_H / maxF);
-        if (h <= 0) return;
-        int x0 = this.leftPos + barX;
-        int yBottom = this.topPos + TANK_TOP + TANK_H;
-        int yTop = yBottom - h;
-        Identifier fluidTex = tank.getTankType().getTexture();
-        if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
-            graphics.enableScissor(x0, yTop, x0 + TANK_W, yBottom);
-            for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                GuiDraw.blit(graphics, fluidTex, x0, ty, 0F, 0F, TANK_W, 16, 16, 16);
-            }
-            graphics.disableScissor();
-        } else {
-            graphics.fill(x0, yTop, x0 + TANK_W, yBottom, 0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
-        }
+        Production2Gui.drawTank(graphics, tank, this.leftPos + barX, this.topPos + TANK_TOP + TANK_H, TANK_W, TANK_H);
     }
 
     private void led(GuiGraphicsExtractor graphics, int x, int u) {
@@ -114,11 +97,11 @@ public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerS
         TileEntityMachineChemicalPlant te = this.menu.getChemplant();
         if (te == null) return;
 
-        if (this.isHovering(152, 18, 16, 61, mouseX, mouseY)) {
+        if (in17(152, 18, 16, 61, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, te.maxPower), Optional.empty(), mouseX, mouseY);
             return;
         }
-        if (this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, mouseX, mouseY)) {
+        if (in17(BTN_X, BTN_Y, BTN_W, BTN_H, mouseX, mouseY)) {
             GenericRecipe recipe = ChemicalPlantRecipes.INSTANCE.getRecipe(te.chemplantModule.recipe);
             if (recipe != null) GuiDraw.tooltip(graphics, this.font, recipe.print(), Optional.empty(), mouseX, mouseY);
             else GuiDraw.tooltip(graphics, this.font,
@@ -127,8 +110,8 @@ public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerS
         }
         // Fluid tank hover → name + mB.
         for (int i = 0; i < 3; i++) {
-            if (this.isHovering(8 + i * 18, TANK_TOP, TANK_W, TANK_H, mouseX, mouseY)) { tankTooltip(graphics, te.inputTanks[i], mouseX, mouseY); return; }
-            if (this.isHovering(80 + i * 18, TANK_TOP, TANK_W, TANK_H, mouseX, mouseY)) { tankTooltip(graphics, te.outputTanks[i], mouseX, mouseY); return; }
+            if (in17(8 + i * 18, TANK_TOP, TANK_W, TANK_H, mouseX, mouseY)) { tankTooltip(graphics, te.inputTanks[i], mouseX, mouseY); return; }
+            if (in17(80 + i * 18, TANK_TOP, TANK_W, TANK_H, mouseX, mouseY)) { tankTooltip(graphics, te.outputTanks[i], mouseX, mouseY); return; }
         }
         // (No "Acceptable Upgrades" info panel here — the 1.12.2 chemical plant GUI has none; the upgrade
         // item's own tooltip [ItemMachineUpgrade + IUpgradeInfoProviderSource] shows this machine's numbers.)
@@ -140,20 +123,30 @@ public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerS
     }
 
     private void tankTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int mouseX, int mouseY) {
-        GuiDraw.tooltip(graphics, this.font, List.of(
-                tank.getTankType().getDisplayName(),
-                Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")
-        ), Optional.empty(), mouseX, mouseY);
+        GuiDraw.tooltip(graphics, this.font, GuiUtil.tankTooltip(tank), Optional.empty(), mouseX, mouseY);
+    }
+
+    /** 1.7 {@code GUIMachineChemicalPlant.drawGuiContainerForegroundLayer}: title centred on x 70 at y 6, "Inventory" at (8, ySize - 94). */
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, this.font, this.title, 70 - this.font.width(this.title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, 8, this.imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
     protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         TileEntityMachineChemicalPlant te = this.menu.getChemplant();
-        if (te != null && this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
+        if (te != null && in17(BTN_X, BTN_Y, BTN_W, BTN_H, (int) event.x(), (int) event.y())) {
             GUIScreenRecipeSelector.openSelector(ChemicalPlantRecipes.INSTANCE, te.getBlockPos(),
                     te.chemplantModule.recipe, 0, ItemBlueprints.grabPool(te.getItem(1)), this);
             return true;
         }
         return false;
+    }
+
+    /** The 1.7 GUI hit test ({@code checkClick}/{@code renderTankInfo}): x <= mouse < x + w, y < mouse <= y + h. */
+    private boolean in17(int x, int y, int w, int h, int mouseX, int mouseY) {
+        int mx = mouseX - this.leftPos, my = mouseY - this.topPos;
+        return x <= mx && x + w > mx && y < my && y + h >= my;
     }
 }

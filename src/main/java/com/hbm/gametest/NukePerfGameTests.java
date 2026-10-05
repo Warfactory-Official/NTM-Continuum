@@ -584,21 +584,18 @@ public final class NukePerfGameTests {
                                         "fallout exceeded its unresolved request cap: peak "
                                                 + virgin.getPeakUnresolvedRequests() + " > "
                                                 + virgin.getMaxUnresolvedRequests());
-                                assertAshIsTicking(helper, level, centre, scale);
+                                assertAshIsInert(helper, level, centre, scale);
                                 helper.succeed();
                             });
                 });
     }
 
     /**
-     * The sweep writes its blocks straight into the chunk sections now, which skips {@code onPlace} —
-     * so the apply pass has to call it by hand. This is the check that it does.
-     *
-     * <p>Not cosmetic: {@code onPlace} is what schedules {@link com.hbm.blocks.generic.BlockFallout}'s
-     * tick, and that tick is the block's entire purpose. Ash placed without it sits there looking
-     * radioactive and emitting nothing, which no block-state comparison would ever notice.
+     * The sweep writes its blocks straight into the chunk sections and calls {@code onPlace} by hand. Since History
+     * §19ek-small {@link com.hbm.blocks.generic.BlockFallout} follows 1.7: it has no tick and emits no chunk
+     * radiation (the self-rescheduling +1 RAD tick was 1.12.2's). This checks the sweep's ash carries no tick.
      */
-    private static void assertAshIsTicking(GameTestHelper helper, ServerLevel level, BlockPos centre, int scale) {
+    private static void assertAshIsInert(GameTestHelper helper, ServerLevel level, BlockPos centre, int scale) {
         net.minecraft.world.level.block.Block fallout = com.hbm.blocks.ModFalloutBlocks.fallout.get();
         BlockPos.MutableBlockPos probe = new BlockPos.MutableBlockPos();
         int found = 0;
@@ -616,9 +613,7 @@ public final class NukePerfGameTests {
         }
         Constants.LOG.info("[FALLOUT-BENCH] ash sampled: {} found, {} with a scheduled tick", found, ticking);
         helper.assertTrue(found > 0, "the sweep laid down no ash to check");
-        helper.assertTrue(ticking == found,
-                "only " + ticking + " of " + found + " ash blocks have a scheduled tick — the section-write "
-                        + "apply path is not calling onPlace, so the ash is inert");
+        helper.assertTrue(ticking == 0, ticking + " of " + found + " ash blocks have a scheduled tick; 1.7 ash has none");
     }
 
     /** Poll attempts for a whole sweep to finish. Generous: it has real chunks to wait on. */
@@ -882,17 +877,10 @@ public final class NukePerfGameTests {
     }
 
     /**
-     * What the ash layer costs <em>after</em> the sweep has finished.
-     *
-     * <p>{@link com.hbm.blocks.generic.BlockFallout} schedules a block tick when it is placed, and its
-     * tick re-schedules itself forever — the 1.12.2 design, ported faithfully. So every ash block the
-     * sweep lays down becomes a permanent recurring cost, and a nuke lays down thousands. This measures
-     * both halves: what placing them costs, and what one round of their ticks costs, so the steady-state
-     * load a blast leaves behind can be projected instead of guessed at.
-     *
-     * <p>{@code ntm-next} deleted the scheduled tick and made the block declare {@code radEmission} /
-     * {@code radSaturation} instead, read by the radiation sweep. This test is the argument for or
-     * against doing the same here.
+     * What the ash layer costs <em>after</em> the sweep has finished. Until History §19ek-small the port used
+     * 1.12.2's self-rescheduling ash tick (+1 RAD every 10..39 ticks, forever), and this test projected that load.
+     * 1.7's {@code BlockFallout} has no tick, so placed ash is now free after placement: this measures placement and
+     * asserts that no ash block schedules a tick.
      */
     public static void falloutAshLoad(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -913,50 +901,27 @@ public final class NukePerfGameTests {
             }
         }
 
-        // Placement, exactly as the sweep does it.
         long t0 = System.nanoTime();
         int placed = 0;
+        int ticking = 0;
         for (int dx = 0; dx < side; dx++) {
             for (int dz = 0; dz < side; dz++) {
                 pos.set(origin.getX() + dx, baseY + 1, origin.getZ() + dz);
                 level.setBlock(pos, ash, Block.UPDATE_ALL);
                 placed++;
+                if (level.getBlockTicks().hasScheduledTick(pos.immutable(), com.hbm.blocks.ModFalloutBlocks.fallout.get())) ticking++;
             }
         }
         long placeUs = (System.nanoTime() - t0) / 1000L;
 
-        // One round of what those blocks do when their scheduled tick fires. The tick body is an
-        // incrementRad plus a re-schedule; both are measured, because both recur forever.
-        long t1 = System.nanoTime();
-        for (int dx = 0; dx < side; dx++) {
-            for (int dz = 0; dz < side; dz++) {
-                pos.set(origin.getX() + dx, baseY + 1, origin.getZ() + dz);
-                com.hbm.handler.radiation.ChunkRadiationManager.proxy.incrementRad(level, pos, 1, 100);
-                level.scheduleTick(pos.immutable(), com.hbm.blocks.ModFalloutBlocks.fallout.get(), 25);
-            }
-        }
-        long roundUs = (System.nanoTime() - t1) / 1000L;
-
-        // A Fat Man's disc scaled from what nuke_fallout_benchmark actually laid down.
-        int projectedAsh = placed > 0 ? PROJECTED_FATMAN_ASH : 0;
-        double perTickMs = (roundUs / 1000.0) * ((double) projectedAsh / placed) / MEAN_ASH_CADENCE_TICKS;
-
-        Constants.LOG.info("[FALLOUT-BENCH] ash: placed {} in {} us ({} us each) | one tick round for {} = "
-                        + "{} us ({} us each)",
-                placed, placeUs, placeUs / Math.max(1, placed), placed, roundUs, roundUs / Math.max(1, placed));
-        Constants.LOG.info("[FALLOUT-BENCH] projected steady state for a Fat Man (~{} ash blocks, mean "
-                        + "cadence {} ticks): about {} ms of block ticks EVERY tick, forever",
-                projectedAsh, MEAN_ASH_CADENCE_TICKS, String.format("%.2f", perTickMs));
+        Constants.LOG.info("[FALLOUT-BENCH] ash: placed {} in {} us ({} us each), {} with a scheduled tick",
+                placed, placeUs, placeUs / Math.max(1, placed), ticking);
 
         helper.assertTrue(placed > 0, "no ash was placed");
+        helper.assertTrue(ticking == 0, ticking + " placed ash blocks scheduled a tick; 1.7 ash has none");
         helper.succeed();
     }
 
-    /**
-     * Ash blocks a Fat Man leaves behind, scaled from {@code nuke_fallout_benchmark}: it laid ~434 over a
-     * scale-48 disc, and area goes with the square of the scale ((175/48)^2 is about 13).
-     */
-    private static final int PROJECTED_FATMAN_ASH = 5_700;
     /**
      * What the notify pass actually costs, and on what.
      *
@@ -1091,9 +1056,6 @@ public final class NukePerfGameTests {
                 shapes / 1_000_000L, cells > 0 ? (shapes / 1000L) / cells : 0);
         helper.assertTrue(cells > 0, "nothing was converted for " + label);
     }
-
-    /** {@code BlockFallout} re-schedules itself at {@code 10 + rand(30)}, so the mean is 25 ticks. */
-    private static final int MEAN_ASH_CADENCE_TICKS = 25;
 
     /**
      * Poll attempts, two ticks apart, before a light phase is called stuck.

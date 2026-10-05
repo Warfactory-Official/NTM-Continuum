@@ -138,7 +138,7 @@ public class EntityFireLingering extends CompatEntity {
             switch (getFireType()) {
                 case TYPE_DIESEL, TYPE_PHOSPHORUS -> meta = FlameCreator.META_NORMAL;
                 case TYPE_BALEFIRE -> meta = FlameCreator.META_BALEFIRE;
-                case TYPE_BLACK -> meta = com.hbm.particle.helper.FlameCreator.META_BLACK; // drawn with the normal hue: the port particle has no black band yet
+                case TYPE_BLACK -> meta = com.hbm.particle.helper.FlameCreator.META_BLACK; // 1.7 black-fire colour ramp in ParticleFlamethrower
                 default -> { continue; }
             }
             FireLingeringClientEffects.flame(this.level(), x, down.y, z, meta);

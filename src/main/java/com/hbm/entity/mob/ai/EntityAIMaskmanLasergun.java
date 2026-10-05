@@ -15,13 +15,6 @@ import net.minecraft.world.phys.Vec3;
 
 public class EntityAIMaskmanLasergun extends Goal {
 
-    /**
-     * 1.7 played "hbm:weapon.teslaShoot" (sounds/weapon/teslaShoot.ogg), not the sedna "weapon.fire.tesla" shot.
-     * sounds.json carries the event as weapon.teslashoot, but nothing registers it, so it plays as a direct event.
-     */
-    private static final SoundEvent TESLA_SHOOT =
-            SoundEvent.createVariableRangeEvent(dev.golem.core.Ids.of(Constants.MOD_ID, "weapon.teslashoot"));
-
     private final PathfinderMob owner;
     private Attack attack;
     private int timer;
@@ -80,7 +73,7 @@ public class EntityAIMaskmanLasergun extends Goal {
                 if (orb == null) return;
                 orb.setDeltaMovement(orb.getDeltaMovement().add(0D, 0.5D, 0D));
                 this.owner.level().addFreshEntity(orb);
-                play(TESLA_SHOOT);
+                play(ModSounds.WEAPON_TESLA_SHOOT.get());
             }
 
             case MISSILE -> {

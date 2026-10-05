@@ -40,9 +40,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The fluid registry: HBM's own list of {@link FluidType}s, keyed by registry name ({@code hbm:water}), which is
- * the only form a fluid is saved in. NOT a vanilla/Forge registry - it's a plain static map populated by
- * {@link #init()}; see History section 19ej-ids for why (b) a name-keyed HBM registry was chosen over registering
- * 156 vanilla {@code Fluid}s. The 1.7 numbers remain as the read-only {@link #legacyId}/{@link #networkId} views.
+ * the only form a fluid is saved in. It is a plain static map populated by {@link #init()} (History section
+ * 19ej-ids); since History section 19ek-fluids each type is additionally registered as a vanilla {@code Fluid}
+ * ({@link #declareVanilla}, {@link #toVanilla}/{@link #fromVanilla}) so other mods can see HBM fluids, with saves
+ * unchanged. The 1.7 numbers remain as the read-only {@link #legacyId}/{@link #networkId} views.
  *
  * <p>26.1 slim port: the 1.12.2 original carried a full trait/pollution/potion subsystem plus Forge-fluid
  * compat on each type. This port keeps the registry mechanics ({@code registerSelf}/{@code byRegistryName}/
@@ -749,5 +750,85 @@ public class Fluids {
 
     public static FluidType[] getAll() {
         return registerOrder.toArray(new FluidType[0]);
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
+    // Vanilla Fluid registry entries (History section 19ek-fluids). Every FluidType is also a vanilla Fluid so other
+    // mods' tanks, pipes and recipe viewers can name it: hbm:<key> as a Core TokenFluid (never placeable, no bucket),
+    // and WATER/LAVA/NONE as vanilla's own water, lava and empty, as ntm-next does. The registry entry is only a
+    // name: every HBM system keeps working in FluidType, and saves keep the FluidType registry name (unchanged).
+    // ------------------------------------------------------------------------------------------------------------
+
+    private static final java.util.Map<FluidType, java.util.function.Supplier<net.minecraft.world.level.material.Fluid>> VANILLA =
+            new java.util.IdentityHashMap<>();
+    private static volatile java.util.Map<net.minecraft.world.level.material.Fluid, FluidType> byVanilla;
+    private static boolean vanillaDeclared = false;
+
+    /**
+     * Declares the token fluids with Core's {@code TokenFluids}. Common bootstrap, after {@link #init()} and before
+     * the registries are flushed. Idempotent.
+     */
+    public static void declareVanilla() {
+        if (vanillaDeclared) return;
+        vanillaDeclared = true;
+        init();
+        List<dev.golem.core.fluid.TokenFluids.Spec> specs = new ArrayList<>();
+        for (FluidType fluid : registerOrder) {
+            if (isVanillaAlias(fluid)) continue;
+            specs.add(tokenSpec(fluid));
+        }
+        java.util.Map<String, dev.golem.core.registry.RegistryObject<net.minecraft.world.level.material.Fluid>> handles =
+                dev.golem.core.fluid.TokenFluids.register(Constants.MOD_ID, specs);
+        for (FluidType fluid : registerOrder) {
+            if (!isVanillaAlias(fluid)) VANILLA.put(fluid, handles.get(fluid.getKey()));
+        }
+    }
+
+    /** NONE, WATER and LAVA are vanilla's empty, water and lava rather than fluids of their own. */
+    private static boolean isVanillaAlias(FluidType fluid) {
+        return fluid == NONE || fluid == WATER || fluid == LAVA;
+    }
+
+    /**
+     * What another mod reads of a fluid. The sprite is the 1.7 GUI tank texture ({@code textures/gui/fluids/<key>.png},
+     * stitched into the block atlas by {@code ModItemModels}); it is drawn in the fluid's own colour already, so it is
+     * not tinted again. Temperature is 1.7's degrees Celsius in kelvin; gases (1.7 {@code FT_Gaseous}/{@code _ART})
+     * are lighter than air, viscous fluids ({@code FT_Viscous}) are slow.
+     */
+    private static dev.golem.core.fluid.TokenFluids.Spec tokenSpec(FluidType fluid) {
+        boolean gaseous = fluid.hasTrait(FT_Gaseous.class) || fluid.hasTrait(FT_Gaseous_ART.class);
+        boolean viscous = fluid.hasTrait(FT_Viscous.class);
+        return new dev.golem.core.fluid.TokenFluids.Spec(fluid.getKey(), fluid.getTranslationKey(), fluid.getFallbackName(),
+                Constants.MOD_ID + ":gui/fluids/" + fluid.getKey(), 0xFFFFFFFF, fluid.temperature + 273,
+                gaseous ? -1000 : 1000, viscous ? 6000 : 1000, gaseous);
+    }
+
+    /** The vanilla {@code Fluid} {@code fluid} is registered as; {@code Fluids.EMPTY} for NONE (and before registration). */
+    public static net.minecraft.world.level.material.Fluid toVanilla(FluidType fluid) {
+        if (fluid == null || fluid == NONE) return net.minecraft.world.level.material.Fluids.EMPTY;
+        if (fluid == WATER) return net.minecraft.world.level.material.Fluids.WATER;
+        if (fluid == LAVA) return net.minecraft.world.level.material.Fluids.LAVA;
+        java.util.function.Supplier<net.minecraft.world.level.material.Fluid> handle = VANILLA.get(fluid);
+        return handle == null ? net.minecraft.world.level.material.Fluids.EMPTY : handle.get();
+    }
+
+    /**
+     * The FluidType a vanilla {@code Fluid} stands for: an HBM token fluid's own type, WATER/LAVA for vanilla water and
+     * lava (still or flowing), NONE for empty and for every other mod's fluid.
+     */
+    public static FluidType fromVanilla(net.minecraft.world.level.material.Fluid fluid) {
+        if (fluid == null || fluid == net.minecraft.world.level.material.Fluids.EMPTY) return NONE;
+        if (fluid == net.minecraft.world.level.material.Fluids.WATER || fluid == net.minecraft.world.level.material.Fluids.FLOWING_WATER) return WATER;
+        if (fluid == net.minecraft.world.level.material.Fluids.LAVA || fluid == net.minecraft.world.level.material.Fluids.FLOWING_LAVA) return LAVA;
+        java.util.Map<net.minecraft.world.level.material.Fluid, FluidType> map = byVanilla;
+        if (map == null) {
+            map = new java.util.IdentityHashMap<>();
+            for (java.util.Map.Entry<FluidType, java.util.function.Supplier<net.minecraft.world.level.material.Fluid>> entry : VANILLA.entrySet()) {
+                map.put(entry.getValue().get(), entry.getKey());
+            }
+            byVanilla = map;
+        }
+        FluidType type = map.get(fluid);
+        return type == null ? NONE : type;
     }
 }

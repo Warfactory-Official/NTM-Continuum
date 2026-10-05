@@ -9,10 +9,8 @@ import com.hbm.entity.mob.ai.EntityAINearestAttackableTargetNT;
 import com.hbm.items.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.BossEvent;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -36,9 +34,6 @@ public class EntityBOTPrimeHead extends EntityBOTPrimeBase {
 
     private static final int BODY_SEGMENTS = 74;
 
-    private final ServerBossEvent bossEvent = dev.golem.core.world.Compat.bossEvent(this, getDisplayName(),
-            // 1.7 BossStatus drew the one vanilla bar, which is 26.2's PINK
-            BossEvent.BossBarColor.PINK, BossEvent.BossBarOverlay.PROGRESS);
 
     public EntityBOTPrimeHead(EntityType<? extends EntityBOTPrimeHead> type, Level level) {
         super(type, level);
@@ -148,21 +143,9 @@ public class EntityBOTPrimeHead extends EntityBOTPrimeBase {
         setXRot(pitch);
         this.xRotO = pitch;
 
-        if (!level().isClientSide()) bossEvent.setProgress(getHealth() / getMaxHealth());
     }
 
-    // 1.7: renderer-pushed BossStatus, self-expiring; 26.2 equivalent is the tracking pair.
-    @Override
-    public void startSeenByPlayer(ServerPlayer player) {
-        super.startSeenByPlayer(player);
-        this.bossEvent.addPlayer(player);
-    }
 
-    @Override
-    public void stopSeenByPlayer(ServerPlayer player) {
-        super.stopSeenByPlayer(player);
-        this.bossEvent.removePlayer(player);
-    }
 
     @Override
     public void die(DamageSource source) {

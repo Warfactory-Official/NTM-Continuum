@@ -1,7 +1,6 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerCoreStabilizer;
-import com.hbm.items.machine.ItemLens;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreStabilizer;
 import dev.golem.core.gui.GuiDraw;
@@ -14,12 +13,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.ItemStack;
 
 /**
  * The stabiliser's panel. The field is the strength of field it holds, and the cost of that field goes up
- * with its fourth power, so the number is the whole difficulty of running a core. The lamp beside the lens
- * slot reports that a lens is in and not yet spent.
+ * with its fourth power, so the number is the whole difficulty of running a core. Layout ported from 1.7
+ * {@code GUICoreStabilizer}: power column at (35,17), watts bar at (71,45), field at (75,57), set button at (124,52).
  */
 public class GUICoreStabilizer extends GUIDFCBase<ContainerCoreStabilizer> {
 
@@ -28,7 +26,7 @@ public class GUICoreStabilizer extends GUIDFCBase<ContainerCoreStabilizer> {
     private EditBox field;
 
     public GUICoreStabilizer(ContainerCoreStabilizer menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 176, 170);
+        super(menu, playerInventory, title, 176, 166);
     }
 
     @Override
@@ -40,8 +38,9 @@ public class GUICoreStabilizer extends GUIDFCBase<ContainerCoreStabilizer> {
     protected void init() {
         super.init();
         String previous = this.field == null ? null : this.field.getValue();
-        this.field = new EditBox(this.font, leftPos + 60, topPos + 62, 24, 10, Component.empty());
-        this.field.setTextColor(0xFF5BBC00);
+        // 1.7 GuiTextField(guiLeft + 75, guiTop + 57, 29, 12), no background, white text.
+        this.field = new EditBox(this.font, leftPos + 75, topPos + 57, 29, 12, Component.empty());
+        this.field.setTextColor(0xFFFFFFFF);
         this.field.setBordered(false);
         this.field.setMaxLength(3);
         TileEntityCoreStabilizer stabilizer = menu.getStabilizer();
@@ -57,19 +56,14 @@ public class GUICoreStabilizer extends GUIDFCBase<ContainerCoreStabilizer> {
         if (stabilizer == null) return;
 
         if (field != null && field.isFocused()) {
-            GuiDraw.blit(graphics, TEXTURE, leftPos + 53, topPos + 58, 192F, 0F, 32, 14, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, leftPos + 71, topPos + 53, 192F, 4F, 34, 16, 256, 256);
         }
 
-        drawWattsBar(graphics, 81, 17, stabilizer.getWattsScaled(35));
-        drawPowerBar(graphics, 13, 21, stabilizer.power, TileEntityCoreStabilizer.maxPower);
+        int w = stabilizer.watts * 34 / 100;
+        if (w > 0) GuiDraw.blit(graphics, TEXTURE, leftPos + 71, topPos + 45, 192F, 0F, w, 4, 256, 256);
 
-        ItemStack lens = menu.slots.get(0).getItem();
-        if (lens.getItem() instanceof ItemLens item && ItemLens.getLensDamage(lens) < item.maxDamage) {
-            GuiDraw.blit(graphics, TEXTURE, leftPos + 43, topPos + 33, 0F, 170F, 25, 2, 256, 256);
-        }
-        if (stabilizer.beam > 0) {
-            GuiDraw.blit(graphics, TEXTURE, leftPos + 149, topPos + 33, 176F, 87F, 80, 3, 256, 256);
-        }
+        int i = (int) stabilizer.getPowerScaled(52);
+        if (i > 0) GuiDraw.blit(graphics, TEXTURE, leftPos + 35, topPos + 69 - i, 176F, 52 - i, 16, i, 256, 256);
     }
 
     @Override
@@ -81,7 +75,7 @@ public class GUICoreStabilizer extends GUIDFCBase<ContainerCoreStabilizer> {
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityCoreStabilizer stabilizer = menu.getStabilizer();
         if (stabilizer == null) return;
-        if (isHovering(13, 21, 16, 52, mouseX, mouseY)) {
+        if (isHovering(35, 17, 16, 52, mouseX, mouseY)) {
             tooltip(graphics, GuiUtil.energyTooltip(stabilizer.power, TileEntityCoreStabilizer.maxPower),
                     mouseX, mouseY);
         }
@@ -94,7 +88,8 @@ public class GUICoreStabilizer extends GUIDFCBase<ContainerCoreStabilizer> {
 
         int x = (int) event.x() - leftPos;
         int y = (int) event.y() - topPos;
-        if (x < 115 || x >= 133 || y < 56 || y >= 74) return false;
+        // 1.7 hit box: x in [124, 142), y in (52, 70].
+        if (x < 124 || x >= 142 || y <= 52 || y > 70) return false;
 
         int watts;
         try {

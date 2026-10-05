@@ -6,6 +6,7 @@ import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.TileEntityMachineArcFurnaceLarge;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.net.GolemNetwork;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -13,9 +14,12 @@ import net.minecraft.world.entity.player.Inventory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-/** The old 176x256 Large Arc Furnace screen, with solid/liquid toggle and stacked molten output. */
+/**
+ * 1.7.10 {@code GUIMachineArcFurnaceLarge} ({@code processing/gui_arc_furnace.png}, 176x256), with solid/liquid
+ * toggle and stacked molten output. Not reproduced: 1.7's second additive (SRC_ALPHA, ONE) 30%-white pass over
+ * each molten layer, which needs a tinted additive blit Core does not offer yet.
+ */
 public class GUIMachineArcFurnaceLarge extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineArcFurnaceLarge>
         implements IUpgradeInfoProviderSource {
 
@@ -67,32 +71,31 @@ public class GUIMachineArcFurnaceLarge extends dev.golem.core.gui.CompatContaine
         TileEntityMachineArcFurnaceLarge furnace = menu.getFurnace();
         Component label = furnace == null || furnace.hasCustomName() ? title : furnace.getDisplayName();
         GuiDraw.text(graphics, font, label, imageWidth / 2 - font.width(label) / 2, 6, 0xFFFFFF, false);
-        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 94, 4210752, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 4210752, false);
     }
 
+    /** 1.7 {@code drawScreen}: liquid stack info over (152,36) 16x70, then the energy info over (8,36) 7x70. */
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineArcFurnaceLarge furnace = menu.getFurnace();
         if (furnace == null) return;
-        if (isHovering(8, 36, 7, 70, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.energyTooltip(furnace.power,
-                    TileEntityMachineArcFurnaceLarge.MAX_POWER), Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(152, 36, 16, 70, mouseX, mouseY)) {
+        if (GuiUtil.hover(mouseX, mouseY, leftPos + 152, topPos + 36, 16, 70)) {
+            boolean shift = dev.golem.core.client.KeyMappings.isKeyDown(org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT);
             List<Component> lines = new ArrayList<>();
-            if (furnace.liquids.isEmpty()) lines.add(Component.literal("Empty"));
-            for (Mats.MaterialStack material : furnace.liquids) lines.add(Component.literal(
-                    material.material.getDisplayName() + ": " + Mats.formatAmount(material.amount, false)));
-            GuiDraw.tooltip(graphics, font, lines, Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(151, 17, 18, 18, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, List.of(Component.literal(furnace.liquidMode
-                    ? "Liquid mode" : "Solid mode")), Optional.empty(), mouseX, mouseY);
+            if (furnace.liquids.isEmpty()) lines.add(Component.literal(ChatFormatting.RED + "Empty"));
+            for (Mats.MaterialStack material : furnace.liquids) lines.add(Component.literal(ChatFormatting.YELLOW
+                    + material.material.getDisplayName() + ": " + Mats.formatAmount(material.amount, shift)));
+            GuiUtil.tooltip(graphics, font, lines, mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 8, topPos + 36, 7, 70)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.energyTooltip(furnace.power, TileEntityMachineArcFurnaceLarge.MAX_POWER), mouseX, mouseY);
         }
     }
 
     @Override
     protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         TileEntityMachineArcFurnaceLarge furnace = menu.getFurnace();
-        if (furnace != null && isHovering(151, 17, 18, 18, event.x(), event.y())) {
+        // 1.7 checkClick(x, y, 151, 17, 18, 18): x [151,169), y (17,35].
+        if (furnace != null && GuiUtil.hover(event.x(), event.y(), leftPos + 151, topPos + 17, 18, 18)) {
             GuiUtil.playClickSound();
             net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
             data.putBoolean("liquid", true);

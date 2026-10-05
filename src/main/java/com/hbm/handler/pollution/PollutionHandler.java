@@ -64,8 +64,8 @@ public final class PollutionHandler {
     /**
      * Rampant-mode guidance target for the scouts; null until a player sleeps with guidance on.
      *
-     * <p>A {@link BlockPos} rather than NEXT's {@code Vec3}: Continuum's scout already reads it
-     * through {@code Vec3.atCenterOf}, which is the bed's centre rather than its corner.
+     * <p>A {@link BlockPos} rather than 1.7's {@code Vec3}: the scout reads it through {@code Vec3.atLowerCornerOf},
+     * the bed block's corner, which is 1.7's {@code Vec3(event.x, event.y, event.z)}.
      */
     public static @Nullable BlockPos targetCoords = null;
 
@@ -231,14 +231,8 @@ public final class PollutionHandler {
 
     // ------------------------------------------------------------------ rampant mode
 
-    /*
-     * NOT YET TRIGGERED. Both entry points below are ported and correct, and nothing calls them:
-     * 1.7 drives them from PlayerSleepInBedEvent and WorldEvent.PotentialSpawns, and Continuum has
-     * no hook for either - NeoForge publishes no sleep event at 26.1, and no loader-neutral spawn
-     * hook exists in Core. Every gate they read (rampantGlyphidGuidance, rampantNaturalScoutSpawn)
-     * defaults to false, so nothing is silently degraded today; wiring them is what turns rampant
-     * mode on. Recorded here rather than left to be rediscovered from a feature that does nothing.
-     */
+    // 1.7 drives these from PlayerSleepInBedEvent and WorldEvent.PotentialSpawns; the port from Core Sleeps and
+    // Spawns.onPotentialSpawns (ModEventHandlerHooks, History §19ek-hooks). Both gates default to false (rampant mode).
 
     public static void rampantTargetSetter(BlockPos bedPos) {
         if (MobConfig.rampantGlyphidGuidance) targetCoords = bedPos.immutable();

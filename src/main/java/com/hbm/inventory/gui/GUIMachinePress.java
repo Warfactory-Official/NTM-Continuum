@@ -12,17 +12,16 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Client screen for the burner press. Reads {@code speed}/{@code burnTime}/{@code progress} off the
- * synced client {@link TileEntityMachinePress} (broadcast via the BufPacket, not a 16-bit ContainerData
- * slot). Background + the burn-flame icon + the descending stamp progress bar, with hover tooltips for
- * the speed percentage and the remaining fuel operations — matching the 1.12.2 GUI.
+ * Client screen for the burner press, a straight port of 1.7 {@code GUIMachinePress}
+ * ({@code processing/gui_press.png}, 176x214). Reads {@code speed}/{@code burnTime}/{@code progress} off the
+ * synced client {@link TileEntityMachinePress} (broadcast via the BufPacket, not a 16-bit ContainerData slot).
  */
 public class GUIMachinePress extends dev.golem.core.gui.CompatContainerScreen<ContainerMachinePress> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_press.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_press.png");
 
     public GUIMachinePress(ContainerMachinePress menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 176, 202);
+        super(menu, playerInventory, title, 176, 214);
     }
 
     @Override
@@ -32,18 +31,25 @@ public class GUIMachinePress extends dev.golem.core.gui.CompatContainerScreen<Co
         TileEntityMachinePress press = this.menu.getPress();
         if (press == null) return;
 
-        // Burn-flame indicator (lit while there is fuel buffered).
-        if (press.burnTime > 0) {
-            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 27, this.topPos + 36, 0.0F, 202.0F, 14, 14, 256, 256);
+        // 1.7: flame lit while at least 20 ticks of fuel are buffered.
+        if (press.burnTime >= 20) {
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 26, this.topPos + 36, 0.0F, 214.0F, 14, 14, 256, 256);
         }
-        // Descending stamp progress bar (grows downward from the top).
-        int progress = press.getProgressScaled(16);
-        if (progress > 0) {
-            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 79, this.topPos + 35, 14.0F, 202.0F, 18, progress, 256, 256);
+        // 1.7: k = renderPress * 16 / maxPress, drawn from the top down.
+        int k = press.getProgressScaled(16);
+        if (k > 0) {
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 79, this.topPos + 35, 15.0F, 214.0F, 18, k, 256, 256);
         }
 
         GuiUtil.drawSmoothGauge(graphics, this.leftPos + 34, this.topPos + 25,
                 press.speed / (double) TileEntityMachinePress.maxSpeed, 5, 2, 1, 0x7F0000);
+    }
+
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        // 1.7: white title at y=5, grey "Inventory" at ySize - 96 + 2.
+        GuiDraw.text(graphics, this.font, this.title, this.imageWidth / 2 - this.font.width(this.title) / 2, 5, 0xffffff, false);
+        GuiDraw.text(graphics, this.font, Component.translatable("container.inventory"), 8, this.imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override

@@ -68,5 +68,10 @@ public class HbmJeiPluginForgelike implements IModPlugin {
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         HbmJeiPluginCommon.registerCatalysts(registration);
     }
+
+    @Override
+    public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
+        HbmJeiPluginCommon.onRuntimeAvailable(runtime);
+    }
 }
 //?}

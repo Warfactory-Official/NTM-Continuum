@@ -27,9 +27,12 @@ public final class ArmorSetBClient {
     private ArmorSetBClient() {}
 
     private static final Identifier[] BLURS = new Identifier[6];
+    /** 1.7 {@code ArmorGasMask.maskBlur}: the plain gas mask's own six wear stages. */
+    private static final Identifier[] MASK_BLURS = new Identifier[6];
 
     static {
         for (int i = 0; i < 6; i++) BLURS[i] = dev.golem.core.Ids.of("hbm", "textures/misc/overlay_goggles_" + i + ".png");
+        for (int i = 0; i < 6; i++) MASK_BLURS[i] = dev.golem.core.Ids.of("hbm", "textures/misc/overlay_gasmask_" + i + ".png");
     }
 
     public static void registerHud(HbmClientRegistrations.HudSink sink) {
@@ -40,16 +43,28 @@ public final class ArmorSetBClient {
     /**
      * The goggles' fullscreen blur, one of six textures chosen by wear: {@code (int) (damage / maxDamage * 6)},
      * 5 when out of range. Forge ran helmet overlays in first person only.
+     *
+     * <p>1.7 {@code ArmorGasMask.renderHelmetOverlay} draws the same goggles blur for the M65 mask and its own
+     * {@code overlay_gasmask_<n>} set for the plain gas mask, with the same wear formula; the mono and olde masks
+     * draw none.
      */
     public static void renderGogglesBlur(GuiGraphicsExtractor graphics) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.options.hideGui || !mc.options.getCameraType().isFirstPerson()) return;
         ItemStack helmet = mc.player.getItemBySlot(EquipmentSlot.HEAD);
-        if (helmet.getItem() != ModArmorSetBItems.goggles.get()) return;
+        Identifier[] blurs;
+        if (helmet.getItem() == ModArmorSetBItems.goggles.get()
+                || helmet.getItem() == com.hbm.items.ModGearItems.gas_mask_m65.get()) {
+            blurs = BLURS;
+        } else if (helmet.getItem() == com.hbm.items.ModGearItems.gas_mask.get()) {
+            blurs = MASK_BLURS;
+        } else {
+            return;
+        }
         int max = helmet.getMaxDamage();
         int index = max <= 0 ? 0 : (int) ((double) helmet.getDamageValue() / (double) max * 6D);
         if (index < 0 || index > 5) index = 5;
-        GuiDraw.blitUvFullscreen(graphics, BLURS[index], 0F, 0F, 1F, 1F);
+        GuiDraw.blitUvFullscreen(graphics, blurs[index], 0F, 0F, 1F, 1F);
     }
 
     private static JsonObject query(Minecraft mc) {

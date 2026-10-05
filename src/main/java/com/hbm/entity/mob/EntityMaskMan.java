@@ -11,11 +11,9 @@ import com.hbm.entity.mob.ai.EntityAIMaskmanMinigun;
 import com.hbm.interfaces.IRadiationImmune;
 import com.hbm.items.ModItems;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntityType;
@@ -38,8 +36,6 @@ import net.minecraft.world.level.Level;
 
 public class EntityMaskMan extends CompatMonster implements IRadiationImmune {
 
-    private final ServerBossEvent bossEvent = dev.golem.core.world.Compat.bossEvent(this, getDisplayName(),
-            BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.PROGRESS);
 
     // 1.7's edge detector read EntityLivingBase.prevHealth, which starts at zero. Seeding this from the max health
     // instead re-armed the crossing on every load, so a mask man left below half health blew up again each time
@@ -117,7 +113,6 @@ public class EntityMaskMan extends CompatMonster implements IRadiationImmune {
 
             this.lastHealth = getHealth();
 
-            bossEvent.setProgress(getHealth() / getMaxHealth());
         }
     }
 
@@ -147,18 +142,7 @@ public class EntityMaskMan extends CompatMonster implements IRadiationImmune {
         HbmCriteria.bossKilled(this, BossKilledTrigger.Kind.MASKMAN, 100D);
     }
 
-    // 1.7: renderer-pushed BossStatus, self-expiring; 26.2 equivalent is the tracking pair.
-    @Override
-    public void startSeenByPlayer(ServerPlayer player) {
-        super.startSeenByPlayer(player);
-        this.bossEvent.addPlayer(player);
-    }
 
-    @Override
-    public void stopSeenByPlayer(ServerPlayer player) {
-        super.stopSeenByPlayer(player);
-        this.bossEvent.removePlayer(player);
-    }
 
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {

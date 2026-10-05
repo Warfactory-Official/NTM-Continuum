@@ -43,6 +43,18 @@ public final class NTMWorldGenerator {
     public static final RegistryObject<StructureType<NBTStructure.GenStructure>> NBT_STRUCTURE =
             REG.register(Registries.STRUCTURE_TYPE, "nbt", () -> Structures.type(NBTStructure.GenStructure.CODEC));
 
+    public static final DeferredRegister<net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType<?>> STRUCTURE_PLACEMENTS =
+            DeferredRegister.create(Registries.STRUCTURE_PLACEMENT, Constants.MOD_ID);
+
+    /** {@code hbm:config_spread}: random_spread spacing read from hbm.cfg (1.7 5.01/5.02 and the 4.xx dungeon chances). */
+    public static final RegistryObject<net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType<ConfigSpreadPlacement>> CONFIG_SPREAD =
+            Reg.of(STRUCTURE_PLACEMENTS).register(Registries.STRUCTURE_PLACEMENT, "config_spread",
+                    () -> Structures.placementType(ConfigSpreadPlacement.CODEC));
+
+    static {
+        ConfigSpreadPlacement.TYPE = CONFIG_SPREAD::get;
+    }
+
     /** {@code hbm:nbt_component}: one placed jigsaw piece (1.7 {@code NBTStructure.Component}). */
     public static final RegistryObject<StructurePieceType> NBT_COMPONENT =
             REG.register(Registries.STRUCTURE_PIECE, "nbt_component", () -> (StructurePieceType) NBTStructure.Component::new);

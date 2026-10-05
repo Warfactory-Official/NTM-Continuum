@@ -140,7 +140,11 @@ public class ItemGrenadeFilling extends Item {
         igniteAround(grenade, 3);
         if (!(level instanceof ServerLevel server)) return;
         for (int i = 0; i < 3; i++) {
-            /* 1.7 haze cloud (HazePayload): the haze particle is not ported yet, see the entity port manifest */ if (false) {}
+            // 1.7: three haze clouds scattered 4 blocks (gaussian) around the grenade, sent 150 blocks
+            com.hbm.particle.helper.HbmEffectNT.Haze.sendAround(server,
+                    grenade.getX() + server.getRandom().nextGaussian() * 4, grenade.getY(),
+                    grenade.getZ() + server.getRandom().nextGaussian() * 4, null,
+                    grenade.getX(), grenade.getY(), grenade.getZ(), 150D);
         }
     }
 

@@ -5,7 +5,6 @@ import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -18,7 +17,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * Shared chrome for the five particle-accelerator panels. Every one of them is a 176 x 204 screen
+ * Shared chrome for the five particle-accelerator panels (1.7 {@code GUIPA*}). Every one of them is a 176 x 204 screen
  * carrying the same three readouts off {@link TileEntityCooledBase} — a power bar, the cold and warm
  * perfluoromethyl tanks, and the temperature the machine has to reach before it will run — so they are
  * drawn here once rather than in each subclass, the way {@code GUITurretBase} serves all fourteen
@@ -48,23 +47,9 @@ public abstract class GUIPABase<T extends AbstractContainerMenu> extends CompatC
         GuiDraw.blit(graphics, texture(), x, y, 176F, 8F, 8, 8, 256, 256);
     }
 
+    /** 1.7 {@code FluidTank.renderTank} (tinted, GL_REPEAT); {@code x, y} is the absolute top-left of the 16x52 gauge. */
     protected void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y) {
-        int max = tank.getMaxFill();
-        int height = max <= 0 ? 0 : (int) ((long) tank.getFill() * 52 / max);
-        if (height <= 0) return;
-
-        int bottom = y + 52;
-        int top = bottom - height;
-        Identifier fluidTexture = tank.getTankType().getTexture();
-        if (Minecraft.getInstance().getResourceManager().getResource(fluidTexture).isPresent()) {
-            graphics.enableScissor(x, top, x + 16, bottom);
-            for (int tileY = bottom - 16; tileY > top - 16; tileY -= 16) {
-                GuiDraw.blit(graphics, fluidTexture, x, tileY, 0F, 0F, 16, 16, 16, 16);
-            }
-            graphics.disableScissor();
-        } else {
-            graphics.fill(x, top, x + 16, bottom, 0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
-        }
+        NuclearMiscGuiUtil.drawTank(graphics, tank, x, y, 16, 52);
     }
 
     /**
@@ -76,17 +61,22 @@ public abstract class GUIPABase<T extends AbstractContainerMenu> extends CompatC
         if (machine == null) return;
 
         Component target = Component.literal("/" + COOL_ENOUGH + "K").withStyle(ChatFormatting.AQUA);
-        GuiDraw.text(graphics, font, target, targetX, targetY, 0xFF404040, false);
+        GuiDraw.text(graphics, font, target, targetX, targetY, 4210752, false);
 
         int heat = (int) Math.ceil(machine.temperature);
         Component value = Component.literal(heat + "K")
                 .withStyle(heat > COOL_ENOUGH ? ChatFormatting.RED : ChatFormatting.AQUA);
-        GuiDraw.text(graphics, font, value, valueRight - font.width(value), valueY, 0xFF404040, false);
+        GuiDraw.text(graphics, font, value, valueRight - font.width(value), valueY, 4210752, false);
     }
 
-    protected void drawTitleAndInventory(GuiGraphicsExtractor graphics, int titleY) {
-        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2 - 9, titleY, 0xFF404040, false);
-        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 0xFF404040, false);
+    /**
+     * The title and "Inventory" labels. The five 1.7 panels disagree on the title's offset, row and colour
+     * (detector -8/5/white, source -9/4/white, dipole -9/6/grey, quadrupole -9/6/white, RFC none), so each
+     * passes its own.
+     */
+    protected void drawTitleAndInventory(GuiGraphicsExtractor graphics, int titleXOffset, int titleY, int titleColor) {
+        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2 + titleXOffset, titleY, titleColor, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 4210752, false);
     }
 
     /** Tooltips for the power bar and the two coolant tanks, at the coordinates the panel drew them. */

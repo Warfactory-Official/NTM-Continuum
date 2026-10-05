@@ -2,7 +2,6 @@ package com.hbm.inventory.gui;
 
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineFluidTank;
-import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -10,22 +9,17 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
- * Client screen for the fluid tank multiblock. Draws the {@code gui_tank.png} background, a coloured fill
- * bar (the carried fluid's colour, height scaled by fill), and the I/O-mode button. Reads the live
- * client {@link TileEntityMachineFluidTank} for fill/type/mode; the mode button dispatches through the
- * vanilla menu-button path. 26.1 render API (extractBackground + blit/fill).
- *
- * <p>The 1.12.2 {@code FluidTankNTM.renderTank} (a GL-textured fluid sprite) was stripped in the slim
- * port, so the fill is shown as a solid colour bar — enough to verify the network is filling the tank.
+ * The 1.7 {@code GUIMachineFluidTank}: {@code gui_tank.png} (176x166), the tinted fluid column 34x52 with its
+ * bottom at (71, 69), and the I/O-mode button at (151, 34). Reads the live client
+ * {@link TileEntityMachineFluidTank} for fill/type/mode; the mode button dispatches through the vanilla
+ * menu-button path.
  */
 public class GUIMachineFluidTank extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineFluidTank> {
 
     private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_tank.png");
-    private static final String[] MODE_NAMES = {"Input only", "Buffer (in+out)", "Output only", "Disabled"};
 
     // Fill bar geometry (GUI-relative), matching the 1.12.2 layout: 34×52 at (71, 17)..(71, 69).
     private static final int BAR_X = 71, BAR_TOP = 17, BAR_W = 34, BAR_H = 52, BAR_BOTTOM = 69;
@@ -40,61 +34,36 @@ public class GUIMachineFluidTank extends dev.golem.core.gui.CompatContainerScree
         GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineFluidTank tank = this.menu.getTank();
-
-        // Fluid fill bar — the fluid's own 16×16 GUI texture TILED at native scale into the filled
-        // height, bottom-anchored (the 1.12.2 renderTank tiled type.getTexture() via a REPEAT quad;
-        // stretching it looked wrong). Static, like the original; a scissor clips the partial top tile.
-        if (tank != null) {
-            FluidTankNTM ft = tank.tank;
-            int max = ft.getMaxFill();
-            int h = max <= 0 ? 0 : (int) ((long) ft.getFill() * BAR_H / max);
-            if (h > 0) {
-                Identifier fluidTex = ft.getTankType().getTexture();
-                int x0 = this.leftPos + BAR_X;
-                int yBottom = this.topPos + BAR_BOTTOM;
-                int yTop = yBottom - h;
-                if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
-                    // Tile the fluid's own 16×16 sprite, clipped to the filled height.
-                    graphics.enableScissor(x0, yTop, x0 + BAR_W, yBottom);
-                    for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                        for (int tx = 0; tx < BAR_W; tx += 16) {
-                            int tw = Math.min(16, BAR_W - tx);
-                            GuiDraw.blit(graphics, fluidTex, x0 + tx, ty, 0F, 0F, tw, 16, 16, 16);
-                        }
-                    }
-                    graphics.disableScissor();
-                } else {
-                    // A few of the 156 fluids ship no GUI sprite — fall back to a solid colour bar.
-                    graphics.fill(x0, yTop, x0 + BAR_W, yBottom, 0xFF000000 | (ft.getTankType().getColor() & 0xFFFFFF));
-                }
-            }
-            // I/O mode button overlay (strip at u=176, v=mode*18).
-            int mode = tank.mode;
-            GuiDraw.blit(graphics, TEXTURE, this.leftPos + BTN_X, this.topPos + BTN_Y, 176.0F, (float) (mode * 18), BTN_W, BTN_H, 256, 256);
-        }
+        if (tank == null) return;
+        // 1.7 order: mode icon (strip at u=176, v=mode*18), then tank.renderTank(guiLeft + 71, guiTop + 69, z, 34, 52)
+        // — the fluid texture tinted with the fluid's tint, bottom-anchored.
+        int mode = tank.mode;
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + BTN_X, this.topPos + BTN_Y, 176.0F, (float) (mode * 18), BTN_W, BTN_H, 256, 256);
+        Production2Gui.drawTank(graphics, tank.tank, this.leftPos + BAR_X, this.topPos + BAR_BOTTOM, BAR_W, BAR_H);
     }
 
+    /** 1.7 {@code GUIMachineFluidTank.drawGuiContainerForegroundLayer}: centred title at y 6, "Inventory" at (8, ySize - 94). */
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, this.font, this.title, this.imageWidth / 2 - this.font.width(this.title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, 8, this.imageHeight - 96 + 2, 4210752, false);
+    }
+
+    /** 1.7 draws only the tank tooltip ({@code renderTankInfo}); the mode button has none. */
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineFluidTank tank = this.menu.getTank();
         if (tank == null) return;
-
-        if (this.isHovering(BAR_X, BAR_TOP, BAR_W, BAR_H, mouseX, mouseY)) {
-            FluidTankNTM ft = tank.tank;
-            GuiDraw.tooltip(graphics, this.font, List.of(
-                    ft.getTankType().getDisplayName(),
-                    Component.literal(ft.getFill() + " / " + ft.getMaxFill() + " mB")
-            ), Optional.empty(), mouseX, mouseY);
-        } else if (this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, List.of(
-                    Component.literal("Mode: " + MODE_NAMES[tank.mode % MODE_NAMES.length])
-            ), Optional.empty(), mouseX, mouseY);
+        if (in17(BAR_X, BAR_TOP, BAR_W, BAR_H, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.tankTooltip(tank.tank), Optional.empty(), mouseX, mouseY);
         }
     }
 
     @Override
     protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
-        if (this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
+        // 1.7 hit box: guiLeft + 151 <= x < guiLeft + 169, guiTop + 35 < y <= guiTop + 53; 1.7 plays the click sound.
+        if (in17(BTN_X, BTN_Y + 1, BTN_W, BTN_H, event.x(), event.y())) {
+            GuiUtil.playClickSound();
             Minecraft mc = Minecraft.getInstance();
             if (mc.gameMode != null) {
                 mc.gameMode.handleInventoryButtonClick(this.menu.containerId, 0);
@@ -102,5 +71,11 @@ public class GUIMachineFluidTank extends dev.golem.core.gui.CompatContainerScree
             }
         }
         return false;
+    }
+
+    /** The 1.7 GUI hit test ({@code drawCustomInfoStat}/{@code renderTankInfo}): x <= mouse < x + w, y < mouse <= y + h. */
+    private boolean in17(int x, int y, int w, int h, double mouseX, double mouseY) {
+        double mx = mouseX - this.leftPos, my = mouseY - this.topPos;
+        return x <= mx && x + w > mx && y < my && y + h >= my;
     }
 }

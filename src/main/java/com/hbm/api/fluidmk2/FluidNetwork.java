@@ -154,7 +154,15 @@ public final class FluidNetwork {
     }
 
     private static @Nullable BlockEntity userAt(ServerLevel level, BlockPos pos, int faceOrdinal, FluidType type) {
-        Direction face = faceOrdinal == EdgeFaces.SELF ? null : DIRS[faceOrdinal].getOpposite();
+        return userAtFace(level, pos, faceOrdinal == EdgeFaces.SELF ? null : DIRS[faceOrdinal].getOpposite(), type);
+    }
+
+    /**
+     * The fluid user a duct touching {@code pos} through its {@code face} side would find for {@code type}, or null
+     * ({@code face} null: the cell's own machine). Public so the loader fluid capabilities
+     * ({@link com.hbm.capability.ForeignFluids}) open exactly the faces a duct connects to, never a second rule.
+     */
+    public static @Nullable BlockEntity userAtFace(ServerLevel level, BlockPos pos, @Nullable Direction face, FluidType type) {
         BlockEntity declared = EndpointRegistry.of(level).resolve(level, pos.asLong(), face, FLUID);
         if (accepts(declared, type, face)) return declared;
 

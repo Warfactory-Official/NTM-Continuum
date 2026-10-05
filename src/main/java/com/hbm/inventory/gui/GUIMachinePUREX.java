@@ -9,7 +9,6 @@ import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.tileentity.machine.TileEntityMachinePUREX;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -20,8 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Screen for the PUREX plant — a faithful port of the 1.12.2 {@code GUIMachinePUREX} on its own
- * {@code gui_purex.png} (176×256). Power bar 16×61 at (152,18) filling upward; progress arrow up to 70×16 at
+ * Screen for the PUREX plant — 1.7.10 {@code GUIMachinePUREX} ({@code processing/gui_purex.png}, 176×256). Power bar 16×61 at (152,18) filling upward; progress arrow up to 70×16 at
  * (62,126); two 3×6 status LEDs at (51,121)/(56,121); the recipe-selector button at (7,125) showing the
  * selected recipe's icon or the template-folder fallback; ghost previews of the recipe's inputs in empty
  * input slots; three 16×52 reagent tank bars at x=8/26/44 (top y=18) and the 16×52 product tank at x=116
@@ -38,11 +36,11 @@ public class GUIMachinePUREX extends dev.golem.core.gui.CompatContainerScreen<Co
         super(menu, playerInventory, title, 176, 256);
     }
 
+    /** 1.7: title centred on x=70 at y=6, inventory at (8, ySize-96+2), both 4210752. */
     @Override
-    protected void init() {
-        super.init();
-        this.titleLabelX = 70 - this.font.width(this.title) / 2; // the old GUI centred on x=70
-        this.inventoryLabelY = this.imageHeight - 94;
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, this.font, this.title, 70 - this.font.width(this.title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, 8, this.imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
@@ -67,10 +65,9 @@ public class GUIMachinePUREX extends dev.golem.core.gui.CompatContainerScreen<Co
         drawTank(graphics, te.outputTanks[0], OUT_TANK_X, OUT_TANK_TOP);
 
         GenericRecipe recipe = PUREXRecipes.INSTANCE.getRecipe(te.purexModule.recipe);
-        boolean configured = recipe != null || ItemBlueprints.grabPool(te.getItem(1)) != null;
-        boolean powered = recipe != null ? te.power >= recipe.power : te.power > 0;
-        if (te.didProcess) led(graphics, 51, 195); else if (configured) led(graphics, 51, 192);
-        if (te.didProcess) led(graphics, 56, 195); else if (configured && powered) led(graphics, 56, 192);
+        // 1.7 LEDs: left = recipe set, right = recipe set and enough power; both bright while processing.
+        if (te.didProcess) led(graphics, 51, 195); else if (recipe != null) led(graphics, 51, 192);
+        if (te.didProcess) led(graphics, 56, 195); else if (recipe != null && te.power >= recipe.power) led(graphics, 56, 192);
 
         GuiDraw.item(graphics, recipe != null ? recipe.getIcon() : new ItemStack(ModItems.template_folder.get()),
                 this.leftPos + 8, this.topPos + 126);
@@ -87,24 +84,9 @@ public class GUIMachinePUREX extends dev.golem.core.gui.CompatContainerScreen<Co
         }
     }
 
-    /** Draws a tank's fill bar: tile the fluid's 16×16 sprite into the fill height, or a solid colour. */
+    /** 1.7 {@code renderTank(guiLeft + x, guiTop + top + 52, ...)} — the 1.7 call passes the bottom edge. */
     private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int barX, int barTop) {
-        int maxF = tank.getMaxFill();
-        int h = maxF <= 0 ? 0 : (int) ((long) tank.getFill() * TANK_H / maxF);
-        if (h <= 0) return;
-        int x0 = this.leftPos + barX;
-        int yBottom = this.topPos + barTop + TANK_H;
-        int yTop = yBottom - h;
-        Identifier fluidTex = tank.getTankType().getTexture();
-        if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
-            graphics.enableScissor(x0, yTop, x0 + TANK_W, yBottom);
-            for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                GuiDraw.blit(graphics, fluidTex, x0, ty, 0F, 0F, TANK_W, 16, 16, 16);
-            }
-            graphics.disableScissor();
-        } else {
-            graphics.fill(x0, yTop, x0 + TANK_W, yBottom, 0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
-        }
+        GuiUtil.tank(graphics, tank, this.leftPos + barX, this.topPos + barTop + TANK_H, TANK_W, TANK_H);
     }
 
     private void led(GuiGraphicsExtractor graphics, int x, int u) {
@@ -116,11 +98,11 @@ public class GUIMachinePUREX extends dev.golem.core.gui.CompatContainerScreen<Co
         TileEntityMachinePUREX te = this.menu.getPurex();
         if (te == null) return;
 
-        if (this.isHovering(152, 18, 16, 61, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, te.maxPower), Optional.empty(), mouseX, mouseY);
+        if (GuiUtil.hover(mouseX, mouseY, this.leftPos + 152, this.topPos + 18, 16, 61)) {
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, te.maxPower), mouseX, mouseY);
             return;
         }
-        if (this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, mouseX, mouseY)) {
+        if (GuiUtil.hover(mouseX, mouseY, this.leftPos + BTN_X, this.topPos + BTN_Y, BTN_W, BTN_H)) {
             GenericRecipe recipe = PUREXRecipes.INSTANCE.getRecipe(te.purexModule.recipe);
             if (recipe != null) GuiDraw.tooltip(graphics, this.font, recipe.print(), Optional.empty(), mouseX, mouseY);
             else GuiDraw.tooltip(graphics, this.font,
@@ -128,21 +110,18 @@ public class GUIMachinePUREX extends dev.golem.core.gui.CompatContainerScreen<Co
             return;
         }
         for (int i = 0; i < 3; i++) {
-            if (this.isHovering(8 + i * 18, IN_TANK_TOP, TANK_W, TANK_H, mouseX, mouseY)) {
+            if (GuiUtil.hover(mouseX, mouseY, this.leftPos + 8 + i * 18, this.topPos + IN_TANK_TOP, TANK_W, TANK_H)) {
                 tankTooltip(graphics, te.inputTanks[i], mouseX, mouseY);
                 return;
             }
         }
-        if (this.isHovering(OUT_TANK_X, OUT_TANK_TOP, TANK_W, TANK_H, mouseX, mouseY)) {
+        if (GuiUtil.hover(mouseX, mouseY, this.leftPos + OUT_TANK_X, this.topPos + OUT_TANK_TOP, TANK_W, TANK_H)) {
             tankTooltip(graphics, te.outputTanks[0], mouseX, mouseY);
         }
     }
 
     private void tankTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int mouseX, int mouseY) {
-        GuiDraw.tooltip(graphics, this.font, List.of(
-                tank.getTankType().getDisplayName(),
-                Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")
-        ), Optional.empty(), mouseX, mouseY);
+        GuiUtil.tooltip(graphics, this.font, GuiUtil.tankTooltip(tank), mouseX, mouseY);
     }
 
     @Override
@@ -153,7 +132,7 @@ public class GUIMachinePUREX extends dev.golem.core.gui.CompatContainerScreen<Co
     @Override
     protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         TileEntityMachinePUREX te = this.menu.getPurex();
-        if (te != null && this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
+        if (te != null && GuiUtil.hover(event.x(), event.y(), this.leftPos + BTN_X, this.topPos + BTN_Y, BTN_W, BTN_H)) {
             GUIScreenRecipeSelector.openSelector(PUREXRecipes.INSTANCE, te.getBlockPos(),
                     te.purexModule.recipe, 0, ItemBlueprints.grabPool(te.getItem(1)), this);
             return true;

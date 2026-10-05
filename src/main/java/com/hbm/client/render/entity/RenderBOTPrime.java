@@ -55,6 +55,9 @@ public class RenderBOTPrime<T extends EntityWormBaseNT> extends CompatEntityRend
 
     @Override
     public void extract(T entity, State state, float partialTicks) {
+        // 1.7 RenderWormHead pushed BossStatus; the body segments did not
+        if (entity instanceof com.hbm.entity.mob.botprime.EntityBOTPrimeHead)
+            com.hbm.client.BossStatus.set(entity, net.minecraft.world.BossEvent.BossBarColor.PINK); // 1.7 render-pushed BossStatus
         state.yaw = Mth.rotLerp(partialTicks, entity.yRotO, entity.getYRot());
         state.pitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
     }

@@ -40,7 +40,7 @@ public final class TracerRegistry {
             id("flame_topaz_gas"), id("flame_topaz_napalm"), id("flame_topaz_balefire"),
             id("flame_daybreaker_diesel"), id("flame_daybreaker_gas"), id("flame_daybreaker_napalm"),
             id("flame_daybreaker_balefire"), id("rocket_he"),
-            id("rocket_heat"), id("rocket_demo"), id("rocket_inc"), id("rocket_phosphorus"), id("folly_nuke"));
+            id("rocket_heat"), id("rocket_demo"), id("rocket_inc"), id("rocket_phosphorus"));
     private static boolean initialized;
 
     private TracerRegistry() {}
@@ -116,6 +116,9 @@ public final class TracerRegistry {
         register(black, "bmg50_black");
         register(legendary, "m44_equestrian_pip", "m44_equestrian_mn7", "g12_equestrian_bj", "g12_equestrian_tkr",
                 "bmg50_equestrian");
+        // 1.7 LegoClient.RENDER_BIG_NUKE (GunFactoryClient: folly_nuke): scale 0.5, rotate 90 on Z, rocket_mirv skin.
+        register(model("models/projectiles/projectiles.obj", "textures/models/projectiles/rocket_mirv.png", "MissileMIRV", 0.5F,
+                pose -> pose.mulPose(Axis.ZP.rotationDegrees(90F))), "folly_nuke");
         register(model("models/projectiles/projectiles.obj", "textures/models/projectiles/grenade.png", "Grenade", 0.25F,
                 pose -> pose.mulPose(Axis.ZP.rotationDegrees(90F))), "nuke_tots", "g40_he", "g40_heat", "g40_demo",
                 "g40_inc", "g40_phosphorus", "shell_normal", "shell_explosive", "shell_ap", "shell_du", "shell_w9");
@@ -164,7 +167,8 @@ public final class TracerRegistry {
         registerBeam(emerald, "energy_emerald", "energy_emerald_overcharge", "energy_emerald_ir");
         registerBeam(ni4ni, "ni4ni_arc");
         registerBeam(tesla(false), "energy_tesla", "energy_tesla_overcharge", "energy_tesla_ir");
-        registerBeam(tesla(true), "energy_tesla_ir_sub");
+        // 1.7 GunFactoryClient: setRendererBulkBeam(RENDER_LIGHTNING_SUB, energy_tesla_ir_sub, TileEntityBatterySocket.discharge)
+        registerBeam(tesla(true), "energy_tesla_ir_sub", "battery_socket_discharge");
         registerBeam(endpointMaterial(0xE3D692, 0xFFFFFF), "p35800");
         registerBeam(endpointMaterial(0x4C3093, 0x000000), "p35800_bl");
         registerBeam(tau(false), "tau_uranium");

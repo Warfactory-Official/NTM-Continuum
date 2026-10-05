@@ -61,6 +61,8 @@ public class GunFactory {
         XFactoryTool.init();
         XFactoryDrill.init();
         XFactoryPA.init();
+        // 1.7 TileEntityBatterySocket.discharge (a static BulletConfig of the battery socket, History §19ek-hooks)
+        com.hbm.tileentity.machine.storage.TileEntityBatterySocket.registerDischarge();
         CasingRegistry.install();
         initialized = true;
     }

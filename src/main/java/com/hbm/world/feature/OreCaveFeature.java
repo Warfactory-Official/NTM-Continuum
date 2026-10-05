@@ -57,6 +57,22 @@ public class OreCaveFeature extends Feature<NoneFeatureConfiguration> {
     private LegacyPerlinNoise sulfurNoise, asbestosNoise;
     private long noiseSeed = Long.MIN_VALUE;
 
+    /**
+     * Columns of this world (seed) where the sulfur stratum is generated: every {@code step}-th column within
+     * {@code radius} of {@code x, z} whose noise exceeds the threshold, as {@code {x, z, range}}. For the harness search.
+     */
+    public static java.util.List<int[]> sulfurColumns(long seed, int x, int z, int radius, int step, int limit) {
+        LegacyPerlinNoise noise = new LegacyPerlinNoise(new WorldgenRandom(new LegacyRandomSource(seed + SULFUR.salt())), 2);
+        java.util.List<int[]> out = new java.util.ArrayList<>();
+        for (int dx = -radius; dx <= radius && out.size() < limit; dx += step) {
+            for (int dz = -radius; dz <= radius && out.size() < limit; dz += step) {
+                double n = noise.getValue((x + dx) * SCALE, (z + dz) * SCALE);
+                if (n > SULFUR.threshold()) out.add(new int[] {x + dx, z + dz, (int) ((n - SULFUR.threshold()) * SULFUR.rangeMult())});
+            }
+        }
+        return out;
+    }
+
     public OreCaveFeature(Codec<NoneFeatureConfiguration> codec) {
         super(codec);
     }

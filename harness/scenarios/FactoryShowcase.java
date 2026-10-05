@@ -89,9 +89,24 @@ public class FactoryShowcase implements Scenario {
     /** The client, for the placement helpers. */
     private static Client C;
 
+    /** 1.20.1 spells item NBT {@code Count:<n>b} and item data as NBT, and has no reach attribute. */
+    private static boolean LEGACY;
+
     @Override
     public void run(Client c) throws Exception {
         C = c;
+        LEGACY = c.node().startsWith("1.20.1");
+        try {
+            tour(c);
+        } finally {
+            // a failed tour must not leave the world without command feedback (it broke a later /locate check)
+            c.cmd("gamerule sendCommandFeedback true");
+            c.cmd("gamerule send_command_feedback true");
+            reach(c, 4.5);
+        }
+    }
+
+    private void tour(Client c) throws Exception {
         if ("launch".equals(System.getenv("HARNESS_STAGE"))) {   // development aid: re-run the launch only
             houseBlocksBefore = houseBlocks(c);
             clearInventory(c);
@@ -110,6 +125,7 @@ public class FactoryShowcase implements Scenario {
         // =========================================================================================
         Fixtures.platform(c, -8, Y, -4, 24);
         c.cmd("gamerule sendCommandFeedback false");
+        c.cmd("gamerule send_command_feedback false");   // 26.1 spelling
         // The oil field and the missile site extend the ground south and east: forceload, stone, air.
         c.cmd("forceload add -32 -12 56 40");
         c.cmd("forceload add 112 -8 144 24");
@@ -133,12 +149,14 @@ public class FactoryShowcase implements Scenario {
         overview(c, "00-site");
 
         title(c, "Mass placement", "structure template, /fill, /clone");
-        Fixtures.template(c, "ore_depot", DEPOT_OX, Y, DEPOT_OZ);
+        // 1.20.1 cannot read the 1.21 template's item stacks (lowercase count, DataVersion 3955): its own copy
+        Fixtures.template(c, LEGACY ? "ore_depot_1201" : "ore_depot", DEPOT_OX, Y, DEPOT_OZ);
         Expect.block(c, CRATE_X, L, CRATE_Z, "hbm:crate_steel");
         Expect.that(nbt(c, CRATE_X, L, CRATE_Z).contains("minecraft:coal_block"), "the template brought its stocked crate");
         Expect.block(c, DEPOT_OX, L + 2, DEPOT_OZ, "hbm:steel_beam");
-        c.cmd("data modify block " + CRATE_X + " " + L + " " + CRATE_Z + " inventory.Items[{Slot:0b}].count set value 12");
-        Expect.that(nbt(c, CRATE_X, L, CRATE_Z).contains("count:12,id:\"minecraft:iron_ingot\""), "the depot holds 12 iron; "
+        c.cmd("data modify block " + CRATE_X + " " + L + " " + CRATE_Z + " inventory.Items[{Slot:0b}]."
+                + (LEGACY ? "Count set value 12b" : "count set value 12"));
+        Expect.that(countIn(nbt(c, CRATE_X, L, CRATE_Z), "minecraft:iron_ingot") == 12, "the depot holds 12 iron; "
                 + nbt(c, CRATE_X, L, CRATE_Z));
 
         // Power: cable bus behind the burners (one /fill) and a battery bank in buffer mode (one /fill with
@@ -265,7 +283,7 @@ public class FactoryShowcase implements Scenario {
         belt(ASM_X - 2, L, COPPER_Z - 1, "north");
         crane("inserter", ASM_X - 2, L, ASM_Z + 1, "south", "east");
         // motors: parts crate -> assembler (north face)
-        c.cmd("setblock " + ASM_X + " " + L + " " + PARTS_Z + " hbm:crate_steel{inventory:{Items:[{Slot:0b,id:\"hbm:motor\",count:2}]}}");
+        c.cmd("setblock " + ASM_X + " " + L + " " + PARTS_Z + " " + items("hbm:crate_steel{inventory:{Items:[{Slot:0b,id:\"hbm:motor\",count:2}]}}"));
         crane("extractor", ASM_X, L, PARTS_Z + 1, "south", "north");
         belt(ASM_X, L, PARTS_Z + 2, "south");
         crane("inserter", ASM_X, L, PARTS_Z + 3, "north", "south");
@@ -379,12 +397,12 @@ public class FactoryShowcase implements Scenario {
         sink(TR_X, L, CHEM_Z - 2, XYLENE);
         c.cmd("setblock 20 " + L + " " + CHEM_Z + " hbm:barrel_steel{mode:2s,tank:16000,tank_type:\"" + CHLOR + "\"}");
         c.cmd("setblock " + (PEROX_X + 4) + " " + L + " " + PEROX_Z + " hbm:barrel_steel{mode:2s,tank_type:\"" + WATER + "\""
-                + ",inventory:{Items:[{Slot:2b,id:\"hbm:inf_water_mk2\",count:1}]}}");
+                + items(",inventory:{Items:[{Slot:2b,id:\"hbm:inf_water_mk2\",count:1}]}}"));
         crane("extractor", TNT_X, L, CHEM_Z + 2, "south", "north");
         crane("extractor", PVC_X, L, CHEM_Z + 2, "south", "north");
         // missile hall: Ti/Al stock -> press -> assembler; dye and circuits -> assembler; output -> hangar
         c.cmd("setblock " + (TA_X - 4) + " " + L + " " + MA_Z + " hbm:crate_steel{inventory:{Items:["
-                + "{Slot:0b,id:\"hbm:ingot_titanium\",count:20},{Slot:1b,id:\"hbm:ingot_aluminium\",count:20}]}}");
+                + items("{Slot:0b,id:\"hbm:ingot_titanium\",count:20},{Slot:1b,id:\"hbm:ingot_aluminium\",count:20}]}}"));
         crane("extractor", TA_X - 3, L, MA_Z, "east", "west");
         belt(TA_X - 2, L, MA_Z, "east");
         crane("inserter", TA_X - 1, L, MA_Z, "west", "east");
@@ -392,7 +410,7 @@ public class FactoryShowcase implements Scenario {
         belt(TA_X + 2, L, MA_Z, "east");
         crane("inserter", TA_X + 3, L, MA_Z, "west", "east");
         c.cmd("setblock " + MA_X + " " + L + " " + (MA_Z - 5) + " hbm:crate_steel{inventory:{Items:["
-                + "{Slot:0b,id:\"minecraft:black_dye\",count:16},{Slot:1b,id:\"hbm:circuit_advanced\",count:4}]}}");
+                + items("{Slot:0b,id:\"minecraft:black_dye\",count:16},{Slot:1b,id:\"hbm:circuit_advanced\",count:4}]}}"));
         crane("extractor", MA_X, L, MA_Z - 4, "south", "north");
         belt(MA_X, L, MA_Z - 3, "south");
         crane("inserter", MA_X, L, MA_Z - 2, "north", "south");
@@ -740,7 +758,7 @@ public class FactoryShowcase implements Scenario {
     }
 
     private static String slot(int slot, String id) {
-        return "{Slot:" + slot + "b,id:\"" + id + "\",count:1}";
+        return items("{Slot:" + slot + "b,id:\"" + id + "\",count:1}");
     }
 
     /** A router with its modes (D, U, N, S, W, E) and filters (slot = side * 5 + k). */
@@ -905,7 +923,7 @@ public class FactoryShowcase implements Scenario {
 
     /** A plain right-click with a fluid identifier at a face point, from a stand point. */
     private static void identify(Client c, String fluid, double tx, double ty, double tz, double px, double py, double pz) {
-        giveOnly(c, "hbm:fluid_identifier[hbm:fluid=\"" + fluid + "\"]", 1);
+        giveOnly(c, identifier(fluid), 1);
         standAt(c, px, py, pz);
         c.lookAt(tx, ty, tz);
         c.waitTicks(2);
@@ -917,7 +935,7 @@ public class FactoryShowcase implements Scenario {
     /** Reformer through its menu: the fluid identifier into slot 9, the catalytic converter into slot 10. */
     private static void reformer(Client c, int x, int z, String fluid) {
         clearInventory(c);
-        Fixtures.give(c, "hbm:fluid_identifier[hbm:fluid=\"" + fluid + "\"]", 1);
+        Fixtures.give(c, identifier(fluid), 1);
         Fixtures.give(c, "hbm:catalytic_converter", 1);
         open(c, x, L, z + 1, 0, 2.5, "GUIMachineCatalyticReformer");
         moveTo(c, "hbm:fluid_identifier", 9);
@@ -954,7 +972,7 @@ public class FactoryShowcase implements Scenario {
      * free spot and aims at its centre; every duct is checked at the end.
      */
     private static void typeDucts(Client c, String fluid, int[][] boxes) {
-        giveOnly(c, "hbm:fluid_identifier[hbm:fluid=\"" + fluid + "\"]", 1);
+        giveOnly(c, identifier(fluid), 1);
         // One sneak-click on the first duct retypes the whole connected run.
         int[] b0 = boxes[0];
         for (int[] o : CLICK_FROM) {
@@ -1000,13 +1018,13 @@ public class FactoryShowcase implements Scenario {
     /** An infinite drain: a barrel of one fluid with a bottomless barrel in its unload slot. */
     private static void sink(int x, int y, int z, String fluid) {
         C.cmd("setblock " + x + " " + y + " " + z + " hbm:barrel_steel{mode:0s,tank_type:\"" + fluid + "\""
-                + ",inventory:{Items:[{Slot:4b,id:\"hbm:fluid_barrel_infinite\",count:1}]}}");
+                + items(",inventory:{Items:[{Slot:4b,id:\"hbm:fluid_barrel_infinite\",count:1}]}}"));
     }
 
     /** A low-priority overflow drain beside a pipe: buffer mode (LOW priority) plus a bottomless barrel. */
     private static void overflow(int x, int y, int z, String fluid) {
         C.cmd("setblock " + x + " " + y + " " + z + " hbm:barrel_steel{mode:1s,tank_type:\"" + fluid + "\""
-                + ",inventory:{Items:[{Slot:4b,id:\"hbm:fluid_barrel_infinite\",count:1}]}}");
+                + items(",inventory:{Items:[{Slot:4b,id:\"hbm:fluid_barrel_infinite\",count:1}]}}"));
     }
 
     /** A floor cable from (x, z) to the grid B bus with an open cable switch at z = {@code switchZ}. */
@@ -1104,7 +1122,7 @@ public class FactoryShowcase implements Scenario {
         }
         // The pumpjacks' upgrade slots (5..7) through NBT; their inventories are empty at this point.
         for (int z : new int[]{PJ1_Z, PJ2_Z}) {
-            c.cmd("data merge block " + PJ_X + " " + L + " " + z + " {inventory:{Items:[{Slot:5b,id:\"hbm:upgrade_speed_3\",count:1}]}}");
+            c.cmd("data merge block " + PJ_X + " " + L + " " + z + items(" {inventory:{Items:[{Slot:5b,id:\"hbm:upgrade_speed_3\",count:1}]}}"));
         }
         Expect.that(nbt(c, PJ_X, L, PJ1_Z).contains("hbm:upgrade_speed_3"), "pumpjack 1 carries a speed upgrade");
         selectRecipe(c, MA_X, MA_Z + 1, 0, 2.5, "GUIMachineAssemblyMachine", "stealth", "ass.stealthmissile", MA_X, MA_Z);
@@ -1116,8 +1134,17 @@ public class FactoryShowcase implements Scenario {
         for (int x : new int[]{FA_X, FB_X}) {
             clearInventory(c);
             Fixtures.give(c, "minecraft:coal", 4);
-            // From the ground: a higher eye would see the boiler standing on the firebox.
-            openAt(c, x, L, HEAT_Z + 1, x + 0.5, L, HEAT_Z + 4.5, "GUIFirebox");
+            // From the ground: a higher eye would see the boiler standing on the firebox. The crude-oil duct runs
+            // along z = HEAT_Z + 2 right in front of the firebox's south face, so aim high on that face (y + 0.9):
+            // the ray passes over the duct, whose pipe ends at y + 0.69. Aiming at the block corner hit the duct.
+            c.hotbar(9);
+            standAt(c, x + 0.5, L, HEAT_Z + 4.5);
+            c.lookAt(x + 0.5, L + 0.9, HEAT_Z + 1.98);
+            c.waitTicks(1);
+            c.use(2);
+            c.waitTicks(3);
+            c.waitScreen("GUIFirebox", 5_000L);
+            Expect.screenStaysOpen(c, "GUIFirebox", 5);
             moveTo(c, "minecraft:coal", 0);
             pause(c, 10);
             if (x == FA_X) c.screenshot("41-firebox-menu");
@@ -1435,11 +1462,31 @@ public class FactoryShowcase implements Scenario {
         return m.find() ? Long.parseLong(m.group(1)) : 0;
     }
 
+    /** Item stack SNBT in this node's spelling: 1.20.1 writes {@code Count:<n>b}. */
+    private static String items(String snbt) {
+        return LEGACY ? snbt.replaceAll("count:([0-9]+)", "Count:$1b") : snbt;
+    }
+
+    /** A fluid identifier set to a fluid: a component from 1.20.5 on, item NBT on 1.20.1. */
+    private static String identifier(String fluid) {
+        return LEGACY ? "hbm:fluid_identifier{\"hbm:fluid\":\"" + fluid + "\"}" : "hbm:fluid_identifier[hbm:fluid=\"" + fluid + "\"]";
+    }
+
+    /**
+     * Block reach: 26.1 calls the attribute {@code minecraft:block_interaction_range}, 1.20.5..1.21.x
+     * {@code minecraft:player.block_interaction_range}, and 1.20.1 has none (the camera shots keep their overlay there).
+     */
+    private static void reach(Client c, double blocks) {
+        if (LEGACY) return;
+        String attribute = c.node().startsWith("26.") ? "minecraft:block_interaction_range" : "minecraft:player.block_interaction_range";
+        c.cmd("attribute @s " + attribute + " base set " + blocks);
+    }
+
     private static int countIn(String nbt, String id) {
         int total = 0;
         Matcher m = Pattern.compile("\\{[^{}]*id:\"" + Pattern.quote(id) + "\"[^{}]*}").matcher(nbt);
         while (m.find()) {
-            Matcher n = Pattern.compile("count:([0-9]+)").matcher(m.group());
+            Matcher n = Pattern.compile("[cC]ount:([0-9]+)").matcher(m.group());
             total += n.find() ? Integer.parseInt(n.group(1)) : 1;
         }
         return total;
@@ -1538,13 +1585,13 @@ public class FactoryShowcase implements Scenario {
     /** A camera position: stand, look, and a block reach of 0 so no machine overlay covers the shot. */
     private static void view(Client c, double x, double y, double z, double lx, double ly, double lz) {
         standAt(c, x, y, z);
-        c.cmd("attribute @s minecraft:player.block_interaction_range base set 0");
+        reach(c, 0);
         c.lookAt(lx, ly, lz);
     }
 
     /** Stands (hovers) at a point: flight goes off whenever the player lands, so double-jump it back on. */
     private static void standAt(Client c, double x, double y, double z) {
-        c.cmd("attribute @s minecraft:player.block_interaction_range base set 4.5");   // back to reach for clicks
+        reach(c, 4.5);   // back to reach for clicks
         if (!c.player().get("flying").getAsBoolean()) {
             c.key("space", 1);
             c.waitTicks(2);

@@ -1,6 +1,7 @@
 package com.hbm.blocks.generic;
 
-import com.hbm.handler.radiation.ChunkRadiationManager;
+import com.hbm.capability.HbmLivingProps;
+import com.hbm.entity.EntityHbmProps;
 import com.hbm.potion.ModEffects;
 import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
@@ -10,6 +11,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -21,12 +23,12 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * The radioactive fallout layer deposited by {@code EntityFalloutRain}, ported from 1.12.2's
- * {@code BlockFallout}. A thin (2px) replaceable ash layer that steadily pumps chunk radiation:
- * every {@code 10 + rand(30)} ticks it adds 1 RAD (capped at 100) and <b>re-schedules itself</b> —
- * unlike {@link BlockHazard} this is a self-perpetuating scheduled tick, not vanilla random ticks,
- * mirroring the old {@code updateTick → scheduleUpdate} loop. Contact applies the radiation effect
- * (amp 14 ≙ 15 RAD/s for 2 min, the old {@code HbmPotion.radiation} dose).
+ * The radioactive fallout layer deposited by {@code EntityFalloutRain}, 1.7.10's {@code BlockFallout}: a thin
+ * (2px) replaceable ash layer. 1.7 gives it no tick and no chunk radiation (History §19ek-small; an earlier port
+ * took 1.12.2's self-rescheduling +1 RAD tick). Walking on it gives a non-creative living entity the radiation
+ * effect for 10 minutes at amplifier 0; left-clicking it contaminates the player (1 RAD/s for 200 ticks, armor
+ * counts). 1.7 also cleared the effect's curative items so milk could not remove it; the port has no cross-loader
+ * curative-item hook, so milk still cures it there.
  *
  * <p>Support rules match the old {@code canPlaceBlockAt}: sits on leaves or any up-sturdy block,
  * never on ice/packed ice ({@link #canSupport}); the sweep also refuses a cell holding fluid
@@ -46,29 +48,6 @@ public class BlockFallout extends dev.golem.core.world.CompatBlock {
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
-    }
-
-    private static int tickDelay(RandomSource random) {
-        return 10 + random.nextInt(30);
-    }
-
-    @Override
-    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        super.onPlace(state, level, pos, oldState, movedByPiston);
-        if (!level.isClientSide()) {
-            level.scheduleTick(pos, this, tickDelay(level.getRandom()));
-        }
-    }
-
-    @Override
-    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        // Safety net for a support lost through a shape-only update (no neighbour notification).
-        if (!state.canSurvive(level, pos)) {
-            level.removeBlock(pos, false);
-            return;
-        }
-        ChunkRadiationManager.proxy.incrementRad(level, pos, 1, 100);
-        level.scheduleTick(pos, this, tickDelay(random));
     }
 
     @Override
@@ -92,7 +71,7 @@ public class BlockFallout extends dev.golem.core.world.CompatBlock {
         return cell.isAir() || (cell.canBeReplaced() && !cell.liquid() && cell.getFluidState().isEmpty());
     }
 
-    /** Keep the state: an unsupported layer is removed drop-free by the neighbour/tick hooks, never here. */
+    /** Keep the state: an unsupported layer is removed drop-free by the neighbour hook, never here. */
     @Override
     protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
                                        Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState) {
@@ -106,20 +85,18 @@ public class BlockFallout extends dev.golem.core.world.CompatBlock {
         if (!level.isClientSide() && !state.canSurvive(level, pos)) level.removeBlock(pos, false);
     }
 
+    /** 1.7 {@code onEntityWalking}: living, not a creative player, radiation 10 min at amplifier 0. */
     @Override
     public void stepOn(Level level, BlockPos pos, BlockState onState, Entity entity) {
         super.stepOn(level, pos, onState, entity);
-        irradiate(level, entity);
+        if (level.isClientSide() || !(entity instanceof LivingEntity living)) return;
+        if (living instanceof Player player && player.isCreative()) return; // 1.7 capabilities.isCreativeMode
+        Effects.addRegistered(living, ModEffects.RADIATION.get(), 10 * 60 * 20, 0);
     }
 
+    /** 1.7 {@code onBlockClicked}: {@code addCont(player, new ContaminationEffect(1F, 200, false))}. */
     @Override
-    protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-        irradiate(level, entity);
-    }
-
-    private static void irradiate(Level level, Entity entity) {
-        if (!level.isClientSide() && entity instanceof LivingEntity living) {
-            Effects.addRegistered(living, ModEffects.RADIATION.get(), 2 * 60 * 20, 14);
-        }
+    protected void onAttack(BlockState state, Level level, BlockPos pos, Player player) {
+        if (!level.isClientSide()) HbmLivingProps.addCont(player, new EntityHbmProps.ContaminationEffect(1F, 200, false));
     }
 }

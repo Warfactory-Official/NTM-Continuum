@@ -107,7 +107,7 @@ public class GUIPADipole extends GUIPABase<ContainerPADipole> {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        drawTitleAndInventory(graphics, 6);
+        drawTitleAndInventory(graphics, -9, 6, 4210752);
         drawTemperature(graphics, 136, 22, 166, 12);
     }
 
@@ -143,9 +143,10 @@ public class GUIPADipole extends GUIPABase<ContainerPADipole> {
         int y = (int) event.y() - topPos;
         if (x < 62 || x >= 74) return false;
 
-        if (y >= 29 && y < 41) return cycle(dipole, "lower");
-        if (y >= 43 && y < 55) return cycle(dipole, "upper");
-        if (y >= 57 && y < 69) return cycle(dipole, "redstone");
+        // 1.7 hit boxes: the y test is exclusive at the top and inclusive at the bottom.
+        if (y > 29 && y <= 41) return cycle(dipole, "lower");
+        if (y > 43 && y <= 55) return cycle(dipole, "upper");
+        if (y > 57 && y <= 69) return cycle(dipole, "redstone");
         return false;
     }
 

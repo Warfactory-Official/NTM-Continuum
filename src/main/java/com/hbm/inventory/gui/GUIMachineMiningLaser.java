@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Client screen for the mining laser (1.12.2 {@code GUIMachineMiningLaser}, 176×222). Reads the synced
+ * Client screen for the mining laser (1.7 {@code GUIMiningLaser}, {@code machine/gui_laser_miner.png}, 176x222). Reads the synced
  * client {@link TileEntityMachineMiningLaser}: the on-button overlay, the 88-tall power bar, the
  * descending break-progress bar, the oil-tank column and the mining-square width number. The on/off
  * button sends a {@link ControlEventPayload} toggle (the old {@code AuxButtonPacket}).
@@ -33,7 +33,7 @@ public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScr
     // "Acceptable upgrades" info glyph (old drawInfoPanel(87, 31, …, 8)).
     private static final int INFO_X = 87, INFO_Y = 31;
 
-    /** The old GUI's hardcoded acceptable-upgrades text block (kept verbatim, incl. the deferred Scream). */
+    /** 1.7's hard-coded acceptable-upgrades text block, verbatim (1.7 does not list the Scream upgrade it accepts). */
     private static final List<Component> UPGRADE_TEXT = List.of(
             Component.literal("Acceptable upgrades:"),
             Component.literal(" -Speed (stacks to level 12)"),
@@ -44,7 +44,6 @@ public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScr
             Component.literal(" -Shredder (exclusive)"),
             Component.literal(" -Centrifuge (exclusive)"),
             Component.literal(" -Crystallizer (exclusive)"),
-            Component.literal(" -Scream (4xSpeed, 4xCylces, 20xConsumption)"),
             Component.literal(" -Nullifier"));
 
     public GUIMachineMiningLaser(ContainerMachineMiningLaser menu, Inventory playerInventory, Component title) {
@@ -52,19 +51,14 @@ public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScr
     }
 
     @Override
-    protected void init() {
-        super.init();
-        this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2; // the old centered name
-    }
-
-    @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        super.extractLabels(graphics, mouseX, mouseY);
-        // The mining-square width readout (old drawGuiContainerForegroundLayer).
+        // 1.7 GUIMiningLaser: centred title at y=4, "Inventory", then the mining-square width readout.
+        GuiDraw.text(graphics, this.font, this.title, this.imageWidth / 2 - this.font.width(this.title) / 2, 4, 4210752, false);
+        GuiDraw.text(graphics, this.font, Component.translatable("container.inventory"), 8, this.imageHeight - 96 + 2, 4210752, false);
         TileEntityMachineMiningLaser te = this.menu.getLaser();
         if (te != null) {
             String width = "" + te.getWidth();
-            GuiDraw.text(graphics, this.font, width, 43 - this.font.width(width) / 2, 26, 0xFFFFFFFF, false);
+            GuiDraw.text(graphics, this.font, width, 43 - this.font.width(width) / 2, 26, 0xffffff, false);
         }
     }
 
@@ -93,16 +87,10 @@ public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScr
         }
 
         // "Acceptable upgrades" info glyph (small blue *).
-        GuiUtil.drawUpgradeInfoPanel(graphics, this.leftPos + INFO_X, this.topPos + INFO_Y);
+        GuiUtil.drawInfoPanel(graphics, this.leftPos + INFO_X, this.topPos + INFO_Y, 8);
 
-        // Oil tank column — a solid-colour level (the fluid's colour), bottom-anchored (port gauge convention).
-        int max = te.tank.getMaxFill();
-        int fh = max <= 0 ? 0 : (int) ((long) te.tank.getFill() * FLUID_H / max);
-        if (fh > 0) {
-            int x0 = this.leftPos + FLUID_X;
-            int yBottom = this.topPos + FLUID_TOP + FLUID_H;
-            graphics.fill(x0, yBottom - fh, x0 + FLUID_W, yBottom, 0xFF000000 | (te.tank.getTankType().getColor() & 0xFFFFFF));
-        }
+        // Oil tank column: 1.7 renderTank(35, 124, z, 7, 52).
+        GuiUtil.tank(graphics, te.tank, this.leftPos + FLUID_X, this.topPos + FLUID_TOP + FLUID_H, FLUID_W, FLUID_H);
     }
 
     @Override
@@ -110,21 +98,20 @@ public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScr
         TileEntityMachineMiningLaser te = this.menu.getLaser();
         if (te == null) return;
 
-        if (this.isHovering(8, 18, 16, 88, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, TileEntityMachineMiningLaser.maxPower), Optional.empty(), mouseX, mouseY);
-        } else if (this.isHovering(FLUID_X, FLUID_TOP, FLUID_W, FLUID_H, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, List.of(
-                    te.tank.getTankType().getDisplayName(),
-                    Component.literal(te.tank.getFill() + " / " + te.tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
-        } else if (this.isHovering(INFO_X, INFO_Y, GuiUtil.INFO_PANEL_SIZE, GuiUtil.INFO_PANEL_SIZE, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, UPGRADE_TEXT, Optional.empty(), mouseX, mouseY);
+        if (GuiUtil.hover(mouseX, mouseY, this.leftPos + 8, this.topPos + 106 - 88, 16, 88)) {
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, TileEntityMachineMiningLaser.maxPower), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, this.leftPos + INFO_X, this.topPos + INFO_Y, 8, 8)) {
+            // 1.7 draws this block at a fixed spot, (guiLeft + 141, guiTop + 39 + 16), not at the mouse.
+            GuiDraw.tooltip(graphics, this.font, UPGRADE_TEXT, Optional.empty(), this.leftPos + 141, this.topPos + 39 + 16);
+        } else if (GuiUtil.hover(mouseX, mouseY, this.leftPos + FLUID_X, this.topPos + FLUID_TOP, FLUID_W, FLUID_H)) {
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.tankTooltip(te.tank), mouseX, mouseY);
         }
     }
 
     @Override
     protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         TileEntityMachineMiningLaser te = this.menu.getLaser();
-        if (te != null && this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
+        if (te != null && GuiUtil.hover(event.x(), event.y(), this.leftPos + BTN_X, this.topPos + BTN_Y, BTN_W, BTN_H)) {
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             CompoundTag data = new CompoundTag();
             data.putBoolean("toggle", true);

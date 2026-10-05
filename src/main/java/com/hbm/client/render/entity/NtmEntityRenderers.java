@@ -77,7 +77,16 @@ public final class NtmEntityRenderers {
                 ctx -> new CompatCreeperRenderer(ctx, ResourceManager.creeper_gold_tex, 1F));
         // 1.7 RenderDuck and RenderQuacc: vanilla chicken geometry, NTM skin, Quackos at 25x.
         sink.register(ModNtmEntities.DUCK.get(), ctx -> new CompatChickenRenderer(ctx, ResourceManager.duck_tex, 0.3F, 1F));
-        sink.register(ModNtmEntities.QUACKOS.get(), ctx -> new CompatChickenRenderer(ctx, ResourceManager.duck_tex, 7.5F, 25F));
+        sink.register(ModNtmEntities.QUACKOS.get(), ctx -> new CompatChickenRenderer(ctx, ResourceManager.duck_tex, 7.5F, 25F) {
+            // 1.7 RenderQuacc pushed BossStatus from doRender, which ran only for an entity in range and in the frustum
+            @Override
+            public boolean shouldRender(net.minecraft.world.entity.animal.chicken.Chicken entity,
+                                        net.minecraft.client.renderer.culling.Frustum frustum, double camX, double camY, double camZ) {
+                boolean render = super.shouldRender(entity, frustum, camX, camY, camZ);
+                if (render) com.hbm.client.BossStatus.set(entity, net.minecraft.world.BossEvent.BossBarColor.YELLOW);
+                return render;
+            }
+        });
         sink.register(ModNtmEntities.GHOST.get(), RenderHumanoidMob::ghost);
         sink.register(ModNtmEntities.TEST_DUMMY.get(), RenderHumanoidMob::dummy);
         sink.register(ModNtmEntities.FBI.get(), RenderHumanoidMob::fbi);

@@ -11,16 +11,16 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.List;
 
 /**
- * The core's own panel: the two fuel columns down the sides, the two bars across the middle that are the
- * heat the reaction is making and the field the stabilisers are holding against it, and the lamp that
- * lights when an exotic core is seated.
+ * The core's own panel, ported from 1.7 {@code GUICore}: 176x166, the restriction-field column on the left
+ * (u 176), the heat-saturation column on the right (u 192), the two fuel tanks inside them and the three
+ * catalyst/core slots in the middle.
  */
 public class GUICore extends GUIDFCBase<ContainerCore> {
 
     private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/dfc/gui_core.png");
 
     public GUICore(ContainerCore menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 176, 204);
+        super(menu, playerInventory, title, 176, 166);
     }
 
     @Override
@@ -35,24 +35,19 @@ public class GUICore extends GUIDFCBase<ContainerCore> {
         TileEntityCore core = menu.getCore();
         if (core == null) return;
 
-        int heat = Math.min(core.getHeatScaled(70), 70);
-        if (heat > 0) GuiDraw.blit(graphics, TEXTURE, leftPos + 53, topPos + 98, 0F, 204F, heat, 4, 256, 256);
-        int field = Math.min(core.getFieldScaled(70), 70);
-        if (field > 0) GuiDraw.blit(graphics, TEXTURE, leftPos + 53, topPos + 102, 0F, 208F, field, 4, 256, 256);
+        int i = core.getFieldScaled(52);
+        if (i > 0) GuiDraw.blit(graphics, TEXTURE, leftPos + 8, topPos + 69 - i, 176F, 52 - i, 16, i, 256, 256);
 
-        if (core.hasCore()) {
-            GuiDraw.blit(graphics, TEXTURE, leftPos + 70, topPos + 29, 220F, 0F, 36, 36, 256, 256);
-        }
+        int j = core.getHeatScaled(52);
+        if (j > 0) GuiDraw.blit(graphics, TEXTURE, leftPos + 152, topPos + 69 - j, 192F, 52 - j, 16, j, 256, 256);
 
-        drawTank(graphics, core.tanks[0], 8, 8, 16, 80);
-        drawTank(graphics, core.tanks[1], 152, 8, 16, 80);
+        drawTank(graphics, core.tanks[0], 26, 17, 16, 52);
+        drawTank(graphics, core.tanks[1], 134, 17, 16, 52);
     }
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        GuiDraw.text(graphics, font, title, imageWidth - 8 - font.width(title), imageHeight - 96 + 2,
-                0xFF404040, false);
-        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 0xFF404040, false);
+        drawTitleAndInventory(graphics);
     }
 
     @Override
@@ -60,14 +55,14 @@ public class GUICore extends GUIDFCBase<ContainerCore> {
         TileEntityCore core = menu.getCore();
         if (core == null) return;
 
-        if (isHovering(8, 8, 16, 80, mouseX, mouseY)) {
+        if (isHovering(26, 17, 16, 52, mouseX, mouseY)) {
             tooltip(graphics, GuiUtil.tankTooltip(core.tanks[0]), mouseX, mouseY);
-        } else if (isHovering(152, 8, 16, 80, mouseX, mouseY)) {
+        } else if (isHovering(134, 17, 16, 52, mouseX, mouseY)) {
             tooltip(graphics, GuiUtil.tankTooltip(core.tanks[1]), mouseX, mouseY);
-        } else if (isHovering(53, 97, 70, 4, mouseX, mouseY)) {
-            tooltip(graphics, List.of(Component.literal("Heat Saturation: " + core.heat + "%")), mouseX, mouseY);
-        } else if (isHovering(53, 101, 70, 4, mouseX, mouseY)) {
+        } else if (isHovering(8, 17, 16, 52, mouseX, mouseY)) {
             tooltip(graphics, List.of(Component.literal("Restriction Field: " + core.field + "%")), mouseX, mouseY);
+        } else if (isHovering(152, 17, 16, 52, mouseX, mouseY)) {
+            tooltip(graphics, List.of(Component.literal("Heat Saturation: " + core.heat + "%")), mouseX, mouseY);
         }
     }
 }

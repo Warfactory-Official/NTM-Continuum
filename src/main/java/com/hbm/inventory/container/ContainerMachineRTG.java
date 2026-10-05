@@ -42,14 +42,14 @@ public final class ContainerMachineRTG extends AbstractContainerMenu {
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 5; column++) {
                 int slot = column + row * 5;
-                addSlot(new Slot(machine, slot, 26 + column * 18, 22 + row * 18) {
+                addSlot(new Slot(machine, slot, 16 + column * 18, 18 + row * 18) { // 1.7 ContainerMachineRTG
                     @Override public boolean mayPlace(ItemStack stack) {
                         return machine.canPlaceItem(slot, stack);
                     }
                 });
             }
         }
-        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 94);
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 106);
     }
 
     private static @Nullable TileEntityMachineRTG resolve(Inventory inventory, BlockPos pos) {

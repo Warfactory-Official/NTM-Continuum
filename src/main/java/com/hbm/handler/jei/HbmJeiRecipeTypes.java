@@ -60,6 +60,9 @@ public final class HbmJeiRecipeTypes {
             type("rotary_furnace", com.hbm.inventory.recipes.RotaryFurnaceRecipes.RotaryFurnaceRecipe.class);
     public static final JeiRecipeType<StorageDrumRecipeHandler.Entry> STORAGE_DRUM =
             type("storage_drum", StorageDrumRecipeHandler.Entry.class);
+    /** 1.7 {@code FuelPoolHandler} ("ntmSpentDrum"): the spent fuel pool drum. */
+    public static final JeiRecipeType<com.hbm.inventory.recipes.FuelPoolRecipes.Entry> FUEL_POOL =
+            type("fuel_pool", com.hbm.inventory.recipes.FuelPoolRecipes.Entry.class);
 
     public static final JeiRecipeType<PressRecipes.PressRecipe> PRESS = type("press", PressRecipes.PressRecipe.class);
     public static final JeiRecipeType<AmmoPressRecipes.AmmoPressRecipe> AMMO_PRESS =

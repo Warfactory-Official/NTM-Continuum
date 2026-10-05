@@ -36,26 +36,27 @@ public class ContainerMachineRefinery extends AbstractContainerMenu {
         this.refinery = refinery;
         this.machine = refinery != null ? refinery : new SimpleContainer(MACHINE_SLOTS);
 
-        this.addSlot(validated(0, 186, 72));   // battery
-        this.addSlot(validated(1, 8, 99));     // input container in
-        this.addSlot(takeOnly(2, 8, 119));     // input container out
-        this.addSlot(validated(3, 86, 99));    // heavy oil out container in
-        this.addSlot(takeOnly(4, 86, 119));
-        this.addSlot(validated(5, 106, 99));   // naphtha
-        this.addSlot(takeOnly(6, 106, 119));
-        this.addSlot(validated(7, 126, 99));   // light oil
-        this.addSlot(takeOnly(8, 126, 119));
-        this.addSlot(validated(9, 146, 99));   // petroleum
-        this.addSlot(takeOnly(10, 146, 119));
-        this.addSlot(takeOnly(11, 58, 119));   // sulfur / byproduct
-        this.addSlot(validated(12, 186, 106)); // fluid identifier
+        // Slot positions: 1.7 ContainerMachineRefinery (182x240 GUI, player inventory at x=11).
+        this.addSlot(validated(0, 158, 108));   // battery
+        this.addSlot(validated(1, 12, 90));     // input container in
+        this.addSlot(takeOnly(2, 12, 108));     // input container out
+        this.addSlot(validated(3, 64, 90));    // heavy oil out container in
+        this.addSlot(takeOnly(4, 64, 108));
+        this.addSlot(validated(5, 82, 90));   // naphtha
+        this.addSlot(takeOnly(6, 82, 108));
+        this.addSlot(validated(7, 100, 90));   // light oil
+        this.addSlot(takeOnly(8, 100, 108));
+        this.addSlot(validated(9, 118, 90));   // petroleum
+        this.addSlot(takeOnly(10, 118, 108));
+        this.addSlot(takeOnly(11, 38, 90));   // sulfur / byproduct
+        this.addSlot(validated(12, 38, 108)); // fluid identifier
 
         // player inventory: main rows at y=150, hotbar y=208 (old layout)
         Inventory inv = playerInventory;
         for (int i = 0; i < 3; i++) for (int j = 0; j < 9; j++) {
-            this.addSlot(new Slot(inv, j + i * 9 + 9, 8 + j * 18, 150 + i * 18));
+            this.addSlot(new Slot(inv, j + i * 9 + 9, 11 + j * 18, 158 + i * 18));
         }
-        for (int i = 0; i < 9; i++) this.addSlot(new Slot(inv, i, 8 + i * 18, 208));
+        for (int i = 0; i < 9; i++) this.addSlot(new Slot(inv, i, 11 + i * 18, 216));
     }
 
     private Slot validated(int index, int x, int y) {

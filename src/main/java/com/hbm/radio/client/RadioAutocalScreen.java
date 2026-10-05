@@ -24,7 +24,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
-/** The old AUTOCAL screen, retaining its 170x138 geometry and file workflow. */
+/** The AUTOCAL screen — 1.7.10 {@code GUIScreenRadioAUTOCAL} ({@code machine/gui_rtty_autocal.png}, 170x138), with its file workflow. */
 public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocalMenu> {
     private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/machine/gui_rtty_autocal.png");
 
@@ -49,18 +49,9 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
         for (int i = 0; i < autocal.history.length; i++) {
             String line = autocal.history[i];
             if (line == null || line.isEmpty()) continue;
-            drawFitting(graphics, line, 7, 73 + i * 10, 0xFF00FF00, 156);
+            // 1.7 draws each line unscaled at (7, 73 + i*10) in 0x00ff00 (long lines run past the panel, as in 1.7).
+            GuiDraw.text(graphics, font, line, 7, 73 + i * 10, 0x00ff00, false);
         }
-    }
-
-    private void drawFitting(GuiGraphicsExtractor graphics, String value, int x, int y, int color, int maxWidth) {
-        if (value.isEmpty()) return;
-        float scale = Math.min(1F, (float) maxWidth / font.width(value));
-        GuiDraw.pushMatrix(graphics);
-        GuiDraw.translate(graphics, x, y);
-        GuiDraw.scale(graphics, scale, scale);
-        GuiDraw.text(graphics, font, value, 0, 0, color, false);
-        GuiDraw.popMatrix(graphics);
     }
 
     @Override
@@ -99,8 +90,8 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
 
     @Override
     protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
-        int x = (int) event.x();
-        int y = (int) event.y();
+        double x = event.x();
+        double y = event.y();
         CompoundTag data = null;
 
         if (over(x, y, 8, 36, 18, 18)) { data = new CompoundTag(); data.putBoolean("on", true); }
@@ -142,7 +133,7 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
         try {
             Path folder = uploadFolder();
             Files.createDirectories(folder);
-            Path documentation = folder.resolve("documentation.md");
+            Path documentation = folder.resolve("documentation_v1.1.md"); // 1.7 file name
             if (!Files.exists(documentation)) {
                 Files.write(documentation, (String.join(System.lineSeparator(), DOCS) + System.lineSeparator())
                         .getBytes(StandardCharsets.US_ASCII));
@@ -171,9 +162,10 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
         }
     }
 
+    /** 1.7 {@code checkClick}: x [x, x+w), y (y, y+h]. */
     private boolean over(double mouseX, double mouseY, int x, int y, int width, int height) {
-        return mouseX >= leftPos + x && mouseX < leftPos + x + width
-                && mouseY >= topPos + y && mouseY < topPos + y + height;
+        return leftPos + x <= mouseX && leftPos + x + width > mouseX
+                && topPos + y < mouseY && topPos + y + height >= mouseY;
     }
 
     public static final String[] DOCS = new String[] {
@@ -206,8 +198,16 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
             "",
             "Example: `/ntmserver set AUTOCAL_MAX_CLOCK 10` -> Sets the max clock speed to 10.",
             "",
+            "## About MS-ES v1.1",
+            "MS-ES v1.1 (or MS-ES1 FEID, \"First Extended Instruction Set\") is the second released version of the AUTOCAL's script interpreter. It features various useful additions such as text splitting, substrings, a stack-based buffer and world time grabbing. The stack for example allows for a call stack, which means that functions that were jumped to can now be nested without having to save the most recent jumping points in dedicated variables. The string split and substring operations now allow for reversing concat operations and potentially grabbing individual coordinates out of combined coordinate strings. A single RoR send operation can now send serialized data (i.e. multiple values in a single text string) which can now finally be de-serialized again.",
+            "",
+            "Programs witten in MS-ES1 are largely compatible with MS-ES1.1 interpreters, however, MS-ES1.1 now imposes a character limit of 256 on buffered values.",
+            "",
             "## About the Buffer",
             "The buffer is a single \"slot\" of information that can be used for many commands. Some commands produce an output which is saved to the buffer, some commands modify the contents of the buffer, and some commands use the buffer's contents. The buffer's contents can also be saved permanently as a named variable, and named variables can be written back into the buffer again if needed. The buffer persists as long as the AUTOCAL unit is running, should it restart or shut down, the buffer's contents are lost.",
+            "",
+            "## About the Stack (v1.1)",
+            "The stack functions similar to the buffer, as in there is only one single stack that can be accessed per AUTOCAL unit, and it can save arbitrary text data. The difference being, while the buffer can only store one value, the stack can store a list of up to 256 values. Values on a stack follow the last-in-first-out principle, i.e. the most recently added values are read first. The stack supports `push` (adding new elements), `pop` (reading and removing elements) and `peek` (reading but not removing elements).",
             "",
             "## About Variables",
             "MS-ES1 allows named variables to be saved for later use. There is no limit to how many variables can be saved. All variables are text (\"Strings\"), however depending on the command and context, that text may be interpreted as a number (both full and decimal). Variables, much like the buffer, are also stored as long as the program is running, if the AUTOCAL unit shuts down, all stored variables are lost.",
@@ -240,7 +240,7 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
             "### dest",
             "`dest <name>` creates a jump destination. Using the various jumping conditions, we can cause the AUTOCAL to return back (or forward) to this point. If a destination is reached not by jumping but simply by reading the next line, it will not use up a clock cycle, just like a comment. Destinations need unique names, if multiple destinations exist with the same name, then the latter ones will overwrite the former ones.",
             "",
-            "Example: `dest start` -> Creates a destination point named \"start\", any jump instruction using \"start\" will cause the script to return to that point.",
+            "Example: `dest start` -> Creates a destination point named \"start\", any jump instruction using \"start\" will cause the script to return to this point.",
             "",
             "### jmp",
             "`jmp <destination>` will cause the program to skip to the destination with the supplied name. The jump will always be performed when the script reaches this instruction. Supports variable substitution!",
@@ -249,7 +249,7 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
             "Example: `jmp $dest$` -> Jumps to the destination point with the same name as the contents of the variable \"dest\".",
             "",
             "### jmpif",
-            "`jmpif <destination>` will cause the program to skip to the destination point named \"destination\", if the buffer's content is `true`. Otherwise, the program will just proceed to the next line, like any other instruction. Supports variable substitution!",
+            "`jmpif <destination>` will cause the program to skip to the destination with the supplied name, if the buffer's content is `true`. Otherwise, the program will just proceed to the next line, like any other instruction. Supports variable substitution!",
             "",
             "Example:",
             "`jmpif skip`",
@@ -260,7 +260,7 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
             "-> If the buffer is `true`, then the program will jump to the destination point named \"skip\" and only run the second `nop`. Otherwise, both the first and second `nop` will run.",
             "",
             "### jmpnot",
-            "`jmpnot <destination>` will cause the program to skip to the destination point named \"destination\", if the buffer's content is **not** `true`. This is basically the inverse of `jmpif`. Only exists for some convenience for people who are used to more traditional languages' `if` statements. Supports variable substitution!",
+            "`jmpnot <destination>` will cause the program to skip to the destination with the supplied name, if the buffer's content is **not** `true`. This is basically the inverse of `jmpif`. Only exists for some convenience for people who are used to more traditional languages' `if` statements. Supports variable substitution!",
             "",
             "Example:",
             "`jmpnot skip` <- if",
@@ -270,7 +270,7 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
             "`nop`         <- else",
             "`dest end`    <- end",
             "",
-            "-> By using two jumps, one conditional and one fixed, we can emulate the structure of an `if/else` block. If the buffer's content is `true`, the first `nop` runs. Otherwise, the second `nop` is run. The second jump (`jmp end`) lets us skip over the `else` part of the script after running the `then` part.",
+            "-> By using two jumps, one conditional and one fixed, we can emulate the structure of an `if/else` block. If the buffer's content is `true`, the first `nop` runs. Otherwise, the second `nop` is run. The second jump (`jmp end`) lets us skip over the \"else\" part of the script after running the \"then\" part.",
             "",
             "### endtick",
             "`endtick` stops the script until the next game tick. This is important when sending multiple RoR signals on the same channel in a row, since a channel in the same tick can only hold one signal.",
@@ -297,11 +297,20 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
             "",
             "-> Will buffer the value `Horseshoe` and then save it to the variable called \"item\".",
             "",
+            "### push (v1.1)",
+            "`push [value]` will add the supplied value to the stack. If no value is supplied, it will write the buffer's contents to the stack instead. Do note that the stack can only hold up to 256 values! Supports variable substitution!",
+            "",
+            "### pop (v1.1)",
+            "`pop` will remove the most recently added value from the stack and write it to the buffer.",
+            "",
+            "### peek (v1.1)",
+            "`peek` will write the most recently added value from the stack to the buffer, but without removing it from the stack like `pop` would.",
+            "",
             "### eval",
             "`eval [statement]` will evaluate the supplied statement as a mathematical expression. In short, anything NTM's calculator can make sense of (the one you open with N by default), this function can do the same. The statement is optional, if no statement is supplied, then it will try to use the buffer's contents as the statement. `eval` produces **decimal** values and not whole number **integers**, so for use in RoR signals, the output needs to be rounded! The result of the calculation is then saved to the buffer. Supports variable substitution!",
             "",
             "Example: `eval 4 + 5` -> Calculates \"4+5\" and saves `9` to the buffer.",
-            "Example: `eval $val$ / 2` -> Takes the value of \"val\" and saves the result to the buffer.",
+            "Example: `eval $val$ / 2` -> Takes the value of \"val\" and divides it by 2, saving the result to the buffer.",
             "",
             "Example:",
             "`load calc`",
@@ -333,7 +342,7 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
             "### concat",
             "`concat <text>` works similarly to `buffer <text>`, however it accepts variable substitution. This means that the text of multiple variables can be combined.",
             "",
-            "Example: `concat $first$ and $second$` -> Assuming the variable \"first\" is `Cats` and \"second\" is `dogs`, then the result saved to the buffer is `Cats and dogs`.",
+            "Example: `concat $first$ and $second$` -> Assuming the variable \"first\" to be `Cats` and \"second\" to be `dogs`, then the result saved to the buffer is `Cats and dogs`.",
             "",
             "### eq",
             "`eq <value>` - equals, will try to compare the buffer to the supplied value. The buffer will be set to `true` if the values are equal and `false` otherwise. Supports variable substitution!",
@@ -359,6 +368,54 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
             "### leb",
             "`leb <value>` - less than or equal buffer.",
             "",
+            "### splitter (v1.1)",
+            "`splitter <value>` sets the splitter character (or text) which is used for splitting operations. This value exists once per AUTOCAL, similar to the clockspeed. By default, the splitter is set to `;`. Supports variable substitution!",
+            "",
+            "### split (v1.1)",
+            "`split <index>` will split the buffer's contents, grab the fragment with the desired index, and write its contents to the buffer.",
+            "",
+            "Example:",
+            "`buffer cats;and;dogs`",
+            "`split 3`",
+            "",
+            "-> Will buffer the value of the third fragment, being `dogs`.",
+            "",
+            "### splitcount (v1.1)",
+            "`splitcount` will split the buffer's contents, count the number of fragments created, and write that value to the buffer.",
+            "",
+            "Example:",
+            "`buffer cats;and;dogs;and;birds`",
+            "`splitcount`",
+            "",
+            "-> Will buffer the number of fragments, being `5`.",
+            "",
+            "### length (v1.1)",
+            "`length` will count the number of characters in the buffer's stored text, and write that value to the buffer.",
+            "",
+            "Example:",
+            "`buffer cats and dogs`",
+            "`lenght`",
+            "",
+            "-> Will buffer the number of characters in `cats and dogs`, being `13`.",
+            "",
+            "### first (v1.1)",
+            "`first <amount>` will grab the first x characters from the buffer and write them to the buffer. This is a substring operation that always starts at the first letter.",
+            "",
+            "Example:",
+            "`buffer cats and dogs`",
+            "`first 4`",
+            "",
+            "-> Will buffer the first four characters of the buffer, `cats`.",
+            "",
+            "### last (v1.1)",
+            "`last <amount>` will grab the last x characters from the buffer and write them to the buffer. This is a substring operation that always ends at the last letter.",
+            "",
+            "Example:",
+            "`buffer cats and dogs`",
+            "`last 4`",
+            "",
+            "-> Will buffer the last four characters of the buffer, `dogs`.",
+            "",
             "### send",
             "`send <channel>` will send a Redstone-over-Radio signal over the supplied channel, with the signal's value being the current buffer's value. Sending repeatedly over the same channel requires waiting for a full game tick, so using `endtick` after sending is advised. Supports variable substitution!",
             "",
@@ -383,6 +440,12 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
             "`send output`",
             "",
             "-> Will take the signal from the RoR channel \"input\", multiply it by 100, and send that value on the channel \"output\".",
+            "",
+            "### poll (v1.1)",
+            "`poll <channel>` will listen to the supplied RoR channel and write the signal to the buffer. Unlike `listen`, it will only detect signals from the last tick. Supports variable substitution!",
+            "",
+            "### worldtime (v1.1)",
+            "`worldtime` will save the amount of ticks since world creation to the buffer. If the result is saved to a variable, it can be compared later, allowing for precise and clockspeed-agnostic timers.",
             "",
             "## Advanced",
             "",
@@ -420,11 +483,11 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
             "`save b`",
             "`buffer 0.6`",
             "`save i`",
-            "`buffer returnhere` <- then we define the name of our return point",
+            "`buffer returnhere` <- then we define the name of the return point",
             "`save return`",
             "`jmp lerp`          <- call the function",
             "`dest returnhere`   <- once the function concludes, we are back here",
             "",
-            "At the end of it all, the variable \"result\" now has the desired value."
+            "At the end of it all, the variable \"result\" now has the desired value.",
     };
 }

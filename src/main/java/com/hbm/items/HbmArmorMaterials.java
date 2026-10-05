@@ -18,6 +18,21 @@ public final class HbmArmorMaterials {
     public static final GolemArmorMaterial HAZMAT = hazmat("hazmat", "hazmat_cloth");
     public static final GolemArmorMaterial HAZMAT_RED = hazmat("hazmat_red", "hazmat_cloth_red");
     public static final GolemArmorMaterial HAZMAT_GREY = hazmat("hazmat_grey", "hazmat_cloth_grey");
+    /**
+     * The red and grey hoods: 1.7 {@code ArmorHazmatMask} on {@code aMatHaz2}/{@code aMatHaz3} with an M65 model
+     * ({@code ModelHazRed.png} / {@code ModelHazGrey.png}) instead of the armour layer. Same numbers as the rest of
+     * the suit; a material of their own only so their equipment layer can be the transparent one the model needs.
+     */
+    public static final GolemArmorMaterial HAZMAT_RED_HOOD = hazmat("hazmat_red_hood", "hazmat_cloth_red");
+    public static final GolemArmorMaterial HAZMAT_GREY_HOOD = hazmat("hazmat_grey_hood", "hazmat_cloth_grey");
+
+    /**
+     * 1.7 {@code ArmorGasMask}: vanilla {@code ArmorMaterial.IRON} (15, {2, 6, 5, 2}, 9), repaired with iron. The
+     * worn mask is a model ({@code ArmorModRenderLayer}); the equipment layer texture is transparent, as the
+     * goggles' is, because 1.7's {@code getArmorModel} replaced the armour layer outright.
+     */
+    public static final GolemArmorMaterial GAS_MASK = new GolemArmorMaterial(
+            Constants.MOD_ID, "gas_mask", 15, 2, 6, 5, 2, 9, 0.0F, 0.0F, "repairs/infamy");
 
     /** 1.12.2 {@code aMatSteel}: multiplier 30, defense {3, 6, 8, 3}, enchantability 5. */
     public static final GolemArmorMaterial STEEL = new GolemArmorMaterial(

@@ -55,30 +55,21 @@ public final class ModItemModels {
         sprites();
         renamedSprites();
         layeredSprites();
-        shared();
         blockItems();
         machineFrames();
         funnelModel();
         gameTestFixtures();
-        // 1.7 names block sprites textures/blocks/*, outside the block/ directory vanilla stitches.
-        Atlases.directories("minecraft", "blocks", "blocks", "blocks/");
+        // 1.7 names block sprites textures/blocks (any file there), outside the block/ directory vanilla stitches. The 1.7 GUI tank
+        // textures (every file under textures/gui/fluids) are stitched too: they are what other mods draw an HBM fluid with
+        // (Fluids.tokenSpec, History section 19ek-fluids), and a fluid sprite must be in the block atlas.
+        Atlases.directories("minecraft", "blocks", "blocks", "blocks/", "gui/fluids", "gui/fluids/");
         // The fourteen rail/tower/compressor OBJ item definitions are authored JSON (assets/hbm/items/,
         // listed in gradle/dejson-authored.txt): hand-tuned transforms stay files, not JsonObject calls.
-        // 1.7 names item sprites textures/items/*, outside the item/ directory vanilla stitches. Below 1.21.4
+        // 1.7 names item sprites textures/items (any file there), outside the item/ directory vanilla stitches. Below 1.21.4
         // there is no items atlas; legacy-assets folds this source into blocks.json.
         Atlases.directories("minecraft", "items", "items", "items/");
     }
 
-    /** Items that show a model another item already declares. */
-    private static void shared() {
-        for (String waste : ZIRNOX_WASTE) {
-            Dejson.item(NS, waste).shares("hbm:item/zirnox_waste").register();
-        }
-    }
-
-    private static final String[] ZIRNOX_WASTE = {
-            "waste_schrabidium",
-    };
 
     private static final String[] SPRITE_ITEMS_0 = {
             "bedrock_ore_fragment_bismuth",

@@ -4,18 +4,16 @@ import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerFEL;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.tileentity.machine.TileEntityFEL;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
- * Client screen for the FEL. Coordinates are the 1.12.2 {@code GUIFEL} verbatim (203×169).
+ * Client screen for the FEL, ported from 1.7 {@code GUIFEL} (203×169).
  *
  * <p>Beyond the vertical power bar it shows two pieces of status text the original leans on heavily:
  * <b>LIVE</b> in green whenever the laser is switched on, and <b>ERR.</b> in red when it is on but has
@@ -49,7 +47,8 @@ public class GUIFEL extends dev.golem.core.gui.CompatContainerScreen<ContainerFE
                     203.0F, 0.0F, TOGGLE_W, TOGGLE_H, 256, 256);
         }
 
-        int k = (int) te.getPowerScaled(POWER_H);
+        // 1.7 scales to 114 but anchors at 113, so a full bar overdraws one pixel above the column. Preserved.
+        int k = (int) te.getPowerScaled(114);
         if (k > 0) {
             GuiDraw.blit(graphics, TEXTURE, this.leftPos + POWER_X,
                     this.topPos + POWER_Y + POWER_H - k, 203.0F, (float) (17 + POWER_H - k), POWER_W, k, 256, 256);
@@ -61,13 +60,19 @@ public class GUIFEL extends dev.golem.core.gui.CompatContainerScreen<ContainerFE
                 && te.isOn && te.mode != EnumWavelengths.NULL && te.distance > 0;
         if (beam) {
             int color = te.mode != EnumWavelengths.VISIBLE
-                    ? te.mode.renderedBeamColor
+                    ? te.mode.guiColor
                     : java.awt.Color.HSBtoRGB(gameTime() / 50.0F, 0.5F, 1.0F) & 0xFFFFFF;
             int argb = 0xFF000000 | (color & 0xFFFFFF);
-            // Two segments at y = 31.5 (the emitter aperture and the exit), 10px thick.
-            int y0 = this.topPos + 27, y1 = y0 + 10;
-            graphics.fill(this.leftPos + 113, y0, this.leftPos + 135, y1, argb);
-            graphics.fill(this.leftPos, y0, this.leftPos + 4, y1, argb);
+            // 1.7 draws two GL lines at y = 31.5 with glLineWidth(5): five framebuffer pixels thick, whatever the
+            // GUI scale. The second segment starts at the screen's left edge (x = 0), not at the GUI's.
+            float half = (float) (2.5 / Minecraft.getInstance().getWindow().getGuiScale());
+            GuiDraw.pushMatrix(graphics);
+            GuiDraw.translate(graphics, 0F, this.topPos + 31.5F);
+            GuiDraw.scale(graphics, 1F / 8F, 1F / 8F);
+            int h = Math.max(1, Math.round(half * 8F));
+            graphics.fill((this.leftPos + 113) * 8, -h, (this.leftPos + 135) * 8, h, argb);
+            graphics.fill(0, -h, (this.leftPos + 4) * 8, h, argb);
+            GuiDraw.popMatrix(graphics);
         }
     }
 
@@ -78,21 +83,18 @@ public class GUIFEL extends dev.golem.core.gui.CompatContainerScreen<ContainerFE
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        // Upstream nudges the title 90px right of centre; the status words sit to its left.
-        int titleX = 90 + this.imageWidth / 2 - this.font.width(this.title) / 2;
-        GuiDraw.text(graphics, this.font, this.title, titleX, 7, 0xFFFFFFFF, false);
-        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF404040, false);
+        int nameWidth = this.font.width(this.title);
+        GuiDraw.text(graphics, this.font, this.title, 90 + this.imageWidth / 2 - nameWidth / 2, 7, 0xffffff, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, 8, this.imageHeight - 98, 4210752, false);
 
         TileEntityFEL te = this.menu.getFel();
         if (te == null) return;
 
-        if (te.isOn) {
-            Component live = Component.literal("LIVE").withStyle(ChatFormatting.GREEN);
-            GuiDraw.text(graphics, this.font, live, 54 + this.imageWidth / 2 - this.font.width(live) / 2, 9, 0xFF00FF00, false);
-            if (te.missingValidSilex) {
-                Component err = Component.literal("ERR.").withStyle(ChatFormatting.RED);
-                GuiDraw.text(graphics, this.font, err, 55 + this.imageWidth / 2 - this.font.width(err) / 2, 9, 0xFFFF0000, false);
-            }
+        // 1.7 centres both status words on the width of the machine's name, not their own.
+        if (te.missingValidSilex && te.isOn) {
+            GuiDraw.text(graphics, this.font, Component.literal("ERR."), 55 + this.imageWidth / 2 - nameWidth / 2, 9, 0xFF0000, false);
+        } else if (te.isOn) {
+            GuiDraw.text(graphics, this.font, Component.literal("LIVE"), 54 + this.imageWidth / 2 - nameWidth / 2, 9, 0x00FF00, false);
         }
     }
 
@@ -104,17 +106,18 @@ public class GUIFEL extends dev.golem.core.gui.CompatContainerScreen<ContainerFE
         if (this.isHovering(POWER_X, POWER_Y, POWER_W, POWER_H, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, this.font,
                     GuiUtil.energyTooltip(te.power, TileEntityFEL.maxPower), Optional.empty(), mouseX, mouseY);
-        } else if (this.isHovering(TOGGLE_X, TOGGLE_Y, TOGGLE_W, TOGGLE_H, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font,
-                    List.of(Component.literal(te.isOn ? "Turn off" : "Turn on")), Optional.empty(), mouseX, mouseY);
         }
     }
 
     @Override
     protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
-        if (this.isHovering(TOGGLE_X, TOGGLE_Y, TOGGLE_W, TOGGLE_H, event.x(), event.y())) {
+        int x = (int) event.x() - this.leftPos;
+        int y = (int) event.y() - this.topPos;
+        // 1.7 hit box: x in [142, 171), y in (41, 58].
+        if (x >= TOGGLE_X && x < TOGGLE_X + TOGGLE_W && y > TOGGLE_Y && y <= TOGGLE_Y + TOGGLE_H) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.gameMode != null) {
+                GuiUtil.playClickSound();
                 mc.gameMode.handleInventoryButtonClick(this.menu.containerId, 2);
                 return true;
             }

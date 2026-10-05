@@ -2,32 +2,25 @@ package com.hbm.inventory.gui;
 
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerBatterySocket;
+import com.hbm.util.BobMathUtil;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
- * Client screen for the battery socket. Mirrors {@link GUIMachineBattery} (energy bar + two redstone I/O
- * mode buttons + a priority button), but the energy reflects the inserted battery item's charge rather
- * than an internal buffer. Reads the live (client) BlockEntity through the container; clicks dispatch
- * through the vanilla {@code clickMenuButton} path. 26.1 render API (extractBackground + blit).
+ * Client screen for the battery socket — 1.7.10 {@code GUIBatterySocket} ({@code storage/gui_battery_socket.png},
+ * 176×181). The 34×52 bar at (62,17) shows the inserted battery item's charge; redstone-low (106,16) and
+ * redstone-high (106,52) mode buttons and the priority button (125,35). Clicks go through {@code clickMenuButton}.
  */
 public class GUIBatterySocket extends dev.golem.core.gui.CompatContainerScreen<ContainerBatterySocket> {
 
     private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_battery_socket.png");
-    private static final String[] MODE_NAMES = {"Input only", "Buffer (both)", "Output only", "Disabled"};
-    private static final String[] PRIORITY_NAMES = {"Lowest", "Low", "Normal", "High", "Highest"};
-
-    // Energy bar (GUI-relative): 34×52, bottom anchored at (62, 69).
-    private static final int BAR_X = 62, BAR_W = 34, BAR_H = 52, BAR_BOTTOM = 69, BAR_TOP = BAR_BOTTOM - BAR_H;
-    // Buttons.
-    private static final int REDLOW_X = 106, REDLOW_Y = 16, REDHIGH_X = 106, REDHIGH_Y = 52, RED_W = 18;
-    private static final int PRIO_X = 125, PRIO_Y = 35, PRIO_W = 16;
 
     public GUIBatterySocket(ContainerBatterySocket menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 181);
@@ -40,62 +33,62 @@ public class GUIBatterySocket extends dev.golem.core.gui.CompatContainerScreen<C
         if (!this.menu.getBattery().isEmpty()) {
             long power = this.menu.getPower();
             long max = this.menu.getMaxPower();
-            // Guard the long->int multiply for very large capacities (the limits of the LONG data type).
             if (power > Long.MAX_VALUE / 100) { power /= 100; max /= 100; }
             if (max <= 1) max = 1;
-            int p = (int) (power * BAR_H / max);
-            if (p > 0) {
-                GuiDraw.blit(graphics, TEXTURE, this.leftPos + BAR_X, this.topPos + BAR_BOTTOM - p,
-                        176.0F, (float) (BAR_H - p), BAR_W, p, 256, 256);
-            }
+            int p = (int) (power * 52 / max); // won't work when flying too close to the sun (1.7 comment: LONG limits)
+            if (p > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 62, this.topPos + 69 - p, 176.0F, (float) (52 - p), 34, p, 256, 256);
         }
 
-        GuiDraw.blit(graphics, TEXTURE, this.leftPos + REDLOW_X, this.topPos + REDLOW_Y,
-                176.0F, (float) (52 + this.menu.getRedLow() * 18), RED_W, RED_W, 256, 256);
-        GuiDraw.blit(graphics, TEXTURE, this.leftPos + REDHIGH_X, this.topPos + REDHIGH_Y,
-                176.0F, (float) (52 + this.menu.getRedHigh() * 18), RED_W, RED_W, 256, 256);
-        GuiDraw.blit(graphics, TEXTURE, this.leftPos + PRIO_X, this.topPos + PRIO_Y,
-                194.0F, (float) (52 + (this.menu.getPriorityOrdinal() - 1) * 16), PRIO_W, PRIO_W, 256, 256);
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + 106, this.topPos + 16, 176.0F, (float) (52 + this.menu.getRedLow() * 18), 18, 18, 256, 256);
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + 106, this.topPos + 52, 176.0F, (float) (52 + this.menu.getRedHigh() * 18), 18, 18, 256, 256);
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + 125, this.topPos + 35, 194.0F, (float) (52 + this.menu.getPriorityOrdinal() * 16 - 16), 16, 16, 256, 256);
     }
 
+    /** 1.7: centred title at y=6, inventory at (8, ySize-96+2), both 4210752. */
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        // Centre the title (the 1.12.2 socket drew it at xSize/2 - width/2); keep the inventory label default.
-        GuiDraw.text(graphics, this.font, this.title, (this.imageWidth - this.font.width(this.title)) / 2, this.titleLabelY, -12566464, false);
-        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
+        GuiDraw.text(graphics, this.font, this.title, this.imageWidth / 2 - this.font.width(this.title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, 8, this.imageHeight - 96 + 2, 4210752, false);
     }
 
+    /** 1.7 {@code drawScreen}: the charge readout over the bar (battery present only), then the priority text. */
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        if (!this.menu.getBattery().isEmpty() && this.isHovering(BAR_X, BAR_TOP, BAR_W, BAR_H, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font,
-                    GuiUtil.energyTooltip(this.menu.getPower(), this.menu.getMaxPower(), this.menu.getDelta()),
-                    Optional.empty(), mouseX, mouseY);
-        } else if (this.isHovering(REDLOW_X, REDLOW_Y, RED_W, RED_W, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, List.of(
-                    Component.literal("No redstone: " + mode(this.menu.getRedLow()))), Optional.empty(), mouseX, mouseY);
-        } else if (this.isHovering(REDHIGH_X, REDHIGH_Y, RED_W, RED_W, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, List.of(
-                    Component.literal("Redstone on: " + mode(this.menu.getRedHigh()))), Optional.empty(), mouseX, mouseY);
-        } else if (this.isHovering(PRIO_X, PRIO_Y, PRIO_W, PRIO_W, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, List.of(
-                    Component.literal("Priority: " + priority(this.menu.getPriorityOrdinal()))), Optional.empty(), mouseX, mouseY);
+        int gl = this.leftPos, gt = this.topPos;
+        if (!this.menu.getBattery().isEmpty() && GuiUtil.hover(mouseX, mouseY, gl + 62, gt + 69 - 52, 34, 52)) {
+            long delta = this.menu.getDelta();
+            String deltaText = BobMathUtil.getShortNumber(Math.abs(delta)) + "HE/s";
+            if (delta > 0) deltaText = ChatFormatting.GREEN + "+" + deltaText;
+            else if (delta < 0) deltaText = ChatFormatting.RED + "-" + deltaText;
+            else deltaText = ChatFormatting.YELLOW + "+" + deltaText;
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.lines(
+                    BobMathUtil.getShortNumber(this.menu.getPower()) + "/" + BobMathUtil.getShortNumber(this.menu.getMaxPower()) + "HE",
+                    deltaText), mouseX, mouseY);
+            return;
+        }
+        if (GuiUtil.hover(mouseX, mouseY, gl + 125, gt + 35, 16, 16)) {
+            int ordinal = this.menu.getPriorityOrdinal();
+            String lang = ordinal == 1 ? "low" : ordinal == 3 ? "high" : "normal";
+            List<Component> lines = new ArrayList<>();
+            lines.add(Component.translatable("battery.priority." + lang));
+            lines.add(Component.translatable("battery.priority.recommended"));
+            lines.addAll(GuiUtil.keyArray("battery.priority." + lang + ".desc"));
+            GuiUtil.tooltip(graphics, this.font, lines, mouseX, mouseY);
         }
     }
-
-    private static String mode(int m) { return m >= 0 && m < MODE_NAMES.length ? MODE_NAMES[m] : "?"; }
-    private static String priority(int o) { return o >= 0 && o < PRIORITY_NAMES.length ? PRIORITY_NAMES[o] : "?"; }
 
     @Override
     protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         int button = -1;
-        if (this.isHovering(REDLOW_X, REDLOW_Y, RED_W, RED_W, event.x(), event.y())) button = 0;
-        else if (this.isHovering(REDHIGH_X, REDHIGH_Y, RED_W, RED_W, event.x(), event.y())) button = 1;
-        else if (this.isHovering(PRIO_X, PRIO_Y, PRIO_W, PRIO_W, event.x(), event.y())) button = 2;
+        // 1.7 checkClick boxes: x [x, x+w), y (y, y+h].
+        if (GuiUtil.hover(event.x(), event.y(), this.leftPos + 106, this.topPos + 16, 18, 18)) button = 0;
+        else if (GuiUtil.hover(event.x(), event.y(), this.leftPos + 106, this.topPos + 52, 18, 18)) button = 1;
+        else if (GuiUtil.hover(event.x(), event.y(), this.leftPos + 125, this.topPos + 35, 16, 16)) button = 2;
 
         if (button >= 0) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.gameMode != null) {
+                GuiUtil.playClickSound();
                 mc.gameMode.handleInventoryButtonClick(this.menu.containerId, button);
                 return true;
             }

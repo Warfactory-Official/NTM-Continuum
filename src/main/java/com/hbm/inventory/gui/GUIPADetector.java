@@ -41,8 +41,8 @@ public class GUIPADetector extends GUIPABase<ContainerPADetector> {
 
         drawPowerBar(graphics, x + 8, y + 18, detector.power, detector.getMaxPower());
 
-        if (Math.ceil(detector.temperature) <= COOL_ENOUGH) drawLamp(graphics, x + 44, y + 18);
-        if (detector.power >= TileEntityPADetector.usage) drawLamp(graphics, x + 44, y + 43);
+        if (Math.ceil(detector.temperature) <= COOL_ENOUGH) drawLamp(graphics, x + 43, y + 18);
+        if (detector.power >= TileEntityPADetector.usage) drawLamp(graphics, x + 43, y + 43);
 
         drawTank(graphics, detector.coolantTanks[0], x + 134, y + 36);
         drawTank(graphics, detector.coolantTanks[1], x + 152, y + 36);
@@ -50,7 +50,7 @@ public class GUIPADetector extends GUIPABase<ContainerPADetector> {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        drawTitleAndInventory(graphics, 4);
+        drawTitleAndInventory(graphics, -8, 5, 0xffffff);
         drawTemperature(graphics, 136, 22, 166, 12);
     }
 

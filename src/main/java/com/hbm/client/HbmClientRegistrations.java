@@ -247,6 +247,7 @@ public final class HbmClientRegistrations {
         // final armor B: goggles blur first, as Forge drew helmet overlays beneath the rest of the HUD
         ArmorSetBClient.registerHud(sink);
         sink.register("look_overlay", HbmLookOverlay::render);
+        sink.register("boss_status", BossStatus::render); // 1.7 BossStatus: render-pushed boss bar
         sink.register("rad_counter", RadCounterOverlay::render);
         com.hbm.client.EnergyNetClientRegistrations.registerHud(sink);
         sink.register("nuke_flash", NukeScreenEffects::render);
@@ -333,6 +334,7 @@ public final class HbmClientRegistrations {
     public static void installTints() {
         dev.golem.core.client.Tints.install(com.hbm.Constants.MOD_ID);
         com.hbm.client.EnergyBedrockClientRegistrations.installSprites(); // computed bedrock ore grade art
+        dev.golem.core.fluid.TokenFluids.installClient(); // how other mods draw HBM fluids (History section 19ek-fluids)
     }
 
     /** The component-backed replacement for legacy item metadata in generated model selects. */
@@ -394,10 +396,12 @@ public final class HbmClientRegistrations {
         ArmorModHarnessQueries.register();
         StructureHarnessQueries.register(); // harness query hbm_structure: NBT structure starts, placement score, loot state
         WorldFeatureHarnessQueries.register(); // harness query hbm_worldgen: block counts/finds, biome, meteor scheduler
+        SmallHarnessQueries.register(); // hbm_small: boss bar, rad fog, impact spawn refusals, sulfur columns (§19ek-small)
         ComponentHarnessQueries.register(); // harness query hbm_wgc: features/bunker/meteor_dungeon starts, hardcoded piece builds (WG-C)
         LegacyDungeonHarnessQueries.register(); // harness query hbm_wgd: legacy dungeon starts, placement score, loot/spawners (WG-D)
         GapsAHarnessQueries.register(); // harness query hbm_gapsa: held stack/attack damage/cells, hurt jolt, amat flashes (G-A)
         GapsBHarnessQueries.register(); // harness query hbm_gapsb: boss spawns, reputation, machine damage, structure tiles, radar (G-B)
+        ForeignFluidHarnessQueries.register(); // harness query hbm_fluidcaps: HBM fluids through the loader fluid capability (19ek-fluids)
     }
 
     /** Connects the client-owned visuals to the common JetpackHandler without making it import client APIs. */
@@ -459,6 +463,9 @@ public final class HbmClientRegistrations {
         com.hbm.client.render.ConveyorPreviewRenderer.init();
         // 1.7 BlockDummyable.drawPlacementHighlight: the held multiblock's footprint outline, green/red.
         com.hbm.client.render.MultiblockPlacementHighlight.init();
+        // 1.7 RenderNTMSkyboxImpact / RenderNTMSkyboxChainloader and the tick that installs them (1.31_enableSkyboxes).
+        com.hbm.client.render.world.NTMSkyboxes.register();
+        com.hbm.client.SmogFog.register(); // 1.7 ModEventHandlerRenderer smog (POL_03/06/07, History §19ek-hooks)
         com.hbm.commands.HbmClientCommands.register(); // 1.7 client commands: /ntmclient, /ntmwikirender, /dumpthreadsandcrashgame
         com.hbm.client.RenderInputClientRegistrations.install(); // G-C: overhead markers, HUD, world text, particles
     }

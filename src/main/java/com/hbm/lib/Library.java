@@ -28,23 +28,13 @@ public final class Library {
 
     private Library() {}
 
-    private static final DecimalFormat SHORT_NUMBER_FORMAT = new DecimalFormat("0.00");
-    private static final String[] SHORT_SUFFIXES = {"", "k", "M", "G", "T", "P", "E", "Z", "Y", "R", "Q"};
-
     /**
-     * Abbreviated number for GUIs, e.g. {@code 1500000 -> "1.50M"}, {@code 250 -> "250"}. Ported from
-     * the 1.12.2 {@code Library.getShortNumber} (2-decimal {@code DecimalFormat}, metric suffixes).
+     * Abbreviated number for GUIs. 1.7 has no {@code Library.getShortNumber}; every 1.7 GUI calls
+     * {@code BobMathUtil.getShortNumber} ({@code 1500000 -> "1.5M"}), so this delegates to it. The former body was
+     * 1.12.2's two-decimal {@code DecimalFormat} ({@code "1.50M"}).
      */
     public static String getShortNumber(long value) {
-        boolean negative = value < 0;
-        double d = Math.abs((double) value);
-        int idx = 0;
-        while (d >= 1000.0 && idx < SHORT_SUFFIXES.length - 1) {
-            d /= 1000.0;
-            idx++;
-        }
-        String result = idx == 0 ? Long.toString((long) d) : SHORT_NUMBER_FORMAT.format(d);
-        return (negative ? "-" : "") + result + SHORT_SUFFIXES[idx];
+        return com.hbm.util.BobMathUtil.getShortNumber(value);
     }
 
     private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("0.##");

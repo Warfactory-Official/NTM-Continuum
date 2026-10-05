@@ -9,10 +9,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-import java.util.List;
-
+/**
+ * The 1.7 {@code GUIRBMKOutgasser}: {@code reactors/gui_rbmk_outgasser.png} (176x186), a 13-wide progress arrow at
+ * (82, 50), the 10x42 gas gauge with its bottom at (115, 66), and the tank tooltip over (112, 21, 16, 48) — the
+ * 1.7 hover box is larger than the gauge it describes; kept as 1.7 had it. Labels come from
+ * {@link RBMKContainerScreen#extractLabels}, which draws exactly 1.7's title and "Inventory" strings.
+ */
 public final class ScreenRBMKOutgasser extends RBMKContainerScreen<MenuRBMKOutgasser> {
-    private static final Identifier TEX = Ids.of("hbm", "textures/gui/rbmk/gui_rbmk_outgasser.png");
+    private static final Identifier TEX = Ids.of("hbm", "textures/gui/reactors/gui_rbmk_outgasser.png");
 
     public ScreenRBMKOutgasser(MenuRBMKOutgasser menu, Inventory inventory, Component title) { super(menu, inventory, title, 176, 186); }
 
@@ -20,36 +24,19 @@ public final class ScreenRBMKOutgasser extends RBMKContainerScreen<MenuRBMKOutga
         texture(graphics, TEX);
         BlockEntityRBMKOutgasser outgasser = menu.blockEntity();
         if (outgasser == null) return;
-        int progress = outgasser.duration > 0 ? (int) (outgasser.progress * 45 / outgasser.duration) : 0;
-        if (progress > 0) GuiDraw.blit(graphics, TEX, leftPos + 66, topPos + 58, 190, 0, progress, 6, 256, 256);
-        int gas = outgasser.gas.getMaxFill() > 0 ? outgasser.gas.getFill() * 58 / outgasser.gas.getMaxFill() : 0;
-        if (gas > 0) GuiDraw.blit(graphics, TEX, leftPos + 143, topPos + 82 - gas, 176, 58 - gas, 14, gas, 256, 256);
+        int progress = outgasser.duration > 0 ? (int) (outgasser.progress * 13 / outgasser.duration) : 0;
+        if (progress > 0) GuiDraw.blit(graphics, TEX, leftPos + 82, topPos + 50, 176, 0, progress, 6, 256, 256);
+        int gas = outgasser.gas.getMaxFill() > 0 ? outgasser.gas.getFill() * 42 / outgasser.gas.getMaxFill() : 0;
+        if (gas > 0) GuiDraw.blit(graphics, TEX, leftPos + 115, topPos + 66 - gas, 188, 42 - gas, 10, gas, 256, 256);
     }
 
     @Override protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         BlockEntityRBMKOutgasser outgasser = menu.blockEntity();
         if (outgasser == null) return;
-        fluidTooltip(graphics, outgasser.gas, 143, 24, 14, 58, mouseX, mouseY);
-        if (region(20, 32, 103, 10, mouseX, mouseY)) {
-            tooltip(graphics, List.of(Component.literal("Flux: " + (int) outgasser.progress + " / " + outgasser.duration)), mouseX, mouseY);
+        // 1.7 FluidTank.renderTankInfo hit test: x <= mouse < x + w, y < mouse <= y + h.
+        int x = leftPos + 112, y = topPos + 21;
+        if (x <= mouseX && x + 16 > mouseX && y < mouseY && y + 48 >= mouseY) {
+            tooltip(graphics, TankDisplay.tooltip(outgasser.gas), mouseX, mouseY);
         }
-    }
-
-    @Override protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        super.extractLabels(graphics, mouseX, mouseY);
-        BlockEntityRBMKOutgasser outgasser = menu.blockEntity();
-        if (outgasser == null) return;
-        GuiDraw.text(graphics, font, Component.literal("Flux"), 21, 34, 0xFF404040, false);
-        String flux = formatNumber((float) outgasser.progress) + "/" + formatNumber((float) outgasser.duration);
-        GuiDraw.text(graphics, font, Component.literal(flux), 123 - font.width(flux), 34, 0xFF46EA00, false);
-    }
-
-    private static String formatNumber(float number) {
-        if (number < 1_000D) return String.format("%5.1f ", number);
-        if (number < 1_000_000D) return String.format("%5.1fk", number / 1_000F);
-        if (number < 1_000_000_000D) return String.format("%5.1fM", number / 1_000_000F);
-        if (number < 1_000_000_000_000D) return String.format("%5.1fG", number / 1_000_000_000F);
-        if (number < 1_000_000_000_000_000D) return String.format("%5.1fT", number / 1_000_000_000_000F);
-        return "";
     }
 }

@@ -42,6 +42,45 @@ public final class FuelPoolRecipes {
         return ItemStacks.copyWithCount(new ItemStack(ModPwrItems.depleted(fuel)), stack.getCount());
     }
 
+    /** One 1.7 FuelPool entry as the recipe browser shows it. */
+    public record Entry(ItemStack input, ItemStack output) {}
+
+    /**
+     * 1.7 {@code FuelPoolRecipes.recipes} for the recipe browser (1.7 {@code FuelPoolHandler}): the hot ZIRNOX wastes, the
+     * hot plate wastes and the hot PWR rods to their cooled forms, then every craftable RBMK rod shown hot (core 100, hull
+     * 50, 1.7 {@code ComparableStackHeat}) to the same rod cold, both at 20% of its yield.
+     */
+    public static java.util.List<Entry> displayRecipes() {
+        java.util.List<Entry> out = new java.util.ArrayList<>();
+        for (com.hbm.items.machine.ZirnoxFuel fuel : com.hbm.items.machine.ZirnoxFuel.values()) {
+            if (fuel.wasteId == null) continue;
+            ItemStack hot = com.hbm.items.ModZirnoxItems.hotWaste(fuel, 1);
+            out.add(new Entry(hot, cool(hot)));
+        }
+        for (var plate : java.util.List.of(com.hbm.items.ModNuclearMiscItems.WASTE_PLATE_U233, com.hbm.items.ModNuclearMiscItems.WASTE_PLATE_U235,
+                com.hbm.items.ModNuclearMiscItems.WASTE_PLATE_MOX, com.hbm.items.ModNuclearMiscItems.WASTE_PLATE_PU239,
+                com.hbm.items.ModNuclearMiscItems.WASTE_PLATE_SA326, com.hbm.items.ModNuclearMiscItems.WASTE_PLATE_RA226BE,
+                com.hbm.items.ModNuclearMiscItems.WASTE_PLATE_PU238BE)) {
+            ItemStack hot = ItemDepletedFuel.makeHot(plate.get(), 1);
+            out.add(new Entry(hot, cool(hot)));
+        }
+        for (EnumPWRFuel fuel : EnumPWRFuel.values()) {
+            ItemStack hot = new ItemStack(ModPwrItems.hot(fuel));
+            out.add(new Entry(hot, cool(hot)));
+        }
+        for (var rodHandle : com.hbm.items.ModRBMKItems.PELLETS.keySet()) {
+            com.hbm.items.machine.ItemRBMKRod rod = rodHandle.get();
+            ItemStack hot = new ItemStack(rod);
+            com.hbm.items.machine.ItemRBMKRod.setYield(hot, 0.2 * rod.yield);
+            com.hbm.items.machine.ItemRBMKRod.setCoreHeat(hot, 100);
+            com.hbm.items.machine.ItemRBMKRod.setHullHeat(hot, 50);
+            ItemStack cold = new ItemStack(rod);
+            com.hbm.items.machine.ItemRBMKRod.setYield(cold, 0.2 * rod.yield);
+            out.add(new Entry(hot, cold));
+        }
+        return out;
+    }
+
     private static EnumPWRFuel hotPwr(ItemStack stack) {
         for (EnumPWRFuel fuel : EnumPWRFuel.values()) {
             if (stack.getItem() == ModPwrItems.hot(fuel)) return fuel;

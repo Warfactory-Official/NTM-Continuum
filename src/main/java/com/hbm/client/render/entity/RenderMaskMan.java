@@ -38,6 +38,7 @@ public class RenderMaskMan extends CompatEntityRenderer<EntityMaskMan, RenderMas
 
     @Override
     public void extract(EntityMaskMan entity, State state, float partialTicks) {
+        com.hbm.client.BossStatus.set(entity, net.minecraft.world.BossEvent.BossBarColor.RED); // 1.7 render-pushed BossStatus
         // 1.7 read limbSwing/limbSwingAmount straight off the entity inside the model
         float swing = entity.walkAnimation.position(partialTicks);
         float amount = entity.walkAnimation.speed(partialTicks) * 0.5F;

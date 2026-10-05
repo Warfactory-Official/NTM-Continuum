@@ -19,6 +19,7 @@ import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -168,6 +169,40 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
             if (holds(full, fluid, amount)) examples.add(full);
         }
         return examples;
+    }
+
+    // ---- the same table as another mod's fluid handler sees it (History section 19ek-fluids) ----
+
+    /** A fixed container: {@code full} holds {@code amount} of {@code fluid}; draining all of it leaves {@code empty}. */
+    public record ForeignRow(Item full, ItemStack empty, FluidType fluid, int amount) {}
+
+    /** An empty item that a fill turns into a full member of a component-backed container family, at its capacity. */
+    public record ForeignFill(Item empty, ItemFluidTank family, Predicate<FluidType> admits) {}
+
+    /**
+     * The fixed rows whose full item is HBM's: vanilla's own items (buckets, bottles, potions) keep the handlers their
+     * loader gives them. The empty item is whatever 1.7 left ({@link ItemStack#EMPTY} when the container is used up).
+     */
+    public List<ForeignRow> foreignRows() {
+        List<ForeignRow> rows = new ArrayList<>();
+        for (Fixed fixed : FIXED) {
+            if (!fixed.full.startsWith(com.hbm.Constants.MOD_ID + ":")) continue;
+            ItemStack full = item(fixed.full);
+            if (full.isEmpty()) continue;
+            rows.add(new ForeignRow(full.getItem(), item(fixed.container), Fluids.fromName(fixed.fluid), fixed.amount));
+        }
+        return rows;
+    }
+
+    /** The empty canister, gas tank, lead tank, disperser canister and gland, each filling into its family. */
+    public List<ForeignFill> foreignFills() {
+        List<ForeignFill> fills = new ArrayList<>();
+        for (Typed typed : typed()) {
+            ItemStack container = typed.container.get();
+            if (container.isEmpty() || !(typed.item.get() instanceof ItemFluidTank family) || container.getItem() == family) continue;
+            fills.add(new ForeignFill(container.getItem(), family, typed::admits));
+        }
+        return fills;
     }
 
     private static ItemStack item(String id) {

@@ -96,6 +96,11 @@ public final class RadioTelexScreen extends CompatContainerScreen<RadioTelexMenu
         drawWaveform(graphics, telex);
     }
 
+    /** 1.7 {@code GUIScreenRadioTelex} is a plain GuiScreen whose foreground pass draws only tooltips: no title, no "Inventory". */
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    }
+
     private void drawTxLine(GuiGraphicsExtractor graphics, String text, int line) {
         String format = "\u00a7r";
         int y = 11 + 14 * line;

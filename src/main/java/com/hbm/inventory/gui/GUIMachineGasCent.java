@@ -15,7 +15,7 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.List;
 import java.util.Optional;
 
-/** Gas centrifuge screen preserving the old 206x204 layout and tank/progress gauges. */
+/** Gas centrifuge screen, 1.7 {@code GUIMachineGasCent} ({@code processing/gui_centrifuge_gas.png}, 206x204). */
 public class GUIMachineGasCent extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineGasCent>
         implements IUpgradeInfoProviderSource {
 
@@ -28,12 +28,6 @@ public class GUIMachineGasCent extends dev.golem.core.gui.CompatContainerScreen<
     }
 
     @Override
-    protected void init() {
-        super.init();
-        inventoryLabelY = imageHeight - 96 + 2;
-    }
-
-    @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         GuiDraw.blit(graphics, TEXTURE, leftPos, topPos, 0F, 0F, imageWidth, imageHeight, SHEET, SHEET);
         GuiUtil.drawInfoPanel(graphics, leftPos - 12, topPos + 16, 3);
@@ -42,13 +36,14 @@ public class GUIMachineGasCent extends dev.golem.core.gui.CompatContainerScreen<
         TileEntityMachineGasCent gasCent = menu.getGasCent();
         if (gasCent == null) return;
 
+        // 1.7 GUIMachineGasCent: power bar, progress arrow (getCentrifugeProgressScaled(36), not clamped), four 6x52 tanks.
         int power = (int) gasCent.getPowerScaled(52);
         if (power > 0) {
             GuiDraw.blit(graphics, TEXTURE, leftPos + 182, topPos + 69 - power,
                     206F, 52F - power, 16, power, SHEET, SHEET);
         }
 
-        int progress = Math.min(36, gasCent.progress * 36 / Math.max(gasCent.getProcessingSpeed(), 1));
+        int progress = gasCent.getProgressScaled(36);
         if (progress > 0) {
             GuiDraw.blit(graphics, TEXTURE, leftPos + 70, topPos + 35,
                     206F, 52F, progress, 13, SHEET, SHEET);
@@ -83,7 +78,7 @@ public class GUIMachineGasCent extends dev.golem.core.gui.CompatContainerScreen<
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 94, 0x404040, false);
+        GuiDraw.text(graphics, font, Component.translatable("container.inventory"), 8, imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
@@ -91,20 +86,19 @@ public class GUIMachineGasCent extends dev.golem.core.gui.CompatContainerScreen<
         TileEntityMachineGasCent gasCent = menu.getGasCent();
         if (gasCent == null) return;
 
-        if (isHovering(182, 17, 16, 52, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font,
-                    GuiUtil.energyTooltip(gasCent.power, TileEntityMachineGasCent.MAX_POWER),
-                    Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(15, 15, 24, 55, mouseX, mouseY)) {
+        // 1.7 order: input tank, output tank, power, then the two info panels.
+        if (GuiUtil.hover(mouseX, mouseY, leftPos + 15, topPos + 15, 24, 55)) {
             tankTooltip(graphics, gasCent.inputTank.getTankType(),
                     gasCent.inputTank.getFill(), gasCent.inputTank.getMaxFill(), true, mouseX, mouseY);
-        } else if (isHovering(137, 15, 25, 55, mouseX, mouseY)) {
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 137, topPos + 15, 25, 55)) {
             tankTooltip(graphics, gasCent.outputTank.getTankType(),
                     gasCent.outputTank.getFill(), gasCent.outputTank.getMaxFill(), false, mouseX, mouseY);
-        } else if (isHovering(-12, 16, 16, 16, mouseX, mouseY)) {
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 182, topPos + 69 - 52, 16, 52)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.energyTooltip(gasCent.power, TileEntityMachineGasCent.MAX_POWER), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos - 12, topPos + 16, 16, 16)) {
             GuiDraw.tooltip(graphics, font, GasCentTooltips.enrichment(),
                     Optional.empty(), leftPos - 8, topPos + 32);
-        } else if (isHovering(-12, 32, 16, 16, mouseX, mouseY)) {
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos - 12, topPos + 32, 16, 16)) {
             GuiDraw.tooltip(graphics, font, GasCentTooltips.output(),
                     Optional.empty(), leftPos - 8, topPos + 48);
         }
@@ -119,8 +113,12 @@ public class GUIMachineGasCent extends dev.golem.core.gui.CompatContainerScreen<
 
     private Component pseudoFluidName(PseudoFluidType type, boolean input) {
         if (!type.getIfHighSpeed()) return Component.translatable(type.getNameKey());
+        // 1.7: the input name is dark red unless the speed upgrade is in (processing speed 150 - 70), then gold;
+        // the output name is always gold.
+        TileEntityMachineGasCent gasCent = menu.getGasCent();
+        boolean slow = gasCent != null && gasCent.getProcessingSpeed() > TileEntityMachineGasCent.PROCESSING_SPEED - 70;
         return Component.translatable(type.getNameKey())
-                .withStyle(input ? ChatFormatting.DARK_RED : ChatFormatting.GOLD);
+                .withStyle(input && slow ? ChatFormatting.DARK_RED : ChatFormatting.GOLD);
     }
 
     @Override

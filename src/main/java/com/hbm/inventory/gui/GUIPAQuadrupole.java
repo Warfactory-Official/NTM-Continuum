@@ -44,7 +44,17 @@ public class GUIPAQuadrupole extends GUIPABase<ContainerPAQuadrupole> {
 
         if (quadrupole.power >= TileEntityPAQuadrupole.usage) drawLamp(graphics, x + 65, y + 64);
         if (Math.ceil(quadrupole.temperature) <= COOL_ENOUGH) drawLamp(graphics, x + 75, y + 64);
-        if (ItemPACoil.typeOf(quadrupole.inventory.getStackInSlot(1)) != null) drawLamp(graphics, x + 85, y + 64);
+        ItemPACoil.EnumCoilType coil = ItemPACoil.typeOf(quadrupole.inventory.getStackInSlot(1));
+        if (coil != null) {
+            drawLamp(graphics, x + 85, y + 64);
+            // 1.7 GUIPAQuadrupole: the inserted coil's 28x28 picture over the magnet.
+            switch (coil) {
+                case GOLD -> GuiDraw.blit(graphics, TEXTURE, x + 65, y + 30, 200F, 0F, 28, 28, 256, 256);
+                case NIOBIUM -> GuiDraw.blit(graphics, TEXTURE, x + 65, y + 30, 228F, 0F, 28, 28, 256, 256);
+                case BSCCO -> GuiDraw.blit(graphics, TEXTURE, x + 65, y + 30, 200F, 28F, 28, 28, 256, 256);
+                case CHLOROPHYTE -> GuiDraw.blit(graphics, TEXTURE, x + 65, y + 30, 228F, 28F, 28, 28, 256, 256);
+            }
+        }
 
         drawTank(graphics, quadrupole.coolantTanks[0], x + 116, y + 36);
         drawTank(graphics, quadrupole.coolantTanks[1], x + 134, y + 36);
@@ -52,7 +62,7 @@ public class GUIPAQuadrupole extends GUIPABase<ContainerPAQuadrupole> {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        drawTitleAndInventory(graphics, 6);
+        drawTitleAndInventory(graphics, -9, 6, 0xffffff);
         drawTemperature(graphics, 118, 22, 148, 12);
     }
 

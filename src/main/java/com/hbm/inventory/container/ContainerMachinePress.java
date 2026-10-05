@@ -48,11 +48,11 @@ public class ContainerMachinePress extends AbstractContainerMenu {
         });
         for (int i = 0; i < 9; i++) this.addSlot(validated(4 + i, 8 + i * 18, 84)); // storage buffer
 
-        // Player inventory: rows at y=120 (GUI is 202 tall), hotbar at y=178.
+        // Player inventory: 1.7 ContainerMachinePress rows at y=132 (GUI is 214 tall), hotbar at y=190.
         for (int row = 0; row < 3; row++) for (int col = 0; col < 9; col++) {
-            this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 120 + row * 18));
+            this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 132 + row * 18));
         }
-        for (int col = 0; col < 9; col++) this.addSlot(new Slot(playerInventory, col, 8 + col * 18, 178));
+        for (int col = 0; col < 9; col++) this.addSlot(new Slot(playerInventory, col, 8 + col * 18, 190));
     }
 
     private Slot validated(int index, int x, int y) {

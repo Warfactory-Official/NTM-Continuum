@@ -37,11 +37,14 @@ public final class ArmorEquipmentDeclarations {
         Equipment.humanoid(NS, "envsuit", "hbm:envsuit");
         Equipment.humanoid(NS, "euphemium", "hbm:euphemium");
         Equipment.humanoid(NS, "fau", "hbm:fau");
+        Equipment.humanoid(NS, "gas_mask", "hbm:gas_mask");
         Equipment.humanoid(NS, "goggles", "hbm:goggles");
         Equipment.humanoid(NS, "hazmat", "hbm:hazmat");
         Equipment.humanoid(NS, "hazmat_grey", "hbm:hazmat_grey");
+        Equipment.humanoid(NS, "hazmat_grey_hood", "hbm:hazmat_grey_hood");
         Equipment.humanoid(NS, "hazmat_paa", "hbm:hazmat_paa");
         Equipment.humanoid(NS, "hazmat_red", "hbm:hazmat_red");
+        Equipment.humanoid(NS, "hazmat_red_hood", "hbm:hazmat_red_hood");
         Equipment.humanoid(NS, "hev", "hbm:hev");
         Equipment.of(NS, "infamy").layer("humanoid", "hbm:infamy").register();
         Equipment.humanoid(NS, "jackt", "hbm:jackt");

@@ -21,12 +21,11 @@ public class GUIFurnaceCombination extends dev.golem.core.gui.CompatContainerScr
         super(menu, playerInventory, title, 176, 186);
     }
 
+    /** 1.7 {@code GUIFurnaceCombo.drawGuiContainerForegroundLayer}: centred title at y 6, "Inventory" at (8, ySize - 94). */
     @Override
-    protected void init() {
-        super.init();
-        titleLabelX = imageWidth / 2 - font.width(title) / 2;
-        titleLabelY = 6;
-        inventoryLabelY = imageHeight - 96 + 2;
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
@@ -40,45 +39,31 @@ public class GUIFurnaceCombination extends dev.golem.core.gui.CompatContainerScr
         int heat = furnace.getHeatScaled(37);
         if (heat > 0) GuiDraw.blit(graphics, TEXTURE, leftPos + 45, topPos + 46, 176F, 5F, heat, 5, 256, 256);
 
-        drawTank(graphics, furnace, 118, 18, 16, 52);
+        // 1.7: furnace.tank.renderTank(guiLeft + 118, guiTop + 70, z, 16, 52) — tinted, bottom-anchored.
+        Production2Gui.drawTank(graphics, furnace.tank, leftPos + 118, topPos + 70, 16, 52);
     }
 
-    private void drawTank(GuiGraphicsExtractor graphics, TileEntityFurnaceCombination furnace,
-                          int x, int y, int width, int height) {
-        int fill = furnace.tank.getFill();
-        int max = furnace.tank.getMaxFill();
-        int filledHeight = max <= 0 ? 0 : fill * height / max;
-        if (filledHeight <= 0 || furnace.tank.getTankType() == com.hbm.inventory.fluid.Fluids.NONE) return;
-        int x0 = leftPos + x;
-        int bottom = topPos + y + height;
-        int top = bottom - filledHeight;
-        Identifier fluidTexture = furnace.tank.getTankType().getTexture();
-        if (net.minecraft.client.Minecraft.getInstance().getResourceManager().getResource(fluidTexture).isPresent()) {
-            graphics.enableScissor(x0, top, x0 + width, bottom);
-            for (int tileY = bottom - 16; tileY > top - 16; tileY -= 16) {
-                GuiDraw.blit(graphics, fluidTexture, x0, tileY, 0F, 0F, width, 16, 16, 16);
-            }
-            graphics.disableScissor();
-        } else {
-            graphics.fill(x0, top, x0 + width, bottom, 0xFF000000 | (furnace.tank.getTankType().getColor() & 0xFFFFFF));
-        }
-    }
-
+    /** 1.7 {@code GUIFurnaceCombo.drawScreen}: tank readout, then progress and heat stats ("TU" unspaced, as 1.7). */
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityFurnaceCombination furnace = menu.getFurnace();
         if (furnace == null) return;
-        if (isHovering(118, 18, 16, 52, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, List.of(
-                    furnace.tank.getTankType().getDisplayName(),
-                    Component.literal(furnace.tank.getFill() + " / " + furnace.tank.getMaxFill() + " mB")),
+        if (in17(118, 18, 16, 52, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(furnace.tank), Optional.empty(), mouseX, mouseY);
+        } else if (in17(44, 36, 39, 7, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, font, List.of(Component.literal(String.format(Locale.US, "%,d", furnace.progress)
+                    + " / " + String.format(Locale.US, "%,d", TileEntityFurnaceCombination.processTime) + "TU")),
                     Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(44, 36, 39, 7, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, List.of(Component.literal(String.format(Locale.US, "%,d / %,d TU",
-                    furnace.progress, TileEntityFurnaceCombination.processTime))), Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(44, 45, 39, 7, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, List.of(Component.literal(String.format(Locale.US, "%,d / %,d TU",
-                    furnace.heat, TileEntityFurnaceCombination.maxHeat))), Optional.empty(), mouseX, mouseY);
+        } else if (in17(44, 45, 39, 7, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, font, List.of(Component.literal(String.format(Locale.US, "%,d", furnace.heat)
+                    + " / " + String.format(Locale.US, "%,d", TileEntityFurnaceCombination.maxHeat) + "TU")),
+                    Optional.empty(), mouseX, mouseY);
         }
+    }
+
+    /** The 1.7 GUI hit test ({@code drawCustomInfoStat}/{@code renderTankInfo}): x <= mouse < x + w, y < mouse <= y + h. */
+    private boolean in17(int x, int y, int w, int h, int mouseX, int mouseY) {
+        int mx = mouseX - leftPos, my = mouseY - topPos;
+        return x <= mx && x + w > mx && y < my && y + h >= my;
     }
 }

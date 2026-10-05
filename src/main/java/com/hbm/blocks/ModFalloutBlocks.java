@@ -60,7 +60,7 @@ public final class ModFalloutBlocks {
     public static final RegistryObject<BlockWasteEarth> waste_earth = block("waste_earth",
             p -> new BlockWasteEarth(p, false),
             // 1.7: Material.ground, soundTypeGrass, setHardness(0.6F) (explosion resistance 0.6 with no setResistance)
-            p -> p.strength(0.6F).sound(SoundType.GRASS)
+            p -> p.strength(0.6F).sound(SoundType.GRASS).randomTicks()
                     .isValidSpawn((state, level, pos, type) -> false))
             .model(d -> d.models(Models.cubeBottomTop("minecraft:block/dirt", "hbm:blocks/contamination/waste_grass_side_0", "hbm:blocks/contamination/waste_grass_top_0")).states(Variants.simple()).blockItem())
             // 1.7 WasteEarth.getItemDropped: dirt, quantity 1, no fortune; silk touch keeps the block
@@ -69,7 +69,7 @@ public final class ModFalloutBlocks {
     public static final RegistryObject<BlockWasteEarth> waste_mycelium = block("waste_mycelium",
             p -> new BlockWasteEarth(p, true),
             // 1.7: as waste_earth plus setLightLevel(1F), i.e. light 15
-            p -> p.strength(0.6F).sound(SoundType.GRASS).lightLevel(s -> 15)
+            p -> p.strength(0.6F).sound(SoundType.GRASS).lightLevel(s -> 15).randomTicks()
                     .isValidSpawn((state, level, pos, type) -> false))
             .model(d -> d.models(Models.cubeBottomTop("minecraft:block/dirt", "hbm:blocks/contamination/waste_mycelium_side_0", "hbm:blocks/contamination/waste_mycelium_top")).states(Variants.simple()).blockItem())
             .loot(Loot.oreNoFortune("minecraft:dirt", 1, 1))

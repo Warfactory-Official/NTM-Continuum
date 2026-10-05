@@ -9,7 +9,6 @@ import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalFactory;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -19,7 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 import java.util.Optional;
 
-/** The legacy 248x216 four-lane Chemical Factory screen. */
+/** The 248x216 four-lane Chemical Factory screen — 1.7.10 {@code GUIMachineChemicalFactory} ({@code processing/gui_chemical_factory.png}). */
 public class GUIMachineChemicalFactory
         extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineChemicalFactory>
         implements IUpgradeInfoProviderSource {
@@ -99,27 +98,12 @@ public class GUIMachineChemicalFactory
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         GuiDraw.text(graphics, font, title, 106 - font.width(title) / 2, 6, 0xFF404040, false);
-        GuiDraw.text(graphics, font, playerInventoryTitle, 26, imageHeight - 94, 0xFF404040, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 26, imageHeight - 96 + 2, 0xFF404040, false);
     }
 
+    /** 1.7 {@code renderTank(guiLeft + x, guiTop + y + height, ...)} — the 1.7 call passes the bottom edge. */
     private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y, int width, int height) {
-        int max = tank.getMaxFill();
-        int filled = max <= 0 ? 0 : (int) ((long) tank.getFill() * height / max);
-        if (filled <= 0) return;
-        int x0 = leftPos + x;
-        int bottom = topPos + y + height;
-        int top = bottom - filled;
-        Identifier fluidTexture = tank.getTankType().getTexture();
-        if (Minecraft.getInstance().getResourceManager().getResource(fluidTexture).isPresent()) {
-            graphics.enableScissor(x0, top, x0 + width, bottom);
-            for (int tile = bottom - 16; tile > top - 16; tile -= 16) {
-                GuiDraw.blit(graphics, fluidTexture, x0, tile, 0F, 0F, width, 16, 16, 16);
-            }
-            graphics.disableScissor();
-        } else {
-            graphics.fill(x0, top, x0 + width, bottom,
-                    0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
-        }
+        GuiUtil.tank(graphics, tank, leftPos + x, topPos + y + height, width, height);
     }
 
     private void led(GuiGraphicsExtractor graphics, int x, int sourceX, int lane) {
@@ -132,14 +116,13 @@ public class GUIMachineChemicalFactory
         TileEntityMachineChemicalFactory factory = menu.getFactory();
         if (factory == null) return;
 
-        if (isHovering(224, 18, 16, 68, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.energyTooltip(factory.power, factory.maxPower),
-                    Optional.empty(), mouseX, mouseY);
+        if (GuiUtil.hover(mouseX, mouseY, leftPos + 224, topPos + 18, 16, 68)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.energyTooltip(factory.power, factory.maxPower), mouseX, mouseY);
             return;
         }
 
         for (int lane = 0; lane < TileEntityMachineChemicalFactory.LANES; lane++) {
-            if (isHovering(74, 19 + lane * 22, 18, 18, mouseX, mouseY)) {
+            if (GuiUtil.hover(mouseX, mouseY, leftPos + 74, topPos + 19 + lane * 22, 18, 18)) {
                 GenericRecipe recipe = ChemicalPlantRecipes.INSTANCE.getRecipe(
                         factory.chemplantModule[lane].recipe);
                 GuiDraw.tooltip(graphics, font,
@@ -150,27 +133,25 @@ public class GUIMachineChemicalFactory
             }
             for (int i = 0; i < 3; i++) {
                 int tank = lane * 3 + i;
-                if (isHovering(60 + i * 5, 20 + lane * 22, 3, 16, mouseX, mouseY)) {
+                if (GuiUtil.hover(mouseX, mouseY, leftPos + 60 + i * 5, topPos + 20 + lane * 22, 3, 16)) {
                     tankTooltip(graphics, factory.inputTanks[tank], mouseX, mouseY);
                     return;
                 }
-                if (isHovering(189 + i * 5, 20 + lane * 22, 3, 16, mouseX, mouseY)) {
+                if (GuiUtil.hover(mouseX, mouseY, leftPos + 189 + i * 5, topPos + 20 + lane * 22, 3, 16)) {
                     tankTooltip(graphics, factory.outputTanks[tank], mouseX, mouseY);
                     return;
                 }
             }
         }
-        if (isHovering(224, 125, 7, 52, mouseX, mouseY)) {
+        if (GuiUtil.hover(mouseX, mouseY, leftPos + 224, topPos + 125, 7, 52)) {
             tankTooltip(graphics, factory.water, mouseX, mouseY);
-        } else if (isHovering(233, 125, 7, 52, mouseX, mouseY)) {
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 233, topPos + 125, 7, 52)) {
             tankTooltip(graphics, factory.lps, mouseX, mouseY);
         }
     }
 
     private void tankTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int mouseX, int mouseY) {
-        GuiDraw.tooltip(graphics, font, List.of(tank.getTankType().getDisplayName(),
-                        Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")),
-                Optional.empty(), mouseX, mouseY);
+        GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(tank), mouseX, mouseY);
     }
 
     @Override
@@ -178,7 +159,7 @@ public class GUIMachineChemicalFactory
         TileEntityMachineChemicalFactory factory = menu.getFactory();
         if (factory == null) return false;
         for (int lane = 0; lane < TileEntityMachineChemicalFactory.LANES; lane++) {
-            if (isHovering(74, 19 + lane * 22, 18, 18, (int) event.x(), (int) event.y())) {
+            if (GuiUtil.hover(event.x(), event.y(), leftPos + 74, topPos + 19 + lane * 22, 18, 18)) {
                 int blueprint = TileEntityMachineChemicalFactory.blueprintSlot(lane);
                 GUIScreenRecipeSelector.openSelector(ChemicalPlantRecipes.INSTANCE,
                         factory.getBlockPos(), factory.chemplantModule[lane].recipe, lane,

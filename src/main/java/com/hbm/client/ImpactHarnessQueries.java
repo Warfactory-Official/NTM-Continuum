@@ -67,6 +67,9 @@ public final class ImpactHarnessQueries {
         c.addProperty("fire", ImpactWorldHandler.getFireForClient(mc.level));
         c.addProperty("impact", ImpactWorldHandler.getImpactForClient(mc.level));
         c.addProperty("sky_darken", mc.level.getSkyDarken());
+        // sky renderer slot: none / chainloader / chainloader_impact (stable while dust or fire > 0).
+        c.addProperty("skybox", com.hbm.client.render.world.NTMSkyboxes.state(mc.level));
+        c.addProperty("lode_star", com.hbm.client.render.world.NTMSkyboxes.renderLodeStar);
         json.add("client", c);
         return json;
     }

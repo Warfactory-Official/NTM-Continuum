@@ -202,6 +202,8 @@ public final class ModSounds {
 
     // --- ntm-next entity port (gen_entity_sounds.py) ---
     public static final RegistryObject<SoundEvent> TESLA_ZAP = register("weapon.tesla");
+    /** 1.7 {@code hbm:weapon.teslaShoot} (sounds/weapon/teslaShoot.ogg): the Maskman's lasergun tesla attack. */
+    public static final RegistryObject<SoundEvent> WEAPON_TESLA_SHOOT = register("weapon.teslashoot");
 
     // --- ntm-next entity port (gen_entity_sounds.py) ---
     public static final RegistryObject<SoundEvent> CRATE_BREAK = register("crate_break");

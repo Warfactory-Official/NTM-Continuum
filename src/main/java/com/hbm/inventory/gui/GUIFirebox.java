@@ -8,15 +8,16 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Locale;
 
 /**
  * Client screen for the firebox family. Reads the heat/burn state off the synced client
  * {@link TileEntityFireboxBase} (BufPacket): the horizontal heat bar, the burn-time bar and the flame
- * icon while burning — texture layout matches the 1.12.2 {@code gui_firebox.png} (176×168, bars at
- * tex 176,0 / 176,5 and the 18×18 flame at 176,10).
+ * icon while burning — 1.7.10 {@code GUIFirebox} on {@code machine/gui_firebox.png} or, for the heating oven,
+ * {@code machine/gui_heating_oven.png} (176×168, bars at tex 176,0 / 176,5 and the 18×18 flame at 176,10).
  */
 public class GUIFirebox extends dev.golem.core.gui.CompatContainerScreen<ContainerFirebox> {
 
@@ -27,11 +28,12 @@ public class GUIFirebox extends dev.golem.core.gui.CompatContainerScreen<Contain
         super(menu, playerInventory, title, 176, 168);
     }
 
-    /** The 1.12.2 GUI centred its title. */
+    /** 1.7: centred title at y=6 (white for the heating oven, 4210752 otherwise), inventory line at (8, ySize-96+2). */
     @Override
-    protected void init() {
-        super.init();
-        this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        int color = this.menu.getFirebox() instanceof TileEntityHeaterOven ? 0xffffff : 4210752;
+        GuiDraw.text(graphics, this.font, this.title, this.imageWidth / 2 - this.font.width(this.title) / 2, 6, color, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, 8, this.imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
@@ -59,17 +61,28 @@ public class GUIFirebox extends dev.golem.core.gui.CompatContainerScreen<Contain
         }
     }
 
+    /** 1.7 {@code drawScreen}: burn-module bonuses over an empty fuel slot, then the heat and burn readouts. */
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityFireboxBase te = this.menu.getFirebox();
         if (te == null) return;
-        if (this.isHovering(80, 27, 71, 7, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, List.of(
-                    Component.literal(String.format("%,d", te.heatEnergy) + " / " + String.format("%,d", te.getMaxHeat()) + " TU")), Optional.empty(), mouseX, mouseY);
-        } else if (this.isHovering(80, 36, 71, 7, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, List.of(
-                    Component.literal(te.burnHeat + " TU/t"),
-                    Component.literal((te.burnTime / 20) + "s")), Optional.empty(), mouseX, mouseY);
+        if (this.menu.getCarried().isEmpty()) {
+            for (int i = 0; i < 2; i++) {
+                Slot slot = this.menu.getSlot(i);
+                if (!slot.hasItem() && this.isHovering(slot.x, slot.y, 16, 16, mouseX, mouseY)) {
+                    List<String> bonuses = te.getModule().getDesc();
+                    if (!bonuses.isEmpty()) {
+                        GuiUtil.tooltip(graphics, this.font, GuiUtil.lines(bonuses.toArray(new String[0])), mouseX, mouseY);
+                        return;
+                    }
+                }
+            }
+        }
+        if (GuiUtil.hover(mouseX, mouseY, this.leftPos + 80, this.topPos + 27, 71, 7)) {
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.lines(
+                    String.format(Locale.US, "%,d", te.heatEnergy) + " / " + String.format(Locale.US, "%,d", te.getMaxHeat()) + "TU"), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, this.leftPos + 80, this.topPos + 36, 71, 7)) {
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.lines(te.burnHeat + "TU/t", (te.burnTime / 20) + "s"), mouseX, mouseY);
         }
     }
 }

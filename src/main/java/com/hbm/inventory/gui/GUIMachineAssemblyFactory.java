@@ -17,11 +17,10 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/** The 256x240 Assembly Factory screen, preserving the four old lane panels and tank overlays. */
+/** The 256x240 Assembly Factory screen — 1.7.10 {@code GUIMachineAssemblyFactory} ({@code processing/gui_assembly_factory.png}). */
 public final class GUIMachineAssemblyFactory
         extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineAssemblyFactory>
         implements IUpgradeInfoProviderSource {
@@ -101,19 +100,10 @@ public final class GUIMachineAssemblyFactory
         GuiDraw.blit(graphics, TEXTURE, leftPos + x, topPos + y, u, 236F, 4, 4, 256, 256);
     }
 
-    /** The old renderTank convention takes the bar's bottom edge and stretches one tiled texture quad. */
+    /** 1.7 {@code renderTank(guiLeft + x, guiTop + bottom, z, width, height)}: y is the bottom edge. */
     private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank,
                           int x, int bottom, int width, int height) {
-        int max = tank.getMaxFill();
-        int fill = max <= 0 ? 0 : (int) ((long) tank.getFill() * height / max);
-        if (fill <= 0) return;
-
-        int drawX = leftPos + x;
-        int drawBottom = topPos + bottom;
-        int top = drawBottom - fill;
-        Identifier texture = tank.getTankType().getTexture();
-        GuiDraw.blit(graphics, texture, drawX, top, 0F, 1F - fill / 16F,
-                width, fill, 16, 16, 0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF));
+        GuiUtil.tank(graphics, tank, leftPos + x, topPos + bottom, width, height);
     }
 
     @Override
@@ -121,54 +111,45 @@ public final class GUIMachineAssemblyFactory
         TileEntityMachineAssemblyFactory factory = menu.getFactory();
         if (factory == null) return;
 
-        if (isHovering(234, 18, 16, 92, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.energyTooltip(factory.power, factory.maxPower),
-                    Optional.empty(), mouseX, mouseY);
+        if (GuiUtil.hover(mouseX, mouseY, leftPos + 234, topPos + 18, 16, 92)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.energyTooltip(factory.power, factory.maxPower), mouseX, mouseY);
             return;
         }
 
         for (int lane = 0; lane < TileEntityMachineAssemblyFactory.LANES; lane++) {
             int x = lane % 2;
             int y = lane / 2;
-            if (isHovering(6 + x * 109, 53 + y * 56, 18, 18, mouseX, mouseY)) {
+            if (GuiUtil.hover(mouseX, mouseY, leftPos + 6 + x * 109, topPos + 53 + y * 56, 18, 18)) {
                 GenericRecipe recipe = AssemblyMachineRecipes.INSTANCE.getRecipe(factory.assemblerModule[lane].recipe);
                 GuiDraw.tooltip(graphics, font, recipe == null
                         ? List.of(Component.translatable("gui.recipe.setRecipe").withStyle(ChatFormatting.YELLOW))
                         : recipe.print(), Optional.empty(), mouseX, mouseY);
                 return;
             }
-            if (isHovering(105 + x * 109, 20 + y * 56, 3, 16, mouseX, mouseY)) {
+            if (GuiUtil.hover(mouseX, mouseY, leftPos + 105 + x * 109, topPos + 20 + y * 56, 5, 32)) {
                 tankTooltip(graphics, factory.inputTanks[lane], mouseX, mouseY);
                 return;
             }
-            if (isHovering(105 + x * 109, 54 + y * 56, 3, 16, mouseX, mouseY)) {
+            if (GuiUtil.hover(mouseX, mouseY, leftPos + 105 + x * 109, topPos + 54 + y * 56, 5, 16)) {
                 tankTooltip(graphics, factory.outputTanks[lane], mouseX, mouseY);
                 return;
             }
         }
-        if (isHovering(232, 149, 7, 52, mouseX, mouseY)) {
+        if (GuiUtil.hover(mouseX, mouseY, leftPos + 232, topPos + 149, 7, 52)) {
             tankTooltip(graphics, factory.water, mouseX, mouseY);
-        } else if (isHovering(241, 149, 7, 52, mouseX, mouseY)) {
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 241, topPos + 149, 7, 52)) {
             tankTooltip(graphics, factory.lps, mouseX, mouseY);
         }
     }
 
     private void tankTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y) {
-        List<Component> lines = new ArrayList<>();
-        lines.add(tank.getTankType().getDisplayName());
-        lines.add(Component.literal(tank.getFill() + "/" + tank.getMaxFill() + "mB"));
-        if (tank.getPressure() != 0) {
-            lines.add(Component.literal("Pressure: " + tank.getPressure() + " PU").withStyle(ChatFormatting.RED));
-        }
-        tank.getTankType().addInfo(lines);
-        GuiDraw.tooltip(graphics, font, lines,
-                Optional.empty(), x, y);
+        GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(tank), x, y);
     }
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         GuiDraw.text(graphics, font, title, 113 - font.width(title) / 2, 6, 0x404040, false);
-        GuiDraw.text(graphics, font, playerInventoryTitle, 33, imageHeight - 94, 0x404040, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 33, imageHeight - 96 + 2, 0x404040, false);
     }
 
     @Override
@@ -178,7 +159,7 @@ public final class GUIMachineAssemblyFactory
         for (int lane = 0; lane < TileEntityMachineAssemblyFactory.LANES; lane++) {
             int x = lane % 2;
             int y = lane / 2;
-            if (isHovering(6 + x * 109, 53 + y * 56, 18, 18, event.x(), event.y())) {
+            if (GuiUtil.hover(event.x(), event.y(), leftPos + 6 + x * 109, topPos + 53 + y * 56, 18, 18)) {
                 GUIScreenRecipeSelector.openSelector(AssemblyMachineRecipes.INSTANCE, factory.getBlockPos(),
                         factory.assemblerModule[lane].recipe, lane,
                         ItemBlueprints.grabPool(factory.getItem(TileEntityMachineAssemblyFactory.templateSlot(lane))), this);

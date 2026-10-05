@@ -18,9 +18,11 @@ import java.util.function.Predicate;
  * <ul>
  *   <li>{@code data/hbm/worldgen/structure/<id>.json}: one {@code hbm:nbt} structure per spawn;</li>
  *   <li>{@code data/hbm/tags/worldgen/biome/has_structure/<id>.json}: the biomes its 1.7 biome predicate accepts;</li>
- *   <li>{@code data/hbm/worldgen/structure_set/ntm_structures.json}: all of them with their 1.7 weights, placed by
- *       {@code random_spread} spacing {@code structureMaxChunks} (16), separation {@code structureMinChunks} (4), salt
- *       996996996, which is exactly 1.7's region pick (see {@code NBTStructure.GenStructure});</li>
+ *   <li>{@code data/hbm/worldgen/structure_set/ntm_structures.json}: all of them with their 1.7 default weights, placed
+ *       by {@code hbm:config_spread} (random_spread with spacing {@code structureMaxChunks}, separation
+ *       {@code structureMinChunks}, both read from {@code hbm.cfg} at generation), salt 996996996, which is exactly 1.7's
+ *       region pick. The weights that decide are {@link #runtimeWeight}, read from {@code hbm.cfg} by
+ *       {@code NBTStructure.GenStructure} (History §19ek-hooks); the set's weights only order vanilla's tries;</li>
  *   <li>{@code data/hbm/tags/worldgen/structure/ntm_structures.json}: every real (non-null) one, for
  *       {@code /locate structure #hbm:ntm_structures} and maps.</li>
  * </ul>
@@ -99,8 +101,11 @@ public final class NTMStructureDeclarations {
         // plains / BiomeGenPlains (LowPlains); sunflower plains is a new BiomeGenPlains, same height
         LEGACY.put("minecraft:plains", b(LOW_PLAINS, true, P));
         LEGACY.put("minecraft:sunflower_plains", b(LOW_PLAINS, true, P));
-        // meadow: no 1.7 biome; a grassy upland flat -> plains types at MidPlains height
-        LEGACY.put("minecraft:meadow", b(MID_PLAINS, true, P));
+        // meadow: no 1.7 biome. A grassy flat, but one of the modern mountain biomes (#minecraft:is_mountain): on the
+        // harness seed its start chunks average y 110-112 (relief 14-15, i.e. 1.7 rootHeight ~2.7, heightVariation
+        // ~0.4). Filed as plains at MidPlains height it took the dish, which 1.7 clamps to y 53..65: about 45 blocks
+        // under the meadow. 1.7 had no plains that high, so it is filed as extreme-hills terrain (History §19ek-small).
+        LEGACY.put("minecraft:meadow", b(MID_HILLS, true, MO, H));
         LEGACY.put("minecraft:snowy_plains", b(LOW_PLAINS, false, C, SN));                     // icePlains
         LEGACY.put("minecraft:ice_spikes", b(0.425F, 0.45F, false, C, SN));                    // ice plains spikes (+0.3, +0.4)
         LEGACY.put("minecraft:desert", b(LOW_PLAINS, false, HO, S));
@@ -116,7 +121,9 @@ public final class NTMStructureDeclarations {
         LEGACY.put("minecraft:snowy_taiga", b(MID_PLAINS, false, C, SN, F));                    // coldTaiga
         LEGACY.put("minecraft:old_growth_pine_taiga", b(MID_PLAINS, true, C, F));              // megaTaiga
         LEGACY.put("minecraft:old_growth_spruce_taiga", b(MID_PLAINS, true, C, F));            // mega spruce taiga, same height
-        LEGACY.put("minecraft:grove", b(LOW_HILLS, false, C, SN, F, H));                       // no 1.7 biome: coldTaigaHills
+        // grove, snowy slopes, cherry grove: modern mountain biomes (#minecraft:is_mountain) that sit high like the meadow
+        // (a 1.20.1 snowy-slopes sample averaged y 140); filed as extreme-hills terrain for the same reason (History §19ek-small).
+        LEGACY.put("minecraft:grove", b(MID_HILLS, false, C, SN, F, MO, H));                   // no 1.7 biome: coldTaigaHills
         LEGACY.put("minecraft:savanna", b(LOW_PLAINS, false, HO, P, SP));
         LEGACY.put("minecraft:savanna_plateau", b(HIGH_PLATEAUS, false, HO, P, SP));
         LEGACY.put("minecraft:windswept_savanna", b(0.3625F, 1.225F, false, HO));               // savanna M (root*.5+.3, var*.5+1.2)
@@ -126,8 +133,8 @@ public final class NTMStructureDeclarations {
         LEGACY.put("minecraft:stony_peaks", b(MID_HILLS, true, MO, H));                         // no 1.7 biome: extremeHills
         LEGACY.put("minecraft:jagged_peaks", b(MID_HILLS, false, C, SN, MO));                   // no 1.7 biome: snowy mountain
         LEGACY.put("minecraft:frozen_peaks", b(MID_HILLS, false, C, SN, MO));                   // no 1.7 biome: snowy mountain
-        LEGACY.put("minecraft:snowy_slopes", b(LOW_HILLS, false, C, SN, MO));                   // iceMountains
-        LEGACY.put("minecraft:cherry_grove", b(LOW_HILLS, true, F, H));                         // no 1.7 biome: forestHills
+        LEGACY.put("minecraft:snowy_slopes", b(MID_HILLS, false, C, SN, MO, H));                // iceMountains, at extreme-hills height
+        LEGACY.put("minecraft:cherry_grove", b(MID_HILLS, true, F, MO, H));                     // no 1.7 biome: forestHills, at extreme-hills height
         LEGACY.put("minecraft:jungle", b(DEFAULT, true, HO, J));
         LEGACY.put("minecraft:bamboo_jungle", b(DEFAULT, true, HO, J));                         // no 1.7 biome: jungle
         LEGACY.put("minecraft:sparse_jungle", b(DEFAULT, true, HO, J, F));                      // jungleEdge
@@ -212,6 +219,60 @@ public final class NTMStructureDeclarations {
             ENTRIES.add(new Entry(NULL_PLAINS, NULL_PLAINS, StructureConfig.plainsNullWeight, null, false, types()));
         if (StructureConfig.oceanNullWeight > 0)
             ENTRIES.add(new Entry(NULL_OCEAN, NULL_OCEAN, StructureConfig.oceanNullWeight, b -> b.is(Type.OCEAN), false, types(Type.OCEAN)));
+    }
+
+    /**
+     * The spawn weight of a set entry from the live {@code StructureConfig} (hbm.cfg {@code 5.05}..{@code 5.43}), 0 for an
+     * entry the config turns off. Read at generation, not at class initialisation.
+     */
+    public static int runtimeWeight(String id) {
+        boolean ruins = StructureConfig.enableRuins, ocean = StructureConfig.enableOceanStructures;
+        return switch (id) {
+            case "spire" -> StructureConfig.spireSpawnWeight;
+            case "features" -> StructureConfig.featuresSpawnWeight;
+            case "bunker" -> StructureConfig.bunkerSpawnWeight;
+            case "vertibird" -> StructureConfig.vertibirdSpawnWeight;
+            case "crashed_vertibird" -> StructureConfig.vertibirdCrashedSpawnWeight;
+            case "beached_patrol" -> StructureConfig.beachedPatrolSpawnWeight;
+            case "aircraft_carrier" -> ocean ? StructureConfig.aircraftCarrierSpawnWeight : 0;
+            case "oil_rig" -> ocean ? StructureConfig.oilRigSpawnWeight : 0;
+            case "lighthouse" -> ocean ? StructureConfig.lighthouseSpawnWeight : 0;
+            case "dish" -> StructureConfig.dishSpawnWeight;
+            case "water_pump" -> StructureConfig.waterPumpSpawnWeight;
+            case "forestchem" -> StructureConfig.forestChemSpawnWeight;
+            case "labolatory" -> StructureConfig.laboratorySpawnWeight;
+            case "forest_post" -> StructureConfig.forestPostSpawnWeight;
+            case "radio" -> StructureConfig.radioSpawnWeight;
+            case "factory" -> StructureConfig.factorySpawnWeight;
+            case "crane" -> StructureConfig.craneSpawnWeight;
+            case "broadcaster_tower" -> StructureConfig.broadcastingTowerSpawnWeight;
+            case "plane1" -> StructureConfig.plane1SpawnWeight;
+            case "plane2" -> StructureConfig.plane2SpawnWeight;
+            case "desert_shack_1" -> StructureConfig.desertShack1SpawnWeight;
+            case "desert_shack_2" -> StructureConfig.desertShack2SpawnWeight;
+            case "desert_shack_3" -> StructureConfig.desertShack3SpawnWeight;
+            case "dead_dish_small" -> StructureConfig.deadDishSmallSpawnWeight;
+            case "ruina" -> ruins ? StructureConfig.ruinsASpawnWeight : 0;
+            case "ruinb" -> ruins ? StructureConfig.ruinsBSpawnWeight : 0;
+            case "ruinc" -> ruins ? StructureConfig.ruinsCSpawnWeight : 0;
+            case "ruind" -> ruins ? StructureConfig.ruinsDSpawnWeight : 0;
+            case "ruine" -> ruins ? StructureConfig.ruinsESpawnWeight : 0;
+            case "ruinf" -> ruins ? StructureConfig.ruinsFSpawnWeight : 0;
+            case "ruing" -> ruins ? StructureConfig.ruinsGSpawnWeight : 0;
+            case "ruinh" -> ruins ? StructureConfig.ruinsHSpawnWeight : 0;
+            case "ruini" -> ruins ? StructureConfig.ruinsISpawnWeight : 0;
+            case "ruinj" -> ruins ? StructureConfig.ruinsJSpawnWeight : 0;
+            case "tower_base" -> StructureConfig.towerBaseSpawnWeight;
+            case "meteor_dungeon" -> 1;
+            case NULL_PLAINS -> StructureConfig.plainsNullWeight;
+            case NULL_OCEAN -> StructureConfig.oceanNullWeight;
+            default -> 0;
+        };
+    }
+
+    /** The set entries in declaration order (every id the data pack lists). */
+    public static List<Entry> entries() {
+        return ENTRIES;
     }
 
     /** The vanilla biomes a 1.7 predicate accepts, in table order. */
@@ -352,12 +413,11 @@ public final class NTMStructureDeclarations {
             if (entry.real()) real.add(NS + ":" + entry.id());
         }
 
+        // hbm:config_spread "ntm": random_spread with spacing 5.02 / separation 5.01 read from hbm.cfg at generation
         JsonObject placement = new JsonObject();
-        placement.addProperty("type", "minecraft:random_spread");
+        placement.addProperty("type", NS + ":config_spread");
         placement.addProperty("salt", SALT);
-        placement.addProperty("spacing", StructureConfig.structureMaxChunks);
-        placement.addProperty("separation", StructureConfig.structureMinChunks);
-        placement.addProperty("spread_type", "linear");
+        placement.addProperty("key", "ntm");
         JsonObject set = new JsonObject();
         set.add("structures", setEntries);
         set.add("placement", placement);

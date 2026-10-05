@@ -46,6 +46,7 @@ public class RenderUFO extends CompatEntityRenderer<EntityUFO, RenderUFO.State> 
 
     @Override
     public void extract(EntityUFO entity, State state, float partialTicks) {
+        com.hbm.client.BossStatus.set(entity, net.minecraft.world.BossEvent.BossBarColor.PINK); // 1.7 render-pushed BossStatus
         state.spin = (float) ((entity.tickCount + partialTicks) * 5D % 360D);
         state.alive = entity.isAlive();
         state.deathTilt = entity.deathTime + 30 + partialTicks;

@@ -31,22 +31,28 @@ public class ItemGunStinger extends ItemGunBaseNT {
             resetLockon(stack);
             return;
         }
-        int previous = getLockonTarget(stack);
-        int target = getLockonTarget(player, 150D, 10D);
-        if (target < 0) {
-            if (getLockonProgress(stack) < 60) resetLockon(stack);
+        String previous = getLockonTarget(stack);
+        Entity target = getLockonTarget(player, 150D, 10D);
+        if (target == null) {
+            if (!getIsLockedOn(stack)) resetLockon(stack);
             return;
         }
-        if (!getIsLockedOn(stack) && target != previous) {
+        if (!getIsLockedOn(stack) && !target.getUUID().toString().equals(previous)) {
             resetLockon(stack);
             setLockonTarget(stack, target);
         }
         setLockonProgress(stack, Math.min(60, getLockonProgress(stack) + 1));
-        if (getLockonProgress(stack) >= 60) setIsLockedOn(stack, true);
+        if (getLockonProgress(stack) >= 60 && !getIsLockedOn(stack)) {
+            // 1.7: playSoundAtEntity(player, TECH_BLEEP, 1, 1) once, when the lock is acquired
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), com.hbm.sound.ModSounds.TECH_BLEEP.get(),
+                    net.minecraft.sounds.SoundSource.PLAYERS, 1F, 1F);
+            setIsLockedOn(stack, true);
+        }
     }
 
-    public static int getLockonTarget(Player player, double distance, double angleThreshold) {
-        if (player == null) return -1;
+    /** 1.7 returned the closest entity's network id (or -1); the port returns the entity itself (or null). */
+    public static @org.jspecify.annotations.Nullable Entity getLockonTarget(Player player, double distance, double angleThreshold) {
+        if (player == null) return null;
         Vec3 origin = player.getEyePosition();
         Vec3 forward = player.getViewVector(1F).normalize();
         AABB bounds = player.getBoundingBox().expandTowards(forward.scale(distance)).inflate(10D);
@@ -63,7 +69,7 @@ public class ItemGunStinger extends ItemGunBaseNT {
                 closest = entity;
             }
         }
-        return closest == null ? -1 : closest.getId();
+        return closest;
     }
 
     public static void resetLockon(ItemStack stack) {

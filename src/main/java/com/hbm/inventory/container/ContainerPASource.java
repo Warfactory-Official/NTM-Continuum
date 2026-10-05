@@ -44,10 +44,10 @@ public class ContainerPASource extends AbstractContainerMenu {
         this.access = access;
 
         addSlot(validated(0, 8, 72));
-        addSlot(validated(1, 62, 18));
-        addSlot(validated(2, 80, 18));
-        addSlot(takeOnly(3, 62, 45));
-        addSlot(takeOnly(4, 80, 45));
+        addSlot(validated(1, 62, 16));
+        addSlot(validated(2, 80, 16));
+        addSlot(takeOnly(3, 62, 43));
+        addSlot(takeOnly(4, 80, 43));
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 122);
     }
 

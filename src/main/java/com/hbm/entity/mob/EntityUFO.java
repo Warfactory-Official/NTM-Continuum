@@ -21,13 +21,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.BossEvent;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
@@ -63,9 +61,6 @@ public class EntityUFO extends CompatMob implements Enemy, IRadiationImmune {
     private static final EntityDataAccessor<Integer> WAYPOINT_Z =
             SynchedEntityData.defineId(EntityUFO.class, EntityDataSerializers.INT);
 
-    private final ServerBossEvent bossEvent = dev.golem.core.world.Compat.bossEvent(this, getDisplayName(),
-            // 1.7 BossStatus drew the one vanilla bar, which is 26.2's PINK
-            BossEvent.BossBarColor.PINK, BossEvent.BossBarOverlay.PROGRESS);
 
     private final List<Entity> secondaries = new ArrayList<>();
 
@@ -249,6 +244,12 @@ public class EntityUFO extends CompatMob implements Enemy, IRadiationImmune {
                 ContaminationUtil.contaminate(living, HazardType.RADIATION, ContaminationType.CREATIVE, 5F);
             }
         }
+
+        // 1.7: two still muke clouds a tick at the beam's foot, one half a tick ahead along the motion (150 blocks)
+        Vec3 motion = getDeltaMovement();
+        com.hbm.particle.helper.HbmEffectNT.Ufo.send(level, getX(), groundY + 0.5, getZ(), null, 150D);
+        com.hbm.particle.helper.HbmEffectNT.Ufo.send(level, getX() + motion.x * 0.5, groundY + 0.5,
+                getZ() + motion.z * 0.5, null, 150D);
     }
 
     /**
@@ -375,21 +376,9 @@ public class EntityUFO extends CompatMob implements Enemy, IRadiationImmune {
     public void tick() {
         super.tick();
 
-        if (!level().isClientSide()) bossEvent.setProgress(getHealth() / getMaxHealth());
     }
 
-    // 1.7: renderer-pushed BossStatus, self-expiring; 26.2 equivalent is the tracking pair.
-    @Override
-    public void startSeenByPlayer(ServerPlayer player) {
-        super.startSeenByPlayer(player);
-        this.bossEvent.addPlayer(player);
-    }
 
-    @Override
-    public void stopSeenByPlayer(ServerPlayer player) {
-        super.stopSeenByPlayer(player);
-        this.bossEvent.removePlayer(player);
-    }
 
 
     @Override

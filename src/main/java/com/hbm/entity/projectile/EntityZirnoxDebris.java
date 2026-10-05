@@ -4,7 +4,6 @@ import dev.golem.core.data.Tags;
 
 import dev.golem.core.data.CompatEntity;
 import com.hbm.entity.ModEntities;
-import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.items.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -96,19 +95,15 @@ public class EntityZirnoxDebris extends CompatEntity {
         return InteractionResult.SUCCESS;
     }
 
+    /**
+     * 1.7 {@code onUpdate}: move first, then the server logic. 1.7 adds no chunk radiation here (an earlier port took
+     * 1.12.2's +20 RAD per tick for ELEMENT debris; removed in History §19ek-small). Instead ELEMENT and GRAPHITE
+     * debris give every living entity within 2.5 blocks the radiation effect, and rising CONCRETE/EXCHANGER debris
+     * smashes a rough 3x3x3 hole where it hits a block.
+     */
     @Override
     public void tick() {
         super.tick();
-
-        if (!level().isClientSide()) {
-            if (getDebrisType() == DebrisType.ELEMENT) {
-                ChunkRadiationManager.proxy.incrementRad(level(), blockPosition(), 20.0D, 150.0D);
-            }
-            if (tickCount > getDebrisType().lifetime + getId() % 50) {
-                discard();
-                return;
-            }
-        }
 
         Vec3 velocity = getDeltaMovement().add(0.0D, -0.04D, 0.0D);
         move(MoverType.SELF, velocity);
@@ -123,6 +118,44 @@ public class EntityZirnoxDebris extends CompatEntity {
             }
         }
         setDeltaMovement(velocity);
+
+        if (level().isClientSide()) return;
+        DebrisType type = getDebrisType();
+
+        if ((type == DebrisType.CONCRETE || type == DebrisType.EXCHANGER) && velocity.y > 0) {
+            Vec3 pos = position();
+            Vec3 next = pos.add(velocity.scale(2D));
+            net.minecraft.world.phys.BlockHitResult hit = level().clip(new net.minecraft.world.level.ClipContext(pos, next,
+                    net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, this));
+            if (hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK) {
+                BlockPos centre = hit.getBlockPos();
+                for (int i = -1; i <= 1; i++) {
+                    for (int j = -1; j <= 1; j++) {
+                        for (int k = -1; k <= 1; k++) {
+                            int rn = Math.abs(i) + Math.abs(j) + Math.abs(k);
+                            if (rn <= 1 || random.nextInt(rn) == 0) {
+                                level().setBlock(centre.offset(i, j, k), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                            }
+                        }
+                    }
+                }
+                discard();
+                return;
+            }
+        }
+
+        if (type == DebrisType.ELEMENT || type == DebrisType.GRAPHITE) {
+            int amplifier = type == DebrisType.ELEMENT ? 7 : 4;
+            for (net.minecraft.world.entity.LivingEntity e : level().getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
+                    getBoundingBox().inflate(2.5D))) {
+                dev.golem.core.world.Effects.addRegistered(e, com.hbm.potion.ModEffects.RADIATION.get(), 60 * 20, amplifier);
+            }
+        }
+
+        if (!com.hbm.tileentity.machine.rbmk.RBMKDials.getPermaScrap(level())
+                && tickCount > type.lifetime + getId() % 50) {
+            discard();
+        }
     }
 
     public DebrisType getDebrisType() {

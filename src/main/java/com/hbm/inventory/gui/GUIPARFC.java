@@ -46,7 +46,8 @@ public class GUIPARFC extends GUIPABase<ContainerPARFC> {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 0xFF404040, false);
+        // 1.7 GUIPARFC draws no title, only "Inventory".
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 4210752, false);
         drawTemperature(graphics, 91, 22, 121, 12);
     }
 

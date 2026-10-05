@@ -96,8 +96,8 @@ public final class ModEventHandlerImpact {
                 }
             }
             for (LivingEntity entity : burning) {
-                // 1.7 setFire(5): never shortens a longer burn
-                entity.setRemainingFireTicks(Math.max(entity.getRemainingFireTicks(), 5 * 20));
+                // 1.7 setFire(5): Fire Protection applies, never shortens a longer burn
+                dev.golem.core.world.Effects.ignite(entity, 5);
                 Compat.hurt(entity, world, world.damageSources().onFire(), 2);
             }
         }
@@ -121,7 +121,16 @@ public final class ModEventHandlerImpact {
      * 1.7 {@code extinction} (CheckSpawn) and {@code onPopulate} (ANIMALS). True refuses the spawn.
      * The size test keeps 1.7's precedence: {@code height >= 0.85 || (width >= 0.85 && !water && !child)}.
      */
+    /** Spawns this hook refused since start (harness evidence only). */
+    public static int denied;
+
     public static boolean denySpawn(Mob mob, ServerLevel level, dev.golem.core.world.Spawns.Reason reason) {
+        boolean deny = denySpawn17(mob, level, reason);
+        if (deny) denied++;
+        return deny;
+    }
+
+    private static boolean denySpawn17(Mob mob, ServerLevel level, dev.golem.core.world.Spawns.Reason reason) {
         if (!TomSaveData.impact(level)) return false;
 
         if (reason == dev.golem.core.world.Spawns.Reason.CHUNK_GENERATION) return true;

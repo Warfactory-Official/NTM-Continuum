@@ -56,11 +56,15 @@ public class GUIPASource extends GUIPABase<ContainerPASource> {
 
         drawPowerBar(graphics, x + 8, y + 18, source.power, source.getMaxPower());
 
-        if (Math.ceil(source.temperature) <= COOL_ENOUGH) drawLamp(graphics, x + 44, y + 18);
-        if (source.power >= TileEntityPASource.usage) drawLamp(graphics, x + 44, y + 43);
+        if (Math.ceil(source.temperature) <= COOL_ENOUGH) drawLamp(graphics, x + 44, y + 16);
+        if (source.power >= TileEntityPASource.usage) drawLamp(graphics, x + 44, y + 41);
 
-        GuiDraw.blit(graphics, TEXTURE, x + 45, y + 73, 176F, 52F, 68, 14, 256, 256,
-                0xFF000000 | source.state.color);
+        // 1.7 passes the 0..255 channel values straight to glColor4f, which clamps them to [0, 1]: every
+        // channel of the state colour is either fully on or fully off, so the lamp shows the saturated colour.
+        int color = source.state.color;
+        int tint = 0xFF000000 | ((color & 0xFF0000) != 0 ? 0xFF0000 : 0)
+                | ((color & 0x00FF00) != 0 ? 0x00FF00 : 0) | ((color & 0x0000FF) != 0 ? 0x0000FF : 0);
+        GuiDraw.blit(graphics, TEXTURE, x + 45, y + 73, 176F, 52F, 68, 14, 256, 256, tint);
 
         drawTank(graphics, source.coolantTanks[0], x + 134, y + 36);
         drawTank(graphics, source.coolantTanks[1], x + 152, y + 36);
@@ -68,7 +72,7 @@ public class GUIPASource extends GUIPABase<ContainerPASource> {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        drawTitleAndInventory(graphics, 4);
+        drawTitleAndInventory(graphics, -9, 4, 0xffffff);
         drawTemperature(graphics, 136, 22, 166, 12);
 
         TileEntityPASource source = menu.getSource();
@@ -86,7 +90,7 @@ public class GUIPASource extends GUIPABase<ContainerPASource> {
         TileEntityPASource source = menu.getSource();
         if (source == null) return;
 
-        if (isHovering(105, 18, 10, 10, mouseX, mouseY)) {
+        if (isHovering(105, 16, 10, 10, mouseX, mouseY)) {
             List<Component> info = new ArrayList<>();
             info.add(Component.literal("Last momentum: ").withStyle(ChatFormatting.BLUE)
                     .append(Component.literal(comma(source.lastSpeed)).withStyle(ChatFormatting.RESET)));
@@ -96,7 +100,7 @@ public class GUIPASource extends GUIPABase<ContainerPASource> {
                 info.add(Component.translatable(base + i).withStyle(ChatFormatting.YELLOW));
             }
             tooltip(graphics, info, mouseX, mouseY);
-        } else if (isHovering(105, 30, 10, 10, mouseX, mouseY)) {
+        } else if (isHovering(105, 28, 10, 10, mouseX, mouseY)) {
             tooltip(graphics, List.of(Component.literal("Cancel operation").withStyle(ChatFormatting.RED)),
                     mouseX, mouseY);
         }
@@ -109,7 +113,8 @@ public class GUIPASource extends GUIPABase<ContainerPASource> {
 
         int x = (int) event.x() - leftPos;
         int y = (int) event.y() - topPos;
-        if (x >= 105 && x < 115 && y >= 30 && y < 40) {
+        // 1.7 hit box: x in [105, 115), y in (28, 38].
+        if (x >= 105 && x < 115 && y > 28 && y <= 38) {
             GuiUtil.playClickSound();
             CompoundTag data = new CompoundTag();
             data.putBoolean("cancel", true);

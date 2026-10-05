@@ -8,15 +8,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-import java.util.Optional;
 
-/** Faithful 176x237 storage-drum screen, including the two vertical tank columns. */
+/** Storage-drum screen, 1.7 {@code GUIStorageDrum} ({@code processing/gui_drum.png}, 176x234). */
 public class GUIStorageDrum extends dev.golem.core.gui.CompatContainerScreen<ContainerStorageDrum> {
 
     private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_drum.png");
 
     public GUIStorageDrum(ContainerStorageDrum menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 176, 237);
+        super(menu, playerInventory, title, 176, 234);
     }
 
     @Override
@@ -40,17 +39,17 @@ public class GUIStorageDrum extends dev.golem.core.gui.CompatContainerScreen<Con
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 6, 0x404040, false);
-        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 0x404040, false);
+        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, font, Component.translatable("container.inventory"), 8, imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if (menu.getDrum() == null) return;
-        if (isHovering(16, 23, 9, 108, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(menu.getDrum().liquid), Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(151, 23, 9, 108, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(menu.getDrum().gas), Optional.empty(), mouseX, mouseY);
+        if (GuiUtil.hover(mouseX, mouseY, leftPos + 16, topPos + 23, 9, 108)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(menu.getDrum().liquid), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 151, topPos + 23, 9, 108)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(menu.getDrum().gas), mouseX, mouseY);
         }
     }
 }

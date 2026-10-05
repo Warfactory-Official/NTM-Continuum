@@ -19,13 +19,27 @@ public class ItemGunChargeThrower extends ItemGunBaseNT {
         super(properties, quality, configs);
     }
 
-    public static int getLastHook(ItemStack stack) { return getValueInt(stack, KEY_LASTHOOK); }
-    public static void setLastHook(ItemStack stack, int value) { setValueInt(stack, KEY_LASTHOOK, value); }
+    /**
+     * The last hook's UUID, or null. 1.7 kept the hook's network entity id; the port keeps its UUID so no numeric
+     * id is persisted in the stack (History section 19ek-small). An old int value reads as no hook.
+     */
+    public static java.util.@org.jspecify.annotations.Nullable UUID getLastHook(ItemStack stack) {
+        String id = getValueString(stack, KEY_LASTHOOK);
+        if (id.isEmpty()) return null;
+        try {
+            return java.util.UUID.fromString(id);
+        } catch (IllegalArgumentException notAUuid) {
+            return null;
+        }
+    }
+    public static void setLastHook(ItemStack stack, Entity hook) { setValueString(stack, KEY_LASTHOOK, hook.getUUID().toString()); }
+    /** 1.7 setLastHook(stack, -1). */
+    public static void clearLastHook(ItemStack stack) { setValueString(stack, KEY_LASTHOOK, ""); }
 
     /** The source rope step, driven by physical client input and using the synchronized hook entity. */
-    public static void clientGrappleTick(Player player, ItemStack stack, boolean primary, boolean secondary) {
+    public static void clientGrappleTick(Player player, @org.jspecify.annotations.Nullable Entity entity,
+            boolean primary, boolean secondary) {
         if (player == null) return;
-        Entity entity = player.level().getEntity(getLastHook(stack));
         if (!(entity instanceof EntityBulletBaseMK4 hook) || !hook.isAlive()
                 || hook.config != XFactoryTool.ct_hook || hook.velocity >= 0.01D) return;
 
@@ -58,13 +72,14 @@ public class ItemGunChargeThrower extends ItemGunBaseNT {
     protected void compatInventoryTick(ItemStack stack, ServerLevel level, Entity entity,
             EquipmentSlot slot, boolean held) {
         super.compatInventoryTick(stack, level, entity, slot, held);
-        if (getState(stack, 0) == GunState.RELOADING) setLastHook(stack, -1);
+        if (getState(stack, 0) == GunState.RELOADING) clearLastHook(stack);
         if (slot != EquipmentSlot.MAINHAND || !(entity instanceof Player player)) {
-            setLastHook(stack, -1);
+            clearLastHook(stack);
             return;
         }
 
-        Entity hook = level.getEntity(getLastHook(stack));
+        java.util.UUID hookId = getLastHook(stack);
+        Entity hook = hookId == null ? null : level.getEntity(hookId);
         if (!(hook instanceof EntityBulletBaseMK4 bullet) || !bullet.isAlive()
                 || bullet.config != XFactoryTool.ct_hook || bullet.velocity >= 0.01D) return;
         if (getPrimary(stack, 0)

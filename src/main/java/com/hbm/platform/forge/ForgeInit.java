@@ -69,11 +69,13 @@ public final class ForgeInit {
         com.hbm.gametest.FinalRecipeGapGameTests.init();
         com.hbm.gametest.Fix1AGameTests.init();
         com.hbm.gametest.IdsGameTests.init();
+        com.hbm.gametest.ForeignFluidGameTests.init();
         com.hbm.gametest.Fix4GameTests.init();
         com.hbm.gametest.Fix5GameTests.init();
         com.hbm.gametest.Fix1BGameTests.init();
         com.hbm.gametest.Fix3GameTests.init();
         com.hbm.gametest.Fix7GameTests.init();
+        com.hbm.gametest.SmallGameTests.init();
         com.hbm.gametest.Fix7GlyphidGameTests.init();
         com.hbm.gametest.Fix7BossGameTests.init();
         com.hbm.gametest.Fix7MobGameTests.init();
@@ -112,6 +114,7 @@ public final class ForgeInit {
         com.hbm.gametest.RadiationPersistenceGameTests.init();
         com.hbm.gametest.WorldgenImpactGameTests.init();
         com.hbm.gametest.ConfigGameTests.init();
+        com.hbm.gametest.HooksGameTests.init();
         com.hbm.gametest.FoldedPortParityGameTests.init();
         com.hbm.gametest.WeaponTableGameTests.init();
         com.hbm.gametest.GunSupportGameTests.init();
@@ -156,6 +159,8 @@ public final class ForgeInit {
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.IdsGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ForeignFluidGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.Fix4GameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.Fix5GameTests.TESTS));
@@ -165,6 +170,8 @@ public final class ForgeInit {
                 com.hbm.gametest.Fix3GameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.Fix7GameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.SmallGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.Fix7GlyphidGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
@@ -239,6 +246,8 @@ public final class ForgeInit {
                 com.hbm.gametest.WorldgenImpactGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.ConfigGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.HooksGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.FoldedPortParityGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,

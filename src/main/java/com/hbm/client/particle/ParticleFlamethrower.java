@@ -6,11 +6,20 @@ import net.minecraft.client.multiplayer.ClientLevel;
  * One tongue of flame from the flamethrower — a fast, rising, spinning blob that swells as it burns
  * out.
  *
- * <p>Ported from 1.12.2 {@code ParticleFlamethrower}. The three fuel types keep their original hue
- * bands: normal fire is orange, balefire green-blue, digamma pushed below zero into magenta (a
- * negative hue wraps, which is what upstream relies on).
+ * <p>Ported from original-hbm (1.7.10) {@code com.hbm.particle.ParticleFlamethrower}. The fuel types keep their
+ * hue bands: normal fire is orange, balefire green-blue, digamma pushed below zero into magenta (a negative hue
+ * wraps, which is what upstream relies on). Oxy (meta 3) and black fire (meta 4) start white and are darkened per
+ * frame by 1.7's {@code renderParticle} colour ramps; the other metas are brightened by {@code 0.75 - age} and drawn at
+ * half alpha. 1.12.2 dropped all of that (white-only fire for black/oxy, no ramp), which the port had copied.
+ * Like 1.7, the colour, alpha and size follow the whole-tick age ({@code particleAge / particleMaxAge}), and the
+ * vertex colours are clamped to 0..1 as 1.7's {@code Tessellator.setColorRGBA} clamped them.
  */
 public class ParticleFlamethrower extends ParticleRotating {
+
+    private final int type;
+    private final float baseRed;
+    private final float baseGreen;
+    private final float baseBlue;
 
     public ParticleFlamethrower(ClientLevel level, double x, double y, double z, int type) {
         super(level, x, y, z);
@@ -25,7 +34,16 @@ public class ParticleFlamethrower extends ParticleRotating {
         if (type == FlameCreator.META_BALEFIRE) initialColor = 65F + this.random.nextFloat() * 35F;
         if (type == FlameCreator.META_DIGAMMA) initialColor = 0F - this.random.nextFloat() * 15F;
 
-        this.setColorHSB(initialColor / 255F, 1F, 1F);
+        int rgb = java.awt.Color.HSBtoRGB(initialColor / 255F, 1F, 1F);
+        float red = ((rgb >> 16) & 0xFF) / 255F;
+        float green = ((rgb >> 8) & 0xFF) / 255F;
+        float blue = (rgb & 0xFF) / 255F;
+        if (type == FlameCreator.META_OXY || type == FlameCreator.META_BLACK) red = green = blue = 1F;
+        this.type = type;
+        this.baseRed = red;
+        this.baseGreen = green;
+        this.baseBlue = blue;
+        this.setColor(red, green, blue);
     }
 
     @Override
@@ -52,13 +70,31 @@ public class ParticleFlamethrower extends ParticleRotating {
 
     @Override
     protected void updateForFrame(float partialTick) {
-        double ageScaled = (this.age + partialTick) / (double) this.lifetime;
-        this.setAlpha((float) Math.pow(1 - Math.min(ageScaled, 1), 0.5));
+        double ageScaled = (double) this.age / (double) this.lifetime;
+        float alpha;
+        if (this.type == FlameCreator.META_OXY) {
+            alpha = (float) (1 - ageScaled);
+            float add = (float) ageScaled * 1.25F - 0.25F;
+            this.setColor(clamp(this.baseRed - add), clamp(this.baseGreen - add * 0.75F), clamp(this.baseBlue));
+        } else if (this.type == FlameCreator.META_BLACK) {
+            alpha = (float) (1 - ageScaled);
+            float add = (float) ageScaled * 2F - 0.25F;
+            this.setColor(clamp(this.baseRed - add * 0.75F), clamp(this.baseGreen - add), clamp(this.baseBlue - add * 0.5F));
+        } else {
+            alpha = (float) Math.pow(1 - Math.min(ageScaled, 1), 0.5) * 0.5F;
+            float add = 0.75F - (float) ageScaled;
+            this.setColor(clamp(this.baseRed + add), clamp(this.baseGreen + add), clamp(this.baseBlue + add));
+        }
+        this.setAlpha(clamp(alpha));
+    }
+
+    private static float clamp(float value) {
+        return value < 0F ? 0F : value > 1F ? 1F : value;
     }
 
     @Override
     public float getQuadSize(float partialTick) {
-        double ageScaled = (this.age + partialTick) / (double) this.lifetime;
+        double ageScaled = (double) this.age / (double) this.lifetime;
         return (float) ((ageScaled * 1.25 + 0.25) * 0.5F);
     }
 }

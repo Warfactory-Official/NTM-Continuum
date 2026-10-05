@@ -7,9 +7,9 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 /** Blast furnace screen preserving the legacy 176x222 layout and two fluid gauges. */
@@ -21,12 +21,11 @@ public class GUIBlastFurnace extends dev.golem.core.gui.CompatContainerScreen<Co
         super(menu, playerInventory, title, 176, 222);
     }
 
+    /** 1.7 {@code GUIBlastFurnace.drawGuiContainerForegroundLayer}: centred title at y 6, "Inventory" at (8, ySize - 94). */
     @Override
-    protected void init() {
-        super.init();
-        titleLabelX = imageWidth / 2 - font.width(title) / 2;
-        titleLabelY = 6;
-        inventoryLabelY = imageHeight - 96 + 2;
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
@@ -80,27 +79,39 @@ public class GUIBlastFurnace extends dev.golem.core.gui.CompatContainerScreen<Co
         }
     }
 
+    /**
+     * 1.7 {@code GUIBlastFurnace.drawScreen}: the burn-heat bonus list over the empty fuel slot (0) while nothing is
+     * carried, the speed stat over (79, 62, 18, 18), and the two tank readouts ({@code renderTankInfo}).
+     */
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineBlastFurnace furnace = menu.getFurnace();
         if (furnace == null) return;
-        if (isHovering(79, 62, 18, 18, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font,
-                    List.of(Component.literal("Speed: " + (int) (furnace.speed * 100F) + "%")),
-                    Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(25, 71, 18, 18, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, List.of(
-                    Component.translatable("hbmfluid.airblast"),
-                    Component.literal(furnace.tanks[0].getFill() + " / " + furnace.tanks[0].getMaxFill() + " mB")),
-                    Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(25, 17, 18, 18, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, List.of(
-                    Component.translatable("hbmfluid.flue"),
-                    Component.literal(furnace.tanks[1].getFill() + " / " + furnace.tanks[1].getMaxFill() + " mB")),
-                    Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(62, 18, 56, 88, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, List.of(Component.literal(String.format(Locale.US,
-                    "%.0f%%", furnace.progress * 100F))), Optional.empty(), mouseX, mouseY);
+        if (menu.getCarried().isEmpty()) {
+            Slot slot = menu.getSlot(0);
+            if (isHovering(slot.x, slot.y, 16, 16, mouseX, mouseY) && !slot.hasItem()) {
+                List<String> bonuses = furnace.burnModule.getHeatDesc();
+                if (!bonuses.isEmpty()) {
+                    GuiDraw.tooltip(graphics, font, bonuses.stream().map(line -> (Component) Component.literal(line)).toList(),
+                            Optional.empty(), mouseX, mouseY);
+                    return;
+                }
+            }
         }
+        if (in17(79, 62, 18, 18, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, font,
+                    List.of(Component.literal("Speed: " + (int) (furnace.speed * 100) + "%")),
+                    Optional.empty(), mouseX, mouseY);
+        } else if (in17(25, 71, 18, 18, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(furnace.tanks[0]), Optional.empty(), mouseX, mouseY);
+        } else if (in17(25, 17, 18, 18, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(furnace.tanks[1]), Optional.empty(), mouseX, mouseY);
+        }
+    }
+
+    /** The 1.7 GUI hit test ({@code drawCustomInfoStat}/{@code renderTankInfo}): x <= mouse < x + w, y < mouse <= y + h. */
+    private boolean in17(int x, int y, int w, int h, int mouseX, int mouseY) {
+        int mx = mouseX - leftPos, my = mouseY - topPos;
+        return x <= mx && x + w > mx && y < my && y + h >= my;
     }
 }

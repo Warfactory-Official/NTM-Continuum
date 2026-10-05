@@ -19,6 +19,10 @@ public class FlameCreator implements IParticleCreator {
     public static final int META_NORMAL = 0;
     public static final int META_BALEFIRE = 1;
     public static final int META_DIGAMMA = 2;
+    /** 1.7 {@code FlameCreator.META_OXY}: starts white, loses red then green over its life (1.7 render ramp). */
+    public static final int META_OXY = 3;
+    /** 1.7 {@code FlameCreator.META_BLACK}: starts white, loses green, red, then blue over its life (1.7 render ramp). */
+    public static final int META_BLACK = 4;
 
     /**
      * Client-side: play it locally without a round trip. Upstream keeps this separate because the

@@ -26,6 +26,8 @@ public final class GeneralConfig {
     public static boolean enableRad = true;
     /** 1.7 {@code 1.32_enableImpactWorldProvider}: the post-impact sky, fog, light and star changes (History §19ej-6). */
     public static boolean enableImpactWorldProvider = true;
+    /** 1.7 {@code 1.31_enableSkyboxes}: the custom overworld sky renderers (impact sky, digamma/lode star, satellite). */
+    public static boolean enableSkyboxes = true;
 
     /** 1.7 {@code 1.17_enableCataclysm}: a burning FOEQ satellite falls from Y 500 above every mob that dies (History §19ej-7). */
     public static boolean enableCataclysm = false;
@@ -164,6 +166,7 @@ public final class GeneralConfig {
         enableGuns = config.get(CATEGORY_GENERAL, "1.20_enableGuns", true, "Prevents new system guns to be fired").getBoolean(true);
         TerrainConfig.enableVirus = config.get(CATEGORY_GENERAL, "1.21_enableVirus", false, "Allows virus blocks to spread").getBoolean(false);
         enableCrosshairs = config.get(CATEGORY_GENERAL, "1.22_enableCrosshairs", true, "Shows custom crosshairs when an NTM gun is being held").getBoolean(true);
+        enableSkyboxes = config.get(CATEGORY_GENERAL, "1.31_enableSkyboxes", true, "If enabled, will try to use NTM's custom skyboxes.").getBoolean(true);
         enableImpactWorldProvider = config.get(CATEGORY_GENERAL, "1.32_enableImpactWorldProvider", true, "If enabled, registers custom world provider which modifies lighting and sky colors for post impact effects.").getBoolean(true);
         enableStatReRegistering = config.get(CATEGORY_GENERAL, "1.33_enableStatReRegistering", true, "If enabled, will re-register item crafting/breaking/usage stats in order to fix a forge bug where modded items just won't show up.").getBoolean(true);
         enableKeybindOverlap = config.get(CATEGORY_GENERAL, "1.34_enableKeybindOverlap", true, "If enabled, will handle keybinds that would otherwise be ignored due to overlapping.").getBoolean(true);

@@ -38,18 +38,18 @@ public class ContainerMachineEPress extends AbstractContainerMenu {
         this.machine = press != null ? press : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
-        this.addSlot(validated(0, 44, 53));   // battery
-        this.addSlot(validated(1, 80, 17));    // stamp
-        this.addSlot(validated(2, 80, 53));    // input
-        this.addSlot(new Slot(this.machine, 3, 140, 35) { // output (take only)
+        this.addSlot(validated(0, 152, 54));  // battery (1.7 ContainerMachineEPress positions)
+        this.addSlot(validated(1, 19, 15));    // stamp
+        this.addSlot(validated(2, 19, 51));    // input
+        this.addSlot(new Slot(this.machine, 3, 79, 33) { // output (take only)
             @Override public boolean mayPlace(ItemStack stack) { return false; }
         });
-        this.addSlot(validated(4, 44, 21));    // upgrade
+        this.addSlot(validated(4, 111, 32));   // upgrade
 
         for (int row = 0; row < 3; row++) for (int col = 0; col < 9; col++) {
-            this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
+            this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 104 + row * 18));
         }
-        for (int col = 0; col < 9; col++) this.addSlot(new Slot(playerInventory, col, 8 + col * 18, 142));
+        for (int col = 0; col < 9; col++) this.addSlot(new Slot(playerInventory, col, 8 + col * 18, 162));
     }
 
     private Slot validated(int index, int x, int y) {

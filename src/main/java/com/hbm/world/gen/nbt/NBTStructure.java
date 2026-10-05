@@ -1288,6 +1288,8 @@ public class NBTStructure {
             if (checksBiome(context)) {
                 var biome = com.hbm.world.gen.LegacyBiomes.biomeAt(context.biomeSource(), context.randomState(), cx, surface, cz);
                 if (!com.hbm.world.gen.LegacyBiomes.accepts(spawnName, biome, context)) return java.util.Optional.empty();
+                // 1.7 picked one spawn per region by the hbm.cfg weights (5.05..5.43); only that one generates here
+                if (!wins(spawnName, biome, context)) return java.util.Optional.empty();
             }
 
             return java.util.Optional.of(new GenerationStub(center, builder -> {
@@ -1299,6 +1301,43 @@ public class NBTStructure {
                     Start.claim(builder, spawn.name, center);
                 }
             }));
+        }
+
+        private static final java.util.Map<String, net.minecraft.tags.TagKey<net.minecraft.world.level.biome.Biome>> HAS_STRUCTURE =
+                new java.util.concurrent.ConcurrentHashMap<>();
+
+        /**
+         * 1.7 {@code NBTStructure.findSpawn}: one weighted pick, by the live {@code hbm.cfg} weights
+         * ({@code NTMStructureDeclarations.runtimeWeight}), among the spawns whose biome rule accepts the region's biome
+         * (its {@code has_structure} tag and its 1.7 predicate, as this structure's own check). True when {@code spawn}
+         * is the pick. Every structure of the set computes the same pick from the same seed, so exactly one of them
+         * (or a null weight) generates per region, whichever order vanilla tries them in - the data pack's weights no
+         * longer decide anything (History §19ek-hooks). The draw is vanilla's own large-feature seed of the chunk.
+         */
+        public static boolean wins(String spawn, net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> biome,
+                                   GenerationContext context) {
+            java.util.List<com.hbm.world.gen.NTMStructureDeclarations.Entry> candidates = new java.util.ArrayList<>();
+            int total = 0;
+            for (com.hbm.world.gen.NTMStructureDeclarations.Entry entry : com.hbm.world.gen.NTMStructureDeclarations.entries()) {
+                int weight = com.hbm.world.gen.NTMStructureDeclarations.runtimeWeight(entry.id());
+                if (weight <= 0) continue;
+                net.minecraft.tags.TagKey<net.minecraft.world.level.biome.Biome> tag = HAS_STRUCTURE.computeIfAbsent(entry.id(),
+                        id -> net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BIOME,
+                                dev.golem.core.Ids.of(Constants.MOD_ID, "has_structure/" + id)));
+                if (!biome.is(tag) || !com.hbm.world.gen.LegacyBiomes.accepts(entry.spawn(), biome, context)) continue;
+                candidates.add(entry);
+                total += weight;
+            }
+            if (total <= 0) return false;
+            net.minecraft.world.level.levelgen.WorldgenRandom random =
+                    new net.minecraft.world.level.levelgen.WorldgenRandom(new net.minecraft.world.level.levelgen.LegacyRandomSource(0L));
+            random.setLargeFeatureSeed(context.seed(), context.chunkPos().getMinBlockX() >> 4, context.chunkPos().getMinBlockZ() >> 4);
+            int roll = random.nextInt(total);
+            for (com.hbm.world.gen.NTMStructureDeclarations.Entry entry : candidates) {
+                roll -= com.hbm.world.gen.NTMStructureDeclarations.runtimeWeight(entry.id());
+                if (roll < 0) return entry.spawn().equals(spawn);
+            }
+            return false;
         }
 
         /**

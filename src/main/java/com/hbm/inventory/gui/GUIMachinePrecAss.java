@@ -9,7 +9,6 @@ import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.tileentity.machine.TileEntityMachinePrecAss;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -19,7 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 import java.util.Optional;
 
-/** Precision assembler screen, preserving the old 176x256 layout and horizontal fluid bars. */
+/** Precision assembler screen — 1.7.10 {@code GUIMachinePrecAss} ({@code processing/gui_precass.png}, 176x256). */
 public final class GUIMachinePrecAss extends dev.golem.core.gui.CompatContainerScreen<ContainerMachinePrecAss>
         implements IUpgradeInfoProviderSource {
 
@@ -46,8 +45,9 @@ public final class GUIMachinePrecAss extends dev.golem.core.gui.CompatContainerS
                     176F, 61F, progress, 16, 256, 256);
         }
 
-        drawTank(graphics, te.inputTank, leftPos + 8, topPos + 115, 52, 16);
-        drawTank(graphics, te.outputTank, leftPos + 80, topPos + 115, 52, 16);
+        // 1.7: renderTank(guiLeft + 8 / + 80, guiTop + 115, z, 52, 16, 1) — horizontal, y is the bottom edge.
+        GuiUtil.tankHorizontal(graphics, te.inputTank, leftPos + 8, topPos + 115, 52, 16);
+        GuiUtil.tankHorizontal(graphics, te.outputTank, leftPos + 80, topPos + 115, 52, 16);
 
         GenericRecipe recipe = PrecAssRecipes.INSTANCE.getRecipe(te.assemblerModule.recipe);
         if (te.didProcess) {
@@ -73,22 +73,6 @@ public final class GUIMachinePrecAss extends dev.golem.core.gui.CompatContainerS
         }
     }
 
-    private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y, int width, int height) {
-        if (tank.getFill() <= 0 || tank.getMaxFill() <= 0 || tank.getTankType() == com.hbm.inventory.fluid.Fluids.NONE) return;
-        int fill = tank.getFill() * width / tank.getMaxFill();
-        if (fill <= 0) return;
-        Identifier texture = tank.getTankType().getTexture();
-        if (Minecraft.getInstance().getResourceManager().getResource(texture).isPresent()) {
-            graphics.enableScissor(x, y, x + fill, y + height);
-            for (int tile = 0; tile < width; tile += 16)
-                GuiDraw.blit(graphics, texture, x + tile, y, 0F, 0F, 16, height, 16, 16);
-            graphics.disableScissor();
-        } else {
-            GuiDraw.fill(graphics, x, y, x + fill, y + height,
-                    0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF));
-        }
-    }
-
     private void led(GuiGraphicsExtractor graphics, int x, int u) {
         GuiDraw.blit(graphics, TEXTURE, leftPos + x, topPos + 121, u, 0F, 3, 6, 256, 256);
     }
@@ -97,13 +81,13 @@ public final class GUIMachinePrecAss extends dev.golem.core.gui.CompatContainerS
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachinePrecAss te = menu.getAssembler();
         if (te == null) return;
-        if (isHovering(152, 18, 16, 61, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.energyTooltip(te.power, te.maxPower), Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(8, 99, 52, 16, mouseX, mouseY)) {
+        if (GuiUtil.hover(mouseX, mouseY, leftPos + 152, topPos + 18, 16, 61)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.energyTooltip(te.power, te.maxPower), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 8, topPos + 99, 52, 16)) {
             tankTooltip(graphics, te.inputTank, mouseX, mouseY);
-        } else if (isHovering(80, 99, 52, 16, mouseX, mouseY)) {
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 80, topPos + 99, 52, 16)) {
             tankTooltip(graphics, te.outputTank, mouseX, mouseY);
-        } else if (isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, mouseX, mouseY)) {
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + BTN_X, topPos + BTN_Y, BTN_W, BTN_H)) {
             GenericRecipe recipe = PrecAssRecipes.INSTANCE.getRecipe(te.assemblerModule.recipe);
             GuiDraw.tooltip(graphics, font, recipe == null
                     ? List.of(Component.translatable("gui.recipe.setRecipe").withStyle(ChatFormatting.YELLOW))
@@ -112,19 +96,19 @@ public final class GUIMachinePrecAss extends dev.golem.core.gui.CompatContainerS
     }
 
     private void tankTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int mouseX, int mouseY) {
-        GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(tank), Optional.empty(), mouseX, mouseY);
+        GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(tank), mouseX, mouseY);
     }
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         GuiDraw.text(graphics, font, title, 70 - font.width(title) / 2, 6, 0x404040, false);
-        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 94, 0x404040, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 0x404040, false);
     }
 
     @Override
     protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         TileEntityMachinePrecAss te = menu.getAssembler();
-        if (te != null && isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
+        if (te != null && GuiUtil.hover(event.x(), event.y(), leftPos + BTN_X, topPos + BTN_Y, BTN_W, BTN_H)) {
             GUIScreenRecipeSelector.openSelector(PrecAssRecipes.INSTANCE, te.getBlockPos(),
                     te.assemblerModule.recipe, 0, ItemBlueprints.grabPool(te.getItem(1)), this);
             return true;

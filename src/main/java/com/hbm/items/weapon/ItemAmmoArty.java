@@ -185,6 +185,12 @@ public class ItemAmmoArty extends ItemEnumMulti {
                     }
                 }
 
+                // 1.7: five haze clouds scattered 10 blocks (gaussian) around the hit, sent 150 blocks around the shell
+                for (int i = 0; i < 5; i++) {
+                    com.hbm.particle.helper.HbmEffectNT.Haze.sendAround(level,
+                            where.x + level.getRandom().nextGaussian() * 10, where.y,
+                            where.z + level.getRandom().nextGaussian() * 10, null, x, y, z, 150D);
+                }
                 ExplosionCreator.composeEffectRBMKMush(level, where.x, where.y, where.z, 10F);
             }
         },

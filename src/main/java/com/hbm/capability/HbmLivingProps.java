@@ -21,8 +21,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
  * {@code HbmLivingProps}. All gameplay code goes through here: the setters carry the old clamps and
  * side effects (digamma max-health modifier + death, asbestos/blacklung kill at max).
  *
- * <p>Deferred vs the original: the asbestos/coal-dust on-screen inform toasts, the digamma death
- * particle burst.
+ * <p>Deferred vs the original: the asbestos/coal-dust on-screen inform toasts.
  */
 public class HbmLivingProps {
 
@@ -129,7 +128,8 @@ public class HbmLivingProps {
                 entity.setHealth(0);
                 entity.die(source);
             }
-            // TODO(particles): soul-sand sweat burst on digamma death (needs the HBM particle system)
+            // 1.7 setDigamma: a 50-particle soul-sand sweat burst on the digamma death, sent 50 blocks
+            com.hbm.particle.helper.LivingEffects.sweat(entity, 50, net.minecraft.world.level.block.Blocks.SOUL_SAND, 50D);
         }
         // 1.7 setDigamma: digammaSee above 0, digammaFeel from 2, digammaKnow from 10
         if (entity instanceof net.minecraft.server.level.ServerPlayer player) {

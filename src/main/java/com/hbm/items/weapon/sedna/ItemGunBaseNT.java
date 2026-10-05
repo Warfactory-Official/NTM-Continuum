@@ -571,8 +571,24 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     public static void setIsAiming(ItemStack stack, boolean value) { setValueBool(stack, KEY_AIMING, value); }
     public static float getWear(ItemStack stack, int index) { return getValueFloat(stack, KEY_WEAR + index); }
     public static void setWear(ItemStack stack, int index, float value) { setValueFloat(stack, KEY_WEAR + index, value); }
-    public static int getLockonTarget(ItemStack stack) { return getValueInt(stack, KEY_LOCKONTARGET); }
-    public static void setLockonTarget(ItemStack stack, int value) { setValueInt(stack, KEY_LOCKONTARGET, value); }
+    // 1.7 kept the target's network entity id here; the port keeps its UUID (never persist numeric ids, History
+    // section 19ek-small) and resolves it on the server where 1.7 called getEntityByID.
+    public static String getLockonTarget(ItemStack stack) { return getValueString(stack, KEY_LOCKONTARGET); }
+    public static void setLockonTarget(ItemStack stack, net.minecraft.world.entity.Entity target) {
+        setValueString(stack, KEY_LOCKONTARGET, target.getUUID().toString());
+    }
+    /** The locked-on entity in this level, or null (1.7 {@code worldObj.getEntityByID(getLockonTarget(stack))}). */
+    public static net.minecraft.world.entity.@org.jspecify.annotations.Nullable Entity resolveLockonTarget(
+            net.minecraft.world.level.Level level, ItemStack stack) {
+        if (!(level instanceof net.minecraft.server.level.ServerLevel server)) return null;
+        String id = getLockonTarget(stack);
+        if (id.isEmpty()) return null;
+        try {
+            return server.getEntity(java.util.UUID.fromString(id));
+        } catch (IllegalArgumentException notAUuid) {
+            return null; // an old numeric save: no target, as if none was locked
+        }
+    }
     public static boolean getIsLockedOn(ItemStack stack) { return getValueBool(stack, KEY_LOCKEDON); }
     public static void setIsLockedOn(ItemStack stack, boolean value) { setValueBool(stack, KEY_LOCKEDON, value); }
     public static GunAnimation getLastAnim(ItemStack stack, int index) { return savedEnum(GunAnimation.class, getValueString(stack, KEY_LASTANIM + index)); }

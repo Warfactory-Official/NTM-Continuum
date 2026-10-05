@@ -19,13 +19,15 @@ import java.util.function.Supplier;
  * 1.7 vanilla list's total weight. Each draw then yields an HBM item with exactly the 1.7 probability
  * {@code w / (W + sum of HBM weights)}, and so does a chest. 1.7 vanilla totals and draw counts (Forge
  * {@code ChestGenHooks.init}, which also adds an enchanted book of weight 1 to the mineshaft, both temples and the
- * dungeon; {@code getCount} draws {@code min + rand(max - min)}):
+ * dungeon; {@code getCount} draws {@code min + rand(max - min)}). Read from the bytecode of the 1.7.10 client jar and
+ * Forge 10.13.4.1614's {@code ChestGenHooks} (2026-10-04, History §19ek-small); the first version of this table was
+ * written from memory and had the dungeon total and the mineshaft count wrong:
  * <ul>
- *   <li>dungeon ({@code WorldGenDungeons}): 107 + 1 book = 108, 8 draws</li>
- *   <li>mineshaft corridor: 79 + 1 = 80, 8..15 draws</li>
- *   <li>village blacksmith: 94, 3..8 draws</li>
- *   <li>desert pyramid, jungle pyramid: 72 + 1 = 73 each, 2..6 draws</li>
- *   <li>bonus chest: 64, 10 draws</li>
+ *   <li>dungeon ({@code WorldGenDungeons}, 15 entries): 119 + 1 book = 120, {@code addInfo(8, 8)}: 8 draws</li>
+ *   <li>mineshaft corridor: 79 + 1 = 80, {@code addInfo(3, 7)}: 3..6 draws</li>
+ *   <li>village blacksmith: 94 (no book), {@code addInfo(3, 9)}: 3..8 draws</li>
+ *   <li>desert pyramid, jungle pyramid: 72 + 1 = 73 each, {@code addInfo(2, 7)}: 2..6 draws</li>
+ *   <li>bonus chest ({@code WorldServer}): 64, {@code addInfo(10, 10)}: 10 draws</li>
  * </ul>
  * The blacksmith's modern successor is the weaponsmith chest. HBM's own library dungeon uses
  * {@code chests/simple_dungeon} for the chests 1.7 filled from {@code DUNGEON_CHEST}, so it gets the dungeon
@@ -45,12 +47,12 @@ public final class VanillaChestLoot {
         ChestLoot.inject("minecraft:chests/village/village_weaponsmith", "hbm:village_blacksmith", 3, 8, 94, List.of(
                 one("hbm:armor_polish", 3),
                 one("hbm:bathwater", 1)));
-        ChestLoot.inject("minecraft:chests/abandoned_mineshaft", "hbm:mineshaft_corridor", 8, 15, 80, List.of(
+        ChestLoot.inject("minecraft:chests/abandoned_mineshaft", "hbm:mineshaft_corridor", 3, 6, 80, List.of(
                 one("hbm:bathwater", 1),
                 one("hbm:serum", 5),
                 one("hbm:no9", 5),
                 one("hbm:key_red_cracked", 5)));
-        ChestLoot.inject("minecraft:chests/simple_dungeon", "hbm:dungeon_chest", 8, 8, 108, List.of(
+        ChestLoot.inject("minecraft:chests/simple_dungeon", "hbm:dungeon_chest", 8, 8, 120, List.of(
                 one("hbm:heart_piece", 1),
                 one("hbm:key_red_cracked", 5),
                 one("hbm:scrumpy", 1)));

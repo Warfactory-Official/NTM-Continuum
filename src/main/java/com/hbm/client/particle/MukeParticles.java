@@ -107,6 +107,19 @@ public final class MukeParticles {
         spawn(level, x, y, z, true, Tags.getBooleanOr(data, "balefire", false));
     }
 
+    /**
+     * original-hbm (1.7.10) {@code ClientProxy} type {@code ufo}: one lone {@code ParticleMukeCloud} moving
+     * {@code gaussian * motion} sideways. The UFO's tractor beam sends no {@code motion}, so its two clouds a tick
+     * stand still at the beam's foot (friction 0.95, 52..62 ticks). No flash, shockwave or camera jolt.
+     */
+    public static void spawnUfo(Level level, double x, double y, double z, CompoundTag data) {
+        if (!(level instanceof ClientLevel client)) return;
+        double motion = Tags.getDoubleOr(data, "motion", 0D);
+        RandomSource random = client.getRandom();
+        ACTIVE.add(new Detonation(client, x, y, z, random.nextGaussian() * motion, 0D, random.nextGaussian() * motion));
+        Billboards.add(client, POOL);
+    }
+
     private static void spawn(Level level, double x, double y, double z, boolean tiny, boolean balefire) {
         if (!(level instanceof ClientLevel client)) return;
         ACTIVE.add(new Detonation(client, x, y, z, tiny, balefire));
@@ -159,6 +172,17 @@ public final class MukeParticles {
             this.tiny = tiny;
             this.balefire = balefire;
             if (tiny) spawnTinyClouds(level);
+        }
+
+        /** A single cloud with no wave or flash (1.7 {@code ufo}): starts past both lifetimes, never spawns more. */
+        private Detonation(ClientLevel level, double x, double y, double z, double xd, double yd, double zd) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.tiny = true;
+            this.balefire = false;
+            this.age = WAVE_LIFETIME;
+            clouds.add(new Cloud(level, x, y, z, xd, yd, zd, false));
         }
 
         private void tick(ClientLevel level) {

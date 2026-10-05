@@ -15,6 +15,8 @@ public final class WeaponConfig {
 
     /** Old {@code 10.02_dropStar}: rigged star blaster cells explode when dropped. */
     public static boolean dropStar = true;
+    /** 1.7 {@code 10.04_dropCrys}: a xen crystal landing on the ground lifts the blocks around it (ItemDrop). */
+    public static boolean dropCrys = true;
     /** 1.7 {@code 10.05_dropDead}: the dead man's explosive goes off when dropped. */
     public static boolean dropDead = true;
     /** 1.7 {@code 18.00_linearAnimations}: written by 1.7, read by nothing there either. */
@@ -22,8 +24,7 @@ public final class WeaponConfig {
 
     /**
      * 1.7 {@code loadFromConfig}, categories {@code 07_missile_machines}, {@code 10_dangerous_drops} and
-     * {@code 18_weapons}. {@code 10.04_dropCrys} (a dropped xen crystal moves blocks) is not written: the port's
-     * {@code crystal_xen} is a plain item without that drop behaviour yet (History §19ej-8).
+     * {@code 18_weapons}.
      */
     public static void loadFromConfig(Configuration config) {
 
@@ -36,6 +37,7 @@ public final class WeaponConfig {
         dropCell = CommonConfig.createConfigBool(config, CATEGORY_DROPS, "10.00_dropCell", "Whether antimatter cells should explode when dropped", true);
         dropSing = CommonConfig.createConfigBool(config, CATEGORY_DROPS, "10.01_dropBHole", "Whether singularities and black holes should spawn when dropped", true);
         dropStar = CommonConfig.createConfigBool(config, CATEGORY_DROPS, "10.02_dropStar", "Whether rigged star blaster cells should explode when dropped", true);
+        dropCrys = CommonConfig.createConfigBool(config, CATEGORY_DROPS, "10.04_dropCrys", "Whether xen crystals should move blocks when dropped", true);
         dropDead = CommonConfig.createConfigBool(config, CATEGORY_DROPS, "10.05_dropDead", "Whether dead man's explosives should explode when dropped", true);
 
         final String CATEGORY_WEAPONS = CommonConfig.CATEGORY_WEAPONS;

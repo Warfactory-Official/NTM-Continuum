@@ -14,23 +14,23 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 
-/** Draws the four wreck blocks with their authored pribris meshes rather than cube placeholders. */
+/**
+ * 1.7 {@code RenderPribris}: all four wreck blocks draw the one {@code models/rbmk/debris.obj}
+ * ({@code ResourceManager.rbmk_debris}) with their own block icon, translated to the block centre.
+ */
 public final class RBMKDebrisBlockRenderer extends GemBER<BlockEntityRBMKDebris, RBMKDebrisBlockRenderer.State> {
 
     private static final String[] VARIANTS = {"", "_burning", "_radiating", "_digamma"};
-    private static final String[] MESHES = {"pribris", "pribris_burning", "pribris_radiating", "pribris_digamma"};
 
     /** One debris-shaped slot, filled with whichever of the four wrecks this block is. */
     @Override
     protected void setup(Gem.Model<State> declaration) {
-        Geometry[] meshes = new Geometry[MESHES.length];
-        Surface[] skins = new Surface[MESHES.length];
-        for (int variant = 0; variant < MESHES.length; variant++) {
-            meshes[variant] = obj(MESHES[variant] + ".obj").all();
+        Geometry mesh = obj("debris.obj").all();
+        Surface[] skins = new Surface[VARIANTS.length];
+        for (int variant = 0; variant < VARIANTS.length; variant++) {
             skins[variant] = Surface.cutout(texture("rbmk_debris" + VARIANTS[variant]));
         }
-        declaration.part(meshes[0], skins[0])
-                .mesh(state -> meshes[state.variant])
+        declaration.part(mesh, skins[0])
                 .skin(state -> skins[state.variant])
                 .translate(.5F, 0F, .5F);
     }

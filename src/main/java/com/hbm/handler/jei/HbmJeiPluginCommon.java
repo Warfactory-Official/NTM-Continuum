@@ -120,6 +120,7 @@ public final class HbmJeiPluginCommon {
     private static PyrolysisRecipeHandler pyrolysis;
     private static CompressorRecipeHandler compressor;
     private static StorageDrumRecipeHandler storageDrum;
+    private static FuelPoolRecipeHandler fuelPool;
     private static ArcWelderRecipeHandler arcWelder;
     private static RotaryFurnaceRecipeHandler rotaryFurnace;
     private static ArcFurnaceRecipeHandler arcFurnaceSolid;
@@ -278,6 +279,8 @@ public final class HbmJeiPluginCommon {
                 title("compressor"), stack(ModMachineBlocks.machine_compressor.get()));
         storageDrum = new StorageDrumRecipeHandler(helper, HbmJeiRecipeTypes.STORAGE_DRUM,
                 Component.translatable("container.storageDrum"));
+        fuelPool = new FuelPoolRecipeHandler(helper, HbmJeiRecipeTypes.FUEL_POOL,
+                Component.translatable("block.hbm.machine_waste_drum"), stack(ModMachineBlocks.machine_waste_drum.get()));
         arcWelder = new ArcWelderRecipeHandler(helper, HbmJeiRecipeTypes.ARC_WELDER,
                 Component.translatable("block.hbm.machine_arc_welder"),
                 stack(ModMachineBlocks.machine_arc_welder.get()));
@@ -294,7 +297,7 @@ public final class HbmJeiPluginCommon {
 
           reg.addRecipeCategories(assembly, precisionAssembler, chemplant, mixer, exposure, purex, fusion, fusionBreeder, plasmaForge, press, ammoPress, soldering, crystallizer, centrifuge, cyclotron, particleAccelerator, gasCentrifuge, silex, shredder, sawmill, crucible, anvilCon, anvilSmith,
                  electrolyserFluid, electrolyserMetal, refinery, fractioning, liquefaction, solidification, boiling, cooling,
-                 vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, compressor, storageDrum,
+                 vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, compressor, storageDrum, fuelPool,
                  arcWelder, arcFurnaceSolid, arcFurnaceFluid, diFurnace, rotaryFurnace);
         RTGJeiIntegration.registerCategory(reg);
         SatelliteRecipeHandler.registerCategory(reg);
@@ -364,6 +367,7 @@ public final class HbmJeiPluginCommon {
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.PYROLYSIS, PyrolysisRecipeHandler.buildRecipes());
          dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.COMPRESSOR, CompressorRecipeHandler.buildRecipes());
          dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.STORAGE_DRUM, StorageDrumRecipeHandler.buildRecipes());
+         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.FUEL_POOL, FuelPoolRecipeHandler.buildRecipes());
          dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ARC_WELDER, ArcWelderRecipeHandler.buildRecipes());
          dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ROTARY_FURNACE, RotaryFurnaceRecipeHandler.buildRecipes());
          dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ARC_FURNACE_SOLID,
@@ -535,10 +539,46 @@ public final class HbmJeiPluginCommon {
                   stack(ModMachineBlocks.machine_condenser.get()), stack(ModMachineBlocks.machine_condenser_powered.get()));
          dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.STORAGE_DRUM,
                  stack(ModMachineBlocks.machine_storage_drum.get()));
+         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.FUEL_POOL,
+                 stack(ModMachineBlocks.machine_waste_drum.get()));
 
         // The electric furnace runs vanilla smelting — surface it under JEI's built-in furnace category
         // (mirrors the old JEIConfig line; no bespoke category needed).
         dev.golem.core.jei.Jei.addCraftingStation(reg, RecipeTypes.SMELTING, stack(ModMachineBlocks.machine_electric_furnace_off.get()));
+    }
+
+    /**
+     * Runs once JEI's runtime exists: 1.7 {@code ArcFurnaceRecipes.registerFurnaceSmeltables}, the arc furnace's
+     * furnace-smelting pass, listed in the solid arc furnace page. The furnace recipes are only readable from JEI's own
+     * lookup on a 26.1 client, so the pass is added here rather than at registration (History §19ek-hooks).
+     */
+    public static void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
+        java.util.List<com.hbm.foundry.ArcFurnaceRecipes.ArcFurnaceRecipe> pass = com.hbm.foundry.ArcFurnaceRecipes
+                .furnacePass(dev.golem.core.jei.Jei.smeltingRecipes(runtime));
+        dev.golem.core.jei.Jei.addRecipes(runtime, HbmJeiRecipeTypes.ARC_FURNACE_SOLID, pass);
+        com.hbm.Constants.LOG.info("[JEI] arc furnace furnace pass: {} recipe(s)", pass.size());
+        // HBM fluids as JEI fluid ingredients (History section 19ek-fluids): JEI lists every registered source fluid
+        // itself; this only reads the list back, for the log and the harness.
+        java.util.List<String> fluids = hbmFluidIngredients(runtime);
+        com.hbm.client.ForeignFluidHarnessQueries.jeiFluids = () -> hbmFluidIngredients(runtime);
+        com.hbm.Constants.LOG.info("[JEI] {} HBM fluid(s) listed as fluid ingredients", fluids.size());
+    }
+
+    /** The display names of the JEI fluid ingredients that are HBM fluids. */
+    private static java.util.List<String> hbmFluidIngredients(mezz.jei.api.runtime.IJeiRuntime runtime) {
+        return hbmFluidIngredients(runtime, runtime.getJeiHelpers().getPlatformFluidHelper());
+    }
+
+    private static <T> java.util.List<String> hbmFluidIngredients(mezz.jei.api.runtime.IJeiRuntime runtime,
+            mezz.jei.api.helpers.IPlatformFluidHelper<T> fluids) {
+        mezz.jei.api.ingredients.IIngredientTypeWithSubtypes<net.minecraft.world.level.material.Fluid, T> type =
+                fluids.getFluidIngredientType();
+        mezz.jei.api.ingredients.IIngredientHelper<T> helper = runtime.getIngredientManager().getIngredientHelper(type);
+        java.util.List<String> names = new java.util.ArrayList<>();
+        for (T ingredient : runtime.getIngredientManager().getAllIngredients(type)) {
+            if (dev.golem.core.fluid.TokenFluids.isToken(type.getBase(ingredient))) names.add(helper.getDisplayName(ingredient));
+        }
+        return names;
     }
 
     /** The category title, from the {@code hbm.<path>.name} lang key (the old title-key convention). */

@@ -3,7 +3,6 @@ package com.hbm.inventory.gui;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerOilburner;
 import com.hbm.inventory.fluid.FluidCombustion;
-import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -16,7 +15,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * Screen for the oil-fired heater — 1.12.2 {@code GUIOilburner} ({@code gui_oilburner.png}, 176×203):
+ * Screen for the oil-fired heater — 1.7.10 {@code GUIOilburner} ({@code machine/gui_oilburner.png}, 176×203):
  * heat bar 16×52 at (116,17) (fill u=194), tank bar 16×52 at (44,17), burn button 35×14 at (70,54)
  * (lit overlay u=210 while on), flame icon 18×18 at (79,34) (u=176) while burning. Setting readout on
  * the flame icon hover; left/right-click the flame area to raise/lower the mB/t setting (old
@@ -30,10 +29,11 @@ public class GUIOilburner extends dev.golem.core.gui.CompatContainerScreen<Conta
         super(menu, playerInventory, title, 176, 203);
     }
 
+    /** 1.7: centred title at y=6, inventory at (8, ySize-96+2), both 4210752. */
     @Override
-    protected void init() {
-        super.init();
-        this.titleLabelX = this.imageWidth / 2 - this.font.width(this.title) / 2; // old GUI centred the name
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, this.font, this.title, this.imageWidth / 2 - this.font.width(this.title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, 8, this.imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
@@ -54,26 +54,7 @@ public class GUIOilburner extends dev.golem.core.gui.CompatContainerScreen<Conta
             }
         }
 
-        drawTank(graphics, te.tank, 44, 17, 16, 52);
-    }
-
-    private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int barX, int barTop, int w, int h) {
-        int maxF = tank.getMaxFill();
-        int fh = maxF <= 0 ? 0 : (int) ((long) tank.getFill() * h / maxF);
-        if (fh <= 0) return;
-        int x0 = this.leftPos + barX;
-        int yBottom = this.topPos + barTop + h;
-        int yTop = yBottom - fh;
-        Identifier fluidTex = tank.getTankType().getTexture();
-        if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
-            graphics.enableScissor(x0, yTop, x0 + w, yBottom);
-            for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                GuiDraw.blit(graphics, fluidTex, x0, ty, 0F, 0F, w, 16, 16, 16);
-            }
-            graphics.disableScissor();
-        } else {
-            graphics.fill(x0, yTop, x0 + w, yBottom, 0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
-        }
+        GuiUtil.tank(graphics, te.tank, this.leftPos + 44, this.topPos + 69, 16, 52);
     }
 
     @Override
@@ -81,13 +62,15 @@ public class GUIOilburner extends dev.golem.core.gui.CompatContainerScreen<Conta
         TileEntityHeaterOilburner te = this.menu.getHeater();
         if (te == null) return;
 
-        if (this.isHovering(116, 17, 16, 52, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, List.of(Component.literal(
-                    String.format("%,d", Math.min(te.heatEnergy, TileEntityHeaterOilburner.maxHeatEnergy))
-                            + " / " + String.format("%,d", TileEntityHeaterOilburner.maxHeatEnergy) + " TU")), Optional.empty(), mouseX, mouseY);
+        if (GuiUtil.hover(mouseX, mouseY, this.leftPos + 116, this.topPos + 17, 16, 52)) {
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.lines(
+                    String.format(Locale.US, "%,d", Math.min(te.heatEnergy, TileEntityHeaterOilburner.maxHeatEnergy))
+                            + " / " + String.format(Locale.US, "%,d", TileEntityHeaterOilburner.maxHeatEnergy) + " TU"), mouseX, mouseY);
             return;
         }
-        if (this.isHovering(79, 34, 18, 18, mouseX, mouseY)) {
+        // 1.7 shows the setting readout only for an FT_Flammable fluid. The third line is the port's stand-in for
+        // 1.7's screwdriver (IToolable is not ported), so the setting stays reachable.
+        if (FluidCombustion.isFlammable(te.tank.getTankType()) && GuiUtil.hover(mouseX, mouseY, this.leftPos + 79, this.topPos + 34, 18, 18)) {
             long perBucket = FluidCombustion.getFlammableEnergy(te.tank.getTankType());
             GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal(te.setting + " mB/t"),
@@ -95,10 +78,8 @@ public class GUIOilburner extends dev.golem.core.gui.CompatContainerScreen<Conta
                     Component.literal("LMB +1, RMB -1")), Optional.empty(), mouseX, mouseY);
             return;
         }
-        if (this.isHovering(44, 17, 16, 52, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, List.of(
-                    te.tank.getTankType().getDisplayName(),
-                    Component.literal(te.tank.getFill() + " / " + te.tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
+        if (GuiUtil.hover(mouseX, mouseY, this.leftPos + 44, this.topPos + 17, 16, 52)) {
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.tankTooltip(te.tank), mouseX, mouseY);
         }
     }
 
@@ -106,8 +87,9 @@ public class GUIOilburner extends dev.golem.core.gui.CompatContainerScreen<Conta
     protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.gameMode != null) {
-            // burn toggle (old 16×14 hit area at (80,54))
-            if (this.isHovering(80, 54, 16, 14, event.x(), event.y())) {
+            // burn toggle — 1.7 hit area x [80,96), y (54,68]
+            if (GuiUtil.hover(event.x(), event.y(), this.leftPos + 80, this.topPos + 54, 16, 14)) {
+                GuiUtil.playClickSound();
                 mc.gameMode.handleInventoryButtonClick(this.menu.containerId, 0);
                 return true;
             }

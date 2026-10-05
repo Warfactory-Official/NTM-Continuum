@@ -85,9 +85,9 @@ public final class XFactoryRocket {
     private static void missileLauncherPrimary(net.minecraft.world.item.ItemStack stack,
             ItemGunBaseNT.LambdaContext ctx) {
         if (ItemGunBaseNT.getIsAiming(stack)) {
-            int target = com.hbm.items.weapon.sedna.impl.ItemGunStinger.getLockonTarget(
+            net.minecraft.world.entity.Entity target = com.hbm.items.weapon.sedna.impl.ItemGunStinger.getLockonTarget(
                     ctx.getPlayer(), 150D, 20D);
-            if (target != -1) {
+            if (target != null) {
                 ItemGunBaseNT.setLockonTarget(stack, target);
                 ItemGunBaseNT.setIsLockedOn(stack, true);
             }

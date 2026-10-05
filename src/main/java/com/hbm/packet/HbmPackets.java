@@ -45,6 +45,7 @@ public final class HbmPackets {
         GolemNetwork.declarePlayToClient(BlockEntitySyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(EntityPropsSyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(ImpactSyncPayload.CODEC);
+        GolemNetwork.declarePlayToClient(PollutionSyncPayload.CODEC);
         GolemNetwork.registerPlayToServer(ControlEventPayload.CODEC,
                 (payload, player) -> handleControl(player, payload));
         GolemNetwork.registerPlayToServer(AnvilCraftPayload.CODEC,
@@ -152,6 +153,13 @@ public final class HbmPackets {
             com.hbm.handler.ImpactWorldHandler.fire = payload.fire();
             com.hbm.handler.ImpactWorldHandler.dust = payload.dust();
             com.hbm.handler.ImpactWorldHandler.impact = payload.impact();
+        });
+        GolemNetwork.registerPlayToClient(PollutionSyncPayload.CODEC, (payload, context) -> {
+            // 1.7 PermaSyncHandler.readPacket: the pollution of the region the player is in
+            com.hbm.client.SmogFog.pollution[0] = payload.soot();
+            com.hbm.client.SmogFog.pollution[1] = payload.poison();
+            com.hbm.client.SmogFog.pollution[2] = payload.heavyMetal();
+            com.hbm.client.SmogFog.pollution[3] = payload.fallout();
         });
         GolemNetwork.registerPlayToClient(GunAnimationPayload.CODEC,
                 (payload, context) -> com.hbm.client.anim.GunAnimationHandler.handle(payload));

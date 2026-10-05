@@ -16,7 +16,7 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.List;
 import java.util.Optional;
 
-/** The two legacy electrolyser screens share this renderer and select their background by menu mode. */
+/** The two 1.7.10 electrolyser screens ({@code GUIElectrolyserMetal} / {@code GUIElectrolyserFluid}) share this renderer and select their background by menu mode. */
 public final class GUIMachineElectrolyser extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineElectrolyser>
         implements IUpgradeInfoProviderSource {
 
@@ -69,23 +69,9 @@ public final class GUIMachineElectrolyser extends dev.golem.core.gui.CompatConta
                 0xFF000000 | (material.material.moltenColor & 0xFFFFFF));
     }
 
+    /** 1.7 {@code renderTank(guiLeft + x, guiTop + 70, z, 16, 52)} — the 1.7 call passes the bottom edge. */
     private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y) {
-        int height = tank.getMaxFill() <= 0 ? 0 : tank.getFill() * 52 / tank.getMaxFill();
-        if (height <= 0) return;
-        int x0 = leftPos + x;
-        int bottom = topPos + y + 52;
-        int top = bottom - height;
-        Identifier texture = tank.getTankType().getTexture();
-        int tint = 0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF);
-        if (Minecraft.getInstance().getResourceManager().getResource(texture).isPresent()) {
-            graphics.enableScissor(x0, top, x0 + 16, bottom);
-            for (int tileY = bottom - 16; tileY > top - 16; tileY -= 16) {
-                GuiDraw.blit(graphics, texture, x0, tileY, 0F, 0F, 16, 16, 16, 16, tint);
-            }
-            graphics.disableScissor();
-        } else {
-            graphics.fill(x0, top, x0 + 16, bottom, tint);
-        }
+        GuiUtil.tank(graphics, tank, leftPos + x, topPos + y + 52, 16, 52);
     }
 
     @Override
@@ -98,28 +84,27 @@ public final class GUIMachineElectrolyser extends dev.golem.core.gui.CompatConta
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineElectrolyser te = menu.getElectrolyser();
         if (te == null) return;
-        if (isHovering(186, 18, 16, 89, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.energyTooltip(te.power, TileEntityMachineElectrolyser.MAX_POWER),
-                    Optional.empty(), mouseX, mouseY);
+        if (GuiUtil.hover(mouseX, mouseY, leftPos + 186, topPos + 18, 16, 89)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.energyTooltip(te.power, TileEntityMachineElectrolyser.MAX_POWER), mouseX, mouseY);
             return;
         }
         if (menu.isMetal()) {
-            if (isHovering(36, 18, 16, 52, mouseX, mouseY)) {
-                GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(te.tanks[3]), Optional.empty(), mouseX, mouseY);
-            } else if (isHovering(58, 18, 34, 42, mouseX, mouseY)) {
+            if (GuiUtil.hover(mouseX, mouseY, leftPos + 36, topPos + 18, 16, 52)) {
+                GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(te.tanks[3]), mouseX, mouseY);
+            } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 58, topPos + 18, 34, 42)) {
                 materialTooltip(graphics, te.leftStack, mouseX, mouseY);
-            } else if (isHovering(96, 18, 34, 42, mouseX, mouseY)) {
+            } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 96, topPos + 18, 34, 42)) {
                 materialTooltip(graphics, te.rightStack, mouseX, mouseY);
             }
         } else {
-            if (isHovering(42, 18, 16, 52, mouseX, mouseY)) {
-                GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(te.tanks[0]), Optional.empty(), mouseX, mouseY);
+            if (GuiUtil.hover(mouseX, mouseY, leftPos + 42, topPos + 18, 16, 52)) {
+                GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(te.tanks[0]), mouseX, mouseY);
             }
-            if (isHovering(96, 18, 16, 52, mouseX, mouseY)) {
-                GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(te.tanks[1]), Optional.empty(), mouseX, mouseY);
+            if (GuiUtil.hover(mouseX, mouseY, leftPos + 96, topPos + 18, 16, 52)) {
+                GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(te.tanks[1]), mouseX, mouseY);
             }
-            if (isHovering(116, 18, 16, 52, mouseX, mouseY)) {
-                GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(te.tanks[2]), Optional.empty(), mouseX, mouseY);
+            if (GuiUtil.hover(mouseX, mouseY, leftPos + 116, topPos + 18, 16, 52)) {
+                GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(te.tanks[2]), mouseX, mouseY);
             }
         }
     }
@@ -127,7 +112,7 @@ public final class GUIMachineElectrolyser extends dev.golem.core.gui.CompatConta
     @Override
     protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (isHovering(8, 82, 54, 12, event.x(), event.y()) && minecraft.gameMode != null) {
+        if (GuiUtil.hover(event.x(), event.y(), leftPos + 8, topPos + 82, 54, 12) && minecraft.gameMode != null) {
             GuiUtil.playClickSound();
             minecraft.gameMode.handleInventoryButtonClick(menu.containerId,
                     menu.isMetal() ? ContainerMachineElectrolyser.MODE_FLUID : ContainerMachineElectrolyser.MODE_METAL);
@@ -139,8 +124,9 @@ public final class GUIMachineElectrolyser extends dev.golem.core.gui.CompatConta
     private void materialTooltip(GuiGraphicsExtractor graphics, Mats.@org.jspecify.annotations.Nullable MaterialStack stack, int x, int y) {
         GuiDraw.tooltip(graphics, font, stack == null ? List.of(Component.literal("Empty").withStyle(ChatFormatting.RED))
                 : List.of(Component.literal(stack.material.getDisplayName() + ": "
-                        + Mats.formatAmount(stack.amount, Minecraft.getInstance().player != null
-                        && Minecraft.getInstance().player.isShiftKeyDown())).withStyle(ChatFormatting.YELLOW)),
+                        // 1.7: Keyboard.isKeyDown(KEY_LSHIFT) — the physical left shift key, not the sneak state.
+                        + Mats.formatAmount(stack.amount, dev.golem.core.client.KeyMappings.isKeyDown(
+                        org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT))).withStyle(ChatFormatting.YELLOW)),
                 Optional.empty(), x, y);
     }
 

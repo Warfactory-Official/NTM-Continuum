@@ -16,10 +16,11 @@ public class GUIFurnaceBrick extends dev.golem.core.gui.CompatContainerScreen<Co
         super(menu, inventory, title, 176, 166);
     }
 
-    @Override protected void init() {
-        super.init();
-        titleLabelX = (imageWidth - font.width(title)) / 2;
-        inventoryLabelY = imageHeight - 96 + 2;
+    /** 1.7 {@code GUIFurnaceBrick.drawGuiContainerForegroundLayer}: centred title at y 6, "Inventory" at (8, ySize - 94). */
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 6, 0xffffff, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 0xffffff, false);
     }
 
     @Override public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {

@@ -3,14 +3,19 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerNukeBoy;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-/** Little Boy schematic screen with the five installed-part overlays from 1.12.2. */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+/** Little Boy schematic screen, ported from 1.7 {@code GUINukeBoy}: the five installed-part overlays and the info panel. */
 public class GUINukeBoy extends dev.golem.core.gui.CompatContainerScreen<ContainerNukeBoy> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/lilboyschematic.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/weapon/lilboyschematic.png");
 
     public GUINukeBoy(ContainerNukeBoy menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 222);
@@ -18,8 +23,8 @@ public class GUINukeBoy extends dev.golem.core.gui.CompatContainerScreen<Contain
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 6, 0xFF404040, false);
-        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 94, 0xFF404040, false);
+        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
@@ -31,5 +36,22 @@ public class GUINukeBoy extends dev.golem.core.gui.CompatContainerScreen<Contain
         if (menu.hasPart(2)) GuiDraw.blit(graphics, TEXTURE, leftPos + 74, topPos + 94, 176F, 57F, 19, 8, 256, 256);
         if (menu.hasPart(3)) GuiDraw.blit(graphics, TEXTURE, leftPos + 92, topPos + 95, 176F, 66F, 12, 6, 256, 256);
         if (menu.hasPart(4)) GuiDraw.blit(graphics, TEXTURE, leftPos + 107, topPos + 91, 176F, 75F, 16, 14, 256, 256);
+        GuiUtil.drawInfoPanel(graphics, leftPos - 16, topPos + 16, 2);
+    }
+
+    @Override
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        // 1.7 drawCustomInfoStat: the text is anchored at (guiLeft - 8, guiTop + 32), not at the mouse.
+        if (isHovering(-16, 16, 16, 16, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, font, lines("desc.gui.nukeBoy.desc"), Optional.empty(), leftPos - 8, topPos + 16 + 16);
+        }
+    }
+
+    /** 1.7 {@code I18nUtil.resolveKeyArray}; the port's lang stores the {@code $} parts as {@code <key>.0}, {@code .1}, ... */
+    static List<Component> lines(String key) {
+        List<Component> lines = new ArrayList<>();
+        Language language = Language.getInstance();
+        for (int i = 0; language.has(key + "." + i); i++) lines.add(Component.translatable(key + "." + i));
+        return lines;
     }
 }

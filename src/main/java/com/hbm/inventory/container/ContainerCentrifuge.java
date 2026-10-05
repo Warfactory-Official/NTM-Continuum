@@ -42,16 +42,16 @@ public class ContainerCentrifuge extends AbstractContainerMenu {
         this.machine = centrifuge != null ? centrifuge : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
-        this.addSlot(validated(0, 36, 50));
-        this.addSlot(validated(1, 9, 50));
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 2, 63, 50)); // 1.7 SlotCraftingOutput
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 3, 83, 50)); // 1.7 SlotCraftingOutput
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 4, 103, 50)); // 1.7 SlotCraftingOutput
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 5, 123, 50)); // 1.7 SlotCraftingOutput
-        this.addSlot(validated(6, 149, 22));
-        this.addSlot(validated(7, 149, 40));
+        this.addSlot(validated(0, 44, 57)); // 1.7 ContainerCentrifuge positions
+        this.addSlot(validated(1, 8, 57));
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 2, 70, 57)); // 1.7 SlotCraftingOutput
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 3, 90, 57)); // 1.7 SlotCraftingOutput
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 4, 110, 57)); // 1.7 SlotCraftingOutput
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 5, 130, 57)); // 1.7 SlotCraftingOutput
+        this.addSlot(validated(6, 156, 31));
+        this.addSlot(validated(7, 156, 49));
 
-        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 104);
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 11, 107);
     }
 
     private Slot validated(int index, int x, int y) {

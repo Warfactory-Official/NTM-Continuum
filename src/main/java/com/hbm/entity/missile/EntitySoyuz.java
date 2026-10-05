@@ -253,7 +253,7 @@ public class EntitySoyuz extends CompatEntity implements StoredItems {
 
     @Override
     protected void loadData(DataIn input) {
-        setSkin(input.getIntOr("skin", 0));
+        setSkin(com.hbm.util.SavedIds.getEnum(input, "skin", com.hbm.items.ItemEnums.SoyuzSkinType.NORMAL).ordinal());
         targetX = input.getIntOr("targetX", targetX);
         targetZ = input.getIntOr("targetZ", targetZ);
         mode = input.getIntOr("mode", mode);
@@ -267,7 +267,8 @@ public class EntitySoyuz extends CompatEntity implements StoredItems {
 
     @Override
     protected void saveData(DataOut output) {
-        output.putInt("skin", getSkin());
+        // by enum name, never the ordinal (History section 19ek-small)
+        com.hbm.util.SavedIds.putEnum(output, "skin", com.hbm.items.ItemEnums.SoyuzSkinType.VALUES[Math.floorMod(getSkin(), com.hbm.items.ItemEnums.SoyuzSkinType.VALUES.length)]);
         output.putInt("targetX", targetX);
         output.putInt("targetZ", targetZ);
         output.putInt("mode", mode);

@@ -128,8 +128,15 @@ public final class HbmKeybindsClient {
             updateAiming(player);
             ItemGunBaseNT.clientHeldTick(player);
             if (player.getMainHandItem().getItem() instanceof com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower) {
-                com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower.clientGrappleTick(player,
-                        player.getMainHandItem(), primary, !suppressed && gunSecondaryKey.isHeld());
+                net.minecraft.world.entity.Entity hook = null;
+                java.util.UUID hookId = com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower.getLastHook(player.getMainHandItem());
+                if (hookId != null) {
+                    for (net.minecraft.world.entity.Entity e : mc.level.entitiesForRendering()) {
+                        if (hookId.equals(e.getUUID())) { hook = e; break; }
+                    }
+                }
+                com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower.clientGrappleTick(player, hook,
+                        primary, !suppressed && gunSecondaryKey.isHeld());
             }
         }
     }

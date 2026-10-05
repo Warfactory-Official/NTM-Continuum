@@ -40,7 +40,7 @@ public class BlockVolcanicLava extends BlockStaticFluid {
     @Override
     protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (level.isClientSide() || entity.fireImmune()) return;
-        entity.setRemainingFireTicks(Math.max(entity.getRemainingFireTicks(), 15 * 20));
+        dev.golem.core.world.Effects.ignite(entity, 15); // 1.7 lava setFire(15), Fire Protection applies
         entity.hurt(level.damageSources().lava(), 4F);
     }
 

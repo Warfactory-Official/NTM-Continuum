@@ -9,8 +9,6 @@ import com.hbm.entity.mob.ai.EntityAIStopFlying;
 import com.hbm.entity.mob.ai.EntityAISwimmingConditional;
 import com.hbm.entity.mob.ai.EntityAIWanderConditional;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.BlockParticleOption;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -183,8 +181,8 @@ public class EntityPigeon extends CompatPathfinderMob implements IFlyingCreature
             if (getRandom().nextInt(20) == 0) setYRot(getYRot() + (float) (getRandom().nextGaussian() * 30));
 
             if (isFat() && getRandom().nextInt(50) == 0) {
-                level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.WHITE_WOOL.defaultBlockState()),
-                        getX(), getY() + getBbHeight() / 2D, getZ(), 3, 0.2D, 0.2D, 0.2D, 0D);
+                // 1.7 "sweat" with wool (meta 0, white): three 150..199-tick dust particles over the box, 50 blocks
+                com.hbm.particle.helper.LivingEffects.sweat(this, 3, Blocks.WHITE_WOOL, 50D);
 
                 // 1.7 walks 25 blocks down for the first fertilizable block and stops there
                 BlockPos below = blockPosition();

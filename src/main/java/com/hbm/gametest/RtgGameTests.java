@@ -164,13 +164,14 @@ public final class RtgGameTests {
         ContainerMachineRTG menu = new ContainerMachineRTG(0, player.getInventory(), rtg);
         helper.assertTrue(menu.slots.size() == 51, "RTG menu must have 15 machine + 36 player slots");
         for (int slot = 0; slot < 15; slot++) {
-            int expectedX = 26 + slot % 5 * 18;
-            int expectedY = 22 + slot / 5 * 18;
+            // 1.7 ContainerMachineRTG: 5x3 grid at (16 + 18c, 18 + 18r); player inventory at y 106, hotbar 164
+            int expectedX = 16 + slot % 5 * 18;
+            int expectedY = 18 + slot / 5 * 18;
             helper.assertTrue(menu.slots.get(slot).x == expectedX && menu.slots.get(slot).y == expectedY,
                     "RTG machine slot " + slot + " is misplaced");
         }
-        helper.assertTrue(menu.slots.get(15).x == 8 && menu.slots.get(15).y == 94
-                        && menu.slots.get(42).x == 8 && menu.slots.get(42).y == 152,
+        helper.assertTrue(menu.slots.get(15).x == 8 && menu.slots.get(15).y == 106
+                        && menu.slots.get(42).x == 8 && menu.slots.get(42).y == 164,
                 "RTG player inventory layout drifted");
         helper.assertFalse(menu.slots.get(0).mayPlace(new ItemStack(Items.COAL)),
                 "RTG menu slot bypasses machine validation");

@@ -41,11 +41,11 @@ import net.minecraft.world.phys.Vec3;
  * The eight HIMARS rocket pods. 1.12.2 keeps them as a damage-indexed array of anonymous classes; here
  * they are enum constants carrying the same behaviour, selected by {@code ITEM_VARIANT}.
  *
- * <p>Two deviations, both about blocks this slice does not have. {@link HIMARSRocketType#SMALL_LAVA}
+ * <p>One deviation, about a block this slice does not have. {@link HIMARSRocketType#SMALL_LAVA}
  * fills its crater with magma rather than upstream's {@code volcanic_lava_block}, which is a finite
  * fluid on a whole system that is not ported — vanilla flowing lava would run out of the crater and
- * across the map, which is exactly what the finite fluid exists to avoid. And the white-phosphorus
- * round's ten scattered haze puffs have no ported particle, so it composes the mushroom effect alone.
+ * across the map, which is exactly what the finite fluid exists to avoid. The white-phosphorus round's ten
+ * scattered haze puffs are sent as 1.7 sent them ({@code HbmEffectNT.Haze}).
  */
 public class ItemAmmoHIMARS extends ItemEnumMulti {
 
@@ -129,6 +129,12 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
                     }
                 }
 
+                // 1.7: ten haze clouds scattered 15 blocks (gaussian) around the hit, sent 150 blocks around the rocket
+                for (int i = 0; i < 10; i++) {
+                    com.hbm.particle.helper.HbmEffectNT.Haze.sendAround(level,
+                            where.x + level.getRandom().nextGaussian() * 15, where.y,
+                            where.z + level.getRandom().nextGaussian() * 15, null, x, y, z, 150D);
+                }
                 ExplosionCreator.composeEffectRBMKMush(level, where.x, where.y, where.z, 15F);
             }
         },

@@ -1,10 +1,8 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMachineCyclotron;
-import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
 import dev.golem.core.gui.GuiDraw;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -12,11 +10,11 @@ import net.minecraft.world.entity.player.Inventory;
 
 import java.util.Optional;
 
-/** Cyclotron screen preserving the legacy 190×215 layout and three fluid gauges. */
+/** Cyclotron screen, 1.7 {@code GUIMachineCyclotron} ({@code machine/gui_cyclotron.png}, 190x215). */
 public class GUIMachineCyclotron extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineCyclotron>
         implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_cyclotron.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_cyclotron.png");
 
     public GUIMachineCyclotron(ContainerMachineCyclotron menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 190, 215);
@@ -43,36 +41,18 @@ public class GUIMachineCyclotron extends dev.golem.core.gui.CompatContainerScree
                     190F, 63F, 9, 12, 256, 256);
         }
 
-        GuiUtil.drawUpgradeInfoPanel(graphics, leftPos + 49, topPos + 85);
-        drawTank(graphics, cyclotron.tanks[0], 11, 88, 34, 7);
-        drawTank(graphics, cyclotron.tanks[1], 11, 97, 34, 7);
-        drawTank(graphics, cyclotron.tanks[2], 107, 97, 34, 16);
-    }
-
-    private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank,
-                          int x, int y, int width, int height) {
-        int fill = tank.getMaxFill() <= 0 ? 0 : tank.getFill() * height / tank.getMaxFill();
-        if (fill <= 0) return;
-        int drawX = leftPos + x;
-        int bottom = topPos + y + height;
-        int top = bottom - fill;
-        Identifier fluidTexture = tank.getTankType().getTexture();
-        int tint = 0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF);
-        if (Minecraft.getInstance().getResourceManager().getResource(fluidTexture).isPresent()) {
-            graphics.enableScissor(drawX, top, drawX + width, bottom);
-            for (int tileY = bottom - 16; tileY > top - 16; tileY -= 16) {
-                GuiDraw.blit(graphics, fluidTexture, drawX, tileY, 0F, 0F, width, 16, 16, 16, tint);
-            }
-            graphics.disableScissor();
-        } else {
-            graphics.fill(drawX, top, drawX + width, bottom, tint);
-        }
+        GuiUtil.drawInfoPanel(graphics, leftPos + 49, topPos + 85, 8);
+        // 1.7 renderTank(x, yBottom, z, w, h, orientation 1): horizontal gauges filling from the left.
+        GuiUtil.tankHorizontal(graphics, cyclotron.tanks[0], leftPos + 11, topPos + 88, 34, 7);
+        GuiUtil.tankHorizontal(graphics, cyclotron.tanks[1], leftPos + 11, topPos + 97, 34, 7);
+        GuiUtil.tankHorizontal(graphics, cyclotron.tanks[2], leftPos + 107, topPos + 97, 34, 16);
     }
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 6, 0x404040, false);
-        GuiDraw.text(graphics, font, playerInventoryTitle, 15, imageHeight - 94, 0x404040, false);
+        // 1.7: title centred on x=79, "Inventory" at x=15.
+        GuiDraw.text(graphics, font, title, 79 - font.width(title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, font, Component.translatable("container.inventory"), 15, imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
@@ -80,22 +60,16 @@ public class GUIMachineCyclotron extends dev.golem.core.gui.CompatContainerScree
         TileEntityMachineCyclotron cyclotron = menu.getCyclotron();
         if (cyclotron == null) return;
 
-        if (isHovering(168, 18, 16, 63, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font,
-                    GuiUtil.energyTooltip(cyclotron.power, TileEntityMachineCyclotron.MAX_POWER),
-                    Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(11, 81, 34, 7, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(cyclotron.tanks[0]),
-                    Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(11, 90, 34, 7, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(cyclotron.tanks[1]),
-                    Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(107, 81, 34, 16, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(cyclotron.tanks[2]),
-                    Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(49, 85, GuiUtil.INFO_PANEL_SIZE, GuiUtil.INFO_PANEL_SIZE, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.upgradeInfo(cyclotron),
-                    Optional.empty(), mouseX, mouseY);
+        if (GuiUtil.hover(mouseX, mouseY, leftPos + 168, topPos + 18, 16, 63)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.energyTooltip(cyclotron.power, TileEntityMachineCyclotron.MAX_POWER), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 11, topPos + 81, 34, 7)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(cyclotron.tanks[0]), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 11, topPos + 90, 34, 7)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(cyclotron.tanks[1]), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 107, topPos + 81, 34, 16)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(cyclotron.tanks[2]), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 49, topPos + 85, 8, 8)) {
+            GuiDraw.tooltip(graphics, font, GuiUtil.upgradeInfo(cyclotron), Optional.empty(), mouseX, mouseY);
         }
     }
 

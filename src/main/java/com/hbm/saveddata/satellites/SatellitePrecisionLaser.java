@@ -17,10 +17,12 @@ import java.util.Locale;
  */
 public class SatellitePrecisionLaser extends Satellite {
 
+    // 1.7 also wrote targetedEntity (a runtime network entity id typed in over ROR) to NBT. Entity ids are reassigned
+    // on every load, so the saved number could only ever hit the wrong entity; the port keeps it in memory only and
+    // a reload clears it to -1 (never persist numeric ids, History section 19ek-small). An old save's field is ignored.
     public static final MapCodec<SatellitePrecisionLaser> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            Codec.LONG.optionalFieldOf("lastShot", 0L).forGetter(sat -> sat.lastShot),
-            Codec.INT.optionalFieldOf("targetedEntity", -1).forGetter(sat -> sat.targetedEntity)
-    ).apply(i, SatellitePrecisionLaser::new));
+            Codec.LONG.optionalFieldOf("lastShot", 0L).forGetter(sat -> sat.lastShot)
+    ).apply(i, lastShot -> new SatellitePrecisionLaser(lastShot, -1)));
 
     public static final String CMD_FIRE = "fire";
     public static final String CMD_CANFIRE = "canfire";

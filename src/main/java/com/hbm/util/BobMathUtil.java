@@ -95,40 +95,42 @@ public final class BobMathUtil {
         return String.format(Locale.US, "%,d", amount);
     }
 
+    /** 1.7 {@code BobMathUtil.getShortNumber}: sign kept, two decimals (one for values <= -100 of a unit). */
     public static String getShortNumber(long l) {
+        double res;
+        String suffix;
+        long abs = Math.abs(l);
 
-        if (l >= Math.pow(10, 18)) {
-            double res = l / Math.pow(10, 18);
-            res = Math.round(res * 100.0) / 100.0;
-            return res + "E";
-        }
-        if (l >= Math.pow(10, 15)) {
-            double res = l / Math.pow(10, 15);
-            res = Math.round(res * 100.0) / 100.0;
-            return res + "P";
-        }
-        if (l >= Math.pow(10, 12)) {
-            double res = l / Math.pow(10, 12);
-            res = Math.round(res * 100.0) / 100.0;
-            return res + "T";
-        }
-        if (l >= Math.pow(10, 9)) {
-            double res = l / Math.pow(10, 9);
-            res = Math.round(res * 100.0) / 100.0;
-            return res + "G";
-        }
-        if (l >= Math.pow(10, 6)) {
-            double res = l / Math.pow(10, 6);
-            res = Math.round(res * 100.0) / 100.0;
-            return res + "M";
-        }
-        if (l >= Math.pow(10, 3)) {
-            double res = l / Math.pow(10, 3);
-            res = Math.round(res * 100.0) / 100.0;
-            return res + "k";
+        if (abs >= Math.pow(10, 18)) {
+            res = l / Math.pow(10, 18);
+            suffix = "E";
+        } else if (abs >= Math.pow(10, 15)) {
+            res = l / Math.pow(10, 15);
+            suffix = "P";
+        } else if (abs >= Math.pow(10, 12)) {
+            res = l / Math.pow(10, 12);
+            suffix = "T";
+        } else if (abs >= Math.pow(10, 9)) {
+            res = l / Math.pow(10, 9);
+            suffix = "G";
+        } else if (abs >= Math.pow(10, 6)) {
+            res = l / Math.pow(10, 6);
+            suffix = "M";
+        } else if (abs >= Math.pow(10, 3)) {
+            res = l / Math.pow(10, 3);
+            suffix = "k";
+        } else {
+            return Long.toString(l);
         }
 
-        return Long.toString(l);
+        // 1.7: a negative triple-digit value loses one decimal place to stay short.
+        if (res <= -100.0) {
+            res = Math.round(res * 10.0) / 10.0;
+        } else {
+            res = Math.round(res * 100.0) / 100.0;
+        }
+
+        return res + suffix;
     }
 
     // 1.7: ticks -> {year, day, time}, on a 48000-tick day and a 100-day year, time rescaled onto a 0..10 clock.

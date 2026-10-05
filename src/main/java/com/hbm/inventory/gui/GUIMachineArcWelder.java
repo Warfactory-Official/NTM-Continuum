@@ -1,7 +1,6 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMachineArcWelder;
-import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityMachineArcWelder;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -9,10 +8,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-import java.util.List;
-import java.util.Optional;
 
-/** Arc Welder screen with the exact legacy 176x204 layout and gauges. */
+/** Arc Welder screen — 1.7.10 {@code GUIMachineArcWelder} ({@code processing/gui_arc_welder.png}, 176x204). */
 public class GUIMachineArcWelder extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineArcWelder>
         implements IUpgradeInfoProviderSource {
 
@@ -50,32 +47,21 @@ public class GUIMachineArcWelder extends dev.golem.core.gui.CompatContainerScree
 
         GuiUtil.drawUpgradeInfoPanel(graphics, leftPos + INFO_X, topPos + INFO_Y);
 
-        FluidTankNTM tank = welder.tank;
-        // FluidTankNTM.renderTank(..., orientation=1) fills this gauge from left to right. Its y argument
-        // is the bottom edge, so the legacy call at (35, 79) maps to the rectangle (35, 63)-(69, 79).
-        int width = tank.getMaxFill() <= 0 ? 0
-                : (int) ((long) tank.getFill() * FLUID_W / tank.getMaxFill());
-        if (width > 0) {
-            int color = 0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF);
-            graphics.fill(leftPos + FLUID_X, topPos + FLUID_TOP,
-                    leftPos + FLUID_X + width, topPos + FLUID_TOP + FLUID_H, color);
-        }
+        // 1.7: welder.tank.renderTank(guiLeft + 35, guiTop + 79, z, 34, 16, 1) — horizontal, y is the bottom edge.
+        GuiUtil.tankHorizontal(graphics, welder.tank, leftPos + FLUID_X, topPos + FLUID_TOP + FLUID_H, FLUID_W, FLUID_H);
     }
 
+    /** 1.7 {@code drawScreen}: tank info, energy info, then the upgrade list anchored at the panel. */
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineArcWelder welder = menu.getWelder();
         if (welder == null) return;
-        if (isHovering(152, 18, 16, 52, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.energyTooltip(welder.power, welder.maxPower),
-                    Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(FLUID_X, FLUID_TOP, FLUID_W, FLUID_H, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, List.of(
-                    welder.tank.getTankType().getDisplayName(),
-                    Component.literal(welder.tank.getFill() + " / " + welder.tank.getMaxFill() + " mB")),
-                    Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(INFO_X, INFO_Y, GuiUtil.INFO_PANEL_SIZE, GuiUtil.INFO_PANEL_SIZE, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.upgradeInfo(welder), Optional.empty(), mouseX, mouseY);
+        if (GuiUtil.hover(mouseX, mouseY, leftPos + FLUID_X, topPos + FLUID_TOP, FLUID_W, FLUID_H)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(welder.tank), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 152, topPos + 18, 16, 52)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.energyTooltip(welder.power, welder.maxPower), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + INFO_X, topPos + INFO_Y, 8, 8)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.upgradeInfo(welder), leftPos + INFO_X, topPos + INFO_Y);
         }
     }
 
@@ -86,7 +72,7 @@ public class GUIMachineArcWelder extends dev.golem.core.gui.CompatContainerScree
                 ? Component.literal(welder.getName()) : title;
         GuiDraw.text(graphics, font, label, imageWidth / 2 - font.width(label) / 2 - 18,
                 6, 0x404040, false);
-        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 94, 0x404040, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 0x404040, false);
     }
 
     @Override

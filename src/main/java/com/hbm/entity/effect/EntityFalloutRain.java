@@ -72,6 +72,25 @@ public class EntityFalloutRain extends CompatEntity {
     private static final int MAX_SCAN_FAILURE_RETRIES = 3;
 
     private int scale = 1;
+    /** 1.7 {@code tickDelay}, initialised from {@code BombConfig.fDelay} and not saved (1.7 did not save it either). */
+    private final TickDelay tickDelay = new TickDelay(BombConfig.fDelay);
+
+    /** 1.7 {@code EntityFalloutRain.onUpdate}'s {@code tickDelay} counter, alone so the GameTests can drive it. */
+    public static final class TickDelay {
+        private int delay;
+
+        public TickDelay(int initial) {
+            this.delay = initial;
+        }
+
+        /** One tick: true when this tick applies ({@code tickDelay == 0}); then reset to {@code fDelay}, and count down. */
+        public boolean step(int fDelay) {
+            boolean apply = delay == 0;
+            if (apply) delay = fDelay;
+            delay--;
+            return apply;
+        }
+    }
     /** Radius 0, as upstream's {@code EntityExplosionChunkloading}: the sweep keeps its own chunk up so
      * it can keep resolving the rest of the disc even with no player nearby. */
     private final EntityChunkLoader chunkLoader = new EntityChunkLoader(this, 0);
@@ -236,7 +255,12 @@ public class EntityFalloutRain extends CompatEntity {
         FalloutConfig.entries();
 
         dispatchScans(server);
-        applyScans(server);
+        // 1.7 6.04_falloutDelay: the mk5 apply burst runs when tickDelay reaches 0, then it is reset to fDelay and
+        // decremented in the same tick, i.e. the first burst on tick fDelay + 1 and then one every fDelay ticks (every
+        // fourth tick at the default 4). Ported as written, including its oddity: with fDelay 0
+        // the counter goes negative after the first burst and the sweep never applies again. Loading and scanning
+        // (port-only, off the server thread) keep running every tick; only the block writes wait.
+        if (tickDelay.step(BombConfig.fDelay)) applyScans(server);
 
         sweepTicks++;
         // The sweep can time its own work but not the server's. The gap between its ticks is the rest of
@@ -764,9 +788,9 @@ public class EntityFalloutRain extends CompatEntity {
      * Pass two: everything vanilla would have done around each changed cell, then one repair for the
      * whole chunk.
      *
-     * <p>{@code onPlace} is called by hand here. A section write skips it, and it is not optional — it is
-     * what schedules {@link com.hbm.blocks.generic.BlockFallout}'s tick, so ash placed without it would
-     * sit there emitting no radiation at all.
+     * <p>{@code onPlace} is called by hand here, because a section write skips it and setBlockState would
+     * have run it. {@link com.hbm.blocks.generic.BlockFallout} itself no longer needs it (1.7's ash has no
+     * tick, History §19ek-small), but other placed blocks keep their vanilla placement behaviour.
      */
     private boolean notifyPass(ServerLevel server, LevelChunk chunk, ChunkScan scan,
                                BlockPos.MutableBlockPos pos, long deadline, int cx, int cz) {
@@ -783,7 +807,7 @@ public class EntityFalloutRain extends CompatEntity {
             if (oldState == newState) continue;
 
             // The removal hook that UPDATE_NEIGHBORS would have run inside setBlockState, and onPlace,
-            // which a section write skips — it is what schedules BlockFallout's tick.
+            // which a section write skips.
             if (!oldState.is(newState.getBlock())) {
                 dev.golem.core.world.Compat.affectNeighborsAfterRemoval(server, pos, oldState);
             }

@@ -1,19 +1,15 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMachineTurbofan;
-import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
 import dev.golem.core.gui.GuiDraw;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-import java.util.List;
-import java.util.Optional;
 
-/** Screen for the legacy turbofan. */
+/** Screen for the turbofan — 1.7.10 {@code GUIMachineTurbofan} ({@code generators/gui_turbofan.png}, 176x203). */
 public class GUIMachineTurbofan extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineTurbofan>
         implements IUpgradeInfoProviderSource {
     private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/generators/gui_turbofan.png");
@@ -23,9 +19,11 @@ public class GUIMachineTurbofan extends dev.golem.core.gui.CompatContainerScreen
         super(menu, playerInventory, title, 176, 203);
     }
 
-    @Override protected void init() {
-        super.init();
-        titleLabelX = 43 - font.width(title) / 2;
+    /** 1.7: title centred on x=43 at y=6, inventory at (8, ySize-96+2), both 4210752. */
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, font, title, 43 - font.width(title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override
@@ -46,42 +44,22 @@ public class GUIMachineTurbofan extends dev.golem.core.gui.CompatContainerScreen
             int frame = fan.blood.getMaxFill() <= 0 ? 0
                     : (int) Math.round(12D * fan.blood.getFill() / fan.blood.getMaxFill());
             frame = Math.max(0, Math.min(12, frame));
+            // 1.7 GUIElements.renderGauge(ROUND_SMALL): 13 frames of 18x18 stacked VERTICALLY in an 18x234 strip.
             GuiDraw.blit(graphics, BLOOD_GAUGE, leftPos + 97, topPos + 16,
-                    frame * 18F, 0F, 18, 18, 234, 18);
+                    0F, frame * 18F, 18, 18, 18, 234);
         }
-        drawTank(graphics, fan.tank, 35, 17, 34, 52);
-    }
-
-    private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y, int width, int height) {
-        int max = tank.getMaxFill();
-        int fill = max <= 0 ? 0 : tank.getFill() * height / max;
-        if (fill <= 0) return;
-        int x0 = leftPos + x;
-        int bottom = topPos + y + height;
-        int top = bottom - fill;
-        Identifier texture = tank.getTankType().getTexture();
-        if (Minecraft.getInstance().getResourceManager().getResource(texture).isPresent()) {
-            graphics.enableScissor(x0, top, x0 + width, bottom);
-            for (int ty = bottom - 16; ty > top - 16; ty -= 16)
-                GuiDraw.blit(graphics, texture, x0, ty, 0F, 0F, width, 16, 16, 16);
-            graphics.disableScissor();
-        } else GuiDraw.fill(graphics, x0, top, x0 + width, bottom,
-                0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
+        GuiUtil.tank(graphics, fan.tank, leftPos + 35, topPos + 69, 34, 52);
     }
 
     @Override protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineTurbofan fan = menu.getFan();
         if (fan == null) return;
-        if (isHovering(143, 17, 16, 52, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.energyTooltip(fan.power, fan.getMaxPower()), Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(35, 17, 34, 52, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, List.of(fan.tank.getTankType().getDisplayName(),
-                    Component.literal(fan.tank.getFill() + " / " + fan.tank.getMaxFill() + " mB")),
-                    Optional.empty(), mouseX, mouseY);
-        } else if (isHovering(98, 17, 16, 16, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, List.of(fan.blood.getTankType().getDisplayName(),
-                    Component.literal(fan.blood.getFill() + " / " + fan.blood.getMaxFill() + " mB")),
-                    Optional.empty(), mouseX, mouseY);
+        if (GuiUtil.hover(mouseX, mouseY, leftPos + 35, topPos + 17, 34, 52)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(fan.tank), mouseX, mouseY);
+        } else if (fan.showBlood && GuiUtil.hover(mouseX, mouseY, leftPos + 98, topPos + 17, 16, 16)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.tankTooltip(fan.blood), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 143, topPos + 17, 16, 52)) {
+            GuiUtil.tooltip(graphics, font, GuiUtil.energyTooltip(fan.power, fan.getMaxPower()), mouseX, mouseY);
         }
     }
 

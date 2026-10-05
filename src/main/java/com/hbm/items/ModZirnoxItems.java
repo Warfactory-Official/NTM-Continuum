@@ -40,11 +40,12 @@ public final class ModZirnoxItems {
                         .tab(HbmTab.CONTROL);
                 DEPLETED.put(fuel, depleted);
 
-                // every spent-fuel waste shows the one zirnox_waste model
+                // 1.7 ItemDepletedFuel: its own sprite (setTextureName), tinted 0xFFBFA5 while hot, partsTab
                 RegistryObject<ItemZirnoxWaste> waste = REG.item("waste_" + fuel.wasteId,
                         ItemZirnoxWaste::new)
-                        .transform(Presets.shares("hbm:item/zirnox_waste"))
-                        .tab(HbmTab.CONSUMABLES);
+                        .transform(Presets.sprite("hbm:items/" + fuel.wasteTexture())
+                                .tints(dev.golem.core.dejson.Tints.customModelData(0, 0xFFFFFF)))
+                        .tab(HbmTab.MATERIALS);
                 WASTE.put(fuel, waste);
             }
         }

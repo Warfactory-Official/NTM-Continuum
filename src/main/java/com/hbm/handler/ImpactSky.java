@@ -14,7 +14,9 @@ import net.minecraft.world.phys.Vec3;
  * darkening (1.7 {@code getSunBrightnessFactor}, which drives mob spawning and plant light) and on the client for
  * the rest, with the client reading the synced values ({@link ImpactWorldHandler}).
  *
- * <p>Not ported: 1.7's {@code RenderNTMSkyboxImpact} custom sky renderer ({@code enableSkyboxes}).
+ * <p>1.7's {@code RenderNTMSkyboxImpact} custom sky renderer ({@code enableSkyboxes}) - the faded sun, moon and
+ * stars, no sunrise glow, the digamma star and satellite - is {@link com.hbm.client.render.world.RenderNTMSkyboxImpact},
+ * installed by {@link com.hbm.client.render.world.NTMSkyboxes}.
  */
 public final class ImpactSky implements Skies.Modifier {
 

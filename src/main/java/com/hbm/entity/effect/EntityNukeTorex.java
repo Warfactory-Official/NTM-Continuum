@@ -508,6 +508,11 @@ public class EntityNukeTorex extends CompatEntity {
         visualRandom = new VisualRandom(seed);
     }
 
+    /** The server's animation age as the client sees it (harness query {@code hbm_torex}). */
+    public int syncedAnimationAge() {
+        return authoritativeAnimationAge();
+    }
+
     private int authoritativeAnimationAge() {
         long start = Integer.toUnsignedLong(this.entityData.get(START_TIME_LOW))
                 | ((long) this.entityData.get(START_TIME_HIGH) << 32);

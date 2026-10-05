@@ -20,10 +20,11 @@ public class GUIFurnaceSteel extends dev.golem.core.gui.CompatContainerScreen<Co
         super(menu, inventory, title, 176, 166);
     }
 
-    @Override protected void init() {
-        super.init();
-        titleLabelX = (imageWidth - font.width(title)) / 2;
-        inventoryLabelY = imageHeight - 96 + 2;
+    /** 1.7 {@code GUIFurnaceSteel.drawGuiContainerForegroundLayer}: centred title at y 6, "Inventory" at (8, ySize - 94). */
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
@@ -45,27 +46,34 @@ public class GUIFurnaceSteel extends dev.golem.core.gui.CompatContainerScreen<Co
         }
     }
 
+    /** 1.7 {@code GUIFurnaceSteel.drawScreen}: per-lane progress and bonus stats, then the heat stat ("TU" unspaced, as 1.7). */
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityFurnaceSteel furnace = menu.getFurnace();
         if (furnace == null) return;
         for (int i = 0; i < 3; i++) {
-            if (isHovering(53, 17 + 18 * i, 70, 7, mouseX, mouseY)) {
-                GuiDraw.tooltip(graphics, font, List.of(Component.literal(String.format(Locale.US,
-                        "%,d / %,d TU", furnace.progress[i], TileEntityFurnaceSteel.processTime))),
+            if (in17(53, 17 + 18 * i, 70, 7, mouseX, mouseY)) {
+                GuiDraw.tooltip(graphics, font, List.of(Component.literal(String.format(Locale.US, "%,d", furnace.progress[i])
+                        + " / " + String.format(Locale.US, "%,d", TileEntityFurnaceSteel.processTime) + "TU")),
                         Optional.empty(), mouseX, mouseY);
                 return;
             }
-            if (isHovering(53, 26 + 18 * i, 70, 7, mouseX, mouseY)) {
+            if (in17(53, 26 + 18 * i, 70, 7, mouseX, mouseY)) {
                 GuiDraw.tooltip(graphics, font, List.of(Component.literal("Bonus: " + furnace.bonus[i] + "%")),
                         Optional.empty(), mouseX, mouseY);
                 return;
             }
         }
-        if (isHovering(151, 18, 9, 50, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, List.of(Component.literal(String.format(Locale.US,
-                    "%,d / %,d TU", furnace.heat, TileEntityFurnaceSteel.maxHeat))),
+        if (in17(151, 18, 9, 50, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, font, List.of(Component.literal(String.format(Locale.US, "%,d", furnace.heat)
+                    + " / " + String.format(Locale.US, "%,d", TileEntityFurnaceSteel.maxHeat) + "TU")),
                     Optional.empty(), mouseX, mouseY);
         }
+    }
+
+    /** The 1.7 GUI hit test ({@code drawCustomInfoStat}/{@code renderTankInfo}): x <= mouse < x + w, y < mouse <= y + h. */
+    private boolean in17(int x, int y, int w, int h, int mouseX, int mouseY) {
+        int mx = mouseX - leftPos, my = mouseY - topPos;
+        return x <= mx && x + w > mx && y < my && y + h >= my;
     }
 }

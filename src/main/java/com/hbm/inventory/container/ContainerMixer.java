@@ -42,11 +42,11 @@ public class ContainerMixer extends AbstractContainerMenu {
         this.machine = mixer != null ? mixer : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
-        this.addSlot(validated(0, 23, 77));
-        this.addSlot(validated(1, 43, 77));
-        this.addSlot(validated(2, 117, 77));
-        this.addSlot(validated(3, 137, 24));
-        this.addSlot(validated(4, 137, 42));
+        this.addSlot(validated(0, 12, 72));   // 1.7 ContainerMixer positions
+        this.addSlot(validated(1, 52, 72));
+        this.addSlot(validated(2, 126, 72));
+        this.addSlot(validated(3, 148, 18));
+        this.addSlot(validated(4, 148, 36));
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 122);
     }
 

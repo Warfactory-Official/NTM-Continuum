@@ -3,7 +3,6 @@ package com.hbm.inventory.gui;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineShredder;
 import com.hbm.tileentity.machine.TileEntityMachineShredder;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -13,17 +12,13 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Client screen for the shredder. Reads {@code power}/{@code progress} and the two synced blade-wear
- * values off the client {@link TileEntityMachineShredder} (BufPacket).
- *
- * <p>Draws the energy bar (left), the shredding progress arrow, and a per-blade wear icon (green / worn /
- * broken, from the three 18×18 sprite rows in the texture). When a blade is missing or spent the machine
- * is stalled, so the blade icons carry a hover tooltip explaining it — the 26.1 stand-in for the old
- * {@code drawInfoPanel} error marker that hung off the GUI's left edge.
+ * Client screen for the shredder, a straight port of 1.7 {@code GUIMachineShredder}
+ * ({@code processing/gui_shredder.png}, 176x233). Reads {@code power}/{@code progress} and the two synced
+ * blade-wear values off the client {@link TileEntityMachineShredder} (BufPacket).
  */
 public class GUIMachineShredder extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineShredder> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_shredder.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_shredder.png");
 
     public GUIMachineShredder(ContainerMachineShredder menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 233);
@@ -51,9 +46,14 @@ public class GUIMachineShredder extends dev.golem.core.gui.CompatContainerScreen
 
         drawGear(graphics, shredder.getGearLeft(), this.leftPos + 43, 176.0F);
         drawGear(graphics, shredder.getGearRight(), this.leftPos + 79, 194.0F);
+
+        // 1.7: large red "!" hung off the left edge while a blade is missing or spent.
+        if (shredder.bladesBroken()) {
+            GuiUtil.drawInfoPanel(graphics, this.leftPos - 16, this.topPos + 36, 6);
+        }
     }
 
-    /** Wear icon: state 1/2/3 → the fine / worn / broken sprite row. State 0 (no blade) draws nothing. */
+    /** Wear icon: state 1/2/3 the fine / worn / broken sprite row. State 0 (no blade) draws nothing. */
     private void drawGear(GuiGraphicsExtractor graphics, int state, int x, float u) {
         if (state < 1 || state > 3) return;
         float v = (state - 1) * 18.0F;
@@ -65,21 +65,22 @@ public class GUIMachineShredder extends dev.golem.core.gui.CompatContainerScreen
         TileEntityMachineShredder shredder = this.menu.getShredder();
         if (shredder == null) return;
 
-        if (this.isHovering(8, 18, 16, 88, mouseX, mouseY)) {
+        if (this.isHovering(8, 106 - 88, 16, 88, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, this.font,
                     GuiUtil.energyTooltip(shredder.power, TileEntityMachineShredder.maxPower),
                     Optional.empty(), mouseX, mouseY);
-        } else if (shredder.bladesBroken() && this.isHovering(43, 71, 54, 18, mouseX, mouseY)) {
+        } else if (shredder.bladesBroken() && this.isHovering(-16, 36, 16, 16, mouseX, mouseY)) {
+            // 1.7 hard-codes "Error: Shredder blades are broken or missing!".
             GuiDraw.tooltip(graphics, this.font,
-                    List.of(Component.translatable("gui.shredder.bladesBroken").withStyle(ChatFormatting.RED)),
+                    List.of(Component.literal("Error: ").append(Component.translatable("gui.shredder.bladesBroken"))),
                     Optional.empty(), mouseX, mouseY);
         }
     }
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        // Only the player-inventory label; the taller (233px) background already carries the machine name.
-        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.imageHeight - 96 + 2,
-                0xFF404040, false);
+        // 1.7 centres the title on x=106, not xSize/2.
+        GuiDraw.text(graphics, this.font, this.title, 106 - this.font.width(this.title) / 2, 6, 4210752, false);
+        GuiDraw.text(graphics, this.font, Component.translatable("container.inventory"), 8, this.imageHeight - 96 + 2, 4210752, false);
     }
 }

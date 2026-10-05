@@ -77,6 +77,7 @@ public final class HbmParticleHandlers {
                 Particles.add(new ParticleDeadLeaf(clientLevel, x, y, z));
             }
         });
+        LivingEffectParticles.register(); // 1.7 sweat / vomit / radiation / exhaust / haze / ufo
         HbmEffectNT.RadFog.setHandler((level, x, y, z, data) -> {
             if (level instanceof ClientLevel clientLevel) Particles.add(new ParticleRadiationFog(clientLevel, x, y, z));
         });

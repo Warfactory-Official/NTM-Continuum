@@ -42,7 +42,7 @@ public class ContainerCoreEmitter extends AbstractContainerMenu {
         this.machine = tile != null ? tile : new SimpleContainer(Math.max(MACHINE_SLOTS, 1));
         this.access = access;
 
-        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 88);
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
     }
 
     private static @Nullable TileEntityCoreEmitter resolve(Inventory playerInventory, BlockPos pos) {
