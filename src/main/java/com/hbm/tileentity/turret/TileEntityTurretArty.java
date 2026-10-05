@@ -155,9 +155,9 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery {
     @Override
     protected void alignTurret() {
         // Upstream deliberately uses +pitch for aim compensation, while firing uses -pitch.
-        Vec3 muzzle = getTurretPos().add(new Vec3(getBarrelLength(), 0D, 0D)
+        Vec3 muzzle = getTurretPos().add(toWorldDirection(new Vec3(getBarrelLength(), 0D, 0D)
                 .zRot((float) rotationPitch)
-                .yRot((float) -(rotationYaw + Math.PI * 0.5D)));
+                .yRot((float) -(rotationYaw + Math.PI * 0.5D))));
         Vec3 delta = tPos.subtract(muzzle);
         double targetYaw = -Math.atan2(delta.x, delta.z);
 
@@ -170,7 +170,8 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery {
         double targetPitch = Math.atan((v02 + Math.sqrt(v02 * v02 - GRAVITY * (GRAVITY * x * x + 2D * y * v02))
                 * branch) / (GRAVITY * x));
 
-        turnTowardsAngle(targetPitch, targetYaw);
+        // a ballistic solution is in world angles (gravity is the world's)
+        turnTowardsWorldAngle(targetPitch, targetYaw);
     }
 
     public double getV0() {

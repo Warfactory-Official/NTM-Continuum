@@ -136,7 +136,7 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
         BulletConfig conf = type == Fluids.BALEFIRE ? XFactoryFlamer.flame_nograv_bf : XFactoryFlamer.flame_nograv;
 
         EntityBulletBaseMK4 flame = new EntityBulletBaseMK4(level, conf, damage, 0.05F,
-                (float) rotationYaw, (float) rotationPitch);
+                worldYaw(), worldPitch());
         flame.setPos(tip.x, tip.y, tip.z);
         level.addFreshEntity(flame);
 

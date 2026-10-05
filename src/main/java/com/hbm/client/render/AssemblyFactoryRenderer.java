@@ -130,10 +130,10 @@ public final class AssemblyFactoryRenderer
         state.arms[3] = be.animations[1].saw.getPositions(partialTicks);
         long gameTime = be.getLevel() == null ? 0L : be.getLevel().getGameTime();
         state.sparksU = (float) ((gameTime / 10D + partialTicks) % 10D);
-        double cameraX = cameraPosition.x - (be.getBlockPos().getX() + 0.5D);
-        double cameraY = cameraPosition.y - (be.getBlockPos().getY() + 1D);
-        double cameraZ = cameraPosition.z - (be.getBlockPos().getZ() + 0.5D);
-        state.nearby = cameraX * cameraX + cameraY * cameraY + cameraZ * cameraZ < DISPLAY_DISTANCE;
+        // Measured where the machine is seen: on a moving sub-level (Create Aeronautics) its block sits far from it.
+        state.nearby = dev.golem.core.world.SubLevels.distanceSq(be.getLevel(),
+                be.getBlockPos().getX() + 0.5D, be.getBlockPos().getY() + 1D, be.getBlockPos().getZ() + 0.5D,
+                cameraPosition.x, cameraPosition.y, cameraPosition.z) < DISPLAY_DISTANCE;
 
         for (int lane = 0; lane < TileEntityMachineAssemblyFactory.LANES; lane++) {
             state.showItems[lane] = false;

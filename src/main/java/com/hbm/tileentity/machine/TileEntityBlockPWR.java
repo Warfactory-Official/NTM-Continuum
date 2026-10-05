@@ -33,7 +33,17 @@ import com.hbm.tileentity.ModPwrBlockEntities;
  * {@link TileEntityLoadedBase} so the fluid net's loaded check and the chunk-load tag sync apply.
  */
 public class TileEntityBlockPWR extends TileEntityLoadedBase
-        implements IFluidReceiverMK2, IFluidProviderMK2, IRORValueProvider, IRORInteractive {
+        implements IFluidReceiverMK2, IFluidProviderMK2, IRORValueProvider, IRORInteractive, com.hbm.tileentity.IRelocatable {
+
+    /** A sub-level move carried this block; the controller follows when it was carried too. */
+    @Override
+    public void relocate(dev.golem.core.world.SubLevels.Move move) {
+        net.minecraft.core.BlockPos core = com.hbm.tileentity.IRelocatable.follow(move, new net.minecraft.core.BlockPos(coreX, coreY, coreZ));
+        coreX = core.getX(); coreY = core.getY(); coreZ = core.getZ();
+        cachedCore = null;
+        setChanged();
+    }
+
 
     private static final FluidTankNTM[] NO_TANKS = new FluidTankNTM[0];
 

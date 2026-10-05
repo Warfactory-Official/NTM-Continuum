@@ -96,12 +96,20 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
 
     public List<RadarEntry> entries = new ArrayList<>();
 
+    /**
+     * Where the radar is in the world, which is where it scans, maps and measures from: its own block, unless that
+     * block rides a moving sub-level (Create Aeronautics), whose blocks sit far from where the structure is. Taken
+     * every server tick and synced, because the screen lays blips out relative to it.
+     */
+    public BlockPos origin;
+
     public TileEntityMachineRadarNT(BlockPos pos, BlockState state) {
         this(ModRadarUtilityBlockEntities.RADAR.get(), pos, state);
     }
 
     protected TileEntityMachineRadarNT(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state, 10);
+        this.origin = pos;
     }
 
     @Override
@@ -130,7 +138,8 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
 
     protected void updateServer(ServerLevel level) {
         if (this.map == null || this.map.length != 40_000) this.map = new byte[40_000];
-        int x0 = worldPosition.getX(), y0 = worldPosition.getY(), z0 = worldPosition.getZ();
+        this.origin = dev.golem.core.world.SubLevels.toWorldBlock(level, worldPosition);
+        int x0 = origin.getX(), y0 = origin.getY(), z0 = origin.getZ();
 
         // 1.7 charges from slot 9 and then again from slot 0 - slot 0 is the first link slot; the odd second
         // charge is kept, a battery in it works
@@ -169,6 +178,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
                 screen.refX = x0;
                 screen.refY = y0;
                 screen.refZ = z0;
+                screen.radarPos = worldPosition;
                 screen.range = this.getRange();
                 screen.linked = true;
                 screen.networkPackNT();
@@ -191,7 +201,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
      * nothing. A read still in flight leaves the cell blank for the next sweep.
      */
     public void sampleSlot(ServerLevel level, int slot) {
-        int x0 = worldPosition.getX(), z0 = worldPosition.getZ();
+        int x0 = origin.getX(), z0 = origin.getZ();
         int chunkLoads = 0;
         java.util.Set<Long> loaded = null;
         for (int i = 0; i < 100; i++) {
@@ -240,8 +250,8 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
         for (int i = 0; i < 100; i++) {
             int index = slot * 100 + i;
             if (this.map[index] != 0) continue;
-            int x = worldPosition.getX() - getRange() + (index % 200) * getRange() * 2 / 200;
-            int z = worldPosition.getZ() - getRange() + index / 200 * getRange() * 2 / 200;
+            int x = origin.getX() - getRange() + (index % 200) * getRange() * 2 / 200;
+            int z = origin.getZ() - getRange() + index / 200 * getRange() * 2 / 200;
             long key = dev.golem.core.world.Chunks.key(x >> 4, z >> 4);
             if (key == previous) continue;
             previous = key;
@@ -328,6 +338,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
         buf.writeBoolean(this.redMode);
         buf.writeBoolean(this.showMap);
         buf.writeBoolean(this.jammed);
+        buf.writeBlockPos(this.origin);
         buf.writeInt(entries.size());
         for (RadarEntry entry : entries) entry.toBytes(buf);
         if (this.clearFlag) {
@@ -358,6 +369,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
         this.redMode = buf.readBoolean();
         this.showMap = buf.readBoolean();
         this.jammed = buf.readBoolean();
+        this.origin = buf.readBlockPos();
         int count = buf.readInt();
         this.entries.clear();
         for (int i = 0; i < count; i++) {
@@ -417,7 +429,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
     protected void allocateTargets(ServerLevel level) {
         this.entries.clear();
 
-        if (worldPosition.getY() < radarAltitude) return;
+        if (origin.getY() < radarAltitude) return;
         if (this.power < consumption) {
             this.power = 0;
             return;
@@ -425,14 +437,14 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
         this.power -= consumption;
 
         int scan = this.getRange();
-        double cx = worldPosition.getX() + 0.5, cz = worldPosition.getZ() + 0.5;
+        double cx = origin.getX() + 0.5, cz = origin.getZ() + 0.5;
 
         RadarScanParams params = new RadarScanParams(this.scanMissiles, this.scanShells, this.scanPlayers, this.smartMode);
 
         for (Entity e : matchingEntities) {
 
             if (e.level() == level && Math.abs(e.getX() - cx) <= scan && Math.abs(e.getZ() - cz) <= scan
-                    && e.getY() - worldPosition.getY() > radarBuffer) {
+                    && e.getY() - origin.getY() > radarBuffer) {
 
                 if (e instanceof LivingEntity living && HbmLivingProps.getDigamma(living) > 0.001) {
                     this.jammed = true;
@@ -452,8 +464,8 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
 
         if (level.getGameTime() % 20 == 0) {
             SatelliteDetector.reportEvent(level, SatelliteDetector.DURATION_MEDIUM,
-                    SatelliteDetector.BurstIntensity.MEDIUM, worldPosition.getX(), worldPosition.getZ());
-            SatelliteRayScan.reportEvent(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
+                    SatelliteDetector.BurstIntensity.MEDIUM, origin.getX(), origin.getZ());
+            SatelliteRayScan.reportEvent(level, origin.getX(), origin.getY(), origin.getZ(),
                     SatelliteRayScan.RayEvent.INFO_RADAR, 200);
         }
     }
@@ -470,7 +482,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
 
                 for (RadarEntry e : entries) {
                     if (!e.redstone) continue;
-                    double dist = Math.sqrt(Math.pow(e.posX - worldPosition.getX(), 2) + Math.pow(e.posZ - worldPosition.getZ(), 2));
+                    double dist = Math.sqrt(Math.pow(e.posX - origin.getX(), 2) + Math.pow(e.posZ - origin.getZ(), 2));
                     int p = 15 - (int) Math.floor(dist / maxRange * 15);
 
                     if (p > power) power = p;
@@ -557,7 +569,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
                     } else if (dev.golem.core.data.Tags.contains(data, "launchPosX")) {
                         int x = dev.golem.core.data.Tags.getIntOr(data, "launchPosX", 0);
                         int z = dev.golem.core.data.Tags.getIntOr(data, "launchPosZ", 0);
-                        if (rec.sendCommandPosition(x, worldPosition.getY(), z)) bleep(player);
+                        if (rec.sendCommandPosition(x, origin.getY(), z)) bleep(player);
                     }
                 }
             }

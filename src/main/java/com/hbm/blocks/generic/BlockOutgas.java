@@ -102,7 +102,8 @@ public class BlockOutgas extends dev.golem.core.world.CompatBlock {
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         super.onBlockRemoved(state, level, pos, movedByPiston);
-        if (level.isClientSide() || !onBreak) return;
+        // Carried by a sub-level system, not mined: nothing escapes at the old position.
+        if (level.isClientSide() || !onBreak || dev.golem.core.world.SubLevels.isMoving(level)) return;
         Block gas = getGas();
         if (gas != Blocks.AIR) level.setBlock(pos, gas.defaultBlockState(), 3);
 

@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "hbm:entity_c_item",
+    "hbm:entity_c_package"
+  ]
+}

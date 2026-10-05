@@ -14,7 +14,15 @@ import net.minecraft.world.level.block.state.BlockState;
  * target is set with the RBMK console linking device and the view is turned in quarter steps with a
  * screwdriver. Column data travels as the same typed {@link RBMKColumn} snapshot the console uses.
  */
-public class BlockEntityRBMKDisplay extends TileEntityLoadedBase implements IRBMKTicking {
+public class BlockEntityRBMKDisplay extends TileEntityLoadedBase implements IRBMKTicking, com.hbm.tileentity.IRelocatable {
+
+    /** A sub-level move carried this display; it keeps its reactor when the reactor was carried too. */
+    @Override
+    public void relocate(dev.golem.core.world.SubLevels.Move move) {
+        net.minecraft.core.BlockPos target = com.hbm.tileentity.IRelocatable.follow(move, new net.minecraft.core.BlockPos(targetX, targetY, targetZ));
+        setTarget(target.getX(), target.getY(), target.getZ());
+    }
+
 
     private int targetX, targetY, targetZ;
     private byte rotation;

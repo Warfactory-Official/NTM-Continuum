@@ -144,7 +144,7 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery {
     @Override
     protected void alignTurret() {
         Vec3 delta = tPos.subtract(getTurretPos());
-        turnTowardsAngle(Math.PI / 4D, -Math.atan2(delta.x, delta.z));
+        turnTowardsWorldAngle(Math.PI / 4D, -Math.atan2(delta.x, delta.z));
     }
 
     /** The variant of the first HIMARS pod in the ammunition slots, or -1 if there is none. */

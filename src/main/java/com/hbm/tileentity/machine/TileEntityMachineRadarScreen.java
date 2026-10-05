@@ -22,6 +22,8 @@ public class TileEntityMachineRadarScreen extends TileEntityLoadedBase {
     public int refX;
     public int refY;
     public int refZ;
+    /** The linked radar's own block, which the screen opens; {@code ref} is where it scans from (they differ on a sub-level). */
+    public BlockPos radarPos = BlockPos.ZERO;
     public int range;
     public boolean linked;
 
@@ -41,6 +43,7 @@ public class TileEntityMachineRadarScreen extends TileEntityLoadedBase {
         buf.writeInt(refX);
         buf.writeInt(refY);
         buf.writeInt(refZ);
+        buf.writeBlockPos(radarPos);
         buf.writeInt(range);
         buf.writeInt(entries.size());
         for (RadarEntry entry : entries) entry.toBytes(buf);
@@ -52,6 +55,7 @@ public class TileEntityMachineRadarScreen extends TileEntityLoadedBase {
         refX = buf.readInt();
         refY = buf.readInt();
         refZ = buf.readInt();
+        radarPos = buf.readBlockPos();
         range = buf.readInt();
         int count = buf.readInt();
         this.entries.clear();

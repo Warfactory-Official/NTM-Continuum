@@ -134,7 +134,7 @@ public class TileEntityTurretRichard extends TileEntityTurretBaseNT {
         Vec3 tip = barrelTip();
 
         EntityBulletBaseMK4 projectile = new EntityBulletBaseMK4(level, bullet, baseDamage, bullet.spread,
-                (float) rotationYaw, (float) rotationPitch);
+                worldYaw(), worldPitch());
         projectile.setPos(tip.x, tip.y, tip.z);
         projectile.lockonTarget = target;
         level.addFreshEntity(projectile);

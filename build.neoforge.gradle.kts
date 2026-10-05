@@ -101,6 +101,13 @@ repositories {
         forRepository { maven("https://api.modrinth.com/maven") { name = "Modrinth" } }
         filter { includeGroup("maven.modrinth") }
     }
+    exclusiveContent {
+        forRepository { maven("https://maven.ryanhcode.dev/releases") { name = "RyanHCode" } }
+        filter {
+            includeGroup("dev.ryanhcode.sable")
+            includeGroup("dev.ryanhcode.sable-companion")
+        }
+    }
 }
 
 // MDG for this MC version exposes no per-run additional classpath, so dev-only mods go on a
@@ -130,19 +137,36 @@ val syncDevMods = tasks.register<Sync>("syncDevMods") {
     into(layout.projectDirectory.dir("runs/client/mods"))
 }
 
-tasks.matching { it.name == "runClient" }.configureEach { dependsOn(syncDevMods) }
+// The IDE's run configurations do not run `runClient`: they run ModDevGradle's `prepareClientRun` and start the game
+// directly, so the mods folder is filled from there as well.
+tasks.matching { it.name == "runClient" || it.name == "prepareClientRun" }.configureEach { dependsOn(syncDevMods) }
 
-// CC: Tweaked for the server and GameTest runs (`-Pcomputercraft.run=true`); empty otherwise, so a run without
-// the flag also clears a jar an earlier flagged run left behind.
+// CC: Tweaked (`-Pcomputercraft.run=true`) and Sable / Create / Create Aeronautics (`-Psable.run=true`) for the
+// server and GameTest runs; empty otherwise, so a run without the flags also clears jars an earlier flagged run
+// left behind. One sync per run folder: two would each delete the other's jars. Not a `Sync` task: Gradle skips a
+// copy task with no source files (NO-SOURCE) without running it, so an unflagged run used to leave the previous
+// flagged run's jars in place and run with them (seen with Sable, 2026-10-05).
 val ccServerMod: Configuration by configurations.creating
+val sableServerMod: Configuration by configurations.creating
 for ((run, task) in listOf("server" to "runServer", "gametest" to "runGameTestServer")) {
-    val sync = tasks.register<Sync>("syncComputerCraft${run.replaceFirstChar { it.uppercase() }}") {
-        description = "Places CC: Tweaked in the $run run's mods folder when -Pcomputercraft.run=true."
-        from(ccServerMod)
-        into(layout.projectDirectory.dir("runs/$run/mods"))
+    val modsDir = layout.projectDirectory.dir("runs/$run/mods")
+    val sync = tasks.register("syncComputerCraft${run.replaceFirstChar { it.uppercase() }}") {
+        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Psable.run)."
+        inputs.files(ccServerMod, sableServerMod)
+        outputs.dir(modsDir)
+        doLast {
+            project.sync {
+                from(ccServerMod)
+                from(sableServerMod)
+                into(modsDir)
+            }
+        }
     }
-    tasks.matching { it.name == task }.configureEach { dependsOn(sync) }
+    // `prepare<Run>Run` is what the IDE's run configuration runs before launching.
+    val prepare = "prepare${task.removePrefix("run")}Run"
+    tasks.matching { it.name == task || it.name == prepare }.configureEach { dependsOn(sync) }
 }
+
 // ModDev writes run arguments to build/moddev/clientRunProgramArgs.txt. Without this input, a
 // one-off HBM_QUICKPLAY launch remains cached and every later normal client run keeps auto-joining it.
 tasks.matching { it.name == "prepareClientRun" }.configureEach {
@@ -204,6 +228,34 @@ dependencies {
             ccServerMod("cc.tweaked:cc-tweaked-$ccMc-forge:$ccVer") { isTransitive = false }
         }
     }
+    // Sable (moving block sub-levels, the engine under Create Aeronautics) is an optional peer on the nodes that
+    // declare it. HBM's side of it is its own source root, src/sable (com.hbm.compat.sable), added only here; the
+    // shared tree reaches sub-levels only through Golem Core's neutral dev.golem.core.world.SubLevels. Compiled
+    // against, never shipped or required. `-Psable.run=true` puts Sable, Create and Create Aeronautics in the dev
+    // runs; off by default so the recipe baselines stay Create-free.
+    val sableMc = propOrNull("deps.sable_mc")
+    val sableVer = propOrNull("deps.sable")
+    val sableCompanionVer = propOrNull("deps.sable_companion")
+    if (sableMc != null && sableVer != null && sableCompanionVer != null) {
+        compileOnly("dev.ryanhcode.sable-companion:sable-companion-common-$sableMc:$sableCompanionVer") { isTransitive = false }
+        compileOnly("dev.ryanhcode.sable:sable-common-$sableMc:$sableVer") { isTransitive = false }
+        if (propOrNull("sable.run") == "true") {
+            for (mod in listOfNotNull(
+                propOrNull("deps.sable_run")?.let { "maven.modrinth:sable:$it" },
+                propOrNull("deps.create_run")?.let { "maven.modrinth:create:$it" },
+                propOrNull("deps.aeronautics_run")?.let { "maven.modrinth:create-aeronautics:$it" },
+            )) {
+                devModJar(mod) { isTransitive = false }
+                sableServerMod(mod) { isTransitive = false }
+            }
+        }
+    }
+}
+
+if (propOrNull("deps.sable") != null) {
+    sourceSets["main"].java.srcDir(rootProject.file("src/sable/java"))
+    sourceSets["main"].java.srcDir(rootProject.file("src/sable-neoforge/java"))
+    sourceSets["main"].resources.srcDir(rootProject.file("src/sable/resources"))
 }
 
 tasks.processResources {

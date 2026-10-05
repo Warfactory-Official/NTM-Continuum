@@ -14,7 +14,18 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** A solar mirror that feeds heat into the boiler at its recorded target coordinates. */
-public class TileEntitySolarMirror extends TileEntityLoadedBase {
+public class TileEntitySolarMirror extends TileEntityLoadedBase implements com.hbm.tileentity.IRelocatable {
+
+    /**
+     * A sub-level move carried this mirror. Its target is the point above the boiler it heats (the boiler is read
+     * at {@code tY - 1}), so the target follows when that boiler was carried too.
+     */
+    @Override
+    public void relocate(dev.golem.core.world.SubLevels.Move move) {
+        net.minecraft.core.BlockPos boiler = new net.minecraft.core.BlockPos(tX, tY - 1, tZ);
+        if (move.carried(boiler)) setTarget(move.apply(boiler).above());
+    }
+
 
     public int tX;
     public int tY;

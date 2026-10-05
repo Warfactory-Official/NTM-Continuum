@@ -72,10 +72,11 @@ public class SolderingStationRenderer extends GemBER<TileEntityMachineSolderingS
         state.showItem = false;
         ItemStack display = be.display;
         if (display != null && !display.isEmpty() && be.getLevel() != null) {
-            double dx = cameraPosition.x - (be.getBlockPos().getX() + 0.5);
-            double dy = cameraPosition.y - (be.getBlockPos().getY() + 1.0);
-            double dz = cameraPosition.z - (be.getBlockPos().getZ() + 0.5);
-            if (dx * dx + dy * dy + dz * dz < 35 * 35) {
+            // Measured where the machine is seen: on a moving sub-level (Create Aeronautics) its block sits far from it.
+            double distanceSq = dev.golem.core.world.SubLevels.distanceSq(be.getLevel(),
+                    be.getBlockPos().getX() + 0.5, be.getBlockPos().getY() + 1.0, be.getBlockPos().getZ() + 0.5,
+                    cameraPosition.x, cameraPosition.y, cameraPosition.z);
+            if (distanceSq < 35 * 35) {
                 ItemStack one = display.copy();
                 one.setCount(1);
                 state.outputItem.extract(be.getLevel(), one, ItemDisplayContext.FIXED);

@@ -151,16 +151,23 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
     public void launchFromDesignator() {
         ItemStack designatorStack = inventory.getStackInSlot(1);
         if (!designatorStack.isEmpty() && designatorStack.getItem() instanceof IDesignatorItem designator) {
-            if (designator.isReady(level, designatorStack, worldPosition)) {
-                Vec3 coords = designator.getCoords(level, designatorStack, worldPosition);
+            // The designator measures range from the launcher as the world sees it (it may ride a sub-level).
+            BlockPos inWorld = dev.golem.core.world.SubLevels.toWorldBlock(level, worldPosition);
+            if (designator.isReady(level, designatorStack, inWorld)) {
+                Vec3 coords = designator.getCoords(level, designatorStack, inWorld);
                 this.launchTo((int) Math.floor(coords.x), (int) Math.floor(coords.z));
             }
         }
     }
 
     public void launchTo(int tX, int tZ) {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        level.playSound(null, x, y, z, ModSounds.MISSILE_TAKEOFF.get(), SoundSource.BLOCKS, 10.0F, 1.0F);
+        level.playSound(null, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
+                ModSounds.MISSILE_TAKEOFF.get(), SoundSource.BLOCKS, 10.0F, 1.0F);
+        // The launcher as the world sees it: on a moving sub-level (Create Aeronautics) its block sits far away, and
+        // both the missile's arc and its inaccuracy are laid out from here.
+        Vec3 spawn = dev.golem.core.world.SubLevels.toWorld(level, worldPosition.getX() + 0.5D,
+                worldPosition.getY() + 2.5D, worldPosition.getZ() + 0.5D);
+        int x = (int) Math.floor(spawn.x), z = (int) Math.floor(spawn.z);
 
         ItemStack missileStack = inventory.getStackInSlot(0);
         ItemCustomMissilePart chip = ItemCustomMissile.chip(missileStack);
@@ -178,7 +185,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
         target = target.yRot(level.getRandom().nextFloat() * 360);
 
         ItemCustomMissile.Parts parts = ItemCustomMissile.parts(missileStack);
-        EntityMissileCustom missile = new EntityMissileCustom(level, x + 0.5F, y + 2.5F, z + 0.5F,
+        EntityMissileCustom missile = new EntityMissileCustom(level, (float) spawn.x, (float) spawn.y, (float) spawn.z,
                 tX + (int) target.x, tZ + (int) target.z,
                 stack(parts == null ? null : parts.warhead()), stack(parts == null ? null : parts.fuselage()),
                 stack(parts == null ? null : parts.stability()), stack(parts == null ? null : parts.thruster()));
@@ -230,7 +237,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
     public boolean hasDesignator() {
         ItemStack stack = inventory.getStackInSlot(1);
         return !stack.isEmpty() && stack.getItem() instanceof IDesignatorItem designator
-                && designator.isReady(level, stack, worldPosition);
+                && designator.isReady(level, stack, dev.golem.core.world.SubLevels.toWorldBlock(level, worldPosition));
     }
 
     /** 1 = enough, 0 = not enough, -1 = this missile burns no solid fuel (or there is none). */

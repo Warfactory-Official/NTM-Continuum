@@ -567,10 +567,9 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     /** Whether {@code player} is close enough to interact with the machine cored at {@code core}. */
     public static boolean isWithinInteractionRange(BlockGetter level, BlockPos core, Player player) {
         BlockMultiblockCore block = MultiblockSurface.foldedCore(level.getBlockState(core));
-        double dx = core.getX() + 0.5D - player.getX();
-        double dy = core.getY() + 0.5D - player.getY();
-        double dz = core.getZ() + 0.5D - player.getZ();
-        double distance = dx * dx + dy * dy + dz * dz;
+        // Measured in the world: a machine on a moving sub-level keeps its blocks far from where the player sees it.
+        double distance = dev.golem.core.world.SubLevels.distanceSq(player.level(),
+                core.getX() + 0.5D, core.getY() + 0.5D, core.getZ() + 0.5D, player.getX(), player.getY(), player.getZ());
         return distance <= (block == null ? BASE_INTERACTION_RANGE_SQ : block.getInteractionRangeSq());
     }
 

@@ -5,7 +5,9 @@ import com.hbm.items.tool.ItemRebarPlacer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.golem.core.render.CameraInfo;
+import dev.golem.core.client.Frames;
 import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.SubLevelPoses;
 import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.WorldEffects;
 import net.minecraft.ChatFormatting;
@@ -16,7 +18,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 
 /**
  * 1.7 {@code BlockRebar.renderRebar}'s second half: while the held rebar placer has its first corner, the box it
@@ -54,13 +55,15 @@ public final class RebarPlacerPreview {
         double minY = Math.min(pos.getY(), at.getY()) + 0.125, maxY = Math.max(pos.getY(), at.getY()) + 0.875;
         double minZ = Math.min(pos.getZ(), at.getZ()) + 0.125, maxZ = Math.max(pos.getZ(), at.getZ()) + 0.875;
 
-        Vec3 eye = camera.pos;
-        float x0 = (float) (minX - eye.x), x1 = (float) (maxX - eye.x);
-        float y0 = (float) (minY - eye.y), y1 = (float) (maxY - eye.y);
-        float z0 = (float) (minZ - eye.z), z1 = (float) (maxZ - eye.z);
-
-        // world-axis, camera-relative: Core's hook model-view already carries the view rotation (see WorldEffects.onBegin)
+        // Drawn relative to the looked-at cell through a pose that puts it where it is seen: camera-relative in the
+        // world, or with the sub-level it is on (a Create Aeronautics ship keeps its blocks far from where it is drawn).
+        // Core's hook model-view already carries the view rotation (see WorldEffects.onBegin).
         PoseStack pose = new PoseStack();
+        SubLevelPoses.around(pose, mc.level, at, camera.pos, Frames.partialTick());
+        float x0 = (float) (minX - at.getX()), x1 = (float) (maxX - at.getX());
+        float y0 = (float) (minY - at.getY()), y1 = (float) (maxY - at.getY());
+        float z0 = (float) (minZ - at.getZ()), z1 = (float) (maxZ - at.getZ());
+
         WorldEffects.submit(pose, CompatRenderTypes.lines(), 0, (p, buffer) -> {
             // top
             line(buffer, p, x0, y1, z0, x0, y1, z1);

@@ -26,7 +26,17 @@ import org.jspecify.annotations.Nullable;
  * The entity was a plain {@code TileEntity}; it sits on {@link TileEntityLoadedBase} for the loaded check the
  * energy graph asks every receiver.
  */
-public class TileEntityBlockICF extends TileEntityLoadedBase implements IEnergyReceiverMK2 {
+public class TileEntityBlockICF extends TileEntityLoadedBase implements IEnergyReceiverMK2, com.hbm.tileentity.IRelocatable {
+
+    /** A sub-level move carried this block; the controller follows when it was carried too. */
+    @Override
+    public void relocate(dev.golem.core.world.SubLevels.Move move) {
+        net.minecraft.core.BlockPos core = com.hbm.tileentity.IRelocatable.follow(move, new net.minecraft.core.BlockPos(coreX, coreY, coreZ));
+        coreX = core.getX(); coreY = core.getY(); coreZ = core.getZ();
+        cachedCore = null;
+        setChanged();
+    }
+
 
     public @Nullable Block block;
     public int coreX;

@@ -85,7 +85,8 @@ public class BlockPile extends dev.golem.core.world.CompatBlock implements dev.g
      */
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (level.isClientSide() || TileEntityPileCore.meltingDown) return;
+        // Carried by a sub-level system, not broken: the pile moves whole, so it is neither re-bricked nor destroyed.
+        if (level.isClientSide() || TileEntityPileCore.meltingDown || dev.golem.core.world.SubLevels.isMoving(level)) return;
 
         TileEntityPileCore core = findCore(level, pos);
         level.setBlockAndUpdate(pos, ModPileBlocks.pile_brick.get().defaultBlockState());

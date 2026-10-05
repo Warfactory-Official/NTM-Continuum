@@ -14,7 +14,18 @@ import org.jspecify.annotations.Nullable;
  * that a device docked anywhere on the face can walk straight to the simulation, and so that the whole
  * structure collapses back to graphite the moment the core goes.
  */
-public class TileEntityPileBaseMK2 extends TileEntityLoadedBase {
+public class TileEntityPileBaseMK2 extends TileEntityLoadedBase implements com.hbm.tileentity.IRelocatable {
+
+    /** A sub-level move carried this block; the pile core follows when it was carried too. */
+    @Override
+    public void relocate(dev.golem.core.world.SubLevels.Move move) {
+        if (coreY == NO_CORE) return;
+        net.minecraft.core.BlockPos core = com.hbm.tileentity.IRelocatable.follow(move, new net.minecraft.core.BlockPos(coreX, coreY, coreZ));
+        coreX = core.getX(); coreY = core.getY(); coreZ = core.getZ();
+        cachedCore = null;
+        setChanged();
+    }
+
 
     /**
      * "No core recorded". Upstream uses {@code coreY = -999} and tests {@code coreY >= 0}, which only

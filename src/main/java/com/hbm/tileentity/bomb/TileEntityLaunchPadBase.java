@@ -313,9 +313,12 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         ItemStack stack = inventory.getStackInSlot(0);
         if (stack.isEmpty()) return null;
 
+        // Where the pad is in the world: on a moving sub-level (Create Aeronautics) its block sits far away, and the
+        // missile's whole arc is laid out from its spawn point, so it must start where the pad is seen.
+        Vec3 launch = dev.golem.core.world.SubLevels.toWorld(level, worldPosition.getX() + 0.5D,
+                worldPosition.getY() + getLaunchOffset(), worldPosition.getZ() + 0.5D);
         Entity missile = createMissileEntity(level, stack.getItem(),
-                worldPosition.getX() + 0.5F, (float) (worldPosition.getY() + getLaunchOffset()),
-                worldPosition.getZ() + 0.5F, targetX, targetZ);
+                (float) launch.x, (float) launch.y, (float) launch.z, targetX, targetZ);
         if (missile == null) return null;
 
         // The pad's facing, which the tier-4 contrail reads. Upstream derives it from the block
@@ -388,10 +391,12 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
 
         ItemStack designatorStack = inventory.getStackInSlot(1);
         if (!designatorStack.isEmpty() && designatorStack.getItem() instanceof IDesignatorItem designator) {
-            if (!designator.isReady(level, designatorStack, worldPosition) && needsDesignator) {
+            // The designator measures range from the pad as the world sees it.
+            BlockPos padInWorld = dev.golem.core.world.SubLevels.toWorldBlock(level, worldPosition);
+            if (!designator.isReady(level, designatorStack, padInWorld) && needsDesignator) {
                 return BombReturnCode.ERROR_MISSING_COMPONENT;
             }
-            Vec3 coords = designator.getCoords(level, designatorStack, worldPosition);
+            Vec3 coords = designator.getCoords(level, designatorStack, padInWorld);
             targetX = (int) Math.floor(coords.x);
             targetZ = (int) Math.floor(coords.z);
         } else if (needsDesignator) {

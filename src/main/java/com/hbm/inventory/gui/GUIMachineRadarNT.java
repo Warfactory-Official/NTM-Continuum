@@ -142,8 +142,8 @@ public class GUIMachineRadarNT extends CompatScreen {
 
         if (!radar.entries.isEmpty()) {
             for (RadarEntry m : radar.entries) {
-                double x = (m.posX - radar.getBlockPos().getX()) / ((double) radar.getRange() * 2 + 1) * (200D - 8D) - 4D;
-                double z = (m.posZ - radar.getBlockPos().getZ()) / ((double) radar.getRange() * 2 + 1) * (200D - 8D) - 4D;
+                double x = (m.posX - radar.origin.getX()) / ((double) radar.getRange() * 2 + 1) * (200D - 8D) - 4D;
+                double z = (m.posZ - radar.origin.getZ()) / ((double) radar.getRange() * 2 + 1) * (200D - 8D) - 4D;
                 int t = m.blipLevel;
                 GuiDraw.pushMatrix(graphics);
                 GuiDraw.translate(graphics, (float) (guiLeft + 108 + x), (float) (guiTop + 117 + z));
@@ -221,8 +221,8 @@ public class GUIMachineRadarNT extends CompatScreen {
 
         if (!radar.entries.isEmpty()) {
             for (RadarEntry m : radar.entries) {
-                int x = guiLeft + (int) ((m.posX - radar.getBlockPos().getX()) / ((double) radar.getRange() * 2 + 1) * (200D - 8D)) + 108;
-                int z = guiTop + (int) ((m.posZ - radar.getBlockPos().getZ()) / ((double) radar.getRange() * 2 + 1) * (200D - 8D)) + 117;
+                int x = guiLeft + (int) ((m.posX - radar.origin.getX()) / ((double) radar.getRange() * 2 + 1) * (200D - 8D)) + 108;
+                int z = guiTop + (int) ((m.posZ - radar.origin.getZ()) / ((double) radar.getRange() * 2 + 1) * (200D - 8D)) + 117;
 
                 if (mouseX + 5 > x && mouseX - 4 <= x && mouseY + 5 > z && mouseY - 4 <= z) {
                     tip(graphics, List.of(Component.literal(I18n.get(m.unlocalizedName)),
@@ -233,8 +233,8 @@ public class GUIMachineRadarNT extends CompatScreen {
         }
 
         if (checkClick(mouseX, mouseY, 8, 17, 200, 200)) {
-            int tX = (int) ((lastMouseX - guiLeft - 108) * ((double) radar.getRange() * 2 + 1) / 192D + radar.getBlockPos().getX());
-            int tZ = (int) ((lastMouseY - guiTop - 117) * ((double) radar.getRange() * 2 + 1) / 192D + radar.getBlockPos().getZ());
+            int tX = (int) ((lastMouseX - guiLeft - 108) * ((double) radar.getRange() * 2 + 1) / 192D + radar.origin.getX());
+            int tZ = (int) ((lastMouseY - guiTop - 117) * ((double) radar.getRange() * 2 + 1) / 192D + radar.origin.getZ());
             tip(graphics, List.of(Component.literal(tX + " / " + tZ)), lastMouseX, lastMouseY);
         }
     }
@@ -273,8 +273,8 @@ public class GUIMachineRadarNT extends CompatScreen {
 
         if (!radar.entries.isEmpty()) {
             for (RadarEntry m : radar.entries) {
-                int x = guiLeft + (int) ((m.posX - radar.getBlockPos().getX()) / ((double) radar.getRange() * 2 + 1) * (200D - 8D)) + 108;
-                int z = guiTop + (int) ((m.posZ - radar.getBlockPos().getZ()) / ((double) radar.getRange() * 2 + 1) * (200D - 8D)) + 117;
+                int x = guiLeft + (int) ((m.posX - radar.origin.getX()) / ((double) radar.getRange() * 2 + 1) * (200D - 8D)) + 108;
+                int z = guiTop + (int) ((m.posZ - radar.origin.getZ()) / ((double) radar.getRange() * 2 + 1) * (200D - 8D)) + 117;
 
                 if (lastMouseX + 5 > x && lastMouseX - 4 <= x && lastMouseY + 5 > z && lastMouseY - 4 <= z) {
                     CompoundTag data = new CompoundTag();
@@ -286,8 +286,8 @@ public class GUIMachineRadarNT extends CompatScreen {
             }
         }
 
-        int tX = (int) ((lastMouseX - guiLeft - 108) * ((double) radar.getRange() * 2 + 1) / 192D + radar.getBlockPos().getX());
-        int tZ = (int) ((lastMouseY - guiTop - 117) * ((double) radar.getRange() * 2 + 1) / 192D + radar.getBlockPos().getZ());
+        int tX = (int) ((lastMouseX - guiLeft - 108) * ((double) radar.getRange() * 2 + 1) / 192D + radar.origin.getX());
+        int tZ = (int) ((lastMouseY - guiTop - 117) * ((double) radar.getRange() * 2 + 1) / 192D + radar.origin.getZ());
         CompoundTag data = new CompoundTag();
         data.putInt("launchPosX", tX);
         data.putInt("launchPosZ", tZ);

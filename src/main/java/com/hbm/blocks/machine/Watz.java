@@ -74,7 +74,8 @@ public class Watz extends BlockMultiblockMachine implements IFluidConnectorBlock
      */
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (!level.isClientSide() && !state.getValue(CELL) && drop) {
+        // Not while a sub-level system carries the reactor: it lives on at the new position and must not drop its kit.
+        if (!level.isClientSide() && !state.getValue(CELL) && drop && !dev.golem.core.world.SubLevels.isMoving(level)) {
             drop(level, pos, new ItemStack(ModMachineBlocks.watz_casing_tooled.get(), 48));
             for (int i = 0; i < 3; i++) {
                 drop(level, pos, new ItemStack(ModAutogenItems.get(MaterialShapes.BOLT, Mats.MAT_DURA), 64));

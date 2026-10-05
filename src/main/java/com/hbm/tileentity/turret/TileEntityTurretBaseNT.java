@@ -53,6 +53,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 import com.hbm.sound.ModSounds;
@@ -225,10 +226,28 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
     }
 
     public void turnTowards(Vec3 ent) {
-        Vec3 delta = ent.subtract(getTurretPos());
+        // rotationYaw/Pitch are in the frame of what the turret stands on (it is drawn with it): on a moving
+        // sub-level (Create Aeronautics) the world direction to the target is turned into that frame first
+        Vec3 delta = toLocalDirection(ent.subtract(getTurretPos()));
         double targetPitch = Math.asin(delta.y / delta.length());
         double targetYaw = -Math.atan2(delta.x, delta.z);
         turnTowardsAngle(targetPitch, targetYaw);
+    }
+
+    /**
+     * {@link #turnTowardsAngle} for an aim stated in world angles (a ballistic solution, a fixed launch pitch): on a
+     * sub-level the world direction is turned into the turret's frame first. Off one it is exactly
+     * {@code turnTowardsAngle}.
+     */
+    public void turnTowardsWorldAngle(double targetPitch, double targetYaw) {
+        if (!onSubLevel()) {
+            turnTowardsAngle(targetPitch, targetYaw);
+            return;
+        }
+        Vec3 world = new Vec3(-Math.cos(targetPitch) * Math.sin(targetYaw), Math.sin(targetPitch),
+                Math.cos(targetPitch) * Math.cos(targetYaw));
+        Vec3 local = toLocalDirection(world).normalize();
+        turnTowardsAngle(Math.asin(local.y), -Math.atan2(local.x, local.z));
     }
 
     public void turnTowardsAngle(double targetPitch, double targetYaw) {
@@ -286,7 +305,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
 
         if (length < getDetectorGrace() || length > getDetectorRange() * 1.1) return false;
 
-        Vec3 unit = delta.normalize();
+        Vec3 unit = toLocalDirection(delta).normalize();
         double pitchDeg = Math.toDegrees(Math.asin(unit.y / unit.length()));
         if (pitchDeg < -getTurretDepression() || pitchDeg > getTurretElevation()) return false;
 
@@ -372,10 +391,43 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         return null;
     }
 
+    /** An offset along the barrel (forward, up, side), as a world offset from {@link #getTurretPos}. */
     protected Vec3 alongBarrel(double forward, double up, double side) {
-        return new Vec3(forward, up, side)
+        return toWorldDirection(new Vec3(forward, up, side)
                 .zRot((float) -rotationPitch)
-                .yRot((float) -(rotationYaw + Math.PI * 0.5));
+                .yRot((float) -(rotationYaw + Math.PI * 0.5)));
+    }
+
+    /**
+     * The barrel's yaw in the world, for a projectile fired along it: {@link #rotationYaw} itself unless the turret
+     * stands on a turned sub-level, where its own yaw is relative to the structure.
+     */
+    protected float worldYaw() {
+        if (!onSubLevel()) return (float) rotationYaw;
+        Vec3 barrel = alongBarrel(1D, 0D, 0D);
+        return (float) -Math.atan2(barrel.x, barrel.z);
+    }
+
+    /** The barrel's pitch in the world; {@link #rotationPitch} itself off a sub-level. */
+    protected float worldPitch() {
+        if (!onSubLevel()) return (float) rotationPitch;
+        Vec3 barrel = alongBarrel(1D, 0D, 0D);
+        return (float) Math.asin(barrel.y / barrel.length());
+    }
+
+    /** Whether this turret stands on a moving sub-level (Create Aeronautics), whose blocks are not where it is seen. */
+    protected boolean onSubLevel() {
+        return level != null && SubLevels.isOnSubLevel(level, worldPosition);
+    }
+
+    /** A direction in the frame of what the turret stands on, as a world direction; unchanged off a sub-level. */
+    protected Vec3 toWorldDirection(Vec3 local) {
+        return level == null ? local : SubLevels.toWorldDirection(level, worldPosition, local);
+    }
+
+    /** A world direction in the frame of what the turret stands on; unchanged off a sub-level. */
+    protected Vec3 toLocalDirection(Vec3 world) {
+        return level == null ? world : SubLevels.toLocalDirection(level, worldPosition, world);
     }
 
     protected Vec3 barrelTip() {
@@ -429,7 +481,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         Vec3 tip = barrelTip();
 
         EntityBulletBaseMK4 projectile = new EntityBulletBaseMK4(level, bullet, baseDamage, bullet.spread,
-                (float) rotationYaw, (float) rotationPitch);
+                worldYaw(), worldPitch());
         projectile.setPos(tip.x, tip.y, tip.z);
         level.addFreshEntity(projectile);
 
@@ -628,10 +680,15 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         return true;
     }
 
+    /**
+     * The turret's pivot in the world, which everything it measures, aims and fires from starts at. On a moving
+     * sub-level (Create Aeronautics) that is where the structure carries it, not its block's position.
+     */
     public Vec3 getTurretPos() {
         Vec3 offset = getHorizontalOffset();
-        return new Vec3(worldPosition.getX() + offset.x, worldPosition.getY() + getHeightOffset(),
+        Vec3 pivot = new Vec3(worldPosition.getX() + offset.x, worldPosition.getY() + getHeightOffset(),
                 worldPosition.getZ() + offset.z);
+        return level == null ? pivot : SubLevels.toWorld(level, pivot);
     }
 
     public Vec3 getHorizontalOffset() {

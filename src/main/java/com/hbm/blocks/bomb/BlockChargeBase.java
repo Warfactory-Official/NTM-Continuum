@@ -135,7 +135,8 @@ public abstract class BlockChargeBase extends CompatBlock implements TickingBloc
 
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (!safe) explode(level, pos, null);
+        // Carried by a sub-level system (Create Aeronautics), not broken: the charge lives on at its new position.
+        if (!safe && !dev.golem.core.world.SubLevels.isMoving(level)) explode(level, pos, null);
     }
 
     @Override

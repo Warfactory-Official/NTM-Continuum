@@ -6,7 +6,9 @@ import com.hbm.util.ConveyorPlacer;
 import com.hbm.util.ConveyorRoute;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.CameraInfo;
+import dev.golem.core.client.Frames;
 import dev.golem.core.render.GhostBlocks;
+import dev.golem.core.render.SubLevelPoses;
 import dev.golem.core.render.WorldEffects;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -92,7 +94,7 @@ public final class ConveyorPreviewRenderer {
         }
 
         route(level, player, held, run, hit);
-        draw(camera);
+        draw(level, camera);
     }
 
     private static void clear() {
@@ -142,11 +144,12 @@ public final class ConveyorPreviewRenderer {
         cells = List.copyOf(baked);
     }
 
-    private static void draw(CameraInfo camera) {
+    private static void draw(ClientLevel level, CameraInfo camera) {
         List<Cell> run = cells;
         if (run.isEmpty()) return;
 
         Vec3 eye = camera.pos;
+        float partialTick = Frames.partialTick();
         // Frame-start (onBegin) submissions are drawn under Core's hook model-view, which already is the frame's view
         // rotation on every node: the pose stays world-axis and camera-relative (applying viewRotation() here as
         // well rotated the ghost run twice, off into the sky).
@@ -158,7 +161,8 @@ public final class ConveyorPreviewRenderer {
             for (Cell cell : run) {
                 local.last().pose().set(drawPose.pose());
                 local.last().normal().set(drawPose.normal());
-                local.translate(cell.pos().getX() - eye.x, cell.pos().getY() - eye.y, cell.pos().getZ() - eye.z);
+                // where the cell is seen: camera-relative, or with the sub-level it is laid on (an Aeronautics ship)
+                SubLevelPoses.around(local, level, cell.pos(), eye, partialTick);
                 cell.geometry().emit(local.last(), buffer);
             }
         });

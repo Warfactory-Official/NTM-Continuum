@@ -40,7 +40,16 @@ import com.hbm.tileentity.ModDroneBlockEntities;
  * types the tank.
  */
 public class TileEntityDroneCrate extends TileEntityMachineBase
-        implements MenuProvider, IControlReceiver, IDroneLinkable, IFluidStandardTransceiverMK2, WorldlyContainer {
+        implements MenuProvider, IControlReceiver, IDroneLinkable, IFluidStandardTransceiverMK2, WorldlyContainer,
+        com.hbm.tileentity.IRelocatable {
+
+    /** A sub-level move carried this crate; its next link follows when that block was carried too. */
+    @Override
+    public void relocate(dev.golem.core.world.SubLevels.Move move) {
+        next = com.hbm.tileentity.IRelocatable.followNullable(move, next);
+        setChanged();
+    }
+
 
     public static final int CARGO_SLOTS = 18;
     public static final int SLOT_FLUID_ID = 18;

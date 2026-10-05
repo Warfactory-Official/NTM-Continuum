@@ -66,7 +66,7 @@ public class TileEntityTurretSentryDamaged extends TileEntityTurretSentry {
         if (shotSide) {
             level.playSound(null, worldPosition, ModSounds.TURRET_SENTRY_FIRE.get(), SoundSource.BLOCKS, 2.0F, 1.0F);
             spawnBullet(conf, 5F);
-            Vec3 side = new Vec3(0.125, 0, 0).yRot((float) -rotationYaw);
+            Vec3 side = toWorldDirection(new Vec3(0.125, 0, 0).yRot((float) -rotationYaw));
             muzzleFlash(barrelTip().add(side.x, 0, side.z), 1F, 1);
             didJustShootLeft = true;
         } else {

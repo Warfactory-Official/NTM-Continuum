@@ -23,7 +23,15 @@ import com.hbm.tileentity.ModDroneBlockEntities;
  * 1.7 {@code TileEntityDroneWaypoint}: a transport-drone relay. Drones arriving at its stand-off point (its
  * facing times {@link #height}) are sent on to the next link.
  */
-public class TileEntityDroneWaypoint extends TileEntityLoadedBase implements IDroneLinkable {
+public class TileEntityDroneWaypoint extends TileEntityLoadedBase implements IDroneLinkable, com.hbm.tileentity.IRelocatable {
+
+    /** A sub-level move carried this waypoint; its next link follows when that block was carried too. */
+    @Override
+    public void relocate(dev.golem.core.world.SubLevels.Move move) {
+        next = com.hbm.tileentity.IRelocatable.followNullable(move, next);
+        setChanged();
+    }
+
 
     public int height = 5;
     public @Nullable BlockPos next;

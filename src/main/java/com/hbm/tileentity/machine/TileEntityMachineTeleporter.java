@@ -32,7 +32,17 @@ import java.util.List;
  * reflective tracker packet are what vanilla's own teleport does now; the move goes through
  * {@link Teleports}, and a same-level move of a non-player is pushed to trackers with {@link Compat#syncPosition}.
  */
-public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements IEnergyReceiverMK2 {
+public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements IEnergyReceiverMK2, com.hbm.tileentity.IRelocatable {
+
+    /** A sub-level move carried this teleporter; its destination follows only when the block there was carried too. */
+    @Override
+    public void relocate(dev.golem.core.world.SubLevels.Move move) {
+        if (targetY == -1) return;
+        net.minecraft.core.BlockPos target = com.hbm.tileentity.IRelocatable.follow(move, new net.minecraft.core.BlockPos(targetX, targetY, targetZ));
+        targetX = target.getX(); targetY = target.getY(); targetZ = target.getZ();
+        setChanged();
+    }
+
 
     public long power = 0;
     public int targetX = -1;

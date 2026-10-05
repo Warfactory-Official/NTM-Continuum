@@ -54,6 +54,43 @@ fun loomCompatibleComputerCraft(mc: String, version: String): File {
     return target
 }
 
+/**
+ * Sable's Fabric jar for the dev runs (`-Psable.run=true`), with every jar it nests, recursively, unpacked beside it:
+ * a mod given to a dev run is not searched for nested jars, and Sable nests the mods it requires (Veil, Forge Config
+ * API Port, Sable Companion, its Rapier natives). Fetched straight from Sable's maven into the build directory, as
+ * [loomCompatibleComputerCraft] is, because resolving a configuration this early would disturb Loom's repositories.
+ * Returns the jars that are Fabric mods (remapped by `modLocalRuntime`) and the plain libraries, apart.
+ */
+fun sableRunJars(mc: String, version: String): Pair<List<File>, List<File>> {
+    val dir = layout.buildDirectory.dir("sable-run/$version").get().asFile
+    val outer = File(dir, "sable-fabric-$mc-$version.jar")
+    if (!outer.isFile) {
+        dir.mkdirs()
+        val download = File(dir, "${outer.name}.download")
+        uri("https://maven.ryanhcode.dev/releases/dev/ryanhcode/sable/sable-fabric-$mc/$version/${outer.name}").toURL()
+            .openStream().use { input -> download.outputStream().use { input.copyTo(it) } }
+        download.renameTo(outer)
+    }
+    val nestedDir = File(dir, "nested")
+    if (!nestedDir.isDirectory) {
+        nestedDir.mkdirs()
+        val queue = ArrayDeque(listOf(outer))
+        while (queue.isNotEmpty()) {
+            ZipFile(queue.removeFirst()).use { zip ->
+                for (entry in zip.entries()) {
+                    if (!entry.name.startsWith("META-INF/jars/") || !entry.name.endsWith(".jar")) continue
+                    val nested = File(nestedDir, entry.name.substringAfterLast('/'))
+                    zip.getInputStream(entry).use { input -> nested.outputStream().use { input.copyTo(it) } }
+                    queue.add(nested)
+                }
+            }
+        }
+    }
+    val nested = nestedDir.listFiles()?.filter { it.extension == "jar" }?.sorted() ?: emptyList()
+    val (mods, libraries) = nested.partition { jar -> ZipFile(jar).use { it.getEntry("fabric.mod.json") != null } }
+    return (listOf(outer) + mods) to libraries
+}
+
 /** The nested libraries [loomCompatibleComputerCraft] unpacked; call it first. */
 fun computerCraftLibraries(): FileCollection =
     files(layout.buildDirectory.dir("loom-compatible/nested").get().asFile.listFiles()?.filter { it.extension == "jar" }
@@ -90,6 +127,28 @@ repositories {
         forRepository { maven("https://api.modrinth.com/maven") { name = "Modrinth" } }
         filter { includeGroup("maven.modrinth") }
     }
+    exclusiveContent {
+        forRepository { maven("https://maven.ryanhcode.dev/releases") { name = "RyanHCode" } }
+        filter {
+            includeGroup("dev.ryanhcode.sable")
+            includeGroup("dev.ryanhcode.sable-companion")
+        }
+    }
+}
+
+// Sable (moving block sub-levels) is an optional peer on the nodes that declare it. HBM's side of it is the shared
+// root src/sable (com.hbm.compat.sable) plus this loader's entry points in src/sable-fabric, added only here and
+// appended to fabric.mod.json only here; the shared tree reaches sub-levels only through Golem Core's neutral
+// dev.golem.core.world.SubLevels. `-Psable.run=true` puts Sable in the dev runs (Create Aeronautics has no Fabric
+// build); off by default.
+val sableMc = propOrNull("deps.sable_mc")
+val sableVer = propOrNull("deps.sable")
+val sableCompanionVer = propOrNull("deps.sable_companion")
+val hasSable = sableMc != null && sableVer != null && sableCompanionVer != null
+if (hasSable) {
+    sourceSets["main"].java.srcDir(rootProject.file("src/sable/java"))
+    sourceSets["main"].java.srcDir(rootProject.file("src/sable-fabric/java"))
+    sourceSets["main"].resources.srcDir(rootProject.file("src/sable/resources"))
 }
 
 // Whether the target Minecraft is obfuscated decides which Loom configurations exist. 26.1+ ships
@@ -278,6 +337,15 @@ dependencies {
 
     // Sodium declares `environment: client`, so Fabric loads it only during the client run.
     propOrNull("deps.sodium_fabric")?.let { devRuntime("maven.modrinth:sodium:$it") }
+    if (hasSable && obfuscated) {
+        "modCompileOnly"("dev.ryanhcode.sable:sable-fabric-$sableMc:$sableVer") { isTransitive = false }
+        "modCompileOnly"("dev.ryanhcode.sable-companion:sable-companion-fabric-$sableMc:$sableCompanionVer") { isTransitive = false }
+        if (propOrNull("sable.run") == "true") {
+            val (mods, libraries) = sableRunJars(sableMc!!, sableVer!!)
+            devRuntime(files(mods))
+            "runtimeOnly"(files(libraries))
+        }
+    }
     // 1.20.1: Sodium 0.5 skips FabricBakedModel.emitBlockQuads (connected textures) unless Indium is loaded.
     propOrNull("deps.indium")?.let { devRuntime("maven.modrinth:indium:$it") }
     // Team Reborn Energy is an optional peer of Core's energy facades; the dev game loads it so the RF
@@ -369,6 +437,17 @@ tasks.processResources {
     )
     inputs.properties(props)
     filesMatching(listOf("fabric.mod.json", "pack.mcmeta", "*.mixins.json")) { expand(props) }
+    // The Sable integration's entry points, only on nodes that declare Sable. Appended by line rather than templated,
+    // so the source fabric.mod.json stays valid JSON (Loom parses it at configuration).
+    if (hasSable) {
+        val sableLines = mapOf(
+            "\"com.hbm.platform.fabric.FabricInit\"" to "\"com.hbm.compat.sable.HbmSableFabric\"",
+            "\"com.hbm.platform.fabric.FabricGameTests\"" to "\"com.hbm.compat.sable.HbmSableFabricGameTests\"",
+        )
+        filesMatching("fabric.mod.json") {
+            filter { line -> sableLines[line.trim()]?.let { "$line, $it" } ?: line }
+        }
+    }
     // Forge-like biome modifiers are loader-specific; Fabric injects the same feature list in code.
     // `data/neoforge/**` is the NeoForge-namespaced data maps (furnace fuels), which Fabric supplies
     // through FuelRegistry/FuelValueEvents instead — excluded so the jar carries no inert files.

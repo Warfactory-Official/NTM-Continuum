@@ -21,7 +21,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Scans the linked 15 by 15 reactor grid and controls its columns. */
-public class BlockEntityRBMKConsole extends TileEntityMachineBase implements IControlReceiver, MenuProvider, IRBMKTicking {
+public class BlockEntityRBMKConsole extends TileEntityMachineBase implements IControlReceiver, MenuProvider, IRBMKTicking, com.hbm.tileentity.IRelocatable {
+
+    /** A sub-level move carried this console; it keeps watching its reactor when the reactor was carried too. */
+    @Override
+    public void relocate(dev.golem.core.world.SubLevels.Move move) {
+        net.minecraft.core.BlockPos target = com.hbm.tileentity.IRelocatable.follow(move, new net.minecraft.core.BlockPos(targetX, targetY, targetZ));
+        setTarget(target.getX(), target.getY(), target.getZ());
+    }
+
 
     public static final int FLUX_BUFFER = 60;
     private static final int[] EMPTY_INT = new int[0];

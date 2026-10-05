@@ -30,7 +30,21 @@ import java.util.List;
  * {@code FluidNode.addConnection(DirPos UNKNOWN)} became - re-stated on every load. Breaking an anchor tears it out of
  * every peer's list (1.7 {@code invalidate -> disconnectAll}); a chunk unload keeps them.
  */
-public class TileEntityPipeAnchor extends TileEntityFluidDuctVariant {
+public class TileEntityPipeAnchor extends TileEntityFluidDuctVariant implements com.hbm.tileentity.IRelocatable {
+
+    /**
+     * A sub-level move carried this anchor. Pipes to anchors carried with it follow them; a pipe to an anchor left
+     * behind is gone, because that anchor already struck this one from its list when the old position was cleared.
+     */
+    @Override
+    public void relocate(dev.golem.core.world.SubLevels.Move move) {
+        java.util.List<BlockPos> kept = new java.util.ArrayList<>();
+        for (BlockPos peer : connected) if (move.carried(peer)) kept.add(move.apply(peer));
+        connected.clear();
+        connected.addAll(kept);
+        setChanged();
+    }
+
 
     /** 1.7 {@code TileEntityPipelineBase.ConnectionType}. */
     public enum ConnectionType { SMALL }

@@ -15,7 +15,15 @@ import com.hbm.tileentity.ModDoorBlockEntities;
  * 1.7.10 {@code TileEntityDummy} as the blast door uses it: one block of the leaf, pointing at the
  * door that owns it. Removes itself once the door it points at is gone.
  */
-public class TileEntityBlastDoorDummy extends CompatBlockEntity {
+public class TileEntityBlastDoorDummy extends CompatBlockEntity implements com.hbm.tileentity.IRelocatable {
+
+    /** A sub-level move carried this leaf; it keeps its door when the door was carried too. */
+    @Override
+    public void relocate(dev.golem.core.world.SubLevels.Move move) {
+        target = com.hbm.tileentity.IRelocatable.follow(move, target);
+        setChanged();
+    }
+
 
     public BlockPos target = BlockPos.ZERO;
 

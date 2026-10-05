@@ -8,7 +8,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.golem.core.render.BlockOutlines;
 import dev.golem.core.render.CameraInfo;
+import dev.golem.core.client.Frames;
 import dev.golem.core.render.LineRenderTypes;
+import dev.golem.core.render.SubLevelPoses;
 import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.WorldEffects;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -22,7 +24,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -75,16 +76,19 @@ public final class MultiblockPlacementHighlight {
         HitResult trace = EntityDamageUtil.getMouseOver(player, 5.0D);
         if (!(trace instanceof BlockHitResult mop) || mop.getType() != HitResult.Type.BLOCK) return;
 
-        Vec3 eye = camera.pos;
-        double dX = eye.x;
-        double dY = eye.y;
-        double dZ = eye.z;
-
         // 1.7 always quartered 360 degrees here, even for a block that places on a finer yaw step
         // (the large pylon's placementYawSpan); kept as it was.
         int i = Mth.floor(player.getYRot() * 4.0F / 360.0F + 0.5D) & 3;
         int o = -block.getOffset();
         BlockPos hit = mop.getBlockPos();
+        // Everything is drawn relative to the block under the crosshair, through a pose that puts it where it is seen:
+        // camera-relative in the world, or with the sub-level it stands on (a Create Aeronautics ship keeps its blocks
+        // far from where it is drawn). 1.7 subtracted the camera position from each vertex instead.
+        PoseStack placement = new PoseStack();
+        SubLevelPoses.around(placement, mc.level, hit, camera.pos, Frames.partialTick());
+        double dX = hit.getX();
+        double dY = hit.getY();
+        double dZ = hit.getZ();
         int pY = hit.getY() + block.getHeightOffset();
 
         Direction facing = switch (i) {
@@ -138,7 +142,7 @@ public final class MultiblockPlacementHighlight {
         double cY = originY - dY;
         double cZ = originZ - dZ + 0.5;
 
-        WorldEffects.submit(new PoseStack(), LineRenderTypes.lines(LINE_WIDTH), 2, (pose, buffer) -> {
+        WorldEffects.submit(placement, LineRenderTypes.lines(LINE_WIDTH), 2, (pose, buffer) -> {
             for (BlockPos pos : blocks) {
                 boolean px = set.contains(BlockPos.asLong(pos.getX() + 1, pos.getY(), pos.getZ()));
                 boolean nx = set.contains(BlockPos.asLong(pos.getX() - 1, pos.getY(), pos.getZ()));

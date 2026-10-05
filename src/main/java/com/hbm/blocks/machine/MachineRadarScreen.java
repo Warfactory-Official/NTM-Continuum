@@ -42,7 +42,7 @@ public class MachineRadarScreen extends BlockMultiblockMachine {
     protected InteractionResult useAtCore(BlockState state, Level level, BlockPos core, Player player, BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide() && level.getBlockEntity(core) instanceof TileEntityMachineRadarScreen screen && screen.linked
-                && level.getBlockEntity(new BlockPos(screen.refX, screen.refY, screen.refZ)) instanceof TileEntityMachineRadarNT radar) {
+                && level.getBlockEntity(screen.radarPos) instanceof TileEntityMachineRadarNT radar) {
             MachineRadar.OPEN_SCREEN.accept(radar);
         }
         return InteractionResult.SUCCESS;

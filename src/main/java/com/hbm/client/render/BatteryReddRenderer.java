@@ -79,8 +79,10 @@ public final class BatteryReddRenderer extends GemBER<TileEntityBatteryREDD, Bat
         state.speed = blockEntity.getSpeed();
         state.gameTime = blockEntity.getLevel() == null ? 0L : blockEntity.getLevel().getGameTime();
         state.gameMillis = GameTime.now();
-        state.sparkleNearby = cameraPosition.distanceToSqr(blockEntity.getBlockPos().getX() + 0.5D,
-                blockEntity.getBlockPos().getY() + 2.5D, blockEntity.getBlockPos().getZ() + 0.5D) < 100D * 100D;
+        // Measured where the machine is seen: on a moving sub-level (Create Aeronautics) its block sits far from it.
+        state.sparkleNearby = dev.golem.core.world.SubLevels.distanceSq(blockEntity.getLevel(),
+                blockEntity.getBlockPos().getX() + 0.5D, blockEntity.getBlockPos().getY() + 2.5D,
+                blockEntity.getBlockPos().getZ() + 0.5D, cameraPosition.x, cameraPosition.y, cameraPosition.z) < 100D * 100D;
     }
 
     /**

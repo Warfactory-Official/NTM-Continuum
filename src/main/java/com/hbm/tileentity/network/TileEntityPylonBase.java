@@ -30,7 +30,23 @@ import com.hbm.blocks.network.PylonDyes;
  * {@code PowerNode.addConnection(DirPos UNKNOWN)} became. A pylon with several cells (the substation's
  * corners) links them to its core cell the way the battery socket ties its ports together.
  */
-public abstract class TileEntityPylonBase extends TileEntityLoadedBase implements IEnergyConductorMK2 {
+public abstract class TileEntityPylonBase extends TileEntityLoadedBase implements IEnergyConductorMK2, com.hbm.tileentity.IRelocatable {
+
+    /**
+     * A sub-level move carried this pylon. Wires to pylons carried with it follow them; a wire to a pylon left
+     * behind is gone, because that pylon already struck this one from its list when the old position was cleared
+     * (1.7's {@code disconnectAll}). The graph links are restated by the {@code clearRemoved} that follows.
+     */
+    @Override
+    public void relocate(dev.golem.core.world.SubLevels.Move move) {
+        java.util.List<BlockPos> kept = new java.util.ArrayList<>();
+        for (BlockPos peer : connected) if (move.carried(peer)) kept.add(move.apply(peer));
+        connected.clear();
+        connected.addAll(kept);
+        setChanged();
+        sync();
+    }
+
 
     protected final List<BlockPos> connected = new ArrayList<>();
     public int color;

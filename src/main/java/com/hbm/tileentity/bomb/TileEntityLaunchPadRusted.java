@@ -68,14 +68,18 @@ public class TileEntityLaunchPadRusted extends TileEntityMachineBase implements 
         if (!codes.isEmpty() && !key.isEmpty() && !designatorStack.isEmpty() && this.missileLoaded) {
             if (codes.getItem() == ModItems.launch_code.get() && key.getItem() == ModItems.launch_key.get()) {
                 if (designatorStack.getItem() instanceof IDesignatorItem designator) {
-                    if (!designator.isReady(level, designatorStack, worldPosition)) return BombReturnCode.ERROR_MISSING_COMPONENT;
+                    // Range and launch point are the pad as the world sees it (it may ride a moving sub-level).
+                    BlockPos inWorld = dev.golem.core.world.SubLevels.toWorldBlock(level, worldPosition);
+                    if (!designator.isReady(level, designatorStack, inWorld)) return BombReturnCode.ERROR_MISSING_COMPONENT;
 
-                    Vec3 coords = designator.getCoords(level, designatorStack, worldPosition);
+                    Vec3 coords = designator.getCoords(level, designatorStack, inWorld);
                     int targetX = (int) Math.floor(coords.x);
                     int targetZ = (int) Math.floor(coords.z);
 
+                    Vec3 launch = dev.golem.core.world.SubLevels.toWorld(level, worldPosition.getX() + 0.5D,
+                            worldPosition.getY() + 1D, worldPosition.getZ() + 0.5D);
                     EntityMissileTier4.EntityMissileDoomsdayRusted missile = new EntityMissileTier4.EntityMissileDoomsdayRusted(
-                            level, worldPosition.getX() + 0.5F, worldPosition.getY() + 1F, worldPosition.getZ() + 0.5F,
+                            level, (float) launch.x, (float) launch.y, (float) launch.z,
                             targetX, targetZ);
                     level.addFreshEntity(missile);
                     level.playSound(null, worldPosition.getX() + 0.5, worldPosition.getY(), worldPosition.getZ() + 0.5,
