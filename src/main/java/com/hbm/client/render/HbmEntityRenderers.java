@@ -35,6 +35,17 @@ public final class HbmEntityRenderers {
         <T extends Entity> void register(EntityType<? extends T> type, EntityRendererProvider<T> provider);
     }
 
+    private static final java.util.List<java.util.function.Consumer<Sink>> EXTENSIONS = new java.util.ArrayList<>();
+
+    /**
+     * Renderers for entity types that only some nodes register (a node-specific source root such as
+     * {@code src/happyghast}). They are bound inside {@link #registerAll}, through the same sink, so
+     * {@link #verifyCoverage} sees them. Call on the client before the loader registers renderers.
+     */
+    public static synchronized void addExtension(java.util.function.Consumer<Sink> extension) {
+        EXTENSIONS.add(extension);
+    }
+
     public static void registerAll(Sink sink) {
         sink.register(ModEntities.NUKE_EXPLOSION_MK5.get(), NoopRenderer::new);
         sink.register(ModEntities.ENTITY_EMP.get(), NoopRenderer::new);
@@ -88,6 +99,8 @@ public final class HbmEntityRenderers {
         missile(sink, ModMissileEntities.MISSILE_ANTI_BALLISTIC.get(), "missile_abm.obj", "missile_abm.png", 1.0F);
 
         com.hbm.client.render.entity.NtmEntityRenderers.registerAll(sink);
+
+        EXTENSIONS.forEach(extension -> extension.accept(sink));
     }
 
     /**

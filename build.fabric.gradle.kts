@@ -151,6 +151,15 @@ if (hasSable) {
     sourceSets["main"].resources.srcDir(rootProject.file("src/sable/resources"))
 }
 
+// Happy ghasts exist from Minecraft 1.21.6, so only the 26.1 nodes carry the happy-ghast Fat Man: the shared root
+// src/happyghast (com.hbm.compat.happyghast) plus this loader's entry points in src/happyghast-fabric, added and
+// written into fabric.mod.json only on nodes that set `feature.happy_ghast=true`.
+val hasHappyGhast = propOrNull("feature.happy_ghast") == "true"
+if (hasHappyGhast) {
+    sourceSets["main"].java.srcDir(rootProject.file("src/happyghast/java"))
+    sourceSets["main"].java.srcDir(rootProject.file("src/happyghast-fabric/java"))
+}
+
 // Whether the target Minecraft is obfuscated decides which Loom configurations exist. 26.1+ ships
 // unobfuscated, so Loom runs with remapping off and never creates the `mod*` configurations; plain
 // `implementation` is correct and no mappings layer is needed. Older nodes need `modImplementation`
@@ -446,6 +455,21 @@ tasks.processResources {
         )
         filesMatching("fabric.mod.json") {
             filter { line -> sableLines[line.trim()]?.let { "$line, $it" } ?: line }
+        }
+    }
+    // The happy-ghast Fat Man's entry points, only on nodes that set feature.happy_ghast. Both go BEFORE HBM's: Fabric
+    // registers everything in FabricInit's one flush, so the entity type and GameTest bodies must exist by then, and
+    // FabricClientInit binds and audits every hbm entity renderer at once, so the renderer must be handed over first.
+    if (hasHappyGhast) {
+        val happyGhastLines = mapOf(
+            "\"com.hbm.platform.fabric.FabricInit\"" to { it: String -> "\"com.hbm.compat.happyghast.HbmHappyGhastFabric\", $it" },
+            "\"com.hbm.platform.fabric.FabricClientInit\"" to { it: String -> "\"com.hbm.compat.happyghast.HbmHappyGhastFabricClient\", $it" },
+        )
+        filesMatching("fabric.mod.json") {
+            filter { line ->
+                val trimmed = line.trim()
+                happyGhastLines[trimmed]?.let { line.replace(trimmed, it(trimmed)) } ?: line
+            }
         }
     }
     // Forge-like biome modifiers are loader-specific; Fabric injects the same feature list in code.

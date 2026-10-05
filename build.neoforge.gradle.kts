@@ -258,6 +258,14 @@ if (propOrNull("deps.sable") != null) {
     sourceSets["main"].resources.srcDir(rootProject.file("src/sable/resources"))
 }
 
+// Happy ghasts exist from Minecraft 1.21.6, so only the 26.1 nodes carry the happy-ghast Fat Man (a happy ghast carries
+// a rigged Fat Man as it carries a boat). It is its own source root, src/happyghast (com.hbm.compat.happyghast), plus
+// this loader's entry points in src/happyghast-neoforge, added only on nodes that set `feature.happy_ghast=true`.
+if (propOrNull("feature.happy_ghast") == "true") {
+    sourceSets["main"].java.srcDir(rootProject.file("src/happyghast/java"))
+    sourceSets["main"].java.srcDir(rootProject.file("src/happyghast-neoforge/java"))
+}
+
 tasks.processResources {
     val props = mapOf(
         "mod_id" to modId,

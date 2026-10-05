@@ -128,22 +128,29 @@ public class NukeMan extends dev.golem.core.world.CompatBlock implements Ticking
     }
 
     private void ignite(Level level, @Nullable UUID detonatorId, BlockPos pos, @Nullable UUID placer) {
-        level.playSound(null, pos,
+        detonate(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                detonatorId != null ? detonatorId : placer);
+    }
+
+    /**
+     * The Fat Man's blast at a point: what a triggered block does at its centre, also reached by a Fat Man that left
+     * its block (a dropped bomb detonating where it lands).
+     */
+    public static void detonate(Level level, double x, double y, double z, @Nullable UUID detonator) {
+        level.playSound(null, x, y, z,
                 SoundEvents.GENERIC_EXPLODE.value(),
                 SoundSource.BLOCKS, 1.0F,
                 level.getRandom().nextFloat() * 0.1F + 0.9F);
 
-        EntityNukeExplosionMK5 mk5 = EntityNukeExplosionMK5.statFac(level, BombConfig.manRadius,
-                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-        mk5.detonator = detonatorId != null ? detonatorId : placer;
+        EntityNukeExplosionMK5 mk5 = EntityNukeExplosionMK5.statFac(level, BombConfig.manRadius, x, y, z);
+        mk5.detonator = detonator;
         if (level.addFreshEntity(mk5)) mk5.startChunkLoading();
 
         // The mushroom cloud (which carries the shockwave ring, condensation collar, flare, flash + the
         // client sky flash / detonation sound / HUD white-out + shake). Gated like the original, and it
         // only affects visuals — the blast/crater above runs regardless.
         if (BombConfig.enableNukeClouds) {
-            EntityNukeTorex torex = EntityNukeTorex.statFac(level,
-                    pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, BombConfig.manRadius);
+            EntityNukeTorex torex = EntityNukeTorex.statFac(level, x, y, z, BombConfig.manRadius);
             if (level.addFreshEntity(torex)) torex.startChunkLoading();
         }
     }
