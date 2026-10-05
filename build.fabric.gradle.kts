@@ -55,20 +55,18 @@ fun loomCompatibleComputerCraft(mc: String, version: String): File {
 }
 
 /**
- * Sable's Fabric jar for the dev runs (`-Psable.run=true`), with every jar it nests, recursively, unpacked beside it:
- * a mod given to a dev run is not searched for nested jars, and Sable nests the mods it requires (Veil, Forge Config
- * API Port, Sable Companion, its Rapier natives). Fetched straight from Sable's maven into the build directory, as
- * [loomCompatibleComputerCraft] is, because resolving a configuration this early would disturb Loom's repositories.
- * Returns the jars that are Fabric mods (remapped by `modLocalRuntime`) and the plain libraries, apart.
+ * A mod jar for the dev runs, fetched straight from [url] into `build/<dirName>` (resolving a configuration this early
+ * would disturb Loom's repositories), with every jar it nests, recursively, unpacked beside it: a mod given to a dev
+ * run is not searched for nested jars. Returns the jars that are Fabric mods (remapped by `modLocalRuntime`) and the
+ * plain libraries, apart.
  */
-fun sableRunJars(mc: String, version: String): Pair<List<File>, List<File>> {
-    val dir = layout.buildDirectory.dir("sable-run/$version").get().asFile
-    val outer = File(dir, "sable-fabric-$mc-$version.jar")
+fun runJarsWithNested(url: String, dirName: String): Pair<List<File>, List<File>> {
+    val dir = layout.buildDirectory.dir(dirName).get().asFile
+    val outer = File(dir, url.substringAfterLast('/'))
     if (!outer.isFile) {
         dir.mkdirs()
         val download = File(dir, "${outer.name}.download")
-        uri("https://maven.ryanhcode.dev/releases/dev/ryanhcode/sable/sable-fabric-$mc/$version/${outer.name}").toURL()
-            .openStream().use { input -> download.outputStream().use { input.copyTo(it) } }
+        uri(url).toURL().openStream().use { input -> download.outputStream().use { input.copyTo(it) } }
         download.renameTo(outer)
     }
     val nestedDir = File(dir, "nested")
@@ -90,6 +88,14 @@ fun sableRunJars(mc: String, version: String): Pair<List<File>, List<File>> {
     val (mods, libraries) = nested.partition { jar -> ZipFile(jar).use { it.getEntry("fabric.mod.json") != null } }
     return (listOf(outer) + mods) to libraries
 }
+
+/**
+ * Sable's Fabric jar for the dev runs (`-Psable.run=true`) and the mods it nests (Veil, Forge Config API Port, Sable
+ * Companion, its Rapier natives), from Sable's maven.
+ */
+fun sableRunJars(mc: String, version: String): Pair<List<File>, List<File>> = runJarsWithNested(
+    "https://maven.ryanhcode.dev/releases/dev/ryanhcode/sable/sable-fabric-$mc/$version/sable-fabric-$mc-$version.jar",
+    "sable-run/$version")
 
 /** The nested libraries [loomCompatibleComputerCraft] unpacked; call it first. */
 fun computerCraftLibraries(): FileCollection =
@@ -326,9 +332,9 @@ dependencies {
     if (jei != null && jeiVer != null) {
         "compileOnly"("mezz.jei:jei-$jei-common-api:$jeiVer")
         "compileOnly"("mezz.jei:jei-$jei-fabric-api:$jeiVer")
-        // JEI 29.43 (26.1.2) asks for Fabric Loader 0.19.4 at runtime; the node keeps its own loader, because Loom sets
-        // Mixin up from the declared one (a second loader's newer Mixin fails at launch), and code compiled against
-        // 0.19.4's Mixin (`Redirect.at` an array) breaks MixinExtras 0.5.4. JEI itself needs only >=0.17.
+        // JEI's transitive Fabric Loader is excluded: Loom sets Mixin up from the node's declared loader, and a second
+        // loader on the dev classpath fails at launch (`IAdviceProvider` not found). The node's loader (0.19.5) already
+        // meets JEI 29.43's 0.19.4 floor.
         devRuntime("mezz.jei:jei-$jei-fabric:$jeiVer") { exclude(group = "net.fabricmc", module = "fabric-loader") }
     }
 
@@ -358,8 +364,9 @@ dependencies {
     // 1.20.1: Sodium 0.5 skips FabricBakedModel.emitBlockQuads (connected textures) unless Indium is loaded.
     propOrNull("deps.indium")?.let { devRuntime("maven.modrinth:indium:$it") }
     // Team Reborn Energy is an optional peer of Core's energy facades; the dev game loads it so the RF
-    // converters' Fabric exposure can be exercised (HBM never compiles against it).
-    propOrNull("deps.tr_energy")?.let { devRuntime("teamreborn:energy:$it") }
+    // converters' Fabric exposure can be exercised (HBM never compiles against it). `-Ptr_energy.run=false` leaves it
+    // out, as most players run: a game without it once crashed at init (Core's RebornEnergy, History §19eq).
+    if (propOrNull("tr_energy.run") != "false") propOrNull("deps.tr_energy")?.let { devRuntime("teamreborn:energy:$it") }
 
     // CC: Tweaked is an optional peer: HBM's 1.7 OpenComputers components are served to it as peripherals
     // (com.hbm.compat.computercraft, guarded by the `computercraft` constant). Compiled against on every node,

@@ -112,6 +112,8 @@ dependencies {
     modImplementation("dev.golem:golemcore-forge-$mcVersion:${prop("deps.golemcore")}+$mcVersion")
     compileOnly("org.spongepowered:mixin:0.8.5")
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
+    // Forge 1.20.1 does not bundle MixinExtras; Golem Core nests mixinextras-forge (Jar-in-Jar) and its dev runtime
+    // carries it here, so HBM can compile against it without shipping a copy.
     compileOnly("io.github.llamalad7:mixinextras-common:0.3.5")
     annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.5")
 

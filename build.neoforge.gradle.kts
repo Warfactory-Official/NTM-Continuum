@@ -179,7 +179,7 @@ dependencies {
     implementation("dev.golem:golemcore-neoforge-$mcVersion:${prop("deps.golemcore")}+$mcVersion")
 
     compileOnly("org.spongepowered:mixin:0.8.5")
-    // Both loaders bundle mixinextras, so it is safe to use in shared code.
+    // NeoForge and Fabric Loader bundle MixinExtras; on Forge 1.20.1 Golem Core nests it. Safe in shared code.
     compileOnly("io.github.llamalad7:mixinextras-common:0.3.5")
     annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.5")
 
