@@ -254,9 +254,9 @@ public final class CraftingRecipesGenerated {
     private static void declare2() {
         shaped(NS, "gun_fireext", ItemIds.gun_fireext, rows("HB", " T"),
                 "B", TagIds.bolts_steel, "H", TagIds.pipes_steel, "T", ItemIds.tank_steel);
-        componentShaped(NS, "ammo_arty_3_g1", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 5), rows("D", "S", "D"), key("D", item(ItemIds.ingot_phosphorus)), key("S", item(ItemIds.ammo_arty).with(ComponentIds.item_variant, 0)));
-        componentShaped(NS, "ammo_arty_4_g1", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 7), rows("DSD", "SCS", "DSD"), key("C", item(ItemIds.det_cord)), key("D", item(ItemIds.ingot_phosphorus)), key("S", item(ItemIds.ammo_arty).with(ComponentIds.item_variant, 5)));
-        componentShaped(NS, "ammo_arty_6", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 6), rows("DSD", "SCS", "DSD"), key("C", item(ItemIds.det_cord)), key("D", item(ItemIds.neutron_reflector)), key("S", item(ItemIds.ammo_arty).with(ComponentIds.item_variant, 3)));
+        componentShaped(NS, "ammo_arty_3_g1", stack("hbm:ammo_arty_phosphorus"), rows("D", "S", "D"), key("D", item(ItemIds.ingot_phosphorus)), key("S", item("hbm:ammo_arty")));
+        componentShaped(NS, "ammo_arty_4_g1", stack("hbm:ammo_arty_phosphorus_multi"), rows("DSD", "SCS", "DSD"), key("C", item(ItemIds.det_cord)), key("D", item(ItemIds.ingot_phosphorus)), key("S", item("hbm:ammo_arty_phosphorus")));
+        componentShaped(NS, "ammo_arty_6", stack("hbm:ammo_arty_mini_nuke_multi"), rows("DSD", "SCS", "DSD"), key("C", item(ItemIds.det_cord)), key("D", item(ItemIds.neutron_reflector)), key("S", item("hbm:ammo_arty_mini_nuke")));
         componentShaped(NS, "ammo_fireext", stack(ItemIds.ammo_fireext), rows(" P ", "BDB", " P "), key("B", item(ItemIds.bolt_steel)), key("D", item(ItemIds.fluid_tank).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.fluid, "hbm:water").remainder(ItemIds.fluid_tank)), key("P", item(ItemIds.plate_steel)));
         shaped(NS, "ammo_fireext_foam", ItemIds.ammo_fireext_foam, rows(" N ", "NFN", " N "),
                 "F", ItemIds.ammo_fireext, "N", TagIds.dusts_niter);

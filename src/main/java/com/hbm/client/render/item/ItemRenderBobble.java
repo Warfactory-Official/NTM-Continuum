@@ -36,7 +36,7 @@ final class ItemRenderBobble implements CustomItemRenderer {
             pose.scale(10F, 10F, 10F);
         }
         pose.scale(0.5F, 0.5F, 0.5F);
-        RenderBobble.renderItem(pose, sink, ModDataComponents.ITEM_VARIANT.getOr(stack, 0), light);
+        RenderBobble.renderItem(pose, sink, com.hbm.items.LegacyMeta.of(stack), light);
         pose.popPose();
     }
 }

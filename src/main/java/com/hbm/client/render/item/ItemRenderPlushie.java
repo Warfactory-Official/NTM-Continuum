@@ -25,7 +25,7 @@ final class ItemRenderPlushie implements CustomItemRenderer {
     public void render(ItemStack stack, Type type, PoseStack pose, SubmitSink sink, int light, int overlay,
                        @Nullable LivingEntity owner) {
         PlushieType[] types = PlushieType.values();
-        int ordinal = ModDataComponents.ITEM_VARIANT.getOr(stack, 0);
+        int ordinal = com.hbm.items.LegacyMeta.of(stack);
         // 1.7 EnumUtil.grabEnumSafely: abs(index % length)
         PlushieType plushie = types[Math.abs(ordinal % types.length)];
 

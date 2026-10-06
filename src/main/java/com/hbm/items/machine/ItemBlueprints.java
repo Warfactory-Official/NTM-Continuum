@@ -26,7 +26,7 @@ import java.util.List;
  * {@link #pool}. Fixed templates keep their pool on the item, while the legacy dynamic item carries it in
  * {@link com.hbm.items.ModDataComponents#BLUEPRINT_POOL}; {@link #grabPool} reads either form.
  */
-public class ItemBlueprints extends CompatItem {
+public class ItemBlueprints extends CompatItem implements com.hbm.items.ModelState {
 
     public final String pool;
 
@@ -46,11 +46,17 @@ public class ItemBlueprints extends CompatItem {
     public static ItemStack make(String pool) {
         ItemStack stack = new ItemStack(ModMachineItems.blueprints.get());
         ModDataComponents.blueprintPool(stack, pool);
-        int variant = pool.startsWith(GenericRecipes.POOL_PREFIX_DISCOVER) ? 1
+        return stack;
+    }
+
+    /** {@code hbm:model_state}: the sprite of the pool's kind (discover 1, secret 2, 528 3), from the typed pool name. */
+    @Override
+    public int modelState(ItemStack stack) {
+        String pool = grabPool(stack);
+        if (pool == null) return 0;
+        return pool.startsWith(GenericRecipes.POOL_PREFIX_DISCOVER) ? 1
                 : pool.startsWith(GenericRecipes.POOL_PREFIX_SECRET) ? 2
                 : pool.startsWith(GenericRecipes.POOL_PREFIX_528) ? 3 : 0;
-        ModDataComponents.ITEM_VARIANT.set(stack, variant);
-        return stack;
     }
 
     @Override

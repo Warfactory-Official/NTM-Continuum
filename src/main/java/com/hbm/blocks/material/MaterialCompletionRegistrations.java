@@ -118,58 +118,38 @@ public final class MaterialCompletionRegistrations {
     public static final RegistryObject<Block> LIGHTSTONE_BRICKS_STAIRS = stair(
             "lightstone_bricks_stairs", LIGHTSTONE, lightstoneStairTexture(true), 15.0F, 20.0F);
 
-    // Each item selects its variant through the item definition; the base model carries no overrides (below 1.21.4
-    // legacy-assets writes them onto it from the same definition).
-    public static final RegistryObject<MaterialCompletionBlockItem> CONCRETE_COLORED_ITEM = REG.item(
-            "concrete_colored", p -> new MaterialCompletionBlockItem(CONCRETE_COLORED.get(), p,
-                    "concrete_colored", 16, BlockConcreteColored::legacyName),
-            Compat::blockDescription)
-            .icon(d -> d.models(Model.parent("hbm:block/concrete_colored_white"))
-                    .definition(ItemModels.select("hbm:item_variant")
-                    .when("0", ItemModels.model("hbm:block/concrete_colored_white"))
-                    .when("1", ItemModels.model("hbm:block/concrete_colored_orange"))
-                    .when("2", ItemModels.model("hbm:block/concrete_colored_magenta"))
-                    .when("3", ItemModels.model("hbm:block/concrete_colored_light_blue"))
-                    .when("4", ItemModels.model("hbm:block/concrete_colored_yellow"))
-                    .when("5", ItemModels.model("hbm:block/concrete_colored_lime"))
-                    .when("6", ItemModels.model("hbm:block/concrete_colored_pink"))
-                    .when("7", ItemModels.model("hbm:block/concrete_colored_gray"))
-                    .when("8", ItemModels.model("hbm:block/concrete_colored_silver"))
-                    .when("9", ItemModels.model("hbm:block/concrete_colored_cyan"))
-                    .when("10", ItemModels.model("hbm:block/concrete_colored_purple"))
-                    .when("11", ItemModels.model("hbm:block/concrete_colored_blue"))
-                    .when("12", ItemModels.model("hbm:block/concrete_colored_brown"))
-                    .when("13", ItemModels.model("hbm:block/concrete_colored_green"))
-                    .when("14", ItemModels.model("hbm:block/concrete_colored_red"))
-                    .when("15", ItemModels.model("hbm:block/concrete_colored_black"))
-                    .fallback(ItemModels.model("hbm:block/concrete_colored_white"))));
-    public static final RegistryObject<MaterialCompletionBlockItem> CONCRETE_COLORED_EXT_ITEM = REG.item(
-            "concrete_colored_ext", p -> new MaterialCompletionBlockItem(CONCRETE_COLORED_EXT.get(), p,
-                    "concrete_colored_ext", 8, i -> BlockConcreteColoredExt.type(i).getSerializedName()),
-            Compat::blockDescription)
-            .icon(d -> d.models(Model.parent("hbm:block/concrete_colored_ext_machine"))
-                    .definition(ItemModels.select("hbm:item_variant")
-                    .when("0", ItemModels.model("hbm:block/concrete_colored_ext_machine"))
-                    .when("1", ItemModels.model("hbm:block/concrete_colored_ext_machine_stripe"))
-                    .when("2", ItemModels.model("hbm:block/concrete_colored_ext_indigo"))
-                    .when("3", ItemModels.model("hbm:block/concrete_colored_ext_purple"))
-                    .when("4", ItemModels.model("hbm:block/concrete_colored_ext_pink"))
-                    .when("5", ItemModels.model("hbm:block/concrete_colored_ext_hazard"))
-                    .when("6", ItemModels.model("hbm:block/concrete_colored_ext_sand"))
-                    .when("7", ItemModels.model("hbm:block/concrete_colored_ext_bronze"))
-                    .fallback(ItemModels.model("hbm:block/concrete_colored_ext_machine"))));
-    public static final RegistryObject<MaterialCompletionBlockItem> LIGHTSTONE_ITEM = REG.item(
-            "lightstone", p -> new MaterialCompletionBlockItem(LIGHTSTONE.get(), p,
-                    "lightstone", 5, i -> BlockLightstone.type(i).getSerializedName()),
-            Compat::blockDescription)
-            .icon(d -> d.models(Model.parent("hbm:block/lightstone_unrefined"))
-                    .definition(ItemModels.select("hbm:item_variant")
-                    .when("0", ItemModels.model("hbm:block/lightstone_unrefined"))
-                    .when("1", ItemModels.model("hbm:block/lightstone_tile"))
-                    .when("2", ItemModels.model("hbm:block/lightstone_bricks"))
-                    .when("3", ItemModels.model("hbm:block/lightstone_bricks_chiseled"))
-                    .when("4", ItemModels.model("hbm:block/lightstone_chiseled"))
-                    .fallback(ItemModels.model("hbm:block/lightstone_unrefined"))));
+    /** {@link BlockConcreteColoredExt.EnumConcreteType}'s names in metadata order (the enum is not touched here). */
+    private static final String[] EXT_NAMES = {"machine", "machine_stripe", "indigo", "purple", "pink", "hazard", "sand",
+            "bronze"};
+    /** {@link BlockLightstone}'s types in metadata order. */
+    private static final String[] LIGHTSTONE_NAMES = {"unrefined", "tile", "bricks", "bricks_chiseled", "chiseled"};
+
+    /*
+     * 1.7's metadata items, one registered block item per state as ntm-next names them (History §19es-itemvariant):
+     * concrete_<dye> (light gray is 1.7's "silver"), concrete_ext_<type>, lightstone_<type>. The blocks keep their one
+     * id and named state property; each item places its state, and drops/pick-block answer the state's item. Member 0
+     * is registered last so the block's own item (Block.asItem) stays the 1.7 metadata-0 item on every loader.
+     */
+    public static final List<RegistryObject<MaterialCompletionBlockItem>> CONCRETE_COLORED_ITEMS = stateItems(
+            "concrete_colored", CONCRETE_COLORED, LEGACY_DYE_NAMES, "concrete_", "hbm:block/concrete_colored_");
+    public static final List<RegistryObject<MaterialCompletionBlockItem>> CONCRETE_COLORED_EXT_ITEMS = stateItems(
+            "concrete_colored_ext", CONCRETE_COLORED_EXT, EXT_NAMES, "concrete_ext_", "hbm:block/concrete_colored_ext_");
+    public static final List<RegistryObject<MaterialCompletionBlockItem>> LIGHTSTONE_ITEMS = stateItems(
+            "lightstone", LIGHTSTONE, LIGHTSTONE_NAMES, "lightstone_", "hbm:block/lightstone_");
+
+    private static List<RegistryObject<MaterialCompletionBlockItem>> stateItems(String blockId,
+            RegistryObject<? extends Block> block, String[] names, String idPrefix, String modelPrefix) {
+        @SuppressWarnings("unchecked")
+        RegistryObject<MaterialCompletionBlockItem>[] items = new RegistryObject[names.length];
+        for (int k = 1; k <= names.length; k++) {
+            int variant = k % names.length; // 1, 2, ..., n-1, then 0
+            String name = names[variant];
+            items[variant] = REG.item(idPrefix + name, p -> new MaterialCompletionBlockItem(block.get(), p, blockId,
+                            variant, name), Compat::blockDescription)
+                    .transform(Presets.shares(modelPrefix + name));
+        }
+        return List.of(items);
+    }
 
     static {
         ModTabs.addStacksTo(HbmTab.BLOCKS, () -> IntStream.range(0, 16)
@@ -216,15 +196,19 @@ public final class MaterialCompletionRegistrations {
     }
 
     public static ItemStack concreteColoredItem(int variant) {
-        return CONCRETE_COLORED_ITEM.get().of(variant);
+        return member(CONCRETE_COLORED_ITEMS, variant);
     }
 
     public static ItemStack concreteColoredExtItem(int variant) {
-        return CONCRETE_COLORED_EXT_ITEM.get().of(variant);
+        return member(CONCRETE_COLORED_EXT_ITEMS, variant);
     }
 
     public static ItemStack lightstoneItem(int variant) {
-        return LIGHTSTONE_ITEM.get().of(variant);
+        return member(LIGHTSTONE_ITEMS, variant);
+    }
+
+    private static ItemStack member(List<RegistryObject<MaterialCompletionBlockItem>> items, int variant) {
+        return new ItemStack(items.get(Math.floorMod(variant, items.size())).get());
     }
 
     public static String concreteColoredStairTexture(int variant) {

@@ -289,8 +289,8 @@ public final class Fix4GameTests {
         helper.assertTrue(torch.getItem() instanceof ItemBlowtorch blowtorch && blowtorch.getFill(torch) == 0,
                 "POOL_VAULT_LAB[0] is 1.7 ItemBlowtorch.getEmptyTool, got " + torch);
         ItemStack book = get.apply("POOL_OFFICE_TRASH").get(11).template();
-        helper.assertTrue(book.is(item("hbm:book_guide")) && ModDataComponents.ITEM_VARIANT.getOr(book, -1) == 3,
-                "POOL_OFFICE_TRASH[11] is book_guide meta 3 (its variant must survive on every node), got " + book);
+        helper.assertTrue(book.is(item("hbm:book_guide_starter")),
+                "POOL_OFFICE_TRASH[11] is book_guide meta 3, book_guide_starter here, got " + book);
         ItemStack ammoBox = get.apply(ItemPools.POOL_PILE_SUPPLIES).get(6).template();
         helper.assertTrue(ammoBox.is(item("hbm:ammo_container")), "POOL_PILE_SUPPLIES[6] is the ammo container");
         helper.assertTrue(rows > 400, "expected the full baked pool set, read " + rows + " rows");

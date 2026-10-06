@@ -63,9 +63,9 @@ public final class UtilityToolDeclarations {
                 "R", "hbm:radio_torch_receiver", "C", "hbm:circuit_basic", "S", "#c:plates/steel");
         shaped(NS, "fluid_identifier_multi", "hbm:fluid_identifier_multi", rows("D", "C", "P"),
                 "D", "#c:dyes", "C", "hbm:circuit_vacuum_tube", "P", "#c:plates/iron");
-        shapeless(NS, "book_guide_rbmk", stack("hbm:book_guide").with("hbm:item_variant", 1),
+        shapeless(NS, "book_guide_rbmk", "hbm:book_guide_rbmk",
                 "minecraft:book", "minecraft:potato");
-        shapeless(NS, "book_guide_starter", stack("hbm:book_guide").with("hbm:item_variant", 3),
+        shapeless(NS, "book_guide_starter", "hbm:book_guide_starter",
                 "minecraft:book", "minecraft:iron_ingot");
         shaped(NS, "book_guide_block", "hbm:book_guide_block", rows("IBI", "LBL", "IBI"),
                 "B", "minecraft:book", "I", "#c:dyes/black", "L", "#c:dyes/blue");

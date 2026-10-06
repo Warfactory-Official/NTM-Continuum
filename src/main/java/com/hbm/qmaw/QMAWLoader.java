@@ -155,6 +155,12 @@ public final class QMAWLoader {
         if (triggerElement != null && triggerElement.isJsonArray()) {
             for (JsonElement element : triggerElement.getAsJsonArray()) {
                 boolean wildcard = isWildcard(element);
+                // a wildcard over a 1.7 metadata family that is one item per type here: every member
+                List<ItemStack> members = wildcard ? splitMembers(element) : List.of();
+                if (!members.isEmpty()) {
+                    for (ItemStack member : members) triggers.add(new QuickManualAndWiki.Trigger(member, true));
+                    continue;
+                }
                 String prefix = wildcardPrefix(element, wildcard);
                 if (prefix != null) {
                     triggers.add(new QuickManualAndWiki.Trigger(prefix));
@@ -194,6 +200,21 @@ public final class QMAWLoader {
             return array.size() > 2 && array.get(2).isJsonPrimitive() && array.get(2).getAsInt() == 32767;
         } catch (RuntimeException ignored) {
             return false;
+        }
+    }
+
+    private static List<ItemStack> splitMembers(JsonElement element) {
+        try {
+            Identifier id = Ids.parse(element.getAsJsonArray().get(0).getAsString());
+            if (!id.getNamespace().equals("hbm")) return List.of();
+            List<ItemStack> out = new ArrayList<>();
+            for (String member : com.hbm.items.LegacyMetaIds.members(id.getPath())) {
+                ItemStack stack = stack(Ids.parse(member), 1);
+                if (stack != null) out.add(stack);
+            }
+            return out;
+        } catch (RuntimeException ignored) {
+            return List.of();
         }
     }
 
@@ -257,9 +278,11 @@ public final class QMAWLoader {
         ItemStack stack = stack(current, count);
         if (stack == null) return null;
 
-        // Metadata that survived as a component on the current item remains part of exact matching.
-        if (!wildcard && metadata != 0 && componentVariantFamily(oldLocation)) {
-            ModDataComponents.ITEM_VARIANT.set(stack, metadata);
+        // 1.7 metadata 1 of the stirling engines and the sawmill (the gear/blade removed) is a typed state here.
+        if (!wildcard && metadata == 1) {
+            String path = oldLocation.getPath();
+            if (path.equals("machine_sawmill")) ModDataComponents.HAS_BLADE.set(stack, false);
+            if (path.startsWith("machine_stirling")) ModDataComponents.HAS_COG.set(stack, false);
         }
         return stack;
     }
@@ -269,15 +292,13 @@ public final class QMAWLoader {
         return item == null || item == Items.AIR ? null : new ItemStack(item, count);
     }
 
-    private static boolean componentVariantFamily(Identifier id) {
-        String path = id.getPath();
-        return path.equals("gear_large") || path.equals("concrete_colored") || path.equals("concrete_colored_ext")
-                || path.equals("lightstone") || path.equals("machine_sawmill") || path.equals("machine_stirling")
-                || path.equals("satellite");
-    }
-
     private static Identifier flattenedId(Identifier oldId, int metadata) {
         String path = oldId.getPath();
+        // the metadata families that are one item per type (History §19es-itemvariant)
+        if (oldId.getNamespace().equals("hbm") && com.hbm.items.LegacyMetaIds.isSplit(path)) {
+            String split = com.hbm.items.LegacyMetaIds.lookup(path, metadata);
+            return split == null ? null : Ids.parse(split);
+        }
         if (oldId.equals(Ids.of("hbm", "ammo_standard"))) {
             String[] variants = {
                     "ammo_standard_m357_bp", "ammo_standard_m357_sp", "ammo_standard_m357_fmj", "ammo_standard_m357_jhp", "ammo_standard_m357_ap", "ammo_standard_m357_express",
@@ -296,7 +317,7 @@ public final class QMAWLoader {
         if (oldId.equals(Ids.of("hbm", "wire_dense")) && metadata == 48) return Ids.of("hbm", "wire_dense_bscco");
         if (oldId.equals(Ids.of("hbm", "wire_dense")) && metadata == 7900) return Ids.of("hbm", "wire_dense_gold");
         if (oldId.equals(Ids.of("hbm", "coke"))) return Ids.of("hbm", "coke_coal");
-        if (path.equals("pile_device") || path.equals("pile_brick")) return null;
+        if (path.equals("pile_brick")) return null;
         return oldId;
     }
 }

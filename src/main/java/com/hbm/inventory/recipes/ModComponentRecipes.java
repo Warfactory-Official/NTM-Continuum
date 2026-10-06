@@ -60,17 +60,17 @@ public final class ModComponentRecipes {
      * the tank itself ({@code fluid_tank} with a fluid id) are 1.7 recipes that named {@code fluid_tank_full}.
      */
     private static void shaped() {
-        componentShaped(NS, "ammo_arty_1", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 1),
+        componentShaped(NS, "ammo_arty_1", stack("hbm:ammo_arty_classic"),
                 rows(" D ", "DSD", " D "),
                 key("D", item(ItemIds.ball_dynamite)),
-                key("S", item(ItemIds.ammo_arty).with(ComponentIds.item_variant, 0)));
-        componentShaped(NS, "ammo_arty_2", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 2),
+                key("S", item("hbm:ammo_arty")));
+        componentShaped(NS, "ammo_arty_2", stack("hbm:ammo_arty_he"),
                 rows("TTT", "TST", "TTT"),
-                key("T", item(ItemIds.ball_tnt)), key("S", item(ItemIds.ammo_arty).with(ComponentIds.item_variant, 0)));
-        componentShaped(NS, "ammo_arty_3", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 3),
+                key("T", item(ItemIds.ball_tnt)), key("S", item("hbm:ammo_arty")));
+        componentShaped(NS, "ammo_arty_3", stack("hbm:ammo_arty_mini_nuke"),
                 rows(" P ", "NSN", " P "),
                 key("P", item(ItemIds.nugget_pu239)), key("N", item(ItemIds.neutron_reflector)),
-                key("S", item(ItemIds.ammo_arty).with(ComponentIds.item_variant, 0)));
+                key("S", item("hbm:ammo_arty")));
         componentShaped(NS, "ams_core_eyeofharmony", stack(ItemIds.ams_core_eyeofharmony), rows("ALA", "LSL", "ALA"),
                 key("A", item(ItemIds.plate_dalekanium)),
                 key("L", item(ItemIds.fluid_barrel).with(ComponentIds.fluid, "hbm:lava").with(ComponentIds.fluid_amount, 16000).remainder(ItemIds.fluid_barrel)),
@@ -95,115 +95,115 @@ public final class ModComponentRecipes {
                 key("P", item(ItemIds.bj_plate)), key("I", item(ItemIds.mp_thruster_10_xenon)),
                 key("C", item(ItemIds.crystal_phosphorus)));
         componentShaped(NS, "cell_1",
-                stack(ItemIds.cell, 8).with(ComponentIds.fluid, "hbm:deuterium").with(ComponentIds.fluid_amount, 1000).with(ComponentIds.item_variant, CellVariants.DEUTERIUM),
+                stack(ItemIds.cell, 8).with(ComponentIds.fluid, "hbm:deuterium").with(ComponentIds.fluid_amount, 1000),
                 rows("DDD", "DTD", "DDD"),
-                key("D", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount, ComponentIds.item_variant)),
+                key("D", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount)),
                 key("T", item(ItemIds.mike_deut)));
         componentShaped(NS, "concrete_colored_ext_stairs_bronze_from_block",
                 stack(ItemIds.concrete_colored_ext_stairs_bronze, 8), rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored_ext).with(ComponentIds.item_variant, 7)));
+                key("#", item("hbm:concrete_ext_bronze")));
         componentShaped(NS, "concrete_colored_ext_stairs_hazard_from_block",
                 stack(ItemIds.concrete_colored_ext_stairs_hazard, 8), rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored_ext).with(ComponentIds.item_variant, 5)));
+                key("#", item("hbm:concrete_ext_hazard")));
         componentShaped(NS, "concrete_colored_ext_stairs_indigo_from_block",
                 stack(ItemIds.concrete_colored_ext_stairs_indigo, 8), rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored_ext).with(ComponentIds.item_variant, 2)));
+                key("#", item("hbm:concrete_ext_indigo")));
         componentShaped(NS, "concrete_colored_ext_stairs_machine_from_block",
                 stack(ItemIds.concrete_colored_ext_stairs_machine, 8), rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored_ext).with(ComponentIds.item_variant, 0)));
+                key("#", item("hbm:concrete_ext_machine")));
         componentShaped(NS, "concrete_colored_ext_stairs_machine_stripe_from_block",
                 stack(ItemIds.concrete_colored_ext_stairs_machine_stripe, 8), rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored_ext).with(ComponentIds.item_variant, 1)));
+                key("#", item("hbm:concrete_ext_machine_stripe")));
         componentShaped(NS, "concrete_colored_ext_stairs_pink_from_block",
                 stack(ItemIds.concrete_colored_ext_stairs_pink, 8), rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored_ext).with(ComponentIds.item_variant, 4)));
+                key("#", item("hbm:concrete_ext_pink")));
         componentShaped(NS, "concrete_colored_ext_stairs_purple_from_block",
                 stack(ItemIds.concrete_colored_ext_stairs_purple, 8), rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored_ext).with(ComponentIds.item_variant, 3)));
+                key("#", item("hbm:concrete_ext_purple")));
         componentShaped(NS, "concrete_colored_ext_stairs_sand_from_block",
                 stack(ItemIds.concrete_colored_ext_stairs_sand, 8), rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored_ext).with(ComponentIds.item_variant, 6)));
+                key("#", item("hbm:concrete_ext_sand")));
         componentShaped(NS, "concrete_colored_stairs_black", stack(ItemIds.concrete_colored_stairs_black, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 15)));
+                key("#", item("hbm:concrete_black")));
         componentShaped(NS, "concrete_colored_stairs_black_slab", stack(ItemIds.concrete_black_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 15)));
+                key("#", item("hbm:concrete_black")));
         componentShaped(NS, "concrete_colored_stairs_blue", stack(ItemIds.concrete_colored_stairs_blue, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 11)));
+                key("#", item("hbm:concrete_blue")));
         componentShaped(NS, "concrete_colored_stairs_blue_slab", stack(ItemIds.concrete_blue_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 11)));
+                key("#", item("hbm:concrete_blue")));
         componentShaped(NS, "concrete_colored_stairs_brown", stack(ItemIds.concrete_colored_stairs_brown, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 12)));
+                key("#", item("hbm:concrete_brown")));
         componentShaped(NS, "concrete_colored_stairs_brown_slab", stack(ItemIds.concrete_brown_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 12)));
+                key("#", item("hbm:concrete_brown")));
         componentShaped(NS, "concrete_colored_stairs_cyan", stack(ItemIds.concrete_colored_stairs_cyan, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 9)));
+                key("#", item("hbm:concrete_cyan")));
         componentShaped(NS, "concrete_colored_stairs_cyan_slab", stack(ItemIds.concrete_cyan_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 9)));
+                key("#", item("hbm:concrete_cyan")));
         componentShaped(NS, "concrete_colored_stairs_gray", stack(ItemIds.concrete_colored_stairs_gray, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 7)));
+                key("#", item("hbm:concrete_gray")));
         componentShaped(NS, "concrete_colored_stairs_gray_slab", stack(ItemIds.concrete_gray_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 7)));
+                key("#", item("hbm:concrete_gray")));
         componentShaped(NS, "concrete_colored_stairs_green", stack(ItemIds.concrete_colored_stairs_green, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 13)));
+                key("#", item("hbm:concrete_green")));
         componentShaped(NS, "concrete_colored_stairs_green_slab", stack(ItemIds.concrete_green_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 13)));
+                key("#", item("hbm:concrete_green")));
         componentShaped(NS, "concrete_colored_stairs_light_blue", stack(ItemIds.concrete_colored_stairs_light_blue, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 3)));
+                key("#", item("hbm:concrete_light_blue")));
         componentShaped(NS, "concrete_colored_stairs_light_blue_slab", stack(ItemIds.concrete_light_blue_slab, 6),
                 rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 3)));
+                key("#", item("hbm:concrete_light_blue")));
         componentShaped(NS, "concrete_colored_stairs_lime", stack(ItemIds.concrete_colored_stairs_lime, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 5)));
+                key("#", item("hbm:concrete_lime")));
         componentShaped(NS, "concrete_colored_stairs_lime_slab", stack(ItemIds.concrete_lime_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 5)));
+                key("#", item("hbm:concrete_lime")));
         componentShaped(NS, "concrete_colored_stairs_magenta", stack(ItemIds.concrete_colored_stairs_magenta, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 2)));
+                key("#", item("hbm:concrete_magenta")));
         componentShaped(NS, "concrete_colored_stairs_magenta_slab", stack(ItemIds.concrete_magenta_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 2)));
+                key("#", item("hbm:concrete_magenta")));
         componentShaped(NS, "concrete_colored_stairs_orange", stack(ItemIds.concrete_colored_stairs_orange, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 1)));
+                key("#", item("hbm:concrete_orange")));
         componentShaped(NS, "concrete_colored_stairs_orange_slab", stack(ItemIds.concrete_orange_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 1)));
+                key("#", item("hbm:concrete_orange")));
         componentShaped(NS, "concrete_colored_stairs_pink", stack(ItemIds.concrete_colored_stairs_pink, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 6)));
+                key("#", item("hbm:concrete_pink")));
         componentShaped(NS, "concrete_colored_stairs_pink_slab", stack(ItemIds.concrete_pink_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 6)));
+                key("#", item("hbm:concrete_pink")));
         componentShaped(NS, "concrete_colored_stairs_purple", stack(ItemIds.concrete_colored_stairs_purple, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 10)));
+                key("#", item("hbm:concrete_purple")));
         componentShaped(NS, "concrete_colored_stairs_purple_slab", stack(ItemIds.concrete_purple_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 10)));
+                key("#", item("hbm:concrete_purple")));
         componentShaped(NS, "concrete_colored_stairs_red", stack(ItemIds.concrete_colored_stairs_red, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 14)));
+                key("#", item("hbm:concrete_red")));
         componentShaped(NS, "concrete_colored_stairs_red_slab", stack(ItemIds.concrete_red_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 14)));
+                key("#", item("hbm:concrete_red")));
         componentShaped(NS, "concrete_colored_stairs_silver", stack(ItemIds.concrete_colored_stairs_silver, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 8)));
+                key("#", item("hbm:concrete_silver")));
         componentShaped(NS, "concrete_colored_stairs_silver_slab", stack(ItemIds.concrete_silver_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 8)));
+                key("#", item("hbm:concrete_silver")));
         componentShaped(NS, "concrete_colored_stairs_white", stack(ItemIds.concrete_colored_stairs_white, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 0)));
+                key("#", item("hbm:concrete_white")));
         componentShaped(NS, "concrete_colored_stairs_white_slab", stack(ItemIds.concrete_white_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 0)));
+                key("#", item("hbm:concrete_white")));
         componentShaped(NS, "concrete_colored_stairs_yellow", stack(ItemIds.concrete_colored_stairs_yellow, 8),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 4)));
+                key("#", item("hbm:concrete_yellow")));
         componentShaped(NS, "concrete_colored_stairs_yellow_slab", stack(ItemIds.concrete_yellow_slab, 6), rows("###"),
-                key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 4)));
+                key("#", item("hbm:concrete_yellow")));
         componentShaped(NS, "conveyor_wand_express", stack(ItemIds.conveyor_wand_express, 8), rows("CCC", "CLC", "CCC"),
                 key("C", item(ItemIds.conveyor_wand_regular)),
                 key("L", fluid("LUBRICANT", 1000)));
@@ -228,26 +228,26 @@ public final class ModComponentRecipes {
                 key("Q", item(ItemIds.glass_quartz)), key("D", item(ItemIds.ingot_desh)),
                 key("N", item(ItemIds.ingot_niobium)),
                 key("C", item(ItemIds.fluid_tank).with(ComponentIds.fluid, "hbm:carbondioxide").with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)));
-        componentShaped(NS, "lightstone_bricks", stack(ItemIds.lightstone, 4).with(ComponentIds.item_variant, 2),
+        componentShaped(NS, "lightstone_bricks", stack("hbm:lightstone_bricks", 4),
                 rows("CC", "CC"),
-                key("C", item(ItemIds.lightstone).with(ComponentIds.item_variant, 1)));
-        componentShaped(NS, "lightstone_bricks_chiseled", stack(ItemIds.lightstone).with(ComponentIds.item_variant, 3),
+                key("C", item("hbm:lightstone_tile")));
+        componentShaped(NS, "lightstone_bricks_chiseled", stack("hbm:lightstone_bricks_chiseled"),
                 rows("#"),
-                key("#", item(ItemIds.lightstone).with(ComponentIds.item_variant, 2)));
+                key("#", item("hbm:lightstone_bricks")));
         componentShaped(NS, "lightstone_bricks_stairs_from_block", stack(ItemIds.lightstone_bricks_stairs, 4),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.lightstone).with(ComponentIds.item_variant, 2)));
+                key("#", item("hbm:lightstone_bricks")));
         // 1.7 CraftingManager:426: shapeless CHISELED from a bare ModBlocks.lightstone, which vanilla's shapeless
         // recipe reads as metadata 0 - the unrefined block, not the tile
-        componentShaped(NS, "lightstone_chiseled", stack(ItemIds.lightstone).with(ComponentIds.item_variant, 4),
+        componentShaped(NS, "lightstone_chiseled", stack("hbm:lightstone_chiseled"),
                 rows("#"),
-                key("#", item(ItemIds.lightstone).with(ComponentIds.item_variant, 0)));
-        componentShaped(NS, "lightstone_tile", stack(ItemIds.lightstone, 4).with(ComponentIds.item_variant, 1),
+                key("#", item("hbm:lightstone_unrefined")));
+        componentShaped(NS, "lightstone_tile", stack("hbm:lightstone_tile", 4),
                 rows("CC", "CC"),
-                key("C", item(ItemIds.lightstone).with(ComponentIds.item_variant, 0)));
+                key("C", item("hbm:lightstone_unrefined")));
         componentShaped(NS, "lightstone_tile_stairs_from_block", stack(ItemIds.lightstone_tile_stairs, 4),
                 rows("#  ", "## ", "###"),
-                key("#", item(ItemIds.lightstone).with(ComponentIds.item_variant, 1)));
+                key("#", item("hbm:lightstone_tile")));
         componentShaped(NS, "part_generic_piston_hydraulic", stack(ItemIds.part_generic_piston_hydraulic, 4),
                 rows(" I ", "CPC", " I "),
                 key("I", item(ItemIds.ingot_steel)), key("C", item(ItemIds.ingot_titanium)),
@@ -259,20 +259,20 @@ public final class ModComponentRecipes {
                 key("L", fluid("LAVA", 1000)),
                 key("T", item(ItemIds.ingot_tungsten)));
         componentShaped(NS, "rod_dual_tritium_unload",
-                stack(ItemIds.cell, 2).with(ComponentIds.fluid, "hbm:tritium").with(ComponentIds.fluid_amount, 1000).with(ComponentIds.item_variant, CellVariants.TRITIUM),
+                stack(ItemIds.cell, 2).with(ComponentIds.fluid, "hbm:tritium").with(ComponentIds.fluid_amount, 1000),
                 rows("RCC"),
                 key("R", item(ItemIds.rod_dual_tritium)),
-                key("C", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount, ComponentIds.item_variant)));
+                key("C", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount)));
         componentShaped(NS, "rod_quad_tritium_unload",
-                stack(ItemIds.cell, 4).with(ComponentIds.fluid, "hbm:tritium").with(ComponentIds.fluid_amount, 1000).with(ComponentIds.item_variant, CellVariants.TRITIUM),
+                stack(ItemIds.cell, 4).with(ComponentIds.fluid, "hbm:tritium").with(ComponentIds.fluid_amount, 1000),
                 rows("RCC", "CC "),
                 key("R", item(ItemIds.rod_quad_tritium)),
-                key("C", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount, ComponentIds.item_variant)));
+                key("C", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount)));
         componentShaped(NS, "rod_tritium_unload",
-                stack(ItemIds.cell).with(ComponentIds.fluid, "hbm:tritium").with(ComponentIds.fluid_amount, 1000).with(ComponentIds.item_variant, CellVariants.TRITIUM),
+                stack(ItemIds.cell).with(ComponentIds.fluid, "hbm:tritium").with(ComponentIds.fluid_amount, 1000),
                 rows("RC"),
                 key("R", item(ItemIds.rod_tritium)),
-                key("C", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount, ComponentIds.item_variant)));
+                key("C", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount)));
         componentShaped(NS, "singularity", stack(ItemIds.singularity), rows("ESE", "SBS", "ESE"),
                 key("E", item(ItemIds.nugget_euphemium)),
                 key("S", item(ItemIds.cell).with(ComponentIds.fluid, "hbm:aschrab").with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.cell)),
@@ -283,33 +283,22 @@ public final class ModComponentRecipes {
                 key("B", item(ItemIds.battery_lithium)));
         componentShaped(NS, "syringe_empty", stack(ItemIds.syringe_empty, 6), rows("P", "C", "B"),
                 key("B", item(VanillaIds.iron_bars)),
-                key("C", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount, ComponentIds.item_variant)),
+                key("C", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount)),
                 key("P", item(ItemIds.plate_iron)));
     }
+
+    private static final String FORGE_COUNT = "hbm:forge_count";
 
     private static void smelting() {
         componentSmelt(NS, "ingot_chainsteel", item(ItemIds.ingot_chainsteel),
                 stack(ItemIds.ingot_chainsteel).with(ComponentIds.heat, 200), 0.0);
-        componentSmelt(NS, "ingot_steel_dusted", item(ItemIds.ingot_steel_dusted).with(ComponentIds.item_variant, 0),
-                stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, 200).with(ComponentIds.item_variant, 0), 1.0);
-        componentSmelt(NS, "ingot_steel_dusted_1", item(ItemIds.ingot_steel_dusted).with(ComponentIds.item_variant, 1),
-                stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, 200).with(ComponentIds.item_variant, 1), 1.0);
-        componentSmelt(NS, "ingot_steel_dusted_2", item(ItemIds.ingot_steel_dusted).with(ComponentIds.item_variant, 2),
-                stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, 200).with(ComponentIds.item_variant, 2), 1.0);
-        componentSmelt(NS, "ingot_steel_dusted_3", item(ItemIds.ingot_steel_dusted).with(ComponentIds.item_variant, 3),
-                stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, 200).with(ComponentIds.item_variant, 3), 1.0);
-        componentSmelt(NS, "ingot_steel_dusted_4", item(ItemIds.ingot_steel_dusted).with(ComponentIds.item_variant, 4),
-                stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, 200).with(ComponentIds.item_variant, 4), 1.0);
-        componentSmelt(NS, "ingot_steel_dusted_5", item(ItemIds.ingot_steel_dusted).with(ComponentIds.item_variant, 5),
-                stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, 200).with(ComponentIds.item_variant, 5), 1.0);
-        componentSmelt(NS, "ingot_steel_dusted_6", item(ItemIds.ingot_steel_dusted).with(ComponentIds.item_variant, 6),
-                stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, 200).with(ComponentIds.item_variant, 6), 1.0);
-        componentSmelt(NS, "ingot_steel_dusted_7", item(ItemIds.ingot_steel_dusted).with(ComponentIds.item_variant, 7),
-                stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, 200).with(ComponentIds.item_variant, 7), 1.0);
-        componentSmelt(NS, "ingot_steel_dusted_8", item(ItemIds.ingot_steel_dusted).with(ComponentIds.item_variant, 8),
-                stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, 200).with(ComponentIds.item_variant, 8), 1.0);
-        componentSmelt(NS, "ingot_steel_dusted_9", item(ItemIds.ingot_steel_dusted).with(ComponentIds.item_variant, 9),
-                stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, 200).with(ComponentIds.item_variant, 9), 1.0);
+        // 1.7 metadata = forge count: hbm:forge_count, absent on an unforged ingot (History §19es-itemvariant)
+        componentSmelt(NS, "ingot_steel_dusted", item(ItemIds.ingot_steel_dusted).without(FORGE_COUNT),
+                stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, 200), 1.0);
+        for (int count = 1; count <= 9; count++) {
+            componentSmelt(NS, "ingot_steel_dusted_" + count, item(ItemIds.ingot_steel_dusted).with(FORGE_COUNT, count),
+                    stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, 200).with(FORGE_COUNT, count), 1.0);
+        }
     }
 
     private static void copying() {

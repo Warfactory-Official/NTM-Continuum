@@ -291,11 +291,12 @@ tasks.processResources {
     )
     inputs.properties(props)
     filesMatching(listOf("META-INF/neoforge.mods.toml", "pack.mcmeta", "*.mixins.json")) { expand(props) }
-    exclude("fabric.mod.json", "$modId.fabric.mixins.json", "data/$modId/forge/**")
+    // NeoForge reads only neoforge.mods.toml; the Forge template would ship unexpanded.
+    exclude("fabric.mod.json", "$modId.fabric.mixins.json", "data/$modId/forge/**", "META-INF/mods.toml")
 }
 
 tasks.jar {
-    from(rootProject.file("LICENSE")) { rename { "${it}_${prop("mod.name")}" } }
+    from(files(rootProject.file("LICENSE"), rootProject.file("LICENSE.LESSER"))) { rename { "${it}_${prop("mod.id")}" } }
 }
 
 tasks.named("createMinecraftArtifacts") { dependsOn(tasks.named("stonecutterGenerate")) }

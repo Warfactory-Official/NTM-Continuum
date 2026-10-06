@@ -36,7 +36,8 @@ import java.util.List;
 
 /**
  * 1.7 {@code BlockCustomMachine} ({@code custom_machine}): the controller of a configured machine. Its item carries
- * the machine's index as 1.7's damage value ({@link ModDataComponents#ITEM_VARIANT} = index + 100); placing it
+ * the machine's configuration by name ({@link ModDataComponents#CUSTOM_MACHINE}; 1.7 kept index + 100 in the damage
+ * value); placing it
  * stamps the configuration on the block entity, breaking it gives the same item back, and the filters in slots
  * 10-15 are not dropped.
  *
@@ -103,7 +104,7 @@ public class BlockCustomMachine extends CompatBlock implements TickingBlock {
         super.setPlacedBy(level, pos, state, placer, stack);
 
         if (level.getBlockEntity(pos) instanceof TileEntityCustomMachine tile) {
-            MachineConfiguration config = CustomMachineConfigJSON.byVariant(ModDataComponents.ITEM_VARIANT.getOr(stack, 0));
+            MachineConfiguration config = CustomMachineConfigJSON.byName(ModDataComponents.CUSTOM_MACHINE.getOr(stack, null));
 
             if (config != null) {
                 tile.machineType = config.unlocalizedName;
@@ -114,11 +115,11 @@ public class BlockCustomMachine extends CompatBlock implements TickingBlock {
         }
     }
 
-    /** The controller item for the machine at this position: 1.7 damage {@code niceList.indexOf(config) + 100}. */
+    /** The controller item for the machine at this position (1.7: damage {@code niceList.indexOf(config) + 100}). */
     public ItemStack stackFor(@Nullable BlockEntity be) {
         ItemStack stack = new ItemStack(this);
-        if (be instanceof TileEntityCustomMachine tile) {
-            ModDataComponents.ITEM_VARIANT.set(stack, CustomMachineConfigJSON.niceList.indexOf(tile.config) + 100);
+        if (be instanceof TileEntityCustomMachine tile && tile.config != null) {
+            ModDataComponents.CUSTOM_MACHINE.set(stack, tile.config.unlocalizedName);
         }
         return stack;
     }

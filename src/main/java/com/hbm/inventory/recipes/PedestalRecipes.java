@@ -5,15 +5,15 @@ import java.util.List;
 
 /**
  * 1.7 {@code PedestalRecipes}, as data: the ritual recipes whose sets the clay tablets reveal and the pedestal
- * ({@code BlockPedestal}) performs - the output, the nine inputs (an item id, a {@code #tag}, or an enum-variant
- * item as {@code id@variant}), the extra condition and the recipe set - in 1.7's registration order, which the
+ * ({@code BlockPedestal}) performs - the output, the nine inputs (an item id or a {@code #tag}; 1.7's enum-variant
+ * items are items of their own here), the extra condition and the recipe set - in 1.7's registration order, which the
  * tablet's seeded draw and the pedestal's first-match search both depend on.
  */
 public final class PedestalRecipes {
 
     public enum PedestalExtraCondition { NONE, FULL_MOON, NEW_MOON, SUN, GOOD_KARMA, BAD_KARMA }
 
-    /** One ingredient: {@code id} is an item id, a {@code #tag}, or {@code id@variant}. */
+    /** One ingredient: {@code id} is an item id or a {@code #tag}. */
     public record Input(String id, int count) {}
 
     public static final class PedestalRecipe {
@@ -47,10 +47,10 @@ public final class PedestalRecipes {
     private static Input i(String id) { return new Input(id, 1); }
     private static Input i(String id, int count) { return new Input(id, count); }
 
-    // 1.7 GunFactory.EnumModSpecial ordinals for weapon_mod_special
-    private static final String SCOPE = "hbm:weapon_mod_special@1";
-    private static final String SILENCER = "hbm:weapon_mod_special@0";
-    private static final String FURNITURE_BLACK = "hbm:weapon_mod_special@9";
+    // 1.7 weapon_mod_special metadata SCOPE / SILENCER / FURNITURE_BLACK, items of their own (History §19es-itemvariant)
+    private static final String SCOPE = "hbm:weapon_mod_special_scope";
+    private static final String SILENCER = "hbm:weapon_mod_special_silencer";
+    private static final String FURNITURE_BLACK = "hbm:weapon_mod_special_furniture_black";
 
     private static void registerDefaults() {
         register(new PedestalRecipe("hbm:gun_light_revolver_dani", 1,
@@ -142,8 +142,7 @@ public final class PedestalRecipes {
     }
 
     /**
-     * 1.7 {@code AStack.matchesRecipe(stack, true)} plus the pedestal's exact-count check: the item (or tag, or
-     * item and variant) must match and the stack must hold exactly the ingredient's count.
+     * 1.7 {@code AStack.matchesRecipe(stack, true)} plus the pedestal's exact-count check: the item (or tag) must match and the stack must hold exactly the ingredient's count.
      */
     public static boolean matches(Input input, net.minecraft.world.item.ItemStack stack) {
         if (stack.isEmpty() || stack.getCount() != input.count()) return false;
@@ -152,14 +151,7 @@ public final class PedestalRecipes {
             return stack.is(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM,
                     dev.golem.core.Ids.parse(id.substring(1))));
         }
-        int variant = -1;
-        int at = id.indexOf('@');
-        if (at > 0) {
-            variant = Integer.parseInt(id.substring(at + 1));
-            id = id.substring(0, at);
-        }
-        if (!dev.golem.core.world.ItemStacks.matchesItemId(stack, id)) return false;
-        return variant < 0 || com.hbm.items.ModDataComponents.ITEM_VARIANT.getOr(stack, 0) == variant;
+        return dev.golem.core.world.ItemStacks.matchesItemId(stack, id);
     }
 
     /** The recipe's product, or empty if its item is not registered in this port. */

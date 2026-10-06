@@ -29,22 +29,15 @@ public final class ModSatelliteItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    /** One sprite per {@link EnumSatType}, selected by {@code hbm:item_variant}. */
-    public static final RegistryObject<ItemSatellite> satellite =
-            REG.item("satellite", ItemSatellite::new, p -> p.stacksTo(1))
-                    .icon(d -> d.models(Models.group()
-                                    .and("", Models.generated("hbm:items/satellite_spy"))
-                                    .and("_scanner", Models.generated("hbm:items/satellite_scanner"))
-                                    .and("_radar", Models.generated("hbm:items/satellite_radar"))
-                                    .and("_miner_astro", Models.generated("hbm:items/satellite_miner_astro"))
-                                    .and("_miner_lunar", Models.generated("hbm:items/satellite_miner_lunar"))
-                                    .and("_precision_laser", Models.generated("hbm:items/satellite_precision_laser"))
-                                    .and("_death_ray", Models.generated("hbm:items/satellite_death_ray"))
-                                    .and("_xenium_resonator", Models.generated("hbm:items/satellite_xenium_resonator"))
-                                    .and("_relay", Models.generated("hbm:items/satellite_relay"))
-                                    .and("_detector", Models.generated("hbm:items/satellite_detector"))
-                                    .and("_ray_scan", Models.generated("hbm:items/satellite_ray_scan")))
-                            .selects(Constants.MOD_ID + ":item_variant"));
+    /**
+     * 1.7 {@code satellite}, one item per {@link EnumSatType} as in ntm-next ({@code satellite_spy} ...
+     * {@code satellite_ray_scan}; History §19es-itemvariant), each drawn with its 1.7 sprite.
+     */
+    public static final ItemFamily<EnumSatType, ItemSatellite> satellite = ItemFamily.of(EnumSatType.class, type -> {
+        String id = "satellite_" + type.name().toLowerCase(java.util.Locale.ROOT);
+        return REG.item(id, p -> new ItemSatellite(p, type), p -> p.stacksTo(1))
+                .transform(Presets.sprite("hbm:items/" + id));
+    });
 
     @Deprecated public static final RegistryObject<ItemSatChip> sat_mapper = chip("sat_mapper");
     @Deprecated public static final RegistryObject<ItemSatChip> sat_scanner = chip("sat_scanner");
@@ -70,8 +63,7 @@ public final class ModSatelliteItems {
     }
 
     static {
-        ModTabs.addStacksTo(HbmTab.MISSILES, () -> Arrays.stream(EnumSatType.VALUES)
-                .map(type -> satellite.get().of(type)).toList());
+        ModTabs.addStacksTo(HbmTab.MISSILES, satellite::stacks);
         for (RegistryObject<? extends Item> item : java.util.List.of(sat_gerald, sat_chip, sat_coord, sat_designator,
                 sat_relay)) {
             ModTabs.addTo(HbmTab.MISSILES, item);

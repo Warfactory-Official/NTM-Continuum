@@ -31,7 +31,7 @@ public final class FinalStructures implements Scenario {
     }
 
     private static String loadItem(Client c) {
-        return legacy(c) ? "hbm:wand_structure{\"hbm:item_variant\":1}" : "hbm:wand_structure[hbm:item_variant=1]";
+        return "hbm:wand_structure_load"; // 1.7 wand_structure metadata 1 (History §19es-itemvariant)
     }
 
     @Override

@@ -68,17 +68,9 @@ public class GUIScreenClayTablet extends CompatScreen {
             }
             return list;
         }
-        int variant = -1;
-        int at = id.indexOf('@');
-        if (at > 0) {
-            variant = Integer.parseInt(id.substring(at + 1));
-            id = id.substring(0, at);
-        }
         Item item = BuiltInRegistries.ITEM.getValue(Ids.parse(id));
         if (item == null || item == Items.AIR) return list;
-        ItemStack stack = new ItemStack(item, input.count());
-        if (variant >= 0) ModDataComponents.ITEM_VARIANT.set(stack, variant);
-        list.add(stack);
+        list.add(new ItemStack(item, input.count()));
         return list;
     }
 
@@ -92,7 +84,7 @@ public class GUIScreenClayTablet extends CompatScreen {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack held = player.getMainHandItem();
-        if (!held.isEmpty()) tabletMeta = ModDataComponents.ITEM_VARIANT.getOr(held, 0);
+        if (!held.isEmpty()) tabletMeta = com.hbm.items.LegacyMeta.of(held);
 
         int tabletOffset = tabletMeta == 1 ? 84 : 0;
         int iconOffset = tabletMeta == 1 ? 16 : 0;

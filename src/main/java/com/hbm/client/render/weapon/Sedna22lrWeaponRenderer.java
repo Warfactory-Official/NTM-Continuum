@@ -114,6 +114,7 @@ public final class Sedna22lrWeaponRenderer extends WeaponRenderer {
                             rail, side);
                 }
                 akimboRest(declaration);
+                modTableGun(declaration);
             }
         }
     }
@@ -199,12 +200,23 @@ public final class Sedna22lrWeaponRenderer extends WeaponRenderer {
                 .visibleIf(state -> silenced(state, rail));
     }
 
+    /**
+     * 1.7 {@code ItemRenderStarFAkimbo.renderModTable(stack, index)}: one elite Star F at the origin, uncrossed and
+     * unscaled, with the silencer of configuration {@code index}.
+     */
+    private void modTableGun(Gem.Model<WeaponPose> declaration) {
+        declaration.part(model().parts("Gun", "Slide", "Mag", "Hammer"), body).visibleIf(state -> state.modTable);
+        declaration.part(silencerModel().part("Silencer"), SILENCER)
+                .visibleIf(state -> state.modTable && silenced(state, state.tableIndex))
+                .translate(0F, 2.375F, -0.25F);
+    }
+
     /** The akimbo rest pose: the pair crossed, as the old inventory draw laid them out. */
     private void akimboRest(Gem.Model<WeaponPose> declaration) {
         String[] parts = {"Gun", "Slide", "Mag", "Hammer"};
 
         Gem.Part<WeaponPose> first = declaration.joint()
-                .visibleIf(state -> !state.animated)
+                .visibleIf(state -> !state.animated && !state.modTable)
                 .rotate(Gem.Axes.Z, 225F)
                 .rotate(Gem.Axes.Y, 90F)
                 .rotate(Gem.Axes.X, 25F)
@@ -218,7 +230,7 @@ public final class Sedna22lrWeaponRenderer extends WeaponRenderer {
                 .visibleIf(state -> silenced(state, 1));
 
         Gem.Part<WeaponPose> second = declaration.joint()
-                .visibleIf(state -> !state.animated)
+                .visibleIf(state -> !state.animated && !state.modTable)
                 .translate(0F, 0F, 5F)
                 .rotate(Gem.Axes.Z, 225F)
                 .rotate(Gem.Axes.Y, -90F)

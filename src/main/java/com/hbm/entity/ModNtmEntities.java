@@ -136,9 +136,6 @@ public final class ModNtmEntities {
             DeferredRegister.createEntityTypes(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ENTITY_TYPES);
 
-    public static final RegistryObject<EntityType<EntityDischargeBeam>> BEAM_DISCHARGE =
-            REG.entity("beam_discharge", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityDischargeBeam>of(EntityDischargeBeam::new, MobCategory.MISC)).noSave().fireImmune().sized(0.5F, 0.5F).clientTrackingRange(16).updateInterval(Integer.MAX_VALUE), key));
     public static final RegistryObject<EntityType<EntityUndeadSoldier>> UNDEAD_SOLDIER =
             REG.entity("entity_undead_soldier", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntityUndeadSoldier>of(EntityUndeadSoldier::new, MobCategory.MONSTER)).sized(.6F, 1.95F).clientTrackingRange(5).updateInterval(3), key));

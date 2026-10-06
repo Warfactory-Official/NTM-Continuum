@@ -30,16 +30,17 @@ public final class EottWeaponRenderer extends WeaponRenderer {
     @Override protected void setup(Gem.Model<WeaponPose> declaration) {
         WavefrontObj obj = model();
         Gem.Part<WeaponPose> ordinary = declaration.joint()
-                .visibleIf(state -> !state.animated && !doubleStaticContext(state) && !worldStaticContext(state));
+                .visibleIf(state -> !state.animated
+                        && (state.modTable || !doubleStaticContext(state) && !worldStaticContext(state)));
         staticBody(ordinary, obj);
         // The inventory renderer made two different copies after setupInv; the item base supplies setupInv.
         Gem.Part<WeaponPose> guiFirst = declaration.joint()
-                .visibleIf(state -> !state.animated && state.context == net.minecraft.world.item.ItemDisplayContext.GUI)
+                .visibleIf(state -> !state.animated && doubleStaticContext(state))
                 .translate(0, 1, 0).rotate(Gem.Axes.Z, 225F).rotate(Gem.Axes.Y, 90F)
                 .rotate(Gem.Axes.X, 25F).rotate(Gem.Axes.Y, 45F).translate(-1, 0, 0);
         staticBody(guiFirst, obj);
         Gem.Part<WeaponPose> guiSecond = declaration.joint()
-                .visibleIf(state -> !state.animated && state.context == net.minecraft.world.item.ItemDisplayContext.GUI)
+                .visibleIf(state -> !state.animated && doubleStaticContext(state))
                 .translate(0, 1, 5).rotate(Gem.Axes.Z, 225F).rotate(Gem.Axes.Y, -90F)
                 .rotate(Gem.Axes.X, -90F).rotate(Gem.Axes.X, 25F).rotate(Gem.Axes.Y, -45F)
                 .translate(1, 0, 0);
@@ -53,8 +54,9 @@ public final class EottWeaponRenderer extends WeaponRenderer {
         for (int i = 0; i < 2; i++) rail(declaration, obj, i, i == 0 ? -1 : 1);
     }
 
+    /** The renderInv pair. The weapon table draws 1.7's renderModTable = renderOther, one gun, instead. */
     private static boolean doubleStaticContext(WeaponPose state) {
-        return state.context == net.minecraft.world.item.ItemDisplayContext.GUI;
+        return state.context == net.minecraft.world.item.ItemDisplayContext.GUI && !state.modTable;
     }
 
     private static boolean worldStaticContext(WeaponPose state) {

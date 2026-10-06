@@ -268,7 +268,7 @@ public final class RecipeContentGameTests {
         for (String crt : new String[]{"deco_crt_clean", "deco_crt_broken", "deco_crt_blinking", "deco_crt_bsod"}) {
             helper.assertTrue(recycling(new ItemStack(item(crt))) != null, crt + " dismantles (1.7 wildcard deco_crt)");
         }
-        AnvilConstructionRecipe cabinet = recycling(new ItemStack(item("filing_cabinet")));
+        AnvilConstructionRecipe cabinet = recycling(new ItemStack(item("filing_cabinet_green")));
         helper.assertTrue(cabinet != null && cabinet.isTierValid(1), "the filing cabinet dismantles at tier 1 (1.7)");
         AnvilConstructionRecipe gear = recycling(com.hbm.items.ModGearItems.gear_large.get().of(1));
         helper.assertTrue(gear != null && gear.output.get(1).stack.getItem() == item("ingot_titanium"),

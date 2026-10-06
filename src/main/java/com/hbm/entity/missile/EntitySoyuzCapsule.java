@@ -82,8 +82,8 @@ public class EntitySoyuzCapsule extends CompatThrowableProjectile implements Sto
                         capsule.setItem(i, payload[i] == null ? ItemStack.EMPTY : payload[i]);
                     }
                     com.hbm.items.ItemEnums.SoyuzSkinType[] skins = com.hbm.items.ItemEnums.SoyuzSkinType.VALUES;
-                    capsule.setItem(18, com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.missile_soyuz.get()
-                            .of(skins[Math.floorMod(soyuz, skins.length)]));
+                    capsule.setItem(18, com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.missile_soyuz
+                            .stack(skins[Math.floorMod(soyuz, skins.length)]));
                 }
             }
         }

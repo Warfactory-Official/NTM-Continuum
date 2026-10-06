@@ -362,7 +362,7 @@ public final class SatelliteGameTests {
         String[] required = {
                 "assets/hbm/blockstates/machine_satlink.json",
                 "assets/hbm/models/machines/satlink.obj",
-                "assets/hbm/items/satellite.json",
+                "assets/hbm/items/satellite_spy.json",
                 "assets/hbm/items/sat_gerald.json",
                 "assets/hbm/items/sat_coord.json",
                 "assets/hbm/items/sat_dock.json",

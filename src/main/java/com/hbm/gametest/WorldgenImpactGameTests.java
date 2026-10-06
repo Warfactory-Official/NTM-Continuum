@@ -52,6 +52,8 @@ public final class WorldgenImpactGameTests {
             "fix6_impact_decay_17", 20, () -> WorldgenImpactGameTests::impactDecay);
     public static final GameTests.Function IMPACT_SPAWNS = TESTS.function(
             "fix6_impact_spawns_17", 20, () -> WorldgenImpactGameTests::impactSpawns);
+    public static final GameTests.Function IMPACT_WORLD_SPAWNERS = TESTS.function(
+            "impact_refuses_world_spawners", 20, () -> WorldgenImpactGameTests::impactWorldSpawners);
     public static final GameTests.Function IMPACT_WORLDGEN = TESTS.function(
             "fix6_impact_worldgen_17", 20, () -> WorldgenImpactGameTests::impactWorldgen);
     public static final GameTests.Function IMPACT_SKY = TESTS.function(
@@ -165,6 +167,48 @@ public final class WorldgenImpactGameTests {
             if (chicken != null) chicken.discard();
         }
         helper.succeed();
+    }
+
+    /**
+     * The impact refusal on the modern world spawners (Core {@code Spawns.Reason.WORLD_SPAWNER}), through vanilla's own
+     * spawn path ({@code EntityType.spawn} runs {@code finalizeSpawn}, where Forge-like loaders fire FinalizeSpawn and
+     * Fabric has Core's mixin): with the impact flag set, 1.7's overworld rule refuses a patrol pillager (1.95 tall),
+     * a wandering trader (1.95 tall) and its llama (1.87 tall) and a phantom (0.5 tall but 0.9 wide, not water, not a
+     * child). A raid pillager (EVENT) is not asked, and without the impact the patrol pillager spawns.
+     */
+    private static void impactWorldSpawners(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        TomSaveData data = TomSaveData.get(level);
+        boolean before = data.impact;
+        BlockPos at = helper.absolutePos(new BlockPos(2, 3, 2));
+        java.util.List<net.minecraft.world.entity.Entity> spawned = new java.util.ArrayList<>();
+        try {
+            data.impact = true;
+            helper.assertTrue(!added(level, spawned, EntityType.PILLAGER.spawn(level, at, net.minecraft.world.entity.EntitySpawnReason.PATROL)),
+                    "a patrol pillager must be refused after the impact");
+            helper.assertTrue(!added(level, spawned, EntityType.WANDERING_TRADER.spawn(level, at, net.minecraft.world.entity.EntitySpawnReason.EVENT)),
+                    "a wandering trader must be refused after the impact");
+            helper.assertTrue(!added(level, spawned, EntityType.TRADER_LLAMA.spawn(level, at, net.minecraft.world.entity.EntitySpawnReason.EVENT)),
+                    "a trader llama must be refused after the impact");
+            helper.assertTrue(!added(level, spawned, EntityType.PHANTOM.spawn(level, at, net.minecraft.world.entity.EntitySpawnReason.NATURAL)),
+                    "a phantom (0.9 wide) must be refused after the impact");
+            helper.assertTrue(added(level, spawned, EntityType.PILLAGER.spawn(level, at, net.minecraft.world.entity.EntitySpawnReason.EVENT)),
+                    "a raid pillager (EVENT) is not a world spawner and must spawn");
+            data.impact = false;
+            helper.assertTrue(added(level, spawned, EntityType.PILLAGER.spawn(level, at, net.minecraft.world.entity.EntitySpawnReason.PATROL)),
+                    "without the impact a patrol pillager must spawn");
+        } finally {
+            data.impact = before;
+            for (net.minecraft.world.entity.Entity e : spawned) e.discard();
+        }
+        helper.succeed();
+    }
+
+    private static boolean added(ServerLevel level, java.util.List<net.minecraft.world.entity.Entity> spawned,
+                                 net.minecraft.world.entity.Entity entity) {
+        if (entity == null) return false;
+        spawned.add(entity);
+        return level.getEntity(entity.getUUID()) == entity;
     }
 
     /** The worldgen verdicts: dusty chunks get impact dirt and lose decorations; recovered chunks keep 1 in 9. */

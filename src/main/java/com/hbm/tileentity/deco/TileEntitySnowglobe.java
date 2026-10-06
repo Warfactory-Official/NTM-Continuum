@@ -13,8 +13,8 @@ public class TileEntitySnowglobe extends TileEntityTrinket {
     }
 
     @Override
-    protected int typeCount() {
-        return BlockSnowglobe.SnowglobeType.VALUES.length;
+    protected Enum<?>[] typeValues() {
+        return BlockSnowglobe.SnowglobeType.VALUES;
     }
 
     public BlockSnowglobe.SnowglobeType type() {

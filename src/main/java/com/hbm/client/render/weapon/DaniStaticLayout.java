@@ -25,6 +25,14 @@ public final class DaniStaticLayout {
 
     private DaniStaticLayout() {}
 
+    /**
+     * 1.7 {@code ItemRenderDANI.renderModTable}: one {@code bio_revolver.renderAll()} at the model origin,
+     * {@code index == 1 ? dani_celestial_tex : dani_lunar_tex}, so configuration 0 shows the lunar revolver.
+     */
+    public static List<Draw> forModTable(int index) {
+        return index == 1 ? CELESTIAL : LUNAR;
+    }
+
     public static List<Draw> forContext(ItemDisplayContext context) {
         if (context == ItemDisplayContext.GUI) return INVENTORY;
         if (context == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND) return THIRD_PERSON_RIGHT;

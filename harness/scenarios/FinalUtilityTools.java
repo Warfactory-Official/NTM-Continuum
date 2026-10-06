@@ -27,7 +27,7 @@ public final class FinalUtilityTools implements Scenario {
             "hbm:digamma_diagnostic", "hbm:meltdown_tool", "hbm:fluid_identifier_multi", "hbm:meteor_remote",
             "hbm:ore_density_scanner", "hbm:survey_scanner", "hbm:pollution_detector", "hbm:power_net_tool",
             "hbm:settings_tool", "hbm:rtty_pager", "hbm:polaroid", "hbm:pipette", "hbm:pipette_boron",
-            "hbm:pipette_laboratory", "hbm:book_guide", "hbm:book_lore", "hbm:holotape_image", "hbm:clay_tablet",
+            "hbm:pipette_laboratory", "hbm:book_guide_rbmk", "hbm:book_lore", "hbm:holotape_image_holo_digamma", "hbm:clay_tablet",
             "hbm:book_lemegeton", "hbm:book_guide_block"};
 
     @Override
@@ -184,14 +184,15 @@ public final class FinalUtilityTools implements Scenario {
         c.keyUp("key.sneak");
         c.waitTicks(8);
         JsonObject tool = util(c, null);
-        Expect.that(tool.has("settings") && tool.get("settings").getAsString().contains("fluidID"),
+        Expect.that(tool.has("settings") && tool.get("settings").getAsString().contains("fluids"),
                 "the settings tool copied the duct's fluid: " + tool);
         c.screenshot("21-hud-settings-copied");
         clickBlock(c, bx, dz, false);
         c.waitTicks(5);
         String b = c.blockEntity(bx, Y + 1, dz).toString();
         a = c.blockEntity(ax, Y + 1, dz).toString();
-        Expect.that(typeOf(a) != 0 && typeOf(a) == typeOf(b), "duct B took duct A's fluid: A " + a + " / B " + b);
+        Expect.that(!typeOf(a).isEmpty() && !typeOf(a).equals("hbm:none") && typeOf(a).equals(typeOf(b)),
+                "duct B took duct A's fluid: A " + a + " / B " + b);
         worldShot(c, "22-world-ducts", ax - 3.5, Y + 4, dz - 4.5, ax + 2, Y + 1, dz + 1);
     }
 
@@ -457,9 +458,11 @@ public final class FinalUtilityTools implements Scenario {
         return held.get("pipette").getAsString().matches(".*fill:0s?[,}].*");
     }
 
-    private static int typeOf(String nbt) {
-        java.util.regex.Matcher m = java.util.regex.Pattern.compile("type\"?:\\s*(-?\\d+)").matcher(nbt);
-        return m.find() ? Integer.parseInt(m.group(1)) : 0;
+    /** The duct's saved fluid: a registry name since History section 19ej-ids (never 1.7's int fluid id). */
+    private static String typeOf(String nbt) {
+        String flat = nbt.replaceAll("\\s", "").replace("\\\"", "\"");
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("type\"?:\"([^\"]+)\"").matcher(flat);
+        return m.find() ? m.group(1) : "";
     }
 
     private static JsonObject util(Client c, String give) {

@@ -38,6 +38,11 @@ public final class WeaponRenderers {
         return renderer == null ? fov : renderer.viewFov(stack, fov, partialTick);
     }
 
+    /** The renderer drawing this stack, or null when it is not a Sedna weapon renderer's. */
+    public static @org.jspecify.annotations.Nullable WeaponRenderer forStack(ItemStack stack) {
+        return stack.isEmpty() ? null : byItem().get(stack.getItem());
+    }
+
     /**
      * Whether the stack is drawn by a weapon renderer - 1.7's {@code ItemRenderWeaponBase}, an
      * {@code IItemRenderer} - rather than by a sprite or block model. A caller that reproduces 1.7's

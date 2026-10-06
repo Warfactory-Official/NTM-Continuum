@@ -11,7 +11,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 
 /**
- * 1.7 {@code CargoShellCraftingHandler}: an empty cargo artillery shell ({@code ammo_arty} variant 8 with no
+ * 1.7 {@code CargoShellCraftingHandler}: an empty cargo artillery shell ({@code ammo_arty_cargo}, 1.7 {@code ammo_arty} meta 8, with no
  * cargo yet - 1.7 tested {@code !hasTagCompound()}) and exactly one other item, anywhere in the grid, give the
  * shell carrying one of that item ({@link ModDataComponents#ARTY_CARGO}, 1.7's {@code cargo} tag). Exactly two
  * occupied slots; an item with a crafting remainder (a bucket, a filled tank) refuses the grid, as 1.7's
@@ -21,15 +21,12 @@ public final class CargoShellCraftingRecipe extends CompatCustomRecipe {
     public static final CargoShellCraftingRecipe INSTANCE = new CargoShellCraftingRecipe();
     public static final RecipeSerializer<CargoShellCraftingRecipe> SERIALIZER = CustomRecipes.serializer(() -> INSTANCE);
 
-    /** {@code ItemAmmoArty} variant of the cargo shell (1.7 meta 8). */
-    public static final int CARGO = 8;
-
     private CargoShellCraftingRecipe() {
         super("hbm", "ammo_arty_cargo");
     }
 
     private static boolean emptyShell(ItemStack stack) {
-        return stack.is(ModAmmoItems.ammo_arty.get()) && ModDataComponents.ITEM_VARIANT.getOr(stack, 0) == CARGO
+        return ModAmmoItems.ammo_arty.is(stack, com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType.CARGO)
                 && !ModDataComponents.ARTY_CARGO.has(stack);
     }
 

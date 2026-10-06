@@ -97,7 +97,7 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
                 if (level.getBlockEntity(pos) instanceof TileEntityWandLogic logic) {
                     if (!level.isClientSide()) {
                         logic.disguise = block;
-                        logic.disguiseMeta = com.hbm.items.ModDataComponents.ITEM_VARIANT.getOr(stack, 0) & 15;
+                        logic.disguiseMeta = com.hbm.items.LegacyMeta.of(stack) & 15;
                         logic.setChanged();
                     }
                     return InteractionResult.SUCCESS;

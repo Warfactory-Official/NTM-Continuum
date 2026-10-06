@@ -55,9 +55,6 @@
       "weight": 3
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
       "item": "hbm:ammo_container",
       "max": 1,
       "min": 1,
@@ -224,10 +221,7 @@
       "weight": 10
     },
     {
-      "components": {
-        "hbm:item_variant": 2
-      },
-      "item": "hbm:blueprint_folder",
+      "item": "hbm:blueprint_folder_secret",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -235,9 +229,6 @@
   ],
   "POOL_BLACK_SLAB": [
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
       "item": "hbm:clay_tablet",
       "max": 1,
       "min": 1,
@@ -246,27 +237,18 @@
   ],
   "POOL_BLUEPRINTS": [
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
       "item": "hbm:blueprint_folder",
       "max": 1,
       "min": 1,
       "weight": 10
     },
     {
-      "components": {
-        "hbm:item_variant": 1
-      },
-      "item": "hbm:blueprint_folder",
+      "item": "hbm:blueprint_folder_discover",
       "max": 1,
       "min": 1,
       "weight": 5
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
       "item": "hbm:blueprint_folder",
       "max": 1,
       "min": 1,
@@ -470,10 +452,7 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 1
-      },
-      "item": "hbm:blueprint_folder",
+      "item": "hbm:blueprint_folder_discover",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -535,9 +514,6 @@
       "weight": 10
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
       "item": "hbm:blueprint_folder",
       "max": 1,
       "min": 1,
@@ -725,9 +701,6 @@
       "weight": 3
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
       "item": "hbm:blueprint_folder",
       "max": 1,
       "min": 1,
@@ -846,9 +819,6 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
       "item": "hbm:blueprint_folder",
       "max": 1,
       "min": 1,
@@ -965,10 +935,7 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 1
-      },
-      "item": "hbm:blueprint_folder",
+      "item": "hbm:blueprint_folder_discover",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -1410,10 +1377,7 @@
       "weight": 2
     },
     {
-      "components": {
-        "hbm:item_variant": 3
-      },
-      "item": "hbm:book_guide",
+      "item": "hbm:book_guide_starter",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -1425,9 +1389,6 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
       "item": "hbm:blueprint_folder",
       "max": 1,
       "min": 1,
@@ -2085,9 +2046,6 @@
       "weight": 30
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
       "item": "hbm:ammo_container",
       "max": 3,
       "min": 2,
@@ -2234,19 +2192,13 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 16
-      },
-      "item": "hbm:weapon_mod_special",
+      "item": "hbm:weapon_mod_special_nickel",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 17
-      },
-      "item": "hbm:weapon_mod_special",
+      "item": "hbm:weapon_mod_special_doubloons",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -2977,10 +2929,7 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 1
-      },
-      "item": "hbm:blueprint_folder",
+      "item": "hbm:blueprint_folder_discover",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -3120,27 +3069,18 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
       "item": "hbm:blueprint_folder",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 1
-      },
-      "item": "hbm:blueprint_folder",
+      "item": "hbm:blueprint_folder_discover",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
       "item": "hbm:ammo_container",
       "max": 1,
       "min": 1,
@@ -3185,9 +3125,6 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
       "item": "hbm:ammo_container",
       "max": 4,
       "min": 1,
@@ -3369,9 +3306,6 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
       "item": "hbm:ammo_container",
       "max": 1,
       "min": 1,
@@ -3432,9 +3366,6 @@
   ],
   "POOL_VAULT_UNBREAKABLE": [
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
       "item": "hbm:ammo_container",
       "max": 6,
       "min": 3,

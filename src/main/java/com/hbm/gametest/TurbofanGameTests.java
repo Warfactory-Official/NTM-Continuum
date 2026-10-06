@@ -44,6 +44,33 @@ public final class TurbofanGameTests {
         helper.succeed();
     }
 
+    /**
+     * 1.7 {@code TileEntityMachineTurbofan.updateEntity}: the tank burns {@code min(1 + afterburner, fill)} of whatever
+     * it holds; only AERO-grade fuel gives a burn value. Diesel (HIGH grade) and water (not combustible), no upgrade:
+     * one tick burns 1 mB, {@code wasOn} and {@code consumption = 1}, output {@code 0 * 1 * (1 + 0) = 0}, power stays
+     * 0. A redstone signal on a port stops the burn entirely (fill unchanged, not on).
+     */
+    public static void anyFuelZeroOutput(GameTestHelper helper) {
+        TileEntityMachineTurbofan fan = place(helper, new BlockPos(3, 1, 3));
+        BlockPos core = helper.absolutePos(new BlockPos(3, 1, 3));
+        for (var type : new com.hbm.inventory.fluid.FluidType[] {Fluids.DIESEL, Fluids.WATER}) {
+            fan.tank.setTankType(type);
+            fan.tank.setFill(20);
+            fan.power = 0;
+            TileEntityMachineTurbofan.serverTick(helper.getLevel(), core, fan.getBlockState(), fan);
+            helper.assertTrue(fan.wasOn && fan.consumption == 1 && fan.output == 0 && fan.power == 0
+                            && fan.tank.getFill() == 19,
+                    type.getName() + " must burn 1 mB at zero output (1.7), got on=" + fan.wasOn + " consumption="
+                            + fan.consumption + " output=" + fan.output + " power=" + fan.power + " fill=" + fan.tank.getFill());
+        }
+        // beside port 0 at (3,1,1): 1.7 isBlockIndirectlyGettingPowered on the port cell
+        helper.setBlock(new BlockPos(3, 1, 0), net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK);
+        fan.tank.setFill(20);
+        TileEntityMachineTurbofan.serverTick(helper.getLevel(), core, fan.getBlockState(), fan);
+        helper.assertTrue(!fan.wasOn && fan.tank.getFill() == 20, "a powered port stops the burn");
+        helper.succeed();
+    }
+
     public static void menu(GameTestHelper helper) {
         TileEntityMachineTurbofan fan = place(helper, new BlockPos(3, 1, 3));
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);

@@ -356,150 +356,150 @@ public final class ModShapelessRecipes {
         shapeless(NS, "concrete_asbestos_1", ItemIds.concrete_asbestos,
                 ItemIds.concrete_asbestos_slab, ItemIds.concrete_asbestos_slab);
         shapeless(NS, "concrete_colored_ext_stairs_bronze_from_stairs",
-                stack(ItemIds.concrete_colored_ext, 3).with(ComponentIds.item_variant, 7),
+                stack("hbm:concrete_ext_bronze", 3),
                 ItemIds.concrete_colored_ext_stairs_bronze, ItemIds.concrete_colored_ext_stairs_bronze,
                 ItemIds.concrete_colored_ext_stairs_bronze, ItemIds.concrete_colored_ext_stairs_bronze);
     }
 
     private static void shapeless1() {
         shapeless(NS, "concrete_colored_ext_stairs_hazard_from_stairs",
-                stack(ItemIds.concrete_colored_ext, 3).with(ComponentIds.item_variant, 5),
+                stack("hbm:concrete_ext_hazard", 3),
                 ItemIds.concrete_colored_ext_stairs_hazard, ItemIds.concrete_colored_ext_stairs_hazard,
                 ItemIds.concrete_colored_ext_stairs_hazard, ItemIds.concrete_colored_ext_stairs_hazard);
         shapeless(NS, "concrete_colored_ext_stairs_indigo_from_stairs",
-                stack(ItemIds.concrete_colored_ext, 3).with(ComponentIds.item_variant, 2),
+                stack("hbm:concrete_ext_indigo", 3),
                 ItemIds.concrete_colored_ext_stairs_indigo, ItemIds.concrete_colored_ext_stairs_indigo,
                 ItemIds.concrete_colored_ext_stairs_indigo, ItemIds.concrete_colored_ext_stairs_indigo);
         shapeless(NS, "concrete_colored_ext_stairs_machine_from_stairs",
-                stack(ItemIds.concrete_colored_ext, 3).with(ComponentIds.item_variant, 0),
+                stack("hbm:concrete_ext_machine", 3),
                 ItemIds.concrete_colored_ext_stairs_machine, ItemIds.concrete_colored_ext_stairs_machine,
                 ItemIds.concrete_colored_ext_stairs_machine, ItemIds.concrete_colored_ext_stairs_machine);
         shapeless(NS, "concrete_colored_ext_stairs_machine_stripe_from_stairs",
-                stack(ItemIds.concrete_colored_ext, 3).with(ComponentIds.item_variant, 1),
+                stack("hbm:concrete_ext_machine_stripe", 3),
                 ItemIds.concrete_colored_ext_stairs_machine_stripe, ItemIds.concrete_colored_ext_stairs_machine_stripe,
                 ItemIds.concrete_colored_ext_stairs_machine_stripe, ItemIds.concrete_colored_ext_stairs_machine_stripe);
         shapeless(NS, "concrete_colored_ext_stairs_pink_from_stairs",
-                stack(ItemIds.concrete_colored_ext, 3).with(ComponentIds.item_variant, 4),
+                stack("hbm:concrete_ext_pink", 3),
                 ItemIds.concrete_colored_ext_stairs_pink, ItemIds.concrete_colored_ext_stairs_pink,
                 ItemIds.concrete_colored_ext_stairs_pink, ItemIds.concrete_colored_ext_stairs_pink);
         shapeless(NS, "concrete_colored_ext_stairs_purple_from_stairs",
-                stack(ItemIds.concrete_colored_ext, 3).with(ComponentIds.item_variant, 3),
+                stack("hbm:concrete_ext_purple", 3),
                 ItemIds.concrete_colored_ext_stairs_purple, ItemIds.concrete_colored_ext_stairs_purple,
                 ItemIds.concrete_colored_ext_stairs_purple, ItemIds.concrete_colored_ext_stairs_purple);
         shapeless(NS, "concrete_colored_ext_stairs_sand_from_stairs",
-                stack(ItemIds.concrete_colored_ext, 3).with(ComponentIds.item_variant, 6),
+                stack("hbm:concrete_ext_sand", 3),
                 ItemIds.concrete_colored_ext_stairs_sand, ItemIds.concrete_colored_ext_stairs_sand,
                 ItemIds.concrete_colored_ext_stairs_sand, ItemIds.concrete_colored_ext_stairs_sand);
         shapeless(NS, "concrete_colored_stairs_black_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 15),
+                stack("hbm:concrete_black"),
                 ItemIds.concrete_black_slab, ItemIds.concrete_black_slab);
         shapeless(NS, "concrete_colored_stairs_black_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 15),
+                stack("hbm:concrete_black", 3),
                 ItemIds.concrete_colored_stairs_black, ItemIds.concrete_colored_stairs_black,
                 ItemIds.concrete_colored_stairs_black, ItemIds.concrete_colored_stairs_black);
         shapeless(NS, "concrete_colored_stairs_blue_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 11),
+                stack("hbm:concrete_blue"),
                 ItemIds.concrete_blue_slab, ItemIds.concrete_blue_slab);
         shapeless(NS, "concrete_colored_stairs_blue_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 11),
+                stack("hbm:concrete_blue", 3),
                 ItemIds.concrete_colored_stairs_blue, ItemIds.concrete_colored_stairs_blue,
                 ItemIds.concrete_colored_stairs_blue, ItemIds.concrete_colored_stairs_blue);
         shapeless(NS, "concrete_colored_stairs_brown_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 12),
+                stack("hbm:concrete_brown"),
                 ItemIds.concrete_brown_slab, ItemIds.concrete_brown_slab);
         shapeless(NS, "concrete_colored_stairs_brown_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 12),
+                stack("hbm:concrete_brown", 3),
                 ItemIds.concrete_colored_stairs_brown, ItemIds.concrete_colored_stairs_brown,
                 ItemIds.concrete_colored_stairs_brown, ItemIds.concrete_colored_stairs_brown);
         shapeless(NS, "concrete_colored_stairs_cyan_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 9),
+                stack("hbm:concrete_cyan"),
                 ItemIds.concrete_cyan_slab, ItemIds.concrete_cyan_slab);
         shapeless(NS, "concrete_colored_stairs_cyan_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 9),
+                stack("hbm:concrete_cyan", 3),
                 ItemIds.concrete_colored_stairs_cyan, ItemIds.concrete_colored_stairs_cyan,
                 ItemIds.concrete_colored_stairs_cyan, ItemIds.concrete_colored_stairs_cyan);
         shapeless(NS, "concrete_colored_stairs_gray_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 7),
+                stack("hbm:concrete_gray"),
                 ItemIds.concrete_gray_slab, ItemIds.concrete_gray_slab);
         shapeless(NS, "concrete_colored_stairs_gray_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 7),
+                stack("hbm:concrete_gray", 3),
                 ItemIds.concrete_colored_stairs_gray, ItemIds.concrete_colored_stairs_gray,
                 ItemIds.concrete_colored_stairs_gray, ItemIds.concrete_colored_stairs_gray);
         shapeless(NS, "concrete_colored_stairs_green_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 13),
+                stack("hbm:concrete_green"),
                 ItemIds.concrete_green_slab, ItemIds.concrete_green_slab);
         shapeless(NS, "concrete_colored_stairs_green_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 13),
+                stack("hbm:concrete_green", 3),
                 ItemIds.concrete_colored_stairs_green, ItemIds.concrete_colored_stairs_green,
                 ItemIds.concrete_colored_stairs_green, ItemIds.concrete_colored_stairs_green);
         shapeless(NS, "concrete_colored_stairs_light_blue_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 3),
+                stack("hbm:concrete_light_blue"),
                 ItemIds.concrete_light_blue_slab, ItemIds.concrete_light_blue_slab);
         shapeless(NS, "concrete_colored_stairs_light_blue_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 3),
+                stack("hbm:concrete_light_blue", 3),
                 ItemIds.concrete_colored_stairs_light_blue, ItemIds.concrete_colored_stairs_light_blue,
                 ItemIds.concrete_colored_stairs_light_blue, ItemIds.concrete_colored_stairs_light_blue);
         shapeless(NS, "concrete_colored_stairs_lime_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 5),
+                stack("hbm:concrete_lime"),
                 ItemIds.concrete_lime_slab, ItemIds.concrete_lime_slab);
         shapeless(NS, "concrete_colored_stairs_lime_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 5),
+                stack("hbm:concrete_lime", 3),
                 ItemIds.concrete_colored_stairs_lime, ItemIds.concrete_colored_stairs_lime,
                 ItemIds.concrete_colored_stairs_lime, ItemIds.concrete_colored_stairs_lime);
         shapeless(NS, "concrete_colored_stairs_magenta_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 2),
+                stack("hbm:concrete_magenta"),
                 ItemIds.concrete_magenta_slab, ItemIds.concrete_magenta_slab);
         shapeless(NS, "concrete_colored_stairs_magenta_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 2),
+                stack("hbm:concrete_magenta", 3),
                 ItemIds.concrete_colored_stairs_magenta, ItemIds.concrete_colored_stairs_magenta,
                 ItemIds.concrete_colored_stairs_magenta, ItemIds.concrete_colored_stairs_magenta);
         shapeless(NS, "concrete_colored_stairs_orange_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 1),
+                stack("hbm:concrete_orange"),
                 ItemIds.concrete_orange_slab, ItemIds.concrete_orange_slab);
         shapeless(NS, "concrete_colored_stairs_orange_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 1),
+                stack("hbm:concrete_orange", 3),
                 ItemIds.concrete_colored_stairs_orange, ItemIds.concrete_colored_stairs_orange,
                 ItemIds.concrete_colored_stairs_orange, ItemIds.concrete_colored_stairs_orange);
         shapeless(NS, "concrete_colored_stairs_pink_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 6),
+                stack("hbm:concrete_pink"),
                 ItemIds.concrete_pink_slab, ItemIds.concrete_pink_slab);
         shapeless(NS, "concrete_colored_stairs_pink_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 6),
+                stack("hbm:concrete_pink", 3),
                 ItemIds.concrete_colored_stairs_pink, ItemIds.concrete_colored_stairs_pink,
                 ItemIds.concrete_colored_stairs_pink, ItemIds.concrete_colored_stairs_pink);
         shapeless(NS, "concrete_colored_stairs_purple_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 10),
+                stack("hbm:concrete_purple"),
                 ItemIds.concrete_purple_slab, ItemIds.concrete_purple_slab);
         shapeless(NS, "concrete_colored_stairs_purple_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 10),
+                stack("hbm:concrete_purple", 3),
                 ItemIds.concrete_colored_stairs_purple, ItemIds.concrete_colored_stairs_purple,
                 ItemIds.concrete_colored_stairs_purple, ItemIds.concrete_colored_stairs_purple);
         shapeless(NS, "concrete_colored_stairs_red_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 14),
+                stack("hbm:concrete_red"),
                 ItemIds.concrete_red_slab, ItemIds.concrete_red_slab);
         shapeless(NS, "concrete_colored_stairs_red_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 14),
+                stack("hbm:concrete_red", 3),
                 ItemIds.concrete_colored_stairs_red, ItemIds.concrete_colored_stairs_red,
                 ItemIds.concrete_colored_stairs_red, ItemIds.concrete_colored_stairs_red);
         shapeless(NS, "concrete_colored_stairs_silver_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 8),
+                stack("hbm:concrete_silver"),
                 ItemIds.concrete_silver_slab, ItemIds.concrete_silver_slab);
         shapeless(NS, "concrete_colored_stairs_silver_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 8),
+                stack("hbm:concrete_silver", 3),
                 ItemIds.concrete_colored_stairs_silver, ItemIds.concrete_colored_stairs_silver,
                 ItemIds.concrete_colored_stairs_silver, ItemIds.concrete_colored_stairs_silver);
         shapeless(NS, "concrete_colored_stairs_white_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 0),
+                stack("hbm:concrete_white"),
                 ItemIds.concrete_white_slab, ItemIds.concrete_white_slab);
         shapeless(NS, "concrete_colored_stairs_white_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 0),
+                stack("hbm:concrete_white", 3),
                 ItemIds.concrete_colored_stairs_white, ItemIds.concrete_colored_stairs_white,
                 ItemIds.concrete_colored_stairs_white, ItemIds.concrete_colored_stairs_white);
         shapeless(NS, "concrete_colored_stairs_yellow_from_slab",
-                stack(ItemIds.concrete_colored).with(ComponentIds.item_variant, 4),
+                stack("hbm:concrete_yellow"),
                 ItemIds.concrete_yellow_slab, ItemIds.concrete_yellow_slab);
         shapeless(NS, "concrete_colored_stairs_yellow_from_stairs",
-                stack(ItemIds.concrete_colored, 3).with(ComponentIds.item_variant, 4),
+                stack("hbm:concrete_yellow", 3),
                 ItemIds.concrete_colored_stairs_yellow, ItemIds.concrete_colored_stairs_yellow,
                 ItemIds.concrete_colored_stairs_yellow, ItemIds.concrete_colored_stairs_yellow);
         shapeless(NS, "concrete_smooth", ItemIds.concrete_smooth, 3,
@@ -594,7 +594,7 @@ public final class ModShapelessRecipes {
                 ItemIds.launch_code_piece, ItemIds.launch_code_piece, ItemIds.launch_code_piece,
                 ItemIds.launch_code_piece, ItemIds.launch_code_piece, ItemIds.launch_code_piece,
                 ItemIds.launch_code_piece, ItemIds.launch_code_piece, ItemIds.circuit_advanced);
-        shapeless(NS, "lightstone", stack(ItemIds.lightstone, 4).with(ComponentIds.item_variant, 0),
+        shapeless(NS, "lightstone", stack("hbm:lightstone_unrefined", 4),
                 VanillaIds.stone, VanillaIds.stone, VanillaIds.stone, ItemIds.powder_limestone);
         shapeless(NS, "loops", ItemIds.loops, ItemIds.flame_pony, VanillaIds.wheat, VanillaIds.sugar);
         shapeless(NS, "machine_industrial_turbine", ItemIds.machine_industrial_turbine, ItemIds.machine_large_turbine);

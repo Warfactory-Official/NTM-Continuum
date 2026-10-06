@@ -146,14 +146,20 @@ public final class ArmorWaveGameTests {
 
         // Count only what closing dropped: a 4-block sphere reaches a neighbouring plot's drops when the
         // legacy framework packs batches tighter than 26.1 does.
+        // Only stacks of the two dropped items count, and the count is polled: on 26.1 a plot's entity section
+        // can still be hidden from level queries on the test's first tick (a freshly loaded chunk), so the
+        // dropped entities exist but are not returned yet (History section 19es-final).
+        net.minecraft.world.phys.AABB area = player.getBoundingBox().inflate(4D);
         java.util.Set<Integer> before = new java.util.HashSet<>();
-        for (ItemEntity e : helper.getLevel().getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(4D))) before.add(e.getId());
+        for (ItemEntity e : helper.getLevel().getEntitiesOfClass(ItemEntity.class, area)) before.add(e.getId());
         menu.removed(player);
-        int drops = (int) helper.getLevel().getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(4D)).stream()
-                .filter(e -> !before.contains(e.getId())).count();
-        helper.assertTrue(drops == 2, "closing the table dropped " + drops + " stacks, expected armor + module");
+        helper.succeedWhen(() -> {
+            int drops = (int) helper.getLevel().getEntitiesOfClass(ItemEntity.class, area).stream()
+                    .filter(e -> !before.contains(e.getId()))
+                    .filter(e -> e.getItem().is(armor.getItem()) || e.getItem().is(insert.getItem())).count();
+            helper.assertTrue(drops == 2, "closing the table dropped " + drops + " stacks, expected armor + module");
+        });
         }
-        helper.succeed();
     }
 
     private static Player player(GameTestHelper helper) {

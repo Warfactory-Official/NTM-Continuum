@@ -120,6 +120,9 @@ public final class ModEventHandlerImpact {
     /**
      * 1.7 {@code extinction} (CheckSpawn) and {@code onPopulate} (ANIMALS). True refuses the spawn.
      * The size test keeps 1.7's precedence: {@code height >= 0.85 || (width >= 0.85 && !water && !child)}.
+     * {@code WORLD_SPAWNER} spawns (pillager patrols, phantoms, wandering traders - modern periodic spawners 1.7 did
+     * not have, standing where its natural spawner was) get the natural rule, so the impact winter refuses them too;
+     * raids and village sieges are not asked (1.7's siege never fired CheckSpawn).
      */
     /** Spawns this hook refused since start (harness evidence only). */
     public static int denied;

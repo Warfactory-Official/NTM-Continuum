@@ -155,7 +155,7 @@ public class EntitySoyuz extends CompatEntity implements StoredItems {
                 if (load.is(ModItems.flame_pony.get())) {
                     ExplosionLarge.spawnTracers(level(), getX(), getY(), getZ(), 25);
                     // 1.7 achSpace, awarded to every player in the world; the trigger keys on the rocket
-                    ItemStack rocket = new ItemStack(com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.missile_soyuz.get());
+                    ItemStack rocket = com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.missile_soyuz.stack(com.hbm.items.ItemEnums.SoyuzSkinType.NORMAL);
                     for (Player p : level().players()) {
                         if (p instanceof ServerPlayer serverPlayer) HbmCriteria.orbit(serverPlayer, rocket);
                     }

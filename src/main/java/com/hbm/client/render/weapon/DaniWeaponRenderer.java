@@ -94,7 +94,8 @@ public final class DaniWeaponRenderer extends WeaponRenderer {
             Surface body) {
         return declaration.part(model().parts(PARTS), body)
                 .visibleIf(state -> !state.animated
-                        && DaniStaticLayout.forContext(state.context).contains(draw));
+                        && (state.modTable ? DaniStaticLayout.forModTable(state.tableIndex)
+                                : DaniStaticLayout.forContext(state.context)).contains(draw));
     }
 
     /** Scaled down out of the 8× the model is authored at. */

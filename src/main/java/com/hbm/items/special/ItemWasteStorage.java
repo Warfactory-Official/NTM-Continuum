@@ -1,6 +1,5 @@
 package com.hbm.items.special;
 
-import com.hbm.items.ModDataComponents;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -10,7 +9,10 @@ import net.minecraft.world.item.TooltipFlag;
 
 import java.util.List;
 
-/** The metadata-backed long/short waste families used by the legacy storage drum. */
+/**
+ * One member of the long/short storage-drum waste families: the family ({@link #base()}) and the waste class (1.7's
+ * metadata, {@link #variant()}) are the item itself, as in ntm-next (History §19es-itemvariant).
+ */
 public final class ItemWasteStorage extends ItemNuclearWaste {
 
     public enum Family {
@@ -58,19 +60,32 @@ public final class ItemWasteStorage extends ItemNuclearWaste {
     }
 
     private final Family family;
+    private final String base;
+    private final int variant;
 
-    public ItemWasteStorage(Properties properties, Family family) {
+    public ItemWasteStorage(Properties properties, Family family, String base, int variant) {
         super(properties);
         this.family = family;
+        this.base = base;
+        this.variant = variant;
     }
 
     public Family family() {
         return family;
     }
 
+    /** The family's id, e.g. {@code nuclear_waste_long_tiny}. */
+    public String base() {
+        return base;
+    }
+
+    /** The waste class (1.7 metadata). */
+    public int variant() {
+        return variant;
+    }
+
     public int variant(ItemStack stack) {
-        int length = family == Family.LONG ? LongWasteClass.values().length : ShortWasteClass.values().length;
-        return rectify(ModDataComponents.storageWasteClass(stack), length);
+        return variant;
     }
 
     public String variantName(ItemStack stack) {
@@ -79,19 +94,12 @@ public final class ItemWasteStorage extends ItemNuclearWaste {
                 : ShortWasteClass.values()[variant(stack)].displayName;
     }
 
-    /** Makes the modern equivalent of a metadata-bearing old waste stack. */
+    /** 1.7 {@code new ItemStack(item, 1, variant)}: the member of the item's family for waste class {@code variant}. */
     public static ItemStack make(Item item, int variant) {
         if (!(item instanceof ItemWasteStorage waste)) {
             throw new IllegalArgumentException("Not a storage-drum waste item: " + item);
         }
-        ItemStack stack = new ItemStack(item);
-        int length = waste.family == Family.LONG ? LongWasteClass.values().length : ShortWasteClass.values().length;
-        ModDataComponents.storageWasteClass(stack, rectify(variant, length));
-        return stack;
-    }
-
-    private static int rectify(int variant, int length) {
-        return Math.abs(variant) % length;
+        return com.hbm.items.ModStorageDrumItems.family(waste.base).stack(variant);
     }
 
     @Override

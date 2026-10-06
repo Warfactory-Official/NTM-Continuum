@@ -522,70 +522,43 @@ public final class DejsonGameTests {
     }
 
     /**
-     * Every enum-backed family that says its constants look different really has a model for each.
+     * Every enum-backed family whose constants look different really has a model for each.
      *
-     * <p>{@code multiTexture} is a claim about art and nothing held anyone to it: {@code ammo_arty}
-     * shipped one sprite for twelve shells and drew the plain one twelve times, through a green build
-     * and a green suite. The definition is read off the classpath rather than off a declaration
-     * because that is the file the client resolves, whichever of the two put it there.
+     * <p>The claim used to be a {@code multiTexture} flag that nothing held anyone to: {@code ammo_arty} shipped one
+     * sprite for twelve shells and drew the plain one twelve times, through a green build and a green suite. Since the
+     * families became one item per constant (History §19es-itemvariant) each member needs its own item definition,
+     * and the members of a family must not all resolve to the same one - except the holotapes, which 1.7 drew with one
+     * texture. The definition is read off the classpath because that is the file the client resolves.
      */
     public static void variantModelsPerConstant(GameTestHelper helper) {
         List<String> problems = new ArrayList<>();
-        int families = 0;
+        java.util.Map<Class<?>, Set<String>> drawn = new java.util.LinkedHashMap<>();
+        java.util.Map<Class<?>, Integer> members = new java.util.LinkedHashMap<>();
 
         for (Item item : BuiltInRegistries.ITEM) {
-            if (!(item instanceof com.hbm.items.ItemEnumMulti family) || !family.multiTexture) continue;
+            if (!(item instanceof com.hbm.items.ItemEnumMulti family)) continue;
             String id = BuiltInRegistries.ITEM.getKey(item).toString();
             JsonObject definition = read(assetPath(id, "items"));
-            if (definition == null) {
+            if (definition == null || !definition.has("model")) {
                 problems.add(id + " has no item definition on the classpath");
                 continue;
             }
-            families++;
-            int constants = family.theEnum.getEnumConstants().length;
-            List<String> drawn = new ArrayList<>();
-            for (int variant = 0; variant < constants; variant++) {
-                String model = selectedModel(definition, variant);
-                if (model == null) {
-                    problems.add(id + " does not select a model for variant " + variant
-                            + " of " + constants);
-                    break;
-                }
-                drawn.add(model);
-            }
-            if (drawn.size() == constants && Set.copyOf(drawn).size() < constants) {
-                problems.add(id + " draws its " + constants + " variants with only "
-                        + Set.copyOf(drawn).size() + " model(s)");
+            drawn.computeIfAbsent(family.theEnum, k -> new java.util.HashSet<>()).add(definition.get("model").toString());
+            members.merge(family.theEnum, 1, Integer::sum);
+        }
+        for (var entry : members.entrySet()) {
+            if (entry.getKey() == com.hbm.items.special.ItemHolotapeImage.EnumHoloImage.class) continue;
+            int models = drawn.get(entry.getKey()).size();
+            if (models < entry.getValue()) {
+                problems.add(entry.getKey().getSimpleName() + " draws its " + entry.getValue() + " items with only "
+                        + models + " model(s)");
             }
         }
 
         helper.assertTrue(problems.isEmpty(), join(problems));
-        helper.assertTrue(families > 0, "no multi-texture enum family was found in the registry");
-        Constants.LOG.info("[DEJSON] variant models: {} enum families draw one model per constant",
-                families);
+        helper.assertTrue(!members.isEmpty(), "no enum item family was found in the registry");
+        Constants.LOG.info("[DEJSON] variant models: {} enum families draw one model per constant", members.size());
         helper.succeed();
-    }
-
-    /** The model an {@code hbm:item_variant} definition resolves a variant to, or null if it has none. */
-    private static String selectedModel(JsonObject definition, int variant) {
-        JsonObject model = definition.getAsJsonObject("model");
-        if (model == null || !model.has("type")
-                || !"minecraft:select".equals(model.get("type").getAsString())
-                || !model.has("property")
-                || !"hbm:item_variant".equals(model.get("property").getAsString())) {
-            return null;
-        }
-        JsonArray cases = model.getAsJsonArray("cases");
-        if (cases != null) {
-            for (JsonElement element : cases) {
-                JsonObject entry = element.getAsJsonObject();
-                if (entry.has("when") && entry.get("when").getAsString().equals(String.valueOf(variant))) {
-                    return entry.get("model").toString();
-                }
-            }
-        }
-        JsonElement fallback = model.get("fallback");
-        return fallback == null ? null : fallback.toString();
     }
 
     private static String assetPath(String id, String folder) {

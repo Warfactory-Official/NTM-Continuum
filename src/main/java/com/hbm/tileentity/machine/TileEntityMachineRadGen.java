@@ -72,13 +72,13 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase
         Item item = stack.getItem();
         if (item instanceof com.hbm.items.special.ItemWasteStorage waste) {
             int variant = waste.variant(stack);
-            if (item == com.hbm.items.ModStorageDrumItems.nuclear_waste_short.get())
+            if (com.hbm.items.ModStorageDrumItems.nuclear_waste_short.is(item))
                 return wasteFuel(1500, 30 * 60 * 20, com.hbm.items.ModStorageDrumItems.nuclear_waste_short_depleted.get(), variant);
-            if (item == com.hbm.items.ModStorageDrumItems.nuclear_waste_short_tiny.get())
+            if (com.hbm.items.ModStorageDrumItems.nuclear_waste_short_tiny.is(item))
                 return wasteFuel(150, 3 * 60 * 20, com.hbm.items.ModStorageDrumItems.nuclear_waste_short_depleted_tiny.get(), variant);
-            if (item == com.hbm.items.ModStorageDrumItems.nuclear_waste_long.get())
+            if (com.hbm.items.ModStorageDrumItems.nuclear_waste_long.is(item))
                 return wasteFuel(500, 2 * 60 * 60 * 20, com.hbm.items.ModStorageDrumItems.nuclear_waste_long_depleted.get(), variant);
-            if (item == com.hbm.items.ModStorageDrumItems.nuclear_waste_long_tiny.get())
+            if (com.hbm.items.ModStorageDrumItems.nuclear_waste_long_tiny.is(item))
                 return wasteFuel(50, 12 * 60 * 20, com.hbm.items.ModStorageDrumItems.nuclear_waste_long_depleted_tiny.get(), variant);
             return null;
         }

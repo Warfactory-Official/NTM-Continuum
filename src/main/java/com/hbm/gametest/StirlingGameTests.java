@@ -89,7 +89,7 @@ public final class StirlingGameTests {
         BlockPos clicked = helper.absolutePos(new BlockPos(3, 1, 3));
         helper.getLevel().setBlock(clicked, block.defaultBlockState(), 3);
         ItemStack stack = new ItemStack(block);
-        ModDataComponents.ITEM_VARIANT.set(stack, 1);
+        ModDataComponents.HAS_COG.set(stack, false);
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(
                 helper, net.minecraft.world.level.GameType.SURVIVAL);
         player.setYRot(0F);
@@ -100,8 +100,8 @@ public final class StirlingGameTests {
         helper.assertTrue(stirling != null && !stirling.hasCog,
                 "Missing-gear Stirling item must place without its gear");
         ItemStack clone = block.pickBlockStack(helper.getLevel(), core, helper.getLevel().getBlockState(core));
-        helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(clone, 0) == 1,
-                "Cloning a missing-gear Stirling must preserve its item variant");
+        helper.assertTrue(!ModDataComponents.HAS_COG.getOr(clone, true),
+                "Cloning a missing-gear Stirling must keep hbm:has_cog false");
         helper.succeed();
     }
 

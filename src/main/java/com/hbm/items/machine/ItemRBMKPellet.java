@@ -10,8 +10,33 @@ import net.minecraft.world.item.TooltipFlag;
 
 import java.util.List;
 
-/** RBMK recycling pellet; ITEM_VARIANT retains the old ten damage states. */
-public class ItemRBMKPellet extends ItemNuclearWaste {
+/**
+ * RBMK recycling pellet. 1.7's ten damage values (0..4 depletion, 5..9 the same stage xenon-poisoned) are the typed
+ * {@code hbm:rbmk_pellet} component here ({@link Stage}, ntm-next's shape); {@link #getVariant}/{@link #of(int)} still
+ * speak the 1.7 number at run time for the recipe tables written against it.
+ */
+public class ItemRBMKPellet extends ItemNuclearWaste implements com.hbm.items.ModelState {
+
+    /** ntm-next {@code ItemRBMKPellet.Stage}: depletion 0..4 and the xenon flag, saved as two named fields. */
+    public record Stage(int depletion, boolean xenon) {
+        public static final Stage FRESH = new Stage(0, false);
+        public static final com.mojang.serialization.Codec<Stage> CODEC =
+                com.mojang.serialization.codecs.RecordCodecBuilder.create(i -> i.group(
+                        com.mojang.serialization.Codec.intRange(0, 4).optionalFieldOf("depletion", 0).forGetter(Stage::depletion),
+                        com.mojang.serialization.Codec.BOOL.optionalFieldOf("xenon", false).forGetter(Stage::xenon)
+                ).apply(i, Stage::new));
+
+        /** The stage 1.7 metadata {@code meta} named ({@code abs(meta) % 10}). */
+        public static Stage ofLegacy(int meta) {
+            int m = rectify(meta);
+            return new Stage(m % 5, m >= 5);
+        }
+
+        /** The 1.7 metadata of this stage. */
+        public int legacyMeta() {
+            return depletion + (xenon ? 5 : 0);
+        }
+    }
     public final String fullName;
     private boolean xenon = true;
     public ItemRBMKPellet(Properties properties, String fullName) { super(properties); this.fullName = fullName; }
@@ -19,8 +44,19 @@ public class ItemRBMKPellet extends ItemNuclearWaste {
     public static boolean hasXenon(int meta) { return rectify(meta) >= 5; }
     public ItemRBMKPellet disableXenon() { xenon = false; return this; }
     public boolean isXenonEnabled() { return xenon; }
-    public int getVariant(ItemStack stack) { return ModDataComponents.ITEM_VARIANT.getOr(stack, 0); }
-    public ItemStack of(int meta) { ItemStack stack = new ItemStack(this); ModDataComponents.ITEM_VARIANT.set(stack, meta); return stack; }
+    public static Stage stage(ItemStack stack) { return ModDataComponents.RBMK_PELLET.getOr(stack, Stage.FRESH); }
+    /** The stack's stage as 1.7's metadata (0..9); a run-time value. */
+    public int getVariant(ItemStack stack) { return stage(stack).legacyMeta(); }
+    /** A pellet at 1.7 metadata {@code meta}; the fresh stage carries no component, as 1.7's damage 0 carried none. */
+    public ItemStack of(int meta) {
+        ItemStack stack = new ItemStack(this);
+        Stage stage = Stage.ofLegacy(meta);
+        if (!stage.equals(Stage.FRESH)) ModDataComponents.RBMK_PELLET.set(stack, stage);
+        return stack;
+    }
+
+    @Override
+    public int modelState(ItemStack stack) { return getVariant(stack); }
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context, List<Component> tooltip,

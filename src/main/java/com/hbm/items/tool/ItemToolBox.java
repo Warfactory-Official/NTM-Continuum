@@ -32,10 +32,10 @@ import java.util.List;
  * 1.7 {@code ItemToolBox}: a 24-slot (three rows of eight) box. Right-click rotates hotbar rows through it
  * (the hotbar minus the box itself goes into the box, the lowest filled row comes out onto the hotbar);
  * sneak-right-click opens it. While open the icon shows its {@code kit_toolbox_empty} lid ({@code isOpen},
- * here {@code item_variant} 1). Contents ride {@code hbm:toolbox}, in place of 1.7's NBT item list, and are
+ * here {@code hbm:toolbox_open}, ntm-next's TOOLBOX_OPEN). Contents ride {@code hbm:toolbox}, in place of 1.7's NBT item list, and are
  * ejected with a warning when their compressed size passes 6 kB exactly as {@code ItemInventory.checkNBT} did.
  */
-public class ItemToolBox extends CompatItem {
+public class ItemToolBox extends CompatItem implements com.hbm.items.ModelState {
 
     public static final int SIZE = 24;
 
@@ -198,6 +198,12 @@ public class ItemToolBox extends CompatItem {
         return true;
     }
 
+    /** {@code hbm:model_state}: 1 draws the open lid (1.7 metadata 1), from {@code hbm:toolbox_open}. */
+    @Override
+    public int modelState(ItemStack stack) {
+        return ModDataComponents.TOOLBOX_OPEN.getOr(stack, false) ? 1 : 0;
+    }
+
     @Override
     protected InteractionResult compatUse(Level world, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
@@ -207,7 +213,7 @@ public class ItemToolBox extends CompatItem {
                 moveRows(stack, player);
                 player.inventoryMenu.broadcastChanges();
             } else {
-                ModDataComponents.ITEM_VARIANT.set(stack, 1); // isOpen
+                ModDataComponents.TOOLBOX_OPEN.set(stack, true); // 1.7 isOpen (metadata 1)
                 Component title = ItemStacks.customName(stack) != null ? stack.getHoverName()
                         : Component.translatable("container.toolBox");
                 Menus.openWithHand(serverPlayer, new SimpleMenuProvider((id, inventory, opener) ->
@@ -258,7 +264,7 @@ public class ItemToolBox extends CompatItem {
 
         /** 1.7 {@code closeInventory}: the lid closes. */
         public void close() {
-            ModDataComponents.ITEM_VARIANT.remove(target);
+            ModDataComponents.TOOLBOX_OPEN.remove(target);
         }
     }
 }

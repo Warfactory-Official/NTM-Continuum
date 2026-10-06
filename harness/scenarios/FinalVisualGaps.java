@@ -192,8 +192,20 @@ public final class FinalVisualGaps implements Scenario {
         return c.node().startsWith("1.20") ? id + "{\"hbm:heat\":100000}" : id + "[hbm:heat=100000]";
     }
 
+    /** 1.7 (block, metadata): one item per subtype since History §19es-itemvariant (ntm-next ids). */
     private static String variant(Client c, String id, int variant) {
-        return c.node().startsWith("1.20") ? id + "{\"hbm:item_variant\":" + variant + "}"
-                : id + "[hbm:item_variant=" + variant + "]";
+        return switch (id) {
+            case "hbm:bobblehead" -> variant == 0 ? id : id + "_" + BOBBLE_NAMES[variant];
+            case "hbm:snowglobe" -> variant == 0 ? id : id + "_" + new String[] {"none", "rivetcity", "tenpennytower", "lucky38", "sierramadre", "prydwen"}[variant];
+            case "hbm:plushie" -> variant == 0 ? id : id + "_" + new String[] {"none", "yomi", "numbernine", "hundun", "derg"}[variant];
+            case "hbm:filing_cabinet" -> id + (variant == 1 ? "_steel" : "_green");
+            case "hbm:vending_machine" -> variant == 1 ? id + "_snacks" : id;
+            case "hbm:glyphid_base", "hbm:glyphid_spawner" -> id + new String[] {"", "_infested", "_rad"}[variant];
+            case "hbm:holotape_image" -> id + "_holo_digamma";
+            default -> throw new IllegalArgumentException(id);
+        };
     }
+
+    /** BlockBobble.BobbleType names by ordinal. */
+    private static final String[] BOBBLE_NAMES = {"none", "strength", "perception", "endurance", "charisma", "intelligence", "agility", "luck", "bob", "frizzle", "pu238", "vt", "doc", "bluehat", "pheo", "adam29", "uffr", "vaer", "nos", "drillgon", "cirno", "microwave", "peep", "mellow", "abel", "movblock", "leafia", "hacker6329", "eos"};
 }

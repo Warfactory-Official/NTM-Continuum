@@ -77,11 +77,6 @@ public final class BobmazonOfferFactory {
         return new TreeSet<>(UNRESOLVED);
     }
 
-    private static ItemStack variant(ItemStack stack, int variant) {
-        if (!stack.isEmpty()) ModDataComponents.ITEM_VARIANT.set(stack, variant);
-        return stack;
-    }
-
     private static ItemStack named(ItemStack stack, String name) {
         if (!stack.isEmpty()) ItemStacks.setCustomName(stack, Component.literal(name));
         return stack;
@@ -120,11 +115,12 @@ public final class BobmazonOfferFactory {
         add(std, hbm("geiger_counter", 1), Requirement.NONE, 16);
         add(std, hbm("matchstick", 16), Requirement.STEEL, 2);
         //blueprints
-        add(std, variant(hbm("blueprint_folder", 1), 0), Requirement.ASSEMBLY, 64);
-        add(std, variant(hbm("blueprint_folder", 1), 1), Requirement.OIL, 256);
+        // 1.7 metadata stacks, items of their own here (History §19es-itemvariant)
+        add(std, hbm("blueprint_folder", 1), Requirement.ASSEMBLY, 64);
+        add(std, hbm("blueprint_folder_discover", 1), Requirement.OIL, 256);
         //vending machines
-        add(std, variant(hbm("vending_machine", 1), 0), Requirement.CHEMICS, 64);
-        add(std, variant(hbm("vending_machine", 1), 1), Requirement.CHEMICS, 64);
+        add(std, hbm("vending_machine", 1), Requirement.CHEMICS, 64);
+        add(std, hbm("vending_machine_snacks", 1), Requirement.CHEMICS, 64);
         //plants (1.7 Blocks.sapling:3 is the jungle sapling)
         add(std, of("minecraft", "jungle_sapling", 1), Requirement.STEEL, 12, 9);
         add(std, hbm("plant_flower_foxglove", 1), Requirement.STEEL, 16, 5);
@@ -133,10 +129,17 @@ public final class BobmazonOfferFactory {
         add(std, hbm("plant_flower_weed", 1), Requirement.STEEL, 4, 10);
         add(std, hbm("plant_flower_cd0", 1), Requirement.NUCLEAR, 64, 8);
         //deco: EnumConcreteType is MACHINE, MACHINE_STRIPE, INDIGO, PURPLE, PINK, HAZARD, SAND, BRONZE
-        for (int conc = 0; conc < 8; conc++) add(std, variant(hbm("concrete_colored_ext", 16), conc), Requirement.CHEMICS, 4);
+        for (String conc : new String[] {"machine", "machine_stripe", "indigo", "purple", "pink", "hazard", "sand", "bronze"}) {
+            add(std, hbm("concrete_ext_" + conc, 16), Requirement.CHEMICS, 4);
+        }
         // 1.7: every SnowglobeType (NONE included) and every PlushieType but NONE, types 1 and 2 rated 10
-        for (int globe = 0; globe < 6; globe++) add(std, variant(hbm("snowglobe", 1), globe), Requirement.CHEMICS, 128);
-        for (int i = 1; i < 5; i++) add(std, variant(hbm("plushie", 1), i), Requirement.OIL, 16, i < 3 ? 10 : 0);
+        for (String globe : com.hbm.blocks.DecoCrateDeclarations.trinketIds("snowglobe",
+                com.hbm.blocks.generic.BlockSnowglobe.SnowglobeType.VALUES)) {
+            add(std, hbm(globe, 1), Requirement.CHEMICS, 128);
+        }
+        String[] plushies = com.hbm.blocks.DecoCrateDeclarations.trinketIds("plushie",
+                com.hbm.blocks.generic.BlockPlushie.PlushieType.VALUES);
+        for (int i = 1; i < 5; i++) add(std, hbm(plushies[i], 1), Requirement.OIL, 16, i < 3 ? 10 : 0);
 
         add(spc, of("minecraft", "iron_ingot", 64), Requirement.STEEL, 1);
         add(spc, hbm("ingot_steel", 64), Requirement.STEEL, 1);

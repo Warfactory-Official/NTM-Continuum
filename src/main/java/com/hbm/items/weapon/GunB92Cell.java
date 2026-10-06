@@ -18,8 +18,6 @@ import net.minecraft.world.level.Level;
 /** The reusable B92 cell. It siphons charge from a carried B92 and becomes a bomb at 25 charges. */
 public final class GunB92Cell extends CompatItem {
 
-    private static final String ENERGY = "b92_cell_energy";
-
     public GunB92Cell(Properties properties) {
         super(properties.stacksTo(1));
     }
@@ -38,7 +36,6 @@ public final class GunB92Cell extends CompatItem {
                 GunB92.setPower(gun, power - 1);
                 int cellPower = getPower(stack) + 1;
                 setPower(stack, cellPower);
-                if (cellPower == 25) ModDataComponents.ITEM_VARIANT.set(stack, 1);
                 return;
             }
         }
@@ -54,22 +51,21 @@ public final class GunB92Cell extends CompatItem {
         tooltip.add(Component.translatable("item.hbm.gun_b92_ammo.charges", getPower(stack)));
     }
 
+    /**
+     * The cell's charge, {@code hbm:b92_energy} (ntm-next's component). 1.7 marked the full cell (25) with metadata 1
+     * as well; the port matches the full charge itself instead of a mirrored number (History §19es-itemvariant).
+     */
     public static int getPower(ItemStack stack) {
-        CompoundTag tag = ModDataComponents.GUN_STATE.getOr(stack, new CompoundTag());
-        return dev.golem.core.data.Tags.getIntOr(tag, ENERGY, 0);
+        return ModDataComponents.B92_ENERGY.getOr(stack, 0);
     }
 
     public static void setPower(ItemStack stack, int value) {
-        CompoundTag current = ModDataComponents.GUN_STATE.getOr(stack, new CompoundTag());
-        CompoundTag next = current.copy();
-        next.putInt(ENERGY, value);
-        ModDataComponents.GUN_STATE.set(stack, next);
+        ModDataComponents.B92_ENERGY.set(stack, value);
     }
 
     public static ItemStack getFullCell() {
         ItemStack stack = new ItemStack(ModGunItems.gun_b92_ammo.get());
         setPower(stack, 25);
-        ModDataComponents.ITEM_VARIANT.set(stack, 1);
         return stack;
     }
 

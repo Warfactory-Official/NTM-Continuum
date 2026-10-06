@@ -199,15 +199,25 @@ public final class ArmorGameTests {
         victim.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
 
         float health = victim.getHealth();
-        // The real entry point. Player.causeFallDamage returns early for a flying player and never calls
-        // super, which is why the hook cannot live on LivingEntity.
-        dev.golem.core.world.Compat.causeFallDamage(player, 20F, 1F, player.damageSources().fall());
-
-        helper.assertTrue(victim.getDeltaMovement().horizontalDistanceSqr() > 0.0D,
-                "the hard landing did not throw a nearby entity — the creative fall path is not routed");
-        helper.assertTrue(victim.getHealth() < health,
-                "the hard landing did no damage: " + victim.getHealth() + " vs " + health);
-        helper.succeed();
+        // The shockwave finds its victims with a level query. On 26.1 a plot's entity section can still be
+        // hidden from such queries on the test's first tick (a freshly loaded chunk): the pig exists but is not
+        // returned yet, and the landing would hit nothing. Land once the query sees the pig (History 19es-final).
+        net.minecraft.world.phys.AABB around = player.getBoundingBox().inflate(3, 0, 3);
+        boolean[] landed = {false};
+        helper.succeedWhen(() -> {
+            if (!landed[0]) {
+                helper.assertTrue(helper.getLevel().getEntities(player, around).contains(victim),
+                        "the pig is not visible to level queries yet");
+                landed[0] = true;
+                // The real entry point. Player.causeFallDamage returns early for a flying player and never calls
+                // super, which is why the hook cannot live on LivingEntity.
+                dev.golem.core.world.Compat.causeFallDamage(player, 20F, 1F, player.damageSources().fall());
+            }
+            helper.assertTrue(victim.getDeltaMovement().horizontalDistanceSqr() > 0.0D,
+                    "the hard landing did not throw a nearby entity — the creative fall path is not routed");
+            helper.assertTrue(victim.getHealth() < health,
+                    "the hard landing did no damage: " + victim.getHealth() + " vs " + health);
+        });
     }
 
     /** A fall below the threshold does nothing at all — upstream's {@code fallDistance > 10} gate. */

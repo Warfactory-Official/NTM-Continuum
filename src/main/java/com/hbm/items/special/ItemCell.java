@@ -19,7 +19,7 @@ import net.minecraft.world.item.TooltipFlag;
 import java.util.List;
 
 /** Component-backed replacement for the old metadata fluid cell used by the antimatter recipe. */
-public final class ItemCell extends CompatItem implements IFillableItem {
+public final class ItemCell extends CompatItem implements IFillableItem, com.hbm.items.ModelState {
     public static final int CAPACITY = 1_000;
 
     public ItemCell(Item.Properties properties) {
@@ -57,12 +57,19 @@ public final class ItemCell extends CompatItem implements IFillableItem {
         if (!isCellFluid(fluid) || amount <= 0) {
             ModDataComponents.removeFluid(stack);
             ModDataComponents.removeFluidAmount(stack);
-            ModDataComponents.ITEM_VARIANT.remove(stack);
             return;
         }
         ModDataComponents.fluid(stack, fluid);
         ModDataComponents.fluidAmount(stack, Math.min(CAPACITY, amount));
-        ModDataComponents.ITEM_VARIANT.set(stack, variantOf(fluid));
+    }
+
+    /**
+     * {@code hbm:model_state}: the 1.7 cell item ({@link CellVariants}) whose sprite this cell draws, from its fluid
+     * (saved by name). Nothing about the sprite is stored on the stack (History §19es-itemvariant).
+     */
+    @Override
+    public int modelState(ItemStack stack) {
+        return variantOf(getFluidType(stack));
     }
 
     /** The cell variant (1.7 item) that holds this fluid, or {@link CellVariants#EMPTY} if no cell holds it. */
@@ -152,7 +159,6 @@ public final class ItemCell extends CompatItem implements IFillableItem {
      */
     public static void tickDropped(ItemEntity entity) {
         if (!(entity.getItem().getItem() instanceof ItemCell) || entity.level().isClientSide()) return;
-        migrateVariant(entity.getItem());
         if (!entity.onGround() || !(entity.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
         FluidType fluid = getFluidType(entity.getItem());
         if (!isFullCell(entity.getItem(), fluid) || (fluid != Fluids.AMAT && fluid != Fluids.ASCHRAB)) return;
@@ -174,29 +180,6 @@ public final class ItemCell extends CompatItem implements IFillableItem {
             }
         }
         entity.discard();
-    }
-
-    /**
-     * Stacks saved before 2026-09-25 carry the fluid id as their model variant (e.g. 33 for antimatter), which the
-     * cell model no longer selects on, so they drew the empty icon. Any stack that ticks in an inventory or on the
-     * ground is rewritten to the variant its fluid calls for, after which it also stacks with new cells.
-     */
-    public static void migrateVariant(ItemStack stack) {
-        if (!(stack.getItem() instanceof ItemCell)) return;
-        FluidType fluid = getFluidType(stack);
-        int expected = variantOf(fluid);
-        if (expected == CellVariants.EMPTY) {
-            if (ModDataComponents.ITEM_VARIANT.has(stack) && isEmptyCell(stack)) ModDataComponents.ITEM_VARIANT.remove(stack);
-            return;
-        }
-        if (ModDataComponents.ITEM_VARIANT.getOr(stack, -1) != expected) ModDataComponents.ITEM_VARIANT.set(stack, expected);
-    }
-
-    @Override
-    protected void compatInventoryTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
-                                       net.minecraft.world.entity.Entity owner,
-                                       net.minecraft.world.entity.EquipmentSlot slot, boolean held) {
-        migrateVariant(stack);
     }
 
     @Override

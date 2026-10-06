@@ -37,8 +37,8 @@ import java.util.List;
  * The structure-editing blocks of 1.7 {@code ModBlocks} ({@code wand_air}, {@code wand_loot}, {@code wand_jigsaw},
  * {@code wand_logic}, {@code wand_tandem}, {@code wand_structure}) and their block entities under 1.7
  * {@code TileMappings}' names. 1.7 gave them no creative tab and no hardness (they break instantly); the port does
- * the same. {@code wand_structure}'s two 1.7 subtypes (save 0, load 1) are one item told apart by
- * {@code hbm:item_variant}, and one block told apart by its {@code mode}. Models, blockstates and loot are stated
+ * the same. {@code wand_structure}'s two 1.7 subtypes (save 0, load 1) are two items, {@code wand_structure} and
+ * {@code wand_structure_load}, over one block told apart by its {@code mode}. Models, blockstates and loot are stated
  * on each registration (Reg; emitted by Dejson at build time).
  *
  * <p>1.7 looks: {@code wand_air} is {@code RenderBlockWand}'s 1..15 px glass box drawn from outside and from inside
@@ -108,12 +108,13 @@ public final class ModStructureWandBlocks {
                 Component.literal("Use hand drill to cycle forwards through the interaction list, shift click to go back").withStyle(ChatFormatting.GOLD),
                 Component.literal("Use a detonator to transform").withStyle(ChatFormatting.YELLOW)));
         REG.blockItem(wand_tandem, Compat::blockDescription);
+        // 1.7 wand_structure metadata 0/1 (save/load), one item each (1.7 texture names; History §19es-itemvariant)
+        REG.item("wand_structure_load", p -> new MaterialCompletionBlockItem(wand_structure.get(), p,
+                        "wand_structure", 1, "load"), Compat::blockDescription)
+                .icon(d -> d.models(Models.blockItem("hbm:block/wand_structure_load")));
         REG.item("wand_structure", p -> new MaterialCompletionBlockItem(wand_structure.get(), p,
-                        "wand_structure", 2, i -> i == 1 ? "load" : "save"), Compat::blockDescription)
-                .icon(d -> d.models(Models.group()
-                                .and("", Models.blockItem("hbm:block/wand_structure"))
-                                .and("_load", Models.blockItem("hbm:block/wand_structure_load")))
-                        .selects(Constants.MOD_ID + ":item_variant"));
+                        "wand_structure", 0, "save"), Compat::blockDescription)
+                .icon(d -> d.models(Models.blockItem("hbm:block/wand_structure")));
     }
 
     private static void tooltipItem(String id, RegistryObject<? extends Block> block, List<Component> lines) {

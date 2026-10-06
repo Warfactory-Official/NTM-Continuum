@@ -147,6 +147,11 @@ public final class LegacyStructureTiles {
             com.hbm.util.SavedIds.putEnum(data, "priority", com.hbm.util.EnumUtil.grabEnumSafely(
                     com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority.class, Tags.getIntOr(data, "priority", 0)));
         }
+        // the bobblehead's figure: 1.7 saved the BobbleType ordinal as a byte, the port its name (History §19es-itemvariant)
+        if (id.equals("tileentity_ntm_bobblehead") && Tags.hasInt(data, "type")) {
+            com.hbm.util.SavedIds.putEnum(data, "type",
+                    com.hbm.blocks.generic.BlockBobble.BobbleType.of(Tags.getIntOr(data, "type", 0)));
+        }
         if (id.equals("tileentity_ntm_dungeon_spawner") && Tags.hasInt(data, "type")) {
             com.hbm.util.SavedIds.putEnum(data, "type", com.hbm.util.EnumUtil.grabEnumSafely(
                     com.hbm.blocks.generic.DungeonSpawner.EnumSpawnerType.class, Tags.getIntOr(data, "type", 0)));

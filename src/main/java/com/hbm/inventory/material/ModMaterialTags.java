@@ -65,7 +65,10 @@ public final class ModMaterialTags {
         tag("cobblestones", "minecraft:cobblestone");
         tag("cokes", "hbm:coke_coal", "hbm:coke_lignite", "hbm:coke_petroleum");
         tag("concretes", "hbm:concrete", "hbm:concrete_smooth", "hbm:concrete_asbestos", "hbm:ducrete",
-                "hbm:ducrete_smooth", "hbm:concrete_colored", "hbm:concrete_colored_ext");
+                "hbm:ducrete_smooth",
+                // 1.7's wildcard concrete_colored / concrete_colored_ext: one item per colour (History §19es-itemvariant)
+                "hbm:concrete_white", "hbm:concrete_orange", "hbm:concrete_magenta", "hbm:concrete_light_blue", "hbm:concrete_yellow", "hbm:concrete_lime", "hbm:concrete_pink", "hbm:concrete_gray", "hbm:concrete_silver", "hbm:concrete_cyan", "hbm:concrete_purple", "hbm:concrete_blue", "hbm:concrete_brown", "hbm:concrete_green", "hbm:concrete_red", "hbm:concrete_black",
+                "hbm:concrete_ext_machine", "hbm:concrete_ext_machine_stripe", "hbm:concrete_ext_indigo", "hbm:concrete_ext_purple", "hbm:concrete_ext_pink", "hbm:concrete_ext_hazard", "hbm:concrete_ext_sand", "hbm:concrete_ext_bronze");
         tag("dusts/actinium_tiny", "hbm:powder_actinium_tiny");
         tag("dusts/ash", "hbm:powder_ash_wood", "hbm:powder_ash_coal", "hbm:powder_ash_misc", "hbm:powder_ash_fly",
                 "hbm:powder_ash_soot");

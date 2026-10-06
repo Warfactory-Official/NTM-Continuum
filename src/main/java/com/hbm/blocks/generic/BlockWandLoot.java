@@ -126,7 +126,7 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
             if (block != null) {
                 if (!level.isClientSide()) {
                     loot.replaceState = block.defaultBlockState();
-                    loot.replaceMeta = ModDataComponents.ITEM_VARIANT.getOr(held, 0);
+                    loot.replaceMeta = com.hbm.items.LegacyMeta.of(held);
 
                     List<String> poolNames = loot.getPoolNames(block == ModDungeonBlocks.deco_loot.get());
                     if (!poolNames.contains(loot.poolName)) {

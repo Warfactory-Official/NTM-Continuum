@@ -89,11 +89,11 @@ public final class RecipeGapGameTests {
 
         // purex.pilepu239: 40 t, 100 HE/t, 100 mB sulfuric -> 2 Pu-239 billets + 1 uranium billet; any burn-up data
         GenericRecipe pile = PUREXRecipes.INSTANCE.getRecipe("purex.pilepu239");
-        ItemStack rod = ModPileBlocks.pile_rod.get().of(EnumPileRod.PU239);
+        ItemStack rod = ModPileBlocks.pile_rod.stack(EnumPileRod.PU239);
         ItemPileRodMK2.setDepletion(rod, 123D);
         helper.assertTrue(pile != null && pile.duration == 40 && pile.power == 100
                         && pile.inputItem[0].matchesRecipe(rod, false)
-                        && !pile.inputItem[0].matchesRecipe(ModPileBlocks.pile_rod.get().of(EnumPileRod.NU), false),
+                        && !pile.inputItem[0].matchesRecipe(ModPileBlocks.pile_rod.stack(EnumPileRod.NU), false),
                 "pilepu239 matches the PU239 rod (with burn-up) and not the NU rod");
         assertStack(helper, pile.outputItem[0], ModItems.billet_pu239.get(), 2);
         assertStack(helper, pile.outputItem[1], ModItems.billet_uranium.get(), 1);
@@ -207,9 +207,7 @@ public final class RecipeGapGameTests {
     }
 
     private static ItemStack pellet(String name, int meta) {
-        ItemStack stack = new ItemStack(item("rbmk_pellet_" + name));
-        ModDataComponents.ITEM_VARIANT.set(stack, meta);
-        return stack;
+        return ((com.hbm.items.machine.ItemRBMKPellet) item("rbmk_pellet_" + name)).of(meta);
     }
 
     private static void assertOutputs(GameTestHelper helper, SILEXRecipe recipe, List<WeightedOutput> expected) {

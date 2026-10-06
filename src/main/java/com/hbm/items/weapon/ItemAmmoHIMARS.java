@@ -39,7 +39,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The eight HIMARS rocket pods. 1.12.2 keeps them as a damage-indexed array of anonymous classes; here
- * they are enum constants carrying the same behaviour, selected by {@code ITEM_VARIANT}.
+ * they are enum constants carrying the same behaviour, one item each ({@code ammo_himars_<name>}, ntm-next).
  *
  * <p>One deviation, about a block this slice does not have. {@link HIMARSRocketType#SMALL_LAVA}
  * fills its crater with magma rather than upstream's {@code volcanic_lava_block}, which is a finite
@@ -49,14 +49,15 @@ import net.minecraft.world.phys.Vec3;
  */
 public class ItemAmmoHIMARS extends ItemEnumMulti {
 
-    public ItemAmmoHIMARS(Properties properties) {
-        super(HIMARSRocketType.class, true, true, properties);
+    public ItemAmmoHIMARS(Properties properties, HIMARSRocketType type) {
+        super(HIMARSRocketType.class, type, properties);
     }
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, dev.golem.core.world.CompatTooltipContext context,
                                          java.util.List<Component> tooltip, TooltipFlag flag) {
-        String desc = getDescriptionId() + "." + getType(stack).name().toLowerCase(Locale.US) + ".desc.";
+        // the 1.7 tooltip keys, item.hbm.ammo_himars.<type>.desc.<n>, kept as they were
+        String desc = "item.hbm.ammo_himars." + getType(stack).name().toLowerCase(Locale.US) + ".desc.";
         switch ((HIMARSRocketType) getType(stack)) {
             case SMALL -> {
                 line(tooltip, desc, 0, ChatFormatting.YELLOW);

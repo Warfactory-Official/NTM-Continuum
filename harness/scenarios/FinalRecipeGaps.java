@@ -54,9 +54,22 @@ public final class FinalRecipeGaps implements Scenario {
                 : "hbm:fluid_tank[hbm:fluid=\"" + fluid + "\",hbm:fluid_amount=1000]";
     }
 
+    /** 1.7 (block, metadata): one item per subtype since History §19es-itemvariant (ntm-next ids). */
     private static String variant(Client c, String id, int variant) {
-        return legacy(c) ? id + "{\"hbm:item_variant\":" + variant + "}" : id + "[hbm:item_variant=" + variant + "]";
+        return switch (id) {
+            case "hbm:bobblehead" -> variant == 0 ? id : id + "_" + BOBBLE_NAMES[variant];
+            case "hbm:snowglobe" -> variant == 0 ? id : id + "_" + new String[] {"none", "rivetcity", "tenpennytower", "lucky38", "sierramadre", "prydwen"}[variant];
+            case "hbm:plushie" -> variant == 0 ? id : id + "_" + new String[] {"none", "yomi", "numbernine", "hundun", "derg"}[variant];
+            case "hbm:filing_cabinet" -> id + (variant == 1 ? "_steel" : "_green");
+            case "hbm:vending_machine" -> variant == 1 ? id + "_snacks" : id;
+            case "hbm:glyphid_base", "hbm:glyphid_spawner" -> id + new String[] {"", "_infested", "_rad"}[variant];
+            case "hbm:holotape_image" -> id + "_holo_digamma";
+            default -> throw new IllegalArgumentException(id);
+        };
     }
+
+    /** BlockBobble.BobbleType names by ordinal. */
+    private static final String[] BOBBLE_NAMES = {"none", "strength", "perception", "endurance", "charisma", "intelligence", "agility", "luck", "bob", "frizzle", "pu238", "vt", "doc", "bluehat", "pheo", "adam29", "uffr", "vaer", "nos", "drillgon", "cirno", "microwave", "peep", "mellow", "abel", "movblock", "leafia", "hacker6329", "eos"};
 
     // ------------------------------------------------------------------ crafting table by clicks
 
@@ -194,13 +207,13 @@ public final class FinalRecipeGaps implements Scenario {
         c.cmd("give @s hbm:armor_polish 1");
         c.waitTicks(3);
         openTable(c);
-        place(c, "hbm:holotape_image", 1);
+        place(c, "hbm:holotape_image_holo_digamma", 1);
         place(c, "hbm:screwdriver", 2);
         place(c, "hbm:ducttape", 3);
         place(c, "hbm:armor_polish", 4);
         c.waitTicks(3);
         c.screenshot("30-holotape-grid");
-        take(c, "hbm:holotape_image");
+        take(c, "hbm:holotape_image_holo_restored");
         JsonObject tool = c.slot(2);
         Expect.that("hbm:screwdriver".equals(id(tool)) && tool.get("damage").getAsInt() == 1,
                 "the screwdriver stayed, one use more worn: " + tool);

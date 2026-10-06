@@ -10,7 +10,6 @@ import com.hbm.blocks.generic.BlockGrate;
 import com.hbm.blocks.generic.BlockScaffold;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
-import com.hbm.items.ModDataComponents;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -69,18 +68,55 @@ public final class ModSteelBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
+    /**
+     * 1.7 steel_scaffold metadata 0..3 (steel, red, white, yellow), one block item per colour with ntm-next's ids
+     * (History §19es-itemvariant); the metadata-0 item is registered last so it stays the block's own item.
+     */
+    public static final List<RegistryObject<ScaffoldItem>> SCAFFOLD_ITEMS = scaffoldItems();
+
+    private static List<RegistryObject<ScaffoldItem>> scaffoldItems() {
+        String[] ids = {"steel_scaffold", "steel_scaffold_red", "steel_scaffold_white", "steel_scaffold_yellow"};
+        @SuppressWarnings("unchecked")
+        RegistryObject<ScaffoldItem>[] items = new RegistryObject[ids.length];
+        for (int k = 1; k <= ids.length; k++) {
+            int variant = k % ids.length;
+            items[variant] = REG.item(ids[variant], p -> new ScaffoldItem(steel_scaffold.get(), p, variant),
+                    Compat::blockDescription);
+        }
+        return List.of(items);
+    }
+
+    /** The scaffold item of 1.7 metadata {@code variant}. */
+    public static ItemStack scaffoldItem(int variant) {
+        return new ItemStack(SCAFFOLD_ITEMS.get(Math.floorMod(variant, SCAFFOLD_ITEMS.size())).get());
+    }
+
+    /** A scaffold colour's block item; places that colour and shows the block's one 1.7 name. */
+    public static final class ScaffoldItem extends dev.golem.core.world.CompatBlockItem implements com.hbm.items.LegacyMeta {
+        private final int variant;
+
+        public ScaffoldItem(Block block, net.minecraft.world.item.Item.Properties properties, int variant) {
+            super(block, properties);
+            this.variant = variant;
+        }
+
+        @Override
+        public int legacyMeta() {
+            return variant;
+        }
+
+        @Override
+        public net.minecraft.network.chat.Component getName(ItemStack stack) {
+            return net.minecraft.network.chat.Component.translatable("block.hbm.steel_scaffold");
+        }
+    }
+
     static {
         Reg.Handle<BlockItem> grateItem = REG.blockItem(steel_grate, Compat::blockDescription);
         ModTabs.addTo(HbmTab.BLOCKS, grateItem);
 
-        Reg.Handle<BlockItem> scaffoldItem = REG.blockItem(steel_scaffold,
-                Compat::blockDescription);
-        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> IntStream.range(0, BlockScaffold.Variant.values().length)
-                .mapToObj(variant -> {
-                    ItemStack stack = new ItemStack(scaffoldItem.get());
-                    ModDataComponents.ITEM_VARIANT.set(stack, variant);
-                    return stack;
-                }).toList());
+        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> IntStream.range(0, SCAFFOLD_ITEMS.size())
+                .mapToObj(ModSteelBlocks::scaffoldItem).toList());
 
         OBJ_BLOCKS.add(steel_scaffold);
     }

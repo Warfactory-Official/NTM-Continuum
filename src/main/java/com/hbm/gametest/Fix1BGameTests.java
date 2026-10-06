@@ -77,10 +77,9 @@ public final class Fix1BGameTests {
         return new ItemStack(items.get(0));
     }
 
+    /** 1.7 {@code (id, metadata)}: the split family's item (History §19es-itemvariant). */
     private static ItemStack variant(String id, int variant) {
-        ItemStack stack = of(id);
-        ModDataComponents.ITEM_VARIANT.set(stack, variant);
-        return stack;
+        return of(com.hbm.items.LegacyMetaIds.lookup(id.substring(4), variant));
     }
 
     private static List<ItemStack> grid(int size, ItemStack... stacks) {
@@ -104,12 +103,10 @@ public final class Fix1BGameTests {
         ItemStack plastic = tag(helper, "c:ingots/any_plastic");
         ItemStack pane = tag(helper, "c:glass_panes");
         ItemStack scope = craft(helper, plate, plastic, plate, pane, null, pane, plate, plastic, plate);
-        expect(helper, scope, "hbm:weapon_mod_special", 1, "scope");
-        helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(scope, -1) == 1, "scope variant 1, got " + scope);
+        expect(helper, scope, "hbm:weapon_mod_special_scope", 1, "scope");
         // WeaponRecipes:121 IRON_DURA (generic variant 1): gunmetal ingot, iron ingot, duct tape
         ItemStack dura = craft(helper, tag(helper, "c:ingots/gunmetal"), new ItemStack(Items.IRON_INGOT), of("hbm:ducttape"));
-        expect(helper, dura, "hbm:weapon_mod_generic", 1, "iron dura mod");
-        helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(dura, -1) == 1, "IRON_DURA is variant 1, got " + dura);
+        expect(helper, dura, "hbm:weapon_mod_generic_iron_dura", 1, "iron dura mod");
         // ConsumableRecipes:33 carpet bombing caller
         ItemStack tnt = new ItemStack(Items.TNT);
         expect(helper, craft(helper, tnt, tnt, tnt, tnt, of("hbm:rangefinder"), tnt, tnt, tnt, tnt),
@@ -129,8 +126,7 @@ public final class Fix1BGameTests {
         ItemStack scaffold = of("hbm:steel_scaffold");
         ItemStack red = craft(helper, scaffold, scaffold, scaffold, scaffold, tag(helper, "c:dyes/red"), scaffold,
                 scaffold, scaffold, scaffold);
-        expect(helper, red, "hbm:steel_scaffold", 8, "red scaffold");
-        helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(red, -1) == 1, "red scaffold variant 1, got " + red);
+        expect(helper, red, "hbm:steel_scaffold_red", 8, "red scaffold");
         // ToolRecipes:159 steel minecart carries the steel chassis; :166 a powder cart always comes out wood in 1.7
         ItemStack ingot = tag(helper, "c:ingots/steel");
         ItemStack cart = craft(helper, plate, null, plate, ingot, plate, ingot);
@@ -145,8 +141,7 @@ public final class Fix1BGameTests {
         // WeaponRecipes:242 white phosphorus shell (variant 5) from a plain shell (variant 0)
         ItemStack wp = craft(helper, of("hbm:ingot_phosphorus"), null, null, variant("hbm:ammo_arty", 0), null, null,
                 of("hbm:ingot_phosphorus"));
-        expect(helper, wp, "hbm:ammo_arty", 1, "WP shell");
-        helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(wp, -1) == 5, "WP shell variant 5, got " + wp);
+        expect(helper, wp, "hbm:ammo_arty_phosphorus", 1, "WP shell");
         // the remaining declarations are present
         for (String id : new String[] {"gun_amat", "gun_stg77", "gun_lasrifle", "weapon_mod_special_canisters",
                 "weapon_mod_generic_bronze_dura", "syringe_taint", "siox", "xanax", "radaway_flush", "med_bag_antidote",
@@ -165,8 +160,7 @@ public final class Fix1BGameTests {
     public static void mismatches(GameTestHelper helper) {
         // CraftingManager:426 chiseled lightstone (variant 4) from the unrefined block (variant 0), not from tile
         ItemStack chiseled = craft(helper, variant("hbm:lightstone", 0));
-        expect(helper, chiseled, "hbm:lightstone", 1, "chiseled lightstone");
-        helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(chiseled, -1) == 4, "chiseled variant 4, got " + chiseled);
+        expect(helper, chiseled, "hbm:lightstone_chiseled", 1, "chiseled lightstone");
         helper.assertTrue(craft(helper, variant("hbm:lightstone", 1)).isEmpty(), "tile lightstone alone crafts nothing");
         // BlockGenericStairs.recipeGen: six blocks give four stairs
         ItemStack brick = of("hbm:brick_concrete");
@@ -217,10 +211,9 @@ public final class Fix1BGameTests {
     public static void cargo(GameTestHelper helper) {
         ItemStack shell = variant("hbm:ammo_arty", 8);
         ItemStack loaded = craft(helper, shell, null, null, null, new ItemStack(Items.DIAMOND, 5));
-        expect(helper, loaded, "hbm:ammo_arty", 1, "cargo shell");
+        expect(helper, loaded, "hbm:ammo_arty_cargo", 1, "cargo shell");
         ItemStack cargo = ModDataComponents.ARTY_CARGO.getOr(loaded, ItemStack.EMPTY);
         helper.assertTrue(cargo.is(Items.DIAMOND) && cargo.getCount() == 1, "one diamond aboard, got " + cargo);
-        helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(loaded, -1) == 8, "still the cargo shell");
         helper.assertTrue(craft(helper, shell, new ItemStack(Items.WATER_BUCKET)).isEmpty(),
                 "an item with a container is refused");
         helper.assertTrue(craft(helper, loaded, new ItemStack(Items.DIAMOND)).isEmpty(), "a loaded shell takes no more");

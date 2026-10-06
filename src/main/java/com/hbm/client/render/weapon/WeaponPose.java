@@ -29,6 +29,15 @@ public final class WeaponPose {
     public long[] lastShot = new long[0];
     public float shotRand;
     public @Nullable LivingEntity owner;
+    /**
+     * Drawn by the weapon table's preview: 1.7's {@code renderModTable(stack, index)}, which defaults to
+     * {@code renderOther(stack, INVENTORY)} (so {@link #context} is {@code GUI}) but is not {@code renderInv}.
+     * Declarations whose GUI draw is a 1.7 {@code renderInv} override, or whose 1.7 class overrides
+     * {@code renderModTable}, gate on this.
+     */
+    public boolean modTable;
+    /** The configuration the table shows, 1.7's {@code container.index}; meaningful only with {@link #modTable}. */
+    public int tableIndex;
 
     private final Map<String, double[]> buses = new HashMap<>();
 
@@ -51,6 +60,8 @@ public final class WeaponPose {
         this.context = context;
         this.owner = owner;
         this.hand = hand;
+        this.modTable = false;
+        this.tableIndex = 0;
         if (stack.getItem() instanceof com.hbm.items.weapon.sedna.ItemGunBaseNT gun) {
             this.lastShot = gun.lastShotByHand[hand.ordinal()].clone();
             this.shotRand = (float) gun.shotRandByHand[hand.ordinal()];

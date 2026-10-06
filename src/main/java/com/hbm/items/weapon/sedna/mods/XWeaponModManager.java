@@ -174,8 +174,8 @@ public final class XWeaponModManager {
         def(ModWeaponModItems.weapon_mod_caliber, EnumModCaliber.BMG50).addMod(ModGunItems.gun_henry, new WeaponModCaliber(370, 5, 10F, bmg50)).addMod(items(ModGunItems.gun_minigun, ModGunItems.gun_minigun_dual), new WeaponModCaliber(371, 0, 6F, bmg50));
     }
 
-    private static WeaponModDefinition def(RegistryObject<ItemEnumMulti> item, Enum<?> variant) {
-        return new WeaponModDefinition(() -> item.get().of(variant));
+    private static <E extends Enum<E>> WeaponModDefinition def(com.hbm.items.ItemFamily<E, ItemEnumMulti> family, E variant) {
+        return new WeaponModDefinition(() -> family.stack(variant));
     }
 
     private static Supplier<Item> item(String id) {

@@ -63,60 +63,80 @@ public final class ModPileBlocks {
             "pile_device", BlockPileDevice::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(Presets.statesOnly(Variants.uniformRange("meta", 0, 11)))
-            .loot(Loot.self());
+            // the drop is the device's own item (pile_loader/_vent/_control, BlockPileDevice.getDrops)
+            .loot(Loot.nothing());
 
     public static final RegistryObject<BlockItem> pile_brick_item =
             REG.blockItem(pile_brick)
                     .transform(Presets.shares("hbm:block/pile_brick"))
                     .tab(HbmTab.MACHINES);
-    public static final RegistryObject<PileDeviceItem> pile_device_item =
-            REG.item("pile_device", (net.minecraft.world.item.Item.Properties p) -> new PileDeviceItem(pile_device.get(), p));
-    public static final RegistryObject<ItemPileRodMK2> pile_rod =
-            REG.item("pile_rod", ItemPileRodMK2::new, p -> p.stacksTo(1))
-                    .icon(d -> d.models(Models.group()
-                                    .and("", Models.generated("hbm:items/pile_rod_ra226be"))
-                                    .and("_po210be", Models.generated("hbm:items/pile_rod_po210be"))
-                                    .and("_zr", Models.generated("hbm:items/pile_rod_zr"))
-                                    .and("_nu", Models.generated("hbm:items/pile_rod_nu"))
-                                    // 1.7 pile_rod.pu239: the plain _pu239 name is the deprecated old-style rod's model and texture
-                                    .and("_mk2_pu239", Models.generated("hbm:items/pile_rod_mk2_pu239"))
-                                    .and("_rgp", Models.generated("hbm:items/pile_rod_rgp"))
-                                    .and("_waste", Models.generated("hbm:items/pile_rod_waste"))
-                                    .and("_thorium", Models.generated("hbm:items/pile_rod_thorium"))
-                                    .and("_thorium_fuel", Models.generated("hbm:items/pile_rod_thorium_fuel")))
-                            .selects(Constants.MOD_ID + ":item_variant"));
+    /**
+     * 1.7 pile_device metadata 0..2 (loader, vent, control rod), one block item each with ntm-next's ids
+     * ({@code pile_loader}, {@code pile_vent}, {@code pile_control}; History §19es-itemvariant). The block keeps its one
+     * id and {@code meta} state; the metadata-0 item is registered last so it stays the block's own item.
+     */
+    public static final java.util.List<RegistryObject<PileDeviceItem>> pile_device_items = pileDeviceItems();
+
+    private static java.util.List<RegistryObject<PileDeviceItem>> pileDeviceItems() {
+        String[] ids = {"pile_loader", "pile_vent", "pile_control"};
+        @SuppressWarnings("unchecked")
+        RegistryObject<PileDeviceItem>[] items = new RegistryObject[ids.length];
+        for (int k = 1; k <= ids.length; k++) {
+            int variant = k % ids.length;
+            items[variant] = REG.item(ids[variant],
+                    (net.minecraft.world.item.Item.Properties p) -> new PileDeviceItem(pile_device.get(), p, variant));
+        }
+        return java.util.List.of(items);
+    }
+
+    /** 1.7 {@code pile_rod} metadata, one item per rod as ntm-next registers them ({@code pile_rod_mk2_<type>}). */
+    public static final com.hbm.items.ItemFamily<EnumPileRod, ItemPileRodMK2> pile_rod = com.hbm.items.ItemFamily.of(
+            EnumPileRod.class, type -> REG.item("pile_rod_mk2_" + type.name().toLowerCase(java.util.Locale.ROOT),
+                            p -> new ItemPileRodMK2(p, type), p -> p.stacksTo(1))
+                    .transform(Presets.sprite("hbm:items/" + switch (type) {
+                        case RA226BE -> "pile_rod_ra226be";
+                        case PO210BE -> "pile_rod_po210be";
+                        case ZR -> "pile_rod_zr";
+                        case NU -> "pile_rod_nu";
+                        case PU239 -> "pile_rod_mk2_pu239";
+                        case RGP -> "pile_rod_rgp";
+                        case WASTE -> "pile_rod_waste";
+                        case THORIUM -> "pile_rod_thorium";
+                        case THORIUM_FUEL -> "pile_rod_thorium_fuel";
+                    })));
 
     static {
         ModTabs.addStacksTo(HbmTab.MACHINES,
                 () -> IntStream.range(0, 3).mapToObj(ModPileBlocks::pileDeviceItem).toList());
-        ModTabs.addStacksTo(HbmTab.CONTROL, () -> java.util.Arrays.stream(EnumPileRod.VALUES)
-                .map(type -> pile_rod.get().of(type)).toList());
+        ModTabs.addStacksTo(HbmTab.CONTROL, pile_rod::stacks);
     }
 
     public static ItemStack pileDeviceItem(int variant) {
-        return pile_device_item.get().of(variant);
+        return new ItemStack(pile_device_items.get(Math.floorMod(variant, pile_device_items.size())).get());
     }
 
-    /** Block item for the three pile devices; upstream picks between them with item damage. */
-    public static final class PileDeviceItem extends CompatBlockItem {
+    /** Block item of one of the three pile devices (1.7 item damage = {@link #variant()}). */
+    public static final class PileDeviceItem extends CompatBlockItem implements com.hbm.items.LegacyMeta {
 
-        public PileDeviceItem(net.minecraft.world.level.block.Block block, Properties properties) {
+        private final int variant;
+
+        public PileDeviceItem(net.minecraft.world.level.block.Block block, Properties properties, int variant) {
             super(block, properties);
+            this.variant = variant;
         }
 
-        public ItemStack of(int variant) {
-            ItemStack stack = new ItemStack(this);
-            ModDataComponents.ITEM_VARIANT.set(stack, Math.floorMod(variant, 3));
-            return stack;
+        public int variant() {
+            return variant;
         }
 
-        public int variant(ItemStack stack) {
-            return Math.floorMod(ModDataComponents.ITEM_VARIANT.getOr(stack, 0), 3);
+        @Override
+        public int legacyMeta() {
+            return variant;
         }
 
         @Override
         public Component getName(ItemStack stack) {
-            return Component.translatable("block.hbm.pile_device_" + variant(stack));
+            return Component.translatable("block.hbm.pile_device_" + variant);
         }
     }
 

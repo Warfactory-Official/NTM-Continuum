@@ -75,7 +75,14 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
 
     /** 1.7 {@code explodeDischarge}: a size 5 VNT whose entity damage is the electric cross-smooth 20, and the UFO blast. */
     public static void explodeDischarge(Level level, double x, double y, double z) {
-        com.hbm.entity.EntityDischargeBeam.explodeDischarge(level, x, y, z);
+        new com.hbm.explosion.vanillant.ExplosionVNT(level, x, y, z, 5F)
+                .setEntityProcessor(new com.hbm.explosion.vanillant.standard.EntityProcessorCrossSmooth(1D, 20F)
+                        .setDamageClass(com.hbm.lib.ModDamageSources.DamageClass.ELECTRIC))
+                .setPlayerProcessor(new com.hbm.explosion.vanillant.standard.PlayerProcessorStandard())
+                .setSFX(new com.hbm.explosion.vanillant.standard.ExplosionEffectStandard())
+                .explode();
+        level.playSound(null, x, y, z, com.hbm.sound.ModSounds.UFO_BLAST.get(), net.minecraft.sounds.SoundSource.BLOCKS, 5F,
+                0.9F + level.getRandom().nextFloat() * 0.2F);
     }
 
     public TileEntityBatterySocket(BlockPos pos, BlockState state) {

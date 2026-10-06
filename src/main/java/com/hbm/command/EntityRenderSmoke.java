@@ -68,7 +68,7 @@ public final class EntityRenderSmoke {
             "entity_elder_one");
 
     /**
-     * Deliberately absent: nuke_mk3, entity_balefire, entity_tom_bust, beam_discharge, entity_laser_blast,
+     * Deliberately absent: nuke_mk3, entity_balefire, entity_tom_bust, entity_laser_blast,
      * entity_moonstone_blast, entity_tom_the_moonstone, entity_digamma_quasar (destroy the fixture);
      * grenade_universal (needs a grenade stack); entity_falling_multiblock (needs a structure);
      * missile_schrabidium/bhole/emp/cluster_strong/drill (identical bodies to listed ones); entity_waste_pearl,

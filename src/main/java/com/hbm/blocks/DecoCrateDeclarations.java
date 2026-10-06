@@ -62,8 +62,13 @@ public final class DecoCrateDeclarations {
         }
         // ItemRenderLibrary bobblehead / RenderPlushie item: ItemRenderBase around the block renderers' own
         // renderBobble / renderPlushie, so the item has every prop, glow skin and the engraved name
-        com.hbm.items.ItemRendererDeclarations.model("bobblehead", "bobblehead", "machine");
-        com.hbm.items.ItemRendererDeclarations.model("plushie", "plushie", "machine");
+        // one item per type (History §19es-itemvariant); the renderer reads the member's type
+        for (String id : trinketIds("bobblehead", com.hbm.blocks.generic.BlockBobble.BobbleType.VALUES)) {
+            com.hbm.items.ItemRendererDeclarations.model(id, "bobblehead", "machine");
+        }
+        for (String id : trinketIds("plushie", com.hbm.blocks.generic.BlockPlushie.PlushieType.VALUES)) {
+            com.hbm.items.ItemRendererDeclarations.model(id, "plushie", "machine");
+        }
         snowglobes();
         // RenderVendingMachine item: inventory T(0,-4,0) S(6.25); the "Soda" or "Obamna" part
         {
@@ -76,7 +81,7 @@ public final class DecoCrateDeclarations {
                 model.add("parts", strings(parts[i]));
                 cases.add(when(i, model));
             }
-            variantItem("vending_machine", cases);
+            variantItems(new String[] {"vending_machine", "vending_machine_snacks"}, cases);
         }
         // RenderFileCabinet item: inventory T(-1,0.5,-1) Ry(180) S(4); common T(0,-1.25,0) S(2.75), renderAll
         {
@@ -89,7 +94,7 @@ public final class DecoCrateDeclarations {
                 model.addProperty("guiYaw", 180.0);
                 cases.add(when(i, model));
             }
-            variantItem("filing_cabinet", cases);
+            variantItems(new String[] {"filing_cabinet_green", "filing_cabinet_steel"}, cases);
         }
     }
 
@@ -109,7 +114,8 @@ public final class DecoCrateDeclarations {
             model.add("passes", passes);
             cases.add(when(type, model));
         }
-        variantItem("snowglobe", cases);
+        variantItems(trinketIds("snowglobe", com.hbm.blocks.generic.BlockSnowglobe.SnowglobeType.VALUES),
+                cases);
     }
 
     private static void recipes() {
@@ -134,11 +140,11 @@ public final class DecoCrateDeclarations {
                 "I", TagIds.ingots_iron, "D", TagIds.gems_diamond, "R", TagIds.storage_blocks_redstone);
         shaped(NS, "field_disturber", "hbm:field_disturber", rows("ICI", "CAC", "ICI"),
                 "I", TagIds.ingots_starmetal, "C", ItemIds.circuit_bismoid, "A", ItemIds.gem_alexandrite);
-        shaped(NS, "filing_cabinet_steel", stack("hbm:filing_cabinet").with("hbm:item_variant", 1),
+        shaped(NS, "filing_cabinet_steel", "hbm:filing_cabinet_steel",
                 rows(" P ", "PIP", " P "), "P", TagIds.plates_steel, "I", ItemIds.plate_polymer);
-        shaped(NS, "plushie_yomi", stack("hbm:plushie").with("hbm:item_variant", 1), rows("LCR"),
+        shaped(NS, "plushie_yomi", "hbm:plushie_yomi", rows("LCR"),
                 "L", TagIds.crops_carrot, "C", "hbm:rag", "R", ItemIds.circuit_vacuum_tube);
-        shaped(NS, "plushie_numbernine", stack("hbm:plushie").with("hbm:item_variant", 2), rows(" C ", "LCR", " C "),
+        shaped(NS, "plushie_numbernine", "hbm:plushie_numbernine", rows(" C ", "LCR", " C "),
                 "L", "hbm:cigarette", "C", "hbm:rag", "R", TagIds.gems_coal);
         shaped(NS, "wood_structure_roof", "hbm:wood_structure_roof", 16, rows("SSS", "F F"),
                 "S", TagIds.minecraft_wooden_slabs, "F", VanillaIds.oak_fence);
@@ -200,14 +206,18 @@ public final class DecoCrateDeclarations {
         Dejson.itemDefinition("hbm:item/" + name).addProperty("oversized_in_gui", true);
     }
 
-    /** A {@code minecraft:select} on {@code hbm:item_variant} over one OBJ model per subtype; case 0 is the fallback. */
-    private static void variantItem(String name, JsonArray cases) {
-        JsonObject select = new JsonObject();
-        select.addProperty("type", "minecraft:select");
-        select.addProperty("property", NS + ":item_variant");
-        select.add("cases", cases);
-        select.add("fallback", cases.get(0).getAsJsonObject().get("model").deepCopy());
-        item(name, select);
+    /** {@code <base>} for the NONE type, {@code <base>_<type>} for the rest (ntm-next's trinket ids). */
+    public static String[] trinketIds(String base, Enum<?>[] types) {
+        String[] ids = new String[types.length];
+        for (int i = 0; i < types.length; i++) {
+            ids[i] = i == 0 ? base : base + "_" + types[i].name().toLowerCase(java.util.Locale.ROOT);
+        }
+        return ids;
+    }
+
+    /** One item per subtype (1.7 metadata = index), each drawn with its case's OBJ model. */
+    private static void variantItems(String[] ids, JsonArray cases) {
+        for (int i = 0; i < ids.length; i++) item(ids[i], cases.get(i).getAsJsonObject().get("model").getAsJsonObject());
     }
 
     private static JsonArray numbers(double... values) {

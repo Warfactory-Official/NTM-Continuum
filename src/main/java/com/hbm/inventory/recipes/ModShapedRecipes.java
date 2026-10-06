@@ -54,9 +54,9 @@ public final class ModShapedRecipes {
                 "G", TagIds.glass_panes, "R", TagIds.dusts_redstone, "C", ItemIds.circuit_basic, "S", TagIds.plates_steel);
         shaped(NS, "designator_manual", "hbm:designator_manual", rows("  A", "#C#", "#B#"),
                 "A", TagIds.plates_lead, "C", ItemIds.designator, "B", ItemIds.circuit_advanced, "#", TagIds.ingots_any_plastic);
-        shaped(NS, "ammo_arty", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 0), rows("CIC", "CSC", "CCC"),
+        shaped(NS, "ammo_arty", stack("hbm:ammo_arty"), rows("CIC", "CSC", "CCC"),
                 "C", ItemIds.cordite, "I", TagIds.storage_blocks_iron, "S", TagIds.shells_copper);
-        shaped(NS, "ammo_arty_4", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 8), rows(" I ", " S ", "CCC"),
+        shaped(NS, "ammo_arty_4", stack("hbm:ammo_arty_cargo"), rows(" I ", " S ", "CCC"),
                 "C", ItemIds.cordite, "I", ItemIds.sphere_steel, "S", TagIds.shells_copper);
         shaped(NS, "ammo_dgk", ItemIds.ammo_dgk, rows("LLL", "GGG", "CCC"),
                 "L", TagIds.plates_lead, "G", ItemIds.ballistite, "C", TagIds.ingots_copper);
@@ -425,76 +425,76 @@ public final class ModShapedRecipes {
                 "#", ItemIds.concrete_asbestos);
         shaped(NS, "concrete_asbestos_stairs", ItemIds.concrete_asbestos_stairs, 4, rows("#  ", "## ", "###"),
                 "#", ItemIds.concrete_asbestos);
-        shaped(NS, "concrete_colored_black", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 15),
+        shaped(NS, "concrete_colored_black", stack("hbm:concrete_black", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.black_dye);
-        shaped(NS, "concrete_colored_blue", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 11),
+        shaped(NS, "concrete_colored_blue", stack("hbm:concrete_blue", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.blue_dye);
-        shaped(NS, "concrete_colored_brown", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 12),
+        shaped(NS, "concrete_colored_brown", stack("hbm:concrete_brown", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.brown_dye);
-        shaped(NS, "concrete_colored_cyan", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 9),
+        shaped(NS, "concrete_colored_cyan", stack("hbm:concrete_cyan", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.cyan_dye);
         shaped(NS, "concrete_colored_ext_bronze",
-                stack(ItemIds.concrete_colored_ext, 6).with(ComponentIds.item_variant, 7), rows("CCC", "1 2", "CCC"),
+                stack("hbm:concrete_ext_bronze", 6), rows("CCC", "1 2", "CCC"),
                 "C", ItemIds.concrete_smooth, "1", VanillaIds.orange_dye, "2", VanillaIds.brown_dye);
         shaped(NS, "concrete_colored_ext_hazard",
-                stack(ItemIds.concrete_colored_ext, 6).with(ComponentIds.item_variant, 5), rows("CCC", "1 2", "CCC"),
+                stack("hbm:concrete_ext_hazard", 6), rows("CCC", "1 2", "CCC"),
                 "C", ItemIds.concrete_smooth, "1", VanillaIds.yellow_dye, "2", VanillaIds.black_dye);
         shaped(NS, "concrete_colored_ext_indigo",
-                stack(ItemIds.concrete_colored_ext, 6).with(ComponentIds.item_variant, 2), rows("CCC", "1 2", "CCC"),
+                stack("hbm:concrete_ext_indigo", 6), rows("CCC", "1 2", "CCC"),
                 "C", ItemIds.concrete_smooth, "1", VanillaIds.blue_dye, "2", VanillaIds.purple_dye);
         shaped(NS, "concrete_colored_ext_machine",
-                stack(ItemIds.concrete_colored_ext, 6).with(ComponentIds.item_variant, 0), rows("CCC", "1 2", "CCC"),
+                stack("hbm:concrete_ext_machine", 6), rows("CCC", "1 2", "CCC"),
                 "C", ItemIds.concrete_smooth, "1", VanillaIds.brown_dye, "2", VanillaIds.gray_dye);
         shaped(NS, "concrete_colored_ext_machine_stripe",
-                stack(ItemIds.concrete_colored_ext, 6).with(ComponentIds.item_variant, 1), rows("CCC", "1 2", "CCC"),
+                stack("hbm:concrete_ext_machine_stripe", 6), rows("CCC", "1 2", "CCC"),
                 "C", ItemIds.concrete_smooth, "1", VanillaIds.brown_dye, "2", VanillaIds.black_dye);
         shaped(NS, "concrete_colored_ext_pink",
-                stack(ItemIds.concrete_colored_ext, 6).with(ComponentIds.item_variant, 4), rows("CCC", "1 2", "CCC"),
+                stack("hbm:concrete_ext_pink", 6), rows("CCC", "1 2", "CCC"),
                 "C", ItemIds.concrete_smooth, "1", VanillaIds.pink_dye, "2", VanillaIds.red_dye);
         shaped(NS, "concrete_colored_ext_purple",
-                stack(ItemIds.concrete_colored_ext, 6).with(ComponentIds.item_variant, 3), rows("CCC", "1 2", "CCC"),
+                stack("hbm:concrete_ext_purple", 6), rows("CCC", "1 2", "CCC"),
                 "C", ItemIds.concrete_smooth, "1", VanillaIds.purple_dye, "2", VanillaIds.purple_dye);
         shaped(NS, "concrete_colored_ext_sand",
-                stack(ItemIds.concrete_colored_ext, 6).with(ComponentIds.item_variant, 6), rows("CCC", "1 2", "CCC"),
+                stack("hbm:concrete_ext_sand", 6), rows("CCC", "1 2", "CCC"),
                 "C", ItemIds.concrete_smooth, "1", VanillaIds.yellow_dye, "2", VanillaIds.gray_dye);
-        shaped(NS, "concrete_colored_gray", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 7),
+        shaped(NS, "concrete_colored_gray", stack("hbm:concrete_gray", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.gray_dye);
-        shaped(NS, "concrete_colored_green", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 13),
+        shaped(NS, "concrete_colored_green", stack("hbm:concrete_green", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.green_dye);
-        shaped(NS, "concrete_colored_light_blue", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 3),
+        shaped(NS, "concrete_colored_light_blue", stack("hbm:concrete_light_blue", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.light_blue_dye);
-        shaped(NS, "concrete_colored_lime", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 5),
+        shaped(NS, "concrete_colored_lime", stack("hbm:concrete_lime", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.lime_dye);
-        shaped(NS, "concrete_colored_magenta", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 2),
+        shaped(NS, "concrete_colored_magenta", stack("hbm:concrete_magenta", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.magenta_dye);
-        shaped(NS, "concrete_colored_orange", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 1),
+        shaped(NS, "concrete_colored_orange", stack("hbm:concrete_orange", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.orange_dye);
-        shaped(NS, "concrete_colored_pink", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 6),
+        shaped(NS, "concrete_colored_pink", stack("hbm:concrete_pink", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.pink_dye);
-        shaped(NS, "concrete_colored_purple", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 10),
+        shaped(NS, "concrete_colored_purple", stack("hbm:concrete_purple", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.purple_dye);
-        shaped(NS, "concrete_colored_red", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 14),
+        shaped(NS, "concrete_colored_red", stack("hbm:concrete_red", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.red_dye);
-        shaped(NS, "concrete_colored_silver", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 8),
+        shaped(NS, "concrete_colored_silver", stack("hbm:concrete_silver", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.light_gray_dye);
-        shaped(NS, "concrete_colored_white", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 0),
+        shaped(NS, "concrete_colored_white", stack("hbm:concrete_white", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.white_dye);
-        shaped(NS, "concrete_colored_yellow", stack(ItemIds.concrete_colored, 8).with(ComponentIds.item_variant, 4),
+        shaped(NS, "concrete_colored_yellow", stack("hbm:concrete_yellow", 8),
                 rows("CCC", "CDC", "CCC"),
                 "C", ItemIds.concrete_smooth, "D", VanillaIds.yellow_dye);
         shaped(NS, "concrete_pillar", ItemIds.concrete_pillar, 6, rows("CBC", "CBC", "CBC"),
@@ -801,9 +801,9 @@ public final class ModShapedRecipes {
                 "P", TagIds.ingots_any_rubber, "F", TagIds.plates_iron);
         shaped(NS, "gas_mask_olde", ItemIds.gas_mask_olde, rows("PPP", "GPG", " F "),
                 "G", TagIds.glass_panes, "P", VanillaIds.leather, "F", TagIds.ingots_iron);
-        shaped(NS, "gear_large", stack(ItemIds.gear_large).with(ComponentIds.item_variant, 0), rows("III", "ICI", "III"),
+        shaped(NS, "gear_large", stack("hbm:gear_large"), rows("III", "ICI", "III"),
                 "I", TagIds.plates_iron, "C", TagIds.ingots_copper);
-        shaped(NS, "gear_large_1", stack(ItemIds.gear_large).with(ComponentIds.item_variant, 1),
+        shaped(NS, "gear_large_1", stack("hbm:gear_large_steel"),
                 rows("III", "ICI", "III"),
                 "I", TagIds.plates_steel, "C", TagIds.ingots_titanium);
         shaped(NS, "glass_polarized", ItemIds.glass_polarized, 4, rows("##", "##"),
@@ -1180,14 +1180,14 @@ public final class ModShapedRecipes {
                 "P", TagIds.plates_steel, "I", TagIds.ingots_steel);
         shaped(NS, "photo_panel", ItemIds.photo_panel, rows(" G ", "IPI", " C "),
                 "G", TagIds.glass_panes, "I", ItemIds.plate_polymer, "P", TagIds.billets_silicon, "C", ItemIds.circuit_pcb);
-        shaped(NS, "pile_device_control", stack(ItemIds.pile_device).with(ComponentIds.item_variant, 2),
+        shaped(NS, "pile_device_control", stack("hbm:pile_control"),
                 rows(" B ", "SBS", "SBS"),
                 "B", TagIds.ingots_boron, "S", TagIds.plates_steel);
-        shaped(NS, "pile_device_loader", stack(ItemIds.pile_device).with(ComponentIds.item_variant, 0),
+        shaped(NS, "pile_device_loader", stack("hbm:pile_loader"),
                 rows(" A ", "CBS"),
                 "A", TagIds.plates_aluminium, "C", TagIds.plates_cast_steel, "B", TagIds.ingots_boron,
                 "S", TagIds.shells_steel);
-        shaped(NS, "pile_device_vent", stack(ItemIds.pile_device).with(ComponentIds.item_variant, 1),
+        shaped(NS, "pile_device_vent", stack("hbm:pile_vent"),
                 rows(" M ", "ACA", " S "),
                 "M", ItemIds.motor, "A", TagIds.plates_aluminium, "C", TagIds.shells_copper,
                 "S", TagIds.plates_cast_steel);

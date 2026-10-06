@@ -63,12 +63,19 @@ public final class ModMachineItems {
     public static final RegistryObject<ItemBlueprints> blueprints = REG.<ItemBlueprints>item(
             "blueprints", (Item.Properties p) -> new ItemBlueprints(p, null))
             .icon(d -> d.models(Models.generated("hbm:items/blueprints"))
-                    .definition(ItemModels.select("hbm:item_variant").when("1", ItemModels.model("hbm:item/blueprints_discover")).when("2", ItemModels.model("hbm:item/blueprints_secret")).when("3", ItemModels.model("hbm:item/blueprints_528")).fallback(ItemModels.model("hbm:item/blueprints"))));
-    /** The 1.12.2 booklet which turns into a randomly selected blueprint on right-click. */
+                    // hbm:model_state: the pool's prefix (ItemBlueprints.modelState), never stored
+                    .definition(ItemModels.select("hbm:model_state").when("1", ItemModels.model("hbm:item/blueprints_discover")).when("2", ItemModels.model("hbm:item/blueprints_secret")).when("3", ItemModels.model("hbm:item/blueprints_528")).fallback(ItemModels.model("hbm:item/blueprints"))));
+    /**
+     * The booklet which turns into a randomly selected blueprint on right-click: 1.7 metadata 0 ({@code blueprint_folder})
+     * and 1 ({@code blueprint_folder_discover}), one item each as in ntm-next (History §19es-itemvariant).
+     */
     public static final RegistryObject<ItemBlueprintFolder> blueprint_folder = REG.<ItemBlueprintFolder>item(
-            "blueprint_folder", ItemBlueprintFolder::new, p -> p.stacksTo(1))
-            .icon(d -> d.models(Models.generated("hbm:items/blueprint_folder"))
-                    .definition(ItemModels.select("hbm:item_variant").when("1", ItemModels.model("hbm:item/blueprint_folder_discover")).fallback(ItemModels.model("hbm:item/blueprint_folder"))));
+            "blueprint_folder", p -> new ItemBlueprintFolder(p, 0), p -> p.stacksTo(1)).transform(Presets.sprite());
+    public static final RegistryObject<ItemBlueprintFolder> blueprint_folder_discover = REG.<ItemBlueprintFolder>item(
+            "blueprint_folder_discover", p -> new ItemBlueprintFolder(p, 1), p -> p.stacksTo(1)).transform(Presets.sprite());
+    /** 1.7 metadata 2 (SECRET pools; dungeon loot only, 1.7 kept it out of the creative tab). */
+    public static final RegistryObject<ItemBlueprintFolder> blueprint_folder_secret = REG.<ItemBlueprintFolder>item(
+            "blueprint_folder_secret", p -> new ItemBlueprintFolder(p, 2), p -> p.stacksTo(1)).transform(Presets.sprite());
     /** Faulty output from precision-assembler recipes; the original item id is carried as data. */
     public static final RegistryObject<ItemBroken> broken_item = REG.<ItemBroken>item(
             "broken_item", ItemBroken::new)
@@ -125,6 +132,7 @@ public final class ModMachineItems {
         ModTabs.addTo(HbmTab.TEMPLATES, blueprint_plate);
         ModTabs.addTo(HbmTab.TEMPLATES, blueprints);
         ModTabs.addTo(HbmTab.TEMPLATES, blueprint_folder);
+        ModTabs.addTo(HbmTab.TEMPLATES, blueprint_folder_discover); // 1.7 getSubItems: metadata 0 and 1
         ModTabs.addTo(HbmTab.CONTROL, laser_crystal_co2);
         ModTabs.addTo(HbmTab.CONTROL, laser_crystal_bismuth);
         ModTabs.addTo(HbmTab.CONTROL, laser_crystal_cmb);

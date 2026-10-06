@@ -72,8 +72,8 @@ public final class DecoCrateMachineRecipes {
 
     /** 1.7 ShredderRecipes:338-341: a bobblehead gives the plastic scrap of its {@code BobbleType.scrap}; else null. */
     public static ItemStack bobbleScrap(ItemStack stack) {
-        if (stack.isEmpty() || stack.getItem() != ModDecoCrateBlocks.bobblehead.get().asItem()
-                || !(stack.getItem() instanceof com.hbm.items.block.ItemBlockDecoVariant item)) return null;
+        if (stack.isEmpty() || !(stack.getItem() instanceof com.hbm.items.block.ItemBlockDecoVariant item)
+                || item.getBlock() != ModDecoCrateBlocks.bobblehead.get()) return null;
         com.hbm.blocks.generic.BlockBobble.BobbleType type =
                 com.hbm.blocks.generic.BlockBobble.BobbleType.of(item.variant(stack));
         ItemStack scrap = stack("scrap_plastic_" + type.scrap.toLowerCase(Locale.US), 1);

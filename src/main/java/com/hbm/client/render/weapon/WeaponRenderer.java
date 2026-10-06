@@ -178,13 +178,43 @@ public abstract class WeaponRenderer {
         replay(stack, false, pose, collector, light, overlay, staticContext, owner, InteractionHand.MAIN_HAND);
     }
 
+    /**
+     * 1.7 {@code renderModTable(stack, index)}: the gun at rest in its own model space, as the weapon table's
+     * preview draws it after {@link WeaponTableFrames}' {@code setupModTable} frame. The default is 1.7's
+     * {@code renderOther(stack, INVENTORY)}; the renderers whose 1.7 class overrode either hook gate on
+     * {@link WeaponPose#modTable} (the akimbo guns draw the one gun of configuration {@code index}).
+     */
+    public final void renderModTable(ItemStack stack, int index, PoseStack pose, SubmitSink collector,
+            int light, int overlay) {
+        replay(stack, false, pose, collector, light, overlay, ItemDisplayContext.GUI, null,
+                InteractionHand.MAIN_HAND, index);
+    }
+
     private void replay(ItemStack stack, boolean animated, PoseStack poseStack, SubmitSink collector,
             int light, int overlay, ItemDisplayContext context,
             net.minecraft.world.entity.@Nullable LivingEntity owner, InteractionHand hand) {
+        replay(stack, animated, poseStack, collector, light, overlay, context, owner, hand, -1);
+    }
+
+    /** {@code tableIndex} below zero is every draw but the weapon table's. */
+    private void replay(ItemStack stack, boolean animated, PoseStack poseStack, SubmitSink collector,
+            int light, int overlay, ItemDisplayContext context,
+            net.minecraft.world.entity.@Nullable LivingEntity owner, InteractionHand hand, int tableIndex) {
         pose.begin(stack, animated, overlay, context, owner, hand);
+        if (tableIndex >= 0) {
+            pose.modTable = true;
+            pose.tableIndex = tableIndex;
+        }
         Gem.replay(gem(), pose, poseStack, collector, light);
+        overlays(pose, poseStack, collector);
         WeaponEffects.render(pose, poseStack, collector, light, overlay);
     }
+
+    /**
+     * Passes a weapon draws over its own declared parts after them (1.7's Fat Man balefire glint). Walk the
+     * declaration with {@code Gem.walk} so each pass gets the exact pose its part was drawn at.
+     */
+    protected void overlays(WeaponPose state, PoseStack poseStack, SubmitSink collector) {}
 
     /**
      * The pose upstream puts a weapon in for every context that is not the first-person hand.

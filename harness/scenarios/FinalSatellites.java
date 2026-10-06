@@ -28,7 +28,7 @@ public final class FinalSatellites implements Scenario {
     static final String[] IDS = {"hbm:sat_mapper", "hbm:sat_scanner", "hbm:sat_radar", "hbm:sat_laser",
             "hbm:sat_foeq", "hbm:sat_resonator", "hbm:sat_miner", "hbm:sat_lunar_miner", "hbm:sat_gerald",
             "hbm:sat_chip", "hbm:sat_coord", "hbm:sat_designator", "hbm:sat_relay", "hbm:machine_satlinker",
-            "hbm:sat_dock", "hbm:machine_satlink", "hbm:soyuz_launcher", "hbm:missile_soyuz",
+            "hbm:sat_dock", "hbm:machine_satlink", "hbm:soyuz_launcher", "hbm:missile_soyuz_0",
             "hbm:missile_soyuz_lander"};
 
     // 1.7 EnumSatType ordinals
@@ -85,11 +85,11 @@ public final class FinalSatellites implements Scenario {
 
         c.cmd("clear");
         c.cmd("give @s " + satellite(c, PRECISION_LASER, laserFreq) + " 1");
-        c.cmd("give @s hbm:missile_soyuz 1");
+        c.cmd("give @s hbm:missile_soyuz_0 1");
         c.waitTicks(3);
         openLauncher(c, launcher);
-        clickFromInventory(c, "hbm:missile_soyuz", 0);
-        clickFromInventory(c, "hbm:satellite", 2);
+        clickFromInventory(c, "hbm:missile_soyuz_0", 0);
+        clickFromInventory(c, satId(PRECISION_LASER), 2);
         c.waitTicks(3);
         close(c);
         c.cmd("data merge block " + launcher[0] + " " + launcher[1] + " " + launcher[2]
@@ -356,14 +356,20 @@ public final class FinalSatellites implements Scenario {
         return c.node().startsWith("1.20.");
     }
 
+    private static final String[] SAT_NAMES = {"spy", "scanner", "radar", "miner_astro", "miner_lunar",
+            "precision_laser", "death_ray", "xenium_resonator", "relay", "detector", "ray_scan"};
+
+    /** The item id of 1.7 satellite metadata {@code variant}. */
+    private static String satId(int variant) {
+        return "hbm:satellite_" + SAT_NAMES[variant];
+    }
+
     /** A satellite variant, optionally with a frequency already on it. */
     private static String satellite(Client c, int variant, int freq) {
-        if (legacy(c)) {
-            return "hbm:satellite{\"hbm:item_variant\":" + variant
-                    + (freq != 0 ? ",\"hbm:persistent_data\":{freq:" + freq + "}" : "") + "}";
-        }
-        return "hbm:satellite[hbm:item_variant=" + variant
-                + (freq != 0 ? ",hbm:persistent_data={freq:" + freq + "}" : "") + "]";
+        // one item per satellite since History §19es-itemvariant (ntm-next ids)
+        String id = "hbm:satellite_" + new String[] {"spy", "scanner", "radar", "miner_astro", "miner_lunar", "precision_laser", "death_ray", "xenium_resonator", "relay", "detector", "ray_scan"}[variant];
+        if (legacy(c)) return id + (freq != 0 ? "{\"hbm:persistent_data\":{freq:" + freq + "}}" : "");
+        return id + (freq != 0 ? "[hbm:persistent_data={freq:" + freq + "}]" : "");
     }
 
     private static String chip(Client c, String id, int freq) {
@@ -380,7 +386,7 @@ public final class FinalSatellites implements Scenario {
         c.waitTicks(4);
         JsonObject inv = c.inventory();
         for (String id : IDS) Expect.that(inv.toString().contains("\"" + id + "\""), "inventory holds " + id);
-        Expect.that(inv.toString().contains("\"hbm:satellite\""), "inventory holds the satellites");
+        for (int v = 0; v <= 10; v++) Expect.that(inv.toString().contains("\"" + satId(v) + "\""), "inventory holds " + satId(v));
         c.key("key.inventory");
         c.waitScreen("", 5000);
         c.waitTicks(10);
@@ -412,7 +418,7 @@ public final class FinalSatellites implements Scenario {
         c.cmd("give @s " + chipId + " 1");
         c.waitTicks(3);
         openAt(c, LX + 2.5, LZ + 0.5, LX + 0.5, LZ + 0.5, "SatLink Device");
-        clickFromInventory(c, "hbm:satellite", 2);
+        clickFromInventory(c, satId(variant), 2);
         c.waitTicks(5);
         int freq = freqIn(c.blockEntity(LX, Y + 1, LZ).toString(), 2);
         Expect.that(freq >= 0 && freq < 100_000, "the randomiser gave a frequency below 100,000: " + freq);
@@ -450,7 +456,7 @@ public final class FinalSatellites implements Scenario {
         c.cmd("give @s " + chipId + " 1");
         c.waitTicks(3);
         openAt(c, LX + 2.5, LZ + 0.5, LX + 0.5, LZ + 0.5, "SatLink Device");
-        clickFromInventory(c, "hbm:satellite", 0);
+        clickFromInventory(c, satId(variant), 0);
         clickFromInventory(c, chipId, 1);
         c.waitTicks(5);
         Expect.that(freqIn(c.blockEntity(LX, Y + 1, LZ).toString(), 1) == freq, "the copy slot took " + freq);

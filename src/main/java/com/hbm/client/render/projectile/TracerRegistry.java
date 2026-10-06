@@ -129,8 +129,8 @@ public final class TracerRegistry {
                 pose -> { pose.mulPose(Axis.YN.rotationDegrees(90F)); pose.translate(0F, -1F, 1F); }), "cluster_submunition");
         register(rocketModel("models/weapons/panzerschreck.obj", "textures/models/weapons/panzerschreck.png", "Rocket", 0.125F,
                 pose -> { pose.mulPose(Axis.YN.rotationDegrees(90F)); pose.translate(0F, 0F, 3.5F); }), "nuke_hive");
-        register(model("models/weapons/fatman.obj", "textures/models/weapons/fatman_balefire.png", "MiniNuke", 0.125F,
-                pose -> { pose.mulPose(Axis.YN.rotationDegrees(90F)); pose.translate(0F, -1F, 1F); }), "nuke_balefire");
+        // 1.7 LegoClient.RENDER_NUKE_BALEFIRE: the shell through ItemRenderFatMan.renderBalefire, glint included
+        register(balefireNuke(), "nuke_balefire");
         register(model("models/weapons/charge_thrower.obj", "textures/models/weapons/charge_thrower_mortar.png", "Mortar", 0.125F,
                 pose -> { pose.mulPose(Axis.YN.rotationDegrees(90F)); pose.mulPose(Axis.ZP.rotationDegrees(180F)); pose.translate(0F, 0F, -6F); }),
                 "ct_mortar", "ct_mortar_charge");
@@ -225,6 +225,26 @@ public final class TracerRegistry {
             transform.accept(pose);
             sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutout(texture),
                     (p, buffer) -> model(model).renderPart(part, p, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
+            pose.popPose();
+        };
+    }
+
+    /**
+     * 1.7 {@code RENDER_NUKE_BALEFIRE}: scale 0.125, -90 about Y, (0, -1, 1), then the balefire mini-nuke and its glint
+     * drawn over the same triangles ({@link com.hbm.client.render.BalefireGlint}).
+     */
+    private static BulletTracer balefireNuke() {
+        Identifier modelId = Ids.of("hbm", "models/weapons/fatman.obj");
+        Identifier texture = Ids.of("hbm", "textures/models/weapons/fatman_balefire.png");
+        return (state, pose, sink) -> {
+            dev.golem.core.render.gem.Geometry nuke = model(modelId).part("MiniNuke");
+            pose.pushPose();
+            pose.scale(0.125F, 0.125F, 0.125F);
+            pose.mulPose(Axis.YN.rotationDegrees(90F));
+            pose.translate(0F, -1F, 1F);
+            sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutout(texture),
+                    (p, buffer) -> nuke.draw(p, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY, -1));
+            com.hbm.client.render.BalefireGlint.fatMan(pose, sink.order(1), nuke);
             pose.popPose();
         };
     }

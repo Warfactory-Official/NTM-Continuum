@@ -47,7 +47,8 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The twelve 16-inch shells. 1.12.2 holds them as an array of anonymous subclasses indexed by item
- * damage; here the behaviour lives on the enum constants and the selector is {@code ITEM_VARIANT}.
+ * damage; here the behaviour lives on the enum constants and each shell is its own item, named as ntm-next names
+ * it ({@link ArtilleryShellType#name}: {@code ammo_arty}, {@code ammo_arty_he}, ...).
  *
  * <p>Spent casings are absent by standing project decision: this port's ammunition carries no casing, so
  * the shells declare none. The chemical shells push 1.7's heavy-metal and poison loads into the pollution
@@ -55,14 +56,15 @@ import net.minecraft.world.phys.Vec3;
  */
 public class ItemAmmoArty extends ItemEnumMulti {
 
-    public ItemAmmoArty(Properties properties) {
-        super(ArtilleryShellType.class, true, true, properties);
+    public ItemAmmoArty(Properties properties, ArtilleryShellType type) {
+        super(ArtilleryShellType.class, type, properties);
     }
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        String desc = getDescriptionId() + "." + getType(stack).name().toLowerCase(Locale.US) + ".desc.";
+        // the 1.7 tooltip keys, item.hbm.ammo_arty.<type>.desc.<n>, kept as they were
+        String desc = "item.hbm.ammo_arty." + getType(stack).name().toLowerCase(Locale.US) + ".desc.";
         switch ((ArtilleryShellType) getType(stack)) {
             case NORMAL, CLASSIC -> {
                 line(tooltip, desc, 0, ChatFormatting.YELLOW);

@@ -49,57 +49,22 @@ public final class ObjItemDeclarations {
     }
 
     private static void part0() {
-        Dejson.item(NS, "ammo_himars")
-                .models(Models.parented("hbm:item/machine_obj_context_legacy", Slots.EMPTY))
-                .definition(ItemModels.select("hbm:item_variant")
-                        .when("1", MachineObjModel.of("hbm:models/turrets/turret_himars.obj", "hbm:textures/models/projectiles/himars_standard_he.png")
-                                .scale(1.0).ty(0.0).yaw(-45.0).pitch(90.0).guiScale(2.75).guiSpinSpeed(0.1)
-                                .rawLegacyTransform().itemTranslate(0.0, 1.5, 0.0)
-                                .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)
-                                .translate(0.75, 0.0, 0.0).parts("RocketStandard")
-                                .passes(MachineObjModel.pass("hbm:textures/models/projectiles/himars_standard_he.png").parts("TubeStandard").translate(-0.75, -3.375, 0.0)))
-                        .when("2", MachineObjModel.of("hbm:models/turrets/turret_himars.obj", "hbm:textures/models/projectiles/himars_standard_wp.png")
-                                .scale(1.0).ty(0.0).yaw(-45.0).pitch(90.0).guiScale(2.75).guiSpinSpeed(0.1)
-                                .rawLegacyTransform().itemTranslate(0.0, 1.5, 0.0)
-                                .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)
-                                .translate(0.75, 0.0, 0.0).parts("RocketStandard")
-                                .passes(MachineObjModel.pass("hbm:textures/models/projectiles/himars_standard_wp.png").parts("TubeStandard").translate(-0.75, -3.375, 0.0)))
-                        .when("3", MachineObjModel.of("hbm:models/turrets/turret_himars.obj", "hbm:textures/models/projectiles/himars_standard_tb.png")
-                                .scale(1.0).ty(0.0).yaw(-45.0).pitch(90.0).guiScale(2.75).guiSpinSpeed(0.1)
-                                .rawLegacyTransform().itemTranslate(0.0, 1.5, 0.0)
-                                .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)
-                                .translate(0.75, 0.0, 0.0).parts("RocketStandard")
-                                .passes(MachineObjModel.pass("hbm:textures/models/projectiles/himars_standard_tb.png").parts("TubeStandard").translate(-0.75, -3.375, 0.0)))
-                        .when("4", MachineObjModel.of("hbm:models/turrets/turret_himars.obj", "hbm:textures/models/projectiles/himars_standard_lava.png")
-                                .scale(1.0).ty(0.0).yaw(-45.0).pitch(90.0).guiScale(2.75).guiSpinSpeed(0.1)
-                                .rawLegacyTransform().itemTranslate(0.0, 1.5, 0.0)
-                                .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)
-                                .translate(0.75, 0.0, 0.0).parts("RocketStandard")
-                                .passes(MachineObjModel.pass("hbm:textures/models/projectiles/himars_standard_lava.png").parts("TubeStandard").translate(-0.75, -3.375, 0.0)))
-                        .when("5", MachineObjModel.of("hbm:models/turrets/turret_himars.obj", "hbm:textures/models/projectiles/himars_standard_mini_nuke.png")
-                                .scale(1.0).ty(0.0).yaw(-45.0).pitch(90.0).guiScale(2.75).guiSpinSpeed(0.1)
-                                .rawLegacyTransform().itemTranslate(0.0, 1.5, 0.0)
-                                .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)
-                                .translate(0.75, 0.0, 0.0).parts("RocketStandard")
-                                .passes(MachineObjModel.pass("hbm:textures/models/projectiles/himars_standard_mini_nuke.png").parts("TubeStandard").translate(-0.75, -3.375, 0.0)))
-                        .when("6", MachineObjModel.of("hbm:models/turrets/turret_himars.obj", "hbm:textures/models/projectiles/himars_single.png")
-                                .scale(1.0).ty(0.0).yaw(-45.0).pitch(90.0).guiScale(2.75).guiSpinSpeed(0.1)
-                                .rawLegacyTransform().itemTranslate(0.0, 1.5, 0.0)
-                                .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)
-                                .translate(0.75, 0.0, 0.0).parts("RocketSingle")
-                                .passes(MachineObjModel.pass("hbm:textures/models/projectiles/himars_single.png").parts("TubeSingle").translate(-0.75, -3.375, 0.0)))
-                        .when("7", MachineObjModel.of("hbm:models/turrets/turret_himars.obj", "hbm:textures/models/projectiles/himars_single_tb.png")
-                                .scale(1.0).ty(0.0).yaw(-45.0).pitch(90.0).guiScale(2.75).guiSpinSpeed(0.1)
-                                .rawLegacyTransform().itemTranslate(0.0, 1.5, 0.0)
-                                .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)
-                                .translate(0.75, 0.0, 0.0).parts("RocketSingle")
-                                .passes(MachineObjModel.pass("hbm:textures/models/projectiles/himars_single_tb.png").parts("TubeSingle").translate(-0.75, -3.375, 0.0)))
-                        .fallback(MachineObjModel.of("hbm:models/turrets/turret_himars.obj", "hbm:textures/models/projectiles/himars_standard.png")
-                                .scale(1.0).ty(0.0).yaw(-45.0).pitch(90.0).guiScale(2.75).guiSpinSpeed(0.1)
-                                .rawLegacyTransform().itemTranslate(0.0, 1.5, 0.0)
-                                .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)
-                                .translate(0.75, 0.0, 0.0).parts("RocketStandard")
-                                .passes(MachineObjModel.pass("hbm:textures/models/projectiles/himars_standard.png").parts("TubeStandard").translate(-0.75, -3.375, 0.0)))).oversizedInGui().register();
+        // 1.7 ammo_himars metadata, one item per rocket (ntm-next ids ammo_himars_<name>; History §19es-itemvariant):
+        // ItemRenderLibrary's rocket + tube pair from the HIMARS mesh, the pair by modelType, the sheet by the type
+        for (String[] rocket : new String[][] {{"standard", "Standard"}, {"standard_he", "Standard"},
+                {"standard_wp", "Standard"}, {"standard_tb", "Standard"}, {"standard_lava", "Standard"},
+                {"standard_mini_nuke", "Standard"}, {"single", "Single"}, {"single_tb", "Single"}}) {
+            String sheet = "hbm:textures/models/projectiles/himars_" + rocket[0] + ".png";
+            Dejson.item(NS, "ammo_himars_" + rocket[0])
+                    .models(Models.parented("hbm:item/machine_obj_context_legacy", Slots.EMPTY))
+                    .definition(MachineObjModel.of("hbm:models/turrets/turret_himars.obj", sheet)
+                            .scale(1.0).ty(0.0).yaw(-45.0).pitch(90.0).guiScale(2.75).guiSpinSpeed(0.1)
+                            .rawLegacyTransform().itemTranslate(0.0, 1.5, 0.0)
+                            .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)
+                            .translate(0.75, 0.0, 0.0).parts("Rocket" + rocket[1])
+                            .passes(MachineObjModel.pass(sheet).parts("Tube" + rocket[1]).translate(-0.75, -3.375, 0.0)))
+                    .oversizedInGui().register();
+        }
         Dejson.item(NS, "anvil_arsenic_bronze")
                 // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj (icon-P2 2026-10-01)
                 .definition(MachineObjModel.of("hbm:models/anvils/anvil_arsenic_bronze.obj", "hbm:textures/models/anvils/anvil_arsenic_bronze.png")
@@ -623,11 +588,11 @@ public final class ObjItemDeclarations {
         // Rx(30), then a Z spin about the hub T(0,1.375,0) Rz(millis % 3600 * k) T(0,-1.375,0) (k = 0.1 gear, 0.2 saw),
         // all GUI-only; renderCommonWithStack T(0,0,-0.875) and one part (stirling Cog by damage, sawmill Blade).
         Dejson.item(NS, "gear_large")
-                .definition(ItemModels.select("hbm:item_variant")
-                        .when("1", wheel("hbm:models/machines/stirling.obj", "hbm:textures/models/machines/stirling_steel.png", 0.1)
-                                .exclude("Base", "CogSmall", "Piston"))
-                        .fallback(wheel("hbm:models/machines/stirling.obj", "hbm:textures/models/machines/stirling.png", 0.1)
-                                .exclude("Base", "CogSmall", "Piston"))).oversizedInGui().register();
+                .definition(wheel("hbm:models/machines/stirling.obj", "hbm:textures/models/machines/stirling.png", 0.1)
+                        .exclude("Base", "CogSmall", "Piston")).oversizedInGui().register();
+        Dejson.item(NS, "gear_large_steel")
+                .definition(wheel("hbm:models/machines/stirling.obj", "hbm:textures/models/machines/stirling_steel.png", 0.1)
+                        .exclude("Base", "CogSmall", "Piston")).oversizedInGui().register();
         Dejson.item(NS, "sawblade")
                 .definition(wheel("hbm:models/machines/sawmill.obj", "hbm:textures/models/machines/sawmill.png", 0.2)
                         .exclude("GearRight", "GearLeft", "Main")).oversizedInGui().register();
@@ -1074,7 +1039,7 @@ public final class ObjItemDeclarations {
                         .passes(MachineObjModel.pass("hbm:textures/models/machines/satlink.png").parts("Rotor").rotateStep(0.0, 15.0, 0.0),
                                 MachineObjModel.pass("hbm:textures/models/machines/satlink.png").parts("Dish").rotateStep(0.0, 15.0, 0.0).translateStep(0.0, 7.375, 0.0).rotateStep(0.0, 0.0, -45.0).translateStep(0.0, -7.375, 0.0))).oversizedInGui().register();
         Dejson.item(NS, "machine_sawmill")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("1", MachineObjModel.of("hbm:models/machines/sawmill.obj", "hbm:textures/models/machines/sawmill.png").scale(1.0)
                                 .ty(0.0).yaw(90.0).guiScale(3.25).rawLegacyTransform()
                                 .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
@@ -1109,7 +1074,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -1.5, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_stirling")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("1", MachineObjModel.of("hbm:models/machines/stirling.obj", "hbm:textures/models/machines/stirling.png").scale(1.0)
                                 .ty(0.0).yaw(90.0).guiScale(3.25).rawLegacyTransform().spin()
                                 .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
@@ -1120,7 +1085,7 @@ public final class ObjItemDeclarations {
                                 .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                                 .guiTranslate(0.0, -1.5, 0.0).spinPivot(0.0, 1.375, 0.0).spinParts("Stirling"))).oversizedInGui().register();
         Dejson.item(NS, "machine_stirling_creative")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("1", MachineObjModel.of("hbm:models/machines/stirling.obj", "hbm:textures/models/machines/stirling_creative.png")
                                 .scale(1.0).ty(0.0).yaw(90.0).guiScale(3.25).rawLegacyTransform().spin()
                                 .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
@@ -1131,7 +1096,7 @@ public final class ObjItemDeclarations {
                                 .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                                 .guiTranslate(0.0, -1.5, 0.0).spinPivot(0.0, 1.375, 0.0).spinParts("Stirling"))).oversizedInGui().register();
         Dejson.item(NS, "machine_stirling_steel")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("1", MachineObjModel.of("hbm:models/machines/stirling.obj", "hbm:textures/models/machines/stirling_steel.png")
                                 .scale(1.0).ty(0.0).yaw(90.0).guiScale(3.25).rawLegacyTransform().spin()
                                 .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
@@ -1454,24 +1419,16 @@ public final class ObjItemDeclarations {
                         .scale(0.5).ty(0.0).yaw(90.0).guiScale(4.0).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -1.0, 0.0)).oversizedInGui().register();
-        Dejson.item(NS, "pile_device")
-                .definition(ItemModels.select("hbm:item_variant")
-                        .when("0", MachineObjModel.of("hbm:models/pile/pile_control.obj", "hbm:textures/models/pile/pile_control.png").scale(2.0)
-                                .ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform()
-                                .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
-                                .guiTranslate(0.0, -3.5, 0.0))
-                        .when("1", MachineObjModel.of("hbm:models/pile/pile_loader.obj", "hbm:textures/models/pile/pile_loader.png").scale(2.0)
-                                .ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform()
-                                .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
-                                .guiTranslate(0.0, -3.5, 0.0))
-                        .when("2", MachineObjModel.of("hbm:models/pile/pile_vent.obj", "hbm:textures/models/pile/pile_vent.png").scale(2.0)
-                                .ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform()
-                                .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
-                                .guiTranslate(0.0, -3.5, 0.0))
-                        .fallback(MachineObjModel.of("hbm:models/pile/pile_control.obj", "hbm:textures/models/pile/pile_control.png").scale(2.0)
-                                .ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform()
-                                .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
-                                .guiTranslate(0.0, -3.5, 0.0))).oversizedInGui().register();
+        // 1.7 pile_device metadata 0..2 (loader, vent, control rod; RenderPileLoader's item renderer picks the mesh by
+        // item damage), one item each (ntm-next ids; History §19es-itemvariant). The single select this replaced drew
+        // metadata 0 with the control-rod mesh and 1 with the loader's.
+        for (String device : new String[] {"loader", "vent", "control"}) {
+            Dejson.item(NS, "pile_" + device)
+                    .definition(MachineObjModel.of("hbm:models/pile/pile_" + device + ".obj", "hbm:textures/models/pile/pile_" + device + ".png").scale(2.0)
+                            .ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform()
+                            .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
+                            .guiTranslate(0.0, -3.5, 0.0)).oversizedInGui().register();
+        }
         Dejson.item(NS, "pink_barrel")
                 // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel) (icon-P2 2026-10-01)
                 .definition(MachineObjModel.of("hbm:models/blocks/barrel.obj", "hbm:textures/blocks/barrel_pink.png")
@@ -1621,7 +1578,7 @@ public final class ObjItemDeclarations {
                 .definition(ItemModels.special("hbm:item/machine_obj_base",
                         ItemModels.custom("hbm:rbmk_block_column").with("side", "hbm:blocks/rbmk/rbmk_outgasser_side").with("top", "hbm:blocks/rbmk/rbmk_outgasser_top").with("scale", 0.35).with("yaw", 0).with("lift", -0.675))).register();
         Dejson.item(NS, "rbmk_pellet_balefire")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_balefire_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_balefire_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_balefire_e2"))
@@ -1634,7 +1591,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_balefire_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_balefire_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_balefire_gold")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_balefire_gold_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_balefire_gold_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_balefire_gold_e2"))
@@ -1647,7 +1604,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_balefire_gold_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_balefire_gold_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_drx")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_drx_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_drx_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_drx_e2"))
@@ -1660,7 +1617,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_drx_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_drx_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_flashlead")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_flashlead_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_flashlead_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_flashlead_e2"))
@@ -1673,7 +1630,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_flashlead_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_flashlead_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_hea241")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_hea241_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_hea241_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_hea241_e2"))
@@ -1686,7 +1643,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_hea241_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_hea241_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_hea242")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_hea242_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_hea242_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_hea242_e2"))
@@ -1699,7 +1656,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_hea242_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_hea242_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_heaus")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_heaus_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_heaus_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_heaus_e2"))
@@ -1715,7 +1672,7 @@ public final class ObjItemDeclarations {
 
     private static void part10() {
         Dejson.item(NS, "rbmk_pellet_hen")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_hen_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_hen_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_hen_e2"))
@@ -1728,7 +1685,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_hen_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_hen_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_hep")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_hep_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_hep_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_hep_e2"))
@@ -1741,7 +1698,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_hep_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_hep_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_hep241")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_hep241_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_hep241_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_hep241_e2"))
@@ -1754,7 +1711,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_hep241_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_hep241_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_hes")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_hes_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_hes_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_hes_e2"))
@@ -1767,7 +1724,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_hes_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_hes_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_heu233")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_heu233_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_heu233_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_heu233_e2"))
@@ -1780,7 +1737,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_heu233_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_heu233_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_heu235")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_heu235_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_heu235_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_heu235_e2"))
@@ -1793,7 +1750,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_heu235_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_heu235_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_lea")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_lea_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_lea_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_lea_e2"))
@@ -1806,7 +1763,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_lea_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_lea_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_leaus")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_leaus_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_leaus_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_leaus_e2"))
@@ -1819,7 +1776,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_leaus_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_leaus_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_lep")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_lep_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_lep_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_lep_e2"))
@@ -1832,7 +1789,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_lep_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_lep_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_les")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_les_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_les_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_les_e2"))
@@ -1845,7 +1802,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_les_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_les_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_mea")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_mea_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_mea_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_mea_e2"))
@@ -1858,7 +1815,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_mea_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_mea_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_men")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_men_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_men_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_men_e2"))
@@ -1871,7 +1828,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_men_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_men_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_mep")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_mep_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_mep_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_mep_e2"))
@@ -1884,7 +1841,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_mep_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_mep_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_mes")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_mes_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_mes_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_mes_e2"))
@@ -1897,7 +1854,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_mes_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_mes_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_meu")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_meu_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_meu_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_meu_e2"))
@@ -1910,7 +1867,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_meu_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_meu_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_mox")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_mox_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_mox_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_mox_e2"))
@@ -1923,7 +1880,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_mox_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_mox_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_po210be")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_po210be_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_po210be_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_po210be_e2"))
@@ -1936,7 +1893,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_po210be_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_po210be_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_pu238be")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_pu238be_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_pu238be_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_pu238be_e2"))
@@ -1949,7 +1906,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_pu238be_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_pu238be_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_ra226be")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_ra226be_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_ra226be_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_ra226be_e2"))
@@ -1962,7 +1919,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_ra226be_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_ra226be_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_thmeu")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_thmeu_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_thmeu_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_thmeu_e2"))
@@ -1975,7 +1932,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_thmeu_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_thmeu_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_ueu")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_ueu_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_ueu_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_ueu_e2"))
@@ -1988,7 +1945,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_ueu_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_ueu_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_uzh")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_uzh_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_uzh_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_uzh_e2"))
@@ -2001,7 +1958,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_uzh_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_uzh_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_zfb_am_mix")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_zfb_am_mix_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_zfb_am_mix_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_zfb_am_mix_e2"))
@@ -2014,7 +1971,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_zfb_am_mix_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_zfb_am_mix_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_zfb_bismuth")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_zfb_bismuth_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_zfb_bismuth_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_zfb_bismuth_e2"))
@@ -2027,7 +1984,7 @@ public final class ObjItemDeclarations {
                         .when("9", ItemModels.model("hbm:item/rbmk_pellet_zfb_bismuth_e4_xe"))
                         .fallback(ItemModels.model("hbm:item/rbmk_pellet_zfb_bismuth_e0"))).register();
         Dejson.item(NS, "rbmk_pellet_zfb_pu241")
-                .definition(ItemModels.select("hbm:item_variant")
+                .definition(ItemModels.select("hbm:model_state")
                         .when("0", ItemModels.model("hbm:item/rbmk_pellet_zfb_pu241_e0"))
                         .when("1", ItemModels.model("hbm:item/rbmk_pellet_zfb_pu241_e1"))
                         .when("2", ItemModels.model("hbm:item/rbmk_pellet_zfb_pu241_e2"))
@@ -2210,30 +2167,17 @@ public final class ObjItemDeclarations {
         // 1.7 RenderScaffoldBlock.renderInventoryBlock: glTranslated(0, -0.5, 0) centres the 0..1-tall OBJ and it is
         // drawn unrotated. The block-framed item path already centres the OBJ's bounds on the block centre, so
         // that is ty 0 / yaw 0 here; the earlier ty -0.5 applied the centring twice (icon half a block low).
-        Dejson.item(NS, "steel_scaffold")
-                // 1.7 RenderScaffoldBlock.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(scaffold), in the 3D
-                // block-item frame (icon-P2 2026-10-01)
-                .models(Model.parent("hbm:item/block_obj_context_legacy")
-                        .override("hbm:item/steel_scaffold_red", "hbm:item_variant", 1)
-                        .override("hbm:item/steel_scaffold_white", "hbm:item_variant", 2)
-                        .override("hbm:item/steel_scaffold_yellow", "hbm:item_variant", 3))
-                .definition(ItemModels.select("hbm:item_variant")
-                        .when("0", MachineObjModel.of("hbm:models/blocks/scaffold.obj", "hbm:textures/blocks/scaffold_steel.png")
-                                .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
-                                .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0))
-                        .when("1", MachineObjModel.of("hbm:models/blocks/scaffold.obj", "hbm:textures/blocks/scaffold_red.png")
-                                .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
-                                .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0))
-                        .when("2", MachineObjModel.of("hbm:models/blocks/scaffold.obj", "hbm:textures/blocks/scaffold_white.png")
-                                .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
-                                .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0))
-                        .when("3", MachineObjModel.of("hbm:models/blocks/scaffold.obj", "hbm:textures/blocks/scaffold_yellow.png")
-                                .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
-                                .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0))
-                        .fallback(MachineObjModel.of("hbm:models/blocks/scaffold.obj", "hbm:textures/blocks/scaffold_steel.png")
-                                .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
-                                .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)))
-                .oversizedInGui().register();
+        // 1.7 steel_scaffold metadata 0..3, one item per colour (ntm-next ids; History §19es-itemvariant)
+        for (String colour : new String[] {"steel", "red", "white", "yellow"}) {
+            Dejson.item(NS, colour.equals("steel") ? "steel_scaffold" : "steel_scaffold_" + colour)
+                    // 1.7 RenderScaffoldBlock.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(scaffold), in the 3D
+                    // block-item frame (icon-P2 2026-10-01)
+                    .models(Model.parent("hbm:item/block_obj_context_legacy"))
+                    .definition(MachineObjModel.of("hbm:models/blocks/scaffold.obj", "hbm:textures/blocks/scaffold_" + colour + ".png")
+                            .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
+                            .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0))
+                    .oversizedInGui().register();
+        }
         Dejson.item(NS, "steel_wall")
                 // 1.7 RenderSteelWall.renderInventoryBlock: translate(-0.5, -0.5, -0.9375), box z 0.875..1 (a plate on the origin); our OBJ is the 1/16-unit placed wall (icon-P2 2026-10-01)
                 .definition(MachineObjModel.of("hbm:models/deco/steel_wall.obj", "hbm:textures/models/deco/steelwall.png")

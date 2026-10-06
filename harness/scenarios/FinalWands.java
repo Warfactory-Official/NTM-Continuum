@@ -161,7 +161,8 @@ public final class FinalWands implements Scenario {
     private static void customMachine(Client c) throws Exception {
         // a stand for the controller: the Paper Press has components one below it, so it sits in the air on glass
         Fixtures.setBlock(c, CX, CY - 1, CZ, "minecraft:glass");
-        String controller = legacy(c) ? "hbm:custom_machine{\"hbm:item_variant\":100}" : "hbm:custom_machine[hbm:item_variant=100]";
+        String controller = legacy(c) ? "hbm:custom_machine{\"hbm:custom_machine\":\"paperPress\"}"
+                : "hbm:custom_machine[hbm:custom_machine=\"paperPress\"]";
         Fixtures.giveOnly(c, controller, 1);
         c.teleport(CX + 0.5, Y + 1, CZ - 2.5);
         c.waitTicks(3);

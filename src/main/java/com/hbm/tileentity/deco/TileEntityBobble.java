@@ -13,8 +13,8 @@ public class TileEntityBobble extends TileEntityTrinket {
     }
 
     @Override
-    protected int typeCount() {
-        return BlockBobble.BobbleType.VALUES.length;
+    protected Enum<?>[] typeValues() {
+        return BlockBobble.BobbleType.VALUES;
     }
 
     public BlockBobble.BobbleType type() {

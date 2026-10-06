@@ -120,7 +120,7 @@ public final class Hazard17GameTests {
         expect(helper, "powder_coal", HazardRegistry.COAL, 3.0);
         helper.assertTrue(level(new ItemStack(Items.PUMPKIN_PIE), HazardRegistry.EXPLOSIVE) == 1.0,
                 "1.7 registers the pumpkin pie as EXPLOSIVE 1");
-        ItemStack pile = com.hbm.blocks.machine.pile.ModPileBlocks.pile_rod.get().of(ItemPileRodMK2.EnumPileRod.RA226BE);
+        ItemStack pile = com.hbm.blocks.machine.pile.ModPileBlocks.pile_rod.stack(ItemPileRodMK2.EnumPileRod.RA226BE);
         helper.assertTrue(Math.abs(level(pile, HazardRegistry.RADIATION) - 33.75) < 1e-4,
                 "Ra226Be pile rod must be rabe*billet*3 = 33.75, got " + level(pile, HazardRegistry.RADIATION));
 

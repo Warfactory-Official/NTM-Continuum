@@ -72,11 +72,7 @@ public class ItemRebarPlacer extends CompatItem {
         list.add(new ItemStack(ModBlocks.concrete_smooth.get()));
         list.add(new ItemStack(ModDecoContent.concrete_pillar.get()));
         for (int i = 0; i < 16; i++) list.add(MaterialCompletionRegistrations.concreteColoredItem(i));
-        for (int i = 0; i < 8; i++) {
-            ItemStack ext = new ItemStack(MaterialCompletionRegistrations.CONCRETE_COLORED_EXT.get());
-            com.hbm.items.ModDataComponents.ITEM_VARIANT.set(ext, i);
-            list.add(ext);
-        }
+        for (int i = 0; i < 8; i++) list.add(MaterialCompletionRegistrations.concreteColoredExtItem(i));
         return list;
     }
 

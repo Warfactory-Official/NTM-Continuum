@@ -151,32 +151,24 @@ public final class HbmJeiPluginCommon {
                 ModDataComponents.MATERIAL.get(stack).orElse("") + "|"
                         + ModDataComponents.MAT_AMOUNT.get(stack).map(String::valueOf).orElse("") + "|"
                         + ModelData.flag(stack) + "|" + ModelData.color(stack, -1));
-        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_long.get(), ModDataComponents.STORAGE_WASTE_CLASS);
-        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_long_tiny.get(), ModDataComponents.STORAGE_WASTE_CLASS);
-        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_short.get(), ModDataComponents.STORAGE_WASTE_CLASS);
-        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_short_tiny.get(), ModDataComponents.STORAGE_WASTE_CLASS);
-        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_long_depleted.get(), ModDataComponents.STORAGE_WASTE_CLASS);
-        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_long_depleted_tiny.get(), ModDataComponents.STORAGE_WASTE_CLASS);
-        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_short_depleted.get(), ModDataComponents.STORAGE_WASTE_CLASS);
-        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_short_depleted_tiny.get(), ModDataComponents.STORAGE_WASTE_CLASS);
-        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg,
-                com.hbm.blocks.material.MaterialCompletionRegistrations.CONCRETE_COLORED_ITEM.get(),
-                ModDataComponents.ITEM_VARIANT);
-        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg,
-                com.hbm.blocks.material.MaterialCompletionRegistrations.CONCRETE_COLORED_EXT_ITEM.get(),
-                ModDataComponents.ITEM_VARIANT);
-        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg,
-                com.hbm.blocks.material.MaterialCompletionRegistrations.LIGHTSTONE_ITEM.get(),
-                ModDataComponents.ITEM_VARIANT);
-        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, com.hbm.items.ModGearItems.gear_large.get(),
-                ModDataComponents.ITEM_VARIANT);
-        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg,
-                com.hbm.blocks.ModSteelBlocks.steel_scaffold.get().asItem(), ModDataComponents.ITEM_VARIANT);
+        // The 1.7 metadata families are one item per type (History §19es-itemvariant); only the items that keep one id
+        // with a typed state still need a subtype interpreter.
         for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
-            if (item instanceof com.hbm.items.ItemEnumMulti) {
-                dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, item, ModDataComponents.ITEM_VARIANT);
+            if (item instanceof com.hbm.items.machine.ItemRBMKPellet) {
+                dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, item, ModDataComponents.RBMK_PELLET);
             }
         }
+        for (var stirling : java.util.List.of(com.hbm.blocks.machine.ModMachineBlocks.machine_stirling,
+                com.hbm.blocks.machine.ModMachineBlocks.machine_stirling_steel,
+                com.hbm.blocks.machine.ModMachineBlocks.machine_stirling_creative)) {
+            dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, stirling.get().asItem(), ModDataComponents.HAS_COG);
+        }
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg,
+                com.hbm.blocks.machine.ModMachineBlocks.machine_sawmill.get().asItem(), ModDataComponents.HAS_BLADE);
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg,
+                com.hbm.items.ModJetpackDependencyItems.ingot_steel_dusted.get(), ModDataComponents.FORGE_COUNT);
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg,
+                com.hbm.blocks.ModCustomMachineBlocks.custom_machine_item.get(), ModDataComponents.CUSTOM_MACHINE);
     }
 
     /** Add a droplet icon for every registered fluid to JEI's ingredient list / search — the fluid‑icon item

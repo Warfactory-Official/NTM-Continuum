@@ -99,7 +99,7 @@ public final class SingularityGameTests {
         helper.assertTrue(deuterium.is(ModSingularityItems.cell.get()) && deuterium.getCount() == 8
                         && ItemCell.isFullCell(deuterium, Fluids.DEUTERIUM)
                         && ModDataComponents.fluidAmount(deuterium) == ItemCell.CAPACITY
-                        && ModDataComponents.ITEM_VARIANT.getOr(deuterium, -1) == com.hbm.items.special.CellVariants.DEUTERIUM,
+                        && com.hbm.items.ModelState.of(deuterium) == com.hbm.items.special.CellVariants.DEUTERIUM,
                 "empty-cell recipe did not produce a model-selecting full deuterium cell");
         deuteriumGrid.set(0, antimatter.copyWithCount(1));
         helper.assertTrue(Recipes.craftingResult(helper.getLevel(), 3, 3, deuteriumGrid).isEmpty(),
@@ -132,13 +132,12 @@ public final class SingularityGameTests {
                         && ItemCell.isEmptyCell(full)
                         && ModDataComponents.fluid(full) == Fluids.NONE
                         && ModDataComponents.fluidAmount(full) == 0
-                        && !ModDataComponents.ITEM_VARIANT.has(full),
+                        && com.hbm.items.ModelState.of(full) == com.hbm.items.special.CellVariants.EMPTY,
                 "whole-cell drain did not clear fluid components");
 
         ItemStack partial = new ItemStack(ModSingularityItems.cell.get());
         ModDataComponents.fluid(partial, Fluids.AMAT);
         ModDataComponents.fluidAmount(partial, 1);
-        ModDataComponents.ITEM_VARIANT.set(partial, Fluids.legacyId(Fluids.AMAT));
         helper.assertTrue(!ItemCell.isFullCell(partial, Fluids.AMAT)
                         && !cell.providesFluid(Fluids.AMAT, partial)
                         && cell.tryFill(Fluids.AMAT, ItemCell.CAPACITY, partial) == ItemCell.CAPACITY
@@ -150,7 +149,6 @@ public final class SingularityGameTests {
         ItemStack partialAschrab = new ItemStack(ModSingularityItems.cell.get());
         ModDataComponents.fluid(partialAschrab, Fluids.ASCHRAB);
         ModDataComponents.fluidAmount(partialAschrab, 1);
-        ModDataComponents.ITEM_VARIANT.set(partialAschrab, com.hbm.items.special.CellVariants.ANTI_SCHRABIDIUM);
         helper.assertTrue(Recipes.craftingResult(helper.getLevel(), 3, 3, singularityGrid(partialAschrab))
                         .orElse(ItemStack.EMPTY).isEmpty(),
                 "component singularity recipe matched a partial anti-schrabidium cell");

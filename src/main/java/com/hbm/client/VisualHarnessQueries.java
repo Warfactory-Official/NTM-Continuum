@@ -27,6 +27,8 @@ public final class VisualHarnessQueries {
         dev.golem.core.harness.HarnessQueryRegistry.register("hbm_lang_missing", VisualHarnessQueries::langMissing);
         dev.golem.core.harness.HarnessQueryRegistry.register("hbm_sound", VisualHarnessQueries::sound);
         dev.golem.core.harness.HarnessQueryRegistry.register("hbm_torex", VisualHarnessQueries::torex);
+        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_haze", VisualHarnessQueries::haze);
+        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_swing", VisualHarnessQueries::swing);
     }
 
     /** Client-side state of every Torex cloud: local tick, synced age, replay readiness and cloudlet count. */
@@ -47,6 +49,26 @@ public final class VisualHarnessQueries {
             }
         }
         json.add("clouds", clouds);
+        return json;
+    }
+
+    /** Spawns 1.7's white-phosphorus haze at x/y/z, already {@code age} ticks old (default 200, its peak). */
+    private static JsonObject haze(Minecraft mc, JsonObject params) {
+        JsonObject json = new JsonObject();
+        if (mc.level == null) return json;
+        int age = params.has("age") ? params.get("age").getAsInt() : 200;
+        dev.golem.core.render.Particles.add(new com.hbm.client.particle.ParticleHaze(mc.level,
+                params.get("x").getAsDouble(), params.get("y").getAsDouble(), params.get("z").getAsDouble()).aged(age));
+        json.addProperty("spawned", true);
+        return json;
+    }
+
+    /** The local player's arm swing: whether it is swinging and its swing tick (vanilla's own fields). */
+    private static JsonObject swing(Minecraft mc, JsonObject params) {
+        JsonObject json = new JsonObject();
+        if (mc.player == null) return json;
+        json.addProperty("swinging", mc.player.swinging);
+        json.addProperty("swing_time", mc.player.swingTime);
         return json;
     }
 

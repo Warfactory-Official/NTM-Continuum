@@ -37,12 +37,12 @@ public final class SoyuzGameTests {
         helper.assertTrue(!launcher.canLaunch(), "An empty pad must not launch");
 
         launcher.inventory.setStackInSlot(TileEntitySoyuzLauncher.SLOT_ROCKET,
-                ModSoyuzBlocks.missile_soyuz.get().of(SoyuzSkinType.NORMAL));
+                ModSoyuzBlocks.missile_soyuz.stack(SoyuzSkinType.NORMAL));
         helper.assertTrue(launcher.hasRocket(), "The pad should see the rocket");
         helper.assertTrue(!launcher.canLaunch(), "A rocket with no payload must not launch");
 
         launcher.inventory.setStackInSlot(TileEntitySoyuzLauncher.SLOT_SATELLITE,
-                ModSatelliteItems.satellite.get().of(EnumSatType.RAY_SCAN));
+                ModSatelliteItems.satellite.stack(EnumSatType.RAY_SCAN));
         helper.assertTrue(!launcher.canLaunch(), "A dry rocket must not launch");
 
         fuel(launcher);
@@ -63,11 +63,11 @@ public final class SoyuzGameTests {
 
     public static void liftoff(GameTestHelper helper) {
         TileEntitySoyuzLauncher launcher = place(helper);
-        ItemStack satellite = ModSatelliteItems.satellite.get().of(EnumSatType.RAY_SCAN);
+        ItemStack satellite = ModSatelliteItems.satellite.stack(EnumSatType.RAY_SCAN);
         ISatChip.setFreqS(satellite, FREQ);
 
         launcher.inventory.setStackInSlot(TileEntitySoyuzLauncher.SLOT_ROCKET,
-                ModSoyuzBlocks.missile_soyuz.get().of(SoyuzSkinType.LUNAR));
+                ModSoyuzBlocks.missile_soyuz.stack(SoyuzSkinType.LUNAR));
         launcher.inventory.setStackInSlot(TileEntitySoyuzLauncher.SLOT_SATELLITE, satellite);
         fuel(launcher);
         launcher.power = launcher.getMaxPower();
@@ -98,7 +98,7 @@ public final class SoyuzGameTests {
         SatelliteSavedData data = SatelliteSavedData.get(helper.getLevel());
         data.descend(FREQ);
 
-        ItemStack satellite = ModSatelliteItems.satellite.get().of(EnumSatType.RAY_SCAN);
+        ItemStack satellite = ModSatelliteItems.satellite.stack(EnumSatType.RAY_SCAN);
         ISatChip.setFreqS(satellite, FREQ);
 
         EntitySoyuz rocket = new EntitySoyuz(
@@ -123,7 +123,7 @@ public final class SoyuzGameTests {
     public static void modes(GameTestHelper helper) {
         TileEntitySoyuzLauncher launcher = place(helper);
         launcher.inventory.setStackInSlot(TileEntitySoyuzLauncher.SLOT_ROCKET,
-                ModSoyuzBlocks.missile_soyuz.get().of(SoyuzSkinType.NORMAL));
+                ModSoyuzBlocks.missile_soyuz.stack(SoyuzSkinType.NORMAL));
         fuel(launcher);
         launcher.power = launcher.getMaxPower();
 
@@ -164,7 +164,7 @@ public final class SoyuzGameTests {
                 "assets/hbm/textures/models/soyuz_luna/bottomstage.png",
                 "assets/hbm/textures/models/soyuz_authentic/bottomstage.png",
                 "assets/hbm/textures/gui/machine/gui_soyuz.png",
-                "assets/hbm/items/missile_soyuz.json",
+                "assets/hbm/items/missile_soyuz_0.json",
                 "assets/hbm/items/struct_soyuz_core.json",
                 "assets/hbm/sounds/entity/soyuztakeoff.ogg",
                 "assets/hbm/sounds/block/soyuzready.ogg",

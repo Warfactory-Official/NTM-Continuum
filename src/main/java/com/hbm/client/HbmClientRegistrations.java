@@ -338,11 +338,14 @@ public final class HbmClientRegistrations {
         dev.golem.core.fluid.TokenFluids.installClient(); // how other mods draw HBM fluids (History section 19ek-fluids)
     }
 
-    /** The component-backed replacement for legacy item metadata in generated model selects. */
+    /**
+     * {@code hbm:model_state}: the sprite an item with typed state draws ({@link com.hbm.items.ModelState}), computed
+     * from that state and never saved. It replaced the saved {@code hbm:item_variant} int (History §19es-itemvariant).
+     */
     public static void installItemModelProperties() {
         com.hbm.client.UtilityToolClientRegistrations.installItemModelProperties();
-        dev.golem.core.client.ItemModelProperties.register(com.hbm.Constants.MOD_ID, "item_variant",
-                stack -> com.hbm.items.ModDataComponents.ITEM_VARIANT.getOr(stack, 0));
+        dev.golem.core.client.ItemModelProperties.register(com.hbm.Constants.MOD_ID, "model_state",
+                com.hbm.items.ModelState::of);
     }
 
     public static void registerBlockColors() {
@@ -451,6 +454,7 @@ public final class HbmClientRegistrations {
         com.hbm.inventory.fluid.FluidType.setShiftHeldPoll(() -> dev.golem.core.client.KeyMappings.isHeld(
                 net.minecraft.client.Minecraft.getInstance().options.keyShift));
         com.hbm.client.anim.GunRecoil.register();
+        GrenadeUniversalClient.register(); // 1.7 ItemGrenadeUniversal.onUpdate's client half (arm swing)
         CraneKeybindHandler.register();
         com.hbm.client.UtilityToolClientRegistrations.installKeybinds();
         AbilityToolClientRegistrations.registerKeys();

@@ -118,7 +118,7 @@ public final class ModFuelItems {
             extra("coke_" + coke, 200 * 16);
             extra("block_coke_" + coke, 200 * 160);
         }
-        extra("book_guide", 200);
+        for (String book : new String[]{"test", "rbmk", "hadron", "starter"}) extra("book_guide_" + book, 200);
         extra("coal_eternal", 200 * 16);
         extra("powder_sawdust", 200 / 2);
         extra("powder_ash_wood", 200 / 2);

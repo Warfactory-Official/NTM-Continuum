@@ -5,7 +5,6 @@ import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.ModDataComponents;
-import com.hbm.items.ModGearItems;
 import com.hbm.items.machine.ItemGear;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
@@ -34,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The legacy one-core Stirling engine family. */
-public class MachineStirling extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay {
+public class MachineStirling extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay, com.hbm.items.ModelState {
 
     public MachineStirling(Properties properties) {
         super(properties);
@@ -60,7 +59,7 @@ public class MachineStirling extends BlockMultiblockMachine implements IEnergyCo
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityStirling stirling
-                && !stirling.hasCog && stack.is(ModGearItems.gear_large.get())
+                && !stirling.hasCog
                 && stack.getItem() instanceof ItemGear gear
                 && gear.getVariant(stack) == stirling.getGearVariant()) {
             if (!level.isClientSide()) {
@@ -78,12 +77,23 @@ public class MachineStirling extends BlockMultiblockMachine implements IEnergyCo
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        if (level.isClientSide() || ModDataComponents.ITEM_VARIANT.getOr(stack, 0) != 1) return;
+        if (level.isClientSide() || hasCog(stack)) return;
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityStirling stirling) {
             stirling.hasCog = false;
             stirling.setChanged();
         }
+    }
+
+    /** 1.7 metadata 0 (the item still carries its cog): {@code hbm:has_cog}, absent meaning true (ntm-next). */
+    public static boolean hasCog(ItemStack stack) {
+        return ModDataComponents.HAS_COG.getOr(stack, true);
+    }
+
+    /** {@code hbm:model_state}: 1 draws the item without its cog, as 1.7's metadata 1 did. */
+    @Override
+    public int modelState(ItemStack stack) {
+        return hasCog(stack) ? 0 : 1;
     }
 
     @Override
@@ -93,7 +103,7 @@ public class MachineStirling extends BlockMultiblockMachine implements IEnergyCo
         BlockPos core = MultiblockSurface.coreOfAny(params.getLevel(), pos);
         if (core != null && params.getLevel().getBlockEntity(core) instanceof TileEntityStirling stirling
                 && !stirling.hasCog) {
-            ModDataComponents.ITEM_VARIANT.set(stack, 1);
+            ModDataComponents.HAS_COG.set(stack, false);
         }
         return List.of(stack);
     }
@@ -108,7 +118,7 @@ public class MachineStirling extends BlockMultiblockMachine implements IEnergyCo
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityStirling stirling
                 && !stirling.hasCog) {
-            ModDataComponents.ITEM_VARIANT.set(stack, 1);
+            ModDataComponents.HAS_COG.set(stack, false);
         }
         return stack;
     }

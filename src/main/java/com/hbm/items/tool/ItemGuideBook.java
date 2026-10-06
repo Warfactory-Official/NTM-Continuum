@@ -1,6 +1,5 @@
 package com.hbm.items.tool;
 
-import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModUtilityToolItems;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
@@ -15,22 +14,28 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 /**
- * 1.7 {@code ItemGuideBook}: the guide books, one item whose {@link BookType} was the metadata and is
- * {@code item_variant} here. Right-click opens {@code GUIScreenGuide}. The creative tab shows the RBMK and
+ * 1.7 {@code ItemGuideBook}: the guide books; the {@link BookType} was the metadata and is one item per type here
+ * ({@code book_guide_<type>}, as ntm-next registers them; History §19es-itemvariant). Right-click opens {@code GUIScreenGuide}. The creative tab shows the RBMK and
  * starter books only (1.7 skipped the test and hadron books in {@code getSubItems}).
  *
  * <p>Page contents are kept as texture paths ({@code hbm:textures/...}) so this class names no client type.
  */
-public class ItemGuideBook extends CompatItem {
+public class ItemGuideBook extends CompatItem implements com.hbm.items.LegacyMeta {
 
-    public ItemGuideBook(Properties properties) {
+    private final BookType type;
+
+    public ItemGuideBook(Properties properties, BookType type) {
         super(properties);
+        this.type = type;
+    }
+
+    @Override
+    public int legacyMeta() {
+        return type.ordinal();
     }
 
     public static ItemStack of(BookType type) {
-        ItemStack stack = new ItemStack(ModUtilityToolItems.book_guide.get());
-        ModDataComponents.ITEM_VARIANT.set(stack, type.ordinal());
-        return stack;
+        return new ItemStack(ModUtilityToolItems.book_guide.get(type.ordinal()).get());
     }
 
     /** 1.7 {@code getSubItems}. */
@@ -42,7 +47,7 @@ public class ItemGuideBook extends CompatItem {
     }
 
     public static BookType getType(ItemStack stack) {
-        return BookType.getType(ModDataComponents.ITEM_VARIANT.getOr(stack, 0));
+        return stack.getItem() instanceof ItemGuideBook book ? book.type : BookType.TEST;
     }
 
     @Override

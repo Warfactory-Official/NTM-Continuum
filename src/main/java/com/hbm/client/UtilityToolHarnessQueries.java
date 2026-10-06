@@ -73,8 +73,9 @@ public final class UtilityToolHarnessQueries {
                     yield ItemStack.EMPTY;
                 }
                 case "guide" -> ItemGuideBook.of(ItemGuideBook.BookType.getType(Integer.parseInt(give[1])));
-                case "holotape" -> variant(ModUtilityToolItems.holotape_image.get(), give[1]);
-                case "tablet" -> variant(ModUtilityToolItems.clay_tablet.get(), give[1]);
+                case "holotape" -> ModUtilityToolItems.holotape_image.stack(
+                        com.hbm.items.special.ItemHolotapeImage.EnumHoloImage.values()[Integer.parseInt(give[1])]);
+                case "tablet" -> com.hbm.items.special.ItemClayTablet.of(Integer.parseInt(give[1]));
                 case "fluid_multi" -> {
                     ItemStack id = new ItemStack(ModUtilityToolItems.fluid_identifier_multi.get());
                     String[] types = give[1].split(",");
@@ -92,7 +93,7 @@ public final class UtilityToolHarnessQueries {
         ItemStack held = player.getMainHandItem();
         json.addProperty("id", held.isEmpty() ? "" : BuiltInRegistries.ITEM.getKey(held.getItem()).toString());
         json.addProperty("count", held.getCount());
-        json.addProperty("variant", ModDataComponents.ITEM_VARIANT.getOr(held, 0));
+        json.addProperty("variant", com.hbm.items.LegacyMeta.of(held)); // 1.7 metadata, from the item
         json.addProperty("radiation", HazardSystem.getHazardLevelFromStack(held, HazardRegistry.RADIATION));
         json.addProperty("digamma_hazard", HazardSystem.getHazardLevelFromStack(held, HazardRegistry.DIGAMMA));
         ModUtilityToolItems.PIPETTE.get(held).ifPresent(t -> json.addProperty("pipette", t.toString()));
@@ -112,9 +113,4 @@ public final class UtilityToolHarnessQueries {
         return json;
     }
 
-    private static ItemStack variant(net.minecraft.world.item.Item item, String variant) {
-        ItemStack stack = new ItemStack(item);
-        ModDataComponents.ITEM_VARIANT.set(stack, Integer.parseInt(variant));
-        return stack;
-    }
 }

@@ -48,7 +48,9 @@ public final class ModEventHandlerMobs {
         Deaths.onDeath(ModEventHandlerMobs::onEntityDeath);
         // 1.7 decorateMob listens to LivingSpawnEvent, whose CheckSpawn fires before a natural spawn is placed and before
         // onSpawnWithEgg (so vanilla's own equipment roll still runs after it). The check never refuses a spawn.
+        // Patrols, phantoms and wandering traders (WORLD_SPAWNER) have no 1.7 counterpart that reached decorateMob.
         Spawns.onSpawnCheck((mob, level, reason) -> {
+            if (reason == Spawns.Reason.WORLD_SPAWNER) return false;
             decorateMob(mob, level, mob.getRandom());
             return false;
         });

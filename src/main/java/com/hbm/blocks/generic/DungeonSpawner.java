@@ -147,9 +147,7 @@ public class DungeonSpawner extends CompatBlock implements TickingBlock {
                 if (world.getRandom().nextInt(5) == 0) {
                     skeleton.setItem(LogicBlockActions.stack("hbm:item_secret_aberrator", 1));
                 } else {
-                    ItemStack tablet = new ItemStack(ModUtilityToolItems.clay_tablet.get());
-                    ModDataComponents.ITEM_VARIANT.set(tablet, 1);
-                    skeleton.setItem(tablet);
+                    skeleton.setItem(com.hbm.items.special.ItemClayTablet.of(1));
                 }
             }
             world.setBlockAndUpdate(tile.getBlockPos(), Blocks.OBSIDIAN.defaultBlockState());

@@ -111,7 +111,7 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
     private static void extractHeld(State state, net.minecraft.world.level.@org.jspecify.annotations.Nullable Level level) {
         ItemStack held = switch (BobbleFigure.NAMES[state.type]) {
             case "VAER" -> new ItemStack(BuiltInRegistries.ITEM.getValue(tex("cigarette")));
-            case "FRIZZLE" -> ModWeaponModItems.weapon_mod_special.get().of(GunFactory.EnumModSpecial.DOUBLOONS);
+            case "FRIZZLE" -> ModWeaponModItems.weapon_mod_special.stack(GunFactory.EnumModSpecial.DOUBLOONS);
             case "ADAM29" -> new ItemStack(ModConsumableTailItems.can_redbomb.get());
             default -> ItemStack.EMPTY;
         };

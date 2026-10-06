@@ -242,8 +242,7 @@ public final class Fix3GameTests {
         helper.assertTrue(is(ShredderRecipes.getShredderResult(of("hbm:powder_cobalt_tiny")), "hbm:dust_tiny", 1), "tiny dust");
         helper.assertTrue(is(ShredderRecipes.getShredderResult(of("hbm:nugget_bismuth")), "hbm:scrap", 1), "nuggets give scrap");
         // :338-341 a bobblehead gives its own plastic scrap (BOB = CPU_SOCKET)
-        ItemStack bob = ((com.hbm.items.block.ItemBlockDecoVariant) item("hbm:bobblehead"))
-                .of(com.hbm.blocks.generic.BlockBobble.BobbleType.BOB.ordinal());
+        ItemStack bob = of("hbm:bobblehead_bob");
         helper.assertTrue(is(ShredderRecipes.getShredderResult(bob), "hbm:scrap_plastic_cpu_socket", 1), "bobblehead scrap");
         helper.succeed();
     }

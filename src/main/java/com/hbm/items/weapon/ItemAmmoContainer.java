@@ -1,6 +1,5 @@
 package com.hbm.items.weapon;
 
-import com.hbm.items.ModDataComponents;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
@@ -19,17 +18,22 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
-/** Source ntm-next ammo container: supplies default ammunition for up to three carried Sedna guns. */
-public final class ItemAmmoContainer extends CompatItem {
+/**
+ * Source ntm-next ammo container: supplies default ammunition for up to three carried Sedna guns. 1.7 metadata 1 (the
+ * constrained box that skips expensive ammo) is its own item, {@code ammo_container_alt}, as in ntm-next.
+ */
+public final class ItemAmmoContainer extends CompatItem implements com.hbm.items.LegacyMeta {
 
-    public ItemAmmoContainer(Properties properties) {
+    private final boolean constrained;
+
+    public ItemAmmoContainer(Properties properties, boolean constrained) {
         super(properties.stacksTo(1));
+        this.constrained = constrained;
     }
 
-    public ItemStack of(int variant) {
-        ItemStack stack = new ItemStack(this);
-        ModDataComponents.ITEM_VARIANT.set(stack, variant);
-        return stack;
+    @Override
+    public int legacyMeta() {
+        return constrained ? 1 : 0;
     }
 
     @Override
@@ -37,7 +41,6 @@ public final class ItemAmmoContainer extends CompatItem {
         if (!(level instanceof ServerLevel serverLevel)) return InteractionResult.SUCCESS;
 
         ItemStack container = player.getItemInHand(hand);
-        boolean constrained = ModDataComponents.ITEM_VARIANT.getOr(container, 0) == 1;
         List<ItemGunBaseNT> guns = new ArrayList<>();
         for (ItemStack carried : Inventories.main(player.getInventory())) {
             if (!(carried.getItem() instanceof ItemGunBaseNT gun)
@@ -63,7 +66,6 @@ public final class ItemAmmoContainer extends CompatItem {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        boolean constrained = ModDataComponents.ITEM_VARIANT.getOr(stack, 0) == 1;
         String key = constrained ? "item.hbm.ammo_container_1.desc.0" : "item.hbm.ammo_container.desc.0";
         for (String line : Component.translatable(key).getString().split("\\$", -1)) {
             tooltip.add(Component.literal(line).withStyle(ChatFormatting.YELLOW));

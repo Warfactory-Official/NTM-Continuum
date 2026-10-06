@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * 1.7 {@code ItemMS}, the Brittle Spade: digging up {@code ntm_dirt} with it yields the three inert
- * U-238m2 easter-egg ingots (metadata 1, 2, 3; the port's {@code item_variant} 1..3).
+ * U-238m2 easter-egg ingots (metadata 1, 2, 3; the port's {@code hs_elements}, {@code hs_arsenic}, {@code hs_vault}).
  */
 public class ItemMS extends CompatItem {
 
@@ -42,9 +42,10 @@ public class ItemMS extends CompatItem {
             world.destroyBlock(pos, false);
             RandomSource rand = world.getRandom();
 
-            for (int meta = 1; meta <= 3; meta++) {
-                ItemStack sta = new ItemStack(ModNuclearMiscItems.INGOT_U238M2.get());
-                ModDataComponents.ITEM_VARIANT.set(sta, meta);
+            // 1.7 ingot_u238m2 metadata 1..3, the hs_* items here
+            for (net.minecraft.world.item.Item egg : new net.minecraft.world.item.Item[] {ModNuclearMiscItems.HS_ELEMENTS.get(),
+                    ModNuclearMiscItems.HS_ARSENIC.get(), ModNuclearMiscItems.HS_VAULT.get()}) {
+                ItemStack sta = new ItemStack(egg);
                 float f = rand.nextFloat() * 0.8F + 0.1F;
                 float f1 = rand.nextFloat() * 0.8F + 0.1F;
                 float f2 = rand.nextFloat() * 0.8F + 0.1F;

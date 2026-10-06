@@ -69,15 +69,14 @@ public final class SteelStructureGameTests {
     public static void scaffoldPlacement(GameTestHelper helper) {
         BlockScaffold scaffold = ModSteelBlocks.steel_scaffold.get();
         Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
-        ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.getValue(Ids.of(Constants.MOD_ID, "steel_scaffold")));
-        ModDataComponents.ITEM_VARIANT.set(stack, 2);
+        ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.getValue(Ids.of(Constants.MOD_ID, "steel_scaffold_white")));
 
         player.setYRot(0F);
         var horizontalNs = scaffold.getStateForPlacement(context(helper, player, stack, Direction.UP, 0.5D));
         helper.assertTrue(horizontalNs.getValue(BlockScaffold.ORIENT) == BlockScaffold.Orientation.HORIZONTAL_NS,
                 "yaw 0 scaffold must be horizontal north/south");
         helper.assertTrue(horizontalNs.getValue(BlockScaffold.VARIANT) == BlockScaffold.Variant.WHITE,
-                "scaffold item component must select the white variant");
+                "steel_scaffold_white must place the white variant");
 
         player.setYRot(90F);
         var horizontalEw = scaffold.getStateForPlacement(context(helper, player, stack, Direction.UP, 0.5D));

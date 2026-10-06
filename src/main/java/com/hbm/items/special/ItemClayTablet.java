@@ -12,12 +12,31 @@ import net.minecraft.world.level.Level;
 /**
  * 1.7 {@code ItemClayTablet}: the first read draws a seed ({@code tabletSeed}) from the reader's random, and the
  * tablet then always shows the same pedestal recipe of its set, partly worn away ({@code GUIScreenClayTablet}).
- * The set is the 1.7 metadata, {@code item_variant} here (0 for the red-room tablet, 1 for the dungeon one).
+ * The set is the 1.7 metadata: {@code clay_tablet} (0, the red-room tablet) and {@code clay_tablet_1} (1, the
+ * dungeon one), two items as in ntm-next (History §19es-itemvariant).
  */
-public class ItemClayTablet extends CompatItem {
+public class ItemClayTablet extends CompatItem implements com.hbm.items.LegacyMeta {
 
-    public ItemClayTablet(Properties properties) {
+    private final int set;
+
+    public ItemClayTablet(Properties properties, int set) {
         super(properties);
+        this.set = set;
+    }
+
+    /** The tablet's set: 0 red room, 1 dungeon (1.7 metadata). */
+    public int set() {
+        return set;
+    }
+
+    @Override
+    public int legacyMeta() {
+        return set;
+    }
+
+    /** The tablet of 1.7 metadata {@code set}. */
+    public static ItemStack of(int set) {
+        return new ItemStack(set == 1 ? ModUtilityToolItems.clay_tablet_1.get() : ModUtilityToolItems.clay_tablet.get());
     }
 
     @Override

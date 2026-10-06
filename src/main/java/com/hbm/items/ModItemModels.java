@@ -73,7 +73,7 @@ public final class ModItemModels {
 
     private static final String[] SPRITE_ITEMS_0 = {
             "bedrock_ore_fragment_bismuth",
-            "blueprint_folder_discover", "blueprints_528", "blueprints_discover", "blueprints_secret",
+            "blueprints_528", "blueprints_discover", "blueprints_secret",
             "bolt"
     };
 
@@ -722,9 +722,5 @@ public final class ModItemModels {
     private static void blockItems() {
         Dejson.item(NS, "foam_layer_height2").models(Models.blockItem("hbm:block/foam_layer_height2")).register();
         Dejson.item(NS, "jetpack_glider_base").models(Models.blockItem("hbm:item/machine_obj_base")).register();
-        Dejson.item(NS, "steel_scaffold_red").models(Models.blockItem("hbm:item/block_obj_context_legacy")).register();
-        Dejson.item(NS, "steel_scaffold_steel").models(Models.blockItem("hbm:item/block_obj_context_legacy")).register();
-        Dejson.item(NS, "steel_scaffold_white").models(Models.blockItem("hbm:item/block_obj_context_legacy")).register();
-        Dejson.item(NS, "steel_scaffold_yellow").models(Models.blockItem("hbm:item/block_obj_context_legacy")).register();
     }
 }

@@ -80,8 +80,8 @@ public final class FinalCellHudFixGameTests {
             String name = (String) row[2];
             ItemStack stack = fluid == null ? new ItemStack(ModSingularityItems.cell.get()) : ItemCell.getFullCell(fluid);
             helper.assertTrue(CellVariants.NAMES[variant].equals(name), "variant " + variant + " is not " + name);
-            helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(stack, 0) == variant,
-                    "cell_" + name + " selects model variant " + ModDataComponents.ITEM_VARIANT.getOr(stack, 0)
+            helper.assertTrue(com.hbm.items.ModelState.of(stack) == variant,
+                    "cell_" + name + " selects model state " + com.hbm.items.ModelState.of(stack)
                             + ", expected " + variant);
             if (fluid != null) {
                 helper.assertTrue(ItemCell.isFullCell(stack, fluid) && ModDataComponents.fluid(stack) == fluid,
@@ -121,7 +121,7 @@ public final class FinalCellHudFixGameTests {
 
         List<ItemStack> kit = ItemStarterKit.contents(ItemStarterKit.Kind.PROTOTYPE);
         helper.assertTrue(kit.stream().anyMatch(s -> s.getCount() == 4 && ItemCell.isFullCell(s, Fluids.SAS3)
-                        && ModDataComponents.ITEM_VARIANT.getOr(s, 0) == CellVariants.SAS3),
+                        && com.hbm.items.ModelState.of(s) == CellVariants.SAS3),
                 "prototype kit lost its four SAS3 cells");
         helper.succeed();
     }

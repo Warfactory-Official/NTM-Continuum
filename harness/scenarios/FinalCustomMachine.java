@@ -173,7 +173,8 @@ public final class FinalCustomMachine implements Scenario {
     }
 
     private static String controller(Client c) {
-        return legacy(c) ? "hbm:custom_machine{\"hbm:item_variant\":100}" : "hbm:custom_machine[hbm:item_variant=100]";
+        return legacy(c) ? "hbm:custom_machine{\"hbm:custom_machine\":\"paperPress\"}"
+                : "hbm:custom_machine[hbm:custom_machine=\"paperPress\"]";
     }
 
     private static String identifier(Client c) {

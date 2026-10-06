@@ -13,7 +13,8 @@ import java.util.List;
 
 /**
  * 1.7 {@code ItemCustomMachine}: one controller item per configured machine. 1.7 kept the machine's index in the
- * damage value ({@code index + 100}); the port keeps the same number in {@link ModDataComponents#ITEM_VARIANT}.
+ * damage value ({@code index + 100}); the port names the configuration instead ({@link ModDataComponents#CUSTOM_MACHINE},
+ * its {@code unlocalizedName}), so no number is saved (History §19es-itemvariant).
  */
 public class ItemCustomMachine extends CompatBlockItem {
 
@@ -28,15 +29,18 @@ public class ItemCustomMachine extends CompatBlockItem {
         return list;
     }
 
+    /** The controller for configuration {@code index} of {@code niceList} (1.7's {@code getSubItems} order). */
     public ItemStack of(int index) {
         ItemStack stack = new ItemStack(this);
-        ModDataComponents.ITEM_VARIANT.set(stack, index + 100);
+        if (index >= 0 && index < CustomMachineConfigJSON.niceList.size()) {
+            ModDataComponents.CUSTOM_MACHINE.set(stack, CustomMachineConfigJSON.niceList.get(index).unlocalizedName);
+        }
         return stack;
     }
 
     @Override
     public Component getName(ItemStack stack) {
-        MachineConfiguration conf = CustomMachineConfigJSON.byVariant(ModDataComponents.ITEM_VARIANT.getOr(stack, 0));
+        MachineConfiguration conf = CustomMachineConfigJSON.byName(ModDataComponents.CUSTOM_MACHINE.getOr(stack, null));
         if (conf != null) return Component.literal(conf.displayName());
         return Component.literal("INVALID MACHINE CONTROLLER");
     }

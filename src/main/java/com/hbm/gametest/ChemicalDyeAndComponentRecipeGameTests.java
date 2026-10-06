@@ -91,9 +91,8 @@ public final class ChemicalDyeAndComponentRecipeGameTests {
                 MaterialCompletionRegistrations.lightstoneItem(0),
                 MaterialCompletionRegistrations.lightstoneItem(0));
         ItemStack tile = Recipes.craftingResult(helper.getLevel(), 2, 2, lightstone).orElse(ItemStack.EMPTY);
-        helper.assertTrue(tile.is(MaterialCompletionRegistrations.LIGHTSTONE_ITEM.get().asItem())
-                        && ModDataComponents.ITEM_VARIANT.getOr(tile, -1) == 1 && tile.getCount() == 4,
-                "component-shaped lightstone tile recipe did not preserve its result component");
+        helper.assertTrue(tile.is(MaterialCompletionRegistrations.LIGHTSTONE_ITEMS.get(1).get()) && tile.getCount() == 4,
+                "lightstone tile recipe did not give four lightstone_tile");
 
         List<ItemStack> tankRecipe = new ArrayList<>();
         for (int i = 0; i < 9; i++) tankRecipe.add(ItemStack.EMPTY);

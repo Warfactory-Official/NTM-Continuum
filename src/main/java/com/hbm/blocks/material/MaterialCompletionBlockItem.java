@@ -1,40 +1,47 @@
 package com.hbm.blocks.material;
 
-import com.hbm.items.ModDataComponents;
+import com.hbm.items.LegacyMeta;
 import dev.golem.core.world.CompatBlockItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
-import java.util.function.IntFunction;
+/**
+ * One block item per state of a 1.7 metadata block (concrete colours, lightstone, the structure wand): each places
+ * its own state. The item knows its 1.7 metadata ({@link #variant()}), which is never stored on the stack (History
+ * §19es-itemvariant). The 1.7 name {@code block.hbm.<block>.<variant>} is kept.
+ */
+public final class MaterialCompletionBlockItem extends CompatBlockItem implements LegacyMeta {
 
-/** Block item for a legacy metadata block whose modern identity is an item component. */
-public final class MaterialCompletionBlockItem extends CompatBlockItem {
-
-    private final int variantCount;
     private final String blockId;
-    private final IntFunction<String> variantName;
+    private final int variant;
+    private final String variantName;
 
-    public MaterialCompletionBlockItem(Block block, Properties properties, String blockId, int variantCount,
-                                       IntFunction<String> variantName) {
+    public MaterialCompletionBlockItem(Block block, Properties properties, String blockId, int variant,
+                                       String variantName) {
         super(block, properties);
         this.blockId = blockId;
-        this.variantCount = variantCount;
+        this.variant = variant;
         this.variantName = variantName;
     }
 
-    public ItemStack of(int variant) {
-        ItemStack stack = new ItemStack(this);
-        ModDataComponents.ITEM_VARIANT.set(stack, Math.floorMod(variant, variantCount));
-        return stack;
+    /** The 1.7 metadata this item places. */
+    public int variant() {
+        return variant;
     }
 
+    /** As {@link #variant()}; the stack is not consulted. */
     public int variant(ItemStack stack) {
-        return Math.floorMod(ModDataComponents.ITEM_VARIANT.getOr(stack, 0), variantCount);
+        return variant;
+    }
+
+    @Override
+    public int legacyMeta() {
+        return variant;
     }
 
     @Override
     public Component getName(ItemStack stack) {
-        return Component.translatable("block.hbm." + blockId + "." + variantName.apply(variant(stack)));
+        return Component.translatable("block.hbm." + blockId + "." + variantName);
     }
 }

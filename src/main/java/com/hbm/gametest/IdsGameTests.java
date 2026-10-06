@@ -59,6 +59,9 @@ import java.util.regex.Pattern;
  *       (structure wand blacklist, rubble entity), material (foundry), enum (battery priority, pollution data).</li>
  *   <li>Old int-keyed data reads as the default instead of failing (pre-release, no migration).</li>
  *   <li>The 1.7 fluid numbers survive only as a frozen side table, checked here against 1.7's registration order.</li>
+ *   <li>Items: every HBM item and creative-tab stack is encoded: no {@code hbm:item_variant} /
+ *       {@code hbm:storage_waste_class} (removed 2026-10-06, History §19es-itemvariant) and no number under an
+ *       identity key in its components.</li>
  * </ul>
  */
 public final class IdsGameTests {
@@ -76,6 +79,8 @@ public final class IdsGameTests {
             TESTS.function("ids_material_enum_round_trip", 20, () -> IdsGameTests::materialsAndEnums);
     public static final GameTests.Function LEGACY =
             TESTS.function("ids_legacy_table_and_old_saves", 20, () -> IdsGameTests::legacy);
+    public static final GameTests.Function ITEMS =
+            TESTS.function("ids_no_numeric_ids_in_item_components", 40, () -> IdsGameTests::items);
 
     public static void init() {}
 
@@ -149,6 +154,58 @@ public final class IdsGameTests {
         helper.assertTrue(numeric.isEmpty(), "numeric ids in block entity saves: " + numeric);
         Constants.LOG.info("[IDS] guard scanned {} block entity classes ({} skipped), 0 numeric identity values", scanned, skipped);
         helper.succeed();
+    }
+
+    /**
+     * Every HBM item's own stack and every stack an HBM creative tab shows, encoded as the game saves them: none may
+     * carry the removed numeric metadata components ({@code hbm:item_variant}, {@code hbm:storage_waste_class}), nor a
+     * number under an identity key (matched without the component's namespace).
+     */
+    public static void items(GameTestHelper helper) {
+        var ops = net.minecraft.resources.RegistryOps.create(NbtOps.INSTANCE, helper.getLevel().registryAccess());
+        List<ItemStack> stacks = new ArrayList<>();
+        for (net.minecraft.world.item.Item item : BuiltInRegistries.ITEM) {
+            if (BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(Constants.MOD_ID)) stacks.add(new ItemStack(item));
+        }
+        for (var suppliers : com.hbm.creativetabs.ModTabs.STACK_CONTENTS.values()) {
+            for (var supplier : suppliers) stacks.addAll(supplier.get());
+        }
+        int scanned = 0, skipped = 0;
+        List<String> numeric = new ArrayList<>();
+        for (ItemStack stack : stacks) {
+            if (stack.isEmpty()) continue;
+            Tag tag = dev.golem.core.world.ItemStacks.optionalCodec().encodeStart(ops, stack).result().orElse(null);
+            if (tag == null) {
+                skipped++;
+                continue;
+            }
+            scanned++;
+            String owner = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+            String text = tag.toString();
+            if (text.contains("item_variant") || text.contains("storage_waste_class")) numeric.add(owner + " " + text);
+            scanComponents(tag, owner, "", numeric);
+        }
+        helper.assertTrue(scanned >= 3000, "expected to encode at least 3000 HBM item stacks, encoded " + scanned
+                + " (" + skipped + " did not encode)");
+        helper.assertTrue(numeric.isEmpty(), "numeric ids in item components: " + numeric);
+        Constants.LOG.info("[IDS] item guard encoded {} HBM item stacks ({} skipped), 0 numeric identity values", scanned, skipped);
+        helper.succeed();
+    }
+
+    private static void scanComponents(Tag tag, String owner, String path, List<String> numeric) {
+        if (tag instanceof CompoundTag compound) {
+            for (String key : Tags.keys(compound)) {
+                Tag child = compound.get(key);
+                String bare = key.substring(key.indexOf(':') + 1);
+                if ((child instanceof NumericTag || child instanceof net.minecraft.nbt.IntArrayTag)
+                        && IDENTITY_KEY.matcher(bare).matches()) {
+                    numeric.add(owner + ":" + path + "/" + key + "=" + child);
+                }
+                scanComponents(child, owner, path + "/" + key, numeric);
+            }
+        } else if (tag instanceof ListTag list) {
+            for (int i = 0; i < list.size(); i++) scanComponents(list.get(i), owner, path + "[" + i + "]", numeric);
+        }
     }
 
     private static void scan(Tag tag, String owner, String path, List<String> numeric) {

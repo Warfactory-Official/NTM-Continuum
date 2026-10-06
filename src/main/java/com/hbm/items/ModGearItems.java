@@ -19,6 +19,7 @@ import com.hbm.items.tool.ItemGeigerCounter;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.CompatArmorItem;
 import dev.golem.core.world.GolemArmorMaterial;
@@ -41,8 +42,16 @@ public final class ModGearItems {
             REG.item("geiger_counter", ItemGeigerCounter::new, p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<ItemDosimeter> dosimeter =
             REG.item("dosimeter", ItemDosimeter::new, p -> p.stacksTo(1)).transform(Presets.sprite());
+    // 1.7 gear_large metadata 0/1, one item each (ntm-next ids; History §19es-itemvariant)
     public static final RegistryObject<ItemGear> gear_large =
-            REG.item("gear_large", ItemGear::new);
+            REG.item("gear_large", p -> new ItemGear(p, 0));
+    public static final RegistryObject<ItemGear> gear_large_steel =
+            REG.item("gear_large_steel", p -> new ItemGear(p, 1));
+
+    /** The gear for 1.7 metadata {@code variant} (0 regular, 1 steel). */
+    public static ItemStack gear(int variant) {
+        return new ItemStack(variant == 1 ? gear_large_steel.get() : gear_large.get());
+    }
 
     // ---- hazmat suits (yellow / red / grey) ----
     public static final RegistryObject<Item> hazmat_helmet = armor("hazmat_helmet", () -> HbmArmorMaterials.HAZMAT, ArmorSlot.HELMET);
@@ -97,7 +106,7 @@ public final class ModGearItems {
         ModTabs.addTo(HbmTab.CONSUMABLES, geiger_counter);
         ModTabs.addTo(HbmTab.CONSUMABLES, dosimeter);
         ModTabs.addStacksTo(HbmTab.MATERIALS, () -> IntStream.range(0, 2)
-                .mapToObj(gear_large.get()::of).toList());
+                .mapToObj(ModGearItems::gear).toList());
     }
 
     /** Wires the radiation-resistance coefficients + full-set membership (post-registration). */

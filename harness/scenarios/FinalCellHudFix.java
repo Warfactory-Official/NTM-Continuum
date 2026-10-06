@@ -36,10 +36,11 @@ public final class FinalCellHudFix implements Scenario {
         return c.node().startsWith("1.20.");
     }
 
+    /** A full cell; {@code variant} is the sprite its fluid selects (no longer stored, History §19es-itemvariant). */
     private static String cell(Client c, String fluid, int variant) {
         return legacy(c)
-                ? "hbm:cell{\"hbm:fluid\":\"" + fluid + "\",\"hbm:fluid_amount\":1000,\"hbm:item_variant\":" + variant + "}"
-                : "hbm:cell[hbm:fluid=\"" + fluid + "\",hbm:fluid_amount=1000,hbm:item_variant=" + variant + "]";
+                ? "hbm:cell{\"hbm:fluid\":\"" + fluid + "\",\"hbm:fluid_amount\":1000}"
+                : "hbm:cell[hbm:fluid=\"" + fluid + "\",hbm:fluid_amount=1000]";
     }
 
     @Override

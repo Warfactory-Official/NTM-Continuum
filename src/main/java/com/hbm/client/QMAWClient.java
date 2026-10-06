@@ -43,8 +43,9 @@ public final class QMAWClient {
             lastManualScreen = null;
             return;
         }
+        // 1.7 ModEventHandlerClient: EnumChatFormatting.YELLOW (green is the cannery "presentation" line)
         lines.add(Component.translatable("qmaw.tab", HbmKeybindsClient.qmawKey.getTranslatedKeyMessage())
-                .withStyle(ChatFormatting.GREEN));
+                .withStyle(ChatFormatting.YELLOW));
         lastManual = manual;
         lastManualScreen = Minecraft.getInstance().screen;
     }

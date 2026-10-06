@@ -86,6 +86,19 @@ public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem implem
     }
 
     /**
+     * The client half of 1.7 {@code onUpdate}'s held branch for the local player, called once per client tick by
+     * {@code GrenadeUniversalClient} with the stack in its main hand and the one it held last tick (empty if none):
+     * a new grenade resets the counter, a held one advances it. The sounds are the server's.
+     */
+    public static void clientHeldTick(Player player, ItemStack held, ItemStack previous) {
+        if (previous.isEmpty() || !dev.golem.core.world.ItemStacks.sameItemAndData(previous, held)) {
+            HbmPlayerProps.getData(player).grenadeDeployment = 0;
+        } else {
+            HbmPlayerProps.getData(player).grenadeDeployment++;
+        }
+    }
+
+    /**
      * 1.7 {@code getSubItems}: for every shell, every filling that fits it, every fuze — the plain grenade,
      * then one per extra. 19 shell/filling pairs x 5 fuzes x (1 + 4 extras) = 475 stacks, in that order.
      */
@@ -118,14 +131,17 @@ public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem implem
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        // TODO: 1.7 ItemGrenadeUniversal:98-109 ticks the counter on both sides, so its client gate can pass and
-        // swing the arm. Here it only ever advances server-side, so the client always PASSes and never swings;
-        // the throw itself still lands, because MultiPlayerGameMode.useItem sends its packet regardless.
+        // 1.7 ItemGrenadeUniversal:98-109 runs on both sides. The client's counter is ticked by
+        // com.hbm.client.GrenadeUniversalClient (inventoryTick is server-only here), so this gate passes on the
+        // client too and the SUCCESS swings the arm, as 1.7's did.
         if (deployment(player) < getData(stack).shell().getDrawDuration()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide()) {
             level.addFreshEntity(new EntityGrenadeUniversal(level, player, stack));
             dev.golem.core.world.ItemStacks.consume(stack, 1, player);
             if (!stack.isEmpty()) onEquip((ServerPlayer) player, stack);
+        } else if (player.isCreative() || stack.getCount() > 1) {
+            // 1.7 onEquip on the client after the throw (stackSize-- is the server's here): the pin goes back in
+            HbmPlayerProps.getData(player).grenadeDeployment = 0;
         }
         return InteractionResult.SUCCESS;
     }
@@ -140,11 +156,14 @@ public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem implem
         long tick = level.getGameTime();
         ItemStack previous = EQUIPPED.get(id);
         Long previousTick = LAST_HELD_TICK.get(id);
-        if (previous == null || previousTick == null || previousTick != tick - 1 || !dev.golem.core.world.ItemStacks.sameItemAndData(
-                previous, stack)) onEquip(player, stack);
+        boolean equipped = previous == null || previousTick == null || previousTick != tick - 1
+                || !dev.golem.core.world.ItemStacks.sameItemAndData(previous, stack);
+        if (equipped) onEquip(player, stack);
         EQUIPPED.put(id, stack.copy());
         LAST_HELD_TICK.put(id, tick);
         clearStaleEquipState(tick);
+        // 1.7: `if(!wasHeld && isHeld) onEquip(...); else if(isHeld) deployment++` - the equip tick stays at 0
+        if (equipped) return;
         int deployed = HbmPlayerProps.getData(player).grenadeDeployment + 1;
         HbmPlayerProps.getData(player).grenadeDeployment = deployed;
         switch (getData(stack).shell()) {

@@ -51,6 +51,9 @@ public final class TagIds {
     public static final String barrels_light_tcalloy = "#c:barrels_light/tcalloy";
     public static final String barrels_light_weaponsteel = "#c:barrels_light/weaponsteel";
     public static final String barrels_wooden = "#c:barrels/wooden";
+    public static final String bars = "#c:bars";
+    public static final String bars_copper = "#c:bars/copper";
+    public static final String bars_iron = "#c:bars/iron";
     public static final String billets_actinium = "#c:billets/actinium";
     public static final String billets_am241 = "#c:billets/am241";
     public static final String billets_am242 = "#c:billets/am242";
@@ -441,6 +444,7 @@ public final class TagIds {
     public static final String fragments_u238 = "#c:fragments/u238";
     public static final String fragments_uranium = "#c:fragments/uranium";
     public static final String fragments_zirconium = "#c:fragments/zirconium";
+    public static final String froglights = "#c:froglights";
     public static final String gems = "#c:gems";
     public static final String gems_alexandrite = "#c:gems/alexandrite";
     public static final String gems_amethyst = "#c:gems/amethyst";

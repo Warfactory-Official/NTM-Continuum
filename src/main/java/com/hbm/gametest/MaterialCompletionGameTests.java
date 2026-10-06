@@ -102,16 +102,16 @@ public final class MaterialCompletionGameTests {
         BlockConcreteColored block = MaterialCompletionRegistrations.CONCRETE_COLORED.get();
         for (int variant = 0; variant < DyeColor.values().length; variant++) {
             ItemStack stack = MaterialCompletionRegistrations.concreteColoredItem(variant);
-            helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(stack, -1) == variant,
+            helper.assertTrue(com.hbm.items.LegacyMeta.of(stack) == variant,
                     "Concrete item lost variant " + variant);
             helper.assertTrue(BlockConcreteColored.variant(block.stateForItem(stack)) == variant,
                     "Concrete placement changed variant " + variant);
             ItemStack clone = block.pickBlockStack((net.minecraft.world.level.BlockGetter) null,
                     BlockPos.ZERO, block.stateForVariant(variant));
-            helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(clone, -1) == variant,
+            helper.assertTrue(ItemStack.isSameItem(clone, stack),
                     "Concrete clone lost variant " + variant);
             ItemStack drop = block.getDrops(block.stateForVariant(variant), null).get(0);
-            helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(drop, -1) == variant,
+            helper.assertTrue(ItemStack.isSameItem(drop, stack),
                     "Concrete drop lost variant " + variant);
         }
         helper.succeed();
@@ -156,10 +156,10 @@ public final class MaterialCompletionGameTests {
                     "Legacy lightstone variant unexpectedly emits light: " + variant);
             ItemStack clone = block.pickBlockStack((net.minecraft.world.level.BlockGetter) null,
                     BlockPos.ZERO, block.stateForVariant(variant));
-            helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(clone, -1) == variant,
+            helper.assertTrue(ItemStack.isSameItem(clone, stack),
                     "Lightstone clone lost variant " + variant);
             ItemStack drop = block.getDrops(block.stateForVariant(variant), null).get(0);
-            helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(drop, -1) == variant,
+            helper.assertTrue(ItemStack.isSameItem(drop, stack),
                     "Lightstone drop lost variant " + variant);
         }
         helper.succeed();

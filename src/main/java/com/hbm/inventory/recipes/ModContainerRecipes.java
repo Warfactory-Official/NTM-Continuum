@@ -32,11 +32,12 @@ import static dev.golem.core.dejson.Crafting.tag;
 public final class ModContainerRecipes {
 
     private static final String NS = "hbm";
-    private static final String VARIANT = ComponentIds.item_variant;
+    private static final String B92_ENERGY = "hbm:b92_energy";
     private static boolean declared;
 
     // not yet in the generated id tables (registered this wave)
-    private static final String HOLOTAPE_IMAGE = "hbm:holotape_image";
+    private static final String HOLOTAPE_DIGAMMA = "hbm:holotape_image_holo_digamma";
+    private static final String HOLOTAPE_RESTORED = "hbm:holotape_image_holo_restored";
     private static final String WRENCH = "hbm:wrench";
     private static final String SCREWDRIVER_DESH = "hbm:screwdriver_desh";
     private static final String CHEMISTRY_SET_BORON = "hbm:chemistry_set_boron";
@@ -108,16 +109,13 @@ public final class ModContainerRecipes {
     }
 
     private static void tools() {
-        // HOLO_DIGAMMA is variant 0, which a stack may carry explicitly or leave absent (the enum's default)
-        componentShapeless(NS, "holotape_image_restored", stack(HOLOTAPE_IMAGE).with(VARIANT, 1),
-                item(HOLOTAPE_IMAGE).with(VARIANT, 0), screwdriver(), item(ItemIds.ducttape),
-                item(ItemIds.armor_polish));
-        componentShapeless(NS, "holotape_image_restored_1", stack(HOLOTAPE_IMAGE).with(VARIANT, 1),
-                item(HOLOTAPE_IMAGE).without(VARIANT), screwdriver(), item(ItemIds.ducttape),
+        // 1.7 holotape_image metadata HOLO_DIGAMMA / HOLO_RESTORED, items of their own (History §19es-itemvariant)
+        componentShapeless(NS, "holotape_image_restored", stack(HOLOTAPE_RESTORED),
+                item(HOLOTAPE_DIGAMMA), screwdriver(), item(ItemIds.ducttape),
                 item(ItemIds.armor_polish));
         // the gem_alexandrite is 1.7's own "placeholder for amplifier"
         componentShapeless(NS, "holotape_damaged", stack(ItemIds.holotape_damaged),
-                item(HOLOTAPE_IMAGE).with(VARIANT, 1), item(UPGRADE_MUFFLER), item(ItemIds.crt_display),
+                item(HOLOTAPE_RESTORED), item(UPGRADE_MUFFLER), item(ItemIds.crt_display),
                 item(ItemIds.gem_alexandrite));
     }
 
@@ -141,11 +139,12 @@ public final class ModContainerRecipes {
 
     private static void weapons() {
         // WeaponRecipes: fluid_tank_full meta PEROXIDE (the tank itself, not any container), the full B92
-        // cell (meta 1; 1.7 matched item and meta only, so the charge NBT is not checked) and fine copper wire
+        // cell (1.7 meta 1, which 1.7 set exactly when the charge reached 25: hbm:b92_energy 25 here, as ntm-next
+        // matches it) and fine copper wire
         componentShapeless(NS, "weaponized_starblaster_cell", stack(STARBLASTER_CELL),
                 item(ItemIds.fluid_tank).with(ComponentIds.fluid, FLUID_PEROXIDE)
                         .with(ComponentIds.fluid_amount, 1_000).remainder(ItemIds.fluid_tank),
-                item(ItemIds.gun_b92_ammo).with(VARIANT, 1), tag(TagIds.wires_copper));
+                item(ItemIds.gun_b92_ammo).with(B92_ENERGY, 25), tag(TagIds.wires_copper));
         componentShapeless(NS, "missile_taint", stack(ItemIds.missile_taint),
                 item(ItemIds.missile_assembly), fluid("WATZ", 1_000), item(ItemIds.powder_spark_mix),
                 item(ItemIds.powder_magic));

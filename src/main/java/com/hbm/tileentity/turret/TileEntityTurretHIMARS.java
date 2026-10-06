@@ -71,9 +71,8 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery {
         if (ammoStacks != null) return ammoStacks;
 
         List<ItemStack> stacks = new ArrayList<>();
-        ItemAmmoHIMARS item = ModAmmoItems.ammo_himars.get();
         for (ItemAmmoHIMARS.HIMARSRocketType type : ItemAmmoHIMARS.HIMARSRocketType.values()) {
-            stacks.add(item.of(type));
+            stacks.add(ModAmmoItems.ammo_himars.stack(type));
         }
 
         ammoStacks = stacks;
@@ -151,8 +150,8 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery {
     public int getSpareRocket() {
         for (int i = SLOT_AMMO_FIRST; i <= SLOT_AMMO_LAST; i++) {
             ItemStack stack = getItem(i);
-            if (stack.is(ModAmmoItems.ammo_himars.get())) {
-                return ModAmmoItems.ammo_himars.get().getVariant(stack);
+            if (stack.getItem() instanceof ItemAmmoHIMARS pod) {
+                return pod.getVariant(stack);
             }
         }
         return -1;
@@ -161,8 +160,7 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery {
     public void consumeRocket(int variant) {
         for (int i = SLOT_AMMO_FIRST; i <= SLOT_AMMO_LAST; i++) {
             ItemStack stack = getItem(i);
-            if (stack.is(ModAmmoItems.ammo_himars.get())
-                    && ModAmmoItems.ammo_himars.get().getVariant(stack) == variant) {
+            if (stack.getItem() instanceof ItemAmmoHIMARS pod && pod.getVariant(stack) == variant) {
                 removeItem(i, 1);
                 return;
             }

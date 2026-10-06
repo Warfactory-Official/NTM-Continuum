@@ -45,7 +45,7 @@ import net.minecraft.world.item.Item;
  * meteorite remote, ore density / survey scanners, pollution detector, RoR pager, the Polaroid, the three
  * pipettes, the guide books, lore books, holotapes, clay tablets and the Lemegeton. Tabs follow 1.7
  * ({@code consumableTab}, {@code controlTab}, {@code templateTab}); items 1.7 hid stay hidden. Metadata items
- * (guide book, holotape, clay tablet) keep one id and select their variant with {@code item_variant}.
+ * (guide book, holotape, clay tablet) are one item per variant (History §19es-itemvariant).
  */
 public final class ModUtilityToolItems {
 
@@ -98,7 +98,7 @@ public final class ModUtilityToolItems {
                 .models(Models.group()
                         .and("", Models.generated("hbm:items/" + handle.path(), "hbm:items/pipette_empty"))
                         .and("_filled", Models.generated("hbm:items/" + handle.path(), "hbm:items/" + overlay)))
-                .selects(Constants.MOD_ID + ":item_variant")
+                .selects(Constants.MOD_ID + ":model_state")
                 .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
     }
 
@@ -163,17 +163,39 @@ public final class ModUtilityToolItems {
     public static final RegistryObject<ItemPipette> pipette_laboratory = reg("pipette_laboratory", HbmTab.CONTROL,
             ItemPipette::new, single(), pipette("pipette_laboratory_overlay"));
 
-    /** 1.7 consumableTab with the RBMK and starter books ({@link ItemGuideBook#creativeStacks}). */
-    public static final RegistryObject<ItemGuideBook> book_guide = reg("book_guide", null, ItemGuideBook::new, single(),
-            Presets.sprite());
+    /**
+     * 1.7 book_guide metadata, one item per {@link ItemGuideBook.BookType} as ntm-next registers them
+     * ({@code book_guide_<type>}, all drawn with the 1.7 sprite; History §19es-itemvariant). 1.7 consumableTab with
+     * the RBMK and starter books ({@link ItemGuideBook#creativeStacks}).
+     */
+    public static final List<RegistryObject<ItemGuideBook>> book_guide = guideBooks();
+
+    /** By name, in {@link ItemGuideBook.BookType} order: the enum builds its pages and needs a running game. */
+    private static List<RegistryObject<ItemGuideBook>> guideBooks() {
+        List<RegistryObject<ItemGuideBook>> books = new ArrayList<>();
+        String[] names = {"test", "rbmk", "hadron", "starter"};
+        for (int i = 0; i < names.length; i++) {
+            int ordinal = i;
+            books.add(reg("book_guide_" + names[i], null,
+                    p -> new ItemGuideBook(p, ItemGuideBook.BookType.values()[ordinal]), single(),
+                    Presets.sprite("hbm:items/book_guide")));
+        }
+        return List.copyOf(books);
+    }
     /** 1.7 ItemBookLore: pages, the tinted cover, the tinted title. */
     public static final RegistryObject<ItemBookLore> book_lore = reg("book_lore", null, ItemBookLore::new, single(),
             Presets.sprite("hbm:items/book_pages", "hbm:items/book_cover", "hbm:items/book_title")
                     .tints(Tints.constant(-1), Tints.customModelData(0, 0x303030), Tints.customModelData(1, 0xFFFFFF)));
-    public static final RegistryObject<ItemHolotapeImage> holotape_image = reg("holotape_image", null,
-            ItemHolotapeImage::new, single(), Presets.sprite("hbm:items/holotape"));
-    public static final RegistryObject<ItemClayTablet> clay_tablet = reg("clay_tablet", null, ItemClayTablet::new,
-            single(), Presets.sprite());
+    /** 1.7 holotape_image metadata, one item per image as ntm-next registers them ({@code holotape_image_<image>}). */
+    public static final ItemFamily<ItemHolotapeImage.EnumHoloImage, ItemHolotapeImage> holotape_image = ItemFamily.of(
+            ItemHolotapeImage.EnumHoloImage.class,
+            type -> reg("holotape_image_" + type.name().toLowerCase(java.util.Locale.ROOT), null,
+                    p -> new ItemHolotapeImage(p, type), single(), Presets.sprite("hbm:items/holotape")));
+    /** 1.7 clay_tablet metadata 0 (the red-room tablet) and 1 (the dungeon one), one item each as in ntm-next. */
+    public static final RegistryObject<ItemClayTablet> clay_tablet = reg("clay_tablet", null,
+            p -> new ItemClayTablet(p, 0), single(), Presets.sprite());
+    public static final RegistryObject<ItemClayTablet> clay_tablet_1 = reg("clay_tablet_1", null,
+            p -> new ItemClayTablet(p, 1), single(), Presets.sprite("hbm:items/clay_tablet"));
     public static final RegistryObject<ItemPolaroid> polaroid = reg("polaroid", HbmTab.CONSUMABLES, ItemPolaroid::new,
             single(), polaroids());
     public static final RegistryObject<ItemBookLemegeton> book_lemegeton = reg("book_lemegeton", null,

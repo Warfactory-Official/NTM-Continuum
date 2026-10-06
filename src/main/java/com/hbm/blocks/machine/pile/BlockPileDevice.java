@@ -104,7 +104,7 @@ public class BlockPileDevice extends dev.golem.core.world.CompatBlock implements
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        int device = itemMetaToBlockMeta(ModDataComponents.ITEM_VARIANT.getOr(context.getItemInHand(), 0));
+        int device = itemMetaToBlockMeta(com.hbm.items.LegacyMeta.of(context.getItemInHand()));
         int meta = device + Mth.clamp(context.getClickedFace().get3DDataValue() - 2, 0, 3);
 
         // Upstream re-derives the control rod's facing from the player when the clicked face gave no

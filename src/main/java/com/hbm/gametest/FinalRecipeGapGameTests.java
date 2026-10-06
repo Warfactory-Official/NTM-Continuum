@@ -141,29 +141,24 @@ public final class FinalRecipeGapGameTests {
     }
 
     public static void componentMatch(GameTestHelper helper) {
-        // holotape: HOLO_DIGAMMA (variant 0) + a screwdriver that stays, one use more worn
-        Item holotape = item("hbm:holotape_image");
+        // holotape: HOLO_DIGAMMA + a screwdriver that stays, one use more worn (one item per tape, History §19es-itemvariant)
+        Item holotape = item("hbm:holotape_image_holo_digamma");
         ItemStack digamma = new ItemStack(holotape);
-        com.hbm.items.ModDataComponents.ITEM_VARIANT.set(digamma, 0);
         ItemStack screwdriver = new ItemStack(item("hbm:screwdriver"));
         List<ItemStack> tape = grid(digamma, screwdriver, new ItemStack(ModItems.ducttape.get()),
                 new ItemStack(item("hbm:armor_polish")));
         ItemStack restored = craft(helper, tape);
-        helper.assertTrue(restored.is(holotape) && com.hbm.items.ModDataComponents.ITEM_VARIANT.getOr(restored, -1) == 1,
+        helper.assertTrue(restored.is(item("hbm:holotape_image_holo_restored")),
                 "the digamma tape restores to HOLO_RESTORED, got " + restored);
         ItemStack worn = remainders(helper, tape).get(1);
         helper.assertTrue(worn.is(item("hbm:screwdriver")) && worn.getDamageValue() == 1,
                 "the screwdriver stays in the grid one use more worn, got " + worn);
-        tape.set(0, new ItemStack(holotape)); // variant absent reads as HOLO_DIGAMMA
-        helper.assertTrue(craft(helper, tape).is(holotape), "an unmarked tape is HOLO_DIGAMMA too");
-        ItemStack fe = new ItemStack(holotape);
-        com.hbm.items.ModDataComponents.ITEM_VARIANT.set(fe, 2);
+        ItemStack fe = new ItemStack(item("hbm:holotape_image_holo_fe_hall"));
         tape.set(0, fe);
         helper.assertTrue(craft(helper, tape).isEmpty(), "another holotape variant does not restore");
 
-        // rigged cell: the full B92 cell is variant 1; peroxide in the tank itself
-        ItemStack cell = new ItemStack(item("hbm:gun_b92_ammo"));
-        com.hbm.items.ModDataComponents.ITEM_VARIANT.set(cell, 1);
+        // rigged cell: the full B92 cell (1.7 meta 1 = charge 25, hbm:b92_energy); peroxide in the tank itself
+        ItemStack cell = com.hbm.items.weapon.GunB92Cell.getFullCell();
         List<ItemStack> rig = grid(ModFluidItems.fluid_tank.get().make(Fluids.PEROXIDE, 1_000), cell,
                 tagged(helper, "c:wires/copper"));
         ItemStack rigged = craft(helper, rig);

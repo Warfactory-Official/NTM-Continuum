@@ -44,7 +44,7 @@ import java.util.function.Consumer;
 /**
  * 1.7 {@code BlockWandStructure} ({@code wand_structure}): the structure saving block (metadata 0) and structure
  * loading block (metadata 1), here the {@link #MODE} property with the variant picked by the item's
- * {@code hbm:item_variant} (1 = load).
+ * item {@code wand_structure_load} (1.7 metadata 1).
  *
  * <p>The saving block covers the box starting one above it ({@code sizeX/Y/Z}, drawn as a white wire box) and
  * saves it to {@code <game dir>/structures/<name>.nbt}, leaving out air and its blacklist; a block in hand toggles
@@ -91,7 +91,7 @@ public class BlockWandStructure extends CompatBlock implements TickingBlock, ILo
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        int variant = ModDataComponents.ITEM_VARIANT.getOr(context.getItemInHand(), 0);
+        int variant = com.hbm.items.LegacyMeta.of(context.getItemInHand());
         return defaultBlockState().setValue(MODE, variant == 1 ? Mode.LOAD : Mode.SAVE);
     }
 

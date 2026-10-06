@@ -681,7 +681,7 @@ fun Project.applyLegacyItemAssets() {
                 }
             }
 
-            // RBMK pellets use the registered hbm:item_variant property. The modern item definition selects
+            // RBMK pellets (and the other ModelState items) use the registered hbm:model_state property. The modern item definition selects
             // its ten visual-state models; older clients express the same selection as ordered overrides.
             var selected = 0
             assets.listFiles()?.filter { it.isDirectory }?.forEach { namespace ->
@@ -1127,7 +1127,7 @@ fun customModelDataConditionOf(definition: File): Pair<String, String>? {
     return onFalse to onTrue
 }
 
-val LEGACY_SELECT_PROPERTIES = setOf("hbm:item_variant", "hbm:coltass", "hbm:polaroid")
+val LEGACY_SELECT_PROPERTIES = setOf("hbm:model_state", "hbm:coltass", "hbm:polaroid")
 
 fun itemVariantSelectOf(definition: File): Pair<String, List<Pair<Float, String>>>? {
     @Suppress("UNCHECKED_CAST")

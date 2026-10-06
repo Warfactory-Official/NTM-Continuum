@@ -111,7 +111,10 @@ public final class CustomMachineGameTests {
         Integer index = CustomMachineCraftingRecipe.find(3, 3, grid);
         helper.assertTrue(index != null && index == 0, "controller recipe did not match: " + index);
         ItemStack result = ModCustomMachineBlocks.custom_machine_item.get().of(index);
-        helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(result, 0) == 100, "variant " + ModDataComponents.ITEM_VARIANT.getOr(result, 0));
+        // 1.7 damage niceList index + 100; the configuration's name here (History §19es-itemvariant)
+        helper.assertTrue(com.hbm.config.CustomMachineConfigJSON.niceList.get(0).unlocalizedName
+                        .equals(ModDataComponents.CUSTOM_MACHINE.getOr(result, null)),
+                "controller names " + ModDataComponents.CUSTOM_MACHINE.getOr(result, null));
         helper.assertTrue("Paper Press".equals(result.getHoverName().getString()), "name " + result.getHoverName().getString());
         grid.set(4, p.copy());
         helper.assertTrue(CustomMachineCraftingRecipe.find(3, 3, grid) == null, "wrong centre still matched");

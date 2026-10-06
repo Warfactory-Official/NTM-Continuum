@@ -98,9 +98,11 @@ public final class Sedna44WeaponRenderer extends WeaponRenderer {
             }
             case HEAVY_REVOLVER, LILMAC, PROTEGE -> {
                 heavyRevolver(declaration);
-                rest(declaration, "Gun", "Pivot", "Cylinder", "Bullets", "Casings", "Hammer");
-                declaration.part(model().part("Scope"), SCOPE)
-                        .visibleIf(state -> !state.animated && isScoped(state.stack));
+                // 1.7 ItemRenderHeavyRevolver.renderOther opens with glRotated(90, 0, 1, 0).
+                Gem.Part<WeaponPose> still = declaration.joint().visibleIf(state -> !state.animated)
+                        .rotate(Gem.Axes.Y, 90F);
+                still.child(model().parts("Gun", "Pivot", "Cylinder", "Bullets", "Casings", "Hammer"), body);
+                still.child(model().part("Scope"), SCOPE).visibleIf(state -> isScoped(state.stack));
             }
             case HANGMAN -> {
                 hangman(declaration);

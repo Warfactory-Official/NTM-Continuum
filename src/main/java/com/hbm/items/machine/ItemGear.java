@@ -1,31 +1,35 @@
 package com.hbm.items.machine;
 
-import com.hbm.items.ModDataComponents;
-import net.minecraft.network.chat.Component;
+import com.hbm.items.LegacyMeta;
+import com.hbm.items.ModGearItems;
 import dev.golem.core.world.CompatItem;
 import net.minecraft.world.item.ItemStack;
 
-/** The two old metadata variants of the large gear, represented by ITEM_VARIANT. */
-public class ItemGear extends CompatItem {
+/**
+ * One of 1.7's two large gears ({@code gear_large} metadata 0, {@code gear_large_steel} metadata 1): two registered
+ * items as in ntm-next (History §19es-itemvariant); the item knows which one it is.
+ */
+public class ItemGear extends CompatItem implements LegacyMeta {
 
-    public ItemGear(Properties properties) {
+    private final int variant;
+
+    public ItemGear(Properties properties, int variant) {
         super(properties);
+        this.variant = variant;
     }
 
+    /** 0 = regular, 1 = steel (1.7's metadata); a run-time value. */
     public int getVariant(ItemStack stack) {
-        return ModDataComponents.ITEM_VARIANT.getOr(stack, 0);
-    }
-
-    public ItemStack of(int variant) {
-        ItemStack stack = new ItemStack(this);
-        ModDataComponents.ITEM_VARIANT.set(stack, variant);
-        return stack;
+        return variant;
     }
 
     @Override
-    public Component getName(ItemStack stack) {
-        return Component.translatable(getVariant(stack) == 1
-                ? "item.hbm.gear_large_steel"
-                : "item.hbm.gear_large");
+    public int legacyMeta() {
+        return variant;
+    }
+
+    /** A stack of the gear for 1.7 metadata {@code variant}. */
+    public ItemStack of(int variant) {
+        return ModGearItems.gear(variant);
     }
 }

@@ -137,11 +137,11 @@ public final class ModMeleeKitItems {
     private static final Preset KIT_CUSTOM_MODEL = Presets.sprite("hbm:items/kit", "hbm:items/kit_1", "hbm:items/kit_2")
             .tints(Tints.constant(-1), Tints.customModelData(0, 0), Tints.customModelData(1, 0));
 
-    /** 1.7 ItemToolBox: pass 1 is kit_toolbox, or its empty lid kit_toolbox_empty while open (item_variant 1). */
+    /** 1.7 ItemToolBox: pass 1 is kit_toolbox, or its empty lid kit_toolbox_empty while open (hbm:model_state 1). */
     private static final Preset TOOLBOX_MODEL = handle -> handle.icon(d -> d.models(Models.group()
                     .and("", Models.generated("hbm:items/kit_toolbox"))
                     .and("_open", Models.generated("hbm:items/kit_toolbox", "hbm:items/kit_toolbox_empty")))
-            .selects(Constants.MOD_ID + ":item_variant"));
+            .selects(Constants.MOD_ID + ":model_state"));
 
     private static final HbmTab C = HbmTab.CONSUMABLES;
 

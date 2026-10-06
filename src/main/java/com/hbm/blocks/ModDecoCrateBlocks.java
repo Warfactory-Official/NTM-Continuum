@@ -67,9 +67,9 @@ import java.util.stream.IntStream;
  * structures, the radiation absorbers, the glyphid hive blocks and the field jammer.
  *
  * <p>1.7 metadata subtypes that are really different blocks are flattened ({@code block_cap_<type>},
- * {@code rad_absorber[_red|_green|_pink]}, {@code wood_structure_<type>}); subtypes of one object keep one id and
- * carry the subtype in {@code hbm:item_variant} (bobblehead, plushie, snowglobe, vending machine, filing cabinet,
- * glyphid hive blocks).
+ * {@code rad_absorber[_red|_green|_pink]}, {@code wood_structure_<type>}); subtypes of one object keep one block and
+ * get one block item each, with ntm-next's ids (bobblehead, plushie, snowglobe, vending machine, filing cabinet,
+ * glyphid hive blocks; History §19es-itemvariant).
  *
  * <p>Each block's model, blockstate, item model, loot and tags are stated on its registration (Reg; emitted by
  * Dejson at build time). The OBJ item definitions of the renderer-drawn props and the family's recipes stay in
@@ -273,11 +273,7 @@ public final class ModDecoCrateBlocks {
                             .and("_rad_1", Models.cubeAll("hbm:blocks/glyphid_base_rad_alt")))
                     .states(Variants.product(Variants.select("type", "normal", "_normal", "infested", "_infested",
                             "rad", "_rad"), Variants.pool(2))))
-            .icon(d -> d.models(Models.group()
-                            .and("", Models.blockItem("hbm:block/glyphid_base_normal_0"))
-                            .and("_infested", Models.blockItem("hbm:block/glyphid_base_infested_0"))
-                            .and("_rad", Models.blockItem("hbm:block/glyphid_base_rad_0")))
-                    .selects(Constants.MOD_ID + ":item_variant"))
+            .icon(d -> d.models(Models.blockItem("hbm:block/glyphid_base_normal_0")))
             .loot(Loot.nothing());
     public static final RegistryObject<BlockGlyphidSpawner> glyphid_spawner = REG.block("glyphid_spawner",
                     BlockGlyphidSpawner::new, p -> p.strength(0.5F).sound(Sounds.FLESH_SOUND))
@@ -286,11 +282,7 @@ public final class ModDecoCrateBlocks {
                             .and("_infested", Models.cubeAll("hbm:blocks/glyphid_eggs_infested"))
                             .and("_rad", Models.cubeAll("hbm:blocks/glyphid_eggs_rad")))
                     .states(Variants.select("type", "normal", "_normal", "infested", "_infested", "rad", "_rad")))
-            .icon(d -> d.models(Models.group()
-                            .and("", Models.blockItem("hbm:block/glyphid_spawner_normal"))
-                            .and("_infested", Models.blockItem("hbm:block/glyphid_spawner_infested"))
-                            .and("_rad", Models.blockItem("hbm:block/glyphid_spawner_rad")))
-                    .selects(Constants.MOD_ID + ":item_variant"))
+            .icon(d -> d.models(Models.blockItem("hbm:block/glyphid_spawner_normal")))
             .loot(Loot.nothing());
     public static final RegistryObject<MachineFieldDisturber> field_disturber = REG.block("field_disturber",
                     MachineFieldDisturber::new, iron(5.0F, 200.0F))
@@ -299,39 +291,56 @@ public final class ModDecoCrateBlocks {
             .tag(BlockTag.PICKAXE);
 
     // ---- items ----
-    public static final RegistryObject<ItemBlockDecoVariant> bobblehead_item = variant("bobblehead", bobblehead,
-            BlockBobble.BobbleType.VALUES.length, i -> Component.translatable("block.hbm.bobblehead"), null);
-    public static final RegistryObject<ItemBlockDecoVariant> plushie_item = variant("plushie", plushie,
-            BlockPlushie.PlushieType.VALUES.length, i -> {
+    // 1.7's metadata items, one block item per subtype with ntm-next's ids (History §19es-itemvariant); index = metadata.
+    public static final List<RegistryObject<ItemBlockDecoVariant>> bobblehead_items = variants(
+            DecoCrateDeclarations.trinketIds("bobblehead", BlockBobble.BobbleType.VALUES), bobblehead,
+            i -> Component.translatable("block.hbm.bobblehead"), null);
+    public static final List<RegistryObject<ItemBlockDecoVariant>> plushie_items = variants(
+            DecoCrateDeclarations.trinketIds("plushie", BlockPlushie.PlushieType.VALUES), plushie, i -> {
                 BlockPlushie.PlushieType type = BlockPlushie.PlushieType.of(i);
                 return Component.translatable("block.hbm.plushie", type == BlockPlushie.PlushieType.NONE ? "" : type.label);
             }, i -> {
                 BlockPlushie.PlushieType type = BlockPlushie.PlushieType.of(i);
                 return type.inscription == null ? List.of() : List.of(Component.literal(type.inscription));
             });
-    public static final RegistryObject<ItemBlockDecoVariant> snowglobe_item = variant("snowglobe", snowglobe,
-            BlockSnowglobe.SnowglobeType.VALUES.length, i -> Component.translatable("block.hbm.snowglobe"), null);
-    public static final RegistryObject<ItemBlockDecoVariant> vending_machine_item = variant("vending_machine",
-            vending_machine, 2, i -> Component.translatable("block.hbm.vending_machine"), null);
-    public static final RegistryObject<ItemBlockDecoVariant> filing_cabinet_item = variant("filing_cabinet",
-            filing_cabinet, 2, i -> Component.translatable("block.hbm.filing_cabinet."
-                    + BlockDecoContainer.CabinetType.of(i).getSerializedName()), null);
-    public static final RegistryObject<ItemBlockDecoVariant> glyphid_base_item = variant("glyphid_base", glyphid_base,
-            3, i -> Component.translatable("block.hbm.glyphid_base"), null);
-    public static final RegistryObject<ItemBlockDecoVariant> glyphid_spawner_item = variant("glyphid_spawner",
-            glyphid_spawner, 3, i -> Component.translatable("block.hbm.glyphid_spawner"), null);
-    public static final RegistryObject<ItemBlockDecoVariant> deco_emitter_item = variant("deco_emitter", deco_emitter,
-            1, i -> Component.translatable("block.hbm.deco_emitter"), i -> {
+    public static final List<RegistryObject<ItemBlockDecoVariant>> snowglobe_items = variants(
+            DecoCrateDeclarations.trinketIds("snowglobe", BlockSnowglobe.SnowglobeType.VALUES), snowglobe,
+            i -> Component.translatable("block.hbm.snowglobe"), null);
+    public static final List<RegistryObject<ItemBlockDecoVariant>> vending_machine_items = variants(
+            new String[] {"vending_machine", "vending_machine_snacks"}, vending_machine,
+            i -> Component.translatable("block.hbm.vending_machine"), null);
+    public static final List<RegistryObject<ItemBlockDecoVariant>> filing_cabinet_items = variants(
+            new String[] {"filing_cabinet_green", "filing_cabinet_steel"}, filing_cabinet,
+            i -> Component.translatable("block.hbm.filing_cabinet." + BlockDecoContainer.CabinetType.of(i).getSerializedName()),
+            null);
+    public static final List<RegistryObject<ItemBlockDecoVariant>> glyphid_base_items = variants(
+            new String[] {"glyphid_base", "glyphid_base_infested", "glyphid_base_rad"}, glyphid_base,
+            i -> Component.translatable("block.hbm.glyphid_base"), null);
+    public static final List<RegistryObject<ItemBlockDecoVariant>> glyphid_spawner_items = variants(
+            new String[] {"glyphid_spawner", "glyphid_spawner_infested", "glyphid_spawner_rad"}, glyphid_spawner,
+            i -> Component.translatable("block.hbm.glyphid_spawner"), null);
+    public static final RegistryObject<ItemBlockDecoVariant> deco_emitter_item = variants(new String[] {"deco_emitter"},
+            deco_emitter, i -> Component.translatable("block.hbm.deco_emitter"), i -> {
                 List<Component> list = new ArrayList<>();
                 BlockEmitter.addInformation(list);
                 return list;
-            });
-    public static final RegistryObject<ItemBlockDecoVariant> part_emitter_item = variant("part_emitter", part_emitter,
-            1, i -> Component.translatable("block.hbm.part_emitter"), i -> {
+            }).get(0);
+    public static final RegistryObject<ItemBlockDecoVariant> part_emitter_item = variants(new String[] {"part_emitter"},
+            part_emitter, i -> Component.translatable("block.hbm.part_emitter"), i -> {
                 List<Component> list = new ArrayList<>();
                 PartEmitter.addInformation(list);
                 return list;
-            });
+            }).get(0);
+
+    static {
+        // the hive blocks' other members draw their block models (the base ids' icons are on their blocks)
+        for (String type : new String[] {"infested", "rad"}) {
+            dev.golem.core.dejson.Dejson.item(Constants.MOD_ID, "glyphid_base_" + type)
+                    .models(Models.blockItem("hbm:block/glyphid_base_" + type + "_0")).register();
+            dev.golem.core.dejson.Dejson.item(Constants.MOD_ID, "glyphid_spawner_" + type)
+                    .models(Models.blockItem("hbm:block/glyphid_spawner_" + type)).register();
+        }
+    }
 
     static {
         // crates: 1.7 consumable tab (supply/conserve), machine tab (tungsten/safe), block tab (cabinet)
@@ -339,13 +348,13 @@ public final class ModDecoCrateBlocks {
         plain("crate_can", crate_can, HbmTab.CONSUMABLES);
         lockable("crate_tungsten", crate_tungsten, 27);
         lockable("safe", safe, 15);
-        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(filing_cabinet_item, 0, 2));
+        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(filing_cabinet_items, 0, 2));
 
         // props: the creative lists skip the NONE type
-        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(bobblehead_item, 1, BlockBobble.BobbleType.VALUES.length));
-        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(snowglobe_item, 1, BlockSnowglobe.SnowglobeType.VALUES.length));
-        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(plushie_item, 1, BlockPlushie.PlushieType.VALUES.length));
-        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(vending_machine_item, 0, 2));
+        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(bobblehead_items, 1, BlockBobble.BobbleType.VALUES.length));
+        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(snowglobe_items, 1, BlockSnowglobe.SnowglobeType.VALUES.length));
+        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(plushie_items, 1, BlockPlushie.PlushieType.VALUES.length));
+        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(vending_machine_items, 0, 2));
         plain("broadcaster_pc", broadcaster_pc, HbmTab.MACHINES);
         plain("radiobox", radiobox, HbmTab.MACHINES);
         plain("radiorec", radiorec, HbmTab.MACHINES);
@@ -357,7 +366,7 @@ public final class ModDecoCrateBlocks {
                 hadron_coil_starmetal, hadron_coil_chlorophyte, hadron_coil_mese}) {
             String id = ((Reg.Handle<?>) coil).path();
             RegistryObject<ItemBlockDecoVariant> item = REG.item(id,
-                    p -> new ItemBlockDecoVariant(coil.get(), p, 1, i -> Component.translatable("block.hbm." + id), i -> {
+                    p -> new ItemBlockDecoVariant(coil.get(), p, 0, i -> Component.translatable("block.hbm." + id), i -> {
                         List<Component> list = new ArrayList<>();
                         BlockHadronCoil.addInformation(coil.get().factor, list);
                         return list;
@@ -370,8 +379,8 @@ public final class ModDecoCrateBlocks {
             plain(((Reg.Handle<?>) wood).path(), wood, HbmTab.BLOCKS);
         for (RegistryObject<BlockAbsorber> absorber : ABSORBERS.values())
             plain(((Reg.Handle<?>) absorber).path(), absorber, HbmTab.MACHINES);
-        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(glyphid_base_item, 0, 3));
-        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(glyphid_spawner_item, 0, 3));
+        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(glyphid_base_items, 0, 3));
+        ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(glyphid_spawner_items, 0, 3));
         plain("field_disturber", field_disturber, null);
     }
 
@@ -407,15 +416,27 @@ public final class ModDecoCrateBlocks {
                 .tab(HbmTab.MACHINES);
     }
 
-    private static RegistryObject<ItemBlockDecoVariant> variant(String id, Supplier<? extends Block> block, int count,
-                                                                IntFunction<Component> name,
-                                                                IntFunction<List<Component>> tooltip) {
-        return REG.item(id, p -> new ItemBlockDecoVariant(block.get(), p, count, name, tooltip),
-                Compat::blockDescription);
+    /**
+     * One block item per id (index = 1.7 metadata) over {@code block}. Member 0 is registered last, so the block's own
+     * item ({@code Block.asItem}) stays the metadata-0 item on every loader.
+     */
+    private static List<RegistryObject<ItemBlockDecoVariant>> variants(String[] ids, Supplier<? extends Block> block,
+                                                                      IntFunction<Component> name,
+                                                                      IntFunction<List<Component>> tooltip) {
+        @SuppressWarnings("unchecked")
+        RegistryObject<ItemBlockDecoVariant>[] items = new RegistryObject[ids.length];
+        for (int k = 1; k <= ids.length; k++) {
+            int variant = k % ids.length;
+            items[variant] = REG.item(ids[variant], p -> new ItemBlockDecoVariant(block.get(), p, variant, name, tooltip),
+                    Compat::blockDescription);
+        }
+        List<RegistryObject<ItemBlockDecoVariant>> members = List.of(items);
+        ItemBlockDecoVariant.Families.record(block, members);
+        return members;
     }
 
-    private static List<ItemStack> stacks(RegistryObject<ItemBlockDecoVariant> item, int from, int to) {
-        return IntStream.range(from, to).mapToObj(i -> item.get().of(i)).toList();
+    private static List<ItemStack> stacks(List<RegistryObject<ItemBlockDecoVariant>> items, int from, int to) {
+        return IntStream.range(from, to).mapToObj(i -> new ItemStack(items.get(i).get())).toList();
     }
 
     /** The wooden structures' multipart blockstates (their joins); the element models are authored. */

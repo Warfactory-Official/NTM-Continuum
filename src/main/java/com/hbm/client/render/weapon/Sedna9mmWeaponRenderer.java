@@ -102,7 +102,9 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
             }
             case LAG -> {
                 lag(declaration);
-                rest(declaration, "Grip", "Slide", "Hammer");
+                // 1.7 ItemRenderLAG.renderOther opens with glRotated(90, 0, 1, 0).
+                declaration.joint().visibleIf(state -> !state.animated).rotate(Gem.Axes.Y, 90F)
+                        .child(model().parts("Grip", "Slide", "Hammer"), body);
             }
             case UZI -> {
                 uzi(held(declaration), 0, 1, "Gun");
@@ -124,6 +126,7 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
                             rail, side, side < 0 ? "GunMirror" : "Gun");
                 }
                 akimboRest(declaration);
+                modTableGun(declaration);
             }
         }
     }
@@ -239,13 +242,31 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
         magazine.child(obj.part("Bullet"), body).visibleIf(state -> state.bus("BULLET", rail)[0] == 1);
     }
 
+    /**
+     * 1.7 {@code ItemRenderUziAkimbo.renderModTable(stack, index)}: one uzi at the origin, configuration 0 the
+     * "GunMirror" body and any other the "Gun" body, with that configuration's saturnite skin and silencer.
+     */
+    private void modTableGun(Gem.Model<WeaponPose> declaration) {
+        WavefrontObj obj = model();
+        Gem.SurfaceOf<WeaponPose> skin = state -> XWeaponModManager.hasUpgrade(state.stack, state.tableIndex,
+                XWeaponModManager.ID_UZI_SATURN) ? SATURNITE : body;
+        declaration.part(obj.part("GunMirror"), body).skin(skin)
+                .visibleIf(state -> state.modTable && state.tableIndex == 0);
+        declaration.part(obj.part("Gun"), body).skin(skin)
+                .visibleIf(state -> state.modTable && state.tableIndex != 0);
+        declaration.part(obj.parts("StockBack", "StockFront", "Slide", "Magazine"), body).skin(skin)
+                .visibleIf(state -> state.modTable);
+        declaration.part(obj.part("Silencer"), body).skin(skin)
+                .visibleIf(state -> state.modTable && silenced(state, state.tableIndex));
+    }
+
     /** The akimbo rest pose: the pair crossed, as the old inventory draw laid them out. */
     private void akimboRest(Gem.Model<WeaponPose> declaration) {
         WavefrontObj obj = model();
         String[] parts = {"StockBack", "StockFront", "Slide", "Magazine"};
 
         Gem.Part<WeaponPose> left = declaration.joint()
-                .visibleIf(state -> !state.animated)
+                .visibleIf(state -> !state.animated && !state.modTable)
                 .rotate(Gem.Axes.Z, 225F)
                 .rotate(Gem.Axes.Y, 90F)
                 .rotate(Gem.Axes.X, 25F)
@@ -257,7 +278,7 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
                 .visibleIf(state -> silenced(state, 1));
 
         Gem.Part<WeaponPose> right = declaration.joint()
-                .visibleIf(state -> !state.animated)
+                .visibleIf(state -> !state.animated && !state.modTable)
                 .translate(0F, 0F, 5F)
                 .rotate(Gem.Axes.Z, 225F)
                 .rotate(Gem.Axes.Y, -90F)

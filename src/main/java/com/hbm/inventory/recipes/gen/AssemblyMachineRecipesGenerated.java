@@ -576,28 +576,28 @@ public final class AssemblyMachineRecipesGenerated {
                 .setPools528("528.arty"));
         reg.registerGenerated(new GenericRecipe("ass.himarssmall").setup(100, 100)
                 .inputItems(STEEL.plate().count(24), ANY_PLASTIC.ingot().count(12), new ComparableStack(ModFuelItems.rocket_fuel.get(), 48), tag("c", "ingots/any_highexplosive", 48), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 6))
-                .outputItems(ModAmmoItems.ammo_himars.get().of(HIMARSRocketType.SMALL)));
+                .outputItems(ModAmmoItems.ammo_himars.stack(HIMARSRocketType.SMALL)));
         reg.registerGenerated(new GenericRecipe("ass.himarssmallhe").setup(100, 100)
                 .inputItems(STEEL.plate().count(24), ANY_PLASTIC.ingot().count(24), new ComparableStack(ModFuelItems.rocket_fuel.get(), 48), tag("c", "ingots/any_plasticexplosive", 18), tag("c", "ingots/any_highexplosive", 48), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 6))
-                .outputItems(ModAmmoItems.ammo_himars.get().of(HIMARSRocketType.SMALL_HE)));
+                .outputItems(ModAmmoItems.ammo_himars.stack(HIMARSRocketType.SMALL_HE)));
         reg.registerGenerated(new GenericRecipe("ass.himarssmallwp").setup(100, 100)
                 .inputItems(STEEL.plate().count(24), ANY_PLASTIC.ingot().count(24), new ComparableStack(ModFuelItems.rocket_fuel.get(), 48), tag("c", "ingots/phosphorus", 18), tag("c", "ingots/any_highexplosive", 48), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 6))
-                .outputItems(ModAmmoItems.ammo_himars.get().of(HIMARSRocketType.SMALL_WP)));
+                .outputItems(ModAmmoItems.ammo_himars.stack(HIMARSRocketType.SMALL_WP)));
         reg.registerGenerated(new GenericRecipe("ass.himarssmalltb").setup(100, 100)
                 .inputItems(STEEL.plate().count(24), ANY_PLASTIC.ingot().count(24), new ComparableStack(ModFuelItems.rocket_fuel.get(), 48), new ComparableStack(ModItems.ball_tatb.get(), 32), new FluidContainerStack("KEROSENE_REFORM", 1_000).count(12), new FluidContainerStack("PEROXIDE", 1_000).count(12), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 6))
-                .outputItems(ModAmmoItems.ammo_himars.get().of(HIMARSRocketType.SMALL_TB)));
+                .outputItems(ModAmmoItems.ammo_himars.stack(HIMARSRocketType.SMALL_TB)));
         reg.registerGenerated(new GenericRecipe("ass.himarssmallnuke").setup(100, 100)
                 .inputItems(STEEL.plate().count(24), ANY_PLASTIC.ingot().count(24), new ComparableStack(ModFuelItems.rocket_fuel.get(), 48), new ComparableStack(ModItems.ball_tatb.get(), 6), PU239.nugget().count(12), new ComparableStack(ModItems.neutron_reflector.get(), 12), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 6))
-                .outputItems(ModAmmoItems.ammo_himars.get().of(HIMARSRocketType.SMALL_MINI_NUKE)));
+                .outputItems(ModAmmoItems.ammo_himars.stack(HIMARSRocketType.SMALL_MINI_NUKE)));
         reg.registerGenerated(new GenericRecipe("ass.himarssmalllava").setup(100, 100)
                 .inputItems(STEEL.plate().count(24), ANY_HARDPLASTIC.ingot().count(12), new ComparableStack(ModFuelItems.rocket_fuel.get(), 32), new ComparableStack(ModItems.ball_tatb.get(), 4), tag("c", "gems/volcanic", 1), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 6))
-                .outputItems(ModAmmoItems.ammo_himars.get().of(HIMARSRocketType.SMALL_LAVA)));
+                .outputItems(ModAmmoItems.ammo_himars.stack(HIMARSRocketType.SMALL_LAVA)));
         reg.registerGenerated(new GenericRecipe("ass.himarslarge").setup(200, 100)
                 .inputItems(STEEL.plate().count(24), ANY_HARDPLASTIC.ingot().count(12), new ComparableStack(ModFuelItems.rocket_fuel.get(), 36), new ComparableStack(ModItems.ball_tatb.get(), 16), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED)))
-                .outputItems(ModAmmoItems.ammo_himars.get().of(HIMARSRocketType.LARGE)));
+                .outputItems(ModAmmoItems.ammo_himars.stack(HIMARSRocketType.LARGE)));
         reg.registerGenerated(new GenericRecipe("ass.himarslargetb").setup(200, 100)
                 .inputItems(STEEL.plate().count(24), ANY_HARDPLASTIC.ingot().count(12), new ComparableStack(ModFuelItems.rocket_fuel.get(), 36), new ComparableStack(ModItems.ball_tatb.get(), 24), new FluidContainerStack("KEROSENE_REFORM", 1_000).count(16), new FluidContainerStack("PEROXIDE", 1_000).count(16), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED)))
-                .outputItems(ModAmmoItems.ammo_himars.get().of(HIMARSRocketType.LARGE_TB)));
+                .outputItems(ModAmmoItems.ammo_himars.stack(HIMARSRocketType.LARGE_TB)));
         reg.registerGenerated(new GenericRecipe("ass.missileassembly").setup(200, 100)
                 .inputItems(AL.shell().count(2), TI.shell().count(4), ANY_PLASTIC.ingot().count(8), new ComparableStack(ModFuelItems.rocket_fuel.get(), 8), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC)))
                 .outputItems(new ItemStack(ModItems.missile_assembly.get())));
@@ -670,17 +670,17 @@ public final class AssemblyMachineRecipesGenerated {
                 .outputItems(new ItemStack(ModAmmoItems.bmg50_black.get(), 12))
                 .setPools("secret.psalm"));
         reg.registerGenerated(new GenericRecipe("chem.shellchlorine").setup(100, 1_000)
-                .inputItems(new ComparableStack(ModAmmoItems.ammo_arty.get().of(ArtilleryShellType.NORMAL)), ANY_PLASTIC.ingot())
+                .inputItems(new ComparableStack(ModAmmoItems.ammo_arty.stack(ArtilleryShellType.NORMAL)), ANY_PLASTIC.ingot())
                 .inputFluids(new FluidStack(Fluids.CHLORINE, 4_000))
-                .outputItems(ModAmmoItems.ammo_arty.get().of(ArtilleryShellType.CHLORINE)));
+                .outputItems(ModAmmoItems.ammo_arty.stack(ArtilleryShellType.CHLORINE)));
         reg.registerGenerated(new GenericRecipe("ass.shellphosgene").setup(100, 1_000)
-                .inputItems(new ComparableStack(ModAmmoItems.ammo_arty.get().of(ArtilleryShellType.NORMAL)), ANY_PLASTIC.ingot())
+                .inputItems(new ComparableStack(ModAmmoItems.ammo_arty.stack(ArtilleryShellType.NORMAL)), ANY_PLASTIC.ingot())
                 .inputFluids(new FluidStack(Fluids.PHOSGENE, 4_000))
-                .outputItems(ModAmmoItems.ammo_arty.get().of(ArtilleryShellType.PHOSGENE)));
+                .outputItems(ModAmmoItems.ammo_arty.stack(ArtilleryShellType.PHOSGENE)));
         reg.registerGenerated(new GenericRecipe("ass.shellmustard").setup(100, 1_000)
-                .inputItems(new ComparableStack(ModAmmoItems.ammo_arty.get().of(ArtilleryShellType.NORMAL)), ANY_PLASTIC.ingot())
+                .inputItems(new ComparableStack(ModAmmoItems.ammo_arty.stack(ArtilleryShellType.NORMAL)), ANY_PLASTIC.ingot())
                 .inputFluids(new FluidStack(Fluids.MUSTARDGAS, 4_000))
-                .outputItems(ModAmmoItems.ammo_arty.get().of(ArtilleryShellType.MUSTARD)));
+                .outputItems(ModAmmoItems.ammo_arty.stack(ArtilleryShellType.MUSTARD)));
         reg.registerGenerated(new GenericRecipe("ass.nitra").setupNamed(200, 500)
                 .inputItems(new ComparableStack(ModItems.nitra.get()))
                 .outputChoices(new GenericRecipe.OutputChoice(new ItemStack(item("casing_shotshell")), 20F), new GenericRecipe.OutputChoice(new ItemStack(ModItems.casing_buckshot.get()), 10F), new GenericRecipe.OutputChoice(new ItemStack(item("casing_small"), 2), 20F), new GenericRecipe.OutputChoice(new ItemStack(item("casing_large")), 10F), new GenericRecipe.OutputChoice(new ItemStack(Items.GUNPOWDER), 30F), new GenericRecipe.OutputChoice(new ItemStack(ModItems.cordite.get()), 20F), new GenericRecipe.OutputChoice(new ItemStack(ModItems.ballistite.get()), 20F), new GenericRecipe.OutputChoice(new ItemStack(item("grenade_shell_frag")), 5F), new GenericRecipe.OutputChoice(new ItemStack(item("grenade_shell_stick")), 5F), new GenericRecipe.OutputChoice(new ItemStack(item("grenade_fuze_s3")), 10F))

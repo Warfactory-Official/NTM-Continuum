@@ -19,8 +19,8 @@ import com.hbm.saveddata.AnnihilatorSavedData;
 /**
  * 1.7 {@code AnnihilatorRecipes}: milestone payouts keyed by what a pool has swallowed. Keys are an
  * {@link Item}, a {@link FluidType}, or a {@link String} tag id (the 1.7 ore-dictionary name, e.g.
- * {@code c:ingots/steel}), or a {@link VariantKey} for 1.7's type+meta {@code ComparableStack} of a metadata family
- * that stays one item here. Every 1.7 default milestone sits inside {@code if(GeneralConfig.enable528)}: the fifteen
+ * {@code c:ingots/steel}); 1.7's type+meta {@code ComparableStack} is the item itself, every metadata family being
+ * one item per type here (History §19es-itemvariant). Every 1.7 default milestone sits inside {@code if(GeneralConfig.enable528)}: the fifteen
  * 528 blueprint payouts are registered in 528 mode only, so the table is empty on a default config, as in 1.7.
  */
 public final class AnnihilatorRecipes {
@@ -67,11 +67,11 @@ public final class AnnihilatorRecipes {
             milestone(tag(OreDictManager.ANY_RESISTANTALLOY, MaterialShapes.INGOT), 1024, "tcalloy");
             milestone(com.hbm.items.ModItems.powder_chlorophyte.get(), 1024, "chlorophyte");
 
-            // 1.7 ComparableStack keys: ammo_standard BMG50_FMJ and the circuit CONTROLLER are items of their own
-            // here; ammo_arty meta 0 (NORMAL) is still a variant of one item.
+            // 1.7 ComparableStack keys: ammo_standard BMG50_FMJ, ammo_arty NORMAL and the circuit CONTROLLER are
+            // items of their own here.
             milestone(com.hbm.items.ModAmmoItems.bmg50_fmj.get(), 256, "bmg");
-            milestone(new VariantKey(com.hbm.items.ModAmmoItems.ammo_arty.get(),
-                    com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType.NORMAL.ordinal()), 128, "arty");
+            milestone(com.hbm.items.ModAmmoItems.ammo_arty.get(com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType.NORMAL),
+                    128, "arty");
             milestone(com.hbm.items.ModIntermediateItems.circuit(com.hbm.items.ItemEnums.EnumCircuitType.CONTROLLER),
                     128, "controller");
         }
@@ -81,15 +81,6 @@ public final class AnnihilatorRecipes {
     private static void milestone(Object key, int amount, String pool) {
         recipes.put(key, new AnnihilatorRecipe(new Milestone(BigInteger.valueOf(amount), com.hbm.items.machine.ItemBlueprints
                 .make(com.hbm.inventory.recipes.loader.GenericRecipes.POOL_PREFIX_528 + pool))));
-    }
-
-    /** 1.7's type+meta {@code ComparableStack} key for an item whose metadata is its {@code ITEM_VARIANT} component. */
-    public record VariantKey(Item item, int variant) {}
-
-    /** The variant key of a stack of a metadata family ({@code ItemEnumMulti}), or null for any other item. */
-    public static @org.jspecify.annotations.Nullable VariantKey variantKey(ItemStack stack) {
-        if (!(stack.getItem() instanceof com.hbm.items.ItemEnumMulti multi)) return null;
-        return new VariantKey(stack.getItem(), multi.getVariant(stack));
     }
 
     /** The 1.7 ore-dictionary key, spelled as the material's item tag id. */
@@ -120,15 +111,6 @@ public final class AnnihilatorRecipes {
 
         for (String key : AnnihilatorSavedData.tagNames(stack)) {
             AnnihilatorRecipe recipe = recipes.get(key);
-            if (recipe != null) {
-                ItemStack payout = getHighestPayoutFromRecipe(recipe, prevAmount, currentAmount);
-                if (payout != null) return payout;
-            }
-        }
-
-        VariantKey comp = variantKey(stack);
-        if (comp != null) {
-            AnnihilatorRecipe recipe = recipes.get(comp);
             if (recipe != null) {
                 ItemStack payout = getHighestPayoutFromRecipe(recipe, prevAmount, currentAmount);
                 if (payout != null) return payout;

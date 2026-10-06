@@ -18,8 +18,8 @@ import java.util.Locale;
  */
 public class ItemPileRodMK2 extends ItemEnumMulti {
 
-    public ItemPileRodMK2(Properties properties) {
-        super(EnumPileRod.class, true, true, properties);
+    public ItemPileRodMK2(Properties properties, EnumPileRod type) {
+        super(EnumPileRod.class, type, properties);
     }
 
     public enum EnumPileRod {
@@ -73,7 +73,7 @@ public class ItemPileRodMK2 extends ItemEnumMulti {
             if (depletion > 0) tooltip.add(Component.literal("Depletion: " + (int) Math.round(depletion) + "%"));
         }
 
-        tooltip.add(Component.translatable(getDescriptionId() + "." + rod.name().toLowerCase(Locale.US) + ".desc")
+        tooltip.add(Component.translatable("item.hbm.pile_rod." + rod.name().toLowerCase(Locale.US) + ".desc")
                 .withStyle(ChatFormatting.YELLOW));
     }
 

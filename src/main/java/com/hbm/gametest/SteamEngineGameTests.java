@@ -79,10 +79,10 @@ public final class SteamEngineGameTests {
     public static void gearAndRecipe(GameTestHelper helper) {
         ItemStack regular = ModGearItems.gear_large.get().of(0);
         ItemStack steel = ModGearItems.gear_large.get().of(1);
-        helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(regular, -1) == 0,
-                "Large gear default variant was not preserved");
-        helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(steel, -1) == 1,
-                "Large steel gear variant was not preserved");
+        helper.assertTrue(regular.is(ModGearItems.gear_large.get()),
+                "1.7 gear_large metadata 0 is gear_large");
+        helper.assertTrue(steel.is(ModGearItems.gear_large_steel.get()),
+                "1.7 gear_large metadata 1 is gear_large_steel");
         helper.assertTrue(steel.getHoverName().getString().equals("Large Steel Gear"),
                 "Large steel gear has the wrong display name");
 

@@ -57,7 +57,7 @@ public class AssemblyMachineRecipes extends GenericRecipes {
     private static final String GROUP_PILE_ROD = "autoswitch.pilerod";
 
     private static ItemStack satellite(EnumSatType type) {
-        return com.hbm.items.ModSatelliteItems.satellite.get().of(type);
+        return com.hbm.items.ModSatelliteItems.satellite.stack(type);
     }
 
     /** A full fluid barrel as a recipe input; the barrel itself comes back. */
@@ -85,7 +85,7 @@ public class AssemblyMachineRecipes extends GenericRecipes {
     }
 
     private static ItemStack pileRod(EnumPileRod type, int count) {
-        return ModPileBlocks.pile_rod.get().of(type, count);
+        return ModPileBlocks.pile_rod.stack(type, count);
     }
 
     @Override
@@ -300,8 +300,8 @@ public class AssemblyMachineRecipes extends GenericRecipes {
                         new ComparableStack(ModItems.thruster_medium.get(), 12),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER), 4),
                         new ComparableStack(ModIngredientItems.part(EnumPartType.LDE), 32))
-                .outputItems(com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.missile_soyuz.get()
-                        .of(com.hbm.items.ItemEnums.SoyuzSkinType.NORMAL))
+                .outputItems(com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.missile_soyuz
+                        .stack(com.hbm.items.ItemEnums.SoyuzSkinType.NORMAL))
                 .setPools(GenericRecipes.POOL_PREFIX_DISCOVER + "soyuz"));
         register(new GenericRecipe("ass.lander").setup(2_400, 25_000)
                 .inputItems(AL.shell().count(4), RUBBER.ingot().count(16),

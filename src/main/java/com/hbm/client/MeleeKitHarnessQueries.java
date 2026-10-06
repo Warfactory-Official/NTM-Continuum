@@ -25,6 +25,7 @@ public final class MeleeKitHarnessQueries {
         MobHarnessQueries.register(); // fix wave phase 7
         HooksHarnessQueries.register(); // wave 2 HOOKS
         VisualHarnessQueries.register(); // wave 2 VISUAL
+        ReleaseHarnessQueries.register(); // pre-release client wave (§19es-client)
     }
 
     /**

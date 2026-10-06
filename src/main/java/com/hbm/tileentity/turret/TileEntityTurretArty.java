@@ -67,9 +67,8 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery {
         if (ammoStacks != null) return ammoStacks;
 
         List<ItemStack> stacks = new ArrayList<>();
-        ItemAmmoArty item = ModAmmoItems.ammo_arty.get();
         for (ItemAmmoArty.ArtilleryShellType type : ItemAmmoArty.ArtilleryShellType.values()) {
-            stacks.add(item.of(type));
+            stacks.add(ModAmmoItems.ammo_arty.stack(type));
         }
 
         ammoStacks = stacks;
@@ -181,14 +180,14 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery {
     public ItemStack getShellLoaded() {
         for (int i = SLOT_AMMO_FIRST; i <= SLOT_AMMO_LAST; i++) {
             ItemStack stack = getItem(i);
-            if (stack.is(ModAmmoItems.ammo_arty.get())) return stack;
+            if (stack.getItem() instanceof ItemAmmoArty) return stack;
         }
         return ItemStack.EMPTY;
     }
 
     public void consumeShell() {
         for (int i = SLOT_AMMO_FIRST; i <= SLOT_AMMO_LAST; i++) {
-            if (getItem(i).is(ModAmmoItems.ammo_arty.get())) {
+            if (getItem(i).getItem() instanceof ItemAmmoArty) {
                 removeItem(i, 1);
                 return;
             }
@@ -199,7 +198,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery {
     public void spawnShell(ItemStack loaded) {
         Vec3 heading = alongBarrel(getBarrelLength(), 0D, 0D);
         Vec3 pos = getTurretPos().add(heading);
-        int variant = ModAmmoItems.ammo_arty.get().getVariant(loaded);
+        int variant = loaded.getItem() instanceof ItemAmmoArty shell ? shell.getVariant(loaded) : 0;
 
         EntityArtilleryShell shell = new EntityArtilleryShell(ModEntities.ARTILLERY_SHELL.get(), level);
         shell.setPos(pos.x, pos.y, pos.z);

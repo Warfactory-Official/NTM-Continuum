@@ -101,7 +101,7 @@ public final class SawmillGameTests {
         BlockPos clicked = helper.absolutePos(new BlockPos(4, 1, 2));
         helper.getLevel().setBlock(clicked, block.defaultBlockState(), 3);
         ItemStack missingBlade = new ItemStack(block);
-        ModDataComponents.ITEM_VARIANT.set(missingBlade, 1);
+        ModDataComponents.HAS_BLADE.set(missingBlade, false);
         block.setPlacedBy(helper.getLevel(), clicked, block.defaultBlockState(), player, missingBlade);
 
         BlockPos core = clicked.south();
@@ -109,13 +109,13 @@ public final class SawmillGameTests {
         helper.assertTrue(sawmill != null && !sawmill.hasBlade,
                 "missing-blade machine item must place a sawmill without its blade");
         ItemStack clone = block.pickBlockStack(helper.getLevel(), core, helper.getLevel().getBlockState(core));
-        helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(clone, 0) == 1,
-                "cloning a missing-blade sawmill must preserve its item variant");
+        helper.assertTrue(!ModDataComponents.HAS_BLADE.getOr(clone, true),
+                "cloning a missing-blade sawmill must keep hbm:has_blade false");
         ItemStack drop = block.getDrops(helper.getLevel().getBlockState(core),
                 new LootParams.Builder((ServerLevel) helper.getLevel())
                         .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(core))).get(0);
-        helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(drop, 0) == 1,
-                "breaking a missing-blade sawmill must preserve its item variant");
+        helper.assertTrue(!ModDataComponents.HAS_BLADE.getOr(drop, true),
+                "breaking a missing-blade sawmill must keep hbm:has_blade false");
         helper.succeed();
     }
 

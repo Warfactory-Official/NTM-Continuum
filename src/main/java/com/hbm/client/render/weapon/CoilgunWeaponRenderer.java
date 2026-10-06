@@ -31,7 +31,8 @@ public final class CoilgunWeaponRenderer extends WeaponRenderer {
     }
     @Override protected void setup(Gem.Model<WeaponPose> declaration) {
         WavefrontObj obj = model();
-        declaration.part(obj.all(), BODY).visibleIf(state -> !state.animated);
+        // 1.7 renderOther opens with glRotated(-90, 0, 1, 0): every static draw (icon, hand, ground, weapon table).
+        declaration.joint().visibleIf(state -> !state.animated).rotate(Gem.Axes.Y, -90F).child(obj.all(), BODY);
         declaration.joint().visibleIf(SpecialWeaponRenderers::animated)
                 .scale(0.75F)
                 .rotate(Gem.Axes.Y, -90F)

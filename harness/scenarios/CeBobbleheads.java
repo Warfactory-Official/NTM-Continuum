@@ -18,6 +18,8 @@ public final class CeBobbleheads implements Scenario {
     private static final String[] NAMES = {"MOVBLOCK", "LEAFIA", "HACKER6329", "EOS", "BOB"};
     /** The four CE figures, then 1.7's BOB as the orientation reference. */
     private static final int[] TYPES = {25, 26, 27, 28, 8};
+    /** BlockBobble.BobbleType names by ordinal (the item ids are bobblehead_<name>). */
+    private static final String[] BOBBLE_NAMES = {"none", "strength", "perception", "endurance", "charisma", "intelligence", "agility", "luck", "bob", "frizzle", "pu238", "vt", "doc", "bluehat", "pheo", "adam29", "uffr", "vaer", "nos", "drillgon", "cirno", "microwave", "peep", "mellow", "abel", "movblock", "leafia", "hacker6329", "eos"};
 
     @Override
     public void run(Client c) throws Exception {
@@ -38,8 +40,8 @@ public final class CeBobbleheads implements Scenario {
             for (int i = 0; i < TYPES.length; i++) {
                 c.cmd("clear");
                 c.waitTicks(1);
-                String item = c.node().startsWith("1.20") ? "hbm:bobblehead{\"hbm:item_variant\":" + TYPES[i] + "}"
-                        : "hbm:bobblehead[hbm:item_variant=" + TYPES[i] + "]";
+                // one item per bobblehead type since History §19es-itemvariant
+                String item = "hbm:bobblehead_" + BOBBLE_NAMES[TYPES[i]];
                 c.cmd("give @s " + item + " 1");
                 c.hotbar(1);
                 c.waitTicks(2);
@@ -51,8 +53,9 @@ public final class CeBobbleheads implements Scenario {
                 c.use(2);
                 c.waitTicks(5);
                 Expect.block(c, x, Y + 1, Z, "hbm:bobblehead");
-                String nbt = c.blockEntity(x, Y + 1, Z).toString().replace(" ", "");
-                Expect.that(nbt.contains("type:" + TYPES[i] + "b") || nbt.contains("\"type\":" + TYPES[i]),
+                // the figure is saved by name since History §19es-itemvariant
+                String nbt = c.blockEntity(x, Y + 1, Z).toString().replace(" ", "").replace("\\", "");
+                Expect.that(nbt.contains("type:\"" + BOBBLE_NAMES[TYPES[i]] + "\""),
                         NAMES[i] + " keeps type " + TYPES[i] + ": " + nbt);
             }
             c.cmd("clear");

@@ -227,7 +227,7 @@ public interface IWeaponAbility extends IBaseAbility {
                 // 1.7: a random bobblehead, never the NONE type (mob.entityDropItem at the mob's feet)
                 if (world.getRandom().nextInt(chance) == 0) {
                     int type = world.getRandom().nextInt(com.hbm.blocks.generic.BlockBobble.BobbleType.VALUES.length - 1) + 1;
-                    drop(mob, com.hbm.blocks.ModDecoCrateBlocks.bobblehead_item.get().of(type));
+                    drop(mob, new net.minecraft.world.item.ItemStack(com.hbm.blocks.ModDecoCrateBlocks.bobblehead_items.get(type).get()));
                 }
             }
         }

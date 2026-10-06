@@ -299,11 +299,13 @@ public final class CustomMachineConfigJSON {
         }
     }
 
-    /** The configuration a controller item names ({@code ITEM_VARIANT - 100}, 1.7's damage value), or null. */
-    public static @Nullable MachineConfiguration byVariant(int variant) {
-        int id = variant - 100;
-        if (id >= 0 && id < customMachines.size() && id < niceList.size()) return niceList.get(id);
-        return null;
+    /**
+     * The configuration a controller item names, or null. 1.7 kept {@code niceList} index + 100 in the item damage; the
+     * port saves the configuration's {@code unlocalizedName} ({@code hbm:custom_machine}), which a config edit cannot
+     * shift onto another machine (History §19es-itemvariant).
+     */
+    public static @Nullable MachineConfiguration byName(@Nullable String unlocalizedName) {
+        return unlocalizedName == null ? null : customMachines.get(unlocalizedName);
     }
 
     public static class MachineConfiguration {

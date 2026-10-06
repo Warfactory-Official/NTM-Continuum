@@ -11,11 +11,12 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
-/** The satellite launch vehicle, as a single item the launcher consumes. The variant is its paint. */
+/** The satellite launch vehicle, as the item the launcher consumes; one item per paint
+ * ({@code missile_soyuz_0/1/2}). */
 public class ItemSoyuz extends ItemEnumMulti {
 
-    public ItemSoyuz(Properties properties) {
-        super(SoyuzSkinType.class, true, true, properties);
+    public ItemSoyuz(Properties properties, SoyuzSkinType type) {
+        super(SoyuzSkinType.class, type, properties);
     }
 
     public @Nullable SoyuzSkinType typeOf(ItemStack stack) {

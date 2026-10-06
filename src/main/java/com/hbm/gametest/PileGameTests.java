@@ -241,8 +241,8 @@ public final class PileGameTests {
                 "assets/hbm/blockstates/pile_block.json",
                 "assets/hbm/blockstates/pile_brick.json",
                 "assets/hbm/blockstates/pile_device.json",
-                "assets/hbm/items/pile_device.json",
-                "assets/hbm/items/pile_rod.json",
+                "assets/hbm/items/pile_loader.json",
+                "assets/hbm/items/pile_rod_mk2_nu.json",
                 "assets/hbm/sounds/weapon/reload/boltopen.ogg",
                 "data/hbm/loot_table/blocks/pile_brick.json",
                 "data/hbm/loot_table/blocks/pile_device.json",
@@ -306,7 +306,7 @@ public final class PileGameTests {
     }
 
     private static ItemStack rod(EnumPileRod type) {
-        return ModPileBlocks.pile_rod.get().of(type);
+        return ModPileBlocks.pile_rod.stack(type);
     }
 
     private static void assertMeta(GameTestHelper helper, BlockPos relative, int expected) {

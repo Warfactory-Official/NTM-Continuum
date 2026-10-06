@@ -95,7 +95,7 @@ public class BlockWandJigsaw extends CompatBlock implements TickingBlock, ILookO
             if (block != null && !ModStructureWandBlocks.isStructureBlock(block, false)) {
                 if (!level.isClientSide()) {
                     jigsaw.replaceState = block.defaultBlockState();
-                    jigsaw.replaceMeta = com.hbm.items.ModDataComponents.ITEM_VARIANT.getOr(held, 0);
+                    jigsaw.replaceMeta = com.hbm.items.LegacyMeta.of(held);
                     jigsaw.setChanged();
                 }
                 return InteractionResult.SUCCESS;

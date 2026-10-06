@@ -88,10 +88,8 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         fan.afterburner = fan.upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.AFTERBURN);
         if (fan.inventory.getStackInSlot(2).is(ModItems.flame_pony.get())) fan.afterburner = 100;
 
+        long burnValue = 0L;
         int amountToBurn = Math.min(1 + fan.afterburner, fan.tank.getFill());
-        FluidCombustion.Combustible fuel = FluidCombustion.getCombustible(fan.tank.getTankType());
-        long burnValue = fuel != null && fuel.grade() == FluidCombustion.FuelGrade.AERO
-                ? fuel.energyPerBucket() / 1_000L : 0L;
         boolean redstone = false;
         for (DirPos connection : fan.getConPos()) {
             if (level.hasNeighborSignal(connection.getPos())) {
@@ -100,16 +98,21 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
             }
         }
 
-        if (!redstone && amountToBurn > 0 && burnValue > 0) {
-            fan.wasOn = true;
-            fan.tank.setFill(fan.tank.getFill() - amountToBurn);
-            fan.output = (int) (burnValue * amountToBurn * (1D + Math.min(fan.afterburner / 3D, 4D)));
-            fan.power += fan.output;
-            fan.consumption = amountToBurn;
+        if (!redstone) {
+            FluidCombustion.Combustible fuel = FluidCombustion.getCombustible(fan.tank.getTankType());
+            if (fuel != null && fuel.grade() == FluidCombustion.FuelGrade.AERO) burnValue = fuel.energyPerBucket() / 1_000L;
 
-            if (TickPhase.every(level, pos, 20L)) fan.pollute(fan.tank.getTankType(), FluidReleaseType.BURN, amountToBurn * 5);
+            // Odd but 1.7: any fluid in the tank burns, at zero output unless it is AERO-grade fuel. The fan spins, the
+            // tank drains and the burn pollutes all the same; only the exhaust (below) needs a burn value.
+            if (amountToBurn > 0) {
+                fan.wasOn = true;
+                fan.tank.setFill(fan.tank.getFill() - amountToBurn);
+                fan.output = (int) (burnValue * amountToBurn * (1D + Math.min(fan.afterburner / 3D, 4D)));
+                fan.power += fan.output;
+                fan.consumption = amountToBurn;
 
-            fan.applyExhaust(level, amountToBurn);
+                if (TickPhase.every(level, pos, 20L)) fan.pollute(fan.tank.getTankType(), FluidReleaseType.BURN, amountToBurn * 5);
+            }
         }
 
         fan.power = Library.chargeItemsFromTE(fan.inventory, 3, fan.power, fan.power);
@@ -118,6 +121,8 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
             if (fan.blood.getFill() > 0) fan.tryProvide(fan.blood, level, connection);
             fan.sendSmoke(connection);
         }
+
+        if (burnValue > 0 && amountToBurn > 0) fan.applyExhaust(level, amountToBurn);
         fan.power = Math.min(fan.power, MAX_POWER);
         fan.networkPackNT();
     }

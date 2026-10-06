@@ -133,7 +133,7 @@ public final class FinalGapsA implements Scenario {
         List<String> results = new ArrayList<>();
 
         step(c, results, "01 dropped AMAT cell (ExplosionVNT 3F amat)", () -> amatDrop(c));
-        step(c, results, "14 old numeric cell variant migrates", () -> oldCell(c));
+        step(c, results, "14 a hand-built cell stacks with a new one", () -> oldCell(c));
         step(c, results, "02 singularity from ASCHRAB cells (crafting table)", () -> singularity(c));
         step(c, results, "03 radiovoltaic batteries + socket", () -> batteries(c));
         step(c, results, "03b orbus cell drop keeps the tank", () -> orbus(c));
@@ -268,7 +268,7 @@ public final class FinalGapsA implements Scenario {
         int amat = 0;
         for (JsonElement e : q.getAsJsonArray("cells")) {
             JsonObject cell = e.getAsJsonObject();
-            Expect.that(cell.get("variant").getAsInt() < 8, "every cell carries a CellVariants model variant: " + q);
+            Expect.that(cell.get("variant").getAsInt() < 8, "every cell draws a CellVariants sprite: " + q);
             if (cell.get("fluid").getAsString().equals("hbm:amat")) amat += cell.get("count").getAsInt();
         }
         Expect.that(amat == 2 && q.getAsJsonArray("cells").size() == 2,
@@ -1162,10 +1162,11 @@ public final class FinalGapsA implements Scenario {
         return c.node().startsWith("1.20.");
     }
 
+    /** A full cell; {@code variant} is the sprite its fluid selects (no longer stored, History §19es-itemvariant). */
     private static String cell(Client c, String fluid, int variant) {
         return legacy(c)
-                ? "hbm:cell{\"hbm:fluid\":\"" + fluid + "\",\"hbm:fluid_amount\":1000,\"hbm:item_variant\":" + variant + "}"
-                : "hbm:cell[hbm:fluid=\"" + fluid + "\",hbm:fluid_amount=1000,hbm:item_variant=" + variant + "]";
+                ? "hbm:cell{\"hbm:fluid\":\"" + fluid + "\",\"hbm:fluid_amount\":1000}"
+                : "hbm:cell[hbm:fluid=\"" + fluid + "\",hbm:fluid_amount=1000]";
     }
 
     private static String crucible(Client c, int charges) {
@@ -1173,15 +1174,25 @@ public final class FinalGapsA implements Scenario {
     }
 
     private static String controller(Client c, int variant) {
-        return legacy(c) ? "hbm:custom_machine{\"hbm:item_variant\":" + variant + "}"
-                : "hbm:custom_machine[hbm:item_variant=" + variant + "]";
+        String name = controllerName(variant);
+        return legacy(c) ? "hbm:custom_machine{\"hbm:custom_machine\":\"" + name + "\"}"
+                : "hbm:custom_machine[hbm:custom_machine=\"" + name + "\"]";
     }
 
+    /** 1.7 controller damage 100/101/102: the paper press and the two staged test machines, by configuration name. */
+    private static String controllerName(int variant) {
+        return switch (variant) {
+            case 101 -> "gapsaFlux";
+            case 102 -> "gapsaHeat";
+            default -> "paperPress";
+        };
+    }
+
+
     private static String satellite(Client c, int variant, int freq) {
-        if (legacy(c)) {
-            return "hbm:satellite{\"hbm:item_variant\":" + variant + ",\"hbm:persistent_data\":{freq:" + freq + "}}";
-        }
-        return "hbm:satellite[hbm:item_variant=" + variant + ",hbm:persistent_data={freq:" + freq + "}]";
+        String id = "hbm:satellite_" + new String[] {"spy", "scanner", "radar", "miner_astro", "miner_lunar", "precision_laser", "death_ray", "xenium_resonator", "relay", "detector", "ray_scan"}[variant];
+        if (legacy(c)) return id + "{\"hbm:persistent_data\":{freq:" + freq + "}}";
+        return id + "[hbm:persistent_data={freq:" + freq + "}]";
     }
 
     private static String chip(Client c, String id, int freq) {

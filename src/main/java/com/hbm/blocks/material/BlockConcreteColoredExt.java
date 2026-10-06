@@ -1,6 +1,5 @@
 package com.hbm.blocks.material;
 
-import com.hbm.items.ModDataComponents;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.StringRepresentable;
@@ -41,7 +40,7 @@ public final class BlockConcreteColoredExt extends CompatBlock {
     }
 
     public BlockState stateForItem(ItemStack stack) {
-        return stateForVariant(ModDataComponents.ITEM_VARIANT.getOr(stack, 0));
+        return stateForVariant(stack.getItem() instanceof MaterialCompletionBlockItem item ? item.variant() : 0);
     }
 
     @Override

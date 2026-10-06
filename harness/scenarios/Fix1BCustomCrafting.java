@@ -9,10 +9,10 @@ import dev.golem.harness.api.Scenario;
  * Fix phase 1B (History §19ej-1b): the 1.7 IRecipe handlers, crafted by real mouse clicks in a real crafting table.
  * <ul>
  *   <li>GrenadeCraftingHandler: frag shell + HE filling + 3 s fuze give a universal grenade;</li>
- *   <li>CargoShellCraftingHandler: an empty cargo shell (ammo_arty variant 8) and a diamond give the shell carrying
+ *   <li>CargoShellCraftingHandler: an empty cargo shell (ammo_arty_cargo, 1.7 ammo_arty meta 8) and a diamond give the shell carrying
  *       one diamond;</li>
  *   <li>ScrapsCraftingHandler: steel scraps worth three ingots split into two halves;</li>
- *   <li>a restored declared recipe with a component result: the SEDNA scope (weapon_mod_special variant 1).</li>
+ *   <li>a restored declared recipe with a component result: the SEDNA scope (weapon_mod_special_scope).</li>
  * </ul>
  * Custom recipe types are registered per loader, so this runs on every node.
  */
@@ -135,15 +135,15 @@ public final class Fix1BCustomCrafting implements Scenario {
     }
 
     private void cargo(Client c) {
-        c.cmd("give @s " + withComponents(c, "hbm:ammo_arty", "[hbm:item_variant=8]", "{\"hbm:item_variant\":8}") + " 1");
+        c.cmd("give @s hbm:ammo_arty_cargo 1");
         c.cmd("give @s minecraft:diamond 3");
         c.waitTicks(3);
         openTable(c);
-        place(c, "hbm:ammo_arty", 1);
+        place(c, "hbm:ammo_arty_cargo", 1);
         place(c, "minecraft:diamond", 9);
         c.waitTicks(3);
         c.screenshot("20-cargo-grid");
-        take(c, "hbm:ammo_arty", 1);
+        take(c, "hbm:ammo_arty_cargo", 1);
         Expect.that(id(c.slot(1)).isEmpty() && id(c.slot(9)).isEmpty(), "the shell and the one diamond were used up");
         JsonObject diamonds = invSlot(c, "minecraft:diamond");
         Expect.that(diamonds != null && diamonds.get("count").getAsInt() == 2, "two diamonds stayed in the inventory");
@@ -176,7 +176,7 @@ public final class Fix1BCustomCrafting implements Scenario {
         place(c, "minecraft:glass_pane", 4, 6);
         c.waitTicks(3);
         c.screenshot("40-scope-grid");
-        take(c, "hbm:weapon_mod_special", 1);
+        take(c, "hbm:weapon_mod_special_scope", 1);
         c.screenshot("41-scope-taken");
         close(c);
     }

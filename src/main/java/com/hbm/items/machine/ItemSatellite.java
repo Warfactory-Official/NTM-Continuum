@@ -13,13 +13,13 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /**
- * 1.7 {@code com.hbm.items.special.ItemSatellite}: the launchable satellite, one variant per kind (the variant is
- * 1.7's metadata, {@link EnumSatType#ordinal()}), carrying the frequency it will answer on.
+ * 1.7 {@code com.hbm.items.special.ItemSatellite}: the launchable satellite, one item per kind (1.7's metadata
+ * {@link EnumSatType#ordinal()} is the member's constant), carrying the frequency it will answer on.
  */
 public class ItemSatellite extends ItemEnumMulti implements ISatChip {
 
-    public ItemSatellite(Properties properties) {
-        super(EnumSatType.class, true, true, properties);
+    public ItemSatellite(Properties properties, EnumSatType type) {
+        super(EnumSatType.class, type, properties);
     }
 
     /** 1.7 {@code ItemSatellite.EnumSatType}, in 1.7 order; the ordinal is the item's metadata. */
@@ -45,7 +45,7 @@ public class ItemSatellite extends ItemEnumMulti implements ISatChip {
     }
 
     public static ItemStack make(EnumSatType type) {
-        return ModSatelliteItems.satellite.get().of(type);
+        return ModSatelliteItems.satellite.stack(type);
     }
 
     /** 1.7: the frequency and nothing else. */

@@ -101,7 +101,10 @@ public final class RBMKGameTests {
                 "A cool linked rod must match fuel disassembly");
         ItemStack pellets = recipe.assembleItemStacks(List.of(depleted));
         helper.assertTrue(pellets.is(ModRBMKItems.pelletFor(rod)) && pellets.getCount() == 8
-                        && ModDataComponents.ITEM_VARIANT.getOr(pellets, -1) == 7,
+                        && ((com.hbm.items.machine.ItemRBMKPellet) pellets.getItem()).getVariant(pellets) == 7
+                        && ModDataComponents.RBMK_PELLET.getOr(pellets, null) != null
+                        && ModDataComponents.RBMK_PELLET.getOr(pellets, null).depletion() == 2
+                        && ModDataComponents.RBMK_PELLET.getOr(pellets, null).xenon(),
                 "60% depleted, xenon-poisoned fuel must disassemble into eight variant-7 pellets");
         ItemRBMKRod.setHullHeat(depleted, 50D);
         helper.assertFalse(recipe.matchesItemStacks(List.of(depleted), helper.getLevel()),

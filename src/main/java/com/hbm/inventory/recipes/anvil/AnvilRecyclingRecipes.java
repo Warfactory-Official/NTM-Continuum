@@ -38,7 +38,8 @@ import static com.hbm.inventory.OreDictManager.ZR;
  * {@code platemetal:0} = {@code platemetal_base}, {@code deco_toaster:0/1/2} = iron/steel/wooden toaster,
  * {@code deco_computer:0} = {@code deco_computer_ibm_300pl}, {@code rbmk_rod[_mod]} = {@code rbmk_fuel_rod[_moderated]},
  * {@code reactor_research} = {@code machine_reactor_small}; 1.7's wildcard {@code deco_crt} accepts every CRT, and
- * {@code gear_large}/{@code machine_stirling[_steel]} metadata 1 is their {@code ITEM_VARIANT} 1.
+ * {@code gear_large:1} is {@code gear_large_steel}, and {@code machine_stirling[_steel]} metadata 1 (gear removed) is
+ * {@code hbm:has_cog} false (History §19es-itemvariant).
  * Ids are resolved when the (lazy) anvil list is built and a missing one fails loudly.
  */
 public final class AnvilRecyclingRecipes {
@@ -66,13 +67,13 @@ public final class AnvilRecyclingRecipes {
         r.add(rec(in("heater_firebox", 1), 2, out("plate_steel", 8), out("ingot_copper", 6)));
         r.add(rec(in("heater_oven", 1), 2, out("ingot_firebrick", 16), out("ingot_copper", 8)));
         // 1.7 metadata 1 of machine_stirling[_steel] is the engine whose gear was removed (MachineStirling.getDrops);
-        // the port marks it with ITEM_VARIANT 1, like gear_large's steel variant.
-        r.add(rec(variant("machine_stirling", 0), 2, out("plate_steel", 6), out("ingot_copper", 8), out("coil_copper", 4), gear(0)));
-        r.add(rec(variant("machine_stirling", 1), 2, out("plate_steel", 6), out("ingot_copper", 8), out("coil_copper", 4)));
-        r.add(rec(variant("machine_stirling_steel", 0), 2, out("plate_steel", 16), out("ingot_beryllium", 6), out("ingot_copper", 4), out("coil_gold", 8), gear(1)));
-        r.add(rec(variant("gear_large", 1), 2, out("plate_steel", 8), out("ingot_titanium", 1)));
-        r.add(rec(variant("gear_large", 0), 2, out("plate_iron", 8), out("ingot_copper", 1)));
-        r.add(rec(variant("machine_stirling_steel", 1), 2, out("plate_steel", 16), out("ingot_beryllium", 6), out("ingot_copper", 4), out("coil_gold", 8)));
+        // the port carries that as hbm:has_cog false. gear_large metadata 1 is the item gear_large_steel.
+        r.add(rec(stirling("machine_stirling", true), 2, out("plate_steel", 6), out("ingot_copper", 8), out("coil_copper", 4), gear(0)));
+        r.add(rec(stirling("machine_stirling", false), 2, out("plate_steel", 6), out("ingot_copper", 8), out("coil_copper", 4)));
+        r.add(rec(stirling("machine_stirling_steel", true), 2, out("plate_steel", 16), out("ingot_beryllium", 6), out("ingot_copper", 4), out("coil_gold", 8), gear(1)));
+        r.add(rec(in("gear_large_steel", 1), 2, out("plate_steel", 8), out("ingot_titanium", 1)));
+        r.add(rec(in("gear_large", 1), 2, out("plate_iron", 8), out("ingot_copper", 1)));
+        r.add(rec(stirling("machine_stirling_steel", false), 2, out("plate_steel", 16), out("ingot_beryllium", 6), out("ingot_copper", 4), out("coil_gold", 8)));
         r.add(rec(in("machine_bat9000", 1), 3, autogen(MaterialShapes.WELDEDPLATE, Mats.MAT_TCALLOY, 4, 1F), out("plate_steel", 16)));
 
         r.add(rec(in("deco_computer_ibm_300pl", 1), 2, out("crt_display", 1), out("scrap", 3),
@@ -170,12 +171,12 @@ public final class AnvilRecyclingRecipes {
         return new AnvilOutput(ModGearItems.gear_large.get().of(variant));
     }
 
-    private static AStack variant(String id, int variant) {
-        return new VariantStack(item(id), variant);
+    private static AStack stirling(String id, boolean hasCog) {
+        return new CogStack(item(id), hasCog);
     }
 
     private static AnvilOutput pileRod(EnumPileRod type) {
-        return new AnvilOutput(ModPileBlocks.pile_rod.get().of(type));
+        return new AnvilOutput(ModPileBlocks.pile_rod.stack(type));
     }
 
     private static Item item(String id) {
@@ -183,27 +184,28 @@ public final class AnvilRecyclingRecipes {
                 .orElseThrow(() -> new IllegalStateException("anvil recycling names unregistered hbm:" + id));
     }
 
-    /** 1.7 {@code new ComparableStack(item, 1, meta)} of a metadata family kept on one item via ITEM_VARIANT. */
-    private static final class VariantStack extends AStack {
+    /** 1.7 {@code new ComparableStack(machine_stirling, 1, meta)}: meta 1 is the engine without its gear. */
+    private static final class CogStack extends AStack {
         private final Item item;
-        private final int variant;
+        private final boolean hasCog;
 
-        VariantStack(Item item, int variant) {
+        CogStack(Item item, boolean hasCog) {
             this.item = item;
-            this.variant = variant;
+            this.hasCog = hasCog;
             this.stacksize = 1;
         }
 
         @Override
         public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
-            return !stack.isEmpty() && stack.getItem() == item && ModDataComponents.ITEM_VARIANT.getOr(stack, 0) == variant
+            return !stack.isEmpty() && stack.getItem() == item
+                    && com.hbm.blocks.machine.MachineStirling.hasCog(stack) == hasCog
                     && (ignoreSize || stack.getCount() >= stacksize);
         }
 
         @Override
         public List<ItemStack> getDisplayStacks() {
             ItemStack stack = new ItemStack(item, stacksize);
-            if (variant != 0) ModDataComponents.ITEM_VARIANT.set(stack, variant);
+            if (!hasCog) ModDataComponents.HAS_COG.set(stack, false);
             return List.of(stack);
         }
     }

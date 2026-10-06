@@ -62,7 +62,7 @@ public static MachineItemModel get(Identifier item) {
 public static MachineItemModel get(Identifier item, ItemStack stack) {
     Map<Integer, MachineItemModel> choices = variantModels.get(item);
     if (choices == null) return models.get(item);
-    int variant = ModDataComponents.ITEM_VARIANT.getOr(stack, 0);
+    int variant = com.hbm.items.ModelState.of(stack);
     return choices.getOrDefault(variant, choices.get(-1));
 }
 
@@ -195,7 +195,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
             return out;
         }
         if (!"minecraft:select".equals(string(modelObject, "type", ""))
-                || !"hbm:item_variant".equals(string(modelObject, "property", ""))) return out;
+                || !"hbm:model_state".equals(string(modelObject, "property", ""))) return out;
         JsonElement fallback = modelObject.get("fallback");
         if (fallback != null && fallback.isJsonObject()) {
             JsonObject machine = machineObjFromSpecial(fallback.getAsJsonObject());

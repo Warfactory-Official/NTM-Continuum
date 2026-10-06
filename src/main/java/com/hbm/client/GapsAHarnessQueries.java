@@ -132,7 +132,7 @@ public final class GapsAHarnessQueries {
                 ItemStack cell = new ItemStack(ModSingularityItems.cell.get());
                 ModDataComponents.fluid(cell, fluid);
                 ModDataComponents.fluidAmount(cell, ItemCell.CAPACITY);
-                ModDataComponents.ITEM_VARIANT.set(cell, Fluids.legacyId(fluid)); // the pre-2026-09-25 variant numbering
+                // no stored sprite number since History §19es-itemvariant: an "old" cell is any cell of the fluid
                 json.addProperty("given", player.getInventory().add(cell));
                 player.inventoryMenu.broadcastChanges();
             }
@@ -140,7 +140,9 @@ public final class GapsAHarnessQueries {
         }
         ItemStack held = player.getMainHandItem();
         json.addProperty("held", held.isEmpty() ? "" : BuiltInRegistries.ITEM.getKey(held.getItem()).toString());
-        json.addProperty("held_variant", ModDataComponents.ITEM_VARIANT.getOr(held, -1));
+        // the 1.7 metadata the held item stands for, or its drawn state (both computed, never stored)
+        json.addProperty("held_variant", held.getItem() instanceof com.hbm.items.LegacyMeta meta ? meta.legacyMeta()
+                : com.hbm.items.ModelState.of(held));
         json.addProperty("crucible_charges", held.getItem() instanceof ItemCrucible ? ItemCrucible.getCharges(held) : -1);
         json.addProperty("modifiers_suppressed", ItemStacks.attributeModifiersSuppressed(held));
         json.addProperty("attack_damage", player.getAttributeValue(Attributes.ATTACK_DAMAGE));
@@ -163,7 +165,7 @@ public final class GapsAHarnessQueries {
             c.addProperty("slot", i);
             c.addProperty("count", stack.getCount());
             c.addProperty("fluid", ModDataComponents.fluid(stack).getRegistryName());
-            c.addProperty("variant", ModDataComponents.ITEM_VARIANT.getOr(stack, -1));
+            c.addProperty("variant", com.hbm.items.ModelState.of(stack));
             c.addProperty("name", stack.getHoverName().getString());
             cells.add(c);
         }

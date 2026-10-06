@@ -82,7 +82,8 @@ public final class FinalDecoCrates implements Scenario {
         Expect.block(c, X - 4, Y + 1, Z - 8, "hbm:filing_cabinet");
         Expect.block(c, X, Y + 1, Z - 8, "hbm:glyphid_base");
         String bobbleNbt = c.blockEntity(X - 26 + 2 * 7, Y + 1, Z - 4).toString();
-        Expect.that(bobbleNbt.replace(" ", "").contains("type:8b"), "bobblehead 8 (BOB) keeps its type: " + bobbleNbt);
+        // the figure is saved by name since History §19es-itemvariant (1.7 saved the ordinal byte 8)
+        Expect.that(bobbleNbt.replaceAll("\\s", "").replace("\\", "").contains("type:\"bob\""), "bobblehead 8 (BOB) keeps its type: " + bobbleNbt);
         worldShot(c, "20-bobbleheads-west", X - 21.5, Y + 2.2, Z - 1.5, X - 21.5, Y + 1.2, Z - 4.5);
         worldShot(c, "21-bobbleheads-mid", X - 9.5, Y + 2.2, Z - 1.5, X - 9.5, Y + 1.2, Z - 4.5);
         worldShot(c, "22-bobbleheads-east", X + 16.5, Y + 2.2, Z - 1.5, X + 16.5, Y + 1.2, Z - 4.5);
@@ -253,9 +254,22 @@ public final class FinalDecoCrates implements Scenario {
     }
 
     /** The give syntax for a subtype: 26.1/1.21 components, 1.20.1 the legacy NBT key. */
+    /** 1.7 (block, metadata): one item per subtype since History §19es-itemvariant (ntm-next ids). */
     private static String variant(Client c, String id, int variant) {
-        return c.node().startsWith("1.20") ? id + "{\"hbm:item_variant\":" + variant + "}" : id + "[hbm:item_variant=" + variant + "]";
+        return switch (id) {
+            case "hbm:bobblehead" -> variant == 0 ? id : id + "_" + BOBBLE_NAMES[variant];
+            case "hbm:snowglobe" -> variant == 0 ? id : id + "_" + new String[] {"none", "rivetcity", "tenpennytower", "lucky38", "sierramadre", "prydwen"}[variant];
+            case "hbm:plushie" -> variant == 0 ? id : id + "_" + new String[] {"none", "yomi", "numbernine", "hundun", "derg"}[variant];
+            case "hbm:filing_cabinet" -> id + (variant == 1 ? "_steel" : "_green");
+            case "hbm:vending_machine" -> variant == 1 ? id + "_snacks" : id;
+            case "hbm:glyphid_base", "hbm:glyphid_spawner" -> id + new String[] {"", "_infested", "_rad"}[variant];
+            case "hbm:holotape_image" -> id + "_holo_digamma";
+            default -> throw new IllegalArgumentException(id);
+        };
     }
+
+    /** BlockBobble.BobbleType names by ordinal. */
+    private static final String[] BOBBLE_NAMES = {"none", "strength", "perception", "endurance", "charisma", "intelligence", "agility", "luck", "bob", "frizzle", "pu238", "vt", "doc", "bluehat", "pheo", "adam29", "uffr", "vaer", "nos", "drillgon", "cirno", "microwave", "peep", "mellow", "abel", "movblock", "leafia", "hacker6329", "eos"};
 
     private static void placeVariant(Client c, String id, int variant, int x, int y, int z) {
         c.cmd("clear");

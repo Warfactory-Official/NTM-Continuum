@@ -487,7 +487,7 @@ tasks.processResources {
 }
 
 tasks.jar {
-    from(rootProject.file("LICENSE")) { rename { "${it}_${prop("mod.name")}" } }
+    from(files(rootProject.file("LICENSE"), rootProject.file("LICENSE.LESSER"))) { rename { "${it}_${prop("mod.id")}" } }
 }
 
 // Stonecutter rewrites the shared src/ tree in place for the active node. Both compilation and

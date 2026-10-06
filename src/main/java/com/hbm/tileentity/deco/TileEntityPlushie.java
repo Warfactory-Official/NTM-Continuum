@@ -19,8 +19,8 @@ public class TileEntityPlushie extends TileEntityTrinket {
     }
 
     @Override
-    protected int typeCount() {
-        return BlockPlushie.PlushieType.VALUES.length;
+    protected Enum<?>[] typeValues() {
+        return BlockPlushie.PlushieType.VALUES;
     }
 
     public BlockPlushie.PlushieType type() {

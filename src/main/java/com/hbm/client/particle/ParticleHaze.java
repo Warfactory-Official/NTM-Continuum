@@ -21,9 +21,9 @@ import net.minecraft.world.level.levelgen.Heightmap;
  * constant the walk is computed once.
  *
  * <p>The alpha is 1.7's {@code glColor4f(1, 1, 1, sin(age * pi / 400) * 0.25 * 0.1)}: at most 0.025, and clamped to
- * zero (invisible) from age 400 on. Known gap: the vanilla particle shader discards fragments below alpha 0.1 on
- * every node, so the quads are culled entirely and only the lava pops show; drawing them needs a Core particle layer
- * without that discard.
+ * zero (invisible) from age 400 on. 1.7 drew it with {@code glAlphaFunc(GL_GREATER, 0)} and {@code glDepthMask(false)}:
+ * vanilla's particle shader discards below alpha 0.1 on every node, which hid every quad, so the haze draws through
+ * Core's {@code keepFaintFragments} layer (alpha above 0 kept, no depth write).
  */
 public class ParticleHaze extends CompatParticle {
 
@@ -60,7 +60,15 @@ public class ParticleHaze extends CompatParticle {
         this.setQuadSize(SCALE);
         // 1.7: brightness 240, SRC_ALPHA / ONE_MINUS_SRC_ALPHA, depth mask off, vertex colour from glColor (white)
         this.setLayer(ParticleLayer.EMISSIVE);
+        this.keepFaintFragments();
         this.setColor(1F, 1F, 1F);
+    }
+
+    /** Harness only (query {@code hbm_haze}): starts the haze at {@code age} ticks, e.g. 200 = 1.7's peak alpha. */
+    public ParticleHaze aged(int age) {
+        this.age = age;
+        this.lifetime = Math.max(this.lifetime, age + 200);
+        return this;
     }
 
     @Override

@@ -188,7 +188,7 @@ tasks.processResources {
 
 tasks.jar {
     manifest.attributes["MixinConfigs"] = "$modId.mixins.json"
-    from(rootProject.file("LICENSE")) { rename { "${it}_${prop("mod.name")}" } }
+    from(files(rootProject.file("LICENSE"), rootProject.file("LICENSE.LESSER"))) { rename { "${it}_${prop("mod.id")}" } }
 }
 
 tasks.compileJava {

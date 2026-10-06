@@ -581,12 +581,6 @@ public final class AnvilRecipes {
         return new ComparableStack(ModIntermediateItems.circuit(type), count);
     }
 
-    private static ItemStack stirlingItemVariant(Block block, int variant) {
-        ItemStack stack = new ItemStack(block.asItem());
-        com.hbm.items.ModDataComponents.ITEM_VARIANT.set(stack, variant);
-        return stack;
-    }
-
     /** A construction recipe: consume the {@link AStack} inputs from the player's inventory, give the
      * (chance-rolled) outputs. Tier-gated by the anvil the player is using. */
     public static class AnvilConstructionRecipe {

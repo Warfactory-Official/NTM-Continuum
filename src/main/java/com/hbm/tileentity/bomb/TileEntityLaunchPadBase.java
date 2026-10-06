@@ -216,6 +216,14 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         ItemStack in = inventory.getStackInSlot(inSlot);
         if (in.isEmpty() || tank.getTankType() == Fluids.NONE) return;
 
+        // 1.7 FluidTank.loadTank runs FluidLoaderInfinite first: the infinite barrel (any fluid) and the typed infinite
+        // items fill a typed tank and are never consumed. This method's fillable branch reads getFirstFluidType, which
+        // is NONE for the untyped barrel, so without this the barrel sat in the pad's fuel slot doing nothing.
+        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+            setChanged();
+            return;
+        }
+
         if (in.getItem() instanceof IFillableItem fillable) {
             int held = fillable.getFill(in);
             FluidType heldType = fillable.getFirstFluidType(in);

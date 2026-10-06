@@ -25,9 +25,9 @@ import net.minecraft.world.level.Level;
  * (sneak lowers it) in 50 mB steps between 50 and 1,000 mB, or 1 mB steps between 1 and 50 mB for the laboratory
  * pipette. The plain glass pipette fizzles away when a corrosive fluid other than peroxide enters it; none
  * accept antimatter. State rides {@code hbm:pipette} ({@code type}, {@code fill}, {@code capacity}, 1.7's NBT
- * keys, stored as ints: the legacy tag reader takes ints only); the icon picks its filled overlay through {@code item_variant} and tints it with the fluid's colour.
+ * keys, stored as ints: the legacy tag reader takes ints only); the icon picks its filled overlay through {@code hbm:model_state} (from the fill) and tints it with the fluid's colour.
  */
-public class ItemPipette extends CompatItem implements IFillableItem {
+public class ItemPipette extends CompatItem implements IFillableItem, com.hbm.items.ModelState {
 
     public ItemPipette(Properties properties) {
         super(properties);
@@ -66,8 +66,6 @@ public class ItemPipette extends CompatItem implements IFillableItem {
         Fluids.write(tag, "type", type);
         tag.putInt("fill", fill);
         ModUtilityToolItems.PIPETTE.set(stack, tag);
-        // 1.7 getIcon/getColorFromItemStack: pass 1 is the empty sprite at fill 0, else the tinted overlay.
-        ModDataComponents.ITEM_VARIANT.set(stack, fill > 0 ? 1 : 0);
         int color = type.getColor();
         ModelData.setColor(stack, color < 0 ? 0xFFFFFF : color);
     }
@@ -76,6 +74,12 @@ public class ItemPipette extends CompatItem implements IFillableItem {
         CompoundTag tag = tag(stack).copy();
         tag.putInt("capacity", capacity);
         ModUtilityToolItems.PIPETTE.set(stack, tag);
+    }
+
+    /** 1.7 getIcon: pass 1 is the empty sprite at fill 0, else the tinted overlay ({@code hbm:model_state}, never saved). */
+    @Override
+    public int modelState(ItemStack stack) {
+        return getFill(stack) > 0 ? 1 : 0;
     }
 
     @Override

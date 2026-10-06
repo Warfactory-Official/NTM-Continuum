@@ -426,7 +426,7 @@ public final class GunSmokeClient {
                 if (serverMutationPending) return true;
                 queueServerMutation("populate weapon table UI fixture", actual -> {
                     actual.getInventory().setItem(0, new ItemStack(ModGunItems.gun_light_revolver_dani.get()));
-                    actual.getInventory().setItem(1, ModWeaponModItems.weapon_mod_test.get().of(EnumModTest.FIRERATE));
+                    actual.getInventory().setItem(1, ModWeaponModItems.weapon_mod_test.stack(EnumModTest.FIRERATE));
                     syncInventory(actual);
                 }, actualPlayerId());
                 stage = Stage.TABLE_POPULATE_WAIT;
@@ -473,7 +473,7 @@ public final class GunSmokeClient {
             }
             case TABLE_MOD_WAIT -> {
                 if (mc.player.containerMenu instanceof ContainerWeaponTable menu
-                        && menu.getSlot(0).getItem().is(ModWeaponModItems.weapon_mod_test.get())) {
+                        && ModWeaponModItems.weapon_mod_test.typeOf(menu.getSlot(0).getItem()) != null) {
                     capture(mc, "weapon_table");
                     ContainerClicks.send(mc.gameMode, menu.containerId, ContainerWeaponTable.GUN_SLOT, 0,
                             ContainerClicks.Action.QUICK_MOVE, mc.player);

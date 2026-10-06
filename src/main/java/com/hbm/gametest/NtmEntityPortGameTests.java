@@ -79,7 +79,9 @@ public final class NtmEntityPortGameTests {
 
     public static void allTypesRegistered(GameTestHelper helper) {
         List<EntityType<?>> types = portedTypes();
-        helper.assertTrue(types.size() >= 100, "expected the 100 ntm-next port types, found " + types.size());
+        // 99: the 100 ntm-next port types less hbm:beam_discharge, deleted in §19es-gameplay (1.7 has no discharge
+        // entity; the battery socket fires a BulletConfig beam).
+        helper.assertTrue(types.size() >= 99, "expected the 99 ntm-next port types, found " + types.size());
         for (EntityType<?> type : types) {
             String id = EntityType.getKey(type).toString();
             helper.assertTrue(id.startsWith("hbm:"), "ported type registered outside hbm: " + id);

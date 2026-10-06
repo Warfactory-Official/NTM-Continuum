@@ -23,8 +23,23 @@ public final class CyclotronGameTests {
 
     public static void recipes(GameTestHelper helper) {
         CyclotronRecipes.register();
-        helper.assertTrue(CyclotronRecipes.recipes.size() == 40,
-                "cyclotron must retain the 40 recipes whose items and tags are available (1.7 has 42; two dustPhosphorus inputs lack a tag)");
+        // 1.7 registerDefaults: lithium 13 + beryllium 7 + carbon 8 + copper 10 + plutonium 4 = 42.
+        helper.assertTrue(CyclotronRecipes.recipes.size() == 42,
+                "cyclotron must have 1.7's 42 recipes, has " + CyclotronRecipes.recipes.size());
+        // The two 1.7 dustPhosphorus inputs are the c:dusts/phosphorus tag (empty with HBM alone, as in 1.7).
+        net.minecraft.tags.TagKey<net.minecraft.world.item.Item> phosphorus = net.minecraft.tags.TagKey.create(
+                net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dusts/phosphorus"));
+        int lithiumSulfur = 0, plutoniumTennessine = 0;
+        for (CyclotronRecipes.CyclotronRecipe r : CyclotronRecipes.recipes) {
+            if (!(r.input instanceof com.hbm.inventory.RecipesCommon.TagStack tag) || !tag.tag.equals(phosphorus)) continue;
+            if (r.particle.matchesRecipe(new ItemStack(ModItems.part_lithium.get()), true)
+                    && r.output.is(ModItems.sulfur.get()) && r.antimatter == 50) lithiumSulfur++;
+            if (r.particle.matchesRecipe(new ItemStack(ModItems.part_plutonium.get()), true)
+                    && r.output.is(ModItems.powder_tennessine.get()) && r.antimatter == 100) plutoniumTennessine++;
+        }
+        helper.assertTrue(lithiumSulfur == 1 && plutoniumTennessine == 1,
+                "1.7 dustPhosphorus recipes: lithium -> sulfur (50 mB) and plutonium -> tennessine (100 mB), found "
+                        + lithiumSulfur + " / " + plutoniumTennessine);
 
         Object[] lithium = CyclotronRecipes.getOutput(new ItemStack(ModItems.powder_lithium.get()),
                 new ItemStack(ModItems.part_lithium.get()));

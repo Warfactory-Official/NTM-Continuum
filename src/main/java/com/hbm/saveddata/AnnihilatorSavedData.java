@@ -108,10 +108,7 @@ public final class AnnihilatorSavedData extends CompatSavedData<AnnihilatorSaved
         AnnihilatorPool poolInstance = grabPool(pool);
 
         ItemStack itemPayout = poolInstance.increment(stack.getItem(), stack.getCount(), alwaysPayOut);
-        // 1.7 also counted the type+meta ComparableStack; with flattened metadata that is the item itself, except for
-        // a metadata family kept as one item, whose variant is its own key
-        AnnihilatorRecipes.VariantKey comp = AnnihilatorRecipes.variantKey(stack);
-        ItemStack compPayout = comp == null ? null : poolInstance.increment(comp, stack.getCount(), alwaysPayOut);
+        // 1.7 also counted the type+meta ComparableStack; with flattened metadata that is the item itself
         ItemStack dictPayout = null;
 
         for (String name : tagNames(stack)) {
@@ -121,7 +118,7 @@ public final class AnnihilatorSavedData extends CompatSavedData<AnnihilatorSaved
 
         this.setDirty();
 
-        return dictPayout != null ? dictPayout : compPayout != null ? compPayout : itemPayout;
+        return dictPayout != null ? dictPayout : itemPayout;
     }
 
     /** The 1.7 ore-dictionary names of a stack: its item tag ids. */
@@ -134,9 +131,6 @@ public final class AnnihilatorSavedData extends CompatSavedData<AnnihilatorSaved
     private static @Nullable Entry serializeKey(Object key, BigInteger amount) {
         if (key instanceof Item item) { // 0
             return new Entry((byte) 0, BuiltInRegistries.ITEM.getKey(item).toString(), amount.toString());
-        }
-        if (key instanceof AnnihilatorRecipes.VariantKey comp) { // 1, 1.7's ComparableStack
-            return new Entry((byte) 1, BuiltInRegistries.ITEM.getKey(comp.item()) + "@" + comp.variant(), amount.toString());
         }
         if (key instanceof FluidType type) { // 2
             return new Entry((byte) 2, type.getName(), amount.toString());
@@ -151,10 +145,10 @@ public final class AnnihilatorSavedData extends CompatSavedData<AnnihilatorSaved
         return switch (entry.key()) {
             case 0 -> BuiltInRegistries.ITEM.getValue(Ids.parse(entry.id()));
             case 1 -> {
+                // written before 2026-10-06 as "<item>@<metadata>" for a family kept on one item; every family is one
+                // item per type now, so the count goes to the base item (History §19es-itemvariant)
                 int at = entry.id().lastIndexOf('@');
-                if (at < 0) yield BuiltInRegistries.ITEM.getValue(Ids.parse(entry.id()));
-                yield new AnnihilatorRecipes.VariantKey(BuiltInRegistries.ITEM.getValue(Ids.parse(entry.id().substring(0, at))),
-                        Integer.parseInt(entry.id().substring(at + 1)));
+                yield BuiltInRegistries.ITEM.getValue(Ids.parse(at < 0 ? entry.id() : entry.id().substring(0, at)));
             }
             case 2 -> Fluids.fromName(entry.id());
             case 3 -> entry.id();

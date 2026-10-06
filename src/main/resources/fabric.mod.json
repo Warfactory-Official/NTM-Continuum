@@ -3,12 +3,11 @@
     "id": "${mod_id}",
     "version": "${mod_version}",
     "name": "${mod_name}",
-    "description": "${mod_description}",
+    "description": "${mod_description} ${mod_credits}",
     "authors": [
         "${mod_author}"
     ],
     "license": "${mod_license}",
-    "icon": "${mod_id}.png",
     "environment": "*",
     "entrypoints": {
         "main": [

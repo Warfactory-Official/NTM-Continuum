@@ -46,6 +46,9 @@ public final class CyclotronRecipes {
         add(ModItems.part_lithium.get(), BE.dust(), ModItems.powder_boron.get(), 50);
         add(ModItems.part_lithium.get(), B.dust(), ModFuelItems.powder_coal.get(), 50);
         add(ModItems.part_lithium.get(), dustTag("quartz"), ModFuelItems.powder_fire.get(), 50);
+        // 1.7 OreDictStack("dustPhosphorus"): HBM 1.7 registers nothing under that name (its phosphorus dicts are
+        // dustRedPhosphorus / ingotWhitePhosphorus), so like 1.7 this matches only another mod's phosphorus dust.
+        add(ModItems.part_lithium.get(), dustTag("phosphorus"), ModItems.sulfur.get(), 50);
         add(ModItems.part_lithium.get(), IRON.dust(), ModItems.powder_cobalt.get(), 50);
         add(ModItems.part_lithium.get(), exact(ModItems.powder_strontium.get()), ModItems.powder_zirconium.get(), 50);
         // 1.7 ingot_mercury is registered as nugget_mercury (its nugget_mercury field is nugget_mercury_tiny).
@@ -88,11 +91,11 @@ public final class CyclotronRecipes {
         add(ModItems.part_copper.get(), GOLD.dust(), ModItems.powder_uranium.get(), 15);
 
         // Plutonium particle, 100 mB antimatter per conversion.
+        add(ModItems.part_plutonium.get(), dustTag("phosphorus"), ModItems.powder_tennessine.get(), 100); // 1.7 dustPhosphorus, as above
         add(ModItems.part_plutonium.get(), PU.dust(), ModItems.powder_tennessine.get(), 100);
         add(ModItems.part_plutonium.get(), exact(ModItems.powder_tennessine.get()), ModItems.powder_australium.get(), 100);
         add(ModItems.part_plutonium.get(), exact(ModItems.pellet_charged.get()), ModItems.nugget_schrabidium.get(), 1_000);
 
-        // Omitted rather than remapped: two dustPhosphorus inputs have no c:dusts/phosphorus tag.
     }
 
     public static CyclotronRecipe getRecipe(ItemStack particle, ItemStack input) {

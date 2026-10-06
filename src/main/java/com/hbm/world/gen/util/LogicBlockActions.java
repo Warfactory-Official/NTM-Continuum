@@ -81,9 +81,7 @@ public class LogicBlockActions {
     }
 
     static ItemStack clayTablet(int variant) {
-        ItemStack tablet = new ItemStack(ModUtilityToolItems.clay_tablet.get());
-        ModDataComponents.ITEM_VARIANT.set(tablet, variant);
-        return tablet;
+        return com.hbm.items.special.ItemClayTablet.of(variant);
     }
 
     private static int heightValue(Level world, int x, int z) {

@@ -1,7 +1,6 @@
 package com.hbm.blocks.generic;
 
 import net.minecraft.world.item.ItemStack;
-import com.hbm.items.ModDataComponents;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.deco.TileEntityDeco;
 import dev.golem.core.world.CompatBlock;
@@ -61,7 +60,7 @@ public class BlockScaffold extends CompatBlock implements TickingBlock {
     @Override
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        int variant = ModDataComponents.ITEM_VARIANT.getOr(context.getItemInHand(), 0) & 3;
+        int variant = com.hbm.items.LegacyMeta.of(context.getItemInHand()) & 3;
         Orientation orientation;
         if (context.getClickedFace().getAxis().isVertical()) {
             float yaw = context.getPlayer() == null ? 0.0F : context.getPlayer().getYRot();
@@ -77,16 +76,15 @@ public class BlockScaffold extends CompatBlock implements TickingBlock {
                 .setValue(ORIENT, orientation);
     }
 
+    /** 1.7 {@code damageDropped(meta)}: the scaffold item of the block's colour. */
     @Override
-    protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
-        net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(this);
-        return withVariant(stack, state);
+    public java.util.List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder params) {
+        return java.util.List.of(com.hbm.blocks.ModSteelBlocks.scaffoldItem(state.getValue(VARIANT).ordinal()));
     }
 
-    private static net.minecraft.world.item.ItemStack withVariant(net.minecraft.world.item.ItemStack stack,
-                                                                   BlockState state) {
-        ModDataComponents.ITEM_VARIANT.set(stack, state.getValue(VARIANT).ordinal());
-        return stack;
+    @Override
+    protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
+        return com.hbm.blocks.ModSteelBlocks.scaffoldItem(state.getValue(VARIANT).ordinal());
     }
 
     @Override

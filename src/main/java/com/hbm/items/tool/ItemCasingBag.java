@@ -49,8 +49,8 @@ public class ItemCasingBag extends CompatItem {
     /** Adds a fractional casing and materializes whole casings into the fifteen slots. */
     public static boolean pushCasing(ItemStack bag, ItemStack casing, float amount) {
         if (!(bag.getItem() instanceof ItemCasingBag) || casing.isEmpty() || amount <= 0) return false;
-        String key = Ids.keyId(casing.getItem().builtInRegistryHolder().key()) + "@"
-                + ModDataComponents.ITEM_VARIANT.getOr(casing, 0);
+        // 1.7 keyed the fraction on the casing's name and metadata; the item id carries both here (ntm-next)
+        String key = Ids.keyId(casing.getItem().builtInRegistryHolder().key()).toString();
         var progress = ModDataComponents.CASING_PROGRESS.getOr(bag, new net.minecraft.nbt.CompoundTag());
         float current = Tags.getFloatOr(progress, key, 0F);
         boolean accepted = false;

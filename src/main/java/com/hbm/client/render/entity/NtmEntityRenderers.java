@@ -40,7 +40,6 @@ public final class NtmEntityRenderers {
 
     public static void registerAll(Sink sink) {
         // 1.7: invisible logic and effect entities.
-        sink.register(ModNtmEntities.BEAM_DISCHARGE.get(), VanillaRenderers.noop());
         sink.register(ModNtmEntities.BALEFIRE.get(), VanillaRenderers.noop());
         sink.register(ModNtmEntities.TOM_BUST.get(), VanillaRenderers.noop());
         sink.register(ModNtmEntities.NUKE_EXPLOSION_MK3.get(), VanillaRenderers.noop());

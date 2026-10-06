@@ -14,15 +14,15 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 /**
- * 1.7 {@code ItemHolotapeImage}: an {@code ItemHoloTape} (one texture, one name, stack size 1) whose variant is
- * an {@link EnumHoloImage}; the tooltip names the band colour and label, right-click opens
+ * 1.7 {@code ItemHolotapeImage}: an {@code ItemHoloTape} (one texture, one name, stack size 1) per
+ * {@link EnumHoloImage} ({@code holotape_image_<image>}, ntm-next's ids); the tooltip names the band colour and label, right-click opens
  * {@code GUIScreenHolotape} with the tape's description. The restored tape carries digamma (registered by the
  * utility-tool content through a hazard transformer, as the port's hazard map is per item, not per variant).
  */
 public class ItemHolotapeImage extends ItemEnumMulti {
 
-    public ItemHolotapeImage(Properties properties) {
-        super(EnumHoloImage.class, false, false, properties);
+    public ItemHolotapeImage(Properties properties, EnumHoloImage type) {
+        super(EnumHoloImage.class, type, properties);
     }
 
     @Override

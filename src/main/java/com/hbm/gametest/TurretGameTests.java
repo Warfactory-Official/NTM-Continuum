@@ -916,8 +916,7 @@ public final class TurretGameTests {
         helper.assertTrue(himars.mode == TileEntityTurretHIMARS.MODE_AUTO,
                 "The HIMARS mode button must wrap back to automatic mode");
 
-        ItemStack pod = ModAmmoItems.ammo_himars.get()
-                .of(com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.SMALL_HE, 2);
+        ItemStack pod = ModAmmoItems.ammo_himars.stack(com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.SMALL_HE, 2);
         himars.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST, pod);
         himars.isOn = true;
 
@@ -1059,8 +1058,7 @@ public final class TurretGameTests {
         arty.isOn = true;
         arty.mode = TileEntityTurretArty.MODE_MANUAL;
         arty.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST,
-                ModAmmoItems.ammo_arty.get()
-                        .of(com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType.CARGO, 4));
+                ModAmmoItems.ammo_arty.stack(com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType.CARGO, 4));
 
         helper.assertTrue(arty.sendCommandPosition(core.getX(), core.getY(), core.getZ() + 200),
                 "The gun must accept a fire mission inside its range");

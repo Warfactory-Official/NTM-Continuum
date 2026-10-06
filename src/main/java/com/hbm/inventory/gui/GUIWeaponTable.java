@@ -4,7 +4,12 @@ import com.hbm.inventory.container.ContainerWeaponTable;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
-import dev.golem.core.gui.GuiEntities;
+import com.hbm.client.render.weapon.WeaponRenderer;
+import com.hbm.client.render.weapon.WeaponRenderers;
+import com.hbm.client.render.weapon.WeaponTableFrames;
+import com.mojang.math.Axis;
+import dev.golem.core.gui.GuiScenes;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import dev.golem.core.gui.MouseInput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -13,19 +18,18 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
-/** The source 176x240 weapon-table screen with a GEM-backed rotatable item preview. */
+/** The source 176x240 weapon-table screen with 1.7's rotatable, per-gun framed preview. */
 public final class GUIWeaponTable extends CompatContainerScreen<ContainerWeaponTable> {
     private static final Identifier TEXTURE = dev.golem.core.Ids.of(
             "hbm", "textures/gui/machine/gui_weapon_modifier.png");
     private static final int PREVIEW_X = 8, PREVIEW_Y = 17, PREVIEW_W = 160, PREVIEW_H = 80;
     private static final int CONFIG_X = 26, CONFIG_Y = 111, CONFIG_W = 7, CONFIG_H = 10;
-    /** Pixels per block for the FIXED-context preview; the box is 160x80. */
-    private static final float PREVIEW_SCALE = 44F;
+    /** 1.7 {@code glTranslated(guiLeft + 88, guiTop + 57, 100)}: where the gun's model origin sits. */
+    private static final int PREVIEW_CENTRE_X = 88, PREVIEW_CENTRE_Y = 57;
+    /** 1.7 drew the preview with the GUI's lightmap off, i.e. at full brightness. */
+    private static final int FULL_BRIGHT = 0xF000F0;
     private double yaw = 20D;
     private double pitch = -10D;
-    private boolean dragging;
-    private net.minecraft.world.entity.@org.jspecify.annotations.Nullable Entity previewEntity;
-    private ItemStack previewFor = ItemStack.EMPTY;
 
     public GUIWeaponTable(ContainerWeaponTable menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 240);
@@ -37,17 +41,17 @@ public final class GUIWeaponTable extends CompatContainerScreen<ContainerWeaponT
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         GuiDraw.blit(graphics, TEXTURE, leftPos, topPos, 0F, 0F, imageWidth, imageHeight, 256, 256);
         ItemStack gun = menu.previewStack();
+        // 1.7 drawScreen: the turn follows the held left button only while the cursor is over the box.
+        if (Minecraft.getInstance().mouseHandler.isLeftPressed()
+                && isHovering(PREVIEW_X, PREVIEW_Y + 1, PREVIEW_W, PREVIEW_H - 1, mouseX, mouseY)) {
+            updateRotation(mouseX, mouseY);
+        }
         if (gun.getItem() instanceof ItemGunBaseNT weapon) {
             int config = weapon.isValidConfigIndex(menu.configIndex()) ? menu.configIndex() : 0;
             GuiDraw.blit(graphics, TEXTURE, leftPos + 35, topPos + 112,
                     176F + 6F * config, 0F, 6, 8, 256, 256);
+            submitPreview(graphics, gun, config);
         }
-        if (dragging && Minecraft.getInstance().mouseHandler.isLeftPressed()) {
-            updateRotation(mouseX, mouseY);
-        } else if (dragging) {
-            dragging = false;
-        }
-        if (gun.getItem() instanceof ItemGunBaseNT) submitPreview(graphics, gun);
     }
 
     @Override
@@ -57,51 +61,42 @@ public final class GUIWeaponTable extends CompatContainerScreen<ContainerWeaponT
     }
 
     /**
-     * The original preview is a 3D gun rotated by the mouse (yaw about Y, then pitch about X, as the
-     * original {@code glRotated} pair). 26.1 only draws 3D inside a GUI through an entity render state,
-     * so the gun is shown as a detached item-display entity in the FIXED (item frame) framing, which is
-     * the side-on view the original {@code setupModTable} transforms produced; the entity's own
-     * rotation carries the yaw/pitch so it turns about the frame centre.
+     * 1.7 {@code drawGuiContainerBackgroundLayer}: {@code glTranslated(guiLeft + 88, guiTop + 57, 100)}, the mouse
+     * turn ({@code glRotated(yaw, 0, 1, 0)}, {@code glRotated(pitch, 1, 0, 0)}), then the gun's own
+     * {@code setupModTable} ({@link WeaponTableFrames}) and {@code renderModTable(gun, index)}. The scene is the
+     * whole screen, not the 160x80 box, because 1.7 did not clip: a large gun (the Quadro is scaled by 30) ran
+     * over the frame there too. {@link GuiScenes}' frame is the legacy GUI frame (y down, origin at the scene
+     * centre), so the 1.7 calls apply unchanged after moving the origin to the preview centre. Only a gun with
+     * an {@code ItemRenderWeaponBase} in 1.7 is drawn; {@code gun_fireext} shows no preview, as there.
      */
-    private void submitPreview(GuiGraphicsExtractor graphics, ItemStack gun) {
-        net.minecraft.world.entity.Entity entity = previewEntity(gun);
-        if (entity == null) return;
-        entity.setYRot((float) yaw);
-        entity.yRotO = (float) yaw;
-        entity.setXRot((float) pitch);
-        entity.xRotO = (float) pitch;
-        // Display entities build their render state in tick(); a detached one must be ticked here.
-        entity.tick();
-        GuiEntities.draw(graphics, entity, leftPos + PREVIEW_X, topPos + PREVIEW_Y + 1,
-                leftPos + PREVIEW_X + PREVIEW_W, topPos + PREVIEW_Y + PREVIEW_H,
-                PREVIEW_SCALE, new org.joml.Vector3f(0F, 0F, 0F), new org.joml.Quaternionf());
-    }
-
-    private net.minecraft.world.entity.@org.jspecify.annotations.Nullable Entity previewEntity(ItemStack gun) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null) return null;
-        if (previewEntity == null || !dev.golem.core.world.ItemStacks.sameItemAndData(gun, previewFor)) {
-            net.minecraft.world.entity.Display.ItemDisplay display = dev.golem.core.registry.Entities.createDetached(
-                    net.minecraft.world.entity.EntityType.ITEM_DISPLAY, minecraft.level);
-            if (display == null) return null;
-            net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
-            tag.putString("item_display", "fixed");
-            dev.golem.core.registry.Entities.loadFromTag(display, tag);
-            var slot = display.getSlot(0);
-            if (slot != null) slot.set(gun.copy());
-            // Never added to the level, but render-state extraction reads the world around its position.
-            if (minecraft.player != null) display.setPos(minecraft.player.position());
-            previewEntity = display;
-            previewFor = gun.copy();
-        }
-        return previewEntity;
+    private void submitPreview(GuiGraphicsExtractor graphics, ItemStack gun, int config) {
+        WeaponRenderer renderer = WeaponRenderers.forStack(gun);
+        WeaponTableFrames.Frame frame = WeaponTableFrames.forItem(
+                net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(gun.getItem()).getPath());
+        if (renderer == null || frame == null) return;
+        ItemStack stack = gun.copy();
+        float centreX = leftPos + PREVIEW_CENTRE_X - width / 2F;
+        float centreY = topPos + PREVIEW_CENTRE_Y - height / 2F;
+        float turnYaw = (float) yaw;
+        float turnPitch = (float) pitch;
+        GuiScenes.draw(graphics, 0, 0, width, height, (pose, sink, camera) -> {
+            pose.pushPose();
+            pose.translate(centreX, centreY, 0F);
+            pose.mulPose(Axis.YP.rotationDegrees(turnYaw));
+            pose.mulPose(Axis.XP.rotationDegrees(turnPitch));
+            float scale = (float) -frame.scale();
+            pose.scale(scale, scale, scale);
+            pose.mulPose(Axis.YP.rotationDegrees((float) frame.yaw()));
+            pose.translate((float) frame.x(), (float) frame.y(), (float) frame.z());
+            renderer.renderModTable(stack, config, pose, sink, FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+            pose.popPose();
+        });
     }
 
     @Override
     protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         int x = (int) event.x(), y = (int) event.y();
         if (event.button() == 0 && isHovering(PREVIEW_X, PREVIEW_Y + 1, PREVIEW_W, PREVIEW_H - 1, x, y)) {
-            dragging = true;
             updateRotation(x, y);
             return true;
         }
@@ -114,12 +109,6 @@ public final class GUIWeaponTable extends CompatContainerScreen<ContainerWeaponT
                 return true;
             }
         }
-        return false;
-    }
-
-    @Override
-    protected boolean mouseReleased(MouseInput event) {
-        if (event.button() == 0) dragging = false;
         return false;
     }
 

@@ -29,7 +29,7 @@ import static dev.golem.core.dejson.Crafting.tag;
  * {@code SmeltingRecipes.java} at default config. Each block names its 1.7 source lines.
  *
  * <p>Spelling conventions are the rest of the port's: a 1.7 ore-dictionary name is its {@code c:} tag, a metadata
- * variant is {@code item_variant} (or the flattened id), a 1.7 cell is the port's {@code cell} carrying the fluid
+ * variant is the flattened id (History §19es-itemvariant), a 1.7 cell is the port's {@code cell} carrying the fluid
  * and leaving the empty cell, {@code Items.potionitem} is the water bottle consumed whole. A result that carries
  * components goes through the mod's own component recipe types, which read result components on every target.
  * Recipes 1.7 decided in Java ({@code IRecipe} handlers) and the ones whose result is stack state a declaration
@@ -38,7 +38,6 @@ import static dev.golem.core.dejson.Crafting.tag;
 public final class RestoredCraftingRecipes {
 
     private static final String NS = "hbm";
-    private static final String VARIANT = ComponentIds.item_variant;
     private static boolean declared;
 
     /** 1.7 fluid ids (declaration order of {@code Fluids}) of the fluids carried by 1.7's cell items. */
@@ -77,21 +76,22 @@ public final class RestoredCraftingRecipes {
 
     // ---- helpers -------------------------------------------------------------------------------------------------
 
-    private static int ordinal(String[] values, String name) {
-        for (int i = 0; i < values.length; i++) if (values[i].equals(name)) return i;
-        throw new IllegalArgumentException(name);
+    // 1.7's weapon-mod metadata, one item per constant here (ntm-next ids; History §19es-itemvariant)
+    private static String modId(String base, String[] values, String name) {
+        if (!java.util.Arrays.asList(values).contains(name)) throw new IllegalArgumentException(name);
+        return "hbm:" + base + "_" + name.toLowerCase(java.util.Locale.ROOT);
     }
 
     private static Stack specialStack(String name) {
-        return stack(ItemIds.weapon_mod_special).with(VARIANT, ordinal(MOD_SPECIAL, name));
+        return stack(modId("weapon_mod_special", MOD_SPECIAL, name));
     }
 
     private static Ingredient specialMod(String name) {
-        return item(ItemIds.weapon_mod_special).with(VARIANT, ordinal(MOD_SPECIAL, name));
+        return item(modId("weapon_mod_special", MOD_SPECIAL, name));
     }
 
     private static Stack generic(String name) {
-        return stack(ItemIds.weapon_mod_generic).with(VARIANT, ordinal(MOD_GENERIC, name));
+        return stack(modId("weapon_mod_generic", MOD_GENERIC, name));
     }
 
     /** Items.potionitem meta 0 - the water bottle - consumed whole (1.7's potion had no container item). */
@@ -105,8 +105,13 @@ public final class RestoredCraftingRecipes {
                 .remainder(ItemIds.cell);
     }
 
+    /** {@code ItemAmmoArty.ArtilleryShellType} in 1.7 metadata order, by the shells' (ntm-next) item ids. */
+    private static final String[] ARTY = {"ammo_arty", "ammo_arty_classic", "ammo_arty_he", "ammo_arty_mini_nuke",
+            "ammo_arty_nuke", "ammo_arty_phosphorus", "ammo_arty_mini_nuke_multi", "ammo_arty_phosphorus_multi",
+            "ammo_arty_cargo", "ammo_arty_chlorine", "ammo_arty_phosgene", "ammo_arty_mustard_gas"};
+
     private static Ingredient arty(int variant) {
-        return item(ItemIds.ammo_arty).with(VARIANT, variant);
+        return item("hbm:" + ARTY[variant]);
     }
 
     private static Key k(String symbol, String idOrTag) {
@@ -181,8 +186,9 @@ public final class RestoredCraftingRecipes {
         shaped(NS, "blades_titanium_sharpen", ItemIds.blades_titanium, rows("PIP"),
                 "P", TagIds.plates_titanium, "I", ItemIds.blades_titanium);
         // :392-393 any coloured concrete back to smooth concrete
-        shapeless(NS, "concrete_smooth_from_colored", ItemIds.concrete_smooth, ItemIds.concrete_colored);
-        shapeless(NS, "concrete_smooth_from_colored_ext", ItemIds.concrete_smooth, ItemIds.concrete_colored_ext);
+        // (1.7 wildcard metadata: every colour, one item each here; History §19es-itemvariant)
+        componentShapeless(NS, "concrete_smooth_from_colored", stack(ItemIds.concrete_smooth), anyOf("hbm:concrete_white", "hbm:concrete_orange", "hbm:concrete_magenta", "hbm:concrete_light_blue", "hbm:concrete_yellow", "hbm:concrete_lime", "hbm:concrete_pink", "hbm:concrete_gray", "hbm:concrete_silver", "hbm:concrete_cyan", "hbm:concrete_purple", "hbm:concrete_blue", "hbm:concrete_brown", "hbm:concrete_green", "hbm:concrete_red", "hbm:concrete_black"));
+        componentShapeless(NS, "concrete_smooth_from_colored_ext", stack(ItemIds.concrete_smooth), anyOf("hbm:concrete_ext_machine", "hbm:concrete_ext_machine_stripe", "hbm:concrete_ext_indigo", "hbm:concrete_ext_purple", "hbm:concrete_ext_pink", "hbm:concrete_ext_hazard", "hbm:concrete_ext_sand", "hbm:concrete_ext_bronze"));
         // :429 compound bricks
         shaped(NS, "brick_compound_from_reinforced_brick", ItemIds.brick_compound, 4, rows("FBF", "BTB", "FBF"),
                 "F", TagIds.bolts_steel, "B", ItemIds.reinforced_brick, "T", TagIds.tars);
@@ -240,31 +246,29 @@ public final class RestoredCraftingRecipes {
     }
 
     private static void scaffold(int variant, String colour, String dye) {
-        componentShaped(NS, "steel_scaffold_" + colour, stack(ItemIds.steel_scaffold, 8).with(VARIANT, variant),
+        componentShaped(NS, "steel_scaffold_" + colour, stack("hbm:steel_scaffold_" + colour, 8),
                 rows("SSS", "SDS", "SSS"), k("S", ItemIds.steel_scaffold), k("D", dye));
     }
 
     // ---- MineralRecipes ------------------------------------------------------------------------------------------
 
     private static void minerals() {
-        // :95-104 add1To9PairSameMeta for every waste class of the long/short storage-drum waste
+        // :95-104 add1To9PairSameMeta for every waste class of the long/short storage-drum waste; each class is an item
+        // of its own ({@code <family>_<class>}, History §19es-itemvariant)
+        String[] longClasses = {"thorium", "uranium233", "uranium235", "neptunium", "schrabidium"};
+        String[] shortClasses = {"uranium233", "uranium235", "neptunium", "plutonium239", "plutonium240", "plutonium241",
+                "americium242", "schrabidium"};
         String[][] waste = {
-                {ItemIds.nuclear_waste_long, ItemIds.nuclear_waste_long_tiny, "5"},
-                {ItemIds.nuclear_waste_long_depleted, ItemIds.nuclear_waste_long_depleted_tiny, "5"},
-                {ItemIds.nuclear_waste_short, ItemIds.nuclear_waste_short_tiny, "8"},
-                {ItemIds.nuclear_waste_short_depleted, ItemIds.nuclear_waste_short_depleted_tiny, "8"}};
+                {"nuclear_waste_long", "nuclear_waste_long_tiny"},
+                {"nuclear_waste_long_depleted", "nuclear_waste_long_depleted_tiny"},
+                {"nuclear_waste_short", "nuclear_waste_short_tiny"},
+                {"nuclear_waste_short_depleted", "nuclear_waste_short_depleted_tiny"}};
         for (String[] pair : waste) {
-            String one = pair[0], nine = pair[1];
-            for (int c = 0; c < Integer.parseInt(pair[2]); c++) {
-                wastePair(one, nine, c, item(one).with(ComponentIds.storage_waste_class, c),
-                        item(nine).with(ComponentIds.storage_waste_class, c), "");
-                // class 0 is also the component's default: a stack without it reads as class 0
-                if (c == 0) wastePair(one, nine, c, item(one).without(ComponentIds.storage_waste_class),
-                        item(nine).without(ComponentIds.storage_waste_class), "_unmarked");
-            }
+            String[] classes = pair[0].contains("_long") ? longClasses : shortClasses;
+            for (int c = 0; c < classes.length; c++) wastePair(pair[0], pair[1], c, classes[c]);
         }
         // :425 the alternative ammo container
-        componentShaped(NS, "ammo_container_1", stack(ItemIds.ammo_container).with(VARIANT, 1), rows("##", "##"),
+        componentShaped(NS, "ammo_container_1", stack("hbm:ammo_container_alt"), rows("##", "##"),
                 k("#", ItemIds.nitra));
         // :448 PU mix from tiny nuggets (:447's "nuggetPluonium240" sibling is a 1.7 typo that never matched)
         shapeless(NS, "ingot_pu_mix_from_nuggets", ItemIds.ingot_pu_mix, TagIds.nuggets_pu239, TagIds.nuggets_pu239,
@@ -272,12 +276,11 @@ public final class RestoredCraftingRecipes {
                 TagIds.nuggets_pu240, TagIds.nuggets_pu240, TagIds.nuggets_pu240);
     }
 
-    private static void wastePair(String one, String nine, int c, Ingredient oneIn, Ingredient nineIn, String suffix) {
-        String a = one.substring(4), b = nine.substring(4);
-        componentShapeless(NS, a + "_to_" + b + "_" + c + suffix,
-                stack(nine, 9).with(ComponentIds.storage_waste_class, c), oneIn);
-        componentShaped(NS, b + "_to_" + a + "_" + c + suffix, stack(one).with(ComponentIds.storage_waste_class, c),
-                rows("###", "###", "###"), key("#", nineIn));
+    /** The 1.7 pair for waste class {@code c}; recipe names keep 1.7's class number. */
+    private static void wastePair(String a, String b, int c, String waste) {
+        String one = "hbm:" + a + "_" + waste, nine = "hbm:" + b + "_" + waste;
+        shapeless(NS, a + "_to_" + b + "_" + c, nine, 9, one);
+        shaped(NS, b + "_to_" + a + "_" + c, one, rows("###", "###", "###"), "#", nine);
     }
 
     // ---- PowderRecipes -------------------------------------------------------------------------------------------
@@ -320,7 +323,7 @@ public final class RestoredCraftingRecipes {
                 item(ItemIds.ducttape), cell(ASCHRAB), item(ItemIds.circuit_quantum));
 
         // :246 the mini-nuke shell (variant 4); :242-245 (variants 5-7) are in CraftingRecipesGenerated
-        componentShapeless(NS, "ammo_arty_4_mini_nuke", stack(ItemIds.ammo_arty).with(VARIANT, 4), arty(2),
+        componentShapeless(NS, "ammo_arty_4_mini_nuke", stack("hbm:ammo_arty_nuke"), arty(2),
                 item(ItemIds.boy_bullet), item(ItemIds.boy_target), item(ItemIds.boy_shielding),
                 item(ItemIds.circuit_controller), item(ItemIds.ducttape));
 
@@ -466,9 +469,9 @@ public final class RestoredCraftingRecipes {
 
     private static void slabs() {
         componentShaped(NS, "lightstone_tile_slab", stack(ItemIds.lightstone_tile_slab, 6), rows("###"),
-                key("#", item(ItemIds.lightstone).with(VARIANT, 1)));
+                key("#", item("hbm:lightstone_tile")));
         componentShaped(NS, "lightstone_bricks_slab", stack(ItemIds.lightstone_bricks_slab, 6), rows("###"),
-                key("#", item(ItemIds.lightstone).with(VARIANT, 2)));
+                key("#", item("hbm:lightstone_bricks")));
         shaped(NS, "brick_ducrete_slab", ItemIds.brick_ducrete_slab, 6, rows("###"), "#", ItemIds.brick_ducrete);
     }
 

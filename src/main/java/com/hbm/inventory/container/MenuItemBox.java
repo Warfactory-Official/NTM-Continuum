@@ -75,7 +75,10 @@ public final class MenuItemBox extends CompatContainerMenu {
     private boolean accepts(ItemStack stack) {
         // The casing bag is filled by spent-casing recovery, never by player insertion.
         if (layout.equals(ItemCasingBag.LAYOUT)) return false;
-        return dev.golem.core.world.ItemStacks.hasOnlyVariantAndDamage(stack, ModDataComponents.ITEM_VARIANT);
+        // 1.7 refused stacks with NBT; metadata and damage were fine. The metadata families are items of their own now,
+        // and the few 1.7 metadata values kept on one item are these typed components (History §19es-itemvariant).
+        return dev.golem.core.world.ItemStacks.hasOnlyVariantAndDamage(stack, ModDataComponents.RBMK_PELLET,
+                ModDataComponents.FORGE_COUNT, ModDataComponents.HAS_COG, ModDataComponents.HAS_BLADE);
     }
 
     @Override

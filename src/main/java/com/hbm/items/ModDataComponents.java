@@ -43,7 +43,26 @@ public final class ModDataComponents {
     /** 1.7 satellite chip "freq" NBT (ISatChip); ntm-next keeps it in its persistent-data compound. */
     public static final GolemComponent<net.minecraft.nbt.CompoundTag> PERSISTENT_DATA =
             GolemComponent.compound(Constants.MOD_ID, "persistent_data");
-    public static final GolemComponent<Integer> ITEM_VARIANT = GolemComponent.integer(Constants.MOD_ID, "item_variant");
+    // The typed states that replaced hbm:item_variant on the items that keep one id (History §19es-itemvariant),
+    // named as ntm-next names them. None of them is an id.
+    /** A stirling engine still carrying its gear (1.7 metadata 0); absent means true. ntm-next HAS_COG. */
+    public static final GolemComponent<Boolean> HAS_COG = GolemComponent.of(Constants.MOD_ID, "has_cog", Codec.BOOL);
+    /** A sawmill still carrying its blade (1.7 metadata 0); absent means true. ntm-next HAS_BLADE. */
+    public static final GolemComponent<Boolean> HAS_BLADE = GolemComponent.of(Constants.MOD_ID, "has_blade", Codec.BOOL);
+    /** 1.7 ItemToolBox metadata 1: the box is open. ntm-next TOOLBOX_OPEN. */
+    public static final GolemComponent<Boolean> TOOLBOX_OPEN = GolemComponent.of(Constants.MOD_ID, "toolbox_open", Codec.BOOL);
+    /** An RBMK recycling pellet's depletion stage and xenon poisoning (1.7 metadata 0..9). ntm-next RBMK_PELLET. */
+    public static final GolemComponent<com.hbm.items.machine.ItemRBMKPellet.Stage> RBMK_PELLET = GolemComponent.of(
+            Constants.MOD_ID, "rbmk_pellet", () -> com.hbm.items.machine.ItemRBMKPellet.Stage.CODEC);
+    /** How many times a dusted steel ingot has been forged (1.7 metadata 0..9, a count). ntm-next FORGE_COUNT. */
+    public static final GolemComponent<Integer> FORGE_COUNT = GolemComponent.integer(Constants.MOD_ID, "forge_count");
+    /**
+     * The B92 cell's charge (1.7 NBT; 1.7 also set metadata 1 at the full 25, which the starblaster recipe matched).
+     * ntm-next B92_ENERGY. A charge, not an id; the recipe matches the full value.
+     */
+    public static final GolemComponent<Integer> B92_ENERGY = GolemComponent.integer(Constants.MOD_ID, "b92_energy");
+    /** The custom-machine configuration a controller item builds, by its {@code recordName} (1.7: index + 100). */
+    public static final GolemComponent<String> CUSTOM_MACHINE = GolemComponent.string(Constants.MOD_ID, "custom_machine");
     /** PotatOS voice-line countdown (1.7 NBT {@code timer} on {@code battery_potatos}). */
     public static final GolemComponent<Integer> POTATOS_TIMER = GolemComponent.integer(Constants.MOD_ID, "potatos_timer");
     public static final GolemComponent<Double> PILE_ROD_DEPLETION =
@@ -59,9 +78,6 @@ public final class ModDataComponents {
     // first set ("Data components must implement equals and hashCode"), so no cargo shell could be loaded (§19ej-1b)
     public static final GolemComponent<ItemStack> ARTY_CARGO =
             GolemComponent.itemStack(Constants.MOD_ID, "arty_cargo");
-    /** The old metadata value on the long/short storage-drum waste items. */
-    public static final GolemComponent<Integer> STORAGE_WASTE_CLASS =
-            GolemComponent.integer(Constants.MOD_ID, "storage_waste_class");
     /** The old neutron-contamination float formerly stored directly on an item NBT tag. */
     public static final GolemComponent<Float> NEUTRON_ACTIVATION =
             GolemComponent.floatValue(Constants.MOD_ID, "neutron_activation");
@@ -189,8 +205,6 @@ public final class ModDataComponents {
     public static void gasMaskFilter(ItemStack stack, ItemStack filter) { GAS_MASK_FILTER.set(stack, dev.golem.core.world.ItemStacks.copyWithCount(filter, 1)); }
     public static void removeGasMaskFilter(ItemStack stack) { GAS_MASK_FILTER.remove(stack); }
     public static void removeCustomModelData(ItemStack stack) { ModelData.removeColor(stack); }
-    public static int storageWasteClass(ItemStack stack) { return STORAGE_WASTE_CLASS.getOr(stack, 0); }
-    public static void storageWasteClass(ItemStack stack, int value) { STORAGE_WASTE_CLASS.set(stack, value); }
 
     public static String blueprintPool(ItemStack stack) { return BLUEPRINT_POOL.getOr(stack, null); }
     public static void blueprintPool(ItemStack stack, String value) { BLUEPRINT_POOL.set(stack, value); }

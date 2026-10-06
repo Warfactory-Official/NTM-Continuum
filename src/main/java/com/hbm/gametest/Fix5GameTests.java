@@ -152,11 +152,11 @@ public final class Fix5GameTests {
      */
     private static void weaponModsAndNames(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        var generic = ModWeaponModItems.weapon_mod_generic.get();
-        var special = ModWeaponModItems.weapon_mod_special.get();
+        var generic = ModWeaponModItems.weapon_mod_generic;
+        var special = ModWeaponModItems.weapon_mod_special;
 
         ItemStack pepperbox = new ItemStack(ModGunItems.gun_pepperbox.get());
-        XWeaponModManager.install(level, pepperbox, 0, generic.of(GunFactory.EnumModGeneric.IRON_DAMAGE));
+        XWeaponModManager.install(level, pepperbox, 0, generic.stack(GunFactory.EnumModGeneric.IRON_DAMAGE));
         float dmg = ((ItemGunBaseNT) pepperbox.getItem()).getConfig(pepperbox, 0).getReceivers(pepperbox)[0]
                 .getBaseDamage(pepperbox);
         helper.assertTrue(Math.abs(dmg - 5F * 1.15F) < 1e-4F, "iron damage mod: 5 x 1.15 = 5.75, got " + dmg);
@@ -172,7 +172,7 @@ public final class Fix5GameTests {
             ItemGunBaseNT item = (ItemGunBaseNT) gun.getItem();
             helper.assertTrue(item.LAMBDA_NAME_MUTATOR != null && item.LAMBDA_NAME_MUTATOR.apply(gun) == null,
                     gun.getItem() + " has a name mutator that leaves the plain gun alone");
-            XWeaponModManager.install(level, gun, 0, special.of((Enum<?>) row[1]));
+            XWeaponModManager.install(level, gun, 0, special.stack((GunFactory.EnumModSpecial) row[1]));
             String key = item.LAMBDA_NAME_MUTATOR.apply(gun);
             helper.assertTrue(key != null && key.equals(gun.getItem().getDescriptionId() + row[2]),
                     gun.getItem() + " with " + row[1] + " is named " + key);

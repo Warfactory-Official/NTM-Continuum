@@ -722,27 +722,22 @@ public final class FinalGapsAGameTests {
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ 14. old numeric cell variant
+    // ------------------------------------------------------------------ 14. cell model state
 
+    /**
+     * A cell's sprite comes from its fluid alone ({@code hbm:model_state}, History §19es-itemvariant): nothing else is
+     * stored, so a crafted, a machine-filled and a hand-built cell of one fluid are the same stack.
+     */
     public static void cellMigration(GameTestHelper helper) {
-        ItemStack old = new ItemStack(ModSingularityItems.cell.get());
-        ModDataComponents.fluid(old, Fluids.AMAT);
-        ModDataComponents.fluidAmount(old, ItemCell.CAPACITY);
-        ModDataComponents.ITEM_VARIANT.set(old, Fluids.legacyId(Fluids.AMAT)); // the pre-2026-09-25 variant (fluid id 33)
-        ItemCell.migrateVariant(old);
-        helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(old, -1) == CellVariants.ANTIMATTER,
-                "an old antimatter cell is rewritten to variant 3");
-        helper.assertTrue(ItemStacks.sameItemAndData(old, ItemCell.getFullCell(Fluids.AMAT)),
-                "a migrated cell stacks with a new one");
-        ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
-        ItemStack held = new ItemStack(ModSingularityItems.cell.get());
-        ModDataComponents.fluid(held, Fluids.SAS3);
-        ModDataComponents.fluidAmount(held, ItemCell.CAPACITY);
-        ModDataComponents.ITEM_VARIANT.set(held, Fluids.legacyId(Fluids.SAS3));
-        player.getInventory().setItem(5, held);
-        player.getInventory().tick();
-        helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(player.getInventory().getItem(5), -1) == CellVariants.SAS3,
-                "a cell in a player's inventory is migrated by its inventory tick");
+        ItemStack built = new ItemStack(ModSingularityItems.cell.get());
+        ModDataComponents.fluid(built, Fluids.AMAT);
+        ModDataComponents.fluidAmount(built, ItemCell.CAPACITY);
+        helper.assertTrue(com.hbm.items.ModelState.of(built) == CellVariants.ANTIMATTER,
+                "an antimatter cell draws the antimatter sprite");
+        helper.assertTrue(ItemStacks.sameItemAndData(built, ItemCell.getFullCell(Fluids.AMAT)),
+                "a hand-built cell stacks with a new one");
+        helper.assertTrue(com.hbm.items.ModelState.of(new ItemStack(ModSingularityItems.cell.get())) == CellVariants.EMPTY,
+                "an empty cell draws the empty sprite");
         helper.succeed();
     }
 }

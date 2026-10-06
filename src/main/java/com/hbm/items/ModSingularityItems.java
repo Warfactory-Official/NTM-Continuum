@@ -21,10 +21,10 @@ public final class ModSingularityItems {
 
     /** The metadata cell required by the old antimatter-to-singularity production chain. */
     public static final RegistryObject<ItemCell> cell = REG.item("cell", ItemCell::new)
-            .icon(d -> d.models(cellModels()).selects(Constants.MOD_ID + ":item_variant"));
+            .icon(d -> d.models(cellModels()).selects(Constants.MOD_ID + ":model_state"));
 
     /**
-     * The fluid cell: case <i>n</i> is {@code CellVariants} <i>n</i>, the 1.7 cell item of that
+     * The fluid cell: {@code hbm:model_state} case <i>n</i> (computed from the fluid) is {@code CellVariants} <i>n</i>, the 1.7 cell item of that
      * declaration order (empty, uf6, puf6, antimatter, deuterium, tritium, sas3, anti_schrabidium). The
      * variant is the cell's own index, never the fluid id — see {@link com.hbm.items.special.CellVariants}.
      */

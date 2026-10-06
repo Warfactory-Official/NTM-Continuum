@@ -58,17 +58,21 @@ public final class ModSoyuzBlocks {
                     .transform(Presets.shares("hbm:block/soyuz_launcher"))
                     .tab(HbmTab.MISSILES);
 
-    public static final RegistryObject<ItemSoyuz> missile_soyuz =
-            REG.item("missile_soyuz", ItemSoyuz::new, p -> p.stacksTo(1))
-                    .icon(d -> d.models(Models.group()
-                                    .and("", Models.generated("hbm:items/missile_soyuz_normal"))
-                                    .and("_lunar", Models.generated("hbm:items/missile_soyuz_lunar"))
-                                    .and("_post_war", Models.generated("hbm:items/missile_soyuz_post_war")))
-                            .selects(Constants.MOD_ID + ":item_variant"));
+    /**
+     * 1.7 {@code missile_soyuz} metadata 0..2 (its paint), one item each as in ntm-next ({@code missile_soyuz_0/1/2};
+     * History §19es-itemvariant), each with its 1.7 sprite.
+     */
+    public static final com.hbm.items.ItemFamily<SoyuzSkinType, ItemSoyuz> missile_soyuz = com.hbm.items.ItemFamily.of(
+            SoyuzSkinType.class, type -> REG.item("missile_soyuz_" + type.ordinal(), p -> new ItemSoyuz(p, type),
+                            p -> p.stacksTo(1))
+                    .transform(com.hbm.registration.Presets.sprite("hbm:items/missile_soyuz_" + switch (type) {
+                        case NORMAL -> "normal";
+                        case LUNAR -> "lunar";
+                        case POST_WAR -> "post_war";
+                    })));
 
     static {
-        ModTabs.addStacksTo(HbmTab.MISSILES, () -> Arrays.stream(SoyuzSkinType.VALUES)
-                .map(type -> missile_soyuz.get().of(type)).toList());
+        ModTabs.addStacksTo(HbmTab.MISSILES, missile_soyuz::stacks);
     }
 
     /** The seed block: an ordinary block whose entity watches for the complex to be finished around it. */

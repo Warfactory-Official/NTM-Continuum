@@ -178,11 +178,18 @@ public final class ModAmmoItems {
     public static final RegistryObject<Item> shell_w9 = REG.item(
             ItemAmmoEnums.Ammo240Shell.W9.getInternalName()).transform(Presets.sprite());
 
-    public static final RegistryObject<com.hbm.items.weapon.ItemAmmoHIMARS> ammo_himars =
-            REG.item("ammo_himars", com.hbm.items.weapon.ItemAmmoHIMARS::new);
-    public static final RegistryObject<com.hbm.items.weapon.ItemAmmoArty> ammo_arty =
-            REG.item("ammo_arty", com.hbm.items.weapon.ItemAmmoArty::new)
-                    .icon(d -> d.models(artySprites()).selects(Constants.MOD_ID + ":item_variant"));
+    /**
+     * 1.7 {@code ammo_himars} / {@code ammo_arty} metadata, one item per type with ntm-next's ids
+     * ({@code ammo_himars_<name>}; the shells' own names, {@code ammo_arty}, {@code ammo_arty_he}, ...). The rockets'
+     * icons are the OBJ declarations in {@link ObjItemDeclarations}; the shells draw their 1.7 sprites.
+     */
+    public static final ItemFamily<com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType, com.hbm.items.weapon.ItemAmmoHIMARS> ammo_himars =
+            ItemFamily.of(com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.class,
+                    type -> REG.item("ammo_himars_" + type.name, p -> new com.hbm.items.weapon.ItemAmmoHIMARS(p, type)));
+    public static final ItemFamily<com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType, com.hbm.items.weapon.ItemAmmoArty> ammo_arty =
+            ItemFamily.of(com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType.class,
+                    type -> REG.item(type.name, p -> new com.hbm.items.weapon.ItemAmmoArty(p, type))
+                            .transform(Presets.sprite(Constants.MOD_ID + ":items/" + type.name)));
     public static final RegistryObject<com.hbm.items.tool.ItemDesignatorArtyRange> designator_arty_range =
             REG.item("designator_arty_range", com.hbm.items.tool.ItemDesignatorArtyRange::new)
                     .transform(Presets.handheld());
@@ -214,22 +221,8 @@ public final class ModAmmoItems {
                 shell_normal, shell_explosive, shell_ap, shell_du, shell_w9,
                 designator_arty_range);
         addToWeapons(fext_water, fext_foam, fext_sand);
-        ModTabs.addVariantsTo(HbmTab.WEAPONS, ammo_himars);
-        ModTabs.addVariantsTo(HbmTab.WEAPONS, ammo_arty);
-    }
-
-    /**
-     * The twelve shells pick their sprite from {@code hbm:item_variant}: case <i>n</i> is {@code ItemAmmoArty}
-     * shell <i>n</i>, so this list is the shell order and nothing else. (It shipped as one sprite before, so all
-     * twelve drew the plain shell.)
-     */
-    private static Models.Group artySprites() {
-        Models.Group models = Models.group();
-        for (String suffix : new String[] {"", "_classic", "_he", "_mini_nuke", "_nuke", "_phosphorus",
-                "_mini_nuke_multi", "_phosphorus_multi", "_cargo", "_chlorine", "_phosgene", "_mustard_gas"}) {
-            models = models.and(suffix, Models.generated(Constants.MOD_ID + ":items/ammo_arty" + suffix));
-        }
-        return models;
+        ModTabs.addStacksTo(HbmTab.WEAPONS, ammo_himars::stacks);
+        ModTabs.addStacksTo(HbmTab.WEAPONS, ammo_arty::stacks);
     }
 
     @SafeVarargs

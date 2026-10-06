@@ -16,16 +16,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The old blueprint booklet: right-click chooses a recipe pool and creates a dynamic blueprint. */
-public final class ItemBlueprintFolder extends CompatItem {
+public final class ItemBlueprintFolder extends CompatItem implements com.hbm.items.LegacyMeta {
 
-    public ItemBlueprintFolder(Properties properties) {
+    /** 1.7 metadata: 0 draws an ALT pool, 1 a DISCOVER pool, 2 a SECRET pool. */
+    private final int variant;
+
+    public ItemBlueprintFolder(Properties properties, int variant) {
         super(properties);
+        this.variant = variant;
+    }
+
+    @Override
+    public int legacyMeta() {
+        return variant;
     }
 
     public static ItemStack make(int variant) {
-        ItemStack stack = new ItemStack(ModMachineItems.blueprint_folder.get());
-        ModDataComponents.ITEM_VARIANT.set(stack, variant);
-        return stack;
+        return new ItemStack(variant == 1 ? ModMachineItems.blueprint_folder_discover.get()
+                : variant == 2 ? ModMachineItems.blueprint_folder_secret.get() : ModMachineItems.blueprint_folder.get());
     }
 
     @Override
@@ -35,8 +43,9 @@ public final class ItemBlueprintFolder extends CompatItem {
 
         // Machine recipes are lazy in the modern port; old-hbm had already loaded them before item use.
         AssemblyMachineRecipes.INSTANCE.registerRecipes();
-        int variant = ModDataComponents.ITEM_VARIANT.getOr(held, 0);
-        String prefix = variant == 1 ? GenericRecipes.POOL_PREFIX_DISCOVER : GenericRecipes.POOL_PREFIX_ALT;
+        // 1.7 onItemRightClick: damage 0 ALT, 1 DISCOVER, 2 SECRET (the port had dropped the SECRET folder)
+        String prefix = variant == 1 ? GenericRecipes.POOL_PREFIX_DISCOVER
+                : variant == 2 ? GenericRecipes.POOL_PREFIX_SECRET : GenericRecipes.POOL_PREFIX_ALT;
         List<String> pools = new ArrayList<>();
         for (String pool : GenericRecipes.blueprintPools.keySet()) {
             if (pool.startsWith(prefix)) pools.add(pool);

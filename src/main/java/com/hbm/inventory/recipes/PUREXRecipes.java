@@ -299,14 +299,14 @@ public final class PUREXRecipes extends GenericRecipes {
                 .setIcon(new ItemStack(waste)));
     }
 
-    /** 1.7 {@code ComparableStack(pile_rod, 1, rod)}: the rod's variant only, whatever its burn-up data. */
+    /** 1.7 {@code ComparableStack(pile_rod, 1, rod)}: the rod's item only (one per type), whatever its burn-up data. */
     private void registerPile(String name, EnumPileRod rod, ItemStack... outputs) {
-        Item item = ModPileBlocks.pile_rod.get();
+        Item item = ModPileBlocks.pile_rod.get(rod);
         register(new GenericRecipe(name).setup(40, PILE_POWER).setNameWrapper(RECYCLE)
-                .inputItems(new VariantStack(item, rod.ordinal()))
+                .inputItems(new ItemOnlyStack(item))
                 .inputFluids(new FluidStack(Fluids.SULFURIC_ACID, 100))
                 .outputItems(outputs).setGroup(PILE_GROUP, this)
-                .setIcon(ModPileBlocks.pile_rod.get().of(rod)));
+                .setIcon(ModPileBlocks.pile_rod.stack(rod)));
     }
 
     /** Every 1.7 Watz recipe: the two product stacks, then 2 nuclear waste, plus 1 000 mB of Watz mud. */
@@ -360,28 +360,22 @@ public final class PUREXRecipes extends GenericRecipes {
         }
     }
 
-    /** 1.7 {@code new ComparableStack(item, 1, meta)} of a metadata family kept on one item via ITEM_VARIANT. */
-    private static final class VariantStack extends AStack {
+    /** 1.7 {@code new ComparableStack(item, 1, meta)}: the item (one per 1.7 metadata here) and nothing else. */
+    private static final class ItemOnlyStack extends AStack {
         private final Item item;
-        private final int variant;
 
-        private VariantStack(Item item, int variant) {
+        private ItemOnlyStack(Item item) {
             this.item = item;
-            this.variant = variant;
         }
 
         @Override
         public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
-            return !stack.isEmpty() && stack.getItem() == item
-                    && ModDataComponents.ITEM_VARIANT.getOr(stack, 0) == variant
-                    && (ignoreSize || stack.getCount() >= stacksize);
+            return !stack.isEmpty() && stack.getItem() == item && (ignoreSize || stack.getCount() >= stacksize);
         }
 
         @Override
         public List<ItemStack> getDisplayStacks() {
-            ItemStack stack = new ItemStack(item, stacksize);
-            if (variant != 0) ModDataComponents.ITEM_VARIANT.set(stack, variant);
-            return List.of(stack);
+            return List.of(new ItemStack(item, stacksize));
         }
     }
 }

@@ -37,7 +37,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** The 3x3 sawmill multiblock and its core interaction rules. */
-public class MachineSawmill extends BlockMultiblockMachine implements WorldlyContainerHolder, ILookOverlay {
+public class MachineSawmill extends BlockMultiblockMachine implements WorldlyContainerHolder, ILookOverlay, com.hbm.items.ModelState {
 
     public MachineSawmill(Properties properties) {
         super(properties);
@@ -121,12 +121,23 @@ public class MachineSawmill extends BlockMultiblockMachine implements WorldlyCon
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        if (level.isClientSide() || ModDataComponents.ITEM_VARIANT.getOr(stack, 0) != 1) return;
+        if (level.isClientSide() || hasBlade(stack)) return;
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntitySawmill sawmill) {
             sawmill.hasBlade = false;
             sawmill.setChanged();
         }
+    }
+
+    /** 1.7 metadata 0 (the item still carries its blade): {@code hbm:has_blade}, absent meaning true (ntm-next). */
+    public static boolean hasBlade(ItemStack stack) {
+        return ModDataComponents.HAS_BLADE.getOr(stack, true);
+    }
+
+    /** {@code hbm:model_state}: 1 draws the item without its blade, as 1.7's metadata 1 did. */
+    @Override
+    public int modelState(ItemStack stack) {
+        return hasBlade(stack) ? 0 : 1;
     }
 
     @Override
@@ -136,7 +147,7 @@ public class MachineSawmill extends BlockMultiblockMachine implements WorldlyCon
         BlockPos core = MultiblockSurface.coreOfAny(params.getLevel(), pos);
         if (core != null && params.getLevel().getBlockEntity(core) instanceof TileEntitySawmill sawmill
                 && !sawmill.hasBlade) {
-            ModDataComponents.ITEM_VARIANT.set(stack, 1);
+            ModDataComponents.HAS_BLADE.set(stack, false);
         }
         return List.of(stack);
     }
@@ -151,7 +162,7 @@ public class MachineSawmill extends BlockMultiblockMachine implements WorldlyCon
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntitySawmill sawmill
                 && !sawmill.hasBlade) {
-            ModDataComponents.ITEM_VARIANT.set(stack, 1);
+            ModDataComponents.HAS_BLADE.set(stack, false);
         }
         return stack;
     }

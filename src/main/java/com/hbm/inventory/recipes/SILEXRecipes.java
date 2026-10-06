@@ -42,7 +42,7 @@ import java.util.List;
  * are therefore keyed by input alone.
  *
  * <p>The 28 RBMK fuel-pellet families ({@code rbmk_pellet_*}; the depletion stage and xenon poisoning are
- * the 1.7 metadata 0..9, kept as {@code ITEM_VARIANT}) and the 24 {@code nuclear_waste_long/short[_depleted]}
+ * the 1.7 metadata 0..9, the typed {@code hbm:rbmk_pellet} stage here) and the 24 {@code nuclear_waste_long/short[_depleted]}
  * x {@code WasteClass} reprocessing recipes follow 1.7 exactly, as does the tiny-waste translation that
  * runs a tiny waste item through its full-size counterpart's recipe. Wavelengths given as 1.7 integers
  * are {@code EnumWavelengths.values()[i]}.
@@ -193,10 +193,10 @@ public final class SILEXRecipes {
 
         pellets();
         wastes();
-        TINY_TO_FULL.put(ModStorageDrumItems.nuclear_waste_short_tiny.get(), ModStorageDrumItems.nuclear_waste_short.get());
-        TINY_TO_FULL.put(ModStorageDrumItems.nuclear_waste_long_tiny.get(), ModStorageDrumItems.nuclear_waste_long.get());
-        TINY_TO_FULL.put(ModStorageDrumItems.nuclear_waste_short_depleted_tiny.get(), ModStorageDrumItems.nuclear_waste_short_depleted.get());
-        TINY_TO_FULL.put(ModStorageDrumItems.nuclear_waste_long_depleted_tiny.get(), ModStorageDrumItems.nuclear_waste_long_depleted.get());
+        TINY_TO_FULL.put(ModStorageDrumItems.nuclear_waste_short_tiny.base, ModStorageDrumItems.nuclear_waste_short);
+        TINY_TO_FULL.put(ModStorageDrumItems.nuclear_waste_long_tiny.base, ModStorageDrumItems.nuclear_waste_long);
+        TINY_TO_FULL.put(ModStorageDrumItems.nuclear_waste_short_depleted_tiny.base, ModStorageDrumItems.nuclear_waste_short_depleted);
+        TINY_TO_FULL.put(ModStorageDrumItems.nuclear_waste_long_depleted_tiny.base, ModStorageDrumItems.nuclear_waste_long_depleted);
 
         // old ModItems.fallout — the FIELD is `fallout`, the registry id is `falloutitem`
         add(comp(ModItems.falloutitem.get()), 900, 100, EnumWavelengths.VISIBLE)
@@ -241,8 +241,8 @@ public final class SILEXRecipes {
     // ---------------------------------------------------------------- RBMK pellets (1.7 loop, i = 0..4)
 
     /**
-     * The 1.7 {@code for(int i = 0; i < 5; i++)} block. Pellet stacks carry the old metadata as
-     * {@code ITEM_VARIANT}: 0..4 is the depletion stage, 5..9 the same stage xenon-poisoned (see
+     * The 1.7 {@code for(int i = 0; i < 5; i++)} block. Pellet stacks carry the old metadata as their
+     * {@code hbm:rbmk_pellet} stage: 0..4 is the depletion stage, 5..9 the same stage xenon-poisoned (see
      * {@link ItemRBMKPellet}). The xenon variants are one output-weight smaller and add a xenon roll —
      * except LES/MES/HES, whose "xenon" recipes are identical to the clean ones in 1.7 (its NEI handler
      * could not show a seventh output), and balefire/flashgold/flashlead/Po-210/Ra-226, which 1.7 never
@@ -521,14 +521,14 @@ public final class SILEXRecipes {
      * NEI, not listed in JEI); cached per full-size recipe.
      */
     private static SILEXRecipe tinyWaste(ItemStack stack) {
-        Item full = TINY_TO_FULL.get(stack.getItem());
+        if (!(stack.getItem() instanceof ItemWasteStorage tinyWaste)) return null;
+        ModStorageDrumItems.WasteFamily full = TINY_TO_FULL.get(tinyWaste.base());
         if (full == null) return null;
-        int variant = ModDataComponents.storageWasteClass(stack);
-        ItemStack fullStack = ItemWasteStorage.make(full, variant);
+        ItemStack fullStack = full.stack(tinyWaste.variant());
         for (SILEXRecipe recipe : recipes) {
             if (!recipe.input.matchesRecipe(fullStack, true)) continue;
             return TINY_CACHE.computeIfAbsent(recipe, r -> {
-                SILEXRecipe tiny = new SILEXRecipe(new WasteStack(stack.getItem(), variant),
+                SILEXRecipe tiny = new SILEXRecipe(new WasteStack(stack.getItem()),
                         (r.fluidProduced / 900) * 100, r.fluidConsumed, r.laserStrength);
                 tiny.outputs.addAll(r.outputs);
                 return tiny;
@@ -537,20 +537,20 @@ public final class SILEXRecipes {
         return null;
     }
 
-    private static final java.util.Map<Item, Item> TINY_TO_FULL = new java.util.IdentityHashMap<>();
+    private static final java.util.Map<String, ModStorageDrumItems.WasteFamily> TINY_TO_FULL = new java.util.HashMap<>();
     private static final java.util.Map<SILEXRecipe, SILEXRecipe> TINY_CACHE = new java.util.IdentityHashMap<>();
 
-    private static WasteStack longWaste(LongWasteClass c) { return new WasteStack(ModStorageDrumItems.nuclear_waste_long.get(), c.ordinal()); }
-    private static WasteStack longDepleted(LongWasteClass c) { return new WasteStack(ModStorageDrumItems.nuclear_waste_long_depleted.get(), c.ordinal()); }
-    private static WasteStack shortWaste(ShortWasteClass c) { return new WasteStack(ModStorageDrumItems.nuclear_waste_short.get(), c.ordinal()); }
-    private static WasteStack shortDepleted(ShortWasteClass c) { return new WasteStack(ModStorageDrumItems.nuclear_waste_short_depleted.get(), c.ordinal()); }
+    private static WasteStack longWaste(LongWasteClass c) { return new WasteStack(ModStorageDrumItems.nuclear_waste_long.get(c.ordinal())); }
+    private static WasteStack longDepleted(LongWasteClass c) { return new WasteStack(ModStorageDrumItems.nuclear_waste_long_depleted.get(c.ordinal())); }
+    private static WasteStack shortWaste(ShortWasteClass c) { return new WasteStack(ModStorageDrumItems.nuclear_waste_short.get(c.ordinal())); }
+    private static WasteStack shortDepleted(ShortWasteClass c) { return new WasteStack(ModStorageDrumItems.nuclear_waste_short_depleted.get(c.ordinal())); }
 
     /**
      * Waste outputs by 1.7 class NAME. The port's enums follow 1.12.2's constant order (THORIUM first in
      * the long family, URANIUM233 first in the short one), so 1.7 ordinals must not be copied as numbers.
      */
-    private static ItemStack longTiny(LongWasteClass c) { return ItemWasteStorage.make(ModStorageDrumItems.nuclear_waste_long_tiny.get(), c.ordinal()); }
-    private static ItemStack shortTiny(ShortWasteClass c) { return ItemWasteStorage.make(ModStorageDrumItems.nuclear_waste_short_tiny.get(), c.ordinal()); }
+    private static ItemStack longTiny(LongWasteClass c) { return ModStorageDrumItems.nuclear_waste_long_tiny.stack(c.ordinal()); }
+    private static ItemStack shortTiny(ShortWasteClass c) { return ModStorageDrumItems.nuclear_waste_short_tiny.stack(c.ordinal()); }
 
     /** 1.7 {@code new SILEXRecipe(p, c, int)}: {@code EnumWavelengths.values()[i]} (0 is NULL, so 1 = IR). */
     private static EnumWavelengths wl(int ordinal) {
@@ -566,7 +566,7 @@ public final class SILEXRecipes {
                 .orElseThrow(() -> new IllegalStateException("SILEX names unregistered hbm:" + id));
     }
 
-    /** 1.7 {@code ComparableStack(item, 1, meta)} of an RBMK pellet: the ITEM_VARIANT only. */
+    /** 1.7 {@code ComparableStack(item, 1, meta)} of an RBMK pellet: its {@code hbm:rbmk_pellet} stage only. */
     public static final class VariantStack extends AStack {
         private final Item item;
         private final int variant;
@@ -578,41 +578,35 @@ public final class SILEXRecipes {
 
         @Override
         public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
-            return !stack.isEmpty() && stack.getItem() == item
-                    && ModDataComponents.ITEM_VARIANT.getOr(stack, 0) == variant
+            return !stack.isEmpty() && stack.getItem() == item && item instanceof ItemRBMKPellet pellet
+                    && pellet.getVariant(stack) == variant
                     && (ignoreSize || stack.getCount() >= stacksize);
         }
 
         @Override
         public List<ItemStack> getDisplayStacks() {
-            ItemStack stack = new ItemStack(item, stacksize);
-            if (variant != 0) ModDataComponents.ITEM_VARIANT.set(stack, variant);
+            ItemStack stack = item instanceof ItemRBMKPellet pellet ? pellet.of(variant) : new ItemStack(item);
+            stack.setCount(stacksize);
             return List.of(stack);
         }
     }
 
-    /** 1.7 {@code ComparableStack(nuclear_waste_*, 1, WasteClass.ordinal())}: the storage-drum waste class. */
+    /** 1.7 {@code ComparableStack(nuclear_waste_*, 1, WasteClass.ordinal())}: the family member of that class. */
     public static final class WasteStack extends AStack {
         private final Item item;
-        private final int variant;
 
-        WasteStack(Item item, int variant) {
+        WasteStack(Item item) {
             this.item = item;
-            this.variant = variant;
         }
 
         @Override
         public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
-            return !stack.isEmpty() && stack.getItem() == item
-                    && ModDataComponents.storageWasteClass(stack) == variant
-                    && (ignoreSize || stack.getCount() >= stacksize);
+            return !stack.isEmpty() && stack.getItem() == item && (ignoreSize || stack.getCount() >= stacksize);
         }
 
         @Override
         public List<ItemStack> getDisplayStacks() {
-            ItemStack stack = ItemWasteStorage.make(item, variant);
-            stack.setCount(stacksize);
-            return List.of(stack);
+            return List.of(new ItemStack(item, stacksize));
         }
     }
 

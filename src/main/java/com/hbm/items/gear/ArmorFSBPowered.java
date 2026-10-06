@@ -107,13 +107,14 @@ public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
     /**
      * The idle drain, one tick's worth, charged to every piece of a complete set.
      *
-     * <p>Note that this does <b>not</b> call {@code super.armorTick}, which upstream also does not — so
-     * the built-in geiger click on {@link ArmorFSB} is silently dead on every electric suit. That is
-     * upstream behaviour and is reproduced rather than fixed; the suits that want a counter have their
-     * own HUD instead.
+     * <p>1.7.10 {@code ArmorFSBPowered.onArmorTick} calls {@code super.onArmorTick} first, so a powered suit with
+     * {@code setHasGeigerSound} (AJR, AJR-O, HEV, RPA, ...) clicks like any other FSB suit. An earlier port followed
+     * 1.12.2 here, which skips the super call and leaves the built-in counter silent (found by the harness sound log,
+     * History §19es-client).
      */
     @Override
     public void armorTick(Level level, Player player, ItemStack stack) {
+        super.armorTick(level, player, stack);
         if (player.isCreative() || this.drain <= 0) return;
         if (!ArmorFSB.hasFSBArmor(player)) return;
         long netDrain = drain;

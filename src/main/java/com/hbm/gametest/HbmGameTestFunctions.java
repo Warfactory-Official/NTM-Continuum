@@ -259,6 +259,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("turbofan_layout", 100, 8, () -> TurbofanGameTests::layout);
     public static final GameTests.Function TURBOFAN_PORTS_BURN =
             TESTS.function("turbofan_ports_burn", 100, 8, () -> TurbofanGameTests::portsAndBurn);
+    public static final GameTests.Function TURBOFAN_ANY_FUEL_ZERO_OUTPUT =
+            TESTS.function("turbofan_any_fuel_zero_output", 100, 8, () -> TurbofanGameTests::anyFuelZeroOutput);
     public static final GameTests.Function TURBOFAN_MENU =
             TESTS.function("turbofan_menu", 40, () -> TurbofanGameTests::menu);
     public static final GameTests.Function STEAM_ENGINE_LAYOUT =
@@ -2082,7 +2084,7 @@ public final class HbmGameTestFunctions {
         var output = com.hbm.inventory.recipes.StorageDrumRecipes.getOutput(input);
         var waste = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(input);
         helper.assertTrue(output != null
-                        && output.getItem() == com.hbm.items.ModStorageDrumItems.nuclear_waste_short_depleted.get()
+                        && com.hbm.items.ModStorageDrumItems.nuclear_waste_short_depleted.is(output.getItem())
                         && ((com.hbm.items.special.ItemWasteStorage) output.getItem()).variant(output)
                                 == com.hbm.items.special.ItemWasteStorage.ShortWasteClass.PLUTONIUM240.ordinal(),
                 "Short-waste transformation lost its subtype");
@@ -2096,7 +2098,7 @@ public final class HbmGameTestFunctions {
         var longTinyOutput = com.hbm.inventory.recipes.StorageDrumRecipes.getOutput(longTinyInput);
         var longTinyWaste = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(longTinyInput);
         helper.assertTrue(longTinyOutput != null
-                        && longTinyOutput.getItem() == com.hbm.items.ModStorageDrumItems.nuclear_waste_long_depleted_tiny.get()
+                        && com.hbm.items.ModStorageDrumItems.nuclear_waste_long_depleted_tiny.is(longTinyOutput.getItem())
                         && ((com.hbm.items.special.ItemWasteStorage) longTinyOutput.getItem()).variant(longTinyOutput)
                                 == com.hbm.items.special.ItemWasteStorage.LongWasteClass.URANIUM233.ordinal()
                         && longTinyWaste != null && longTinyWaste[0] == 21_600

@@ -66,15 +66,17 @@ public final class ModNuclearMiscItems {
     public static final RegistryObject<ItemDepletedFuel> WASTE_PLATE_PU238BE = waste("waste_plate_pu238be", "waste_plate_pu238be");
 
     /** 1.7: {@code new ItemUnstable(350, 200)}, no creative tab. */
-    // 1.7 ItemUnstable metadata 1..3 (ELEMENTS / ARSENIC / VAULT), the Brittle Spade's inert easter eggs.
     public static final RegistryObject<ItemUnstable> INGOT_U238M2 = REG.item("ingot_u238m2",
                     (Item.Properties p) -> new ItemUnstable(p, 350, 200))
-            .icon(d -> d.models(Models.group()
-                            .and("", Models.generated("hbm:items/ingot_u238m2"))
-                            .and("_elements", Models.generated("hbm:items/hs-elements"))
-                            .and("_arsenic", Models.generated("hbm:items/hs-arsenic"))
-                            .and("_vault", Models.generated("hbm:items/hs-vault")))
-                    .selects(Constants.MOD_ID + ":item_variant"));
+            .transform(Presets.sprite());
+    // 1.7 ingot_u238m2 metadata 1..3 (ELEMENTS / ARSENIC / VAULT), the Brittle Spade's inert easter eggs: plain items of
+    // their own as ntm-next registers them (History §19es-itemvariant). 1.7 skipped every ItemUnstable behaviour for them.
+    public static final RegistryObject<Item> HS_ELEMENTS = REG.simpleItem("hs_elements", p -> p)
+            .transform(Presets.sprite("hbm:items/hs-elements"));
+    public static final RegistryObject<Item> HS_ARSENIC = REG.simpleItem("hs_arsenic", p -> p)
+            .transform(Presets.sprite("hbm:items/hs-arsenic"));
+    public static final RegistryObject<Item> HS_VAULT = REG.simpleItem("hs_vault", p -> p)
+            .transform(Presets.sprite("hbm:items/hs-vault"));
     public static final RegistryObject<ItemDemonCore> DEMON_CORE_OPEN = REG.item("demon_core_open", ItemDemonCore::new)
             .transform(Presets.sprite())
             .tab(HbmTab.BOMBS);

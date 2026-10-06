@@ -182,7 +182,7 @@ val DECLARATION_CLASSES = arrayOf(
     // 2026-09-28 JSON migration (§19ed-dejson): the files that were still authored.
     "com.hbm.items.ObjItemDeclarations",
     "com.hbm.items.GunItemDeclarations",
-    "com.hbm.items.ItemModelDeclarations",
+    // ItemModelDeclarations (the weapon-mod select cases) was removed 2026-10-06: each mod is its own item now.
     // BlockModelDeclarations (hand-built element geometry transliterated from JSON) was removed 2026-09-30;
     // those models are authored files again, listed in gradle/dejson-authored.txt.
     "com.hbm.items.ArmorEquipmentDeclarations",

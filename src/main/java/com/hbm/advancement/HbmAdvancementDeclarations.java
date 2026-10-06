@@ -154,8 +154,8 @@ public final class HbmAdvancementDeclarations {
         entry("soyuz", "soyuz", "minecraft:baked_potato", "desh", CHALLENGE)
                 .criterion("exhaust", trigger("detonation").kinds("soyuz_exhaust")).register();
         // 1.7 EntitySoyuz:104: only the flame_pony payload; the port's call site passes the rocket for it
-        entry("space", "space", "hbm:missile_soyuz", "desh", CHALLENGE)
-                .criterion("orbit", trigger("orbit").item("hbm:missile_soyuz", "hbm:flame_pony")).register();
+        entry("space", "space", "hbm:missile_soyuz_0", "desh", CHALLENGE)
+                .criterion("orbit", trigger("orbit").item("hbm:missile_soyuz_0", "hbm:flame_pony")).register();
         crafted(entry("schrab", "schrab", "hbm:ingot_schrabidium", "desh", TASK), "hbm:ingot_schrabidium", "hbm:nugget_schrabidium");
         crafted(entry("acidizer", "acidizer", "hbm:machine_crystallizer", "desh", TASK), "hbm:machine_crystallizer");
         entry("radium", "radium", "hbm:coffee_radium", "centrifuge", CHALLENGE)

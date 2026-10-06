@@ -2,6 +2,7 @@ package com.hbm.inventory.recipes;
 
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.machine.ItemRBMKRod;
+import com.hbm.items.machine.ItemRBMKPellet;
 import dev.golem.core.world.CompatCustomRecipe;
 import dev.golem.core.world.CustomRecipes;
 import java.util.List;
@@ -48,9 +49,10 @@ public final class RBMKFuelDisassemblyRecipe extends CompatCustomRecipe {
                 || ItemRBMKRod.getHullHeat(stack) >= 50 || ItemRBMKRod.getCoreHeat(stack) >= 50) return ItemStack.EMPTY;
 
         int depletion = 4 - Mth.clamp((int) Math.ceil(ItemRBMKRod.getEnrichment(stack) * 5 - 1), 0, 4);
-        int variant = depletion + (ItemRBMKRod.getPoisonLevel(stack) >= 0.5D ? 5 : 0);
+        boolean xenon = ItemRBMKRod.getPoisonLevel(stack) >= 0.5D;
         ItemStack pellets = new ItemStack(fuel.pellet, 8);
-        ModDataComponents.ITEM_VARIANT.set(pellets, variant);
+        ItemRBMKPellet.Stage stage = new ItemRBMKPellet.Stage(depletion, xenon);
+        if (!stage.equals(ItemRBMKPellet.Stage.FRESH)) ModDataComponents.RBMK_PELLET.set(pellets, stage);
         return pellets;
     }
 

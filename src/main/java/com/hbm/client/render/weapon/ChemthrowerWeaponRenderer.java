@@ -31,10 +31,9 @@ public final class ChemthrowerWeaponRenderer extends WeaponRenderer {
 
     @Override protected void setup(Gem.Model<WeaponPose> declaration) {
         WavefrontObj obj = model();
-        declaration.part(obj.part("Gun"), BODY).visibleIf(state -> !state.animated);
-        declaration.part(obj.part("Hose"), BODY).visibleIf(state -> !state.animated);
-        declaration.part(obj.part("Nozzle"), BODY).visibleIf(state -> !state.animated);
-        declaration.part(obj.part("Gauge"), BODY).visibleIf(state -> !state.animated);
+        // 1.7 renderOther opens with glRotated(90, 0, 1, 0): every static draw (icon, hand, ground, weapon table).
+        declaration.joint().visibleIf(state -> !state.animated).rotate(Gem.Axes.Y, 90F)
+                .child(obj.parts("Gun", "Hose", "Nozzle", "Gauge"), BODY);
         Gem.Part<WeaponPose> root = declaration.joint().visibleIf(SpecialWeaponRenderers::animated)
                 .scale(0.75F)
                 .translate(0, -2, -4)
