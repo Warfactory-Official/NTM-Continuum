@@ -137,7 +137,8 @@ public final class ModRadioBlocks {
     }
 
     private static Shape torch(String sprite) {
-        return Models.parented("hbm:block/radio_torch_template", Slots.of("torch", "hbm:blocks/" + sprite));
+        return Models.renderType("minecraft:cutout",
+                Models.parented("hbm:block/radio_torch_template", Slots.of("torch", "hbm:blocks/" + sprite)));
     }
 
     public static void init() {}

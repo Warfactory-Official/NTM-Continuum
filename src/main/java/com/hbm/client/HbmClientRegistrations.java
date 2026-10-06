@@ -333,6 +333,7 @@ public final class HbmClientRegistrations {
 
     public static void installTints() {
         dev.golem.core.client.Tints.install(com.hbm.Constants.MOD_ID);
+        dev.golem.core.client.BlockLayers.install(com.hbm.Constants.MOD_ID);
         com.hbm.client.EnergyBedrockClientRegistrations.installSprites(); // computed bedrock ore grade art
         dev.golem.core.fluid.TokenFluids.installClient(); // how other mods draw HBM fluids (History section 19ek-fluids)
     }

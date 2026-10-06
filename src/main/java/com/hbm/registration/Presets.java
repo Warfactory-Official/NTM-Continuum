@@ -41,6 +41,11 @@ public final class Presets {
         return new BlockModel(path -> Models.cubeAll("hbm:blocks/" + path));
     }
 
+    /** {@link #cubeAll()} on the cutout layer, for a cube whose own icon has holes. */
+    public static BlockModel cubeAllCutout() {
+        return new BlockModel(path -> Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/" + path)));
+    }
+
     /** {@code minecraft:block/cube_bottom_top}. */
     public static BlockModel cubeBottomTop(String bottom, String side, String top) {
         return new BlockModel(path -> Models.cubeBottomTop(bottom, side, top));

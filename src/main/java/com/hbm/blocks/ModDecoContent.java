@@ -529,8 +529,8 @@ public final class ModDecoContent {
     private static Models.Group grateWideModels() {
         Models.Group grate = Models.group();
         for (int height = 0; height <= 9; height++) {
-            grate = grate.and(String.valueOf(height), Models.parented("hbm:block/steel_grate" + height,
-                    Slots.of("end", "hbm:blocks/grate_wide_top", "particle", "hbm:blocks/grate_wide_top")));
+            grate = grate.and(String.valueOf(height), Models.renderType("minecraft:cutout", Models.parented("hbm:block/steel_grate" + height,
+                    Slots.of("end", "hbm:blocks/grate_wide_top", "particle", "hbm:blocks/grate_wide_top"))));
         }
         return grate;
     }

@@ -103,7 +103,7 @@ public final class ModFalloutBlocks {
     public static final RegistryObject<com.hbm.blocks.generic.BlockWasteLeaves> waste_leaves = block("waste_leaves",
             com.hbm.blocks.generic.BlockWasteLeaves::new,
             p -> p.strength(0.3F, 0.3F).sound(SoundType.GRASS).noOcclusion().randomTicks())
-            .transform(Presets.cubeAll().viaItemModel())
+            .transform(Presets.shape(Models.renderType("minecraft:cutout_mipped", Models.cubeAll("hbm:blocks/waste_leaves"))).viaItemModel())
             .loot(Loot.nothing())
             .tag(BlockTag.HOE);
 

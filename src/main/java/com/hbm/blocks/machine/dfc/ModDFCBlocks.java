@@ -34,13 +34,13 @@ public final class ModDFCBlocks {
     private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
     /** The aimed components: a cube of their own icon turned to any of the six facings; items are OBJ (ObjItemDeclarations). */
-    private static final Preset AIMED = Presets.cubeAll().states(Variants.facingAll()).noItem()
+    private static final Preset AIMED = Presets.cubeAllCutout().states(Variants.facingAll()).noItem()
             .and(handle -> handle.loot(Loot.self()));
 
     /** 1.7 renders the core invisible; its item is the flat {@code dfc_core} sprite (see {@link #dfc_core_item}). */
     public static final RegistryObject<CoreCore> dfc_core = REG.block(
             "dfc_core", CoreCore::new, ModDFCBlocks::machine)
-            .transform(Presets.cubeAll().noItem())
+            .transform(Presets.cubeAllCutout().noItem())
             .loot(Loot.self());
 
     public static final RegistryObject<CoreComponent> dfc_emitter = REG.block(

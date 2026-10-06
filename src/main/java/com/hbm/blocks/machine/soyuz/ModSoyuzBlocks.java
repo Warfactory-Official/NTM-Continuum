@@ -39,7 +39,7 @@ public final class ModSoyuzBlocks {
     public static final RegistryObject<SoyuzLauncher> soyuz_launcher = REG.block(
             "soyuz_launcher", SoyuzLauncher::new,
             p -> p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
-            .transform(Presets.cubeAll().noItem())
+            .transform(Presets.shape(Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/soyuz_launcher"))).noItem())
             .loot(Loot.nothing());
 
     public static final RegistryObject<SoyuzStruct> struct_soyuz_core = REG.block(

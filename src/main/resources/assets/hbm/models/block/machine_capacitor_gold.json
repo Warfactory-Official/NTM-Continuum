@@ -1,4 +1,5 @@
 {
+  "render_type": "minecraft:cutout",
   "parent": "hbm:block/capacitor",
   "textures": {
     "top": "hbm:blocks/capacitor_gold_top",

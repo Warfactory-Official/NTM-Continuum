@@ -43,8 +43,8 @@ public final class ModDroneBlocks {
             .tag(BlockTag.PICKAXE);
     /** The radio torch's element model over the waypoint's own sprite, mounted on any side; drops itself. */
     private static final Preset WAYPOINT = handle -> handle
-            .transform(Presets.shape(Models.parented("hbm:block/radio_torch_template",
-                    Slots.of("torch", "hbm:blocks/" + handle.path()))).states(Variants.facingUp()).noItem())
+            .transform(Presets.shape(Models.renderType("minecraft:cutout", Models.parented("hbm:block/radio_torch_template",
+                    Slots.of("torch", "hbm:blocks/" + handle.path())))).states(Variants.facingUp()).noItem())
             .loot(Loot.self());
 
     public static final RegistryObject<DroneWaypoint> DRONE_WAYPOINT = REG.block(

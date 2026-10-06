@@ -1,4 +1,5 @@
 {
+  "render_type": "minecraft:cutout",
   "parent": "minecraft:block/block",
   "textures": {
     "top": "hbm:blocks/capacitor_schrabidate_top",
