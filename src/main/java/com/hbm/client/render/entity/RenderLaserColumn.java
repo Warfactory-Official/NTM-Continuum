@@ -37,8 +37,11 @@ public class RenderLaserColumn<T extends Entity> extends CompatEntityRenderer<T,
         Vec3 vector = new Vec3(radius, 0D, 0D);
         for (int i = 0; i < 8; i++) {
             Vec3 next = vector.yRot((float) Math.toRadians(45D));
+            // 1.7 culls this outward-wound facet; dragonRays() is culled triangles, so the quad is split 0-1-2, 0-2-3.
             vertex(buffer, pose, vector.x, HEIGHT, vector.z, color);
             vertex(buffer, pose, vector.x, 0D, vector.z, color);
+            vertex(buffer, pose, next.x, 0D, next.z, color);
+            vertex(buffer, pose, vector.x, HEIGHT, vector.z, color);
             vertex(buffer, pose, next.x, 0D, next.z, color);
             vertex(buffer, pose, next.x, HEIGHT, next.z, color);
             vector = next;

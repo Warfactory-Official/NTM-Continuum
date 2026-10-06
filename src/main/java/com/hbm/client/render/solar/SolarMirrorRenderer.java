@@ -24,7 +24,7 @@ public final class SolarMirrorRenderer extends GemBER<TileEntitySolarMirror, Sol
             dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/solar_mirror.obj"));
     private final Surface surface = Surface.cutoutNoCull(
             Constants.MOD_ID + ":textures/models/machines/solar_mirror.png");
-    private final RenderType beamType = CompatRenderTypes.lightning();
+    private final RenderType beamType = CompatRenderTypes.additive();
 
     @Override
     protected void setup(Gem.Model<SolarMirrorRenderState> declaration) {

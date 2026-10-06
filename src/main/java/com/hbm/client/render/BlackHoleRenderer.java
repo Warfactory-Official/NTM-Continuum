@@ -128,15 +128,19 @@ public final class BlackHoleRenderer extends GemEntityRenderer<EntityBlackHole, 
         pose.pushPose();
         pose.mulPose(Axis.XP.rotationDegrees(entity.getId() % 90 - 45));
         pose.mulPose(Axis.YP.rotationDegrees(entity.getId() % 360));
-        sink.submitCustomGeometry(pose, CompatRenderTypes.lightning(), (last, buffer) -> {
+        // 1.7 draws each jet as a GL_TRIANGLE_FAN with culling off; a fan is expanded into its triangles here.
+        sink.submitCustomGeometry(pose, CompatRenderTypes.additiveTriangles(), (last, buffer) -> {
             int centre = argb(0.35F, 1F, 1F, 1F);
             int edge = argb(0F, 1F, 1F, 1F);
             for (int direction : new int[] {-1, 1}) {
-                Vertexes.color(buffer, last, 0F, 0F, 0F, centre);
-                for (int i = 0; i <= 12; i++) {
-                    double angle = i * Math.PI / 6D * -direction;
-                    Vertexes.color(buffer, last, (float) (Math.cos(angle) * 0.5D),
-                            10F * direction, (float) (Math.sin(angle) * 0.5D), edge);
+                for (int i = 0; i < 12; i++) {
+                    double a0 = i * Math.PI / 6D * -direction;
+                    double a1 = (i + 1) * Math.PI / 6D * -direction;
+                    Vertexes.color(buffer, last, 0F, 0F, 0F, centre);
+                    Vertexes.color(buffer, last, (float) (Math.cos(a0) * 0.5D),
+                            10F * direction, (float) (Math.sin(a0) * 0.5D), edge);
+                    Vertexes.color(buffer, last, (float) (Math.cos(a1) * 0.5D),
+                            10F * direction, (float) (Math.sin(a1) * 0.5D), edge);
                 }
             }
         });

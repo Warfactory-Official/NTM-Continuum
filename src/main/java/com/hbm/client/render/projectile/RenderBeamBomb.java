@@ -42,7 +42,7 @@ public final class RenderBeamBomb extends GemEntityRenderer<EntityB92Beam, Rende
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
         poseStack.mulPose(Axis.XN.rotationDegrees(state.pitch));
-        collector.submitCustomGeometry(poseStack, dev.golem.core.render.CompatRenderTypes.dragonRays(),
+        collector.submitCustomGeometry(poseStack, dev.golem.core.render.CompatRenderTypes.additiveDepthWrite(),
                 (pose, buffer) -> {
                     for (int layer = 0; layer <= LAYERS; layer++) {
                         float offset = RADIUS / LAYERS * layer;

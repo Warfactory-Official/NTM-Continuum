@@ -60,7 +60,7 @@ public class PlasmaForgeRenderer extends GemBER<TileEntityFusionPlasmaForge, Pla
         plasma = CompatRenderTypes.plasmaGlow(Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma.png"));
         glow = CompatRenderTypes.plasmaGlow(Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma_glow.png"));
         beam = CompatRenderTypes.plasmaGlow(Fluids.STELLAR_FLUX.getTexture());
-        plume = CompatRenderTypes.lightning();
+        plume = CompatRenderTypes.additive();
     }
 
     /**

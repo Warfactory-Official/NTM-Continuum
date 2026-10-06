@@ -131,7 +131,7 @@ public final class BatteryReddRenderer extends GemBER<TileEntityBatteryREDD, Bat
         if (span <= 0D) return;
         poseStack.pushPose();
         poseStack.translate(0D, 5.5D, 0D);
-        collector.submitCustomGeometry(poseStack, CompatRenderTypes.lightning(), (pose, buffer) -> {
+        collector.submitCustomGeometry(poseStack, CompatRenderTypes.additive(), (pose, buffer) -> {
             double length = 4.25D;
             double width = 0.125D;
             float[] alpha = {0.75F, 0.5F, 0.25F, 0F};

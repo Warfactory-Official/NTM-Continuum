@@ -124,7 +124,7 @@ public final class RBMKFuelRodRenderer<T extends BlockEntityRBMKRod> extends Gem
         if (state.flux > 5D) {
             pose.pushPose();
             pose.translate(0.5D, 0.75D, 0.5D);
-            sink.submitCustomGeometry(pose, CompatRenderTypes.lightning(), (last, buffer) -> {
+            sink.submitCustomGeometry(pose, CompatRenderTypes.additiveDepthWrite(), (last, buffer) -> {
                 for (float y = 0; y <= state.layers - 1; y += .25F) {
                     dev.golem.core.render.Vertexes.vertex(buffer, last, -.5F, y, -.5F, 0x1A66E6FF, 0, 0, OverlayTexture.NO_OVERLAY, 0, 0, 1, 0);
                     dev.golem.core.render.Vertexes.vertex(buffer, last, -.5F, y,  .5F, 0x1A66E6FF, 0, 0, OverlayTexture.NO_OVERLAY, 0, 0, 1, 0);

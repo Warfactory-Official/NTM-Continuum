@@ -88,7 +88,7 @@ public class RenderSiegeLaser extends CompatEntityRenderer<EntitySiegeLaser, Ren
         poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw - 90F));
         poseStack.mulPose(Axis.ZP.rotationDegrees(state.pitch + 180F));
         poseStack.scale(-0.5F, 0.25F, 0.25F);
-        sink.submitCustomGeometry(poseStack, CompatRenderTypes.dragonRays(),
+        sink.submitCustomGeometry(poseStack, CompatRenderTypes.additive(),
                 (pose, buffer) -> dart(buffer, pose, color));
         poseStack.popPose();
     }

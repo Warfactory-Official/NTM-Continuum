@@ -99,7 +99,7 @@ public final class ChemicalProjectileRenderer
         pose.mulPose(Axis.YP.rotationDegrees(yaw));
         pose.mulPose(Axis.XP.rotationDegrees(-pitch - 90F));
         final float beamLength = (float) length;
-        collector.submitCustomGeometry(pose, CompatRenderTypes.dragonRays(), (last, buffer) -> {
+        collector.submitCustomGeometry(pose, CompatRenderTypes.additiveTriangles(), (last, buffer) -> {
             float radius = 0.0625F;
             int near = 0x33FFFFFF;
             int far = 0x00FFFFFF;

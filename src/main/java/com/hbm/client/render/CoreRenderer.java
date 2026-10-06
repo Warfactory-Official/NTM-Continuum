@@ -21,9 +21,10 @@ import java.util.Random;
  * is a pulsing shell of nested spheres tinted by the two catalysts and sized by how much fuel is in it;
  * melting down it is the ray burst.
  *
- * <p>All three passes are untextured additive geometry upstream, drawn with texturing switched off. Here
- * they go through {@code dragonRays()}, the modern pipeline with the same blend, no depth write and no
- * cull — the same substitution {@link BeamPronter} makes.
+ * <p>All three passes are untextured additive geometry upstream, drawn with texturing switched off and culling
+ * on. The spheres also write depth: {@code lightning()} (quads, culled, depth write; the spheres arrive as
+ * degenerate quads). The rays are triangles with no depth write: {@code dragonRays()}. Upstream draws the
+ * innermost sphere opaque; there is no opaque untextured type yet, so it is additive here.
  */
 public class CoreRenderer implements CompatBER<TileEntityCore, CoreRenderState> {
 
@@ -69,19 +70,20 @@ public class CoreRenderer implements CompatBER<TileEntityCore, CoreRenderState> 
 
     /** The cold core: a dull ball in a faint blue halo, arcing now and then. */
     private void standby(CoreRenderState s, PoseStack ps, SubmitSink col) {
-        RenderType type = CompatRenderTypes.dragonRays();
+        RenderType type = CompatRenderTypes.lightning();
 
         ps.pushPose();
         ps.scale(0.25F, 0.25F, 0.25F);
-        submitSphere(ps, col, type, sphere, 0x808080);
+        submitSphere(ps, col, type, sphere, 0xFF808080);
         ps.scale(1.25F, 1.25F, 1.25F);
-        submitSphere(ps, col, type, sphere, 0x1A3366);
+        // 1.7 glColor3f(0.1F, 0.1F, 0.1F): a grey halo, alpha 1.
+        submitSphere(ps, col, type, sphere, 0xFF1A1A1A);
         ps.popPose();
 
         if (!s.spark) return;
 
         int seed = (int) (s.gameTime / 2L);
-        col.submitCustomGeometry(ps, type, (pose, buffer) -> {
+        col.submitCustomGeometry(ps, CompatRenderTypes.dragonRays(), (pose, buffer) -> {
             for (int i = 0; i < 3; i++) {
                 arc(pose, buffer, seed + i * 10_000, 1.5F, 0x00FFFF);
                 arc(pose, buffer, seed * 2 + i * 10_000, 3F, 0x00FFFF);
@@ -91,7 +93,7 @@ public class CoreRenderer implements CompatBER<TileEntityCore, CoreRenderState> 
 
     /** The running core: nested shells breathing on the old arctangent pulse. */
     private void orb(CoreRenderState s, PoseStack ps, SubmitSink col) {
-        RenderType type = CompatRenderTypes.dragonRays();
+        RenderType type = CompatRenderTypes.lightning();
         int tint = dim(s.color, 0.4F);
 
         ps.pushPose();
@@ -227,6 +229,7 @@ public class CoreRenderer implements CompatBER<TileEntityCore, CoreRenderState> 
         int r = (int) ((color >> 16 & 0xFF) * factor);
         int g = (int) ((color >> 8 & 0xFF) * factor);
         int b = (int) ((color & 0xFF) * factor);
-        return r << 16 | g << 8 | b;
+        // glColor3f leaves alpha at 1; with SRC_ALPHA/ONE an alpha of 0 draws nothing.
+        return 0xFF000000 | r << 16 | g << 8 | b;
     }
 }

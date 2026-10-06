@@ -77,7 +77,7 @@ public final class RenderBreeder extends MachineObjRenderer<TileEntityMachineRea
 
         int outer = 0xFF000000 | (color1 & 0xFFFFFF);
         int inner = 0xFF000000 | (color2 & 0xFFFFFF);
-        sink.submitCustomGeometry(poseStack, CompatRenderTypes.lightning(), (pose, buffer) -> {
+        sink.submitCustomGeometry(poseStack, CompatRenderTypes.additive(), (pose, buffer) -> {
             for (int i = 0; i < segments; i++) {
                 ribbon(buffer, pose, points[i], points[i + 1], 0.03F, outer);
                 ribbon(buffer, pose, points[i], points[i + 1], 0.012F, inner);

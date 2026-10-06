@@ -59,7 +59,7 @@ public class DemonLampRenderer extends GemBER<DemonLamp.TileEntityDemonLamp, Dem
     protected void submitUndeclared(State state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
         poseStack.pushPose();
         dev.golem.core.render.Poses.mulPose(poseStack, orient(state.facing));
-        sink.submitCustomGeometry(poseStack, CompatRenderTypes.lightning(), (pose, buffer) -> {
+        sink.submitCustomGeometry(poseStack, CompatRenderTypes.additive(), (pose, buffer) -> {
             Vec3 vec = new Vec3(1, 0, 0);
             double near = 0.375D;
             double far = 15D;

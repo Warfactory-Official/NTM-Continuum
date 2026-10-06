@@ -65,7 +65,7 @@ public final class RenderSmallReactor extends GemBER<TileEntityReactorResearch, 
         poseStack.translate(0.5D, 0D, 0.5D);
         float alpha = 0.025F + state.random * 0.015F + (0.125F * state.totalFlux / 1000F);
         int color = argb(alpha, 0.4F, 0.9F, 1.0F);
-        sink.submitCustomGeometry(poseStack, CompatRenderTypes.lightning(), (pose, buffer) -> {
+        sink.submitCustomGeometry(poseStack, CompatRenderTypes.additiveDepthWrite(), (pose, buffer) -> {
             for (double dd = 0.285; dd < 0.7; dd += 0.025) {
                 float d = (float) dd;
                 float top = 1.375F, bottom = 1.375F;

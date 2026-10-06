@@ -13,9 +13,10 @@ import java.util.Random;
 /**
  * The 1.12.2 {@code BeamPronter} SOLID/STRAIGHT beam, ported to the 26.1 submit API. The original drew
  * layered concentric quad prisms (4 axis-plane quads per layer) in POSITION_COLOR with additive blending,
- * no depth write and no cull; {@code CompatRenderTypes.dragonRays()} is the exact modern pipeline match
- * (POSITION_COLOR triangles, {@code BlendFunction.LIGHTNING} additive, depth-write OFF). The source
- * emitted each quad once with culling disabled, so the submit path does not duplicate its additive energy.
+ * no depth write and {@code glDisable(GL_CULL_FACE)}; {@code CompatRenderTypes.additiveTriangles()} is that state.
+ * Not {@code dragonRays()}: it culls, and the prism faces are not consistently wound (opposite faces share a
+ * vertex order), so a culled beam lost faces by view direction and faded out as the camera circled it.
+ * The source emitted each quad once with culling disabled, so the submit path does not duplicate its additive energy.
  *
  * <p>The legacy helper also emitted randomized/spiral line beams. Those use the same thin crossed-prism
  * geometry here because the modern lightning pipeline does not expose the old immediate-mode line width.
@@ -44,7 +45,7 @@ public final class BeamPronter {
         ps.mulPose(Axis.YP.rotationDegrees(180));
         ps.mulPose(Axis.YP.rotationDegrees(sYaw));
         ps.mulPose(Axis.XP.rotationDegrees(sPitch - 90));
-        collector.submitCustomGeometry(ps, CompatRenderTypes.dragonRays(),
+        collector.submitCustomGeometry(ps, CompatRenderTypes.additiveTriangles(),
                 (pose, buffer) -> gradientPrism(pose, buffer, startColor, endColor,
                         (float) skeleton.length(), thickness));
         ps.popPose();
@@ -60,7 +61,7 @@ public final class BeamPronter {
         ps.mulPose(Axis.YP.rotationDegrees(180));
         ps.mulPose(Axis.YP.rotationDegrees(sYaw));
         ps.mulPose(Axis.XP.rotationDegrees(sPitch - 90));
-        collector.submitCustomGeometry(ps, CompatRenderTypes.dragonRays(),
+        collector.submitCustomGeometry(ps, CompatRenderTypes.additiveTriangles(),
                 (pose, buffer) -> bulletPrism(pose, buffer, startColor, endColor,
                         (float) skeleton.length(), muzzleWidth, endpointWidth));
         ps.popPose();
@@ -75,7 +76,7 @@ public final class BeamPronter {
     public static void prontBulletStandard(PoseStack ps, SubmitSink collector, double length,
                                            int darkColor, int lightColor) {
         if (length <= 0D) return;
-        collector.submitCustomGeometry(ps, CompatRenderTypes.dragonRays(),
+        collector.submitCustomGeometry(ps, CompatRenderTypes.additiveTriangles(),
                 (pose, buffer) -> bulletRibbon(pose, buffer, (float) length,
                         0.03125F, 0.0078125F, lightColor, darkColor));
     }
@@ -100,11 +101,11 @@ public final class BeamPronter {
         float segmentLength = (float) skeleton.length() / segmentCount;
 
         if (beam == EnumBeamType.LINE) {
-            collector.submitCustomGeometry(ps, CompatRenderTypes.lightning(),
+            collector.submitCustomGeometry(ps, CompatRenderTypes.additiveTriangles(),
                     (pose, buffer) -> drawLineBeam(pose, buffer, wave, start, size, segmentCount, segmentLength,
                             outerColor, innerColor));
         } else {
-            collector.submitCustomGeometry(ps, CompatRenderTypes.dragonRays(),
+            collector.submitCustomGeometry(ps, CompatRenderTypes.additiveTriangles(),
                     (pose, buffer) -> drawSolidBeam(pose, buffer, wave, start, size, layers, thickness,
                             segmentCount, segmentLength, outerColor, innerColor));
         }
@@ -207,12 +208,6 @@ public final class BeamPronter {
         vert(pose, buffer, startColor, ax, ay, az);
         vert(pose, buffer, endColor, cx, cy, cz);
         vert(pose, buffer, endColor, dx, dy, dz);
-        vert(pose, buffer, endColor, cx, cy, cz);
-        vert(pose, buffer, startColor, bx, by, bz);
-        vert(pose, buffer, startColor, ax, ay, az);
-        vert(pose, buffer, endColor, dx, dy, dz);
-        vert(pose, buffer, endColor, cx, cy, cz);
-        vert(pose, buffer, startColor, ax, ay, az);
     }
 
     private static void bulletPrism(PoseStack.Pose pose, VertexConsumer buffer, int startColor,
@@ -233,7 +228,7 @@ public final class BeamPronter {
 
     private static void bulletRibbon(PoseStack.Pose pose, VertexConsumer buffer, float length,
                                      float headWidth, float tailWidth, int headColor, int tailColor) {
-        // The source renderBulletStandard ribbon is endpoint-first. Keep both planes unculled so the
+        // The source renderBulletStandard ribbon is endpoint-first. Both planes are drawn unculled so the
         // additive pass remains visible from the same angles as the source's screen-facing ribbon.
         gradientQuad(pose, buffer, headColor, tailColor,
                 0F, -headWidth, 0F, 0F, headWidth, 0F,

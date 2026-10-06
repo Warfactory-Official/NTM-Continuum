@@ -30,7 +30,7 @@ public final class RadGenRenderer extends GemBER<TileEntityMachineRadGen, RadGen
             Constants.MOD_ID + ":textures/models/machines/rad_gen_body.png");
     private final Surface glass = Surface.translucent(
             Constants.MOD_ID + ":textures/models/machines/rad_gen_body.png");
-    private final RenderType lightType = CompatRenderTypes.lightning();
+    private final RenderType lightType = CompatRenderTypes.additiveDepthWrite();
 
     @Override
     protected void setup(Gem.Model<RadGenRenderState> declaration) {
