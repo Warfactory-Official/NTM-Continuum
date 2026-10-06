@@ -105,7 +105,15 @@ public final class ModGlassBlocks {
     }
 
     private static Reg.Handle<BlockRadResistant> resistantGlass(String id) {
-        return REG.block(id, BlockRadResistant::new,
+        return REG.block(id, p -> new BlockRadResistant(p) {
+                    // 1.7 BlockNTMGlassCT is a BlockBreakable(.., false): faces against the same glass are not drawn
+                    @Override
+                    public boolean skipRendering(net.minecraft.world.level.block.state.BlockState state,
+                                                 net.minecraft.world.level.block.state.BlockState adjacent,
+                                                 net.minecraft.core.Direction side) {
+                        return adjacent.is(this) || super.skipRendering(state, adjacent, side);
+                    }
+                },
                 p -> p.strength(0.3F).sound(SoundType.GLASS).noOcclusion()
                         .isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false));
     }

@@ -30,4 +30,13 @@ public class BlockNTMGlass extends Block implements com.hbm.interfaces.IRadResis
     public boolean isRadResistant(net.minecraft.world.level.BlockGetter level, net.minecraft.core.BlockPos pos) {
         return radResistant;
     }
+
+    /**
+     * 1.7 {@code BlockBreakable(name, material, false)}: a face against the same glass is not drawn, so a wall reads
+     * as one pane (and the connected-texture border only shows on its outside).
+     */
+    @Override
+    public boolean skipRendering(BlockState state, BlockState adjacent, net.minecraft.core.Direction side) {
+        return adjacent.is(this) || super.skipRendering(state, adjacent, side);
+    }
 }

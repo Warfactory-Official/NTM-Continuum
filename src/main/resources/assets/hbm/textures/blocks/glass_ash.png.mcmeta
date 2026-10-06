@@ -1,9 +1,0 @@
-{
-	"ctm": {
-		"ctm_version": 1,
-		"type": "CTM",
-		"textures": [
-			"hbm:blocks/glass_ash_ctm"
-		]
-	}
-}

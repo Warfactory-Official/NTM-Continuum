@@ -279,7 +279,7 @@ public final class FinalGapsC implements Scenario {
 
     private void connected(Client c) {
         JsonObject ct = q(c);
-        Expect.that(ct.get("ct_registered").getAsInt() == 12, "12 connected-texture blocks: " + ct.get("ct_registered"));
+        Expect.that(ct.get("ct_registered").getAsInt() == 45, "45 connected-texture blocks (1.7 IBlockCT set): " + ct.get("ct_registered"));
         int wz = Z + 14;
         String[] walls = {"hbm:hadron_coil_alloy", "hbm:hadron_coil_mese", "hbm:red_wire_coated", "hbm:icf_block",
                 "hbm:pwr_block"};

@@ -125,8 +125,9 @@ public final class RenderInputClientRegistrations {
             dev.golem.core.render.Particles.add(new com.hbm.client.particle.ParticleHadron(client, x, y, z).makeSmall(small));
         });
         com.hbm.client.GapsCHarnessQueries.register(); // harness query hbm_gapsc (FinalGapsC)
+        com.hbm.client.ConnectedTextureHarnessQueries.register(); // harness query hbm_ct (ConnectedTextures17)
         com.hbm.client.IconAuditHarnessQueries.register(); // harness query hbm_icon_audit (ItemIconAudit)
-        // 1.7 IBlockCT connected textures: hadron coils, coated wire, ICF and PWR shells
+        // 1.7 IBlockCT connected textures: hadron coils, coated wire, ICF/PWR shells, deco metals, CT glass, platemetal, pile
         com.hbm.client.ConnectedTextureRegistrations.register();
         // 1.7 RenderOverhead markers ("marker" aux effect) and ParticleText ("debug")
         com.hbm.client.render.RenderOverhead.register();
