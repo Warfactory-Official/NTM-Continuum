@@ -151,6 +151,7 @@ public class EntityEffectHandler {
         ArmorDNT.updateSprintSpeed(player);
         com.hbm.items.ModArmorSetBItems.tickPlayer(player); // steam/diesel modifiers, mining helmet, beta
         ArmorDashHandler.tick(player); // 1.7 handleDashing: bismuth suit / dash modules
+        SpecialPlayers.tick(player); // 1.7 onWingFlop + PU RADIATION (ShadyUtil players)
         if (player instanceof ServerPlayer serverPlayer) JetpackHandler.serverTick(serverPlayer);
     }
 

@@ -131,6 +131,9 @@ public class HazmatRegistry {
     public static float getResistance(LivingEntity entity) {
         float res = 0.0F;
 
+        // 1.7: Pu_238 carries 0.4 of his own
+        if (com.hbm.util.ShadyUtil.is(entity.getUUID(), com.hbm.util.ShadyUtil.Pu_238)) res += 0.4F;
+
         if (entity instanceof Player player) {
             res += (float) getResistance(player.getItemBySlot(EquipmentSlot.HEAD));
             res += (float) getResistance(player.getItemBySlot(EquipmentSlot.CHEST));

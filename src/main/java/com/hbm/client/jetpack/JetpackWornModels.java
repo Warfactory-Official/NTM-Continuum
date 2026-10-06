@@ -9,6 +9,7 @@ import dev.golem.core.render.gem.Surface;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
@@ -33,6 +34,14 @@ public final class JetpackWornModels {
 
     private static final Surface BJ = Surface.cutoutCull("hbm:textures/armor/bj_jetpack.png");
     private static final Surface WINGS = Surface.cutoutCull("hbm:textures/armor/wings_murk.png");
+    /** 1.7 {@code ModelArmorWings} types 2 and 3: Bob's and the_NCR's own wings ({@code SpecialPlayerRenderLayer}). */
+    public static final Surface WINGS_BOB = Surface.cutoutCull("hbm:textures/armor/wings_bob.png");
+    public static final Surface WINGS_BLACK = Surface.cutoutCull("hbm:textures/armor/wings_black.png");
+    // 1.7 drew these two inside the living renderer's disabled face culling and never re-enabled it
+    private static final Surface AXEPACK = Surface.cutoutNoCull("hbm:textures/armor/axepack.png");
+    private static final Surface TAIL = Surface.cutoutNoCull("hbm:textures/armor/tail_peep.png");
+    static final Identifier AXEPACK_MODEL = Ids.of("hbm", "models/armor/wings_pheo.obj");
+    static final Identifier TAIL_MODEL = Ids.of("hbm", "models/armor/tail_peep.obj");
 
     private static final Map<String, Surface> PACKS = new ConcurrentHashMap<>();
 
@@ -54,6 +63,8 @@ public final class JetpackWornModels {
     private static @Nullable JetpackWornModels standard;
     private static @Nullable JetpackWornModels bj;
     private static @Nullable JetpackWornModels wings;
+    private static @Nullable JetpackWornModels axePack;
+    private static @Nullable JetpackWornModels tail;
 
     public static JetpackWornModels standard() {
         if (standard == null) standard = new JetpackWornModels(declareStandard());
@@ -70,11 +81,25 @@ public final class JetpackWornModels {
         return wings;
     }
 
+    /** 1.7 {@code ModelArmorWingsPheo}'s pack (its flames are drawn by the caller). */
+    public static JetpackWornModels axePack() {
+        if (axePack == null) axePack = new JetpackWornModels(declareRooted(AXEPACK_MODEL, AXEPACK));
+        return axePack;
+    }
+
+    /** 1.7 {@code ModelArmorTailPeep}. */
+    public static JetpackWornModels tail() {
+        if (tail == null) tail = new JetpackWornModels(declareRooted(TAIL_MODEL, TAIL));
+        return tail;
+    }
+
     /** A declaration holds the meshes it names, so a reload has to rebuild the tree to pick them up. */
     public static void clear() {
         standard = null;
         bj = null;
         wings = null;
+        axePack = null;
+        tail = null;
     }
 
     /** The colour a standard pack wears, by the name the item's path resolves to. */
@@ -137,6 +162,16 @@ public final class JetpackWornModels {
         return declaration.seal();
     }
 
+    /** {@code body.copyTo(part); part.render(scale)}: the whole mesh riding the torso bone. */
+    private static Gem.Model<Pose> declareRooted(Identifier model, Surface surface) {
+        WavefrontObj obj = WavefrontObj.load(model);
+        Gem.Model<Pose> declaration = Gem.model();
+        declaration.part(obj.all(), surface)
+                .pose(state -> rooted(state.bone))
+                .scale(PIXEL);
+        return declaration.seal();
+    }
+
     private static Gem.Model<Pose> declareWings() {
         WavefrontObj obj = WavefrontObj.load(JetpackClientVisuals.WINGS_MODEL);
         Gem.Model<Pose> declaration = Gem.model();
@@ -164,13 +199,18 @@ public final class JetpackWornModels {
                 .translate(pivotX, pivotY, pivotZ)
                 .angle(Gem.Axes.Z, state -> state.sweep * side)
                 .translate(-pivotX, -pivotY, -pivotZ);
-        base.child(obj.part(name + "Base"), WINGS).scale(PIXEL);
+        base.child(obj.part(name + "Base"), WINGS).skin(JetpackWornModels::wingSkin).scale(PIXEL);
 
         Gem.Part<Pose> tip = base.joint()
                 .translate(TIP_SIDE * PIXEL * side, pivotY, TIP_Z * PIXEL)
                 .angle(Gem.Axes.Y, state -> state.trail * side)
                 .angle(Gem.Axes.Z, state -> (state.trail * 0.25F + 5F) * side)
                 .translate(-TIP_SIDE * PIXEL * side, -pivotY, -TIP_Z * PIXEL);
-        tip.child(obj.part(name + "Tip"), WINGS).scale(PIXEL);
+        tip.child(obj.part(name + "Tip"), WINGS).skin(JetpackWornModels::wingSkin).scale(PIXEL);
+    }
+
+    /** Murk and limp wings pass no skin (1.7's default {@code wings_murk}); the special players pass theirs. */
+    private static Surface wingSkin(Pose state) {
+        return state.skin == null ? WINGS : state.skin;
     }
 }

@@ -694,7 +694,8 @@ public final class JetpackHandler {
 
     /** Server tick: drain glider fuel, persist its state and replicate state to tracking clients. */
     public static void serverTick(ServerPlayer player) {
-        if (player == null || player.isRemoved() || !hasFlightGear(player)) {
+        // Bob, the_NCR and Pheo fly on their own wings (SpecialPlayers) and keep the C/jump state without gear
+        if (player == null || player.isRemoved() || !hasFlightGear(player) && !SpecialPlayers.hasInnateFlight(player)) {
             remove(player);
             return;
         }
@@ -709,7 +710,7 @@ public final class JetpackHandler {
             if (info.thrust < 0.0001F) drain = 0;
             if (drain > 0) drainGlider(glider, drain);
         }
-        if (player.getDeltaMovement().y > -0.5D) player.fallDistance = 0;
+        if (hasFlightGear(player) && player.getDeltaMovement().y > -0.5D) player.fallDistance = 0;
         if (glider.stack() != null) {
             if (saveStateToStack(glider.stack(), info) && glider.outer() != null) {
                 ArmorModHandler.applyMod(glider.outer(), glider.stack());

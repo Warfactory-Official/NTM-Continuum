@@ -50,6 +50,16 @@ public final class HbmGameTestFunctions {
             TESTS.function("jetpack_bj_glider", 20, () -> JetpackGameTests::bjGliderMotionIncludesVerticalBrake);
     public static final GameTests.Function JETPACK_MURK_STRAFE =
             TESTS.function("jetpack_murk_strafe", 20, () -> JetpackGameTests::murkStrafeUsesLegacyPositiveRotation);
+    public static final GameTests.Function SPECIAL_PLAYERS_CAPES =
+            TESTS.function("special_players_capes", 20, () -> SpecialPlayerGameTests::capes);
+    public static final GameTests.Function SPECIAL_PLAYERS_WING_FLOP =
+            TESTS.function("special_players_wing_flop", 20, () -> SpecialPlayerGameTests::wingFlop);
+    public static final GameTests.Function SPECIAL_PLAYERS_PU_RADIATION =
+            TESTS.function("special_players_pu_radiation", 20, () -> SpecialPlayerGameTests::puRadiation);
+    public static final GameTests.Function SPECIAL_PLAYERS_PEEP_SPRINT =
+            TESTS.function("special_players_peep_sprint", 20, () -> SpecialPlayerGameTests::peepSprint);
+    public static final GameTests.Function SPECIAL_PLAYERS_BOBBLEHEADS =
+            TESTS.function("special_players_bobbleheads", 20, () -> SpecialPlayerGameTests::bobbleheads);
     public static final GameTests.Function JETPACK_STATE_SCOPE =
             TESTS.function("jetpack_state_scope", 20, () -> JetpackGameTests::stateScopeCleansOnLevelRemoval);
     public static final GameTests.Function JETPACK_SMOKE_CLEANUP =

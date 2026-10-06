@@ -411,6 +411,23 @@ public final class JetpackClientVisuals {
         JetpackWornModels.wings().submit(pose, sink, light, parts.body(), null, sweep, trail);
     }
 
+    /**
+     * 1.7 {@code RenderAccessoryUtility.renderWings(event, mode)}: {@code ModelArmorWings} types 2 (Bob) and 3
+     * (the_NCR), which flap like murk wings in a skin of their own.
+     */
+    public static void submitWings(PoseStack pose, SubmitSink sink, int light, HumanoidPose parts,
+            dev.golem.core.render.gem.Surface skin) {
+        Player player = parts.player();
+        if (player == null) return;
+        float sweep = (float) Math.sin(player.tickCount * 0.2D) * 20F;
+        float trail = (float) Math.sin(player.tickCount * 0.2D - Math.PI * 0.5D) * 50F + 30F;
+        if (player.onGround()) {
+            sweep = 20F;
+            trail = 160F;
+        }
+        JetpackWornModels.wings().submit(pose, sink, light, parts.body(), skin, sweep, trail);
+    }
+
     public static void submitLocalEffects(PoseStack pose, CameraInfo camera,
             boolean sneaking, Player player) {
         if (!WorldEffects.isCollecting() || player == null || !GLIDER.equals(kind(player))) return;

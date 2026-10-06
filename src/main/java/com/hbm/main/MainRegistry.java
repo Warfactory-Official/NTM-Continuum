@@ -210,6 +210,7 @@ public final class MainRegistry {
         com.hbm.advancement.AdvancementCommandContent.init(); // 1.7 achievements as advancements (triggers, icons) + ntm* commands
         com.hbm.world.gen.ModFeatures.init(); // worldgen feature types (1.7 ores, strata, MapGen terrain, surface features)
         com.hbm.handler.BossSpawnHandler.init(); // 1.7 meteor strikes and showers, rolled every level tick
+        com.hbm.handler.SpecialPlayers.init(); // 1.7 onPlayerRespawn: Dr_Nostalgia's hat and Beta
         com.hbm.extprop.HbmPlayerProps.init(); // 1.7 onPlayerClone: reputation, shield, fbi/rad marks survive respawn
         com.hbm.world.gen.NTMWorldGenerator.init(); // NBT structures: hbm:nbt structure type, piece type, 1.7 spawn registrations
         com.hbm.world.gen.NTMComponentStructures.init(); // features/bunker/meteor_dungeon spawns + hardcoded piece types (WG-C)

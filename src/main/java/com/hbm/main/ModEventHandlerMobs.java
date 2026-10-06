@@ -43,9 +43,6 @@ public final class ModEventHandlerMobs {
 
     private ModEventHandlerMobs() {}
 
-    /** 1.7 {@code ShadyUtil.HbMinecraft}. */
-    public static final String HB_MINECRAFT = "192af5d7-ed0f-48d8-bd89-9d41af8524f8";
-
     public static void init() {
         Deaths.install();
         Deaths.onDeath(ModEventHandlerMobs::onEntityDeath);
@@ -69,7 +66,7 @@ public final class ModEventHandlerMobs {
         }
 
         // 1.7 also matches any entity whose name is "HbMinecraft" (a name tag will do)
-        if (entity.getUUID().toString().equals(HB_MINECRAFT) || entity.getName().getString().equals("HbMinecraft")) {
+        if (com.hbm.util.ShadyUtil.is(entity, com.hbm.util.ShadyUtil.HbMinecraft, "HbMinecraft")) {
             drop(entity, level, com.hbm.items.ModMeleeKitItems.book_of_.get());
         }
 

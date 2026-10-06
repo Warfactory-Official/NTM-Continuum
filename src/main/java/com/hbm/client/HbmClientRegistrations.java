@@ -394,6 +394,11 @@ public final class HbmClientRegistrations {
                 com.hbm.client.jetpack.JetpackRenderLayer::new);
         dev.golem.core.render.HumanoidLayers.register(com.hbm.client.render.armor.ArmorModRenderLayer::new);
         dev.golem.core.render.HumanoidLayers.register(com.hbm.client.render.armor.WornModelRenderLayer::new); // final armor B: goggles, glasses, hat, no9
+        // 1.7 RenderAccessoryUtility: special players' wings, axe pack and tail, and the HBM capes
+        dev.golem.core.render.HumanoidLayers.register(com.hbm.client.render.util.SpecialPlayerRenderLayer::new);
+        dev.golem.core.client.Capes.register(com.hbm.client.render.util.RenderAccessoryUtility::getCloakFromPlayer);
+        SpecialPlayerHarnessQueries.register();
+        com.hbm.client.render.RenderBobble.preloadSkins(); // old-hbm ClientHttpHandler.preinit: skinned bobbleheads
         ArmorModHarnessQueries.register();
         StructureHarnessQueries.register(); // harness query hbm_structure: NBT structure starts, placement score, loot state
         WorldFeatureHarnessQueries.register(); // harness query hbm_worldgen: block counts/finds, biome, meteor scheduler

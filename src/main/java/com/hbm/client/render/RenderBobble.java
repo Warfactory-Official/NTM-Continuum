@@ -74,6 +74,20 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
     private final WavefrontObj shimmerAxe = WavefrontObj.load(tex("models/shimmer_axe.obj"));
     private final WavefrontObj fatman = WavefrontObj.load(tex("models/weapons/fatman.obj"));
     private final WavefrontObj doubleBarrel = WavefrontObj.load(tex("models/weapons/sacred_dragon.obj"));
+    private final WavefrontObj leafia = WavefrontObj.load(tex("models/trinkets/leafia.obj"));
+
+    /** old-hbm {@code skinModelCache}: one voxelized figure per skin, built the first frame the skin is in. */
+    private static final java.util.Map<java.util.UUID, com.hbm.client.render.skinlayer.BobbleSkinModel> SKIN_MODELS =
+            new java.util.HashMap<>();
+    private static final Identifier GRAY_SKIN = tex("bobble_gray_skin");
+    private static boolean grayRegistered;
+
+    /** old-hbm {@code ClientHttpHandler.preinit}: start fetching every skinned figure's skin at client start. */
+    public static void preloadSkins() {
+        for (BobbleType type : BobbleType.VALUES) {
+            if (type.skinUuid != null) dev.golem.core.client.ProfileSkins.preload(java.util.UUID.fromString(type.skinUuid));
+        }
+    }
     private final Font font = Minecraft.getInstance().font;
 
     @Override
@@ -141,6 +155,8 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
             case PELLET -> renderPellet(pose, sink, skin, state);
             case FUMO -> renderFumo(pose, sink, skin, state, light);
             case DRILLGON -> part(pose, sink, bobble, CompatRenderTypes.entityCutoutCull(skin), "Drillgon", light);
+            case LEAFIA -> part(pose, sink, leafia, CompatRenderTypes.entityCutoutCull(skin), "thislooksbad", light);
+            case SKIN -> renderSkinGuy(pose, sink, state, light);
             case GUY -> renderGuy(pose, sink, skin, state, light);
         }
 
@@ -211,6 +227,31 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
         }
         pose.popPose();
         pose.popPose();
+    }
+
+    /**
+     * old-hbm {@code renderSkinGuy}: the figure voxelized from the person's Mojang skin, grey while it loads or if it
+     * cannot be fetched.
+     */
+    private void renderSkinGuy(PoseStack pose, SubmitSink sink, State state, int light) {
+        java.util.UUID id = java.util.UUID.fromString(BobbleType.of(state.type).skinUuid);
+        var loaded = dev.golem.core.client.ProfileSkins.get(id);
+        com.hbm.client.render.skinlayer.BobbleSkinModel model;
+        Identifier texture;
+        if (loaded != null) {
+            model = SKIN_MODELS.computeIfAbsent(id, k -> new com.hbm.client.render.skinlayer.BobbleSkinModel(loaded.argb()));
+            texture = loaded.texture();
+        } else {
+            dev.golem.core.client.ProfileSkins.preload(id);
+            if (!grayRegistered) {
+                dev.golem.core.client.DynamicTextures.register(GRAY_SKIN, 64, 64,
+                        com.hbm.client.render.skinlayer.BobbleSkinModel.GRAY_SKIN);
+                grayRegistered = true;
+            }
+            model = com.hbm.client.render.skinlayer.BobbleSkinModel.gray();
+            texture = GRAY_SKIN;
+        }
+        model.render(pose, sink, texture, state.time, BobbleFigure.pose(state.type), light);
     }
 
     private void renderPellet(PoseStack pose, SubmitSink sink, Identifier skin, State state) {

@@ -216,6 +216,8 @@ public class ItemCrucible extends ItemSwordCutter implements dev.golem.core.worl
             super.compatOnEntitySwing(stack, entity, hand);
             return false;
         }
+        // 1.7: Tankish's crucible is recharged by every swing (setItemDamage(0))
+        if (com.hbm.util.ShadyUtil.is(player.getUUID(), com.hbm.util.ShadyUtil.Tankish)) charge(stack);
         if (!doSpecialClick(player) && hand == InteractionHand.MAIN_HAND) {
             com.hbm.packet.CrucibleAnimPayload.send(player, com.hbm.packet.CrucibleAnimPayload.CSWING);
             // the client starts cSwing only while no swing runs (SWING_ROT x back at 0)
@@ -256,9 +258,14 @@ public class ItemCrucible extends ItemSwordCutter implements dev.golem.core.worl
     @Override
     protected void compatHurtEnemy(ItemStack stack, LivingEntity victim, LivingEntity attacker) {
         boolean server = !attacker.level().isClientSide();
+        // 1.7: a charged hit by "Tankish" / "Tankish020" returned before ItemSwordAbility.hitEntity, so it spent nothing
+        boolean tankish = attacker instanceof Player named && getCharges(stack) > 0
+                && (named.getName().getString().equals("Tankish") || named.getName().getString().equals("Tankish020"));
         if (!(doSpecialClick(attacker) && (!server || takeFreeHit(attacker)))) {
-            discharge(stack);
-            if (server && getCharges(stack) == 0) clearSpecialClick(attacker);
+            if (!tankish) {
+                discharge(stack);
+                if (server && getCharges(stack) == 0) clearSpecialClick(attacker);
+            }
             if (!attacker.level().isClientSide() && getCharges(stack) > 0 && !victim.isAlive()) {
                 int count = Math.min((int) Math.ceil(victim.getMaxHealth() / 3D), 250);
                 CompoundTag data = new CompoundTag();
@@ -272,6 +279,7 @@ public class ItemCrucible extends ItemSwordCutter implements dev.golem.core.worl
                 }
             }
         }
+        if (tankish) return;
         super.compatHurtEnemy(stack, victim, attacker);
         Tools.hurt(stack, 1, attacker);
     }

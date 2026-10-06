@@ -277,6 +277,20 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
     public static void handleTick(Player player) {
         updateInsertSpeed(player);
         updateStepSize(player);
+
+        // 1.7: the_NCR and Pheo always walk with the powered step while wearing any FSB chestplate (1.7 only called
+        // handleTick for one), in place of the suit's own. 1.7 compared a UUID with a String here, so it never fired;
+        // fixed as old-hbm did (user decision, 2026-10-06).
+        boolean step = true;
+        if (com.hbm.util.ShadyUtil.is(player.getUUID(), com.hbm.util.ShadyUtil.the_NCR)
+                || com.hbm.util.ShadyUtil.is(player.getUUID(), com.hbm.util.ShadyUtil.Barnaby99_x)) {
+            step = false;
+            if (player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).getItem() instanceof ArmorFSB
+                    && player.level().isClientSide() && player.onGround()) {
+                steppy(player, com.hbm.sound.ModSounds.STEP_POWERED.get());
+            }
+        }
+
         if (!hasFSBArmor(player)) return;
 
         ArmorFSB chestplate = chestplate(player);
@@ -292,7 +306,7 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
                     effect.isAmbient(), false, true));
         }
 
-        if (chestplate.step != null && player.level().isClientSide() && player.onGround()
+        if (step && chestplate.step != null && player.level().isClientSide() && player.onGround()
                 && !player.isShiftKeyDown()) {
             steppy(player, chestplate.step.get());
         }
