@@ -29,6 +29,7 @@ public final class VisualHarnessQueries {
         dev.golem.core.harness.HarnessQueryRegistry.register("hbm_torex", VisualHarnessQueries::torex);
         dev.golem.core.harness.HarnessQueryRegistry.register("hbm_haze", VisualHarnessQueries::haze);
         dev.golem.core.harness.HarnessQueryRegistry.register("hbm_swing", VisualHarnessQueries::swing);
+        com.hbm.client.render.LensBenchmark.register();
     }
 
     /** Client-side state of every Torex cloud: local tick, synced age, replay readiness and cloudlet count. */

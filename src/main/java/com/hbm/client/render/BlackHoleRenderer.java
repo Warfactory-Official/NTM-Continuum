@@ -72,7 +72,7 @@ public final class BlackHoleRenderer extends GemEntityRenderer<EntityBlackHole, 
         state.partialTicks = partialTicks;
         state.entityId = entity.getId();
         state.size = entity.getSize();
-        state.lensed = SceneWarp.isConfigured();
+        state.lensed = SceneWarp.isConfigured() && LensBenchmark.lensAllowed();
     }
 
     @Override
@@ -84,8 +84,10 @@ public final class BlackHoleRenderer extends GemEntityRenderer<EntityBlackHole, 
         if (lens != null) {
             // the shader ray-traces the disc or swirl and the jets
             lens.submitField(entity, pose, state.partialTicks);
+            LensBenchmark.lensDrawn();
             return;
         }
+        LensBenchmark.fallbackDrawn();
         pose.pushPose();
         pose.scale(entity.getSize(), entity.getSize(), entity.getSize());
         // 1.7 RenderBlackHole.doRender: Vortex swirl; RagingVortex (a sibling, not a Vortex) swirl + jets;
@@ -129,7 +131,7 @@ public final class BlackHoleRenderer extends GemEntityRenderer<EntityBlackHole, 
         }
 
         private static Lens of(EntityBlackHole entity, PoseStack pose) {
-            if (!WorldEffects.isCollecting() || !SceneWarp.isConfigured()) return null;
+            if (!WorldEffects.isCollecting() || !SceneWarp.isConfigured() || !LensBenchmark.lensAllowed()) return null;
             float size = entity.getSize();
             if (size <= 0F) return null;
             Matrix4f baseToView = new Matrix4f(pose.last().pose());
