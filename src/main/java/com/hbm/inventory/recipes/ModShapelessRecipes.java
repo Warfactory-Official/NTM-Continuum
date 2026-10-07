@@ -1044,7 +1044,7 @@ public final class ModShapelessRecipes {
                 ItemIds.tile_lab_cracked_slab, ItemIds.tile_lab_cracked_slab);
         shapeless(NS, "trapdoor_steel", ItemIds.trapdoor_steel, TagIds.minecraft_wooden_trapdoors, TagIds.ingots_steel);
         shapeless(NS, "vinyl_tile_large_1", ItemIds.vinyl_tile_large, ItemIds.vinyl_tile_small);
-        shapeless(NS, "waste_trinitite", ItemIds.waste_trinitite, TagIds.minecraft_sand, ItemIds.trinitite);
-        shapeless(NS, "waste_trinitite_red", ItemIds.waste_trinitite_red, TagIds.minecraft_sand, ItemIds.trinitite);
+        shapeless(NS, "waste_trinitite", ItemIds.waste_trinitite, VanillaIds.sand, ItemIds.trinitite);
+        shapeless(NS, "waste_trinitite_red", ItemIds.waste_trinitite_red, VanillaIds.red_sand, ItemIds.trinitite);
     }
 }

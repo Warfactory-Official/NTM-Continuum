@@ -583,11 +583,11 @@ public final class ModAbilityToolItems {
 
     // --- meteorite ---
     public static final RegistryObject<ItemHot> ingot_meteorite = reg("ingot_meteorite", HbmTab.MATERIALS,
-            p -> new ItemHot(p, 200), hot());
+            p -> new ItemHot(p, ItemHot.LEGACY_HEAT), hot());
     public static final RegistryObject<ItemHot> ingot_meteorite_forged = reg("ingot_meteorite_forged", HbmTab.MATERIALS,
-            p -> new ItemHot(p, 200), hot());
+            p -> new ItemHot(p, ItemHot.LEGACY_HEAT), hot());
     public static final RegistryObject<ItemHot> blade_meteorite = reg("blade_meteorite", HbmTab.MATERIALS,
-            p -> new ItemHot(p, 200), hot());
+            p -> new ItemHot(p, ItemHot.LEGACY_HEAT), hot());
 
     public static final RegistryObject<ItemSwordMeteorite> meteorite_sword = meteorite("meteorite_sword", 9F);
     public static final RegistryObject<ItemSwordMeteorite> meteorite_sword_seared = meteorite("meteorite_sword_seared", 10F);

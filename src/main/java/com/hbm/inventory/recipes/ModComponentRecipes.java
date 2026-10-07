@@ -1,6 +1,7 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.items.special.CellVariants;
+import com.hbm.items.special.ItemHot;
 import com.hbm.lib.ComponentIds;
 import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
@@ -291,13 +292,13 @@ public final class ModComponentRecipes {
 
     private static void smelting() {
         componentSmelt(NS, "ingot_chainsteel", item(ItemIds.ingot_chainsteel),
-                stack(ItemIds.ingot_chainsteel).with(ComponentIds.heat, 200), 0.0);
+                stack(ItemIds.ingot_chainsteel).with(ComponentIds.heat, ItemHot.LEGACY_HEAT), 0.0);
         // 1.7 metadata = forge count: hbm:forge_count, absent on an unforged ingot (History §19es-itemvariant)
         componentSmelt(NS, "ingot_steel_dusted", item(ItemIds.ingot_steel_dusted).without(FORGE_COUNT),
-                stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, 200), 1.0);
+                stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, ItemHot.LEGACY_HEAT), 1.0);
         for (int count = 1; count <= 9; count++) {
             componentSmelt(NS, "ingot_steel_dusted_" + count, item(ItemIds.ingot_steel_dusted).with(FORGE_COUNT, count),
-                    stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, 200).with(FORGE_COUNT, count), 1.0);
+                    stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, ItemHot.LEGACY_HEAT).with(FORGE_COUNT, count), 1.0);
         }
     }
 
@@ -312,7 +313,7 @@ public final class ModComponentRecipes {
                 ItemIds.rod_zirnox_empty,
                 ItemIds.rod_zirnox_empty, ItemIds.billet_uranium, ItemIds.billet_uranium);
         copyShapeless(NS, "rod_zirnox_plutonium_fuel", ItemIds.rod_zirnox_plutonium_fuel, ItemIds.rod_zirnox_empty,
-                ItemIds.rod_zirnox_empty, ItemIds.billet_plutonium, ItemIds.billet_plutonium);
+                ItemIds.rod_zirnox_empty, ItemIds.billet_plutonium_fuel, ItemIds.billet_plutonium_fuel);
         copyShapeless(NS, "rod_zirnox_th232_fuel", ItemIds.rod_zirnox_th232_fuel, ItemIds.rod_zirnox_empty,
                 ItemIds.rod_zirnox_empty, ItemIds.billet_th232, ItemIds.billet_th232);
         copyShapeless(NS, "rod_zirnox_thorium_fuel", ItemIds.rod_zirnox_thorium_fuel, ItemIds.rod_zirnox_empty,

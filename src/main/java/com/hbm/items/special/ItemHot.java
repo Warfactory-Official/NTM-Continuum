@@ -17,7 +17,13 @@ public class ItemHot extends CompatItem {
     private static final GolemComponent<Integer> HEAT =
             GolemComponent.integer(Constants.MOD_ID, "heat");
 
-    /** Effective legacy heat scale after the old ItemHot declarations finish constructing. */
+    /**
+     * 1.7's heat scale. 1.7 kept it in a static field, so every hot item used the last constructor argument:
+     * ingot_chainsteel's 100 (ModItems.java:2312, after the four 200s). The static getMaxHeat also hides
+     * ItemHotDusted's per-forge value, so a smelted dusted ingot always gets this too.
+     */
+    public static final int LEGACY_HEAT = 100;
+
     public final int maxHeat;
 
     public ItemHot(Item.Properties properties, int maxHeat) {

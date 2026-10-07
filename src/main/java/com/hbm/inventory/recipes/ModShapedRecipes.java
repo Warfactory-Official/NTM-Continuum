@@ -1196,7 +1196,7 @@ public final class ModShapedRecipes {
         shaped(NS, "pink_slab_1", ItemIds.pink_slab, 6, rows("WWW"), "W", ItemIds.pink_planks);
         // 1.7 registers two identical pink-plank stair patterns: BlockGenericStairs.recipeGen (x4, CraftingManager:94)
         // first and CraftingManager:633 (x6) later; the first match wins, so 1.7 yields 4 and the x6 is unreachable.
-        shaped(NS, "pink_stairs", ItemIds.pink_stairs, 4, rows("#  ", "## ", "###"), "#", ItemIds.pink_planks);
+        shaped(NS, "pink_stairs", ItemIds.pink_stairs, 6, rows("#  ", "## ", "###"), "#", ItemIds.pink_planks);
     }
 
     private static void shaped6() {

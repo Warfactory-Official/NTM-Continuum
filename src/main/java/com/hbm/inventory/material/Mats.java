@@ -518,7 +518,7 @@ public final class Mats {
         Map<Item, List<MaterialStack>> items = new LinkedHashMap<>();
         Map<String, List<MaterialStack>> tags = new LinkedHashMap<>();
 
-        int n = NUGGET.quantity, i = INGOT.quantity, b = BLOCK.quantity, quart = INGOT.quantity / 4;
+        int n = NUGGET.quantity, i = INGOT.quantity, b = BLOCK.quantity, quart = BLOCK.quantity / 4; // 1.7 QUART = 162
 
         // vanilla crap
         tagEntry(tags, "c:stones", MAT_STONE, b);

@@ -15,8 +15,7 @@ public final class ItemSteelDusted extends ItemHot {
     public static final int VARIANTS = 10;
 
     public ItemSteelDusted(Item.Properties properties) {
-        // The old ItemHot static scale ends at 200 after the legacy ItemHot declarations are constructed.
-        super(properties, 200);
+        super(properties, LEGACY_HEAT);
     }
 
     /**
@@ -34,6 +33,7 @@ public final class ItemSteelDusted extends ItemHot {
         return Math.floorMod(ModDataComponents.FORGE_COUNT.getOr(stack, 0), VARIANTS);
     }
 
+    /** 1.7's ItemHotDusted.getMaxHeat; dead there too (ItemHot.heatUp calls the static ItemHot version). */
     public static int getMaxHeat(ItemStack stack) {
         return Math.max(0, 200 - variant(stack) * 10);
     }

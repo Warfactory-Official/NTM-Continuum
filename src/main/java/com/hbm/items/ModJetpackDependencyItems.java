@@ -27,7 +27,7 @@ public final class ModJetpackDependencyItems {
 
     /** Old ItemHot(100); the effective legacy global scale is preserved by ItemHot. */
     public static final RegistryObject<ItemHot> ingot_chainsteel = REG.item(
-            "ingot_chainsteel", p -> new ItemHot(p, 200), p -> p).transform(Presets.sprite())
+            "ingot_chainsteel", p -> new ItemHot(p, ItemHot.LEGACY_HEAT), p -> p).transform(Presets.sprite())
             .andThen(h -> ItemRendererDeclarations.overSprite(h.path(), h.path(), "hot", "generated"));
 
     // mp_thruster_10_xenon moved to ModCustomMissileItems with the rest of the custom missile parts.
