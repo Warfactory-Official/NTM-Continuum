@@ -415,7 +415,8 @@ public final class LegacyDungeonWorld {
                         if (!box.isInside(pos) || level.isOutsideBuildHeight(pos)) continue;
                         Placed p = blocks.get(key);
                         Resolved r = resolve(p, doorOther(key, p));
-                        level.setBlock(pos, r.state(), Block.UPDATE_CLIENTS);
+                        level.setBlock(pos, com.hbm.blocks.generic.Waterlogging.inWorld(r.state(), level, pos),
+                                Block.UPDATE_CLIENTS);
                         placed.add(pos);
                         Tile tile = tiles.get(key);
                         if (tile != null) applyTile(level, pos, tile);

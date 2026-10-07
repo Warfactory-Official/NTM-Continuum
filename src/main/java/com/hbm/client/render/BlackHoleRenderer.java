@@ -109,7 +109,9 @@ public final class BlackHoleRenderer extends GemEntityRenderer<EntityBlackHole, 
      * and under the shadow and the thin higher-order rings come from the paths themselves; a path that escapes
      * shows the copied scene where it lands, with the background assumed {@link #LENS_BACKGROUND} blocks behind.
      * The jets are traced too, so the shadow and the disc hide what lies behind them (as geometry drawn after the
-     * impostor they were tested only against the world's depth and drew over both).
+     * impostor they were tested only against the world's depth and drew over both). Seen through water or glass,
+     * Core tests the impostor against the world under the translucent layer and the shader lays that layer back
+     * over the hole (drawn after translucency, it was hidden behind any water surface; 2026-10-07).
      */
     private static final class Lens {
         private final Matrix4f viewToBase;

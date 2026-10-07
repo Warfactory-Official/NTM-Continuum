@@ -32,6 +32,16 @@ public final class Waterlogging {
         return state.setValue(WATERLOGGED, level.getFluidState(pos).getType() == Fluids.WATER);
     }
 
+    /**
+     * A structure block written over the world: any waterloggable state (HBM's or vanilla's chains, bars, …) that
+     * replaces a water source holds it, as vanilla {@code StructureTemplate} placement does. A state already saved
+     * waterlogged stays so; everything else passes through unchanged.
+     */
+    public static BlockState inWorld(BlockState state, LevelReader level, BlockPos pos) {
+        if (!state.hasProperty(WATERLOGGED) || state.getValue(WATERLOGGED)) return state;
+        return level.getFluidState(pos).getType() == Fluids.WATER ? state.setValue(WATERLOGGED, true) : state;
+    }
+
     public static FluidState fluid(BlockState state) {
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : Fluids.EMPTY.defaultFluidState();
     }

@@ -301,7 +301,7 @@ public abstract class Component extends StructurePiece {
         if (!writable(x, y, z)) return;
         BlockPos pos = new BlockPos(x, y, z);
         if (world.isOutsideBuildHeight(pos)) return;
-        world.setBlock(pos, state, Block.UPDATE_CLIENTS);
+        world.setBlock(pos, com.hbm.blocks.generic.Waterlogging.inWorld(state, world, pos), Block.UPDATE_CLIENTS);
         Build build = BUILD.get();
         if (build != null) build.placed.add(pos);
     }

@@ -607,7 +607,7 @@ public class NBTStructure {
             // 1.7: with STRUCTURE_DEBUG on, palette air is shown as wand_air
             if (debug && state.isAir()) state = ModStructureWandBlocks.wand_air.get().defaultBlockState();
 
-            level.setBlock(pos, state, Block.UPDATE_CLIENTS);
+            level.setBlock(pos, com.hbm.blocks.generic.Waterlogging.inWorld(state, level, pos), Block.UPDATE_CLIENTS);
             placed.add(pos);
             if (core) cores.add(pos);
 

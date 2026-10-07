@@ -3,6 +3,9 @@
 #moj_import <minecraft:projection.glsl>
 uniform sampler2D Sampler0;
 uniform sampler2D Sampler1;
+uniform sampler2D Sampler2;   // Core SceneWarp: the scene under the world's translucent layer (water, glass)
+uniform sampler2D Sampler3;   // its alpha: how much that layer covers each pixel
+uniform sampler2D Sampler4;   // the world depth including that layer
 in vec3 rayPos;
 in vec2 lensPos;
 flat in vec3 holeCentre;
@@ -97,10 +100,14 @@ vec3 field(vec3 dst, float rho, float theta) {
     return dst;
 }
 
+// The background at a point behind the hole. Where water or glass lies in front of the hole there, that surface is
+// not behind it: the scene under the translucent layer is the background, and main() lays the layer over the result.
+// (The impostor faces the camera, so its own depth is the hole's.)
 vec3 sceneAt(vec3 point) {
     vec4 clip = ProjMat * ModelViewMat * vec4(point, 1.0);
-    if (clip.w <= 0.05) return texture(Sampler0, vec2(0.5)).rgb;
-    return texture(Sampler0, clamp(clip.xy / clip.w * 0.5 + 0.5, 0.0, 1.0)).rgb;
+    vec2 uv = clip.w <= 0.05 ? vec2(0.5) : clamp(clip.xy / clip.w * 0.5 + 0.5, 0.0, 1.0);
+    if (texture(Sampler4, uv).r < gl_FragCoord.z) return texture(Sampler2, uv).rgb;
+    return texture(Sampler0, uv).rgb;
 }
 
 vec4 blackHole() {
@@ -245,5 +252,13 @@ vec4 blackHole() {
 }
 
 void main() {
-    fragColor = blackHole();
+    vec4 hole = blackHole();
+    // Core SceneWarp: seen through water or glass, the layer in front goes back over the hole (scene = layer over
+    // what was under it, so layer over the hole = scene + (hole - under) * transmission)
+    ivec2 pixel = ivec2(gl_FragCoord.xy);
+    if (texelFetch(Sampler4, pixel, 0).r < gl_FragCoord.z) {
+        float through = 1.0 - texelFetch(Sampler3, pixel, 0).a;
+        hole.rgb = texelFetch(Sampler0, pixel, 0).rgb + (hole.rgb - texelFetch(Sampler2, pixel, 0).rgb) * through;
+    }
+    fragColor = hole;
 }

@@ -135,6 +135,41 @@ public final class StructureHarnessQueries {
                     }
                 }
             }
+            // Waterloggable blocks over the box: how many hold water, and how many stand dry beside a water source (a
+            // structure block that replaced water must hold it; 2026-10-07, chains/bars/scaffold of the oil rig were dry)
+            int waterlogged = 0, dryInWater = 0;
+            JsonArray dry = new JsonArray();
+            for (int bx = box.minX() >> 4; bx <= box.maxX() >> 4; bx++) {
+                for (int bz = box.minZ() >> 4; bz <= box.maxZ() >> 4; bz++) {
+                    var loaded = ServerQueries.loaded(level, bx, bz);
+                    if (loaded == null) continue;
+                    for (int px = Math.max(box.minX(), bx << 4); px <= Math.min(box.maxX(), (bx << 4) + 15); px++) {
+                        for (int pz = Math.max(box.minZ(), bz << 4); pz <= Math.min(box.maxZ(), (bz << 4) + 15); pz++) {
+                            for (int py = box.minY(); py <= box.maxY(); py++) {
+                                var state = loaded.getBlockState(pos.set(px, py, pz));
+                                if (!state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED)) continue;
+                                if (state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED)) {
+                                    waterlogged++;
+                                    continue;
+                                }
+                                for (var side : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                                    BlockPos next = pos.relative(side);
+                                    var beside = ServerQueries.loaded(level, next.getX() >> 4, next.getZ() >> 4);
+                                    if (beside == null) continue;
+                                    if (beside.getFluidState(next).getType() == net.minecraft.world.level.material.Fluids.WATER) {
+                                        dryInWater++;
+                                        if (dry.size() < 8) dry.add(BuiltInRegistries.BLOCK.getKey(state.getBlock()) + " @ " + px + "," + py + "," + pz);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            s.addProperty("waterlogged", waterlogged);
+            s.addProperty("dry_in_water", dryInWater);
+            s.add("dry_in_water_sample", dry);
             s.addProperty("wand_loot", loot);
             s.addProperty("wand_logic", logic);
             s.addProperty("containers", containers);
