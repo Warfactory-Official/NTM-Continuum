@@ -1,5 +1,8 @@
 package com.hbm.blocks.generic;
 
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.material.FluidState;
+import dev.golem.core.world.BlockTickScheduler;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,14 +23,14 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-/** The thin, height-selectable steel grate from the 1.12.2 {@code BlockGrate}. */
-public class BlockGrate extends CompatBlock {
+/** The thin, height-selectable steel grate from the 1.12.2 {@code BlockGrate}. Waterloggable (port addition, see {@link Waterlogging}). */
+public class BlockGrate extends CompatBlock implements SimpleWaterloggedBlock {
 
     public static final IntegerProperty HEIGHT = IntegerProperty.create("height", 0, 9);
 
     public BlockGrate(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(HEIGHT, 0));
+        registerDefaultState(stateDefinition.any().setValue(HEIGHT, 0).setValue(Waterlogging.WATERLOGGED, false));
     }
 
     public static double yOffset(int height) {
@@ -54,6 +57,10 @@ public class BlockGrate extends CompatBlock {
     @Override
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return Waterlogging.place(heightForPlacement(context), context);
+    }
+
+    private BlockState heightForPlacement(BlockPlaceContext context) {
         Direction face = context.getClickedFace();
         if (face == Direction.DOWN) return defaultBlockState().setValue(HEIGHT, 7);
         if (face == Direction.UP) return defaultBlockState().setValue(HEIGHT, 0);
@@ -61,6 +68,18 @@ public class BlockGrate extends CompatBlock {
         Vec3 click = context.getClickLocation();
         double localY = click.y - context.getClickedPos().getY();
         return defaultBlockState().setValue(HEIGHT, Mth.floor(localY * 8.0D));
+    }
+
+    @Override
+    public FluidState getFluidState(BlockState state) {
+        return Waterlogging.fluid(state);
+    }
+
+    @Override
+    protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
+                                       Direction direction, BlockPos neighbourPos, BlockState neighbourState) {
+        Waterlogging.tick(state, level, ticks, pos);
+        return state;
     }
 
     @Override
@@ -111,6 +130,6 @@ public class BlockGrate extends CompatBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(HEIGHT);
+        builder.add(HEIGHT, Waterlogging.WATERLOGGED);
     }
 }

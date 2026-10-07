@@ -1,5 +1,7 @@
 package com.hbm.blocks.generic;
 
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.material.FluidState;
 import dev.golem.core.world.BlockTickScheduler;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -26,9 +28,10 @@ import org.jetbrains.annotations.Nullable;
  * or flat against a wall (meta 2-5). {@link #FACING} is the side the chain faces, away from its
  * support, as the 1.12 blockstate spelt it; {@link #END} is the old "is the block below not holding
  * the chain" test that swapped in the {@code chain_end} icon and lifted the box by a quarter block —
- * a property here because a model cannot look at its neighbour.
+ * a property here because a model cannot look at its neighbour. Waterloggable (port addition, see
+ * {@link Waterlogging}).
  */
-public class BlockChain extends CompatBlock {
+public class BlockChain extends CompatBlock implements SimpleWaterloggedBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty WALL = BooleanProperty.create("wall");
@@ -36,12 +39,13 @@ public class BlockChain extends CompatBlock {
 
     public BlockChain(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WALL, false).setValue(END, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WALL, false).setValue(END, false)
+                .setValue(Waterlogging.WATERLOGGED, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, WALL, END);
+        builder.add(FACING, WALL, END, Waterlogging.WATERLOGGED);
     }
 
     @Override
@@ -108,7 +112,13 @@ public class BlockChain extends CompatBlock {
             }
         }
         if (state == null) return null;
-        return withEnd(level, pos, state);
+        // re-read here: a chain copied from above carries the water flag of its own position
+        return Waterlogging.place(withEnd(level, pos, state), level, pos);
+    }
+
+    @Override
+    public FluidState getFluidState(BlockState state) {
+        return Waterlogging.fluid(state);
     }
 
     @Override
@@ -134,6 +144,7 @@ public class BlockChain extends CompatBlock {
     @Override
     protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
                                        Direction direction, BlockPos neighbourPos, BlockState neighbourState) {
+        Waterlogging.tick(state, level, ticks, pos);
         return withEnd(level, pos, state);
     }
 

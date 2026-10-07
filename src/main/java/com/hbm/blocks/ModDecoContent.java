@@ -460,7 +460,7 @@ public final class ModDecoContent {
             .transform(CUBE).tag(BlockTag.PICKAXE);
 
     // ---- OBJ-drawn decorations (invisible block + TileEntityDecoModel + DecoModelRenderer) ----
-    public static final RegistryObject<DecoModelBlock> steel_poles = model("steel_poles", DecoModelBlock.Kind.POLE, 5.0F, 15.0F, true);
+    public static final RegistryObject<DecoModelBlock> steel_poles = model("steel_poles", DecoModelBlock.Pole::new, 5.0F, 15.0F, true);
     public static final RegistryObject<DecoModelBlock> pole_top = model("pole_top", DecoModelBlock.Kind.TOP, 5.0F, 15.0F, true);
     /** 1.7 render type -1 with no item renderer: the item is the block's flat {@code deco_satellite_receiver} icon. */
     public static final RegistryObject<DecoModelBlock> pole_satellite_receiver = model("pole_satellite_receiver", DecoModelBlock.Kind.SATELLITE, 5.0F, 15.0F, true)
@@ -479,7 +479,12 @@ public final class ModDecoContent {
     public static final RegistryObject<DecoModelBlock> deco_computer_ibm_300pl = model("deco_computer_ibm_300pl", DecoModelBlock.Kind.COMPUTER, 5.0F, 10.0F, true);
 
     private static Reg.Handle<DecoModelBlock> model(String id, DecoModelBlock.Kind kind, float hardness, float resistance, boolean iron) {
-        return plain(id, p -> new DecoModelBlock(p, kind), p -> {
+        return model(id, p -> new DecoModelBlock(p, kind), hardness, resistance, iron);
+    }
+
+    private static Reg.Handle<DecoModelBlock> model(String id, Function<BlockBehaviour.Properties, DecoModelBlock> factory,
+                                                    float hardness, float resistance, boolean iron) {
+        return plain(id, factory, p -> {
             p = p.strength(hardness, resistance).noOcclusion().isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false);
             return iron ? p.requiresCorrectToolForDrops() : p;
         }, HbmTab.BLOCKS).transform(FURNITURE);

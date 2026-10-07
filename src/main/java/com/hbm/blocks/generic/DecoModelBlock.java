@@ -1,19 +1,24 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.BlockTickScheduler;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -30,7 +35,7 @@ import com.hbm.tileentity.deco.TileEntityDecoModel;
  * keeps the placer's horizontal look direction itself and {@code DecoModelRenderer} owns each kind's
  * old rotation table. Looks are drawn by that renderer through {@link TileEntityDecoModel}.
  */
-public class DecoModelBlock extends Block implements EntityBlock {
+public class DecoModelBlock extends CompatBlock implements EntityBlock {
 
     public enum Kind {
         POLE, TOP, SATELLITE, TAPE_RECORDER,
@@ -105,5 +110,77 @@ public class DecoModelBlock extends Block implements EntityBlock {
     @Override
     public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
+    }
+
+    /** {@code steel_poles}: the one furniture piece that is waterloggable (port addition, see {@link Waterlogging}). */
+    public static class Pole extends DecoModelBlock implements SimpleWaterloggedBlock {
+
+        public Pole(Properties properties) {
+            super(properties, Kind.POLE);
+            registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(Waterlogging.WATERLOGGED, false));
+        }
+
+        @Override
+        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+            super.createBlockStateDefinition(builder);
+            builder.add(Waterlogging.WATERLOGGED);
+        }
+
+        @Override
+        @Nullable
+        public BlockState getStateForPlacement(BlockPlaceContext context) {
+            return Waterlogging.place(super.getStateForPlacement(context), context);
+        }
+
+        @Override
+        public FluidState getFluidState(BlockState state) {
+            return Waterlogging.fluid(state);
+        }
+
+        @Override
+        protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
+                                           Direction direction, BlockPos neighbourPos, BlockState neighbourState) {
+            Waterlogging.tick(state, level, ticks, pos);
+            return state;
+        }
+
+        /** {@code pole.obj}'s three 2x2 posts, centred on the block, before {@code DecoModelRenderer}'s yaw. */
+        private static final double[][] POSTS = {{0, -5}, {5, 5}, {-5, 5}};
+        private static final java.util.Map<Direction, VoxelShape> COLLISION = new java.util.EnumMap<>(Direction.class);
+
+        static {
+            for (Direction look : Direction.Plane.HORIZONTAL) {
+                // DecoModelRenderer: POLE yaw = quadrant - 90 (south 0, west -90, north 180, east 90), JOML rotateY
+                double yaw = Math.toRadians(switch (look) {
+                    case WEST -> -90;
+                    case NORTH -> 180;
+                    case EAST -> 90;
+                    default -> 0;
+                });
+                double cos = Math.round(Math.cos(yaw)), sin = Math.round(Math.sin(yaw));
+                VoxelShape shape = Shapes.empty();
+                for (double[] post : POSTS) {
+                    double x = 8 + post[0] * cos + post[1] * sin;
+                    double z = 8 - post[0] * sin + post[1] * cos;
+                    shape = Shapes.or(shape, Block.box(x - 1, 0, z - 1, x + 1, 16, z + 1));
+                }
+                COLLISION.put(look, shape);
+            }
+        }
+
+        /*
+         * Collision is the three posts (port deviation, user decision 2026-10-07): 1.7's full cube kept a waterlogged
+         * pole's water in, since vanilla fluid only leaves through faces the collision does not cover. The outline
+         * and the support shape stay the 1.7 full cube; the gaps between posts are narrower than a player.
+         */
+        @Override
+        public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+            return COLLISION.get(state.getValue(FACING));
+        }
+
+        @Override
+        public VoxelShape getBlockSupportShape(BlockState state, BlockGetter level, BlockPos pos) {
+            return Shapes.block();
+        }
     }
 }

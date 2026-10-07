@@ -1,5 +1,9 @@
 package com.hbm.blocks.generic;
 
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.material.FluidState;
+import dev.golem.core.world.BlockTickScheduler;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -28,9 +32,9 @@ import java.util.Map;
  * does not match the full-cube visual (faithful to the original {@code getBoundingBox}/{@code addCollisionBox}
  * switch): {@code WALL} = a 2px slab on one side, {@code CORNER} = two such slabs, {@code ROOF} = a 1px floor,
  * {@code BEAM} = a central 2×2 post, {@code FULL} = a normal cube. The old easter-egg statue variants
- * ({@code DecoBlockAlt}) are intentionally not ported here.
+ * ({@code DecoBlockAlt}) are intentionally not ported here. Waterloggable (port addition, see {@link Waterlogging}).
  */
-public class BlockDeco extends dev.golem.core.world.CompatBlock {
+public class BlockDeco extends dev.golem.core.world.CompatBlock implements SimpleWaterloggedBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -63,7 +67,7 @@ public class BlockDeco extends dev.golem.core.world.CompatBlock {
     public BlockDeco(Properties properties, Shape shape) {
         super(properties);
         this.shape = shape;
-        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(Waterlogging.WATERLOGGED, false));
     }
 
     private VoxelShape shapeFor(BlockState state) {
@@ -91,7 +95,19 @@ public class BlockDeco extends dev.golem.core.world.CompatBlock {
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         // Faithful to DecoBlock: the block faces the same way the player looks (not the opposite).
-        return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection());
+        return Waterlogging.place(this.defaultBlockState().setValue(FACING, context.getHorizontalDirection()), context);
+    }
+
+    @Override
+    public FluidState getFluidState(BlockState state) {
+        return Waterlogging.fluid(state);
+    }
+
+    @Override
+    protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
+                                       Direction direction, BlockPos neighbourPos, BlockState neighbourState) {
+        Waterlogging.tick(state, level, ticks, pos);
+        return state;
     }
 
     @Override
@@ -106,6 +122,6 @@ public class BlockDeco extends dev.golem.core.world.CompatBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, Waterlogging.WATERLOGGED);
     }
 }

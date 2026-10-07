@@ -66,7 +66,8 @@ public abstract class BlockTerrainPlant extends CompatBlock {
             if (dropsWhenUnsupported(state) && level instanceof net.minecraft.server.level.ServerLevel server) {
                 dropResources(state, server, pos);
             }
-            return Blocks.AIR.defaultBlockState();
+            // air, or the water a waterlogged plant was holding
+            return state.getFluidState().createLegacyBlock();
         }
         return state;
     }

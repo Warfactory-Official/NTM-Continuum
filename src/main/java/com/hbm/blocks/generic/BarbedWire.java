@@ -1,5 +1,9 @@
 package com.hbm.blocks.generic;
 
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.material.FluidState;
+import dev.golem.core.world.BlockTickScheduler;
+import net.minecraft.world.level.LevelReader;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.potion.ModEffects;
@@ -49,8 +53,9 @@ import com.hbm.tileentity.TileEntitySecurityObj;
  * (east/west) or -180° (north/south); here that is the horizontal {@link #FACING}, read by
  * {@code SecurityObjRenderer}. The block itself is invisible — the wire OBJ is drawn by the BER on
  * its {@link TileEntitySecurityObj}, the same invisible-block + renderer route the deco OBJs take.
+ * Waterloggable (port addition, see {@link Waterlogging}).
  */
-public class BarbedWire extends CompatBlock implements EntityBlock {
+public class BarbedWire extends CompatBlock implements EntityBlock, SimpleWaterloggedBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -71,7 +76,7 @@ public class BarbedWire extends CompatBlock implements EntityBlock {
     public BarbedWire(Properties properties, Kind kind) {
         super(properties);
         this.kind = kind;
-        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(Waterlogging.WATERLOGGED, false));
     }
 
     public Kind kind() {
@@ -143,7 +148,19 @@ public class BarbedWire extends CompatBlock implements EntityBlock {
     @Override
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection());
+        return Waterlogging.place(this.defaultBlockState().setValue(FACING, context.getHorizontalDirection()), context);
+    }
+
+    @Override
+    public FluidState getFluidState(BlockState state) {
+        return Waterlogging.fluid(state);
+    }
+
+    @Override
+    protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
+                                       Direction direction, BlockPos neighbourPos, BlockState neighbourState) {
+        Waterlogging.tick(state, level, ticks, pos);
+        return state;
     }
 
     @Override
@@ -158,6 +175,6 @@ public class BarbedWire extends CompatBlock implements EntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, Waterlogging.WATERLOGGED);
     }
 }

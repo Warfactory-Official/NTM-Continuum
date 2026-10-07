@@ -1,5 +1,11 @@
 package com.hbm.blocks.generic;
 
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.material.FluidState;
+import dev.golem.core.world.BlockTickScheduler;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import com.hbm.api.fluidmk2.IFluidPipeMK2;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.blocks.ModDecoContent;
@@ -41,12 +47,36 @@ import java.util.List;
  * and it hands every delivery to the lowest layer of the rebar cage it belongs to (all rebar connected face to face,
  * 1.7's {@code RebarNetwork}). That layer fills evenly, at most 50 mB per rebar per delivery, and a rebar that
  * reaches 1,000 mB sets into the concrete the placer was loaded with (or reinforced concrete if that is not a valid
- * concrete). The rising concrete is drawn by {@code RenderRebarFill}.
+ * concrete). The rising concrete is drawn by {@code RenderRebarFill}. Waterloggable (port addition, see
+ * {@link Waterlogging}); a rebar that sets into concrete displaces its water.
  */
-public class BlockRebar extends CompatBlock implements TickingBlock {
+public class BlockRebar extends CompatBlock implements TickingBlock, SimpleWaterloggedBlock {
 
     public BlockRebar(Properties properties) {
         super(properties);
+        registerDefaultState(stateDefinition.any().setValue(Waterlogging.WATERLOGGED, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(Waterlogging.WATERLOGGED);
+    }
+
+    @Override
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
+        return Waterlogging.place(defaultBlockState(), context);
+    }
+
+    @Override
+    public FluidState getFluidState(BlockState state) {
+        return Waterlogging.fluid(state);
+    }
+
+    @Override
+    protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
+                                       Direction direction, BlockPos neighbourPos, BlockState neighbourState) {
+        Waterlogging.tick(state, level, ticks, pos);
+        return state;
     }
 
     @Override
@@ -54,8 +84,36 @@ public class BlockRebar extends CompatBlock implements TickingBlock {
         return new TileEntityRebar(pos, state);
     }
 
+    /** The cage's twelve 2x2 bars, the same boxes as the {@code rebarModel()} declaration in {@code ModDungeonBlocks}. */
+    private static final VoxelShape BARS = bars();
+
+    private static VoxelShape bars() {
+        VoxelShape shape = Shapes.empty();
+        double[] at = {3, 11};
+        for (double a : at) for (double b : at) {
+            shape = Shapes.or(shape, Block.box(a, 0, b, a + 2, 16, b + 2), Block.box(0, a, b, 16, a + 2, b + 2),
+                    Block.box(a, b, 0, a + 2, b + 2, 16));
+        }
+        return shape.optimize();
+    }
+
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return Shapes.block();
+    }
+
+    /*
+     * Collision is the bars (port deviation, user decision 2026-10-07): 1.7's full cube kept a waterlogged rebar's
+     * water in, since vanilla fluid only leaves through faces the collision does not cover. The outline and the
+     * support shape stay the 1.7 full cube.
+     */
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return BARS;
+    }
+
+    @Override
+    public VoxelShape getBlockSupportShape(BlockState state, BlockGetter level, BlockPos pos) {
         return Shapes.block();
     }
 

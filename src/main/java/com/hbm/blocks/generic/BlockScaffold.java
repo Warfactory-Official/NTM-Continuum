@@ -1,5 +1,9 @@
 package com.hbm.blocks.generic;
 
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.material.FluidState;
+import dev.golem.core.world.BlockTickScheduler;
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.deco.TileEntityDeco;
@@ -20,8 +24,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-/** The four-way steel scaffold, including the old metadata-backed colour variants. */
-public class BlockScaffold extends CompatBlock implements TickingBlock {
+/** The four-way steel scaffold, including the old metadata-backed colour variants. Waterloggable (port addition, see {@link Waterlogging}). */
+public class BlockScaffold extends CompatBlock implements TickingBlock, SimpleWaterloggedBlock {
 
     public static final EnumProperty<Orientation> ORIENT = EnumProperty.create("orient", Orientation.class);
     public static final EnumProperty<Variant> VARIANT = EnumProperty.create("variant", Variant.class);
@@ -34,7 +38,8 @@ public class BlockScaffold extends CompatBlock implements TickingBlock {
         super(properties);
         registerDefaultState(stateDefinition.any()
                 .setValue(ORIENT, Orientation.HORIZONTAL_NS)
-                .setValue(VARIANT, Variant.STEEL));
+                .setValue(VARIANT, Variant.STEEL)
+                .setValue(Waterlogging.WATERLOGGED, false));
     }
 
     @Override
@@ -71,9 +76,21 @@ public class BlockScaffold extends CompatBlock implements TickingBlock {
         } else {
             orientation = Orientation.VERTICAL_EW;
         }
-        return defaultBlockState()
+        return Waterlogging.place(defaultBlockState()
                 .setValue(VARIANT, Variant.values()[variant])
-                .setValue(ORIENT, orientation);
+                .setValue(ORIENT, orientation), context);
+    }
+
+    @Override
+    public FluidState getFluidState(BlockState state) {
+        return Waterlogging.fluid(state);
+    }
+
+    @Override
+    protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
+                                       Direction direction, BlockPos neighbourPos, BlockState neighbourState) {
+        Waterlogging.tick(state, level, ticks, pos);
+        return state;
     }
 
     /** 1.7 {@code damageDropped(meta)}: the scaffold item of the block's colour. */
@@ -95,7 +112,7 @@ public class BlockScaffold extends CompatBlock implements TickingBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ORIENT, VARIANT);
+        builder.add(ORIENT, VARIANT, Waterlogging.WATERLOGGED);
     }
 
     public enum Orientation implements net.minecraft.util.StringRepresentable {

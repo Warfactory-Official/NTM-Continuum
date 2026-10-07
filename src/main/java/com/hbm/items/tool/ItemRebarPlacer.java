@@ -4,6 +4,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModDecoContent;
 import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.blocks.generic.BlockRebar;
+import com.hbm.blocks.generic.Waterlogging;
 import com.hbm.blocks.material.MaterialCompletionRegistrations;
 import com.hbm.inventory.ModDungeonMenus;
 import com.hbm.inventory.container.ContainerRebar;
@@ -178,7 +179,7 @@ public class ItemRebarPlacer extends CompatItem {
                         if (rebarLeft <= 0) break outer;
                         BlockPos at = new BlockPos(i, k, j);
                         if (world.getBlockState(at).canBeReplaced() && player.mayUseItemAt(at, dir, stack)) {
-                            world.setBlock(at, ModDungeonBlocks.rebar.get().defaultBlockState(), 3);
+                            world.setBlock(at, Waterlogging.place(ModDungeonBlocks.rebar.get().defaultBlockState(), world, at), 3);
                             if (world.getBlockEntity(at) instanceof BlockRebar.TileEntityRebar rebar) rebar.setup(theConk);
                             rebarUsed++;
                             rebarLeft--;
