@@ -206,6 +206,10 @@ dependencies {
     // Sodium declares itself client-side, so it loads only during the client run. It goes on
     // `devModJar` rather than `localRuntime` — see that configuration for why.
     propOrNull("deps.sodium_neoforge")?.let { devModJar("maven.modrinth:sodium:$it") }
+    // Iris (Oculus on Forge 1.20.1) for testing under shader packs: `-Pshaders.run=true` puts it in the client run.
+    // Client-side, dev runtime only, never compiled against or published; off by default so the standard runs
+    // and baselines keep vanilla's pipeline. Place a pack in the run's shaderpacks folder and select it in game.
+    if (propOrNull("shaders.run") == "true") propOrNull("deps.iris")?.let { devModJar("maven.modrinth:iris:$it") }
 
     // Pipez is a real third-party energy mod, on `localRuntime` so it is present for the gametest
     // server run and not only the client: it ships no mixins, so it needs no `mods` folder placement.

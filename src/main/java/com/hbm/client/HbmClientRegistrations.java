@@ -367,6 +367,8 @@ public final class HbmClientRegistrations {
         installJetpackBridge();
         dev.golem.core.render.HeatDistortionRenderType.configure(
                 "hbm:pipeline/heat_distortion", "hbm:heat_distortion");
+        // port-only black hole lensing (BlackHoleRenderer.Lens)
+        dev.golem.core.render.SceneWarp.configure("hbm:pipeline/black_hole_lens", "hbm:black_hole_lens");
         // 1.12 HbmShaderManager2 bloom/distortion layers, composited after the hand (first-person crucible blade)
         dev.golem.core.render.ScreenEffects.init();
         // old-hbm crucible/sword cutters: first-person Collada scene, slicing input, cut mobs

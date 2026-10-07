@@ -55,6 +55,25 @@ fun loomCompatibleComputerCraft(mc: String, version: String): File {
 }
 
 /**
+ * The libraries nested in [jar], unpacked once into `build/<dirName>`: every nested jar except Fabric API modules (which
+ * the run already has). Loom's `include` gives a plain library a generated `fabric.mod.json`, so that cannot tell them apart.
+ */
+fun nestedLibraries(jar: File, dirName: String): List<File> {
+    val dir = layout.buildDirectory.dir(dirName).get().asFile
+    if (!dir.isDirectory) {
+        dir.mkdirs()
+        ZipFile(jar).use { zip ->
+            for (entry in zip.entries()) {
+                if (!entry.name.startsWith("META-INF/jars/") || !entry.name.endsWith(".jar")) continue
+                val nested = File(dir, entry.name.substringAfterLast('/'))
+                zip.getInputStream(entry).use { input -> nested.outputStream().use { input.copyTo(it) } }
+            }
+        }
+    }
+    return dir.listFiles()?.filter { it.extension == "jar" && !it.name.startsWith("fabric-") }?.sorted() ?: emptyList()
+}
+
+/**
  * A mod jar for the dev runs, fetched straight from [url] into `build/<dirName>` (resolving a configuration this early
  * would disturb Loom's repositories), with every jar it nests, recursively, unpacked beside it: a mod given to a dev
  * run is not searched for nested jars. Returns the jars that are Fabric mods (remapped by `modLocalRuntime`) and the
@@ -352,6 +371,19 @@ dependencies {
 
     // Sodium declares `environment: client`, so Fabric loads it only during the client run.
     propOrNull("deps.sodium_fabric")?.let { devRuntime("maven.modrinth:sodium:$it") }
+    // Iris (Oculus on Forge 1.20.1) for testing under shader packs: `-Pshaders.run=true` puts it in the client run.
+    // Client-side, dev runtime only, never compiled against or published; off by default so the standard runs
+    // and baselines keep vanilla's pipeline. Place a pack in the run's shaderpacks folder and select it in game.
+    if (propOrNull("shaders.run") == "true") propOrNull("deps.iris")?.let { iris ->
+        devRuntime("maven.modrinth:iris:$iris")
+        // A dev run is not searched for nested jars (see runJarsWithNested), so Iris's GLSL libraries (antlr4-runtime,
+        // glsl-transformer, jcpp) are unpacked from its jar onto the runtime classpath; its nested Fabric API modules
+        // are already in the run. Resolved lazily, when the run classpath is.
+        val irisJar = configurations.detachedConfiguration(dependencies.create("maven.modrinth:iris:$iris")).apply {
+            isTransitive = false
+        }
+        "runtimeOnly"(files(provider { nestedLibraries(irisJar.singleFile, "iris-nested/$iris") }))
+    }
     if (hasSable && obfuscated) {
         "modCompileOnly"("dev.ryanhcode.sable:sable-fabric-$sableMc:$sableVer") { isTransitive = false }
         "modCompileOnly"("dev.ryanhcode.sable-companion:sable-companion-fabric-$sableMc:$sableCompanionVer") { isTransitive = false }
