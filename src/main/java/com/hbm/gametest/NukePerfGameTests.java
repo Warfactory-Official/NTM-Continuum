@@ -1192,6 +1192,77 @@ public final class NukePerfGameTests {
         }
     }
 
+    /**
+     * A crater that reaches only part of a multiblock still removes all of it, through the section carve.
+     *
+     * <p>1.7's nuke cleared with {@code setBlock}, whose {@code breakBlock} ran on every cell, and a dummy's
+     * {@code breakBlock} removed its core. The carve writes into sections and runs no hook at all, so a fluid tank
+     * whose core the rays missed kept standing, model and all, with its other cells gone (playtest 2026-10-07).
+     */
+    public static void carveTearsDownMultiblock(GameTestHelper helper) {
+        tearDownCase(helper, true);
+    }
+
+    /**
+     * The same through the per-block path ({@code BombConfig.craterSectionCarve = false}): on 26.1 {@code setBlock}
+     * skips the removal hook without {@code UPDATE_NEIGHBORS}, which the nuke leaves out.
+     */
+    public static void writeTearsDownMultiblock(GameTestHelper helper) {
+        tearDownCase(helper, false);
+    }
+
+    private static void tearDownCase(GameTestHelper helper, boolean carve) {
+        ServerLevel level = helper.getLevel();
+        var block = com.hbm.blocks.machine.ModMachineBlocks.machine_fluidtank.get();
+        BlockPos rel = new BlockPos(5, 1, 5);
+        helper.setBlock(rel, block.defaultBlockState());
+        block.fillSpace(level, helper.absolutePos(rel), net.minecraft.core.Direction.NORTH);
+        BlockPos core = helper.absolutePos(rel);
+        helper.assertTrue(level.getBlockEntity(core) != null, "the tank core has its block entity");
+
+        // The tank's top layer only: cells, never the core, as rays that stopped short of the middle would leave it.
+        java.util.List<BlockPos> hit = new java.util.ArrayList<>();
+        int structure = 0;
+        for (BlockPos p : BlockPos.betweenClosed(core.offset(-3, 0, -3), core.offset(3, 4, 3))) {
+            BlockState state = level.getBlockState(p);
+            if (!state.is(block)) continue;
+            structure++;
+            if (p.getY() == core.getY() + 2) {
+                helper.assertTrue(state.getValue(com.hbm.blocks.multiblock.BlockMultiblockMachine.CELL), "top layer is cells");
+                hit.add(p.immutable());
+            }
+        }
+        helper.assertTrue(!hit.isEmpty() && structure > hit.size() + 1, "the tank has cells below its top layer");
+
+        if (carve) {
+            int maxY = level.getMaxY();
+            java.util.Map<Long, java.util.BitSet> perChunk = new java.util.HashMap<>();
+            for (BlockPos p : hit) {
+                perChunk.computeIfAbsent(net.minecraft.world.level.ChunkPos.pack(p.getX() >> 4, p.getZ() >> 4),
+                        k -> new java.util.BitSet()).set(((maxY - p.getY()) << 8) | ((p.getX() & 15) << 4) | (p.getZ() & 15));
+            }
+            for (var entry : perChunk.entrySet()) {
+                int cx = net.minecraft.world.level.ChunkPos.getX(entry.getKey());
+                int cz = net.minecraft.world.level.ChunkPos.getZ(entry.getKey());
+                ChunkCarver carver = new ChunkCarver(level, level.getChunk(cx, cz), entry.getValue(), cx, cz, maxY);
+                helper.assertTrue(carver.carveUntil(System.currentTimeMillis() + 10_000L), "the carve did not finish");
+                carver.finish();
+            }
+        } else {
+            int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
+            for (BlockPos p : hit) dev.golem.core.world.Compat.setBlockWithRemoval(level, p, Blocks.AIR.defaultBlockState(), flags);
+        }
+
+        int left = 0;
+        for (BlockPos p : BlockPos.betweenClosed(core.offset(-3, 0, -3), core.offset(3, 4, 3))) {
+            if (level.getBlockState(p).is(block)) left++;
+        }
+        helper.assertTrue(!level.getBlockState(core).is(block) && level.getBlockEntity(core) == null,
+                "the core went with its cells (" + (carve ? "carve" : "setBlock") + ")");
+        helper.assertTrue(left == 0, left + " tank block(s) left standing after the crater took its top layer");
+        helper.succeed();
+    }
+
     private static void fillRayVolume(ServerLevel level, BlockPos centre, int radius) {
         BlockState dirt = Blocks.DIRT.defaultBlockState();
         for (int dx = -radius; dx <= radius; dx++) {

@@ -978,7 +978,10 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
             // legacy block (getFluidState(pos).createLegacyBlock()), so it leaves water/lava behind —
             // the old setBlockToAir cleared everything. Suppress drops + neighbour cascades for perf
             // (a nuke clears millions of blocks; we don't want item drops or block-update storms).
-            world.setBlock(pos, AIR, CLEAR_FLAGS);
+            // with the removal hook 1.7's setBlock always ran (26.1 skips it without UPDATE_NEIGHBORS), so a
+            // multiblock still tears down when the rays reach only some of its cells
+            if (world instanceof ServerLevel server) dev.golem.core.world.Compat.setBlockWithRemoval(server, pos, AIR, CLEAR_FLAGS);
+            else world.setBlock(pos, AIR, CLEAR_FLAGS);
             index = hitArray.nextSetBit(index + 1);
             blocksRemoved++;
             blocksDestroyed++;

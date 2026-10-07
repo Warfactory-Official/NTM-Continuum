@@ -1184,6 +1184,14 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function NUKE_CARVE_EQUIVALENCE =
             TESTS.function("nuke_carve_equivalence", 20 * 90, () -> NukePerfGameTests::carveEquivalence);
 
+    /** A crater reaching only some of a multiblock's cells still removes the whole machine (carve path). */
+    public static final GameTests.Function NUKE_CARVE_MULTIBLOCK_TEARDOWN =
+            TESTS.function("nuke_carve_multiblock_teardown", 20 * 30, () -> NukePerfGameTests::carveTearsDownMultiblock);
+
+    /** The same through the per-block setBlock path, where 26.1 skips the removal hook without neighbour updates. */
+    public static final GameTests.Function NUKE_WRITE_MULTIBLOCK_TEARDOWN =
+            TESTS.function("nuke_write_multiblock_teardown", 20 * 30, () -> NukePerfGameTests::writeTearsDownMultiblock);
+
     /** Does a carved pocket actually relight? The one thing a block-state comparison cannot see. */
     public static final GameTests.Function NUKE_CARVE_LIGHTING =
             TESTS.function("nuke_carve_lighting", 20 * 400, () -> NukePerfGameTests::carveLighting);

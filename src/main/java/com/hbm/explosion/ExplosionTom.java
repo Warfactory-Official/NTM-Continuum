@@ -153,7 +153,13 @@ public class ExplosionTom {
                             }
                         }
                     }
-                    level.setBlock(new BlockPos(pX, y, pZ), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                    // 1.7 flag 2, but its breakBlock still ran: keep the removal hook on 26.1
+                    if (level instanceof net.minecraft.server.level.ServerLevel server) {
+                        dev.golem.core.world.Compat.setBlockWithRemoval(server, new BlockPos(pX, y, pZ),
+                                Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                    } else {
+                        level.setBlock(new BlockPos(pX, y, pZ), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                    }
                 }
             } else {
                 for (int i = -2; i < 3; i++) {

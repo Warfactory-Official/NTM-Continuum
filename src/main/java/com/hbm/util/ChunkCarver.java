@@ -17,6 +17,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.Heightmap;
 
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.EnumSet;
 import java.util.List;
@@ -51,6 +52,13 @@ import java.util.Set;
  * the chunk with no block under it, and its POI record behind. They are collected during the walk and
  * cleared through {@code Level.setBlock} in {@link #finish()}, which is what the reference does too;
  * there are a handful per crater, so the per-block cost of that path does not matter.
+ *
+ * <p><b>Removal hooks still run.</b> 1.7's {@code setBlock} called {@code breakBlock} whatever the flags, and a
+ * multiblock relies on it: removing any one cell tears the whole machine down. A section write runs no hook, so
+ * every carved {@code CompatBlock} cell is replayed through {@code Compat.blockRemoved} in {@link #finish()}, and
+ * block-entity cells go through {@code Compat.setBlockWithRemoval}, because 26.1's {@code setBlock} skips the hook
+ * without {@code UPDATE_NEIGHBORS}. Without this a tank whose core the rays did not reach kept standing, whole
+ * model and all, inside a crater that had eaten its other cells.
  *
  * <p>Bit layout is the caller's: {@code ((maxY - y) << 8) | ((x & 15) << 4) | (z & 15)}, which walks
  * top-down and so visits each section's cells contiguously.
@@ -88,6 +96,9 @@ public final class ChunkCarver {
     /** One flag per section index; the light engine is told about exactly these at the end. */
     private final boolean[] touched;
     private final LongArrayList blockEntityCells = new LongArrayList();
+    /** Carved cells whose block has a removal hook ({@code CompatBlock}), and the state each one held. */
+    private final LongArrayList hookedCells = new LongArrayList();
+    private final List<BlockState> hookedStates = new ArrayList<>();
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
     private int cursor;
@@ -146,6 +157,12 @@ public final class ChunkCarver {
                         // the carve is to skip the per-write bookkeeping.
                         section.setBlockState(localX, y & 15, localZ, AIR, false);
                         carved++;
+                        // 1.7's setBlock always ran breakBlock, so a multiblock cell tore its whole structure
+                        // down. A section write runs nothing; the hook is replayed in finish().
+                        if (old.getBlock() instanceof dev.golem.core.world.CompatBlock) {
+                            hookedCells.add(BlockPos.asLong(baseX | localX, y, baseZ | localZ));
+                            hookedStates.add(old);
+                        }
                     }
                 }
             }
@@ -170,10 +187,20 @@ public final class ChunkCarver {
         for (int i = 0; i < blockEntityCells.size(); i++) {
             long packed = blockEntityCells.getLong(i);
             pos.set(BlockPos.getX(packed), BlockPos.getY(packed), BlockPos.getZ(packed));
-            level.setBlock(pos, AIR, BE_CLEAR_FLAGS);
+            Compat.setBlockWithRemoval(level, pos, AIR, BE_CLEAR_FLAGS);
             carved++;
         }
         blockEntityCells.clear();
+
+        // Then the removal hooks the section writes skipped, once the whole chunk is carved, so a multiblock
+        // demolishing its remaining cells finds the ones the crater reached already gone.
+        for (int i = 0; i < hookedCells.size(); i++) {
+            long packed = hookedCells.getLong(i);
+            pos.set(BlockPos.getX(packed), BlockPos.getY(packed), BlockPos.getZ(packed));
+            Compat.blockRemoved(level, pos, hookedStates.get(i));
+        }
+        hookedCells.clear();
+        hookedStates.clear();
 
         repairAndResend(level, chunk, chunkX, chunkZ, touched);
     }

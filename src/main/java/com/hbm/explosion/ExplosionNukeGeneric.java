@@ -195,7 +195,12 @@ public final class ExplosionNukeGeneric {
     }
 
     private static void clear(Level world, BlockPos pos) {
-        world.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS); // 1.7 setBlock(..., air, 0, 2)
+        // 1.7 setBlock(..., air, 0, 2); its breakBlock ran regardless of the flag, so keep the removal hook on 26.1
+        if (world instanceof net.minecraft.server.level.ServerLevel server) {
+            dev.golem.core.world.Compat.setBlockWithRemoval(server, pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+        } else {
+            world.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+        }
     }
 
     /** 1.7 wasteDest (:238). 1.7's sand meta 0/1 are sand and red sand; meta-10 mushroom blocks are stems. */
