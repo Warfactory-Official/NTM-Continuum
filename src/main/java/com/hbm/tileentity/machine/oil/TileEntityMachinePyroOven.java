@@ -86,6 +86,8 @@ public class TileEntityMachinePyroOven extends TileEntityMachinePolluting
         te.setTypeFromFluidId();
 
         for (DirPos dp : te.getConPos()) {
+            te.trySubscribe(level, dp);
+            if (te.tanks[0].getTankType() != com.hbm.inventory.fluid.Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
             if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, dp);
         }
 

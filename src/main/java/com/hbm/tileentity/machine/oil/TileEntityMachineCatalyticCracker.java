@@ -42,6 +42,10 @@ public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase impl
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCatalyticCracker te) {
         te.setupTanks();
+        for (DirPos dp : te.getConPos()) {
+            te.trySubscribe(te.tanks[0].getTankType(), level, dp);
+            te.trySubscribe(te.tanks[1].getTankType(), level, dp);
+        }
 
         if (TickPhase.every(level, pos, 5)) te.crack();
 

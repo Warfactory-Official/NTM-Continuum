@@ -19,6 +19,12 @@
         "jei_mod_plugin": [
             "com.hbm.handler.jei.HbmJeiPluginFabric"
         ],
+        "rei_client": [
+            "com.hbm.handler.rei.HbmReiClientPlugin"
+        ],
+        "rei_common": [
+            "com.hbm.handler.rei.HbmReiCommonPlugin"
+        ],
         "fabric-gametest": [
             "com.hbm.platform.fabric.FabricGameTests"
         ]

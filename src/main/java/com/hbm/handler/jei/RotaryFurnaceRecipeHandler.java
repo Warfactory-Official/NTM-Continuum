@@ -1,15 +1,11 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.RotaryFurnaceRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.machine.ItemScraps;
-import dev.golem.core.jei.JeiRecipeType;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -24,9 +20,9 @@ import java.util.Locale;
  */
 public class RotaryFurnaceRecipeHandler extends JEIUniversalHandler<RotaryFurnaceRecipes.RotaryFurnaceRecipe> {
 
-    public RotaryFurnaceRecipeHandler(IGuiHelper helper, JeiRecipeType<RotaryFurnaceRecipes.RotaryFurnaceRecipe> type,
+    public RotaryFurnaceRecipeHandler(ViewerType<RotaryFurnaceRecipes.RotaryFurnaceRecipe> type,
                                       Component title, ItemStack... machines) {
-        super(helper, type, title, machines);
+        super(type, title, machines);
     }
 
     public static List<RotaryFurnaceRecipes.RotaryFurnaceRecipe> buildRecipes() {
@@ -51,13 +47,12 @@ public class RotaryFurnaceRecipeHandler extends JEIUniversalHandler<RotaryFurnac
     }
 
     @Override
-    public void draw(RotaryFurnaceRecipes.RotaryFurnaceRecipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor graphics,
+    public void draw(RotaryFurnaceRecipes.RotaryFurnaceRecipe recipe, GuiGraphicsExtractor graphics,
                      double mouseX, double mouseY) {
-        super.draw(recipe, slots, graphics, mouseX, mouseY);
+        super.draw(recipe, graphics, mouseX, mouseY);
         String duration = String.format(Locale.US, "%,d", recipe.duration) + " ticks";
         String consumption = Fluids.STEAM.getDisplayNameString() + ": " + String.format(Locale.US, "%,d", recipe.steam) + " mB/t";
         text(graphics, duration, 160 - textWidth(duration), 43);
         text(graphics, consumption, 160 - textWidth(consumption), 55);
     }
 }
-//?}

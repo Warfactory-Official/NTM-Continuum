@@ -66,7 +66,10 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
         te.loadTank();
         te.setTypeFromFluidId();
 
-        for (DirPos connection : te.getConPos()) te.sendSmoke(connection);
+        for (DirPos connection : te.getConPos()) {
+            te.trySubscribe(te.tank.getTankType(), level, connection);
+            te.sendSmoke(connection);
+        }
 
         boolean shouldCool = true;
 
@@ -104,6 +107,11 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
         ItemStack in = inventory.getStackInSlot(0);
         if (in.isEmpty()) return;
 
+        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
+        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+            setChanged();
+            return;
+        }
         if (in.getItem() instanceof IFillableItem fillable) {
             int held = fillable.getFill(in);
             FluidType heldType = fillable.getFirstFluidType(in);

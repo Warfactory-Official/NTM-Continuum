@@ -1,15 +1,10 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
+import dev.golem.core.viewer.Role;
+import dev.golem.core.viewer.SlotLayout;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.recipes.StorageDrumRecipes;
-import dev.golem.core.jei.JeiRecipeType;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -21,8 +16,8 @@ public final class StorageDrumRecipeHandler extends HbmRecipeCategory<StorageDru
 
     public record Entry(ItemStack input, ItemStack output) {}
 
-    public StorageDrumRecipeHandler(IGuiHelper helper, JeiRecipeType<Entry> type, Component title) {
-        super(helper, type, title, new ItemStack(ModMachineBlocks.machine_storage_drum.get()),
+    public StorageDrumRecipeHandler(ViewerType<Entry> type, Component title) {
+        super(type, title, new ItemStack(ModMachineBlocks.machine_storage_drum.get()),
                 "gui_nei_wastedrum.png", 99, 27, 38, 29);
     }
 
@@ -35,15 +30,14 @@ public final class StorageDrumRecipeHandler extends HbmRecipeCategory<StorageDru
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, Entry recipe, IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.INPUT, 5, 5).addItemStacks(List.of(recipe.input()));
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 78, 6).addItemStacks(List.of(recipe.output()));
+    public void setRecipe(SlotLayout builder, Entry recipe) {
+        builder.addSlot(Role.INPUT, 5, 5).addItemStacks(List.of(recipe.input()));
+        builder.addSlot(Role.OUTPUT, 78, 6).addItemStacks(List.of(recipe.output()));
     }
 
     @Override
-    public void draw(Entry recipe, IRecipeSlotsView slots, net.minecraft.client.gui.GuiGraphicsExtractor graphics,
+    public void draw(Entry recipe, net.minecraft.client.gui.GuiGraphicsExtractor graphics,
                      double mouseX, double mouseY) {
-        super.draw(recipe, slots, graphics, mouseX, mouseY);
+        super.draw(recipe, graphics, mouseX, mouseY);
     }
 }
-//?}

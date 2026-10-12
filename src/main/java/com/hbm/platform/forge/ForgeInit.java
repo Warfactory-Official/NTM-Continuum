@@ -64,6 +64,7 @@ public final class ForgeInit {
         com.hbm.gametest.Fix1AGameTests.init();
         com.hbm.gametest.IdsGameTests.init();
         com.hbm.gametest.ForeignFluidGameTests.init();
+        com.hbm.gametest.PortClaimGameTests.init();
         com.hbm.gametest.Fix4GameTests.init();
         com.hbm.gametest.Fix5GameTests.init();
         com.hbm.gametest.Fix1BGameTests.init();
@@ -168,6 +169,8 @@ public final class ForgeInit {
                 com.hbm.gametest.IdsGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.ForeignFluidGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.PortClaimGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.Fix4GameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,

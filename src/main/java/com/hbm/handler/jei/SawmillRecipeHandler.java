@@ -1,11 +1,8 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.inventory.recipes.SawmillRecipes;
 import com.hbm.inventory.recipes.SawmillRecipes.SawmillRecipe;
-import dev.golem.core.jei.JeiRecipeType;
-import mezz.jei.api.helpers.IGuiHelper;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -15,9 +12,9 @@ import java.util.List;
 /** JEI view of the sawmill's primary and chance outputs. */
 public class SawmillRecipeHandler extends JEIUniversalHandler<SawmillRecipe> {
 
-    public SawmillRecipeHandler(IGuiHelper helper, JeiRecipeType<SawmillRecipe> type,
+    public SawmillRecipeHandler(ViewerType<SawmillRecipe> type,
                                 Component title, ItemStack machine) {
-        super(helper, type, title, machine);
+        super(type, title, machine);
     }
 
     public static List<SawmillRecipe> buildRecipes() {
@@ -38,4 +35,3 @@ public class SawmillRecipeHandler extends JEIUniversalHandler<SawmillRecipe> {
     }
 
 }
-//?}

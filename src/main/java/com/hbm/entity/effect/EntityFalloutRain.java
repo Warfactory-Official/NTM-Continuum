@@ -1080,7 +1080,11 @@ public class EntityFalloutRain extends CompatEntity {
                 scan.addStateWrite(BlockPos.asLong(x, upY, z), ModFalloutBlocks.fallout.get().defaultBlockState());
             }
 
-            if (!transformed && state.isCollisionShapeFullBlock(chunk, pos)) solidDepth++;
+            // 1.7 {@code !eval && b.isNormalCube()}: an OPAQUE full cube that gives no redstone power. A full
+            // collision shape alone also admits leaves (walkable in modern Minecraft, not a normal cube in 1.7), so
+            // three leaves the falloff band had spared stopped the column above the logs under them
+            if (!transformed && state.isCollisionShapeFullBlock(chunk, pos)
+                    && dev.golem.core.world.Compat.isSolidRender(state, chunk, pos) && !state.isSignalSource()) solidDepth++;
         }
     }
 

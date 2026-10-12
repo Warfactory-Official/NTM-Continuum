@@ -1,34 +1,28 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.config.CustomMachineConfigJSON;
 import com.hbm.config.CustomMachineConfigJSON.MachineConfiguration;
-import dev.golem.core.jei.Jei;
-import mezz.jei.api.registration.IRecipeCatalystRegistration;
-import mezz.jei.api.registration.IRecipeCategoryRegistration;
-import mezz.jei.api.registration.IRecipeRegistration;
+import dev.golem.core.viewer.ViewerPlugin;
 
 /** One-call hooks for 1.7 {@code NEIConfig}'s loop over {@code CustomMachineConfigJSON.niceList}. */
 public final class CustomMachineJeiIntegration {
     private CustomMachineJeiIntegration() {}
 
-    public static void registerCategories(IRecipeCategoryRegistration registration) {
+    public static void registerCategories(ViewerPlugin.Categories registration) {
         for (MachineConfiguration conf : CustomMachineConfigJSON.niceList) {
-            registration.addRecipeCategories(new CustomMachineRecipeHandler(registration.getJeiHelpers().getGuiHelper(), conf));
+            registration.add(new CustomMachineRecipeHandler(conf));
         }
     }
 
-    public static void registerRecipes(IRecipeRegistration registration) {
+    public static void registerRecipes(ViewerPlugin.Recipes registration) {
         for (MachineConfiguration conf : CustomMachineConfigJSON.niceList) {
-            Jei.addRecipes(registration, CustomMachineRecipeHandler.type(conf), CustomMachineRecipeHandler.buildRecipes(conf));
+            registration.add(CustomMachineRecipeHandler.type(conf), CustomMachineRecipeHandler.buildRecipes(conf));
         }
     }
 
-    public static void registerCatalysts(IRecipeCatalystRegistration registration) {
+    public static void registerCatalysts(ViewerPlugin.Stations registration) {
         for (MachineConfiguration conf : CustomMachineConfigJSON.niceList) {
-            Jei.addCraftingStation(registration, CustomMachineRecipeHandler.type(conf), CustomMachineRecipeHandler.machine(conf));
+            registration.add(CustomMachineRecipeHandler.type(conf), CustomMachineRecipeHandler.machine(conf));
         }
     }
 }
-//?}

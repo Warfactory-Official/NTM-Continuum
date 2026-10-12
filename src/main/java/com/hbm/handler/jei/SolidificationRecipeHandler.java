@@ -1,12 +1,9 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.recipes.SolidificationRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
-import mezz.jei.api.helpers.IGuiHelper;
-import dev.golem.core.jei.JeiRecipeType;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -18,8 +15,8 @@ public class SolidificationRecipeHandler extends JEIUniversalHandler<Solidificat
 
     public record Entry(FluidType input, SolidificationRecipes.SolidRecipe recipe) {}
 
-    public SolidificationRecipeHandler(IGuiHelper helper, JeiRecipeType<Entry> type, Component title, ItemStack... machines) {
-        super(helper, type, title, machines);
+    public SolidificationRecipeHandler(ViewerType<Entry> type, Component title, ItemStack... machines) {
+        super(type, title, machines);
     }
 
     public static List<Entry> buildRecipes() {
@@ -38,4 +35,3 @@ public class SolidificationRecipeHandler extends JEIUniversalHandler<Solidificat
         return List.of(List.of(recipe.recipe.output().copy()));
     }
 }
-//?}

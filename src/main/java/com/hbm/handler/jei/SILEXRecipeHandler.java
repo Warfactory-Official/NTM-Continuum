@@ -1,11 +1,7 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.inventory.recipes.SILEXRecipes;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import dev.golem.core.jei.JeiRecipeType;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -28,8 +24,8 @@ import java.util.List;
  */
 public class SILEXRecipeHandler extends JEIUniversalHandler<SILEXRecipes.SILEXRecipe> {
 
-    public SILEXRecipeHandler(IGuiHelper helper, JeiRecipeType<SILEXRecipes.SILEXRecipe> type, Component title, ItemStack... machines) {
-        super(helper, type, title, machines);
+    public SILEXRecipeHandler(ViewerType<SILEXRecipes.SILEXRecipe> type, Component title, ItemStack... machines) {
+        super(type, title, machines);
     }
 
     @Override
@@ -50,8 +46,8 @@ public class SILEXRecipeHandler extends JEIUniversalHandler<SILEXRecipes.SILEXRe
     }
 
     @Override
-    public void draw(SILEXRecipes.SILEXRecipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor g, double mouseX, double mouseY) {
-        super.draw(recipe, slots, g, mouseX, mouseY);
+    public void draw(SILEXRecipes.SILEXRecipe recipe, GuiGraphicsExtractor g, double mouseX, double mouseY) {
+        super.draw(recipe, g, mouseX, mouseY);
         text(g, Component.translatable(recipe.laserStrength.name).getString() + " laser or stronger", 8, 44);
         int rolls = recipe.fluidConsumed > 0 ? recipe.fluidProduced / recipe.fluidConsumed : 0;
         if (rolls > 0) text(g, rolls + "x output per input", 8, 54);
@@ -66,4 +62,3 @@ public class SILEXRecipeHandler extends JEIUniversalHandler<SILEXRecipes.SILEXRe
         text(g, chances.toString(), 8, 64);
     }
 }
-//?}

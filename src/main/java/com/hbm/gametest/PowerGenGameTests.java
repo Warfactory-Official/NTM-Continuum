@@ -76,6 +76,18 @@ public final class PowerGenGameTests {
         FoldedTestSupport.assertPort(helper, relativeCore, relativeCore.offset(1, 0, 0));
         FoldedTestSupport.assertPort(helper, relativeCore, relativeCore.offset(0, 11, -1));
 
+        // 1.7 getTotalHeat triples the sum while worldTime - fissureScanTime < 20, and fissureScanTime starts at 0,
+        // so in the first 20 ticks of a world every heat exchanger reads as on a fissure (1.7 does the same). A short
+        // filtered GameTest run reaches this test before world tick 20; wait it out instead of reading 3x.
+        long early = 20 - helper.getLevel().getGameTime();
+        if (early > 0) {
+            helper.runAfterDelay(early, () -> hephaestusHeatingMeasure(helper, core, heatex));
+            return;
+        }
+        hephaestusHeatingMeasure(helper, core, heatex);
+    }
+
+    private static void hephaestusHeatingMeasure(GameTestHelper helper, BlockPos core, TileEntityMachineHephaestus heatex) {
         int height = (int) (helper.getLevel().getGameTime() % 10);
         int y = core.getY() - 1 - height;
         for (int dx = 0; dx <= 1; dx++) {

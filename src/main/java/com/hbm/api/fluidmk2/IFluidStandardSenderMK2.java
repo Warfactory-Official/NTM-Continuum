@@ -4,6 +4,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.uninos.graph.PortClaims;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -11,8 +12,8 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * {@link IFluidProviderMK2} with a standard implementation of provision/removal backed by the tile's own
- * sending tanks. {@code tryProvide} is now only the direct, network-less transfer to a touching
- * receiver: a duct network finds its own providers by probing the faces of its cells.
+ * sending tanks. {@code tryProvide} is 1.7's: it makes the tile a provider of the net of the duct at that port (a
+ * {@link PortClaims} claim, renewed every tick) and hands fluid straight to a touching receiver.
  */
 public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
 
@@ -26,6 +27,7 @@ public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
 
     default void tryProvide(FluidType type, int pressure, Level world, int x, int y, int z, ForgeDirection dir) {
 
+        PortClaims.claim(world, x, y, z, dir, this, type, PortClaims.PROVIDE);
         BlockEntity te = world.getBlockEntity(new BlockPos(x, y, z));
 
         if (te != this && te instanceof IFluidReceiverMK2 rec) {
@@ -37,6 +39,19 @@ public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
                 this.useUpFluid(type, pressure, toTransfer);
             }
         }
+    }
+
+    /** 1.7 {@code IFluidStandardSender.sendFluidToAll}: {@link #tryProvide} on all six sides of {@code tile}. */
+    default void sendFluidToAll(FluidTankNTM tank, BlockEntity tile) {
+        BlockPos pos = tile.getBlockPos();
+        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+            tryProvide(tank, tile.getLevel(), pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
+        }
+    }
+
+    /** 1.7 {@code net.removeProvider(this)} at the duct at {@code x, y, z}: stop providing {@code type} there now. */
+    default void tryUnprovide(FluidType type, Level world, int x, int y, int z) {
+        PortClaims.withdraw(world, x, y, z, this, type, PortClaims.PROVIDE);
     }
 
     @NonNull FluidTankNTM[] getSendingTanks();

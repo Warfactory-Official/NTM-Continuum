@@ -21,6 +21,7 @@ import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.uninos.graph.EndpointRegistry;
+import com.hbm.uninos.graph.PortClaims;
 import dev.golem.core.fluid.FluidContainer;
 import dev.golem.core.fluid.FluidExposure;
 import dev.golem.core.fluid.FluidMachine;
@@ -61,6 +62,8 @@ import java.util.Set;
  *       intake/outlet hold, and nothing is written into a tank directly.</li>
  *   <li>Pressure 0 only: a foreign pipe carries no pressure, so a pressurised tank answers neither way.</li>
  *   <li>A directional user (the flow-control pump) receives only on its intake and provides only on its outlet.</li>
+ *   <li>A role is offered only at a port the machine claims it at, as for a duct: its 1.7 {@code trySubscribe} /
+ *       {@code tryProvide} at the position the foreign pipe stands at, on this side ({@link PortClaims}).</li>
  * </ul>
  *
  * <p>HBM's own duct network is unchanged: it does not reach foreign tanks, and ducts are not exposed.
@@ -163,15 +166,25 @@ public final class ForeignFluids {
             return side == null ? null : ForgeDirection.getOrientation(side);
         }
 
-        private @Nullable IFluidReceiverMK2 receiver() {
+        /**
+         * The receiver this face is a port of for {@code type}, when it wants some: 1.7's {@code trySubscribe} at the
+         * position a duct (here the foreign pipe) stands at, on this side ({@link PortClaims}), as the duct network asks.
+         * The demand is read first because the role is only asked about with something to move.
+         */
+        private @Nullable IFluidReceiverMK2 receiver(FluidType type) {
             if (!(user instanceof IFluidReceiverMK2 receiver)) return null;
             if (user instanceof IFluidDirectionalMK2 directional && (side == null || !directional.receivesOn(forgeSide()))) return null;
+            if (side == null || Math.min(receiver.getDemand(type, PRESSURE), receiver.getReceiverSpeed(type, PRESSURE)) <= 0L) return null;
+            if (!PortClaims.allows(level, pos.relative(side).asLong(), forgeSide(), user, type, PortClaims.SUBSCRIBE)) return null;
             return receiver;
         }
 
-        private @Nullable IFluidProviderMK2 provider() {
+        /** The provider this face is a port of for {@code type}, when it holds some: 1.7's {@code tryProvide} there. */
+        private @Nullable IFluidProviderMK2 provider(FluidType type) {
             if (!(user instanceof IFluidProviderMK2 provider)) return null;
             if (user instanceof IFluidDirectionalMK2 directional && (side == null || !directional.providesOn(forgeSide()))) return null;
+            if (side == null || Math.min(provider.getFluidAvailable(type, PRESSURE), provider.getProviderSpeed(type, PRESSURE)) <= 0L) return null;
+            if (!PortClaims.allows(level, pos.relative(side).asLong(), forgeSide(), user, type, PortClaims.PROVIDE)) return null;
             return provider;
         }
 
@@ -217,7 +230,7 @@ public final class ForeignFluids {
             FluidTankNTM tank = tank(index);
             FluidType type = Fluids.fromVanilla(fluid);
             if (tank == null || type == Fluids.NONE || tank.getTankType() != type || tank.getPressure() != PRESSURE) return false;
-            IFluidReceiverMK2 receiver = receiver();
+            IFluidReceiverMK2 receiver = receiver(type);
             if (receiver == null || !connects(type)) return false;
             return !(receiver instanceof IFluidStandardReceiverMK2 standard) || contains(standard.getReceivingTanks(), tank);
         }
@@ -227,7 +240,7 @@ public final class ForeignFluids {
             FluidTankNTM tank = tank(index);
             FluidType type = Fluids.fromVanilla(fluid);
             if (tank == null || type == Fluids.NONE || tank.getTankType() != type || tank.getPressure() != PRESSURE) return false;
-            IFluidProviderMK2 provider = provider();
+            IFluidProviderMK2 provider = provider(type);
             if (provider == null || !connects(type)) return false;
             return !(provider instanceof IFluidStandardSenderMK2 standard) || contains(standard.getSendingTanks(), tank);
         }
@@ -235,7 +248,7 @@ public final class ForeignFluids {
         @Override
         public long demand(Fluid fluid) {
             FluidType type = Fluids.fromVanilla(fluid);
-            IFluidReceiverMK2 receiver = receiver();
+            IFluidReceiverMK2 receiver = receiver(type);
             if (receiver == null || !valid() || !connects(type)) return 0L;
             return Math.max(0L, Math.min(receiver.getDemand(type, PRESSURE), receiver.getReceiverSpeed(type, PRESSURE)));
         }
@@ -243,23 +256,23 @@ public final class ForeignFluids {
         @Override
         public long available(Fluid fluid) {
             FluidType type = Fluids.fromVanilla(fluid);
-            IFluidProviderMK2 provider = provider();
+            IFluidProviderMK2 provider = provider(type);
             if (provider == null || !valid() || !connects(type)) return 0L;
             return Math.max(0L, Math.min(provider.getFluidAvailable(type, PRESSURE), provider.getProviderSpeed(type, PRESSURE)));
         }
 
         @Override
         public long receive(Fluid fluid, long mb) {
-            IFluidReceiverMK2 receiver = receiver();
             FluidType type = Fluids.fromVanilla(fluid);
+            IFluidReceiverMK2 receiver = receiver(type);
             if (receiver == null || type == Fluids.NONE || mb <= 0L) return 0L;
             return mb - receiver.transferFluid(type, PRESSURE, mb);
         }
 
         @Override
         public long give(Fluid fluid, long mb) {
-            IFluidProviderMK2 provider = provider();
             FluidType type = Fluids.fromVanilla(fluid);
+            IFluidProviderMK2 provider = provider(type);
             if (provider == null || type == Fluids.NONE || mb <= 0L) return 0L;
             long given = Math.min(mb, provider.getFluidAvailable(type, PRESSURE));
             if (given > 0L) provider.useUpFluid(type, PRESSURE, given);

@@ -5,7 +5,11 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 
 /** Network-facing coolant view used only by the factory's four coolant proxy positions. */
-public final class ChemicalFactoryCoolantDelegate implements IEnergyReceiverMK2, IFluidStandardTransceiverMK2 {
+public final class ChemicalFactoryCoolantDelegate implements IEnergyReceiverMK2, IFluidStandardTransceiverMK2,
+        com.hbm.uninos.graph.PortClaims.Delegate {
+
+    /** 1.7's {@code delegate} subscribes at the coolant positions on the factory's behalf. */
+    @Override public Object portClaimOwner() { return owner; }
 
     private final TileEntityMachineChemicalFactory owner;
 

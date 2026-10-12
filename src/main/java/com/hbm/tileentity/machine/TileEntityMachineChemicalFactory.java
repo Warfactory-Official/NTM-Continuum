@@ -45,7 +45,22 @@ import java.util.List;
 /** Four-lane Chemical Factory, ported from the legacy TileEntityMachineChemicalFactory. */
 public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IControlReceiver,
-        WorldlyContainer, IUpgradeInfoProvider, IRORValueProvider {
+        WorldlyContainer, IUpgradeInfoProvider, IRORValueProvider, com.hbm.api.fluidmk2.IFluidMultiUserMK2 {
+
+    /**
+     * 1.7: a duct at a coolant position reached the coolant {@code delegate} (water in, low-pressure steam out), not
+     * the factory, whose own tanks are the recipe tanks.
+     */
+    @Override
+    public com.hbm.api.fluidmk2.@org.jspecify.annotations.Nullable IFluidUserMK2 fluidUserAt(BlockPos pos,
+            net.minecraft.core.@org.jspecify.annotations.Nullable Direction face) {
+        if (face == null) return null;
+        BlockPos duct = pos.relative(face);
+        for (DirPos cool : getCoolPos()) {
+            if (cool.getPos().equals(duct) && cool.getDir().toDirection() == face) return coolantDelegate;
+        }
+        return null;
+    }
 
     public static final int LANES = 4;
     public static final int MACHINE_SLOTS = 32;
@@ -133,12 +148,18 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalFactory te) {
         for (DirPos port : te.getConPos()) {
+            te.trySubscribe(level, port);
+            for (FluidTankNTM tank : te.inputTanks) {
+                if (tank.getTankType() != Fluids.NONE) te.trySubscribe(tank.getTankType(), level, port);
+            }
             for (FluidTankNTM tank : te.outputTanks) {
                 if (tank.getFill() > 0) te.tryProvide(tank, level, port);
             }
         }
 
         for (DirPos port : te.getCoolPos()) {
+            te.coolantDelegate.trySubscribe(level, port);
+            te.coolantDelegate.trySubscribe(te.water.getTankType(), level, port);
             te.coolantDelegate.tryProvide(te.lps, level, port);
         }
 

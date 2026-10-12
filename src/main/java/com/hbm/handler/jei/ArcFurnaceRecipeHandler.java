@@ -1,14 +1,11 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.foundry.ArcFurnaceRecipes;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.machine.ItemScraps;
-import dev.golem.core.jei.JeiRecipeType;
-import mezz.jei.api.helpers.IGuiHelper;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -20,10 +17,9 @@ public final class ArcFurnaceRecipeHandler extends JEIUniversalHandler<ArcFurnac
 
     private final boolean liquid;
 
-    public ArcFurnaceRecipeHandler(IGuiHelper helper,
-                                   JeiRecipeType<ArcFurnaceRecipes.ArcFurnaceRecipe> type,
+    public ArcFurnaceRecipeHandler(ViewerType<ArcFurnaceRecipes.ArcFurnaceRecipe> type,
                                    Component title, boolean liquid, ItemStack... machines) {
-        super(helper, type, title, machines);
+        super(type, title, machines);
         this.liquid = liquid;
     }
 
@@ -66,4 +62,3 @@ public final class ArcFurnaceRecipeHandler extends JEIUniversalHandler<ArcFurnac
     }
 
 }
-//?}

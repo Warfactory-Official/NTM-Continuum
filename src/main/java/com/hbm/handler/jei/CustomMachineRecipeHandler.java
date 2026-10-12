@@ -1,7 +1,7 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
+import dev.golem.core.viewer.Role;
+import dev.golem.core.viewer.SlotLayout;
 import com.hbm.blocks.ModCustomMachineBlocks;
 import com.hbm.config.CustomMachineConfigJSON;
 import com.hbm.config.CustomMachineConfigJSON.MachineConfiguration;
@@ -9,12 +9,7 @@ import com.hbm.inventory.recipes.CustomMachineRecipes;
 import com.hbm.inventory.recipes.CustomMachineRecipes.CustomMachineRecipe;
 import com.hbm.items.machine.ItemFluidIcon;
 import dev.golem.core.gui.GuiDraw;
-import dev.golem.core.jei.JeiRecipeType;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -34,15 +29,15 @@ public final class CustomMachineRecipeHandler extends HbmRecipeCategory<CustomMa
 
     private final MachineConfiguration conf;
 
-    public CustomMachineRecipeHandler(IGuiHelper helper, MachineConfiguration conf) {
-        super(helper, type(conf), Component.literal(conf.displayName()), machine(conf), "gui_nei_custom.png");
+    public CustomMachineRecipeHandler(MachineConfiguration conf) {
+        super(type(conf), Component.literal(conf.displayName()), machine(conf), "gui_nei_custom.png");
         this.conf = conf;
     }
 
     /** 1.7's handler id was {@code "ntm_" + unlocalizedName}. */
-    public static JeiRecipeType<CustomMachineRecipe> type(MachineConfiguration conf) {
+    public static ViewerType<CustomMachineRecipe> type(MachineConfiguration conf) {
         String path = ("ntm_" + conf.unlocalizedName).toLowerCase(Locale.US).replaceAll("[^a-z0-9_]", "_");
-        return JeiRecipeType.create("hbm", path, CustomMachineRecipe.class);
+        return ViewerType.create("hbm", path, CustomMachineRecipe.class);
     }
 
     public static ItemStack machine(MachineConfiguration conf) {
@@ -55,29 +50,29 @@ public final class CustomMachineRecipeHandler extends HbmRecipeCategory<CustomMa
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, CustomMachineRecipe recipe, IFocusGroup focuses) {
+    public void setRecipe(SlotLayout builder, CustomMachineRecipe recipe) {
         for (int i = 0; i < 3; i++) if (recipe.inputFluids.length > i)
-            builder.addSlot(RecipeIngredientRole.INPUT, 12 + i * 18, 6).addItemStack(ItemFluidIcon.make(recipe.inputFluids[i]));
+            builder.addSlot(Role.INPUT, 12 + i * 18, 6).addItemStack(ItemFluidIcon.make(recipe.inputFluids[i]));
         for (int i = 0; i < 3; i++) if (recipe.inputItems.length > i)
-            builder.addSlot(RecipeIngredientRole.INPUT, 12 + i * 18, 24).addItemStacks(recipe.inputItems[i].getDisplayStacks());
+            builder.addSlot(Role.INPUT, 12 + i * 18, 24).addItemStacks(recipe.inputItems[i].getDisplayStacks());
         for (int i = 3; i < 6; i++) if (recipe.inputItems.length > i)
-            builder.addSlot(RecipeIngredientRole.INPUT, 12 + (i - 3) * 18, 42).addItemStacks(recipe.inputItems[i].getDisplayStacks());
+            builder.addSlot(Role.INPUT, 12 + (i - 3) * 18, 42).addItemStacks(recipe.inputItems[i].getDisplayStacks());
 
         for (int i = 0; i < 3; i++) if (recipe.outputFluids.length > i)
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 102 + i * 18, 6).addItemStack(ItemFluidIcon.make(recipe.outputFluids[i]));
+            builder.addSlot(Role.OUTPUT, 102 + i * 18, 6).addItemStack(ItemFluidIcon.make(recipe.outputFluids[i]));
         for (int i = 0; i < 6; i++) if (recipe.outputItems.length > i) {
             var out = recipe.outputItems[i];
-            var slot = builder.addSlot(RecipeIngredientRole.OUTPUT, 102 + (i % 3) * 18, i < 3 ? 24 : 42)
+            var slot = builder.addSlot(Role.OUTPUT, 102 + (i % 3) * 18, i < 3 ? 24 : 42)
                     .addItemStack(out.stack().copy());
             // 1.7 RecipeSet: a red "<chance>%" tooltip line on every output whose chance is not exactly 1
             if (out.chance() != 1) {
                 String percent = chanceText(out.chance());
-                slot.addRichTooltipCallback((view, tooltip) ->
+                slot.addTooltipCallback((shown, tooltip) ->
                         tooltip.add(Component.literal(percent).withStyle(net.minecraft.ChatFormatting.RED)));
             }
         }
 
-        builder.addSlot(dev.golem.core.jei.Jei.CRAFTING_STATION, 75, 42).addItemStack(machine(conf));
+        builder.addSlot(Role.CRAFTING_STATION, 75, 42).addItemStack(machine(conf));
     }
 
     /** 1.7 {@code (((int)(chance * 1000)) / 10D) + "%"}: one decimal, truncated toward zero. */
@@ -87,8 +82,8 @@ public final class CustomMachineRecipeHandler extends HbmRecipeCategory<CustomMa
 
     /** 1.7 {@code drawExtras}. */
     @Override
-    public void draw(CustomMachineRecipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor g, double mouseX, double mouseY) {
-        super.draw(recipe, slots, g, mouseX, mouseY);
+    public void draw(CustomMachineRecipe recipe, GuiGraphicsExtractor g, double mouseX, double mouseY) {
+        super.draw(recipe, g, mouseX, mouseY);
         var font = Minecraft.getInstance().font;
         int side = 83;
         if (recipe.radiationAmount != 0) {
@@ -109,4 +104,3 @@ public final class CustomMachineRecipeHandler extends HbmRecipeCategory<CustomMa
         }
     }
 }
-//?}

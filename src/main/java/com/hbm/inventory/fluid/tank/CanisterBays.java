@@ -37,6 +37,15 @@ public final class CanisterBays {
         if (in.isEmpty()) return;
         FluidType tankType = tank.getTankType();
 
+        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item (inf_water, the infinite barrel...) feeds the tank from where it
+        // sits and is never consumed or moved. It is also an IFillableItem, which without this would carry it to the out slot.
+        if (in.getItem() instanceof com.hbm.api.fluidmk2.IInfiniteFluidItem) {
+            if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in) && tank.getTankType() != tankType) {
+                onTypeChange.accept(tankType);
+            }
+            return;
+        }
+
         if (in.getItem() instanceof IFillableItem fillable) {
             int held = fillable.getFill(in);
             FluidType heldType = fillable.getFirstFluidType(in);

@@ -19,6 +19,19 @@ public abstract class EntityCreeperBase extends CompatCreeper {
 
     protected abstract void detonate(ServerLevel level);
 
+    /**
+     * 1.7 {@code func_146077_cc} called {@code setDead()} before the blast, and a dead entity refused every
+     * {@code attackEntityFrom}. {@link #tick} sets {@code dead} for the blast's duration, so the creeper's own
+     * explosion damage (it stands inside its kill radius) must be refused the same way: letting it through
+     * kills the creeper inside the blast, which NeoForge's {@code LivingDamageEvent.Pre} check rejects with an
+     * IllegalArgumentException that crashes the server.
+     */
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+        if (dead) return false;
+        return super.hurtServer(level, source, amount);
+    }
+
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);

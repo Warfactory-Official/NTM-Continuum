@@ -24,7 +24,14 @@ import org.jspecify.annotations.Nullable;
  * stands behind it. So the proxy answers as a provider too, which is where 1.7's pushes arrived.
  */
 public class TileEntityCMPort extends TileEntityLoadedBase
-        implements IEnergyReceiverMK2, IEnergyProviderMK2, IFluidReceiverMK2, IFluidProviderMK2 {
+        implements IEnergyReceiverMK2, IEnergyProviderMK2, IFluidReceiverMK2, IFluidProviderMK2,
+        com.hbm.uninos.graph.PortClaims.Delegate {
+
+    /** 1.7: the controller subscribes and provides at its connection positions; the port only fronts it. */
+    @Override
+    public @Nullable Object portClaimOwner() {
+        return getCore();
+    }
 
     private static final FluidTankNTM[] NO_TANKS = new FluidTankNTM[0];
 

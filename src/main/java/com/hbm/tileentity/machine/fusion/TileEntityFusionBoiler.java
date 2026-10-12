@@ -56,6 +56,7 @@ public class TileEntityFusionBoiler extends TileEntityLoadedBase
         te.plasmaEnergy = 0;
 
         for (DirPos port : te.getConPos()) {
+            if (te.tanks[0].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, port);
             if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, port);
         }
 

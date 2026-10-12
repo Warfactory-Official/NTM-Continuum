@@ -33,7 +33,14 @@ import com.hbm.tileentity.ModPwrBlockEntities;
  * {@link TileEntityLoadedBase} so the fluid net's loaded check and the chunk-load tag sync apply.
  */
 public class TileEntityBlockPWR extends TileEntityLoadedBase
-        implements IFluidReceiverMK2, IFluidProviderMK2, IRORValueProvider, IRORInteractive, com.hbm.tileentity.IRelocatable {
+        implements IFluidReceiverMK2, IFluidProviderMK2, IRORValueProvider, IRORInteractive, com.hbm.tileentity.IRelocatable,
+        com.hbm.uninos.graph.PortClaims.Delegate {
+
+    /** 1.7: the controller subscribes and provides at the port positions; the port block only fronts it. */
+    @Override
+    public @org.jspecify.annotations.Nullable Object portClaimOwner() {
+        return portCore();
+    }
 
     /** A sub-level move carried this block; the controller follows when it was carried too. */
     @Override

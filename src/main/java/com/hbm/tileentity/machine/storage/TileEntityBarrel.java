@@ -111,8 +111,16 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         // In buffer mode, acts like a pipe block, providing fluid to its own node
         // otherwise, it is a regular providing/receiving machine, blocking further propagation
         if (level instanceof ServerLevel server) barrel.updateCells(server);
-        if (barrel.mode == 2) {
-            for (DirPos dp : barrel.getConPos()) barrel.tryProvide(barrel.tank, level, dp.getPos(), dp.getDir());
+        if (barrel.mode != 1) {
+            // 1.7: send mode provides at each port, receive mode subscribes there; any other mode leaves the role now
+            com.hbm.inventory.fluid.FluidType type = barrel.tank.getTankType();
+            for (DirPos dp : barrel.getConPos()) {
+                BlockPos at = dp.getPos();
+                if (barrel.mode == 2) barrel.tryProvide(barrel.tank, level, at, dp.getDir());
+                else barrel.tryUnprovide(type, level, at.getX(), at.getY(), at.getZ());
+                if (barrel.mode == 0) barrel.trySubscribe(type, level, at, dp.getDir());
+                else barrel.tryUnsubscribe(type, level, at.getX(), at.getY(), at.getZ());
+            }
         }
 
         if (barrel.tank.getFill() > 0) barrel.checkFluidInteraction();
@@ -196,8 +204,10 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         if (slot == 4) {
             if (tank.getTankType() == Fluids.NONE) return false;
             if (stack.is(Items.BUCKET)) return ItemFluidBucket.VOLUME <= tank.getMaxFill();
-            return stack.getItem() instanceof IFillableItem fillable && fillable.getFill(stack) == 0
-                    && fillable.acceptsFluid(tank.getTankType(), stack);
+            // 1.7 FluidLoaderFillableItem fills a fillable in place whatever its fill (a half-empty jetpack refuels)
+            return stack.getItem() instanceof IFillableItem fillable
+                    && fillable.acceptsFluid(tank.getTankType(), stack)
+                    && (stack.getMaxStackSize() == 1 || fillable.getFill(stack) == 0);
         }
         return false; // 1.7: the output slots 3 and 5 accept nothing (they are filled internally)
     }

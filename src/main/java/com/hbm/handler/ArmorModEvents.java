@@ -21,7 +21,6 @@ import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Attacks;
 import dev.golem.core.world.Attributes;
 import dev.golem.core.world.Compat;
-import dev.golem.core.world.CompatArmorItem;
 import dev.golem.core.world.DamageEvents;
 import dev.golem.core.world.Deaths;
 import dev.golem.core.world.Effects;
@@ -73,7 +72,26 @@ public final class ArmorModEvents {
         Deaths.onAllowDeath(ArmorModEvents::onAllowDeath);
         Deaths.onDeath(ArmorModEvents::onDeath);
         Attacks.onPlayerAttack(ArmorModEvents::onPlayerAttack);
+        // port: an elytra installed in a chestplate glides like a worn one (ArmorModHandler.isElytra)
+        dev.golem.core.world.Gliders.register(new dev.golem.core.world.Gliders.Source() {
+            @Override
+            public boolean canGlide(LivingEntity entity) {
+                return dev.golem.core.world.Gliders.hasFlightLeft(
+                        ArmorModHandler.installedElytra(entity.getItemBySlot(EquipmentSlot.CHEST)));
+            }
+
+            @Override
+            public void wear(LivingEntity entity) {
+                ItemStack chest = entity.getItemBySlot(EquipmentSlot.CHEST);
+                ItemStack elytra = ArmorModHandler.installedElytra(chest);
+                if (elytra.isEmpty()) return;
+                dev.golem.core.world.Durability.hurt(elytra, 1, entity, EquipmentSlot.CHEST);
+                if (!elytra.isEmpty()) ArmorModHandler.applyMod(chest, elytra);
+            }
+        });
+        dev.golem.core.world.Gliders.registerWings(chest -> ArmorModHandler.installedElytra(chest));
     }
+
 
     // ------------------------------------------------------------------ living update
 
@@ -85,7 +103,7 @@ public final class ArmorModEvents {
             // Runs for every living entity every tick on both sides: the lists are only allocated when a
             // modded or self-modifying suit can actually fill them (reconcileModifiers never keeps them).
             List<ItemArmorMod.Modifier> wanted = List.of();
-            ArmorSlot armorSlot = armor.getItem() instanceof CompatArmorItem item ? item.armorSlot() : null;
+            ArmorSlot armorSlot = dev.golem.core.world.Armors.slotOf(armor); // 1.7: any ItemArmor
 
             if (armorSlot != null && ArmorModHandler.hasMods(armor)) {
                 if (server) wanted = new ArrayList<>();
@@ -220,7 +238,8 @@ public final class ArmorModEvents {
         if (com.hbm.items.weapon.MobSlicer.killedByMobSlicer(entity)) return true;
         for (EquipmentSlot slot : SLOTS) {
             ItemStack stack = entity.getItemBySlot(slot);
-            if (!(stack.getItem() instanceof CompatArmorItem) || !ArmorModHandler.hasMods(stack)) continue;
+            if (!dev.golem.core.world.Armors.isArmor(stack) || !ArmorModHandler.hasMods(stack)) continue;
+
             ItemStack revive = ArmorModHandler.pryMod(stack, ArmorModHandler.extra);
             if (revive.isEmpty()) continue;
 

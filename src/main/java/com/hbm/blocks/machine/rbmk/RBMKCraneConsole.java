@@ -1,42 +1,30 @@
 package com.hbm.blocks.machine.rbmk;
 
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.api.block.IToolable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockMaskTable;
-import com.hbm.tileentity.ModRBMKBlockEntities;
 import com.hbm.tileentity.machine.rbmk.BlockEntityCraneConsole;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
-import org.jspecify.annotations.Nullable;
+import net.minecraft.world.phys.Vec3;
 
 /** Crane desk with its tall body and ground desk folded into the core. */
-public class RBMKCraneConsole extends BlockMultiblockCore {
+public class RBMKCraneConsole extends BlockMultiblockMachine implements IToolable {
 
     private static final int[] DIMENSIONS = {1, 0, 0, 0, 1, 1};
     private static final int[] DESK = {0, 0, 0, 1, 1, 1};
-    private static final BooleanProperty CELL = BooleanProperty.create("cell");
 
     public RBMKCraneConsole(Properties props) {
         super(props);
-        registerDefaultState(defaultBlockState().setValue(CELL, false));
-    }
-
-    @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        super.createBlockStateDefinition(builder);
-        builder.add(CELL);
     }
 
     @Override
@@ -93,18 +81,8 @@ public class RBMKCraneConsole extends BlockMultiblockCore {
     }
 
     @Override
-    protected BlockState cellStateFor(int x, int y, int z, Direction facing, int shapeId) {
-        return defaultBlockState().setValue(CELL, true);
-    }
-
-    @Override
-    public boolean isCellState(BlockState state) {
-        return state.getValue(CELL);
-    }
-
-    @Override
     public RenderShape getRenderShape(BlockState state) {
-        return state.getValue(CELL) ? RenderShape.INVISIBLE : RenderShape.MODEL;
+        return isCellState(state) ? RenderShape.INVISIBLE : RenderShape.MODEL;
     }
 
     @Override
@@ -117,8 +95,23 @@ public class RBMKCraneConsole extends BlockMultiblockCore {
     }
 
     @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) {
+        // 1.7 createNewTileEntity: only the core (meta >= offset) has a tile; BlockMultiblockMachine gives cells none
         return new BlockEntityCraneConsole(pos, state);
+    }
+
+    /** 1.7 {@code onScrew}: the screwdriver on any part finds the core. */
+    @Override
+    public boolean onScrew(Level level, Player player, BlockPos pos, Direction side, Vec3 hit,
+                           InteractionHand hand, ToolType tool) {
+        if (tool != ToolType.SCREWDRIVER) return false;
+        if (level.isClientSide()) return true;
+        BlockPos core = coreOf(level, pos, level.getBlockState(pos));
+        if (core != null && level.getBlockEntity(core) instanceof BlockEntityCraneConsole console) {
+            console.cycleCraneRotation();
+            console.setChanged();
+        }
+        return true;
     }
 
     /** 1.7 {@code RBMKCraneConsole.getAllDimensions}, read only by the placement highlight. */

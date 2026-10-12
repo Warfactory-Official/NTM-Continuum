@@ -1,21 +1,14 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
+import dev.golem.core.viewer.Drawable;
+import dev.golem.core.viewer.Role;
+import dev.golem.core.viewer.SlotLayout;
 import com.hbm.inventory.recipes.PressRecipes;
 import com.hbm.items.machine.ItemStamp;
 import com.hbm.items.machine.ItemStamp.StampType;
 import com.hbm.items.machine.ModStampItems;
 import dev.golem.core.registry.RegistryObject;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.drawable.IDrawable;
-import mezz.jei.api.gui.drawable.IDrawableAnimated;
-import mezz.jei.api.gui.drawable.IDrawableStatic;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
-import dev.golem.core.jei.JeiRecipeType;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -35,15 +28,15 @@ import java.util.Map;
  */
 public class PressRecipeHandler extends HbmRecipeCategory<PressRecipes.PressRecipe> {
 
-    private final IDrawableAnimated progress;
+    private final Drawable progress;
 
     /** StampType → all registered stamp items of that type (built once from ModStampItems). */
     private static Map<StampType, List<ItemStack>> stampsByType;
 
-    public PressRecipeHandler(IGuiHelper helper, JeiRecipeType<PressRecipes.PressRecipe> type, Component title, ItemStack icon) {
-        super(helper, type, title, icon, "gui_nei_press.png");
-        IDrawableStatic progressStatic = helper.createDrawable(tex("gui_nei_press.png"), 0, 86, 18, 18);
-        this.progress = helper.createAnimatedDrawable(progressStatic, 20, IDrawableAnimated.StartDirection.TOP, false);
+    public PressRecipeHandler(ViewerType<PressRecipes.PressRecipe> type, Component title, ItemStack icon) {
+        super(type, title, icon, "gui_nei_press.png");
+        Drawable.Texture progressStatic = Drawable.texture(tex("gui_nei_press.png"), 0, 86, 18, 18);
+        this.progress = Drawable.animated(progressStatic, 20, Drawable.Direction.TOP, false);
     }
 
     private static Map<StampType, List<ItemStack>> stampsByType() {
@@ -61,17 +54,16 @@ public class PressRecipeHandler extends HbmRecipeCategory<PressRecipes.PressReci
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, PressRecipes.PressRecipe recipe, IFocusGroup focuses) {
+    public void setRecipe(SlotLayout builder, PressRecipes.PressRecipe recipe) {
         List<ItemStack> stamps = stampsByType().getOrDefault(recipe.type(), List.of());
-        builder.addSlot(RecipeIngredientRole.INPUT, 48, 6).addItemStacks(stamps);                              // stamp (old init 47,5)
-        builder.addSlot(RecipeIngredientRole.INPUT, 48, 42).addItemStacks(recipe.input().getDisplayStacks()); // ingredient (old init 47,41)
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 111, 24).addItemStacks(List.of(recipe.output()));        // output (old init 110,23)
+        builder.addSlot(Role.INPUT, 48, 6).addItemStacks(stamps);                              // stamp (old init 47,5)
+        builder.addSlot(Role.INPUT, 48, 42).addItemStacks(recipe.input().getDisplayStacks()); // ingredient (old init 47,41)
+        builder.addSlot(Role.OUTPUT, 111, 24).addItemStacks(List.of(recipe.output()));        // output (old init 110,23)
     }
 
     @Override
-    public void draw(PressRecipes.PressRecipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor g, double mouseX, double mouseY) {
-        super.draw(recipe, slots, g, mouseX, mouseY);
+    public void draw(PressRecipes.PressRecipe recipe, GuiGraphicsExtractor g, double mouseX, double mouseY) {
+        super.draw(recipe, g, mouseX, mouseY);
         progress.draw(g, 47, 24);
     }
 }
-//?}

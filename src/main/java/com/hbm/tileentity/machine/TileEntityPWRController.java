@@ -208,7 +208,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
                 for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
                     BlockPos portPos = port.relative(dir.toDirection());
                     if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, portPos, dir);
-                    // 1.7 also subscribed the cold tank here; the port's fluid net finds the port cells itself
+                    te.trySubscribe(te.tanks[0].getTankType(), level, portPos, dir);
                 }
             }
 

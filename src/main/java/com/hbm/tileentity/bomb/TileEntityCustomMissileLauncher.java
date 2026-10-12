@@ -106,6 +106,15 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityCustomMissileLauncher te) {
         te.updateTypes();
 
+        // 1.7 updateConnections, every second: power and both fuel tanks at each connection position
+        if (level.getGameTime() % 20 == 0) {
+            for (com.hbm.lib.DirPos port : te.connectionPositions()) {
+                te.trySubscribe(level, port);
+                te.trySubscribe(te.tanks[0].getTankType(), level, port);
+                te.trySubscribe(te.tanks[1].getTankType(), level, port);
+            }
+        }
+
         MachineFluidContainerIO.load(te.tanks[0], te.inventory, 2, 6);
         MachineFluidContainerIO.load(te.tanks[1], te.inventory, 3, 7);
 
@@ -131,6 +140,9 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
             }
         }
     }
+
+    /** 1.7 {@code updateConnections}' positions (a cable at one the table does not open never connects). */
+    public abstract com.hbm.lib.DirPos[] connectionPositions();
 
     public boolean canLaunch() {
         return power >= maxPower * 0.75 && isMissileValid() && (!requiresDesignatorToLaunch() || hasDesignator())

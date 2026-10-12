@@ -1,0 +1,78 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "#straight"
+  },
+  "elements": [
+    {
+      "from": [
+        6,
+        6,
+        0
+      ],
+      "to": [
+        10,
+        10,
+        16
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            6,
+            16,
+            10,
+            0
+          ],
+          "texture": "#straight"
+        },
+        "up": {
+          "uv": [
+            6,
+            0,
+            10,
+            16
+          ],
+          "texture": "#straight"
+        },
+        "north": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#end"
+        },
+        "south": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#end"
+        },
+        "west": {
+          "uv": [
+            6,
+            0,
+            10,
+            16
+          ],
+          "rotation": 90,
+          "texture": "#straight"
+        },
+        "east": {
+          "uv": [
+            10,
+            0,
+            6,
+            16
+          ],
+          "rotation": 90,
+          "texture": "#straight"
+        }
+      }
+    }
+  ]
+}

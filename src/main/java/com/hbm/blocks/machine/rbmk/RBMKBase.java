@@ -80,9 +80,11 @@ public abstract class RBMKBase extends BlockMultiblockCore implements IFluidConn
     @Override protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) { BlockPos core = coreOf(level, pos, state); return core == null ? 0 : super.onAnalogOutputSignal(level.getBlockState(core), level, core); }
     @Override protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (this instanceof RBMKRod || this instanceof RBMKStorage) com.hbm.handler.BossSpawnHandler.markFBI(player); // 1.7: rods and storage mark on any use
-        if (level.isClientSide()) return InteractionResult.SUCCESS;
-        BlockPos core = coreOf(level, pos, state); if (core == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        BlockPos core = coreOf(level, pos, state); if (core == null) return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
         BlockState coreState = level.getBlockState(core);
+        // 1.7 openInv: a lid in hand on a lidless column is the lid's click (ItemRBMKLid.onItemUse), not the GUI's.
+        if (player.getMainHandItem().getItem() instanceof com.hbm.items.machine.ItemRBMKLid && !hasOwnLid() && !lidOf(coreState).present()) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (player.isShiftKeyDown() && !hasOwnLid()) { Lid lid = lidOf(coreState); if (lid.present()) { level.setBlock(core, coreState.setValue(LID, Lid.NONE), 3); if (NeutronNodeWorld.getNode(level, core) instanceof RBMKNeutronNode node) node.removeLid(); Block.popResource(level, core, new ItemStack(lid == Lid.GLASS ? ModRBMKItems.rbmk_lid_glass.get() : ModRBMKItems.rbmk_lid.get())); return InteractionResult.SUCCESS; } }
         if (level.getBlockEntity(core) instanceof MenuProvider menu && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) { dev.golem.core.gui.Menus.openWithPos(serverPlayer, menu, core); return InteractionResult.SUCCESS; }
         return InteractionResult.TRY_WITH_EMPTY_HAND;

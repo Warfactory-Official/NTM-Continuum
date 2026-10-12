@@ -1,13 +1,10 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.recipes.CokerRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
-import mezz.jei.api.helpers.IGuiHelper;
-import dev.golem.core.jei.JeiRecipeType;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -19,8 +16,8 @@ public class CokerRecipeHandler extends JEIUniversalHandler<CokerRecipeHandler.E
 
     public record Entry(FluidType input, CokerRecipes.CokerRecipe recipe) {}
 
-    public CokerRecipeHandler(IGuiHelper helper, JeiRecipeType<Entry> type, Component title, ItemStack... machines) {
-        super(helper, type, title, machines);
+    public CokerRecipeHandler(ViewerType<Entry> type, Component title, ItemStack... machines) {
+        super(type, title, machines);
     }
 
     public static List<Entry> buildRecipes() {
@@ -44,4 +41,3 @@ public class CokerRecipeHandler extends JEIUniversalHandler<CokerRecipeHandler.E
         return out;
     }
 }
-//?}

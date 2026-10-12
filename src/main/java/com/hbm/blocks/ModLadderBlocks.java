@@ -86,13 +86,13 @@ public final class ModLadderBlocks {
             .tag(BlockTag.CLIMBABLE);
     public static final RegistryObject<BlockNTMLadder> ladder_red = ladder("ladder_red", false)
             .model(d -> d.statesOnly().states(Variants.facing()))
-            .icon(d -> d.models(Models.blockItem("hbm:block/ladder_red")))
+            .icon(d -> d.models(Models.blockItem("hbm:block/ladder_red_item")))
             .loot(Loot.self())
             .tag(BlockTag.AXE)
             .tag(BlockTag.CLIMBABLE);
     public static final RegistryObject<BlockNTMLadder> ladder_red_top = ladder("ladder_red_top", true)
             .model(d -> d.statesOnly().states(Variants.facing()))
-            .icon(d -> d.models(Models.blockItem("hbm:block/ladder_red_top")))
+            .icon(d -> d.models(Models.blockItem("hbm:block/ladder_red_top_item")))
             .loot(Loot.self())
             .tag(BlockTag.AXE)
             .tag(BlockTag.CLIMBABLE);
@@ -100,7 +100,7 @@ public final class ModLadderBlocks {
     private static Reg.Handle<BlockNTMLadder> ladder(String id, boolean top) {
         Reg.Handle<BlockNTMLadder> block = REG.block(id,
                 p -> new BlockNTMLadder(p, top),
-                p -> p.strength(0.25F, 2.0F).sound(SoundType.LADDER).noOcclusion().noCollision());
+                p -> p.strength(0.25F, 2.0F).sound(SoundType.LADDER).noOcclusion());
         Reg.Handle<BlockItem> item = REG.blockItem(block, Compat::blockDescription);
         ModTabs.addTo(HbmTab.BLOCKS, item);
         return block;

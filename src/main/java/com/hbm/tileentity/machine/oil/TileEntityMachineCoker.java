@@ -73,6 +73,10 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
         te.tryPullHeat();
         te.setTypeFromFluidId();
 
+        if (level.getGameTime() % 20 == 0) {
+            for (DirPos dp : te.getConPos()) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
+        }
+
 
         te.wasOn = false;
 

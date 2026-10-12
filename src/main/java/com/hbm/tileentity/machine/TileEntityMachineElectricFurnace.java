@@ -85,6 +85,12 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
 
+        if (level.getGameTime() % 40 == 0) { // 1.7 updateConnections every 40 ticks (the net keeps a subscriber 3 s)
+            for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+                te.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
+            }
+        }
+
         te.consumption = 50;
         te.maxProgress = 100;
 

@@ -20,6 +20,9 @@ public class TileEntityMachineDetector extends TileEntityLoadedBase implements I
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineDetector detector) {
+        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+            detector.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
+        }
         boolean on = false;
         if (detector.power > 0) {
             on = true;

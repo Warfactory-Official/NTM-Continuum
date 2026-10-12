@@ -1,20 +1,15 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
+import dev.golem.core.viewer.Drawable;
+import dev.golem.core.viewer.Role;
+import dev.golem.core.viewer.SlotLayout;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.machine.ItemBlueprints;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.drawable.IDrawable;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
-import dev.golem.core.jei.JeiRecipeType;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -37,18 +32,18 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
 
     protected final GenericRecipes recipeSet;
     protected final ItemStack[] machines;
-    protected final IDrawable slotFrame;    // gui_nei 5,87 18x18
-    protected final IDrawable machinePill;  // gui_nei 59,87 18x36 (arrow above, machine below)
-    protected final IDrawable blueprintPill; // gui_nei 77,87 18x50 (blueprint, arrow, machine)
+    protected final Drawable slotFrame;    // gui_nei 5,87 18x18
+    protected final Drawable machinePill;  // gui_nei 59,87 18x36 (arrow above, machine below)
+    protected final Drawable blueprintPill; // gui_nei 77,87 18x50 (blueprint, arrow, machine)
 
-    public JEIGenericRecipeHandler(IGuiHelper helper, JeiRecipeType<GenericRecipe> type, Component title,
+    public JEIGenericRecipeHandler(ViewerType<GenericRecipe> type, Component title,
                                    GenericRecipes recipeSet, ItemStack... machines) {
-        super(helper, type, title, machines.length > 0 ? machines[0] : ItemStack.EMPTY, "gui_nei.png");
+        super(type, title, machines.length > 0 ? machines[0] : ItemStack.EMPTY, "gui_nei.png");
         this.recipeSet = recipeSet;
         this.machines = machines;
-        this.slotFrame = helper.createDrawable(tex("gui_nei.png"), 5, 87, 18, 18);
-        this.machinePill = helper.createDrawable(tex("gui_nei.png"), 59, 87, 18, 36);
-        this.blueprintPill = helper.createDrawable(tex("gui_nei.png"), 77, 87, 18, 50);
+        this.slotFrame = Drawable.texture(tex("gui_nei.png"), 5, 87, 18, 18);
+        this.machinePill = Drawable.texture(tex("gui_nei.png"), 59, 87, 18, 36);
+        this.blueprintPill = Drawable.texture(tex("gui_nei.png"), 77, 87, 18, 50);
     }
 
     /** The recipes to register for this category — the machine's whole ordered list, minus empties. */
@@ -116,7 +111,7 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, GenericRecipe recipe, IFocusGroup focuses) {
+    public void setRecipe(SlotLayout builder, GenericRecipe recipe) {
         int off = xOffset(recipe);
         List<List<ItemStack>> in = inputs(recipe);
         List<List<ItemStack>> out = outputs(recipe);
@@ -124,31 +119,31 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
 
         int[][] inPos = getInputSlotPositions(in.size());
         for (int i = 0; i < in.size(); i++) {
-            builder.addSlot(RecipeIngredientRole.INPUT, inPos[i][0] + off, inPos[i][1])
+            builder.addSlot(Role.INPUT, inPos[i][0] + off, inPos[i][1])
                     .addItemStacks(in.get(i)).setBackground(slotFrame, -1, -1);
         }
 
         int[][] outPos = getOutputSlotPositions(out.size());
         for (int i = 0; i < out.size(); i++) {
-            builder.addSlot(RecipeIngredientRole.OUTPUT, outPos[i][0] + off, outPos[i][1])
+            builder.addSlot(Role.OUTPUT, outPos[i][0] + off, outPos[i][1])
                     .addItemStacks(out.get(i)).setBackground(slotFrame, -1, -1);
         }
 
         // The machine itself, sitting in the lower half of the pill (old: init(74+off, 29) → item at +1).
         if (machines != null && machines.length > 0) {
-            builder.addSlot(dev.golem.core.jei.Jei.CRAFTING_STATION, 75 + off, templates.isEmpty() ? 30 : 37)
+            builder.addSlot(Role.CRAFTING_STATION, 75 + off, templates.isEmpty() ? 30 : 37)
                     .addItemStacks(List.of(machines));
         }
 
         if (!templates.isEmpty()) {
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 75 + off, 10)
+            builder.addSlot(Role.OUTPUT, 75 + off, 10)
                     .addItemStacks(templates);
         }
     }
 
     @Override
-    public void draw(GenericRecipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor g, double mouseX, double mouseY) {
-        super.draw(recipe, slots, g, mouseX, mouseY);
+    public void draw(GenericRecipe recipe, GuiGraphicsExtractor g, double mouseX, double mouseY) {
+        super.draw(recipe, g, mouseX, mouseY);
         if (blueprintTemplates(recipe).isEmpty()) {
             machinePill.draw(g, 74 + xOffset(recipe), 14);
         } else {
@@ -188,4 +183,3 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
         };
     }
 }
-//?}

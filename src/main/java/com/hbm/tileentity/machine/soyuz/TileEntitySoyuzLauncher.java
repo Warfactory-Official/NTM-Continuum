@@ -42,7 +42,8 @@ import java.util.List;
  * countdown once started; the rocket leaves when the clock hits zero.
  *
  * <p>1.7's {@code canLaunch} tests {@code hasRocket()} twice and never {@code hasOxy()}, so a launch needs
- * kerosene but not oxygen, while liftoff still drains both tanks (clamped at zero here; 1.7's tank clamped too).
+ * kerosene but not oxygen, while liftoff still drains both tanks. Clamped at zero here; 1.7's {@code FluidTank.setFill}
+ * does not clamp, so a 1.7 launch short of oxygen left a negative oxygen fill (open port decision, 2026-10-12).
  * Ported as found. Nothing may be piped into the inventory (1.7 {@code isItemValidForSlot} is the base's false).
  */
 public class TileEntitySoyuzLauncher extends TileEntityMachineBase
@@ -88,6 +89,13 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
     }
 
     protected void tickServer(Level level) {
+        if (level.getGameTime() % 20 == 0) {
+            for (DirPos port : getConPos()) {
+                this.trySubscribe(level, port);
+                this.trySubscribe(tanks[0].getTankType(), level, port);
+                this.trySubscribe(tanks[1].getTankType(), level, port);
+            }
+        }
         com.hbm.inventory.fluid.tank.CanisterBays.process(inventory, tanks[0], 4, 5, before -> { });
         com.hbm.inventory.fluid.tank.CanisterBays.process(inventory, tanks[1], 6, 7, before -> { });
         power = Library.chargeTEFromItems(inventory, SLOT_BATTERY, power, maxPower);

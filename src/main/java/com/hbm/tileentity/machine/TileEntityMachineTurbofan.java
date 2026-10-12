@@ -121,6 +121,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         fan.power = Library.chargeItemsFromTE(fan.inventory, 3, fan.power, fan.power);
         for (DirPos connection : fan.getConPos()) {
             fan.tryProvide(level, connection.getPos(), connection.getDir());
+            fan.trySubscribe(fan.tank.getTankType(), level, connection);
             if (fan.blood.getFill() > 0) fan.tryProvide(fan.blood, level, connection);
             fan.sendSmoke(connection);
         }
@@ -151,6 +152,11 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
 
     private void loadTank(Level level) {
         ItemStack in = inventory.getStackInSlot(0);
+        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
+        if (!in.isEmpty() && com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+            setChanged();
+            return;
+        }
         if (in.isEmpty() || !(in.getItem() instanceof IFillableItem fillable)) return;
         int held = fillable.getFill(in);
         FluidType heldType = fillable.getFirstFluidType(in);

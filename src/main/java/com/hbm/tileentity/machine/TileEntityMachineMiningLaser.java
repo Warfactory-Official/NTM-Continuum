@@ -109,6 +109,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
         // Power from the TOP arm; crude oil out the 4 side arms (old sendFluid coords kept verbatim,
         // including the odd y±2 Z-direction pair).
 
+        te.trySubscribe(level, pos.getX(), pos.getY() + 2, pos.getZ(), ForgeDirection.UP); // 1.7 updateConnections
         te.tryProvide(te.tank, level, pos.getX() + 2, pos.getY(), pos.getZ(), Library.POS_X);
         te.tryProvide(te.tank, level, pos.getX() - 2, pos.getY(), pos.getZ(), Library.NEG_X);
         te.tryProvide(te.tank, level, pos.getX(), pos.getY() + 2, pos.getZ(), Library.POS_Z);

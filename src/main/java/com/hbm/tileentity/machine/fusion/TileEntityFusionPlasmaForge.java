@@ -125,6 +125,10 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         te.maxPower = Math.max(Math.max(te.power, te.maxPower), 100_000L);
         te.power = Library.chargeTEFromItems(te.inventory, SLOT_BATTERY, te.power, te.maxPower);
 
+        for (DirPos port : te.getConPos()) {
+            te.trySubscribe(level, port);
+            if (te.inputTank.getTankType() != Fluids.NONE) te.trySubscribe(te.inputTank.getTankType(), level, port);
+        }
 
         if (te.booster <= 0) {
             ItemStack boosterStack = te.getItem(SLOT_BOOSTER);

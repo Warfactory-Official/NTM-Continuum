@@ -145,6 +145,10 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
         // charge is kept, a battery in it works
         this.power = Library.chargeTEFromItems(inventory, 9, power, maxPower);
         this.power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
+
+        if (level.getGameTime() % 20 == 0) {
+            for (DirPos pos : getConPos()) this.trySubscribe(level, pos);
+        }
         this.jammed = false;
         allocateTargets(level);
 

@@ -42,26 +42,16 @@ public class ContainerBarrel extends AbstractContainerMenu {
         this.machine = barrel != null ? barrel : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
-        this.addSlot(validated(0, 8, 17));
-        this.addSlot(validated(1, 8, 53));
-        this.addSlot(validated(2, 53 - 18, 17));
-        this.addSlot(takeOnly(3, 53 - 18, 53));
-        this.addSlot(validated(4, 125, 17));
-        this.addSlot(takeOnly(5, 125, 53));
+        // 1.7: six plain Slots. isItemValidForSlot only gates automation; by hand any item goes anywhere, which is
+        // how the creative infinite barrel (no fluid content of its own) is put into the drain slot.
+        this.addSlot(new Slot(this.machine, 0, 8, 17));
+        this.addSlot(new Slot(this.machine, 1, 8, 53));
+        this.addSlot(new Slot(this.machine, 2, 53 - 18, 17));
+        this.addSlot(new Slot(this.machine, 3, 53 - 18, 53));
+        this.addSlot(new Slot(this.machine, 4, 125, 17));
+        this.addSlot(new Slot(this.machine, 5, 125, 53));
 
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
-    }
-
-    private Slot validated(int index, int x, int y) {
-        return new Slot(this.machine, index, x, y) {
-            @Override public boolean mayPlace(ItemStack stack) { return ContainerBarrel.this.machine.canPlaceItem(index, stack); }
-        };
-    }
-
-    private Slot takeOnly(int index, int x, int y) {
-        return new Slot(this.machine, index, x, y) {
-            @Override public boolean mayPlace(ItemStack stack) { return false; }
-        };
     }
 
     private static @Nullable TileEntityBarrel resolve(Inventory playerInventory, BlockPos pos) {

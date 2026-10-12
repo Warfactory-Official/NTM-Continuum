@@ -3,7 +3,6 @@ package com.hbm.inventory.gui;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.inventory.container.ContainerArmorTable;
 import dev.golem.core.gui.GuiDraw;
-import dev.golem.core.world.CompatArmorItem;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -35,7 +34,8 @@ public final class GUIArmorTable extends dev.golem.core.gui.CompatContainerScree
         ItemStack armor = menu.getSlot(ContainerArmorTable.ARMOR_SLOT).getItem();
         if (!armor.isEmpty()) {
             GuiDraw.blit(graphics, TEXTURE, leftPos + 63, topPos + 60,
-                    176F, armor.getItem() instanceof CompatArmorItem ? 74F : 52F, 22, 22, 256, 256);
+                    176F, dev.golem.core.world.Armors.isArmor(armor) ? 74F : 52F, 22, 22, 256, 256);
+
         } else if ((System.currentTimeMillis() / 500L) % 2L == 0L) {
             GuiDraw.blit(graphics, TEXTURE, leftPos + 63, topPos + 60, 176F, 52F, 22, 22, 256, 256);
         }

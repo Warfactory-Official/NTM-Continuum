@@ -30,6 +30,14 @@ public abstract class TileEntityChimneyBase extends TileEntityLoadedBase impleme
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityChimneyBase chimney) {
 
+        // 1.7: the three smokes at the four connection points, every second (the net keeps a subscriber three)
+        if (level.getGameTime() % 20 == 0) {
+            for (com.hbm.inventory.fluid.FluidType type : new com.hbm.inventory.fluid.FluidType[]{
+                    com.hbm.inventory.fluid.Fluids.SMOKE, com.hbm.inventory.fluid.Fluids.SMOKE_LEADED, com.hbm.inventory.fluid.Fluids.SMOKE_POISON}) {
+                for (DirPos port : chimney.getConPos()) chimney.trySubscribe(type, level, port);
+            }
+        }
+
         if (chimney.ashTick > 0L || chimney.sootTick > 0L) {
             if (level.getBlockEntity(pos.below()) instanceof TileEntityAshpit ashpit) {
                 ashpit.ashLevelFly += (int) chimney.ashTick;

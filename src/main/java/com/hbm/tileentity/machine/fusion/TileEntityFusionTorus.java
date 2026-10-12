@@ -129,6 +129,13 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
         te.updateCooling();
 
         for (DirPos port : te.getConPos()) {
+            if (level.getGameTime() % 20 == 0) {
+                te.trySubscribe(level, port);
+                te.trySubscribe(te.coolantTanks[0].getTankType(), level, port);
+                if (te.tanks[0].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, port);
+                if (te.tanks[1].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[1].getTankType(), level, port);
+                if (te.tanks[2].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[2].getTankType(), level, port);
+            }
             if (te.coolantTanks[1].getFill() > 0) te.tryProvide(te.coolantTanks[1], level, port);
             if (te.tanks[3].getFill() > 0) te.tryProvide(te.tanks[3], level, port);
         }
@@ -221,10 +228,14 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
                 te.getVolume(speed), 30F, speed, 20);
     }
 
-    /** A fill fraction, but never zero while anything is in the buffer — the reactor idles, not stalls. */
-    public static double getSpeedScaled(long max, long current) {
-        if (max <= 0) return 0D;
-        return Math.min(1D, (double) current / (double) max);
+    /**
+     * 1.7 {@code getSpeedScaled}: "Linearly scales up from 0% to 100% from 0 to 0.5, then stays at 100%". A buffer or
+     * tank at half fill or more runs at full speed; below that the speed is twice the fill fraction.
+     */
+    public static double getSpeedScaled(double max, double level) {
+        if (max == 0) return 0D;
+        if (level >= max * 0.5) return 1D;
+        return level / max * 2D;
     }
 
     /**

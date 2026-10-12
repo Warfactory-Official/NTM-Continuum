@@ -58,6 +58,7 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTurbine te) {
+        te.subscribeToAllAround(te.input.getTankType(), te);
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
             te.tryProvide(level, pos.relative(direction.toDirection()), direction);
         }
@@ -130,6 +131,11 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
         if (in.isEmpty()) return;
         FluidType tankType = tank.getTankType();
 
+        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
+        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+            setChanged();
+            return;
+        }
         if (in.getItem() instanceof IFillableItem fillable) {
             int held = fillable.getFill(in);
             FluidType heldType = fillable.getFirstFluidType(in);

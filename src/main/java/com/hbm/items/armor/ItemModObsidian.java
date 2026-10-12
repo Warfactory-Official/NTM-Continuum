@@ -39,7 +39,8 @@ public class ItemModObsidian extends ItemArmorMod {
     public static void protectDropped(ItemEntity entity) {
         if (entity.isInvulnerable()) return;
         ItemStack stack = entity.getItem();
-        if (!(stack.getItem() instanceof dev.golem.core.world.CompatArmorItem) || !ArmorModHandler.hasMods(stack)) return;
+        if (!dev.golem.core.world.Armors.isArmor(stack) || !ArmorModHandler.hasMods(stack)) return;
+
         if (ArmorModHandler.pryMod(stack, ArmorModHandler.cladding).getItem() instanceof ItemModObsidian) {
             entity.setInvulnerable(true);
         }

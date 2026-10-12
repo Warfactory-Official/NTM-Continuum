@@ -120,6 +120,12 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityReactorZirnox te) {
+        if (level.getGameTime() % 20 == 0) {
+            for (DirPos port : te.getConPos()) {
+                te.trySubscribe(te.water.getTankType(), level, port);
+                te.trySubscribe(te.carbonDioxide.getTankType(), level, port);
+            }
+        }
         if (te.redstonePowered) te.isOn = true;
         te.loadTank(24, 26, te.carbonDioxide, Fluids.CARBONDIOXIDE);
         te.loadTank(25, 27, te.water, Fluids.WATER);
@@ -162,6 +168,11 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
         ItemStack input = inventory.getStackInSlot(inputSlot);
         if (input.isEmpty()) return;
 
+        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
+        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, input)) {
+            setChanged();
+            return;
+        }
         if (input.getItem() instanceof IFillableItem fillable) {
             int held = fillable.getFill(input);
             if (held <= 0 || fillable.getFirstFluidType(input) != expected) return;

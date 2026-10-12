@@ -20,7 +20,7 @@ public final class ForeignEnergyBridge {
     /**
      * The injected pool, presented to the distributor as an ordinary provider; getMaxPower equals getPower - this is not a store with headroom.
      */
-    private final IEnergyHandlerMK2 injectedSource = new IEnergyHandlerMK2() {
+    private final IEnergyHandlerMK2 injectedSource = new IEnergyProviderMK2() {
 
         @Override
         public boolean isLoaded() {

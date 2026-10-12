@@ -1,5 +1,7 @@
 package com.hbm.tileentity.bomb;
 
+import com.hbm.lib.DirPos;
+import com.hbm.lib.Library;
 import com.hbm.inventory.container.ContainerLaunchTable;
 import com.hbm.items.weapon.ItemCustomMissilePart.PartSize;
 import com.hbm.lib.ForgeDirection;
@@ -38,6 +40,21 @@ public class TileEntityLaunchTable extends TileEntityCustomMissileLauncher imple
     @Override public PartSize acceptedSize() { return padSize; }
     @Override protected int footprintRadius() { return 4; }
     @Override protected boolean requiresDesignatorToLaunch() { return false; }
+
+    /** 1.7 {@code TileEntityLaunchTable.updateConnections}: nine positions along each side, five out. */
+    @Override
+    public DirPos[] connectionPositions() {
+        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+        DirPos[] ports = new DirPos[36];
+        int n = 0;
+        for (int i = -4; i <= 4; i++) {
+            ports[n++] = new DirPos(x + i, y, z + 5, Library.POS_Z);
+            ports[n++] = new DirPos(x + i, y, z - 5, Library.NEG_Z);
+            ports[n++] = new DirPos(x + 5, y, z + i, Library.POS_X);
+            ports[n++] = new DirPos(x - 5, y, z + i, Library.NEG_X);
+        }
+        return ports;
+    }
 
     @Override
     public boolean canConnect(ForgeDirection dir) {

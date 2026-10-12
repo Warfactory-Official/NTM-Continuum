@@ -6,7 +6,6 @@ import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Geometry;
-import dev.golem.core.render.gem.Quads;
 import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -18,7 +17,8 @@ import net.minecraft.world.phys.Vec3;
  * {@code PowerCableBox.getIcon(world, x, y, z, side)} chose: straight, the size's end plate, one of four curves,
  * or the single junction plate.
  *
- * <p>Not reproduced, as in {@link BoxDuctRenderer}: the per-face UV rotations of the 1.7 renderer.
+ * <p>The per-face UV rotations of the 1.7 renderer are {@link BoxDuctRenderer}'s ({@code JOINT_TB}: a vertical
+ * bend with an X arm; {@code JOINT_SIDES}: a horizontal bend; {@code JOINT}: every other joint, unturned).
  */
 public class PowerCableBoxRenderer extends GemBER<TileEntityCableBox, PowerCableBoxRenderer.State> {
 
@@ -29,8 +29,8 @@ public class PowerCableBoxRenderer extends GemBER<TileEntityCableBox, PowerCable
         public int count;
     }
 
-    private static final int SHAPES = 4;
-    private static final int STRAIGHT_X = 0, STRAIGHT_Y = 1, STRAIGHT_Z = 2, JOINT = 3;
+    private static final int SHAPES = 6;
+    private static final int STRAIGHT_X = 0, STRAIGHT_Y = 1, STRAIGHT_Z = 2, JOINT = 3, JOINT_TB = 4, JOINT_SIDES = 5;
     private static final int STRAIGHT = 0, CURVE_TL = 1, CURVE_TR = 2, CURVE_BL = 3, CURVE_BR = 4, JUNCTION = 5, END_0 = 6;
     private static final String[] ICONS = {"straight", "curve_tl", "curve_tr", "curve_bl", "curve_br", "junction",
             "end_0", "end_1", "end_2", "end_3", "end_4"};
@@ -49,7 +49,14 @@ public class PowerCableBoxRenderer extends GemBER<TileEntityCableBox, PowerCable
                     case STRAIGHT_Z -> new float[]{l, l, 0F, u, u, 1F};
                     default -> new float[]{l, l, l, u, u, u};
                 };
-                GEO[size][shape][0] = box("pcore_" + size + "_" + shape, core);
+                int[] rot = switch (shape) {
+                    case STRAIGHT_X -> BoxDuctRenderer.ROT_STRAIGHT_X;
+                    case STRAIGHT_Z -> BoxDuctRenderer.ROT_STRAIGHT_Z;
+                    case JOINT_TB -> BoxDuctRenderer.ROT_CURVE_TB;
+                    case JOINT_SIDES -> BoxDuctRenderer.ROT_CURVE_SIDES;
+                    default -> BoxDuctRenderer.ROT_NONE;
+                };
+                GEO[size][shape][0] = BoxDuctRenderer.box("pcore_" + size + "_" + shape, core, rot);
                 float[][] arms = {
                         {l, 0F, l, u, l, u},   // DOWN
                         {l, u, l, u, 1F, u},   // UP
@@ -59,32 +66,13 @@ public class PowerCableBoxRenderer extends GemBER<TileEntityCableBox, PowerCable
                         {u, l, l, 1F, u, u},   // EAST
                 };
                 for (int arm = 0; arm < 6; arm++) {
-                    GEO[size][shape][arm + 1] = box("parm_" + size + "_" + shape + "_" + arm, arms[arm]);
+                    GEO[size][shape][arm + 1] = BoxDuctRenderer.box("parm_" + size + "_" + shape + "_" + arm, arms[arm], rot);
                 }
             }
         }
         for (int i = 0; i < ICONS.length; i++) {
             SURF[i] = Surface.cutoutNoCull("hbm:textures/blocks/boxduct_cable_" + ICONS[i] + ".png");
         }
-    }
-
-    /** Six face quads of an axis-aligned box, UV-mapped by the face's extent on a 16x16 tile (1.7 render bounds). */
-    private static Geometry[] box(String name, float[] b) {
-        float x0 = b[0], y0 = b[1], z0 = b[2], x1 = b[3], y1 = b[4], z1 = b[5];
-        Geometry[] faces = new Geometry[6];
-        faces[0] = Quads.named(name + "_d").normal(0, -1, 0)
-                .vertex(x0, y0, z0, x0, z0).vertex(x1, y0, z0, x1, z0).vertex(x1, y0, z1, x1, z1).vertex(x0, y0, z1, x0, z1).build();
-        faces[1] = Quads.named(name + "_u").normal(0, 1, 0)
-                .vertex(x0, y1, z0, x0, z0).vertex(x0, y1, z1, x0, z1).vertex(x1, y1, z1, x1, z1).vertex(x1, y1, z0, x1, z0).build();
-        faces[2] = Quads.named(name + "_n").normal(0, 0, -1)
-                .vertex(x1, y1, z0, 1 - x1, 1 - y1).vertex(x1, y0, z0, 1 - x1, 1 - y0).vertex(x0, y0, z0, 1 - x0, 1 - y0).vertex(x0, y1, z0, 1 - x0, 1 - y1).build();
-        faces[3] = Quads.named(name + "_s").normal(0, 0, 1)
-                .vertex(x0, y1, z1, x0, 1 - y1).vertex(x0, y0, z1, x0, 1 - y0).vertex(x1, y0, z1, x1, 1 - y0).vertex(x1, y1, z1, x1, 1 - y1).build();
-        faces[4] = Quads.named(name + "_w").normal(-1, 0, 0)
-                .vertex(x0, y1, z0, z0, 1 - y1).vertex(x0, y0, z0, z0, 1 - y0).vertex(x0, y0, z1, z1, 1 - y0).vertex(x0, y1, z1, z1, 1 - y1).build();
-        faces[5] = Quads.named(name + "_e").normal(1, 0, 0)
-                .vertex(x1, y1, z1, 1 - z1, 1 - y1).vertex(x1, y0, z1, 1 - z1, 1 - y0).vertex(x1, y0, z0, 1 - z0, 1 - y0).vertex(x1, y1, z0, 1 - z0, 1 - y1).build();
-        return faces;
     }
 
     @Override
@@ -96,7 +84,7 @@ public class PowerCableBoxRenderer extends GemBER<TileEntityCableBox, PowerCable
                 declaration.part(GEO[0][JOINT][b][f], SURF[0])
                         .mesh(state -> GEO[state.size][state.shape][b][f])
                         .skin(state -> SURF[icon(state, f)])
-                        .visibleIf(state -> b == 0 || (state.shape == JOINT && (state.mask & bit(b - 1)) != 0));
+                        .visibleIf(state -> b == 0 || (state.shape >= JOINT && (state.mask & bit(b - 1)) != 0));
             }
         }
     }
@@ -155,6 +143,10 @@ public class PowerCableBoxRenderer extends GemBER<TileEntityCableBox, PowerCable
         if ((mask & 0b001111) == 0 && mask > 0) state.shape = STRAIGHT_X;
         else if ((mask & 0b111100) == 0 && mask > 0) state.shape = STRAIGHT_Z;
         else if ((mask & 0b110011) == 0 && mask > 0) state.shape = STRAIGHT_Y;
-        else state.shape = JOINT;
+        else if (state.count == 2) {
+            boolean anyY = (mask & 0b001100) != 0, anyX = (mask & 0b110000) != 0;
+            // 1.7 RenderBoxDuct: (nY || pY) && (pX || nX) turns top and bottom; !nY && !pY turns the four sides.
+            state.shape = anyY && anyX ? JOINT_TB : !anyY ? JOINT_SIDES : JOINT;
+        } else state.shape = JOINT;
     }
 }

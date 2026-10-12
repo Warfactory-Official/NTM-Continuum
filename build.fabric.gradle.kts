@@ -159,6 +159,15 @@ repositories {
             includeGroup("dev.ryanhcode.sable-companion")
         }
     }
+    // REI and its Cloth Config / Architectury dependencies (the optional `rei` peer, see deps.rei).
+    exclusiveContent {
+        forRepository { maven("https://maven.shedaniel.me") { name = "Shedaniel" } }
+        filter {
+            includeGroup("me.shedaniel")
+            includeGroup("me.shedaniel.cloth")
+            includeGroup("dev.architectury")
+        }
+    }
 }
 
 // Sable (moving block sub-levels) is an optional peer on the nodes that declare it. HBM's side of it is the shared
@@ -355,6 +364,32 @@ dependencies {
         // loader on the dev classpath fails at launch (`IAdviceProvider` not found). The node's loader (0.19.5) already
         // meets JEI 29.43's 0.19.4 floor.
         devRuntime("mezz.jei:jei-$jei-fabric:$jeiVer") { exclude(group = "net.fabricmc", module = "fabric-loader") }
+    }
+
+    // REI (Roughly Enough Items) is an optional peer like JEI: HBM's recipe-viewer declarations
+    // (com.hbm.handler.jei.HbmRecipeViewer) feed it through Golem Core's dev.golem.core.rei, from the thin plugins in
+    // com.hbm.handler.rei (the `rei_client` / `rei_common` entrypoints; guarded by the `rei` constant). Compiled
+    // against on every node (intermediary jars below 26.1), never shipped or required. `-Prei.run=true` puts REI
+    // (with Cloth Config and Architectury) in the client run, beside JEI; off by default so the recipe baselines stay
+    // REI-free. Its POM's Fabric Loader / Fabric API are left out, as JEI's are: the node declares its own.
+    propOrNull("deps.rei")?.let { rei ->
+        (if (obfuscated) "modCompileOnly" else "compileOnly")("me.shedaniel:RoughlyEnoughItems-api-fabric:$rei") {
+            exclude(group = "net.fabricmc")
+            exclude(group = "net.fabricmc.fabric-api")
+        }
+        // REI 26's Fabric POM lists Cloth Config and Architectury at runtime scope; REI's API types name theirs
+        // (Point, Rectangle, FluidStack), so the compile classpath needs them as well.
+        for (dep in listOfNotNull(
+            (findProperty("deps.rei_cloth") as String?)?.takeIf { it.isNotBlank() }?.let { "me.shedaniel.cloth:cloth-config-fabric:$it" },
+            (findProperty("deps.rei_architectury") as String?)?.takeIf { it.isNotBlank() }?.let { "dev.architectury:architectury-fabric:$it" },
+        )) (if (obfuscated) "modCompileOnly" else "compileOnly")(dep) {
+            exclude(group = "net.fabricmc")
+            exclude(group = "net.fabricmc.fabric-api")
+        }
+        if (propOrNull("rei.run") == "true") devRuntime("me.shedaniel:RoughlyEnoughItems-fabric:$rei") {
+            exclude(group = "net.fabricmc")
+            exclude(group = "net.fabricmc.fabric-api")
+        }
     }
 
     // Published Flywheel supplies the older nodes. 26.1 Fabric has no published build and starts Golem

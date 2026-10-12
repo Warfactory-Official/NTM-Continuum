@@ -57,6 +57,8 @@ public class TileEntityCoreInjector extends TileEntityMachineBase
 
     protected void tickServer(Level level) {
         BlockPos pos = getBlockPos();
+        subscribeToAllAround(tanks[0].getTankType(), this);
+        subscribeToAllAround(tanks[1].getTankType(), this);
 
         setTypeFromFluidId(0, 0);
         setTypeFromFluidId(1, 2);

@@ -30,6 +30,11 @@ assets/hbm/items/rail_large_switch.json
 assets/hbm/items/rail_large_switch_flipped.json
 assets/hbm/items/rail_narrow_curve.json
 assets/hbm/items/rail_narrow_straight.json
+assets/hbm/models/block/boxduct_item_0.json
+assets/hbm/models/block/boxduct_item_1.json
+assets/hbm/models/block/boxduct_item_2.json
+assets/hbm/models/block/boxduct_item_3.json
+assets/hbm/models/block/boxduct_item_4.json
 assets/hbm/models/block/cable_diode.json
 assets/hbm/models/block/capacitor.json
 assets/hbm/models/block/capacitor_schrabidate.json
@@ -98,6 +103,8 @@ assets/hbm/models/block/ladder_iron.json
 assets/hbm/models/block/ladder_lead.json
 assets/hbm/models/block/ladder_red.json
 assets/hbm/models/block/ladder_red_top.json
+assets/hbm/models/block/ladder_red_top_item.json
+assets/hbm/models/block/ladder_red_item.json
 assets/hbm/models/block/ladder_steel.json
 assets/hbm/models/block/ladder_sturdy.json
 assets/hbm/models/block/ladder_titanium.json

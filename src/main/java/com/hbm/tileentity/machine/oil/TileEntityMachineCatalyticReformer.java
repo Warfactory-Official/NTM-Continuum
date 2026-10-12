@@ -64,6 +64,12 @@ public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase
     @Override public String getDefaultName() { return "container.catalyticReformer"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCatalyticReformer te) {
+        if (level.getGameTime() % 20 == 0) {
+            for (DirPos dp : te.getConPos()) {
+                te.trySubscribe(level, dp);
+                te.trySubscribe(te.tanks[0].getTankType(), level, dp);
+            }
+        }
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
         te.loadInput();
@@ -142,6 +148,11 @@ public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase
         if (in.isEmpty()) return;
         FluidTankNTM tank = tanks[0];
 
+        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
+        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+            setChanged();
+            return;
+        }
         if (in.getItem() instanceof IFillableItem fillable) {
             int held = fillable.getFill(in);
             FluidType heldType = fillable.getFirstFluidType(in);

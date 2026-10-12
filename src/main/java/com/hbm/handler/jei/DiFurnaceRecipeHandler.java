@@ -1,20 +1,12 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
+import dev.golem.core.viewer.Drawable;
+import dev.golem.core.viewer.Role;
+import dev.golem.core.viewer.SlotLayout;
 import com.hbm.blocks.machine.DiFurnaceContent;
 import com.hbm.inventory.recipes.DiFurnaceRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
-import dev.golem.core.jei.JeiRecipeType;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.drawable.IDrawable;
-import mezz.jei.api.gui.drawable.IDrawableAnimated;
-import mezz.jei.api.gui.drawable.IDrawableStatic;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.category.AbstractRecipeCategory;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -22,29 +14,27 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
-/** Feature-local JEI category for the old alloy-furnace/DiFurnace recipe handler. */
-public final class DiFurnaceRecipeHandler extends AbstractRecipeCategory<GenericRecipe> {
+/** Feature-local recipe-viewer (JEI and REI) category for the old alloy-furnace/DiFurnace recipe handler. */
+public final class DiFurnaceRecipeHandler extends dev.golem.core.viewer.ViewerCategory<GenericRecipe> {
 
     private static final Identifier TEXTURE = dev.golem.core.Ids.of(
             com.hbm.Constants.MOD_ID, "textures/gui/guidifurnace.png");
 
-    private final IDrawable background;
-    private final IDrawableAnimated power;
-    private final IDrawableAnimated progress;
-    private final IDrawableAnimated fuel;
+    private final Drawable background;
+    private final Drawable power;
+    private final Drawable progress;
+    private final Drawable fuel;
 
-    public DiFurnaceRecipeHandler(IGuiHelper helper, JeiRecipeType<GenericRecipe> type, Component title) {
-        super(type.unwrap(), title,
-                helper.createDrawableItemStack(new ItemStack(DiFurnaceContent.MACHINE_DIFURNACE.get())),
-                150, 56);
-        background = helper.createDrawable(TEXTURE, 6, 16, 150, 56);
+    public DiFurnaceRecipeHandler(ViewerType<GenericRecipe> type, Component title) {
+        super(type, title, new ItemStack(DiFurnaceContent.MACHINE_DIFURNACE.get()), 150, 56);
+        background = Drawable.texture(TEXTURE, 6, 16, 150, 56);
 
-        IDrawableStatic powerStatic = helper.createDrawable(TEXTURE, 176, 0, 14, 14);
-        power = helper.createAnimatedDrawable(powerStatic, 48, IDrawableAnimated.StartDirection.TOP, true);
-        IDrawableStatic progressStatic = helper.createDrawable(TEXTURE, 176, 14, 24, 17);
-        progress = helper.createAnimatedDrawable(progressStatic, 48, IDrawableAnimated.StartDirection.LEFT, false);
-        IDrawableStatic fuelStatic = helper.createDrawable(TEXTURE, 201, 0, 17, 54);
-        fuel = helper.createAnimatedDrawable(fuelStatic, 480, IDrawableAnimated.StartDirection.TOP, true);
+        Drawable.Texture powerStatic = Drawable.texture(TEXTURE, 176, 0, 14, 14);
+        power = Drawable.animated(powerStatic, 48, Drawable.Direction.TOP, true);
+        Drawable.Texture progressStatic = Drawable.texture(TEXTURE, 176, 14, 24, 17);
+        progress = Drawable.animated(progressStatic, 48, Drawable.Direction.LEFT, false);
+        Drawable.Texture fuelStatic = Drawable.texture(TEXTURE, 201, 0, 17, 54);
+        fuel = Drawable.animated(fuelStatic, 480, Drawable.Direction.TOP, true);
     }
 
     public static List<GenericRecipe> buildRecipes() {
@@ -54,22 +44,22 @@ public final class DiFurnaceRecipeHandler extends AbstractRecipeCategory<Generic
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, GenericRecipe recipe, IFocusGroup focuses) {
+    public void setRecipe(SlotLayout builder, GenericRecipe recipe) {
         if (recipe.inputItem == null || recipe.inputItem.length < 2
                 || recipe.outputItem == null || recipe.outputItem.length == 0) return;
 
-        builder.addSlot(RecipeIngredientRole.INPUT, 73, 1)
+        builder.addSlot(Role.INPUT, 73, 1)
                 .addItemStacks(recipe.inputItem[0].getDisplayStacks());
-        builder.addSlot(RecipeIngredientRole.INPUT, 73, 37)
+        builder.addSlot(Role.INPUT, 73, 37)
                 .addItemStacks(recipe.inputItem[1].getDisplayStacks());
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 127, 19)
+        builder.addSlot(Role.OUTPUT, 127, 19)
                 .addItemStacks(List.of(recipe.outputItem[0]));
-        builder.addSlot(RecipeIngredientRole.INPUT, 1, 19)
+        builder.addSlot(Role.INPUT, 1, 19)
                 .addItemStacks(DiFurnaceRecipes.getAlloyFuels());
     }
 
     @Override
-    public void draw(GenericRecipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor graphics,
+    public void draw(GenericRecipe recipe, GuiGraphicsExtractor graphics,
                      double mouseX, double mouseY) {
         background.draw(graphics, 0, 0);
         power.draw(graphics, 56, 21);
@@ -77,4 +67,3 @@ public final class DiFurnaceRecipeHandler extends AbstractRecipeCategory<Generic
         fuel.draw(graphics, 38, 1);
     }
 }
-//?}

@@ -1,13 +1,9 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.recipes.SolderingRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import dev.golem.core.jei.JeiRecipeType;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -24,8 +20,8 @@ import java.util.Locale;
  */
 public class SolderingStationRecipeHandler extends JEIUniversalHandler<SolderingRecipes.SolderingRecipe> {
 
-    public SolderingStationRecipeHandler(IGuiHelper helper, JeiRecipeType<SolderingRecipes.SolderingRecipe> type, Component title, ItemStack... machines) {
-        super(helper, type, title, machines);
+    public SolderingStationRecipeHandler(ViewerType<SolderingRecipes.SolderingRecipe> type, Component title, ItemStack... machines) {
+        super(type, title, machines);
     }
 
     @Override
@@ -55,12 +51,11 @@ public class SolderingStationRecipeHandler extends JEIUniversalHandler<Soldering
     }
 
     @Override
-    public void draw(SolderingRecipes.SolderingRecipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor g, double mouseX, double mouseY) {
-        super.draw(recipe, slots, g, mouseX, mouseY);
+    public void draw(SolderingRecipes.SolderingRecipe recipe, GuiGraphicsExtractor g, double mouseX, double mouseY) {
+        super.draw(recipe, g, mouseX, mouseY);
         String duration = String.format(Locale.US, "%,d", recipe.duration) + " ticks";
         String consumption = String.format(Locale.US, "%,d", recipe.consumption) + " HE/t";
         text(g, duration, 160 - textWidth(duration), 43);
         text(g, consumption, 160 - textWidth(consumption), 55);
     }
 }
-//?}

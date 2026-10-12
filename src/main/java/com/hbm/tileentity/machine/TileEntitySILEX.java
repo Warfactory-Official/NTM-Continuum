@@ -92,6 +92,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntitySILEX te) {
         te.updateTankType();
         te.fillTankFromSlots();
+        for (DirPos port : te.getConPos()) te.trySubscribe(te.tank.getTankType(), level, port);
 
 
         te.loadFluid();
@@ -267,6 +268,11 @@ public class TileEntitySILEX extends TileEntityMachineBase
         ItemStack in = inventory.getStackInSlot(2);
         if (in.isEmpty()) return;
 
+        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
+        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+            setChanged();
+            return;
+        }
         if (in.getItem() instanceof IFillableItem fillable) {
             int held = fillable.getFill(in);
             FluidType heldType = fillable.getFirstFluidType(in);

@@ -68,6 +68,11 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, maxPower);
         te.setTypeFromFluidId();
 
+        for (DirPos con : te.getConPos()) {
+            te.trySubscribe(level, con);
+            te.trySubscribe(te.tank.getTankType(), level, con);
+        }
+
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
         int speed = Math.min(te.upgradeManager.getLevel(UpgradeType.SPEED), 3);
         int pow = Math.min(te.upgradeManager.getLevel(UpgradeType.POWER), 3);

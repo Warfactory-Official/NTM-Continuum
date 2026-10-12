@@ -158,6 +158,109 @@ public final class PickAndFalloutGameTests {
         helper.getLevel().setBlock(floor.above(2), Blocks.WATER.defaultBlockState(), 3);
     }
 
+    /**
+     * 2026-10-12 playtest: "tall trees do not turn into burnt logs completely". A 30-block spruce-like trunk with leaf
+     * rings, and a 2x2 jungle-style trunk, are swept column by column (random rolls, as in the world) inside the
+     * wood range; every log must end up a waste log (1.7 logs carry no .sol, so the three-solid depth never stops a column).
+     */
+    public static void falloutBurnsTallTrees(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos base = helper.absolutePos(new BlockPos(4, 1, 4));
+        for (int dx = -4; dx < 12; dx++) {
+            for (int dz = -4; dz < 12; dz++) level.setBlock(base.offset(dx, -1, dz), Blocks.DIRT.defaultBlockState(), 3);
+        }
+        java.util.List<BlockPos> logs = new java.util.ArrayList<>();
+        java.util.List<BlockPos> columns = new java.util.ArrayList<>();
+        // single trunk, 30 tall, leaves from y 10 up, in a plus/ring pattern
+        for (int y = 0; y < 30; y++) {
+            BlockPos p = base.above(y);
+            level.setBlock(p, Blocks.SPRUCE_LOG.defaultBlockState(), 3);
+            logs.add(p);
+        }
+        for (int y = 10; y < 32; y++) {
+            int r = y % 3 == 0 ? 2 : 1;
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    BlockPos p = base.offset(dx, y, dz);
+                    if (level.getBlockState(p).isAir()) level.setBlock(p, Blocks.SPRUCE_LEAVES.defaultBlockState(), 3);
+                }
+            }
+        }
+        // 2x2 jungle trunk, 24 tall, with leaves and vines
+        BlockPos jungle = base.offset(6, 0, 6);
+        for (int y = 0; y < 24; y++) {
+            for (int dx = 0; dx < 2; dx++) {
+                for (int dz = 0; dz < 2; dz++) {
+                    BlockPos p = jungle.offset(dx, y, dz);
+                    level.setBlock(p, Blocks.JUNGLE_LOG.defaultBlockState(), 3);
+                    logs.add(p);
+                }
+            }
+        }
+        for (int y = 16; y < 27; y++) {
+            for (int dx = -2; dx <= 3; dx++) {
+                for (int dz = -2; dz <= 3; dz++) {
+                    BlockPos p = jungle.offset(dx, y, dz);
+                    if (level.getBlockState(p).isAir()) level.setBlock(p, Blocks.JUNGLE_LEAVES.defaultBlockState(), 3);
+                }
+            }
+        }
+        for (int dx = -4; dx < 12; dx++) for (int dz = -4; dz < 12; dz++) columns.add(base.offset(dx, 0, dz));
+
+        for (double dist : new double[] {20.0D, 45.0D}) {
+            // the same cells again for each distance: restore the trunks first
+            for (BlockPos log : logs) {
+                level.setBlock(log, (log.getX() - base.getX() >= 5 ? Blocks.JUNGLE_LOG : Blocks.SPRUCE_LOG).defaultBlockState(), 3);
+            }
+            Map<BlockPos, BlockState> all = new java.util.HashMap<>();
+            net.minecraft.util.RandomSource rolls = net.minecraft.util.RandomSource.create(1234L);
+            for (BlockPos column : columns) all.putAll(EntityFalloutRain.stompColumnForTest(level, column.getX(), column.getZ(), dist, rolls));
+            int left = 0;
+            StringBuilder where = new StringBuilder();
+            for (BlockPos log : logs) {
+                BlockState after = all.get(log);
+                if (after == null || !after.is(ModFalloutBlocks.waste_log.get())) {
+                    left++;
+                    if (where.length() < 200) where.append(log.getX() - base.getX()).append('/').append(log.getY() - base.getY())
+                            .append('/').append(log.getZ() - base.getZ()).append(' ');
+                }
+            }
+            helper.assertTrue(left == 0, "at " + dist + "% of the scale " + left + " of " + logs.size()
+                    + " tree logs were not turned into waste logs (x/y/z from the trunk): " + where);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * 1.7 stomp counted depth with {@code isNormalCube}: leaves are not one. At 59.5% of the scale (inside the 58.5%
+     * falloff band, below the 60% waste-leaves rule) a leaf can be spared by the falloff roll; four spared leaves over
+     * a trunk must not stop the walk before the logs. The roll sequence is scripted: the first eight gaussian draws
+     * (two per leaf) reject, every later one passes.
+     */
+    public static void falloutSparedLeavesAreNotSolid(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos base = helper.absolutePos(new BlockPos(2, 1, 2));
+        level.setBlock(base.below(), Blocks.DIRT.defaultBlockState(), 3);
+        for (int y = 0; y < 5; y++) level.setBlock(base.above(y), Blocks.OAK_LOG.defaultBlockState(), 3);
+        for (int y = 5; y < 9; y++) level.setBlock(base.above(y), Blocks.OAK_LEAVES.defaultBlockState(), 3);
+        int[] draws = {0};
+        LegacyRandomSource rolls = new LegacyRandomSource(0L) {
+            @Override
+            public double nextGaussian() {
+                return draws[0]++ < 8 ? 0.0D : 10.0D;
+            }
+        };
+        Map<BlockPos, BlockState> writes = EntityFalloutRain.stompColumnForTest(level, base.getX(), base.getZ(), 59.5D, rolls);
+        int converted = 0;
+        for (int y = 0; y < 5; y++) {
+            BlockState after = writes.get(base.above(y));
+            if (after != null && after.is(ModFalloutBlocks.waste_log.get())) converted++;
+        }
+        helper.assertTrue(converted == 5, "four spared leaves above the trunk stopped the column: " + converted
+                + " of 5 logs became waste logs (1.7: only opaque full cubes count as depth)");
+        helper.succeed();
+    }
+
     private static Map<BlockPos, BlockState> stomp(GameTestHelper helper, BlockPos column) {
         return stomp(helper, column, 70.0D);
     }

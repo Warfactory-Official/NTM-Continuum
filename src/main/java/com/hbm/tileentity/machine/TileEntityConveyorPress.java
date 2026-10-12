@@ -57,6 +57,8 @@ public class TileEntityConveyorPress extends TileEntityMachineBase implements IE
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityConveyorPress te) {
+        for (DirPos port : te.getConPos()) te.trySubscribe(level, port);
+
         if (te.delay <= 0) {
 
             if (te.isRetracting) {

@@ -75,6 +75,7 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase
         breeder.neutronEnergySync = breeder.neutronEnergy;
 
         for (DirPos port : breeder.getConPos()) {
+            if (breeder.tanks[0].getTankType() != Fluids.NONE) breeder.trySubscribe(breeder.tanks[0].getTankType(), level, port);
             if (breeder.tanks[1].getFill() > 0) breeder.tryProvide(breeder.tanks[1], level, port);
         }
 

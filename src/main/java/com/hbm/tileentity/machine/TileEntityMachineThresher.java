@@ -98,7 +98,9 @@ public class TileEntityMachineThresher extends TileEntityLoadedBase implements I
             } else {
                 te.isOn = false;
             }
-            // 1.7 subscribes to fuel at both flanks and below; the port's duct network finds the receiver itself.
+            te.trySubscribe(te.tank.getTankType(), level, pos.getX() + rot.offsetX, pos.getY(), pos.getZ() + rot.offsetZ, rot);
+            te.trySubscribe(te.tank.getTankType(), level, pos.getX() - rot.offsetX, pos.getY(), pos.getZ() - rot.offsetZ, rot.getOpposite());
+            te.trySubscribe(te.tank.getTankType(), level, pos.getX(), pos.getY() - 1, pos.getZ(), ForgeDirection.DOWN);
         }
 
         if (te.isOn && !te.isSuspended) {

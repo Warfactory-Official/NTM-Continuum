@@ -3,7 +3,7 @@ package com.hbm.inventory.container;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.armor.JetpackBase;
 import dev.golem.core.world.Compat;
-import dev.golem.core.world.CompatArmorItem;
+import dev.golem.core.world.Armors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -116,7 +116,7 @@ public final class ContainerArmorTable extends AbstractContainerMenu {
             if (!moveItemStackTo(source, PLAYER_START, PLAYER_END, true)) return ItemStack.EMPTY;
         } else if (index < PLAYER_START) {
             if (!moveItemStackTo(source, PLAYER_START, PLAYER_END, true)) return ItemStack.EMPTY;
-        } else if (source.getItem() instanceof CompatArmorItem && !(source.getItem() instanceof JetpackBase)) {
+        } else if (Armors.isArmor(source) && !(source.getItem() instanceof JetpackBase)) {
             if (!moveItemStackTo(source, ARMOR_SLOT, ARMOR_SLOT + 1, false)) return ItemStack.EMPTY;
         } else {
             int moduleSlot = ArmorModHandler.getModuleSlot(source);
@@ -168,7 +168,8 @@ public final class ContainerArmorTable extends AbstractContainerMenu {
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return stack.getItem() instanceof CompatArmorItem;
+            // 1.7: any ItemArmor - vanilla's and other mods' armour take modules too
+            return Armors.isArmor(stack);
         }
 
         @Override
@@ -190,10 +191,12 @@ public final class ContainerArmorTable extends AbstractContainerMenu {
 
     private static final class EquipmentTargetSlot extends Slot {
         private final EquipmentSlot equipmentSlot;
+        private final Player player;
 
         EquipmentTargetSlot(Inventory inventory, int index, EquipmentSlot equipmentSlot, int x, int y) {
             super(inventory, index, x, y);
             this.equipmentSlot = equipmentSlot;
+            this.player = inventory.player;
         }
 
         @Override
@@ -201,16 +204,9 @@ public final class ContainerArmorTable extends AbstractContainerMenu {
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            // ArmorSlot spells the pieces HELMET/CHESTPLATE/LEGGINGS/BOOTS and EquipmentSlot HEAD/CHEST/
-            // LEGS/FEET, so the names never matched and no armor could be placed here.
-            if (!(stack.getItem() instanceof CompatArmorItem armor)) return false;
-            EquipmentSlot wanted = switch (armor.armorSlot()) {
-                case HELMET -> EquipmentSlot.HEAD;
-                case CHESTPLATE -> EquipmentSlot.CHEST;
-                case LEGGINGS -> EquipmentSlot.LEGS;
-                case BOOTS -> EquipmentSlot.FEET;
-            };
-            return wanted == equipmentSlot;
+            // 1.7 isValidArmor(stack, slot, player): whatever vanilla lets the player wear there (any armour, a pumpkin
+            // or head on the head, an elytra on the chest), as the vanilla inventory's armour slots decide it.
+            return player.getEquipmentSlotForItem(stack) == equipmentSlot;
         }
 
         @Override

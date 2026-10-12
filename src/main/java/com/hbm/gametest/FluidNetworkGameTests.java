@@ -33,16 +33,20 @@ import net.minecraft.server.level.ServerLevel;
  */
 public final class FluidNetworkGameTests {
 
+    /** Long enough for every machine to claim its ports and an unclaiming class to pass its PortClaims grace. */
+    private static final int PORT_CLAIM_WAIT = (int) com.hbm.uninos.graph.PortClaims.GRACE_TICKS + 10;
+
+
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
 
     public static final GameTests.Function JOIN =
-            TESTS.function("fluid_net_join", 60, 8, () -> FluidNetworkGameTests::join);
+            TESTS.function("fluid_net_join", 200, 8, () -> FluidNetworkGameTests::join);
     public static final GameTests.Function SPLIT =
-            TESTS.function("fluid_net_split", 60, 8, () -> FluidNetworkGameTests::split);
+            TESTS.function("fluid_net_split", 200, 8, () -> FluidNetworkGameTests::split);
     public static final GameTests.Function SEGREGATION =
             TESTS.function("fluid_net_type_segregation", 40, 8, () -> FluidNetworkGameTests::segregation);
     public static final GameTests.Function EXHAUST =
-            TESTS.function("fluid_net_exhaust_all_smokes", 60, 8, () -> FluidNetworkGameTests::exhaust);
+            TESTS.function("fluid_net_exhaust_all_smokes", 200, 8, () -> FluidNetworkGameTests::exhaust);
     public static final GameTests.Function IDENTIFIER_TINT =
             TESTS.function("fluid_identifier_tint_from_id", 20, 8, () -> FluidNetworkGameTests::identifierTint);
     public static final GameTests.Function IDENTIFIER_SPREAD =
@@ -50,7 +54,7 @@ public final class FluidNetworkGameTests {
     public static final GameTests.Function INTERIOR_RETYPE =
             TESTS.function("fluid_net_interior_retype", 40, 8, () -> FluidNetworkGameTests::interiorRetype);
     public static final GameTests.Function MULTI_USER =
-            TESTS.function("fluid_net_multi_user_faces", 40, 8, () -> FluidNetworkGameTests::multiUser);
+            TESTS.function("fluid_net_multi_user_faces", 300, 8, () -> FluidNetworkGameTests::multiUser);
 
     private static final int Y = 5;
     private static final int JOIN_Z = 6, SPLIT_Z = 12, TYPE_Z = 18, EXHAUST_Z = 24, SPREAD_Z = 30, INTERIOR_Z = 36, MULTI_Z = 42;
@@ -73,15 +77,20 @@ public final class FluidNetworkGameTests {
         level.setBlock(ductPos.offset(port.getDir().offsetX, port.getDir().offsetY, port.getDir().offsetZ),
                 ModMachineBlocks.creative_fluid_source.get().defaultBlockState(), 3);
 
-        settle(level);
+        // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
+        helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
+            settle(level);
 
-        helper.assertTrue(tank.tank.getFill() > 0,
-                "water never crossed the duct from a creative source into the tank");
-        helper.succeed();
+            helper.assertTrue(tank.tank.getFill() > 0,
+                    "water never crossed the duct from a creative source into the tank");
+            helper.succeed();
+        });
     }
 
     /** Taking a duct out of the middle of a run severs it, and the far half stops being served. */
     private static void split(GameTestHelper helper) {
+        // the row lies outside the padded plot: hold it ticking, or its machines never claim their ports (PortClaims)
+        Runnable release = dev.golem.core.gametest.GameTests.holdChunks(helper, -4, 12, SPLIT_Z - 6, SPLIT_Z + 6);
         ServerLevel level = helper.getLevel();
         TileEntityMachineFluidTank tank = tank(helper, new BlockPos(4, Y, SPLIT_Z), (short) 0);
         DirPos port = openPort(helper, tank);
@@ -95,23 +104,27 @@ public final class FluidNetworkGameTests {
         level.setBlock(third.offset(out.offsetX, out.offsetY, out.offsetZ),
                 ModMachineBlocks.creative_fluid_source.get().defaultBlockState(), 3);
 
-        settle(level);
-        long filled = tank.tank.getFill();
-        helper.assertTrue(filled > 0, "a three-duct run did not carry water to the tank");
+        // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
+        helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
+            settle(level);
+            long filled = tank.tank.getFill();
+            helper.assertTrue(filled > 0, "a three-duct run did not carry water to the tank");
 
-        LevelNodeGraph<DuctData> graph = FluidGraph.get(level);
-        helper.assertTrue(graph.networkAt(first.asLong()) == graph.networkAt(third.asLong()),
-                "three ducts in a line must be one network");
+            LevelNodeGraph<DuctData> graph = FluidGraph.get(level);
+            helper.assertTrue(graph.networkAt(first.asLong()) == graph.networkAt(third.asLong()),
+                    "three ducts in a line must be one network");
 
-        level.removeBlock(second, false);
-        helper.assertTrue(graph.networkAt(first.asLong()) != graph.networkAt(third.asLong()),
-                "taking the middle duct out must sever the run");
+            level.removeBlock(second, false);
+            helper.assertTrue(graph.networkAt(first.asLong()) != graph.networkAt(third.asLong()),
+                    "taking the middle duct out must sever the run");
 
-        tank.tank.setFill(0);
-        settle(level);
-        helper.assertTrue(tank.tank.getFill() == 0,
-                "a severed run still delivered " + tank.tank.getFill() + "mB");
-        helper.succeed();
+            tank.tank.setFill(0);
+            settle(level);
+            helper.assertTrue(tank.tank.getFill() == 0,
+                    "a severed run still delivered " + tank.tank.getFill() + "mB");
+            release.run();
+            helper.succeed();
+        });
     }
 
     /**
@@ -245,6 +258,8 @@ public final class FluidNetworkGameTests {
      * a plain duct typed to any smoke is one network with the exhaust beside it.
      */
     private static void exhaust(GameTestHelper helper) {
+        // the row lies outside the padded plot: hold it ticking, or its machines never claim their ports (PortClaims)
+        Runnable release = dev.golem.core.gametest.GameTests.holdChunks(helper, -4, 12, EXHAUST_Z - 6, EXHAUST_Z + 6);
         ServerLevel level = helper.getLevel();
         BlockPos source = helper.absolutePos(new BlockPos(1, Y, EXHAUST_Z));
         BlockPos sink = source.east(4);
@@ -260,16 +275,20 @@ public final class FluidNetworkGameTests {
                         && graph.networkAt(source.east(1).asLong()) == graph.networkAt(source.east(3).asLong()),
                 "three exhaust ducts in a line must be one network");
 
-        settle(level);
-        helper.assertTrue(to.tank.getFill() > 0,
-                "leaded smoke never crossed an exhaust run that was never typed to it");
+        // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
+        helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
+            settle(level);
+            helper.assertTrue(to.tank.getFill() > 0,
+                    "leaded smoke never crossed an exhaust run that was never typed to it");
 
-        BlockPos poison = source.east(2).north();
-        level.setBlock(poison, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
-        ((TileEntityFluidDuctNT) level.getBlockEntity(poison)).setFluidType(Fluids.SMOKE_POISON);
-        helper.assertTrue(graph.networkAt(poison.asLong()) == graph.networkAt(source.east(2).asLong()),
-                "a duct typed to any smoke must join the exhaust run beside it");
-        helper.succeed();
+            BlockPos poison = source.east(2).north();
+            level.setBlock(poison, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
+            ((TileEntityFluidDuctNT) level.getBlockEntity(poison)).setFluidType(Fluids.SMOKE_POISON);
+            helper.assertTrue(graph.networkAt(poison.asLong()) == graph.networkAt(source.east(2).asLong()),
+                    "a duct typed to any smoke must join the exhaust run beside it");
+            release.run();
+            helper.succeed();
+        });
     }
 
     private static TileEntityBarrel barrel(GameTestHelper helper, BlockPos absolute, short mode) {
@@ -308,6 +327,8 @@ public final class FluidNetworkGameTests {
      * the east face fills that tank, water through the west face the barrel's own.
      */
     private static void multiUser(GameTestHelper helper) {
+        // the row lies outside the padded plot: hold it ticking, or its machines never claim their ports (PortClaims)
+        Runnable release = dev.golem.core.gametest.GameTests.holdChunks(helper, -4, 12, MULTI_Z - 6, MULTI_Z + 6);
         ServerLevel level = helper.getLevel();
         BlockPos at = helper.absolutePos(new BlockPos(4, Y, MULTI_Z));
         level.setBlock(at, ModFluidNetBlocks.barrel_steel.get().defaultBlockState(), 3);
@@ -318,18 +339,29 @@ public final class FluidNetworkGameTests {
 
         duct(helper, at.east());
         level.setBlock(at.east(2), ModMachineBlocks.creative_fluid_source.get().defaultBlockState(), 3);
-        settle(level);
-        helper.assertTrue(barrel.second.getFill() > 0 && barrel.tank.getFill() == 0,
-                "the east face must fill the second receiver's tank only: second " + barrel.second.getFill()
-                        + ", own " + barrel.tank.getFill());
+        // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
+        helper.runAfterDelay(PORT_CLAIM_WAIT * 2, () -> {
+            settle(level);
+            helper.assertTrue(barrel.second.getFill() > 0 && barrel.tank.getFill() == 0,
+                    "the east face must fill the second receiver's tank only: second " + barrel.second.getFill()
+                            + ", own " + barrel.tank.getFill() + "; " + com.hbm.uninos.graph.PortClaims.describe(barrel.secondReceiverForTest(), Fluids.WATER)
+                            + "; now " + level.getServer().getTickCount()
+                            + "; source " + com.hbm.uninos.graph.PortClaims.describe(level.getBlockEntity(at.east(2)), Fluids.WATER)
+                            + " claimed " + com.hbm.uninos.graph.PortClaims.claimed(level, at.east().asLong(), com.hbm.lib.ForgeDirection.WEST, level.getBlockEntity(at.east(2)), Fluids.WATER, com.hbm.uninos.graph.PortClaims.PROVIDE)
+                            + "; net " + FluidGraph.get(level).networkAt(at.east().asLong()));
 
-        int second = barrel.second.getFill();
-        duct(helper, at.west());
-        level.setBlock(at.west(2), ModMachineBlocks.creative_fluid_source.get().defaultBlockState(), 3);
-        settle(level);
-        helper.assertTrue(barrel.tank.getFill() > 0, "the west face must fill the barrel's own tank");
-        helper.assertTrue(barrel.second.getFill() >= second, "the second tank must keep what it had");
-        helper.succeed();
+            int second = barrel.second.getFill();
+            duct(helper, at.west());
+            level.setBlock(at.west(2), ModMachineBlocks.creative_fluid_source.get().defaultBlockState(), 3);
+            // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
+            helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
+                settle(level);
+                helper.assertTrue(barrel.tank.getFill() > 0, "the west face must fill the barrel's own tank");
+                helper.assertTrue(barrel.second.getFill() >= second, "the second tank must keep what it had");
+                release.run();
+                helper.succeed();
+            });
+        });
     }
 
     /** A steel barrel whose east face reaches a second receiver with a tank of its own. */
@@ -352,6 +384,8 @@ public final class FluidNetworkGameTests {
         TwoUserBarrel(BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
             super(pos, state);
         }
+
+        Object secondReceiverForTest() { return secondReceiver; }
 
         @Override
         public com.hbm.api.fluidmk2.IFluidUserMK2 fluidUserAt(BlockPos pos, Direction face) {

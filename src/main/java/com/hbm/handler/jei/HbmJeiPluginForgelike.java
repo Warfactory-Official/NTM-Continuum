@@ -23,7 +23,14 @@ import net.minecraft.resources.Identifier;
  * there — a {@code jei_mod_plugin} entrypoint in {@code fabric.mod.json} rather than an annotation
  * scan — but NeoForge and Forge discover this class the same way and need nothing loader-specific in
  * it, so widening the guard beats keeping a third identical copy.
+ *
+ * <p>On Forge 1.20.1 the class also opts out of "REI Plugin Compatibilities", which runs JEI plugins inside REI when
+ * JEI is absent: HBM has a native REI plugin ({@code com.hbm.handler.rei}), and both would list every category twice.
+ * That mod exists for no later target.
  */
+//? if forge {
+/*@me.shedaniel.rei.plugincompatibilities.api.REIPluginCompatIgnore
+*///?}
 @JeiPlugin
 public class HbmJeiPluginForgelike implements IModPlugin {
 

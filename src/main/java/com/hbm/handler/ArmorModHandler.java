@@ -4,7 +4,7 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.items.armor.ItemArmorMod;
 import com.hbm.items.armor.JetpackBase;
 import com.hbm.items.gear.JetpackGlider;
-import dev.golem.core.world.CompatArmorItem;
+import dev.golem.core.world.Armors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -40,22 +40,46 @@ public final class ArmorModHandler {
 
     private ArmorModHandler() {}
 
+    /**
+     * 1.7 {@code isApplicable}: any armour piece ({@code instanceof ItemArmor} - vanilla's, another mod's or HBM's, through
+     * Golem Core's {@link Armors}) takes a module whose flags allow that piece. The direct-wear jetpacks are armour in the
+     * port but not module carriers.
+     */
     public static boolean isApplicable(ItemStack armor, ItemStack mod) {
-        if (armor == null || armor.isEmpty() || armor.getItem() instanceof JetpackBase
-                || !(armor.getItem() instanceof CompatArmorItem armorItem)) return false;
+        if (armor == null || armor.isEmpty() || armor.getItem() instanceof JetpackBase) return false;
+        dev.golem.core.world.ArmorSlot slot = Armors.slotOf(armor);
+        if (slot == null) return false;
         if (mod == null || mod.isEmpty()) return false;
 
         int type = getModuleSlot(mod);
-        if (type == plate_only && (mod.getItem() instanceof JetpackBase || mod.getItem() instanceof JetpackGlider)) {
-            return armorItem.armorSlot() == dev.golem.core.world.ArmorSlot.CHESTPLATE;
+        if (type == plate_only && (mod.getItem() instanceof JetpackBase || mod.getItem() instanceof JetpackGlider
+                || isElytra(mod))) {
+            return slot == dev.golem.core.world.ArmorSlot.CHESTPLATE;
         }
         if (!(mod.getItem() instanceof ItemArmorMod armorMod)) return false;
-        return switch (armorItem.armorSlot()) {
+        return switch (slot) {
             case HELMET -> armorMod.helmet;
             case CHESTPLATE -> armorMod.chestplate;
             case LEGGINGS -> armorMod.leggings;
             case BOOTS -> armorMod.boots;
         };
+    }
+
+    /**
+     * port: the vanilla elytra as a chestplate module (user request, 2026-10-12; 1.7 has no such module). It takes the
+     * chestplate slot the jetpacks use, so a chestplate carries a jetpack or an elytra, not both. Worn, the chestplate
+     * glides exactly like a worn elytra (Golem Core {@code Gliders}): the stored elytra wears and shows its wings, and
+     * comes back out of the armor table with its damage.
+     */
+    public static boolean isElytra(ItemStack mod) {
+        return mod != null && mod.is(net.minecraft.world.item.Items.ELYTRA);
+    }
+
+    /** The elytra installed in {@code chest}, or empty. */
+    public static ItemStack installedElytra(ItemStack chest) {
+        if (!hasMods(chest)) return ItemStack.EMPTY;
+        ItemStack mod = pryMod(chest, plate_only);
+        return isElytra(mod) ? mod : ItemStack.EMPTY;
     }
 
     /** Stores one copy in its type slot. Callers validate applicability before calling this method. */
@@ -75,6 +99,7 @@ public final class ArmorModHandler {
         if (mod.getItem() instanceof ItemArmorMod armorMod) return armorMod.type;
         if (mod.getItem() instanceof JetpackBase) return plate_only;
         if (mod.getItem() instanceof JetpackGlider) return plate_only;
+        if (isElytra(mod)) return plate_only;
         return -1;
     }
 

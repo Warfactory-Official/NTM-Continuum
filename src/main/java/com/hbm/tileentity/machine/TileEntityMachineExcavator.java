@@ -133,6 +133,11 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase
 
         if (level.getGameTime() % 20 == 0) {
             te.tryEjectBuffer();
+
+            for (DirPos port : te.getConPos()) {
+                te.trySubscribe(level, port);
+                te.trySubscribe(te.tank.getTankType(), level, port);
+            }
         }
 
         if (te.chuteTimer > 0) te.chuteTimer--;

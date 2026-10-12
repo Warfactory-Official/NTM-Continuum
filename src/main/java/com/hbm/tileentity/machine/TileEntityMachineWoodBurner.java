@@ -76,6 +76,7 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
 
         for (DirPos connection : te.getConPos()) {
             if (te.power > 0) te.tryProvide(level, connection.getPos(), connection.getDir());
+            if (level.getGameTime() % 20 == 0) te.trySubscribe(te.tank.getTankType(), level, connection);
         }
 
         if (!te.liquidBurn) {
@@ -157,6 +158,11 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
         ItemStack in = inventory.getStackInSlot(3);
         if (in.isEmpty()) return;
 
+        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
+        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+            setChanged();
+            return;
+        }
         if (in.getItem() instanceof IFillableItem fillable) {
             FluidType heldType = fillable.getFirstFluidType(in);
             int held = fillable.getFill(in);

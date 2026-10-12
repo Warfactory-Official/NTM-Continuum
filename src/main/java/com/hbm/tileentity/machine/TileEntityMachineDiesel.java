@@ -102,6 +102,7 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             te.tryProvide(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
             te.sendSmoke(pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
+            te.trySubscribe(te.tank.getTankType(), level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
         }
 
         te.power = Library.chargeItemsFromTE(te.inventory, 2, te.power, te.powerCap);
@@ -148,6 +149,11 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
         ItemStack in = inventory.getStackInSlot(0);
         if (in.isEmpty()) return;
 
+        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
+        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+            setChanged();
+            return;
+        }
         if (in.getItem() instanceof IFillableItem fillable) {
             int held = fillable.getFill(in);
             FluidType heldType = fillable.getFirstFluidType(in);

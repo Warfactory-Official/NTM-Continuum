@@ -106,6 +106,15 @@ repositories {
         forRepository { maven("https://api.modrinth.com/maven") { name = "Modrinth" } }
         filter { includeGroup("maven.modrinth") }
     }
+    // REI and its Cloth Config / Architectury dependencies (the optional `rei` peer, see deps.rei).
+    exclusiveContent {
+        forRepository { maven("https://maven.shedaniel.me") { name = "Shedaniel" } }
+        filter {
+            includeGroup("me.shedaniel")
+            includeGroup("me.shedaniel.cloth")
+            includeGroup("dev.architectury")
+        }
+    }
 }
 
 dependencies {
@@ -123,6 +132,27 @@ dependencies {
         modCompileOnly("mezz.jei:jei-$jei-common-api:$jeiVer")
         modCompileOnly("mezz.jei:jei-$jei-forge-api:$jeiVer")
         modRuntimeOnly("mezz.jei:jei-$jei-forge:$jeiVer")
+    }
+
+    // REI (Roughly Enough Items) is an optional peer like JEI: HBM's recipe-viewer declarations
+    // (com.hbm.handler.jei.HbmRecipeViewer) feed it through Golem Core's dev.golem.core.rei, from the thin plugins in
+    // com.hbm.handler.rei (guarded by the `rei` constant). Compiled against on every node, never shipped or required.
+    // `-Prei.run=true` puts REI (with Cloth Config and Architectury) in the client run, beside JEI; off by default so
+    // the recipe baselines stay REI-free. The REI Plugin Compatibilities annotation lets HBM's JEI plugin opt out of
+    // that mod's JEI-on-REI layer (Forge 1.20.1 only; it exists for no later target).
+    propOrNull("deps.rei")?.let { rei ->
+        modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-forge:$rei")
+        // MDG Legacy remaps the API jar alone, not its POM dependencies; REI's API types name Cloth Config's and
+        // Architectury's (Point, Rectangle, FluidStack), so they are compiled against as well.
+        (findProperty("deps.rei_cloth") as String?)?.takeIf { it.isNotBlank() }?.let { modCompileOnly("me.shedaniel.cloth:cloth-config-forge:$it") }
+        (findProperty("deps.rei_architectury") as String?)?.takeIf { it.isNotBlank() }?.let { modCompileOnly("dev.architectury:architectury-forge:$it") }
+        compileOnly("me.shedaniel:REIPluginCompatibilities-forge-annotations:12.0.93")
+        if (propOrNull("rei.run") == "true") {
+            modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-forge:$rei")
+            // MDG Legacy's mod configurations are not transitive: REI's own dependencies are named here.
+            propOrNull("deps.rei_cloth")?.let { modRuntimeOnly("me.shedaniel.cloth:cloth-config-forge:$it") }
+            propOrNull("deps.rei_architectury")?.let { modRuntimeOnly("dev.architectury:architectury-forge:$it") }
+        }
     }
 
     // Published Flywheel is optional at runtime.

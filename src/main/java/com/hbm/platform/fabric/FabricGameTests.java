@@ -43,6 +43,7 @@ public final class FabricGameTests {
         com.hbm.gametest.Fix1AGameTests.init();
         com.hbm.gametest.IdsGameTests.init();
         com.hbm.gametest.ForeignFluidGameTests.init();
+        com.hbm.gametest.PortClaimGameTests.init();
         com.hbm.gametest.Fix4GameTests.init();
         com.hbm.gametest.Fix5GameTests.init();
         com.hbm.gametest.Fix1BGameTests.init();
@@ -131,6 +132,7 @@ public final class FabricGameTests {
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix1AGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.IdsGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.ForeignFluidGameTests.TESTS);
+        dev.golem.core.gametest.GameTests.register(com.hbm.gametest.PortClaimGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix4GameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix5GameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix1BGameTests.TESTS);

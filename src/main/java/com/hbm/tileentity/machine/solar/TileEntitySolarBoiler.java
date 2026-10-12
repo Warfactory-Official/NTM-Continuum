@@ -48,6 +48,7 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFlui
 
     private void sendFluid(Level level) {
         for (DirPos connection : getConPos()) {
+            trySubscribe(tanks[0].getTankType(), level, connection);
             tryProvide(tanks[1], level, connection);
         }
     }

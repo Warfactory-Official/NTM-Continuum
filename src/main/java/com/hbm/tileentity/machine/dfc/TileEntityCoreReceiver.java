@@ -55,6 +55,7 @@ public class TileEntityCoreReceiver extends TileEntityMachineBase
 
     protected void tickServer(Level level) {
         BlockPos pos = getBlockPos();
+        subscribeToAllAround(tank.getTankType(), this);
 
         power = joules * 5000;
 

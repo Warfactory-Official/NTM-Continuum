@@ -6,7 +6,6 @@ import com.hbm.items.armor.ItemArmorMod;
 import com.hbm.items.armor.JetpackBase;
 import dev.golem.core.client.Tooltips;
 import dev.golem.core.client.KeyMappings;
-import dev.golem.core.world.CompatArmorItem;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -23,7 +22,8 @@ public final class ArmorModTooltips {
     }
 
     private static void addLines(ItemStack armor, List<Component> lines) {
-        if (!(armor.getItem() instanceof CompatArmorItem) || !ArmorModHandler.hasMods(armor)) return;
+        if (!dev.golem.core.world.Armors.isArmor(armor) || !ArmorModHandler.hasMods(armor)) return;
+
         Minecraft minecraft = Minecraft.getInstance();
         boolean show = KeyMappings.isHeld(minecraft.options.keyShift) || minecraft.screen instanceof GUIArmorTable;
         if (!show) {
@@ -40,6 +40,9 @@ public final class ArmorModTooltips {
             ItemStack mod = mods[slot];
             if (mod.getItem() instanceof ItemArmorMod armorMod) armorMod.addArmorModDescription(lines, mod, armor);
             else if (mod.getItem() instanceof JetpackBase jetpack) jetpack.addArmorModDescription(lines, mod, armor);
+            // port: the elytra module (ArmorModHandler.isElytra) is a vanilla item, so it gets 1.7's base
+            // ItemArmorMod.addDesc line: the stack's display name.
+            else if (ArmorModHandler.isElytra(mod)) lines.add(mod.getHoverName());
         }
     }
 }

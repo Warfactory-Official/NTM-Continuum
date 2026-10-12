@@ -83,6 +83,7 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
 
         for (DirPos port : te.getConPos()) {
             te.tryProvide(level, port.getPos().getX(), port.getPos().getY(), port.getPos().getZ(), port.getDir());
+            if (te.tanks[0].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, port);
             if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, port);
         }
 

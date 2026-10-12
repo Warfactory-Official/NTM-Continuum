@@ -61,7 +61,9 @@ public class TileEntityMachineHephaestus extends TileEntityLoadedBase implements
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineHephaestus heatex) {
         heatex.setupTanks();
 
-        // 1.7 re-subscribed to the ducts every 20 ticks; the duct network finds this machine's ports by itself.
+        if (level.getGameTime() % 20 == 0 && heatex.input.getTankType() != Fluids.NONE) {
+            for (DirPos connection : heatex.getConPos()) heatex.trySubscribe(heatex.input.getTankType(), level, connection);
+        }
 
         int height = (int) (level.getGameTime() % 10);
         int range = 7;

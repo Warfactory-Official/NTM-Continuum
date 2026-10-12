@@ -68,6 +68,11 @@ public class TileEntityFluidPump extends TileEntityLoadedBase implements IFluidS
             pump.redstone = powered;
             pump.setChanged();
         }
+        // 1.7: subscribe at the intake, provide at the outlet unless powered (PortClaims)
+        ForgeDirection in = pump.inSide();
+        ForgeDirection out = pump.outSide();
+        pump.trySubscribe(pump.tank[0].getTankType(), level, pos.getX() + in.offsetX, pos.getY(), pos.getZ() + in.offsetZ, in);
+        if (!pump.redstone) pump.tryProvide(pump.tank[0], level, pos.getX() + out.offsetX, pos.getY(), pos.getZ() + out.offsetZ, out);
         pump.networkPackNT(); // 1.7 packed every 15 ticks; the port's pack skips unchanged payloads
     }
 

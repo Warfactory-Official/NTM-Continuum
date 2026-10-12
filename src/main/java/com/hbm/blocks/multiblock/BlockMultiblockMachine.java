@@ -71,6 +71,20 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
     protected abstract BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state);
 
     /**
+     * A block entity a cell still carries from a save made before its machine gave cells none (the RBMK consoles
+     * until 2026-10-12): removes it and answers true, so the caller's tick stops there. Old worlds only.
+     */
+    public static boolean removeIfAtCell(BlockEntity blockEntity) {
+        BlockState state = blockEntity.getBlockState();
+        Level level = blockEntity.getLevel();
+        if (level == null || !(state.getBlock() instanceof BlockMultiblockCore block) || !block.isCellState(state)) {
+            return false;
+        }
+        level.removeBlockEntity(blockEntity.getBlockPos());
+        return true;
+    }
+
+    /**
      * The core of the multiblock {@code pos} belongs to, or null where the index has no answer — which is
      * every cell of a half-torn structure, and every cell on a client that has not yet meshed its core.
      */

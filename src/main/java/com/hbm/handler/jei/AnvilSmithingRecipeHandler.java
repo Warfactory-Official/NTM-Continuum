@@ -1,15 +1,10 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
+import dev.golem.core.viewer.Role;
+import dev.golem.core.viewer.SlotLayout;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilSmithingRecipe;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
-import dev.golem.core.jei.JeiRecipeType;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -26,8 +21,8 @@ import java.util.List;
  */
 public class AnvilSmithingRecipeHandler extends HbmRecipeCategory<AnvilSmithingRecipe> {
 
-    public AnvilSmithingRecipeHandler(IGuiHelper helper, JeiRecipeType<AnvilSmithingRecipe> type, Component title, ItemStack icon) {
-        super(helper, type, title, icon, "gui_nei_smithing.png");
+    public AnvilSmithingRecipeHandler(ViewerType<AnvilSmithingRecipe> type, Component title, ItemStack icon) {
+        super(type, title, icon, "gui_nei_smithing.png");
     }
 
     public static List<AnvilSmithingRecipe> buildRecipes() {
@@ -36,21 +31,20 @@ public class AnvilSmithingRecipeHandler extends HbmRecipeCategory<AnvilSmithingR
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, AnvilSmithingRecipe recipe, IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.INPUT, 39, 24)   // old init 38,23
+    public void setRecipe(SlotLayout builder, AnvilSmithingRecipe recipe) {
+        builder.addSlot(Role.INPUT, 39, 24)   // old init 38,23
                 .addItemStacks(recipe.getLeft()).setStandardSlotBackground();
-        builder.addSlot(RecipeIngredientRole.INPUT, 75, 24)   // old init 74,23
+        builder.addSlot(Role.INPUT, 75, 24)   // old init 74,23
                 .addItemStacks(recipe.getRight()).setStandardSlotBackground();
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 111, 24) // old init 110,23
+        builder.addSlot(Role.OUTPUT, 111, 24) // old init 110,23
                 .addItemStacks(List.of(recipe.getSimpleOutput())).setStandardSlotBackground()
-                .addRichTooltipCallback((view, tooltip) ->
+                .addTooltipCallback((shown, tooltip) ->
                         tooltip.add(Component.literal("Tier " + recipe.tier).withStyle(ChatFormatting.DARK_GRAY)));
     }
 
     @Override
-    public void draw(AnvilSmithingRecipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor g, double mouseX, double mouseY) {
-        super.draw(recipe, slots, g, mouseX, mouseY);
+    public void draw(AnvilSmithingRecipe recipe, GuiGraphicsExtractor g, double mouseX, double mouseY) {
+        super.draw(recipe, g, mouseX, mouseY);
         text(g, "Tier " + recipe.tier, 52, 43);
     }
 }
-//?}

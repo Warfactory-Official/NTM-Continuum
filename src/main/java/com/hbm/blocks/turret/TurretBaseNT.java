@@ -116,6 +116,25 @@ public abstract class TurretBaseNT extends BlockMultiblockCore implements IEnerg
         super.removedAt(state, level, pos, movedByPiston);
     }
 
+    /**
+     * Playtest 2026-10-12 (user): a gun turret may not be placed on top of another gun turret's half-block pad. 1.7 had
+     * no such rule (its space check only reads the footprint), but the second turret then hung half a block above the
+     * first, so the placement and its highlight refuse it. Port-only restriction, decided from the playtest report.
+     */
+    @Override
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        if (!super.checkRequirement(level, core, facing, clicked)) return false;
+        boolean[] onTurret = {isTurretPad(level.getBlockState(core.below()))};
+        visitCells(core, facing, (cell, mask) -> {
+            if (!onTurret[0] && isTurretPad(level.getBlockState(cell.below()))) onTurret[0] = true;
+        });
+        return !onTurret[0];
+    }
+
+    private static boolean isTurretPad(BlockState state) {
+        return state.getBlock() instanceof TurretBaseNT || state.getBlock() instanceof BlockTurretPad;
+    }
+
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;

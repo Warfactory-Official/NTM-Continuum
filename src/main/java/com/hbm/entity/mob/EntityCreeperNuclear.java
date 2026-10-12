@@ -48,7 +48,7 @@ public class EntityCreeperNuclear extends EntityCreeperBase {
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
 
         // 1.7: the nuclear blast would damage the already dead creeper, reviving it into its death animation
-        if (isRemoved()) return false;
+        if (isRemoved() || dead) return false; // dead: set by EntityCreeperBase.tick while the blast runs (1.7 setDead() came first)
 
         if (source.is(ModDamageSources.RADIATION) || source.is(ModDamageSources.MUD_POISONING)) {
             if (isAlive()) heal(amount);

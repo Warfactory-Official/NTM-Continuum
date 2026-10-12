@@ -72,6 +72,10 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCyclotron te) {
 
+        for (DirPos connection : te.getConPos()) {
+            te.trySubscribe(level, connection);
+            te.trySubscribe(te.tanks[0].getTankType(), level, connection);
+        }
         te.power = Library.chargeTEFromItems(te.inventory, 9, te.power, MAX_POWER);
         te.upgradeManager.checkSlots(te.inventory, 10, 11);
 

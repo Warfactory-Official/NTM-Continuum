@@ -20,8 +20,11 @@ import com.hbm.blocks.network.FluidDuctBoxExhaust;
  * (straight / end / one of four curves / one of five junction plates), in the block's material
  * (silver, copper, white, exhaust) and size. The white duct is tinted with the lightened fluid colour.
  *
- * <p>Not reproduced: the 1.7 renderer's per-face UV rotations ({@code uvRotateTop} etc.), which turned
- * the straight/curve icons to run along the duct; faces here are mapped upright.
+ * <p>The 1.7 renderer's per-face UV rotations ({@code uvRotateTop} etc.) are reproduced: a straight run along X
+ * or Z, a vertical bend with an X arm and a horizontal bend each turn some faces' icons so the straight icon runs
+ * along the duct (without them every horizontal run showed its bands across the pipe, 2026-10-12 playtest). The
+ * turned UVs are {@code RenderBlocks.renderFace*}'s for those flags, including its quirk of reflecting the
+ * along-Y coordinate about the box's own centre ({@code minY + maxY - y}); see {@link #uv}.
  */
 public class BoxDuctRenderer<T extends TileEntityFluidDuctNT> extends GemBER<T, BoxDuctRenderer.State> {
 
@@ -34,8 +37,18 @@ public class BoxDuctRenderer<T extends TileEntityFluidDuctNT> extends GemBER<T, 
         public int color = 0xFFFFFFFF;
     }
 
-    private static final int SHAPES = 5;
-    private static final int STRAIGHT_X = 0, STRAIGHT_Y = 1, STRAIGHT_Z = 2, CURVE = 3, JUNCTION = 4;
+    private static final int SHAPES = 7;
+    /**
+     * {@code CURVE} is a bend with no UV rotation (vertical, in the Z plane), {@code CURVE_TB} a vertical bend with an
+     * X arm (1.7 {@code uvRotateTop = uvRotateBottom = 1}), {@code CURVE_SIDES} a horizontal bend (1.7
+     * {@code uvRotateNorth = 1, South = 2, East = 2, West = 1}).
+     */
+    private static final int STRAIGHT_X = 0, STRAIGHT_Y = 1, STRAIGHT_Z = 2, CURVE = 3, JUNCTION = 4,
+            CURVE_TB = 5, CURVE_SIDES = 6;
+    // Declared before the static block that bakes the geometry (static initialisers run in source order).
+    /** {@code RenderBoxDuct}'s flags, shared with {@link PowerCableBoxRenderer} (the same 1.7 renderer). */
+    static final int[] ROT_NONE = new int[6], ROT_STRAIGHT_X = {1, 1, 2, 1, 0, 0}, ROT_STRAIGHT_Z = {0, 0, 0, 0, 1, 2},
+            ROT_CURVE_TB = {1, 1, 0, 0, 0, 0}, ROT_CURVE_SIDES = {0, 0, 2, 1, 1, 2};
     private static final int STRAIGHT = 0, END = 1, CURVE_TL = 2, CURVE_TR = 3, CURVE_BL = 4, CURVE_BR = 5, JUNCTION_0 = 6;
     private static final String[] ICONS = {"straight", "end", "curve_tl", "curve_tr", "curve_bl", "curve_br",
             "junction_0", "junction_1", "junction_2", "junction_3", "junction_4"};
@@ -54,10 +67,11 @@ public class BoxDuctRenderer<T extends TileEntityFluidDuctNT> extends GemBER<T, 
                     case STRAIGHT_X -> new float[]{0F, l, l, 1F, u, u};
                     case STRAIGHT_Y -> new float[]{l, 0F, l, u, 1F, u};
                     case STRAIGHT_Z -> new float[]{l, l, 0F, u, u, 1F};
-                    case CURVE -> new float[]{l, l, l, u, u, u};
+                    case CURVE, CURVE_TB, CURVE_SIDES -> new float[]{l, l, l, u, u, u};
                     default -> new float[]{j, j, j, jU, jU, jU};
                 };
-                GEO[size][shape][0] = box("core_" + size + "_" + shape, core);
+                int[] rot = rotations(shape);
+                GEO[size][shape][0] = box("core_" + size + "_" + shape, core, rot);
                 float c = shape == JUNCTION ? j : l, cU = 1F - c;
                 float[][] arms = {
                         {l, 0F, l, u, c, u},   // DOWN
@@ -68,7 +82,7 @@ public class BoxDuctRenderer<T extends TileEntityFluidDuctNT> extends GemBER<T, 
                         {cU, l, l, 1F, u, u},  // EAST
                 };
                 for (int arm = 0; arm < 6; arm++) {
-                    GEO[size][shape][arm + 1] = box("arm_" + size + "_" + shape + "_" + arm, arms[arm]);
+                    GEO[size][shape][arm + 1] = box("arm_" + size + "_" + shape + "_" + arm, arms[arm], rot);
                 }
             }
         }
@@ -79,23 +93,66 @@ public class BoxDuctRenderer<T extends TileEntityFluidDuctNT> extends GemBER<T, 
         }
     }
 
-    /** Six face quads of an axis-aligned box, UV-mapped by the face's extent on a 16×16 tile (1.7 render bounds). */
-    private static Geometry[] box(String name, float[] b) {
+    /**
+     * The 1.7 {@code uvRotate*} flag per face (Direction ordinal: down, up, north, south, west, east) that
+     * {@code RenderBoxDuct.renderWorldBlock} set for a shape. {@code renderFaceZNeg} reads {@code uvRotateEast},
+     * {@code ZPos} {@code uvRotateWest}, {@code XNeg} {@code uvRotateNorth}, {@code XPos} {@code uvRotateSouth}.
+     */
+    private static int[] rotations(int shape) {
+        return switch (shape) {
+            case STRAIGHT_X -> ROT_STRAIGHT_X;
+            case STRAIGHT_Z -> ROT_STRAIGHT_Z;
+            case CURVE_TB -> ROT_CURVE_TB;
+            case CURVE_SIDES -> ROT_CURVE_SIDES;
+            default -> ROT_NONE;
+        };
+    }
+
+
+    /**
+     * Six face quads of an axis-aligned box with the 1.7 render bounds' UVs on a 16x16 tile, each face turned by
+     * its {@code uvRotate} flag. The vertex order is the one {@code RenderBlocks} emitted for each face.
+     */
+    static Geometry[] box(String name, float[] b, int[] rot) {
         float x0 = b[0], y0 = b[1], z0 = b[2], x1 = b[3], y1 = b[4], z1 = b[5];
+        float[][][] corners = {
+                {{x0, y0, z1}, {x0, y0, z0}, {x1, y0, z0}, {x1, y0, z1}}, // down
+                {{x1, y1, z1}, {x1, y1, z0}, {x0, y1, z0}, {x0, y1, z1}}, // up
+                {{x0, y1, z0}, {x1, y1, z0}, {x1, y0, z0}, {x0, y0, z0}}, // north
+                {{x0, y1, z1}, {x0, y0, z1}, {x1, y0, z1}, {x1, y1, z1}}, // south
+                {{x0, y1, z1}, {x0, y1, z0}, {x0, y0, z0}, {x0, y0, z1}}, // west
+                {{x1, y0, z1}, {x1, y0, z0}, {x1, y1, z0}, {x1, y1, z1}}, // east
+        };
+        float[][] normals = {{0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}, {-1, 0, 0}, {1, 0, 0}};
+        String[] suffix = {"_d", "_u", "_n", "_s", "_w", "_e"};
         Geometry[] faces = new Geometry[6];
-        faces[0] = Quads.named(name + "_d").normal(0, -1, 0)
-                .vertex(x0, y0, z0, x0, z0).vertex(x1, y0, z0, x1, z0).vertex(x1, y0, z1, x1, z1).vertex(x0, y0, z1, x0, z1).build();
-        faces[1] = Quads.named(name + "_u").normal(0, 1, 0)
-                .vertex(x0, y1, z0, x0, z0).vertex(x0, y1, z1, x0, z1).vertex(x1, y1, z1, x1, z1).vertex(x1, y1, z0, x1, z0).build();
-        faces[2] = Quads.named(name + "_n").normal(0, 0, -1)
-                .vertex(x1, y1, z0, 1 - x1, 1 - y1).vertex(x1, y0, z0, 1 - x1, 1 - y0).vertex(x0, y0, z0, 1 - x0, 1 - y0).vertex(x0, y1, z0, 1 - x0, 1 - y1).build();
-        faces[3] = Quads.named(name + "_s").normal(0, 0, 1)
-                .vertex(x0, y1, z1, x0, 1 - y1).vertex(x0, y0, z1, x0, 1 - y0).vertex(x1, y0, z1, x1, 1 - y0).vertex(x1, y1, z1, x1, 1 - y1).build();
-        faces[4] = Quads.named(name + "_w").normal(-1, 0, 0)
-                .vertex(x0, y1, z0, z0, 1 - y1).vertex(x0, y0, z0, z0, 1 - y0).vertex(x0, y0, z1, z1, 1 - y0).vertex(x0, y1, z1, z1, 1 - y1).build();
-        faces[5] = Quads.named(name + "_e").normal(1, 0, 0)
-                .vertex(x1, y1, z1, 1 - z1, 1 - y1).vertex(x1, y0, z1, 1 - z1, 1 - y0).vertex(x1, y0, z0, 1 - z0, 1 - y0).vertex(x1, y1, z0, 1 - z0, 1 - y1).build();
+        for (int f = 0; f < 6; f++) {
+            Quads.Builder quad = Quads.named(name + suffix[f]).normal(normals[f][0], normals[f][1], normals[f][2]);
+            for (float[] c : corners[f]) {
+                float[] uv = uv(f, rot[f], c[0], c[1], c[2], y0, y1);
+                quad.vertex(c[0], c[1], c[2], uv[0], uv[1]);
+            }
+            faces[f] = quad.build();
+        }
         return faces;
+    }
+
+    /**
+     * The 1.7 icon coordinate (0..1 of the tile) at a box corner. Unturned faces map the face's extent upright, as
+     * {@code RenderBlocks} did (north and east through HBM's {@code RenderBlocksNT}, which unmirrored them). The turned
+     * cases are the {@code renderFace*} branches for the flags {@link #rotations} sets: a quarter turn, with the
+     * along-Y coordinate taken as {@code minY + maxY - y} (the branches swap the bounds, not the coordinate).
+     */
+    private static float[] uv(int face, int rot, float x, float y, float z, float minY, float maxY) {
+        float flipY = minY + maxY - y;
+        return switch (face) {
+            case 0 -> rot == 1 ? new float[]{1 - z, x} : new float[]{x, z};          // renderFaceYNeg
+            case 1 -> rot == 1 ? new float[]{z, 1 - x} : new float[]{x, z};          // renderFaceYPos
+            case 2 -> rot == 2 ? new float[]{flipY, 1 - x} : new float[]{1 - x, 1 - y}; // renderFaceZNeg (NT)
+            case 3 -> rot == 1 ? new float[]{flipY, 1 - x} : new float[]{x, 1 - y};      // renderFaceZPos
+            case 4 -> rot == 1 ? new float[]{flipY, 1 - z} : new float[]{z, 1 - y};      // renderFaceXNeg
+            default -> rot == 2 ? new float[]{flipY, 1 - z} : new float[]{1 - z, 1 - y}; // renderFaceXPos (NT)
+        };
     }
 
     @Override
@@ -169,8 +226,11 @@ public class BoxDuctRenderer<T extends TileEntityFluidDuctNT> extends GemBER<T, 
         if ((mask & 0b001111) == 0 && mask > 0) state.shape = STRAIGHT_X;
         else if ((mask & 0b111100) == 0 && mask > 0) state.shape = STRAIGHT_Z;
         else if ((mask & 0b110011) == 0 && mask > 0) state.shape = STRAIGHT_Y;
-        else if (state.count == 2) state.shape = CURVE;
-        else state.shape = JUNCTION;
+        else if (state.count == 2) {
+            boolean anyY = (mask & 0b001100) != 0, anyX = (mask & 0b110000) != 0;
+            // 1.7: (nY || pY) && (pX || nX) turns top and bottom; !nY && !pY turns the four sides.
+            state.shape = anyY && anyX ? CURVE_TB : !anyY ? CURVE_SIDES : CURVE;
+        } else state.shape = JUNCTION;
         // 1.7: the white duct takes ColorUtil.lightenColor(type colour, 0.25) — a quarter of the way to
         // white — for every type, NONE (0x888888) included.
         int color = 0xFFFFFF;

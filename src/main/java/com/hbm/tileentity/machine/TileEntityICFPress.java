@@ -70,6 +70,10 @@ public class TileEntityICFPress extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityICFPress press) {
+        if (level.getGameTime() % 20 == 0) {
+            press.subscribeToAllAround(press.tanks[0].getTankType(), press);
+            press.subscribeToAllAround(press.tanks[1].getTankType(), press);
+        }
         press.setTypeFromIdentifier(0, 6);
         press.setTypeFromIdentifier(1, 7);
 

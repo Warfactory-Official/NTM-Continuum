@@ -44,6 +44,10 @@ public class TileEntityTesla extends TileEntityMachineBase implements IEnergyRec
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityTesla tesla) {
         if (!(level instanceof ServerLevel server)) return;
 
+        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+            tesla.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
+        }
+
         tesla.targets.clear();
 
         if (level.getBlockState(pos.below()).is(ModBlocks.meteor_battery.get())) tesla.power = maxPower;

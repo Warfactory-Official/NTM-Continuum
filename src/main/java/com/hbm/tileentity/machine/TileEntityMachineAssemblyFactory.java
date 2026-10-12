@@ -48,7 +48,22 @@ import java.util.Random;
 /** The four-lane Assembly Factory controller, ported from the 1.12.2 tile entity. */
 public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase implements MenuProvider,
         IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IControlReceiver, WorldlyContainer,
-        IUpgradeInfoProvider, IRORValueProvider {
+        IUpgradeInfoProvider, IRORValueProvider, com.hbm.api.fluidmk2.IFluidMultiUserMK2 {
+
+    /**
+     * 1.7: a duct at a coolant position reached the coolant {@code delegate} (water in, low-pressure steam out), not
+     * the factory, whose own tanks are the recipe tanks.
+     */
+    @Override
+    public com.hbm.api.fluidmk2.@org.jspecify.annotations.Nullable IFluidUserMK2 fluidUserAt(BlockPos pos,
+            net.minecraft.core.@org.jspecify.annotations.Nullable Direction face) {
+        if (face == null) return null;
+        BlockPos duct = pos.relative(face);
+        for (DirPos cool : getCoolPos()) {
+            if (cool.getPos().equals(duct) && cool.getDir().toDirection() == face) return coolantDelegate;
+        }
+        return null;
+    }
 
     public static final int LANES = 4;
     public static final int LANE_SIZE = 14;
@@ -176,11 +191,17 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
         factory.upgradeManager.checkSlots(factory.inventory, 1, 3);
 
         for (DirPos connection : factory.getConPos()) {
+            factory.trySubscribe(level, connection);
+            for (FluidTankNTM tank : factory.inputTanks) {
+                if (tank.getTankType() != Fluids.NONE) factory.trySubscribe(tank.getTankType(), level, connection);
+            }
             for (FluidTankNTM tank : factory.outputTanks) {
                 if (tank.getFill() > 0) factory.tryProvide(tank, level, connection);
             }
         }
         for (DirPos connection : factory.getCoolPos()) {
+            factory.coolantDelegate.trySubscribe(level, connection);
+            factory.coolantDelegate.trySubscribe(factory.water.getTankType(), level, connection);
             factory.coolantDelegate.tryProvide(factory.lps, level, connection);
         }
 
@@ -408,7 +429,10 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
     }
 
     /** The coolant proxy capability from the old extra-dummy cells. */
-    private final class CoolantDelegate implements IEnergyReceiverMK2, IFluidStandardTransceiverMK2 {
+    private final class CoolantDelegate implements IEnergyReceiverMK2, IFluidStandardTransceiverMK2,
+            com.hbm.uninos.graph.PortClaims.Delegate {
+        /** 1.7's {@code delegate} subscribes at the coolant positions on the factory's behalf. */
+        @Override public Object portClaimOwner() { return TileEntityMachineAssemblyFactory.this; }
         @Override public long getPower() { return TileEntityMachineAssemblyFactory.this.power; }
         @Override public void setPower(long power) { TileEntityMachineAssemblyFactory.this.power = power; }
         @Override public long getMaxPower() { return TileEntityMachineAssemblyFactory.this.maxPower; }

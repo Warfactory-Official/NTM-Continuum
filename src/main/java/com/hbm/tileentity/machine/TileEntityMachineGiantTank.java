@@ -84,8 +84,16 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
         cells = mode == 1 && type != Fluids.NONE
                 ? FluidGraph.hold(server, this, type, getConPos())
                 : FluidGraph.release(server, cells);
-        if (mode != 2 || isTilted()) return;
-        for (DirPos connection : getConPos()) tryProvide(tankNew, level, connection);
+        if (mode == 1 || isTilted()) return;
+        // 1.7 (TileEntityMachineFluidTank, which these extend there): send provides at each port, receive
+        // subscribes there, and any other mode leaves the role at once
+        for (DirPos connection : getConPos()) {
+            BlockPos at = connection.getPos();
+            if (mode == 2) tryProvide(tankNew, level, connection);
+            else tryUnprovide(type, level, at.getX(), at.getY(), at.getZ());
+            if (mode == 0) trySubscribe(type, level, connection);
+            else tryUnsubscribe(type, level, at.getX(), at.getY(), at.getZ());
+        }
     }
 
     private void updateTypeFromIdentifier() {

@@ -83,6 +83,12 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, MAX_POWER);
         te.updateOutputType();
 
+        for (DirPos dp : te.getConPos()) {
+            te.trySubscribe(level, dp);
+            if (te.tanks[0].getTankType() != com.hbm.inventory.fluid.Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
+            if (te.tanks[1].getTankType() != com.hbm.inventory.fluid.Fluids.NONE) te.trySubscribe(te.tanks[1].getTankType(), level, dp);
+        }
+
         te.upgradeManager.checkSlots(te.inventory, 3, 4);
         int speedLevel = te.upgradeManager.getLevel(UpgradeType.SPEED);
         int powerLevel = te.upgradeManager.getLevel(UpgradeType.POWER);

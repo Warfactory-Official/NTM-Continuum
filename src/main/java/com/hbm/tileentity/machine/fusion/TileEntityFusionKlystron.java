@@ -86,6 +86,10 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
         te.maxPower = Math.max(1_000_000L, te.outputTarget * 100L);
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.maxPower);
 
+        for (DirPos port : te.getConPos()) {
+            te.trySubscribe(level, port);
+            te.trySubscribe(te.compair.getTankType(), level, port);
+        }
 
         te.output = 0;
         double powerFactor = TileEntityFusionTorus.getSpeedScaled(te.maxPower, te.power);

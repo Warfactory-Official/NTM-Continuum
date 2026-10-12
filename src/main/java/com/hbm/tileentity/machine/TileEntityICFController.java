@@ -142,7 +142,12 @@ public class TileEntityICFController extends TileEntityLoadedBase implements IEn
         te.networkPackNT();
 
         if (te.assembled) {
-            // 1.7 subscribed each port's neighbours here; the port cells answer the energy graph themselves.
+            // 1.7: each port's neighbours; the port cells front the controller (TileEntityBlockICF)
+            for (BlockPos port : te.ports) {
+                for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+                    if (te.getMaxPower() > 0) te.trySubscribe(level, port.getX() + dir.offsetX, port.getY() + dir.offsetY, port.getZ() + dir.offsetZ, dir);
+                }
+            }
             if (te.power > 0) {
                 ForgeDirection dir = te.facing();
 

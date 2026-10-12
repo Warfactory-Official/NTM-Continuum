@@ -1,11 +1,8 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.recipes.RTGRecipes;
-import dev.golem.core.jei.JeiRecipeType;
-import mezz.jei.api.helpers.IGuiHelper;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -14,13 +11,13 @@ import java.util.List;
 
 /** The old universal JEI strip showing each fresh pellet and the residual pellet it decays into. */
 public final class RTGRecipeHandler extends JEIUniversalHandler<RTGRecipeHandler.Entry> {
-    public static final JeiRecipeType<Entry> TYPE =
-            JeiRecipeType.create("hbm", "rtg", Entry.class);
+    public static final ViewerType<Entry> TYPE =
+            ViewerType.create("hbm", "rtg", Entry.class);
 
     public record Entry(ItemStack input, ItemStack output) {}
 
-    public RTGRecipeHandler(IGuiHelper helper) {
-        super(helper, TYPE, Component.literal("RTG"), new ItemStack(ModMachineBlocks.machine_rtg_grey.get()));
+    public RTGRecipeHandler() {
+        super(TYPE, Component.literal("RTG"), new ItemStack(ModMachineBlocks.machine_rtg_grey.get()));
     }
 
     public static List<Entry> buildRecipes() {
@@ -39,4 +36,3 @@ public final class RTGRecipeHandler extends JEIUniversalHandler<RTGRecipeHandler
         return List.of(List.of(recipe.output()));
     }
 }
-//?}

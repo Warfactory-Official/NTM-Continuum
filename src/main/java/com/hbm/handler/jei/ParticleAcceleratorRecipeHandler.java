@@ -1,12 +1,8 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.inventory.recipes.ParticleAcceleratorRecipes;
 import com.hbm.inventory.recipes.ParticleAcceleratorRecipes.ParticleAcceleratorRecipe;
-import dev.golem.core.jei.JeiRecipeType;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -18,9 +14,9 @@ import java.util.Locale;
 /** JEI category for the particle accelerator: two particles in, one or two products out, and the momentum the beam has to reach. */
 public class ParticleAcceleratorRecipeHandler extends JEIUniversalHandler<ParticleAcceleratorRecipe> {
 
-    public ParticleAcceleratorRecipeHandler(IGuiHelper helper, JeiRecipeType<ParticleAcceleratorRecipe> type,
+    public ParticleAcceleratorRecipeHandler(ViewerType<ParticleAcceleratorRecipe> type,
                                             Component title, ItemStack... machines) {
-        super(helper, type, title, machines);
+        super(type, title, machines);
     }
 
     public static List<ParticleAcceleratorRecipe> buildRecipes() {
@@ -40,10 +36,9 @@ public class ParticleAcceleratorRecipeHandler extends JEIUniversalHandler<Partic
     }
 
     @Override
-    public void draw(ParticleAcceleratorRecipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor g,
+    public void draw(ParticleAcceleratorRecipe recipe, GuiGraphicsExtractor g,
                      double mouseX, double mouseY) {
-        super.draw(recipe, slots, g, mouseX, mouseY);
+        super.draw(recipe, g, mouseX, mouseY);
         text(g, "Momentum: " + String.format(Locale.US, "%,d", recipe.momentum), 8, 52);
     }
 }
-//?}

@@ -1,12 +1,9 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.recipes.LiquefactionRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
-import mezz.jei.api.helpers.IGuiHelper;
-import dev.golem.core.jei.JeiRecipeType;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
@@ -21,8 +18,8 @@ public class LiquefactionRecipeHandler extends JEIUniversalHandler<LiquefactionR
 
     public record Entry(List<ItemStack> input, FluidStack output) {}
 
-    public LiquefactionRecipeHandler(IGuiHelper helper, JeiRecipeType<Entry> type, Component title, ItemStack... machines) {
-        super(helper, type, title, machines);
+    public LiquefactionRecipeHandler(ViewerType<Entry> type, Component title, ItemStack... machines) {
+        super(type, title, machines);
     }
 
     public static List<Entry> buildRecipes() {
@@ -53,4 +50,3 @@ public class LiquefactionRecipeHandler extends JEIUniversalHandler<LiquefactionR
         return List.of(List.of(ItemFluidIcon.make(recipe.output.type)));
     }
 }
-//?}

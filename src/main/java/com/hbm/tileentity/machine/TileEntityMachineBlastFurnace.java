@@ -74,6 +74,7 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineBlastFurnace furnace) {
         for (DirPos connection : furnace.getConPos()) {
+            furnace.trySubscribe(furnace.tanks[0].getTankType(), level, connection);
             if (furnace.tanks[1].getFill() > 0) furnace.tryProvide(furnace.tanks[1], level, connection);
         }
 

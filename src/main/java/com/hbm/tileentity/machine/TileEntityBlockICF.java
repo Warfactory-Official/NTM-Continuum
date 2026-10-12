@@ -26,7 +26,14 @@ import org.jspecify.annotations.Nullable;
  * The entity was a plain {@code TileEntity}; it sits on {@link TileEntityLoadedBase} for the loaded check the
  * energy graph asks every receiver.
  */
-public class TileEntityBlockICF extends TileEntityLoadedBase implements IEnergyReceiverMK2, com.hbm.tileentity.IRelocatable {
+public class TileEntityBlockICF extends TileEntityLoadedBase implements IEnergyReceiverMK2, com.hbm.tileentity.IRelocatable,
+        com.hbm.uninos.graph.PortClaims.Delegate {
+
+    /** 1.7: the controller subscribes at each port's neighbours; the port cell only fronts it. */
+    @Override
+    public @Nullable Object portClaimOwner() {
+        return getCore();
+    }
 
     /** A sub-level move carried this block; the controller follows when it was carried too. */
     @Override

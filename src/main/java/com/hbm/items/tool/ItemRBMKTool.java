@@ -58,8 +58,8 @@ public class ItemRBMKTool extends Item {
             return InteractionResult.SUCCESS;
         }
 
-        BlockPos consoleCore = block instanceof RBMKConsole || block instanceof RBMKCraneConsole
-                ? pos : MultiblockSurface.coreOfCell(level, pos);
+        // 1.7 findCore: a console cell is the console's own block too, so the core comes from the index
+        BlockPos consoleCore = MultiblockSurface.coreOfAny(level, pos);
         if (consoleCore == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
         Block coreBlock = level.getBlockState(consoleCore).getBlock();
         if (!(coreBlock instanceof RBMKConsole) && !(coreBlock instanceof RBMKCraneConsole)) {

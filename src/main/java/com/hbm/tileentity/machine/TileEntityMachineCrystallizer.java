@@ -92,6 +92,10 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         te.ensureClimbRegistered();
         te.isOn = false;
 
+        for (DirPos con : te.getConPos()) {
+            te.trySubscribe(level, con);
+            te.trySubscribe(te.tank.getTankType(), level, con);
+        }
 
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.getPower(), te.getMaxPower());
         te.updateTankType();
@@ -215,6 +219,11 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         ItemStack in = inventory.getStackInSlot(3);
         if (in.isEmpty()) return;
 
+        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
+        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+            setChanged();
+            return;
+        }
         if (in.getItem() instanceof IFillableItem fillable) {
             int held = fillable.getFill(in);
             FluidType heldType = fillable.getFirstFluidType(in);

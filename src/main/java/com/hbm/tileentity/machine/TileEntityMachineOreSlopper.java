@@ -118,6 +118,8 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase
         if (conversion != null) te.tanks[1].setTankType(conversion);
 
         for (DirPos con : te.getConPos()) {
+            te.trySubscribe(level, con);
+            te.trySubscribe(te.tanks[0].getTankType(), level, con);
             if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, con);
         }
 

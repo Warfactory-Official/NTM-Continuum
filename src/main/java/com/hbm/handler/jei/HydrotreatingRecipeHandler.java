@@ -1,13 +1,10 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.recipes.HydrotreatingRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
-import mezz.jei.api.helpers.IGuiHelper;
-import dev.golem.core.jei.JeiRecipeType;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -19,8 +16,8 @@ public class HydrotreatingRecipeHandler extends JEIUniversalHandler<Hydrotreatin
 
     public record Entry(FluidType input, HydrotreatingRecipes.HydrotreatingRecipe recipe) {}
 
-    public HydrotreatingRecipeHandler(IGuiHelper helper, JeiRecipeType<Entry> type, Component title, ItemStack... machines) {
-        super(helper, type, title, machines);
+    public HydrotreatingRecipeHandler(ViewerType<Entry> type, Component title, ItemStack... machines) {
+        super(type, title, machines);
     }
 
     public static List<Entry> buildRecipes() {
@@ -43,4 +40,3 @@ public class HydrotreatingRecipeHandler extends JEIUniversalHandler<Hydrotreatin
                 List.of(ItemFluidIcon.make(recipe.recipe.out2())));
     }
 }
-//?}

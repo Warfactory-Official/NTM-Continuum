@@ -71,10 +71,16 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         tanks[1] = new FluidTankNTM(Fluids.GAS, 64_000);
     }
 
+    /** 1.7 {@code updateConnections}: power at every connection position (the fracking tower adds its solution). */
+    protected void updateConnections(Level level) {
+        for (DirPos port : getConPos()) this.trySubscribe(level, port);
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityOilDrillBase te) {
         te.unloadTank(0, 1, 2);
         te.unloadTank(1, 3, 4);
 
+        te.updateConnections(level);
 
         te.upgradeManager.checkSlots(te.inventory, 5, 7);
         te.speedLevel = Math.min(te.upgradeManager.getLevel(UpgradeType.SPEED), 3);

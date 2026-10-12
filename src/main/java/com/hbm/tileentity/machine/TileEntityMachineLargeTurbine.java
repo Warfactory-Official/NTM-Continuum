@@ -63,6 +63,7 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
         BlockPos powerPos = turbine.getBlockPos().offset(-dir.offsetX * 4, 0, -dir.offsetZ * 4);
         turbine.tryProvide(level, powerPos, dir.getOpposite());
         for (DirPos connection : turbine.getConPos()) {
+            turbine.trySubscribe(turbine.tanks[0].getTankType(), level, connection);
             turbine.tryProvide(turbine.tanks[1], level, connection);
         }
 
@@ -129,6 +130,11 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
         if (in.isEmpty()) return;
 
         FluidType tankType = tank.getTankType();
+        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
+        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+            setChanged();
+            return;
+        }
         if (in.getItem() instanceof IFillableItem fillable) {
             int held = fillable.getFill(in);
             FluidType heldType = fillable.getFirstFluidType(in);

@@ -45,6 +45,7 @@ public class TileEntityMachineIntake extends TileEntityLoadedBase
 
         for (DirPos connection : intake.getConPos()) {
             if (intake.compair.getFill() > 0) intake.tryProvide(intake.compair, level, connection);
+            intake.trySubscribe(level, connection);
         }
 
         intake.setChanged();

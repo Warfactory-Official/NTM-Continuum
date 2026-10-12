@@ -96,6 +96,7 @@ public class TileEntityChungus extends TileEntityLoadedBase
         }
         for (DirPos connection : turbine.getConPos()) {
             turbine.tryProvide(turbine.tanks[1], level, connection);
+            turbine.trySubscribe(turbine.tanks[0].getTankType(), level, connection); // 1.7 TileEntityTurbineBase
         }
         turbine.networkPackNT();
     }

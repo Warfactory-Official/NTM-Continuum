@@ -104,6 +104,12 @@ public class TileEntityForceField extends TileEntityMachineBase implements IEner
         boolean remote = level.isClientSide();
 
         if (!remote) {
+            // 1.7 updateConnections: five sides, all but the top
+            BlockPos at = getBlockPos();
+            for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+                if (dir != ForgeDirection.UP) trySubscribe(level, at.getX() + dir.offsetX, at.getY() + dir.offsetY, at.getZ() + dir.offsetZ, dir);
+            }
+
             int rStack = 0;
             int hStack = 0;
             radius = baseRadius;

@@ -91,13 +91,20 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         FluidType type = tank.tank.getTankType();
         if (!tank.hasExploded) {
             tank.updateTypeFromFluidId();
-            if (tank.tank.getPressure() == 0) {
+            // 1.7 FluidTank.loadTank: a pressurised tank takes nothing but the infinite barrel
+            if (tank.tank.getPressure() == 0 || tank.inventory.getStackInSlot(2).is(com.hbm.items.ModFluidNetItems.fluid_barrel_infinite.get())) {
                 MachineFluidContainerIO.load(tank.tank, tank.inventory, 2, 3);
             }
             type = tank.tank.getTankType();
             if (level instanceof ServerLevel server) tank.updateCells(server, type);
-            if (tank.mode == 2) {
-                for (DirPos dp : tank.getConPos()) tank.tryProvide(tank.tank, level, dp.getPos(), dp.getDir());
+            if (tank.mode != 1) {
+                for (DirPos dp : tank.getConPos()) {
+                    BlockPos at = dp.getPos();
+                    if (tank.mode == 2) tank.tryProvide(tank.tank, level, at, dp.getDir());
+                    else tank.tryUnprovide(type, level, at.getX(), at.getY(), at.getZ());
+                    if (tank.mode == 0) tank.trySubscribe(type, level, at, dp.getDir());
+                    else tank.tryUnsubscribe(type, level, at.getX(), at.getY(), at.getZ());
+                }
             }
         } else if (level instanceof ServerLevel server) {
             tank.cells = FluidGraph.release(server, tank.cells); // 1.7: a torn tank leaves the network
@@ -287,17 +294,19 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
                 && tank.fill(type, amount, false) > 0;
     }
 
-    /** Slot 4 mirrors the source tank's unloadTank path: it accepts only an empty container to fill. */
+    /**
+     * Slot 4 mirrors the source tank's unloadTank path (1.7 {@code FluidLoaderFillableItem.fill}): any
+     * {@link IFillableItem} that accepts the tank's fluid is filled in place, partly filled or not (a half-empty
+     * jetpack refuels here), and an empty bucket. 1.7's GUI slot took any item; an item the tank cannot fill is
+     * still refused so automation does not park it here. port: a stackable canister must come empty (partly filled
+     * canisters are port-only; they belong in slot 2), an unstackable fillable (jetpack, tool, gun) fills in place.
+     */
     private boolean isFillable(ItemStack stack) {
         if (MachineFluidContainerIO.acceptsInfiniteSink(tank, stack)) return true;
-        if (stack.isEmpty() || tank.getPressure() != 0 || tank.getTankType() == Fluids.NONE
-                || tank.getFill() <= 0) return false;
+        if (stack.isEmpty() || tank.getTankType() == Fluids.NONE) return false;
         if (stack.is(Items.BUCKET)) return true;
-        if (!(stack.getItem() instanceof IFillableItem fillable)) return false;
-
-        // Slot 4 is the source's empty-canister input; filled canisters belong in slot 2.
-        return fillable.getFill(stack) == 0 && fillable.getFirstFluidType(stack) == Fluids.NONE
-                && fillable.acceptsFluid(tank.getTankType(), stack);
+        return stack.getItem() instanceof IFillableItem fillable && fillable.acceptsFluid(tank.getTankType(), stack)
+                && (stack.getMaxStackSize() == 1 || fillable.getFill(stack) == 0);
     }
 
     /**

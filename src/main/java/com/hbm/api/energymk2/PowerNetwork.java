@@ -10,6 +10,7 @@ import com.hbm.uninos.graph.EndpointRegistry;
 import com.hbm.uninos.graph.GraphNode;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.graph.NodeNetwork;
+import com.hbm.uninos.graph.PortClaims;
 import dev.golem.core.platform.Lifecycle;
 import dev.golem.core.world.EnergyCompat;
 import dev.golem.core.world.EnergyView;
@@ -38,8 +39,9 @@ import java.util.List;
  * and {@code instanceof IEnergyHandlerMK2} answers the same question with nothing in between. A
  * capability lookup is only needed for machines that are somebody else's.
  *
- * <p>Discovery is entirely pull: a conductor probes the faces of its own cells and asks what is on the
- * other side. Nothing subscribes. The three things that can make a parked face live again are a
+ * <p>Discovery is pull: a conductor probes the faces of its own cells and asks what is on the other side.
+ * The role a machine found there plays is 1.7's per-port answer, claimed by its own {@code tryProvide} /
+ * {@code trySubscribe} calls ({@link PortClaims}). The three things that can make a parked face live again are a
  * neighbour notification on the conductor, a block entity announcing itself through
  * {@link com.hbm.tileentity.GraphResident} as its chunk loads, and a chunk reaching FULL.
  */
@@ -81,6 +83,7 @@ public final class PowerNetwork {
         Lifecycle.onLevelUnload((server, level) -> {
             LevelNodeGraph.clearLevel(level);
             EndpointRegistry.clearLevel(level);
+            com.hbm.uninos.graph.PortClaims.clearLevel(level);
         });
         Lifecycle.onServerTick(PowerNetwork::onServerTick);
     }
@@ -148,7 +151,24 @@ public final class PowerNetwork {
                 if (!resident(level, at)) continue;
                 BlockEntity be = handlerAt(level, at, d);
                 if (be instanceof IEnergyHandlerMK2 handler) {
-                    if (handler.isLoaded() && gather.seen.add(handler)) gather.offer(handler);
+                    if (handler.isLoaded()) {
+                        // 1.7: a role only through a port the machine claimed it at (tryProvide / trySubscribe),
+                        // each role once per round whichever of its faces carries it; see PortClaims.
+                        ForgeDirection side = d == EdgeFaces.SELF ? ForgeDirection.UNKNOWN
+                                : ForgeDirection.getOrientation(DIRS[d].getOpposite());
+                        // asked only with something to move: PortClaims learns a class from what it does then
+                        boolean provide = handler instanceof IEnergyProviderMK2
+                                && !gather.seenProviding.contains(handler)
+                                && Math.min(handler.getPower(), handler.getProviderSpeed()) > 0L
+                                && PortClaims.allows(level, node.posKey, side, handler, PortClaims.POWER, PortClaims.PROVIDE)
+                                && gather.seenProviding.add(handler);
+                        boolean receive = handler instanceof IEnergyReceiverMK2
+                                && !gather.seenReceiving.contains(handler)
+                                && Math.min(handler.getMaxPower() - handler.getPower(), handler.getReceiverSpeed()) > 0L
+                                && PortClaims.allows(level, node.posKey, side, handler, PortClaims.POWER, PortClaims.SUBSCRIBE)
+                                && gather.seenReceiving.add(handler);
+                        if (provide || receive) gather.offer(handler, provide, receive);
+                    }
                     continue;
                 }
                 EnergyView view = foreignAt(level, at, d);
@@ -164,7 +184,7 @@ public final class PowerNetwork {
         }
 
         long injected = bridge == null ? 0L : bridge.injected();
-        if (injected > 0L) gather.offer(bridge.injectedSource());
+        if (injected > 0L) gather.offer(bridge.injectedSource(), true, false);
         gather.fileForeignDemand();
 
         long supply = gather.totalSupply();
@@ -307,7 +327,8 @@ public final class PowerNetwork {
         @SuppressWarnings("unchecked")
         final List<Distribution.Share<IEnergyHandlerMK2>>[] bufferProviders = new List[PRIORITIES];
         final List<Distribution.Share<IEnergyHandlerMK2>> providers = new ArrayList<>();
-        final ReferenceOpenHashSet<IEnergyHandlerMK2> seen = new ReferenceOpenHashSet<>();
+        final ReferenceOpenHashSet<IEnergyHandlerMK2> seenProviding = new ReferenceOpenHashSet<>();
+        final ReferenceOpenHashSet<IEnergyHandlerMK2> seenReceiving = new ReferenceOpenHashSet<>();
         final ReferenceOpenHashSet<Object> seenForeign = new ReferenceOpenHashSet<>();
         final long[] demand = new long[PRIORITIES];
         final long[] bufferHeadroom = new long[PRIORITIES];
@@ -328,11 +349,15 @@ public final class PowerNetwork {
             Arrays.fill(demand, 0L);
         }
 
-        void offer(IEnergyHandlerMK2 handler) {
+        void offer(IEnergyHandlerMK2 handler, boolean provide, boolean receive) {
             int tier = handler.getPriority().ordinal();
             boolean buffer = handler.bufferedEndpoint();
 
-            long supply = Math.min(handler.getPower(), handler.getProviderSpeed());
+            // 1.7 PowerNetMK2 kept providers and receivers in two lists, filled only by IEnergyProviderMK2.tryProvide
+            // and IEnergyReceiverMK2.trySubscribe: a consumer's stored power is never supply, and a generator's
+            // headroom is never demand, whatever its speeds say (playtest 2026-10-12: a battery drained a machine).
+            long supply = provide && handler instanceof IEnergyProviderMK2
+                    ? Math.min(handler.getPower(), handler.getProviderSpeed()) : 0L;
             if (supply > 0L) {
                 if (buffer) {
                     bufferProviders[tier].add(new Distribution.Share<>(handler, supply));
@@ -344,7 +369,8 @@ public final class PowerNetwork {
                 }
             }
 
-            long headroom = Math.min(handler.getMaxPower() - handler.getPower(), handler.getReceiverSpeed());
+            long headroom = receive && handler instanceof IEnergyReceiverMK2
+                    ? Math.min(handler.getMaxPower() - handler.getPower(), handler.getReceiverSpeed()) : 0L;
             if (headroom > 0L) {
                 if (buffer) {
                     bufferReceivers[tier].add(new Distribution.Share<>(handler, headroom));

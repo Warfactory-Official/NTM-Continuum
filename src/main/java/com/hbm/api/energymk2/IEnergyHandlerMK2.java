@@ -39,14 +39,22 @@ public interface IEnergyHandlerMK2 extends IEnergyConnectorMK2, ILoadedTile, IBu
         this.setPower(this.getPower() - power);
     }
 
-    /** Max speed at which this handler can send energy. Defaults to its capacity. */
+    /**
+     * Max speed at which this handler can send energy. Zero unless it is an {@link IEnergyProviderMK2}, which
+     * defaults it to its capacity: 1.7 declared this on the provider interface only, so a consumer's buffer
+     * was never offered to a net (playtest 2026-10-12: a battery on the same cable drained a machine).
+     */
     default long getProviderSpeed() {
-        return this.getMaxPower();
+        return 0L;
     }
 
-    /** Max speed at which this handler can take energy. Defaults to its capacity. */
+    /**
+     * Max speed at which this handler can take energy. Zero unless it is an {@link IEnergyReceiverMK2}, which
+     * defaults it to its capacity: 1.7 declared this on the receiver interface only, so a generator never took
+     * power from a net.
+     */
     default long getReceiverSpeed() {
-        return this.getMaxPower();
+        return 0L;
     }
 
     /** Absorbs as much of {@code power} as it can and returns the excess. */

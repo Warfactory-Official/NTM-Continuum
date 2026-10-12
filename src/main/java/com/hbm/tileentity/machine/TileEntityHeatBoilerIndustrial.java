@@ -45,6 +45,7 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeatBoilerIndustrial te) {
         te.setupTanks();
+        for (DirPos connection : te.getConPos()) te.trySubscribe(te.tanks[0].getTankType(), level, connection);
         te.tryPullHeat(level);
         // 1.7 Tom-impact fire heating: +0.0005% of the remaining buffer per tick under sky light > 7.
         if (level instanceof net.minecraft.server.level.ServerLevel server

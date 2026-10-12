@@ -1004,6 +1004,13 @@ public final class HbmGameTestFunctions {
             TESTS.function("armor_mod_tick", 40, () -> ArmorModGameTests::medalAndMilkTick);
     public static final GameTests.Function ARMOR_MOD_REVIVE =
             TESTS.function("armor_mod_revive", 40, () -> ArmorModGameTests::whiskeyRevivesThreeTimes);
+    public static final GameTests.Function PT1012_ARMOR_VANILLA =
+            TESTS.function("pt1012_armor_vanilla", 40, () -> Pt1012ArmorGameTests::vanillaArmorTakesModules);
+    public static final GameTests.Function PT1012_ARMOR_ELYTRA =
+            TESTS.function("pt1012_armor_elytra", 40, () -> Pt1012ArmorGameTests::elytraModuleGlides);
+    public static final GameTests.Function PT1012_TANK_FILLS_GLIDER =
+            TESTS.function("pt1012_tank_fills_glider", 40, 8, () -> Pt1012ArmorGameTests::tankFillsGlider);
+
     public static final GameTests.Function ARMOR_SHORT_FALL =
             TESTS.function("armor_short_fall", 40, () -> ArmorGameTests::shortFallDoesNothing);
     public static final GameTests.Function ARMOR_STEEL_TITANIUM =
@@ -1071,6 +1078,12 @@ public final class HbmGameTestFunctions {
             TESTS.function("fallout_pops_without_drops", 20, () -> PickAndFalloutGameTests::falloutPopsWithoutDrops);
     public static final GameTests.Function FALLOUT_HOLDS_WATER =
             TESTS.function("fallout_holds_water", 60, () -> PickAndFalloutGameTests::falloutHoldsWater);
+
+    public static final GameTests.Function FALLOUT_BURNS_TALL_TREES =
+            TESTS.function("pt1012_fallout_burns_tall_trees", 100, 24, () -> PickAndFalloutGameTests::falloutBurnsTallTrees);
+
+    public static final GameTests.Function FALLOUT_SPARED_LEAVES_NOT_SOLID =
+            TESTS.function("pt1012_fallout_spared_leaves_not_solid", 100, 24, () -> PickAndFalloutGameTests::falloutSparedLeavesAreNotSolid);
 
     // --- volcano cores + blobs (implementations live in VolcanoGameTests) ---
     public static final GameTests.Function VOLCANO_GROWING_CORE_CLIMBS =

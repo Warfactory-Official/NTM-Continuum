@@ -1,20 +1,15 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
+import dev.golem.core.viewer.Drawable;
+import dev.golem.core.viewer.Role;
+import dev.golem.core.viewer.SlotLayout;
 import com.hbm.blocks.ModSatelliteBlocks;
 import com.hbm.itempool.ItemPool;
 import com.hbm.items.ModSatelliteItems;
 import com.hbm.items.machine.ItemSatellite;
 import com.hbm.items.machine.ItemSatellite.EnumSatType;
 import com.hbm.saveddata.satellites.SatelliteMiner;
-import dev.golem.core.jei.JeiRecipeType;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.drawable.IDrawable;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -36,20 +31,20 @@ import java.util.List;
  */
 public class SatelliteRecipeHandler extends HbmRecipeCategory<SatelliteRecipeHandler.Entry> {
 
-    public static final JeiRecipeType<Entry> TYPE = JeiRecipeType.create("hbm", "satellite", Entry.class);
+    public static final ViewerType<Entry> TYPE = ViewerType.create("hbm", "satellite", Entry.class);
 
     public record Entry(ItemStack satellite, List<ItemStack> outputs, List<Float> chances) {}
 
-    private final IDrawable smallSlot;
-    private final IDrawable area108;
-    private final IDrawable opRecycle;
+    private final Drawable smallSlot;
+    private final Drawable area108;
+    private final Drawable opRecycle;
 
-    public SatelliteRecipeHandler(IGuiHelper helper) {
-        super(helper, TYPE, Component.literal("Satellite"), new ItemStack(ModSatelliteBlocks.sat_dock.get()),
+    public SatelliteRecipeHandler() {
+        super(TYPE, Component.literal("Satellite"), new ItemStack(ModSatelliteBlocks.sat_dock.get()),
                 "gui_nei_anvil.png");
-        this.smallSlot = helper.createDrawable(tex("gui_nei_anvil.png"), 113, 105, 18, 18);
-        this.area108 = helper.createDrawable(tex("gui_nei_anvil.png"), 5, 87, 108, 54);
-        this.opRecycle = helper.createDrawable(tex("gui_nei_anvil.png"), 131, 96, 18, 36);
+        this.smallSlot = Drawable.texture(tex("gui_nei_anvil.png"), 113, 105, 18, 18);
+        this.area108 = Drawable.texture(tex("gui_nei_anvil.png"), 5, 87, 108, 54);
+        this.opRecycle = Drawable.texture(tex("gui_nei_anvil.png"), 131, 96, 18, 36);
     }
 
     /** 1.7 {@code getMiningSatellites}. */
@@ -82,8 +77,8 @@ public class SatelliteRecipeHandler extends HbmRecipeCategory<SatelliteRecipeHan
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, Entry recipe, IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.INPUT, 12, 24).addItemStacks(List.of(recipe.satellite()));
+    public void setRecipe(SlotLayout builder, Entry recipe) {
+        builder.addSlot(Role.INPUT, 12, 24).addItemStacks(List.of(recipe.satellite()));
 
         // 1.7: more than eighteen outputs cycle through the eighteen positions
         int overflow = recipe.outputs().size() / 18;
@@ -94,30 +89,17 @@ public class SatelliteRecipeHandler extends HbmRecipeCategory<SatelliteRecipeHan
                 stacks.add(recipe.outputs().get(j * 18 + i));
                 chances.add(recipe.chances().get(j * 18 + i));
             }
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 48 + 18 * (i % 6), 6 + 18 * (i / 6))
+            builder.addSlot(Role.OUTPUT, 48 + 18 * (i % 6), 6 + 18 * (i / 6))
                     .addItemStacks(stacks)
-                    .addRichTooltipCallback((view, tooltip) -> view.getDisplayedItemStack().ifPresent(shown -> {
+                    .addTooltipCallback((shown, tooltip) -> {
                         int k = indexOf(stacks, shown);
                         if (k >= 0) tooltip.add(Component.literal(((int) (chances.get(k) * 10F) / 10F) + "%")
                                 .withStyle(ChatFormatting.RED));
-                    }));
+                    });
         }
 
-        builder.addSlot(dev.golem.core.jei.Jei.CRAFTING_STATION, 30, 31)
+        builder.addSlot(Role.CRAFTING_STATION, 30, 31)
                 .addItemStacks(List.of(new ItemStack(ModSatelliteBlocks.sat_dock.get())));
-    }
-
-    /** One-call hooks, as {@code RTGJeiIntegration}. */
-    public static void registerCategory(mezz.jei.api.registration.IRecipeCategoryRegistration reg) {
-        reg.addRecipeCategories(new SatelliteRecipeHandler(reg.getJeiHelpers().getGuiHelper()));
-    }
-
-    public static void registerRecipes(mezz.jei.api.registration.IRecipeRegistration reg) {
-        dev.golem.core.jei.Jei.addRecipes(reg, TYPE, buildRecipes());
-    }
-
-    public static void registerCatalyst(mezz.jei.api.registration.IRecipeCatalystRegistration reg) {
-        dev.golem.core.jei.Jei.addCraftingStation(reg, TYPE, new ItemStack(ModSatelliteBlocks.sat_dock.get()));
     }
 
     private static int indexOf(List<ItemStack> stacks, ItemStack shown) {
@@ -128,11 +110,10 @@ public class SatelliteRecipeHandler extends HbmRecipeCategory<SatelliteRecipeHan
     }
 
     @Override
-    public void draw(Entry recipe, IRecipeSlotsView slots, GuiGraphicsExtractor g, double mouseX, double mouseY) {
-        super.draw(recipe, slots, g, mouseX, mouseY);
+    public void draw(Entry recipe, GuiGraphicsExtractor g, double mouseX, double mouseY) {
+        super.draw(recipe, g, mouseX, mouseY);
         smallSlot.draw(g, 11, 23);
         area108.draw(g, 47, 5);
         opRecycle.draw(g, 29, 14);
     }
 }
-//?}

@@ -13,6 +13,7 @@ import com.hbm.uninos.graph.GraphNode;
 import com.hbm.uninos.graph.GraphSegment;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.graph.NodeNetwork;
+import com.hbm.uninos.graph.PortClaims;
 import dev.golem.core.platform.Lifecycle;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.core.BlockPos;
@@ -39,9 +40,10 @@ import java.util.List;
  * {@link IFluidUserMK2#HIGHEST_VALID_PRESSURE}, because a machine advertises a range of them and a
  * provider at one pressure cannot serve a receiver at another.
  *
- * <p>What does not differ is discovery. It is entirely pull: a duct probes the faces of its own cells
- * and asks what is on the other side. Nothing subscribes, and there is no timeout to evict what stopped
- * subscribing, because nothing ever did.
+ * <p>What does not differ is discovery. It is pull: a duct probes the faces of its own cells and asks what
+ * is on the other side. Which role a machine found that way plays is 1.7's per-port answer: its own
+ * {@code tryProvide}/{@code trySubscribe} calls claim the ports, and a face that is not a claimed port gives
+ * no role ({@link PortClaims}).
  */
 public final class FluidNetwork {
 
@@ -127,7 +129,7 @@ public final class FluidNetwork {
                         : ForgeDirection.getOrientation(DIRS[d].getOpposite());
                 // a machine with several users (IFluidMultiUserMK2) is served once per user its faces reach
                 IFluidUserMK2 user = IFluidMultiUserMK2.resolve(be, at, d == EdgeFaces.SELF ? null : DIRS[d].getOpposite());
-                if (user != null) gather.offer(user, type, side);
+                if (user != null) gather.offer(level, node.posKey, user, type, side);
             }
         }
 
@@ -250,8 +252,7 @@ public final class FluidNetwork {
         final List<Distribution.Share<IFluidReceiverMK2>>[][] receivers = new List[PRESSURES][PRIORITIES];
         final long[] supply = new long[PRESSURES];
         final long[][] demand = new long[PRESSURES][PRIORITIES];
-        final ReferenceOpenHashSet<IFluidUserMK2> seen = new ReferenceOpenHashSet<>();
-        /** Directional users are deduplicated per role, so a pump whose intake and outlet face the same net keeps both. */
+        /** Users are deduplicated per role, so a machine whose intake and outlet face the same net keeps both. */
         final ReferenceOpenHashSet<IFluidUserMK2> seenProviding = new ReferenceOpenHashSet<>();
         final ReferenceOpenHashSet<IFluidUserMK2> seenReceiving = new ReferenceOpenHashSet<>();
 
@@ -262,16 +263,24 @@ public final class FluidNetwork {
             }
         }
 
-        void offer(IFluidUserMK2 user, FluidType type, ForgeDirection side) {
+        /**
+         * One face's user. 1.7 gave a tile a role in a net only through its own per-port calls ({@code tryProvide},
+         * {@code trySubscribe}), so a role is added here only where this face is a port the user claimed it at
+         * ({@link PortClaims#allows}); each role is added once per round, by whichever of the user's faces first
+         * carries it, so a machine whose input and output ports both touch this net plays both roles, as it did in 1.7.
+         */
+        void offer(ServerLevel level, long cell, IFluidUserMK2 user, FluidType type, ForgeDirection side) {
             if (!user.isLoaded()) return;
             // A directional user (the flow-control pump) carries one role per face; see IFluidDirectionalMK2.
-            // 1.7's pump subscribed on its intake and provided on its outlet, so in a closed loop the same
-            // net saw it in both roles: each face may still add the one role it carries.
             IFluidDirectionalMK2 directional = user instanceof IFluidDirectionalMK2 d ? d : null;
-            if (directional == null && !seen.add(user)) return;
 
+            // the role is asked about only with something to move: PortClaims learns a class from what it does then
             if (user instanceof IFluidProviderMK2 provider
-                    && (directional == null || (directional.providesOn(side) && seenProviding.add(user)))) {
+                    && (directional == null || directional.providesOn(side))
+                    && !seenProviding.contains(user)
+                    && supplies(provider, type)
+                    && PortClaims.allows(level, cell, side, user, type, PortClaims.PROVIDE)) {
+                seenProviding.add(user);
                 int[] range = provider.getProvidingPressureRange(type);
                 for (int p = Math.max(0, range[0]); p <= Math.min(range[1], PRESSURES - 1); p++) {
                     long available = Math.min(provider.getFluidAvailable(type, p), provider.getProviderSpeed(type, p));
@@ -282,7 +291,11 @@ public final class FluidNetwork {
             }
 
             if (user instanceof IFluidReceiverMK2 receiver
-                    && (directional == null || (directional.receivesOn(side) && seenReceiving.add(user)))) {
+                    && (directional == null || directional.receivesOn(side))
+                    && !seenReceiving.contains(user)
+                    && demands(receiver, type)
+                    && PortClaims.allows(level, cell, side, user, type, PortClaims.SUBSCRIBE)) {
+                seenReceiving.add(user);
                 int[] range = receiver.getReceivingPressureRange(type);
                 int tier = receiver.getFluidPriority().ordinal();
                 for (int p = Math.max(0, range[0]); p <= Math.min(range[1], PRESSURES - 1); p++) {
@@ -294,8 +307,23 @@ public final class FluidNetwork {
             }
         }
 
+        private static boolean supplies(IFluidProviderMK2 provider, FluidType type) {
+            int[] range = provider.getProvidingPressureRange(type);
+            for (int p = Math.max(0, range[0]); p <= Math.min(range[1], PRESSURES - 1); p++) {
+                if (Math.min(provider.getFluidAvailable(type, p), provider.getProviderSpeed(type, p)) > 0L) return true;
+            }
+            return false;
+        }
+
+        private static boolean demands(IFluidReceiverMK2 receiver, FluidType type) {
+            int[] range = receiver.getReceivingPressureRange(type);
+            for (int p = Math.max(0, range[0]); p <= Math.min(range[1], PRESSURES - 1); p++) {
+                if (Math.min(receiver.getDemand(type, p), receiver.getReceiverSpeed(type, p)) > 0L) return true;
+            }
+            return false;
+        }
+
         void clear() {
-            seen.clear();
             seenProviding.clear();
             seenReceiving.clear();
             for (int p = 0; p < PRESSURES; p++) {

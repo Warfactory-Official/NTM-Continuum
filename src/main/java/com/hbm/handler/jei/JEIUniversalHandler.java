@@ -1,14 +1,9 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.drawable.IDrawable;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
-import dev.golem.core.jei.JeiRecipeType;
+import dev.golem.core.viewer.Drawable;
+import dev.golem.core.viewer.Role;
+import dev.golem.core.viewer.SlotLayout;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -25,14 +20,14 @@ import java.util.List;
 public abstract class JEIUniversalHandler<T> extends HbmRecipeCategory<T> {
 
     protected final ItemStack[] machines;
-    protected final IDrawable slotFrame;
-    protected final IDrawable machinePill;
+    protected final Drawable slotFrame;
+    protected final Drawable machinePill;
 
-    protected JEIUniversalHandler(IGuiHelper helper, JeiRecipeType<T> type, Component title, ItemStack... machines) {
-        super(helper, type, title, machines.length > 0 ? machines[0] : ItemStack.EMPTY, "gui_nei.png");
+    protected JEIUniversalHandler(ViewerType<T> type, Component title, ItemStack... machines) {
+        super(type, title, machines.length > 0 ? machines[0] : ItemStack.EMPTY, "gui_nei.png");
         this.machines = machines;
-        this.slotFrame = helper.createDrawable(tex("gui_nei.png"), 5, 87, 18, 18);
-        this.machinePill = helper.createDrawable(tex("gui_nei.png"), 59, 87, 18, 36);
+        this.slotFrame = Drawable.texture(tex("gui_nei.png"), 5, 87, 18, 18);
+        this.machinePill = Drawable.texture(tex("gui_nei.png"), 59, 87, 18, 36);
     }
 
     /** One entry per input slot (each entry cycles through its alternatives). */
@@ -42,32 +37,32 @@ public abstract class JEIUniversalHandler<T> extends HbmRecipeCategory<T> {
     protected abstract List<List<ItemStack>> outputs(T recipe);
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, T recipe, IFocusGroup focuses) {
+    public void setRecipe(SlotLayout builder, T recipe) {
         List<List<ItemStack>> in = inputs(recipe);
         List<List<ItemStack>> out = outputs(recipe);
 
         int[][] inPos = getInputCoords(in.size());
         for (int i = 0; i < in.size(); i++) {
-            builder.addSlot(RecipeIngredientRole.INPUT, inPos[i][0] + 1, inPos[i][1] + 1)
+            builder.addSlot(Role.INPUT, inPos[i][0] + 1, inPos[i][1] + 1)
                     .addItemStacks(in.get(i)).setBackground(slotFrame, -1, -1);
         }
 
         int[][] outPos = getOutputCoords(out.size());
         for (int i = 0; i < out.size(); i++) {
-            builder.addSlot(RecipeIngredientRole.OUTPUT, outPos[i][0] + 1, outPos[i][1] + 1)
+            builder.addSlot(Role.OUTPUT, outPos[i][0] + 1, outPos[i][1] + 1)
                     .addItemStacks(out.get(i)).setBackground(slotFrame, -1, -1);
         }
 
         // Machine icon in the pill's lower half (old: init(74,31) → item at 75,32).
         if (machines != null && machines.length > 0) {
-            builder.addSlot(dev.golem.core.jei.Jei.CRAFTING_STATION, 75, 32)
+            builder.addSlot(Role.CRAFTING_STATION, 75, 32)
                     .addItemStacks(List.of(machines));
         }
     }
 
     @Override
-    public void draw(T recipe, IRecipeSlotsView slots, GuiGraphicsExtractor g, double mouseX, double mouseY) {
-        super.draw(recipe, slots, g, mouseX, mouseY);
+    public void draw(T recipe, GuiGraphicsExtractor g, double mouseX, double mouseY) {
+        super.draw(recipe, g, mouseX, mouseY);
         machinePill.draw(g, 74, 14);
     }
 
@@ -101,4 +96,3 @@ public abstract class JEIUniversalHandler<T> extends HbmRecipeCategory<T> {
         };
     }
 }
-//?}

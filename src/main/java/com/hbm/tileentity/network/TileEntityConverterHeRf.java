@@ -52,6 +52,10 @@ public class TileEntityConverterHeRf extends TileEntityLoadedBase implements IEn
         if (converter.power > 0) converter.power = (long) (converter.power * (1D - inputDecay));
         if (rfCreated > 0) converter.setChanged();
 
+        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+            converter.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
+        }
+
         if (EnergyCompat.supported()) {
             for (Direction dir : Direction.values()) {
                 BlockPos neighbour = pos.relative(dir);

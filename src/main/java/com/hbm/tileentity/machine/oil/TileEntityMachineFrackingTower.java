@@ -113,6 +113,15 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
 
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[0], tanks[1]}; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[2]}; }
+
+    /** 1.7 {@code TileEntityMachineFrackingTower.updateConnections}: power and the fracking solution. */
+    @Override
+    protected void updateConnections(net.minecraft.world.level.Level level) {
+        for (DirPos port : getConPos()) {
+            this.trySubscribe(level, port);
+            this.trySubscribe(tanks[2].getTankType(), level, port);
+        }
+    }
     @Override public FluidTankNTM[] getAllTanks() { return tanks; }
 
     @Override

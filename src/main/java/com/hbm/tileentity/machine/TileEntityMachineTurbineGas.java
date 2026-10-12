@@ -117,6 +117,10 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
         turbine.tryProvide(level, power.getPos(), power.getDir());
         turbine.power = Math.min(turbine.power, MAX_POWER);
 
+        for (int i = 0; i < 2; i++) { // fuel and lube
+            for (DirPos port : turbine.getFuelPos()) turbine.trySubscribe(turbine.tanks[i].getTankType(), level, port);
+        }
+        for (DirPos port : turbine.getWaterPos()) turbine.trySubscribe(turbine.tanks[2].getTankType(), level, port);
         turbine.tryProvide(turbine.tanks[3], level, turbine.getSteamPos());
         turbine.networkPackNT();
     }

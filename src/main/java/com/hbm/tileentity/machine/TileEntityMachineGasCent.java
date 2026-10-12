@@ -74,6 +74,14 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineGasCent te) {
         GasCentrifugeRecipes.register();
 
+        // 1.7 updateConnections: power always, the fluid only while the pseudo-fluid is one a fluid converts to
+        for (DirPos port : te.getConPos()) {
+            te.trySubscribe(level, port);
+            if (GasCentrifugeRecipes.FLUID_CONVERSIONS.containsValue(te.inputTank.getTankType())) {
+                te.trySubscribe(te.tank.getTankType(), level, port);
+            }
+        }
+
         te.power = Library.chargeTEFromItems(te.inventory, 4, te.power, MAX_POWER);
         te.setTankTypeFromIdentifier();
 

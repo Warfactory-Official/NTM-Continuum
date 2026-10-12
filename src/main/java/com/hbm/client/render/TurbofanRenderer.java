@@ -16,11 +16,13 @@ public final class TurbofanRenderer extends GemBER<TileEntityMachineTurbofan, Tu
 
     private final WavefrontObj model = WavefrontObj.load(
             dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/turbofan.obj"));
-    private final Surface body = Surface.cutoutNoCull(
+    // Culled, as 1.7 RenderTurbofan enables GL_CULL_FACE: turbofan.obj's Blades carry 136 back-to-back face pairs on
+    // the same vertices (and Body 32), so drawing both sides z-fights them.
+    private final Surface body = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/turbofan.png");
-    private final Surface back = Surface.cutoutNoCull(
+    private final Surface back = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/turbofan_back.png");
-    private final Surface afterburner = Surface.cutoutNoCull(
+    private final Surface afterburner = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/turbofan_afterburner.png");
 
     @Override

@@ -56,7 +56,13 @@ public class BlockEntityRBMKConsole extends TileEntityMachineBase implements ICo
     }
 
     @Override
+    public void tickClient() {
+        com.hbm.blocks.multiblock.BlockMultiblockMachine.removeIfAtCell(this); // stale pre-fix cell desk
+    }
+
+    @Override
     public void tickServer() {
+        if (com.hbm.blocks.multiblock.BlockMultiblockMachine.removeIfAtCell(this)) return; // stale pre-fix cell desk
         if (++cadence % 10 != 0) {
             return;
         }

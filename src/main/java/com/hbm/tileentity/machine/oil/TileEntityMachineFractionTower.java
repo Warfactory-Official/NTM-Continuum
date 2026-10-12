@@ -66,6 +66,8 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 
     private void sendFluid() {
         for (DirPos dp : getConPos()) {
+            this.trySubscribe(tanks[0].getTankType(), level, dp); // 1.7 updateConnections, same points, same tick
+
             this.tryProvide(tanks[1], level, dp);
             this.tryProvide(tanks[2], level, dp);
         }

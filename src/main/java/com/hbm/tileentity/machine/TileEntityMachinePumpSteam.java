@@ -50,10 +50,9 @@ public class TileEntityMachinePumpSteam extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePumpSteam pump) {
-        // UNINOS subscriptions are wall-clock leases; the legacy subtype refreshed all four every tick.
-
-        // The legacy steam subtype sends spent steam before the base sends water.
+        // The legacy steam subtype subscribes steam and sends spent steam before the base sends water.
         for (DirPos connection : pump.getConPos()) {
+            pump.trySubscribe(pump.steam.getTankType(), level, connection);
             if (pump.lps.getFill() > 0) pump.tryProvide(pump.lps, level, connection);
         }
 

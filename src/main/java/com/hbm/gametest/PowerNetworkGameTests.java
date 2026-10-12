@@ -13,6 +13,8 @@ import com.hbm.api.energymk2.PowerNetwork;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.capability.MachineCaps;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
+import com.hbm.tileentity.machine.TileEntityMachineElectricFurnace;
+import com.hbm.tileentity.network.TileEntityConverterRfHe;
 import com.hbm.uninos.graph.Distribution;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.graph.NodeNetwork;
@@ -51,6 +53,10 @@ import java.util.List;
  */
 public final class PowerNetworkGameTests {
 
+    /** Long enough for every machine to claim its ports and an unclaiming class to pass its PortClaims grace. */
+    private static final int PORT_CLAIM_WAIT = (int) com.hbm.uninos.graph.PortClaims.GRACE_TICKS + 10;
+
+
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
 
     public static final GameTests.Function JOIN =
@@ -70,11 +76,17 @@ public final class PowerNetworkGameTests {
     public static final GameTests.Function FOREIGN =
             TESTS.function("power_net_foreign_lookup", 20, () -> PowerNetworkGameTests::foreignLookup);
     public static final GameTests.Function GRAPH_ROUND =
-            TESTS.function("power_graph_round", 40, () -> PowerNetworkGameTests::graphRound);
+            TESTS.function("power_graph_round", 200, () -> PowerNetworkGameTests::graphRound);
     public static final GameTests.Function FOREIGN_FACE =
-            TESTS.function("power_foreign_face", 40, () -> PowerNetworkGameTests::foreignFace);
+            TESTS.function("power_foreign_face", 200, () -> PowerNetworkGameTests::foreignFace);
     public static final GameTests.Function CONVERSION =
             TESTS.function("power_he_fe_conversion", 20, () -> PowerNetworkGameTests::heFeConversion);
+    public static final GameTests.Function CONSUMER_NOT_DRAINED =
+            TESTS.function("power_net_consumer_not_drained", 200, () -> PowerNetworkGameTests::consumerNotDrained);
+    public static final GameTests.Function GENERATOR_NOT_FILLED =
+            TESTS.function("power_net_generator_not_filled", 200, () -> PowerNetworkGameTests::generatorNotFilled);
+    public static final GameTests.Function CONSUMER_NOT_FOREIGN =
+            TESTS.function("power_net_consumer_not_foreign_supply", 40, () -> PowerNetworkGameTests::consumerNotForeignSupply);
 
     /**
      * A row per test, because a gametest plot is not alone in the level and the graph is. Plots sit
@@ -86,6 +98,9 @@ public final class PowerNetworkGameTests {
     private static final int SPLIT_Z = 12;
     private static final int GRAPH_Z = 18;
     private static final int FOREIGN_Z = 22;
+    private static final int THEFT_Z = 26;
+    private static final int GENERATOR_Z = 30;
+    private static final int THEFT_FOREIGN_Z = 34;
     private static final int CABLE_FROM = 6;
     private static final int CABLE_TO = 14;
     private static final long CAP = TileEntityMachineBattery.MAX_POWER;
@@ -260,50 +275,52 @@ public final class PowerNetworkGameTests {
             graph.addNode(cells[x - CABLE_FROM], CableData.INSTANCE, MachineCaps.FACE_MASK_ALL);
         }
 
-        String failure;
-        long moved;
-        long total;
-        try {
-            Rig rig = new Rig(helper, GRAPH_Z);
-            TileEntityMachineBattery source =
-                    rig.batteryAt(CABLE_FROM, 3, GRAPH_Z - 1, TileEntityMachineBattery.MODE_OUTPUT, SPEED);
-            TileEntityMachineBattery sink =
-                    rig.batteryAt(CABLE_FROM + 6, 3, GRAPH_Z + 1, TileEntityMachineBattery.MODE_INPUT, 0L);
-
-            NodeNetwork<CableData> net = graph.networkAt(cells[0]);
-            failure = net == null ? "Nine cells did not form a network"
-                    : net.size() < cells.length ? "The network holds only " + net.size() + " of " + cells.length
-                    + " cells" : null;
-            if (net != null) {
-                // The sink hangs off a run INTERIOR, which lives in a segment's bitset: a segment face
-                // that probes PRESENT promotes the cell and re-queues it after the pass that found it,
-                // so the round that serves it is never the first one.
-                for (int pass = 0; pass < 8 && sink.power == 0L; pass++) {
-                    PowerNetwork.distribute(level, graph, net);
-                    source.power = SPEED;
+        Rig rig = new Rig(helper, GRAPH_Z);
+        TileEntityMachineBattery source =
+                rig.batteryAt(CABLE_FROM, 3, GRAPH_Z - 1, TileEntityMachineBattery.MODE_OUTPUT, SPEED);
+        TileEntityMachineBattery sink =
+                rig.batteryAt(CABLE_FROM + 6, 3, GRAPH_Z + 1, TileEntityMachineBattery.MODE_INPUT, 0L);
+        // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
+        helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
+            String failure;
+            long moved;
+            long total;
+            try {
+                NodeNetwork<CableData> net = graph.networkAt(cells[0]);
+                failure = net == null ? "Nine cells did not form a network"
+                        : net.size() < cells.length ? "The network holds only " + net.size() + " of " + cells.length
+                        + " cells" : null;
+                if (net != null) {
+                    // The sink hangs off a run INTERIOR, which lives in a segment's bitset: a segment face
+                    // that probes PRESENT promotes the cell and re-queues it after the pass that found it,
+                    // so the round that serves it is never the first one.
+                    for (int pass = 0; pass < 8 && sink.power == 0L; pass++) {
+                        PowerNetwork.distribute(level, graph, net);
+                        source.power = SPEED;
+                        sink.power = 0L;
+                    }
                     sink.power = 0L;
+                    source.power = SPEED;
+                    PowerNetwork.distribute(level, graph, net);
                 }
-                sink.power = 0L;
-                source.power = SPEED;
-                PowerNetwork.distribute(level, graph, net);
+                moved = sink.power;
+                total = source.power + sink.power;
+            } finally {
+                for (long cell : cells) graph.removeNode(cell);
             }
-            moved = sink.power;
-            total = source.power + sink.power;
-        } finally {
-            for (long cell : cells) graph.removeNode(cell);
-        }
 
-        for (long cell : cells) {
-            helper.assertTrue(!graph.containsCell(cell),
-                    "A hand-fed cell outlived the test at " + BlockPos.of(cell));
-            NodeNetwork<CableData> orphan = graph.networkAt(cell);
-            helper.assertTrue(orphan == null, "A removed cell still answers with a network of "
-                    + (orphan == null ? 0 : orphan.size()) + " cells at " + BlockPos.of(cell));
-        }
-        helper.assertTrue(failure == null, String.valueOf(failure));
-        helper.assertTrue(moved > 0L, "The graph moved nothing to a receiver on its own net");
-        helper.assertTrue(total == SPEED, "The graph round created or destroyed energy: " + total);
-        helper.succeed();
+            for (long cell : cells) {
+                helper.assertTrue(!graph.containsCell(cell),
+                        "A hand-fed cell outlived the test at " + BlockPos.of(cell));
+                NodeNetwork<CableData> orphan = graph.networkAt(cell);
+                helper.assertTrue(orphan == null, "A removed cell still answers with a network of "
+                        + (orphan == null ? 0 : orphan.size()) + " cells at " + BlockPos.of(cell));
+            }
+            helper.assertTrue(failure == null, String.valueOf(failure));
+            helper.assertTrue(moved > 0L, "The graph moved nothing to a receiver on its own net");
+            helper.assertTrue(total == SPEED, "The graph round created or destroyed energy: " + total);
+            helper.succeed();
+        });
     }
 
     /**
@@ -326,31 +343,34 @@ public final class PowerNetworkGameTests {
         TileEntityMachineBattery source =
                 rig.battery(CABLE_FROM, FOREIGN_Z - 1, TileEntityMachineBattery.MODE_OUTPUT, SPEED);
 
-        BlockPos cable = helper.absolutePos(new BlockPos(CABLE_FROM + 2, 1, FOREIGN_Z));
-        EnergyView view = EnergyCompat.find(level, cable, Direction.UP);
-        helper.assertTrue(view != null, "A cable exposed no energy handler to a foreign lookup");
+        // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
+        helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
+            BlockPos cable = helper.absolutePos(new BlockPos(CABLE_FROM + 2, 1, FOREIGN_Z));
+            EnergyView view = EnergyCompat.find(level, cable, Direction.UP);
+            helper.assertTrue(view != null, "A cable exposed no energy handler to a foreign lookup");
 
-        // The first round is what publishes a budget; before it the net has never been asked anything.
-        for (int pass = 0; pass < 8 && view.extractable() == 0L; pass++) rig.round();
+            // The first round is what publishes a budget; before it the net has never been asked anything.
+            for (int pass = 0; pass < 8 && view.extractable() == 0L; pass++) rig.round();
 
-        long offered = view.extractable();
-        helper.assertTrue(offered > 0L, "A cable fed by a full provider offered a foreign peer nothing");
-        // The surplus a round publishes is what the provider could hand over that round: its charge capped
-        // by its provider speed (1.7 battery: maxPower / 600), not its whole charge.
-        long surplus = Math.min(SPEED, source.getProviderSpeed());
-        helper.assertTrue(offered == EnergyConversion.feFromHe(surplus),
-                "A cable offered " + offered + " FE where a " + surplus + " HE surplus is worth "
-                        + EnergyConversion.feFromHe(surplus));
+            long offered = view.extractable();
+            helper.assertTrue(offered > 0L, "A cable fed by a full provider offered a foreign peer nothing");
+            // The surplus a round publishes is what the provider could hand over that round: its charge capped
+            // by its provider speed (1.7 battery: maxPower / 600), not its whole charge.
+            long surplus = Math.min(SPEED, source.getProviderSpeed());
+            helper.assertTrue(offered == EnergyConversion.feFromHe(surplus),
+                    "A cable offered " + offered + " FE where a " + surplus + " HE surplus is worth "
+                            + EnergyConversion.feFromHe(surplus));
 
-        long taken = view.extract(offered);
-        helper.assertTrue(taken == offered, "A peer asked for " + offered + " FE and got " + taken);
-        helper.assertTrue(view.extractable() == 0L, "A budget survived being spent");
+            long taken = view.extract(offered);
+            helper.assertTrue(taken == offered, "A peer asked for " + offered + " FE and got " + taken);
+            helper.assertTrue(view.extractable() == 0L, "A budget survived being spent");
 
-        rig.round();
-        long charged = SPEED - source.power;
-        helper.assertTrue(charged == EnergyConversion.heFromFe(taken),
-                "A peer took " + taken + " FE but the net charged its provider " + charged + " HE");
-        helper.succeed();
+            rig.round();
+            long charged = SPEED - source.power;
+            helper.assertTrue(charged == EnergyConversion.heFromFe(taken),
+                    "A peer took " + taken + " FE but the net charged its provider " + charged + " HE");
+            helper.succeed();
+        });
     }
 
     /**
@@ -373,6 +393,98 @@ public final class PowerNetworkGameTests {
                 + " at once buys " + fe + "; the carry is dropping the remainder");
         helper.assertTrue(carry.heToFeRemainder() == 0L,
                 "An exact conversion left " + carry.heToFeRemainder() + " banked");
+        helper.succeed();
+    }
+
+    /**
+     * Playtest 2026-10-12: "power can be stolen from machines". 1.7's {@code PowerNetMK2} only ever debits an
+     * {@code IEnergyProviderMK2} that called {@code tryProvide}; a consumer's buffer is never supply. An electric
+     * furnace holding power beside an empty input battery on one cable keeps every HE, and the run is proven live by
+     * the same battery feeding the furnace once it is switched to output.
+     */
+    private static void consumerNotDrained(GameTestHelper helper) {
+        Rig rig = new Rig(helper, THEFT_Z);
+        rig.cables(CABLE_FROM, CABLE_FROM + 2);
+        TileEntityMachineElectricFurnace furnace = rig.furnace(CABLE_FROM - 1, THEFT_Z, 50_000L);
+        TileEntityMachineBattery battery = rig.battery(CABLE_FROM + 3, THEFT_Z, TileEntityMachineBattery.MODE_INPUT, 0L);
+
+        // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
+        helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
+            for (int pass = 0; pass < 8; pass++) {
+                rig.tickBatteries();
+                rig.round();
+            }
+            helper.assertTrue(battery.power == 0L, "An input battery took " + battery.power + " HE out of a consumer; " + rig.state());
+            helper.assertTrue(furnace.power == 50_000L, "A consumer lost power to the net: " + furnace.power);
+
+            battery.redLow = (short) TileEntityMachineBattery.MODE_OUTPUT;
+            battery.redHigh = (short) TileEntityMachineBattery.MODE_OUTPUT;
+            battery.power = SPEED;
+            furnace.power = 0L;
+            for (int pass = 0; pass < 8 && furnace.power == 0L; pass++) {
+                rig.tickBatteries();
+                rig.round();
+            }
+            helper.assertTrue(furnace.power > 0L, "The run never reached the furnace, so the first half proved nothing; " + rig.state());
+            helper.succeed();
+        });
+    }
+
+    /**
+     * The other half of the same 1.7 rule: a provider that is not a receiver (here the RF-to-HE converter) never takes
+     * power from a net, so an output battery keeps its charge; the converter itself still feeds an input battery.
+     */
+    private static void generatorNotFilled(GameTestHelper helper) {
+        Rig rig = new Rig(helper, GENERATOR_Z);
+        rig.cables(CABLE_FROM, CABLE_FROM + 2);
+        TileEntityMachineBattery battery = rig.battery(CABLE_FROM - 1, GENERATOR_Z, TileEntityMachineBattery.MODE_OUTPUT, SPEED);
+        TileEntityConverterRfHe converter = rig.converter(CABLE_FROM + 3, GENERATOR_Z);
+
+        // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
+        helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
+            for (int pass = 0; pass < 8; pass++) {
+                rig.tickBatteries();
+                rig.round();
+            }
+            helper.assertTrue(converter.power == 0L, "A provider-only machine took " + converter.power + " HE from the net");
+            helper.assertTrue(battery.power == SPEED, "An output battery was debited with no receiver on the net: " + battery.power);
+
+            battery.redLow = (short) TileEntityMachineBattery.MODE_INPUT;
+            battery.redHigh = (short) TileEntityMachineBattery.MODE_INPUT;
+            battery.power = 0L;
+            converter.power = 1_000L;
+            rig.settle();
+            helper.assertTrue(battery.power > 0L, "The converter never fed the input battery; " + rig.state());
+            helper.succeed();
+        });
+    }
+
+    /**
+     * What a cable offers a foreign mod is the round's unspent provider supply; with only a consumer on the run that
+     * is nothing, so a foreign extract through the cable cannot reach the consumer's buffer either.
+     */
+    private static void consumerNotForeignSupply(GameTestHelper helper) {
+        if (!EnergyExposure.supported()) {
+            helper.succeed();
+            return;
+        }
+        ServerLevel level = helper.getLevel();
+        Rig rig = new Rig(helper, THEFT_FOREIGN_Z);
+        rig.cables(CABLE_FROM, CABLE_FROM + 2);
+        TileEntityMachineElectricFurnace furnace = rig.furnace(CABLE_FROM - 1, THEFT_FOREIGN_Z, 50_000L);
+        BlockPos cable = helper.absolutePos(new BlockPos(CABLE_FROM + 1, 1, THEFT_FOREIGN_Z));
+        EnergyView view = EnergyCompat.find(level, cable, Direction.UP);
+        helper.assertTrue(view != null, "A cable exposed no energy handler to a foreign lookup");
+        long offered = 0L;
+        for (int pass = 0; pass < 8; pass++) {
+            rig.round();
+            offered = Math.max(offered, view.extractable());
+        }
+        long taken = view.extract(1_000_000L);
+        rig.round();
+        helper.assertTrue(offered == 0L && taken == 0L,
+                "A cable with only a consumer on it offered " + offered + " FE and gave " + taken + " FE");
+        helper.assertTrue(furnace.power == 50_000L, "A foreign extract drained the consumer: " + furnace.power);
         helper.succeed();
     }
 
@@ -479,6 +591,24 @@ public final class PowerNetworkGameTests {
             return battery;
         }
 
+        TileEntityMachineElectricFurnace furnace(int x, int z, long power) {
+            BlockPos pos = helper.absolutePos(new BlockPos(x, 1, z));
+            level.setBlock(pos, ModMachineBlocks.machine_electric_furnace_off.get().defaultBlockState(), 3);
+            TileEntityMachineElectricFurnace furnace = (TileEntityMachineElectricFurnace) level.getBlockEntity(pos);
+            helper.assertTrue(furnace != null, "An electric furnace block entity failed to appear at " + pos);
+            furnace.power = power;
+            return furnace;
+        }
+
+        TileEntityConverterRfHe converter(int x, int z) {
+            BlockPos pos = helper.absolutePos(new BlockPos(x, 1, z));
+            level.setBlock(pos, com.hbm.blocks.ModEnergyBedrockBlocks.machine_converter_rf_he.get().defaultBlockState(), 3);
+            TileEntityConverterRfHe converter = (TileEntityConverterRfHe) level.getBlockEntity(pos);
+            helper.assertTrue(converter != null, "A converter block entity failed to appear at " + pos);
+            converter.power = 0L;
+            return converter;
+        }
+
         /**
          * The cables minted their cells when their blocks were placed, so all that is left is rounds.
          * More than one, because discovery is not instant: a machine on a run END hangs off a
@@ -526,7 +656,7 @@ public final class PowerNetworkGameTests {
             }
         }
 
-        private void tickBatteries() {
+        void tickBatteries() {
             for (BlockPos pos : batteries) {
                 if (level.getBlockEntity(pos) instanceof TileEntityMachineBattery battery) {
                     TileEntityMachineBattery.serverTick(level, pos, battery.getBlockState(), battery);

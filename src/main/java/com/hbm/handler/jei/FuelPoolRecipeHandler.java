@@ -1,10 +1,7 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.inventory.recipes.FuelPoolRecipes;
-import dev.golem.core.jei.JeiRecipeType;
-import mezz.jei.api.helpers.IGuiHelper;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -17,9 +14,9 @@ import java.util.List;
  */
 public final class FuelPoolRecipeHandler extends JEIUniversalHandler<FuelPoolRecipes.Entry> {
 
-    public FuelPoolRecipeHandler(IGuiHelper helper, JeiRecipeType<FuelPoolRecipes.Entry> type, Component title,
+    public FuelPoolRecipeHandler(ViewerType<FuelPoolRecipes.Entry> type, Component title,
                                  ItemStack... machines) {
-        super(helper, type, title, machines);
+        super(type, title, machines);
     }
 
     public static List<FuelPoolRecipes.Entry> buildRecipes() {
@@ -36,4 +33,3 @@ public final class FuelPoolRecipeHandler extends JEIUniversalHandler<FuelPoolRec
         return List.of(List.of(recipe.output()));
     }
 }
-//?}

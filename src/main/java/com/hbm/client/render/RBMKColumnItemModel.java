@@ -21,6 +21,7 @@ public final class RBMKColumnItemModel {
     private static final WavefrontObj RODS =
             WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/rbmk/rbmk_element_rods.obj"));
     private static final int SECTIONS = 4;
+    private static final int ROD_TINT = 0xFF304825;
 
     private final float scale, yaw, lift;
     private final ItemGem body;
@@ -65,7 +66,8 @@ public final class RBMKColumnItemModel {
                     .translate(.5F, section, .5F);
             builder.part(ELEMENT.part("Cap"), top, ELEMENT.boundsIncluding(Set.of("Cap")))
                     .translate(.5F, section, .5F);
-            builder.part(RODS.all(), fuel, null).translate(.5F, section, .5F);
+            // RenderRBMKRod.renderInventoryBlock: tessellator.setColorOpaque_I(0x304825) before the Rods.
+            builder.part(RODS.all(), fuel, null).translate(.5F, section, .5F).tint(state -> ROD_TINT);
         }
         return builder.build();
     }

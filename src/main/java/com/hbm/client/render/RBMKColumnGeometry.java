@@ -30,8 +30,16 @@ final class RBMKColumnGeometry {
 
     static Quads.Builder caps(Quads.Builder faces, float x0, float y0, float z0,
                               float x1, float y1, float z1) {
-        face(faces, 0F, 1F, 0F, x0, y1, z0, x1, y1, z0, x1, y1, z1, x0, y1, z1);
-        face(faces, 0F, -1F, 0F, x1, y0, z1, x1, y0, z0, x0, y0, z0, x0, y0, z1);
+        // Wound counter-clockwise from outside like vanilla's UP/DOWN faces (each corner keeps the UV it had). These
+        // two were wound the other way, so a culled surface dropped the top and drew the bottom from above: a lid's
+        // underside, shaded as a down face and coplanar with the column's cap, showed as a dark, z-fighting top
+        // (2026-10-12 playtest), and the block-column items had no top at all.
+        faces.normal(0F, 1F, 0F)
+                .vertex(x0, y1, z0, 0F, 0F).vertex(x0, y1, z1, 0F, 1F)
+                .vertex(x1, y1, z1, 1F, 1F).vertex(x1, y1, z0, 1F, 0F);
+        faces.normal(0F, -1F, 0F)
+                .vertex(x0, y0, z1, 0F, 1F).vertex(x0, y0, z0, 1F, 1F)
+                .vertex(x1, y0, z0, 1F, 0F).vertex(x1, y0, z1, 0F, 0F);
         return faces;
     }
 

@@ -1,7 +1,8 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
+import dev.golem.core.viewer.Drawable;
+import dev.golem.core.viewer.Role;
+import dev.golem.core.viewer.SlotLayout;
 import com.hbm.blocks.ModAnvilBlocks;
 import com.hbm.blocks.machine.NTMAnvil;
 import com.hbm.inventory.RecipesCommon.AStack;
@@ -9,14 +10,7 @@ import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilOutput;
 import dev.golem.core.registry.RegistryObject;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
-import mezz.jei.api.gui.drawable.IDrawable;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
-import dev.golem.core.jei.JeiRecipeType;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -39,20 +33,20 @@ import java.util.List;
  */
 public class AnvilConstructionRecipeHandler extends HbmRecipeCategory<AnvilConstructionRecipe> {
 
-    private final IDrawable area72;     // input/output area panel, 4-wide
-    private final IDrawable area108;    // input/output area panel, 6-wide
-    private final IDrawable smallSlot;  // single-slot highlight
-    private final IDrawable opNone, opSmith, opCon, opRecycle; // 18x36 operation pills
+    private final Drawable area72;     // input/output area panel, 4-wide
+    private final Drawable area108;    // input/output area panel, 6-wide
+    private final Drawable smallSlot;  // single-slot highlight
+    private final Drawable opNone, opSmith, opCon, opRecycle; // 18x36 operation pills
 
-    public AnvilConstructionRecipeHandler(IGuiHelper helper, JeiRecipeType<AnvilConstructionRecipe> type, Component title, ItemStack icon) {
-        super(helper, type, title, icon, "gui_nei_anvil.png");
-        this.area72 = helper.createDrawable(tex("gui_nei_anvil.png"), 5, 87, 72, 54);
-        this.area108 = helper.createDrawable(tex("gui_nei_anvil.png"), 5, 87, 108, 54);
-        this.smallSlot = helper.createDrawable(tex("gui_nei_anvil.png"), 113, 105, 18, 18);
-        this.opNone = helper.createDrawable(tex("gui_nei_anvil.png"), 131, 96, 18, 36);
-        this.opSmith = helper.createDrawable(tex("gui_nei_anvil.png"), 149, 96, 18, 36);
-        this.opCon = helper.createDrawable(tex("gui_nei_anvil.png"), 167, 96, 18, 36);
-        this.opRecycle = helper.createDrawable(tex("gui_nei_anvil.png"), 185, 96, 18, 36);
+    public AnvilConstructionRecipeHandler(ViewerType<AnvilConstructionRecipe> type, Component title, ItemStack icon) {
+        super(type, title, icon, "gui_nei_anvil.png");
+        this.area72 = Drawable.texture(tex("gui_nei_anvil.png"), 5, 87, 72, 54);
+        this.area108 = Drawable.texture(tex("gui_nei_anvil.png"), 5, 87, 108, 54);
+        this.smallSlot = Drawable.texture(tex("gui_nei_anvil.png"), 113, 105, 18, 18);
+        this.opNone = Drawable.texture(tex("gui_nei_anvil.png"), 131, 96, 18, 36);
+        this.opSmith = Drawable.texture(tex("gui_nei_anvil.png"), 149, 96, 18, 36);
+        this.opCon = Drawable.texture(tex("gui_nei_anvil.png"), 167, 96, 18, 36);
+        this.opRecycle = Drawable.texture(tex("gui_nei_anvil.png"), 185, 96, 18, 36);
     }
 
     public static List<AnvilConstructionRecipe> buildRecipes() {
@@ -70,7 +64,7 @@ public class AnvilConstructionRecipeHandler extends HbmRecipeCategory<AnvilConst
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, AnvilConstructionRecipe recipe, IFocusGroup focuses) {
+    public void setRecipe(SlotLayout builder, AnvilConstructionRecipe recipe) {
         int inLine = 1, outLine = 1, inOX = 0, inOY = 0, outOX = 0, outOY = 0, anvX = 75;
 
         switch (recipe.getOverlay()) {
@@ -82,27 +76,27 @@ public class AnvilConstructionRecipeHandler extends HbmRecipeCategory<AnvilConst
 
         for (int i = 0; i < recipe.input.size(); i++) {
             AStack a = recipe.input.get(i);
-            builder.addSlot(RecipeIngredientRole.INPUT, inOX + 18 * (i % inLine), inOY + 18 * (i / inLine))
-                    .addItemStacks(a.getDisplayStacks()).setBackground(helper.getSlotDrawable(), -1, -1);
+            builder.addSlot(Role.INPUT, inOX + 18 * (i % inLine), inOY + 18 * (i / inLine))
+                    .addItemStacks(a.getDisplayStacks()).setBackground(Drawable.slot(), -1, -1);
         }
 
         // The anvil, as an extra input like the original (so looking up an anvil's uses lists its recipes).
-        builder.addSlot(RecipeIngredientRole.INPUT, anvX, 31).addItemStacks(anvilsFor(recipe));
+        builder.addSlot(Role.INPUT, anvX, 31).addItemStacks(anvilsFor(recipe));
 
         for (int i = 0; i < recipe.output.size(); i++) {
             AnvilOutput out = recipe.output.get(i);
-            IRecipeSlotBuilder slot = builder.addSlot(RecipeIngredientRole.OUTPUT, outOX + 18 * (i % outLine), outOY + 18 * (i / outLine))
-                    .addItemStacks(List.of(out.stack)).setBackground(helper.getSlotDrawable(), -1, -1);
+            SlotLayout.Slot slot = builder.addSlot(Role.OUTPUT, outOX + 18 * (i % outLine), outOY + 18 * (i / outLine))
+                    .addItemStacks(List.of(out.stack)).setBackground(Drawable.slot(), -1, -1);
             if (out.chance < 1F) {
-                slot.addRichTooltipCallback((view, tooltip) ->
+                slot.addTooltipCallback((shown, tooltip) ->
                         tooltip.add(Component.literal(((int) (out.chance * 1000)) / 10D + "%").withStyle(ChatFormatting.RED)));
             }
         }
     }
 
     @Override
-    public void draw(AnvilConstructionRecipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor g, double mouseX, double mouseY) {
-        super.draw(recipe, slots, g, mouseX, mouseY);
+    public void draw(AnvilConstructionRecipe recipe, GuiGraphicsExtractor g, double mouseX, double mouseY) {
+        super.draw(recipe, g, mouseX, mouseY);
         switch (recipe.getOverlay()) {
             case NONE -> {
                 area72.draw(g, 2, 5);
@@ -127,4 +121,3 @@ public class AnvilConstructionRecipeHandler extends HbmRecipeCategory<AnvilConst
         }
     }
 }
-//?}

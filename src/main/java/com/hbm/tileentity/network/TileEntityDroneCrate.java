@@ -96,6 +96,10 @@ public class TileEntityDroneCrate extends TileEntityMachineBase
             }
         }
 
+        // 1.7: a fluid crate subscribes on all sides while sending (it loads drones) and provides while receiving
+        if (sendingMode && !itemType && level.getGameTime() % 20 == 0) subscribeToAllAround(tank.getTankType(), this);
+        if (!sendingMode && !itemType && level.getGameTime() % 20 == 0) sendFluidToAll(tank, this);
+
         if (next != null) {
             BlockPos pos = getCoord();
             for (EntityDeliveryDrone drone : server.getEntitiesOfClass(EntityDeliveryDrone.class, new AABB(pos))) {

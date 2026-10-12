@@ -82,6 +82,10 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineVacuumDistill te) {
         te.isOn = false;
 
+        for (DirPos dp : te.getConPos()) {
+            te.trySubscribe(level, dp);
+            te.trySubscribe(te.tanks[0].getTankType(), level, dp);
+        }
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
         te.loadInput();

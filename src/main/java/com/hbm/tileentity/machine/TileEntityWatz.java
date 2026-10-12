@@ -142,6 +142,7 @@ public class TileEntityWatz extends TileEntityMachineBase
 
         List<TileEntityWatz> segments = new ArrayList<>();
         segments.add(te);
+        for (DirPos port : te.topPorts()) te.trySubscribe(te.tanks[0].getTankType(), level, port); // 1.7 subscribeToTop
 
         // Accumulate the column downward. Upstream scans to y=0; a 26.1 world can start lower.
         for (int y = pos.getY() - SEGMENT_HEIGHT; y >= level.getMinY(); y -= SEGMENT_HEIGHT) {

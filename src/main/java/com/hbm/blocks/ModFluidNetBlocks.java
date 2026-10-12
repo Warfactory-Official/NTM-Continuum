@@ -282,15 +282,20 @@ public final class ModFluidNetBlocks {
         item(fluid_duct_neo_colored, HbmTab.MACHINES);
         for (int m = 0; m < BOX_MATERIALS.length; m++) {
             String straight = "hbm:blocks/boxduct_" + BOX_MATERIALS[m] + "_straight";
+            String end = "hbm:blocks/boxduct_" + BOX_MATERIALS[m] + "_end";
             for (int s = 0; s < 5; s++) {
-                // Box-duct items: a plain cube in the duct's straight texture (1.7 drew the straight run).
+                // Box-duct items: 1.7 RenderBoxDuct.renderInventoryBlock drew the size's straight run along Z
+                // (straight on four sides turned along the duct, the end icon on both ends), authored per size.
+                String parent = "hbm:block/boxduct_item_" + s;
                 item(fluid_duct_box[m][s], HbmTab.MACHINES)
-                        .icon(d -> d.models(Models.parented(Models.CUBE_ALL, Slots.of("all", straight))));
+                        .icon(d -> d.models(Models.parented(parent, Slots.of("straight", straight, "end", end))));
             }
         }
         for (int s = 0; s < 5; s++) {
+            String parent = "hbm:block/boxduct_item_" + s;
             item(fluid_duct_exhaust[s], HbmTab.MACHINES)
-                    .icon(d -> d.models(Models.parented(Models.CUBE_ALL, Slots.of("all", "hbm:blocks/boxduct_exhaust_straight"))));
+                    .icon(d -> d.models(Models.parented(parent, Slots.of("straight", "hbm:blocks/boxduct_exhaust_straight",
+                            "end", "hbm:blocks/boxduct_exhaust_end"))));
         }
         item(fluid_duct_paintable_block_exhaust, HbmTab.MACHINES)
                 .transform(Presets.shares("hbm:block/fluid_duct_paintable_block_exhaust"));

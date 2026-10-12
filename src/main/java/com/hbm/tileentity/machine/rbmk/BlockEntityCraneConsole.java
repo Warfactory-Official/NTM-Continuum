@@ -69,6 +69,7 @@ public class BlockEntityCraneConsole extends TileEntityMachineBase implements IR
 
     @Override
     public void tickClient() {
+        if (com.hbm.blocks.multiblock.BlockMultiblockMachine.removeIfAtCell(this)) return; // stale pre-fix cell desk
         lastTiltFront = tiltFront;
         lastTiltLeft = tiltLeft;
         lastPosFront = posFront;
@@ -89,6 +90,7 @@ public class BlockEntityCraneConsole extends TileEntityMachineBase implements IR
 
     @Override
     public void tickServer() {
+        if (com.hbm.blocks.multiblock.BlockMultiblockMachine.removeIfAtCell(this)) return; // stale pre-fix cell desk
         BlockEntityRBMKBase column = getColumnAtPos();
         if (column != null) {
             column.craneIndicator = 10;

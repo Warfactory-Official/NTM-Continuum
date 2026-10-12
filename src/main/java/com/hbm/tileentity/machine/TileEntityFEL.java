@@ -98,6 +98,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFEL te) {
         ForgeDirection dir = te.facing();
+        for (DirPos port : te.getConPos()) te.trySubscribe(level, port);
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
 
         ItemStack crystal = te.inventory.getStackInSlot(1);

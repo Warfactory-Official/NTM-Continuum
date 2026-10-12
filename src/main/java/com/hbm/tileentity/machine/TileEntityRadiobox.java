@@ -35,6 +35,9 @@ public class TileEntityRadiobox extends TileEntityLoadedBase implements IEnergyR
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityRadiobox box) {
+        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+            box.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
+        }
         if (state.getValue(Radiobox.ON) && (box.power >= 25000 || box.infinite)) {
 
             if (!box.infinite) {

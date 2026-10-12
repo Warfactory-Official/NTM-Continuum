@@ -104,6 +104,10 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
         }
         if (minted) {
             for (int i = 1; i < ports.length; i++) graph.addRemoteLink(anchor, ports[i].asLong());
+        }
+        // Recorded whether minted now or found in the saved graph: after a reload the cells come back with the
+        // graph's save while this field does not, and a battery removed then left its footprint in the graph.
+        if (cells.length != ports.length) {
             cells = new long[ports.length];
             for (int i = 0; i < ports.length; i++) cells[i] = ports[i].asLong();
         }

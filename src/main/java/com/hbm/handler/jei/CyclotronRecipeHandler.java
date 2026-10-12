@@ -1,16 +1,10 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
+import dev.golem.core.viewer.Drawable;
+import dev.golem.core.viewer.Role;
+import dev.golem.core.viewer.SlotLayout;
 import com.hbm.inventory.recipes.CyclotronRecipes;
-import dev.golem.core.jei.JeiRecipeType;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.drawable.IDrawableAnimated;
-import mezz.jei.api.gui.drawable.IDrawableStatic;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -19,31 +13,28 @@ import java.util.List;
 
 /** The legacy three-slot cyclotron JEI category. */
 public final class CyclotronRecipeHandler extends HbmRecipeCategory<CyclotronRecipes.CyclotronRecipe> {
-    private final IDrawableAnimated arrow;
+    private final Drawable arrow;
 
-    public CyclotronRecipeHandler(IGuiHelper helper, JeiRecipeType<CyclotronRecipes.CyclotronRecipe> type,
+    public CyclotronRecipeHandler(ViewerType<CyclotronRecipes.CyclotronRecipe> type,
                                   Component title, ItemStack machine) {
-        super(helper, type, title, machine, "gui_nei_cyclotron.png", 127, 53, 24, 16);
-        IDrawableStatic arrowStatic = helper.createDrawable(tex("gui_nei_cyclotron.png"), 100, 118, 24, 18);
-        arrow = helper.createAnimatedDrawable(arrowStatic, 48, IDrawableAnimated.StartDirection.LEFT, false);
+        super(type, title, machine, "gui_nei_cyclotron.png", 127, 53, 24, 16);
+        Drawable.Texture arrowStatic = Drawable.texture(tex("gui_nei_cyclotron.png"), 100, 118, 24, 18);
+        arrow = Drawable.animated(arrowStatic, 48, Drawable.Direction.LEFT, false);
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, CyclotronRecipes.CyclotronRecipe recipe,
-                          IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.INPUT, 1, 18)
+    public void setRecipe(SlotLayout builder, CyclotronRecipes.CyclotronRecipe recipe) {
+        builder.addSlot(Role.INPUT, 1, 18)
                 .addItemStacks(recipe.particle.getDisplayStacks());
-        builder.addSlot(RecipeIngredientRole.INPUT, 55, 18)
+        builder.addSlot(Role.INPUT, 55, 18)
                 .addItemStacks(recipe.input.getDisplayStacks());
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 109, 18)
+        builder.addSlot(Role.OUTPUT, 109, 18)
                 .addItemStacks(List.of(recipe.output));
     }
 
     @Override
-    public void draw(CyclotronRecipes.CyclotronRecipe recipe, IRecipeSlotsView slots,
-                     GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
-        super.draw(recipe, slots, graphics, mouseX, mouseY);
+    public void draw(CyclotronRecipes.CyclotronRecipe recipe, GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
+        super.draw(recipe, graphics, mouseX, mouseY);
         arrow.draw(graphics, 25, 18);
     }
 }
-//?}

@@ -83,6 +83,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineGasFlare te) {
         for (DirPos dp : te.getConPos()) {
             te.tryProvide(level, dp.getPos(), dp.getDir());
+            te.trySubscribe(te.tank.getTankType(), level, dp);
         }
 
         te.setTypeFromFluidId();
@@ -172,6 +173,11 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         ItemStack in = inventory.getStackInSlot(1);
         if (in.isEmpty()) return;
 
+        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
+        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+            setChanged();
+            return;
+        }
         if (in.getItem() instanceof IFillableItem fillable) {
             int held = fillable.getFill(in);
             FluidType heldType = fillable.getFirstFluidType(in);

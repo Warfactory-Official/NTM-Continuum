@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.lib.DirPos;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
@@ -68,12 +69,28 @@ public class TileEntityMachineAnnihilator extends TileEntityMachineBase
         return "container.annihilator";
     }
 
+    /** 1.7 {@code TileEntityMachineAnnihilator.getConPos}: the fluid ports. */
+    public DirPos[] getConPos() {
+        ForgeDirection dir = MachineCore.facing(getBlockState());
+        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+        return new DirPos[]{
+                new DirPos(x + dir.offsetX * 5, y, z + dir.offsetZ * 5, dir),
+                new DirPos(x + dir.offsetX * 3 + rot.offsetX * 2, y, z + dir.offsetZ * 3 + rot.offsetZ * 2, rot),
+                new DirPos(x + dir.offsetX * 3 - rot.offsetX * 2, y, z + dir.offsetZ * 3 - rot.offsetZ * 2, rot.getOpposite())
+        };
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineAnnihilator te) {
         if (!(level instanceof ServerLevel serverLevel)) return;
 
         te.setTankTypeFromSlot(1);
 
         if (te.pool != null && !te.pool.isEmpty()) {
+
+            for (DirPos con : te.getConPos()) {
+                if (te.tank.getTankType() != Fluids.NONE) te.trySubscribe(te.tank.getTankType(), level, con);
+            }
 
             AnnihilatorSavedData data = AnnihilatorSavedData.getData(serverLevel);
             boolean didSomething = false;

@@ -50,7 +50,7 @@ public final class ScreenRBMKConsole extends RBMKContainerScreen<MenuRBMKConsole
         texture(graphics, TEX);
         BlockEntityRBMKConsole console = menu.blockEntity();
         if (az5Lid) GuiDraw.blit(graphics, TEX, leftPos + 30, topPos + 138, 228, 172, 28, 28, 256, 256);
-        else if (lastPress + 3000 >= System.currentTimeMillis()) GuiDraw.blit(graphics, TEX, leftPos + 30, topPos + 136, 228, 228, 28, 28, 256, 256);
+        // 1.7 GUIRBMKConsole draws no pressed state (the 1.12.2 overlay from (228, 228) is not part of the spec)
         if (console == null) return;
         for (int j = 0; j < 3; j++) for (int k = 0; k < 2; k++) {
             int index = j * 2 + k;

@@ -58,6 +58,9 @@ public class TileEntityMicrowave extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMicrowave te) {
+        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+            te.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
+        }
         te.power = Library.chargeTEFromItems(te.inventory, 2, te.power, maxPower);
 
         if (te.canProcess(level)) {

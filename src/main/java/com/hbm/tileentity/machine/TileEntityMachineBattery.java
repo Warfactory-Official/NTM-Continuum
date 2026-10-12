@@ -119,9 +119,13 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
 
         if (level instanceof ServerLevel server) battery.updateBufferCell(server, state, mode);
 
-        if (mode == MODE_OUTPUT) {
+        if (mode != MODE_BUFFER) {
             for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-                battery.tryProvide(level, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir);
+                BlockPos at = pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ);
+                if (mode == MODE_OUTPUT) battery.tryProvide(level, at, dir);
+                else battery.tryUnprovide(level, at.getX(), at.getY(), at.getZ());
+                if (mode == MODE_INPUT) battery.trySubscribe(level, at, dir);
+                else battery.tryUnsubscribe(level, at.getX(), at.getY(), at.getZ());
             }
         }
 

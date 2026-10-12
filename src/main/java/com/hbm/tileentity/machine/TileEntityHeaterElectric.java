@@ -37,6 +37,9 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeaterElectric te) {
+        if (level.getGameTime() % 20 == 0) { // 1.7: "doesn't have to happen constantly"
+            for (DirPos port : te.getConPos()) te.trySubscribe(level, port);
+        }
         te.heatEnergy *= 0.999;
 
         te.tryPullHeat(level, pos);

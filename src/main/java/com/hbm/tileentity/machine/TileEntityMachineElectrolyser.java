@@ -100,6 +100,11 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineElectrolyser te) {
         for (DirPos connection : te.getConPos()) {
+            if (level.getGameTime() % 20 == 0) {
+                te.trySubscribe(level, connection);
+                te.trySubscribe(te.tanks[0].getTankType(), level, connection);
+                te.trySubscribe(te.tanks[3].getTankType(), level, connection);
+            }
             if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, connection);
             if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, connection);
         }
@@ -161,6 +166,11 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
         if (input.isEmpty()) return;
         FluidType type;
         int amount;
+        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
+        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tanks[0], input)) {
+            setChanged();
+            return;
+        }
         if (input.getItem() instanceof IFillableItem fillable) {
             type = fillable.getFirstFluidType(input);
             amount = fillable.getFill(input);

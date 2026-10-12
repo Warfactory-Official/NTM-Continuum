@@ -66,6 +66,13 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
     @Override public String getDefaultName() { return "container.hydrotreater"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineHydrotreater te) {
+        if (level.getGameTime() % 20 == 0) {
+            for (DirPos dp : te.getConPos()) {
+                te.trySubscribe(level, dp);
+                te.trySubscribe(te.tanks[0].getTankType(), level, dp);
+                te.trySubscribe(te.tanks[1].getTankType(), level, dp);
+            }
+        }
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
         te.loadInput(0, 1, 2);
@@ -144,6 +151,11 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
         // 1.7 FluidTank.loadTank: a pressurised tank only accepts the infinite barrel.
         if (tank.getPressure() != 0 && !in.is(com.hbm.items.ModFluidNetItems.fluid_barrel_infinite.get())) return;
 
+        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
+        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+            setChanged();
+            return;
+        }
         if (in.getItem() instanceof IFillableItem fillable) {
             int held = fillable.getFill(in);
             FluidType heldType = fillable.getFirstFluidType(in);

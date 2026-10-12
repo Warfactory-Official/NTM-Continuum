@@ -115,7 +115,11 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         te.setTankType(3);
 
         for (DirPos con : te.getSteamPos()) {
+            te.trySubscribe(te.tanks[1].getTankType(), level, con);
             if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, con);
+        }
+        if (te.tanks[0].getTankType() != com.hbm.inventory.fluid.Fluids.NONE) {
+            for (DirPos con : te.getFluidPos()) te.trySubscribe(te.tanks[0].getTankType(), level, con);
         }
 
         if (te.smoke.getFill() > 0) {

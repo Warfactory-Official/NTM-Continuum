@@ -1,13 +1,9 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.recipes.ArcWelderRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
-import dev.golem.core.jei.JeiRecipeType;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -19,9 +15,9 @@ import java.util.Locale;
 /** JEI view of the legacy Arc Welder's unordered item inputs and optional fluid input. */
 public class ArcWelderRecipeHandler extends JEIUniversalHandler<ArcWelderRecipes.ArcWelderRecipe> {
 
-    public ArcWelderRecipeHandler(IGuiHelper helper, JeiRecipeType<ArcWelderRecipes.ArcWelderRecipe> type,
+    public ArcWelderRecipeHandler(ViewerType<ArcWelderRecipes.ArcWelderRecipe> type,
                                   Component title, ItemStack... machines) {
-        super(helper, type, title, machines);
+        super(type, title, machines);
     }
 
     public static List<ArcWelderRecipes.ArcWelderRecipe> buildRecipes() {
@@ -46,13 +42,12 @@ public class ArcWelderRecipeHandler extends JEIUniversalHandler<ArcWelderRecipes
     }
 
     @Override
-    public void draw(ArcWelderRecipes.ArcWelderRecipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor graphics,
+    public void draw(ArcWelderRecipes.ArcWelderRecipe recipe, GuiGraphicsExtractor graphics,
                      double mouseX, double mouseY) {
-        super.draw(recipe, slots, graphics, mouseX, mouseY);
+        super.draw(recipe, graphics, mouseX, mouseY);
         String duration = String.format(Locale.US, "%,d", recipe.duration) + " ticks";
         String consumption = String.format(Locale.US, "%,d", recipe.consumption) + " HE/t";
         text(graphics, duration, 160 - textWidth(duration), 43);
         text(graphics, consumption, 160 - textWidth(consumption), 55);
     }
 }
-//?}

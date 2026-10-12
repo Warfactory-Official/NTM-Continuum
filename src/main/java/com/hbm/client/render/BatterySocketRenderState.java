@@ -7,6 +7,11 @@ import org.jspecify.annotations.Nullable;
 /** Render state for {@link BatterySocketRenderer}: facing yaw + the inserted battery's part/texture. */
 public class BatterySocketRenderState extends CompatRenderState {
     public float yaw;
+    public boolean frame;
+    public boolean creative;
+    public final dev.golem.core.render.CompatItemRenderState other = new dev.golem.core.render.CompatItemRenderState();
+    public long gameTime;
+    public float interp;
     /** The OBJ part to draw for the inserted item ("Battery" / "Capacitor"), or null if empty. */
     public @Nullable String batteryPart;
     /** Texture for that part, or null if no battery is inserted. */

@@ -109,6 +109,7 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
 
     private void updateConnections(Level level) {
         for (DirPos port : getFluidConPos()) {
+            trySubscribe(water.getTankType(), level, port);
             tryProvide(steam, level, port);
         }
     }

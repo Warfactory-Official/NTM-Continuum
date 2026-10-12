@@ -33,6 +33,9 @@ public final class ArmorModHarnessQueries {
         json.addProperty("health", player.getHealth());
         json.addProperty("max_health", player.getMaxHealth());
         json.addProperty("alive", player.isAlive());
+        json.addProperty("fall_flying", player.isFallFlying());
+        json.addProperty("client_fall_flying", mc.player.isFallFlying());
+
         json.addProperty("knockback_resistance", attribute(player, "knockback_resistance"));
         json.addProperty("attack_damage", attribute(player, "attack_damage"));
         json.addProperty("movement_speed", attribute(player, "movement_speed"));

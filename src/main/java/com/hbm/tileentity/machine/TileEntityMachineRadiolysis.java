@@ -90,7 +90,7 @@ public class TileEntityMachineRadiolysis extends TileEntityMachineBase
 
         for (DirPos con : te.getConPos()) {
             te.tryProvide(level, con.getPos(), con.getDir());
-            // 1.7 trySubscribe(tanks[0]) at the same points: the port's net discovers the intake through the passive ports.
+            te.trySubscribe(te.tanks[0].getTankType(), level, con);
             if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, con);
             if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, con);
         }

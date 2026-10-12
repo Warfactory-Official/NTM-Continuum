@@ -95,6 +95,8 @@ public class TileEntityICF extends TileEntityMachineBase
     public void tick(Level level, BlockPos pos) {
         setTypeFromIdentifier();
 
+        for (DirPos con : getConPos()) this.trySubscribe(tanks[0].getTankType(), level, con);
+
         boolean markDirty = false;
 
         //eject depleted pellet

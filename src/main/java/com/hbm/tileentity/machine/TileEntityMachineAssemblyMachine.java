@@ -127,6 +127,8 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.maxPower);
 
         for (DirPos dp : te.getConPos()) {
+            te.trySubscribe(level, dp);
+            if (te.inputTank.getTankType() != com.hbm.inventory.fluid.Fluids.NONE) te.trySubscribe(te.inputTank.getTankType(), level, dp);
             if (te.outputTank.getFill() > 0) te.tryProvide(te.outputTank, level, dp);
         }
 

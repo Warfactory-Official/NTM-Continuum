@@ -100,6 +100,8 @@ public class TileEntityMachinePrecAss extends TileEntityMachineBase implements M
 
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
         for (DirPos connection : te.getConPos()) {
+            te.trySubscribe(level, connection);
+            if (te.inputTank.getTankType() != com.hbm.inventory.fluid.Fluids.NONE) te.trySubscribe(te.inputTank.getTankType(), level, connection);
             if (te.outputTank.getFill() > 0) te.tryProvide(te.outputTank, level, connection);
         }
 

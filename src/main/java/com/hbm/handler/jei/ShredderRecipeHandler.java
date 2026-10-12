@@ -1,17 +1,11 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
+import dev.golem.core.viewer.Drawable;
+import dev.golem.core.viewer.Role;
+import dev.golem.core.viewer.SlotLayout;
 import com.hbm.inventory.recipes.ShredderRecipes;
 import com.hbm.items.ModMachineItems;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.drawable.IDrawableAnimated;
-import mezz.jei.api.gui.drawable.IDrawableStatic;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
-import dev.golem.core.jei.JeiRecipeType;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -33,15 +27,15 @@ public class ShredderRecipeHandler extends HbmRecipeCategory<ShredderRecipeHandl
     /** One shredder recipe row (input item → output stack). */
     public record ShredderPair(ItemStack input, ItemStack output) {}
 
-    private final IDrawableAnimated powerBar;
-    private final IDrawableAnimated progressBar;
+    private final Drawable powerBar;
+    private final Drawable progressBar;
 
-    public ShredderRecipeHandler(IGuiHelper helper, JeiRecipeType<ShredderPair> type, Component title, ItemStack icon) {
-        super(helper, type, title, icon, "gui_nei_shredder.png");
-        IDrawableStatic power = helper.createDrawable(tex("gui_nei_shredder.png"), 36, 86, 16, 52);
-        this.powerBar = helper.createAnimatedDrawable(power, 480, IDrawableAnimated.StartDirection.TOP, true);
-        IDrawableStatic progress = helper.createDrawable(tex("gui_nei_shredder.png"), 100, 118, 24, 16);
-        this.progressBar = helper.createAnimatedDrawable(progress, 48, IDrawableAnimated.StartDirection.LEFT, false);
+    public ShredderRecipeHandler(ViewerType<ShredderPair> type, Component title, ItemStack icon) {
+        super(type, title, icon, "gui_nei_shredder.png");
+        Drawable.Texture power = Drawable.texture(tex("gui_nei_shredder.png"), 36, 86, 16, 52);
+        this.powerBar = Drawable.animated(power, 480, Drawable.Direction.TOP, true);
+        Drawable.Texture progress = Drawable.texture(tex("gui_nei_shredder.png"), 100, 118, 24, 16);
+        this.progressBar = Drawable.animated(progress, 48, Drawable.Direction.LEFT, false);
     }
 
     public static List<ShredderPair> buildRecipes() {
@@ -63,19 +57,18 @@ public class ShredderRecipeHandler extends HbmRecipeCategory<ShredderRecipeHandl
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, ShredderPair recipe, IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.INPUT, 39, 24).addItemStacks(List.of(recipe.input()));   // old init 38,23
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 129, 24).addItemStacks(List.of(recipe.output())); // old init 128,23
+    public void setRecipe(SlotLayout builder, ShredderPair recipe) {
+        builder.addSlot(Role.INPUT, 39, 24).addItemStacks(List.of(recipe.input()));   // old init 38,23
+        builder.addSlot(Role.OUTPUT, 129, 24).addItemStacks(List.of(recipe.output())); // old init 128,23
         List<ItemStack> blades = blades();
-        builder.addSlot(dev.golem.core.jei.Jei.CRAFTING_STATION, 84, 6).addItemStacks(blades);           // old init 83,5
-        builder.addSlot(dev.golem.core.jei.Jei.CRAFTING_STATION, 84, 42).addItemStacks(blades);          // old init 83,41
+        builder.addSlot(Role.CRAFTING_STATION, 84, 6).addItemStacks(blades);           // old init 83,5
+        builder.addSlot(Role.CRAFTING_STATION, 84, 42).addItemStacks(blades);          // old init 83,41
     }
 
     @Override
-    public void draw(ShredderPair recipe, IRecipeSlotsView slots, GuiGraphicsExtractor g, double mouseX, double mouseY) {
-        super.draw(recipe, slots, g, mouseX, mouseY);
+    public void draw(ShredderPair recipe, GuiGraphicsExtractor g, double mouseX, double mouseY) {
+        super.draw(recipe, g, mouseX, mouseY);
         powerBar.draw(g, 3, 6);
         progressBar.draw(g, 80, 23);
     }
 }
-//?}

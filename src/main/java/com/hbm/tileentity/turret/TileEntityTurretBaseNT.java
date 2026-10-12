@@ -142,6 +142,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
 
     protected void tickServer() {
         aligned = false;
+        if (level != null) updateConnections(level);
 
         if (target != null && !target.isAlive()) {
             target = null;
@@ -702,6 +703,15 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
 
     protected boolean hasConnectorPlugs() {
         return true;
+    }
+
+    /**
+     * 1.7 {@code updateConnections}: power at the turret's connection positions, every tick. The positions are the
+     * port's {@link #getConPos} (1.7's eight pad-edge cells, plus the 1.12.2 underside this port kept), so a cable
+     * that connects is a cable the turret subscribes at.
+     */
+    protected void updateConnections(Level level) {
+        for (DirPos port : getConPos()) this.trySubscribe(level, port);
     }
 
     /**

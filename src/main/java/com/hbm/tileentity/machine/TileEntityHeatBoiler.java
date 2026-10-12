@@ -65,6 +65,7 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeatBoiler te) {
         if (!te.hasExploded) {
             te.setupTanks();
+            for (DirPos dp : te.getConPos()) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
             te.tryPullHeat();
 
             te.isOn = false;

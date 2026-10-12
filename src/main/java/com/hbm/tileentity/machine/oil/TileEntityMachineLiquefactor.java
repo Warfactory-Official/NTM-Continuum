@@ -76,7 +76,10 @@ public class TileEntityMachineLiquefactor extends TileEntityMachineBase
         if (te.canProcess()) te.process();
         else te.progress = 0;
 
-        for (DirPos dp : te.getConPos()) te.tryProvide(te.tank, level, dp);
+        for (DirPos dp : te.getConPos()) {
+            te.trySubscribe(level, dp); // 1.7 updateConnections (power), same points
+            te.tryProvide(te.tank, level, dp);
+        }
 
         te.networkPackNT();
     }

@@ -108,6 +108,15 @@ repositories {
             includeGroup("dev.ryanhcode.sable-companion")
         }
     }
+    // REI and its Cloth Config / Architectury dependencies (the optional `rei` peer, see deps.rei).
+    exclusiveContent {
+        forRepository { maven("https://maven.shedaniel.me") { name = "Shedaniel" } }
+        filter {
+            includeGroup("me.shedaniel")
+            includeGroup("me.shedaniel.cloth")
+            includeGroup("dev.architectury")
+        }
+    }
 }
 
 // MDG for this MC version exposes no per-run additional classpath, so dev-only mods go on a
@@ -191,6 +200,17 @@ dependencies {
         compileOnly("mezz.jei:jei-$jei-common-api:$jeiVer")
         compileOnly("mezz.jei:jei-$jei-neoforge-api:$jeiVer")
         localRuntime("mezz.jei:jei-$jei-neoforge:$jeiVer")
+    }
+
+    // REI (Roughly Enough Items) is an optional peer like JEI: HBM's recipe-viewer declarations
+    // (com.hbm.handler.jei.HbmRecipeViewer) feed it through Golem Core's dev.golem.core.rei, from the thin plugins in
+    // com.hbm.handler.rei (guarded by the `rei` constant). Compiled against on every node, never shipped or required.
+    // `-Prei.run=true` puts REI (with Cloth Config and Architectury) in the client run, beside JEI, so a run with it is
+    // also the "both viewers installed" case; off by default so the recipe baselines stay REI-free. Architectury
+    // carries mixins, so the three go to the run's mods folder (`devModJar`).
+    propOrNull("deps.rei")?.let { rei ->
+        compileOnly("me.shedaniel:RoughlyEnoughItems-api-neoforge:$rei")
+        if (propOrNull("rei.run") == "true") devModJar("me.shedaniel:RoughlyEnoughItems-neoforge:$rei")
     }
 
     // Published Flywheel supplies 1.21.1; the 26.1 node leaves this blank and starts Core's vendored

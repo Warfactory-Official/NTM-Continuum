@@ -57,6 +57,9 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTeleporter tele) {
+        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+            tele.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
+        }
         if (tele.targetY != -1) {
             List<Entity> entities = level.getEntities((Entity) null, new AABB(pos.getX() + 0.25, pos.getY(),
                     pos.getZ() + 0.25, pos.getX() + 0.75, pos.getY() + 2, pos.getZ() + 0.75));

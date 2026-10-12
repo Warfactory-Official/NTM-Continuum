@@ -122,6 +122,13 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
         return 15;
     }
 
+    /** 1.7 {@code TileEntityTurretFritz.updateConnections}: power and the fuel tank at the same positions. */
+    @Override
+    protected void updateConnections(net.minecraft.world.level.Level level) {
+        super.updateConnections(level);
+        for (com.hbm.lib.DirPos port : getConPos()) this.trySubscribe(tank.getTankType(), level, port);
+    }
+
     @Override
     public void updateFiringTick() {
         FluidType type = tank.getTankType();

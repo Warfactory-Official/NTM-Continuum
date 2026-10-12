@@ -1,12 +1,8 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import dev.golem.core.jei.JeiRecipeType;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -21,8 +17,8 @@ import java.util.List;
  */
 public class CrystallizerRecipeHandler extends JEIUniversalHandler<CrystallizerRecipes.CrystallizerRecipe> {
 
-    public CrystallizerRecipeHandler(IGuiHelper helper, JeiRecipeType<CrystallizerRecipes.CrystallizerRecipe> type, Component title, ItemStack... machines) {
-        super(helper, type, title, machines);
+    public CrystallizerRecipeHandler(ViewerType<CrystallizerRecipes.CrystallizerRecipe> type, Component title, ItemStack... machines) {
+        super(type, title, machines);
     }
 
     @Override
@@ -41,12 +37,11 @@ public class CrystallizerRecipeHandler extends JEIUniversalHandler<CrystallizerR
     }
 
     @Override
-    public void draw(CrystallizerRecipes.CrystallizerRecipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor g, double mouseX, double mouseY) {
-        super.draw(recipe, slots, g, mouseX, mouseY);
+    public void draw(CrystallizerRecipes.CrystallizerRecipe recipe, GuiGraphicsExtractor g, double mouseX, double mouseY) {
+        super.draw(recipe, g, mouseX, mouseY);
         int productivity = (int) (recipe.productivity * 100);
         if (productivity > 0) {
             text(g, "Effectiveness: +" + Math.min(productivity, 99) + "% per level", 8, 52);
         }
     }
 }
-//?}

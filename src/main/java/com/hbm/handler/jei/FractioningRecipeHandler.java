@@ -1,12 +1,9 @@
 package com.hbm.handler.jei;
 
-//? if jei {
-
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.recipes.FractionRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
-import mezz.jei.api.helpers.IGuiHelper;
-import dev.golem.core.jei.JeiRecipeType;
+import dev.golem.core.viewer.ViewerType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -18,8 +15,8 @@ public class FractioningRecipeHandler extends JEIUniversalHandler<FractioningRec
 
     public record Entry(FluidType input, FractionRecipes.FractionPair pair) {}
 
-    public FractioningRecipeHandler(IGuiHelper helper, JeiRecipeType<Entry> type, Component title, ItemStack... machines) {
-        super(helper, type, title, machines);
+    public FractioningRecipeHandler(ViewerType<Entry> type, Component title, ItemStack... machines) {
+        super(type, title, machines);
     }
 
     public static List<Entry> buildRecipes() {
@@ -39,4 +36,3 @@ public class FractioningRecipeHandler extends JEIUniversalHandler<FractioningRec
                        List.of(ItemFluidIcon.make(recipe.pair.right().type)));
     }
 }
-//?}

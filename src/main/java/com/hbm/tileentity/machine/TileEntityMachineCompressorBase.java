@@ -77,6 +77,12 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCompressorBase te) {
 
+        if (level.getGameTime() % 20 == 0) {
+            for (DirPos dp : te.getConPos()) {
+                te.trySubscribe(level, dp);
+                te.trySubscribe(te.tanks[0].getTankType(), level, dp);
+            }
+        }
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, maxPower);
         te.setTypeFromFluidId();
         te.setupTanks();

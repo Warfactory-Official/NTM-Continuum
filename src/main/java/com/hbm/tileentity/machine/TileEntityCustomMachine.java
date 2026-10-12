@@ -55,10 +55,10 @@ import java.util.List;
  * from its {@link MachineConfiguration}: tank counts and sizes, item slot counts, generator or consumer mode, the
  * recipe set, and the component blocks that have to stand around it, checked every 300 ticks.
  *
- * <p>The {@code TileEntityMachinePolluting} base is inlined as the three smoke tanks. 1.7's {@code trySubscribe}
- * calls are gone with UNINOS: the port's energy and fluid graphs find the controller at its own faces and at the
- * {@code cm_port} proxies ({@link TileEntityCMPort}), which is where 1.7 subscribed. {@code tryProvide} and
- * {@code sendFluid} remain the direct hand-over to a machine standing at a connection position.
+ * <p>The {@code TileEntityMachinePolluting} base is inlined as the three smoke tanks. The port's energy and fluid
+ * graphs find the controller at the {@code cm_port} proxies ({@link TileEntityCMPort}); its 1.7 {@code trySubscribe}
+ * and {@code tryProvide} calls at the connection positions say which role each port carries
+ * ({@link com.hbm.uninos.graph.PortClaims}).
  */
 public class TileEntityCustomMachine extends TileEntityMachineBase
         implements IFluidStandardTransceiverMK2, IEnergyProviderMK2, IEnergyReceiverMK2, MenuProvider, WorldlyContainer {
@@ -154,7 +154,10 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
         if (this.structureCheckDelay <= 0) this.checkStructure();
 
         if (level.getGameTime() % 20 == 0) {
-            // 1.7 trySubscribe on every connection position: the graphs find the ports and the core unasked.
+            for (DirPos pos : this.connectionPos) {
+                for (FluidTankNTM tank : this.inputTanks) this.trySubscribe(tank.getTankType(), level, pos);
+                if (!config.generatorMode) this.trySubscribe(level, pos);
+            }
             for (byte d = 2; d < 6; d++) {
                 ForgeDirection dir = ForgeDirection.getOrientation(d);
                 for (DirPos pos : this.fluxPos) {

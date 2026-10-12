@@ -106,6 +106,8 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
 
         // Fluid network: subscribe input tanks to matching nets, push output tanks out, plus bucket I/O.
         for (DirPos dp : te.getConPos()) {
+            te.trySubscribe(level, dp);
+            for (FluidTankNTM tank : te.inputTanks) if (tank.getTankType() != com.hbm.inventory.fluid.Fluids.NONE) te.trySubscribe(tank.getTankType(), level, dp);
             for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, dp);
         }
         te.fillInputTanks();
@@ -148,6 +150,11 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
             if (in.isEmpty()) continue;
             FluidTankNTM tank = inputTanks[i];
 
+            // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
+            if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+                setChanged();
+                continue;
+            }
             if (in.getItem() instanceof IFillableItem fillable) {
                 int held = fillable.getFill(in);
                 FluidType heldType = fillable.getFirstFluidType(in);

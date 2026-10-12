@@ -1,6 +1,14 @@
 package com.hbm.client.render;
 
 import com.hbm.client.model.WavefrontObj;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import dev.golem.core.render.CameraInfo;
+import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.SubmitSink;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.world.item.ItemDisplayContext;
+import java.util.Random;
 import com.hbm.items.machine.ItemBatteryPack;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
@@ -24,6 +32,10 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
     private static final Surface EMPTY = Surface.cutout("hbm:textures/models/machines/battery_socket.png");
 
     private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of("hbm", "models/battery_socket.obj"));
+    /** 1.7's {@code battery.obj} "Supports" part, split into its own file so the pack icons need not exclude it. */
+    private final WavefrontObj supports = WavefrontObj.load(dev.golem.core.Ids.of("hbm", "models/battery_socket_supports.obj"));
+    private final WavefrontObj horse = WavefrontObj.load(dev.golem.core.Ids.of("hbm", "models/mobs/horse.obj"));
+    private static final Identifier SUNBURST = dev.golem.core.Ids.of("hbm", "textures/models/horse/sunburst.png");
     private final Map<Identifier, Surface> skins = new HashMap<>();
 
     /** Match the 1.12.2 RenderBatterySocket placement: centre, facing-rotate, then its model offset. */
@@ -36,6 +48,8 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
                 .translate(-0.5F, 0F, 0.5F);
 
         socket.child(model.part("Socket"), EMPTY);
+        // 1.7: the supports are drawn while something sits two blocks above the socket (checked once a second)
+        socket.child(supports.part("Supports"), EMPTY).visibleIf(state -> state.frame);
         pack(socket, "Battery");
         pack(socket, "Capacitor");
     }
@@ -68,7 +82,16 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
             default -> 0F;
         };
 
+        var level = be.getLevel();
+        state.gameTime = level == null ? 0L : level.getGameTime();
+        state.interp = partialTicks;
+        // 1.7 refreshed `frame` once a second in updateEntity; asked every frame here (one block lookup), as extraction is
+        // not tied to the tick
+        state.frame = level != null && !level.getBlockState(be.getBlockPos().above(2)).isAir();
+
         ItemStack stack = be.syncStack;
+        state.creative = false;
+        state.other.clear();
         if (stack != null && stack.getItem() instanceof ItemBatteryPack battery) {
             var pack = battery.stats();
             state.batteryPart = pack.capacitor() ? "Capacitor" : "Battery";
@@ -80,6 +103,60 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
         } else {
             state.batteryPart = null;
             state.batteryTexture = null;
+            if (stack != null && !stack.isEmpty()) {
+                if (stack.getItem() instanceof com.hbm.items.machine.ItemBatteryCreative) {
+                    state.creative = true;
+                } else {
+                    state.other.extract(level, stack, ItemDisplayContext.GROUND);
+                }
+            }
         }
+    }
+
+    /**
+     * 1.7 {@code RenderBatterySocket}: a creative battery is a spinning horned pony ({@code HorsePronter} in its zero
+     * pose with the horn), any other item floats and spins at 1.5x, and both are ringed by random electric arcs.
+     */
+    @Override
+    protected void submitUndeclared(BatterySocketRenderState state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
+        if (!state.creative && state.other.isEmpty()) return;
+        pose.pushPose();
+        pose.translate(0.5D, 0D, 0.5D);
+        pose.mulPose(Axis.YP.rotationDegrees(state.yaw));
+        pose.translate(-0.5D, 0D, 0.5D);
+
+        if (state.creative) {
+            pose.pushPose();
+            pose.scale(0.75F, 0.75F, 0.75F);
+            pose.mulPose(Axis.YN.rotationDegrees((float) ((state.gameTime % 360 + state.interp) * 25D)));
+            for (String part : new String[]{"Body", "Head", "Mane", "NoseFemale", "HornPointy", "LeftFrontLeg",
+                    "RightFrontLeg", "LeftBackLeg", "RightBackLeg", "Tail"}) {
+                sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutoutNoCull(SUNBURST),
+                        (p, buffer) -> horse.renderPart(part, p, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
+            }
+            pose.popPose();
+        } else {
+            pose.pushPose();
+            pose.translate(0D, 0.5D, 0D);
+            pose.scale(1.5F, 1.5F, 1.5F);
+            pose.mulPose(Axis.YN.rotationDegrees((float) ((state.gameTime % 360 + state.interp) * 2.5D)));
+            sink.submitItem(pose, state.other, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
+            pose.popPose();
+        }
+
+        Random rand = new Random(state.gameTime / 5);
+        rand.nextBoolean();
+        int animation = (int) (com.hbm.util.GameTime.now() % 1000L) / 50;
+        for (int i = -1; i <= 1; i += 2) for (int j = -1; j <= 1; j += 2) if (rand.nextInt(4) == 0) {
+            pose.pushPose();
+            pose.translate(0D, 0.75D, 0D);
+            Vec3 end = new Vec3(0.4375D * i, 1.1875D, 0.4375D * j);
+            BeamPronter.prontBeam(pose, sink, end, BeamPronter.EnumWaveType.RANDOM, BeamPronter.EnumBeamType.SOLID,
+                    animation, 15, 0.0625F, 0x404040, 0x002040, 3, 0.025F);
+            BeamPronter.prontBeam(pose, sink, end, BeamPronter.EnumWaveType.RANDOM, BeamPronter.EnumBeamType.SOLID,
+                    animation, 1, 0F, 0x404040, 0x002040, 3, 0.025F);
+            pose.popPose();
+        }
+        pose.popPose();
     }
 }

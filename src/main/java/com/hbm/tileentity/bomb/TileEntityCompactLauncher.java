@@ -1,5 +1,7 @@
 package com.hbm.tileentity.bomb;
 
+import com.hbm.lib.DirPos;
+import com.hbm.lib.Library;
 import com.hbm.inventory.container.ContainerCompactLauncher;
 import com.hbm.items.weapon.ItemCustomMissilePart.PartSize;
 import com.hbm.tileentity.ModCustomMissileBlockEntities;
@@ -28,6 +30,26 @@ public class TileEntityCompactLauncher extends TileEntityCustomMissileLauncher i
     @Override public PartSize acceptedSize() { return PartSize.SIZE_10; }
     @Override protected int footprintRadius() { return 1; }
     @Override protected boolean requiresDesignatorToLaunch() { return true; }
+
+    /** 1.7 {@code TileEntityCompactLauncher.getConPos}. */
+    @Override
+    public DirPos[] connectionPositions() {
+        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+        return new DirPos[]{
+                new DirPos(x + 2, y, z + 1, Library.POS_X),
+                new DirPos(x + 2, y, z - 1, Library.POS_X),
+                new DirPos(x - 2, y, z + 1, Library.NEG_X),
+                new DirPos(x - 2, y, z - 1, Library.NEG_X),
+                new DirPos(x + 1, y, z + 2, Library.POS_Z),
+                new DirPos(x - 1, y, z + 2, Library.POS_Z),
+                new DirPos(x + 1, y, z - 2, Library.NEG_Z),
+                new DirPos(x - 1, y, z - 2, Library.NEG_Z),
+                new DirPos(x + 1, y - 1, z + 1, Library.NEG_Y),
+                new DirPos(x + 1, y - 1, z - 1, Library.NEG_Y),
+                new DirPos(x - 1, y - 1, z + 1, Library.NEG_Y),
+                new DirPos(x - 1, y - 1, z - 1, Library.NEG_Y)
+        };
+    }
 
     @Override
     public Component getDisplayName() {
