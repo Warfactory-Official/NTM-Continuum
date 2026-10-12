@@ -1,0 +1,92 @@
+# Builds every node (chiseledBuild) against Golem Core's main branch and publishes the release jars,
+# HBM's and the matching Golem Core jars it needs, as a GitHub pre-release.
+# Runs on every push to main and on demand.
+name: Pre-release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      golem_ref:
+        description: Golem Core branch, tag or commit to build against
+        default: main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prerelease-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      # settings.gradle.kts includes ../Golem-Core as a composite build, so the two repos are checked
+      # out side by side exactly as in the development layout.
+      - uses: actions/checkout@v4
+        with:
+          path: new-hbm
+
+      - uses: actions/checkout@v4
+        with:
+          repository: Warfactory-Official/Golem-Core
+          ref: ${{ inputs.golem_ref || 'main' }}
+          path: Golem-Core
+          # Only needed while Golem Core is private: a fine-grained token with read access to it.
+          token: ${{ secrets.GOLEM_CORE_TOKEN || github.token }}
+
+      # Each node compiles on its own toolchain (1.20.1 -> 17, 1.21.1 -> 21, 26.1 -> 25). The last
+      # one listed becomes JAVA_HOME, which runs Gradle itself.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: |
+            17
+            21
+            25
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Golem Core first: the obfuscated Fabric nodes resolve its jar at configuration time and refuse
+      # one older than its sources (checkGolemJarIsFresh), so it must be on disk before HBM configures.
+      - name: Build Golem Core
+        working-directory: Golem-Core
+        run: bash ./gradlew chiseledBuild --no-daemon --stacktrace
+
+      - name: Build HBM
+        working-directory: new-hbm
+        run: bash ./gradlew chiseledBuild --no-daemon --stacktrace
+
+      - name: Collect release jars
+        id: jars
+        run: |
+          mkdir -p dist
+          # build/libs holds the release jar per node (remapJar/reobfJar/jar); devlibs is not shipped.
+          for repo in new-hbm Golem-Core; do
+            find $repo/versions/*/build/libs -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' -exec cp {} dist/ \;
+          done
+          ls -l dist
+          ls dist | grep -q '^hbm-' || { echo "No HBM jars produced"; exit 1; }
+          version=$(grep -E '^mod.version=' new-hbm/gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          echo "tag=v${version}-build.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "golem=$(git -C Golem-Core rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Create pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: ${{ github.repository }}
+          tag_name: ${{ steps.jars.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: NTM - Continuum ${{ steps.jars.outputs.version }} build ${{ github.run_number }}
+          prerelease: true
+          generate_release_notes: true
+          body: |
+            Automated pre-release build. Not for general use.
+
+            Each `hbm-<loader>-<mc>` jar needs the matching `golemcore-<loader>-<mc>` jar (included,
+            built from Golem Core `${{ steps.jars.outputs.golem }}`).
+          files: dist/*.jar
