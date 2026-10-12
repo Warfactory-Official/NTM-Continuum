@@ -117,7 +117,8 @@ jobs:
 
           # Players get Golem Core from the sites, so the version HBM is built against should be released already.
           golem_mr=$(prop Golem-Core golem.build.publish.modrinthProject)
-          if [ -n "$golem_mr" ] && ! curl -fsSL "https://api.modrinth.com/v2/project/$golem_mr/version" \
+          # Authenticated, so an unapproved (draft) Golem Core project is visible too.
+          if [ -n "$golem_mr" ] && ! curl -fsSL -H "Authorization: $MODRINTH_TOKEN" "https://api.modrinth.com/v2/project/$golem_mr/version" \
                | jq -e --arg v "$golem_version+" 'any(.[]; .version_number | startswith($v))' > /dev/null; then
             echo "::warning::Golem Core $golem_version is not on Modrinth yet. Run Golem Core's Release workflow first."
           fi
