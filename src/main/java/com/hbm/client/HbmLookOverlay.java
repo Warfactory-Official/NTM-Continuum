@@ -14,7 +14,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
 /**
- * Central dispatcher for {@link ILookOverlay}: each frame it finds the block the player is looking at,
+ * Central dispatcher for {@link ILookOverlay}: each frame it finds the block (or {@link com.hbm.interfaces.IEntityLookOverlay}
+ * entity) the player is looking at,
  * obtains its data, and renders that data. The 1.12.2 original ran this from a
  * {@code RenderGameOverlayEvent}; here each loader calls {@link #render} from its HUD-render hook
  * (NeoForge {@code RenderGuiEvent.Post}, Fabric {@code HudElementRegistry}).
@@ -29,7 +30,16 @@ public final class HbmLookOverlay {
         if (!com.hbm.config.ClientConfig.DODD_RBMK_DIAGNOSTIC) return; // 1.7: the whole hook sits behind this toggle
 
         HitResult hit = mc.hitResult;
-        if (hit == null || hit.getType() != HitResult.Type.BLOCK) return;
+        if (hit == null) return;
+
+        // 1.7: an entity looked at (mop.entityHit instanceof ILookOverlay) gives its own readout
+        if (hit.getType() == HitResult.Type.ENTITY) {
+            ILookOverlay.Data data = com.hbm.interfaces.IEntityLookOverlay.of(
+                    ((net.minecraft.world.phys.EntityHitResult) hit).getEntity(), mc.player);
+            if (data != null) render(graphics, data);
+            return;
+        }
+        if (hit.getType() != HitResult.Type.BLOCK) return;
 
         Level level = mc.level;
         BlockPos pos = ((BlockHitResult) hit).getBlockPos();
@@ -40,6 +50,11 @@ public final class HbmLookOverlay {
                 render(graphics, data);
                 return;
             }
+        }
+        ILookOverlay.Data provided = ILookOverlay.provided(level, pos, mc.player); // addon readouts (C-26)
+        if (provided != null) {
+            render(graphics, provided);
+            return;
         }
 
         // 1.7 IItemLookOverlay: the held item may add its own readout (the conveyor wand's creative line break).

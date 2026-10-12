@@ -15,6 +15,7 @@ import static dev.golem.core.dejson.Crafting.componentShapeless;
 import static dev.golem.core.dejson.Crafting.fluid;
 import static dev.golem.core.dejson.Crafting.item;
 import static dev.golem.core.dejson.Crafting.key;
+import static dev.golem.core.dejson.Crafting.requires;
 import static dev.golem.core.dejson.Crafting.rows;
 import static dev.golem.core.dejson.Crafting.shaped;
 import static dev.golem.core.dejson.Crafting.shapeless;
@@ -154,8 +155,10 @@ public final class RestoredCraftingRecipes {
 
         // :118 iodine pills, :130-131 the default (non-LBSM) siox and xanax, :149 radaway flush
         shaped(NS, "pill_iodine", ItemIds.pill_iodine, 8, rows("IF"), "I", TagIds.dusts_iodine, "F", TagIds.dusts_fluorite);
-        shapeless(NS, "siox", ItemIds.siox, 8, TagIds.dusts_coal, TagIds.dusts_asbestos, ItemIds.nugget_bismuth);
-        shapeless(NS, "xanax", ItemIds.xanax, TagIds.dusts_coal, TagIds.dusts_niter, TagIds.dusts_bromine);
+        requires(shapeless(NS, "siox", ItemIds.siox, 8, TagIds.dusts_coal, TagIds.dusts_asbestos, ItemIds.nugget_bismuth),
+                "!lbsm_simple_medicine");
+        requires(shapeless(NS, "xanax", ItemIds.xanax, TagIds.dusts_coal, TagIds.dusts_niter, TagIds.dusts_bromine),
+                "!lbsm_simple_medicine");
         shapeless(NS, "radaway_flush", ItemIds.radaway_flush, ItemIds.radaway_strong, TagIds.dusts_iodine);
 
         // :135 the first of the six med bags (leather, stimpaks, antidote)
@@ -175,7 +178,8 @@ public final class RestoredCraftingRecipes {
                 "S", VanillaIds.string, "P", TagIds.dusts_bromine, "C", TagIds.minecraft_wool);
         // :107, :111 the fiberglass and nether-brick polymer plates
         shaped(NS, "plate_polymer_fiberglass", ItemIds.plate_polymer, 16, rows("DD"), "D", TagIds.ingots_fiberglass);
-        shaped(NS, "plate_polymer_nether_brick", ItemIds.plate_polymer, 4, rows("BB"), "B", VanillaIds.nether_brick);
+        // no :111 plate_polymer from "ingotNetherBrick": nothing in 1.7 registers that ore name (Forge 1.7 names the
+        // nether brick "ingotBrickNether", OreDictManager.KEY_NETHERBRICK), so the 1.7 recipe can never be crafted
         // :209 memespoon
         shaped(NS, "memespoon", ItemIds.memespoon, rows("CGC", "PSP", "IAI"),
                 "C", ItemIds.powder_yellowcake, "G", TagIds.storage_blocks_thorium, "P", ItemIds.photo_panel,
@@ -221,9 +225,9 @@ public final class RestoredCraftingRecipes {
                 "S", VanillaIds.string, "B", TagIds.tars, "P", VanillaIds.paper);
         // :669-670 launch pad structure parts (fluid_duct_neo wildcard = all three duct skins)
         shaped(NS, "struct_launcher", ItemIds.struct_launcher, 8, rows("PPP", "SDS", "CCC"),
-                "P", TagIds.plates_steel, "S", ItemIds.steel_scaffold, "D", TagIds.pipes_steel, "C", TagIds.concretes);
+                "P", TagIds.plates_steel, "S", "#hbm:steel_scaffolds", "D", TagIds.pipes_steel, "C", TagIds.concretes);
         componentShaped(NS, "struct_scaffold", stack(ItemIds.struct_scaffold, 8), rows("SSS", "DCD", "SSS"),
-                k("S", ItemIds.steel_scaffold),
+                k("S", "#hbm:steel_scaffolds"),
                 key("D", anyOf(ItemIds.fluid_duct_neo, ItemIds.fluid_duct_neo_silver, ItemIds.fluid_duct_neo_colored)),
                 k("C", ItemIds.red_cable));
         // :697, :707-708 AMS catalysts
@@ -241,13 +245,13 @@ public final class RestoredCraftingRecipes {
         shaped(NS, "rbmk_fuel_rod_reasim_moderated", ItemIds.rbmk_fuel_rod_reasim_moderated, rows("BGB", "GRG", "BGB"),
                 "G", TagIds.storage_blocks_graphite, "R", ItemIds.rbmk_fuel_rod_reasim,
                 "B", TagIds.ingots_any_resistant_alloy);
-        shaped(NS, "rbmk_fuel_rod_moderated", ItemIds.rbmk_fuel_rod_moderated, rows("BGB", "GRG", "BGB"),
-                "G", TagIds.storage_blocks_graphite, "R", ItemIds.rbmk_fuel_rod, "B", ItemIds.nugget_bismuth);
+        requires(shaped(NS, "rbmk_fuel_rod_moderated", ItemIds.rbmk_fuel_rod_moderated, rows("BGB", "GRG", "BGB"),
+                "G", TagIds.storage_blocks_graphite, "R", ItemIds.rbmk_fuel_rod, "B", ItemIds.nugget_bismuth), "!enable_528");
     }
 
     private static void scaffold(int variant, String colour, String dye) {
         componentShaped(NS, "steel_scaffold_" + colour, stack("hbm:steel_scaffold_" + colour, 8),
-                rows("SSS", "SDS", "SSS"), k("S", ItemIds.steel_scaffold), k("D", dye));
+                rows("SSS", "SDS", "SSS"), k("S", "#hbm:steel_scaffolds"), k("D", dye));
     }
 
     // ---- MineralRecipes ------------------------------------------------------------------------------------------
@@ -255,8 +259,9 @@ public final class RestoredCraftingRecipes {
     private static void minerals() {
         // :95-104 add1To9PairSameMeta for every waste class of the long/short storage-drum waste; each class is an item
         // of its own ({@code <family>_<class>}, History §19es-itemvariant)
-        String[] longClasses = {"thorium", "uranium233", "uranium235", "neptunium", "schrabidium"};
-        String[] shortClasses = {"uranium233", "uranium235", "neptunium", "plutonium239", "plutonium240", "plutonium241",
+        // 1.7's metadata order (ItemWasteLong/ItemWasteShort.WasteClass), as ItemWasteStorage's enums
+        String[] longClasses = {"uranium235", "uranium233", "neptunium", "thorium", "schrabidium"};
+        String[] shortClasses = {"uranium235", "uranium233", "neptunium", "plutonium239", "plutonium240", "plutonium241",
                 "americium242", "schrabidium"};
         String[][] waste = {
                 {"nuclear_waste_long", "nuclear_waste_long_tiny"},

@@ -50,11 +50,19 @@ public final class MultiblockSurface {
      * The client has no server index, so it walks back to the core. The candidates are the exact offsets
      * some registered machine places a cell at, negated — a few hundred deltas rather than the 35937 of a
      * bounding cube, and every one of them a position a core could actually occupy. Cells cluster, so the
-     * last answer is tried first and usually stands.
+     * last answer is tried first and usually stands. The candidates are sorted nearest first.
+     *
+     * <p>A {@link BlockGetter} that is not a {@link Level} may be a section-compile region, which can read only
+     * {@link #REGION_REACH} blocks around any position it is asked about and throws beyond that (vanilla's
+     * {@code RenderSectionRegion} indexes a 3x3x3 section array). Some machine's deltas exceed that reach, so a
+     * door cell next to a section edge crashed the chunk compile (AO asks the neighbour's collision shape). Reads
+     * past the reach are tried and skipped when the getter cannot answer them; the cell's own core is always
+     * within reach for every machine small enough to be drawn from such a region.
      */
     private static @Nullable BlockPos clientCoreOf(BlockGetter level, BlockPos cell) {
+        boolean bounded = !(level instanceof Level);
         BlockPos hint = clientCoreHint;
-        if (hint != null && coreClaims(level, hint, cell)) return hint;
+        if (hint != null && claimsSafely(level, hint, cell, bounded && !withinReach(hint, cell))) return hint;
 
         long[] candidates = clientCandidates;
         if (candidates == null) candidates = clientCandidates = buildClientCandidates();
@@ -62,12 +70,33 @@ public final class MultiblockSurface {
         for (long delta : candidates) {
             probe.set(cell.getX() + BlockPos.getX(delta), cell.getY() + BlockPos.getY(delta),
                     cell.getZ() + BlockPos.getZ(delta));
-            if (!coreClaims(level, probe, cell)) continue;
+            if (!claimsSafely(level, probe, cell, bounded && reach(delta) > REGION_REACH)) continue;
             BlockPos core = probe.immutable();
             clientCoreHint = core;
             return core;
         }
         return null;
+    }
+
+    /** How far around a queried position a section-compile region can always read (one section minus the cell). */
+    private static final int REGION_REACH = 15;
+
+    private static int reach(long delta) {
+        return Math.max(Math.abs(BlockPos.getX(delta)), Math.max(Math.abs(BlockPos.getY(delta)), Math.abs(BlockPos.getZ(delta))));
+    }
+
+    private static boolean withinReach(BlockPos a, BlockPos b) {
+        return Math.abs(a.getX() - b.getX()) <= REGION_REACH && Math.abs(a.getY() - b.getY()) <= REGION_REACH
+                && Math.abs(a.getZ() - b.getZ()) <= REGION_REACH;
+    }
+
+    private static boolean claimsSafely(BlockGetter level, BlockPos core, BlockPos cell, boolean mayBeOutOfRange) {
+        if (!mayBeOutOfRange) return coreClaims(level, core, cell);
+        try {
+            return coreClaims(level, core, cell);
+        } catch (IndexOutOfBoundsException outsideRegion) {
+            return false;
+        }
     }
 
     /**
@@ -91,7 +120,12 @@ public final class MultiblockSurface {
                         -MultiblockMaskTable.worldZ(lx, ly, lz, facing))));
             }
         }
-        return deltas.toLongArray();
+        long[] sorted = deltas.toLongArray();
+        // nearest first: a section-compile region answers those without a range check (see clientCoreOf)
+        return java.util.Arrays.stream(sorted).boxed()
+                .sorted(java.util.Comparator.comparingInt(MultiblockSurface::reach)
+                        .thenComparingLong(Long::longValue))
+                .mapToLong(Long::longValue).toArray();
     }
 
     public static @Nullable BlockPos coreOfAny(BlockGetter level, BlockPos pos) {

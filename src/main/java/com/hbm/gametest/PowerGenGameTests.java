@@ -150,6 +150,20 @@ public final class PowerGenGameTests {
         helper.succeed();
     }
 
+    /**
+     * The LPW-2's addon API (ADDON-API-INVENTORY P-14): HBM's own tile is a synced {@code TileEntityLoadedBase} whose
+     * renderer clock is 1.7's world time ({@code getTotalWorldTime() % 1000000 + interp}).
+     */
+    public static void lpw2AnimationClock(GameTestHelper helper) {
+        BlockPos relative = new BlockPos(1, 1, 1);
+        helper.setBlock(relative, ModPowerGenBlocks.MACHINE_LPW2.get().defaultBlockState());
+        TileEntityMachineLPW2 te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, relative, TileEntityMachineLPW2.class);
+        helper.assertTrue(te instanceof com.hbm.tileentity.TileEntityLoadedBase, "LPW-2 tile is a TileEntityLoadedBase");
+        long time = helper.getLevel().getGameTime() % 1000000;
+        helper.assertTrue(te.animationTime(0.25F) == (double) (time + 0.25F), "LPW-2 clock is world time + partial ticks");
+        helper.succeed();
+    }
+
     /** The memorial is one block that swallows its click and reads the dedication. */
     public static void igenMemorial(GameTestHelper helper) {
         MachineIGenerator block = ModPowerGenBlocks.MACHINE_INDUSTRIAL_GENERATOR.get();

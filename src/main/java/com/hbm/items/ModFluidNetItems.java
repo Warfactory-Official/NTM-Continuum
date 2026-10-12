@@ -69,11 +69,11 @@ public final class ModFluidNetItems {
     // --- infinite sources ---
 
     public static final RegistryObject<ItemInfiniteFluid> inf_water = REG.item("inf_water",
-            p -> new ItemInfiniteFluid(p, () -> Fluids.WATER, 50, 1, false), p -> p.stacksTo(1))
+            p -> new ItemInfiniteFluid(p, () -> Fluids.WATER, 50, 1, false, true), p -> p.stacksTo(1))
             .transform(Presets.sprite())
             .tab(HbmTab.CONTROL);
     public static final RegistryObject<ItemInfiniteFluid> inf_water_mk2 = REG.item("inf_water_mk2",
-            p -> new ItemInfiniteFluid(p, () -> Fluids.WATER, 500, 1, false), p -> p.stacksTo(1))
+            p -> new ItemInfiniteFluid(p, () -> Fluids.WATER, 500, 1, false, true), p -> p.stacksTo(1))
             .transform(Presets.sprite())
             .tab(HbmTab.CONTROL);
     public static final RegistryObject<ItemInfiniteFluid> chlorine_pinwheel = REG.item("chlorine_pinwheel",
@@ -132,7 +132,7 @@ public final class ModFluidNetItems {
 
     private static List<ItemStack> variants(ItemFluidContainerNT item) {
         List<ItemStack> list = new ArrayList<>();
-        for (FluidType fluid : Fluids.getAll()) {
+        for (FluidType fluid : Fluids.getInNiceOrder()) { // 1.7 ItemCanister / ItemGasTank / ItemFluidTank.getSubItems
             if (fluid == Fluids.NONE || !item.allows(fluid)) continue;
             list.add(item.make(fluid, item.capacity));
         }

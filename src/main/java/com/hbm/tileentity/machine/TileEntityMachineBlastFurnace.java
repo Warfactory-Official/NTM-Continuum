@@ -90,7 +90,9 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
                 furnace.inventory.getStackInSlot(1), furnace.inventory.getStackInSlot(2));
 
         if (recipe != null && furnace.fuel >= FUEL_RATE && furnace.hasQuantities(recipe)
-                && furnace.canOutput(recipe)) {
+                && furnace.canOutput(recipe)
+                // hbm-space breatheAir(1): the blast needs air (com.hbm.api.environment.Environment)
+                && com.hbm.api.environment.Environment.breatheAir(level, pos, 1)) {
             furnace.speed = MthClamp.clamp(0.5F + furnace.tanks[0].getFill() * 8F / furnace.tanks[0].getMaxFill(), 0.5F, 5F);
             furnace.isProgressing = true;
             furnace.progress += furnace.speed / recipe.duration;

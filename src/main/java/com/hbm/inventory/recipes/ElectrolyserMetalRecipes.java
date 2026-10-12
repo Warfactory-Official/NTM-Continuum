@@ -3,92 +3,89 @@ package com.hbm.inventory.recipes;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.material.Mats;
-import com.hbm.inventory.material.MaterialShapes;
-import com.hbm.items.ModItems;
-import com.hbm.items.ModIntermediateItems;
-import com.hbm.items.ItemEnums.EnumChunkType;
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec.ItemOut;
+import com.hbm.inventory.recipes.loader.MaterialCodecs;
+import com.hbm.inventory.recipes.loader.RecipeText;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** The crystal-to-molten-material electrolyser table from 1.12.2. */
+/**
+ * Electrolyser (metal side) recipes: the datapack table {@code hbm:electrolyser_metal}, one file per input item in
+ * {@code data/hbm/recipe/electrolyser_metal/}:
+ *
+ * <pre>
+ * {"type": "hbm:electrolyser_metal", "input": "hbm:crystal_iron",
+ *  "molten": [{"material": "iron", "amount": 432}, {"material": "titanium", "amount": 144}],
+ *  "byproducts": [{"id": "hbm:powder_lithium_tiny", "count": 3}], "duration": 600, "order": 0}
+ * </pre>
+ *
+ * One or two molten outputs, any number of item byproducts, {@code duration} in ticks (default 600, 1.7's first
+ * constructor). The lookup is by input item; a second row for the same item replaces the first (1.7 kept a map). The
+ * rows were converted once from the former Java table (1.7 {@code ElectrolyserMetalRecipes}, plus the 18 rows of the
+ * bedrock ore grade chain, 20 ticks each) and are the source now.
+ */
 public final class ElectrolyserMetalRecipes {
-
-    public static final List<ElectrolysisMetalRecipe> RECIPES = new ArrayList<>();
-    private static final Map<net.minecraft.world.item.Item, ElectrolysisMetalRecipe> BY_ITEM = new LinkedHashMap<>();
-    private static boolean initialized;
 
     private ElectrolyserMetalRecipes() {}
 
-    public static synchronized void register() {
-        if (initialized) return;
-        initialized = true;
+    /** One row. */
+    public record Row(Item input, List<Mats.MaterialStack> molten, List<ItemOut> byproducts, int duration, int order) {}
 
-        add(ModItems.crystal_iron.get(), out(Mats.MAT_IRON, MaterialShapes.INGOT, 6), out(Mats.MAT_TITANIUM, MaterialShapes.INGOT, 2),
-                stack(ModItems.powder_lithium_tiny, 3));
-        add(ModItems.crystal_gold.get(), out(Mats.MAT_GOLD, MaterialShapes.INGOT, 6), out(Mats.MAT_LEAD, MaterialShapes.INGOT, 2),
-                stack(ModItems.powder_lithium_tiny, 3), stack(ModItems.nugget_mercury, 2)); // 1.7 ingot_mercury x2 (= hbm:nugget_mercury)
-        add(ModItems.crystal_uranium.get(), out(Mats.MAT_URANIUM, MaterialShapes.INGOT, 6), out(Mats.MAT_RADIUM, MaterialShapes.NUGGET, 4),
-                stack(ModItems.powder_lithium_tiny, 3));
-        add(ModItems.crystal_thorium.get(), out(Mats.MAT_THORIUM, MaterialShapes.INGOT, 6), out(Mats.MAT_URANIUM, MaterialShapes.INGOT, 2),
-                stack(ModItems.powder_lithium_tiny, 3));
-        add(ModItems.crystal_plutonium.get(), out(Mats.MAT_PLUTONIUM, MaterialShapes.INGOT, 6), out(Mats.MAT_POLONIUM, MaterialShapes.INGOT, 2),
-                stack(ModItems.powder_lithium_tiny, 3));
-        add(ModItems.crystal_titanium.get(), out(Mats.MAT_TITANIUM, MaterialShapes.INGOT, 6), out(Mats.MAT_IRON, MaterialShapes.INGOT, 2),
-                stack(ModItems.powder_lithium_tiny, 3));
-        add(ModItems.crystal_copper.get(), out(Mats.MAT_COPPER, MaterialShapes.INGOT, 6), out(Mats.MAT_LEAD, MaterialShapes.NUGGET, 4),
-                stack(ModItems.powder_lithium_tiny, 3), stack(ModItems.sulfur, 2));
-        add(ModItems.crystal_tungsten.get(), out(Mats.MAT_TUNGSTEN, MaterialShapes.INGOT, 6), out(Mats.MAT_IRON, MaterialShapes.INGOT, 2),
-                stack(ModItems.powder_lithium_tiny, 3));
-        add(ModItems.crystal_aluminium.get(), out(Mats.MAT_ALUMINIUM, MaterialShapes.INGOT, 2), out(Mats.MAT_IRON, MaterialShapes.INGOT, 2),
-                ModIntermediateItems.chunk(EnumChunkType.CRYOLITE, 4), stack(ModItems.powder_lithium_tiny, 3));
-        add(ModItems.crystal_beryllium.get(), out(Mats.MAT_BERYLLIUM, MaterialShapes.INGOT, 6), out(Mats.MAT_LEAD, MaterialShapes.NUGGET, 4),
-                stack(ModItems.powder_lithium_tiny, 3), stack(ModItems.powder_quartz, 2));
-        add(ModItems.crystal_lead.get(), out(Mats.MAT_LEAD, MaterialShapes.INGOT, 6), out(Mats.MAT_GOLD, MaterialShapes.INGOT, 2),
-                stack(ModItems.powder_lithium_tiny, 3));
-        add(ModItems.crystal_schraranium.get(), out(Mats.MAT_SCHRABIDIUM, MaterialShapes.NUGGET, 5), out(Mats.MAT_URANIUM, MaterialShapes.NUGGET, 2),
-                stack(ModItems.nugget_neptunium, 2));
-        add(ModItems.crystal_schrabidium.get(), out(Mats.MAT_SCHRABIDIUM, MaterialShapes.INGOT, 6), out(Mats.MAT_PLUTONIUM, MaterialShapes.INGOT, 2),
-                stack(ModItems.powder_lithium_tiny, 3));
-        add(ModItems.crystal_rare.get(), out(Mats.MAT_ZIRCONIUM, MaterialShapes.NUGGET, 6), out(Mats.MAT_BORON, MaterialShapes.NUGGET, 2),
-                stack(ModItems.powder_desh_mix, 3));
-        add(ModItems.crystal_trixite.get(), out(Mats.MAT_PLUTONIUM, MaterialShapes.INGOT, 3), out(Mats.MAT_COBALT, MaterialShapes.INGOT, 4),
-                stack(ModItems.powder_niobium, 4), stack(ModItems.powder_nitan_mix, 2));
-        add(ModItems.crystal_lithium.get(), out(Mats.MAT_LITHIUM, MaterialShapes.INGOT, 6), out(Mats.MAT_BORON, MaterialShapes.INGOT, 2),
-                stack(ModItems.powder_quartz, 2), stack(ModItems.fluorite, 2));
-        add(ModItems.crystal_starmetal.get(), out(Mats.MAT_DURA, MaterialShapes.INGOT, 4), out(Mats.MAT_COBALT, MaterialShapes.INGOT, 4),
-                stack(ModItems.powder_astatine, 3), stack(ModItems.nugget_mercury, 8)); // 1.7 ingot_mercury x8 (= hbm:nugget_mercury)
-        add(ModItems.crystal_cobalt.get(), out(Mats.MAT_COBALT, MaterialShapes.INGOT, 3), out(Mats.MAT_IRON, MaterialShapes.INGOT, 4),
-                stack(ModItems.powder_copper, 4), stack(ModItems.powder_lithium_tiny, 3));
-        BedrockOreChainRecipes.electrolyser(ElectrolyserMetalRecipes::add); // weighted primaries and crumbs, 20 ticks
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.<Row>mapCodec(i -> i.group(
+            dev.golem.core.world.ItemStacks.itemCodec().fieldOf("input").forGetter(Row::input),
+            MaterialCodecs.STACK.listOf().fieldOf("molten").forGetter(Row::molten),
+            GenericRecipeCodec.ITEM_OUT.listOf().optionalFieldOf("byproducts", List.of()).forGetter(Row::byproducts),
+            Codec.INT.optionalFieldOf("duration", 600).forGetter(Row::duration),
+            Codec.INT.optionalFieldOf("order", Integer.MAX_VALUE).forGetter(Row::order)
+    ).apply(i, Row::new)).flatXmap(ElectrolyserMetalRecipes::checkRow, ElectrolyserMetalRecipes::checkRow);
+
+    public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("electrolyser_metal", () -> CODEC);
+
+    /** The current recipes in display order (rebuilt after every reload or sync). */
+    public static volatile List<ElectrolysisMetalRecipe> RECIPES = List.of();
+    private static volatile Map<Item, ElectrolysisMetalRecipe> byItem = Map.of();
+
+    static {
+        TABLE.changed.register(ElectrolyserMetalRecipes::reindex);
+    }
+
+    /** Declares the table at mod construction. */
+    public static void declare() {}
+
+    private static void reindex() {
+        List<ElectrolysisMetalRecipe> next = new ArrayList<>();
+        Map<Item, ElectrolysisMetalRecipe> index = new LinkedHashMap<>();
+        for (Row row : RecipeText.ordered(TABLE.rows(), Row::order)) {
+            ElectrolysisMetalRecipe recipe = new ElectrolysisMetalRecipe(new ComparableStack(row.input()), row.molten().get(0),
+                    row.molten().size() > 1 ? row.molten().get(1) : null, row.duration(),
+                    row.byproducts().stream().map(ItemOut::stack).toArray(ItemStack[]::new));
+            next.add(recipe);
+            index.put(row.input(), recipe); // last wins, as 1.7's map
+        }
+        RECIPES = List.copyOf(next);
+        byItem = Map.copyOf(index);
+    }
+
+    /** Ensures the rows are loaded (kept for the existing callers; the table fills itself from the datapack). */
+    public static void register() {
+        TABLE.rows();
     }
 
     public static ElectrolysisMetalRecipe getRecipe(ItemStack stack) {
         register();
-        return stack.isEmpty() ? null : BY_ITEM.get(stack.getItem());
-    }
-
-    private static void add(net.minecraft.world.item.Item input, Mats.MaterialStack output1, Mats.MaterialStack output2,
-                            ItemStack... byproduct) {
-        add(input, output1, output2, 600, byproduct);
-    }
-
-    /** 1.7's second constructor, with an explicit duration (the bedrock ore grades use 20). */
-    private static void add(net.minecraft.world.item.Item input, Mats.MaterialStack output1, Mats.MaterialStack output2,
-                            int duration, ItemStack... byproduct) {
-        ElectrolysisMetalRecipe recipe = new ElectrolysisMetalRecipe(new ComparableStack(input), output1, output2, duration, byproduct);
-        RECIPES.add(recipe);
-        BY_ITEM.put(input, recipe);
-    }
-
-    private static Mats.MaterialStack out(com.hbm.inventory.material.NTMMaterial material, MaterialShapes shape, int count) {
-        return new Mats.MaterialStack(material, shape.quantity * count);
-    }
-
-    private static ItemStack stack(dev.golem.core.registry.RegistryObject<? extends net.minecraft.world.item.Item> item, int count) {
-        return new ItemStack(item.get(), count);
+        return stack.isEmpty() ? null : byItem.get(stack.getItem());
     }
 
     public static final class ElectrolysisMetalRecipe {
@@ -98,13 +95,34 @@ public final class ElectrolyserMetalRecipes {
         public final ItemStack[] byproduct;
         public final int duration;
 
-        private ElectrolysisMetalRecipe(AStack input, Mats.MaterialStack output1, Mats.MaterialStack output2,
-                                        int duration, ItemStack[] byproduct) {
+        ElectrolysisMetalRecipe(AStack input, Mats.MaterialStack output1, Mats.MaterialStack output2,
+                                int duration, ItemStack[] byproduct) {
             this.duration = duration;
             this.input = input;
             this.output1 = output1;
             this.output2 = output2;
             this.byproduct = byproduct;
         }
+    }
+
+    /** The row form of a recipe (for converting a table and for tests). */
+    public static Row toRow(ElectrolysisMetalRecipe recipe, int order) {
+        List<Mats.MaterialStack> molten = new ArrayList<>();
+        molten.add(recipe.output1);
+        if (recipe.output2 != null) molten.add(recipe.output2);
+        List<ItemOut> byproducts = new ArrayList<>();
+        for (ItemStack stack : recipe.byproduct) byproducts.add(ItemOut.of(stack));
+        return new Row(((ComparableStack) recipe.input).item, molten, byproducts, recipe.duration, order);
+    }
+
+    /** One line per recipe, for comparing a converted table with its source. */
+    public static String describe(ElectrolysisMetalRecipe recipe) {
+        return RecipeText.describe(recipe.input) + " -> " + MaterialCodecs.describe(recipe.output1) + " + "
+                + MaterialCodecs.describe(recipe.output2) + " + " + RecipeText.describe(recipe.byproduct) + " t=" + recipe.duration;
+    }
+
+    /** Rejects a row the machine cannot run (MapCodec.validate is missing from 1.20.1's DataFixerUpper). */
+    private static DataResult<Row> checkRow(Row row) {
+        return row.molten().isEmpty() || row.molten().size() > 2 ? DataResult.error(() -> "an electrolyser row has one or two molten outputs, not " + row.molten().size()) : DataResult.success(row);
     }
 }

@@ -54,8 +54,28 @@ public class ItemReactorSensor extends CompatItem {
             }
             return InteractionResult.SUCCESS;
         }
+        InteractionResult other = USE.invoker().useOn(context);
+        if (other != null) return other;
         return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
+
+    /** What the sensor does on a block that is not a research reactor; null means "not mine". */
+    @FunctionalInterface
+    public interface Use {
+        @Nullable InteractionResult useOn(UseOnContext context);
+    }
+
+    /**
+     * Addon hook: the sensor used on another block (NTM: Space's StarDar and its remote console). Asked after the
+     * research-reactor check; the first non-null answer is the use's result. Plain HBM registers nothing.
+     */
+    public static final dev.golem.core.hook.Hook<Use> USE = dev.golem.core.hook.Hook.of(listeners -> context -> {
+        for (Use listener : listeners) {
+            InteractionResult result = listener.useOn(context);
+            if (result != null) return result;
+        }
+        return null;
+    });
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context, List<Component> tooltip, TooltipFlag flag) {

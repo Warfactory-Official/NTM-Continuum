@@ -84,7 +84,7 @@ public final class ModFluidItems {
     private static List<ItemStack> fluidContainerVariants(ItemFluidTank item) {
         List<ItemStack> list = new ArrayList<>();
         list.add(new ItemStack(item));
-        for (FluidType fluid : Fluids.getAll()) {
+        for (FluidType fluid : Fluids.getInNiceOrder()) { // 1.7 ItemFluidTank.getSubItems
             if (fluid == Fluids.NONE) continue;
             list.add(item.make(fluid, item.capacity));
         }

@@ -21,13 +21,21 @@ import com.hbm.util.ConveyorInventories;
 /** 1.7 {@code CranePartitioner.TileEntityCranePartitioner}: 45 queue slots and 45 declog slots for anything else. */
 public class TileEntityCranePartitioner extends TileEntityMachineBase implements WorldlyContainer {
 
+    /** 1.7's 45 queue and 45 declog slots. */
     public static final int SLOT_COUNT = 45;
-    private static final int[] ACCESS = ConveyorInventories.range(SLOT_COUNT * 2);
+    /**
+     * Queue ({@code INPUT_COUNT}) and declog ({@code OUTPUT_COUNT}) slot counts (ADDON-API-INVENTORY V-176), 1.7's 45 and
+     * 45 in plain HBM; NTM: Space sets hbm-space's 96 and 8. Set before any partitioner exists (an addon's
+     * {@code declare}); the inventory is saved by slot, so a world keeps what fits.
+     */
+    public static int inputCount = SLOT_COUNT, outputCount = SLOT_COUNT;
+    private final int inputs = inputCount;
+    private final int[] access = ConveyorInventories.range(inputCount + outputCount);
 
     public static final Comparator<ItemStack> STACK_SIZE = Comparator.comparingInt(ItemStack::getCount);
 
     public TileEntityCranePartitioner(BlockPos pos, BlockState state) {
-        super(ModConveyorBlockEntities.CRANE_PARTITIONER.get(), pos, state, SLOT_COUNT * 2);
+        super(ModConveyorBlockEntities.CRANE_PARTITIONER.get(), pos, state, inputCount + outputCount);
     }
 
     @Override
@@ -52,11 +60,16 @@ public class TileEntityCranePartitioner extends TileEntityMachineBase implements
         return exact > 0 ? exact : tagged;
     }
 
+    /** The queue slot count of this partitioner (its declog band starts here). */
+    public int inputCount() {
+        return inputs;
+    }
+
     public void serverTick() {
         if (level == null) return;
 
         List<Integer> queued = new ArrayList<>();
-        for (int i = 0; i < SLOT_COUNT; i++) if (!getItem(i).isEmpty()) queued.add(i);
+        for (int i = 0; i < inputs; i++) if (!getItem(i).isEmpty()) queued.add(i);
         queued.sort(Comparator.comparingInt(slot -> getItem(slot).getCount()));
 
         for (int slot : queued) {
@@ -79,28 +92,28 @@ public class TileEntityCranePartitioner extends TileEntityMachineBase implements
 
     @Override
     public int[] getAccessibleSlotsFromSide(int side) {
-        return ACCESS;
+        return access;
     }
 
     @Override
     public int[] getSlotsForFace(Direction side) {
-        return ACCESS;
+        return access;
     }
 
     /** 1.7 {@code isItemValidForSlot}: automation may only queue acidizer inputs; the belt path fills the declog band directly. */
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction side) {
-        return slot <= SLOT_COUNT - 1 && getAmount(stack) >= 1;
+        return slot <= inputs - 1 && getAmount(stack) >= 1;
     }
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        return slot >= SLOT_COUNT || getAmount(stack) >= 1;
+        return slot >= inputs || getAmount(stack) >= 1;
     }
 
     /** 1.7 {@code canExtractItem}: declog only. */
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return slot >= SLOT_COUNT;
+        return slot >= inputs;
     }
 }

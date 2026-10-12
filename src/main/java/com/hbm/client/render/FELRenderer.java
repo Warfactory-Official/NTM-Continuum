@@ -61,7 +61,7 @@ public class FELRenderer extends GemBER<TileEntityFEL, FELRenderState> {
         // The visible beam runs from the aperture (3 blocks in) to whatever it hit.
         state.length = be.distance - 3;
         state.beam = be.isOn && be.mode != EnumWavelengths.NULL && state.length > 0
-                && be.power > TileEntityFEL.powerReq * Math.pow(2, be.mode.ordinal());
+                && be.power > TileEntityFEL.powerReq * Math.pow(2, be.mode.strength());
         state.color = be.mode.renderedBeamColor == 0
                 // VISIBLE has no fixed colour: the original cycles the hue very slowly (÷2000) at low
                 // brightness (0.1), giving a dim shifting glow rather than a rainbow strobe.

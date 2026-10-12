@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The original electrolyser footprint and its six network ports. */
-public final class MachineElectrolyser extends BlockMultiblockMachine
+public class MachineElectrolyser extends BlockMultiblockMachine
         implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     /** The seven upper/side fill volumes from the 1.12.2 implementation. */
@@ -79,7 +79,22 @@ public final class MachineElectrolyser extends BlockMultiblockMachine
             visitor.cell(core.relative(facing, 5).relative(rot, side), MASK_SOUTH);
             visitor.cell(core.relative(facing, -5).relative(rot, side), MASK_NORTH);
         }
+        if (sidePorts) {
+            // hbm-space: the two side proxies and the four getConPos points beside them (local frame: facing SOUTH,
+            // rot = WEST): core - rot * 3 opens east, core + rot and the two end cells at rot + 1 open west
+            visitor.cell(core.relative(rot, -3), MASK_EAST);
+            visitor.cell(core.relative(rot, 1), MASK_WEST);
+            visitor.cell(core.relative(facing, 5).relative(rot, 1), MASK_WEST);
+            visitor.cell(core.relative(facing, -5).relative(rot, 1), MASK_WEST);
+        }
     }
+
+    /**
+     * hbm-space's {@code MachineElectrolyser}/{@code TileEntityElectrolyser}: two more proxies on the long sides
+     * ({@code makeExtra} at core - rot * 3 and core + rot) and four more connection points (ADDON-API-INVENTORY V-178).
+     * Off in plain HBM (1.7: the six end ports); NTM: Space turns it on before any electrolyser exists.
+     */
+    public static boolean sidePorts = false;
 
     /** 1.7 stamps {@code inventory().power().fluid()} on the six. */
     @Override
@@ -89,6 +104,10 @@ public final class MachineElectrolyser extends BlockMultiblockMachine
         for (int side = -1; side <= 1; side++) {
             visitor.passiveCell(core.relative(facing, 5).relative(rot, side), MASK_ALL, domains);
             visitor.passiveCell(core.relative(facing, -5).relative(rot, side), MASK_ALL, domains);
+        }
+        if (sidePorts) {
+            visitor.passiveCell(core.relative(rot, -3), MASK_ALL, domains);
+            visitor.passiveCell(core.relative(rot, 1), MASK_ALL, domains);
         }
     }
 

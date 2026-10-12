@@ -23,6 +23,19 @@ public class BlockGasRadon extends BlockGasBase {
         super(properties);
         this.dose = dose;
         this.dense = dense;
+        // 1.7 BlockGasRadon super(0.1F, 0.8F, 0.1F), BlockGasRadonDense super(0.1F, 0.5F, 0.1F)
+        if (dense) cloudColor(0.1F, 0.5F, 0.1F);
+        else cloudColor(0.1F, 0.8F, 0.1F);
+    }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        super.animateTick(state, level, pos, random);
+        // 1.7 BlockGasRadonDense.randomDisplayTick: one town aura every display tick
+        if (dense) {
+            level.addParticle(net.minecraft.core.particles.ParticleTypes.MYCELIUM, pos.getX() + random.nextFloat(),
+                    pos.getY() + random.nextFloat(), pos.getZ() + random.nextFloat(), 0.0D, 0.0D, 0.0D);
+        }
     }
 
     @Override

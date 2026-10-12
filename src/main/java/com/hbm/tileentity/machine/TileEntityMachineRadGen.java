@@ -48,9 +48,6 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase
 
     private record Fuel(int production, int duration, ItemStack output) {}
 
-    private static final Map<Item, Fuel> FUELS = Map.of(
-            ModItems.scrap_nuclear.get(), new Fuel(50, 5 * 60 * 20, ItemStack.EMPTY),
-            ModItems.gem_rad.get(), new Fuel(25_000, 30 * 60 * 20, new ItemStack(Items.DIAMOND)));
 
     public TileEntityMachineRadGen(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_RAD_GEN.get(), pos, state, 24);
@@ -82,7 +79,12 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase
                 return wasteFuel(50, 12 * 60 * 20, com.hbm.items.ModStorageDrumItems.nuclear_waste_long_depleted_tiny.get(), variant);
             return null;
         }
-        return FUELS.get(item);
+        // scrap and gem_rad (1.7 fuels.put) are the data map hbm:item/radgen_fuel (MachineDataMaps)
+        var fuel = com.hbm.api.data.MachineDataMaps.RADGEN_FUEL.get(item);
+        if (fuel == null) return null;
+        ItemStack output = fuel.output().map(id -> net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.parse(id))
+                .map(found -> new ItemStack(found, fuel.count())).orElse(ItemStack.EMPTY)).orElse(ItemStack.EMPTY);
+        return new Fuel(fuel.production(), fuel.duration(), output);
     }
 
     private static Fuel wasteFuel(int production, int duration, Item depleted, int variant) {

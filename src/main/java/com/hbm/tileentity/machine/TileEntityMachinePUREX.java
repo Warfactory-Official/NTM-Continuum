@@ -54,7 +54,7 @@ import java.util.List;
  * <p>Hot ZIRNOX waste is rejected: the recipes match on the absence of the hot-state component, so spent
  * fuel must cool in a waste drum first.
  */
-public final class TileEntityMachinePUREX extends TileEntityMachineBase
+public class TileEntityMachinePUREX extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IControlReceiver,
         IUpgradeInfoProvider, WorldlyContainer, IRORValueProvider {
 

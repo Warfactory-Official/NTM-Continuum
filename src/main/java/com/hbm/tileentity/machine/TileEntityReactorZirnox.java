@@ -195,22 +195,20 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
                 continue;
             }
             if (!(stack.getItem() instanceof ItemZirnoxRod rod)) continue;
-            ZirnoxFuel fuel = rod.fuel();
-            int operations = fuel.breeding ? 0 : 1;
+            com.hbm.api.data.ReactorDataMaps.ZirnoxFuel fuel = rod.stats();
+            int operations = fuel.breeding() ? 0 : 1;
             for (int neighbour : NEIGHBOURS[slot]) {
                 net.minecraft.world.item.ItemStack near = inventory.getStackInSlot(neighbour);
-                if (near.getItem() instanceof ItemZirnoxRod other && !other.fuel().breeding) operations++;
+                if (near.getItem() instanceof ItemZirnoxRod other && !other.stats().breeding()) operations++;
             }
             for (int i = 0; i < operations; i++) {
-                heat += fuel.heat;
+                heat += fuel.heat();
                 int life = rod.getLife(stack) + 1;
                 rod.setLife(stack, life);
-                if (life > fuel.maxLife) {
-                    inventory.setStackInSlot(slot, fuel == ZirnoxFuel.TH232
-                            ? new net.minecraft.world.item.ItemStack(ModZirnoxItems.active(ZirnoxFuel.THORIUM))
-                            : fuel == ZirnoxFuel.LITHIUM
-                            ? new net.minecraft.world.item.ItemStack(ModItems.rod_zirnox_tritium.get())
-                            : new net.minecraft.world.item.ItemStack(ModZirnoxItems.depleted(fuel)));
+                if (life > fuel.maxLife()) {
+                    // 1.7: thorium-232 breeds into a thorium rod, lithium into a tritium rod, every other rod depletes
+                    inventory.setStackInSlot(slot, new net.minecraft.world.item.ItemStack(
+                            com.hbm.api.data.ReactorDataMaps.itemOf(fuel.depletesInto())));
                     break;
                 }
             }

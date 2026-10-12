@@ -139,9 +139,10 @@ public class CranePartitioner extends CompatBlock implements TickingBlock, IConv
         ItemStack stack = entity.getItemStack().copy();
         ItemStack remainder;
         if (TileEntityCranePartitioner.getAmount(stack) > 0) {
-            remainder = InventoryUtil.tryAddItemToInventory(partitioner.inventory, 0, TileEntityCranePartitioner.SLOT_COUNT - 1, stack);
+            remainder = InventoryUtil.tryAddItemToInventory(partitioner.inventory, 0, partitioner.inputCount() - 1, stack);
         } else {
-            remainder = InventoryUtil.tryAddItemToInventory(partitioner.inventory, TileEntityCranePartitioner.SLOT_COUNT, TileEntityCranePartitioner.SLOT_COUNT * 2 - 1, stack);
+            remainder = InventoryUtil.tryAddItemToInventory(partitioner.inventory, partitioner.inputCount(),
+                    partitioner.inventory.getSlots() - 1, stack);
         }
         if (!remainder.isEmpty()) {
             level.addFreshEntity(new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, remainder.copy()));

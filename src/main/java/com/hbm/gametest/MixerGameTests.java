@@ -11,6 +11,7 @@ import com.hbm.items.machine.ItemFluidId;
 import com.hbm.tileentity.machine.TileEntityMachineMixer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.tags.TagKey;
@@ -106,16 +107,64 @@ public final class MixerGameTests {
     public static void recipeIndexNormalization(GameTestHelper helper) {
         TileEntityMachineMixer mixer = place(helper, new BlockPos(2, 1, 2));
         mixer.tanks[2].setTankType(Fluids.FRACKSOL);
-        mixer.recipeIndex = -1;
+        MixerRecipes.MixerRecipe[] fracksol = MixerRecipes.getOutput(Fluids.FRACKSOL);
+        mixer.recipeName = "mixer.no_such_row";
         mixer.canProcess();
-        helper.assertTrue(mixer.recipeIndex == 1,
-                "Mixer must normalize a negative selector to the last output recipe");
+        helper.assertTrue(mixer.recipeName.equals(fracksol[0].name) && mixer.recipeIndex() == 0,
+                "Mixer must fall back to the first row for a name the output has no row for, got " + mixer.recipeName);
+
+        CompoundTag toggle = new CompoundTag();
+        toggle.putBoolean("toggle", true);
+        mixer.receiveControl(toggle);
+        helper.assertTrue(mixer.recipeName.equals(fracksol[1].name) && mixer.recipeIndex() == 1,
+                "Mixer's button must select the next row by name, got " + mixer.recipeName);
+        mixer.receiveControl(toggle);
+        helper.assertTrue(mixer.recipeIndex() == 0, "Mixer's button must wrap to the first row");
 
         mixer.tanks[2].setTankType(Fluids.SALIENT);
-        mixer.recipeIndex = 99;
+        mixer.recipeName = fracksol[1].name;
         mixer.canProcess();
-        helper.assertTrue(mixer.recipeIndex == 0,
+        helper.assertTrue(mixer.recipeName.equals(MixerRecipes.getOutput(Fluids.SALIENT)[0].name),
                 "Mixer must normalize a stale selector when the output has one recipe");
+        helper.succeed();
+    }
+
+    /** The selection is the row's name in the save and in the sync, and an index-era save still reads (M2 R-93). */
+    public static void selectionRoundTrip(GameTestHelper helper) {
+        TileEntityMachineMixer mixer = place(helper, new BlockPos(2, 1, 2));
+        mixer.tanks[2].setTankType(Fluids.FRACKSOL);
+        CompoundTag toggle = new CompoundTag();
+        toggle.putBoolean("toggle", true);
+        mixer.receiveControl(toggle);
+        String second = MixerRecipes.getOutput(Fluids.FRACKSOL)[1].name;
+        helper.assertTrue(mixer.recipeName.equals(second), "Mixer's button did not select the second Fracksol row");
+
+        CompoundTag saved = dev.golem.core.registry.BlockEntities.save(mixer, helper.getLevel().registryAccess());
+        helper.assertTrue(net.minecraft.nbt.StringTag.valueOf(second).equals(saved.get("recipe")),
+                "Mixer must save the selected row by name, saved " + saved.get("recipe"));
+        var loaded = dev.golem.core.registry.BlockEntities.load(mixer.getBlockPos().east(), mixer.getBlockState(), saved,
+                helper.getLevel().registryAccess());
+        helper.assertTrue(loaded instanceof TileEntityMachineMixer restored && restored.recipeName.equals(second)
+                        && restored.recipeIndex() == 1,
+                "Mixer selection did not survive a save/load round trip");
+
+        var buffer = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
+        mixer.serialize(buffer);
+        TileEntityMachineMixer synced = new TileEntityMachineMixer(mixer.getBlockPos().north(), mixer.getBlockState());
+        synced.deserialize(buffer);
+        buffer.release();
+        helper.assertTrue(synced.recipeName.equals(second), "Mixer selection did not survive the block-entity sync");
+
+        // a save from the input-signature era ("<in1>+<in2>+<solid>#<occurrence>") still finds its row
+        CompoundTag legacy = saved.copy();
+        MixerRecipes.MixerRecipe row = MixerRecipes.getOutput(Fluids.FRACKSOL)[1];
+        legacy.putString("recipe", (row.input1 == null ? "-" : row.input1.type.getRegistryName()) + "+"
+                + (row.input2 == null ? "-" : row.input2.type.getRegistryName()) + "+" + (row.solidInput != null) + "#0");
+        var old = dev.golem.core.registry.BlockEntities.load(mixer.getBlockPos().west(), mixer.getBlockState(), legacy,
+                helper.getLevel().registryAccess());
+        helper.assertTrue(old instanceof TileEntityMachineMixer restored
+                        && restored.recipeName.equals(second),
+                "Mixer did not read an input-signature save: " + (old instanceof TileEntityMachineMixer r ? r.recipeName : old));
         helper.succeed();
     }
 

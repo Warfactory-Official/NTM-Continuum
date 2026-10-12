@@ -38,7 +38,7 @@ public final class BAT9000Renderer extends GiantTankRenderer<TileEntityMachineBA
 
     @Override
     protected void submitHazards(GiantTankRenderState state, PoseStack poseStack, SubmitSink collector) {
-        Hazard hazard = hazardFor(state.fluidType);
+        com.hbm.inventory.fluid.FluidHazard hazard = hazardFor(state.fluidType);
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(45F));
         for (int i = 0; i < 4; i++) {

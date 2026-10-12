@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.inventory.container.ContainerFurnaceBrick;
-import com.hbm.items.ModItems;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -21,13 +20,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.HashMap;
-import java.util.Map;
 
 /** The ordinary brick furnace, including its three accumulated ash streams. */
 public class TileEntityFurnaceBrick extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
@@ -35,16 +31,6 @@ public class TileEntityFurnaceBrick extends TileEntityMachineBase implements Men
     private static final int[] TOP = {0};
     private static final int[] BOTTOM = {2, 3};
     private static final int[] SIDES = {1};
-    private static final Map<Item, Integer> BURN_SPEED = new HashMap<>();
-
-    static {
-        BURN_SPEED.put(Items.CLAY_BALL, 4);
-        BURN_SPEED.put(ModItems.ball_fireclay.get(), 4);
-        BURN_SPEED.put(Items.NETHERRACK, 4);
-        BURN_SPEED.put(Items.COBBLESTONE, 2);
-        BURN_SPEED.put(Items.SAND, 2);
-    }
-
     public int burnTime;
     public int maxBurnTime;
     public int progress;
@@ -63,6 +49,10 @@ public class TileEntityFurnaceBrick extends TileEntityMachineBase implements Men
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFurnaceBrick furnace) {
         boolean wasBurning = furnace.burnTime > 0;
+        // hbm-space breatheAir: 1 mB of oxygen every 5 ticks while burning; without air no fuel is lit and nothing
+        // smelts, while the burn time still runs down (com.hbm.api.environment.Environment, always air on plain HBM)
+        boolean canOperate = com.hbm.api.environment.Environment.breatheAir(level, pos,
+                wasBurning && com.hbm.util.TickPhase.every(level, pos, 5L) ? 1 : 0);
         boolean dirty = false;
 
         if (furnace.burnTime > 0) furnace.burnTime--;
@@ -70,7 +60,7 @@ public class TileEntityFurnaceBrick extends TileEntityMachineBase implements Men
         ItemStack input = furnace.inventory.getStackInSlot(0);
         ItemStack fuel = furnace.inventory.getStackInSlot(1);
         if (furnace.burnTime != 0 || (!fuel.isEmpty() && !input.isEmpty())) {
-            if (furnace.burnTime == 0 && furnace.canSmelt(level)) {
+            if (canOperate && furnace.burnTime == 0 && furnace.canSmelt(level)) {
                 int burn = Compat.burnDuration(level, fuel);
                 if (burn > 0) {
                     furnace.maxBurnTime = furnace.burnTime = burn;
@@ -91,7 +81,7 @@ public class TileEntityFurnaceBrick extends TileEntityMachineBase implements Men
                 }
             }
 
-            if (furnace.burnTime > 0 && furnace.canSmelt(level)) {
+            if (canOperate && furnace.burnTime > 0 && furnace.canSmelt(level)) {
                 furnace.progress += furnace.getBurnSpeed();
                 if (furnace.progress >= 200) {
                     furnace.progress = 0;
@@ -116,7 +106,8 @@ public class TileEntityFurnaceBrick extends TileEntityMachineBase implements Men
     }
 
     public int getBurnSpeed() {
-        Integer speed = BURN_SPEED.get(inventory.getStackInSlot(0).getItem());
+        // per-input speed: data/hbm/value_maps/item/brick_furnace_speed.json (1.7 values: clay, fireclay, netherrack 4; cobble, sand 2)
+        Integer speed = com.hbm.api.data.HbmDataMaps.BRICK_FURNACE_SPEED.get(inventory.getStackInSlot(0).getItem());
         if (speed != null) return speed;
         return inventory.getStackInSlot(0).is(net.minecraft.tags.ItemTags.LOGS) ? 2 : 1;
     }

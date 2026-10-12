@@ -57,6 +57,10 @@ public final class ModPowerGenSounds {
 
     /** The event registered under {@code key} ({@link ItemCassette.TrackType#getSoundKey()}), or null. */
     public static @org.jspecify.annotations.Nullable SoundEvent byKey(@org.jspecify.annotations.Nullable String key) {
+        if (key != null && key.contains(":")) {
+            // another mod's track names its sound event by id
+            return net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.getOptional(dev.golem.core.Ids.parse(key)).orElse(null);
+        }
         RegistryObject<SoundEvent> event = key == null ? null : BY_KEY.get(key);
         return event == null ? null : event.get();
     }

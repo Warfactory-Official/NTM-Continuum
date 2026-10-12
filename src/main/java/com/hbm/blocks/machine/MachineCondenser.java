@@ -29,10 +29,22 @@ public class MachineCondenser extends dev.golem.core.world.CompatBlock implement
         if (!(level.getBlockEntity(pos) instanceof TileEntityCondenser condenser)) return null;
 
         List<String> text = new ArrayList<>();
+        vacuumWarning(level, condenser, text);
         text.add("§a-> §r" + tankLine(condenser.input));
         text.add("§c<- §r" + tankLine(condenser.output));
 
         return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
+    }
+
+    /**
+     * hbm-space's {@code printHook} line for a condenser or cooling tower that is boiling off in a vacuum
+     * ({@link TileEntityCondenser#evaporates}); never shown on plain HBM.
+     */
+    public static void vacuumWarning(Level level, TileEntityCondenser condenser, List<String> text) {
+        if (!condenser.evaporates(level, condenser.getBlockPos())) return;
+        text.add("&[" + (com.hbm.util.BobMathUtil.getBlink() ? 0xff0000 : 0xffff00) + "&]! ! ! "
+                + net.minecraft.network.chat.Component.translatableWithFallback("atmosphere.noVacuum",
+                        "REQUIRES ATMOSPHERE").getString() + " ! ! !");
     }
 
     private static String tankLine(FluidTankNTM tank) {

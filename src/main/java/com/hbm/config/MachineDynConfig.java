@@ -28,8 +28,17 @@ public final class MachineDynConfig {
 
     public static final Gson gson = new Gson();
 
-    public static final List<IConfigurableMachine> CONFIGURABLES = List.of(
-            com.hbm.tileentity.machine.TileEntityICFController.CONFIG);
+    /** Every machine in {@code hbmMachines.json}, in file order: HBM's, then any an addon {@link #register}s. */
+    public static final List<IConfigurableMachine> CONFIGURABLES = new java.util.concurrent.CopyOnWriteArrayList<>(List.of(
+            com.hbm.tileentity.machine.TileEntityICFController.CONFIG));
+
+    /**
+     * Adds an addon's machine to {@code hbmMachines.json} (1.7 {@code CustomMachineConfigJSON}-style dynamic config). Call
+     * before the config is read ({@code initialize}, at common setup), e.g. from the addon's {@code declare}.
+     */
+    public static void register(IConfigurableMachine machine) {
+        CONFIGURABLES.add(machine);
+    }
 
     private MachineDynConfig() {}
 

@@ -95,20 +95,19 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
             if (sawmill.warnCooldown > 0) sawmill.warnCooldown--;
 
             if (sawmill.heat >= 100) {
-                ItemStack result = sawmill.getOutput(level, sawmill.inventory.getStackInSlot(0));
+                ItemStack input = sawmill.inventory.getStackInSlot(0);
+                ItemStack result = sawmill.getOutput(level, input);
                 if (!result.isEmpty()) {
                     sawmill.progress += sawmill.heat / 10;
                     if (sawmill.progress >= PROCESSING_TIME) {
                         sawmill.progress = 0;
+                        // 1.7 sawdustChance: the sawing row's chance (0 for sawdust itself, 0.1 for sticks, else 0.5)
+                        float chance = SawmillRecipes.sawdustChance(input);
                         sawmill.inventory.setStackInSlot(0, ItemStack.EMPTY);
                         sawmill.inventory.setStackInSlot(1, result);
 
-                        if (!result.is(ModItems.powder_sawdust.get())) {
-                            int chance = result.is(net.minecraft.world.item.Items.STICK) ? 10 : 50;
-                            if (level.getRandom().nextInt(100) < chance) {
-                                sawmill.inventory.setStackInSlot(2,
-                                        new ItemStack(com.hbm.items.ModItems.powder_sawdust.get()));
-                            }
+                        if (chance > 0F && level.getRandom().nextFloat() < chance) {
+                            sawmill.inventory.setStackInSlot(2, new ItemStack(com.hbm.items.ModItems.powder_sawdust.get()));
                         }
                         sawmill.setChanged();
                     }
@@ -217,7 +216,7 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
                 || !inventory.getStackInSlot(2).isEmpty() || !SawmillRecipes.isValidInput(input)) {
             return false;
         }
-        if (input.is(ItemTags.LOGS)) {
+        if (SawmillRecipes.needsCraftingResult(input)) {
             // Clients do not have the server recipe access used by getOutput; the server rechecks it.
             return level != null && (level.isClientSide() || !getOutput(level, input).isEmpty());
         }

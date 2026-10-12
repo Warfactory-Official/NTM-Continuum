@@ -2,44 +2,80 @@ package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.items.ItemEnums.EnumTarType;
-import com.hbm.items.ModOilItems;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.tags.ItemTags;
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
- * Liquefactor recipes — item → {@link FluidStack} (stack size ignored, 1 consumed) — 1:1 port of the
- * 1.7 {@code LiquefactionRecipes.registerDefaults} (all 33 entries, History §19ej-3). Ore-dict inputs become
- * {@code c:} item tags; literal item/block inputs become their vanilla items. First-wins, resolved by exact
- * item then by tag, then 1.7's food fallback: any other food gives SALIENT at nutrition × saturation modifier × 20.
+ * Liquefactor recipes, item to fluid (one item consumed): the datapack table {@code hbm:liquefaction} in
+ * {@code data/hbm/recipe/liquefaction/}, {@code {"input": item id or #tag, "output": {type, amount}}}. Converted once from the
+ * Java table (1.7 {@code LiquefactionRecipes.registerDefaults}, all 33 entries; ore-dict inputs are {@code c:} item tags, the
+ * log key is {@code minecraft:logs}, 1.7 tallgrass:1 and :2 are short grass and fern, raw fish is {@code hbm:raw_fishes}).
+ *
+ * <p>Lookup as in 1.7: an exact item row first, then the first tag row (recipe-id order) that holds the item, then 1.7's
+ * food fallback, which stays code: any other food gives SALIENT at nutrition x saturation modifier x 20.
  */
 public final class LiquefactionRecipes {
 
     private LiquefactionRecipes() {}
 
-    private static final Map<Item, FluidStack> byItem = new HashMap<>();
-    private static final Map<TagKey<Item>, FluidStack> byTag = new java.util.LinkedHashMap<>();
-    private static boolean initialized = false;
+    public record Row(Either<TagKey<Item>, Item> input, FluidStack output) {}
+
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            GenericRecipeCodec.INGREDIENT.fieldOf("input").forGetter(Row::input),
+            GenericRecipeCodec.FLUID_STACK.fieldOf("output").forGetter(Row::output)
+    ).apply(i, Row::new));
+
+    public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("liquefaction", () -> CODEC);
+
+    private record Index(Map<Item, FluidStack> byItem, Map<TagKey<Item>, FluidStack> byTag) {}
+
+    private static volatile Index index;
+
+    static {
+        TABLE.changed.register(LiquefactionRecipes::reindex);
+    }
+
+    /** Declares the table at mod construction. */
+    public static void declare() {}
+
+    private static void reindex() {
+        Map<Item, FluidStack> byItem = new LinkedHashMap<>();
+        Map<TagKey<Item>, FluidStack> byTag = new LinkedHashMap<>();
+        for (Row row : TABLE.rows()) {
+            if (row.input().left().isPresent()) byTag.putIfAbsent(row.input().left().get(), row.output());
+            else byItem.putIfAbsent(row.input().right().orElseThrow(), row.output());
+        }
+        index = new Index(Collections.unmodifiableMap(byItem), Collections.unmodifiableMap(byTag));
+    }
+
+    private static Index index() {
+        Index current = index;
+        if (current == null) {
+            TABLE.rows();
+            if (index == null) reindex();
+            current = index;
+        }
+        return current;
+    }
 
     public static FluidStack getOutput(ItemStack stack) {
-        init();
         if (stack.isEmpty()) return null;
-        FluidStack direct = byItem.get(stack.getItem());
+        Index current = index();
+        FluidStack direct = current.byItem().get(stack.getItem());
         if (direct != null) return direct;
-        for (Map.Entry<TagKey<Item>, FluidStack> e : byTag.entrySet()) {
+        for (Map.Entry<TagKey<Item>, FluidStack> e : current.byTag().entrySet()) {
             if (stack.is(e.getKey())) return e.getValue();
         }
-        // 1.7 getOutput: any ItemFood gives SALIENT, food value × saturation modifier × 2 (constant) × 10 (quanta)
+        // 1.7 getOutput: any ItemFood gives SALIENT, food value x saturation modifier x 2 (constant) x 10 (quanta)
         net.minecraft.world.food.FoodProperties food = dev.golem.core.world.ItemStacks.foodProperties(stack);
         if (food != null) {
             int salient = (int) (dev.golem.core.world.ItemStacks.foodNutrition(food)
@@ -51,66 +87,6 @@ public final class LiquefactionRecipes {
     }
 
     /** Read-only views for JEI display. */
-    public static Map<Item, FluidStack> getItemRecipes() { init(); return Collections.unmodifiableMap(byItem); }
-    public static Map<TagKey<Item>, FluidStack> getTagRecipes() { init(); return Collections.unmodifiableMap(byTag); }
-
-    private static TagKey<Item> c(String path) {
-        return TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", path));
-    }
-
-    private static void item(Item in, int fill, com.hbm.inventory.fluid.FluidType type) {
-        if (in != null && in != Items.AIR) byItem.putIfAbsent(in, new FluidStack(type, fill));
-    }
-
-    private static void tag(String path, int fill, com.hbm.inventory.fluid.FluidType type) {
-        byTag.putIfAbsent(c(path), new FluidStack(type, fill));
-    }
-
-    private static synchronized void init() {
-        if (initialized) return;
-        initialized = true;
-
-        // oil processing
-        tag("gems/coal", 100, Fluids.COALOIL);
-        tag("dusts/coal", 100, Fluids.COALOIL);
-        tag("gems/lignite", 50, Fluids.COALOIL);
-        tag("dusts/lignite", 50, Fluids.COALOIL);
-        item(ModOilItems.tar(EnumTarType.CRUDE), 75, Fluids.BITUMEN);   // KEY_OIL_TAR
-        item(ModOilItems.tar(EnumTarType.CRACK), 100, Fluids.BITUMEN);  // KEY_CRACK_TAR
-        item(ModOilItems.tar(EnumTarType.COAL), 50, Fluids.BITUMEN);    // KEY_COAL_TAR
-        // KEY_LOG → the vanilla logs tag → MUG
-        byTag.putIfAbsent(ItemTags.LOGS, new FluidStack(Fluids.MUG, 100));
-        tag("dusts/sodium", 100, Fluids.SODIUM);
-        tag("ingots/lead", 100, Fluids.LEAD);
-        tag("dusts/lead", 100, Fluids.LEAD);
-        tag("storage_blocks/lead", 900, Fluids.LEAD);
-
-        // general utility
-        item(Items.NETHERRACK.asItem(), 250, Fluids.LAVA);
-        item(Items.COBBLESTONE.asItem(), 250, Fluids.LAVA);
-        item(Items.STONE.asItem(), 250, Fluids.LAVA);
-        item(Items.OBSIDIAN.asItem(), 500, Fluids.LAVA);
-        item(Items.SNOWBALL, 125, Fluids.WATER);
-        item(Items.SNOW_BLOCK.asItem(), 500, Fluids.WATER);
-        item(Items.ICE.asItem(), 1000, Fluids.WATER);
-        item(Items.PACKED_ICE.asItem(), 1000, Fluids.WATER);
-        item(Items.ENDER_PEARL, 100, Fluids.ENDERJUICE);
-        item(Items.SUGAR, 100, Fluids.ETHANOL);
-        item(com.hbm.blocks.ModTerrainBlocks.plant_flower(com.hbm.blocks.generic.BlockNTMFlower.Type.WEED).asItem(), 150, Fluids.ETHANOL);
-        item(com.hbm.blocks.ModTerrainBlocks.plant_flower(com.hbm.blocks.generic.BlockNTMFlower.Type.CD0).asItem(), 50, Fluids.ETHANOL);
-        item(byName("hbm", "glyphid_gland_empty"), 2000, Fluids.BIOGAS);
-        item(Items.SUNFLOWER, 100, Fluids.SUNFLOWEROIL);
-        item(Items.WHEAT_SEEDS, 50, Fluids.SEEDSLURRY);
-        item(Item.byBlock(net.minecraft.world.level.block.Blocks.SHORT_GRASS), 100, Fluids.SEEDSLURRY); // 1.7 tallgrass:1
-        item(Items.FERN, 100, Fluids.SEEDSLURRY);                                                         // 1.7 tallgrass:2
-        item(Items.VINE.asItem(), 100, Fluids.SEEDSLURRY);
-        // 1.7 Items.fish at any meta (the raw fish only) → FISHOIL; cooked fish falls through to the food fallback
-        byTag.putIfAbsent(MixerRecipes.RAW_FISHES, new FluidStack(Fluids.FISHOIL, 100));
-        item(byName("hbm", "biomass"), 125, Fluids.BIOGAS);
-        item(com.hbm.blocks.ModFallingBlocks.ore_oil_sand.get().asItem(), 100, Fluids.BITUMEN);
-    }
-
-    private static Item byName(String ns, String path) {
-        return BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.of(ns, path)).orElse(null);
-    }
+    public static Map<Item, FluidStack> getItemRecipes() { return index().byItem(); }
+    public static Map<TagKey<Item>, FluidStack> getTagRecipes() { return index().byTag(); }
 }

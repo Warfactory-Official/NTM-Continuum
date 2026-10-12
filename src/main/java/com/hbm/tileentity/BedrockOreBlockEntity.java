@@ -73,7 +73,9 @@ public class BedrockOreBlockEntity extends CompatBlockEntity {
 
         ItemStack output = resource.copy();
         if (output.is(ModOreBlocks.bedrock_ore_base.get())) {
-            ItemBedrockOreBase.setOreAmount(output, worldPosition.getX(), worldPosition.getZ(),
+            if (level != null) ItemBedrockOreBase.setOreAmount(level, output, worldPosition.getX(), worldPosition.getZ(),
+                    1D + drill.fortune * 0.25D);
+            else ItemBedrockOreBase.setOreAmount(output, worldPosition.getX(), worldPosition.getZ(),
                     1D + drill.fortune * 0.25D);
         }
         return new ExtractionResult(output, ExtractionFailure.NONE);
@@ -111,7 +113,7 @@ public class BedrockOreBlockEntity extends CompatBlockEntity {
         resource = input.read("resource", ItemStack.CODEC)
                 .filter(stack -> !stack.isEmpty())
                 .orElseGet(() -> new ItemStack(ModItems.powder_iron.get()));
-        FluidType fluid = Fluids.byRegistryName(input.getStringOr("fluid", "hbm:none"));
+        FluidType fluid = Fluids.byRegistryName(input.getStringOr("fluid", "minecraft:empty"));
         acidRequirement = fluid == Fluids.NONE ? null : new FluidStack(fluid, input.getIntOr("amount", 0));
         tier = input.getIntOr("tier", 0);
         color = input.getIntOr("color", 0);

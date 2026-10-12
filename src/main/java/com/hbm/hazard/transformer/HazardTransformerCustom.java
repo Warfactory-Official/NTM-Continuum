@@ -60,6 +60,10 @@ public final class HazardTransformerCustom implements IHazardTransformer {
 
     private HazardTransformerCustom() {}
 
+    static {
+        com.hbm.api.data.HazardDataMaps.HAZARD_MULTIPLIER.changed.register(HazardSystem::clearCaches);
+    }
+
     public static void onItem(final Item item, final BiConsumer<ItemStack, List<HazardEntry>> hook) {
         ITEM_HOOKS.computeIfAbsent(item, key -> new CopyOnWriteArrayList<>()).add(hook);
         HazardSystem.clearCaches();
@@ -132,7 +136,9 @@ public final class HazardTransformerCustom implements IHazardTransformer {
         if (stack.isEmpty()) return;
 
         final Item item = stack.getItem();
-        final Double multiplier = MULTIPLIERS.get(item);
+        Double multiplier = MULTIPLIERS.get(item);
+        // the data form (hbm:hazard_multiplier); a code multiplier set at runtime wins
+        if (multiplier == null) multiplier = com.hbm.api.data.HazardDataMaps.HAZARD_MULTIPLIER.get(item);
         if (multiplier != null && !entries.isEmpty() && !multiplier.isNaN() && multiplier != 1D) {
             final List<HazardEntry> scaled = new ArrayList<>(entries.size());
             for (final HazardEntry entry : entries) scaled.add(entry.clone(multiplier));

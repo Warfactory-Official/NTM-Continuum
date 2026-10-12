@@ -206,17 +206,25 @@ extra["mc_version"] = mcVersion
 extra["java_version"] = javaVersion.toString()
 // Forge 1.20.1's community tag namespace is `forge:`, not the `c:` this mod's data is authored in —
 // `c:` only became universal with NeoForge 1.21. The legacy resource pass republishes the convention
-// tags under this namespace and repoints recipes at them; see gradle/legacy-recipes.gradle.kts.
+// tags under this namespace and repoints recipes at them; see ../Golem-Core/gradle/mod/legacy-recipes.gradle.kts.
 // Forge nodes at 1.21+ (should any be added) would drop this line rather than change it.
 extra["convention_namespace"] = "forge"
-apply(from = rootProject.file("gradle/run-toolchain.gradle.kts"))
+// Golem Core's shared build layer; HBM's parameters for it (golem.build.*) are in gradle.properties.
+apply(from = rootProject.file("../Golem-Core/gradle/mod/run-toolchain.gradle.kts"))
 // Visual test harness launch capture (shared by every Golem Core mod); see harness.json and ../Golem-Core/harness/README.md.
 apply(from = rootProject.file("../Golem-Core/gradle/harness-spec.gradle.kts"))
-apply(from = rootProject.file("gradle/legacy-recipes.gradle.kts"))
-apply(from = rootProject.file("gradle/legacy-biomes.gradle.kts"))
-apply(from = rootProject.file("gradle/legacy-assets.gradle.kts"))
-apply(from = rootProject.file("gradle/dejson.gradle.kts"))
-apply(from = rootProject.file("gradle/mixin-validation.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-recipes.gradle.kts"))
+extra["loader"] = "forge"
+// Neutral "golem:conditions" in data JSON, rewritten to this loader's spelling; see the script.
+apply(from = rootProject.file("../Golem-Core/gradle/mod/recipe-conditions.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-biomes.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-assets.gradle.kts"))
+// HBM's own item-model resource checks; after legacy-assets, whose parentModelOf export they read.
+apply(from = rootProject.file("gradle/asset-checks.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/dejson.gradle.kts"))
+// HBM's machine recipe tables, generated from src/recipes on 26.1 NeoForge (build.neoforge.gradle.kts); see the script.
+apply(from = rootProject.file("../Golem-Core/gradle/mod/generated-data.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/mixin-validation.gradle.kts"))
 
 dependencies { compileOnly("org.jspecify:jspecify:1.0.0") }
 

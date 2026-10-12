@@ -82,7 +82,8 @@ public final class NTMSkyboxes implements Skyboxes.Skybox, Skies.Modifier {
 
         // world.provider.dimensionId == 0 / WorldProviderSurface: the overworld gets the chainloader, and the impact
         // renderer underneath it while Tom's dust or fire is above 0 (no 1.7 alternation, no 1.7 persistence).
-        if (world.dimension() == Level.OVERWORLD) {
+        // An addon that draws the overworld's sky itself (com.hbm.api.environment.SkyOwnership) gets none of HBM's layers.
+        if (world.dimension() == Level.OVERWORLD && !com.hbm.api.environment.SkyOwnership.claimed(world)) {
             boolean impact = ImpactWorldHandler.getDustForClient(world) > 0 || ImpactWorldHandler.getFireForClient(world) > 0;
             slot = impact ? Slot.CHAINLOADER_IMPACT : Slot.CHAINLOADER;
         } else {

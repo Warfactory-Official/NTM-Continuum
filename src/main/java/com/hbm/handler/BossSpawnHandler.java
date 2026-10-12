@@ -103,7 +103,9 @@ public final class BossSpawnHandler {
     /** 1.7 {@code rollTheDice(world)}. */
     public static void rollTheDice(ServerLevel level) {
         long time = level.getGameTime();
-        boolean surface = level.dimension() == Level.OVERWORLD; // 1.7 provider.isSurfaceWorld(): the overworld
+        // 1.7 provider.isSurfaceWorld(): the overworld, unless an addon names more surface worlds (hbm-space's planets
+        // are WorldProviderSurface subclasses) through com.hbm.api.environment.Environment.SURFACE
+        boolean surface = com.hbm.api.environment.Environment.isSurface(level);
         RandomSource rand = level.getRandom();
 
         /*
@@ -269,7 +271,8 @@ public final class BossSpawnHandler {
             List<ServerPlayer> players = level.players();
             if (!players.isEmpty()) {
                 ServerPlayer p = players.get(meteorRand.nextInt(players.size()));
-                if (p != null && p.level().dimension() == Level.OVERWORLD) {
+                // 1.7 p.dimension == 0; hbm-space: p.worldObj.provider instanceof WorldProviderSurface
+                if (p != null && com.hbm.api.environment.Environment.isSurface(p.level())) {
                     strike(level, p);
                 }
             }

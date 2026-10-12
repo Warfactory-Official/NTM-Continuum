@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 
-public final class TileEntityRadioTorchReceiver extends TileEntityRadioTorchBase {
+public class TileEntityRadioTorchReceiver extends TileEntityRadioTorchBase {
     public TileEntityRadioTorchReceiver(BlockPos pos, BlockState state) {
         super(ModRadioBlockEntities.RADIO_TORCH_RECEIVER.get(), pos, state);
     }

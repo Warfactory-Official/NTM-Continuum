@@ -63,7 +63,7 @@ public class TileEntityDiFurnace extends TileEntityMachinePolluting
 
         furnace.sendSmoke(level, pos, extension);
 
-        boolean dirty = furnace.loadFuel();
+        boolean dirty = furnace.loadFuel(level, pos);
         boolean canProcess = furnace.canProcess();
         if (canProcess) {
             furnace.fuel--;
@@ -92,9 +92,15 @@ public class TileEntityDiFurnace extends TileEntityMachinePolluting
         furnace.networkPackNT();
     }
 
-    private boolean loadFuel() {
+    private boolean loadFuel(Level level, BlockPos pos) {
         ItemStack fuel = inventory.getStackInSlot(2);
         int fuelPower = DiFurnaceRecipes.getItemPower(fuel);
+        // hbm-space's breatheAir(0): a fuel that burns needs air where the furnace stands (a check, nothing consumed);
+        // lava does not burn. Always true on Earth, so plain HBM is unchanged (com.hbm.api.environment.Environment).
+        if (fuelPower > 0 && !fuel.is(net.minecraft.world.item.Items.LAVA_BUCKET)
+                && !com.hbm.api.environment.Environment.breatheAir(level, pos, 0)) {
+            fuelPower = 0;
+        }
         if (fuel.isEmpty() || fuelPower <= 0 || this.fuel > MAX_FUEL - fuelPower) return false;
 
         // Match the working press/firebox path: capture the template before shrinking the live stack.

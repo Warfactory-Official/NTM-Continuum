@@ -28,7 +28,7 @@ import com.hbm.tileentity.ModNuclearMiscBlockEntities;
  * The reactor remote control block: a sensor in slot 0 links it to a research reactor, and the heat-to-level
  * function (linear / quadratic / logarithmic between the two set points) drives that reactor's target level.
  */
-public final class TileEntityReactorControl extends TileEntityMachineBase implements MenuProvider, IControlReceiver {
+public class TileEntityReactorControl extends TileEntityMachineBase implements MenuProvider, IControlReceiver {
 
     public TileEntityReactorResearch reactor;
 

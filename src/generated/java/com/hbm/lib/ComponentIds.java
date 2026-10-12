@@ -29,6 +29,7 @@ public final class ComponentIds {
     public static final String battery_power = "hbm:battery_power";
     public static final String battery_redd_muffled = "hbm:battery_redd_muffled";
     public static final String battery_redd_power = "hbm:battery_redd_power";
+    public static final String bedrock_ore_composition = "hbm:bedrock_ore_composition";
     public static final String bedrock_ore_density = "hbm:bedrock_ore_density";
     public static final String blueprint_pool = "hbm:blueprint_pool";
     public static final String book_lore = "hbm:book_lore";
@@ -110,5 +111,6 @@ public final class ComponentIds {
     public static final String unstable_timer = "hbm:unstable_timer";
     public static final String watz_yield = "hbm:watz_yield";
     public static final String wire_start = "hbm:wire_start";
+    public static final String wrong_water_table = "hbm:wrong_water_table";
     public static final String zirnox_life = "hbm:zirnox_life";
 }

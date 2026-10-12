@@ -46,6 +46,23 @@ public final class Mats {
     public static final Map<Integer, NTMMaterial> matById = new LinkedHashMap<>();
 
     private static NTMMaterial mat(int id, String name) {
+        return register(id, name);
+    }
+
+    /**
+     * Adds a material to the registry, as 1.7's {@code Mats.mat}: the path an addon's materials take (NTM: Space's
+     * space metals). {@code name} is the saved name ({@code Mats.write/read}) and must be unique; {@code id} is the
+     * runtime number packets carry ({@link #matById}) and must be unique too, but is never saved. Call it from the
+     * addon's {@code declare()}, which runs after HBM's (so after {@code Mats.init}); set colours, shapes and smelting on
+     * the returned material.
+     *
+     * @throws IllegalArgumentException if the name or the id is taken
+     */
+    public static synchronized NTMMaterial register(int id, String name) {
+        if (matByName.containsKey(name) || matById.containsKey(id)) {
+            throw new IllegalArgumentException("Material " + name + " (" + id + ") collides with "
+                    + (matByName.containsKey(name) ? matByName.get(name).name : matById.get(id).name));
+        }
         NTMMaterial m = new NTMMaterial(id, name);
         orderedList.add(m);
         matByName.put(name, m);
@@ -484,13 +501,6 @@ public final class Mats {
     // The crucible item→material lookup (old Mats.getMaterialsFromItem / MatDistribution, on tags)
     // ------------------------------------------------------------------------------------------------
 
-    /** Explicit per-item entries (the old {@code MatDistribution.registerEntry}), lazily initialised —
-     * item registry objects can't be resolved at class-init time. */
-    private static Map<Item, List<MaterialStack>> materialEntries = null;
-    /** Explicit per-tag entries (the old {@code MatDistribution.registerOre}), keyed by full tag id
-     * (e.g. {@code c:ores/iron}). Checked before the shape-prefix scan, like the old ore entries. */
-    private static Map<String, List<MaterialStack>> materialTagEntries = null;
-
     /** {@code c:} tag plural → shape (skipping quantity-0 shapes like ORE). */
     private static final Map<String, MaterialShapes> shapeByPlural = new LinkedHashMap<>();
     static {
@@ -499,109 +509,28 @@ public final class Mats {
         }
     }
 
-    private static void entry(Map<Item, List<MaterialStack>> map, Item item, Object... matDef) {
-        List<MaterialStack> stacks = new ArrayList<>();
-        for (int i = 0; i < matDef.length; i += 2) stacks.add(new MaterialStack((NTMMaterial) matDef[i], (Integer) matDef[i + 1]));
-        map.put(item, stacks);
-    }
-
-    private static void tagEntry(Map<String, List<MaterialStack>> map, String tagId, Object... matDef) {
-        List<MaterialStack> stacks = new ArrayList<>();
-        for (int i = 0; i < matDef.length; i += 2) stacks.add(new MaterialStack((NTMMaterial) matDef[i], (Integer) matDef[i + 1]));
-        map.put(tagId, stacks);
-    }
-
-    /** The old {@code MatDistribution.registerDefaults}, restricted to ported content. Amounts in quanta
-     * (INGOT = 72). Ores yield double metal + a bit of stone, castables melt back to their cost. */
-    private static synchronized void ensureSmeltingEntries() {
-        if (materialEntries != null) return;
-        Map<Item, List<MaterialStack>> items = new LinkedHashMap<>();
-        Map<String, List<MaterialStack>> tags = new LinkedHashMap<>();
-
-        int n = NUGGET.quantity, i = INGOT.quantity, b = BLOCK.quantity, quart = BLOCK.quantity / 4; // 1.7 QUART = 162
-
-        // vanilla crap
-        tagEntry(tags, "c:stones", MAT_STONE, b);
-        tagEntry(tags, "c:cobblestones", MAT_STONE, b);
-        entry(items, net.minecraft.world.item.Items.OBSIDIAN, MAT_OBSIDIAN, b);
-        entry(items, net.minecraft.world.item.Items.RAIL, MAT_IRON, i * 6 / 16);
-        entry(items, net.minecraft.world.item.Items.POWERED_RAIL, MAT_GOLD, i, MAT_REDSTONE, DUST.quantity / 6);
-        entry(items, net.minecraft.world.item.Items.DETECTOR_RAIL, MAT_IRON, i, MAT_REDSTONE, DUST.quantity / 6);
-        entry(items, net.minecraft.world.item.Items.MINECART, MAT_IRON, i * 5);
-        entry(items, net.minecraft.world.item.Items.CHARCOAL, MAT_CARBON, n * 3);
-
-        // powder_flux intentionally remains explicit: old MatDistribution added it alongside its tag entry.
-        entry(items, com.hbm.items.ModItems.powder_flux.get(), MAT_FLUX, DUST.quantity);
-
-        // Flat stamps and flattened metadata families from MatDistribution.registerDefaults.
-        entry(items, ModStampItems.stamp_stone_flat.get(), MAT_STONE, i * 3);
-        entry(items, ModStampItems.stamp_iron_flat.get(), MAT_IRON, i * 3);
-        entry(items, ModStampItems.stamp_steel_flat.get(), MAT_STEEL, i * 3);
-        entry(items, ModStampItems.stamp_titanium_flat.get(), MAT_TITANIUM, i * 3);
-        entry(items, ModStampItems.stamp_obsidian_flat.get(), MAT_OBSIDIAN, i * 3);
-        entry(items, ModIntermediateItems.chunk(EnumChunkType.CRYOLITE),
-                MAT_ALUMINIUM, i, MAT_SODIUM, i);
-        entry(items, ModOreBlocks.stone_resource_limestone.get().asItem(), MAT_FLUX, DUST.quantity * 10);
-        entry(items, ModIngredientItems.ash(EnumAshType.WOOD), MAT_CARBON, n);
-        entry(items, ModIngredientItems.ash(EnumAshType.COAL), MAT_CARBON, n * 2);
-        entry(items, ModIngredientItems.ash(EnumAshType.MISC), MAT_CARBON, n);
-
-        // castables (melt back to their mold cost, per the old MatDistribution)
-        entry(items, com.hbm.items.ModItems.blade_titanium.get(), MAT_TITANIUM, i * 3);
-        entry(items, com.hbm.items.ModItems.blade_tungsten.get(), MAT_TUNGSTEN, i * 3);
-        entry(items, com.hbm.items.ModMachineItems.blades_steel.get(), MAT_STEEL, i * 4);
-        entry(items, com.hbm.items.ModMachineItems.blades_titanium.get(), MAT_TITANIUM, i * 4);
-        entry(items, com.hbm.items.ModItems.pipes_steel.get(), MAT_STEEL, b * 3);
-        entry(items, com.hbm.items.ModCasingItems.casing(com.hbm.items.ItemEnums.EnumCasingType.SMALL),
-                MAT_GUNMETAL, PLATE.quantity / 4);
-        entry(items, com.hbm.items.ModCasingItems.casing(com.hbm.items.ItemEnums.EnumCasingType.SMALL_STEEL),
-                MAT_WEAPONSTEEL, PLATE.quantity / 4);
-        entry(items, com.hbm.items.ModCasingItems.casing(com.hbm.items.ItemEnums.EnumCasingType.LARGE),
-                MAT_GUNMETAL, PLATE.quantity / 2);
-        entry(items, com.hbm.items.ModCasingItems.casing(com.hbm.items.ItemEnums.EnumCasingType.LARGE_STEEL),
-                MAT_WEAPONSTEEL, PLATE.quantity / 2);
-
-        // ores (double yield + trace byproducts + molten stone, per the old MatDistribution)
-        tagEntry(tags, "c:ores/iron", MAT_IRON, i * 2, MAT_TITANIUM, n * 3, MAT_STONE, quart);
-        tagEntry(tags, "c:ores/titanium", MAT_TITANIUM, i * 2, MAT_IRON, n * 3, MAT_STONE, quart);
-        tagEntry(tags, "c:ores/tungsten", MAT_TUNGSTEN, i * 2, MAT_STONE, quart);
-        tagEntry(tags, "c:ores/aluminium", MAT_ALUMINIUM, i * 2, MAT_SODIUM, n * 3, MAT_STONE, quart);
-        tagEntry(tags, "c:ores/coal", MAT_CARBON, GEM.quantity * 3, MAT_STONE, quart);
-        tagEntry(tags, "c:ores/gold", MAT_GOLD, i * 2, MAT_LEAD, n * 3, MAT_STONE, quart);
-        tagEntry(tags, "c:ores/uranium", MAT_URANIUM, i * 2, MAT_LEAD, n * 3, MAT_STONE, quart);
-        tagEntry(tags, "c:ores/thorium", MAT_THORIUM, i * 2, MAT_URANIUM, n * 3, MAT_STONE, quart);
-        tagEntry(tags, "c:ores/copper", MAT_COPPER, i * 2, MAT_STONE, quart);
-        tagEntry(tags, "c:ores/lead", MAT_LEAD, i * 2, MAT_GOLD, n, MAT_STONE, quart);
-        tagEntry(tags, "c:ores/beryllium", MAT_BERYLLIUM, i * 2, MAT_STONE, quart);
-        tagEntry(tags, "c:ores/cobalt", MAT_COBALT, i, MAT_STONE, quart);
-        tagEntry(tags, "c:ores/redstone", MAT_REDSTONE, i * 4, MAT_STONE, quart);
-        tagEntry(tags, "c:ores/hematite", MAT_HEMATITE, i);
-        tagEntry(tags, "c:ores/malachite", MAT_MALACHITE, i * 6);
-
-        materialTagEntries = tags;
-        materialEntries = items;
-    }
-
     /**
      * Resolves an item to the raw materials it consists of (old {@code Mats.getMaterialsFromItem}).
-     * Ignores stack size. Order of precedence, matching the old ore-dict scan: explicit tag entries,
-     * then the {@code c:<plural>/<material>} shape scan (first match wins), then explicit item entries,
+     * Ignores stack size. Order of precedence, matching the old ore-dict scan: tag rows of
+     * {@link MaterialDistribution}, then the {@code c:<plural>/<material>} shape scan (first match wins), then its item rows,
      * then scraps/autogen items by their own data.
      */
     public static List<MaterialStack> getMaterialsFromItem(ItemStack stack) {
-        ensureSmeltingEntries();
+        Map<String, List<MaterialStack>> materialTagEntries = MaterialDistribution.tags();
+        Map<Item, List<MaterialStack>> materialEntries = MaterialDistribution.items();
         List<MaterialStack> list = new ArrayList<>();
 
         outer:
         for (var tag : stack.getItem().builtInRegistryHolder().tags().toList()) {
             Identifier id = tag.location();
-            if (!"c".equals(id.getNamespace())) continue;
-
+            // a material_distribution tag row (1.7 registerOre) replaces the shape scan; HBM's own rows are all c: tags,
+            // a datapack may name any tag
             List<MaterialStack> tagEntries = materialTagEntries.get(id.toString());
             if (tagEntries != null) {
                 for (MaterialStack ms : tagEntries) list.add(ms.copy());
                 break;
             }
+            if (!"c".equals(id.getNamespace())) continue;
 
             String path = id.getPath();
             int slash = path.indexOf('/');

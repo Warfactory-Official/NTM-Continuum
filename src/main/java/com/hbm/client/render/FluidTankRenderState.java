@@ -9,4 +9,6 @@ public class FluidTankRenderState extends CompatRenderState {
     public Identifier bodyTexture;
     /** 1.7 {@code hasExploded}: draw {@code fluidtank_exploded.obj} instead. */
     public boolean exploded;
+    /** The stored fluid's NFPA diamond; null when the tank holds nothing (1.7 draws none then). */
+    public com.hbm.inventory.fluid.FluidHazard hazard;
 }

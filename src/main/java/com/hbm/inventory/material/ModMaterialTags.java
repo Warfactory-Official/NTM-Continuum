@@ -76,6 +76,15 @@ public final class ModMaterialTags {
         tag("dusts/lanthanium_tiny", "hbm:powder_lanthanium_tiny");
         tag("dusts/meteorite_tiny", "hbm:powder_meteorite_tiny");
         tag("dusts/steel_tiny", "hbm:powder_steel_tiny");
+        // 1.7 P_WHITE.ingot() "ingotWhitePhosphorus": only ingot_phosphorus (OreDictManager P_WHITE.ingot(ingot_phosphorus))
+        tag("ingots/white_phosphorus", "hbm:ingot_phosphorus");
+        // 1.7 KEY_SAND, Forge's "sand" ore name: sand and red sand (Blocks.sand at any meta), and other mods' sands. The
+        // convention tag on 26.1/1.21; declared here so it has these members on every node (vanilla's minecraft:sand also
+        // holds suspicious sand since 1.20, which 1.7's "sand" did not)
+        tag("sands", "minecraft:sand", "minecraft:red_sand");
+        // 1.7 KEY_SLIME, Forge's "slimeball" ore name: the vanilla slime ball, and other mods' slime balls. The convention
+        // tag on 26.1/1.21; declared here so it has this member on every node (1.20.1 Forge spells it forge:slimeballs)
+        tag("slime_balls", "minecraft:slime_ball");
         tag("dyes/black", "hbm:chemical_dye_black", "hbm:crayon_black", "hbm:powder_ash_coal",
                 "hbm:powder_ash_soot", "hbm:powder_coal", "hbm:oil_tar_crack", "hbm:oil_tar_crude",
                 "minecraft:black_dye");
@@ -124,6 +133,14 @@ public final class ModMaterialTags {
         tag("storage_blocks/cdalloy", "hbm:block_cdalloy");
         tag("storage_blocks/lithium", "hbm:block_lithium");
         tag("storage_blocks/tcalloy", "hbm:block_tcalloy");
+        // 1.7 ore names a machine table takes, stated with exactly 1.7's members so every node matches the same items
+        // (1.20.1 Forge spells the loader's own tags forge:): KEY_BRICK "ingotBrick" (Forge's vanilla entry),
+        // NETHERQUARTZ.ore() "oreNetherQuartz", QUARTZ.block() "blockQuartz" (Forge's vanilla entry, meta 0) and
+        // FIBER.block() "blockFiberglass"
+        tag("ingots/brick", "minecraft:brick");
+        tag("ores/quartz", "minecraft:nether_quartz_ore");
+        tag("storage_blocks/quartz", "minecraft:quartz_block");
+        tag("storage_blocks/fiberglass", "hbm:block_fiberglass");
         tag("tars", "hbm:oil_tar_crude", "hbm:oil_tar_coal", "hbm:oil_tar_crack", "hbm:oil_tar_wood");
     }
 }

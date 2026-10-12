@@ -39,12 +39,16 @@ public class ItemOilDetector extends CompatItem {
         tooltip.add(Component.translatable("item.hbm.oil_detector.desc2"));
     }
 
+    /** 1.7: {@code ore_oil}; any deposit a plain drill reaches ({@code hbm:fluid_deposit}, not fracking-only). */
     public static boolean isOil(Level level, BlockPos pos) {
-        return level.getBlockState(pos).getBlock() == ModOilBlocks.ore_oil.get();
+        var deposit = com.hbm.api.data.DepositDataMaps.deposit(level.getBlockState(pos));
+        return deposit != null && !deposit.frackingOnly();
     }
 
+    /** 1.7: {@code ore_bedrock_oil}; any fracking-only deposit. */
     public static boolean isBedrockOil(Level level, BlockPos pos) {
-        return level.getBlockState(pos).getBlock() == ModBlocks.ore_bedrock_oil.get();
+        var deposit = com.hbm.api.data.DepositDataMaps.deposit(level.getBlockState(pos));
+        return deposit != null && deposit.frackingOnly();
     }
 
     @Override

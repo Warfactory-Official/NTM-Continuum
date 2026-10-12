@@ -51,6 +51,16 @@ public class AnvilSmithingRecipe {
         return recipe.matchesRecipe(input, false);
     }
 
+    /** The left slot's ingredient. */
+    public AStack leftInput() {
+        return left;
+    }
+
+    /** The right slot's ingredient. */
+    public AStack rightInput() {
+        return right;
+    }
+
     public List<ItemStack> getLeft() {
         return left.getDisplayStacks();
     }

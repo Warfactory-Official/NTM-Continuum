@@ -11,6 +11,7 @@ import static dev.golem.core.dejson.Crafting.componentShapeless;
 import static dev.golem.core.dejson.Crafting.fluid;
 import static dev.golem.core.dejson.Crafting.item;
 import static dev.golem.core.dejson.Crafting.key;
+import static dev.golem.core.dejson.Crafting.requires;
 import static dev.golem.core.dejson.Crafting.rows;
 import static dev.golem.core.dejson.Crafting.shaped;
 import static dev.golem.core.dejson.Crafting.stack;
@@ -101,11 +102,11 @@ public final class ModContainerRecipes {
                 fluid("HEATINGOIL", 1_000), fluid("UNSATURATEDS", 1_000), item(ItemIds.canister_empty),
                 item(ItemIds.canister_empty), chemistrySet());
         // 1.7 infinite water barrels (gated on !enable528, which defaults to off)
-        componentShaped(NS, "inf_water", stack(ItemIds.inf_water), rows("222", "131", "222"),
+        requires(componentShaped(NS, "inf_water", stack(ItemIds.inf_water), rows("222", "131", "222"),
                 key("1", fluid("WATER", 1_000)), key("2", tag(TagIds.plates_aluminium)),
-                key("3", tag(TagIds.gems_diamond)));
-        shaped(NS, "inf_water_mk2", ItemIds.inf_water_mk2, rows("BPB", "PTP", "BPB"),
-                "B", ItemIds.inf_water, "P", TagIds.pipes_steel, "T", TagIds.shells_steel);
+                key("3", tag(TagIds.gems_diamond))), "!enable_528");
+        requires(shaped(NS, "inf_water_mk2", ItemIds.inf_water_mk2, rows("BPB", "PTP", "BPB"),
+                "B", ItemIds.inf_water, "P", TagIds.pipes_steel, "T", TagIds.shells_steel), "!enable_528");
     }
 
     private static void tools() {
@@ -122,13 +123,13 @@ public final class ModContainerRecipes {
     private static void powders() {
         // PowderRecipes
         componentShapeless(NS, "ball_dynamite", stack(ItemIds.ball_dynamite, 2),
-                tag(TagIds.dusts_niter), item("minecraft:sugar"), item("minecraft:sand"), chemistrySet());
+                tag(TagIds.dusts_niter), item("minecraft:sugar"), tag(TagIds.sands), chemistrySet()); // 1.7 bare Blocks.sand: any meta
         componentShapeless(NS, "ball_tnt", stack(ItemIds.ball_tnt, 4),
                 fluid("AROMATICS", 1_000), tag(TagIds.dusts_niter), chemistrySet());
         componentShapeless(NS, "ingot_c4", stack(ItemIds.ingot_c4, 4),
                 fluid("UNSATURATEDS", 1_000), tag(TagIds.dusts_niter), chemistrySet());
         componentShapeless(NS, "clay_ball_from_dust", stack("minecraft:clay_ball", 4),
-                tag(TagIds.minecraft_sand), item(ItemIds.dust), item(ItemIds.dust), fluid("WATER", 1_000));
+                tag(TagIds.sands), item(ItemIds.dust), item(ItemIds.dust), fluid("WATER", 1_000));
         componentShapeless(NS, "powder_bakelite", stack(ItemIds.powder_bakelite, 2),
                 fluid("AROMATICS", 1_000), fluid("PETROLEUM", 1_000), chemistrySet());
         // CraftingManager: four bone meal (dye meta 15) and a sulfuric acid container

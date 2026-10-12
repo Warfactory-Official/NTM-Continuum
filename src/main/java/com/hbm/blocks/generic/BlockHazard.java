@@ -13,14 +13,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * A radioactive / otherwise hazardous block, ported from 1.12.2's {@code BlockHazard}. It does three
- * independent things (any subset):
+ * A radioactive / otherwise hazardous block, 1.7's {@code BlockHazard}. It does (any subset):
  * <ul>
- * <li><b>{@code radIn}/{@code radMax}</b> — pumps chunk radiation into the engine via scheduled ticks
- *     (mirrors the old {@code updateTick → ChunkRadiationManager.incrementRad}, tick delay {@code 60 +
- *     rand(500)}); {@code addRadiation(rad)} sets {@code radIn = rad·0.1, radMax = rad}.</li>
- * <li><b>{@code rad3d}</b> — an area contamination pulse every second ({@code ContaminationUtil.radiate},
- *     range 32) for things like corium.</li>
+ * <li><b>{@code radIn}</b> — 1.7 {@code updateTick}: {@code ChunkRadiationManager.incrementRad(rad)} every 20 ticks
+ *     ({@code tickRate} 20, re-scheduled from {@code onBlockAdded}), uncapped, with {@code rad} the block item's
+ *     RADIATION hazard × 0.1; {@code addRadiation(rad)} sets {@code radIn = rad·0.1}.</li>
+ * <li><b>{@code rad3d}</b> — an area contamination pulse every second ({@code ContaminationUtil.radiate}, range 32): not
+ *     1.7 (its blocks have none); kept for an addon's {@code radiation_emission} {@code area}.</li>
  * <li><b>contact</b> — applies the block's item hazards to any entity standing in/on it
  *     ({@code HazardSystem.applyHazards}).</li>
  * </ul>
@@ -55,51 +54,55 @@ public class BlockHazard extends dev.golem.core.world.CompatBlock {
         return this;
     }
 
-    public float getRadIn() { return radIn; }
-    public float getRadMax() { return radMax; }
-
-    private boolean emitsRadiation() {
-        return radIn > 0 || rad3d > 0;
+    /**
+     * The emission from the {@code hbm:radiation_emission} block data map when it names this block, read at use time so
+     * a datapack reload changes it (1.7 copied the block item's RADIATION hazard into the block once, at start-up);
+     * else what {@link #addRadiation}/{@link #addRad3d} set in code.
+     */
+    private com.hbm.api.data.HazardDataMaps.@org.jspecify.annotations.Nullable Emission emission() {
+        return com.hbm.api.data.HazardDataMaps.RADIATION_EMISSION.get(this);
     }
 
-    /** The old {@code tickRate}: 20t for rad3d pulses, else the 3–28 s initial delay. */
+    public float getRadIn() { var e = emission(); return e != null ? e.radiation() * 0.1F : radIn; }
+    public float getRadMax() { var e = emission(); return e != null ? e.radiation() : radMax; }
+    public float getRad3d() { var e = emission(); return e != null ? e.area() : rad3d; }
+
+    private boolean emitsRadiation() {
+        return getRadIn() > 0 || getRad3d() > 0;
+    }
+
+    /** 1.7 {@code tickRate}: 20 ticks while the block emits. */
     private int tickDelay(RandomSource random) {
-        if (rad3d > 0) return 20;
-        if (radIn > 0) return 60 + random.nextInt(500);
         return 20;
     }
 
     @Override
     public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
-        // Old onBlockAdded: ONE initial scheduled tick; the STEADY cadence for radIn-only blocks is vanilla
-        // random ticks (setTickRandomly ≙ Properties.randomTicks()), NOT self-re-scheduling.
+        // 1.7 onBlockAdded: the first scheduled tick; updateTick then re-schedules itself every 20 ticks
         if (emitsRadiation() && !level.isClientSide()) {
             level.scheduleTick(pos, this, tickDelay(level.getRandom()));
         }
     }
 
-    /**
-     * The old {@code updateTick}, reached from both the scheduled tick and vanilla random ticks (in 1.12
-     * {@code randomTick} delegated to {@code updateTick}; 26.1 separates them — see {@link #randomTick}).
-     * Only the rad3d pulse re-schedules (every 20t); a radIn-only block emits ONCE per tick received, so
-     * its steady rate is the vanilla random-tick cadence (~1 per 68 s at randomTickSpeed 3) — the chunk
-     * reading is a faithful sawtooth (spike +radIn, then decay/diffusion), capped at radMax.
-     */
+    /** 1.7 {@code updateTick}: add {@code radIn} to the chunk (no cap, as 1.7) and re-schedule in 20 ticks. */
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (rad3d > 0) {
-            ContaminationUtil.radiate(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 32, rad3d);
-            level.scheduleTick(pos, this, tickDelay(random));
-        }
-        if (radIn > 0) {
-            ChunkRadiationManager.proxy.incrementRad(level, pos, radIn, radMax);
-        }
+        float rad3d = getRad3d(), radIn = getRadIn();
+        if (rad3d > 0) ContaminationUtil.radiate(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 32, rad3d);
+        if (radIn > 0) ChunkRadiationManager.proxy.incrementRad(level, pos, radIn);
+        if (rad3d > 0 || radIn > 0) level.scheduleTick(pos, this, tickDelay(random));
     }
 
+    /**
+     * Starts the 20-tick cycle of a block that has none: 1.7 ran {@code onBlockAdded} for every placement, but a block
+     * placed during chunk generation or saved by an older version gets no {@link #onPlace}. Emits nothing itself.
+     */
     @Override
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        tick(state, level, pos, random);
+        if (emitsRadiation() && !level.getBlockTicks().hasScheduledTick(pos, this)) {
+            level.scheduleTick(pos, this, tickDelay(random));
+        }
     }
 
     @Override

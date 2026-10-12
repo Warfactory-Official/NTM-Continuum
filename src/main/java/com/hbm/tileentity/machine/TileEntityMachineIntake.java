@@ -39,8 +39,8 @@ public class TileEntityMachineIntake extends TileEntityLoadedBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineIntake intake) {
         if (intake.isMotorRunning()) {
-            intake.compair.setFill(intake.compair.getMaxFill());
-            intake.power -= POWER_PER_TICK;
+            if (intake.canCompress(level, pos)) intake.compair.setFill(intake.compair.getMaxFill());
+            intake.power -= POWER_PER_TICK; // hbm-space: the motor draws power even when there is no air
         }
 
         for (DirPos connection : intake.getConPos()) {
@@ -49,6 +49,18 @@ public class TileEntityMachineIntake extends TileEntityLoadedBase
 
         intake.setChanged();
         intake.networkPackNT();
+    }
+
+    /**
+     * hbm-space {@code canCompress}: 1 mB of the local air makes 100 mB of compressed air ("the same conversion ratio
+     * as water to steam"), at least 1 mB, asked of {@link com.hbm.api.environment.Environment#compressAir} (which
+     * captures it from the planet or the sealed room). A full tank asks nothing. Plain HBM always has air.
+     */
+    private boolean canCompress(Level level, BlockPos pos) {
+        int consumption = compair.getMaxFill() - compair.getFill();
+        if (consumption <= 0) return true;
+        consumption = Math.max(1, consumption / 100);
+        return com.hbm.api.environment.Environment.compressAir(level, pos, consumption);
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineIntake intake) {

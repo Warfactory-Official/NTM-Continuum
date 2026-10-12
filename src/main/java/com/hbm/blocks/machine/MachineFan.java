@@ -132,6 +132,11 @@ public class MachineFan extends dev.golem.core.world.CompatBlock implements Tick
         public float prevSpin;
         public boolean falloff = true;
         public boolean suck;
+        /**
+         * hbm-space: a fan moves nothing where there is no air to move (pressure at or below 0.01 atm,
+         * {@link com.hbm.api.environment.Environment#pressure}). Decided by the server and synced; always true on Earth.
+         */
+        public boolean hasAtmosphere = true;
         private boolean indirectlyPowered;
         private boolean powerStateInitialized;
 
@@ -153,8 +158,18 @@ public class MachineFan extends dev.golem.core.world.CompatBlock implements Tick
             fan.prevSpin = fan.spin;
 
             if (fan.indirectlyPowered) {
+                if (!level.isClientSide()) {
+                    fan.hasAtmosphere = com.hbm.api.environment.Environment.pressure(level, pos) > 0.01D;
+                }
+            }
+
+            if (fan.indirectlyPowered && fan.hasAtmosphere) {
                 // The legacy TE read metadata from the world on every update; do not trust a cached BE state.
-                Direction direction = level.getBlockState(pos).getValue(FACING);
+                // A client may still tick the block entity for a tick while its chunk is being dropped (the world
+                // answers void air there): 1.7 metadata read 0 off an unloaded chunk; here the fan just skips the tick.
+                BlockState current = level.getBlockState(pos);
+                if (!current.hasProperty(FACING)) return;
+                Direction direction = current.getValue(FACING);
                 int effectiveRange = 0;
 
                 for (int distance = 1; distance <= FanPhysics.RANGE; distance++) {
@@ -193,8 +208,9 @@ public class MachineFan extends dev.golem.core.world.CompatBlock implements Tick
                             direction.getStepZ() * speed);
                 }
 
-                fan.spin += 30F;
             }
+
+            if (fan.indirectlyPowered) fan.spin += 30F;
 
             if (fan.spin >= 360F) {
                 fan.prevSpin -= 360F;
@@ -209,6 +225,7 @@ public class MachineFan extends dev.golem.core.world.CompatBlock implements Tick
             super.serialize(buf);
             buf.writeBoolean(falloff);
             buf.writeBoolean(suck);
+            buf.writeBoolean(hasAtmosphere);
         }
 
         @Override
@@ -216,6 +233,7 @@ public class MachineFan extends dev.golem.core.world.CompatBlock implements Tick
             super.deserialize(buf);
             falloff = buf.readBoolean();
             suck = buf.readBoolean();
+            hasAtmosphere = buf.readBoolean();
         }
 
         @Override

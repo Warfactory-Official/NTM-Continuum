@@ -29,7 +29,8 @@ public class TileEntityMachineAmmoPress extends TileEntityMachineBase
 
     private static final int[] ACCESS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-    public int selectedRecipe = -1;
+    /** The selected recipe's id ({@code hbm:ammo_press/m357_bp}), empty for none; saved and synced by id, never by index. */
+    public String selectedRecipe = "";
     public AnimationState animState = AnimationState.LIFTING;
     public int playAnimation;
     public float prevLift;
@@ -98,14 +99,17 @@ public class TileEntityMachineAmmoPress extends TileEntityMachineBase
         }
     }
 
-    public void performRecipe() {
-        AmmoPressRecipes.register();
-        if (selectedRecipe < 0 || selectedRecipe >= AmmoPressRecipes.recipes.size()) return;
+    /** The selected recipe, or null (none selected, or a reload removed it). */
+    public @org.jspecify.annotations.Nullable AmmoPressRecipe selected() {
+        return AmmoPressRecipes.byId(selectedRecipe);
+    }
 
+    public void performRecipe() {
         // The legacy method recursed to process every available batch in one update. A loop has the
         // same observable result without making a malformed external recipe able to overflow the stack.
-        while (selectedRecipe >= 0 && selectedRecipe < AmmoPressRecipes.recipes.size()) {
-            AmmoPressRecipe recipe = AmmoPressRecipes.recipes.get(selectedRecipe);
+        while (true) {
+            AmmoPressRecipe recipe = selected();
+            if (recipe == null) return;
             ItemStack output = inventory.getStackInSlot(9);
             if (!output.isEmpty() && (!dev.golem.core.world.ItemStacks.sameItemAndData(output, recipe.output)
                     || output.getCount() + recipe.output.getCount() > output.getMaxStackSize())) return;
@@ -142,9 +146,8 @@ public class TileEntityMachineAmmoPress extends TileEntityMachineBase
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        AmmoPressRecipes.register();
-        if (slot > 8 || selectedRecipe < 0 || selectedRecipe >= AmmoPressRecipes.recipes.size()) return false;
-        AmmoPressRecipe recipe = AmmoPressRecipes.recipes.get(selectedRecipe);
+        AmmoPressRecipe recipe = slot > 8 ? null : selected();
+        if (recipe == null) return false;
         return recipe.input[slot] != null && recipe.input[slot].matchesRecipe(stack, true);
     }
 
@@ -182,38 +185,44 @@ public class TileEntityMachineAmmoPress extends TileEntityMachineBase
     @Override
     public void receiveControl(CompoundTag data) {
         if (!data.contains("selection")) return;
-        AmmoPressRecipes.register();
-        int newRecipe = Tags.getIntOr(data, "selection", -1);
-        selectedRecipe = newRecipe == selectedRecipe ? -1 : newRecipe;
+        String newRecipe = Tags.getStringOr(data, "selection", "");
+        selectedRecipe = newRecipe.equals(selectedRecipe) ? "" : newRecipe;
         setChanged();
     }
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
-        buf.writeInt(selectedRecipe);
+        buf.writeUtf(selectedRecipe);
         buf.writeInt(playAnimation);
     }
 
     @Override
     public void deserialize(RegistryFriendlyByteBuf buf) {
         super.deserialize(buf);
-        selectedRecipe = buf.readInt();
+        selectedRecipe = buf.readUtf();
         playAnimation = buf.readInt();
     }
 
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        // the chosen recipe by its output, never its list index (History section 19ej-ids)
-        output.putString("recipe", com.hbm.util.SavedIds.listKey(signatures(), selectedRecipe));
+        // the chosen recipe by its recipe id, never its list index (History sections 19ej-ids, 19fa-m2)
+        output.putString("recipe", selectedRecipe);
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
         if (input.getIntOr("recipe", Integer.MIN_VALUE) != Integer.MIN_VALUE) com.hbm.util.SavedIds.warnNumeric("recipe index", "recipe");
-        selectedRecipe = com.hbm.util.SavedIds.fromListKey(signatures(), input.getStringOr("recipe", ""));
+        String saved = input.getStringOr("recipe", "");
+        if (AmmoPressRecipes.byId(saved) != null || !saved.contains("#")) {
+            selectedRecipe = saved;
+        } else {
+            // a save from before the recipes were data names the recipe by output and occurrence ("hbm:...x16#0")
+            int index = com.hbm.util.SavedIds.fromListKey(signatures(), saved);
+            selectedRecipe = index < 0 ? "" : AmmoPressRecipes.recipes.get(index).id;
+        }
     }
 
     private static java.util.List<String> signatures() {

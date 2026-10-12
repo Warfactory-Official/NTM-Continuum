@@ -246,17 +246,13 @@ public final class Fix4GameTests {
      * identities, including the component-carried ones on every node.
      */
     public static void itemPools(GameTestHelper helper) {
-        JsonObject root;
-        try (InputStream in = ItemPool.class.getResourceAsStream(ItemPool.RESOURCE)) {
-            helper.assertTrue(in != null, "missing " + ItemPool.RESOURCE);
-            root = JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject();
-        } catch (java.io.IOException e) {
-            throw new IllegalStateException(e);
-        }
+        // the pools as loaded from data/hbm/item_pool (the 1.7 tables ntm-next baked, split into one file per pool)
+        Map<String, JsonArray> root = ItemPool.rawPools();
+        helper.assertTrue(root.size() >= 50, "expected HBM's 50 item pools, loaded " + root.size());
         var registries = helper.getLevel().registryAccess();
         int rows = 0;
-        for (Map.Entry<String, JsonElement> pool : root.entrySet()) {
-            JsonArray body = pool.getValue().getAsJsonArray();
+        for (Map.Entry<String, JsonArray> pool : root.entrySet()) {
+            JsonArray body = pool.getValue();
             List<ItemPool.Entry> read = ItemPool.read(registries, pool.getKey());
             helper.assertTrue(read.size() == body.size(),
                     pool.getKey() + ": " + body.size() + " rows but only " + read.size() + " resolve");
@@ -271,7 +267,7 @@ public final class Fix4GameTests {
                 rows++;
             }
         }
-        helper.assertTrue(root.has(ItemPools.POOL_PILE_SUPPLIES) && root.getAsJsonArray(ItemPools.POOL_PILE_SUPPLIES).size() == 7,
+        helper.assertTrue(root.containsKey(ItemPools.POOL_PILE_SUPPLIES) && root.get(ItemPools.POOL_PILE_SUPPLIES).size() == 7,
                 "POOL_PILE_SUPPLIES must be baked with its seven 1.7 rows");
 
         Map<String, List<ItemPool.Entry>> pools = new HashMap<>();

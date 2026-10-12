@@ -4,6 +4,7 @@ import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import dev.golem.core.world.CompatSavedData;
 import org.jspecify.annotations.Nullable;
@@ -29,10 +30,13 @@ public class SatelliteSavedData extends CompatSavedData<SatelliteSavedData> {
             SatelliteType.DISPATCH_CODEC.fieldOf("sat").forGetter(Entry::sat),
             Codec.INT.optionalFieldOf("targetX").forGetter(e -> base(e, e.sat().targetX)),
             Codec.INT.optionalFieldOf("targetZ").forGetter(e -> base(e, e.sat().targetZ)),
-            Codec.STRING.optionalFieldOf("tx").forGetter(e -> base(e, e.sat().tx))
-    ).apply(i, (freq, sat, targetX, targetZ, tx) -> {
+            Codec.STRING.optionalFieldOf("tx").forGetter(e -> base(e, e.sat().tx)),
+            net.minecraft.nbt.CompoundTag.CODEC.optionalFieldOf("extra")
+                    .forGetter(e -> e.sat().extra.isEmpty() ? java.util.Optional.empty() : java.util.Optional.of(e.sat().extra))
+    ).apply(i, (freq, sat, targetX, targetZ, tx, extra) -> {
         sat.setTarget(targetX.orElse(0), targetZ.orElse(0));
         sat.tx = tx.orElse("");
+        sat.extra = extra.map(net.minecraft.nbt.CompoundTag::copy).orElseGet(net.minecraft.nbt.CompoundTag::new);
         return new Entry(freq, sat);
     }));
 
@@ -54,6 +58,15 @@ public class SatelliteSavedData extends CompatSavedData<SatelliteSavedData> {
 
     public static SatelliteSavedData get(ServerLevel level) {
         return CompatSavedData.get(level, ID, SatelliteSavedData::new, CODEC);
+    }
+
+    /**
+     * hbm-space {@code getData(world, x, z)}: the satellites that serve {@code pos}, which an addon may keep in
+     * another level (an orbital station's are the body's below; com.hbm.api.environment.Environment.SATELLITES).
+     * Plain HBM: {@link #get(ServerLevel)} of {@code level}.
+     */
+    public static SatelliteSavedData get(ServerLevel level, BlockPos pos) {
+        return get(com.hbm.api.environment.Environment.satelliteLevel(level, pos, net.minecraft.world.item.ItemStack.EMPTY));
     }
 
     private static SatelliteSavedData fromEntries(List<Entry> entries) {

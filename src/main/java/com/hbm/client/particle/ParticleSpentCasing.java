@@ -8,7 +8,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import dev.golem.core.Ids;
 import dev.golem.core.world.Sounds;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,7 +124,8 @@ public final class ParticleSpentCasing {
                 }
             }
             if (config.getSound() != null && Math.abs(initial.y) >= 0.2D) {
-                var sound = Sounds.get(Ids.of("hbm", config.getSound()));
+                // a bare name is one of HBM's plink sounds; an addon casing names its own sound as "ns:path"
+                var sound = Sounds.get(com.hbm.lib.Library.parseId(config.getSound()));
                 if (sound != null) level.playLocalSound(x, y, z, sound, SoundSource.PLAYERS,
                         SpentCasing.PLINK_LARGE.equals(config.getSound()) ? 1F : 0.5F,
                         1F + RANDOM.nextFloat() * 0.2F, false);

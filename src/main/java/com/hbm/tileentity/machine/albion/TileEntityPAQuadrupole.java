@@ -70,15 +70,15 @@ public class TileEntityPAQuadrupole extends TileEntityCooledBase
 
     @Override
     public void onEnter(Particle particle, ForgeDirection dir) {
-        EnumCoilType type = ItemPACoil.typeOf(inventory.getStackInSlot(1));
+        var type = ItemPACoil.stats(inventory.getStackInSlot(1));
 
         int mult = 1;
-        if (type != null) mult = type.quadMin > particle.momentum ? 10 : 1;
+        if (type != null) mult = type.quadMin() > particle.momentum ? 10 : 1;
 
         if (!isCool()) particle.crash(PAState.CRASH_NOCOOL);
         if (this.power < usage * mult) particle.crash(PAState.CRASH_NOPOWER);
         if (type == null) particle.crash(PAState.CRASH_NOCOIL);
-        if (type != null && type.quadMax < particle.momentum) particle.crash(PAState.CRASH_OVERSPEED);
+        if (type != null && type.quadMax() < particle.momentum) particle.crash(PAState.CRASH_OVERSPEED);
 
         if (particle.invalid) return;
 

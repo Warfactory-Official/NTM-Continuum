@@ -99,7 +99,10 @@ public final class ForeignFluids {
      */
     public static @Nullable FluidMachine machineAt(ServerLevel level, BlockPos pos, @Nullable Direction side) {
         BlockEntity be = candidate(level, pos, side);
-        if (!(be instanceof IFluidUserMK2 user)) return null;
+        if (!(be instanceof IFluidUserMK2)) return null;
+        // the user this face reaches, as for a duct (a machine with several users, IFluidMultiUserMK2)
+        IFluidUserMK2 user = com.hbm.api.fluidmk2.IFluidMultiUserMK2.resolve(be, pos, side);
+        if (user == null) return null;
         FluidTankNTM[] tanks = user.getAllTanks();
         if (tanks == null || tanks.length == 0) return null;
         Face face = new Face(level, pos.immutable(), side, be, user);

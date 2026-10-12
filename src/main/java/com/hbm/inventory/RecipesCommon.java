@@ -84,6 +84,11 @@ public class RecipesCommon {
             this.matchStack = stack.copy();
         }
 
+        /** True when this matches the exact item data of a stack (made from an {@code ItemStack}), not the item alone. */
+        public boolean exactData() {
+            return matchStack != null;
+        }
+
         @Override
         public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
             if (stack.isEmpty() || stack.getItem() != item) return false;

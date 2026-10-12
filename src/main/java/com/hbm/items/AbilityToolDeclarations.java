@@ -7,6 +7,7 @@ import dev.golem.core.dejson.Tags;
 
 import static dev.golem.core.dejson.Crafting.componentSmelt;
 import static dev.golem.core.dejson.Crafting.item;
+import static dev.golem.core.dejson.Crafting.requires;
 import static dev.golem.core.dejson.Crafting.rows;
 import static dev.golem.core.dejson.Crafting.shaped;
 import static dev.golem.core.dejson.Crafting.smelt;
@@ -98,27 +99,27 @@ public final class AbilityToolDeclarations {
         // Configged: the default (non-LBSM) upgrade recipes
         String star = TagIds.ingots_starmetal;
         String ring = ItemIds.ring_starmetal;
-        shaped(NS, "starmetal_sword", "hbm:starmetal_sword", rows(" I ", " B ", "ISI"),
-                "I", star, "S", ring, "B", "hbm:cobalt_decorated_sword");
-        shaped(NS, "starmetal_pickaxe", "hbm:starmetal_pickaxe", rows("ISI", " B ", " I "),
-                "I", star, "S", ring, "B", "hbm:cobalt_decorated_pickaxe");
-        shaped(NS, "starmetal_axe", "hbm:starmetal_axe", rows("IS", "IB", " I"),
-                "I", star, "S", ring, "B", "hbm:cobalt_decorated_axe");
-        shaped(NS, "starmetal_shovel", "hbm:starmetal_shovel", rows("I", "B", "I"),
-                "I", star, "B", "hbm:cobalt_decorated_shovel");
-        shaped(NS, "starmetal_hoe", "hbm:starmetal_hoe", rows("IS", " B", " I"),
-                "I", star, "S", ring, "B", "hbm:cobalt_decorated_hoe");
+        requires(shaped(NS, "starmetal_sword", "hbm:starmetal_sword", rows(" I ", " B ", "ISI"),
+                "I", star, "S", ring, "B", "hbm:cobalt_decorated_sword"), "!lbsm_simple_tool");
+        requires(shaped(NS, "starmetal_pickaxe", "hbm:starmetal_pickaxe", rows("ISI", " B ", " I "),
+                "I", star, "S", ring, "B", "hbm:cobalt_decorated_pickaxe"), "!lbsm_simple_tool");
+        requires(shaped(NS, "starmetal_axe", "hbm:starmetal_axe", rows("IS", "IB", " I"),
+                "I", star, "S", ring, "B", "hbm:cobalt_decorated_axe"), "!lbsm_simple_tool");
+        requires(shaped(NS, "starmetal_shovel", "hbm:starmetal_shovel", rows("I", "B", "I"),
+                "I", star, "B", "hbm:cobalt_decorated_shovel"), "!lbsm_simple_tool");
+        requires(shaped(NS, "starmetal_hoe", "hbm:starmetal_hoe", rows("IS", " B", " I"),
+                "I", star, "S", ring, "B", "hbm:cobalt_decorated_hoe"), "!lbsm_simple_tool");
         String schrabBlock = TagIds.storage_blocks_schrabidium;
-        shaped(NS, "schrabidium_sword", "hbm:schrabidium_sword", rows("I", "W", "S"),
-                "I", schrabBlock, "W", "hbm:desh_sword", "S", plastic);
-        shaped(NS, "schrabidium_pickaxe", "hbm:schrabidium_pickaxe", rows("BSB", " W ", " P "),
-                "B", ItemIds.blades_desh, "S", schrabBlock, "W", "hbm:desh_pickaxe", "P", plastic);
-        shaped(NS, "schrabidium_axe", "hbm:schrabidium_axe", rows("BS", "BW", " P"),
-                "B", ItemIds.blades_desh, "S", schrabBlock, "W", "hbm:desh_axe", "P", plastic);
-        shaped(NS, "schrabidium_shovel", "hbm:schrabidium_shovel", rows("B", "W", "P"),
-                "B", schrabBlock, "W", "hbm:desh_shovel", "P", plastic);
-        shaped(NS, "schrabidium_hoe", "hbm:schrabidium_hoe", rows("IW", " S", " S"),
-                "I", TagIds.ingots_schrabidium, "W", "hbm:desh_hoe", "S", plastic);
+        requires(shaped(NS, "schrabidium_sword", "hbm:schrabidium_sword", rows("I", "W", "S"),
+                "I", schrabBlock, "W", "hbm:desh_sword", "S", plastic), "!lbsm_simple_tool");
+        requires(shaped(NS, "schrabidium_pickaxe", "hbm:schrabidium_pickaxe", rows("BSB", " W ", " P "),
+                "B", ItemIds.blades_desh, "S", schrabBlock, "W", "hbm:desh_pickaxe", "P", plastic), "!lbsm_simple_tool");
+        requires(shaped(NS, "schrabidium_axe", "hbm:schrabidium_axe", rows("BS", "BW", " P"),
+                "B", ItemIds.blades_desh, "S", schrabBlock, "W", "hbm:desh_axe", "P", plastic), "!lbsm_simple_tool");
+        requires(shaped(NS, "schrabidium_shovel", "hbm:schrabidium_shovel", rows("B", "W", "P"),
+                "B", schrabBlock, "W", "hbm:desh_shovel", "P", plastic), "!lbsm_simple_tool");
+        requires(shaped(NS, "schrabidium_hoe", "hbm:schrabidium_hoe", rows("IW", " S", " S"),
+                "I", TagIds.ingots_schrabidium, "W", "hbm:desh_hoe", "S", plastic), "!lbsm_simple_tool");
 
         // 1.7 CraftingManager:97
         shaped(NS, "redstone_sword", "hbm:redstone_sword", rows("R", "R", "S"),
@@ -131,8 +132,11 @@ public final class AbilityToolDeclarations {
 
         // 1.7 SmeltingRecipes:168-171: the furnace reheats the meteorite materials (ItemHot.heatUp), and
         // sears the sword. heatUp on the seared sword (not an ItemHot) did nothing, so that one is plain.
+        // 1.7 ItemHot.heat is static, so the last constructor (ingot_chainsteel, 100) wins and heatUp writes 100 for
+        // every hot item although the meteorite items were constructed with 200 (History §19ez; LEGACY_HEAT).
         for (String id : new String[]{"ingot_meteorite", "ingot_meteorite_forged", "blade_meteorite"}) {
-            componentSmelt(NS, id + "_heat", item("hbm:" + id), stack("hbm:" + id).with("hbm:heat", 200), 0.0);
+            componentSmelt(NS, id + "_heat", item("hbm:" + id),
+                    stack("hbm:" + id).with("hbm:heat", com.hbm.items.special.ItemHot.LEGACY_HEAT), 0.0);
         }
         smelt(NS, "meteorite_sword_seared", "hbm:meteorite_sword", "hbm:meteorite_sword_seared", 0.0);
     }

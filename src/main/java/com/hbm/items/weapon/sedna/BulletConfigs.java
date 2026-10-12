@@ -35,7 +35,17 @@ public final class BulletConfigs {
      *         bug in an XFactory, and silently replacing the first one would be far harder to find.
      */
     public static BulletConfig register(String name, BulletConfig config) {
-        Identifier id = dev.golem.core.Ids.of(Constants.MOD_ID, name);
+        return register(dev.golem.core.Ids.of(Constants.MOD_ID, name), config);
+    }
+
+    /**
+     * Registers {@code config} under {@code id}: the form an addon uses, so its rounds live in its own namespace
+     * ({@code ntmspace:worldwar}) and can never collide with HBM's. Same duplicate rule as {@link #register(String,
+     * BulletConfig)}. Register during the addon's {@code declare()} (after HBM's, see {@code HbmEntry}); the client
+     * tracer audit only insists on HBM's own rounds, an addon gives its rounds a tracer with
+     * {@code TracerRegistry.setBulletRenderer}/{@code setBeamRenderer}.
+     */
+    public static synchronized BulletConfig register(Identifier id, BulletConfig config) {
         if (BY_ID.containsKey(id)) {
             throw new IllegalStateException("Duplicate bullet config id: " + id);
         }

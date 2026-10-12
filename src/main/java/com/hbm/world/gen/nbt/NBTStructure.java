@@ -981,7 +981,19 @@ public class NBTStructure {
 
         public static void assemble(net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder builder,
                                     net.minecraft.world.level.levelgen.structure.Structure.GenerationContext context, SpawnCondition spawn) {
-            net.minecraft.util.RandomSource rand = context.random();
+            assemble(builder, context, spawn, context.random());
+        }
+
+        /**
+         * {@link #assemble(net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder,
+         * net.minecraft.world.level.levelgen.structure.Structure.GenerationContext, SpawnCondition)} drawing from
+         * {@code rand} instead of the context's random (ADDON-API-INVENTORY H-56). 1.7's {@code MapGenStructure} built
+         * the start with the random its region pick had just drawn from; an addon whose structure type repeats that pick
+         * (NTM: Space's planet structures) hands that random on, so the pieces, rotations and pools are 1.7's.
+         */
+        public static void assemble(net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder builder,
+                                    net.minecraft.world.level.levelgen.structure.Structure.GenerationContext context, SpawnCondition spawn,
+                                    net.minecraft.util.RandomSource rand) {
             int x = context.chunkPos().getMinBlockX();
             int z = context.chunkPos().getMinBlockZ();
 

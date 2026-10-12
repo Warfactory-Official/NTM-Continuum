@@ -27,7 +27,7 @@ import com.hbm.tileentity.ModProduction2BlockEntities;
  * 1.7 {@code TileEntityRtgFurnace}: a furnace whose cook time advances by the summed heat of up to three
  * RTG pellets per tick (slots 1-3) until it reaches 1,000. Slot 0 is the input, slot 4 the output.
  */
-public final class TileEntityRtgFurnace extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
+public class TileEntityRtgFurnace extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
 
     public int dualCookTime;
     public static final int processingSpeed = 1000;

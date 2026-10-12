@@ -14,6 +14,12 @@ import net.minecraft.world.phys.Vec3;
 /** Powered condenser: a static shell with its two fans turning against each other. */
 public final class CondenserRenderer extends GemBER<TileEntityCondenserPowered, CondenserRenderState> {
 
+    /** An addon's wrecked condenser ({@link DamagedView}, ADDON-API-INVENTORY C-23); null in plain HBM. */
+    public static volatile @org.jspecify.annotations.Nullable DamagedView DAMAGED;
+
+    /** The view this renderer was declared with (read once, in {@link #setup}). */
+    private @org.jspecify.annotations.Nullable DamagedView damagedView;
+
     private final WavefrontObj model = WavefrontObj.load(
             dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/condenser.obj"));
     private final Surface surface = Surface.cutoutNoCull(
@@ -26,11 +32,18 @@ public final class CondenserRenderer extends GemBER<TileEntityCondenserPowered, 
                 .translate(0.5F, 0F, 0.5F)
                 .angle(Gem.Axes.Y, state -> state.yaw);
 
-        machine.child(model.part("Condenser"), surface);
-        machine.child(model.part("Fan1"), surface)
+        Gem.Part<CondenserRenderState> intact = machine.joint().visibleIf(state -> !state.damaged);
+        intact.child(model.part("Condenser"), surface);
+        intact.child(model.part("Fan1"), surface)
                 .spin(Gem.Axes.X, 0F, 1.5F, 0F, state -> state.spin);
-        machine.child(model.part("Fan2"), surface)
+        intact.child(model.part("Fan2"), surface)
                 .spin(Gem.Axes.X, 0F, 1.5F, 0F, state -> -state.spin);
+        damagedView = DAMAGED;
+        if (damagedView != null) {
+            machine.joint().visibleIf(state -> state.damaged).rotate(Gem.Axes.Y, damagedView.extraYaw())
+                    .child(WavefrontObj.load(dev.golem.core.Ids.parse(damagedView.model())).all(!damagedView.cull()),
+                            damagedView.cull() ? Surface.cutoutCull(damagedView.texture()) : Surface.cutoutNoCull(damagedView.texture()));
+        }
     }
 
     @Override
@@ -46,5 +59,6 @@ public final class CondenserRenderer extends GemBER<TileEntityCondenserPowered, 
         ForgeDirection facing = ForgeDirection.getOrientation(meta);
         state.yaw = 90F + facing.getRotationDegrees();
         state.spin = be.lastSpin + (be.spin - be.lastSpin) * partialTicks;
+        state.damaged = damagedView != null && damagedView.damaged().test(be);
     }
 }

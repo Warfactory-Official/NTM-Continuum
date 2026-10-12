@@ -1,6 +1,6 @@
 package com.hbm.blocks.machine.storage;
 
-import com.hbm.registration.BlockTag;
+import dev.golem.core.registry.BlockTag;
 import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
@@ -10,8 +10,8 @@ import dev.golem.core.registry.RegistryObject;
 import com.hbm.tileentity.machine.storage.CrateType;
 import com.hbm.tileentity.machine.storage.MassStorageType;
 import net.minecraft.world.level.block.SoundType;
-import com.hbm.registration.Loot;
-import com.hbm.registration.Preset;
+import dev.golem.core.registry.Loot;
+import dev.golem.core.registry.Preset;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Models;

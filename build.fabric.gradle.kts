@@ -538,15 +538,23 @@ tasks.processResources { dependsOn(tasks.named("stonecutterGenerate")) }
 // Recipe ingredients are written in the 26.1 shape and converted downward for older nodes.
 extra["mc_version"] = mcVersion
 extra["java_version"] = javaVersion.toString()
-apply(from = rootProject.file("gradle/run-toolchain.gradle.kts"))
+// Golem Core's shared build layer; HBM's parameters for it (golem.build.*) are in gradle.properties.
+apply(from = rootProject.file("../Golem-Core/gradle/mod/run-toolchain.gradle.kts"))
 // Visual test harness launch capture (shared by every Golem Core mod); see harness.json and ../Golem-Core/harness/README.md.
 apply(from = rootProject.file("../Golem-Core/gradle/harness-spec.gradle.kts"))
-apply(from = rootProject.file("gradle/legacy-recipes.gradle.kts"))
-apply(from = rootProject.file("gradle/legacy-biomes.gradle.kts"))
-apply(from = rootProject.file("gradle/legacy-assets.gradle.kts"))
-apply(from = rootProject.file("gradle/dejson.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-recipes.gradle.kts"))
+extra["loader"] = "fabric"
+// Neutral "golem:conditions" in data JSON, rewritten to this loader's spelling; see the script.
+apply(from = rootProject.file("../Golem-Core/gradle/mod/recipe-conditions.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-biomes.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-assets.gradle.kts"))
+// HBM's own item-model resource checks; after legacy-assets, whose parentModelOf export they read.
+apply(from = rootProject.file("gradle/asset-checks.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/dejson.gradle.kts"))
+// HBM's machine recipe tables, generated from src/recipes on 26.1 NeoForge (build.neoforge.gradle.kts); see the script.
+apply(from = rootProject.file("../Golem-Core/gradle/mod/generated-data.gradle.kts"))
 
-apply(from = rootProject.file("gradle/mixin-validation.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/mixin-validation.gradle.kts"))
 
 dependencies {
     // NeoForge ships jspecify transitively on 26.1 but not on older versions, and HBM uses @Nullable in

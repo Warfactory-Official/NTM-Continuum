@@ -101,25 +101,15 @@ public final class ClientEffects {
     /**
      * 1.7 {@code ClientProxy:880-883,897-915} - the propellant names the colour. ABM takes the no-colour ctor
      * ({@code ParticleContrail:29-36}), which is black at scale 1, so it and KEROSENE coincide. Lifetime is not
-     * a parameter: 1.7 rolls {@code 100 + rand(40)} inside the particle.
+     * a parameter: 1.7 rolls {@code 100 + rand(40)} inside the particle. A colour and scale, not a closed set: an
+     * addon fuel ({@code ItemCustomMissilePart.FuelType.register}) brings its own.
      */
-    public enum Contrail {
-        ABM(0F, 0F, 0F, 1F),
-        KEROSENE(0F, 0F, 0F, 1F),
-        SOLID(0.3F, 0.2F, 0.05F, 1F),
-        HYDROGEN(0.7F, 0.7F, 0.7F, 1F),
-        BALEFIRE(0.2F, 0.7F, 0.2F, 1F);
+    public record Contrail(float r, float g, float b, float scale) {
 
-        final float r;
-        final float g;
-        final float b;
-        final float scale;
-
-        Contrail(float r, float g, float b, float scale) {
-            this.r = r;
-            this.g = g;
-            this.b = b;
-            this.scale = scale;
-        }
+        public static final Contrail ABM = new Contrail(0F, 0F, 0F, 1F);
+        public static final Contrail KEROSENE = new Contrail(0F, 0F, 0F, 1F);
+        public static final Contrail SOLID = new Contrail(0.3F, 0.2F, 0.05F, 1F);
+        public static final Contrail HYDROGEN = new Contrail(0.7F, 0.7F, 0.7F, 1F);
+        public static final Contrail BALEFIRE = new Contrail(0.2F, 0.7F, 0.2F, 1F);
     }
 }

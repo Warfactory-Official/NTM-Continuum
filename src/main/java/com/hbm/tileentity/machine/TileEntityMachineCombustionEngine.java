@@ -89,8 +89,10 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
 
         if (te.isOn && te.setting > 0 && !piston.isEmpty() && piston.getItem() instanceof ItemPistons pistonItem
                 && fill > 0 && fuel != null) {
-            double eff = pistonItem.getVariant().eff[fuel.grade().ordinal()];
-            if (eff > 0) {
+            double eff = pistonItem.efficiency()[fuel.grade().ordinal()];
+            // hbm-space breatheAir: the setting's worth of oxygen every 5 ticks (com.hbm.api.environment.Environment)
+            if (eff > 0 && com.hbm.api.environment.Environment.breatheAir(level, pos,
+                    TickPhase.every(level, pos, 5L) ? te.setting : 0)) {
                 int speed = te.setting * 2;
                 int toBurn = Math.min(fill, speed);
                 te.power += (long) (toBurn * (fuel.energyPerBucket() / 10_000D) * eff);
@@ -292,7 +294,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
             ItemStack stack = inventory.getStackInSlot(2);
             FluidCombustion.Combustible fuel = FluidCombustion.getCombustible(tank.getTankType());
             if (!stack.isEmpty() && stack.getItem() instanceof ItemPistons piston && fuel != null) {
-                return "" + Math.round(piston.getVariant().eff[fuel.grade().ordinal()] * 100);
+                return "" + Math.round(piston.efficiency()[fuel.grade().ordinal()] * 100);
             }
             return "0";
         }

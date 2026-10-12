@@ -38,8 +38,17 @@ public final class AutogenSprites {
      */
     private static final Set<String> AUTHORED = Set.of("bedrock_ore_fragment_bismuth");
 
-    /** Declares every material-shape remap. Client only, before the first resource load. */
-    public static void install() {
+    /** The sprites already declared ({@code <art>_<material>}), so a later call adds only new materials. */
+    private static final Set<String> DECLARED = new java.util.HashSet<>();
+
+    /**
+     * Declares every material-shape remap not declared yet. Client only, before the first resource load.
+     *
+     * <p>HBM calls it from its client initialisation. An addon that gives its own materials autogen shapes calls it
+     * again from its own, after those materials exist: on NeoForge and Forge HBM's call runs at HBM's construction,
+     * before any dependent mod has registered a material (Fabric's runs after every mod's main initialiser).
+     */
+    public static synchronized void install() {
         int sprites = 0;
         for (MaterialShapes shape : ModAutogenItems.shapeOrder()) {
             String art = ModAutogenItems.base(shape);
@@ -48,17 +57,17 @@ public final class AutogenSprites {
             }
             Sprites.Remap remap = Sprites.remap(Sprites.Atlas.ITEMS).texture(Constants.MOD_ID + ":items/" + art);
             for (NTMMaterial material : Mats.orderedList) {
-                if (!material.autogen.contains(shape) || AUTHORED.contains(art + "_" + material.name)) {
+                String sprite = art + "_" + material.name;
+                if (!material.autogen.contains(shape) || AUTHORED.contains(sprite) || !DECLARED.add(sprite)) {
                     continue;
                 }
                 if (material.solidColorLight == material.solidColorDark) {
-                    // Flat on both ends: there is nothing to interpolate, and a remap would return the
-                    // one colour for every pixel. Leave the sprite to an authored file and say so.
-                    Constants.LOG.warn("{} declares one flat colour, so {}_{} needs an authored sprite",
-                            material.name, art, material.name);
-                    continue;
+                    // Flat on both ends: 1.7 ItemAutogen made no recoloured icon for it and drew the shape's own
+                    // greyscale icon tinted with the molten colour (getColorFromItemStack). Same pixels, as a multiply.
+                    remap.tint(material.name, material.moltenColor);
+                } else {
+                    remap.permutation(material.name, material.solidColorLight, material.solidColorDark);
                 }
-                remap.permutation(material.name, material.solidColorLight, material.solidColorDark);
                 sprites++;
             }
             if (!remap.isEmpty()) {

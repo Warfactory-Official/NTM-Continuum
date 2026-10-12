@@ -36,7 +36,7 @@ public final class RBMKGameTests {
         checkId(helper, ModRBMKItems.rbmk_fuel_drx.get(), "rbmk_fuel_drx");
 
         ItemRBMKRod drx = ModRBMKItems.rbmk_fuel_drx.get();
-        helper.assertTrue(drx.pellet == ModRBMKItems.pelletFor(drx),
+        helper.assertTrue(drx.pelletItem() == ModRBMKItems.pelletFor(drx),
                 "The post-bootstrap DRX rod-to-pellet link must resolve to its registered pellet");
         helper.assertTrue(ModRBMKItems.pelletFor(drx).isXenonEnabled(),
                 "DRX pellets retain xenon variants; only the explicit source families suppress them");

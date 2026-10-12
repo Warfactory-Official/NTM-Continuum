@@ -91,15 +91,15 @@ public class GUIScreenClayTablet extends CompatScreen {
         float revealChance = tabletMeta == 1 ? 0.25F : 0.5F;
         blit(g, guiLeft, guiTop, 0, tabletOffset, xSize, ySize);
 
-        ArrayList<PedestalRecipe> recipeSet = PedestalRecipes.recipeSets[Math.abs(tabletMeta) % PedestalRecipes.recipeSets.length];
+        List<PedestalRecipe> recipeSet = PedestalRecipes.recipeSet(tabletMeta);
 
         if (!held.isEmpty() && ModUtilityToolItems.TABLET_SEED.has(held) && !recipeSet.isEmpty()) {
             Random rand = new Random(ModUtilityToolItems.TABLET_SEED.getOr(held, 0L));
             PedestalRecipe recipe = recipeSet.get(rand.nextInt(recipeSet.size()));
 
-            if (recipe.extra == PedestalExtraCondition.FULL_MOON) blit(g, guiLeft + 120, guiTop + 62, 142 + iconOffset, 32, 16, 16);
-            if (recipe.extra == PedestalExtraCondition.NEW_MOON) blit(g, guiLeft + 120, guiTop + 62, 142 + iconOffset, 48, 16, 16);
-            if (recipe.extra == PedestalExtraCondition.SUN) blit(g, guiLeft + 120, guiTop + 62, 142 + iconOffset, 64, 16, 16);
+            PedestalExtraCondition.Icon icon = recipe.extra.icon;
+            if (icon != null && icon.sheet() == null) blit(g, guiLeft + 120, guiTop + 62, 142 + iconOffset, icon.v(), 16, 16);
+            else if (icon != null) GuiDraw.blit(g, icon.sheet(), guiLeft + 120, guiTop + 62, icon.u(), icon.v(), 16, 16, 256, 256);
 
             for (int l = 0; l < 3; l++) {
                 for (int r = 0; r < 3; r++) {

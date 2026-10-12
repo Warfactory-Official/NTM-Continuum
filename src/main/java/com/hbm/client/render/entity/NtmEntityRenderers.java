@@ -52,7 +52,10 @@ public final class NtmEntityRenderers {
         sink.register(ModNtmEntities.WASTE_ITEM.get(), VanillaRenderers.item());
         sink.register(ModNtmEntities.ITEM_BUOYANT.get(), VanillaRenderers.item());
         // A visible entity with no renderer crashes the render thread; the vanilla TNT block reads the fuse.
-        sink.register(ModNtmEntities.TNT_NTM.get(), VanillaRenderers.tnt());
+        // hbm-space's tumbling charges (V-181) only with EntityTntNtm.spin; plain HBM keeps vanilla's renderer
+        net.minecraft.client.renderer.entity.EntityRendererProvider<com.hbm.entity.item.EntityTntNtm> vanillaTnt = VanillaRenderers.tnt();
+        sink.register(ModNtmEntities.TNT_NTM.get(), context -> com.hbm.entity.item.EntityTntNtm.spin
+                ? new RenderTNTPrimedBase(context) : vanillaTnt.create(context));
         // 1.7's RenderNeoCart drew the NTM chassis mesh with a per-material skin; that renderer needs the
         // rail-following pose 26.1 keeps private, so the whole roster rides vanilla minecart geometry.
         sink.register(ModNtmEntities.CART_ORE.get(), VanillaRenderers.minecart());

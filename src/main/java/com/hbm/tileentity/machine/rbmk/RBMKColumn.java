@@ -47,7 +47,7 @@ public abstract class RBMKColumn {
     public static RBMKColumn readFromBuf(ByteBuf buf) {
         byte ordinal = buf.readByte();
         if (ordinal == -1) return null;
-        RBMKColumn column = createForType(RBMKColumnType.values()[ordinal]);
+        RBMKColumn column = createForType(RBMKColumnType.values().get(ordinal));
         column.deserialize(buf);
         return column;
     }
@@ -62,15 +62,14 @@ public abstract class RBMKColumn {
     }
 
     public static RBMKColumn createForType(RBMKColumnType type) {
-        return switch (type) {
-            case FUEL, FUEL_SIM, BREEDER -> new FuelColumn(type);
-            case BOILER -> new BoilerColumn();
-            case CONTROL, CONTROL_AUTO -> new ControlColumn(type);
-            case COOLER -> new CoolerColumn();
-            case OUTGASSER -> new OutgasserColumn();
-            case HEATEX -> new HeaterColumn();
-            default -> new StandardColumn(type);
-        };
+        if (type == RBMKColumnType.FUEL || type == RBMKColumnType.FUEL_SIM || type == RBMKColumnType.BREEDER) return new FuelColumn(type);
+        if (type == RBMKColumnType.BOILER) return new BoilerColumn();
+        if (type == RBMKColumnType.CONTROL || type == RBMKColumnType.CONTROL_AUTO) return new ControlColumn(type);
+        if (type == RBMKColumnType.COOLER) return new CoolerColumn();
+        if (type == RBMKColumnType.OUTGASSER) return new OutgasserColumn();
+        if (type == RBMKColumnType.HEATEX) return new HeaterColumn();
+        if (type.column != null) return type.column.apply(type);
+        return new StandardColumn(type);
     }
 
     protected void serialize(ByteBuf buf) {

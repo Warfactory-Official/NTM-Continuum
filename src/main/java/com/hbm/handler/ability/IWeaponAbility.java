@@ -233,12 +233,16 @@ public interface IWeaponAbility extends IBaseAbility {
         }
     };
 
-    IWeaponAbility[] abilities = { NONE, RADIATION, VAMPIRE, STUN, PHOSPHORUS, FIRE, CHAINSAW, BEHEADER, BOBBLE };
+    /**
+     * Every ability of this kind by its name ({@link #getName()}, which tool presets save), 1.7's in 1.7 order. An
+     * addon ability registers here ({@code REGISTRY.register(MY_ABILITY)}) at mod construction so a saved preset finds
+     * it again; giving it to a tool is the tool's own {@code addAbility}.
+     */
+    com.hbm.api.registry.NamedRegistry<IWeaponAbility> REGISTRY = com.hbm.api.registry.NamedRegistry.of(
+            "weapon ability", IWeaponAbility::getName, NONE, RADIATION, VAMPIRE, STUN, PHOSPHORUS, FIRE, CHAINSAW, BEHEADER, BOBBLE);
 
     static IWeaponAbility getByName(String name) {
-        for (IWeaponAbility ability : abilities) {
-            if (ability.getName().equals(name)) return ability;
-        }
-        return NONE;
+        IWeaponAbility ability = REGISTRY.get(name);
+        return ability != null ? ability : NONE;
     }
 }

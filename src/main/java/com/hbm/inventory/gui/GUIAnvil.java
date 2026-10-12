@@ -231,9 +231,8 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
         if (isOver(x, y, 52, 53, 18, 18)) { // craft the selection
             if (this.selection >= 0 && this.selection < this.recipes.size()) {
                 click();
-                int globalIndex = AnvilRecipes.getConstruction().indexOf(this.recipes.get(this.selection));
                 GolemNetwork.sendToServer(AnvilCraftPayload.CODEC,
-                        new AnvilCraftPayload(globalIndex, event.hasShiftDown() ? 1 : 0));
+                        new AnvilCraftPayload(this.recipes.get(this.selection).id, event.hasShiftDown() ? 1 : 0));
             }
             return true;
         }

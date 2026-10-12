@@ -54,11 +54,15 @@ public final class BedrockOreFeature {
     public static void generateAutoChunk(WorldGenLevel level, RandomSource random, int chunkMinX, int chunkMinZ) {
         int x = chunkMinX + random.nextInt(2) + 8;
         int z = chunkMinZ + random.nextInt(2) + 8;
-        double density = ItemBedrockOreBase.averageOreLevel(x, z);
+        // hbm-space generateAuto: the mean over the column's types (ItemBedrockOreBase.SOURCE), the body's acid if it
+        // names one; plain HBM: averageOreLevel over its six
+        ItemBedrockOreBase.OreField field = ItemBedrockOreBase.field(level, x, z);
+        double density = field.average();
         int tier = tierForDensity(density);
+        FluidStack acid = field.boreFluid() != null ? field.boreFluid() : boreFluidForTier(tier);
         placeDeposit(level, random, new BlockPos(x, level.getMinY(), z),
                 new Deposit(() -> new ItemStack(ModOreBlocks.bedrock_ore_base.get()),
-                        boreFluidForTier(tier), 0xD78A16, tier, ModOreBlocks.stone_depth.get()));
+                        acid, 0xD78A16, tier, ModOreBlocks.stone_depth.get()));
     }
 
     /**

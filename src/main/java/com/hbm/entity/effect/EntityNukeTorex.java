@@ -80,6 +80,8 @@ public class EntityNukeTorex extends CompatEntity {
     public static final EntityDataAccessor<Integer> RANDOM_SEED_HIGH = SynchedEntityData.defineId(EntityNukeTorex.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> START_TIME_LOW = SynchedEntityData.defineId(EntityNukeTorex.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> START_TIME_HIGH = SynchedEntityData.defineId(EntityNukeTorex.class, EntityDataSerializers.INT);
+    /** hbm-space {@code hasSufficientPressure == false}: detonated in a vacuum (com.hbm.api.environment.Environment). */
+    public static final EntityDataAccessor<Boolean> VACUUM = SynchedEntityData.defineId(EntityNukeTorex.class, EntityDataSerializers.BOOLEAN);
 
     public double coreHeight = 3;
     public double convectionHeight = 3;
@@ -127,6 +129,7 @@ public class EntityNukeTorex extends CompatEntity {
         data.define(RANDOM_SEED_HIGH, 0);
         data.define(START_TIME_LOW, 0);
         data.define(START_TIME_HIGH, 0);
+        data.define(VACUUM, false);
     }
 
     @Override
@@ -207,6 +210,11 @@ public class EntityNukeTorex extends CompatEntity {
         if (Math.abs(spawnTarget - lastSpawnY) < moveSpeed) lastSpawnY = spawnTarget;
         else lastSpawnY += moveSpeed * Math.signum(spawnTarget - lastSpawnY);
 
+        if (isVacuum()) {
+            simulateVacuumTick(playEffects, s, cs);
+            return;
+        }
+
         // spawn mush clouds
         double range = (torusWidth - rollerSize) * 0.25;
         double simSpeed = getSimulationSpeed();
@@ -272,6 +280,51 @@ public class EntityNukeTorex extends CompatEntity {
         heat = maxHeat - Math.pow((maxHeat * this.tickCount) / maxAge, 1);
 
         cloudlets.removeIf(x -> x.isDead);
+    }
+
+    /**
+     * hbm-space's cloud without enough air to carry it ("pondering my glowing orb"): for 40 ticks a growing
+     * gaussian ball of {@link TorexType#STARFISH} cloudlets flies outward, no mushroom, no shock ring, no
+     * condensation. Never on plain HBM: {@link #VACUUM} comes from
+     * {@link com.hbm.api.environment.Environment#isVacuum} at detonation.
+     */
+    private void simulateVacuumTick(boolean playEffects, double s, double cs) {
+        if (this.tickCount < 40) {
+            double range = (this.tickCount + visualRandom.nextDouble()) * 0.6;
+            int toSpawn = this.tickCount * 5;
+            int lifetime = Math.max(800 - this.tickCount * 10, 40);
+
+            for (int i = 0; i < toSpawn; i++) {
+                double x = getX() + visualRandom.nextGaussian() * range;
+                double y = getY() + visualRandom.nextGaussian() * range;
+                double z = getZ() + visualRandom.nextGaussian() * range;
+                Cloudlet cloud = new Cloudlet(x, y, z, (float) (visualRandom.nextDouble() * 2D * Math.PI), 0, lifetime,
+                        TorexType.STARFISH);
+                cloud.setScale(4F, 5F);
+                cloud.setMotion(this.tickCount < 25 && visualRandom.nextBoolean() ? 0.5 : 0.05);
+                cloudlets.add(cloud);
+            }
+        }
+
+        if (playEffects && this.tickCount < 150 && !didPlaySound) didPlaySound = TorexClientEffects.tryPlayDetonationSound(this);
+
+        for (Cloudlet cloud : cloudlets) {
+            cloud.update();
+        }
+        coreHeight += 0.15 / s;
+        torusWidth += 0.05 / s;
+        rollerSize = torusWidth * 0.8;
+        convectionHeight = coreHeight + rollerSize;
+
+        int maxHeat = (int) (50 * cs);
+        heat = maxHeat - Math.pow((maxHeat * this.tickCount) / maxAge, 1);
+
+        cloudlets.removeIf(x -> x.isDead);
+    }
+
+    /** Whether this cloud went off in a vacuum (hbm-space's STARFISH cloud). */
+    public boolean isVacuum() {
+        return this.entityData.get(VACUUM);
     }
 
     /**
@@ -561,7 +614,26 @@ public class EntityNukeTorex extends CompatEntity {
         return this.entityData.get(SCALE);
     }
 
-    /** The colour scheme: 0 = nuke (orange), 1 = balefire (green). Named to avoid {@code Entity.getType()}. */
+    /** {@code java.awt.Color.HSBtoRGB(hue, 1, 1)} (1.7 {@code Color.getHSBColor}), without the AWT dependency. */
+    public static int hsbToRgb(float hue) {
+        float h = (hue - (float) Math.floor(hue)) * 6.0F;
+        float f = h - (float) Math.floor(h);
+        int q = (int) ((1.0F - f) * 255.0F + 0.5F);
+        int t = (int) (f * 255.0F + 0.5F);
+        int r, g, b;
+        switch ((int) h) {
+            case 0 -> { r = 255; g = t; b = 0; }
+            case 1 -> { r = q; g = 255; b = 0; }
+            case 2 -> { r = 0; g = 255; b = t; }
+            case 3 -> { r = 0; g = q; b = 255; }
+            case 4 -> { r = t; g = 0; b = 255; }
+            case 5 -> { r = 255; g = 0; b = q; }
+            default -> { r = 0; g = 0; b = 0; }
+        }
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
+    }
+
+    /** The colour scheme: 0 = nuke (orange), 1 = balefire (green), 2 = hbm-space antimatter (rainbow). Named to avoid {@code Entity.getType()}. */
     public byte getTorexType() {
         return this.entityData.get(TYPE);
     }
@@ -737,6 +809,13 @@ public class EntityNukeTorex extends CompatEntity {
                 this.motionX = motion[0];
                 this.motionY = motion[1];
                 this.motionZ = motion[2];
+            } else if (this.type == TorexType.STARFISH) {
+                // hbm-space: the SHOCK motion, flying out along the cloudlet's angle once above the centre
+                double factor = Mth.clamp((this.posY - EntityNukeTorex.this.getY()) / EntityNukeTorex.this.coreHeight, 0, 1);
+                double[] motion = rotateAroundY(1, 0, 0, this.angle);
+                this.motionX = motion[0] * factor;
+                this.motionY = motion[1] * factor;
+                this.motionZ = motion[2] * factor;
             } else if (this.type == TorexType.CONDENSATION) {
                 // 1.7 getCondensationMotion: the horizontal offset, scaled (not normalized) by 0.00002 * age
                 double speed = 0.00002 * EntityNukeTorex.this.tickCount;
@@ -838,10 +917,28 @@ public class EntityNukeTorex extends CompatEntity {
             dist = Math.max(dist, 1);
             double col = 2D / dist;
 
-            if (EntityNukeTorex.this.getTorexType() == 1) {
+            if (this.type == TorexType.STARFISH) {
+                // hbm-space: a hot red-orange glow
+                this.colorR = Math.max(col * 8, 0.5);
+                this.colorG = Math.max(col * 1.5, 0.1);
+                this.colorB = Math.max(col * 0.5, 0.05);
+            } else if (EntityNukeTorex.this.getTorexType() == 1) {
                 this.colorR = Math.max(col * 1, 0.25);
                 this.colorG = Math.max(col * 2, 0.25);
                 this.colorB = Math.max(col * 0.5, 0.25);
+            } else if (EntityNukeTorex.this.getTorexType() == 2) {
+                // hbm-space's antimatter cloud (startFacAnti, type 2; ADDON-API-INVENTORY V-170): the shock ring grey,
+                // every other cloudlet a full-saturation hue by its spawn angle. Plain HBM never spawns type 2.
+                if (this.type == TorexType.RING) {
+                    this.colorR = Math.max(col * 1, 0.25);
+                    this.colorG = Math.max(col * 1, 0.25);
+                    this.colorB = Math.max(col * 1, 0.25);
+                } else {
+                    int rgb = hsbToRgb(this.angle / 2F / (float) Math.PI);
+                    this.colorR = (rgb >> 16 & 0xFF) / 255D;
+                    this.colorG = (rgb >> 8 & 0xFF) / 255D;
+                    this.colorB = (rgb & 0xFF) / 255D;
+                }
             } else {
                 this.colorR = Math.max(col * 2, 0.25);
                 this.colorG = Math.max(col * 1.5, 0.25);
@@ -931,7 +1028,9 @@ public class EntityNukeTorex extends CompatEntity {
         STANDARD,
         RING,
         CONDENSATION,
-        SHOCK
+        SHOCK,
+        /** hbm-space: the vacuum cloud ({@link #VACUUM}). */
+        STARFISH
     }
 
     /**
@@ -1016,6 +1115,8 @@ public class EntityNukeTorex extends CompatEntity {
         this.entityData.set(FINAL_SPAWN_TARGET, target);
         boolean precipitation = level.getBiome(BlockPos.containing(x, y, z)).value().hasPrecipitation();
         this.entityData.set(HUMIDITY, precipitation ? 0.5F : 0F);
+        // hbm-space checks the body's pressure when the cloud is made: no air, no mushroom
+        this.entityData.set(VACUUM, com.hbm.api.environment.Environment.isVacuum(level, BlockPos.containing(x, y, z)));
         long start = level.getGameTime();
         this.entityData.set(START_TIME_LOW, (int) start);
         this.entityData.set(START_TIME_HIGH, (int) (start >>> 32));
@@ -1040,6 +1141,11 @@ public class EntityNukeTorex extends CompatEntity {
 
         float nextFloat() {
             return next(24) / ((float) (1 << 24));
+        }
+
+        /** java.util.Random.nextBoolean (hbm-space's vacuum cloud). */
+        boolean nextBoolean() {
+            return next(1) != 0;
         }
 
         double nextDouble() {

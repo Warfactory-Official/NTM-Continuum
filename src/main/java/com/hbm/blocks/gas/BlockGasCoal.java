@@ -23,10 +23,12 @@ public class BlockGasCoal extends BlockGasBase {
 
     public BlockGasCoal(Properties properties) {
         super(properties);
+        cloudColor(0.2F, 0.2F, 0.2F);
     }
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource rand) {
+        super.animateTick(state, level, pos, rand);
         level.addParticle(ParticleTypes.SMOKE, pos.getX() + rand.nextFloat(), pos.getY() + rand.nextFloat(),
                 pos.getZ() + rand.nextFloat(), 0.0D, 0.0D, 0.0D);
     }

@@ -125,7 +125,9 @@ public final class FluidNetwork {
                 }
                 ForgeDirection side = d == EdgeFaces.SELF ? ForgeDirection.UNKNOWN
                         : ForgeDirection.getOrientation(DIRS[d].getOpposite());
-                gather.offer((IFluidUserMK2) be, type, side);
+                // a machine with several users (IFluidMultiUserMK2) is served once per user its faces reach
+                IFluidUserMK2 user = IFluidMultiUserMK2.resolve(be, at, d == EdgeFaces.SELF ? null : DIRS[d].getOpposite());
+                if (user != null) gather.offer(user, type, side);
             }
         }
 

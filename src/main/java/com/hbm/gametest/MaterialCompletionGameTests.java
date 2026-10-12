@@ -197,15 +197,13 @@ public final class MaterialCompletionGameTests {
         helper.assertTrue(FuelAdditiveItems.get(FuelAdditiveItems.Variant.ANTIKNOCK)
                         != FuelAdditiveItems.get(FuelAdditiveItems.Variant.DEICER),
                 "Flattened fuel additives must be distinct items");
-        var chemical = FuelAdditiveRecipes.chemicalPlantRecipes();
-        helper.assertTrue(chemical.size() == 2,
-                "Fuel additive chemical catalogue must contain TEL and deicer");
-        helper.assertTrue(chemical.get(0).getInternalName().equals("chem.tel")
-                        && chemical.get(1).getInternalName().equals("chem.deicer")
-                        && chemical.get(0).outputItem[0].getItem()
-                        == FuelAdditiveItems.get(FuelAdditiveItems.Variant.ANTIKNOCK)
-                        && chemical.get(1).outputItem[0].getItem()
-                        == FuelAdditiveItems.get(FuelAdditiveItems.Variant.DEICER),
+        // the two chemical plant rows are datapack recipes since §19fa-m1 (data/hbm/recipe/chemical_plant/tel, deicer)
+        com.hbm.inventory.recipes.ChemicalPlantRecipes.INSTANCE.registerRecipes();
+        var tel = com.hbm.inventory.recipes.ChemicalPlantRecipes.INSTANCE.getRecipe("chem.tel");
+        var deicer = com.hbm.inventory.recipes.ChemicalPlantRecipes.INSTANCE.getRecipe("chem.deicer");
+        helper.assertTrue(tel != null && deicer != null
+                        && tel.outputItem[0].getItem() == FuelAdditiveItems.get(FuelAdditiveItems.Variant.ANTIKNOCK)
+                        && deicer.outputItem[0].getItem() == FuelAdditiveItems.get(FuelAdditiveItems.Variant.DEICER),
                 "Fuel additive chemical recipe IDs changed");
         var mixer = FuelAdditiveRecipes.mixerRecipes();
         helper.assertTrue(mixer.size() == 3

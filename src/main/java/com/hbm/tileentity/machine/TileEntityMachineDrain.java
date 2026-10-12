@@ -49,6 +49,8 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
                 int toSpill = Math.max(drain.tank.getFill() / 2, 1);
                 drain.tank.setFill(drain.tank.getFill() - toSpill);
                 FT_Polluting.pollute(level, pos, drain.tank.getTankType(), FluidReleaseType.SPILL, toSpill);
+                // hbm-space FT_Gaseous.release: a drained gas goes into the planet's air (com.hbm.api.environment)
+                com.hbm.api.environment.Environment.releaseGas(level, pos, drain.tank.getTankType(), toSpill);
 
                 if (toSpill >= 100 && level.getRandom().nextInt(20) == 0
                         && FluidCombustion.isLiquidAndViscous(drain.tank.getTankType())

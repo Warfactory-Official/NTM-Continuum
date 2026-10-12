@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BlockGasAsbestos extends BlockGasBase {
     public BlockGasAsbestos(Properties properties) {
         super(properties);
+        cloudColor(0.6F, 0.6F, 0.5F);
     }
 
     @Override
@@ -26,6 +27,7 @@ public class BlockGasAsbestos extends BlockGasBase {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        super.animateTick(state, level, pos, random);
         if (random.nextInt(5) == 0) {
             level.addParticle(ParticleTypes.MYCELIUM,
                     pos.getX() + random.nextFloat(), pos.getY() + random.nextFloat(),

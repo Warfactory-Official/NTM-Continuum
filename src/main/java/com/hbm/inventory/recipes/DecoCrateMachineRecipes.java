@@ -15,14 +15,13 @@ import net.minecraft.world.item.Items;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.function.BiConsumer;
 
 /**
  * The machine recipes of the crate/deco wave, each handed to its registry from one line in that registry's own
  * registration: 1.7 {@code AssemblyMachineRecipes} "ass.cap*" (two stacks of 64 caps into a cap block),
- * {@code AnvilRecipes} recycling of the FM radio and the filing cabinet, and {@code ShredderRecipes} for the
- * tungsten crate and the bobbleheads (each figure shreds to its own {@code scrap_plastic_<type>}, see
- * {@link #bobbleScrap}).
+ * {@code AnvilRecipes} recycling of the FM radio and the filing cabinet, and the bobblehead rule of
+ * {@code ShredderRecipes} (each figure shreds to its own {@code scrap_plastic_<type>}, see {@link #bobbleScrap}; the
+ * tungsten crate and plain bobblehead rows are files of the shredder table, M2 R-C1).
  */
 public final class DecoCrateMachineRecipes {
 
@@ -43,31 +42,6 @@ public final class DecoCrateMachineRecipes {
                     .outputItems(new ItemStack(ModDecoCrateBlocks.CAP_BLOCKS.get(type).get(), 1))
                     .inputItems(new ComparableStack(cap.getItem(), 64), new ComparableStack(cap.getItem(), 64)));
         }
-    }
-
-    /** 1.7 AnvilRecipes: the FM radio (tier 2) and the filing cabinet (tier 1) recycling. */
-    public static void anvil(List<AnvilConstructionRecipe> recipes) {
-        recipes.add(new AnvilConstructionRecipe(new ComparableStack(ModDecoCrateBlocks.radiorec.get().asItem()),
-                new AnvilOutput[]{
-                        new AnvilOutput(stack("plate_steel", 4)),
-                        new AnvilOutput(stack("wire_fine_copper", 1)),
-                        new AnvilOutput(stack("circuit_vacuum_tube", 1), 0.5F),
-                        new AnvilOutput(stack("ingot_polymer", 1), 0.25F),
-                }).setTier(2));
-        recipes.add(new AnvilConstructionRecipe(new ComparableStack(ModDecoCrateBlocks.filing_cabinet.get().asItem()),
-                new AnvilOutput[]{
-                        new AnvilOutput(stack("plate_steel", 2)),
-                        new AnvilOutput(stack("plate_steel", 2), 0.5F),
-                        new AnvilOutput(stack("plate_polymer", 2), 0.25F),
-                        new AnvilOutput(stack("scrap", 1)),
-                }).setTier(1)); // 1.7 AnvilRecipes: the filing cabinet is tier 1 (the radio tier 2)
-    }
-
-    /** 1.7 ShredderRecipes:281 and 337-341. */
-    public static void shredder(BiConsumer<Item, ItemStack> set) {
-        set.accept(ModDecoCrateBlocks.crate_tungsten.get().asItem(), stack("powder_tungsten", 36));
-        // the table entry is the plain (variant 0, NONE) figure; ShredderRecipes asks bobbleScrap for the others
-        set.accept(ModDecoCrateBlocks.bobblehead.get().asItem(), stack("scrap_plastic_board_blank", 1));
     }
 
     /** 1.7 ShredderRecipes:338-341: a bobblehead gives the plastic scrap of its {@code BobbleType.scrap}; else null. */

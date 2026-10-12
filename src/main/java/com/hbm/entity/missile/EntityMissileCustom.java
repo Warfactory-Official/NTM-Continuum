@@ -160,13 +160,7 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
         // 1.7's ion drive is the one fuel with no visible plume at all; 1.7 cannot reach a null fuselage here
         if(fuel == null) return;
 
-        ClientEffects.Contrail contrail = switch(fuel) {
-            case KEROSENE -> ClientEffects.Contrail.KEROSENE;
-            case SOLID -> ClientEffects.Contrail.SOLID;
-            case HYDROGEN -> ClientEffects.Contrail.HYDROGEN;
-            case BALEFIRE -> ClientEffects.Contrail.BALEFIRE;
-            case XENON -> null;
-        };
+        ClientEffects.Contrail contrail = fuel.contrail; // 1.7: kerosene/solid/hydrogen/balefire, xenon none
         if(contrail == null) return;
 
         // 1.7 iterated i < velocity; flight is server-authoritative now (this.velocity stays client-zero), so the tail
@@ -204,39 +198,31 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
             return;
         }
 
-        switch(type) {
-        case HE:
+        if (type == WarheadType.HE) {
             ExplosionLarge.explode(level(), getX(), getY(), getZ(), strength, true, false, true);
             ExplosionLarge.jolt(level(), getX(), getY(), getZ(), strength, (int) (strength * 50), 0.25);
-            break;
-        case INC:
+        } else if (type == WarheadType.INC) {
             ExplosionLarge.explodeFire(level(), getX(), getY(), getZ(), strength, true, false, true);
             ExplosionLarge.jolt(level(), getX(), getY(), getZ(), strength * 1.5, (int) (strength * 50), 0.25);
-            break;
-        case CLUSTER:
-            break;
-        case BUSTER:
+        } else if (type == WarheadType.CLUSTER) {
+            // 1.7: no impact effect
+        } else if (type == WarheadType.BUSTER) {
             ExplosionLarge.buster(level(), getX(), getY(), getZ(),
                     new Vec3(getDeltaMovement().x, getDeltaMovement().y, getDeltaMovement().z),
                     strength, (int) (strength * 4));
-            break;
-        case NUCLEAR:
-        case TX:
+        } else if (type == WarheadType.NUCLEAR || type == WarheadType.TX) {
             spawnBlast(EntityNukeExplosionMK5.statFac(level(), (int) strength, getX(), getY(), getZ()));
             spawnCloud(EntityNukeTorex.statFac(level(), getX(), getY(), getZ(), strength));
-            break;
-        case BALEFIRE:
+        } else if (type == WarheadType.BALEFIRE) {
             EntityBalefire bf = new EntityBalefire(ModNtmEntities.BALEFIRE.get(), level());
             bf.setPos(getX(), getY(), getZ());
             bf.destructionRange = (int) strength;
             level().addFreshEntity(bf);
             spawnCloud(EntityNukeTorex.statFacBale(level(), getX(), getY(), getZ(), strength));
-            break;
-        case N2:
+        } else if (type == WarheadType.N2) {
             spawnBlast(EntityNukeExplosionMK5.statFacNoRad(level(), (int) strength, getX(), getY(), getZ()));
             spawnCloud(EntityNukeTorex.statFac(level(), getX(), getY(), getZ(), strength));
-            break;
-        case TAINT:
+        } else if (type == WarheadType.TAINT) {
             int r = (int) strength;
             // 1.7: nextInt(r) - (r/2 - 1) on (int)-truncated coords - a window r wide, centered half a radius out
             for (int i = 0; i < r * 10; i++) {
@@ -249,14 +235,12 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
                 level().setBlock(pos, ModBombBlocks.taint.get().defaultBlockState()
                         .setValue(BlockTaint.TAINTAGE, random.nextInt(3) + 4), Block.UPDATE_CLIENTS);
             }
-            break;
-        case CLOUD:
+        } else if (type == WarheadType.CLOUD) {
             // 1.7 playAuxSFX(2002): splash-potion break FX
             level().levelEvent(2002, BlockPos.containing(getX(), getY(), getZ()), 0);
             ExplosionChaos.spawnPoisonCloud(level(), getX() - getDeltaMovement().x, getY() - getDeltaMovement().y,
                     getZ() - getDeltaMovement().z, 750, 2.5, 2);
-            break;
-        case TURBINE:
+        } else if (type == WarheadType.TURBINE) {
             ExplosionLarge.explode(level(), getX(), getY(), getZ(), 10, true, false, true);
             int count = (int) strength;
             // 1.7 fanned the blades out on a rotating 0.5-radius vector, one motion step behind the missile.
@@ -271,10 +255,6 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
                         fan.x, 0D, fan.z));
                 fan = fan.yRot((float) (Math.PI * 2F / count));
             }
-            break;
-        default:
-            break;
-
         }
     }
 

@@ -11,8 +11,32 @@ import org.jspecify.annotations.Nullable;
 // 1.7: EntityTNTPrimedBase - only explode() dispatch differs
 public class EntityTntNtm extends CompatPrimedTnt {
 
+    /**
+     * hbm-space {@code EntityTNTPrimedBase.doesSpin}: a primed charge tumbles, its pitch and yaw turning by a gaussian
+     * 5 and 10 degrees a tick picked when it is made (ADDON-API-INVENTORY V-181; drawn by {@code RenderTNTPrimedBase}).
+     * Off in plain HBM (1.7: no tumble, vanilla's renderer); NTM: Space turns it on.
+     */
+    public static boolean spin = false;
+
+    private final boolean doesSpin;
+    private final float momentumPitch;
+    private final float momentumYaw;
+
     public EntityTntNtm(EntityType<? extends EntityTntNtm> type, Level level) {
         super(type, level);
+        this.doesSpin = spin;
+        // drawn only when spinning, so plain HBM's random sequence is untouched
+        this.momentumPitch = doesSpin ? (float) (level.getRandom().nextGaussian() * 5F) : 0F;
+        this.momentumYaw = doesSpin ? (float) (level.getRandom().nextGaussian() * 10F) : 0F;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (doesSpin && !isRemoved()) {
+            setXRot(getXRot() + momentumPitch);
+            setYRot(getYRot() + momentumYaw);
+        }
     }
 
     // 1.7: 5-arg ctor hardcodes EntityTypes.TNT; body reproduced

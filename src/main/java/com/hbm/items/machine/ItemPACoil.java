@@ -30,6 +30,21 @@ public class ItemPACoil extends CompatItem {
         this.type = type;
     }
 
+    /** The coil values of {@code stack}: its {@code hbm:pa_coil} entry, else HBM's enum constant; null when not a coil. */
+    public static com.hbm.api.data.MachinePartDataMaps.@Nullable Coil stats(ItemStack stack) {
+        if (!(stack.getItem() instanceof ItemPACoil coil)) return null;
+        com.hbm.api.data.MachinePartDataMaps.Coil data = com.hbm.api.data.MachinePartDataMaps.PA_COIL.get(coil);
+        if (data != null) return data;
+        return codeStats(stack);
+    }
+
+    /** The code defaults (constructor or enum values) that the data map entry overrides. */
+    public static com.hbm.api.data.MachinePartDataMaps.@Nullable Coil codeStats(ItemStack stack) {
+        if (!(stack.getItem() instanceof ItemPACoil coil)) return null;
+        EnumCoilType t = coil.type;
+        return new com.hbm.api.data.MachinePartDataMaps.Coil(t.quadMin, t.quadMax, t.diMin, t.diMax, t.diDistMin);
+    }
+
     /** The coil grade of {@code stack}, or null when it is not a coil. */
     public static @Nullable EnumCoilType typeOf(ItemStack stack) {
         return stack.getItem() instanceof ItemPACoil coil ? coil.type : null;
@@ -38,12 +53,14 @@ public class ItemPACoil extends CompatItem {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
+        var type = stats(stack);
+        if (type == null) return;
         tooltip.add(Component.literal("Quadrupole operational range: ").withStyle(ChatFormatting.BLUE)
-                .append(Component.literal(range(type.quadMin, type.quadMax)).withStyle(ChatFormatting.RESET)));
+                .append(Component.literal(range(type.quadMin(), type.quadMax())).withStyle(ChatFormatting.RESET)));
         tooltip.add(Component.literal("Dipole operational range: ").withStyle(ChatFormatting.BLUE)
-                .append(Component.literal(range(type.diMin, type.diMax)).withStyle(ChatFormatting.RESET)));
+                .append(Component.literal(range(type.diMin(), type.diMax())).withStyle(ChatFormatting.RESET)));
         tooltip.add(Component.literal("Dipole minimum side length: ").withStyle(ChatFormatting.BLUE)
-                .append(Component.literal("" + type.diDistMin).withStyle(ChatFormatting.RESET)));
+                .append(Component.literal("" + type.diDistMin()).withStyle(ChatFormatting.RESET)));
         tooltip.add(Component.literal("Minimums not met result in a power draw penalty!").withStyle(ChatFormatting.RED));
         tooltip.add(Component.literal("Maximums exceeded result in the particle crashing!").withStyle(ChatFormatting.RED));
         tooltip.add(Component.literal("Particles will crash in dipoles if both penalties take effect!").withStyle(ChatFormatting.RED));

@@ -41,10 +41,19 @@ public class HazmatRegistry {
     public static final double cobalt = 0.125D;     // 25%
     public static final double paa = 1.7D;          // 97%
 
+    /** Code-registered resistances, below the data map's ({@link com.hbm.api.data.ArmorDataMaps#RADIATION_RESISTANCE}). */
     private static final HashMap<Item, Double> entries = new HashMap<>();
+
+    /** {@code config/hbmConfig/hbmRadResist.json}: per-item overrides above everything else. */
+    private static volatile java.util.Map<Item, Double> configOverrides = java.util.Map.of();
 
     public static void registerHazmat(Item item, double resistance) {
         entries.put(item, resistance);
+    }
+
+    /** The code-registered resistances (read-only view). */
+    public static java.util.Map<Item, Double> codeEntries() {
+        return java.util.Collections.unmodifiableMap(entries);
     }
 
     public static double getResistance(ItemStack stack) {
@@ -52,8 +61,16 @@ public class HazmatRegistry {
             return 0;
 
         double cladding = getCladding(stack);
-        Double f = entries.get(stack.getItem());
+        Double f = rawResistance(stack.getItem());
         return f != null ? f + cladding : cladding;
+    }
+
+    /** A piece's own resistance: the config override, else the data map, else a code registration; null if none. */
+    public static Double rawResistance(Item item) {
+        Double f = configOverrides.get(item);
+        if (f == null) f = com.hbm.api.data.ArmorDataMaps.RADIATION_RESISTANCE.get(item);
+        if (f == null) f = entries.get(item);
+        return f;
     }
 
     /** Returns radiation cladding from the ordered armor-module component, if installed. */
@@ -65,7 +82,9 @@ public class HazmatRegistry {
     /**
      * 1.7 {@code HazmatRegistry.registerHazmats}, run once every default is registered: with no
      * {@code config/hbmConfig/hbmRadResist.json} it writes the defaults to {@code _hbmRadResist.json} as a template;
-     * with one, that file's entries replace the whole table (an item it leaves out has no resistance).
+     * with one, that file's entries override the items it names. 1.7's file replaced the whole table, which also
+     * dropped every resistance another mod had registered; the defaults are a data map now, so the config is an
+     * override layer above it (an item set to 0 there has none).
      */
     public static void registerHazmats() {
         java.nio.file.Path folder = com.hbm.config.CustomMachineConfigJSON.configHbmDir();
@@ -74,10 +93,7 @@ public class HazmatRegistry {
             writeDefault(folder.resolve("_hbmRadResist.json"));
         } else {
             HashMap<Item, Double> conf = readConfig(config);
-            if (conf != null) {
-                entries.clear();
-                entries.putAll(conf);
-            }
+            if (conf != null) configOverrides = java.util.Map.copyOf(conf);
         }
     }
 
@@ -88,9 +104,12 @@ public class HazmatRegistry {
             writer.beginObject();
             writer.name("comment").value("Template file, remove the underscore ('_') from the name to enable the config.");
             writer.name("entries").beginArray();
-            for (java.util.Map.Entry<Item, Double> entry : entries.entrySet()) {
+            java.util.Map<String, Double> defaults = new java.util.TreeMap<>(com.hbm.api.data.ArmorDataMaps.RADIATION_RESISTANCE.byId());
+            entries.forEach((item, value) -> defaults.putIfAbsent(
+                    net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).toString(), value));
+            for (java.util.Map.Entry<String, Double> entry : defaults.entrySet()) {
                 writer.beginObject();
-                writer.name("item").value(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(entry.getKey()).toString());
+                writer.name("item").value(entry.getKey());
                 writer.name("resistance").value(entry.getValue());
                 writer.endObject();
             }

@@ -174,7 +174,6 @@ public final class ModArmorSetItems {
     /** Set bonuses, radiation resistance, hazard classes and worn models; see {@link ModArmorItems#configure()}. */
     public static void configure() {
         // HazmatRegistry: alloy 0.07 (15%), cmb 1.3 (95%), euphemium 10 (<100%). Neither alloy nor dnt had a bonus.
-        alloy_helmet.get().setRadResist(0.07D);
         alloy_plate.get().cloneStats(alloy_helmet.get());
         alloy_legs.get().cloneStats(alloy_helmet.get());
         alloy_boots.get().cloneStats(alloy_helmet.get());
@@ -182,8 +181,7 @@ public final class ModArmorSetItems {
         ArmorFSB cmb = cmb_helmet.get()
                 .addEffect(Effects.instance(Effects.speed(), 20, 2))
                 .addEffect(Effects.instance(Effects.haste(), 20, 2))
-                .addEffect(Effects.instance(Effects.strength(), 20, 4))
-                .setRadResist(1.3D);
+                .addEffect(Effects.instance(Effects.strength(), 20, 4));
         cmb_plate.get().cloneStats(cmb);
         cmb_legs.get().cloneStats(cmb);
         cmb_boots.get().cloneStats(cmb);
@@ -203,14 +201,7 @@ public final class ModArmorSetItems {
         bismuth_legs.get().cloneStats(bismuth);
         bismuth_boots.get().cloneStats(bismuth);
 
-        for (ArmorFSB piece : new ArmorFSB[] {euphemium_helmet.get(), euphemium_plate.get(),
-                euphemium_legs.get(), euphemium_boots.get()}) {
-            piece.setRadResist(10D);
-        }
         // 1.7 ArmorUtil.register: the euphemium helmet protects against every hazard class.
-        ArmorRegistry.registerHazard(euphemium_helmet.get(), FULL_PACKAGE);
-        ArmorUtil.registerHazmat2Set(euphemium_helmet.get(), euphemium_plate.get(), euphemium_legs.get(),
-                euphemium_boots.get());
 
         configurePowerArmor(ajr_helmet.get(), "ajr");
         ajr_plate.get().cloneStats(ajr_helmet.get());
@@ -227,8 +218,6 @@ public final class ModArmorSetItems {
                 .setHasGeigerSound(true)
                 .setHasCustomGeiger(true)
                 .setHides(EnumPlayerPart.HAT)
-                .setHazardClass(FULL_PACKAGE)
-                .setRadResist(2.3D /* 99.5% */)
                 .setArmorModel("hev");
         hev_plate.get().cloneStats(hev);
         hev_legs.get().cloneStats(hev);
@@ -243,13 +232,10 @@ public final class ModArmorSetItems {
                 .setJump(ModSounds.IRON_JUMP)
                 .setFall(ModSounds.IRON_LAND)
                 .setHides(EnumPlayerPart.HAT)
-                .setHazardClass(FULL_PACKAGE)
-                .setRadResist(4D /* 99.99% */)
                 .setArmorModel("fau");
         fau_plate.get().cloneStats(fau).setFullSetForHide();
         fau_legs.get().cloneStats(fau).setHides(EnumPlayerPart.LEFT_LEG, EnumPlayerPart.RIGHT_LEG).setFullSetForHide();
         fau_boots.get().cloneStats(fau);
-        ArmorUtil.registerHazmat2Set(fau_helmet.get(), fau_plate.get(), fau_legs.get(), fau_boots.get());
 
         ArmorFSB trench = trenchmaster_helmet.get()
                 .addEffect(Effects.instance(Effects.strength(), 20, 2))
@@ -259,8 +245,6 @@ public final class ModArmorSetItems {
                 .enableVATS(true)
                 .setStepSize(1)
                 .setHides(EnumPlayerPart.HAT)
-                .setRadResist(1D /* 90% */)
-                .setHazardClass(FULL_PACKAGE)
                 .setArmorModel("trenchmaster");
         trenchmaster_plate.get().cloneStats(trench);
         trenchmaster_legs.get().cloneStats(trench);
@@ -278,75 +262,15 @@ public final class ModArmorSetItems {
                 .setJump(ModSounds.IRON_JUMP)
                 .setFall(ModSounds.IRON_LAND)
                 .setHides(EnumPlayerPart.HAT)
-                .setHazardClass(FULL_PACKAGE)
-                .setRadResist(1.3D /* 95% */)
                 .setArmorModel(model);
     }
 
     /** 1.7 {@code DamageResistanceHandler.initDefaults}, the entries for this family, in source order. */
     public static void registerResistances() {
-        DamageResistanceHandler.registerSet(alloy_helmet.get(), alloy_plate.get(), alloy_legs.get(), alloy_boots.get(),
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 2F, 0.1F));
         // Upstream registers the pants as all four slots of a "set", which no player can ever wear. Kept.
-        DamageResistanceHandler.registerSet(zirconium_legs.get(), zirconium_legs.get(), zirconium_legs.get(),
-                zirconium_legs.get(), new ResistanceStats().setOther(0F, 1F));
-        DamageResistanceHandler.registerSet(dnt_helmet.get(), dnt_plate.get(), dnt_legs.get(), dnt_boots.get(),
-                new ResistanceStats());
-        DamageResistanceHandler.registerSet(cmb_helmet.get(), cmb_plate.get(), cmb_legs.get(), cmb_boots.get(),
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 5F, 0.5F).setOther(5F, 0.25F));
-        ResistanceStats ajr = new ResistanceStats()
-                .addCategory(CATEGORY_PHYSICAL, 4F, 0.15F)
-                .addCategory(CATEGORY_FIRE, 0.5F, 0.35F)
-                .addCategory(CATEGORY_EXPLOSION, 7.5F, 0.25F)
-                .addExact("fall", 0F, 1F)
-                .setOther(0F, 0.15F);
-        DamageResistanceHandler.registerSet(ajr_helmet.get(), ajr_plate.get(), ajr_legs.get(), ajr_boots.get(), ajr);
-        DamageResistanceHandler.registerSet(ajro_helmet.get(), ajro_plate.get(), ajro_legs.get(), ajro_boots.get(),
-                new ResistanceStats()
-                        .addCategory(CATEGORY_PHYSICAL, 4F, 0.15F)
-                        .addCategory(CATEGORY_FIRE, 0.5F, 0.35F)
-                        .addCategory(CATEGORY_EXPLOSION, 7.5F, 0.25F)
-                        .addExact("fall", 0F, 1F)
-                        .setOther(0F, 0.15F));
-        DamageResistanceHandler.registerSet(hev_helmet.get(), hev_plate.get(), hev_legs.get(), hev_boots.get(),
-                new ResistanceStats()
-                        .addCategory(CATEGORY_PHYSICAL, 2F, 0.25F)
-                        .addCategory(CATEGORY_FIRE, 0.5F, 0.5F)
-                        .addCategory(CATEGORY_EXPLOSION, 5F, 0.25F)
-                        .addExact("onFire", 0F, 1F)
-                        .addExact("fall", 10F, 0F)
-                        .setOther(2F, 0.25F));
-        DamageResistanceHandler.registerSet(bismuth_helmet.get(), bismuth_plate.get(), bismuth_legs.get(),
-                bismuth_boots.get(), new ResistanceStats()
-                        .addCategory(CATEGORY_PHYSICAL, 2F, 0.15F)
-                        .addCategory(CATEGORY_FIRE, 5F, 0.5F)
-                        .addCategory(CATEGORY_EXPLOSION, 5F, 0.25F)
-                        .addExact("fall", 0F, 1F)
-                        .setOther(2F, 0.25F));
-        DamageResistanceHandler.registerSet(fau_helmet.get(), fau_plate.get(), fau_legs.get(), fau_boots.get(),
-                new ResistanceStats()
-                        .addCategory(CATEGORY_PHYSICAL, 100F, 0.99F)
-                        .addCategory(CATEGORY_EXPLOSION, 50F, 0.95F)
-                        .addCategory(CATEGORY_FIRE, 100F, 1F)
-                        .addExact(DamageResistanceHandler.DamageClass.LASER.name(), 25F, 0.95F)
-                        .addExact("fall", 0F, 1F)
-                        .setOther(100F, 0.99F));
-        DamageResistanceHandler.registerSet(trenchmaster_helmet.get(), trenchmaster_plate.get(),
-                trenchmaster_legs.get(), trenchmaster_boots.get(), new ResistanceStats()
-                        .addCategory(CATEGORY_PHYSICAL, 5F, 0.5F)
-                        .addCategory(CATEGORY_FIRE, 5F, 0.5F)
-                        .addCategory(CATEGORY_EXPLOSION, 5F, 0.25F)
-                        .addExact(DamageResistanceHandler.DamageClass.LASER.name(), 15F, 0.9F)
-                        .addExact("fall", 10F, 0.5F)
-                        .setOther(5F, 0.25F));
-        DamageResistanceHandler.registerSet(euphemium_helmet.get(), euphemium_plate.get(), euphemium_legs.get(),
-                euphemium_boots.get(), new ResistanceStats().setOther(1_000_000F, 1F));
+        // hbm:damage_resistance and the resistance of hbm:armor_sets (1.7 DamageResistanceHandler.initDefaults)
     }
 
-    private static final HazardClass[] FULL_PACKAGE = {
-            HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_LUNG,
-            HazardClass.BACTERIA, HazardClass.GAS_BLISTERING, HazardClass.GAS_MONOXIDE,
-            HazardClass.LIGHT, HazardClass.SAND};
 
     public static void init() {}
 }

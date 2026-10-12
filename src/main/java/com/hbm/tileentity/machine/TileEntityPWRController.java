@@ -76,6 +76,10 @@ public class TileEntityPWRController extends TileEntityMachineBase
     public double rodLevel = 100;
     public double rodTarget = 100;
 
+    /**
+     * The loaded fuel item as its runtime registry number (synced to the GUI; -1 none). Saved by item name: any item with
+     * an {@code hbm:pwr_fuel} entry can be loaded, an addon's too.
+     */
     public int typeLoaded = -1;
     public int amountLoaded;
     public double progress;
@@ -223,14 +227,15 @@ public class TileEntityPWRController extends TileEntityMachineBase
     /** One fission step; split out of the tick so a test can drive it without the chunk-loading gate. */
     public void runReactor(Level level, BlockPos pos) {
         ItemStack input = inventory.getStackInSlot(0);
-        EnumPWRFuel inputFuel = ModPwrItems.fuelOf(input.getItem());
+        int inputFuel = input.isEmpty() || com.hbm.items.machine.ItemPWRFuel.stats(input.getItem()) == null ? -1
+                : net.minecraft.core.registries.BuiltInRegistries.ITEM.getId(input.getItem());
 
-        if ((typeLoaded == -1 || amountLoaded <= 0) && inputFuel != null) {
-            typeLoaded = inputFuel.ordinal();
+        if ((typeLoaded == -1 || amountLoaded <= 0) && inputFuel != -1) {
+            typeLoaded = inputFuel;
             amountLoaded++;
             inventory.extractItem(0, 1, false);
             this.markChanged();
-        } else if (inputFuel != null && inputFuel.ordinal() == typeLoaded && amountLoaded < rodCount) {
+        } else if (inputFuel != -1 && inputFuel == typeLoaded && amountLoaded < rodCount) {
             amountLoaded++;
             inventory.extractItem(0, 1, false);
             this.markChanged();
@@ -247,13 +252,14 @@ public class TileEntityPWRController extends TileEntityMachineBase
 
         int newFlux = this.sourceCount * 20;
 
-        if (typeLoaded != -1 && amountLoaded > 0) {
-            EnumPWRFuel fuel = EnumPWRFuel.VALUES[Math.abs(typeLoaded) % EnumPWRFuel.VALUES.length];
+        com.hbm.api.data.ReactorDataMaps.PWRFuel fuel = typeLoaded == -1 ? null
+                : com.hbm.items.machine.ItemPWRFuel.stats(net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(typeLoaded));
+        if (fuel != null && amountLoaded > 0) {
             double usedRods = getTotalProcessMultiplier();
             double fluxPerRod = this.flux / this.rodCount;
-            double outputPerRod = fuel.function.effonix(fluxPerRod);
+            double outputPerRod = fuel.function().effonix(fluxPerRod);
             double totalOutput = outputPerRod * amountLoaded * usedRods;
-            double totalHeatOutput = totalOutput * fuel.heatEmission;
+            double totalHeatOutput = totalOutput * fuel.heat();
 
             if (tanks[0].getFill() > 0) totalHeatOutput *= multiplier;
 
@@ -261,14 +267,14 @@ public class TileEntityPWRController extends TileEntityMachineBase
             this.coreHeat += totalHeatOutput;
             newFlux += totalOutput;
 
-            this.processTime = (int) fuel.yield;
+            this.processTime = (int) fuel.yield();
             this.progress += totalOutput;
 
             if (this.progress >= this.processTime) {
                 this.progress -= this.processTime;
 
                 ItemStack out = inventory.getStackInSlot(1);
-                ModPwrItems.ItemPWRFuelSpent hot = ModPwrItems.hot(fuel);
+                net.minecraft.world.item.Item hot = fuel.hotItem();
                 if (out.isEmpty()) {
                     inventory.setStackInSlot(1, new ItemStack(hot, 1));
                 } else if (out.getItem() == hot && out.getCount() < out.getMaxStackSize()) {
@@ -521,8 +527,12 @@ public class TileEntityPWRController extends TileEntityMachineBase
         this.flux = input.getDoubleOr("flux", 0);
         this.rodLevel = input.getDoubleOr("rodLevel", 0);
         this.rodTarget = input.getDoubleOr("rodTarget", 0);
-        EnumPWRFuel savedFuel = com.hbm.util.SavedIds.getEnumOrNull(input, "typeLoaded", EnumPWRFuel.class);
-        this.typeLoaded = savedFuel == null ? -1 : savedFuel.ordinal(); // saved by name, never the ordinal
+        // saved by item name; a save from before the fuel data map holds the 1.7 enum name ("MEU")
+        String saved = input.getStringOr("typeLoaded", "");
+        if (!saved.isEmpty() && !saved.contains(":")) saved = "hbm:pwr_fuel_" + saved.toLowerCase(java.util.Locale.ROOT);
+        net.minecraft.world.item.Item savedFuel = saved.isEmpty() ? null : com.hbm.api.data.ReactorDataMaps.itemOf(saved);
+        this.typeLoaded = savedFuel == null || com.hbm.items.machine.ItemPWRFuel.stats(savedFuel) == null ? -1
+                : net.minecraft.core.registries.BuiltInRegistries.ITEM.getId(savedFuel);
         this.amountLoaded = input.getIntOr("amountLoaded", 0);
         this.progress = input.getDoubleOr("progress", 0);
         this.processTime = input.getDoubleOr("processTime", 0);
@@ -565,7 +575,8 @@ public class TileEntityPWRController extends TileEntityMachineBase
         output.putDouble("flux", flux);
         output.putDouble("rodLevel", rodLevel);
         output.putDouble("rodTarget", rodTarget);
-        if (typeLoaded >= 0) com.hbm.util.SavedIds.putEnum(output, "typeLoaded", EnumPWRFuel.VALUES[typeLoaded % EnumPWRFuel.VALUES.length]);
+        if (typeLoaded >= 0) output.putString("typeLoaded", net.minecraft.core.registries.BuiltInRegistries.ITEM
+                .getKey(net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(typeLoaded)).toString());
         output.putInt("amountLoaded", amountLoaded);
         output.putDouble("progress", progress);
         output.putDouble("processTime", processTime);

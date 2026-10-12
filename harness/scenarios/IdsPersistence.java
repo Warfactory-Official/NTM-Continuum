@@ -84,7 +84,8 @@ public class IdsPersistence implements Scenario {
             Expect.that(duct.contains("type:\"hbm:steam\""), "duct " + x + " kept steam by name: " + duct);
         }
         String valve = nbt(c, VX, Y + 1, DZ);
-        Expect.that(valve.contains("type:\"hbm:water\""), "the valve kept water by name: " + valve);
+        // placed with the old name hbm:water (still read, §19fa-m1); saved under vanilla's fluid id
+        Expect.that(valve.contains("type:\"minecraft:water\""), "the valve kept water by name: " + valve);
         for (String saved : List.of(barrel, valve, nbt(c, 0, Y + 1, DZ))) {
             Expect.that(!NUMERIC_FLUID.matcher(saved.replaceAll("\\s+", "")).find(), "no numeric fluid id on disk: " + saved);
         }

@@ -160,6 +160,32 @@ public final class ModAutogenItems {
         }
     }
 
+    /**
+     * Gives an addon's material (or one of HBM's, in a shape HBM does not generate for it) its material-shape items,
+     * registered in the addon's own register as {@code <namespace>:<base>_<material>} (1.7 {@code ItemAutogen} for a
+     * material made after HBM's; HBM generates only its own materials, at class load). Only the given shapes that
+     * have no item yet are registered; each must be an autogen shape ({@link #shapeOrder()}). The model is the
+     * computed sprite {@code hbm:items/<base>_<material>}, which {@code AutogenSprites} remaps from the shape's plate
+     * for every material in {@code Mats.orderedList} that lists the shape in {@code setAutogen}: so call
+     * {@code setAutogen} with the same shapes first. {@link #get} then finds the items like HBM's own. Call at mod
+     * construction, after the material is registered.
+     */
+    public static void registerAutogen(DeferredRegister.Items items, NTMMaterial mat, MaterialShapes... shapes) {
+        Reg reg = Reg.of(items);
+        for (MaterialShapes shape : shapes) {
+            String base = SHAPES.get(shape);
+            if (base == null) throw new IllegalArgumentException(shape + " is not an autogen shape");
+            synchronized (BY_KEY) {
+                if (BY_KEY.containsKey(key(shape, mat.name))) continue;
+                Reg.Handle<ItemAutogen> item = reg.item(base + "_" + mat.name,
+                        p -> new ItemAutogen(p, shape, mat), p -> p.stacksTo(64))
+                        .transform(Presets.sprite(Constants.MOD_ID + ":items/" + base + "_" + mat.name));
+                BY_KEY.put(key(shape, mat.name), item);
+                ModTabs.addTo(HbmTab.MATERIALS, item);
+            }
+        }
+    }
+
     /** The item for a given material+shape, or null if that combination isn't auto-generated. */
     public static @Nullable ItemAutogen get(MaterialShapes shape, NTMMaterial material) {
         RegistryObject<ItemAutogen> ro = BY_KEY.get(key(shape, material.name));

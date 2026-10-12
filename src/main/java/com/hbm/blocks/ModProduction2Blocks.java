@@ -1,8 +1,8 @@
 package com.hbm.blocks;
 
-import com.hbm.registration.BlockTag;
-import com.hbm.registration.Loot;
-import com.hbm.registration.Preset;
+import dev.golem.core.registry.BlockTag;
+import dev.golem.core.registry.Loot;
+import dev.golem.core.registry.Preset;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Models;
@@ -20,7 +20,6 @@ import dev.golem.core.world.Compat;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.SoundType;
 
-import java.util.EnumMap;
 import java.util.Map;
 import com.hbm.blocks.machine.MachineAnnihilator;
 import com.hbm.blocks.machine.MachineBoiler;
@@ -127,7 +126,7 @@ public final class ModProduction2Blocks {
      * belong to the (unported) bedrock refining chain and are not registered here.
      */
     public static final Map<BedrockOreType, RegistryObject<ItemBedrockOreGraded>> BEDROCK_ORE_BASE =
-            new EnumMap<>(BedrockOreType.class);
+            new java.util.concurrent.ConcurrentHashMap<>(); // an addon type's BASE item joins via ModBedrockOreItems.add
 
     static {
         for (BedrockOreType type : BedrockOreType.VALUES) {

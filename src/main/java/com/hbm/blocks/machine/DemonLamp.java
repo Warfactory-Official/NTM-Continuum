@@ -77,6 +77,15 @@ public class DemonLamp extends Block implements TickingBlock {
 
     public static class TileEntityDemonLamp extends CompatBlockEntity {
 
+        /** One living thing the lamp just irradiated, with its dose (after the RADIATION contamination). */
+        @FunctionalInterface
+        public interface Irradiated {
+            void irradiated(ServerLevel level, BlockPos lamp, LivingEntity entity, float dose);
+        }
+
+        /** Plain HBM registers none (H-79); NTM: Space adds the dose as neutrons too (hbm-space). */
+        public static final dev.golem.core.hook.Hook<Irradiated> IRRADIATED = dev.golem.core.hook.Hook.notifying();
+
         public TileEntityDemonLamp(BlockPos pos, BlockState state) {
             super(ModDecoBlockEntities.DEMON_LAMP.get(), pos, state);
         }
@@ -107,6 +116,7 @@ public class DemonLamp extends Block implements TickingBlock {
                 eRads /= res;
                 eRads /= (float) (len * len);
                 ContaminationUtil.contaminate(e, ContaminationUtil.HazardType.RADIATION, ContaminationUtil.ContaminationType.CREATIVE, eRads);
+                for (Irradiated listener : IRRADIATED) listener.irradiated(world, at, e, eRads);
                 if (len < 2) {
                     Compat.hurt(e, world, world.damageSources().inFire(), 100);
                 }

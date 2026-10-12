@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /** Server-side MS-ES1 execution state and client display state for AUTOCAL. */
-public final class TileEntityRadioAUTOCAL extends TileEntityLoadedBase
+public class TileEntityRadioAUTOCAL extends TileEntityLoadedBase
         implements IControlReceiver, MenuProvider {
     public boolean isOn;
     public boolean ignoreError;

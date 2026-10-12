@@ -53,6 +53,15 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements IFlu
         return "container.storageDrum";
     }
 
+    /** One stored stack, each server tick, after its own decay step (the stack now in the slot). */
+    @FunctionalInterface
+    public interface SlotTick {
+        void tick(TileEntityStorageDrum drum, int slot, ItemStack stack);
+    }
+
+    /** Plain HBM registers none (H-81); NTM: Space decays hbm-space's neutron activation here. */
+    public static final dev.golem.core.hook.Hook<SlotTick> SLOT_TICK = dev.golem.core.hook.Hook.notifying();
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityStorageDrum drum) {
         double rad = 0D;
         int liquid = 0;
@@ -76,6 +85,10 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements IFlu
                 }
             } else {
                 ContaminationUtil.neutronActivateItem(stack, 0.0F, DECAY_RATE);
+            }
+            if (!SLOT_TICK.isEmpty()) {
+                ItemStack now = drum.inventory.getStackInSlot(slot);
+                if (!now.isEmpty()) for (SlotTick listener : SLOT_TICK) listener.tick(drum, slot, now);
             }
         }
 

@@ -10,7 +10,7 @@
     "license": "${mod_license}",
     "environment": "*",
     "entrypoints": {
-        "main": [
+        "golemcore:entry": [
             "com.hbm.platform.fabric.FabricInit"
         ],
         "client": [

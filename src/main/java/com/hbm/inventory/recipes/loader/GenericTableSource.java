@@ -1,0 +1,52 @@
+package com.hbm.inventory.recipes.loader;
+
+import dev.golem.core.world.RecipeSource;
+import java.util.Locale;
+
+/**
+ * The {@link RecipeSource} of a {@link GenericRecipe} table (HBM's tables in {@code src/recipes}, and an addon's rows for
+ * them). 1.7's {@code this.register(new GenericRecipe("ass.plateiron")...)} lines
+ * read the same here; each row takes 1.7's position as its {@code order} (the machine's recipe list order) and is
+ * written as {@code <name without its prefix>.json} ({@code ass.plateiron} → {@code plateiron.json}), the ids the tables
+ * have had since they became data.
+ *
+ * @param <T> the row type ({@link GenericRecipe}, or a subclass with fields of its own)
+ */
+public abstract class GenericTableSource<T extends GenericRecipe> extends RecipeSource<T> {
+
+    protected GenericTableSource(DataGenericRecipes<T> recipes) {
+        super(recipes.table);
+    }
+
+    /** 1.7 {@code register(recipe)}. */
+    public void register(T recipe) {
+        register(id(recipe), recipe);
+    }
+
+    /** A row under an id of its own (two rows of one name, told apart by their {@code requires}). */
+    @Override
+    public void register(String id, T recipe) {
+        if (ordered()) recipe.order = nextOrder();
+        add(id, recipe);
+    }
+
+    /**
+     * The {@code order} of a loaded row ({@link #loaded}), e.g. {@code hbm:press/plate_titanium}: an addon row that
+     * follows or replaces a base row takes that row's position, and sorts right after it (ties sort by recipe id).
+     */
+    protected final int orderOf(String recipeId) {
+        return loaded(recipeId).order;
+    }
+
+    /** Whether rows carry {@code order}; false for a table looked up by input, where position means nothing. */
+    protected boolean ordered() {
+        return true;
+    }
+
+    /** The file id of a row: its name after the first dot, lower case. */
+    protected String id(T recipe) {
+        String name = recipe.getInternalName();
+        int dot = name.indexOf('.');
+        return (dot < 0 ? name : name.substring(dot + 1)).toLowerCase(Locale.ROOT);
+    }
+}

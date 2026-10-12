@@ -58,14 +58,14 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
         return type != null && FluidCombustion.isFlammable(type) && type.hasTrait(FluidTraitSimple.FT_Liquid.class);
     }
 
-    /** The canister first, then every combustible liquid (1.7's list, in registration order). */
+    /** The canister first, then every combustible liquid (1.7's list, in 1.7's Fluids.getInNiceOrder()). */
     @Override
     public List<ItemStack> getAmmoTypesForDisplay() {
         if (ammoStacks != null) return ammoStacks;
 
         List<ItemStack> stacks = new ArrayList<>();
         stacks.add(new ItemStack(ModAmmoItems.flame_diesel.get()));
-        for (FluidType type : Fluids.getAll()) {
+        for (FluidType type : Fluids.getInNiceOrder()) {
             if (type == null || type == Fluids.NONE) continue;
             if (isListedAmmo(type)) {
                 stacks.add(ItemFluidIcon.make(type));

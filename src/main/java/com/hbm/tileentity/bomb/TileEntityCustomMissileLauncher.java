@@ -212,13 +212,13 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
         ItemCustomMissilePart fuselage = multipart.fuselage();
         int fuel = (int) fuselage.fuelAmount();
 
-        switch (fuselage.fuelType()) {
-            case KEROSENE, HYDROGEN, BALEFIRE -> {
-                tanks[0].setFill(tanks[0].getFill() - fuel);
-                tanks[1].setFill(tanks[1].getFill() - fuel);
-            }
-            case XENON -> tanks[0].setFill(tanks[0].getFill() - fuel);
-            case SOLID -> this.solid -= fuel;
+        // 1.7: kerosene/hydrogen/balefire drain both tanks, xenon the fuel tank, solid the solid store
+        ItemCustomMissilePart.FuelType type = fuselage.fuelType();
+        if (type.solid()) {
+            this.solid -= fuel;
+        } else {
+            tanks[0].setFill(tanks[0].getFill() - fuel);
+            if (type.oxidizer != null) tanks[1].setFill(tanks[1].getFill() - fuel);
         }
 
         this.power -= (long) (maxPower * 0.75);
@@ -255,33 +255,24 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
         MissileStruct multipart = getStruct(inventory.getStackInSlot(0));
         if (multipart == null || multipart.fuselage() == null) return -1;
         ItemCustomMissilePart fuselage = multipart.fuselage();
-        return switch (fuselage.fuelType()) {
-            case KEROSENE, HYDROGEN, XENON, BALEFIRE -> tanks[0].getFill() >= fuselage.fuelAmount() ? 1 : 0;
-            default -> -1;
-        };
+        return !fuselage.fuelType().solid() ? (tanks[0].getFill() >= fuselage.fuelAmount() ? 1 : 0) : -1;
     }
 
     public int oxidizerState() {
         MissileStruct multipart = getStruct(inventory.getStackInSlot(0));
         if (multipart == null || multipart.fuselage() == null) return -1;
         ItemCustomMissilePart fuselage = multipart.fuselage();
-        return switch (fuselage.fuelType()) {
-            case KEROSENE, HYDROGEN, BALEFIRE -> tanks[1].getFill() >= fuselage.fuelAmount() ? 1 : 0;
-            default -> -1;
-        };
+        return fuselage.fuelType().oxidizer != null ? (tanks[1].getFill() >= fuselage.fuelAmount() ? 1 : 0) : -1;
     }
 
     public void updateTypes() {
         MissileStruct multipart = getStruct(inventory.getStackInSlot(0));
         if (multipart == null || multipart.fuselage() == null) return;
 
-        switch (multipart.fuselage().fuelType()) {
-            case KEROSENE -> { tanks[0].setTankType(Fluids.KEROSENE); tanks[1].setTankType(Fluids.PEROXIDE); }
-            case HYDROGEN -> { tanks[0].setTankType(Fluids.HYDROGEN); tanks[1].setTankType(Fluids.OXYGEN); }
-            case XENON -> tanks[0].setTankType(Fluids.XENON);
-            case BALEFIRE -> { tanks[0].setTankType(Fluids.BALEFIRE); tanks[1].setTankType(Fluids.PEROXIDE); }
-            default -> { }
-        }
+        // 1.7 updateTypes: each fuel names its tanks' fluids; solid fuel and a missing oxidiser leave a tank alone
+        ItemCustomMissilePart.FuelType type = multipart.fuselage().fuelType();
+        if (type.fuel != null) tanks[0].setTankType(type.fuel.get());
+        if (type.oxidizer != null) tanks[1].setTankType(type.oxidizer.get());
     }
 
     // --- inventory: 1.7 isItemValidForSlot was false everywhere; slots 6/7 must accept our own inserts ---

@@ -51,12 +51,14 @@ public final class AutosawGameTests {
     }
 
     public static void fuelAndTool(GameTestHelper helper) {
-        helper.assertTrue(TileEntityMachineAutosaw.acceptedFuels.size() == 4
+        // 1.7 TileEntityMachineAutosaw.acceptedFuels: wood oil, ethanol, fish oil, heavy oil and coal creosote
+        helper.assertTrue(TileEntityMachineAutosaw.acceptedFuels.size() == 5
+                        && TileEntityMachineAutosaw.acceptedFuels.contains(Fluids.COALCREOSOTE)
                         && TileEntityMachineAutosaw.acceptedFuels.contains(Fluids.WOODOIL)
                         && TileEntityMachineAutosaw.acceptedFuels.contains(Fluids.ETHANOL)
                         && TileEntityMachineAutosaw.acceptedFuels.contains(Fluids.FISHOIL)
                         && TileEntityMachineAutosaw.acceptedFuels.contains(Fluids.HEAVYOIL),
-                "autosaw fuel set must contain exactly the four legacy fuels");
+                "autosaw fuel set must contain exactly 1.7's five fuels");
 
         BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
         MachineAutosaw block = AutosawFeature.machine_autosaw.get();

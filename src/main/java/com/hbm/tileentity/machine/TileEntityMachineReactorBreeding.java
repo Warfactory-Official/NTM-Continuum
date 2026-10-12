@@ -26,7 +26,7 @@ import com.hbm.inventory.container.ContainerMachineReactorBreeding;
 import com.hbm.tileentity.ModNuclearMiscBlockEntities;
 
 /** The legacy breeder: flux from adjacent research reactors advances the rod in slot 0 into slot 1. */
-public final class TileEntityMachineReactorBreeding extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
+public class TileEntityMachineReactorBreeding extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
 
     public int flux;
     public float progress;

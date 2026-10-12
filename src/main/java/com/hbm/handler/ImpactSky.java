@@ -40,7 +40,8 @@ public final class ImpactSky implements Skies.Modifier {
 
     @Override
     public boolean active(Level level) {
-        return GeneralConfig.enableImpactWorldProvider && level.dimension() == Level.OVERWORLD
+        // the overworld's WorldProviderNTM in 1.7; any surface world an addon names (com.hbm.api.environment.Environment)
+        return GeneralConfig.enableImpactWorldProvider && com.hbm.api.environment.Environment.isSurface(level)
                 && (dust(level) > 0 || fire(level) > 0);
     }
 

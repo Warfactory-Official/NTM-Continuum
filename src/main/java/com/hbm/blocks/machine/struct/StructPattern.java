@@ -1,6 +1,5 @@
 package com.hbm.blocks.machine.struct;
 
-import com.hbm.Constants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.BlockGetter;
@@ -82,9 +81,13 @@ public final class StructPattern {
         return new Builder();
     }
 
-    /** Standalone block texture, the form {@code CompatRenderTypes} wants (not an atlas sprite). */
+    /**
+     * Standalone block texture, the form {@code CompatRenderTypes} wants (not an atlas sprite): {@code
+     * <ns>:textures/blocks/<name>.png}, a bare name in {@code hbm}, so an addon's patterns name their own textures as
+     * {@code "ns:name"}.
+     */
     public static Identifier blockTexture(String name) {
-        return dev.golem.core.Ids.of(Constants.MOD_ID, "textures/blocks/" + name + ".png");
+        return com.hbm.lib.Library.parseId(name, "textures/blocks/", ".png");
     }
 
     public static final class Builder {

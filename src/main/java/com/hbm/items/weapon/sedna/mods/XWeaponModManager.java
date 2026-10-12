@@ -7,6 +7,7 @@ import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.inventory.RecipesCommon;
 import dev.golem.core.data.Tags;
+import com.hbm.util.SavedIds;
 import dev.golem.core.world.ItemStacks;
 import dev.golem.core.registry.RegistryObject;
 import java.util.ArrayList;
@@ -58,7 +59,23 @@ public final class XWeaponModManager {
     public static final int ID_ENGINE_AVIATION = 227;
     public static final int ID_ENGINE_ELECTRIC = 228;
     public static final int ID_ENGINE_TURBO = 229;
+    /**
+     * Installed modifiers are saved by name under this key + config index, comma-separated
+     * ({@code "hbm:silencer,hbm:scope"}). 1.7 saved the numeric ids under {@link #KEY_MOD_LIST}; numeric ids are never
+     * persisted now (AGENTS.md section 8; an addon's number would also collide with HBM's).
+     */
+    public static final String KEY_MOD_NAMES = "KEY_MOD_NAMES_";
+    /**
+     * Runtime handles: 1.7's numeric mod id for HBM's modifiers (renderers ask {@code hasUpgrade(stack, cfg, ID_SCOPE)}),
+     * a handle from {@link #FIRST_ADDON_HANDLE} up for a modifier registered by name only. Never saved.
+     */
     public static final Map<Integer, IWeaponMod> idToMod = new HashMap<>();
+    /** Every modifier by its saved name ({@code "hbm:silencer"}, an addon's {@code "<namespace>:<path>"}). */
+    private static final Map<String, IWeaponMod> byName = new HashMap<>();
+    private static final Map<IWeaponMod, String> nameOf = new HashMap<>();
+    /** Handles below this are 1.7's ids; addon modifiers registered by name get handles from here up. */
+    public static final int FIRST_ADDON_HANDLE = 1_000_000;
+    private static int nextHandle = FIRST_ADDON_HANDLE;
     public static final List<WeaponModDefinition> definitions = new ArrayList<>();
     public static final Map<IWeaponMod, Supplier<ItemStack>> modToStack = new HashMap<>();
     private static boolean changedMagState;
@@ -66,9 +83,125 @@ public final class XWeaponModManager {
     private static int previousMagCount;
 
     private XWeaponModManager() {}
+
+    /** The saved name of each of HBM's modifiers, by its 1.7 numeric id (the id stays the runtime handle). */
+    private static final Map<Integer, String> NAMES = new HashMap<>();
+
+    static {
+        NAMES.put(0, "test_firerate");
+        NAMES.put(1, "test_damage");
+        NAMES.put(2, "test_multi");
+        NAMES.put(3, "test_override_2_5");
+        NAMES.put(4, "test_override_5");
+        NAMES.put(5, "test_override_7_5");
+        NAMES.put(6, "test_override_10");
+        NAMES.put(7, "test_override_12_5");
+        NAMES.put(8, "test_override_15");
+        NAMES.put(9, "test_override_20");
+        NAMES.put(100, "iron_damage");
+        NAMES.put(101, "iron_dura");
+        NAMES.put(102, "steel_damage");
+        NAMES.put(103, "steel_dura");
+        NAMES.put(104, "dura_damage");
+        NAMES.put(105, "dura_dura");
+        NAMES.put(106, "desh_damage");
+        NAMES.put(107, "desh_dura");
+        NAMES.put(108, "wsteel_damage");
+        NAMES.put(109, "wsteel_dura");
+        NAMES.put(110, "ferro_damage");
+        NAMES.put(111, "ferro_dura");
+        NAMES.put(112, "tcalloy_damage");
+        NAMES.put(113, "tcalloy_dura");
+        NAMES.put(114, "bigmt_damage");
+        NAMES.put(115, "bigmt_dura");
+        NAMES.put(116, "bronze_damage");
+        NAMES.put(117, "bronze_dura");
+        NAMES.put(200, "speedloader");
+        NAMES.put(201, "silencer");
+        NAMES.put(202, "scope");
+        NAMES.put(203, "sawed_off");
+        NAMES.put(204, "sawed_off_panzerschreck");
+        NAMES.put(205, "sawed_off_g3");
+        NAMES.put(206, "greasegun");
+        NAMES.put(207, "slowdown");
+        NAMES.put(208, "speedup_minigun");
+        NAMES.put(209, "speedup_shredder");
+        NAMES.put(210, "choke");
+        NAMES.put(211, "furniture_green");
+        NAMES.put(212, "furniture_black");
+        NAMES.put(213, "bayonet_mas36");
+        NAMES.put(214, "stack_mag");
+        NAMES.put(215, "skin_saturnite");
+        NAMES.put(216, "las_shotgun");
+        NAMES.put(217, "las_capacitor");
+        NAMES.put(218, "las_auto");
+        NAMES.put(219, "bayonet_carbine");
+        NAMES.put(220, "nickel");
+        NAMES.put(221, "doubloons");
+        NAMES.put(222, "drill_hss");
+        NAMES.put(223, "drill_weaponsteel");
+        NAMES.put(224, "drill_tcalloy");
+        NAMES.put(225, "drill_saturnite");
+        NAMES.put(226, "engine_diesel");
+        NAMES.put(227, "engine_aviation");
+        NAMES.put(228, "engine_electric");
+        NAMES.put(229, "engine_turbo");
+        NAMES.put(230, "magnet");
+        NAMES.put(231, "sifter");
+        NAMES.put(232, "canisters");
+        NAMES.put(300, "caliber_p9_henry");
+        NAMES.put(301, "caliber_p9_star_f");
+        NAMES.put(302, "caliber_p9_star_f_akimbo");
+        NAMES.put(310, "caliber_p45_henry");
+        NAMES.put(311, "caliber_p45_greasegun");
+        NAMES.put(312, "caliber_p45_uzi");
+        NAMES.put(313, "caliber_p45_uzi_akimbo");
+        NAMES.put(314, "caliber_p45_lag");
+        NAMES.put(320, "caliber_p22_henry");
+        NAMES.put(321, "caliber_p22_uzi");
+        NAMES.put(322, "caliber_p22_uzi_akimbo");
+        NAMES.put(330, "caliber_m357_henry");
+        NAMES.put(331, "caliber_m357_lag");
+        NAMES.put(340, "caliber_m44_lag");
+        NAMES.put(350, "caliber_r556_henry");
+        NAMES.put(351, "caliber_r556_carbine");
+        NAMES.put(352, "caliber_r556_minigun");
+        NAMES.put(360, "caliber_r762_henry");
+        NAMES.put(361, "caliber_r762_g3");
+        NAMES.put(370, "caliber_bmg50_henry");
+        NAMES.put(371, "caliber_bmg50_minigun");
+    }
+
+    /**
+     * Registers a modifier under {@code name} (an addon: {@code "<namespace>:<path>"}) and gives it a runtime handle
+     * if it has none. Bind it to its mod item and guns with a {@link WeaponModDefinition}. Call at mod construction.
+     */
+    public static synchronized <M extends IWeaponMod> M register(String name, M mod) {
+        if (byName.containsKey(name)) throw new IllegalStateException("Weapon modifier '" + name + "' is registered twice");
+        byName.put(name, mod);
+        nameOf.put(mod, name);
+        if (idOf(mod) < 0) idToMod.put(nextHandle++, mod);
+        return mod;
+    }
+
+    /** The modifier saved as {@code name}, or null. */
+    public static IWeaponMod byName(String name) {
+        return byName.get(name);
+    }
+
+    /** The saved name of {@code mod}, or null if it was never registered. */
+    public static String nameOf(IWeaponMod mod) {
+        return nameOf.get(mod);
+    }
+
+    /** The runtime handle of the modifier saved as {@code name}, or -1. */
+    public static int handle(String name) {
+        IWeaponMod mod = byName.get(name);
+        return mod == null ? -1 : idOf(mod);
+    }
     /** Registers the source's complete modifier table after every gun and ammo supplier is declared. */
     public static synchronized void init() {
-        if (!idToMod.isEmpty()) return;
+        if (nameOf(idToMod.get(0)) != null) return;
 
         def(ModWeaponModItems.weapon_mod_test, EnumModTest.FIRERATE).addDefault(new WeaponModTestFirerate(0, "FIRERATE"));
         def(ModWeaponModItems.weapon_mod_test, EnumModTest.DAMAGE).addDefault(new WeaponModTestDamage(1, "DAMAGE"));
@@ -172,6 +305,12 @@ public final class XWeaponModManager {
         def(ModWeaponModItems.weapon_mod_caliber, EnumModCaliber.R556).addMod(ModGunItems.gun_henry, new WeaponModCaliber(350, 10, 10F, r556)).addMod(ModGunItems.gun_carbine, new WeaponModCaliber(351, 20, 15F, r556)).addMod(items(ModGunItems.gun_minigun, ModGunItems.gun_minigun_dual), new WeaponModCaliber(352, 0, 6F, r556));
         def(ModWeaponModItems.weapon_mod_caliber, EnumModCaliber.R762).addMod(ModGunItems.gun_henry, new WeaponModCaliber(360, 8, 10F, r762)).addMod(ModGunItems.gun_g3, new WeaponModCaliber(361, 24, 5F, r762));
         def(ModWeaponModItems.weapon_mod_caliber, EnumModCaliber.BMG50).addMod(ModGunItems.gun_henry, new WeaponModCaliber(370, 5, 10F, bmg50)).addMod(items(ModGunItems.gun_minigun, ModGunItems.gun_minigun_dual), new WeaponModCaliber(371, 0, 6F, bmg50));
+        // HBM's own modifiers take their saved names from the 1.7 id table
+        for (Map.Entry<Integer, String> entry : NAMES.entrySet()) {
+            IWeaponMod mod = idToMod.get(entry.getKey());
+            if (mod == null) throw new IllegalStateException("No weapon modifier has the 1.7 id " + entry.getKey());
+            register(Constants.MOD_ID + ":" + entry.getValue(), mod);
+        }
     }
 
     private static <E extends Enum<E>> WeaponModDefinition def(com.hbm.items.ItemFamily<E, ItemEnumMulti> family, E variant) {
@@ -244,17 +383,22 @@ public final class XWeaponModManager {
         }
         selected.sort(modSorter);
         CompoundTag data = ItemGunBaseNT.getGunData(stack);
-        int[] ids = new int[selected.size()];
-        for (int i = 0; i < ids.length; i++) {
+        StringBuilder names = new StringBuilder();
+        for (int i = 0; i < selected.size(); i++) {
             IWeaponMod selectedMod = selected.get(i);
-            ids[i] = idOf(selectedMod);
+            String name = nameOf(selectedMod);
+            if (name != null) {
+                if (names.length() > 0) names.append(',');
+                names.append(name);
+            }
             Supplier<ItemStack> supplier = modToStack.get(selectedMod);
             if (supplier != null) {
                 if (level == null) selectedMod.onInstall(stack, supplier.get(), cfg);
                 else selectedMod.onInstall(level, stack, supplier.get(), cfg);
             }
         }
-        data.putIntArray(KEY_MOD_LIST + cfg, ids);
+        data.remove(KEY_MOD_LIST + cfg);
+        data.putString(KEY_MOD_NAMES + cfg, names.toString());
         ItemGunBaseNT.setGunData(stack, data);
         restoreMagState(stack, cfg);
     }
@@ -267,6 +411,7 @@ public final class XWeaponModManager {
         for (ItemStack mod : getUpgradeItems(stack, cfg)) onUninstallStack(level, stack, mod, cfg);
         CompoundTag data = ItemGunBaseNT.getGunData(stack);
         data.remove(KEY_MOD_LIST + cfg);
+        data.remove(KEY_MOD_NAMES + cfg);
         ItemGunBaseNT.setGunData(stack, data);
     }
 
@@ -325,8 +470,23 @@ public final class XWeaponModManager {
         return value;
     }
 
+    /** The runtime handles of the modifiers installed in config {@code cfg}, in their saved (priority) order. */
     private static int[] getIds(ItemStack stack, int cfg) {
-        return Tags.getIntArrayOr(ItemGunBaseNT.getGunData(stack), KEY_MOD_LIST + cfg, new int[0]);
+        CompoundTag data = ItemGunBaseNT.getGunData(stack);
+        String saved = Tags.getStringOr(data, KEY_MOD_NAMES + cfg, "");
+        if (saved.isEmpty()) {
+            // a gun modded before 2026-10-08 carries 1.7's numeric ids: not read, the mods are gone (one WARN)
+            if (Tags.contains(data, KEY_MOD_LIST + cfg)) SavedIds.warnNumeric("weapon modifier id", KEY_MOD_LIST + cfg);
+            return new int[0];
+        }
+        String[] names = saved.split(",");
+        int[] ids = new int[names.length];
+        int count = 0;
+        for (String name : names) {
+            int handle = handle(name);
+            if (handle >= 0) ids[count++] = handle;
+        }
+        return count == ids.length ? ids : java.util.Arrays.copyOf(ids, count);
     }
 
     private static int idOf(IWeaponMod mod) {

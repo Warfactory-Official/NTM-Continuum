@@ -22,236 +22,154 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 /**
- * The fallout block-transform table, ported from 1.12.2's {@code FalloutConfigJSON} default entries
- * (the user-editable JSON reload is deferred; the entry structure stays JSON-shaped so it can be
- * wired to a file later). {@code EntityFalloutRain} walks the list in order per block — first entry
- * whose {@code eval} returns non-null wins.
+ * The fallout block-transform table, 1.7's {@code FalloutConfigJSON} ({@code hbmFallout.json} there, a datapack folder
+ * here): {@code data/<ns>/fallout_transform/<name>.json}, each {@code {"priority": 0, "entries": [...]}}.
+ * {@code EntityFalloutRain} walks the entries in order per block — first entry whose {@code eval} returns non-null wins
+ * — so files are read highest {@code priority} first (then by id), each file's entries in order. HBM's defaults are
+ * {@code data/hbm/fallout_transform/default.json} at priority 0; an addon adds rules ahead of them with a higher priority,
+ * or replaces the file. GameTest {@code value_map_fallout_transform} pins the defaults to the port's 1.7 table.
  *
- * <p>1.12 {@code Material} matchers are mapped to 26.1 equivalents: logs/planks/leaves → vanilla
- * block tags, plants/vines → {@code instanceof VegetationBlock}, wood-material → {@code
- * ignitedByLava()}, and the ROCK/IRON/SAND/GROUND terrain catch-all → "solid-render full cube"
- * (excluding grass/mycelium, which the old GRASS-material entry handled with its own ≤45% rings).
- * The catch-all is slightly broader than the four old materials (e.g. wool is opaque), which is why
- * every specific matcher stays ahead of it.
+ * <p>An entry matches by exact {@code state}, {@code block}, block {@code tag} and/or a named {@code preset} (a
+ * predicate registered with {@link #registerPreset}; the 1.12 {@code Material} matchers became presets: wood material
+ * → {@code hbm:ignited_by_lava}, plants/vines → {@code hbm:vegetation}, the ROCK/IRON/SAND/GROUND terrain catch-all →
+ * {@code hbm:solid_terrain} (excluding grass/mycelium, which the old GRASS-material entry handled with its own ≤45%
+ * rings, {@code hbm:grass_like})). The catch-all stands for the four 1.7 materials: an opaque block a pickaxe or shovel
+ * mines, except ice, snow and the redstone lamp (1.7's ice, packedIce, craftedSnow and redstoneLight); wool, TNT, gourds
+ * and sponges are not tool-mined that way and fall out too. Every specific matcher stays ahead of it.
  *
- * <p>Skipped old entries (source blocks not ported, marked TODO): ore_nether_uranium,
- * glyphid base/spawner, volcano_core.
- *
- * <p>MUST be built lazily ({@link #entries()}): the outcome states resolve registry objects, which
- * throws "Components not bound yet" during class-init/mod-setup.
+ * <p>Skipped old entry (source block not ported): volcano_core.
  */
 public final class FalloutConfig {
 
     private FalloutConfig() {}
 
-    private static List<FalloutEntry> entries;
+    /** The datapack folder. */
+    public static final String FOLDER = "fallout_transform";
 
+    private static volatile List<FalloutEntry> entries = List.of();
+
+    private static final java.util.Map<String, Predicate<BlockState>> PRESETS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    static {
+        registerPreset("hbm:ignited_by_lava", BlockState::ignitedByLava);
+        registerPreset("hbm:vegetation", state -> state.getBlock() instanceof VegetationBlock
+                || state.is(Blocks.VINE) || state.is(Blocks.SUGAR_CANE));
+        // 1.7 Material.rock / iron / sand / ground: what a pickaxe or shovel mines, opaque, without 1.7's other materials
+        // that modern tools also mine (ice and packed ice, craftedSnow and snow, redstoneLight)
+        registerPreset("hbm:solid_terrain", state -> Compat.isSolidRender(state)
+                && (state.is(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE) || state.is(net.minecraft.tags.BlockTags.MINEABLE_WITH_SHOVEL))
+                && !state.is(net.minecraft.tags.BlockTags.ICE) && !state.is(net.minecraft.tags.BlockTags.SNOW)
+                && !state.is(Blocks.REDSTONE_LAMP)
+                && !(state.getBlock() instanceof GrassBlock) && !state.is(Blocks.MYCELIUM));
+        registerPreset("hbm:grass_like", state -> state.getBlock() instanceof GrassBlock || state.is(Blocks.MYCELIUM));
+    }
+
+    /** Names a block predicate for the {@code preset} matcher. Call at mod construction. */
+    public static void registerPreset(String id, Predicate<BlockState> predicate) {
+        if (PRESETS.putIfAbsent(id, predicate) != null) throw new IllegalStateException("Fallout preset " + id + " registered twice");
+    }
+
+    /** The current rules, in evaluation order (empty until the server's datapacks load). */
     public static List<FalloutEntry> entries() {
-        if (entries == null) {
-            List<FalloutEntry> list = new ArrayList<>();
-            initDefault(list);
-            entries = Collections.unmodifiableList(list);
-        }
         return entries;
     }
 
-    private static void initDefault(List<FalloutEntry> e) {
-        double woodEffectRange = 65D;
-
-        // petrify all wooden things possible
-        e.add(FalloutEntry.builder()
-                .matchesTag(BlockTags.LOGS)
-                .preserveAxis()
-                .addPrimary(ModFalloutBlocks.waste_log.get().defaultBlockState(), 1)
-                .max(woodEffectRange).solid(true).build());
-
-        e.add(FalloutEntry.builder()
-                .matchesBlock(Blocks.MUSHROOM_STEM) // old RED/BROWN_MUSHROOM_BLOCK meta 10 (the stem)
-                .addPrimary(ModFalloutBlocks.waste_log.get().defaultBlockState(), 1)
-                .max(woodEffectRange).solid(true).build());
-
-        e.add(FalloutEntry.builder()
-                .matchesBlock(Blocks.RED_MUSHROOM_BLOCK)
-                .addPrimary(Blocks.AIR.defaultBlockState(), 1)
-                .max(woodEffectRange).build());
-
-        e.add(FalloutEntry.builder()
-                .matchesBlock(Blocks.BROWN_MUSHROOM_BLOCK)
-                .addPrimary(Blocks.AIR.defaultBlockState(), 1)
-                .max(woodEffectRange).build());
-
-        e.add(FalloutEntry.builder()
-                .matchesBlock(Blocks.SNOW_BLOCK) // old Blocks.SNOW (the full block)
-                .addPrimary(Blocks.AIR.defaultBlockState(), 1)
-                .max(woodEffectRange).build());
-
-        e.add(FalloutEntry.builder()
-                .matchesBlock(Blocks.SNOW) // the layer (would block the sweep otherwise)
-                .addPrimary(Blocks.AIR.defaultBlockState(), 1)
-                .max(woodEffectRange).build());
-
-        e.add(FalloutEntry.builder()
-                .matchesTag(BlockTags.PLANKS)
-                .addPrimary(ModBlocks.waste_planks.get().defaultBlockState(), 1)
-                .max(woodEffectRange).solid(true).build());
-
-        // if it can't be petrified, destroy it (old WOOD/LEAVES/PLANTS/VINE material kill list)
-        e.add(FalloutEntry.builder()
-                .matchesPredicate(state -> state.ignitedByLava()) // wood-material stand-in (stairs/fences/doors/…)
-                .addPrimary(Blocks.AIR.defaultBlockState(), 1)
-                .max(woodEffectRange).build());
-
-        e.add(FalloutEntry.builder()
-                .matchesTag(BlockTags.LEAVES)
-                .addPrimary(Blocks.AIR.defaultBlockState(), 1)
-                .max(woodEffectRange).build());
-
-        e.add(FalloutEntry.builder()
-                .matchesPredicate(state -> state.getBlock() instanceof VegetationBlock
-                        || state.is(Blocks.VINE) || state.is(Blocks.SUGAR_CANE))
-                .addPrimary(Blocks.AIR.defaultBlockState(), 1)
-                .max(woodEffectRange).build());
-
-        e.add(FalloutEntry.builder()
-                .matchesBlock(ModFalloutBlocks.waste_leaves.get())
-                .addPrimary(Blocks.AIR.defaultBlockState(), 1)
-                .max(woodEffectRange).build());
-
-        e.add(FalloutEntry.builder()
-                .matchesTag(BlockTags.LEAVES)
-                .addPrimary(ModFalloutBlocks.waste_leaves.get().defaultBlockState(), 1)
-                .min(woodEffectRange - 5D).build());
-
-        e.add(FalloutEntry.builder()
-                .matchesBlock(Blocks.MOSSY_COBBLESTONE)
-                .addPrimary(Blocks.COAL_ORE.defaultBlockState(), 1)
-                .solid(true).build());
-
-        // TODO(port): ore_nether_uranium -> ore_nether_schrabidium/scorched (nether ores not in the transform set yet)
-        e.add(FalloutEntry.builder()
-                .matchesBlock(com.hbm.blocks.ModDecoCrateBlocks.glyphid_base.get())
-                .addPrimary(com.hbm.blocks.ModDecoCrateBlocks.glyphid_base.get().defaultBlockState()
-                        .setValue(com.hbm.blocks.generic.BlockGlyphid.TYPE, com.hbm.blocks.generic.BlockGlyphid.HiveType.RAD), 1)
-                .build());
-        e.add(FalloutEntry.builder()
-                .matchesBlock(com.hbm.blocks.ModDecoCrateBlocks.glyphid_spawner.get())
-                .addPrimary(com.hbm.blocks.ModDecoCrateBlocks.glyphid_spawner.get().defaultBlockState()
-                        .setValue(com.hbm.blocks.generic.BlockGlyphid.TYPE, com.hbm.blocks.generic.BlockGlyphid.HiveType.RAD), 1)
-                .build());
-
-        // the sellafite shade rings: i-th ring = <= i*5 percent, shade m = 10-i (9 = darkest at GZ)
-        for (int i = 1; i <= 10; i++) {
-            int m = 10 - i;
-            double max = i * 5;
-
-            e.add(FalloutEntry.builder()
-                    .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_diamond.get(), m), 3)
-                    .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_emerald.get(), m), 2)
-                    .primaryChance(0.5)
-                    .max(max).opaque(true).solid(true)
-                    .matchesBlock(Blocks.COAL_ORE).build());
-            e.add(FalloutEntry.builder() // deepslate coal behaves like coal (1.12 had one coal ore)
-                    .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_diamond.get(), m), 3)
-                    .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_emerald.get(), m), 2)
-                    .primaryChance(0.5)
-                    .max(max).opaque(true).solid(true)
-                    .matchesBlock(Blocks.DEEPSLATE_COAL_ORE).build());
-
-            e.add(FalloutEntry.builder()
-                    .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_diamond.get(), m), 1)
-                    .primaryChance(0.2)
-                    .max(max).opaque(true).solid(true)
-                    .matchesBlock(ModBlocks.ore_lignite.get()).build());
-
-            e.add(FalloutEntry.builder()
-                    .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_emerald.get(), m), 1)
-                    .max(max).opaque(true).solid(true)
-                    .matchesBlock(ModBlocks.ore_beryllium.get()).build());
-
-            if (m > 4) {
-                e.add(FalloutEntry.builder()
-                        .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_schrabidium.get(), m), 1)
-                        .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_uranium_scorched.get(), m), 9)
-                        .max(max).opaque(true).solid(true)
-                        .matchesBlock(ModNuclearBlocks.ore_uranium.get()).build());
-                e.add(FalloutEntry.builder()
-                        .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_schrabidium.get(), m), 1)
-                        .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_uranium_scorched.get(), m), 9)
-                        .max(max).opaque(true).solid(true)
-                        .matchesBlock(ModNuclearBlocks.ore_gneiss_uranium.get()).build());
+    /** {@link dev.golem.core.data.DataFiles} consumer for {@link #FOLDER}. */
+    public static void apply(java.util.Map<String, com.google.gson.JsonElement> files) {
+        record File(String id, int priority, List<FalloutEntry> entries) {}
+        List<File> read = new ArrayList<>();
+        files.forEach((id, json) -> {
+            try {
+                TransformFile file = read(json);
+                read.add(new File(id, file.priority(), file.entries()));
+            } catch (RuntimeException e) {
+                com.hbm.Constants.LOG.error("Fallout transform file {} is broken, skipping it: {}", id, e.getMessage());
             }
+        });
+        read.sort(java.util.Comparator.comparingInt(File::priority).reversed().thenComparing(File::id));
+        List<FalloutEntry> all = new ArrayList<>();
+        for (File file : read) all.addAll(file.entries());
+        entries = Collections.unmodifiableList(all);
+    }
 
-            e.add(FalloutEntry.builder()
-                    .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_radgem.get(), m), 1)
-                    .max(max).opaque(true).solid(true)
-                    .matchesBlock(Blocks.DIAMOND_ORE).build());
-            e.add(FalloutEntry.builder()
-                    .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_radgem.get(), m), 1)
-                    .max(max).opaque(true).solid(true)
-                    .matchesBlock(Blocks.DEEPSLATE_DIAMOND_ORE).build());
+    /** One file of {@link #FOLDER}: {@code {"priority": 0, "entries": [...]}}. */
+    public record TransformFile(int priority, List<FalloutEntry> entries) {}
 
-            e.add(FalloutEntry.builder()
-                    .addPrimary(sellafield(ModFalloutBlocks.sellafield_bedrock.get(), m), 1)
-                    .max(max).opaque(true).solid(true)
-                    .matchesBlock(Blocks.BEDROCK).build());
-
-            e.add(FalloutEntry.builder()
-                    .addPrimary(sellafield(ModFalloutBlocks.sellafield_bedrock.get(), m), 1)
-                    .max(max).opaque(true).solid(true)
-                    .matchesBlock(ModOreBlocks.ore_bedrock_block.get()).build());
-
-            e.add(FalloutEntry.builder()
-                    .addPrimary(sellafield(ModFalloutBlocks.sellafield_bedrock.get(), m), 1)
-                    .max(max).opaque(true).solid(true)
-                    .matchesBlock(ModBlocks.ore_bedrock_oil.get()).build());
-
-            e.add(FalloutEntry.builder()
-                    .addPrimary(sellafield(ModFalloutBlocks.sellafield_bedrock.get(), m), 1)
-                    .max(max).opaque(true).solid(true)
-                    .matchesBlock(ModFalloutBlocks.sellafield_bedrock.get()).build());
-
-            // the ROCK/IRON/SAND/GROUND terrain catch-all (grass/mycelium had their own GRASS-material entry)
-            e.add(FalloutEntry.builder()
-                    .matchesPredicate(state -> Compat.isSolidRender(state)
-                            && !(state.getBlock() instanceof GrassBlock) && !state.is(Blocks.MYCELIUM))
-                    .addPrimary(sellafield(ModFalloutBlocks.sellafield_slaked.get(), m), 1)
-                    .max(max).opaque(true).solid(true).build());
-
-            if (i <= 9) {
-                e.add(FalloutEntry.builder()
-                        .matchesPredicate(state -> state.getBlock() instanceof GrassBlock || state.is(Blocks.MYCELIUM))
-                        .addPrimary(sellafield(ModFalloutBlocks.sellafield_slaked.get(), m), 1)
-                        .max(max).opaque(true).solid(true).build());
-            }
+    /** Reads one file ({@link #apply}); {@code priority} defaults to 0. */
+    public static TransformFile read(com.google.gson.JsonElement json) {
+        com.google.gson.JsonObject object = json.getAsJsonObject();
+        int priority = object.has("priority") ? object.get("priority").getAsInt() : 0;
+        List<FalloutEntry> list = new ArrayList<>();
+        for (com.google.gson.JsonElement element : object.getAsJsonArray("entries")) {
+            var result = CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, element);
+            if (result.result().isEmpty()) throw new IllegalArgumentException(
+                    result.error().map(e -> e.message()).orElse("?"));
+            list.add(result.result().get());
         }
-
-        e.add(FalloutEntry.builder()
-                .matchesBlock(Blocks.MYCELIUM)
-                .addPrimary(ModFalloutBlocks.waste_mycelium.get().defaultBlockState(), 1)
-                .solid(true).build());
-
-        e.add(FalloutEntry.builder()
-                .matchesState(Blocks.SAND.defaultBlockState())
-                .addPrimary(ModFalloutBlocks.waste_trinitite.get().defaultBlockState(), 1)
-                .primaryChance(0.05).solid(true).build());
-
-        e.add(FalloutEntry.builder()
-                .matchesState(Blocks.RED_SAND.defaultBlockState())
-                .addPrimary(ModFalloutBlocks.waste_trinitite_red.get().defaultBlockState(), 1)
-                .primaryChance(0.05).solid(true).build());
-
-        e.add(FalloutEntry.builder()
-                .matchesBlock(Blocks.CLAY)
-                .addPrimary(Blocks.TERRACOTTA.defaultBlockState(), 1) // old HARDENED_CLAY
-                .solid(true).build());
+        return new TransformFile(priority, list);
     }
 
-    private static BlockState sellafield(Block block, int shade) {
-        return block.defaultBlockState().setValue(BlockSellafieldSlaked.SHADE, shade);
+    /** The inverse of {@link #read}: writes one file (the build-time data source's encoder). */
+    public static com.google.gson.JsonElement write(TransformFile file) {
+        com.google.gson.JsonObject object = new com.google.gson.JsonObject();
+        object.addProperty("priority", file.priority());
+        com.google.gson.JsonArray entries = new com.google.gson.JsonArray();
+        for (FalloutEntry entry : file.entries()) {
+            var result = CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, entry);
+            if (result.result().isEmpty()) throw new IllegalArgumentException(
+                    result.error().map(e -> e.message()).orElse("?"));
+            entries.add(result.result().get());
+        }
+        object.add("entries", entries);
+        return object;
     }
+
+    private static final com.mojang.serialization.Codec<BlockState> STATE =com.mojang.serialization.Codec.STRING.comapFlatMap(
+            name -> {
+                BlockState state = com.hbm.util.SavedIds.stateFromName(name, null);
+                return state != null ? com.mojang.serialization.DataResult.success(state)
+                        : com.mojang.serialization.DataResult.error(() -> "Unknown block state " + name);
+            }, com.hbm.util.SavedIds::stateName);
+
+    private static final com.mojang.serialization.Codec<WeightedState> WEIGHTED = com.mojang.serialization.codecs.RecordCodecBuilder.create(i -> i.group(
+            STATE.fieldOf("state").forGetter(WeightedState::state),
+            com.mojang.serialization.Codec.INT.optionalFieldOf("weight", 1).forGetter(WeightedState::weight)
+    ).apply(i, WeightedState::new));
+
+    /** One rule as JSON. */
+    public static final com.mojang.serialization.Codec<FalloutEntry> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.create(i -> i.group(
+            STATE.optionalFieldOf("state").forGetter(e -> java.util.Optional.ofNullable(e.matchState)),
+            com.mojang.serialization.Codec.STRING.optionalFieldOf("block").forGetter(e -> java.util.Optional.ofNullable(e.matchBlock)
+                    .map(b -> net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).toString())),
+            com.mojang.serialization.Codec.STRING.optionalFieldOf("tag").forGetter(e -> java.util.Optional.ofNullable(e.matchTag).map(t -> t.location().toString())),
+            com.mojang.serialization.Codec.STRING.optionalFieldOf("preset").forGetter(e -> java.util.Optional.ofNullable(e.matchPreset)),
+            com.mojang.serialization.Codec.BOOL.optionalFieldOf("opaque", false).forGetter(e -> e.matchesOpaque),
+            WEIGHTED.listOf().optionalFieldOf("primary", List.of()).forGetter(e -> e.primaryBlocks),
+            WEIGHTED.listOf().optionalFieldOf("secondary", List.of()).forGetter(e -> e.secondaryBlocks),
+            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("primary_chance", 1D).forGetter(e -> e.primaryChance),
+            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("min", 0D).forGetter(e -> e.minDist),
+            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("max", 100D).forGetter(e -> e.maxDist),
+            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("falloff_start", 0.9D).forGetter(e -> e.falloffStart),
+            com.mojang.serialization.Codec.BOOL.optionalFieldOf("solid", false).forGetter(e -> e.solid),
+            com.mojang.serialization.Codec.BOOL.optionalFieldOf("preserve_axis", false).forGetter(e -> e.preserveAxis)
+    ).apply(i, (state, block, tag, preset, opaque, primary, secondary, chance, min, max, falloff, solid, axis) -> {
+        FalloutEntry e = FalloutEntry.builder();
+        state.ifPresent(e::matchesState);
+        block.ifPresent(b -> e.matchesBlock(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getOptional(dev.golem.core.Ids.parse(b)).orElse(net.minecraft.world.level.block.Blocks.AIR)));
+        tag.ifPresent(t -> e.matchesTag(TagKey.create(net.minecraft.core.registries.Registries.BLOCK, dev.golem.core.Ids.parse(t))));
+        preset.ifPresent(e::matchesPreset);
+        e.opaque(opaque);
+        e.primaryBlocks.addAll(primary);
+        e.secondaryBlocks.addAll(secondary);
+        e.primaryChance(chance).min(min).max(max).solid(solid);
+        e.falloffStart = falloff;
+        e.preserveAxis = axis;
+        return e;
+    }));
+
 
     /** A weighted conversion outcome. */
-    private record WeightedState(BlockState state, int weight) {}
+    record WeightedState(BlockState state, int weight) {}
 
     /**
      * One transform rule — the 1.12.2 {@code FalloutEntry}, with the matcher generalised to
@@ -263,6 +181,7 @@ public final class FalloutConfig {
         private Block matchBlock;               // block match
         private TagKey<Block> matchTag;         // tag match
         private Predicate<BlockState> matchPredicate;
+        private String matchPreset;             // the named predicate, for the JSON form
         private boolean matchesOpaque = false;
 
         private final List<WeightedState> primaryBlocks = new ArrayList<>();
@@ -283,6 +202,14 @@ public final class FalloutConfig {
         public FalloutEntry matchesBlock(Block block) { this.matchBlock = block; return this; }
         public FalloutEntry matchesTag(TagKey<Block> tag) { this.matchTag = tag; return this; }
         public FalloutEntry matchesPredicate(Predicate<BlockState> predicate) { this.matchPredicate = predicate; return this; }
+        /** Matches by a predicate registered with {@link FalloutConfig#registerPreset}. */
+        public FalloutEntry matchesPreset(String id) {
+            Predicate<BlockState> predicate = PRESETS.get(id);
+            if (predicate == null) throw new IllegalArgumentException("Unknown fallout preset " + id);
+            this.matchPreset = id;
+            this.matchPredicate = predicate;
+            return this;
+        }
         public FalloutEntry opaque(boolean opaque) { this.matchesOpaque = opaque; return this; }
         public FalloutEntry addPrimary(BlockState state, int weight) { this.primaryBlocks.add(new WeightedState(state, weight)); return this; }
         public FalloutEntry addSecondary(BlockState state, int weight) { this.secondaryBlocks.add(new WeightedState(state, weight)); return this; }

@@ -1,186 +1,80 @@
 package com.hbm.inventory.recipes;
 
-import com.hbm.blocks.ModSteelBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;
-import com.hbm.inventory.RecipesCommon.ComparableStack;
-import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.Fluids;
-import com.hbm.inventory.material.MaterialShapes;
-import com.hbm.inventory.material.NTMMaterial;
-import com.hbm.inventory.material.Mats;
-import com.hbm.items.ItemEnums.EnumPartType;
-import com.hbm.items.ModAutogenItems;
-import com.hbm.items.ModIngredientItems;
-import com.hbm.items.ModItems;
-import com.hbm.items.ModMissileItems;
-import dev.golem.core.Ids;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.hbm.inventory.recipes.loader.ItemSpec;
+import com.hbm.inventory.recipes.loader.TableCodecs;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import net.minecraft.world.item.ItemStack;
 
-import static com.hbm.inventory.OreDictManager.*;
-
-/** The feasible 1.12.2 Arc Welder catalogue and its unordered three-slot matcher. */
+/**
+ * The Arc Welder catalogue and its unordered three-slot matcher. The datapack table {@code hbm:arc_welder}, one file per
+ * recipe in {@code data/hbm/recipe/arc_welder/} ({@code {"ingredients": [up to 3], "fluid": {type, amount},
+ * "output": item, "duration": ticks, "consumption": HE/t, "order": n}}; {@code fluid} optional, the first match by
+ * {@code order} wins). Converted once from the Java table: the parts, dense wires, welded plates (1.7 added one per
+ * material with an autogen welded plate; literal rows now), missile parts and missiles. 1.7's
+ * {@code ArcWelderRecipes} welds no satellite: every satellite is an assembly-machine recipe.
+ */
 public final class ArcWelderRecipes {
-
-    public static final List<ArcWelderRecipe> recipes = new ArrayList<>();
-    private static final TagKey<Item> ANY_HIGH_EXPLOSIVE = TagKey.create(
-            Registries.ITEM, Ids.of("c", "ingots/any_highexplosive"));
-    private static boolean initialized;
 
     private ArcWelderRecipes() {}
 
-    public static synchronized void register() {
-        if (initialized) return;
-        initialized = true;
+    public record Row(List<AStack> ingredients, Optional<FluidStack> fluid, ItemSpec output, int duration, long consumption,
+                      int order) {}
 
-        // Parts. Fiberglass is a single current item, so it retains the old FIBER ore-dictionary meaning.
-        add(new ItemStack(ModItems.motor.get(), 2), 100, 400,
-                STEEL.plate().count(2), MINGRADE.wireDense().count(2));
-        add(ModIngredientItems.part(EnumPartType.LDE, 1), 200, 5_000,
-                AL.plate().count(4), new ComparableStack(ModItems.ingot_fiberglass.get(), 4),
-                ANY_HARDPLASTIC.ingot());
-        add(ModIngredientItems.part(EnumPartType.LDE, 1), 200, 10_000,
-                TI.plate().count(2), new ComparableStack(ModItems.ingot_fiberglass.get(), 4),
-                ANY_HARDPLASTIC.ingot());
-        // Neutron reflector weld (1.7 and 1.12.2 both have it): WC ingots come from the tungsten carbide ingot item.
-        add(new ItemStack(ModItems.neutron_reflector.get(), 2), 400, 50_000,
-                new ComparableStack(ModItems.ingot_tungsten_carbide.get(), 2), DURA.plate());
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            TableCodecs.INGREDIENT.listOf().fieldOf("ingredients").forGetter(Row::ingredients),
+            GenericRecipeCodec.FLUID_STACK.optionalFieldOf("fluid").forGetter(Row::fluid),
+            ItemSpec.CODEC.fieldOf("output").forGetter(Row::output),
+            Codec.INT.fieldOf("duration").forGetter(Row::duration),
+            Codec.LONG.fieldOf("consumption").forGetter(Row::consumption),
+            Codec.INT.optionalFieldOf("order", TableCodecs.LAST).forGetter(Row::order)
+    ).apply(i, Row::new));
 
-        // Dense wires.
-        addDenseWire(Mats.MAT_COPPER, 100, 10_000, CU.wire().count(8));
-        addDenseWire(Mats.MAT_RED_COPPER, 100, 10_000, MINGRADE.wire().count(8));
-        addDenseWire(Mats.MAT_GOLD, 100, 10_000, GOLD.wire().count(8));
+    public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("arc_welder", () -> CODEC);
 
-        // Welded plates.
-        addWelded(Mats.MAT_IRON, 100, 100, null);
-        addWelded(Mats.MAT_STEEL, 100, 500, null);
-        addWelded(Mats.MAT_COPPER, 200, 1_000, null);
-        addWelded(Mats.MAT_TITANIUM, 600, 50_000, null);
-        addWelded(Mats.MAT_ZIRCONIUM, 600, 10_000, null);
-        addWelded(Mats.MAT_ALUMINIUM, 300, 10_000, null);
-        addWelded(Mats.MAT_TCALLOY, 1_200, 1_000_000, new FluidStack(Fluids.OXYGEN, 1_000));
-        addWelded(Mats.MAT_CDALLOY, 1_200, 1_000_000, new FluidStack(Fluids.OXYGEN, 1_000));
-        addWelded(Mats.MAT_TUNGSTEN, 1_200, 250_000, new FluidStack(Fluids.OXYGEN, 1_000));
-        addWelded(Mats.MAT_CMB, 1_200, 10_000_000, new FluidStack(Fluids.REFORMGAS, 1_000));
-        addWelded(Mats.MAT_OSMIRIDIUM, 6_000, 50_000_000, new FluidStack(Fluids.REFORMGAS, 16_000));
+    private static volatile List<ArcWelderRecipe> current = List.of();
 
-        // Missile parts.
-        add(new ItemStack(ModItems.thruster_small.get()), 60, 1_000,
-                STEEL.plate().count(4), AL.wire().count(4), CU.plate().count(4));
-        add(new ItemStack(ModItems.thruster_medium.get()), 100, 2_000,
-                STEEL.plate().count(8), new ComparableStack(ModItems.motor.get()), Mats.MAT_GRAPHITE.ingot().count(8));
-        add(new ItemStack(ModItems.thruster_large.get()), 200, 5_000,
-                DURA.ingot().count(10), new ComparableStack(ModItems.motor.get()),
-                new ComparableStack(ModItems.ingot_tungsten_carbide.get(), 12)); // 1.7: WC.ingot(), 12
-        add(new ItemStack(ModItems.fuel_tank_small.get()), 60, 1_000,
-                AL.plate().count(6), CU.plate().count(4),
-                new ComparableStack(ModSteelBlocks.steel_scaffold.get().asItem(), 4));
-        add(new ItemStack(ModItems.fuel_tank_medium.get()), 100, 2_000,
-                AL.plateCast().count(4), TI.plate().count(8),
-                new ComparableStack(ModSteelBlocks.steel_scaffold.get().asItem(), 12));
-        add(new ItemStack(ModItems.fuel_tank_large.get()), 200, 5_000,
-                AL.plateWelded().count(8), BIGMT.plate().count(12),
-                new ComparableStack(ModSteelBlocks.steel_scaffold.get().asItem(), 16));
+    /** The recipes in match order, always the current rows (read-only). */
+    public static final List<ArcWelderRecipe> recipes = TableCodecs.view(ArcWelderRecipes::index);
 
-        // Missiles.
-        add(new ItemStack(ModMissileItems.missile_anti_ballistic.get()), 100, 5_000,
-                new TagStack(ANY_HIGH_EXPLOSIVE, 3), new ComparableStack(ModItems.missile_assembly.get()),
-                new ComparableStack(ModItems.thruster_small.get(), 4));
-        add(new ItemStack(ModMissileItems.missile_generic.get()), 100, 5_000,
-                new ComparableStack(ModItems.warhead_generic_small.get()),
-                new ComparableStack(ModItems.fuel_tank_small.get()), new ComparableStack(ModItems.thruster_small.get()));
-        add(new ItemStack(ModMissileItems.missile_incendiary.get()), 100, 5_000,
-                new ComparableStack(ModItems.warhead_incendiary_small.get()),
-                new ComparableStack(ModItems.fuel_tank_small.get()), new ComparableStack(ModItems.thruster_small.get()));
-        add(new ItemStack(ModMissileItems.missile_cluster.get()), 100, 5_000,
-                new ComparableStack(ModItems.warhead_cluster_small.get()),
-                new ComparableStack(ModItems.fuel_tank_small.get()), new ComparableStack(ModItems.thruster_small.get()));
-        add(new ItemStack(ModMissileItems.missile_buster.get()), 100, 5_000,
-                new ComparableStack(ModItems.warhead_buster_small.get()),
-                new ComparableStack(ModItems.fuel_tank_small.get()), new ComparableStack(ModItems.thruster_small.get()));
-        add(new ItemStack(ModMissileItems.missile_decoy.get()), 60, 2_500,
-                STEEL.ingot(), new ComparableStack(ModItems.fuel_tank_small.get()),
-                new ComparableStack(ModItems.thruster_small.get()));
-
-        add(new ItemStack(ModMissileItems.missile_strong.get()), 200, 10_000,
-                new ComparableStack(ModItems.warhead_generic_medium.get()),
-                new ComparableStack(ModItems.fuel_tank_medium.get()), new ComparableStack(ModItems.thruster_medium.get()));
-        add(new ItemStack(ModMissileItems.missile_incendiary_strong.get()), 200, 10_000,
-                new ComparableStack(ModItems.warhead_incendiary_medium.get()),
-                new ComparableStack(ModItems.fuel_tank_medium.get()), new ComparableStack(ModItems.thruster_medium.get()));
-        add(new ItemStack(ModMissileItems.missile_cluster_strong.get()), 200, 10_000,
-                new ComparableStack(ModItems.warhead_cluster_medium.get()),
-                new ComparableStack(ModItems.fuel_tank_medium.get()), new ComparableStack(ModItems.thruster_medium.get()));
-        add(new ItemStack(ModMissileItems.missile_buster_strong.get()), 200, 10_000,
-                new ComparableStack(ModItems.warhead_buster_medium.get()),
-                new ComparableStack(ModItems.fuel_tank_medium.get()), new ComparableStack(ModItems.thruster_medium.get()));
-        add(new ItemStack(ModMissileItems.missile_emp_strong.get()), 200, 10_000,
-                new ComparableStack(com.hbm.blocks.ModBombs2Blocks.emp_bomb.get().asItem(), 3),
-                new ComparableStack(ModItems.fuel_tank_medium.get()), new ComparableStack(ModItems.thruster_medium.get()));
-
-        add(new ItemStack(ModMissileItems.missile_burst.get()), 300, 25_000,
-                new ComparableStack(ModItems.warhead_generic_large.get()),
-                new ComparableStack(ModItems.fuel_tank_medium.get(), 2),
-                new ComparableStack(ModItems.thruster_medium.get(), 4));
-        add(new ItemStack(ModMissileItems.missile_inferno.get()), 300, 25_000,
-                new ComparableStack(ModItems.warhead_incendiary_large.get()),
-                new ComparableStack(ModItems.fuel_tank_medium.get(), 2),
-                new ComparableStack(ModItems.thruster_medium.get(), 4));
-        add(new ItemStack(ModMissileItems.missile_rain.get()), 300, 25_000,
-                new ComparableStack(ModItems.warhead_cluster_large.get()),
-                new ComparableStack(ModItems.fuel_tank_medium.get(), 2),
-                new ComparableStack(ModItems.thruster_medium.get(), 4));
-        add(new ItemStack(ModMissileItems.missile_drill.get()), 300, 25_000,
-                new ComparableStack(ModItems.warhead_buster_large.get()),
-                new ComparableStack(ModItems.fuel_tank_medium.get(), 2),
-                new ComparableStack(ModItems.thruster_medium.get(), 4));
-
-        add(new ItemStack(ModMissileItems.missile_nuclear.get()), 600, 50_000,
-                new ComparableStack(ModItems.warhead_nuclear.get()),
-                new ComparableStack(ModItems.fuel_tank_large.get()), new ComparableStack(ModItems.thruster_large.get(), 3));
-        add(new ItemStack(ModMissileItems.missile_nuclear_cluster.get()), 600, 50_000,
-                new ComparableStack(ModItems.warhead_mirv.get()),
-                new ComparableStack(ModItems.fuel_tank_large.get()), new ComparableStack(ModItems.thruster_large.get(), 3));
-        add(new ItemStack(ModMissileItems.missile_volcano.get()), 600, 50_000,
-                new ComparableStack(ModItems.warhead_volcano.get()),
-                new ComparableStack(ModItems.fuel_tank_large.get()), new ComparableStack(ModItems.thruster_large.get(), 3));
-
-        // 1.7 ArcWelderRecipes welds no satellite: every satellite is an assembly-machine recipe
-        // (AssemblyMachineRecipes "ass.spysat" .. "ass.rayscansat"). The 1.12.2 sat_base + sat_head welds are gone.
+    static {
+        TABLE.changed.register(ArcWelderRecipes::reindex);
     }
 
-    private static void addDenseWire(NTMMaterial material, int duration, long consumption, AStack input) {
-        Item output = ModAutogenItems.get(MaterialShapes.DENSEWIRE, material);
-        if (output != null) add(new ItemStack(output), duration, consumption, input);
-    }
+    /** Declares the table at mod construction. */
+    public static void declare() {}
 
-    private static void addWelded(NTMMaterial material, int duration, long consumption, FluidStack fluid) {
-        Item output = ModAutogenItems.get(MaterialShapes.WELDEDPLATE, material);
-        if (output != null) {
-            if (fluid == null) add(new ItemStack(output), duration, consumption, material.plateCast().count(2));
-            else add(new ItemStack(output), duration, consumption, fluid, material.plateCast().count(2));
+    private static void reindex() {
+        List<ArcWelderRecipe> next = new ArrayList<>();
+        for (Row row : TableCodecs.ordered(TABLE.rows(), Row::order)) {
+            next.add(new ArcWelderRecipe(row.output().stack(), row.duration(), row.consumption(), row.fluid().orElse(null),
+                    row.ingredients().toArray(AStack[]::new)));
         }
+        current = List.copyOf(next);
     }
 
-    private static void add(ItemStack output, int duration, long consumption, AStack... ingredients) {
-        recipes.add(new ArcWelderRecipe(output, duration, consumption, null, ingredients));
+    private static List<ArcWelderRecipe> index() {
+        if (current.isEmpty()) TABLE.rows();
+        return current;
     }
 
-    private static void add(ItemStack output, int duration, long consumption, FluidStack fluid, AStack... ingredients) {
-        recipes.add(new ArcWelderRecipe(output, duration, consumption, fluid, ingredients));
+    /** Loads the rows if nothing has yet (kept for the callers of the former Java table). */
+    public static void register() {
+        index();
     }
 
     public static ArcWelderRecipe getRecipe(ItemStack... inputs) {
-        register();
         outer:
-        for (ArcWelderRecipe recipe : recipes) {
+        for (ArcWelderRecipe recipe : index()) {
             List<AStack> remaining = new ArrayList<>(Arrays.asList(recipe.ingredients));
             for (ItemStack input : inputs) {
                 if (input.isEmpty()) continue;

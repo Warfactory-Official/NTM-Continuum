@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** 23-high industrial chimney: fly ash plus soot and 0.1 pollution multiplier when integrated. */
-public final class TileEntityChimneyIndustrial extends TileEntityChimneyBase {
+public class TileEntityChimneyIndustrial extends TileEntityChimneyBase {
 
     public TileEntityChimneyIndustrial(BlockPos pos, BlockState state) {
         super(SmokeChainRegistration.CHIMNEY_INDUSTRIAL.get(), pos, state);

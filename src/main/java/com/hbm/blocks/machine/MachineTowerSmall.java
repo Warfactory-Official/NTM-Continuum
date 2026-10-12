@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** 5x5x19 auxiliary cooling tower, folded from the legacy dummy block. */
-public final class MachineTowerSmall extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay {
+public class MachineTowerSmall extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay {
     public MachineTowerSmall(Properties properties) { super(properties); }
     @Override protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) { return new TileEntityTowerSmall(pos, state); }
     @Override public int[] getDimensions() { return new int[]{18, 0, 2, 2, 2, 2}; }
@@ -34,6 +34,7 @@ public final class MachineTowerSmall extends BlockMultiblockMachine implements I
     @Override public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityTowerSmall tower)) return null;
         List<String> text = new ArrayList<>();
+        MachineCondenser.vacuumWarning(level, tower, text);
         text.add("§a-> §r" + tower.input.getTankType().getDisplayNameString() + ": " + tower.input.getFill() + "/" + tower.input.getMaxFill() + "mB");
         text.add("§c<- §r" + tower.output.getTankType().getDisplayNameString() + ": " + tower.output.getFill() + "/" + tower.output.getMaxFill() + "mB");
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);

@@ -39,7 +39,7 @@ public final class ModBedrockOreItems {
     static {
         for (Grade grade : Grade.values()) {
             if (grade == Grade.BASE) continue;
-            Map<BedrockOreType, RegistryObject<ItemBedrockOreGraded>> byType = new EnumMap<>(BedrockOreType.class);
+            Map<BedrockOreType, RegistryObject<ItemBedrockOreGraded>> byType = new java.util.concurrent.ConcurrentHashMap<>();
             for (BedrockOreType type : BedrockOreType.VALUES) {
                 byType.put(type, REG.item(id(grade, type), p -> new ItemBedrockOreGraded(p, grade, type))
                         .icon(d -> EnergyBedrockDeclarations.gradeModel(d, grade.name().toLowerCase(Locale.ROOT),
@@ -53,6 +53,16 @@ public final class ModBedrockOreItems {
                 if (grade != Grade.BASE) ModTabs.addTo(HbmTab.MATERIALS, GRADED.get(grade).get(type));
             }
         }
+    }
+
+    /**
+     * Maps an addon bedrock ore type's item for one grade (BASE included), so {@link #get}/{@link #make} and HBM's
+     * recipes find it. The addon registers the item itself, in its own namespace and with its own art; HBM registers
+     * items only for its six types.
+     */
+    public static void add(Grade grade, BedrockOreType type, RegistryObject<ItemBedrockOreGraded> item) {
+        if (grade == Grade.BASE) ModProduction2Blocks.BEDROCK_ORE_BASE.put(type, item);
+        else GRADED.get(grade).put(type, item);
     }
 
     /** {@code bedrock_ore_<grade>_<type>}. */

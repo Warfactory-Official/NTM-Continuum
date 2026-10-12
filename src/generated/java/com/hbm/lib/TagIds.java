@@ -528,7 +528,10 @@ public final class TagIds {
     public static final String hbm_repairs_taurun = "#hbm:repairs/taurun";
     public static final String hbm_repairs_titanium = "#hbm:repairs/titanium";
     public static final String hbm_repairs_zirconium = "#hbm:repairs/zirconium";
+    public static final String hbm_sandstones = "#hbm:sandstones";
     public static final String hbm_scrap_plastic = "#hbm:scrap_plastic";
+    public static final String hbm_steel_scaffolds = "#hbm:steel_scaffolds";
+    public static final String hbm_stone_slabs = "#hbm:stone_slabs";
     public static final String hbm_zirnox_depleted_rods = "#hbm:zirnox_depleted_rods";
     public static final String hbm_zirnox_rods = "#hbm:zirnox_rods";
     public static final String ingots = "#c:ingots";
@@ -559,6 +562,7 @@ public final class TagIds {
     public static final String ingots_bismuth_bronze = "#c:ingots/bismuth_bronze";
     public static final String ingots_borax = "#c:ingots/borax";
     public static final String ingots_boron = "#c:ingots/boron";
+    public static final String ingots_brick = "#c:ingots/brick";
     public static final String ingots_bromine = "#c:ingots/bromine";
     public static final String ingots_bscco = "#c:ingots/bscco";
     public static final String ingots_c4 = "#c:ingots/c4";
@@ -656,6 +660,7 @@ public final class TagIds {
     public static final String ingots_verticium = "#c:ingots/verticium";
     public static final String ingots_weaponsteel = "#c:ingots/weaponsteel";
     public static final String ingots_weidanium = "#c:ingots/weidanium";
+    public static final String ingots_white_phosphorus = "#c:ingots/white_phosphorus";
     public static final String ingots_zirconium = "#c:ingots/zirconium";
     public static final String leathers = "#c:leathers";
     public static final String mechanisms_gunmetal = "#c:mechanisms/gunmetal";
@@ -1179,6 +1184,7 @@ public final class TagIds {
     public static final String storage_blocks_dura_steel = "#c:storage_blocks/dura_steel";
     public static final String storage_blocks_emerald = "#c:storage_blocks/emerald";
     public static final String storage_blocks_euphemium = "#c:storage_blocks/euphemium";
+    public static final String storage_blocks_fiberglass = "#c:storage_blocks/fiberglass";
     public static final String storage_blocks_fluorite = "#c:storage_blocks/fluorite";
     public static final String storage_blocks_gold = "#c:storage_blocks/gold";
     public static final String storage_blocks_graphite = "#c:storage_blocks/graphite";
@@ -1200,6 +1206,7 @@ public final class TagIds {
     public static final String storage_blocks_pu239 = "#c:storage_blocks/pu239";
     public static final String storage_blocks_pu240 = "#c:storage_blocks/pu240";
     public static final String storage_blocks_pu_mix = "#c:storage_blocks/pu_mix";
+    public static final String storage_blocks_quartz = "#c:storage_blocks/quartz";
     public static final String storage_blocks_ra226 = "#c:storage_blocks/ra226";
     public static final String storage_blocks_raw_copper = "#c:storage_blocks/raw_copper";
     public static final String storage_blocks_raw_gold = "#c:storage_blocks/raw_gold";

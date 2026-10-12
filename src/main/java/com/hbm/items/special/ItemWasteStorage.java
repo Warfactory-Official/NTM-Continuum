@@ -20,11 +20,12 @@ public final class ItemWasteStorage extends ItemNuclearWaste {
         SHORT
     }
 
+    /** 1.7 {@code ItemWasteLong.WasteClass}, in 1.7's order (the order is the 1.7 metadata: QMAW ids, recipe names). */
     public enum LongWasteClass {
-        THORIUM("Thorium-232", 0, 0),
-        URANIUM233("Uranium-233", 0, 50),
         URANIUM235("Uranium-235", 0, 0),
+        URANIUM233("Uranium-233", 0, 50),
         NEPTUNIUM("Neptunium-237", 0, 100),
+        THORIUM("Thorium-232", 0, 0),
         SCHRABIDIUM("Schrabidium-326", 0, 250);
 
         public final String displayName;
@@ -38,9 +39,10 @@ public final class ItemWasteStorage extends ItemNuclearWaste {
         }
     }
 
+    /** 1.7 {@code ItemWasteShort.WasteClass}, in 1.7's order (the order is the 1.7 metadata: QMAW ids, recipe names). */
     public enum ShortWasteClass {
-        URANIUM233("Uranium-233", 50, 100),
         URANIUM235("Uranium-235", 0, 100),
+        URANIUM233("Uranium-233", 50, 100),
         NEPTUNIUM("Neptunium-237", 150, 500),
         PLUTONIUM239("Plutonium-239", 250, 1000),
         PLUTONIUM240("Plutonium-240", 350, 1000),

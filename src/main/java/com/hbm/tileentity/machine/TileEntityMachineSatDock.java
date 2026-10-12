@@ -56,7 +56,7 @@ public class TileEntityMachineSatDock extends TileEntityMachineBase implements M
     }
 
     private void update(ServerLevel level) {
-        SatelliteSavedData data = SatelliteSavedData.get(level);
+        SatelliteSavedData data = SatelliteSavedData.get(level, worldPosition); // hbm-space getData(world, x, z)
         BlockPos pos = getBlockPos();
         ItemStack chip = inventory.getStackInSlot(15);
 

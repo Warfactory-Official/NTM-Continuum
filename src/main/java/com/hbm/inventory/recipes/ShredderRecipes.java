@@ -1,8 +1,12 @@
 package com.hbm.inventory.recipes;
 
-import com.hbm.blocks.ModFallingBlocks;
-import com.hbm.inventory.recipes.gen.ShredderRecipesGenerated;
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec.ItemOut;
 import com.hbm.items.ModItems;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -22,128 +26,106 @@ import java.util.Optional;
 
 /**
  * Shredder recipes — an exact-item lookup {@code input Item → output ItemStack}, with <b>scrap as the
- * universal fallback</b>: the 1.12.2 {@code getShredderResult} returns {@code ModItems.scrap} for any
+ * universal fallback</b>: 1.7's {@code getShredderResult} returns {@code ModItems.scrap} for any
  * unlisted item, which is why the shredder accepts (and grinds) literally anything.
  *
- * <p>The original built this table in two passes, and so do we:
+ * <p>The table is built in two passes, as in 1.7:
  * <ol>
- *   <li><b>Explicit entries</b> ({@code registerDefaults}) — ~175 hand-listed recipes, ported
- *       mechanically to {@link ShredderRecipesGenerated} by {@code port-tools/gen_shredder_recipes.py}
- *       (entries whose items aren't ported yet are skipped and counted; re-run after a content wave).</li>
- *   <li><b>The tag sweep</b> ({@code registerPost}) — the old ore-dictionary scan, here ported onto
- *       the tag system. The original iterated <i>every</i> ore-dict name; we iterate every {@code c:}
- *       item tag (loader-provided conventional tags included, so vanilla redstone/lapis/coal/emerald
- *       and their deepslate variants participate): each item in {@code c:ingots/<mat>},
- *       {@code c:plates/<mat>} and {@code c:gems/<mat>} grinds to one {@code c:dusts/<mat>};
- *       {@code c:ores/<mat>} and {@code c:raw_materials/<mat>} → 2 dust (raw materials are the modern
- *       ore-drop, kept at ore yield so the doubling mechanic survives either route);
- *       {@code c:storage_blocks/<mat>} → 9 dust; {@code c:nuggets/<mat>} → one tiny dust; and any
- *       material dust itself → generic {@link ModItems#dust}. Because the inputs come from tags,
- *       <i>another mod's</i> iron ingot shreds to HBM iron powder — exactly the cross-mod behaviour
- *       the ore dictionary gave the original.</li>
+ *   <li><b>Explicit rows</b> ({@code registerDefaults}): the datapack table {@code hbm:shredder}, one file per input
+ *       in {@code data/hbm/recipe/shredder/} ({@code {"type": "hbm:shredder", "input": "hbm:scrap", "output":
+ *       "hbm:dust"}}; the input may also be a {@code #tag}, which stands for each member). The rows were converted once
+ *       from the former Java table (the generated 1.12.2 explicit list, the 1.7 entries restored in fix phase 3, the
+ *       tungsten crate and bobblehead, every bedrock ore grade and the modern deepslate counterparts) and are the
+ *       source now; {@code gen/ShredderRecipesGenerated} and its generator are retired.</li>
+ *   <li><b>The tag sweeps</b> ({@code registerPost}) stay rules: the vanilla log/plank/sapling/wool/terracotta tags
+ *       and the old ore-dictionary scan on {@code c:} tags ({@code c:ingots/<mat>}, {@code c:plates/<mat>},
+ *       {@code c:gems/<mat>} grind to one {@code c:dusts/<mat>}; ores and raw materials to 2; storage blocks to 9 (4
+ *       without an ingot or gem); dusts to generic dust). Because the inputs come from tags, <i>another mod's</i>
+ *       iron ingot shreds to HBM iron powder — exactly the cross-mod behaviour the ore dictionary gave 1.7.</li>
  * </ol>
- * Explicit entries are registered first and win (the old {@code setRecipe} was first-wins, and
- * {@code registerDefaults} ran before {@code registerPost}).
+ * Every entry is first-wins (1.7's {@code setRecipe} kept the first): the explicit rows in recipe-id order, then the
+ * sweeps. The bobblehead's variant scrap ({@link DecoCrateMachineRecipes#bobbleScrap}) is a rule ahead of the table.
  *
- * <p>Registration is lazy + idempotent (called on the shredder's first tick), like the port's other
- * machine recipe sets — by then the datapack is loaded, so the {@code c:} tags are bound and
+ * <p>The index is built on first use after each reload (or client sync), when the {@code c:} tags are bound and
  * enumerable.
  */
 public final class ShredderRecipes {
 
     private ShredderRecipes() {}
 
-    private static final Map<Item, ItemStack> recipes = new HashMap<>();
-    private static boolean initialized = false;
+    /** One explicit row: an item or a tag (each member), and what it grinds into. */
+    public record Row(Either<TagKey<Item>, Item> input, ItemOut output) {}
+
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            GenericRecipeCodec.INGREDIENT.fieldOf("input").forGetter(Row::input),
+            GenericRecipeCodec.ITEM_OUT.fieldOf("output").forGetter(Row::output)
+    ).apply(i, Row::new));
+
+    public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("shredder", () -> CODEC);
+
+    private static volatile Map<Item, ItemStack> recipes;
+
+    static {
+        TABLE.changed.register(() -> recipes = null);
+    }
+
+    /** Declares the table at mod construction. */
+    public static void declare() {}
 
     /** The result of shredding {@code stack} — never empty; unlisted items yield scrap. */
     public static ItemStack getShredderResult(ItemStack stack) {
-        register();
+        Map<Item, ItemStack> table = table();
         if (stack.isEmpty()) return new ItemStack(ModItems.scrap.get());
         ItemStack bobble = DecoCrateMachineRecipes.bobbleScrap(stack);
         if (bobble != null) return bobble;
-        ItemStack result = recipes.get(stack.getItem());
+        ItemStack result = table.get(stack.getItem());
         return result != null ? result.copy() : new ItemStack(ModItems.scrap.get());
     }
 
-    /** All registered entries, for JEI/tooling. Keys are input items, values the (immutable) outputs. */
+    /** All entries (explicit rows and sweeps), for JEI/tooling. Keys are input items, values the (shared) outputs. */
     public static Map<Item, ItemStack> getRecipes() {
-        register();
-        return Collections.unmodifiableMap(recipes);
+        return Collections.unmodifiableMap(table());
+    }
+
+    /** Builds the index if a reload invalidated it (kept for the existing callers). */
+    public static void register() {
+        table();
+    }
+
+    private static synchronized Map<Item, ItemStack> table() {
+        Map<Item, ItemStack> current = recipes;
+        if (current != null) return current;
+        Map<Item, ItemStack> next = new HashMap<>();
+        for (Row row : TABLE.rows()) {
+            ItemStack out = row.output().stack();
+            row.input().ifLeft(tag -> { for (Item item : itemsOf(tag)) set(next, item, out); })
+                    .ifRight(item -> set(next, item, out));
+        }
+        registerVanillaSweeps(next);
+        registerTagSweep(next);
+        recipes = next;
+        return next;
     }
 
     /** First-wins, matching the old {@code setRecipe}'s {@code containsKey} guard. */
-    private static void set(Item in, ItemStack out) {
+    private static void set(Map<Item, ItemStack> recipes, Item in, ItemStack out) {
         if (in != null && !out.isEmpty()) recipes.putIfAbsent(in, out);
-    }
-
-    public static void register() {
-        if (initialized) return;
-        initialized = true;
-
-        ShredderRecipesGenerated.registerAll(ShredderRecipes::set);   // explicit entries win
-        registerRestored17();
-        DecoCrateMachineRecipes.shredder(ShredderRecipes::set); // tungsten crate, bobbleheads
-        BedrockOreChainRecipes.shredder(ShredderRecipes::set); // every bedrock ore grade -> gravel
-        registerModernParity();
-        registerVanillaSweeps();
-        registerTagSweep();
-    }
-
-    /**
-     * 1.7 {@code registerDefaults} entries the generated table lacks (fix phase 3, History §19ej-3): the limestone
-     * stone resource (:174), the five skulls (:235), the steel scaffold (:272), the chain (:283, registered as
-     * {@code dungeon_chain}) and the six sellafite stages (:290-295).
-     */
-    private static void registerRestored17() {
-        set(id("stone_resource_limestone"), stack("powder_limestone", 4));
-        for (Item skull : new Item[]{Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.ZOMBIE_HEAD,
-                Items.PLAYER_HEAD, Items.CREEPER_HEAD}) {
-            set(skull, stack("biomass", 4)); // 1.7 Items.skull metas 0-4
-        }
-        set(id("steel_scaffold"), stack("powder_steel_tiny", 4));
-        set(id("dungeon_chain"), stack("powder_steel_tiny", 1));
-        int[] scrap = {1, 2, 3, 5, 7, 15};
-        for (int level = 0; level < scrap.length; level++) {
-            set(id("sellafield_" + level), stack("scrap_nuclear", scrap[level]));
-        }
-    }
-
-    private static Item id(String path) {
-        return firstOfId(path).orElse(null);
-    }
-
-    private static ItemStack stack(String path, int count) {
-        Item item = id(path);
-        return item == null ? ItemStack.EMPTY : new ItemStack(item, count);
-    }
-
-    /**
-     * Modern-only counterparts of explicit 1.12 entries — blocks that didn't exist in 1.12.2 but are
-     * variants of ones the old {@code registerDefaults} listed, so they must match those outputs rather
-     * than fall through to the tag sweep (deepslate diamond ore would otherwise give diamond powder
-     * while stone diamond ore gives diamond gravel).
-     */
-    private static void registerModernParity() {
-        set(Items.DEEPSLATE_DIAMOND_ORE, new ItemStack(ModFallingBlocks.gravel_diamond.get(), 2));
-        set(Items.DEEPSLATE, new ItemStack(Items.GRAVEL));
-        set(Items.COBBLED_DEEPSLATE, new ItemStack(Items.GRAVEL));
     }
 
     /**
      * The old loops over the {@code logWood}/{@code plankWood}/{@code treeSapling} ore-dict lists and the
      * 16 wool / stained-clay metas — now the equivalent vanilla tags, so modded woods work too.
      */
-    private static void registerVanillaSweeps() {
-        for (Item item : itemsOf(ItemTags.LOGS)) set(item, new ItemStack(ModItems.powder_sawdust.get(), 4));
-        for (Item item : itemsOf(ItemTags.PLANKS)) set(item, new ItemStack(ModItems.powder_sawdust.get(), 1));
-        for (Item item : itemsOf(ItemTags.SAPLINGS)) set(item, new ItemStack(Items.STICK, 1));
-        for (Item item : itemsOf(ItemTags.WOOL)) set(item, new ItemStack(Items.STRING, 4));
-        for (Item item : itemsOf(ItemTags.TERRACOTTA)) set(item, new ItemStack(Items.CLAY_BALL, 4));
+    private static void registerVanillaSweeps(Map<Item, ItemStack> recipes) {
+        for (Item item : itemsOf(ItemTags.LOGS)) set(recipes, item, new ItemStack(ModItems.powder_sawdust.get(), 4));
+        for (Item item : itemsOf(ItemTags.PLANKS)) set(recipes, item, new ItemStack(ModItems.powder_sawdust.get(), 1));
+        for (Item item : itemsOf(ItemTags.SAPLINGS)) set(recipes, item, new ItemStack(Items.STICK, 1));
+        for (Item item : itemsOf(ItemTags.WOOL)) set(recipes, item, new ItemStack(Items.STRING, 4));
+        for (Item item : itemsOf(ItemTags.TERRACOTTA)) set(recipes, item, new ItemStack(Items.CLAY_BALL, 4));
         // Upstream moved this from registerDefaults into its dustLapis ore-dict loop. Keep it ahead of
         // the generic dust sweep so first-wins still yields cobalt rather than generic dust.
         for (Item item : itemsOf(cTag("dusts/lapis"))) {
-            set(item, new ItemStack(ModItems.powder_cobalt_tiny.get()));
+            set(recipes, item, new ItemStack(ModItems.powder_cobalt_tiny.get()));
         }
     }
 
@@ -163,7 +145,7 @@ public final class ShredderRecipes {
      * material list, so vanilla and cross-mod materials get recipes whenever a {@code c:dusts/<mat>}
      * exists.
      */
-    private static void registerTagSweep() {
+    private static void registerTagSweep(Map<Item, ItemStack> recipes) {
         // bucket every c:<shape>/<material> item tag by material
         Map<String, Map<String, TagKey<Item>>> byMat = new HashMap<>();
         dev.golem.core.world.Compat.itemTagKeys().forEach(tag -> {
@@ -184,26 +166,26 @@ public final class ShredderRecipes {
             if (dust.isPresent()) {
                 Item d = dust.get();
                 for (String one : new String[]{"ingots", "plates", "gems"}) {
-                    if (shapes.containsKey(one)) for (Item item : itemsOf(shapes.get(one))) set(item, new ItemStack(d, 1));
+                    if (shapes.containsKey(one)) for (Item item : itemsOf(shapes.get(one))) set(recipes, item, new ItemStack(d, 1));
                 }
                 for (String two : new String[]{"ores", "raw_materials"}) {
-                    if (shapes.containsKey(two)) for (Item item : itemsOf(shapes.get(two))) set(item, new ItemStack(d, 2));
+                    if (shapes.containsKey(two)) for (Item item : itemsOf(shapes.get(two))) set(recipes, item, new ItemStack(d, 2));
                 }
                 if (shapes.containsKey("storage_blocks")) {
                     // 1.7: 9 dust, but 4 when the material has no ingot or gem (redstone, sulfur, niter, ...)
                     int count = shapes.containsKey("ingots") || shapes.containsKey("gems") ? 9 : 4;
-                    for (Item item : itemsOf(shapes.get("storage_blocks"))) set(item, new ItemStack(d, count));
+                    for (Item item : itemsOf(shapes.get("storage_blocks"))) set(recipes, item, new ItemStack(d, count));
                 }
             }
             // (1.7 has no nugget branch: nuggets fall through to scrap. The port's nugget -> tiny dust sweep was removed.)
             // 1.7: "dustTiny*" grinds to generic tiny dust, any other "dust*" to generic dust. A few tiny dusts are
             // also tagged as c:dusts/<x>_tiny; they count as tiny dusts here.
             if (shapes.containsKey("dusts_tiny")) {
-                for (Item item : itemsOf(shapes.get("dusts_tiny"))) set(item, new ItemStack(ModItems.dust_tiny.get(), 1));
+                for (Item item : itemsOf(shapes.get("dusts_tiny"))) set(recipes, item, new ItemStack(ModItems.dust_tiny.get(), 1));
             }
             if (shapes.containsKey("dusts")) {
                 Item generic = mat.endsWith("_tiny") ? ModItems.dust_tiny.get() : ModItems.dust.get();
-                for (Item item : itemsOf(shapes.get("dusts"))) set(item, new ItemStack(generic, 1));
+                for (Item item : itemsOf(shapes.get("dusts"))) set(recipes, item, new ItemStack(generic, 1));
             }
         }
     }

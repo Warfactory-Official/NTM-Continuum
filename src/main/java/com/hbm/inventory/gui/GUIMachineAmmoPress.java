@@ -32,12 +32,12 @@ public class GUIMachineAmmoPress extends CompatContainerScreen<ContainerMachineA
     private final List<AmmoPressRecipe> recipes = new ArrayList<>();
     private int page;
     private int pageCount;
-    private int selection;
+    private String selection;
     private EditBox search;
 
     public GUIMachineAmmoPress(ContainerMachineAmmoPress menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 200);
-        this.selection = menu.getPress() == null ? -1 : menu.getPress().selectedRecipe;
+        this.selection = menu.getPress() == null ? "" : menu.getPress().selectedRecipe;
         this.recipes.addAll(AmmoPressRecipes.getRecipes());
         resetPaging();
     }
@@ -96,14 +96,14 @@ public class GUIMachineAmmoPress extends CompatContainerScreen<ContainerMachineA
             int x = leftPos + 16 + 18 * (displayed / 3);
             int y = topPos + 17 + 18 * (displayed % 3);
             GuiDraw.blit(graphics, TEXTURE, x, y,
-                    selection == AmmoPressRecipes.getRecipes().indexOf(recipes.get(i)) ? 194F : 212F,
+                    selection.equals(recipes.get(i).id) ? 194F : 212F,
                     0F, 18, 18, 256, 256);
             drawCount(graphics, recipes.get(i).output, x + 1, y + 1);
         }
 
         TileEntityMachineAmmoPress press = menu.getPress();
-        if (press == null || selection < 0 || selection >= AmmoPressRecipes.getRecipes().size()) return;
-        AmmoPressRecipe recipe = AmmoPressRecipes.getRecipes().get(selection);
+        AmmoPressRecipe recipe = AmmoPressRecipes.byId(selection);
+        if (press == null || recipe == null) return;
 
         for (int i = 0; i < 9; i++) {
             AStack ingredient = recipe.input[i];
@@ -173,10 +173,10 @@ public class GUIMachineAmmoPress extends CompatContainerScreen<ContainerMachineA
         for (int i = page * 3; i < page * 3 + 12 && i < recipes.size(); i++) {
             int displayed = i - page * 3;
             if (!isOver(x, y, 16 + 18 * (displayed / 3), 17 + 18 * (displayed % 3), 18, 18)) continue;
-            int newSelection = AmmoPressRecipes.getRecipes().indexOf(recipes.get(i));
-            selection = selection == newSelection ? -1 : newSelection;
+            String newSelection = recipes.get(i).id;
+            selection = selection.equals(newSelection) ? "" : newSelection;
             CompoundTag data = new CompoundTag();
-            data.putInt("selection", selection);
+            data.putString("selection", newSelection);
             GolemNetwork.sendToServer(ControlEventPayload.CODEC,
                     new ControlEventPayload(menu.getPress().getBlockPos(), data));
             GuiUtil.playClickSound();

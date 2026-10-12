@@ -1,6 +1,6 @@
 package com.hbm.assemblyfactory;
 
-import com.hbm.registration.BlockTag;
+import dev.golem.core.registry.BlockTag;
 import com.hbm.Constants;
 import com.hbm.blocks.machine.MachineAssemblyFactory;
 import com.hbm.creativetabs.HbmTab;
@@ -16,8 +16,8 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import com.hbm.registration.Loot;
-import com.hbm.registration.Preset;
+import dev.golem.core.registry.Loot;
+import dev.golem.core.registry.Preset;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Variants;

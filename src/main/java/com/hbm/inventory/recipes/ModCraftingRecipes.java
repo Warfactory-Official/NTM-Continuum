@@ -403,7 +403,7 @@ public final class ModCraftingRecipes {
         smelt(NS, "iron_ingot", ItemIds.ore_gneiss_iron, VanillaIds.iron_ingot, 5.0);
         smelt(NS, "iron_ingot_1", ItemIds.powder_iron, VanillaIds.iron_ingot, 1.0);
         smelt(NS, "iron_ingot_2", ItemIds.crystal_iron, VanillaIds.iron_ingot, 2.0, 2);
-        smelt(NS, "lignite", ItemIds.lignite, ItemIds.lignite, 1.0);
+        // no "lignite" smelting: 1.7 SmeltingRecipes has none (lignite and ore_lignite do not smelt); the port had lignite -> lignite
         smelt(NS, "lithium", ItemIds.ore_gneiss_lithium, ItemIds.lithium, 10.0);
         smelt(NS, "lithium_1", ItemIds.powder_lithium, ItemIds.lithium, 1.0);
         smelt(NS, "lithium_2", ItemIds.crystal_lithium, ItemIds.lithium, 2.0, 2);

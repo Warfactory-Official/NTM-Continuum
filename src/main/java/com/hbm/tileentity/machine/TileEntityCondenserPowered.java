@@ -27,6 +27,7 @@ public class TileEntityCondenserPowered extends TileEntityCondenser implements I
 
     public TileEntityCondenserPowered(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_CONDENSER_POWERED.get(), pos, state, inputTankSizeP, outputTankSizeP);
+        vacuumOptimised = true; // hbm-space: the powered condenser keeps condensing in a vacuum
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityCondenserPowered condenser) {

@@ -111,8 +111,6 @@ public class TileEntityICFPress extends TileEntityMachineBase
         if (empty.isEmpty() || empty.getItem() != ModItems.icf_pellet_empty.get()) return;
         if (!inventory.getStackInSlot(1).isEmpty()) return;
 
-        ItemICFPellet.init();
-
         EnumICFFuel fuel1 = getFuel(tanks[0], inventory.getStackInSlot(4), 0);
         EnumICFFuel fuel2 = getFuel(tanks[1], inventory.getStackInSlot(5), 1);
 
@@ -134,16 +132,17 @@ public class TileEntityICFPress extends TileEntityMachineBase
 
     public @Nullable EnumICFFuel getFuel(FluidTankNTM tank, ItemStack slot, int index) {
         usedFluid[index] = false;
-        if (tank.getFill() >= 1000 && ItemICFPellet.fluidMap.containsKey(tank.getTankType())) {
+        EnumICFFuel fluidFuel = com.hbm.api.data.MachineDataMaps.ICF_FUEL_FLUID.get(Fluids.toVanilla(tank.getTankType()));
+        if (tank.getFill() >= 1000 && fluidFuel != null) {
             usedFluid[index] = true;
-            return ItemICFPellet.fluidMap.get(tank.getTankType());
+            return fluidFuel;
         }
         if (slot.isEmpty()) return null;
         List<MaterialStack> mats = Mats.getMaterialsFromItem(slot);
         if (mats == null || mats.size() != 1) return null;
         MaterialStack mat = mats.get(0);
         if (mat.amount != MaterialShapes.INGOT.quantity) return null;
-        return ItemICFPellet.materialMap.get(mat.material);
+        return com.hbm.api.data.MachineDataMaps.icfFuel(mat.material);
     }
 
     /** 1.7 {@code tank.setType(slot, slots)}: a new identifier retypes the tank and empties it. */

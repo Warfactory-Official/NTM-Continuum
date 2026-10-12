@@ -1,100 +1,74 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.RecipesCommon.AStack;
-import com.hbm.inventory.RecipesCommon.ComparableStack;
-import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.Fluids;
-import com.hbm.inventory.material.Mats;
-import com.hbm.items.ItemEnums.EnumAshType;
-import com.hbm.items.ItemEnums.EnumCokeType;
-import com.hbm.items.ItemEnums.EnumTarType;
-import com.hbm.items.ModIngredientItems;
-import com.hbm.items.ModItems;
-import com.hbm.items.ModIntermediateItems;
-import com.hbm.items.ModOilItems;
-import dev.golem.core.Ids;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Blocks;
-
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.hbm.inventory.recipes.loader.ItemSpec;
+import com.hbm.inventory.recipes.loader.TableCodecs;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import net.minecraft.world.item.ItemStack;
 
-/** Combination-furnace recipes ported from the 1.12.2 {@code CombinationRecipes} defaults. */
+/**
+ * Combination-furnace recipes: the datapack table {@code hbm:combination}, one file per input in
+ * {@code data/hbm/recipe/combination/}
+ * ({@code {"input": ingredient, "item_output": item, "fluid_output": {type, amount}, "order": n}}; both outputs
+ * optional, the first match by {@code order} wins). Converted once from the Java table: 1.7's defaults, the three
+ * briquettes (formerly {@code FinalConsumableMachineRecipes.combination}) and the bedrock-ore roasting rows (still
+ * {@code BedrockOreChainRecipes}, which another table owner converts). The sodium-dust row keeps 1.7's missing item
+ * output, which the furnace refuses ({@code canSmelt}), as 1.7 did.
+ */
 public final class CombinationRecipes {
 
     private CombinationRecipes() {}
 
     public record CombinationRecipe(AStack input, ItemStack itemOutput, FluidStack fluidOutput) {}
 
-    private static final List<CombinationRecipe> RECIPES = new ArrayList<>();
-    private static boolean initialized;
+    public record Row(AStack input, Optional<ItemSpec> itemOutput, Optional<FluidStack> fluidOutput, int order) {}
+
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            TableCodecs.INGREDIENT.fieldOf("input").forGetter(Row::input),
+            ItemSpec.CODEC.optionalFieldOf("item_output").forGetter(Row::itemOutput),
+            GenericRecipeCodec.FLUID_STACK.optionalFieldOf("fluid_output").forGetter(Row::fluidOutput),
+            Codec.INT.optionalFieldOf("order", TableCodecs.LAST).forGetter(Row::order)
+    ).apply(i, Row::new));
+
+    public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("combination", () -> CODEC);
+
+    private static volatile List<CombinationRecipe> recipes = List.of();
+
+    static {
+        TABLE.changed.register(CombinationRecipes::reindex);
+    }
+
+    /** Declares the table at mod construction. */
+    public static void declare() {}
+
+    private static void reindex() {
+        List<CombinationRecipe> next = new ArrayList<>();
+        for (Row row : TableCodecs.ordered(TABLE.rows(), Row::order)) {
+            next.add(new CombinationRecipe(row.input(), row.itemOutput().map(ItemSpec::stack).orElse(null),
+                    row.fluidOutput().orElse(null)));
+        }
+        recipes = List.copyOf(next);
+    }
 
     public static CombinationRecipe getOutput(ItemStack stack) {
-        if (!initialized) register();
         if (stack == null || stack.isEmpty()) return null;
-        for (CombinationRecipe recipe : RECIPES) {
+        for (CombinationRecipe recipe : getRecipes()) {
             if (recipe.input().matchesRecipe(stack, true)) return recipe;
         }
         return null;
     }
 
     public static List<CombinationRecipe> getRecipes() {
-        if (!initialized) register();
-        return Collections.unmodifiableList(RECIPES);
-    }
-
-    public static synchronized void register() {
-        if (initialized) return;
-        initialized = true;
-
-        add(Mats.MAT_COAL.gem(), ModOilItems.coke(EnumCokeType.COAL, 1), fluid(Fluids.COALCREOSOTE, 100));
-        add(Mats.MAT_COAL.dust(), ModOilItems.coke(EnumCokeType.COAL, 1), fluid(Fluids.COALCREOSOTE, 100));
-        add(Mats.MAT_LIGNITE.gem(), ModOilItems.coke(EnumCokeType.LIGNITE, 1), fluid(Fluids.COALCREOSOTE, 50));
-        add(Mats.MAT_LIGNITE.dust(), ModOilItems.coke(EnumCokeType.LIGNITE, 1), fluid(Fluids.COALCREOSOTE, 50));
-        FinalConsumableMachineRecipes.combination(CombinationRecipes::add); // coal/lignite/sawdust briquettes
-
-        add(Mats.MAT_CHLOROCALCITE.dust(), new ItemStack(ModItems.powder_calcium.get()), fluid(Fluids.CHLORINE, 250));
-        add(Mats.MAT_MOLYSITE.dust(), new ItemStack(Items.IRON_INGOT), fluid(Fluids.CHLORINE, 250));
-        // 1.7 CINNABAR.crystal() is the "crystalCinnabar" ore name, which 1.7 registers for the cinnabar gem (hbm:cinnabar),
-        // not for the acidizer crystal that the port's c:crystals/cinnabar tag holds
-        add(Mats.MAT_CINNABAR.gem(), new ItemStack(ModItems.sulfur.get()), fluid(Fluids.MERCURY, 100));
-        add(new ComparableStack(Items.GLOWSTONE_DUST), new ItemStack(ModItems.sulfur.get()), fluid(Fluids.CHLORINE, 100));
-        add(Mats.MAT_SODALITE.gem(), new ItemStack(ModItems.powder_sodium.get()), fluid(Fluids.CHLORINE, 100));
-        add(new ComparableStack(ModIntermediateItems.chunk(com.hbm.items.ItemEnums.EnumChunkType.CRYOLITE)),
-                new ItemStack(ModItems.powder_aluminium.get()), fluid(Fluids.LYE, 150));
-        // Preserved even though the legacy canSmelt() rejects its null item output.
-        add(Mats.MAT_SODIUM.dust(), null, fluid(Fluids.SODIUM, 100));
-        add(new TagStack(tag("dusts/limestone")), new ItemStack(ModItems.powder_calcium.get()), fluid(Fluids.CARBONDIOXIDE, 50));
-
-        add(new TagStack(ItemTags.LOGS), new ItemStack(Items.CHARCOAL), fluid(Fluids.WOODOIL, 250));
-        add(new TagStack(ItemTags.SAPLINGS), ModIngredientItems.ash(EnumAshType.WOOD, 1), fluid(Fluids.WOODOIL, 50));
-
-        add(new ComparableStack(ModOilItems.tar(EnumTarType.CRUDE)), ModOilItems.coke(EnumCokeType.PETROLEUM, 1), null);
-        add(new ComparableStack(ModOilItems.tar(EnumTarType.CRACK)), ModOilItems.coke(EnumCokeType.PETROLEUM, 1), null);
-        add(new ComparableStack(ModOilItems.tar(EnumTarType.COAL)), ModOilItems.coke(EnumCokeType.COAL, 1), null);
-        add(new ComparableStack(ModOilItems.tar(EnumTarType.WOOD)), ModOilItems.coke(EnumCokeType.COAL, 1), null);
-
-        add(new ComparableStack(Items.SUGAR_CANE), new ItemStack(Items.SUGAR, 2), fluid(Fluids.ETHANOL, 50));
-        add(new ComparableStack(Blocks.CLAY.asItem()), new ItemStack(Blocks.BRICKS.asItem()), null);
-        BedrockOreChainRecipes.combination(CombinationRecipes::add); // bedrock ore roasting, 50 mB vitriol
-    }
-
-    private static void add(AStack input, ItemStack itemOutput, FluidStack fluidOutput) {
-        RECIPES.add(new CombinationRecipe(input, itemOutput, fluidOutput));
-    }
-
-    private static FluidStack fluid(com.hbm.inventory.fluid.FluidType type, int amount) {
-        return new FluidStack(type, amount);
-    }
-
-    private static TagKey<Item> tag(String path) {
-        return TagKey.create(Registries.ITEM, Ids.of("c", path));
+        if (recipes.isEmpty()) TABLE.rows();
+        return Collections.unmodifiableList(recipes);
     }
 }

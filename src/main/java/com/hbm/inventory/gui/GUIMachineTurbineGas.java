@@ -156,8 +156,8 @@ public class GUIMachineTurbineGas extends dev.golem.core.gui.CompatContainerScre
         if (GuiUtil.hover(mouseX, mouseY, gl - 16, gt + 34 + 16, 16, 16)) {
             List<Component> fuels = new ArrayList<>();
             fuels.add(Component.translatable("desc.gui.turbinegas.fuels"));
-            // 1.7 iterates Fluids.getInNiceOrder(); the port has no nice order, so this is registration order.
-            for (FluidType type : Fluids.getAll()) {
+            // 1.7 iterates Fluids.getInNiceOrder()
+            for (FluidType type : Fluids.getInNiceOrder()) {
                 FluidCombustion.Combustible c = FluidCombustion.getCombustible(type);
                 if (c != null && c.grade() == FluidCombustion.FuelGrade.GAS) fuels.add(Component.literal("  ").append(type.getDisplayName()));
             }

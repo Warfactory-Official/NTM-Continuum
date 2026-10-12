@@ -4,18 +4,13 @@ import com.hbm.items.machine.ItemRTGPellet;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
-/** Interpolates a pellet's radiation toward its decay target using the exact power decay curve. */
-public final class HazardModifierRTGRadiation implements IHazardModifier {
-    private final double target;
-
-    public HazardModifierRTGRadiation(double target) {
-        this.target = target;
-    }
+/** 1.7: interpolates a pellet's radiation toward its decay target by the life used up, {@code 1 - life / maxLife} ({@code hbm:rtg_radiation}). */
+public record HazardModifierRTGRadiation(double target) implements IHazardModifier {
 
     @Override
     public double modify(ItemStack stack, LivingEntity holder, double level) {
         if (stack.getItem() instanceof ItemRTGPellet pellet) {
-            double depletion = 1D - ItemRTGPellet.getDecay(pellet, stack);
+            double depletion = 1D - ItemRTGPellet.getRemaining(pellet, stack);
             level = level + (target - level) * depletion;
         }
         return level;

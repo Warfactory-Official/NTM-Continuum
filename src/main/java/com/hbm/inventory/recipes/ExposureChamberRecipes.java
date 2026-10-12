@@ -1,68 +1,57 @@
 package com.hbm.inventory.recipes;
 
-import com.hbm.config.GeneralConfig;
+import com.hbm.Constants;
 import com.hbm.inventory.RecipesCommon.AStack;
-import com.hbm.inventory.RecipesCommon.ComparableStack;
+import com.hbm.inventory.recipes.loader.DataGenericRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
-import com.hbm.inventory.recipes.loader.GenericRecipes;
-import com.hbm.items.ItemEnums.EnumExpensiveType;
-import com.hbm.items.ModFuelItems;
-import com.hbm.items.ModIntermediateItems;
-import com.hbm.items.ModItems;
+import com.hbm.inventory.recipes.loader.RecipeIngredients;
 import com.hbm.tileentity.machine.TileEntityMachineExposureChamber;
-
-import net.minecraft.world.item.ItemStack;
-
+import dev.golem.core.world.ItemStacks;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.item.ItemStack;
 
-import static com.hbm.inventory.OreDictManager.PU;
-import static com.hbm.inventory.OreDictManager.SBD;
-import static com.hbm.inventory.OreDictManager.U;
-import static com.hbm.inventory.OreDictManager.U238;
-
-/** The eight-cycle particle conversion table from the 1.12.2 ExposureChamberRecipes. */
-public final class ExposureChamberRecipes extends GenericRecipes {
+/**
+ * The exposure chamber (1.7 {@code ExposureChamberRecipes}): the datapack table {@code hbm:exposure_chamber}, one file
+ * per row in {@code data/hbm/recipe/exposure_chamber/}, converted once from the former Java table and the source now.
+ * A row is one cycle as 1.7 stated it: input 0 the particle, input 1 the ingredient, one output (ntm-next's
+ * {@code ExposureChamberRecipe}); the schrabidate row's {@code input_items_expensive} is 1.7's expensive-mode branch.
+ *
+ * <p>The machine reads {@link #recipes}; the recipe lists show each row as 1.7's NEI handler did, with eight
+ * ingredients and outputs ({@code getRecipes}: one capsule is good for {@link TileEntityMachineExposureChamber#MAX_PARTICLES}).
+ */
+public final class ExposureChamberRecipes extends DataGenericRecipes<GenericRecipe> {
 
     public static final ExposureChamberRecipes INSTANCE = new ExposureChamberRecipes();
+    /** One entry per row, one cycle each; rebuilt with the table. */
     public static final List<ExposureChamberRecipe> recipes = new ArrayList<>();
 
-    private ExposureChamberRecipes() {}
-
-    @Override
-    public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return;
-
-        add("exposure.uranium", new ComparableStack(ModItems.particle_higgs.get()), U.ingot(),
-                new ItemStack(ModFuelItems.ingot_schraranium.get()));
-        add("exposure.uranium238", new ComparableStack(ModItems.particle_higgs.get()), U238.ingot(),
-                new ItemStack(ModItems.ingot_schrabidium.get()));
-        add("exposure.plutonium", new ComparableStack(ModItems.particle_dark.get()), PU.ingot(),
-                new ItemStack(ModItems.ingot_euphemium.get()));
-
-        AStack finalIngredient = GeneralConfig.enableExpensiveMode
-                ? new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.DEGENERATE_MATTER))
-                : SBD.ingot();
-        add("exposure.schrabidate", new ComparableStack(ModItems.particle_sparkticle.get()), finalIngredient,
-                new ItemStack(ModItems.ingot_dineutronium.get()));
+    private ExposureChamberRecipes() {
+        super(Constants.MOD_ID, "exposure_chamber");
     }
 
-    private void add(String name, AStack particle, AStack ingredient, ItemStack output) {
-        ExposureChamberRecipe recipe = new ExposureChamberRecipe(particle, ingredient, output.copy());
-        recipes.add(recipe);
+    /** Declares the table at mod construction (its recipe type and serializer register with HBM's content). */
+    public static void declare() {}
 
-        // The old JEI adapter displayed one catalyst and eight ingredient/output units, while the
-        // machine consumes and produces one unit per cycle.
-        AStack displayIngredient = GeneralConfig.enableExpensiveMode
-                && name.equals("exposure.schrabidate")
-                ? new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.DEGENERATE_MATTER), 8)
-                : ingredient instanceof com.hbm.inventory.RecipesCommon.TagStack tag
-                ? new com.hbm.inventory.RecipesCommon.TagStack(tag.tag, 8)
-                : new ComparableStack(((ComparableStack) ingredient).item, 8);
-        register(new GenericRecipe(name).setup(TileEntityMachineExposureChamber.PROCESS_TIME_BASE,
-                        TileEntityMachineExposureChamber.CONSUMPTION_BASE)
-                .inputItems(particle, displayIngredient)
-                .outputItems(new ItemStack(output.getItem(), TileEntityMachineExposureChamber.MAX_PARTICLES)));
+    @Override
+    protected void arrange(List<GenericRecipe> rows) {
+        List<ExposureChamberRecipe> cycles = new ArrayList<>();
+        for (int index = 0; index < rows.size(); index++) {
+            GenericRecipe row = rows.get(index);
+            if (row.inputItem == null || row.inputItem.length < 2 || row.outputItem == null || row.outputItem.length == 0) continue;
+            AStack particle = row.inputItem[0];
+            AStack ingredient = row.inputItem[1];
+            ItemStack output = row.outputItem[0];
+            cycles.add(new ExposureChamberRecipe(particle, ingredient, output.copy()));
+            int shown = TileEntityMachineExposureChamber.MAX_PARTICLES;
+            rows.set(index, new GenericRecipe(row.getInternalName()).setup(row.duration, row.power)
+                    .inputItems(particle, RecipeIngredients.withCount(ingredient, ingredient.stacksize * shown))
+                    .outputItems(ItemStacks.copyWithCount(output, output.getCount() * shown)));
+        }
+        synchronized (recipes) {
+            recipes.clear();
+            recipes.addAll(cycles);
+        }
     }
 
     public static ExposureChamberRecipe getRecipe(ItemStack particle, ItemStack ingredient) {

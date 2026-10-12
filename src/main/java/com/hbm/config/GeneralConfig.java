@@ -117,7 +117,7 @@ public final class GeneralConfig {
     public static boolean enable528ReasimBoilers = false;
     /** 1.7 {@code X528_enable528NetherBurn}: players burn in the nether (528 mode only). */
     public static boolean enable528NetherBurn = false;
-    /** 1.7 {@code X528_enable528PressurizedRecipes}: pressurised chemical plant inputs (528 mode only; recipes deferred). */
+    /** 1.7 {@code X528_enable528PressurizedRecipes}: pressurised chemical plant inputs (528 mode only; recipe flag {@code enable_528_pressurized}). */
     public static boolean enable528PressurizedRecipes = false;
     /** 1.7 {@code X528_enable528ExplosiveEnergistics}: AE2 blocks explode (528 mode only; no AE2 here). */
     public static boolean enable528ExplosiveEnergistics = false;

@@ -34,6 +34,22 @@ public class ItemMachineUpgrade extends CompatItem {
         this.tier = tier;
     }
 
+    /**
+     * What {@code item} counts as in an upgrade slot: its {@code hbm:machine_upgrade} entry, else an upgrade item's own
+     * type and tier; null when it is no upgrade.
+     */
+    public static com.hbm.api.data.MachinePartDataMaps.@org.jspecify.annotations.Nullable Upgrade upgradeOf(Item item) {
+        com.hbm.api.data.MachinePartDataMaps.Upgrade data = com.hbm.api.data.MachinePartDataMaps.MACHINE_UPGRADE.get(item);
+        if (data != null) return data;
+        return codeUpgradeOf(item);
+    }
+
+    /** The code defaults (constructor or enum values) that the data map entry overrides. */
+    public static com.hbm.api.data.MachinePartDataMaps.@org.jspecify.annotations.Nullable Upgrade codeUpgradeOf(Item item) {
+        return item instanceof ItemMachineUpgrade upgrade && upgrade.type != null
+                ? new com.hbm.api.data.MachinePartDataMaps.Upgrade(upgrade.type, upgrade.tier) : null;
+    }
+
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
@@ -102,8 +118,6 @@ public class ItemMachineUpgrade extends CompatItem {
         FORTUNE,
         AFTERBURN,
         OVERDRIVE,
-        NULLIFIER,
-        SCREAM,
         SPECIAL
     }
 }

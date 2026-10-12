@@ -61,25 +61,38 @@ public class ContaminationUtil {
         return Math.pow(koeff, -(HazmatRegistry.getResistance(entity))) * mult;
     }
 
-    private static String fmt3(double v) {
-        double ar = Math.abs(v);
-        return (ar >= 1.0e6 || (ar > 0.0 && ar < 1.0e-3)) ? String.format("%.3e", v) : String.format("%.3f", v);
+    /** Extra geiger counter lines, printed after the player's contamination. */
+    @FunctionalInterface
+    public interface GeigerLines {
+        void lines(Player player, java.util.function.Consumer<Component> out);
     }
 
+    /** Plain HBM registers none (H-82); NTM: Space prints hbm-space's "Player radioactivity" (neutron activation). */
+    public static final dev.golem.core.hook.Hook<GeigerLines> GEIGER_LINES = dev.golem.core.hook.Hook.notifying();
+
+    /**
+     * 1.7 {@code printGeigerData}: chunk radiation, the environmental radiation buffer (RAD/s of the last second, not
+     * reduced by armor) and the player's contamination, each truncated to one decimal and printed with Java's plain
+     * {@code "" + double}, then the hazmat resistance in percent (two decimals) and its coefficient. 1.12.2's
+     * "received radiation" line and its three-decimal formatting are not in 1.7. Addon lines ({@link #GEIGER_LINES},
+     * hbm-space's "Player radioactivity") follow the contamination line, where hbm-space prints its own.
+     */
     public static void printGeigerData(Player player) {
-        double rawRadMod = calculateRadiationMod(player);
-        double eRad = HbmLivingProps.getRadiation(player);
-        double rads = ChunkRadiationManager.proxy.getRadiation(player.level(), player.blockPosition());
-        double env = getPlayerRads(player);
-        double res = (1.0 - rawRadMod) * 100.0;
-        double resKoeff = HazmatRegistry.getResistance(player) * 100.0;
-        double rec = env * rawRadMod;
+        for (Component line : geigerData(player)) send(player, line);
+    }
 
-        String resS = (Math.abs(res) >= 1.0e6 || (Math.abs(res) > 0.0 && Math.abs(res) < 1.0e-6))
-                ? String.format("%.6e", res) : String.format("%.6f", res);
-        String resKoeffS = (Math.abs(resKoeff) >= 1.0e6 || (Math.abs(resKoeff) > 0.0 && Math.abs(resKoeff) < 1.0e-2))
-                ? String.format("%.2e", resKoeff) : String.format("%.2f", resKoeff);
+    /** The lines {@link #printGeigerData} sends, in order. */
+    public static List<Component> geigerData(Player player) {
+        double eRad = ((int) (HbmLivingProps.getRadiation(player) * 10)) / 10D;
+        BlockPos at = BlockPos.containing(player.getX(), player.getY(), player.getZ());
+        double rads = ((int) (ChunkRadiationManager.proxy.getRadiation(player.level(), at) * 10)) / 10D;
+        double env = ((int) (HbmLivingProps.getRadBuf(player) * 10D)) / 10D;
 
+        double res = ((int) (10000D - calculateRadiationMod(player) * 10000D)) / 100D;
+        double resKoeff = ((int) (HazmatRegistry.getResistance(player) * 100D)) / 100D;
+
+        String chunkPrefix = getPreffixFromRad(rads);
+        String envPrefix = getPreffixFromRad(env);
         String radPrefix;
         if (eRad < 200) radPrefix = "" + ChatFormatting.GREEN;
         else if (eRad < 400) radPrefix = "" + ChatFormatting.YELLOW;
@@ -87,36 +100,42 @@ public class ContaminationUtil {
         else if (eRad < 800) radPrefix = "" + ChatFormatting.RED;
         else if (eRad < 1000) radPrefix = "" + ChatFormatting.DARK_RED;
         else radPrefix = "" + ChatFormatting.DARK_GRAY;
-        String resPrefix = "" + ChatFormatting.WHITE + (resKoeff > 0 ? ChatFormatting.GREEN : "");
+        String resPrefix = "" + ChatFormatting.WHITE;
+        if (resKoeff > 0) resPrefix += ChatFormatting.GREEN;
 
-        send(player, line(ChatFormatting.GOLD, Component.literal("===== ☢ ")
+        List<Component> out = new java.util.ArrayList<>();
+        out.add(line(ChatFormatting.GOLD, Component.literal("===== ☢ ")
                 .append(Component.translatable("geiger.title")).append(Component.literal(" ☢ ====="))));
-        send(player, line(ChatFormatting.YELLOW, Component.translatable("geiger.chunkRad")
-                .append(Component.literal(" " + getPreffixFromRad(rads) + fmt3(rads) + " RAD/s"))));
-        send(player, line(ChatFormatting.YELLOW, Component.translatable("geiger.envRad")
-                .append(Component.literal(" " + getPreffixFromRad(env) + fmt3(env) + " RAD/s"))));
-        send(player, line(ChatFormatting.YELLOW, Component.translatable("geiger.recievedRad")
-                .append(Component.literal(" " + getPreffixFromRad(rec) + fmt3(rec) + " RAD/s"))));
-        send(player, line(ChatFormatting.YELLOW, Component.translatable("geiger.playerRad")
-                .append(Component.literal(" " + radPrefix + fmt3(eRad) + " RAD"))));
-        send(player, line(ChatFormatting.YELLOW, Component.translatable("geiger.playerRes")
-                .append(Component.literal(" " + resPrefix + resS + "% (" + resKoeffS + ")"))));
+        out.add(line(ChatFormatting.YELLOW, Component.translatable("geiger.chunkRad")
+                .append(Component.literal(" " + chunkPrefix + rads + " RAD/s"))));
+        out.add(line(ChatFormatting.YELLOW, Component.translatable("geiger.envRad")
+                .append(Component.literal(" " + envPrefix + env + " RAD/s"))));
+        out.add(line(ChatFormatting.YELLOW, Component.translatable("geiger.playerRad")
+                .append(Component.literal(" " + radPrefix + eRad + " RAD"))));
+        for (GeigerLines listener : GEIGER_LINES) listener.lines(player, out::add);
+        out.add(line(ChatFormatting.YELLOW, Component.translatable("geiger.playerRes")
+                .append(Component.literal(" " + resPrefix + res + "% (" + resKoeff + ")"))));
+        return out;
     }
 
+    /**
+     * 1.7 {@code printDosimeterData}: the environmental radiation buffer (RAD/s of the last second) truncated to one
+     * decimal and capped at 3.6 (">3.6"). The title key is the port's {@code dosimeter.title} (1.7
+     * {@code geiger.title.dosimeter}, same text).
+     */
     public static void printDosimeterData(Player player) {
-        double rads = getActualPlayerRads(player);
+        double env = ((int) (HbmLivingProps.getRadBuf(player) * 10D)) / 10D;
         boolean limit = false;
 
-        if (rads > 3.6D) {
-            rads = 3.6D;
+        if (env > 3.6D) {
+            env = 3.6D;
             limit = true;
         }
-        rads = ((int) (1000D * rads)) / 1000D;
 
         send(player, line(ChatFormatting.GOLD, Component.literal("===== ☢ ")
                 .append(Component.translatable("dosimeter.title")).append(Component.literal(" ☢ ====="))));
-        send(player, line(ChatFormatting.YELLOW, Component.translatable("geiger.recievedRad")
-                .append(Component.literal(" " + getPreffixFromRad(rads) + (limit ? ">" : "") + rads + " RAD/s"))));
+        send(player, line(ChatFormatting.YELLOW, Component.translatable("geiger.envRad")
+                .append(Component.literal(" " + getPreffixFromRad(env) + (limit ? ">" : "") + env + " RAD/s"))));
     }
 
     public static void printDiagnosticData(Player player) {
@@ -262,9 +281,22 @@ public class ContaminationUtil {
         return 0.0D;
     }
 
+    /**
+     * Asked after the mutation check and before 1.7's immunity list (ADDON-API-INVENTORY H-76): the first listener that
+     * does not {@code PASS} decides ({@code ALLOW} immune, {@code DENY} not). HBM registers none. NTM: Space: hbm-space
+     * dropped the ocelot (and so the cat) from the list.
+     */
+    public static final dev.golem.core.hook.Hook<java.util.function.Function<Entity, dev.golem.core.hook.Verdict>> RAD_IMMUNE =
+            dev.golem.core.hook.Hook.notifying();
+
     public static boolean isRadImmune(Entity e) {
         if (e instanceof LivingEntity living &&
                 dev.golem.core.world.Effects.hasRegistered(living, ModEffects.MUTATION.get())) return true;
+        for (java.util.function.Function<Entity, dev.golem.core.hook.Verdict> listener : RAD_IMMUNE) {
+            dev.golem.core.hook.Verdict verdict = listener.apply(e);
+            if (verdict == dev.golem.core.hook.Verdict.ALLOW) return true;
+            if (verdict == dev.golem.core.hook.Verdict.DENY) return false;
+        }
         // 1.7 immuneEntities (nuclear creeper, mooshroom, zombie, skeleton, quackos, ocelot, IRadiationImmune); the
         // cat (1.7's tamed ocelot), the undead horses and armour stands are the port's additions.
         return e instanceof com.hbm.entity.mob.EntityCreeperNuclear

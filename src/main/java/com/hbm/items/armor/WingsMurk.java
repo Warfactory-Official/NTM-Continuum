@@ -44,6 +44,22 @@ public class WingsMurk extends JetpackBase {
             else if (y < -0.1D) y += 0.2D;
             else if (y < 0D) y = 0D;
             motion = new Vec3(motion.x, y, motion.z);
+        } else if (JetpackHandler.isBackpackEnabled(player)) {
+            // hbm-space: sneaking with the wings spread in low gravity replaces the planet's pull with Earth's-like
+            // glide, at least 0.2 (its gravity units, Environment.EARTH_GRAVITY = 1.6) unless in free fall. Above 1.5
+            // hbm-space returned from the whole tick, which also dropped 1.7's steering below on Earth; here the
+            // branch only does nothing there, so plain HBM keeps 1.7 (com.hbm.api.environment.Environment.gravity).
+            float gravity = (float) (com.hbm.api.environment.Environment.gravity(player)
+                    * com.hbm.api.environment.Environment.EARTH_GRAVITY);
+            if (gravity <= 1.5F) {
+                if (gravity != 0 && gravity < 0.2F) gravity = 0.2F;
+                double y = motion.y;
+                y /= 0.98F;
+                y += gravity / 20F;
+                y -= com.hbm.api.environment.Environment.EARTH_GRAVITY / 20F;
+                y *= 0.98F;
+                motion = new Vec3(motion.x, y, motion.z);
+            }
         }
 
         if (JetpackHandler.isBackpackEnabled(player)) {

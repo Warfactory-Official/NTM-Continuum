@@ -53,12 +53,29 @@ public final class SatelliteGameTests {
         String[] names = {"SatelliteMapper", "SatelliteScanner", "SatelliteRadar", "SatelliteDeathRay",
                 "SatelliteResonator", "SatelliteRelay", "SatelliteMiner", "SatelliteLunarMiner", "SatelliteHorizons",
                 "SatellitePrecisionLaser", "SatelliteDetector", "SatelliteRayScan"};
-        helper.assertTrue(SatelliteType.values().length == names.length, "1.7 registers twelve satellite ids");
+        // 1.7 idToClass order and the names saves carry; the registry keeps both (numeric ids are gone, X-22)
+        String[] saved = {"mapper", "scanner", "radar", "laser", "resonator", "relay", "miner", "lunar_miner",
+                "horizons", "precision_laser", "detector", "ray_scan"};
+        helper.assertTrue(SatelliteType.values().size() >= names.length, "1.7 registers twelve satellite types");
         for (int id = 0; id < names.length; id++) {
-            Satellite sat = XSatelliteRegistry.createFromId(id);
-            helper.assertTrue(sat != null && names[id].equals(sat.getClass().getSimpleName()) && sat.getID() == id,
-                    "1.7 id " + id + " must be " + names[id] + ", got " + (sat == null ? null : sat.getClass().getSimpleName()));
+            SatelliteType type = SatelliteType.values().get(id);
+            Satellite sat = type.create();
+            helper.assertTrue(saved[id].equals(type.name()) && SatelliteType.byName(saved[id]) == type
+                            && names[id].equals(sat.getClass().getSimpleName()) && sat.type() == type,
+                    "1.7 id " + id + " must be " + names[id] + " saved as " + saved[id] + ", got " + type.name());
         }
+        // the hbm:satellite item data map must equal 1.7's registerSatellite table (EnumSatType -> class)
+        SatelliteType[] chips = {SatelliteType.MAPPER, SatelliteType.SCANNER, SatelliteType.RADAR, SatelliteType.MINER,
+                SatelliteType.LUNAR_MINER, SatelliteType.PRECISION_LASER, SatelliteType.DEATH_RAY,
+                SatelliteType.RESONATOR, SatelliteType.RELAY, SatelliteType.DETECTOR, SatelliteType.RAY_SCAN};
+        for (EnumSatType chip : EnumSatType.VALUES) {
+            helper.assertTrue(XSatelliteRegistry.typeFor(ItemSatellite.make(chip)) == chips[chip.ordinal()],
+                    chip + " must launch " + chips[chip.ordinal()]);
+        }
+        helper.assertTrue(com.hbm.api.data.SatelliteDataMaps.SATELLITE.byId().size() == 12,
+                "the satellite data map has 1.7's twelve registerSatellite entries");
+        helper.assertTrue(XSatelliteRegistry.stackFor(SatelliteType.HORIZONS).is(ModSatelliteItems.sat_gerald.get()),
+                "Horizons' chip is sat_gerald");
 
         helper.assertTrue(XSatelliteRegistry.typeFor(ItemSatellite.make(EnumSatType.SPY)) == SatelliteType.MAPPER, "SPY launches the mapper");
         helper.assertTrue(XSatelliteRegistry.typeFor(ItemSatellite.make(EnumSatType.DEATH_RAY)) == SatelliteType.DEATH_RAY, "DEATH_RAY launches the death ray");

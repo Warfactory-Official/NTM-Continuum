@@ -49,12 +49,12 @@ public class BlockEntityRBMKRod extends BlockEntityRBMKBase implements IRBMKFlux
     @Override public void tickServer() {
         ItemStack fuel = inventory.getStackInSlot(0);
         if (fuel.getItem() instanceof ItemRBMKRod rod) {
-            rodColor = rod.colorTint;
+            rodColor = rod.stats().tint();
             if (fluxQuantity > 0 && level.getGameTime() % 200 == 0)
                 com.hbm.saveddata.satellites.SatelliteRayScan.reportEvent(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
                         com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent.INFO_NUCLEAR, 300);
-            double outputRatio = rod.rType == ItemRBMKRod.NType.SLOW ? 0D : 1D;
-            double output = rod.burn(level, fuel, fluxFor(rod.nType));
+            double outputRatio = rod.stats().neutronOut() == ItemRBMKRod.NType.SLOW ? 0D : 1D;
+            double output = rod.burn(level, fuel, fluxFor(rod.stats().neutronIn()));
             rod.updateHeat(level, fuel, 1D); heat += rod.provideHeat(level, fuel, heat, 1D);
             if (!hasLid()) RadiationSystemNT.incrementRad((ServerLevel) level, worldPosition, fluxQuantity * .05D, fluxQuantity * .05D * 1024D);
             super.tickServer();
@@ -80,7 +80,7 @@ public class BlockEntityRBMKRod extends BlockEntityRBMKBase implements IRBMKFlux
     }
     @Override public RBMKType getRBMKType() { return RBMKType.ROD; }
     @Override public RBMKColumnType getConsoleType() { return RBMKColumnType.FUEL; }
-    @Override public RBMKColumn getConsoleData() { RBMKColumn.FuelColumn data = (RBMKColumn.FuelColumn) super.getConsoleData(); ItemStack fuel = inventory.getStackInSlot(0); if (fuel.getItem() instanceof ItemRBMKRod rod) { data.enrichment = ItemRBMKRod.getEnrichment(fuel); data.xenon = ItemRBMKRod.getPoison(fuel); data.c_heat = ItemRBMKRod.getHullHeat(fuel); data.c_coreHeat = ItemRBMKRod.getCoreHeat(fuel); data.c_maxHeat = rod.meltingPoint; } return data; }
+    @Override public RBMKColumn getConsoleData() { RBMKColumn.FuelColumn data = (RBMKColumn.FuelColumn) super.getConsoleData(); ItemStack fuel = inventory.getStackInSlot(0); if (fuel.getItem() instanceof ItemRBMKRod rod) { data.enrichment = ItemRBMKRod.getEnrichment(fuel); data.xenon = ItemRBMKRod.getPoison(fuel); data.c_heat = ItemRBMKRod.getHullHeat(fuel); data.c_coreHeat = ItemRBMKRod.getCoreHeat(fuel); data.c_maxHeat = rod.stats().meltingPoint(); } return data; }
     @Override public boolean canLoad(ItemStack stack) { return !stack.isEmpty() && inventory.getStackInSlot(0).isEmpty(); }
     @Override public void load(ItemStack stack) { inventory.setStackInSlot(0, stack.copy()); markChanged(); }
     @Override public boolean canUnload() { return !inventory.getStackInSlot(0).isEmpty(); }

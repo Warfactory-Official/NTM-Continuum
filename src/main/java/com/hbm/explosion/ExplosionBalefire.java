@@ -6,6 +6,8 @@ import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -35,6 +37,46 @@ public class ExplosionBalefire {
     private int shell;
     private int leg;
     private int element;
+
+    /**
+     * An addon's change to the crater, chosen per blast (ADDON-API-INVENTORY H-65; NTM: Space's antimatter balefire).
+     * Every default is 1.7's balefire, so a blast without a variant is unchanged.
+     */
+    public interface Variant {
+        /** Called for each column block before it is removed; true keeps the block (the column walks on below it). */
+        default boolean keep(ExplosionBalefire explosion, BlockPos pos, BlockState state) {
+            return false;
+        }
+
+        /** Whether the crater floor gets balefire fire and schrabidium clusters stop/transmute the column (1.7: yes). */
+        default boolean balefire() {
+            return true;
+        }
+
+        /**
+         * Called for each of the five layers under the crater floor ({@code layer} = depth .. depth - 4, {@code dist} the
+         * column's distance budget, always positive) before 1.7 slakes stone there.
+         */
+        default void floor(ExplosionBalefire explosion, int x, int depth, int z, int dist, int layer) {}
+    }
+
+    private static final java.util.Map<Identifier, Variant> VARIANTS =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Registers a crater variant under {@code id} (a second registration of one id is an error). */
+    public static void registerVariant(Identifier id, Variant variant) {
+        if (VARIANTS.putIfAbsent(id, java.util.Objects.requireNonNull(variant)) != null) {
+            throw new IllegalStateException("Balefire variant " + id + " registered twice");
+        }
+    }
+
+    /** The variant registered as {@code id}, or null (null id, or unknown: plain 1.7 balefire). */
+    public static @Nullable Variant variant(@Nullable Identifier id) {
+        return id == null ? null : VARIANTS.get(id);
+    }
+
+    /** This blast's variant; null is 1.7's balefire. */
+    public @Nullable Variant variant;
 
     public ExplosionBalefire(int x, int y, int z, Level level, int rad) {
         this.posX = x;
@@ -112,13 +154,15 @@ public class ExplosionBalefire {
 
         depth = Math.max(y - depth, 0);
 
+        boolean balefire = variant == null || variant.balefire();
+
         while (y > depth) {
 
             BlockPos pos = new BlockPos(pX, y, pZ);
             BlockState state = level.getBlockState(pos);
 
             // a schrabidium cluster stops the column dead and may transmute instead
-            if (isSchrabidiumCluster(state)) {
+            if (balefire && isSchrabidiumCluster(state)) {
                 if (level.getRandom().nextInt(10) == 0) {
                     level.setBlockAndUpdate(pos.above(), ModBombBlocks.balefire.get().defaultBlockState());
                     level.setBlock(pos, euphemiumClusterOf(state),
@@ -127,12 +171,17 @@ public class ExplosionBalefire {
                 return;
             }
 
+            if (variant != null && variant.keep(this, pos, state)) {
+                y--;
+                continue;
+            }
+
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
 
             y--;
         }
 
-        if (level.getRandom().nextInt(10) == 0) {
+        if (balefire && level.getRandom().nextInt(10) == 0) {
             level.setBlockAndUpdate(new BlockPos(pX, depth + 1, pZ),
                     ModBombBlocks.balefire.get().defaultBlockState());
 
@@ -145,6 +194,7 @@ public class ExplosionBalefire {
         }
 
         for (int i = depth; i > depth - 5; i--) {
+            if (variant != null) variant.floor(this, pX, depth, pZ, dist, i);
             BlockPos pos = new BlockPos(pX, i, pZ);
             if (level.getBlockState(pos).is(Blocks.STONE)) {
                 level.setBlock(pos, ModFalloutBlocks.sellafield_slaked.get().defaultBlockState(), Block.UPDATE_ALL);

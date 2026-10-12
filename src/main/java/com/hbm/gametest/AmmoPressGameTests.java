@@ -71,7 +71,7 @@ public final class AmmoPressGameTests {
     public static void shiftClickInput(GameTestHelper helper) {
         var press = place(helper, new BlockPos(2, 1, 2));
         CompoundTag select = new CompoundTag();
-        select.putInt("selection", 0);
+        select.putString("selection", AmmoPressRecipes.getRecipes().get(0).id);
         press.receiveControl(select);
 
         try (var playerFixture = dev.golem.core.gametest.GameTestHelpers.mockServerPlayer(helper)) {
@@ -96,9 +96,11 @@ public final class AmmoPressGameTests {
     public static void controlAndProcessing(GameTestHelper helper) {
         var press = place(helper, new BlockPos(2, 1, 2));
         CompoundTag select = new CompoundTag();
-        select.putInt("selection", 1); // .357 soft point
+        String softPoint = AmmoPressRecipes.getRecipes().get(1).id; // .357 soft point
+        select.putString("selection", softPoint);
         press.receiveControl(select);
-        helper.assertTrue(press.selectedRecipe == 1, "Ammo Press control packet did not select recipe 1");
+        helper.assertTrue(press.selectedRecipe.equals(softPoint) && softPoint.equals("hbm:ammo_press/m357_sp"),
+                "Ammo Press control packet did not select the .357 soft point by its recipe id: " + press.selectedRecipe);
 
         press.inventory.setStackInSlot(1, new ItemStack(ModItems.ingot_lead.get(), 2));
         press.inventory.setStackInSlot(4, new ItemStack(ModItems.ballistite.get(), 2));
@@ -114,7 +116,7 @@ public final class AmmoPressGameTests {
                         && press.playAnimation == 40,
                 "Ammo Press did not process all available positional batches");
         press.receiveControl(select);
-        helper.assertTrue(press.selectedRecipe == -1, "reselecting the active recipe must clear it");
+        helper.assertTrue(press.selectedRecipe.isEmpty(), "reselecting the active recipe must clear it");
         helper.succeed();
     }
 

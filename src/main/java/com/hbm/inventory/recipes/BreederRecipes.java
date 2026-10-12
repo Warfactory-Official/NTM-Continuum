@@ -1,19 +1,23 @@
 package com.hbm.inventory.recipes;
 
-import com.hbm.items.ModNuclearMiscItems;
-import com.hbm.items.machine.ItemBreedingRod.BreedingRodType;
-import com.hbm.items.machine.ItemBreedingRod.RodSize;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.ItemSpec;
+import com.hbm.inventory.recipes.loader.TableCodecs;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 /**
- * Breeding reactor recipes — 1:1 port of the 1.7 {@code BreederRecipes.registerDefaults}. Each rod type
- * is registered for the single, dual (flux x2) and quad (flux x3) rods. The etched meteorite sword breeds
- * into the bred sword (flux 1000).
+ * Breeding reactor recipes: the datapack table {@code hbm:breeder}, one file per input in {@code data/hbm/recipe/breeder/}
+ * ({@code {"input": item, "output": item, "flux": n, "order": n}}; the reactor breeds the input into the output once
+ * it has absorbed {@code flux}). Converted once from 1.7's {@code BreederRecipes.registerDefaults}: each rod type for
+ * the single, dual (flux x2) and quad (flux x3) rods, and the etched meteorite sword (flux 1000).
  */
 public final class BreederRecipes {
 
@@ -22,42 +26,46 @@ public final class BreederRecipes {
     /** nicer than opaque object arrays */
     public record BreederRecipe(ItemStack output, int flux) {}
 
-    private static final Map<Item, BreederRecipe> recipes = new LinkedHashMap<>();
-    private static boolean initialized = false;
+    /** One row; {@code order} keeps 1.7's registration order for the recipe display. */
+    public record Row(Item input, ItemSpec output, int flux, int order) {}
+
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            dev.golem.core.world.ItemStacks.itemCodec().fieldOf("input").forGetter(Row::input),
+            ItemSpec.CODEC.fieldOf("output").forGetter(Row::output),
+            Codec.INT.fieldOf("flux").forGetter(Row::flux),
+            Codec.INT.optionalFieldOf("order", TableCodecs.LAST).forGetter(Row::order)
+    ).apply(i, Row::new));
+
+    public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("breeder", () -> CODEC);
+
+    private static volatile Map<Item, BreederRecipe> recipes = Map.of();
+
+    static {
+        TABLE.changed.register(BreederRecipes::reindex);
+    }
+
+    /** Declares the table at mod construction. */
+    public static void declare() {}
+
+    private static void reindex() {
+        Map<Item, BreederRecipe> next = new LinkedHashMap<>();
+        for (Row row : TableCodecs.ordered(TABLE.rows(), Row::order)) {
+            next.put(row.input(), new BreederRecipe(row.output().stack(), row.flux()));
+        }
+        recipes = next;
+    }
+
+    private static Map<Item, BreederRecipe> index() {
+        if (recipes.isEmpty()) TABLE.rows();
+        return recipes;
+    }
 
     public static Map<Item, BreederRecipe> getAllRecipes() {
-        init();
-        return Collections.unmodifiableMap(recipes);
+        return Collections.unmodifiableMap(index());
     }
 
     public static BreederRecipe getOutput(ItemStack stack) {
         if (stack.isEmpty()) return null;
-        init();
-        return recipes.get(stack.getItem());
-    }
-
-    /** Sets recipes for single, dual, and quad rods */
-    private static void setRecipe(BreedingRodType inputType, BreedingRodType outputType, int flux) {
-        for (RodSize size : RodSize.values()) {
-            recipes.put(ModNuclearMiscItems.rod(size, inputType),
-                    new BreederRecipe(new ItemStack(ModNuclearMiscItems.rod(size, outputType)), flux * size.fluxMultiplier));
-        }
-    }
-
-    private static synchronized void init() {
-        if (initialized) return;
-        initialized = true;
-
-        setRecipe(BreedingRodType.LITHIUM, BreedingRodType.TRITIUM, 200);
-        setRecipe(BreedingRodType.CO, BreedingRodType.CO60, 100);
-        setRecipe(BreedingRodType.RA226, BreedingRodType.AC227, 300);
-        setRecipe(BreedingRodType.TH232, BreedingRodType.THF, 500);
-        setRecipe(BreedingRodType.U235, BreedingRodType.NP237, 300);
-        setRecipe(BreedingRodType.NP237, BreedingRodType.PU238, 200);
-        setRecipe(BreedingRodType.PU238, BreedingRodType.PU239, 1000);
-        setRecipe(BreedingRodType.U238, BreedingRodType.RGP, 300);
-        setRecipe(BreedingRodType.URANIUM, BreedingRodType.RGP, 200);
-        setRecipe(BreedingRodType.RGP, BreedingRodType.WASTE, 200);
-        recipes.put(com.hbm.items.ModAbilityToolItems.meteorite_sword_etched.get(), new BreederRecipe(new ItemStack(com.hbm.items.ModAbilityToolItems.meteorite_sword_bred.get()), 1000));
+        return index().get(stack.getItem());
     }
 }

@@ -80,7 +80,8 @@ public class ForeignFluidCaps implements Scenario {
         // the saved form is unchanged
         c.waitTicks(10);
         String water = nbt(c, 0, Y + 1, 0), out = nbt(c, -4, Y + 1, 3), in = nbt(c, -2, Y + 1, 3);
-        Expect.that(water.contains("tank_type:\"hbm:water\"") && water.contains("tank:1000"), "water barrel save: " + water);
+        // placed with the old name hbm:water (still read, §19fa-m1); saved under vanilla's fluid id
+        Expect.that(water.contains("tank_type:\"minecraft:water\"") && water.contains("tank:1000"), "water barrel save: " + water);
         Expect.that(out.contains("tank_type:\"hbm:diesel\"") && out.contains("tank:3500"), "source barrel save: " + out);
         Expect.that(in.contains("tank_type:\"hbm:diesel\"") && in.contains("tank:1500"), "sink barrel save: " + in);
 

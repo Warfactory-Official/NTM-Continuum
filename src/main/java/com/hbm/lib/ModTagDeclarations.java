@@ -54,6 +54,10 @@ public final class ModTagDeclarations {
                 "minecraft:blue_stained_glass_pane", "minecraft:brown_stained_glass_pane",
                 "minecraft:green_stained_glass_pane", "minecraft:red_stained_glass_pane",
                 "minecraft:black_stained_glass_pane");
+        // 1.7 TileEntityMachinePumpBase.validBlocks: the ground a groundwater pump draws from (HbmBlockTags.PUMP_GROUND)
+        Tags.block("hbm", "pump_ground",
+                "minecraft:grass_block", "minecraft:dirt", "minecraft:sand", "minecraft:mycelium", "hbm:waste_earth",
+                "hbm:dirt_dead", "hbm:dirt_oily", "hbm:sand_dirty", "hbm:sand_dirty_red");
         Tags.block("hbm", "uranium_ores",
                 "#c:ores/uranium");
         Tags.entityType("hbm", "bosses",
@@ -71,6 +75,21 @@ public final class ModTagDeclarations {
                 "hbm:scrap_plastic_mem_socket", "hbm:scrap_plastic_mem_16k_a", "hbm:scrap_plastic_mem_16k_b",
                 "hbm:scrap_plastic_mem_16k_c", "hbm:scrap_plastic_mem_16k_d", "hbm:scrap_plastic_card_board",
                 "hbm:scrap_plastic_card_processor");
+        // 1.7 crafting turns a bare Block ingredient into ItemStack(block, 1, WILDCARD_VALUE): every metadata of
+        // the block is accepted. These are the port's items for those metadata (exactly 1.7's, no later variants).
+        // steel_scaffold meta 0..3 (23 1.7 crafting recipes)
+        Tags.item("hbm", "steel_scaffolds",
+                "hbm:steel_scaffold", "hbm:steel_scaffold_red", "hbm:steel_scaffold_white", "hbm:steel_scaffold_yellow");
+        // Blocks.sandstone meta 0..2: plain, chiseled, "smooth" (1.7's smooth sandstone is today's cut sandstone)
+        Tags.item("hbm", "sandstones",
+                "minecraft:sandstone", "minecraft:chiseled_sandstone", "minecraft:cut_sandstone");
+        // Blocks.sand meta 0..1 (sand, red sand) is #c:sands (ModMaterialTags)
+        // Blocks.stone_slab meta 0..7: stone (today's smooth stone slab), sandstone, wood (petrified oak), cobblestone,
+        // brick, stone brick, nether brick, quartz. Blocks.stonebrick meta 0..3 is vanilla's #minecraft:stone_bricks.
+        Tags.item("hbm", "stone_slabs",
+                "minecraft:smooth_stone_slab", "minecraft:sandstone_slab", "minecraft:petrified_oak_slab",
+                "minecraft:cobblestone_slab", "minecraft:brick_slab", "minecraft:stone_brick_slab",
+                "minecraft:nether_brick_slab", "minecraft:quartz_slab");
         // 1.7 Items.fish with the wildcard meta: raw cod, salmon, clownfish and pufferfish, not the cooked fish
         // (Mixer FISHOIL, Liquefaction FISHOIL). Vanilla's fishes tag also holds the cooked ones.
         Tags.item("hbm", "raw_fishes",
@@ -91,7 +110,18 @@ public final class ModTagDeclarations {
                 "hbm:block_coltan", "hbm:block_lanthanium", "hbm:block_niobium", "hbm:block_polymer",
                 "hbm:block_rubber", "hbm:block_tantalium", "hbm:block_zirconium", "hbm:block_tcalloy",
                 "hbm:block_cdalloy", "hbm:block_australium", "hbm:block_lithium", "hbm:block_waste",
-                "hbm:block_waste_painted", "hbm:block_waste_vitrified", "hbm:block_yellowcake");
+                "hbm:block_waste_painted", "hbm:block_waste_vitrified", "hbm:block_yellowcake",
+                // the rest of 1.7's beacon bases: every BlockBeaconable and every BlockHazard().makeBeaconable() storage block
+                "hbm:block_aluminium", "hbm:block_beryllium", "hbm:block_boron", "hbm:block_cobalt", "hbm:block_combine_steel",
+                "hbm:block_copper", "hbm:block_desh", "hbm:block_dineutronium", "hbm:block_dura_steel", "hbm:block_euphemium",
+                "hbm:block_fluorite", "hbm:block_lead", "hbm:block_magnetized_tungsten", "hbm:block_mox_fuel",
+                "hbm:block_neptunium", "hbm:block_niter", "hbm:block_plutonium", "hbm:block_plutonium_fuel",
+                "hbm:block_polonium", "hbm:block_pu238", "hbm:block_pu239", "hbm:block_pu240", "hbm:block_pu_mix",
+                "hbm:block_ra226", "hbm:block_red_copper", "hbm:block_red_phosphorus", "hbm:block_schrabidate",
+                "hbm:block_schrabidium", "hbm:block_schrabidium_fuel", "hbm:block_schraranium", "hbm:block_solinium",
+                "hbm:block_starmetal", "hbm:block_steel", "hbm:block_sulfur", "hbm:block_thorium", "hbm:block_thorium_fuel",
+                "hbm:block_titanium", "hbm:block_trinitite", "hbm:block_tungsten", "hbm:block_u233", "hbm:block_u235",
+                "hbm:block_u238", "hbm:block_uranium", "hbm:block_uranium_fuel", "hbm:block_white_phosphorus");
         Tags.entityType("minecraft", "arthropod",
                 "hbm:entity_glyphid", "hbm:entity_glyphid_behemoth", "hbm:entity_glyphid_blaster",
                 "hbm:entity_glyphid_bombardier", "hbm:entity_glyphid_brawler", "hbm:entity_glyphid_brenda",

@@ -89,9 +89,8 @@ public class ContainerMachineAmmoPress extends AbstractContainerMenu {
             if (index < MACHINE_SLOTS) {
                 if (!this.moveItemStackTo(stack, MACHINE_SLOTS, this.slots.size(), true)) return ItemStack.EMPTY;
             } else {
-                if (press == null || press.selectedRecipe < 0
-                        || press.selectedRecipe >= AmmoPressRecipes.recipes.size()) return ItemStack.EMPTY;
-                var recipe = AmmoPressRecipes.recipes.get(press.selectedRecipe);
+                var recipe = press == null ? null : press.selected();
+                if (recipe == null) return ItemStack.EMPTY;
                 boolean moved = false;
                 for (int input = 0; input < 9; input++) {
                     if (recipe.input[input] != null && recipe.input[input].matchesRecipe(stack, true)) {

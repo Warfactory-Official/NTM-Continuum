@@ -59,6 +59,8 @@ public final class Fix1BGameTests {
             TESTS.function("fix1b_fluid_duct_retype", 20, () -> Fix1BGameTests::duct);
     public static final GameTests.Function ZIRNOX =
             TESTS.function("fix1b_zirnox_waste", 20, () -> Fix1BGameTests::zirnox);
+    public static final GameTests.Function CONFIG_BRANCHES =
+            TESTS.function("fix1b_config_branch_recipes", 20, () -> Fix1BGameTests::configBranches);
 
     public static void init() {}
 
@@ -284,6 +286,36 @@ public final class Fix1BGameTests {
         helper.assertTrue(ItemZirnoxWaste.isHot(waste), "1.7 waste meta 1 is hot");
         List<ItemStack> left = Recipes.craftingRemainders(helper.getLevel(), 3, 3, grid(9, rod)).orElse(List.of());
         helper.assertTrue(left.stream().anyMatch(s -> s.is(item("hbm:rod_zirnox_empty"))), "the empty rod stays, got " + left);
+        helper.succeed();
+    }
+
+    /**
+     * 1.7 CraftingManager / ArmorRecipes / ToolRecipes / ConsumableRecipes / PowderRecipes config branches
+     * ({@code ConfigCraftingRecipes}, {@code "golem:requires"}): each side of a branch is in the recipe manager exactly
+     * while its flag holds. Golem Core removes the other side after the datapack load; at default config (LBSM and 528
+     * off) the LBSM and 528 recipes are absent and the default ones present.
+     */
+    public static void configBranches(GameTestHelper helper) {
+        boolean crafting = com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMSimpleCrafting;
+        boolean armor = com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMSimpleArmorRecipes;
+        boolean tool = com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMSimpleToolRecipes;
+        boolean medicine = com.hbm.config.GeneralConfig.enableLBSM
+                && com.hbm.config.GeneralConfig.enableLBSMSimpleMedicineRecipes;
+        boolean m528 = com.hbm.config.GeneralConfig.enable528;
+        String[][] cases = {
+                {"plate_iron_lbsm", String.valueOf(crafting)}, {"wire_fine_copper_lbsm", String.valueOf(crafting)},
+                {"ore_uranium_lbsm", String.valueOf(crafting)}, {"powder_dura_steel_lbsm", String.valueOf(crafting)},
+                {"starmetal_helmet_lbsm", String.valueOf(armor)}, {"starmetal_helmet", String.valueOf(!armor)},
+                {"schrabidium_sword_lbsm", String.valueOf(tool)}, {"schrabidium_sword", String.valueOf(!tool)},
+                {"siox_lbsm", String.valueOf(medicine)}, {"siox", String.valueOf(!medicine)},
+                {"rbmk_control_reasim_528", String.valueOf(m528)}, {"rbmk_control", String.valueOf(!m528)},
+                {"inf_water", String.valueOf(!m528)},
+        };
+        for (String[] c : cases) {
+            boolean expected = Boolean.parseBoolean(c[1]);
+            helper.assertTrue(Recipes.hasRecipe(helper.getLevel(), "hbm", c[0]) == expected,
+                    "recipe hbm:" + c[0] + (expected ? " missing" : " present although its config branch is off"));
+        }
         helper.succeed();
     }
 }

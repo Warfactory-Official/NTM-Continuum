@@ -42,12 +42,33 @@ public class ItemRag extends CompatItem {
         }
     }
 
+    /** What a used rag becomes instead of {@code rag_piss}; HBM has no listener (1.7: always {@code rag_piss}). */
+    @FunctionalInterface
+    public interface Use {
+        /** The stack the player gets for a used rag, or empty to let the next listener (finally {@code rag_piss}) decide. */
+        ItemStack product(Player player);
+    }
+
+    /**
+     * Listeners in phase order; the first non-empty product wins. NTM: Space gives {@code rag_blood} above 500 RAD.
+     */
+    public static final dev.golem.core.hook.Hook<Use> USE = dev.golem.core.hook.Hook.notifying();
+
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         stack.shrink(1); // 1.7 decrements even in creative
-        player.getInventory().add(new ItemStack(ModItems.rag_piss.get()));
+        player.getInventory().add(product(player));
         return InteractionResult.SUCCESS;
+    }
+
+    /** The stack a used rag gives {@code player}: the first {@link #USE} answer, else {@code rag_piss} (1.7). */
+    public static ItemStack product(Player player) {
+        for (Use listener : USE) {
+            ItemStack out = listener.product(player);
+            if (out != null && !out.isEmpty()) return out;
+        }
+        return new ItemStack(ModItems.rag_piss.get());
     }
 
     @Override

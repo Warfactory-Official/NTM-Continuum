@@ -169,7 +169,7 @@ public final class SoyuzGameTests {
                 "assets/hbm/sounds/entity/soyuztakeoff.ogg",
                 "assets/hbm/sounds/block/soyuzready.ogg",
                 "data/hbm/loot_table/blocks/struct_soyuz_core.json",
-                "data/hbm/recipe/struct_soyuz_core.json",
+                // no data/hbm/recipe/struct_soyuz_core.json: 1.7 has no crafting recipe for it (fix wave 2026-10-12)
                 "data/hbm/damage_type/exhaust.json",
         };
         for (String path : required) {

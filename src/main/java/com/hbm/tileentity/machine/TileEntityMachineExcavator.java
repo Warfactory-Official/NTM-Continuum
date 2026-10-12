@@ -75,7 +75,7 @@ import com.hbm.tileentity.ModProduction2BlockEntities;
  * hole, vein-mining ores, silk-touching and crushing drops, and stops at depth rock or bedrock ore (which
  * it extracts every five minutes with the matching drilling fluid).
  */
-public final class TileEntityMachineExcavator extends TileEntityMachineBase
+public class TileEntityMachineExcavator extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IControlReceiver, IUpgradeInfoProvider {
 
     public static final long maxPower = 1_000_000;
@@ -141,13 +141,13 @@ public final class TileEntityMachineExcavator extends TileEntityMachineBase
         te.operational = false;
         int radiusLevel = te.upgradeManager.getLevel(UpgradeType.EFFECT);
 
-        DrillBitType type = te.getInstalledDrill();
+        var type = te.getInstalledDrill();
         if (te.enableDrill && type != null && te.power >= te.getPowerConsumption()) {
 
             te.operational = true;
             te.power -= te.getPowerConsumption();
 
-            te.speed = type.speed;
+            te.speed = type.speed();
             te.speed *= (1 + speedLevel / 2D);
 
             // 1.7: yCoord - 4 with the world floor at 0; the floor is the level's minimum here.
@@ -352,8 +352,8 @@ public final class TileEntityMachineExcavator extends TileEntityMachineBase
 
             ItemStack resource = ore.getResource();
             if (resource.isEmpty()) return;
-            DrillBitType drill = this.getInstalledDrill();
-            if (drill == null || ore.getTier() > drill.tier) return;
+            var drill = this.getInstalledDrill();
+            if (drill == null || ore.getTier() > drill.tier()) return;
             FluidStack acid = ore.getAcidRequirement();
             if (acid != null) {
 
@@ -368,7 +368,7 @@ public final class TileEntityMachineExcavator extends TileEntityMachineBase
 
             if (stack.is(ModOreBlocks.bedrock_ore_base.get())) {
                 // 1.7: 1 + fortune * 0.1 (the ported BedrockOreBlockEntity.extract uses 0.25; the original value is kept here)
-                ItemBedrockOreBase.setOreAmount(stack, pos.getX(), pos.getZ(), 1D + drill.fortune * 0.1D);
+                ItemBedrockOreBase.setOreAmount(level, stack, pos.getX(), pos.getZ(), 1D + drill.fortune() * 0.1D);
             }
 
             ForgeDirection dir = MachineCore.facing(getBlockState());
@@ -445,9 +445,9 @@ public final class TileEntityMachineExcavator extends TileEntityMachineBase
     public void tryMineAtLocation(BlockPos p) {
 
         BlockState b = level.getBlockState(p);
-        DrillBitType drill = getInstalledDrill();
+        var drill = getInstalledDrill();
 
-        if (this.enableVeinMiner && drill != null && drill.vein) {
+        if (this.enableVeinMiner && drill != null && drill.vein()) {
 
             if (isOre(b)) {
                 minX = p.getX();
@@ -750,9 +750,9 @@ public final class TileEntityMachineExcavator extends TileEntityMachineBase
     }
 
     public int getFortuneLevel() {
-        DrillBitType type = getInstalledDrill();
+        var type = getInstalledDrill();
 
-        if (type != null) return type.fortune;
+        if (type != null) return type.fortune();
         return 0;
     }
 
@@ -772,23 +772,23 @@ public final class TileEntityMachineExcavator extends TileEntityMachineBase
         this.markChanged();
     }
 
-    public @Nullable DrillBitType getInstalledDrill() {
+    public com.hbm.api.data.MachinePartDataMaps.@Nullable DrillBit getInstalledDrill() {
         ItemStack stack = inventory.getStackInSlot(4);
         if (stack.getItem() instanceof ItemDrillbit drill) {
-            return drill.type;
+            return drill.stats();
         }
 
         return null;
     }
 
     public boolean canVeinMine() {
-        DrillBitType type = getInstalledDrill();
-        return this.enableVeinMiner && type != null && type.vein;
+        var type = getInstalledDrill();
+        return this.enableVeinMiner && type != null && type.vein();
     }
 
     public boolean canSilkTouch() {
-        DrillBitType type = getInstalledDrill();
-        return this.enableSilkTouch && type != null && type.silk;
+        var type = getInstalledDrill();
+        return this.enableSilkTouch && type != null && type.silk();
     }
 
     @Override

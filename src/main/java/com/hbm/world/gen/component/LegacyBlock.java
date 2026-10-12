@@ -1,7 +1,6 @@
 package com.hbm.world.gen.component;
 
 import com.hbm.world.gen.nbt.LegacyStructurePalette;
-import dev.golem.core.Ids;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
@@ -127,8 +126,9 @@ public final class LegacyBlock {
         return LegacyStructurePalette.with(state, "facing", Direction.from3DDataValue(meta));
     }
 
+    /** A bare path is HBM's block; {@code "ns:path"} names an addon's (or vanilla's) block. */
     private static BlockState hbmState(String id) {
-        return BuiltInRegistries.BLOCK.getOptional(Ids.of("hbm", id)).map(Block::defaultBlockState).orElse(Blocks.AIR.defaultBlockState());
+        return BuiltInRegistries.BLOCK.getOptional(com.hbm.lib.Library.parseId(id)).map(Block::defaultBlockState).orElse(Blocks.AIR.defaultBlockState());
     }
 
     private static BlockState ordinal(BlockState state, String name, int ordinal) {

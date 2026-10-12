@@ -74,6 +74,11 @@ public class EntityTomBlast extends EntityExplosionChunkloading {
             exp = new ExplosionTom((int) this.getX(), (int) this.getY(), (int) this.getZ(), level(),
                     this.destructionRange);
 
+            // hbm-space marked the body as impacted here (CBT_Impact); addons listen on Environment.IMPACT
+            if (level() instanceof ServerLevel server) {
+                com.hbm.api.environment.Environment.impact(server, this.blockPosition());
+            }
+
             this.did = true;
         }
 

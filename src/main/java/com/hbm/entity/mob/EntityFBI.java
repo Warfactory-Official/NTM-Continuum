@@ -121,7 +121,9 @@ public class EntityFBI extends CompatMonster implements RangedAttackMob {
         }
 
         // 1.7 swapped to the vacuum loadout outside the overworld, glass helmet included
-        if (level().dimension() != Level.OVERWORLD) {
+        // 1.7: the space suit outside the overworld; hbm-space: wherever the agent cannot breathe. An addon answers
+        // com.hbm.api.environment.Environment.BREATHING; unanswered, 1.7's rule decides.
+        if (!com.hbm.api.environment.Environment.breatheAir(level(), blockPosition(), 0, level().dimension() == Level.OVERWORLD)) {
             setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.GLASS));
             setItemSlot(EquipmentSlot.CHEST, ModArmorItems.paa_plate.get().getDefaultInstance());
             setItemSlot(EquipmentSlot.LEGS, ModArmorItems.paa_legs.get().getDefaultInstance());

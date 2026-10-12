@@ -12,6 +12,8 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.world.feature.OilSpot;
+import dev.golem.core.hook.Hook;
+import dev.golem.core.hook.Verdict;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -40,13 +42,16 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
     protected static final int consumption = 5000;
     protected static final int solutionRequired = 10;
     protected static final int delay = 20;
-    protected static final int oilPerDeposit = 1000;
-    protected static final int gasPerDepositMin = 100;
-    protected static final int gasPerDepositMax = 500;
-    protected static final double drainChance = 0.02D;
-    protected static final int oilPerBedrockDeposit = 100;
-    protected static final int gasPerBedrockDepositMin = 10;
-    protected static final int gasPerBedrockDepositMax = 50;
+    /**
+     * 1.7's per-suck amounts (its {@code hbmMachines.json} keys {@code I:oilPerDeposit}, {@code I:gasPerDepositMin/Max},
+     * {@code D:drainChance}); the deposit's {@code hbm:fluid_deposit} yields scale them. Public and assignable so an
+     * addon can set its own at start-up (NTM: Space's fracking tower takes the derrick's amounts); HBM never changes them.
+     */
+    public static int oilPerDeposit = 1000;
+    public static int gasPerDepositMin = 100;
+    public static int gasPerDepositMax = 500;
+    public static double drainChance = 0.02D;
+    // 1.7's bedrock amounts (100 oil, 10-50 gas) are ore_bedrock_oil's yield of 0.1 in hbm:fluid_deposit
     protected static final int destructionRange = 75;
 
     public TileEntityMachineFrackingTower(BlockPos pos, BlockState state) {
@@ -76,45 +81,32 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
         return b;
     }
 
+    /** 1.7's fracking tower also reaches {@code ore_bedrock_oil} (the fracking-only deposits). */
     @Override
-    public boolean canSuckBlock(Block b) {
-        return super.canSuckBlock(b) || b == ModBlocks.ore_bedrock_oil.get();
+    protected boolean canFrack() {
+        return true;
     }
 
-    @Override
-    public void doSuck(BlockPos pos) {
-        super.doSuck(pos);
-        if (level.getBlockState(pos).getBlock() == ModBlocks.ore_bedrock_oil.get()) {
-            onSuck(pos);
-        }
+    /**
+     * What sucking a deposit does to the surface around the tower. HBM's default (no listener deciding) is 1.7's oil spot
+     * of radius 75; a listener that answers {@link Verdict#DENY} replaces it (NTM: Space cracks Tekto's ground instead).
+     */
+    @FunctionalInterface
+    public interface Blight {
+        Verdict blight(ServerLevel level, BlockPos tower, BlockPos deposit, com.hbm.api.data.DepositDataMaps.Deposit kind);
     }
 
+    public static final Hook<Blight> BLIGHT = Hook.of(listeners -> (level, tower, deposit, kind) ->
+            Verdict.first(listeners, listener -> listener.blight(level, tower, deposit, kind)));
+
     @Override
-    public void onSuck(BlockPos pos) {
-        Block b = level.getBlockState(pos).getBlock();
-
-        int oil = 0;
-        int gas = 0;
-
-        if (b == ModOilBlocks.ore_oil.get()) {
-            tanks[0].setTankType(Fluids.OIL);
-            oil = oilPerDeposit;
-            gas = gasPerDepositMin + level.getRandom().nextInt(gasPerDepositMax - gasPerDepositMin + 1);
-            if (level.getRandom().nextDouble() < drainChance) {
-                level.setBlock(pos, ModBlocks.ore_oil_empty.get().defaultBlockState(), 3);
-            }
-        }
-
-        if (b == ModBlocks.ore_bedrock_oil.get()) {
-            oil = oilPerBedrockDeposit;
-            gas = gasPerBedrockDepositMin + level.getRandom().nextInt(gasPerBedrockDepositMax - gasPerBedrockDepositMin + 1);
-        }
-
-        tanks[0].setFill(Math.min(tanks[0].getFill() + oil, tanks[0].getMaxFill()));
-        tanks[1].setFill(Math.min(tanks[1].getFill() + gas, tanks[1].getMaxFill()));
+    public void onSuck(BlockPos pos, com.hbm.api.data.DepositDataMaps.Deposit deposit) {
+        // 1.7 ore_oil: 1000 oil + 100-500 gas, 2% drain; ore_bedrock_oil: 100 + 10-50, never drains (yield 0.1, no empty)
+        suckDeposit(pos, deposit, oilPerDeposit, gasPerDepositMin, gasPerDepositMax, drainChance);
         tanks[2].setFill(tanks[2].getFill() - solutionRequired);
 
-        if (level instanceof ServerLevel server) {
+        if (level instanceof ServerLevel server
+                && BLIGHT.invoker().blight(server, worldPosition, pos, deposit) != Verdict.DENY) {
             OilSpot.generateOilSpot(server, worldPosition.getX(), worldPosition.getZ(), destructionRange, 10, false);
         }
     }

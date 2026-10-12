@@ -25,6 +25,9 @@ public class ParticleRocketFlame extends CompatParticle {
     private static final int QUADS = 10;
 
     private final int seed;
+    private float customRed;
+    private float customGreen;
+    private float customBlue;
 
     public ParticleRocketFlame(ClientLevel level, double x, double y, double z) {
         super(level, x, y, z, Particles.sprite(ParticleRotating.PARTICLE_BASE));
@@ -49,6 +52,18 @@ public class ParticleRocketFlame extends CompatParticle {
 
     public ParticleRocketFlame setScale(float scale) {
         this.setQuadSize(scale);
+        return this;
+    }
+
+    /**
+     * hbm-space's custom puff colour, an addon API (NTM: Space's DCM geyser): each non-zero channel replaces the
+     * default heat colour's (red 1, green 0.6, blue 0) under the same fade and per-quad brightening; a zero channel
+     * keeps the default, as in hbm-space. Unset, the puff is 1.7's.
+     */
+    public ParticleRocketFlame setCustomColor(float red, float green, float blue) {
+        this.customRed = red;
+        this.customGreen = green;
+        this.customBlue = blue;
         return this;
     }
 
@@ -85,9 +100,9 @@ public class ParticleRocketFlame extends CompatParticle {
 
         for (int i = 0; i < QUADS; i++) {
             float add = urandom.nextFloat() * 0.3F;
-            this.setColor(Mth.clamp(dark + add, 0F, 1F),
-                    Mth.clamp(0.6F * dark + add, 0F, 1F),
-                    Mth.clamp(add, 0F, 1F));
+            this.setColor(Mth.clamp((customRed != 0F ? customRed : 1F) * dark + add, 0F, 1F),
+                    Mth.clamp((customGreen != 0F ? customGreen : 0.6F) * dark + add, 0F, 1F),
+                    Mth.clamp((customBlue != 0F ? customBlue : 0F) * dark + add, 0F, 1F));
 
             float size = (urandom.nextFloat() * 0.5F + 0.1F + aged * 2F) * scale;
             // The -1 offset on each Gaussian is upstream's; it biases the cloud rather than centring

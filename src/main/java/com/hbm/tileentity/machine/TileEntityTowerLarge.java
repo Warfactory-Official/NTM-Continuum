@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** 9x9x13 cooling tower; exact old 10,000 mB condenser tanks and twelve perimeter ports. */
-public final class TileEntityTowerLarge extends TileEntityCondenser {
+public class TileEntityTowerLarge extends TileEntityCondenser {
     public static final int INPUT_TANK_SIZE = 10_000;
     public static final int OUTPUT_TANK_SIZE = 10_000;
 

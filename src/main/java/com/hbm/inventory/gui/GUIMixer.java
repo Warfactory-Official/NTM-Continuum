@@ -94,8 +94,8 @@ public class GUIMixer extends dev.golem.core.gui.CompatContainerScreen<Container
         MixerRecipe[] recipes = MixerRecipes.getOutput(mixer.tanks[2].getTankType());
         if (recipes != null && recipes.length > 1 && GuiUtil.hover(mouseX, mouseY, gl + 71, gt + 17, 12, 12)) {
             List<Component> label = new ArrayList<>();
-            label.add(Component.literal(ChatFormatting.YELLOW + "Current recipe (" + (mixer.recipeIndex + 1) + "/" + recipes.length + "):"));
-            MixerRecipe recipe = recipes[Math.floorMod(mixer.recipeIndex, recipes.length)];
+            label.add(Component.literal(ChatFormatting.YELLOW + "Current recipe (" + (mixer.recipeIndex() + 1) + "/" + recipes.length + "):"));
+            MixerRecipe recipe = recipes[Math.min(mixer.recipeIndex(), recipes.length - 1)];
             if (recipe.input1 != null) label.add(Component.literal("-").append(recipe.input1.type.getDisplayName()));
             if (recipe.input2 != null) label.add(Component.literal("-").append(recipe.input2.type.getDisplayName()));
             if (recipe.solidInput != null) label.add(Component.literal("-").append(recipe.solidInput.getCyclingDisplayStack().getHoverName()));

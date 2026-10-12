@@ -212,6 +212,10 @@ public class Spotlight extends CompatBlock implements ISpotlight, EntityBlock {
         BlockState state = level.getBlockState(pos);
         if (!(state.getBlock() instanceof Spotlight) || !state.getValue(BROKEN)) return;
         level.setBlock(pos, copyTo(on.get(), state).setValue(BROKEN, false), 2);
+        // hbm-space registered each repaired light with the body (CBT_Lights) for its night side seen from space
+        if (level instanceof ServerLevel server) {
+            com.hbm.api.environment.Environment.lightOn(server, pos, server.getBlockState(pos));
+        }
         for (Direction dir : Direction.values()) {
             BlockPos other = pos.relative(dir);
             if (level.getBlockState(other).getBlock() == this) repair(level, other);

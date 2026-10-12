@@ -11,7 +11,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,7 +34,7 @@ public class FluidTankRenderer extends GemBER<TileEntityMachineFluidTank, FluidT
     private final Surface inner = Surface.cutout(dev.golem.core.Ids.of("hbm", "textures/models/tank/tank_inner.png").toString());
     private final Surface frame = Surface.cutout(FRAME_TEX.toString());
     private final Map<Identifier, Surface> skins = new ConcurrentHashMap<>();
-    /** Cache of fluid name → resolved body texture (falling back to tank_none when a fluid has no skin). */
+    /** Cache of fluid registry name → resolved body texture (falling back to tank_none when a fluid has no skin). */
     private static final Map<String, Identifier> BODY_TEX = new ConcurrentHashMap<>();
 
     /**
@@ -44,9 +43,10 @@ public class FluidTankRenderer extends GemBER<TileEntityMachineFluidTank, FluidT
      * dedicated tank texture; without this they'd render the missing-texture sprite). Existence is
      * checked once per fluid against the client resource manager and cached.
      */
-    private static Identifier bodyTextureFor(String fluidName) {
-        return BODY_TEX.computeIfAbsent(fluidName.toLowerCase(Locale.US), name -> {
-            Identifier tex = dev.golem.core.Ids.of("hbm", "textures/models/tank/tank_" + name + ".png");
+    private static Identifier bodyTextureFor(com.hbm.inventory.fluid.FluidType fluid) {
+        // in the fluid's own namespace: an addon fluid ships <ns>:textures/models/tank/tank_<key>.png
+        return BODY_TEX.computeIfAbsent(fluid.getNamespace() + ":" + fluid.getKey(), name -> {
+            Identifier tex = dev.golem.core.Ids.of(fluid.getNamespace(), "textures/models/tank/tank_" + fluid.getKey() + ".png");
             return net.minecraft.client.Minecraft.getInstance().getResourceManager().getResource(tex).isPresent() ? tex : TANK_NONE;
         });
     }
@@ -87,8 +87,37 @@ public class FluidTankRenderer extends GemBER<TileEntityMachineFluidTank, FluidT
             case 5 -> 270F;
             default -> 0F;
         };
-        state.bodyTexture = bodyTextureFor(be.tank.getTankType().getName());
+        state.bodyTexture = bodyTextureFor(be.tank.getTankType());
         state.exploded = be.hasExploded;
+        com.hbm.inventory.fluid.FluidType type = be.tank.getTankType();
+        state.hazard = type == null || type == com.hbm.inventory.fluid.Fluids.NONE ? null : type.getHazard();
+    }
+
+    /**
+     * 1.7 {@code RenderFluidTank}: the fluid's NFPA diamond on both ends of the tank, after the tank's own rotation:
+     * {@code translate(-0.25, 0.5, -1.501)}, {@code rotate(90, Y)} and {@code translate(0.25, 0.5, 1.501)},
+     * {@code rotate(-90, Y)}, each {@code scale(1, 0.375, 0.375)}. Drawn for an exploded tank too, as in 1.7.
+     */
+    @Override
+    protected void submitUndeclared(FluidTankRenderState state, com.mojang.blaze3d.vertex.PoseStack poseStack,
+                                    dev.golem.core.render.SubmitSink sink, dev.golem.core.render.CameraInfo camera) {
+        if (state.hazard == null) return;
+        poseStack.pushPose();
+        poseStack.translate(0.5F, 0F, 0.5F);
+        poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(BASE_YAW + state.yaw));
+        poseStack.pushPose();
+        poseStack.translate(-0.25F, 0.5F, -1.501F);
+        poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(90F));
+        poseStack.scale(1.0F, 0.375F, 0.375F);
+        DiamondPronter.pront(poseStack, sink, state.hazard);
+        poseStack.popPose();
+        poseStack.pushPose();
+        poseStack.translate(0.25F, 0.5F, 1.501F);
+        poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-90F));
+        poseStack.scale(1.0F, 0.375F, 0.375F);
+        DiamondPronter.pront(poseStack, sink, state.hazard);
+        poseStack.popPose();
+        poseStack.popPose();
     }
 
 }

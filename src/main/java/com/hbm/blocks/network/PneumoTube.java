@@ -208,7 +208,34 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         // 1.7: the screwdriver is handled by onScrew, not by the GUI arm
         if (ToolType.getType(stack) == ToolType.SCREWDRIVER) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (TileEntityPneumoTube.anyGas && !player.isShiftKeyDown()
+                && stack.getItem() instanceof com.hbm.items.machine.IItemFluidId ident
+                && level.getBlockEntity(pos) instanceof TileEntityPneumoTube tube && tube.isCompressor()) {
+            if (!level.isClientSide()) setGas(level, pos, player, tube, ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack));
+            return InteractionResult.SUCCESS;
+        }
         return openTubeMenu(level, pos, player);
+    }
+
+    /**
+     * hbm-space {@code PneumoTube.onBlockActivated}: a fluid identifier on a compressor picks its gas, any gas that is
+     * neither antimatter nor corrosive ({@link TileEntityPneumoTube#anyGas}, V-177).
+     */
+    private static void setGas(Level level, BlockPos pos, Player player, TileEntityPneumoTube tube, FluidType type) {
+        boolean canUse = !type.hasTrait(com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Amat.class)
+                && !type.hasTrait(com.hbm.inventory.fluid.trait.FT_Corrosive.class)
+                && com.hbm.inventory.fluid.trait.FluidTraitSimple.isGaseousAny(type);
+        if (canUse) {
+            tube.compair.setTankType(type);
+            tube.setChanged();
+            tube.refreshAirMask();
+            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Changed type to ")
+                    .withStyle(net.minecraft.ChatFormatting.YELLOW).append(type.getDisplayName())
+                    .append(net.minecraft.network.chat.Component.literal("!")));
+        } else {
+            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Invalid gas!")
+                    .withStyle(net.minecraft.ChatFormatting.RED));
+        }
     }
 
     @Override

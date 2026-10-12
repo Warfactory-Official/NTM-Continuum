@@ -46,7 +46,10 @@ public abstract class TileEntityLockableBase extends TileEntityLoadedBase {
         int getPins(ItemStack stack);
     }
 
-    /** Chest pieces that multiply the pick chance a hundredfold (the original's {@code jackt}/{@code jackt2}). */
+    /**
+     * Chest pieces that multiply the pick chance a hundredfold, in code; the data form is the {@code hbm:lockpick_jacket}
+     * item data map (1.7's {@code jackt}/{@code jackt2}).
+     */
     public static final List<Supplier<? extends Item>> LOCKPICK_JACKETS = new ArrayList<>();
 
     /**
@@ -173,7 +176,9 @@ public abstract class TileEntityLockableBase extends TileEntityLoadedBase {
         if (canPick) {
 
             ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
-            for (Supplier<? extends Item> jacket : LOCKPICK_JACKETS) {
+            if (!chest.isEmpty() && Boolean.TRUE.equals(com.hbm.api.data.ArmorDataMaps.LOCKPICK_JACKET.get(chest.getItem()))) {
+                chanceOfSuccess *= 100D;
+            } else for (Supplier<? extends Item> jacket : LOCKPICK_JACKETS) {
                 if (!chest.isEmpty() && chest.getItem() == jacket.get()) {
                     chanceOfSuccess *= 100D;
                     break;

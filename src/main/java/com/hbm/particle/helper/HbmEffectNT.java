@@ -8,6 +8,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -27,125 +30,184 @@ import org.jspecify.annotations.Nullable;
  * <p>Only the effects this port actually implements are listed. Upstream declares roughly a hundred;
  * adding one is a constant here plus a handler registration on the client, so the rest arrive with
  * the systems that emit them rather than as dead names.
+ *
+ * <p>A registry of records rather than an enum (ADDON-API-INVENTORY E-046): an addon adds its own effects with
+ * {@link #register} under a namespaced name and they travel in HBM's particle payload like HBM's. The constants keep
+ * their 1.7 names, which are also their wire names.
  */
-public enum HbmEffectNT {
+public final class HbmEffectNT {
+
+    /** Every effect by name, HBM's first (in declaration order), then each addon's in registration order. */
+    private static final Map<String, HbmEffectNT> BY_NAME = new LinkedHashMap<>();
+
 
     /** The flamethrower's cone of burning fuel. */
-    Flamethrower,
+    public static final HbmEffectNT Flamethrower = hbm("Flamethrower");
     /** A small blast: a few fireballs plus tumbling block debris. */
-    ExplosionSmall,
+    public static final HbmEffectNT ExplosionSmall = hbm("ExplosionSmall");
     /** A large blast: a smoke plume and scoops of the ground itself thrown into the air. */
-    ExplosionLarge,
+    public static final HbmEffectNT ExplosionLarge = hbm("ExplosionLarge");
     /** Muzzle smoke and sparks from a gunpowder discharge. */
-    BlackPowder,
+    public static final HbmEffectNT BlackPowder = hbm("BlackPowder");
     /** Drifting embers and ash, for things that are burning down rather than exploding. */
-    Ashes,
+    public static final HbmEffectNT Ashes = hbm("Ashes");
     /** The authored OBJ skeleton strip/fragment effect. */
-    Skeleton,
+    public static final HbmEffectNT Skeleton = hbm("Skeleton");
     /** The authored meat/slime/metal giblet billboard effect. */
-    Giblets,
+    public static final HbmEffectNT Giblets = hbm("Giblets");
     /** The full-size RBMK meltdown cloud. */
-    RBMKMush,
+    public static final HbmEffectNT RBMKMush = hbm("RBMKMush");
     /** The old small-nuke wave, flare and delayed cloud effect. */
-    Muke,
+    public static final HbmEffectNT Muke = hbm("Muke");
     /** The tiny-tot wave and immediate small-nuke cloud effect. */
-    TinyTot,
+    public static final HbmEffectNT TinyTot = hbm("TinyTot");
     /** The smaller Watz/RBMK cloud. */
-    RBMKMushSmall,
+    public static final HbmEffectNT RBMKMushSmall = hbm("RBMKMushSmall");
     /** One puff of a missile's exhaust trail. Spawned client-side, once per tick per nozzle. */
-    MissileContrail,
+    public static final HbmEffectNT MissileContrail = hbm("MissileContrail");
     /** Redstone block debris thrown from a living entity hit by a running sawmill blade. */
-    SawmillDamage,
+    public static final HbmEffectNT SawmillDamage = hbm("SawmillDamage");
     /** The drifting cooling-tower smoke puff. */
-    Tower,
+    public static final HbmEffectNT Tower = hbm("Tower");
     /** One vanilla critical particle used while a refueler fills an item. */
-    FluidFill,
+    public static final HbmEffectNT FluidFill = hbm("FluidFill");
     /** Exhaust from a fuelled jetpack. */
-    Jetpack,
+    public static final HbmEffectNT Jetpack = hbm("Jetpack");
     /** Purple exhaust from the BJ winged power armour. */
-    Jetpack_BJ,
+    public static final HbmEffectNT Jetpack_BJ = hbm("Jetpack_BJ");
     /** Cyan exhaust from the DNT nano suit. */
-    Jetpack_DNS,
+    public static final HbmEffectNT Jetpack_DNS = hbm("Jetpack_DNS");
     /** The old block-destruction particle burst sent when rubble lands. */
-    BlockBurst,
+    public static final HbmEffectNT BlockBurst = hbm("BlockBurst");
     /** The large explosion's drifting smoke cloud. */
-    Smoke_Cloud,
+    public static final HbmEffectNT Smoke_Cloud = hbm("Smoke_Cloud");
     /** The large explosion's radial shock smoke. */
-    Smoke_Shock,
+    public static final HbmEffectNT Smoke_Shock = hbm("Smoke_Shock");
     /** 1.7 smoke mode {@code radial}: ExSmoke thrown on a gaussian in all three axes (the naval mine). */
-    Smoke_Radial,
+    public static final HbmEffectNT Smoke_Radial = hbm("Smoke_Radial");
     /** 1.7 smoke mode {@code foamSplash}: rising foam bubbles (the naval mine under water). */
-    Smoke_FoamSplash,
+    public static final HbmEffectNT Smoke_FoamSplash = hbm("Smoke_FoamSplash");
     /** Direct client-side block dust used by the three legacy extinguisher streams. */
-    VanillaExt_BlockDust,
+    public static final HbmEffectNT VanillaExt_BlockDust = hbm("VanillaExt_BlockDust");
     /**
      * The old {@code gasfire} puff sent by the miner lander's retro burn (ntm-next {@code GasFlamePayload}).
      * Tag: {@code moX/moY/moZ} motion, optional {@code scale} (6.5 when absent).
      */
-    GasFlame,
+    public static final HbmEffectNT GasFlame = hbm("GasFlame");
     /**
      * Arc endpoints for a tesla/taint crab (ntm-next {@code TeslaArcPayload}). Tag: {@code entityID} and a
      * {@code targets} list of {@code x/y/z} doubles; the client hands them to the crab it names.
      */
-    TeslaArc,
+    public static final HbmEffectNT TeslaArc = hbm("TeslaArc");
     /** The ICF's fusion flash (1.7 {@code hadron}): a growing, fading additive quad, every reacting tick. */
-    Hadron,
+    public static final HbmEffectNT Hadron = hbm("Hadron");
     /** Original decontaminator's recoloured town-aura particle, emitted once per client tick. */
-    DeconAura,
+    public static final HbmEffectNT DeconAura = hbm("DeconAura");
     /** 1.7 {@code bnuuy}: the diesel suit legs' twin smoke puffs behind the wearer. Tag: {@code player}. */
-    Bnuuy,
+    public static final HbmEffectNT Bnuuy = hbm("Bnuuy");
     /** 1.7 {@code amat}: {@code ParticleAmatFlash}, a ten-tick white starburst. Tag: {@code scale} (explosion size). */
-    AmatFlash,
+    public static final HbmEffectNT AmatFlash = hbm("AmatFlash");
     /**
      * 1.7 {@code properJolt}, sent to one player: sets its hurt time and hurt duration directly (hurt direction 0),
      * so the hurt-camera tilt lingers for {@code time} ticks. Tag: {@code time}, {@code maxTime}.
      */
-    ProperJolt,
+    public static final HbmEffectNT ProperJolt = hbm("ProperJolt");
     /**
      * 1.7 {@code tau} (G-C): {@code count} white line sparks plus one hadron flash, both halved/shortened when
      * {@code small} - the RBMK lever's contact arc. Tag: {@code count} (byte), {@code small}.
      */
-    Tau,
+    public static final HbmEffectNT Tau = hbm("Tau");
     /**
      * 1.7 {@code marker} (G-C): a {@code RenderOverhead} marker, a see-through outline of the block at the position
      * with an optional label. Tag: {@code color}, {@code label}, {@code expires} (ms, 0 = never), {@code dist}.
      */
-    Marker,
+    public static final HbmEffectNT Marker = hbm("Marker");
     /** 1.7 {@code debug} (G-C): {@code ParticleText}, floating text. Tag: {@code text}, {@code color}, {@code scale}. */
-    DebugText,
+    public static final HbmEffectNT DebugText = hbm("DebugText");
     /** 1.7 {@code launchSmoke} (G-C): one {@code ParticleSmokePlume}, played client-side by a launcher. Tag: {@code moX/moY/moZ}. */
-    LaunchSmoke,
+    public static final HbmEffectNT LaunchSmoke = hbm("LaunchSmoke");
     /**
      * old-hbm {@code VanillaBurst_BlockDust}: {@code count} block-dust particles of block id {@code block}, each with
      * motion {@code gaussian * motion} (+0.2 up) and a 50..99 tick life. The crucible's killing hit.
      */
-    VanillaBurst_BlockDust,
+    public static final HbmEffectNT VanillaBurst_BlockDust = hbm("VanillaBurst_BlockDust");
     /** 1.7 {@code deadleaf}: one {@code ParticleDeadLeaf} drifting down from {@code waste_leaves}. Client-side only. */
-    DeadLeaf,
+    public static final HbmEffectNT DeadLeaf = hbm("DeadLeaf");
     /**
      * 1.7 {@code radFog}: one {@code ParticleRadiationFog}, rolled once a second over chunks holding more than
      * {@code fogRad} (History §19ej-6, {@code RadiationFog}).
      */
-    RadFog,
+    public static final HbmEffectNT RadFog = hbm("RadFog");
     /**
      * 1.7 {@code sweat}: {@code count} 150..199-tick block-dust particles of block {@code block} (runtime block id)
      * scattered over entity {@code entity}'s box. Radiation, digamma, oil and the fat pigeon. Client:
      * {@code LivingEffectParticles}.
      */
-    Sweat,
+    public static final HbmEffectNT Sweat = hbm("Sweat");
     /**
      * 1.7 {@code vomit}: {@code count} particles from entity {@code entity}'s mouth along its look; {@code mode}
      * {@code normal} (green clay dust), {@code blood} (redstone dust) or {@code smoke} (coughed coal).
      */
-    Vomit,
+    public static final HbmEffectNT Vomit = hbm("Vomit");
     /** 1.7 {@code radiation}: {@code count} cyan town-aura flashes around the local player. Client-side only. */
-    Radiation,
+    public static final HbmEffectNT Radiation = hbm("Radiation");
     /** 1.7 {@code exhaust}: {@code count} rocket-flame puffs spread by {@code width}; {@code mode} soyuz or meteor. */
-    Exhaust,
+    public static final HbmEffectNT Exhaust = hbm("Exhaust");
     /** 1.7 {@code haze}: one {@code ParticleHaze}, the white-phosphorus haze. */
-    Haze,
+    public static final HbmEffectNT Haze = hbm("Haze");
     /** 1.7 {@code ufo}: one lone {@code ParticleMukeCloud} at the foot of the UFO's tractor beam. */
-    Ufo;
+    public static final HbmEffectNT Ufo = hbm("Ufo");
+    /**
+     * Declared after the 44 effects of E-046 so their order stays as it was.
+     * 1.7 {@code vanillaExt} mode {@code cloud}: one {@code EntityCloudFX} with motion {@code mX/mY/mZ}; with
+     * {@code r/g/b} the ash-glasses gas form (that colour plus 0..0.1, scale 7.5, at rest). Client-side, from
+     * {@code BlockGasBase.ashGlassesCloud}.
+     */
+    public static final HbmEffectNT VanillaExt_Cloud = hbm("VanillaExt_Cloud");
+
+    private final String name;
+
+    private HbmEffectNT(String name) {
+        this.name = name;
+    }
+
+    private static HbmEffectNT hbm(String name) {
+        return add(name);
+    }
+
+    /**
+     * Registers an addon's effect under {@code name}, which must be namespaced ({@code "ntmspace:spinlaunch"}); HBM's
+     * own effects keep their bare 1.7 names. The server plays it with {@link #send}, the client installs its
+     * behaviour with {@link #setHandler}, as for HBM's. Call at mod construction, on both sides.
+     *
+     * @throws IllegalArgumentException if the name has no namespace or is taken
+     */
+    public static HbmEffectNT register(String name) {
+        if (name.indexOf(':') <= 0) throw new IllegalArgumentException("Addon effect names are namespaced: " + name);
+        return add(name);
+    }
+
+    private static synchronized HbmEffectNT add(String name) {
+        if (BY_NAME.containsKey(name)) throw new IllegalArgumentException("Effect " + name + " is registered twice");
+        HbmEffectNT effect = new HbmEffectNT(name);
+        BY_NAME.put(name, effect);
+        return effect;
+    }
+
+    /** The effect's name, as it travels in {@link ParticlePayload} (1.7's enum name for HBM's own). */
+    public String name() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+
+    /** Every effect, HBM's in declaration order first, then the addons'. */
+    public static synchronized HbmEffectNT[] values() {
+        return BY_NAME.values().toArray(new HbmEffectNT[0]);
+    }
 
     /** 1.7 {@code createSendToThreadedPacket}: this effect for one player only. */
     public void sendTo(ServerPlayer player, double x, double y, double z, @Nullable CompoundTag data) {
@@ -220,11 +282,8 @@ public enum HbmEffectNT {
 
     /** Resolves an effect by name, or null if this port does not implement it. */
     @Nullable
-    public static HbmEffectNT byName(String name) {
-        for (HbmEffectNT effect : values()) {
-            if (effect.name().equals(name)) return effect;
-        }
-        return null;
+    public static synchronized HbmEffectNT byName(String name) {
+        return BY_NAME.get(name);
     }
 
     /** What one effect does on the client. */

@@ -25,6 +25,23 @@ public final class Library {
         return dev.golem.core.Ids.of(com.hbm.Constants.MOD_ID, path);
     }
 
+    /**
+     * A reference an addon may write with its own namespace: {@code "ns:path"} as given, a bare {@code "path"} in
+     * {@code hbm} (the form every HBM table already uses). {@link dev.golem.core.Ids#parse} would put a bare path in
+     * {@code minecraft} instead, which is why HBM's lookups that also take addon ids go through this.
+     */
+    public static net.minecraft.resources.Identifier parseId(String ref) {
+        return parseId(ref, "", "");
+    }
+
+    /** {@link #parseId(String)} with {@code prefix} and {@code suffix} around the path (asset paths, e.g. textures). */
+    public static net.minecraft.resources.Identifier parseId(String ref, String prefix, String suffix) {
+        int colon = ref.indexOf(':');
+        String namespace = colon < 0 ? com.hbm.Constants.MOD_ID : ref.substring(0, colon);
+        String path = colon < 0 ? ref : ref.substring(colon + 1);
+        return dev.golem.core.Ids.of(namespace, prefix + path + suffix);
+    }
+
 
     private Library() {}
 

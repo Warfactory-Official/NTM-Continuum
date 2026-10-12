@@ -41,8 +41,7 @@ public final class GasCentrifugeGameTests {
         GasCentrifugeRecipes.register();
         helper.assertTrue(GasCentrifugeRecipes.RECIPES.size() == 4,
                 "gas centrifuge must expose all four legacy JEI recipes");
-        helper.assertTrue(GasCentrifugeRecipes.RECIPES.get(0).highSpeed
-                        && GasCentrifugeRecipes.RECIPES.get(0).input.type == Fluids.UF6,
+        helper.assertTrue(GasCentrifugeRecipes.RECIPES.stream().anyMatch(r -> r.highSpeed && r.input.type == Fluids.UF6),
                 "gas centrifuge high-speed UF6 recipe is missing");
         helper.assertTrue(GasCentrifugeRecipes.FLUID_CONVERSIONS.get(Fluids.UF6)
                         == GasCentrifugeRecipes.PseudoFluidType.NUF6,

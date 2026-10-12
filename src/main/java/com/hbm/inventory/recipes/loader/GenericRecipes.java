@@ -33,7 +33,14 @@ public abstract class GenericRecipes {
     /** Populates {@link #recipeNameMap}/{@link #recipeOrderedList} — implemented per machine. */
     public abstract void registerRecipes();
 
+    /** Adds a recipe built in code and joins its blueprint pools and auto-switch group. */
     protected void register(GenericRecipe recipe) {
+        put(recipe);
+        if (recipe.blueprintPools != null) for (String pool : recipe.blueprintPools) addToPool(pool, recipe);
+        if (recipe.autoSwitchGroup != null) addToGroup(recipe.autoSwitchGroup, recipe);
+    }
+
+    private void put(GenericRecipe recipe) {
         if (recipeNameMap.containsKey(recipe.getInternalName())) {
             throw new IllegalStateException("Recipe " + recipe.getInternalName()
                     + " has been registered with a duplicate ID!");
@@ -45,6 +52,40 @@ public abstract class GenericRecipes {
     /** Public registration entry point for the generated recipe classes (com.hbm.inventory.recipes.gen). */
     public void registerGenerated(GenericRecipe recipe) {
         register(recipe);
+    }
+
+    /**
+     * Replaces every row with {@code recipes}, in that order (a datapack table after a reload or a client sync), and
+     * keeps this table's blueprint pools and auto-switch groups in step. A second row with an internal name already
+     * taken is skipped with a warning, as ntm-next's tables do; the first one in order wins.
+     */
+    protected synchronized void rebuild(List<GenericRecipe> recipes) {
+        for (GenericRecipe old : recipeOrderedList) {
+            pooledBlueprints.remove(old.getInternalName(), old);
+            // every pool the row could have joined: a config change swaps the pools of the same row object
+            leavePools(old, old.blueprintPools);
+            leavePools(old, old.normalPools());
+            leavePools(old, old.blueprintPools528);
+        }
+        recipeOrderedList.clear();
+        recipeNameMap.clear();
+        autoSwitchGroups.clear();
+        for (GenericRecipe recipe : recipes) {
+            if (recipeNameMap.containsKey(recipe.getInternalName())) {
+                com.hbm.Constants.LOG.warn("Recipe name {} appears twice in {}; keeping the first",
+                        recipe.getInternalName(), getClass().getSimpleName());
+                continue;
+            }
+            register(recipe);
+        }
+    }
+
+    private static void leavePools(GenericRecipe recipe, String[] pools) {
+        if (pools == null) return;
+        for (String pool : pools) {
+            List<String> names = blueprintPools.get(pool);
+            if (names != null) names.remove(recipe.getInternalName());
+        }
     }
 
     public GenericRecipe getRecipe(String name) {

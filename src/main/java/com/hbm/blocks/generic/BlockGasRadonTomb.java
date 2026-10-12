@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BlockGasRadonTomb extends BlockGasBase {
     public BlockGasRadonTomb(Properties properties) {
         super(properties);
+        cloudColor(0.1F, 0.3F, 0.1F);
     }
 
     @Override

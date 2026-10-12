@@ -38,6 +38,8 @@ public final class FoldedGeometryGameTests {
             TESTS.function("folded_passive_plane_is_its_own", 1, () -> FoldedGeometryGameTests::passivePlane);
     public static final GameTests.Function PISTONS_REFUSED =
             TESTS.function("folded_cells_refuse_pistons", 1, () -> FoldedGeometryGameTests::pistonsRefused);
+    public static final GameTests.Function PORTS_COMPOSE =
+            TESTS.function("folded_port_faces_compose", 1, () -> FoldedGeometryGameTests::portsCompose);
 
     private FoldedGeometryGameTests() {}
 
@@ -73,6 +75,30 @@ public final class FoldedGeometryGameTests {
                 "the role-blind union at the west port");
         eq(helper, table.maskAtLocal(4, 0, 0), MultiblockMaskTable.NOT_A_CELL,
                 "an offset outside the footprint");
+        helper.succeed();
+    }
+
+    /**
+     * A cell touching two of 1.7's connection points connects on both faces: 1.7 subscribed each {@code getConPos}
+     * point on its own, so a corner cell next to two points was reached from both (NTM: Space's station machines emit
+     * one face per point). Emissions on one cell for the same role add up; a later {@code MASK_NONE} box fill over a
+     * port cell closes nothing.
+     */
+    public static void portsCompose(GameTestHelper helper) {
+        MultiblockMaskTable table = bake((core, facing, visitor) -> {
+            visitor.cell(core.offset(1, 0, 1), BlockMultiblockCore.MASK_EAST, BlockMultiblockCore.ROLE_FLUID);
+            visitor.cell(core.offset(1, 0, 1), BlockMultiblockCore.MASK_SOUTH, BlockMultiblockCore.ROLE_FLUID);
+            visitor.cell(core.offset(1, 0, 1), BlockMultiblockCore.MASK_NONE);
+            visitor.cell(core.offset(-1, 0, 0), BlockMultiblockCore.MASK_WEST);
+            visitor.cell(core.offset(-1, 0, 0), BlockMultiblockCore.MASK_UP);
+        }, (core, facing, visitor) -> {}, MachineCaps.FLUID_IN | MachineCaps.FLUID_OUT);
+
+        eq(helper, table.maskAtLocal(1, 0, 1, CapRole.FLUID_IN), BlockMultiblockCore.MASK_EAST | BlockMultiblockCore.MASK_SOUTH,
+                "the fluid faces of a cell next to two connection points");
+        eq(helper, table.maskAtLocal(1, 0, 1), BlockMultiblockCore.MASK_EAST | BlockMultiblockCore.MASK_SOUTH,
+                "the role-blind union of that cell");
+        eq(helper, table.maskAtLocal(-1, 0, 0), BlockMultiblockCore.MASK_WEST | BlockMultiblockCore.MASK_UP,
+                "two role-blind emissions on one cell");
         helper.succeed();
     }
 

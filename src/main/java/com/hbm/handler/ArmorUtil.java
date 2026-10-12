@@ -40,6 +40,11 @@ public class ArmorUtil {
         hazmat2Sets.add(new Item[] {helmet, chest, legs, boots});
     }
 
+    /** The code-registered hazmat sets (read-only view). */
+    public static List<Item[]> codeHazmatSets(boolean heavy) {
+        return java.util.Collections.unmodifiableList(heavy ? hazmat2Sets : hazmatSets);
+    }
+
     /** Substrings of armor translation keys that count as conductive "faraday cage" armor. */
     public static final String[] metals = new String[] {
             "chainmail", "iron", "silver", "gold", "platinum", "tin", "lead", "liquidator",
@@ -66,6 +71,31 @@ public class ArmorUtil {
         return false;
     }
 
+    /**
+     * The full set the entity wears, from the {@code hbm:armor_sets} data map (keyed by the chestplate), or null. Every
+     * piece must match; a piece the set leaves out must be an empty slot.
+     */
+    public static com.hbm.api.data.ArmorDataMaps.@org.jspecify.annotations.Nullable ArmorSet wornSet(LivingEntity entity) {
+        ItemStack chest = entity.getItemBySlot(EquipmentSlot.CHEST);
+        if (chest.isEmpty()) return null;
+        com.hbm.api.data.ArmorDataMaps.ArmorSet set = com.hbm.api.data.ArmorDataMaps.ARMOR_SETS.get(chest.getItem());
+        if (set == null) return null;
+        return piece(entity, EquipmentSlot.HEAD, set.helmet()) && piece(entity, EquipmentSlot.LEGS, set.legs())
+                && piece(entity, EquipmentSlot.FEET, set.boots()) ? set : null;
+    }
+
+    private static boolean piece(LivingEntity entity, EquipmentSlot slot, java.util.Optional<String> id) {
+        ItemStack worn = entity.getItemBySlot(slot);
+        if (id.isEmpty()) return worn.isEmpty();
+        return !worn.isEmpty() && net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(worn.getItem()).toString().equals(id.get());
+    }
+
+    /** Whether the entity wears a full data-map set that satisfies {@code check} ({@code hazmat}, {@code hazmat2}, ...). */
+    public static boolean wearsSet(LivingEntity entity, String check) {
+        com.hbm.api.data.ArmorDataMaps.ArmorSet set = wornSet(entity);
+        return set != null && set.checks().contains(check);
+    }
+
     public static boolean checkForFaraday(LivingEntity entity) {
         for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
             ItemStack stack = entity.getItemBySlot(slot);
@@ -75,6 +105,8 @@ public class ArmorUtil {
     }
 
     public static boolean isFaradayArmor(ItemStack stack) {
+        Boolean data = com.hbm.api.data.ArmorDataMaps.FARADAY_ARMOR.get(stack.getItem());
+        if (data != null) return data || HazmatRegistry.getCladding(stack) > 0;
         String name = stack.getItem().getDescriptionId();
         for (String metal : metals) if (name.toLowerCase(Locale.US).contains(metal)) return true;
         if (HazmatRegistry.getCladding(stack) > 0) return true;
@@ -83,26 +115,33 @@ public class ArmorUtil {
 
     /** Any full hazmat set (basic or heavy), or the mutation effect (1.7 {@code checkForHazmat}). */
     public static boolean checkForHazmat(LivingEntity entity) {
-        if (checkAnySet(entity, hazmatSets) || checkForHaz2(entity)) return true;
-        return dev.golem.core.world.Effects.hasRegistered(entity, com.hbm.potion.ModEffects.MUTATION.get());
+        if (wearsSet(entity, "hazmat") || checkAnySet(entity, hazmatSets) || checkForHaz2(entity)) return true;
+        if (dev.golem.core.world.Effects.hasRegistered(entity, com.hbm.potion.ModEffects.MUTATION.get())) return true;
+        for (java.util.function.Predicate<LivingEntity> listener : HAZMAT) {
+            if (listener.test(entity)) return true;
+        }
+        return false;
     }
+
+    /**
+     * More reasons an entity counts as wearing hazmat (ADDON-API-INVENTORY H-71), asked after 1.7's suits and mutation;
+     * any true answer wins. HBM registers none. NTM: Space: its {@code nitan} effect (hbm-space {@code ArmorUtil}).
+     */
+    public static final dev.golem.core.hook.Hook<java.util.function.Predicate<LivingEntity>> HAZMAT = dev.golem.core.hook.Hook.notifying();
 
     /** Only the true hazmat suits (yellow/red/grey/paa/liquidator), not the metal power armors. */
     public static boolean checkForHazmatOnly(LivingEntity entity) {
-        return checkAnySet(entity, hazmatSets);
+        return wearsSet(entity, "hazmat") || checkAnySet(entity, hazmatSets);
     }
 
     /** Heavy hazmat (old paa/liquidator/euphemium/rpa/fau/dns sets). */
     public static boolean checkForHaz2(LivingEntity entity) {
-        return checkAnySet(entity, hazmat2Sets);
+        return wearsSet(entity, "hazmat2") || checkAnySet(entity, hazmat2Sets);
     }
 
     /** 1.7 {@code checkForDigamma}: the full Fau or DNT-nano suit, or the stability effect. */
     public static boolean checkForDigamma(LivingEntity entity) {
-        if (checkArmor(entity, com.hbm.items.ModArmorSetItems.fau_helmet.get(), com.hbm.items.ModArmorSetItems.fau_plate.get(),
-                com.hbm.items.ModArmorSetItems.fau_legs.get(), com.hbm.items.ModArmorSetItems.fau_boots.get())) return true;
-        if (checkArmor(entity, com.hbm.items.ModArmorItems.dns_helmet.get(), com.hbm.items.ModArmorItems.dns_plate.get(),
-                com.hbm.items.ModArmorItems.dns_legs.get(), com.hbm.items.ModArmorItems.dns_boots.get())) return true;
+        if (wearsSet(entity, "digamma")) return true; // the Fau and DNT-nano suits (hbm:armor_sets)
         return dev.golem.core.world.Effects.hasRegistered(entity, com.hbm.potion.ModEffects.STABILITY.get());
     }
 
@@ -111,8 +150,7 @@ public class ArmorUtil {
      * modules at all, and a maximum health already below 3. The only protection from the Spear of Light.
      */
     public static boolean checkForDigamma2(LivingEntity entity) {
-        if (!checkArmor(entity, com.hbm.items.ModArmorItems.robes_helmet.get(), com.hbm.items.ModArmorItems.robes_plate.get(),
-                com.hbm.items.ModArmorItems.robes_legs.get(), com.hbm.items.ModArmorItems.robes_boots.get())) return false;
+        if (!wearsSet(entity, "digamma2")) return false; // the robes (hbm:armor_sets)
         if (!dev.golem.core.world.Effects.hasRegistered(entity, com.hbm.potion.ModEffects.STABILITY.get())) return false;
 
         for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD}) {
@@ -128,8 +166,7 @@ public class ArmorUtil {
 
     /** 1.7 {@code checkForAsbestos}: the full asbestos suit. */
     public static boolean checkForAsbestos(LivingEntity entity) {
-        return checkArmor(entity, com.hbm.items.ModArmorItems.asbestos_helmet.get(), com.hbm.items.ModArmorItems.asbestos_plate.get(),
-                com.hbm.items.ModArmorItems.asbestos_legs.get(), com.hbm.items.ModArmorItems.asbestos_boots.get());
+        return wearsSet(entity, "asbestos"); // hbm:armor_sets
     }
 
     /**

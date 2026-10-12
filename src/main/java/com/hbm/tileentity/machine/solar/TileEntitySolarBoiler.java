@@ -60,7 +60,10 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFlui
     }
 
     private void tryConvert() {
-        int process = heat / 50;
+        // hbm-space: (int)(heat * WorldProviderCelestial.getSunPower(provider, x, z)) / 50, the sun's strength on the
+        // body scaling what the mirrors deliver (com.hbm.api.environment.Environment; 1 on plain HBM, so heat / 50)
+        float sunPower = level == null ? 1F : (float) com.hbm.api.environment.Environment.sunlight(level, worldPosition);
+        int process = (int) (heat * sunPower) / 50;
         display = process;
         process = Math.min(process, tanks[0].getFill());
         process = Math.min(process, (tanks[1].getMaxFill() - tanks[1].getFill()) / 100);

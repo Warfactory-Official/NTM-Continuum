@@ -5,7 +5,7 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ItemEnums.SoyuzSkinType;
 import com.hbm.items.special.ItemSoyuz;
-import com.hbm.registration.Loot;
+import dev.golem.core.registry.Loot;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Models;

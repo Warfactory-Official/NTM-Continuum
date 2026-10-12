@@ -55,7 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /** The dual fluid/metal electrolyser, ported from the 1.12.2 machine. */
-public final class TileEntityMachineElectrolyser extends TileEntityMachineBase
+public class TileEntityMachineElectrolyser extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IControlReceiver,
         WorldlyContainer, IUpgradeInfoProvider {
 
@@ -340,6 +340,15 @@ public final class TileEntityMachineElectrolyser extends TileEntityMachineBase
                     new DirPos(worldPosition.getX() + dir.offsetX * 6 + rot.offsetX, worldPosition.getY(), worldPosition.getZ() + dir.offsetZ * 6 + rot.offsetZ, dir),
                     new DirPos(worldPosition.getX() + dir.offsetX * 6 - rot.offsetX, worldPosition.getY(), worldPosition.getZ() + dir.offsetZ * 6 - rot.offsetZ, dir)
             };
+            if (com.hbm.blocks.machine.MachineElectrolyser.sidePorts) {
+                // hbm-space's four extra points (V-178)
+                int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+                conPos = java.util.Arrays.copyOf(conPos, 10);
+                conPos[6] = new DirPos(x - rot.offsetX * 4, y, z - rot.offsetZ * 4, rot.getOpposite());
+                conPos[7] = new DirPos(x + rot.offsetX * 2, y, z + rot.offsetZ * 2, rot);
+                conPos[8] = new DirPos(x - dir.offsetX * 5 + rot.offsetX * 2, y, z - dir.offsetZ * 5 + rot.offsetZ * 2, rot);
+                conPos[9] = new DirPos(x + dir.offsetX * 5 + rot.offsetX * 2, y, z + dir.offsetZ * 5 + rot.offsetZ * 2, rot);
+            }
         }
         return conPos;
     }

@@ -37,18 +37,26 @@ public class TileEntityDeuteriumExtractor extends TileEntityMachineBase
         this(ModBlockEntities.MACHINE_DEUTERIUM_EXTRACTOR.get(), pos, state, 1_000, 100, 10_000);
     }
 
+    /**
+     * 1.7's power use per conversion is {@code maxPower / 20}, needed in full before it runs. Public and assignable so an
+     * addon can set its own at start-up (NTM: Space: {@code maxPower / 100}, and the buffer must also exceed 200 HE);
+     * HBM never changes them.
+     */
+    public static int powerDivisor = 20;
+    public static long powerFloorExclusive = Long.MIN_VALUE;
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityDeuteriumExtractor extractor) {
         for (DirPos connection : extractor.getConPos()) {
             if (extractor.tanks[1].getFill() > 0) extractor.tryProvide(extractor.tanks[1], level, connection);
         }
 
-        if (extractor.hasPower() && extractor.hasEnoughWater()
+        if (extractor.hasPower() && extractor.power > powerFloorExclusive && extractor.hasEnoughWater()
                 && extractor.tanks[1].getMaxFill() > extractor.tanks[1].getFill()) {
             int convert = Math.min(extractor.tanks[1].getMaxFill(), extractor.tanks[0].getFill()) / 50;
             convert = Math.min(convert, extractor.tanks[1].getMaxFill() - extractor.tanks[1].getFill());
             extractor.tanks[0].setFill(extractor.tanks[0].getFill() - convert * 50);
             extractor.tanks[1].setFill(extractor.tanks[1].getFill() + convert);
-            extractor.power -= extractor.getMaxPower() / 20;
+            extractor.power -= extractor.getMaxPower() / powerDivisor;
         }
 
         extractor.setChanged();
@@ -56,7 +64,7 @@ public class TileEntityDeuteriumExtractor extends TileEntityMachineBase
     }
 
     protected boolean hasPower() {
-        return power >= getMaxPower() / 20;
+        return power >= getMaxPower() / powerDivisor;
     }
 
     protected boolean hasEnoughWater() {

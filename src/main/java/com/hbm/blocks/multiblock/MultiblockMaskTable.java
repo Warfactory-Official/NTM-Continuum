@@ -192,8 +192,10 @@ public final class MultiblockMaskTable {
     }
 
     /**
-     * Write {@code mask} to the named roles' planes; roles not named keep what they had, so two emissions
-     * on one cell compose. {@link #masks} follows as the union — no other writer touches it.
+     * Add {@code mask} to the named roles' planes; roles not named keep what they had, so two emissions
+     * on one cell compose, for the same role too: 1.7 subscribed every {@code getConPos} point on its own, so a
+     * cell next to two points connects on both faces, and a later {@code MASK_NONE} box fill over a port cell
+     * closes nothing. {@link #masks} follows as the union — no other writer touches it.
      */
     private void put(int lx, int ly, int lz, int mask, int roles) {
         if (mask < 0 || mask > 0b111111) {
@@ -208,7 +210,9 @@ public final class MultiblockMaskTable {
         int union = 0;
         for (CapRole role : CapRole.VALUES) {
             byte[] plane = byRole[role.planeIndex];
-            if ((roles & role.bit) != 0) plane[index] = (byte) mask;
+            if ((roles & role.bit) != 0) {
+                plane[index] = plane[index] == (byte) NOT_A_CELL ? (byte) mask : (byte) (plane[index] | mask);
+            }
             else if (plane[index] == (byte) NOT_A_CELL) plane[index] = 0;
             union |= plane[index];
         }

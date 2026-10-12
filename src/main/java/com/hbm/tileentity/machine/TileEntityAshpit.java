@@ -22,7 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 /** Five-output ash collector for firebox ash and chimney fly ash/soot. */
-public final class TileEntityAshpit extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
+public class TileEntityAshpit extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
 
     public static final int SLOT_COUNT = 5;
     private static final int[] ALL_SLOTS = {0, 1, 2, 3, 4};

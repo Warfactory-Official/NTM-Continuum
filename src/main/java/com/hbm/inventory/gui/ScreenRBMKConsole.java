@@ -67,42 +67,36 @@ public final class ScreenRBMKConsole extends RBMKContainerScreen<MenuRBMKConsole
             RBMKColumn column = console.columns[i];
             if (column == null) continue;
             int x = leftPos + 86 + 10 * (i % 15), y = topPos + 11 + 10 * (i / 15);
-            GuiDraw.blit(graphics, TEX, x, y, column.type.offset, 172, 10, 10, 256, 256);
+            GuiDraw.blit(graphics, column.type.sheet != null ? column.type.sheet : TEX, x, y, column.type.offset, 172, 10, 10, 256, 256);
             int heat = (int) Math.min(Math.ceil((column.heat - 20) * 10 / column.maxHeat), 10);
             if (heat > 0) GuiDraw.blit(graphics, TEX, x, y + 10 - heat, 0, 192 - heat, 10, heat, 256, 256);
-            switch (column.type) {
-                case CONTROL, CONTROL_AUTO -> {
-                    RBMKColumn.ControlColumn control = (RBMKColumn.ControlColumn) column;
-                    if (column.type == RBMKColumnType.CONTROL && control.color >= 0) GuiDraw.blit(graphics, TEX, x, y, control.color * 10, 202, 10, 10, 256, 256);
-                    int withdrawn = 8 - (int) Math.ceil(control.level * 8);
-                    if (withdrawn > 0) GuiDraw.blit(graphics, TEX, x + 4, y + 1, 24, 183, 2, withdrawn, 256, 256);
+            RBMKColumnType type = column.type;
+            if (type == RBMKColumnType.CONTROL || type == RBMKColumnType.CONTROL_AUTO) {
+                RBMKColumn.ControlColumn control = (RBMKColumn.ControlColumn) column;
+                if (column.type == RBMKColumnType.CONTROL && control.color >= 0) GuiDraw.blit(graphics, TEX, x, y, control.color * 10, 202, 10, 10, 256, 256);
+                int withdrawn = 8 - (int) Math.ceil(control.level * 8);
+                if (withdrawn > 0) GuiDraw.blit(graphics, TEX, x + 4, y + 1, 24, 183, 2, withdrawn, 256, 256);
+            } else if (type == RBMKColumnType.COOLER) {
+                RBMKColumn.CoolerColumn cooler = (RBMKColumn.CoolerColumn) column;
+                int fill = (int) Math.ceil((double) cooler.cryo * 8 / Math.max(cooler.maxCryo, 1));
+                if (fill > 0) GuiDraw.blit(graphics, TEX, x + 3, y + 9 - fill, 123, 191 - fill, 4, fill, 256, 256);
+            } else if (type == RBMKColumnType.FUEL || type == RBMKColumnType.FUEL_SIM || type == RBMKColumnType.BREEDER) {
+                RBMKColumn.FuelColumn fuel = (RBMKColumn.FuelColumn) column;
+                if (fuel.c_maxHeat > 0) {
+                    bar(graphics, x + 1, y, 11, fuel.c_heat - 20, fuel.c_maxHeat);
+                    bar(graphics, x + 4, y, 14, fuel.enrichment, 1);
+                    bar(graphics, x + 7, y, 17, fuel.xenon, 100);
                 }
-                case COOLER -> {
-                    RBMKColumn.CoolerColumn cooler = (RBMKColumn.CoolerColumn) column;
-                    int fill = (int) Math.ceil((double) cooler.cryo * 8 / Math.max(cooler.maxCryo, 1));
-                    if (fill > 0) GuiDraw.blit(graphics, TEX, x + 3, y + 9 - fill, 123, 191 - fill, 4, fill, 256, 256);
-                }
-                case FUEL, FUEL_SIM, BREEDER -> {
-                    RBMKColumn.FuelColumn fuel = (RBMKColumn.FuelColumn) column;
-                    if (fuel.c_maxHeat > 0) {
-                        bar(graphics, x + 1, y, 11, fuel.c_heat - 20, fuel.c_maxHeat);
-                        bar(graphics, x + 4, y, 14, fuel.enrichment, 1);
-                        bar(graphics, x + 7, y, 17, fuel.xenon, 100);
-                    }
-                }
-                case BOILER -> {
-                    RBMKColumn.BoilerColumn boiler = (RBMKColumn.BoilerColumn) column;
-                    bar(graphics, x + 1, y, 41, boiler.water, boiler.maxWater);
-                    bar(graphics, x + 6, y, 46, boiler.steam, boiler.maxSteam);
-                    int marker = boiler.steamType == steam ? 183 : boiler.steamType == hot ? 185 : boiler.steamType == superhot ? 187 : boiler.steamType == ultra ? 189 : -1;
-                    if (marker >= 0) GuiDraw.blit(graphics, TEX, x + 4, y + (marker - 183), 44, marker, 2, 2, 256, 256);
-                }
-                case HEATEX -> {
-                    RBMKColumn.HeaterColumn heater = (RBMKColumn.HeaterColumn) column;
-                    bar(graphics, x + 1, y, 131, heater.water, heater.maxWater);
-                    bar(graphics, x + 6, y, 136, heater.steam, heater.maxSteam);
-                }
-                default -> { }
+            } else if (type == RBMKColumnType.BOILER) {
+                RBMKColumn.BoilerColumn boiler = (RBMKColumn.BoilerColumn) column;
+                bar(graphics, x + 1, y, 41, boiler.water, boiler.maxWater);
+                bar(graphics, x + 6, y, 46, boiler.steam, boiler.maxSteam);
+                int marker = boiler.steamType == steam ? 183 : boiler.steamType == hot ? 185 : boiler.steamType == superhot ? 187 : boiler.steamType == ultra ? 189 : -1;
+                if (marker >= 0) GuiDraw.blit(graphics, TEX, x + 4, y + (marker - 183), 44, marker, 2, 2, 256, 256);
+            } else if (type == RBMKColumnType.HEATEX) {
+                RBMKColumn.HeaterColumn heater = (RBMKColumn.HeaterColumn) column;
+                bar(graphics, x + 1, y, 131, heater.water, heater.maxWater);
+                bar(graphics, x + 6, y, 136, heater.steam, heater.maxSteam);
             }
             if (selection[i]) GuiDraw.blit(graphics, TEX, x, y, 0, 192, 10, 10, 256, 256);
         }

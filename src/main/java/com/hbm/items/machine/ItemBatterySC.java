@@ -65,13 +65,19 @@ public class ItemBatterySC extends CompatItem implements IBatteryItem {
     @Override public long getChargeRate(ItemStack stack) { return 0; }
     @Override public long getCharge(ItemStack stack) { return getMaxCharge(stack); }
     @Override public long getDischargeRate(ItemStack stack) { return getMaxCharge(stack); }
-    @Override public long getMaxCharge(ItemStack stack) { return pack.power; }
+    /** The output: the {@code hbm:betavoltaic} entry, else HBM's enum constant. */
+    public long power() {
+        Long data = com.hbm.api.data.ReactorDataMaps.BETAVOLTAIC.get(this);
+        return data != null ? data : pack.power;
+    }
+
+    @Override public long getMaxCharge(ItemStack stack) { return power(); }
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        if (pack.power > 0) {
-            tooltip.add(Component.literal("Discharge rate: " + Library.getShortNumber(pack.power) + "HE/t")
+        if (power() > 0) {
+            tooltip.add(Component.literal("Discharge rate: " + Library.getShortNumber(power()) + "HE/t")
                     .withStyle(ChatFormatting.YELLOW));
         }
         // 1.7 I18nUtil.resolveKeyArray("item.battery_sc.desc"), one red line per '$'-separated part

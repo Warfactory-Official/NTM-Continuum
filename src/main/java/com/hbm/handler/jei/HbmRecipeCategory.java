@@ -3,7 +3,6 @@ package com.hbm.handler.jei;
 //? if jei {
 
 import dev.golem.core.gui.GuiDraw;
-import com.hbm.Constants;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -41,8 +40,9 @@ public abstract class HbmRecipeCategory<T> extends AbstractRecipeCategory<T> {
         this.background = helper.createDrawable(tex(texture), textureX, textureY, width, height);
     }
 
+    /** {@code <ns>:textures/gui/jei/<name>}; a bare name is HBM's, an addon category names its own as {@code "ns:name"}. */
     protected static Identifier tex(String name) {
-        return dev.golem.core.Ids.of(Constants.MOD_ID, "textures/gui/jei/" + name);
+        return com.hbm.lib.Library.parseId(name, "textures/gui/jei/", "");
     }
 
     @Override

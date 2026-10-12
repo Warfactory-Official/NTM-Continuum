@@ -97,6 +97,17 @@ final class RadiationWorldHandler {
     static void decayBlock(ServerLevel level, BlockPos pos, BlockState state) {
         Block block = state.getBlock();
 
+        // A block named in the hbm:radiation_decay data map follows its value; the 1.7 rules below key on block
+        // classes and tags, and stay the default for everything else.
+        com.hbm.api.data.WorldDataMaps.Decay decay = com.hbm.api.data.WorldDataMaps.RADIATION_DECAY.get(block);
+        if (decay != null) {
+            if (decay.to().isEmpty()) return;
+            BlockState to = decay.chance() >= 1F || level.getRandom().nextFloat() < decay.chance()
+                    ? com.hbm.util.SavedIds.stateFromName(decay.to(), AIR) : AIR;
+            level.setBlock(pos, to, Block.UPDATE_CLIENTS);
+            return;
+        }
+
         if (block instanceof DoublePlantBlock) {
             if (!state.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) return;
             DoubleBlockHalf half = state.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF);

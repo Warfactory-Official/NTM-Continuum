@@ -65,9 +65,8 @@ public final class NuclearMiscGameTests {
 
         // The chamber ticks through its registered ticker: cracking keys off the level's game time
         // (1.7 {@code getTotalWorldTime() % crackTime}), so it must be observed across real ticks.
-        // The pellet output is the 1.12 half-life curve (see RtgGameTests): a lead pellet (600 heat,
-        // 3,253-tick half-life) already reads 599 a few ticks in, so the heat is checked against the
-        // pellet's own scaled output rather than a flat 600.
+        // The heat is checked against the pellet's own scaled output (1.7 linear decay, see RtgGameTests),
+        // which is the flat 600 unless 9.00_scaleRTGPower is on.
         helper.runAfterDelay(12, () -> {
             ItemRTGPellet lead = ModRtgContent.PELLET_RTG_LEAD.get();
             // heat is read before the pellet decays, so it may sit one point above the stack's current output

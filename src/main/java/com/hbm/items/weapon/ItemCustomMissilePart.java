@@ -88,23 +88,36 @@ public class ItemCustomMissilePart extends CompatItem {
         }
     }
 
-    public enum WarheadType {
+    /**
+     * What a warhead does on impact: 1.7's twelve, as a registry of records keyed by name. 1.7 let addons reuse ten
+     * dummy constants ({@code CUSTOM0..9}) by writing {@code impactCustom}/{@code updateCustom}/{@code labelCustom} onto
+     * them, so two addons fought over the same slots; here an addon registers its own warhead with {@link #register}
+     * (NTM: Space's Apollo and satellite payloads) and gives it to its parts with {@code makeWarhead}. HBM's own
+     * impacts stay in {@code EntityMissileCustom.onMissileImpact}, keyed on these constants. The type is never saved:
+     * a missile carries its part items.
+     */
+    public static final class WarheadType {
 
-        HE,
-        INC,
-        BUSTER,
-        CLUSTER,
-        NUCLEAR,
-        TX,
-        N2,
-        BALEFIRE,
-        SCHRAB,
-        TAINT,
-        CLOUD,
-        TURBINE,
+        public static final com.hbm.api.registry.NamedRegistry<WarheadType> REGISTRY =
+                new com.hbm.api.registry.NamedRegistry<>("warhead type", WarheadType::name);
 
-        // shit solution but it works: dummy slots letting custom warheads attach traits
-        CUSTOM0, CUSTOM1, CUSTOM2, CUSTOM3, CUSTOM4, CUSTOM5, CUSTOM6, CUSTOM7, CUSTOM8, CUSTOM9;
+        public static final WarheadType HE = builtin("he", () -> key("he", ChatFormatting.YELLOW));
+        public static final WarheadType INC = builtin("inc", () -> key("incendiary", ChatFormatting.GOLD));
+        public static final WarheadType BUSTER = builtin("buster", () -> key("bunker_buster", ChatFormatting.WHITE));
+        public static final WarheadType CLUSTER = builtin("cluster", () -> key("cluster", ChatFormatting.GRAY));
+        public static final WarheadType NUCLEAR = builtin("nuclear", () -> key("nuclear", ChatFormatting.DARK_GREEN));
+        public static final WarheadType TX = builtin("tx", () -> key("thermonuclear", ChatFormatting.DARK_PURPLE));
+        public static final WarheadType N2 = builtin("n2", () -> key("n2", ChatFormatting.RED));
+        public static final WarheadType BALEFIRE = builtin("balefire", () -> key("balefire", ChatFormatting.GREEN));
+        public static final WarheadType SCHRAB = builtin("schrab", () -> key("schrabidium", ChatFormatting.AQUA));
+        public static final WarheadType TAINT = builtin("taint", () -> key("taint", ChatFormatting.DARK_PURPLE));
+        public static final WarheadType CLOUD = builtin("cloud", () -> key("cloud", ChatFormatting.LIGHT_PURPLE));
+        // 1.7 flickered the turbine label off the wall clock at 2Hz
+        public static final WarheadType TURBINE = builtin("turbine", () -> key("turbine",
+                System.currentTimeMillis() % 1000 < 500 ? ChatFormatting.RED : ChatFormatting.LIGHT_PURPLE));
+
+        private final String name;
+        private final java.util.function.Supplier<Component> display;
 
         /** Overrides that type's impact effect. Only runs serverside */
         public Consumer<EntityMissileCustom> impactCustom = null;
@@ -113,27 +126,39 @@ public class ItemCustomMissilePart extends CompatItem {
         /** Override for the warhead's name in the missile description */
         public String labelCustom = null;
 
+        private WarheadType(String name, java.util.function.Supplier<Component> display) {
+            this.name = name;
+            this.display = display;
+        }
+
+        private static WarheadType builtin(String name, java.util.function.Supplier<Component> display) {
+            return REGISTRY.register(new WarheadType(name, display));
+        }
+
+        /**
+         * Registers an addon warhead: {@code name} ({@code "<namespace>:<path>"}), its label in the part tooltip, what
+         * it does when the missile hits (server) and each tick (both sides, may be null).
+         */
+        public static WarheadType register(String name, java.util.function.Supplier<Component> display,
+                                           Consumer<EntityMissileCustom> impact, @Nullable Consumer<EntityMissileCustom> update) {
+            WarheadType type = new WarheadType(name, display);
+            type.impactCustom = impact;
+            type.updateCustom = update;
+            return REGISTRY.register(type);
+        }
+
+        public String name() {
+            return name;
+        }
+
         public Component getDisplay() {
-
             if (this.labelCustom != null) return Component.literal(this.labelCustom);
+            return display.get();
+        }
 
-            switch (this) {
-                case HE: return key("he", ChatFormatting.YELLOW);
-                case INC: return key("incendiary", ChatFormatting.GOLD);
-                case CLUSTER: return key("cluster", ChatFormatting.GRAY);
-                case BUSTER: return key("bunker_buster", ChatFormatting.WHITE);
-                case NUCLEAR: return key("nuclear", ChatFormatting.DARK_GREEN);
-                case TX: return key("thermonuclear", ChatFormatting.DARK_PURPLE);
-                case N2: return key("n2", ChatFormatting.RED);
-                case BALEFIRE: return key("balefire", ChatFormatting.GREEN);
-                case SCHRAB: return key("schrabidium", ChatFormatting.AQUA);
-                case TAINT: return key("taint", ChatFormatting.DARK_PURPLE);
-                case CLOUD: return key("cloud", ChatFormatting.LIGHT_PURPLE);
-                // 1.7 flickered the turbine label off the wall clock at 2Hz
-                case TURBINE: return key("turbine", System.currentTimeMillis() % 1000 < 500
-                        ? ChatFormatting.RED : ChatFormatting.LIGHT_PURPLE);
-                default: return Component.translatable("general.na").withStyle(ChatFormatting.BOLD);
-            }
+        @Override
+        public String toString() {
+            return name;
         }
 
         private static Component key(String name, ChatFormatting color) {
@@ -141,24 +166,81 @@ public class ItemCustomMissilePart extends CompatItem {
         }
     }
 
-    public enum FuelType {
+    /**
+     * A missile propellant: 1.7's five, as a registry of records keyed by name, each with its tooltip label and the
+     * contrail it leaves (1.7 {@code ClientProxy}'s per-fuel particle colour; null for the xenon ion drive, which
+     * leaves none). An addon (NTM: Space's hydrazine, methalox, kerolox) registers its own.
+     */
+    public static final class FuelType {
 
-        KEROSENE("kerosene_peroxide", ChatFormatting.LIGHT_PURPLE),
-        SOLID("solid", ChatFormatting.GOLD),
-        HYDROGEN("hydrogen", ChatFormatting.DARK_AQUA),
-        XENON("xenon", ChatFormatting.DARK_PURPLE),
-        BALEFIRE("balefire", ChatFormatting.GREEN);
+        public static final com.hbm.api.registry.NamedRegistry<FuelType> REGISTRY =
+                new com.hbm.api.registry.NamedRegistry<>("missile fuel type", FuelType::name);
 
+        public static final FuelType KEROSENE = register("kerosene", "kerosene_peroxide", ChatFormatting.LIGHT_PURPLE,
+                com.hbm.client.ClientEffects.Contrail.KEROSENE,
+                () -> com.hbm.inventory.fluid.Fluids.KEROSENE, () -> com.hbm.inventory.fluid.Fluids.PEROXIDE);
+        public static final FuelType SOLID = register("solid", "solid", ChatFormatting.GOLD,
+                com.hbm.client.ClientEffects.Contrail.SOLID, null, null);
+        public static final FuelType HYDROGEN = register("hydrogen", "hydrogen", ChatFormatting.DARK_AQUA,
+                com.hbm.client.ClientEffects.Contrail.HYDROGEN,
+                () -> com.hbm.inventory.fluid.Fluids.HYDROGEN, () -> com.hbm.inventory.fluid.Fluids.OXYGEN);
+        public static final FuelType XENON = register("xenon", "xenon", ChatFormatting.DARK_PURPLE, null,
+                () -> com.hbm.inventory.fluid.Fluids.XENON, null);
+        public static final FuelType BALEFIRE = register("balefire", "balefire", ChatFormatting.GREEN,
+                com.hbm.client.ClientEffects.Contrail.BALEFIRE,
+                () -> com.hbm.inventory.fluid.Fluids.BALEFIRE, () -> com.hbm.inventory.fluid.Fluids.PEROXIDE);
+
+        private final String name;
         private final String key;
         private final ChatFormatting color;
+        /** The plume a missile burning this leaves; null for none. */
+        public final com.hbm.client.ClientEffects.@Nullable Contrail contrail;
+        /**
+         * What the custom launcher's two tanks hold for it (1.7 {@code TileEntityLaunchTable.updateTypes}): the fuel
+         * tank's fluid, null for a solid fuel (the launcher's solid-fuel store), and the oxidiser, null for none.
+         */
+        public final java.util.function.@Nullable Supplier<com.hbm.inventory.fluid.FluidType> fuel;
+        public final java.util.function.@Nullable Supplier<com.hbm.inventory.fluid.FluidType> oxidizer;
 
-        FuelType(String key, ChatFormatting color) {
+        private FuelType(String name, String key, ChatFormatting color, com.hbm.client.ClientEffects.@Nullable Contrail contrail,
+                         java.util.function.@Nullable Supplier<com.hbm.inventory.fluid.FluidType> fuel,
+                         java.util.function.@Nullable Supplier<com.hbm.inventory.fluid.FluidType> oxidizer) {
+            this.name = name;
             this.key = key;
             this.color = color;
+            this.contrail = contrail;
+            this.fuel = fuel;
+            this.oxidizer = oxidizer;
+        }
+
+        /**
+         * Registers a fuel: {@code name} (an addon's {@code "<namespace>:<path>"}), its label key
+         * {@code item.missile.fuel.<key>}, colour, contrail (null for none), and the launcher's fuel and oxidiser
+         * fluids (null fuel: solid; null oxidiser: none).
+         */
+        public static FuelType register(String name, String key, ChatFormatting color,
+                                        com.hbm.client.ClientEffects.@Nullable Contrail contrail,
+                                        java.util.function.@Nullable Supplier<com.hbm.inventory.fluid.FluidType> fuel,
+                                        java.util.function.@Nullable Supplier<com.hbm.inventory.fluid.FluidType> oxidizer) {
+            return REGISTRY.register(new FuelType(name, key, color, contrail, fuel, oxidizer));
+        }
+
+        /** Burns from the launcher's solid-fuel store (1.7 {@code SOLID}). */
+        public boolean solid() {
+            return fuel == null;
+        }
+
+        public String name() {
+            return name;
         }
 
         public Component getDisplay() {
             return Component.translatable("item.missile.fuel." + key).withStyle(color);
+        }
+
+        @Override
+        public String toString() {
+            return name;
         }
     }
 

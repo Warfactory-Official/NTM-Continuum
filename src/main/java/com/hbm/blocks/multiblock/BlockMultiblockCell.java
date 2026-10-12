@@ -31,6 +31,20 @@ public class BlockMultiblockCell extends dev.golem.core.world.CompatBlock {
 
     @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.INVISIBLE; }
 
+    /** 1.7 dummies had light opacity 0, as {@link BlockMultiblockCore#isLightTransparent}. */
+    @Override protected boolean isLightTransparent(BlockState state) { return true; }
+
+
+    /** hbm-space {@code internalPlayers} (V-175): the owner's walk-out rule reaches its shared cells too. */
+    @Override public net.minecraft.world.phys.shapes.VoxelShape getCollisionShape(BlockState state,
+            net.minecraft.world.level.BlockGetter level, BlockPos pos, net.minecraft.world.phys.shapes.CollisionContext context) {
+        if (BlockMultiblockCore.walkOutAfterPlacing) {
+            BlockPos core = MultiblockSurface.coreOfCell(level, pos);
+            BlockMultiblockCore owner = core == null ? null : MultiblockSurface.foldedCore(level.getBlockState(core));
+            if (owner != null && owner.ignoresCollisionFor(context)) return net.minecraft.world.phys.shapes.Shapes.empty();
+        }
+        return super.getCollisionShape(state, level, pos, context);
+    }
 
     @Override protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         BlockPos core = MultiblockSurface.coreOfCell(level, pos);

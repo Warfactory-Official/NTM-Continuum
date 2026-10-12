@@ -32,6 +32,8 @@ public final class DiFurnaceGameTests {
             TESTS.function("difurnace_processing", 500, 8, () -> DiFurnaceGameTests::processing);
     public static final GameTests.Function EXTENSION_SPEED =
             TESTS.function("difurnace_extension_speed", 200, 8, () -> DiFurnaceGameTests::extensionSpeed);
+    public static final GameTests.Function ENVIRONMENT_BREATHING =
+            TESTS.function("difurnace_environment_breathing", 20, () -> DiFurnaceGameTests::environmentBreathing);
     public static final GameTests.Function FUEL_REMAINDER =
             TESTS.function("difurnace_fuel_remainder", 20, () -> DiFurnaceGameTests::fuelRemainder);
 
@@ -141,6 +143,49 @@ public final class DiFurnaceGameTests {
         helper.assertTrue(furnace.fuel == TileEntityDiFurnace.MAX_FUEL
                         && furnace.inventory.getStackInSlot(2).is(Items.BUCKET),
                 "Lava bucket remainder was not retained in the fuel slot");
+        helper.succeed();
+    }
+
+    // Positions where the test's Environment.BREATHING listener denies air; the listener passes everywhere else.
+    private static final java.util.Set<BlockPos> AIRLESS = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static final java.util.concurrent.atomic.AtomicBoolean AIRLESS_LISTENER = new java.util.concurrent.atomic.AtomicBoolean();
+
+    /**
+     * hbm-space's {@code breatheAir(0)} in the DiFurnace's fuel loading, through {@link com.hbm.api.environment.Environment}:
+     * where a listener says a fire gets no air, coal is not taken; lava still is; with no listener answering, Earth.
+     */
+    public static void environmentBreathing(GameTestHelper helper) {
+        if (AIRLESS_LISTENER.compareAndSet(false, true)) {
+            com.hbm.api.environment.Environment.BREATHING.register((level, at, amount) ->
+                    AIRLESS.contains(at) ? dev.golem.core.hook.Verdict.DENY : dev.golem.core.hook.Verdict.PASS);
+        }
+        BlockPos pos = new BlockPos(1, 1, 1);
+        BlockPos abs = helper.absolutePos(pos);
+        TileEntityDiFurnace furnace = place(helper, pos);
+        AIRLESS.add(abs);
+        try {
+            helper.assertFalse(com.hbm.api.environment.Environment.breatheAir(helper.getLevel(), abs, 0),
+                    "Environment.breatheAir ignored a denying listener");
+            helper.assertTrue(com.hbm.api.environment.Environment.breatheAir(helper.getLevel(), abs.east(), 0),
+                    "Environment.breatheAir must default to Earth where no listener answers");
+
+            furnace.inventory.setStackInSlot(2, new ItemStack(Items.COAL, 4));
+            TileEntityDiFurnace.serverTick(helper.getLevel(), abs, furnace.getBlockState(), furnace);
+            helper.assertTrue(furnace.fuel == 0 && furnace.inventory.getStackInSlot(2).getCount() == 4,
+                    "DiFurnace took coal without air: fuel " + furnace.fuel);
+
+            furnace.inventory.setStackInSlot(2, new ItemStack(Items.LAVA_BUCKET));
+            TileEntityDiFurnace.serverTick(helper.getLevel(), abs, furnace.getBlockState(), furnace);
+            helper.assertTrue(furnace.fuel > 0 && furnace.inventory.getStackInSlot(2).is(Items.BUCKET),
+                    "DiFurnace must still take lava without air: fuel " + furnace.fuel);
+        } finally {
+            AIRLESS.remove(abs);
+        }
+        furnace.fuel = 0;
+        furnace.inventory.setStackInSlot(2, new ItemStack(Items.COAL, 4));
+        TileEntityDiFurnace.serverTick(helper.getLevel(), abs, furnace.getBlockState(), furnace);
+        helper.assertTrue(furnace.fuel > 0 && furnace.inventory.getStackInSlot(2).getCount() == 3,
+                "DiFurnace must take coal where air is unanswered (Earth): fuel " + furnace.fuel);
         helper.succeed();
     }
 

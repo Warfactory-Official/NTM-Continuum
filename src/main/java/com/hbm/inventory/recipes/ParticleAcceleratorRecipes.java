@@ -1,70 +1,77 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.RecipesCommon.AStack;
-import com.hbm.inventory.RecipesCommon.ComparableStack;
-import com.hbm.items.ItemEnums.EnumExpensiveType;
-import com.hbm.items.ModIntermediateItems;
-import com.hbm.items.ModItems;
-import com.hbm.items.ModRBMKItems;
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.ItemSpec;
+import com.hbm.inventory.recipes.loader.TableCodecs;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.hbm.inventory.OreDictManager.SBD;
-
 /**
- * The particle accelerator's collision table: two particles and a minimum momentum in, one or two
- * items out. Ported from 1.7's {@code ParticleAcceleratorRecipes}, all 11 entries including the
- * chicken-into-chicken-nugget joke recipe.
+ * The particle accelerator's collision table: two particles and a minimum momentum in, one or two items out. The
+ * datapack table {@code hbm:particle_accelerator}, one file per collision in
+ * {@code data/hbm/recipe/particle_accelerator/}
+ * ({@code {"input1": ingredient, "input2": ingredient, "momentum": n, "output1": item, "output2": item, "order": n}};
+ * {@code output2} optional, the inputs match either way round, the first match by {@code order} wins). Converted once
+ * from 1.7's {@code ParticleAcceleratorRecipes}, all 11 entries including the chicken-into-chicken-nugget joke recipe.
  */
 public final class ParticleAcceleratorRecipes {
 
     private ParticleAcceleratorRecipes() {}
 
-    public static final List<ParticleAcceleratorRecipe> recipes = new ArrayList<>();
-    private static boolean initialized;
+    public record Row(AStack input1, AStack input2, int momentum, ItemSpec output1, Optional<ItemSpec> output2, int order) {}
 
-    public static synchronized void register() {
-        if (initialized) return;
-        initialized = true;
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            TableCodecs.INGREDIENT.fieldOf("input1").forGetter(Row::input1),
+            TableCodecs.INGREDIENT.fieldOf("input2").forGetter(Row::input2),
+            Codec.INT.fieldOf("momentum").forGetter(Row::momentum),
+            ItemSpec.CODEC.fieldOf("output1").forGetter(Row::output1),
+            ItemSpec.CODEC.optionalFieldOf("output2").forGetter(Row::output2),
+            Codec.INT.optionalFieldOf("order", TableCodecs.LAST).forGetter(Row::order)
+    ).apply(i, Row::new));
 
-        add(exact(ModItems.particle_hydrogen.get()), exact(ModItems.particle_copper.get()), 300,
-                new ItemStack(ModItems.particle_amat.get()), null);
-        add(exact(ModItems.particle_amat.get()), exact(ModItems.particle_amat.get()), 400,
-                new ItemStack(ModItems.particle_aschrab.get()), null);
-        add(exact(ModItems.particle_aschrab.get()), exact(ModItems.particle_aschrab.get()), 10_000,
-                new ItemStack(ModItems.particle_dark.get()), null);
-        add(exact(ModItems.particle_hydrogen.get()), exact(ModItems.particle_amat.get()), 2_500,
-                new ItemStack(ModItems.particle_muon.get()), null);
-        add(exact(ModItems.particle_hydrogen.get()), exact(ModItems.particle_lead.get()), 6_500,
-                new ItemStack(ModItems.particle_higgs.get()), null);
-        add(exact(ModItems.particle_muon.get()), exact(ModItems.particle_higgs.get()), 5_000,
-                new ItemStack(ModItems.particle_tachyon.get()), null);
-        add(exact(ModItems.particle_muon.get()), exact(ModItems.particle_dark.get()), 12_500,
-                new ItemStack(ModItems.particle_strange.get()), null);
-        add(exact(ModItems.particle_strange.get()), exact(ModItems.powder_magic.get()), 12_500,
-                new ItemStack(ModItems.particle_sparkticle.get()), new ItemStack(ModItems.dust.get()));
-        add(exact(ModItems.particle_sparkticle.get()), exact(ModItems.particle_higgs.get()), 70_000,
-                new ItemStack(ModRBMKItems.particle_digamma.get()), null);
-        add(exact(ModIntermediateItems.expensive(EnumExpensiveType.GOLD_DUST)), SBD.ingot(), 10_000,
-                ModIntermediateItems.expensive(EnumExpensiveType.DEGENERATE_MATTER, 1), null);
-        add(exact(net.minecraft.world.item.Items.CHICKEN), exact(net.minecraft.world.item.Items.CHICKEN), 100,
-                new ItemStack(com.hbm.items.ModFoodItems.nugget.get()), new ItemStack(com.hbm.items.ModFoodItems.nugget.get()));
+    public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("particle_accelerator", () -> CODEC);
+
+    private static volatile List<ParticleAcceleratorRecipe> current = List.of();
+
+    /** The collisions in match order, always the current rows (read-only). */
+    public static final List<ParticleAcceleratorRecipe> recipes = TableCodecs.view(ParticleAcceleratorRecipes::index);
+
+    static {
+        TABLE.changed.register(ParticleAcceleratorRecipes::reindex);
     }
 
-    private static ComparableStack exact(net.minecraft.world.item.Item item) {
-        return new ComparableStack(item);
+    /** Declares the table at mod construction. */
+    public static void declare() {}
+
+    private static void reindex() {
+        List<ParticleAcceleratorRecipe> next = new ArrayList<>();
+        for (Row row : TableCodecs.ordered(TABLE.rows(), Row::order)) {
+            next.add(new ParticleAcceleratorRecipe(row.input1(), row.input2(), row.momentum(), row.output1().stack(),
+                    row.output2().map(ItemSpec::stack).orElse(null)));
+        }
+        current = List.copyOf(next);
     }
 
-    private static void add(AStack in1, AStack in2, int momentum, ItemStack out1, @Nullable ItemStack out2) {
-        recipes.add(new ParticleAcceleratorRecipe(in1, in2, momentum, out1, out2));
+    private static List<ParticleAcceleratorRecipe> index() {
+        if (current.isEmpty()) TABLE.rows();
+        return current;
+    }
+
+    /** Loads the rows if nothing has yet (kept for the callers of the former Java table). */
+    public static void register() {
+        index();
     }
 
     /** The recipe two particles produce, or null when nothing matches — used by JEI and the GUIs. */
     public static @Nullable ParticleAcceleratorRecipe getOutput(ItemStack input1, ItemStack input2) {
-        for (ParticleAcceleratorRecipe recipe : recipes) {
+        for (ParticleAcceleratorRecipe recipe : index()) {
             if (recipe.matchesRecipe(input1, input2)) return recipe;
         }
         return null;

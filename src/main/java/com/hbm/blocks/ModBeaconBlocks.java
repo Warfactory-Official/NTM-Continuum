@@ -1,7 +1,7 @@
 package com.hbm.blocks;
 
-import com.hbm.registration.BlockTag;
-import com.hbm.registration.Loot;
+import dev.golem.core.registry.BlockTag;
+import dev.golem.core.registry.Loot;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import com.hbm.Constants;
@@ -15,7 +15,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
-/** The eleven plain {@code BlockBeaconable} storage blocks from old HBM. */
+/** The ten plain {@code BlockBeaconable} storage blocks from old HBM. */
 public final class ModBeaconBlocks {
 
     private ModBeaconBlocks() {}
@@ -48,10 +48,7 @@ public final class ModBeaconBlocks {
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
-    public static final RegistryObject<BlockBeaconable> block_actinium = beacon("block_actinium", 5.0F, 30.0F, () -> SoundType.METAL)
-            .transform(Presets.cubeAll().viaItemModel())
-            .loot(Loot.self())
-            .tag(BlockTag.PICKAXE);
+    // block_actinium is a BlockHazard (1.7 new BlockHazard().makeBeaconable()): ModHazardBlocks
     public static final RegistryObject<BlockBeaconable> block_polymer = beacon("block_polymer", 3.0F, 10.0F, () -> SoundType.METAL)
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())

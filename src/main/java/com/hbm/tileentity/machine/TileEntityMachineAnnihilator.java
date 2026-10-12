@@ -48,7 +48,7 @@ import com.hbm.tileentity.ModProduction2BlockEntities;
  * 1.7 {@code TileEntityMachineAnnihilator}: destroys everything fed into it and credits the named pool.
  * Slots: 0 trash input, 1 fluid identifier, 2-7 milestone payouts, 8 monitor, 9 payout request, 10 payout.
  */
-public final class TileEntityMachineAnnihilator extends TileEntityMachineBase
+public class TileEntityMachineAnnihilator extends TileEntityMachineBase
         implements MenuProvider, IFluidStandardReceiverMK2, IControlReceiver, WorldlyContainer {
 
     public String pool = "Recycling";

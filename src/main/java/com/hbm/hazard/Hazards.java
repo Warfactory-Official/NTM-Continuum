@@ -17,20 +17,14 @@ public final class Hazards {
         done = true;
         com.hbm.items.ModRBMKItems.linkPellets();
         HazardRegistry.registerTrafos();
-        HazardRegistry.registerItems();
-        com.hbm.items.ModRtgContent.registerHazards();
-        com.hbm.hazard.NuclearMiscHazards.register(); // breeding rods, pile rods, spent plate fuel, demon core
-        com.hbm.blocks.ModPwrContent.registerHazards();   // PWR fuel rods (fresh / hot / depleted)
-        com.hbm.items.ModGearItems.registerHazards(); // hazmat resistance coefficients + full-set membership
+        // item hazards, hazmat resistance, hazard classes, armor sets, damage resistance and block emission are data maps
+        // (HazardDataMaps, ArmorDataMaps); what is left here is code: transformers, suit behaviour, the config layers
         com.hbm.items.ModArmorItems.configure();      // power-armour set bonuses, rad resistance, hazard classes
         com.hbm.items.ModArmorModItems.configure();   // PaA/liquidator suits, gas-mask attachment hazard class
         com.hbm.items.ModArmorSetBItems.configure();  // final armor B: steam/diesel/env suits, masks, jackets
         com.hbm.items.ModArmorSetItems.configure();   // final armor sets A: alloy, cmb, bismuth, euphemium, AJR/AJRO, HEV, Fau, trenchmaster
         com.hbm.handler.HazmatRegistry.registerHazmats(); // 1.7 hbmRadResist.json override (or its template)
         com.hbm.util.DamageResistanceHandler.init();  // threshold/resistance profiles + damage event seam
-        com.hbm.blocks.ModHazardBlocks.initHazards(); // block radiation values (reads block-item RADIATION hazard)
-        com.hbm.hazard.TerrainHazards.register(); // nuclear waste blocks, yellowcake/fallout blocks, hot sellafite
-        com.hbm.tileentity.bomb.TileEntityLaunchPadBase.registerLaunchables(); // missile item -> entity table
         HazardSystem.install();                       // carried hazards, resolved per slot edit
     }
 }

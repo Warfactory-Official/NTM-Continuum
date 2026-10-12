@@ -3,59 +3,69 @@ package com.hbm.inventory.recipes;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.items.ModItems;
+import com.hbm.inventory.recipes.loader.FluidRecipeCodecs;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import net.minecraft.world.item.ItemStack;
 
-/** The 1.12.2 electrolyser fluid table, retaining recipe order for JEI. */
+/**
+ * Electrolyser fluid recipes: the datapack table {@code hbm:electrolyser_fluid}, one file per input fluid in
+ * {@code data/hbm/recipe/electrolyser_fluid/} ({@code {"input": fluid, "amount": mB, "output1"/"output2": {type, amount}
+ * (either may be left out), "duration": ticks (default 20), "byproducts": [items]}}). Converted once from the Java table
+ * (1.7 {@code ElectrolyserFluidRecipes}, 8 rows). 1.7's {@code ModItems.ingot_mercury} is the item registered as
+ * {@code nugget_mercury}, so one 1.7 mercury "ingot" is one {@code hbm:nugget_mercury}.
+ */
 public final class ElectrolyserFluidRecipes {
-
-    public static final Map<FluidType, ElectrolysisRecipe> RECIPES = new LinkedHashMap<>();
-    private static boolean initialized;
 
     private ElectrolyserFluidRecipes() {}
 
-    public static synchronized void register() {
-        if (initialized) return;
-        initialized = true;
+    public record Row(FluidType input, int amount, FluidStack output1, FluidStack output2, int duration,
+                      List<GenericRecipeCodec.ItemOut> byproducts) {}
 
-        add(Fluids.WATER, 2_000, new FluidStack(Fluids.HYDROGEN, 200), new FluidStack(Fluids.OXYGEN, 200), 10);
-        add(Fluids.HEAVYWATER, 2_000, new FluidStack(Fluids.DEUTERIUM, 200), new FluidStack(Fluids.OXYGEN, 200), 10);
-        add(Fluids.VITRIOL, 1_000, new FluidStack(Fluids.SULFURIC_ACID, 500), new FluidStack(Fluids.CHLORINE, 500), 20,
-                new net.minecraft.world.item.ItemStack(ModItems.powder_iron.get()),
-                // 1.7 new ItemStack(ModItems.ingot_mercury): that field is registered as "nugget_mercury", so one
-                // 1.7 mercury "ingot" is exactly one hbm:nugget_mercury (not nine).
-                new net.minecraft.world.item.ItemStack(ModItems.nugget_mercury.get(), 1));
-        add(Fluids.SLOP, 1_000, new FluidStack(Fluids.MERCURY, 250), new FluidStack(Fluids.NONE, 0), 20,
-                new net.minecraft.world.item.ItemStack(ModItems.niter.get(), 2),
-                new net.minecraft.world.item.ItemStack(ModItems.powder_limestone.get(), 2),
-                new net.minecraft.world.item.ItemStack(ModItems.sulfur.get()));
-        add(Fluids.REDMUD, 450, new FluidStack(Fluids.MERCURY, 150), new FluidStack(Fluids.LYE, 50), 20,
-                new net.minecraft.world.item.ItemStack(ModItems.powder_titanium.get(), 3),
-                new net.minecraft.world.item.ItemStack(ModItems.powder_iron.get(), 3),
-                new net.minecraft.world.item.ItemStack(ModItems.powder_aluminium.get(), 2));
-        add(Fluids.ALUMINA, 200, new FluidStack(Fluids.CARBONDIOXIDE, 100), new FluidStack(Fluids.NONE, 0), 40,
-                new net.minecraft.world.item.ItemStack(ModItems.powder_aluminium.get(), 7),
-                new net.minecraft.world.item.ItemStack(ModItems.fluorite.get(), 2));
-        add(Fluids.POTASSIUM_CHLORIDE, 250, new FluidStack(Fluids.CHLORINE, 125), new FluidStack(Fluids.NONE, 0), 20,
-                new net.minecraft.world.item.ItemStack(ModItems.dust.get()));
-        add(Fluids.CALCIUM_CHLORIDE, 250, new FluidStack(Fluids.CHLORINE, 125), new FluidStack(Fluids.CALCIUM_SOLUTION, 125));
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            GenericRecipeCodec.FLUID.fieldOf("input").forGetter(Row::input),
+            Codec.INT.fieldOf("amount").forGetter(Row::amount),
+            FluidRecipeCodecs.optionalStack("output1").forGetter(Row::output1),
+            FluidRecipeCodecs.optionalStack("output2").forGetter(Row::output2),
+            Codec.INT.optionalFieldOf("duration", 20).forGetter(Row::duration),
+            GenericRecipeCodec.ITEM_OUT.listOf().optionalFieldOf("byproducts", List.of()).forGetter(Row::byproducts)
+    ).apply(i, Row::new));
+
+    public static final FluidRecipeCodecs.ByFluid<Row, ElectrolysisRecipe> TABLE = new FluidRecipeCodecs.ByFluid<>(
+            "electrolyser_fluid", () -> CODEC, Row::input, row -> new ElectrolysisRecipe(row.input(), row.amount(),
+            row.output1(), row.output2(), row.duration(),
+            row.byproducts().stream().map(GenericRecipeCodec.ItemOut::stack).toArray(ItemStack[]::new)));
+
+    /** The current rows, by input fluid in recipe-id order (a live read-only view of the table). */
+    public static final Map<FluidType, ElectrolysisRecipe> RECIPES = new AbstractMap<>() {
+        @Override
+        public Set<Entry<FluidType, ElectrolysisRecipe>> entrySet() {
+            return TABLE.all().entrySet();
+        }
+
+        @Override
+        public ElectrolysisRecipe get(Object key) {
+            return TABLE.all().get(key);
+        }
+    };
+
+    /** Declares the table at mod construction. */
+    public static void declare() {}
+
+    /** Loads the rows if nothing has yet (they load by themselves; kept for callers of the former Java table). */
+    public static void register() {
+        TABLE.all();
     }
 
     public static ElectrolysisRecipe getRecipe(FluidType input) {
-        register();
-        return input == null ? null : RECIPES.get(input);
-    }
-
-    private static void add(FluidType input, int amount, FluidStack output1, FluidStack output2, int duration,
-                            net.minecraft.world.item.ItemStack... byproducts) {
-        RECIPES.put(input, new ElectrolysisRecipe(input, amount, output1, output2, duration, byproducts));
-    }
-
-    private static void add(FluidType input, int amount, FluidStack output1, FluidStack output2) {
-        add(input, amount, output1, output2, 20);
+        return TABLE.get(input);
     }
 
     public static final class ElectrolysisRecipe {
@@ -64,10 +74,10 @@ public final class ElectrolyserFluidRecipes {
         public final FluidStack output1;
         public final FluidStack output2;
         public final int duration;
-        public final net.minecraft.world.item.ItemStack[] byproduct;
+        public final ItemStack[] byproduct;
 
         private ElectrolysisRecipe(FluidType input, int amount, FluidStack output1, FluidStack output2, int duration,
-                                   net.minecraft.world.item.ItemStack[] byproduct) {
+                                   ItemStack[] byproduct) {
             this.input = input;
             this.amount = amount;
             this.output1 = output1;
@@ -76,11 +86,11 @@ public final class ElectrolyserFluidRecipes {
             this.byproduct = byproduct;
         }
 
-        public List<net.minecraft.world.item.ItemStack> displayOutputs() {
-            List<net.minecraft.world.item.ItemStack> outputs = new ArrayList<>();
+        public List<ItemStack> displayOutputs() {
+            List<ItemStack> outputs = new ArrayList<>();
             if (output1.type != Fluids.NONE) outputs.add(com.hbm.items.machine.ItemFluidIcon.make(output1));
             if (output2.type != Fluids.NONE) outputs.add(com.hbm.items.machine.ItemFluidIcon.make(output2));
-            for (net.minecraft.world.item.ItemStack stack : byproduct) outputs.add(stack.copy());
+            for (ItemStack stack : byproduct) outputs.add(stack.copy());
             return outputs;
         }
     }

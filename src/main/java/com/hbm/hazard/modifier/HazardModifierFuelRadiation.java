@@ -4,14 +4,8 @@ import com.hbm.items.machine.ItemPlateFuel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
-/** Interpolates a fuel item's radiation from fresh to depleted, as in the old hazard registry. */
-public class HazardModifierFuelRadiation implements IHazardModifier {
-
-    private final double target;
-
-    public HazardModifierFuelRadiation(double target) {
-        this.target = target;
-    }
+/** Interpolates a fuel item's radiation from fresh to depleted, as in the old hazard registry ({@code hbm:fuel_radiation}). */
+public record HazardModifierFuelRadiation(double target) implements IHazardModifier {
 
     @Override
     public double modify(ItemStack stack, LivingEntity entity, double level) {

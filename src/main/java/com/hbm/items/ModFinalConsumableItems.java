@@ -287,10 +287,7 @@ public final class ModFinalConsumableItems {
             .transform(Presets.sprite("hbm:items/briquette.wood"));
 
     static {
-        // 1.7 FuelHandler: single = 200 ticks; coal x10, lignite x8, sawdust x2
-        ModFuelItems.BURN_TIMES.put(briquette_coal, 2000);
-        ModFuelItems.BURN_TIMES.put(briquette_lignite, 1600);
-        ModFuelItems.BURN_TIMES.put(briquette_wood, 400);
+        // 1.7 FuelHandler: single = 200 ticks; coal x10, lignite x8, sawdust x2 (FuelDataMapDeclarations.BURN_TIMES)
     }
 
     /** 1.7 {@code EnumSecretType}; hidden from the tabs as in 1.7 ({@code NEIConfig} hid them too). */

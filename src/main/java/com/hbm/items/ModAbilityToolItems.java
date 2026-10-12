@@ -1,7 +1,7 @@
 package com.hbm.items;
 
-import com.hbm.registration.ItemTag;
-import com.hbm.registration.Preset;
+import dev.golem.core.registry.ItemTag;
+import dev.golem.core.registry.Preset;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import com.hbm.Constants;

@@ -441,8 +441,11 @@ public final class HbmGameTestFunctions {
             TESTS.function("battery_redd_item_models", 20, () -> BatteryReddGameTests::itemModels);
     public static final GameTests.Function ZIRNOX_WORLD_TICK =
             TESTS.function("zirnox_world_tick", 100, 8, () -> HbmGameTestFunctions::zirnoxWorldTick);
+    // padding 12, not 8: the tank's 5x3 footprint reaches x 11 (core 9 + 2). On 26.1 the free space ends `padding`
+    // blocks out of the 1x1x1 template, so with 8 the tank stood in the neighbouring plot, and the steam reached it or
+    // not depending on what that neighbour built there ("did not travel through the ducts into the tank").
     public static final GameTests.Function ZIRNOX_STEAM_OUTPUT =
-            TESTS.function("zirnox_steam_output", 300, 8, () -> HbmGameTestFunctions::zirnoxSteamOutput);
+            TESTS.function("zirnox_steam_output", 300, 12, () -> HbmGameTestFunctions::zirnoxSteamOutput);
     public static final GameTests.Function ZIRNOX_MELTDOWN =
             TESTS.function("zirnox_meltdown", 100, 8, () -> HbmGameTestFunctions::zirnoxMeltdown);
     public static final GameTests.Function ZIRNOX_WRECK_HAZARDS =
@@ -667,6 +670,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("powergen_siren_latch", 40, () -> PowerGenGameTests::sirenLatch);
     public static final GameTests.Function POWERGEN_LPW2 =
             TESTS.function("powergen_lpw2_layout", 60, 16, () -> PowerGenGameTests::lpw2Layout);
+    public static final GameTests.Function POWERGEN_LPW2_CLOCK =
+            TESTS.function("powergen_lpw2_animation_clock", 20, () -> PowerGenGameTests::lpw2AnimationClock);
     public static final GameTests.Function POWERGEN_IGEN =
             TESTS.function("powergen_igen_memorial", 40, () -> PowerGenGameTests::igenMemorial);
 
@@ -777,6 +782,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("mixer_menu", 40, () -> MixerGameTests::menu);
     public static final GameTests.Function MIXER_RECIPE_INDEX =
             TESTS.function("mixer_recipe_index", 40, () -> MixerGameTests::recipeIndexNormalization);
+    public static final GameTests.Function MIXER_SELECTION_ROUND_TRIP =
+            TESTS.function("mixer_selection_round_trip", 40, () -> MixerGameTests::selectionRoundTrip);
 
     // --- sawmill ---
     public static final GameTests.Function SAWMILL_RECIPES =
@@ -1914,7 +1921,8 @@ public final class HbmGameTestFunctions {
         java.util.Map<String, String> bySprite = new java.util.HashMap<>();
         for (com.hbm.inventory.fluid.FluidType fluid : com.hbm.inventory.fluid.Fluids.getAll()) {
             String sprite = fluid.getIconSprite().toString();
-            String expected = com.hbm.Constants.MOD_ID + ":"
+            // in the fluid's own namespace (an addon fluid gets its own droplet, minted by FluidSprites.install(ns))
+            String expected = fluid.getNamespace() + ":"
                     + com.hbm.inventory.fluid.FluidType.ICON_ART + "_" + fluid.getKey();
             helper.assertTrue(sprite.equals(expected),
                     "Fluid " + fluid.getName() + " must name the droplet " + expected + ", names " + sprite);
@@ -2120,6 +2128,24 @@ public final class HbmGameTestFunctions {
         helper.assertTrue(shortTinyWaste != null && shortTinyWaste[0] == 1_800
                         && shortTinyWaste[1] == 35 && shortTinyWaste[2] == 100,
                 "Short-tiny waste must scale liquid and gas by 0.1");
+
+        // 1.7 TileEntityStorageDrum looks short waste up with ItemWasteLong.rectify (meta % 5, five long classes), so
+        // the last three short classes wrap: Pu-241 -> U-235 (0/100), Am-242 -> U-233 (50/100), Sa-326 -> Np-237
+        // (150/500); tiny waste a tenth of that.
+        int[][] wrapped = {{5, 0, 100}, {6, 50, 100}, {7, 150, 500}};
+        for (int[] w : wrapped) {
+            for (boolean tiny : new boolean[]{false, true}) {
+                var stack = com.hbm.items.ModStorageDrumItems.make(tiny
+                        ? com.hbm.items.ModStorageDrumItems.nuclear_waste_short_tiny.get()
+                        : com.hbm.items.ModStorageDrumItems.nuclear_waste_short.get(), w[0], 1);
+                var out = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(stack);
+                int div = tiny ? 10 : 1;
+                helper.assertTrue(out != null && out[1] == w[1] / div && out[2] == w[2] / div,
+                        "Short waste class " + w[0] + (tiny ? " (tiny)" : "") + " must release 1.7's wrapped "
+                                + w[1] / div + "/" + w[2] / div + ", got "
+                                + (out == null ? "none" : out[1] + "/" + out[2]));
+            }
+        }
 
         // 1.7 TileEntityStorageDrum: Au-198 decays into the mercury droplet (ingot_mercury = hbm:nugget_mercury) at
         // shortChance / 20, the Pb-209 / Sr-90 ingots, nuggets and powder into bismuth / zirconium.

@@ -72,10 +72,11 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
 
         if (te.isOn && te.heatEnergy < maxHeatEnergy) {
             long energyPerBucket = FluidCombustion.getFlammableEnergy(te.tank.getTankType());
-            if (energyPerBucket > 0) {
-                int burnRate = te.setting;
-                int toBurn = Math.min(burnRate, te.tank.getFill());
-
+            int toBurn = Math.min(te.setting, te.tank.getFill());
+            // hbm-space breatheAir(toBurn): without air nothing burns and the heater cools
+            // (com.hbm.api.environment.Environment). hbm-space also cooled with an empty tank (toBurn 0); that is
+            // not 1.7, so an empty tank still holds its heat here.
+            if (energyPerBucket > 0 && (toBurn <= 0 || com.hbm.api.environment.Environment.breatheAir(level, pos, toBurn))) {
                 te.tank.setFill(te.tank.getFill() - toBurn);
 
                 int heat = (int) (energyPerBucket / 1000);

@@ -85,6 +85,17 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     public static final int PASSIVE_DOMAINS = 3;
 
     private static final ThreadLocal<Boolean> BUSY = ThreadLocal.withInitial(() -> false);
+
+    /**
+     * 1.7's {@code BlockDummyable} was no opaque cube, so its constructor gave core and dummies light opacity 0: sky
+     * and block light pass through a machine undiminished and the sky stays visible under it ({@code canBlockSeeTheSky},
+     * the solar panels' and mirrors' check). Modern derives a non-occluding full cell's dampening as 1 and stops the
+     * sky column there; this restores 1.7 (ADDON-API-INVENTORY X-24, GameTest {@code multiblock_light_transparent}).
+     */
+    @Override
+    protected boolean isLightTransparent(BlockState state) {
+        return true;
+    }
     /**
      * Per-cell collision and outline boxes in the core's own frame (1.7 {@code BlockDummyable#bounding});
      * the base answers the whole silhouette at every cell of the footprint.
@@ -417,23 +428,159 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
 
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (ignoresCollision(context)) return Shapes.empty();
         return cachedCellShape(0, 0, 0, state.getValue(FACING), true);
+    }
+
+    // --- hbm-space placement rules (ADDON-API-INVENTORY V-175), off in plain HBM ---
+
+    /**
+     * hbm-space {@code BlockDummyable.onBlockPlacedBy}: a multiblock placed against a wall faces away from that wall and
+     * stands against it, one placed under a ceiling hangs from it (its top at the placed block). Off in plain HBM, which
+     * places as 1.7 did: on the floor in front of the player, facing from the yaw. NTM: Space turns it on.
+     */
+    public static boolean wallPlacement = false;
+    /**
+     * hbm-space {@code BlockDummyable.internalPlayers}: a player standing inside a multiblock they just placed does not
+     * collide with it until no such player is inside any multiblock of that type any more. Off in plain HBM.
+     */
+    public static boolean walkOutAfterPlacing = false;
+
+    /** The face the last placement on this thread clicked, with the position it placed at. */
+    private record PlacedFace(BlockPos pos, Direction face) {}
+    private static final ThreadLocal<@Nullable PlacedFace> PLACED_FACE = new ThreadLocal<>();
+
+    /** hbm-space's per-block-type {@code internalPlayers} (1.7 kept it on the Block, shared by every machine of the type). */
+    private final java.util.Set<Player> internalPlayers = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** Where a placement puts the core, which way it faces, and the cell 1.7 left out of the space check. */
+    public record Placement(BlockPos core, Direction facing, BlockPos clicked) {}
+
+    /** 1.7 {@code onBlockPlaced} returned the clicked side as metadata; this remembers it for {@link #setPlacedBy}. */
+    @Override
+    public @Nullable BlockState getStateForPlacement(net.minecraft.world.item.context.BlockPlaceContext context) {
+        PLACED_FACE.set(new PlacedFace(context.getClickedPos().immutable(), context.getClickedFace()));
+        BlockState state = super.getStateForPlacement(context);
+        // Vanilla's BlockItem checks the returned state's collision shape against entities before setPlacedBy builds
+        // the machine. With the default facing, a machine whose silhouette turns with it (hbm-space's greenhouse) was
+        // tested lying across the wrong axis and refused a player standing beside it; 1.7 checked only the clicked
+        // cell. Hand the check the facing the machine will really have.
+        if (state != null && state.hasProperty(FACING) && context.getPlayer() != null) {
+            Direction facing = placement(context.getClickedPos(), context.getClickedFace(), context.getPlayer().getYRot()).facing();
+            if (FACING.getPossibleValues().contains(facing)) state = state.setValue(FACING, facing);
+        }
+        return state;
+    }
+
+    /**
+     * The core and facing of a multiblock whose item block lands at {@code pos} after a click on face {@code face}, for
+     * a placer turned to {@code yaw}. Plain HBM ({@link #wallPlacement} off) ignores the face, as 1.7 did.
+     */
+    public final Placement placement(BlockPos pos, Direction face, float yaw) {
+        Direction yawFacing = switch (Mth.floor(yaw * 4.0F / placementYawSpan() + .5D) & 3) {
+            case 1 -> Direction.EAST; case 2 -> Direction.SOUTH; case 3 -> Direction.WEST; default -> Direction.NORTH;
+        };
+        if (!wallPlacement) {
+            Direction facing = getDirModified(yawFacing);
+            BlockPos placed = pos.above(getHeightOffset());
+            return new Placement(placed.relative(facing, -getOffset()), facing, placed);
+        }
+        // hbm-space: the direction the player faces offsets the block away from them; on a wall it is the wall's normal
+        Direction facingDir = face.getAxis() == Direction.Axis.Y ? yawFacing : face;
+        Direction dir = getDirModified(facingDir);
+        int o = -getOffset();
+        int ox = pos.getX() + facingDir.getStepX() * o;
+        int oy = pos.getY() + getHeightOffset();
+        int oz = pos.getZ() + facingDir.getStepZ() * o;
+        if (face == Direction.DOWN) {
+            int[] dim = getDimensions();
+            oy -= dim[0] + dim[1];
+        } else if (face != Direction.UP) {
+            // rotated dims are {up, down, north, south, west, east}: the Direction ordinals 2..5 index the horizontals
+            int[] rotDim = MultiblockHandlerXR.rotate(getDimensions(), dir);
+            if (rotDim != null) {
+                ox = pos.getX() + face.getStepX() * rotDim[face.getOpposite().ordinal()];
+                oz = pos.getZ() + face.getStepZ() * rotDim[face.getOpposite().ordinal()];
+            }
+        }
+        BlockPos core = new BlockPos(ox, oy, oz);
+        // 1.7 checkRequirement(ox - dir.offsetX * o, oy, oz - dir.offsetZ * o, dir, o): that point is the cell skipped
+        return new Placement(core, dir, new BlockPos(ox - dir.getStepX() * o, oy, oz - dir.getStepZ() * o));
+    }
+
+    /** The placement highlight's green/red answer for a {@link #placement}. */
+    public final boolean canPlace(Level level, Placement placement) {
+        return checkRequirement(level, placement.core(), placement.facing(), placement.clicked());
+    }
+
+    /**
+     * hbm-space {@code addCollisionBoxesToList}: true while {@code context}'s player is one of this type's internal
+     * players. As 1.7's per-tick check, the list is cleared only once none of them is inside any more.
+     */
+    protected final boolean ignoresCollision(CollisionContext context) {
+        if (internalPlayers.isEmpty()
+                || !(context instanceof net.minecraft.world.phys.shapes.EntityCollisionContext entityContext)
+                || !(entityContext.getEntity() instanceof Player player) || !internalPlayers.contains(player)) {
+            return false;
+        }
+        for (Player inside : internalPlayers) {
+            if (isPlayerInside(inside)) return true;
+        }
+        internalPlayers.clear();
+        return false;
+    }
+
+    /** Public spelling of {@link #ignoresCollision} for cell blocks of another class. */
+    public final boolean ignoresCollisionFor(CollisionContext context) {
+        return ignoresCollision(context);
+    }
+
+    /** hbm-space {@code isPlayerInside}: the block at the player's feet (+0.1) or the one above belongs to this type. */
+    private boolean isPlayerInside(Player player) {
+        if (player.isRemoved()) return false;
+        Level level = player.level();
+        BlockPos feet = BlockPos.containing(player.getX(), player.getY() + 0.1D, player.getZ());
+        return partOfThis(level, feet) || partOfThis(level, feet.above());
+    }
+
+    private boolean partOfThis(Level level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() == this) return true;
+        if (!MultiblockSurface.isFoldedCell(state)) return false;
+        BlockPos core = MultiblockSurface.coreOfCell(level, pos);
+        return core != null && MultiblockSurface.foldedCore(level.getBlockState(core)) == this;
+    }
+
+    /** Whether the structure at {@code core} occupies {@code pos} (the client's stand-in before the cells arrive). */
+    private boolean occupies(BlockPos core, Direction facing, BlockPos pos) {
+        if (core.equals(pos)) return true;
+        boolean[] hit = {false};
+        visitCells(core, facing, (cell, mask) -> { if (cell.equals(pos)) hit[0] = true; });
+        return hit[0];
     }
 
     @Override public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         if (!(placer instanceof Player player)) return;
         withoutTeardown(() -> level.removeBlock(pos, false));
-        Direction facing = getDirModified(switch (Mth.floor(player.getYRot() * 4.0F / placementYawSpan() + .5D) & 3) {
-            case 1 -> Direction.EAST; case 2 -> Direction.SOUTH; case 3 -> Direction.WEST; default -> Direction.NORTH;
-        });
-        BlockPos placed = pos.above(getHeightOffset());
-        BlockPos core = placed.relative(facing, -getOffset());
-        if (!checkRequirement(level, core, facing, placed)) {
+        PlacedFace clicked = PLACED_FACE.get();
+        PLACED_FACE.remove();
+        Direction face = clicked != null && clicked.pos().equals(pos) ? clicked.face() : Direction.UP;
+        Placement placement = placement(pos, face, player.getYRot());
+        Direction facing = placement.facing();
+        BlockPos core = placement.core();
+        if (!checkRequirement(level, core, facing, placement.clicked())) {
             ItemStack refund = dev.golem.core.world.ItemStacks.copyWithCount(stack, 1);
             if (!player.getAbilities().instabuild && !player.getInventory().add(refund)) player.drop(refund, false);
             return;
         }
-        if (level.isClientSide()) return;
+        if (level.isClientSide()) {
+            // the cells have not arrived yet: the client asks the footprint instead of the world
+            if (walkOutAfterPlacing) {
+                BlockPos feet = BlockPos.containing(player.getX(), player.getY() + 0.1D, player.getZ());
+                if (occupies(core, facing, feet) || occupies(core, facing, feet.above())) internalPlayers.add(player);
+            }
+            return;
+        }
         withoutTeardown(() -> {
             level.setBlock(core, defaultBlockState().setValue(FACING, facing), 3);
             fillSpace(level, core, facing);
@@ -444,6 +591,8 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
             dev.golem.core.world.ItemStacks.applyComponents(placedCore, stack);
             placedCore.setChanged();
         }
+        // hbm-space: "check if the placing player is inside the placed multiblock"
+        if (walkOutAfterPlacing && isPlayerInside(player)) internalPlayers.add(player);
     }
 
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {

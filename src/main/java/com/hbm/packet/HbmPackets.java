@@ -265,22 +265,21 @@ public final class HbmPackets {
 
     /**
      * Applies a received {@link AnvilCraftPayload} server-side (the anvil's construction crafting).
-     * Everything the client claims is re-validated here: the recipe index, that the player actually has
+     * Everything the client claims is re-validated here: the recipe id, that the player actually has
      * an anvil menu open, and the anvil's tier (read from the server's own world via the container).
      * Ingredients are pulled from — and outputs given to — the player's inventory, like the original.
      */
     public static void handleAnvilCraft(ServerPlayer player, AnvilCraftPayload payload) {
-        handleAnvilCraft(player, payload.recipeIndex(), payload.mode());
+        handleAnvilCraft(player, payload.recipeId(), payload.mode());
     }
 
-    public static void handleAnvilCraft(ServerPlayer player, int recipeIndex, int mode) {
-        if (player == null) return;
-        java.util.List<com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe> recipes =
-                com.hbm.inventory.recipes.anvil.AnvilRecipes.getConstruction();
-        if (recipeIndex < 0 || recipeIndex >= recipes.size()) return;
+    public static void handleAnvilCraft(ServerPlayer player, String recipeId, int mode) {
+        if (player == null || recipeId == null) return;
+        com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe recipe =
+                com.hbm.inventory.recipes.anvil.AnvilRecipes.constructionById(recipeId);
+        if (recipe == null) return;
         if (!(player.containerMenu instanceof com.hbm.inventory.container.ContainerAnvil anvil)) return;
 
-        com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe recipe = recipes.get(recipeIndex);
         if (!recipe.isTierValid(anvil.tier)) return;
 
         int count = mode == 1 ? 64 : 1;

@@ -38,9 +38,12 @@ public class ItemOreDensityScanner extends CompatItem {
         double totalLevel = 0D;
         int x = (int) Math.floor(player.getX());
         int z = (int) Math.floor(player.getZ());
+        // hbm-space: the types of the body the player stands on (ItemBedrockOreBase.SOURCE); plain HBM: its six
+        ItemBedrockOreBase.OreField field = ItemBedrockOreBase.field(world, x, z);
 
-        for (BedrockOreType type : BedrockOreType.VALUES) {
-            double level = ItemBedrockOreBase.getOreLevel(x, z, type);
+        for (java.util.Map.Entry<BedrockOreType, Double> entry : field.levels().entrySet()) {
+            BedrockOreType type = entry.getKey();
+            double level = entry.getValue();
             GolemNetwork.sendToPlayer(player, PlayerInformPayload.CODEC, PlayerInformPayload.of(
                     777 + type.ordinal(), 4000, ChatFormatting.RESET,
                     new Translated("item.bedrock_ore.type." + type.suffix + ".name"),
@@ -49,10 +52,12 @@ public class ItemOreDensityScanner extends CompatItem {
                     ")"));
             totalLevel += level;
         }
-        totalLevel /= BedrockOreType.VALUES.length;
+        totalLevel /= field.levels().size();
 
         int tier = getTier(totalLevel);
         FluidStack boreFluid = getBoreFluid(totalLevel);
+        // hbm-space: a body's own bedrock acid (WorldProviderCelestial.getBedrockAcid) replaces the tier's fluid
+        if (field.boreFluid() != null) boreFluid = field.boreFluid();
 
         List<Object> parts = new ArrayList<>();
         parts.add("Tier " + tier);
@@ -61,7 +66,7 @@ public class ItemOreDensityScanner extends CompatItem {
             parts.add(new Translated(boreFluid.type.getTranslationKey()));
         }
         GolemNetwork.sendToPlayer(player, PlayerInformPayload.CODEC, PlayerInformPayload.of(
-                777 + BedrockOreType.VALUES.length, 4000, ChatFormatting.YELLOW, parts.toArray()));
+                777 + BedrockOreType.values().size(), 4000, ChatFormatting.YELLOW, parts.toArray()));
     }
 
     public static String translateDensity(double density) {

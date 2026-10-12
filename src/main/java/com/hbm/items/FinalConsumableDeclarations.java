@@ -141,7 +141,7 @@ public final class FinalConsumableDeclarations {
         shaped(NS, "record_ss", "hbm:record_ss", rows(" S ", "SDS", " S "),
                 "S", "#c:ingots/any_plastic", "D", "#c:dusts/red_copper");
         shaped(NS, "record_vc", "hbm:record_vc", rows(" S ", "SDS", " S "),
-                "S", "#c:ingots/any_plastic", "D", "hbm:powder_combine_steel");
+                "S", "#c:ingots/any_plastic", "D", "#c:dusts/combine_steel");
         shaped(NS, "rag", "hbm:rag", 4, rows("SW", "WS"), "S", "minecraft:string", "W", "#minecraft:wool");
         shapeless(NS, "parts_legendary_tier1", "hbm:parts_legendary_tier1",
                 "hbm:ingot_chainsteel", "#c:ingots/asbestos", "hbm:gem_alexandrite");

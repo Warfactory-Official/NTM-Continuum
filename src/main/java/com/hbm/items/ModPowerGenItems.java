@@ -23,11 +23,14 @@ public final class ModPowerGenItems {
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
-    private static final Map<TrackType, RegistryObject<ItemCassette>> TRACKS = new EnumMap<>(TrackType.class);
+    private static final Map<TrackType, RegistryObject<ItemCassette>> TRACKS = new java.util.LinkedHashMap<>();
 
     static {
         for (TrackType track : TrackType.VALUES) {
             if (track == TrackType.NULL) continue;
+            // An addon's track ("<namespace>:<name>") is the addon's to give a cassette, in its own namespace. On
+            // loaders that construct the addon first (1.20.1 Forge) its tracks are already in VALUES here.
+            if (!track.isBuiltIn()) continue;
             // 1.7 ItemCassette: pass 0 is the plain cassette, pass 1 the overlay tinted with the track colour.
             RegistryObject<ItemCassette> item = REG.item(track.registryName(),
                             p -> new ItemCassette(p, track), p -> p.stacksTo(1))

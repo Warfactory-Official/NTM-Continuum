@@ -3,7 +3,7 @@
 	"icon": [
 		"hbm:fluid_identifier_multi",
 		1,
-		"hbm:water"
+		"minecraft:water"
 	],
 	"trigger": [
 		[

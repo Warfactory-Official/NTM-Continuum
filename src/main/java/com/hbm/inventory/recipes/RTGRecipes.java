@@ -1,43 +1,37 @@
 package com.hbm.inventory.recipes;
 
-import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.inventory.RecipesCommon.ComparableStack;
-import com.hbm.inventory.recipes.loader.GenericRecipe;
-import com.hbm.items.ModItems;
-import com.hbm.items.ModRtgContent;
-import com.hbm.items.machine.ItemRTGPellet;
+import com.hbm.api.data.ReactorDataMaps;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static com.hbm.inventory.OreDictManager.ANY_PLASTIC;
-import static com.hbm.inventory.OreDictManager.MINGRADE;
-import static com.hbm.inventory.OreDictManager.STEEL;
-
-/** Grey RTG construction and the fresh-to-depleted display table used by recipe viewers. */
+/**
+ * 1.7 {@code RTGRecipes}: the grey RTG's construction and the fresh-to-depleted pairs recipe viewers show.
+ *
+ * <p>The construction is a row of the assembly machine's datapack table ({@code data/hbm/recipe/assembly_machine/rtg.json},
+ * {@code ass.rtg}). The decay pairs are read from the {@code hbm:rtg_pellet} item data map ({@code decays_to}) each time
+ * they are asked for, so an addon pellet (NTM: Space's americium) and a datapack change show up without code.
+ */
 public final class RTGRecipes {
     private RTGRecipes() {}
 
+    /** Loads the assembly table if nothing has yet (kept for its callers; the row itself is data). */
     public static void registerAssembly() {
-        AssemblyMachineRecipes recipes = AssemblyMachineRecipes.INSTANCE;
-        recipes.registerRecipes();
+        AssemblyMachineRecipes.INSTANCE.registerRecipes();
     }
 
-    public static void registerAll(AssemblyMachineRecipes recipes) {
-        if (recipes.getRecipe("ass.rtg") != null) return;
-        recipes.registerGenerated(new GenericRecipe("ass.rtg").setup(200, 100)
-                .inputItems(new ComparableStack(ModItems.rtg_unit.get(), 3), STEEL.plate().count(4),
-                        MINGRADE.wire().count(16), ANY_PLASTIC.ingot().count(4))
-                .outputItems(new ItemStack(ModMachineBlocks.machine_rtg_grey.get())));
-    }
-
+    /** Every pellet of the {@code hbm:rtg_pellet} map and the depleted pellet it decays to, in the map's id order. */
     public static Map<ItemStack, ItemStack> decayPairs() {
         Map<ItemStack, ItemStack> result = new LinkedHashMap<>();
-        for (var entry : ModRtgContent.PELLETS.values()) {
-            ItemRTGPellet pellet = entry.get();
-            result.put(new ItemStack(pellet), new ItemStack(pellet.getDecayItem()));
-        }
+        ReactorDataMaps.RTG_PELLET.byId().forEach((id, pellet) -> {
+            Item fresh = ReactorDataMaps.itemOf(id);
+            Item depleted = ReactorDataMaps.itemOf(pellet.decaysTo());
+            if (fresh == Items.AIR || depleted == Items.AIR) return; // a row for an item that is not registered
+            result.put(new ItemStack(fresh), new ItemStack(depleted));
+        });
         return result;
     }
 }

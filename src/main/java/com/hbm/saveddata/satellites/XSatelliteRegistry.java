@@ -1,9 +1,10 @@
 package com.hbm.saveddata.satellites;
 
-import com.hbm.items.ModSatelliteItems;
+import com.hbm.api.data.SatelliteDataMaps;
 import com.hbm.items.machine.ItemSatellite;
 import com.hbm.items.machine.ItemSatellite.EnumSatType;
 import com.hbm.saveddata.SatelliteSavedData;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
@@ -23,52 +24,48 @@ public final class XSatelliteRegistry {
 
     private XSatelliteRegistry() {}
 
-    /** The satellite class an item launches, or null where it launches nothing. */
+    /**
+     * The satellite class an item launches, or null where it launches nothing: the {@code hbm:satellite} item data
+     * map ({@link SatelliteDataMaps#SATELLITE}, {@code data/hbm/value_maps/item/satellite.json}), which carries 1.7's
+     * {@code registerSatellite} calls. An addon chip adds a line to that file in its own jar.
+     */
     public static @Nullable SatelliteType typeFor(ItemStack stack) {
         if (stack.isEmpty()) return null;
-        if (stack.getItem() instanceof ItemSatellite satellite) {
-            EnumSatType chip = satellite.typeOf(stack);
-            return chip == null ? null : forChip(chip);
-        }
-        if (stack.getItem() == ModSatelliteItems.sat_gerald.get()) return SatelliteType.HORIZONS;
-        return null;
+        String name = SatelliteDataMaps.SATELLITE.get(stack.getItem());
+        return name == null ? null : SatelliteType.byName(name);
     }
 
     /** 1.7 {@code registerSatellite(..., new ComparableStack(ModItems.satellite, 1, EnumSatType.X))}. */
-    public static SatelliteType forChip(EnumSatType chip) {
-        return switch (chip) {
-            case SPY -> SatelliteType.MAPPER;
-            case SCANNER -> SatelliteType.SCANNER;
-            case RADAR -> SatelliteType.RADAR;
-            case DEATH_RAY -> SatelliteType.DEATH_RAY;
-            case XENIUM_RESONATOR -> SatelliteType.RESONATOR;
-            case RELAY -> SatelliteType.RELAY;
-            case MINER_ASTRO -> SatelliteType.MINER;
-            case MINER_LUNAR -> SatelliteType.LUNAR_MINER;
-            case PRECISION_LASER -> SatelliteType.PRECISION_LASER;
-            case DETECTOR -> SatelliteType.DETECTOR;
-            case RAY_SCAN -> SatelliteType.RAY_SCAN;
-        };
+    public static @Nullable SatelliteType forChip(EnumSatType chip) {
+        return typeFor(ItemSatellite.make(chip));
     }
 
     /** The item that launches a satellite class (1.7 NEI's reverse lookup); empty for none. */
     public static ItemStack stackFor(SatelliteType type) {
-        if (type == SatelliteType.HORIZONS) return new ItemStack(ModSatelliteItems.sat_gerald.get());
-        for (EnumSatType chip : EnumSatType.VALUES) {
-            if (forChip(chip) == type) return ItemSatellite.make(chip);
+        for (var entry : SatelliteDataMaps.SATELLITE.byId().entrySet()) {
+            if (!entry.getValue().equals(type.name())) continue;
+            var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.parse(entry.getKey()));
+            if (item != null && item != net.minecraft.world.item.Items.AIR) return new ItemStack(item);
         }
         return ItemStack.EMPTY;
     }
 
+    /** A listener told that a new satellite reached orbit from {@code stack}, before it is stored. */
+    @FunctionalInterface
+    public interface Orbited {
+        void orbited(ServerLevel level, ItemStack stack, int freq, Satellite sat);
+    }
+
+    /**
+     * Notified when {@link #orbit} creates a satellite, before it is stored and told it reached orbit: hbm-space copied
+     * the chip's orbit settings onto the new satellite here; an addon copies its own item data into
+     * {@link Satellite#extra}. {@code level} is the level whose satellites it joins.
+     */
+    public static final dev.golem.core.hook.Hook<Orbited> ORBITED = dev.golem.core.hook.Hook.notifying();
+
     /** 1.7 {@code createFromItem}. */
     public static @Nullable Satellite createFromItem(ItemStack stack) {
         SatelliteType type = typeFor(stack);
-        return type == null ? null : type.create();
-    }
-
-    /** 1.7 {@code createFromId}. */
-    public static @Nullable Satellite createFromId(int id) {
-        SatelliteType type = SatelliteType.fromId(id);
         return type == null ? null : type.create();
     }
 
@@ -78,7 +75,9 @@ public final class XSatelliteRegistry {
      * stored and told it reached orbit.
      */
     public static void orbit(ServerLevel level, ItemStack stack, int freq, double x, double y, double z) {
-        SatelliteSavedData data = SatelliteSavedData.get(level);
+        // hbm-space: launched from an orbital station, the satellite joins the body's below
+        BlockPos at = BlockPos.containing(x, y, z);
+        SatelliteSavedData data = SatelliteSavedData.get(level, at);
         Satellite existing = data.sats.get(freq);
 
         if (existing != null) {
@@ -87,8 +86,12 @@ public final class XSatelliteRegistry {
             Satellite sat = createFromItem(stack);
 
             if (sat != null) {
+                // hbm-space getTargetDimensionId: some satellites go to another body than the launch site's
+                ServerLevel target = com.hbm.api.environment.Environment.satelliteLevel(level, at, stack);
+                if (target != level) data = SatelliteSavedData.get(target);
+                for (Orbited listener : ORBITED) listener.orbited(target, stack, freq, sat);
                 data.sats.put(freq, sat);
-                sat.onOrbit(level, x, y, z);
+                sat.onOrbit(target, x, y, z);
                 data.setDirty();
             }
         }

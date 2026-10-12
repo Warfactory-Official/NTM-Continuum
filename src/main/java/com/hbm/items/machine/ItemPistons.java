@@ -49,14 +49,27 @@ public class ItemPistons extends CompatItem {
         return variant;
     }
 
+    /**
+     * Efficiency per fuel grade, indexed by {@link FuelGrade#ordinal()}: the {@code hbm:piston} entry (by grade name),
+     * else HBM's enum constant.
+     */
+    public double[] efficiency() {
+        java.util.Map<String, Double> data = com.hbm.api.data.MachinePartDataMaps.PISTON.get(this);
+        if (data == null) return variant.eff;
+        double[] eff = new double[FuelGrade.values().length];
+        for (FuelGrade grade : FuelGrade.values()) eff[grade.ordinal()] = data.getOrDefault(grade.name(), 0D);
+        return eff;
+    }
+
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          java.util.List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("desc.item.pistonEfficiency").withStyle(ChatFormatting.YELLOW));
-        for (int i = 0; i < variant.eff.length; i++) {
+        double[] eff = efficiency();
+        for (int i = 0; i < eff.length; i++) {
             tooltip.add(Component.literal(ChatFormatting.YELLOW + "-")
                     .append(Component.translatable(GRADE_KEYS[i]).withStyle(ChatFormatting.YELLOW))
-                    .append(Component.literal(ChatFormatting.YELLOW + ": " + ChatFormatting.RED + (int) (variant.eff[i] * 100) + "%")));
+                    .append(Component.literal(ChatFormatting.YELLOW + ": " + ChatFormatting.RED + (int) (eff[i] * 100) + "%")));
         }
     }
 }

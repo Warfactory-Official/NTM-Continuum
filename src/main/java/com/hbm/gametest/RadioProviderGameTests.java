@@ -284,7 +284,7 @@ public final class RadioProviderGameTests {
                 "Terminal clear must empty the whole scrollback");
 
         TileEntityGeiger geiger = new TileEntityGeiger(pos(10), state(ModMachineBlocks.geiger.get()));
-        geiger.ticker = 3.2D;
+        geiger.ticker = 3.2F;
         helper.assertTrue("4".equals(geiger.provideRORValue("VAL:rad")),
                 "Geiger rounds its reading up, so 3.2 must read as 4");
 

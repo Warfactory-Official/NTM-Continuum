@@ -54,10 +54,13 @@ public class ModuleBurnTime {
     private double getMod(ItemStack stack, double[] mod) {
         if (stack.isEmpty()) return 0;
 
-        if (stack.is(ModFuelItems.solid_fuel.get())
-                || stack.is(ModFuelItems.solid_fuel_presto.get())
-                || stack.is(ModFuelItems.solid_fuel_presto_triplet.get())) return mod[modSolid];
-        if (stack.is(ModFuelItems.rocket_fuel.get())) return mod[modRocket];
+        // The hbm:fuel_category item data map names a class outright (1.7 listed the solid and rocket fuels by item);
+        // everything it leaves out is classed by the 1.7 ore-dictionary name scan below.
+        String category = com.hbm.api.data.MachinePartDataMaps.FUEL_CATEGORY.get(stack.getItem());
+        if (category != null) {
+            int index = java.util.Arrays.asList(CATEGORIES).indexOf(category);
+            return index < 0 ? 1D : mod[index];
+        }
 
         // The old ore-dict name scan ("Coke"/"Coal"/"Lignite"/log*/"Wood"), on registry path + tags.
         String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
@@ -89,6 +92,9 @@ public class ModuleBurnTime {
     public ModuleBurnTime setBalefireHeatMod(double mod) { this.modHeat[modBalefire] = mod; return this; }
 
     // --- 1.7 GUI description (the burn-bonus tooltip over an empty fuel slot) ---
+
+    /** The fuel class ids of {@code hbm:fuel_category}, in index order. */
+    public static final String[] CATEGORIES = {"log", "wood", "coal", "lignite", "coke", "solid", "rocket", "balefire"};
 
     private static final String[] CLASS_NAMES = {"Logs", "Wood", "Coal", "Lignite", "Coke", "Solid Fuel", "Rocket Fuel", "Balefire"};
 

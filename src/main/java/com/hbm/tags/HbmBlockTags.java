@@ -36,6 +36,14 @@ public final class HbmBlockTags {
             Registries.BLOCK,
             Library.id("material_ground"));
 
+    /**
+     * The ground a groundwater pump (steam and electric) counts as valid below itself (1.7
+     * {@code TileEntityMachinePumpBase.validBlocks}, a fixed set there); an addon adds its planets' soils.
+     */
+    public static final TagKey<Block> PUMP_GROUND = TagKey.create(
+            Registries.BLOCK,
+            Library.id("pump_ground"));
+
     public static final TagKey<Block> FLEIJA_IMMUNE = TagKey.create(
             Registries.BLOCK,
             Library.id("fleija_immune"));

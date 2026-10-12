@@ -57,23 +57,7 @@ final class ForgeClientInit {
                             com.hbm.client.render.MachineItemModels.reload(resources);
                         }));
         HbmClientRegistrations.registerBlockColors();
-        modBus.addListener((FMLClientSetupEvent event) -> event.enqueueWork(() -> {
-            HbmClientRegistrations.registerScreens(MenuScreens::register);
-        }));
-        modBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> {
-            HbmClientRegistrations.registerRenderers(new com.hbm.client.render.HbmBlockEntityRenderers.Sink() {
-                @Override
-                public <T extends BlockEntity, S extends dev.golem.core.render.CompatRenderState> void register(
-                        BlockEntityType<? extends T> type, dev.golem.core.render.CompatBERProvider<T, S> provider) {
-                    event.registerBlockEntityRenderer(type, dev.golem.core.render.Renderers.toVanilla(provider));
-                }
-            }, new com.hbm.client.render.HbmEntityRenderers.Sink() {
-                @Override
-                public <T extends Entity> void register(EntityType<? extends T> type, EntityRendererProvider<T> provider) {
-                    event.registerEntityRenderer(type, provider);
-                }
-            });
-        });
+        HbmClientRegistrations.installScreensAndRenderers();
         // Core's Hud.draw owns the per-layer composition rule: on 1.20.1 each layer must start on a clear
         // depth buffer, or the chat's z-50 lines hide every HBM overlay drawn where they are (the
         // power-armour charge bars vanished that way while 26.1 drew them).

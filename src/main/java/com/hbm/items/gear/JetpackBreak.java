@@ -32,18 +32,26 @@ public class JetpackBreak extends JetpackFueledBase {
     protected void tickFlight(Level level, Player player, ItemStack stack) {
         if (getFuel(stack) <= 0) return;
         JetpackHandler.resetFlightTime(player);
+        // hbm-space: thrust scaled up (never down) with gravity, the jet pushing along the view in free fall, and no
+        // hovering without gravity (com.hbm.api.environment.Environment.gravity, 1 on plain HBM)
+        double gravity = com.hbm.api.environment.Environment.gravity(player);
         if (isActive(player)) {
             player.fallDistance = 0;
-            if (player.getDeltaMovement().y < 0.4D) player.setDeltaMovement(player.getDeltaMovement().add(0, 0.1D, 0));
+            if (gravity == 0D) {
+                player.setDeltaMovement(player.getDeltaMovement().add(player.getViewVector(1.0F).scale(0.05D)));
+            } else if (player.getDeltaMovement().y < 0.4D) {
+                player.setDeltaMovement(player.getDeltaMovement().add(0, 0.1D * Math.max(gravity, 1D), 0));
+            }
             level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.FLAMETHROWER_SHOOT.get(),
                     SoundSource.PLAYERS, 0.25F, 1.5F);
             if (!level.isClientSide()) JetpackHandler.sendExhaust(player, JetpackHandler.EXHAUST_REGULAR);
             useUpFuel(player, stack, 5);
-        } else if (JetpackHandler.isBackpackEnabled(player) && !player.isShiftKeyDown() && !player.onGround()) {
+        } else if (JetpackHandler.isBackpackEnabled(player) && !player.isShiftKeyDown() && !player.onGround() && gravity > 0D) {
             player.fallDistance = 0;
+            double thrust = Math.max(gravity, 1D);
             double y = player.getDeltaMovement().y;
-            if (y < -1D) y += 0.2D;
-            else if (y < -0.1D) y += 0.1D;
+            if (y < -1D * thrust) y += 0.2D * thrust;
+            else if (y < -0.1D * thrust) y += 0.1D * thrust;
             else if (y < 0D) y = 0D;
             player.setDeltaMovement(player.getDeltaMovement().x, y, player.getDeltaMovement().z);
             level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.FLAMETHROWER_SHOOT.get(),

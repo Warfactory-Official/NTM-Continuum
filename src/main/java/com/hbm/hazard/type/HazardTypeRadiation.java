@@ -16,12 +16,30 @@ import net.minecraft.world.item.ItemStack;
 
 public class HazardTypeRadiation implements IHazardType {
 
+    /**
+     * Radiation a stack carries on top of its hazard entries (H-77): per stack, not per item, added after the modifiers
+     * and the stack count when a RADIATION entry is applied, and to the level a RADIATION tooltip line shows. The
+     * listeners' answers are summed. Plain HBM registers none; NTM: Space adds hbm-space's neutron activation, which
+     * hbm-space's {@code HazardTypeRadiation} read from the stack's {@code ntmNeutron} tag at exactly these two points.
+     */
+    public static final dev.golem.core.hook.Hook<java.util.function.ToDoubleFunction<ItemStack>> STACK_RADIATION =
+            dev.golem.core.hook.Hook.notifying();
+
+    /** The sum of {@link #STACK_RADIATION} for {@code stack}; 0 with no listener. */
+    public static double stackRadiation(final ItemStack stack) {
+        if (STACK_RADIATION.isEmpty()) return 0D;
+        double extra = 0D;
+        for (java.util.function.ToDoubleFunction<ItemStack> listener : STACK_RADIATION) extra += listener.applyAsDouble(stack);
+        return extra;
+    }
+
     @Override
     public void onUpdate(final LivingEntity target, double level, final ItemStack stack) {
 
         final boolean reacher = HazardHelper.isHoldingReacher(target);
 
         level *= stack.getCount();
+        level += stackRadiation(stack);
 
         if (level > 0) {
             double rad = level / 20D;
@@ -43,6 +61,7 @@ public class HazardTypeRadiation implements IHazardType {
     public void addHazardInformation(final Player player, final List<Component> list, double level, final ItemStack stack, final List<IHazardModifier> modifiers) {
 
         level = IHazardModifier.evalAllModifiers(stack, player, level, modifiers);
+        level += stackRadiation(stack);
         if (level == 0) return;
         list.add(Component.literal("[").append(Component.translatable("trait.radioactive")).append(Component.literal("]")).withStyle(ChatFormatting.GREEN));
         list.add(Component.literal(" " + round3(getNewValue(level))).append(suffix(level)).append(Component.literal(" ")).append(Component.translatable("desc.rads")).withStyle(ChatFormatting.YELLOW));

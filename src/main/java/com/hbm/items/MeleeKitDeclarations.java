@@ -48,7 +48,7 @@ public final class MeleeKitDeclarations {
         shaped(NS, "wrench_flipped", "hbm:wrench_flipped", rows("S", "D", "W"),
                 "S", VanillaIds.iron_sword, "D", ItemIds.ducttape, "W", "hbm:wrench");
         shaped(NS, "machine_missile_assembly", "hbm:machine_missile_assembly", rows("PWP", "SSS", "CCC"),
-                "P", ItemIds.pedestal_steel, "W", "hbm:wrench", "S", TagIds.plates_steel, "C", ItemIds.steel_scaffold);
+                "P", ItemIds.pedestal_steel, "W", "hbm:wrench", "S", TagIds.plates_steel, "C", "#hbm:steel_scaffolds");
 
         // 1.7 ToolRecipes
         shaped(NS, "wood_gavel", "hbm:wood_gavel", rows("SWS", " R ", " R "),

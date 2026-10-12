@@ -100,6 +100,10 @@ public class EntityEffectHandler {
 
             craterBiomeRadiation(entity);
 
+            // hbm-space ran handleOxy and handleCorrosion here, after the biome radiation: addons that give entities an
+            // atmosphere to breathe listen on com.hbm.api.environment.Environment.LIVING_TICK
+            com.hbm.api.environment.Environment.livingTick(entity);
+
             HazardSystem.tickEntity(entity);
 
             handleContamination(entity);
@@ -352,6 +356,10 @@ public class EntityEffectHandler {
         // 1.7 handleRadiationFX: the nether's ambient floor (hellRad, 0.1 RAD/s) under the chunk value
         if (level.dimension() == Level.NETHER && RadiationConfig.hellRad > 0 && offset < RadiationConfig.hellRad)
             offset = RadiationConfig.hellRad;
+        // hbm-space: unshielded sunlight on its planets and in orbit raises the floor further
+        // (com.hbm.api.environment.Environment.AMBIENT_RADIATION; none on plain HBM)
+        float floor = com.hbm.api.environment.Environment.ambientRadiationFloor(level, pos, entity);
+        if (floor > 0F && floor > offset) offset = floor;
         double radD = Math.max(0D, offset);
         if (radD > 0D) {
             ContaminationUtil.contaminate(entity, HazardType.RADIATION, ContaminationType.CREATIVE, radD / 20D);

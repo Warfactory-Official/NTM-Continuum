@@ -28,6 +28,12 @@ public class TileEntityCondenser extends TileEntityMachineBase implements IFluid
     public int waterTimer;
     public int throughput;
 
+    /**
+     * hbm-space: a condenser that is not vacuum-optimised boils its water off in a vacuum instead of condensing
+     * ({@link #evaporates}); the powered condenser and NTM: Space's radiator are optimised.
+     */
+    public boolean vacuumOptimised = false;
+
     public TileEntityCondenser(BlockPos pos, BlockState state) {
         this(ModBlockEntities.MACHINE_CONDENSER.get(), pos, state, 100, 100);
     }
@@ -57,13 +63,27 @@ public class TileEntityCondenser extends TileEntityMachineBase implements IFluid
         if (extraCondition(amount)) {
             input.setFill(input.getFill() - amount);
             if (amount > 0) waterTimer = 20;
-            output.setFill(output.getFill() + amount);
+            if (evaporates(level, worldPosition)) {
+                // hbm-space: steam and water both boil off in a vacuum. Its tank had no floor and ran negative.
+                output.setFill(Math.max(output.getFill() - amount, 0));
+            } else {
+                output.setFill(output.getFill() + amount);
+            }
             if (amount > 0) setChanged();
             postConvert(amount);
         }
 
         updateConnections(level);
         networkPackNT();
+    }
+
+    /**
+     * hbm-space's vacuum rule for condensers and cooling towers: in orbit or under 0.01 atm the steam evaporates
+     * instead of condensing, unless the machine is {@link #vacuumOptimised} (com.hbm.api.environment.Environment;
+     * never on plain HBM). hbm-space's Tom-firestorm evaporation is the fork's own addition, not 1.7, and is not here.
+     */
+    public boolean evaporates(Level level, BlockPos pos) {
+        return !vacuumOptimised && com.hbm.api.environment.Environment.isVacuum(level, pos);
     }
 
     protected boolean extraCondition(int amount) { return true; }

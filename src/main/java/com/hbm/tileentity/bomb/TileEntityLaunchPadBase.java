@@ -85,42 +85,59 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         EntityMissileBaseNT create(Level world, float x, float y, float z, int targetX, int targetZ);
     }
 
-    public static void registerLaunchables() {
-        if (!missiles.isEmpty()) return;
+    private static boolean launchablesRegistered;
+
+    /**
+     * Makes {@code item} launchable as the missile {@code factory} builds (1.7 {@code missiles.put}). An addon calls
+     * this from its own start-up, before or after HBM's table is built: HBM's defaults never replace an entry that is
+     * already there, so an addon may also change what one of HBM's missile items launches.
+     */
+    public static synchronized void registerLaunchable(Item item, MissileFactory factory) {
+        missiles.put(item, factory);
+    }
+
+    /**
+     * HBM's 1.7 table ({@code TileEntityLaunchPadBase.registerLaunchables}). Runs once from {@code HbmEntry.registered}
+     * on both sides; it used to return when the map was non-empty, which dropped every default if anything had
+     * registered first.
+     */
+    public static synchronized void registerLaunchables() {
+        if (launchablesRegistered) return;
+        launchablesRegistered = true;
 
         // Tier 0
-        missiles.put(ModMissileItems.missile_micro.get(), EntityMissileTier0.EntityMissileMicro::new);
-        missiles.put(ModMissileItems.missile_taint.get(), EntityMissileTier0.EntityMissileTaint::new);
-        missiles.put(ModMissileItems.missile_test.get(), EntityMissileTier0.EntityMissileTest::new);
-        missiles.put(ModMissileItems.missile_schrabidium.get(), EntityMissileTier0.EntityMissileSchrabidium::new);
-        missiles.put(ModMissileItems.missile_bhole.get(), EntityMissileTier0.EntityMissileBHole::new);
-        missiles.put(ModMissileItems.missile_emp.get(), EntityMissileTier0.EntityMissileEMP::new);
+        missiles.putIfAbsent(ModMissileItems.missile_micro.get(), EntityMissileTier0.EntityMissileMicro::new);
+        missiles.putIfAbsent(ModMissileItems.missile_taint.get(), EntityMissileTier0.EntityMissileTaint::new);
+        missiles.putIfAbsent(ModMissileItems.missile_test.get(), EntityMissileTier0.EntityMissileTest::new);
+        missiles.putIfAbsent(ModMissileItems.missile_schrabidium.get(), EntityMissileTier0.EntityMissileSchrabidium::new);
+        missiles.putIfAbsent(ModMissileItems.missile_bhole.get(), EntityMissileTier0.EntityMissileBHole::new);
+        missiles.putIfAbsent(ModMissileItems.missile_emp.get(), EntityMissileTier0.EntityMissileEMP::new);
         // Tier 1
-        missiles.put(ModMissileItems.missile_generic.get(), EntityMissileTier1.EntityMissileGeneric::new);
-        missiles.put(ModMissileItems.missile_decoy.get(), EntityMissileTier1.EntityMissileDecoy::new);
-        missiles.put(ModMissileItems.missile_incendiary.get(), EntityMissileTier1.EntityMissileIncendiary::new);
-        missiles.put(ModMissileItems.missile_cluster.get(), EntityMissileTier1.EntityMissileCluster::new);
-        missiles.put(ModMissileItems.missile_buster.get(), EntityMissileTier1.EntityMissileBunkerBuster::new);
+        missiles.putIfAbsent(ModMissileItems.missile_generic.get(), EntityMissileTier1.EntityMissileGeneric::new);
+        missiles.putIfAbsent(ModMissileItems.missile_decoy.get(), EntityMissileTier1.EntityMissileDecoy::new);
+        missiles.putIfAbsent(ModMissileItems.missile_incendiary.get(), EntityMissileTier1.EntityMissileIncendiary::new);
+        missiles.putIfAbsent(ModMissileItems.missile_cluster.get(), EntityMissileTier1.EntityMissileCluster::new);
+        missiles.putIfAbsent(ModMissileItems.missile_buster.get(), EntityMissileTier1.EntityMissileBunkerBuster::new);
         // Tier 2
-        missiles.put(ModMissileItems.missile_strong.get(), EntityMissileTier2.EntityMissileStrong::new);
-        missiles.put(ModMissileItems.missile_incendiary_strong.get(), EntityMissileTier2.EntityMissileIncendiaryStrong::new);
-        missiles.put(ModMissileItems.missile_cluster_strong.get(), EntityMissileTier2.EntityMissileClusterStrong::new);
-        missiles.put(ModMissileItems.missile_buster_strong.get(), EntityMissileTier2.EntityMissileBusterStrong::new);
-        missiles.put(ModMissileItems.missile_emp_strong.get(), EntityMissileTier2.EntityMissileEMPStrong::new);
+        missiles.putIfAbsent(ModMissileItems.missile_strong.get(), EntityMissileTier2.EntityMissileStrong::new);
+        missiles.putIfAbsent(ModMissileItems.missile_incendiary_strong.get(), EntityMissileTier2.EntityMissileIncendiaryStrong::new);
+        missiles.putIfAbsent(ModMissileItems.missile_cluster_strong.get(), EntityMissileTier2.EntityMissileClusterStrong::new);
+        missiles.putIfAbsent(ModMissileItems.missile_buster_strong.get(), EntityMissileTier2.EntityMissileBusterStrong::new);
+        missiles.putIfAbsent(ModMissileItems.missile_emp_strong.get(), EntityMissileTier2.EntityMissileEMPStrong::new);
         // Tier 3
-        missiles.put(ModMissileItems.missile_burst.get(), EntityMissileTier3.EntityMissileBurst::new);
-        missiles.put(ModMissileItems.missile_inferno.get(), EntityMissileTier3.EntityMissileInferno::new);
-        missiles.put(ModMissileItems.missile_rain.get(), EntityMissileTier3.EntityMissileRain::new);
-        missiles.put(ModMissileItems.missile_drill.get(), EntityMissileTier3.EntityMissileDrill::new);
-        missiles.put(ModMissileItems.missile_shuttle.get(), EntityMissileShuttle::new);
+        missiles.putIfAbsent(ModMissileItems.missile_burst.get(), EntityMissileTier3.EntityMissileBurst::new);
+        missiles.putIfAbsent(ModMissileItems.missile_inferno.get(), EntityMissileTier3.EntityMissileInferno::new);
+        missiles.putIfAbsent(ModMissileItems.missile_rain.get(), EntityMissileTier3.EntityMissileRain::new);
+        missiles.putIfAbsent(ModMissileItems.missile_drill.get(), EntityMissileTier3.EntityMissileDrill::new);
+        missiles.putIfAbsent(ModMissileItems.missile_shuttle.get(), EntityMissileShuttle::new);
         // Tier 4
-        missiles.put(ModMissileItems.missile_nuclear.get(), EntityMissileTier4.EntityMissileNuclear::new);
-        missiles.put(ModMissileItems.missile_nuclear_cluster.get(), EntityMissileTier4.EntityMissileMirv::new);
-        missiles.put(ModMissileItems.missile_volcano.get(), EntityMissileTier4.EntityMissileVolcano::new);
-        missiles.put(ModMissileItems.missile_doomsday.get(), EntityMissileTier4.EntityMissileDoomsday::new);
-        missiles.put(ModMissileItems.missile_n2.get(), EntityMissileTier4.EntityMissileN2::new);
+        missiles.putIfAbsent(ModMissileItems.missile_nuclear.get(), EntityMissileTier4.EntityMissileNuclear::new);
+        missiles.putIfAbsent(ModMissileItems.missile_nuclear_cluster.get(), EntityMissileTier4.EntityMissileMirv::new);
+        missiles.putIfAbsent(ModMissileItems.missile_volcano.get(), EntityMissileTier4.EntityMissileVolcano::new);
+        missiles.putIfAbsent(ModMissileItems.missile_doomsday.get(), EntityMissileTier4.EntityMissileDoomsday::new);
+        missiles.putIfAbsent(ModMissileItems.missile_n2.get(), EntityMissileTier4.EntityMissileN2::new);
         // Specials
-        missiles.put(ModMissileItems.missile_stealth.get(), EntityMissileStealth::new);
+        missiles.putIfAbsent(ModMissileItems.missile_stealth.get(), EntityMissileStealth::new);
 
         // Logged because the count is the signal: this table decides which missiles a pad will even
         // accept, and it has to be built on BOTH sides — the client predicts slot placement, so an empty

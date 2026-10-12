@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Auxiliary 5x5x19 cooling tower; exact old 1,000 mB condenser tanks and four side ports. */
-public final class TileEntityTowerSmall extends TileEntityCondenser {
+public class TileEntityTowerSmall extends TileEntityCondenser {
     public static final int INPUT_TANK_SIZE = 1_000;
     public static final int OUTPUT_TANK_SIZE = 1_000;
 

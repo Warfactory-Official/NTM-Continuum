@@ -38,6 +38,8 @@ public final class MachineFluidContainerIO {
     /** True when {@code stack} is an infinite item; the tank was filled from it as 1.7 did (never consumed). */
     public static boolean loadInfinite(FluidTankNTM tank, ItemStack stack) {
         if (!(stack.getItem() instanceof com.hbm.api.fluidmk2.IInfiniteFluidItem infinite)) return false;
+        // hbm-space FluidLoaderInfinite: a table-bound item that found the wrong water table gives nothing
+        if (!com.hbm.items.machine.ItemInfiniteFluid.canOperate(stack)) return true;
         if (tank.getTankType() == Fluids.NONE) {
             if (infinite.infiniteType() == null) return true;
             tank.setTankType(infinite.infiniteType());
@@ -52,6 +54,7 @@ public final class MachineFluidContainerIO {
     /** True when {@code stack} is an infinite item; the tank was drained into it as 1.7 did. */
     public static boolean unloadInfinite(FluidTankNTM tank, ItemStack stack) {
         if (!(stack.getItem() instanceof com.hbm.api.fluidmk2.IInfiniteFluidItem infinite)) return false;
+        if (!com.hbm.items.machine.ItemInfiniteFluid.canOperate(stack)) return true;
         if (!infinite.allowPressure(tank.getPressure())) return true;
         if (infinite.infiniteType() != null && tank.getTankType() != infinite.infiniteType()) return true;
         if (infinite.infiniteChance() <= 1 || RANDOM.nextInt(infinite.infiniteChance()) == 0) {
@@ -113,6 +116,11 @@ public final class MachineFluidContainerIO {
             return true;
         }
         if (type == Fluids.NONE || tank.getFill() <= 0 || input.isEmpty() || tank.getPressure() != 0) return false;
+        if (fillArmorMods && com.hbm.handler.ArmorModHandler.hasMods(input)) {
+            boolean filled = fillMods(tank, type, inventory, inputSlot, input);
+            if (!(input.getItem() instanceof IFillableItem)) return filled;
+            input = inventory.getStackInSlot(inputSlot);
+        }
         if (input.getItem() instanceof IFillableItem fillable) {
             if (!fillable.acceptsFluid(type, input)) return false;
             ItemStack result = single(input);
@@ -142,6 +150,30 @@ public final class MachineFluidContainerIO {
         inventory.extractItem(inputSlot, 1, false);
         insertInternally(inventory, outputSlot, result);
         return true;
+    }
+
+    /**
+     * hbm-space {@code FluidLoaderFillableItem.fill}: an armor piece in the unload slot fills its fillable modules, and
+     * each filled module is written back into the armor ({@code ArmorModHandler.applyMod}; 1.7 filled a copy and lost
+     * it). ADDON-API-INVENTORY V-185; off in plain HBM, which leaves the modules alone. NTM: Space turns it on (its
+     * oxygen tank module refills here).
+     */
+    public static boolean fillArmorMods = false;
+
+    private static boolean fillMods(FluidTankNTM tank, FluidType type, NTMItemHandler inventory, int slot, ItemStack armor) {
+        ItemStack work = armor.copy();
+        boolean moved = false;
+        for (ItemStack mod : com.hbm.handler.ArmorModHandler.pryMods(work)) {
+            if (mod == null || mod.isEmpty() || !(mod.getItem() instanceof IFillableItem fillable)) continue;
+            if (tank.getFill() <= 0 || !fillable.acceptsFluid(type, mod)) continue;
+            int remainder = fillable.tryFill(type, tank.getFill(), mod);
+            if (remainder == tank.getFill()) continue;
+            tank.setFill(remainder);
+            com.hbm.handler.ArmorModHandler.applyMod(work, mod);
+            moved = true;
+        }
+        if (moved) inventory.setStackInSlot(slot, work);
+        return moved;
     }
 
     private static FluidType bucketFluid(ItemStack stack) {

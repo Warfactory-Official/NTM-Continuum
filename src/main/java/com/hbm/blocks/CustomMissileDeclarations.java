@@ -176,11 +176,11 @@ public final class CustomMissileDeclarations {
                 ItemIds.circuit_advanced, ItemIds.circuit_bismoid};
         for (int i = 0; i < 5; i++) {
             shaped(NS, "mp_c_" + (i + 1), "hbm:mp_c_" + (i + 1), rows("P", "C", "S"),
-                    "P", TagIds.ingots_any_rubber, "C", circuits[i], "S", ItemIds.steel_scaffold);
+                    "P", TagIds.ingots_any_rubber, "C", circuits[i], "S", "#hbm:steel_scaffolds");
         }
         // 1.7 CraftingManager
         shaped(NS, "struct_launcher_core", "hbm:struct_launcher_core", rows("SCS", "SIS", "BEB"),
-                "S", ItemIds.steel_scaffold, "I", VanillaIds.iron_bars, "C", ItemIds.circuit_basic,
+                "S", "#hbm:steel_scaffolds", "I", VanillaIds.iron_bars, "C", ItemIds.circuit_basic,
                 "B", ItemIds.struct_launcher, "E", ItemIds.battery_lead);
         shaped(NS, "struct_launcher_core_large", "hbm:struct_launcher_core_large", rows("SIS", "ICI", "BEB"),
                 "S", ItemIds.circuit_advanced, "I", VanillaIds.iron_bars, "C", ItemIds.circuit_advanced,

@@ -1,70 +1,142 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.RecipesCommon.AStack;
-import com.hbm.inventory.RecipesCommon.TagStack;
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.ItemSpec;
+import com.hbm.inventory.recipes.loader.TableCodecs;
 import com.hbm.items.ModItems;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.Ids;
 import dev.golem.core.world.Recipes;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
-
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
-/** The four input classes and outputs of the 1.12.2 sawmill. */
+/**
+ * The sawmill's inputs and outputs: the datapack table {@code hbm:sawmill}, one file per input in
+ * {@code data/hbm/recipe/sawmill/}:
+ * <pre>
+ * {"input": {"ingredient": "#minecraft:planks"}, "output": {"id": "minecraft:stick", "count": 6},
+ *  "sawdust_chance": 0.1, "order": 3}
+ * {"input": {"ingredient": "#minecraft:logs"}, "output": {"id": "minecraft:oak_planks", "count": 6},
+ *  "crafting_result": {"require": "#minecraft:planks", "multiply": 6, "divide": 4}, "sawdust_chance": 0.5, "order": 2}
+ * </pre>
+ * The first row (by {@code order}) whose input matches decides the output; {@code sawdust_chance} is the chance of one
+ * sawdust in the side slot. {@code crafting_result} makes the output whatever the input crafts into on the crafting
+ * table (only if it is in {@code require}), scaled by {@code multiply / divide}: 1.7 sawed a log into the planks its own
+ * crafting recipe gives, four planks becoming six, so modded logs make their own planks; {@code output} is then only
+ * what the recipe viewer shows. {@code hidden} rows are left out of the viewer.
+ *
+ * <p>1.7's {@code TileEntitySawmill.getOutput} was code, not a table: {@code stickWood} to sawdust, {@code logWood} to
+ * its crafted planks x 6/4, {@code plankWood} to six sticks, {@code treeSapling} to one stick, in that order, with
+ * {@code sawdustChance} 0 for sawdust, 0.1 for sticks and 0.5 otherwise. Converted once to five rows (the stick has
+ * its own hidden row besides {@code c:rods/wooden}, as the port matched it separately), so an addon adds a sawing (NTM:
+ * Space's vinyl and PVC woods) with a file.
+ */
 public final class SawmillRecipes {
 
     private SawmillRecipes() {}
 
     /** The modern equivalent of the old {@code stickWood} ore-dictionary entry. */
-    public static final TagKey<net.minecraft.world.item.Item> WOODEN_RODS = TagKey.create(
-            Registries.ITEM, Ids.of("c", "rods/wooden"));
+    public static final TagKey<Item> WOODEN_RODS = TagKey.create(Registries.ITEM, Ids.of("c", "rods/wooden"));
 
+    /** What the recipe viewer shows: an input, its output and the sawdust chance in percent. */
     public record SawmillRecipe(AStack input, ItemStack output, ItemStack secondary, int secondaryChance) {}
 
-    private static final List<SawmillRecipe> RECIPES = List.of(
-            new SawmillRecipe(new TagStack(ItemTags.LOGS), new ItemStack(Items.OAK_PLANKS, 6),
-                    new ItemStack(ModItems.powder_sawdust.get()), 50),
-            new SawmillRecipe(new TagStack(ItemTags.PLANKS), new ItemStack(Items.STICK, 6),
-                    new ItemStack(ModItems.powder_sawdust.get()), 10),
-            new SawmillRecipe(new TagStack(WOODEN_RODS), new ItemStack(ModItems.powder_sawdust.get()),
-                    ItemStack.EMPTY, 0),
-            new SawmillRecipe(new TagStack(ItemTags.SAPLINGS), new ItemStack(Items.STICK),
-                    new ItemStack(ModItems.powder_sawdust.get()), 10));
+    /** The input's crafting-table result, if it is in {@code require}, scaled by {@code multiply / divide}. */
+    public record CraftingResult(TagKey<Item> require, int multiply, int divide) {
 
-    public static List<SawmillRecipe> getRecipes() {
-        return RECIPES;
+        static final Codec<CraftingResult> CODEC = RecordCodecBuilder.create(i -> i.group(
+                TagKey.hashedCodec(Registries.ITEM).fieldOf("require").forGetter(CraftingResult::require),
+                Codec.INT.optionalFieldOf("multiply", 1).forGetter(CraftingResult::multiply),
+                Codec.INT.optionalFieldOf("divide", 1).forGetter(CraftingResult::divide)
+        ).apply(i, CraftingResult::new));
     }
 
-    /**
-     * Resolves a sawmill input on the server. Log output deliberately comes from the active vanilla
-     * crafting table, preserving modded-log plank conversions instead of hardcoding wood species.
-     */
+    public record Row(AStack input, ItemSpec output, Optional<CraftingResult> craftingResult, float sawdustChance,
+                      boolean hidden, int order) {}
+
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            TableCodecs.INGREDIENT.fieldOf("input").forGetter(Row::input),
+            ItemSpec.CODEC.fieldOf("output").forGetter(Row::output),
+            CraftingResult.CODEC.optionalFieldOf("crafting_result").forGetter(Row::craftingResult),
+            Codec.FLOAT.optionalFieldOf("sawdust_chance", 0F).forGetter(Row::sawdustChance),
+            Codec.BOOL.optionalFieldOf("hidden", false).forGetter(Row::hidden),
+            Codec.INT.optionalFieldOf("order", TableCodecs.LAST).forGetter(Row::order)
+    ).apply(i, Row::new));
+
+    public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("sawmill", () -> CODEC);
+
+    private static volatile List<Row> rows = List.of();
+
+    static {
+        TABLE.changed.register(() -> rows = TableCodecs.ordered(TABLE.rows(), Row::order));
+    }
+
+    /** Declares the table at mod construction. */
+    public static void declare() {}
+
+    private static List<Row> index() {
+        if (rows.isEmpty()) TABLE.rows();
+        return rows;
+    }
+
+    /** The row that saws {@code input} (the first match by order), or null. */
+    public static @Nullable Row match(ItemStack input) {
+        if (input.isEmpty()) return null;
+        for (Row row : index()) if (row.input().matchesRecipe(input, true)) return row;
+        return null;
+    }
+
+    /** The recipe viewer's list, one entry per visible row. */
+    public static List<SawmillRecipe> getRecipes() {
+        List<SawmillRecipe> out = new ArrayList<>();
+        for (Row row : index()) {
+            if (row.hidden()) continue;
+            boolean sawdust = row.sawdustChance() > 0F;
+            out.add(new SawmillRecipe(row.input(), row.output().stack(),
+                    sawdust ? new ItemStack(ModItems.powder_sawdust.get()) : ItemStack.EMPTY,
+                    sawdust ? Math.round(row.sawdustChance() * 100F) : 0));
+        }
+        return out;
+    }
+
+    /** Resolves a sawmill input on the server (a crafting-result row reads the level's crafting recipes). */
     public static ItemStack getOutput(Level level, ItemStack input) {
-        if (input.isEmpty()) return ItemStack.EMPTY;
-        if (input.is(WOODEN_RODS) || input.is(Items.STICK)) {
-            return new ItemStack(ModItems.powder_sawdust.get());
-        }
-        if (input.is(ItemTags.LOGS)) {
-            return Recipes.craftingResult(level, input)
-                    .filter(result -> result.is(ItemTags.PLANKS))
-                    .map(result -> {
-                        result.setCount(result.getCount() * 6 / 4);
-                        return result;
-                    })
-                    .orElse(ItemStack.EMPTY);
-        }
-        if (input.is(ItemTags.PLANKS)) return new ItemStack(Items.STICK, 6);
-        if (input.is(ItemTags.SAPLINGS)) return new ItemStack(Items.STICK);
-        return ItemStack.EMPTY;
+        Row row = match(input);
+        if (row == null) return ItemStack.EMPTY;
+        if (row.craftingResult().isEmpty()) return row.output().stack();
+        CraftingResult crafting = row.craftingResult().get();
+        return Recipes.craftingResult(level, input)
+                .filter(result -> result.is(crafting.require()))
+                .map(result -> {
+                    result.setCount(result.getCount() * crafting.multiply() / crafting.divide());
+                    return result;
+                })
+                .orElse(ItemStack.EMPTY);
+    }
+
+    /** The chance of a sawdust beside the output of sawing {@code input} (1.7 {@code sawdustChance}). */
+    public static float sawdustChance(ItemStack input) {
+        Row row = match(input);
+        return row == null ? 0F : row.sawdustChance();
+    }
+
+    /** Whether the output of {@code input} depends on the server's crafting recipes (a client cannot check it). */
+    public static boolean needsCraftingResult(ItemStack input) {
+        Row row = match(input);
+        return row != null && row.craftingResult().isPresent();
     }
 
     public static boolean isValidInput(ItemStack input) {
-        return !input.isEmpty() && (input.is(ItemTags.LOGS) || input.is(ItemTags.PLANKS)
-                || input.is(WOODEN_RODS) || input.is(Items.STICK) || input.is(ItemTags.SAPLINGS));
+        return match(input) != null;
     }
 }

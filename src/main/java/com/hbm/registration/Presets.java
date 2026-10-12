@@ -7,6 +7,7 @@ import dev.golem.core.dejson.Shape;
 import dev.golem.core.dejson.Tint;
 import dev.golem.core.dejson.Variants;
 
+import dev.golem.core.registry.Preset;
 import java.util.function.Function;
 
 /**
@@ -36,14 +37,14 @@ public final class Presets {
         return new BlockModel(path -> Models.cubeAll(texture));
     }
 
-    /** {@code cube_all} over {@code hbm:blocks/<path>}. */
+    /** {@code cube_all} over {@code <ns>:blocks/<path>}. */
     public static BlockModel cubeAll() {
-        return new BlockModel(path -> Models.cubeAll("hbm:blocks/" + path));
+        return new BlockModel(id -> Models.cubeAll(texture(id, "blocks")));
     }
 
     /** {@link #cubeAll()} on the cutout layer, for a cube whose own icon has holes. */
     public static BlockModel cubeAllCutout() {
-        return new BlockModel(path -> Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/" + path)));
+        return new BlockModel(id -> Models.renderType("minecraft:cutout", Models.cubeAll(texture(id, "blocks"))));
     }
 
     /** {@code minecraft:block/cube_bottom_top}. */
@@ -96,9 +97,9 @@ public final class Presets {
 
     // --- items ---
 
-    /** {@code item/generated} over {@code hbm:items/<path>}. */
+    /** {@code item/generated} over {@code <ns>:items/<path>}. */
     public static ItemModel sprite() {
-        return new ItemModel(path -> Models.generated("hbm:items/" + path), null);
+        return new ItemModel(id -> Models.generated(texture(id, "items")), null);
     }
 
     /** {@code item/generated} over the given layers (layer0 first). */
@@ -113,7 +114,7 @@ public final class Presets {
      * {@code port-tools/full3d_audit.py} lists any item whose held model disagrees with its 1.7 class.
      */
     public static ItemModel handheld() {
-        return new ItemModel(path -> handheldFull3D("hbm:items/" + path), null);
+        return new ItemModel(id -> handheldFull3D(texture(id, "items")), null);
     }
 
     /** {@link #handheld()} over the given sprite. */
@@ -128,6 +129,15 @@ public final class Presets {
     /** The item definition names an existing model (a block model, or an authored item model). */
     public static ItemModel shares(String modelId) {
         return new ItemModel(null, modelId);
+    }
+
+    /**
+     * {@code <ns>:<folder>/<path>} for a registration id {@code <ns>:<path>}: 1.7's texture folders ({@code blocks},
+     * {@code items}) under the registering mod's own namespace, so an addon's registrations find their own textures.
+     */
+    static String texture(String id, String folder) {
+        int colon = id.indexOf(':');
+        return id.substring(0, colon) + ":" + folder + "/" + id.substring(colon + 1);
     }
 
     enum ItemForm { DIRECT, VIA_ITEM_MODEL, NONE }
@@ -181,7 +191,7 @@ public final class Presets {
         private Dejson.Declaration fill(Dejson.Declaration declaration) {
             Dejson.Declaration d = declaration;
             if (shape != null) {
-                d = d.models(shape.apply(d.blockId().substring(d.blockId().indexOf(':') + 1)));
+                d = d.models(shape.apply(d.blockId()));
             } else if (rendered != null) {
                 d = d.rendered(rendered);
             } else if (statesOnly != null) {
@@ -221,7 +231,7 @@ public final class Presets {
         @Override
         public void applyTo(Reg.Handle<?> handle) {
             handle.icon(d -> {
-                Dejson.ItemDeclaration item = shape != null ? d.models(shape.apply(handle.path())) : d.shares(shares);
+                Dejson.ItemDeclaration item = shape != null ? d.models(shape.apply(handle.id())) : d.shares(shares);
                 return tints != null ? item.tints(tints) : item;
             });
         }

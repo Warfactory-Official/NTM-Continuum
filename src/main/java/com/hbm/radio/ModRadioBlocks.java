@@ -1,7 +1,7 @@
 package com.hbm.radio;
 
-import com.hbm.registration.Loot;
-import com.hbm.registration.Preset;
+import dev.golem.core.registry.Loot;
+import dev.golem.core.registry.Preset;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Models;

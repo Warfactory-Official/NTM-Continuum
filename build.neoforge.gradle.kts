@@ -270,34 +270,38 @@ if (propOrNull("feature.happy_ghast") == "true") {
     sourceSets["main"].java.srcDir(rootProject.file("src/happyghast-neoforge/java"))
 }
 
-tasks.processResources {
-    val props = mapOf(
-        "mod_id" to modId,
-        "mod_name" to prop("mod.name"),
-        "mod_version" to prop("mod.version"),
-        "mod_author" to prop("mod.author"),
-        "mod_license" to prop("mod.license"),
-        "mod_credits" to prop("mod.credits"),
-        "mod_description" to prop("mod.description"),
-        "minecraft_range" to prop("deps.minecraft_range"),
-        "neoforge_version" to prop("deps.neoforge"),
-        "neoforge_loader_range" to prop("deps.neoforge_loader_range"),
-        "java_version" to javaVersion.toString(),
-        "mixin_compatibility" to if (javaVersion <= 17) "JAVA_17" else "JAVA_21",
-        "pack_format" to prop("pack_format"),
-        // pack.mcmeta's version field, whose very name changed: 26.1 declares a supported RANGE
-        // (min_format/max_format) where older versions declare a single pack_format. Keep in step
-        // with the fabric buildscript — the resource is shared.
-        "pack_format_entry" to if (mcVersion.substringBefore('.').toInt() >= 26)
-            "\"min_format\": ${prop("pack_format")}, \"max_format\": ${prop("pack_format")}"
-        else
-            "\"pack_format\": ${prop("pack_format")}",
-    )
-    inputs.properties(props)
-    filesMatching(listOf("META-INF/neoforge.mods.toml", "pack.mcmeta", "*.mixins.json")) { expand(props) }
+val resourceProps = mapOf(
+    "mod_id" to modId,
+    "mod_name" to prop("mod.name"),
+    "mod_version" to prop("mod.version"),
+    "mod_author" to prop("mod.author"),
+    "mod_license" to prop("mod.license"),
+    "mod_credits" to prop("mod.credits"),
+    "mod_description" to prop("mod.description"),
+    "minecraft_range" to prop("deps.minecraft_range"),
+    "neoforge_version" to prop("deps.neoforge"),
+    "neoforge_loader_range" to prop("deps.neoforge_loader_range"),
+    "java_version" to javaVersion.toString(),
+    "mixin_compatibility" to if (javaVersion <= 17) "JAVA_17" else "JAVA_21",
+    "pack_format" to prop("pack_format"),
+    // pack.mcmeta's version field, whose very name changed: 26.1 declares a supported RANGE
+    // (min_format/max_format) where older versions declare a single pack_format. Keep in step
+    // with the fabric buildscript — the resource is shared.
+    "pack_format_entry" to if (mcVersion.substringBefore('.').toInt() >= 26)
+        "\"min_format\": ${prop("pack_format")}, \"max_format\": ${prop("pack_format")}"
+    else
+        "\"pack_format\": ${prop("pack_format")}",
+)
+
+/** The node's resource templating, shared by the mod's resources and the recipe generator's copy of them. */
+fun ProcessResources.expandModResources() {
+    inputs.properties(resourceProps)
+    filesMatching(listOf("META-INF/neoforge.mods.toml", "pack.mcmeta", "*.mixins.json")) { expand(resourceProps) }
     // NeoForge reads only neoforge.mods.toml; the Forge template would ship unexpanded.
     exclude("fabric.mod.json", "$modId.fabric.mixins.json", "data/$modId/forge/**", "META-INF/mods.toml")
 }
+
+tasks.processResources { expandModResources() }
 
 tasks.jar {
     from(files(rootProject.file("LICENSE"), rootProject.file("LICENSE.LESSER"))) { rename { "${it}_${prop("mod.id")}" } }
@@ -314,17 +318,25 @@ tasks.processResources { dependsOn(tasks.named("stonecutterGenerate")) }
 extra["mc_version"] = mcVersion
 extra["java_version"] = javaVersion.toString()
 // Loader fact: NeoForge patches SimpleCookingSerializer to read the result with ItemStack.CODEC, so a cooking
-// result keeps its count on 1.21.1 where vanilla (and Fabric) drop it; see gradle/legacy-recipes.gradle.kts.
+// result keeps its count on 1.21.1 where vanilla (and Fabric) drop it; see ../Golem-Core/gradle/mod/legacy-recipes.gradle.kts.
 extra["loader_cooking_result_count"] = true
-apply(from = rootProject.file("gradle/run-toolchain.gradle.kts"))
+// Golem Core's shared build layer; HBM's parameters for it (golem.build.*) are in gradle.properties.
+apply(from = rootProject.file("../Golem-Core/gradle/mod/run-toolchain.gradle.kts"))
 // Visual test harness launch capture (shared by every Golem Core mod); see harness.json and ../Golem-Core/harness/README.md.
 apply(from = rootProject.file("../Golem-Core/gradle/harness-spec.gradle.kts"))
-apply(from = rootProject.file("gradle/legacy-recipes.gradle.kts"))
-apply(from = rootProject.file("gradle/legacy-biomes.gradle.kts"))
-apply(from = rootProject.file("gradle/legacy-assets.gradle.kts"))
-apply(from = rootProject.file("gradle/dejson.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-recipes.gradle.kts"))
+extra["loader"] = "neoforge"
+// Neutral "golem:conditions" in data JSON, rewritten to this loader's spelling; see the script.
+apply(from = rootProject.file("../Golem-Core/gradle/mod/recipe-conditions.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-biomes.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-assets.gradle.kts"))
+// HBM's own item-model resource checks; after legacy-assets, whose parentModelOf export they read.
+apply(from = rootProject.file("gradle/asset-checks.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/dejson.gradle.kts"))
+// HBM's machine recipe tables, generated from src/recipes on 26.1 NeoForge (build.neoforge.gradle.kts); see the script.
+apply(from = rootProject.file("../Golem-Core/gradle/mod/generated-data.gradle.kts"))
 
-apply(from = rootProject.file("gradle/mixin-validation.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/mixin-validation.gradle.kts"))
 
 dependencies {
     // NeoForge ships jspecify transitively on 26.1 but not on older versions, and HBM uses @Nullable in
@@ -350,4 +362,76 @@ tasks.named<JavaExec>("runGenerateIds") { isIgnoreExitValue = true }
 // into the next run lets those old fixtures tick alongside the new suite (including DFC detonations).
 tasks.matching { it.name == "runGameTestServer" }.configureEach {
     doFirst { delete(layout.projectDirectory.dir("runs/gametest/world")) }
+}
+
+// Machine recipe tables, written in Java (src/recipes: one transliteration of 1.7's registerDefaults() per table, listed in
+// com.hbm.recipes.HbmDataSources) and generated into datapack files on this node only, by Golem Core's DataGenerator in
+// a headless server run: the rows are the runtime row types, written with the tables' own codecs, which need a started
+// server. Every node's processResources depends on the run and packs its output (../Golem-Core/gradle/mod/generated-data
+// .gradle.kts), so nothing is ever run by hand; Gradle reruns it only when its classpath (src/recipes, HBM, Golem Core) or
+// resources changed. src/recipes is not shipped.
+if (project.name == "26.1-neoforge") {
+    val main = sourceSets["main"]
+    val generatedDataRoot = rootProject.layout.buildDirectory.dir("generated/data")
+    val recipes = sourceSets.create("recipes") {
+        java.setSrcDirs(listOf(rootProject.file("src/recipes/java")))
+        resources.setSrcDirs(listOf<File>())
+        compileClasspath += main.compileClasspath + main.output.classesDirs
+    }
+    configurations["recipesRuntimeClasspath"].extendsFrom(configurations.runtimeClasspath.get())
+    // One mod group for the run: HBM's classes and resources plus the table sources. The resources are what processResources
+    // packs (the mod's source folders and Dejson's output), templated the same way, but not processResources itself,
+    // whose output includes the generated tables and would make the run depend on its own product.
+    recipes.output.dir(mapOf("builtBy" to tasks.named("compileJava")), main.java.destinationDirectory)
+    tasks.named<ProcessResources>("processRecipesResources") {
+        dependsOn(tasks.named("stonecutterGenerate"), tasks.named("dejsonGenerate"))
+        from(provider { main.resources.srcDirs })
+        from(layout.buildDirectory.dir("generated/dejson"))
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        expandModResources()
+    }
+    recipes.runtimeClasspath = recipes.output + configurations["recipesRuntimeClasspath"]
+
+    neoForge {
+        mods { register("hbmRecipes") { sourceSet(recipes) } }
+        runs {
+            // The generator's mod group repeats HBM's classes and resources without the generated tables: every other
+            // run loads HBM's own group only, or it would hold two copies of the mod and could pick the one without them.
+            matching { it.name != "generateData" }.configureEach { loadedMods.set(setOf(mods.getByName(modId))) }
+            // The headless GameTest server, as runGenerateIds: the rows hold item stacks, and 26.1 binds item components
+            // only once a server has loaded its registries (a data run never does). Golem Core's DataGenerator writes
+            // when the server has started and halts it before any test runs.
+            register("generateData") {
+                type = "gameTestServer"
+                sourceSet = recipes
+                loadedMods.set(setOf(mods.getByName("hbmRecipes")))
+                gameDirectory = file("runs/generatedata")
+                ideName = "NeoForge Generate Data ($mcVersion)"
+                systemProperty("golem.data.output", generatedDataRoot.get().asFile.absolutePath)
+                systemProperty("golem.data.sources", "com.hbm.recipes.HbmDataSources,com.hbm.recipes.MinecraftDataSources")
+                systemProperty("golem.gametest.filter", "^$")
+            }
+        }
+    }
+
+    tasks.named<JavaExec>("runGenerateData") {
+        group = "build"
+        description = "Generates the machine recipe tables from src/recipes into build/generated/data."
+        inputs.files(recipes.output.classesDirs, main.output.classesDirs).withNormalizer(ClasspathNormalizer::class.java)
+        outputs.dir(generatedDataRoot)
+        outputs.cacheIf { false }
+        // The halted server's exit code means nothing; the manifest is written last, only once every row was encoded.
+        isIgnoreExitValue = true
+        val manifest = generatedDataRoot.map { it.file("manifest.txt") }
+        // A fresh world every run: the run stops without saving, and never needs one that existed before.
+        doFirst {
+            delete(manifest)
+            delete(layout.projectDirectory.dir("runs/generatedata/world"))
+        }
+        doLast {
+            check(manifest.get().asFile.isFile) {
+                "$path wrote no ${manifest.get().asFile.name}: the generator never finished. Read the run's output above."
+            }
+        }
+    }
 }

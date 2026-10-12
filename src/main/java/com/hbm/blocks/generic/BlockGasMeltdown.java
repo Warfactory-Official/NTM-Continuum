@@ -22,6 +22,15 @@ public class BlockGasMeltdown extends BlockGasBase {
 
     public BlockGasMeltdown(Properties properties) {
         super(properties);
+        cloudColor(0.1F, 0.4F, 0.1F);
+    }
+
+    /** 1.7 {@code randomDisplayTick}: one town aura every display tick, after the base's ash-glasses cloud. */
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        super.animateTick(state, level, pos, random);
+        level.addParticle(net.minecraft.core.particles.ParticleTypes.MYCELIUM, pos.getX() + random.nextFloat(),
+                pos.getY() + random.nextFloat(), pos.getZ() + random.nextFloat(), 0.0D, 0.0D, 0.0D);
     }
 
     @Override

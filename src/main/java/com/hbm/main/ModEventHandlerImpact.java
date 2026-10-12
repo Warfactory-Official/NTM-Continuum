@@ -86,7 +86,8 @@ public final class ModEventHandlerImpact {
         TomSaveData data = TomSaveData.get(world);
         decay(data);
 
-        if (world.dimension() == Level.OVERWORLD && data.fire > 0 && data.dust < 0.75F) {
+        // 1.7 dimensionId == 0; hbm-space dropped the check for its impacted planets (com.hbm.api.environment.Environment.SURFACE)
+        if (com.hbm.api.environment.Environment.isSurface(world) && data.fire > 0 && data.dust < 0.75F) {
             List<LivingEntity> burning = new ArrayList<>();
             for (Entity e : world.getAllEntities()) {
                 // 1.7 casts the position to int (towards zero), not floor
@@ -144,7 +145,7 @@ public final class ModEventHandlerImpact {
                 || mob.getType().getCategory() == MobCategory.AXOLOTLS;
 
         // (1.7 also excluded players, which never reach a mob spawn check here)
-        if (level.dimension() == Level.OVERWORLD) {
+        if (com.hbm.api.environment.Environment.isSurface(level)) { // 1.7 dimensionId == 0; hbm-space: any impacted body
             if (mob.getBbHeight() >= 0.85F || mob.getBbWidth() >= 0.85F && !water && !mob.isBaby()) {
                 return true;
             }

@@ -26,6 +26,19 @@ public class ItemPlateFuel extends CompatItem {
         this.reactivity = reactivity;
     }
 
+    /** The plate values: the {@code hbm:plate_fuel} entry, else the constructor's. */
+    public com.hbm.api.data.ReactorDataMaps.PlateFuel stats() {
+        com.hbm.api.data.ReactorDataMaps.PlateFuel data = com.hbm.api.data.ReactorDataMaps.PLATE_FUEL.get(this);
+        return data != null ? data : codeStats();
+    }
+
+    /** The code defaults (constructor or enum values) that the data map entry overrides. */
+    public com.hbm.api.data.ReactorDataMaps.PlateFuel codeStats() {
+        return new com.hbm.api.data.ReactorDataMaps.PlateFuel(lifeTime, function, reactivity);
+    }
+
+    public int lifeTime() { return stats().lifeTime(); }
+
     public static void setLifeTime(ItemStack stack, int time) {
         ModDataComponents.plateFuelLife(stack, time);
     }
@@ -39,7 +52,7 @@ public class ItemPlateFuel extends CompatItem {
     }
 
     public double getDurabilityForDisplay(ItemStack stack) {
-        return (double) getLifeTime(stack) / (double) lifeTime;
+        return (double) getLifeTime(stack) / (double) lifeTime();
     }
 
     @Override
@@ -54,6 +67,9 @@ public class ItemPlateFuel extends CompatItem {
 
     /** Applies one research-reactor flux sample, including the passive-source lifetime increment. */
     public int react(Level level, ItemStack stack, int flux) {
+        var stats = stats();
+        FunctionEnum function = stats.function();
+        int reactivity = stats.reactivity();
         if (function != FunctionEnum.PASSIVE) {
             setLifeTime(stack, getLifeTime(stack) + flux);
         }
@@ -71,7 +87,9 @@ public class ItemPlateFuel extends CompatItem {
     }
 
     public String getFunctionDesc() {
-        return switch (function) {
+        var stats = stats();
+        int reactivity = stats.reactivity();
+        return switch (stats.function()) {
             case LOGARITHM -> "f(x) = log10(x + 1) * 0.5 * " + reactivity;
             case SQUARE_ROOT -> "f(x) = sqrt(x) * " + reactivity + " / 10";
             case NEGATIVE_QUADRATIC -> "f(x) = [x - (x² / 10000)] / 100 * " + reactivity;
@@ -85,7 +103,7 @@ public class ItemPlateFuel extends CompatItem {
                                           List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal("[Research Reactor Plate Fuel]").withStyle(ChatFormatting.YELLOW));
         tooltip.add(Component.literal("   " + getFunctionDesc()).withStyle(ChatFormatting.DARK_AQUA));
-        tooltip.add(Component.literal("   Yield of " + Library.getShortNumber(lifeTime) + " events")
+        tooltip.add(Component.literal("   Yield of " + Library.getShortNumber(lifeTime()) + " events")
                 .withStyle(ChatFormatting.DARK_AQUA));
     }
 

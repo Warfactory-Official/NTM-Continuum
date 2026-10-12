@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.Random;
 
 /** The four-lane Assembly Factory controller, ported from the 1.12.2 tile entity. */
-public final class TileEntityMachineAssemblyFactory extends TileEntityMachineBase implements MenuProvider,
+public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase implements MenuProvider,
         IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IControlReceiver, WorldlyContainer,
         IUpgradeInfoProvider, IRORValueProvider {
 

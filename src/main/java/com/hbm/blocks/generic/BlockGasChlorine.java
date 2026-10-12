@@ -24,6 +24,7 @@ public class BlockGasChlorine extends BlockGasBase {
 
     public BlockGasChlorine(Properties properties) {
         super(properties);
+        cloudColor(0.7F, 0.8F, 0.6F);
     }
 
     @Override

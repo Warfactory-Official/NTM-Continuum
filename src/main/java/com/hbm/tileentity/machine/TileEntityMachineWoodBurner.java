@@ -99,12 +99,14 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
                     if (fuel.isEmpty()) te.inventory.setStackInSlot(0, remainder);
                     te.setChanged();
                 }
-            } else if (te.power < maxPower && te.isOn) {
+            // hbm-space: isOn && breatheAir(1), here and for liquid fuel (com.hbm.api.environment.Environment)
+            } else if (te.power < maxPower && te.isOn && com.hbm.api.environment.Environment.breatheAir(level, pos, 1)) {
                 te.burnTime--;
                 te.powerGen += 100;
                 if (TickPhase.every(level, pos, 20L)) PollutionHandler.incrementPollution(level, pos, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND);
             }
-        } else if (te.power < maxPower && te.tank.getFill() > 0 && te.isOn) {
+        } else if (te.power < maxPower && te.tank.getFill() > 0 && te.isOn
+                && com.hbm.api.environment.Environment.breatheAir(level, pos, 1)) {
             long heatEnergy = com.hbm.inventory.fluid.FluidCombustion.getFlammableEnergy(te.tank.getTankType());
             if (heatEnergy > 0) {
                 int toBurn = Math.min(te.tank.getFill(), 2);

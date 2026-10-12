@@ -23,6 +23,25 @@ public final class ZirnoxWasteRecipe extends CompatCustomRecipe {
         super("hbm", "zirnox_waste");
     }
 
+    /** The waste a used-up rod reprocesses into: the {@code waste} of the {@code hbm:zirnox_fuel} entry that depletes into it. */
+    private static net.minecraft.world.item.Item waste(List<ItemStack> input) {
+        ItemStack rod = ItemStack.EMPTY;
+        for (ItemStack stack : input) {
+            if (stack.isEmpty()) continue;
+            if (!rod.isEmpty()) return null;
+            rod = stack;
+        }
+        if (rod.isEmpty()) return null;
+        for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            if (!(item instanceof com.hbm.items.machine.ItemZirnoxRod active)) continue;
+            com.hbm.api.data.ReactorDataMaps.ZirnoxFuel fuel = active.stats();
+            if (fuel.waste().isPresent() && rod.is(com.hbm.api.data.ReactorDataMaps.itemOf(fuel.depletesInto()))) {
+                return com.hbm.api.data.ReactorDataMaps.itemOf(fuel.waste().get());
+            }
+        }
+        return null;
+    }
+
     private static ZirnoxFuel fuel(List<ItemStack> input) {
         ItemStack rod = ItemStack.EMPTY;
         for (ItemStack stack : input) {
@@ -39,13 +58,13 @@ public final class ZirnoxWasteRecipe extends CompatCustomRecipe {
 
     @Override
     protected boolean matchesItems(List<ItemStack> input, Level level) {
-        return fuel(input) != null;
+        return waste(input) != null;
     }
 
     @Override
     protected ItemStack assembleItems(List<ItemStack> input) {
-        ZirnoxFuel fuel = fuel(input);
-        return fuel == null ? ItemStack.EMPTY : ModZirnoxItems.hotWaste(fuel, 2);
+        net.minecraft.world.item.Item waste = waste(input);
+        return waste == null ? ItemStack.EMPTY : com.hbm.items.machine.ItemZirnoxWaste.makeHot(waste, 2);
     }
 
     @Override

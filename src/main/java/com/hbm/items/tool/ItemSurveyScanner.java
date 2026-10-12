@@ -17,6 +17,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
+import java.util.List;
+
 /**
  * 1.7 {@code ItemSurveyScanner}: an 11x11 grid of columns five blocks apart, sampled every second block from
  * 15 above the player down to y 2, reports oil, bedrock oil, coltan, depth rock, schist and australium in chat.
@@ -36,6 +38,36 @@ public class ItemSurveyScanner extends CompatItem {
         return key.getNamespace().equals("hbm") ? key.getPath() : "";
     }
 
+    /** One line the scanner can report: shown once if any sampled block matches. */
+    public record Finding(java.util.function.Predicate<Block> matches, String message, ChatFormatting colour) {}
+
+    /**
+     * 1.7's checks in its message order (its "wow, this sucks!" if-chain: a block counts for the first check it matches).
+     * An addon adds its own deposits with {@link #addFinding}; NTM: Space's natural gas and brine went in after OIL.
+     */
+    private static final List<Finding> FINDINGS = new java.util.concurrent.CopyOnWriteArrayList<>(List.of(
+            hbm("Found OIL!", ChatFormatting.BLACK, "ore_oil"),
+            hbm("Found BEDROCK OIL!", ChatFormatting.BLACK, "ore_bedrock_oil"),
+            hbm("Found COLTAN!", ChatFormatting.GOLD, "ore_coltan"),
+            hbm("Found DEPTH ROCK!", ChatFormatting.GRAY, "stone_depth", "stone_depth_nether"),
+            hbm("Found SCHIST!", ChatFormatting.DARK_AQUA, "stone_gneiss"),
+            hbm("Found AUSTRALIUM!", ChatFormatting.YELLOW, "ore_australium")));
+
+    private static Finding hbm(String message, ChatFormatting colour, String... paths) {
+        List<String> ids = List.of(paths);
+        return new Finding(block -> ids.contains(id(block)), message, colour);
+    }
+
+    /** Adds a finding at {@code index} of the report order (0 = first, {@link #findings()}{@code .size()} = last). */
+    public static void addFinding(int index, Finding finding) {
+        FINDINGS.add(index, finding);
+    }
+
+    /** The findings in report order (read-only). */
+    public static List<Finding> findings() {
+        return java.util.Collections.unmodifiableList(FINDINGS);
+    }
+
     @Override
     protected InteractionResult compatUse(Level world, Player player, InteractionHand hand) {
         if (!world.isClientSide()) {
@@ -43,28 +75,19 @@ public class ItemSurveyScanner extends CompatItem {
             int y = (int) Math.floor(player.getY());
             int z = (int) Math.floor(player.getZ());
 
-            boolean hasOil = false;
-            boolean hasColtan = false;
-            boolean hasBedrockOil = false;
-            boolean hasDepth = false;
-            boolean hasSchist = false;
-            boolean hasAussie = false;
+            List<Finding> findings = List.copyOf(FINDINGS);
+            boolean[] found = new boolean[findings.size()];
             BedrockOreBlockEntity tile = null;
 
             for (int a = -5; a <= 5; a++) {
                 for (int b = -5; b <= 5; b++) {
                     for (int i = y + 15; i > 1; i -= 2) {
-                        String block = id(world.getBlockState(new BlockPos(x + a * 5, i, z + b * 5)).getBlock());
-
-                        //wow, this sucks!
-                        switch (block) {
-                            case "ore_oil" -> hasOil = true;
-                            case "ore_coltan" -> hasColtan = true;
-                            case "ore_bedrock_oil" -> hasBedrockOil = true;
-                            case "stone_depth", "stone_depth_nether" -> hasDepth = true;
-                            case "stone_gneiss" -> hasSchist = true;
-                            case "ore_australium" -> hasAussie = true;
-                            default -> { }
+                        Block block = world.getBlockState(new BlockPos(x + a * 5, i, z + b * 5)).getBlock();
+                        for (int f = 0; f < findings.size(); f++) {
+                            if (findings.get(f).matches().test(block)) {
+                                found[f] = true;
+                                break;
+                            }
                         }
                     }
 
@@ -76,12 +99,9 @@ public class ItemSurveyScanner extends CompatItem {
                 }
             }
 
-            if (hasOil) say(player, "Found OIL!", ChatFormatting.BLACK);
-            if (hasBedrockOil) say(player, "Found BEDROCK OIL!", ChatFormatting.BLACK);
-            if (hasColtan) say(player, "Found COLTAN!", ChatFormatting.GOLD);
-            if (hasDepth) say(player, "Found DEPTH ROCK!", ChatFormatting.GRAY);
-            if (hasSchist) say(player, "Found SCHIST!", ChatFormatting.DARK_AQUA);
-            if (hasAussie) say(player, "Found AUSTRALIUM!", ChatFormatting.YELLOW);
+            for (int f = 0; f < findings.size(); f++) {
+                if (found[f]) say(player, findings.get(f).message(), findings.get(f).colour());
+            }
             if (tile != null && !tile.getResource().isEmpty()) {
                 player.sendSystemMessage(Component.literal("Found BEDROCK ORE for ")
                         .append(tile.getResource().getHoverName()).append("!").withStyle(ChatFormatting.RED));

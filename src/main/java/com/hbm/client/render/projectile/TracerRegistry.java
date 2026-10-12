@@ -181,6 +181,7 @@ public final class TracerRegistry {
     public static void audit() {
         int rendered = 0;
         int intentional = 0;
+        int foreign = 0;
         List<Identifier> missing = new ArrayList<>();
         for (com.hbm.items.weapon.sedna.BulletConfig config :
                 com.hbm.items.weapon.sedna.BulletConfigs.all()) {
@@ -196,12 +197,17 @@ public final class TracerRegistry {
             } else if (SOURCE_UNRENDERED.contains(id)) {
                 intentional++;
                 reportMissing(beam ? "beam" : "bullet", id);
+            } else if (!id.getNamespace().equals(Constants.MOD_ID)) {
+                // An addon's round: the audit pins HBM's own client table against 1.7's GunFactoryClient, an addon's
+                // tracers are its own business and may be set after this runs (setBulletRenderer/setBeamRenderer).
+                foreign++;
             } else {
                 reportMissing(beam ? "beam" : "bullet", id);
                 missing.add(id);
             }
         }
-        Constants.LOG.info("Projectile tracer audit: {} mapped, {} source-unrendered", rendered, intentional);
+        Constants.LOG.info("Projectile tracer audit: {} mapped, {} source-unrendered, {} addon round(s) not audited",
+                rendered, intentional, foreign);
         if (!missing.isEmpty()) {
             throw new IllegalStateException("Missing original-hbm projectile tracers: " + missing);
         }
@@ -215,10 +221,28 @@ public final class TracerRegistry {
         for (String id : ids) setBeamRenderer(Ids.of("hbm", id), tracer);
     }
 
+    /** One tracer for several rounds, any namespace (an addon's {@code BulletConfigs.register(Identifier, …)} ids). */
+    public static void register(BulletTracer tracer, Identifier... ids) {
+        for (Identifier id : ids) setBulletRenderer(id, tracer);
+    }
+
+    /** One beam for several rounds, any namespace. */
+    public static void registerBeam(BeamTracer tracer, Identifier... ids) {
+        for (Identifier id : ids) setBeamRenderer(id, tracer);
+    }
+
     private static BulletTracer model(String modelId, String textureId, String part, float scale,
             java.util.function.Consumer<PoseStack> transform) {
-        Identifier model = Ids.of("hbm", modelId);
-        Identifier texture = Ids.of("hbm", textureId);
+        return model(Ids.of("hbm", modelId), Ids.of("hbm", textureId), part, scale, transform);
+    }
+
+    /**
+     * 1.7's model tracer ({@code GunFactoryClient} {@code RENDER_*} model styles): one OBJ part, scaled by {@code scale}
+     * after {@code transform}, textured cutout, lit by the projectile. Public with full ids so an addon's rounds can
+     * use their own models.
+     */
+    public static BulletTracer model(Identifier model, Identifier texture, String part, float scale,
+            java.util.function.Consumer<PoseStack> transform) {
         return (state, pose, sink) -> {
             pose.pushPose();
             pose.scale(scale, scale, scale);
@@ -270,7 +294,7 @@ public final class TracerRegistry {
         return MODELS.computeIfAbsent(id, WavefrontObj::load);
     }
 
-    private static BulletTracer flare(float red, float green, float blue) {
+    public static BulletTracer flare(float red, float green, float blue) {
         return (state, pose, sink) -> {
             if (state.age < 2F || state.cameraOrientation == null) return;
             float scale = (float) (Math.min(5D, (state.age - 2F) * 0.5D) * (0.8D + Math.random() * 0.4D));
@@ -294,7 +318,7 @@ public final class TracerRegistry {
         Vertexes.vertex(buffer, pose, size, -size, 0F, color, 0F, 1F, OverlayTexture.NO_OVERLAY, 0xF000F0, 0F, 0F, 1F);
     }
 
-    private static BulletTracer ribbon(int dark, int light, boolean fullbright) {
+    public static BulletTracer ribbon(int dark, int light, boolean fullbright) {
         return (state, pose, sink) -> {
             if (state.length <= 0D) return;
             float end = (float) state.length;
@@ -407,7 +431,7 @@ public final class TracerRegistry {
         };
     }
 
-    private static BeamTracer laser(int r, int g, int b) {
+    public static BeamTracer laser(int r, int g, int b) {
         return (state, pose, sink) -> {
             if (state.length <= 0D) return;
             float age = fade(state);

@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 
-public final class TileEntityRadioTorchLogic extends TileEntityLoadedBase
+public class TileEntityRadioTorchLogic extends TileEntityLoadedBase
         implements IControlReceiver, net.minecraft.world.MenuProvider, RadioTorchTicking {
     public static final int MAPPING_SIZE = 16;
     public String channel = "";

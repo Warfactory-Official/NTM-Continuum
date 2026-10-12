@@ -264,6 +264,31 @@ public final class HbmClientRegistrations {
             sink.register("gun_smoke_capture", com.hbm.client.gun.GunSmokeClient::render);
     }
 
+    /**
+     * Every HBM screen and renderer through Golem Core's loader-neutral {@code ClientRegistrations}: the same path an
+     * addon's client start-up takes. Called once from each loader's client init.
+     */
+    public static void installScreensAndRenderers() {
+        dev.golem.core.client.ClientRegistrations.screens(screens -> registerScreens(screens::register));
+        dev.golem.core.client.ClientRegistrations.renderers(renderers -> registerRenderers(
+                new HbmBlockEntityRenderers.Sink() {
+                    @Override
+                    public <T extends net.minecraft.world.level.block.entity.BlockEntity,
+                            S extends dev.golem.core.render.CompatRenderState> void register(
+                            net.minecraft.world.level.block.entity.BlockEntityType<? extends T> type,
+                            dev.golem.core.render.CompatBERProvider<T, S> provider) {
+                        renderers.blockEntity(type, provider);
+                    }
+                }, new HbmEntityRenderers.Sink() {
+                    @Override
+                    public <T extends net.minecraft.world.entity.Entity> void register(
+                            net.minecraft.world.entity.EntityType<? extends T> type,
+                            net.minecraft.client.renderer.entity.EntityRendererProvider<T> provider) {
+                        renderers.entity(type, provider);
+                    }
+                }));
+    }
+
     public static void registerRenderers(HbmBlockEntityRenderers.Sink blockEntities,
             HbmEntityRenderers.Sink downstream) {
         HbmBlockEntityRenderers.registerAll(blockEntities);
@@ -383,15 +408,20 @@ public final class HbmClientRegistrations {
                     com.hbm.client.render.armor.ArmorRenderers.reload();
                     com.hbm.client.jetpack.JetpackClientVisuals.reload();
                 });
-        dev.golem.core.client.PlayerRenderHooks.register(
+        // HBM's player hooks run in the phase hbm:player, before the default phase addons register in (their
+        // listeners see HBM's pose, as when HBM's was a single slot run first).
+        dev.golem.core.client.PlayerRenderHooks.POSE.addPhaseOrdering("hbm:player", dev.golem.core.hook.Hook.DEFAULT_PHASE);
+        dev.golem.core.client.PlayerRenderHooks.POSE.register("hbm:player",
                 com.hbm.client.jetpack.JetpackClientVisuals::applyPlayerPose);
-        dev.golem.core.client.PlayerRenderHooks.registerModel(parts -> {
+        dev.golem.core.client.PlayerRenderHooks.MODEL.addPhaseOrdering("hbm:player", dev.golem.core.hook.Hook.DEFAULT_PHASE);
+        dev.golem.core.client.PlayerRenderHooks.MODEL.register("hbm:player", parts -> {
             // The source applies gun aimedBow during model setup; keep its arm pose after the glider's
             // flight freeze while retaining the glider's body, head and leg precedence.
             com.hbm.client.jetpack.JetpackClientVisuals.applyPlayerModelPose(parts);
             com.hbm.client.render.weapon.GunPlayerPose.apply(parts);
         });
-        dev.golem.core.client.CameraHooks.register(
+        dev.golem.core.client.CameraHooks.LOWER_THIRD_PERSON.addPhaseOrdering("hbm:player", dev.golem.core.hook.Hook.DEFAULT_PHASE);
+        dev.golem.core.client.CameraHooks.LOWER_THIRD_PERSON.register("hbm:player",
                 com.hbm.client.jetpack.JetpackClientVisuals::lowerThirdPersonCamera);
         dev.golem.core.render.HumanoidLayers.register(
                 com.hbm.client.render.armor.ArmorRenderLayer::new);

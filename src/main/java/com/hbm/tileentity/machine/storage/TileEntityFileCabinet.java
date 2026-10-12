@@ -71,6 +71,9 @@ public class TileEntityFileCabinet extends TileEntityCrateBase {
         playersUsing = buf.readInt();
     }
 
+    /** Every server tick of every filing cabinet (ADDON-API-INVENTORY H-74). HBM registers none; NTM: Space's soyuz blast. */
+    public static final dev.golem.core.hook.Hook<java.util.function.Consumer<TileEntityFileCabinet>> TICK = dev.golem.core.hook.Hook.notifying();
+
     public static void tick(Level level, BlockPos pos, BlockState state, TileEntityFileCabinet cabinet) {
         cabinet.update(level);
     }
@@ -82,6 +85,8 @@ public class TileEntityFileCabinet extends TileEntityCrateBase {
             } else {
                 timer = 0;
             }
+            for (java.util.function.Consumer<TileEntityFileCabinet> listener : TICK) listener.accept(this);
+            if (isRemoved()) return;
             networkPackNT();
         } else {
             this.prevLowerExtent = lowerExtent;

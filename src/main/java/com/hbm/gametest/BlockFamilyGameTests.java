@@ -2,6 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.blocks.ModBeaconBlocks;
+import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.blocks.ModGlassBlocks;
 import com.hbm.blocks.ModLadderBlocks;
@@ -36,7 +37,7 @@ public final class BlockFamilyGameTests {
     private static final List<RegistryObject<? extends Block>> BEACON = List.of(
             ModBeaconBlocks.block_cadmium, ModBeaconBlocks.block_bismuth, ModBeaconBlocks.block_coltan,
             ModBeaconBlocks.block_tantalium, ModBeaconBlocks.block_niobium, ModBeaconBlocks.block_lanthanium,
-            ModBeaconBlocks.block_actinium, ModBeaconBlocks.block_polymer, ModBeaconBlocks.block_bakelite,
+            ModHazardBlocks.block_actinium, ModBeaconBlocks.block_polymer, ModBeaconBlocks.block_bakelite,
             ModBeaconBlocks.block_rubber, ModBeaconBlocks.block_zirconium);
     private static final List<String> BEACON_IDS = List.of(
             "block_cadmium", "block_bismuth", "block_coltan", "block_tantalium", "block_niobium",

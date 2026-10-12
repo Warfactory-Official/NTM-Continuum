@@ -65,8 +65,33 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
             {0, 1, 1}, {0, 1, -1}, {0, -1, 1}, {0, -1, -1}
     };
 
-    public static final Set<FluidType> acceptedFuels = Set.of(
-            Fluids.WOODOIL, Fluids.ETHANOL, Fluids.FISHOIL, Fluids.HEAVYOIL);
+    /**
+     * The fuels the autosaw and the thresher burn: a live view of the {@code hbm:autosaw_fuel} fluid data map
+     * ({@link com.hbm.api.data.FluidDataMaps#AUTOSAW_FUEL}; 1.7: wood oil, ethanol, fish oil, heavy oil).
+     */
+    public static final Set<FluidType> acceptedFuels = new java.util.AbstractSet<>() {
+        @Override
+        public boolean contains(Object o) {
+            return o instanceof FluidType type && type != Fluids.NONE
+                    && Boolean.TRUE.equals(com.hbm.api.data.FluidDataMaps.AUTOSAW_FUEL.get(Fluids.toVanilla(type)));
+        }
+
+        @Override
+        public java.util.Iterator<FluidType> iterator() {
+            java.util.List<FluidType> list = new java.util.ArrayList<>();
+            com.hbm.api.data.FluidDataMaps.AUTOSAW_FUEL.byId().forEach((id, on) -> {
+                if (Boolean.TRUE.equals(on) && Fluids.byRegistryName(id) != Fluids.NONE) list.add(Fluids.byRegistryName(id));
+            });
+            return list.iterator();
+        }
+
+        @Override
+        public int size() {
+            int n = 0;
+            for (java.util.Iterator<FluidType> it = iterator(); it.hasNext(); it.next()) n++;
+            return n;
+        }
+    };
 
     public final FluidTankNTM tank = new FluidTankNTM(Fluids.WOODOIL, 100);
 

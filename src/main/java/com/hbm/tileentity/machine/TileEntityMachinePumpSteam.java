@@ -3,8 +3,6 @@ package com.hbm.tileentity.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
-import com.hbm.blocks.ModFalloutBlocks;
-import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
@@ -21,8 +19,6 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Steam-powered groundwater pump ported from the legacy pump base and steam implementation. */
@@ -109,6 +105,11 @@ public class TileEntityMachinePumpSteam extends TileEntityMachineBase
 
     private boolean checkGround(Level level, BlockPos pos) {
         if (!level.dimensionType().hasSkyLight()) return false;
+        // hbm-space TileEntityMachinePumpBase.checkGround: no groundwater in orbit, and the pump lifts the body's
+        // water table, whatever fluid that is (com.hbm.api.environment.Environment; plain HBM: water)
+        com.hbm.inventory.fluid.FluidType table = com.hbm.api.environment.Environment.groundwater(level, pos);
+        if (table == com.hbm.inventory.fluid.Fluids.NONE) return false;
+        water.setTankType(table);
 
         int validBlocks = 0;
         int invalidBlocks = 0;
@@ -117,21 +118,13 @@ public class TileEntityMachinePumpSteam extends TileEntityMachineBase
                 for (int z = -1; z <= 1; z++) {
                     BlockPos groundPos = pos.offset(x, y, z);
                     BlockState groundState = level.getBlockState(groundPos);
-                    Block block = groundState.getBlock();
                     if (y == -1 && !Compat.isSolidRender(groundState, level, groundPos)) return false;
-                    if (isValidGround(block)) validBlocks++;
+                    if (groundState.is(com.hbm.tags.HbmBlockTags.PUMP_GROUND)) validBlocks++;
                     else invalidBlocks++;
                 }
             }
         }
         return validBlocks >= invalidBlocks;
-    }
-
-    private static boolean isValidGround(Block block) {
-        return block == Blocks.GRASS_BLOCK || block == Blocks.DIRT || block == Blocks.SAND
-                || block == Blocks.MYCELIUM || block == ModFalloutBlocks.waste_earth.get()
-                || block == ModFallingBlocks.dirt_dead.get() || block == ModFallingBlocks.dirt_oily.get()
-                || block == ModFallingBlocks.sand_dirty.get() || block == ModFallingBlocks.sand_dirty_red.get();
     }
 
     public DirPos[] getConPos() {

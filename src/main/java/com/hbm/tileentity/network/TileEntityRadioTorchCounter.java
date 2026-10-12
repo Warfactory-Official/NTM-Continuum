@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Server-side three-slot ROR inventory counter. */
-public final class TileEntityRadioTorchCounter extends TileEntityInventoryBase implements IControlReceiver, RadioTorchTicking,
+public class TileEntityRadioTorchCounter extends TileEntityInventoryBase implements IControlReceiver, RadioTorchTicking,
         net.minecraft.world.MenuProvider {
     public static final int MAPPING_SIZE = 3;
 

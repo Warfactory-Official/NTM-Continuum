@@ -1,41 +1,46 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.RecipesCommon.AStack;
-import com.hbm.inventory.RecipesCommon.ComparableStack;
-import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.Fluids;
-import com.hbm.inventory.material.Mats;
-import com.hbm.items.ModFuelItems;
-import com.hbm.items.ModIngredientItems;
-import com.hbm.items.ModItems;
-import com.hbm.items.ItemEnums.EnumAshType;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.FluidRecipeCodecs;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 /**
- * Pyro oven recipes — 1:1 port of the 1.12.2 {@code PyroOvenRecipes}. An optional fluid + optional item
- * input → an optional fluid + optional item output, over {@code duration} ticks. The {@code registerSFAuto}
- * "solid fuel" auto-computation replicates the old math (1_440_000 TU per SF, ×0.5 bonus, magnitude-round).
+ * Pyrolysis oven recipes: the datapack table {@code hbm:pyrolysis} in {@code data/hbm/recipe/pyrolysis/}, an optional fluid
+ * and an optional item in, an optional fluid and an optional item out, over {@code duration} ticks:
+ * <pre>{"input_fluid": {type, amount}, "input_item": {"ingredient": id or #tag, "count"}, "output_fluid": {type, amount},
+ *  "output_item": item, "duration": ticks}</pre>
+ * or 1.7's {@code registerSFAuto} "solid fuel" rule, which stays a rule reading the fuel's {@code flammable} energy from its
+ * {@code fluid_property} file: {@code {"solid_fuel": fluid, "solid_fuel_energy": TU per item, "output_item": item,
+ * "duration": 60}} takes energy x 1000 x 0.5 / energy per bucket mB of the fluid (cut to two significant digits, at least 1;
+ * a fluid that is not flammable gets no row). Converted once from the Java table (1.7 {@code PyroOvenRecipes}: 27
+ * solid-fuel rows and 14 literal ones).
  *
- * <p>The bedrock-ore roast loops come from {@link BedrockOreChainRecipes}. The {@code ANY_COKE} and {@code ANY_TAR} ingredients resolve to the {@code c:cokes} and
- * {@code c:tars} tags respectively.
+ * <p>The machine takes the <b>first</b> recipe that matches, so the order is 1.7's and load-bearing: solid-fuel rows first
+ * (1.7 registers them first; the syngas one is why syngas plus tungsten dust makes solid fuel), then the bedrock-ore roasting
+ * rows {@link BedrockOreChainRecipes} still adds in code (R-10), then the literal rows; inside each group, recipe-id order.
+ * {@code ANY_COKE} / {@code ANY_TAR} are the {@code c:cokes} / {@code c:tars} tags.
  */
 public final class PyroOvenRecipes {
 
     private PyroOvenRecipes() {}
 
-    /** The coke aggregate (old OreDict ANY_COKE) — the 3 coke items, hand-tagged in data/c/tags/item/cokes.json. */
+    /** The coke aggregate (old OreDict ANY_COKE) - the 3 coke items, hand-tagged in data/c/tags/item/cokes.json. */
     public static final TagKey<Item> COKES = TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", "cokes"));
     /** The tar aggregate (old OreDict ANY_TAR), hand-tagged in data/c/tags/item/tars.json. */
     public static final TagKey<Item> TARS = TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", "tars"));
@@ -54,95 +59,66 @@ public final class PyroOvenRecipes {
         public PyroOvenRecipe out(ItemStack stack) { this.outputItem = stack; return this; }
     }
 
-    private static final List<PyroOvenRecipe> recipes = new ArrayList<>();
-    private static boolean initialized = false;
+    public record Row(Optional<FluidStack> inputFluid, Optional<AStack> inputItem, Optional<FluidStack> outputFluid,
+                      Optional<GenericRecipeCodec.ItemOut> outputItem, int duration, Optional<FluidType> solidFuel,
+                      Optional<Long> solidFuelEnergy) {}
 
+    public static final MapCodec<Row> CODEC = FluidRecipeCodecs.checked(RecordCodecBuilder.<Row>mapCodec(i -> i.group(
+            GenericRecipeCodec.FLUID_STACK.optionalFieldOf("input_fluid").forGetter(Row::inputFluid),
+            GenericRecipeCodec.STACK.optionalFieldOf("input_item").forGetter(Row::inputItem),
+            GenericRecipeCodec.FLUID_STACK.optionalFieldOf("output_fluid").forGetter(Row::outputFluid),
+            GenericRecipeCodec.ITEM_OUT.optionalFieldOf("output_item").forGetter(Row::outputItem),
+            Codec.INT.fieldOf("duration").forGetter(Row::duration),
+            GenericRecipeCodec.FLUID.optionalFieldOf("solid_fuel").forGetter(Row::solidFuel),
+            Codec.LONG.optionalFieldOf("solid_fuel_energy").forGetter(Row::solidFuelEnergy)
+    ).apply(i, Row::new)), row -> row.solidFuel().isPresent() != row.solidFuelEnergy().isPresent()
+            || (row.solidFuel().isPresent() && row.inputFluid().isPresent())
+            ? DataResult.error(() -> "a pyrolysis row has \"input_fluid\", or \"solid_fuel\" with \"solid_fuel_energy\"")
+            : DataResult.success(row));
+
+    public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("pyrolysis", () -> CODEC);
+
+    private static volatile List<PyroOvenRecipe> recipes;
+
+    static {
+        TABLE.changed.register(PyroOvenRecipes::reindex);
+    }
+
+    /** Declares the table at mod construction. */
+    public static void declare() {}
+
+    private static void reindex() {
+        List<PyroOvenRecipe> solidFuel = new ArrayList<>();
+        List<PyroOvenRecipe> literal = new ArrayList<>();
+        for (Row row : TABLE.rows()) {
+            PyroOvenRecipe recipe = new PyroOvenRecipe(row.duration());
+            if (row.solidFuel().isPresent()) {
+                // 1.7 registerSFAuto: x0.5 bonus, at least 1 mB
+                int mB = FluidRecipeCodecs.solidFuelAmount(row.solidFuelEnergy().get(), 0.5D,
+                        FluidCombustion.getFlammableEnergy(row.solidFuel().get()));
+                if (mB < 0) continue;
+                recipe.in(new FluidStack(row.solidFuel().get(), Math.max(mB, 1)));
+            }
+            row.inputFluid().ifPresent(recipe::in);
+            row.inputItem().ifPresent(recipe::in);
+            row.outputFluid().ifPresent(recipe::out);
+            row.outputItem().ifPresent(out -> recipe.out(out.stack()));
+            (row.solidFuel().isPresent() ? solidFuel : literal).add(recipe);
+        }
+        List<PyroOvenRecipe> next = new ArrayList<>(solidFuel);
+        BedrockOreChainRecipes.pyroOven(next); // bedrock-ore roast loops, still code (R-10)
+        next.addAll(literal);
+        recipes = Collections.unmodifiableList(next);
+    }
+
+    /** Every recipe in the order the machine tries them. */
     public static List<PyroOvenRecipe> getAll() {
-        init();
-        return Collections.unmodifiableList(recipes);
-    }
-
-    private static synchronized void init() {
-        if (initialized) return;
-        initialized = true;
-
-        // --- solid fuel (registerSFAuto) ---
-        registerSFAuto(Fluids.SMEAR);
-        registerSFAuto(Fluids.HEATINGOIL);
-        registerSFAuto(Fluids.HEATINGOIL_VACUUM);
-        registerSFAuto(Fluids.RECLAIMED);
-        registerSFAuto(Fluids.PETROIL);
-        registerSFAuto(Fluids.NAPHTHA);
-        registerSFAuto(Fluids.NAPHTHA_CRACK);
-        registerSFAuto(Fluids.DIESEL);
-        registerSFAuto(Fluids.DIESEL_REFORM);
-        registerSFAuto(Fluids.DIESEL_CRACK);
-        registerSFAuto(Fluids.DIESEL_CRACK_REFORM);
-        registerSFAuto(Fluids.LIGHTOIL);
-        registerSFAuto(Fluids.LIGHTOIL_CRACK);
-        registerSFAuto(Fluids.LIGHTOIL_VACUUM);
-        registerSFAuto(Fluids.KEROSENE);
-        registerSFAuto(Fluids.KEROSENE_REFORM);
-        registerSFAuto(Fluids.SOURGAS);
-        registerSFAuto(Fluids.REFORMGAS);
-        registerSFAuto(Fluids.SYNGAS);
-        registerSFAuto(Fluids.PETROLEUM);
-        registerSFAuto(Fluids.LPG);
-        registerSFAuto(Fluids.BIOFUEL);
-        registerSFAuto(Fluids.AROMATICS);
-        registerSFAuto(Fluids.UNSATURATEDS);
-        registerSFAuto(Fluids.REFORMATE);
-        registerSFAuto(Fluids.XYLENE);
-        registerSFAuto(Fluids.BALEFIRE, 24_000_000L, ModItems.solid_fuel_bf.get());
-
-        BedrockOreChainRecipes.pyroOven(recipes); // bedrock-ore roast loops
-
-        // 1.7 PyroOvenRecipes:80 -- steam to syngas is 1:2, syngas to LPS here is 2:1, so it can be cycled
-        recipes.add(new PyroOvenRecipe(300).in(new FluidStack(Fluids.SYNGAS, 2_000)).in(Mats.MAT_TUNGSTEN.dust())
-                .out(new FluidStack(Fluids.SPENTSTEAM, 1_000)).out(new ItemStack(ModItems.ingot_tungsten_carbide.get())));
-
-        // syngas from coal
-        recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.STEAM, 500)).in(Mats.MAT_COAL.gem()).out(new FluidStack(Fluids.SYNGAS, 1_000)));
-        recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.STEAM, 500)).in(Mats.MAT_COAL.dust()).out(new FluidStack(Fluids.SYNGAS, 1_000)));
-        recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.STEAM, 250)).in(new TagStack(COKES)).out(new FluidStack(Fluids.SYNGAS, 1_000)));
-        // syngas from biomass
-        recipes.add(new PyroOvenRecipe(100).in(new ComparableStack(ModFuelItems.biomass.get(), 4)).out(new FluidStack(Fluids.SYNGAS, 1_000)).out(new ItemStack(Items.CHARCOAL, 1)));
-        // soot from tar. 1.7 (PyroOvenRecipes:97) writes .out(HYDROGEN 250) and then .out(CARBONDIOXIDE 1000), and the
-        // second call overwrites the first: the recipe has no fluid input and only the CO2 output. Ported as it behaves.
-        recipes.add(new PyroOvenRecipe(40)
-                .in(new TagStack(TARS, 4)).out(new FluidStack(Fluids.CARBONDIOXIDE, 1_000))
-                .out(new ItemStack(ModIngredientItems.ash(EnumAshType.SOOT))));
-        // heavyoil from coal
-        recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.HYDROGEN, 500)).in(Mats.MAT_COAL.gem()).out(new FluidStack(Fluids.HEAVYOIL, 1_000)));
-        recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.HYDROGEN, 500)).in(Mats.MAT_COAL.dust()).out(new FluidStack(Fluids.HEAVYOIL, 1_000)));
-        // coalgas from coal
-        recipes.add(new PyroOvenRecipe(50).in(new FluidStack(Fluids.HEAVYOIL, 500)).in(Mats.MAT_COAL.gem()).out(new FluidStack(Fluids.COALGAS, 1_000)));
-        recipes.add(new PyroOvenRecipe(50).in(new FluidStack(Fluids.HEAVYOIL, 500)).in(Mats.MAT_COAL.dust()).out(new FluidStack(Fluids.COALGAS, 1_000)));
-        recipes.add(new PyroOvenRecipe(50).in(new FluidStack(Fluids.HEAVYOIL, 500)).in(new TagStack(COKES)).out(new FluidStack(Fluids.COALGAS, 1_000)));
-        // refgas from coker gas
-        recipes.add(new PyroOvenRecipe(60).in(new FluidStack(Fluids.GAS_COKER, 4_000)).out(new FluidStack(Fluids.REFORMGAS, 100)));
-        // hydrogen and carbon from natgas
-        recipes.add(new PyroOvenRecipe(60).in(new FluidStack(Fluids.GAS, 12_000)).out(new FluidStack(Fluids.HYDROGEN, 8_000)).out(new ItemStack(ModFuelItems.ingot_graphite.get(), 1)));
-    }
-
-    private static void registerSFAuto(FluidType fluid) {
-        registerSFAuto(fluid, 1_440_000L, ModFuelItems.solid_fuel.get());
-    }
-
-    /** Old registerSFAuto: mB = tuPerSF·1000·0.5 / flammableEnergy, magnitude-rounded, min 1. */
-    private static void registerSFAuto(FluidType fluid, long tuPerSF, Item fuel) {
-        long tuPerBucket = FluidCombustion.getFlammableEnergy(fluid);
-        if (tuPerBucket <= 0) return; // not flammable in this fork -> no SF recipe (old would NPE)
-        double bonus = 0.5D;
-
-        int mB = (int) (tuPerSF * 1000L * bonus / tuPerBucket);
-
-        if (mB > 10_000) mB -= (mB % 1000);
-        else if (mB > 1_000) mB -= (mB % 100);
-        else if (mB > 100) mB -= (mB % 10);
-
-        mB = Math.max(mB, 1);
-
-        recipes.add(new PyroOvenRecipe(60).in(new FluidStack(fluid, mB)).out(new ItemStack(fuel)));
+        List<PyroOvenRecipe> current = recipes;
+        if (current == null) {
+            TABLE.rows();
+            if (recipes == null) reindex();
+            current = recipes;
+        }
+        return current;
     }
 }

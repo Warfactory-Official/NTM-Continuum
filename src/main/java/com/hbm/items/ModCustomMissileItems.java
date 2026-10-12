@@ -298,6 +298,22 @@ public final class ModCustomMissileItems {
     public static final RegistryObject<ItemCustomMissilePart> mp_chip_5 = part("mp_c_5",
             p -> p.makeChip(0.0F)).transform(Presets.sprite());
 
+    /**
+     * The item properties of a custom missile part, by part id, applied when the part is registered after 1.7's
+     * {@code stacksTo(1)}. Plain HBM has no listener (every part stacks to one, as 1.7); NTM: Space stacks fuselages and
+     * thrusters to 64, as hbm-space did, for its rocket stage clusters. A listener runs from an addon's start-up, before
+     * registration (ADDON-API-INVENTORY V-167).
+     */
+    @FunctionalInterface
+    public interface PartProperties {
+        net.minecraft.world.item.Item.Properties apply(String id, net.minecraft.world.item.Item.Properties properties);
+    }
+
+    public static final dev.golem.core.hook.Hook<PartProperties> PART_PROPERTIES = dev.golem.core.hook.Hook.of(listeners -> (id, properties) -> {
+        for (PartProperties listener : listeners) properties = listener.apply(id, properties);
+        return properties;
+    });
+
     private static Reg.Handle<ItemCustomMissilePart> part(String id, UnaryOperator<ItemCustomMissilePart> builder) {
         return REG.item(id, props -> {
             ItemCustomMissilePart part = builder.apply(new ItemCustomMissilePart(props));
@@ -306,7 +322,7 @@ public final class ModCustomMissileItems {
                 part.setAssembly(row.height(), Ids.of(Constants.MOD_ID, row.mesh()), Ids.of(Constants.MOD_ID, row.skin()));
             }
             return part;
-        }, p -> p.stacksTo(1));
+        }, p -> PART_PROPERTIES.invoker().apply(id, p.stacksTo(1)));
     }
 
     @SuppressWarnings("unchecked")

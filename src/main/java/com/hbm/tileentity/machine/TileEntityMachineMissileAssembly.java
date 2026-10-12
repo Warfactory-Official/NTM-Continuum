@@ -125,6 +125,16 @@ public class TileEntityMachineMissileAssembly extends TileEntityMachineBase impl
         return false;
     }
 
+    /**
+     * hbm-space {@code getInventoryStackLimit() = 1}: {@link #construct} empties every part slot, so a slot holds one
+     * part. Plain HBM's parts stack to one anyway; an addon that stacks them (NTM: Space,
+     * {@code ModCustomMissileItems.PART_PROPERTIES}) would otherwise lose the rest of a stack to one missile.
+     */
+    @Override
+    public int getMaxStackSize() {
+        return 1;
+    }
+
     @Override
     public int[] getAccessibleSlotsFromSide(int side) {
         return new int[]{0};

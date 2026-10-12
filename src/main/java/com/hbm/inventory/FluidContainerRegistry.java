@@ -62,29 +62,21 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
         }
     }
 
-    private static final List<Fixed> FIXED = List.of(
-            new Fixed("minecraft:water_bucket", "minecraft:bucket", "WATER", 1000),
-            new Fixed("minecraft:lava_bucket", "minecraft:bucket", "LAVA", 1000),
-            new Fixed(ItemIds.bucket_mud, "minecraft:bucket", "WATZ", 1000),
-            new Fixed(ItemIds.bucket_schrabidic_acid, "minecraft:bucket", "SCHRABIDIC", 1000),
-            new Fixed(ItemIds.bucket_sulfuric_acid, "minecraft:bucket", "SULFURIC_ACID", 1000),
-            // blocks: no container item, consumed whole
-            new Fixed(ItemIds.red_barrel, "", "DIESEL", 10000),
-            new Fixed(ItemIds.pink_barrel, "", "KEROSENE", 10000),
-            new Fixed(ItemIds.lox_barrel, "", "OXYGEN", 10000),
-            new Fixed(ItemIds.ore_oil, "", "OIL", 250),
-            new Fixed(ItemIds.ore_gneiss_gas, "", "PETROLEUM", 250), // 50 with enable528, off by default
-            new Fixed(ItemIds.bottle_mercury, "minecraft:glass_bottle", "MERCURY", 1000),
-            new Fixed(ItemIds.nugget_mercury, "", "MERCURY", 125), // 1.7 ingot_mercury, registered as "nugget_mercury"
-            new Fixed(ItemIds.rod_zirnox_tritium, ItemIds.rod_zirnox_empty, "TRITIUM", 2000),
-            new Fixed(ItemIds.particle_hydrogen, ItemIds.particle_empty, "HYDROGEN", 1000),
-            new Fixed(ItemIds.particle_amat, ItemIds.particle_empty, "AMAT", 1000),
-            new Fixed(ItemIds.particle_aschrab, ItemIds.particle_empty, "ASCHRAB", 1000),
-            // vanilla 1.7 gave the experience bottle no container item
-            new Fixed("minecraft:experience_bottle", "", "XPJUICE", 100),
-            new Fixed("hbm:iv_blood", "hbm:iv_empty", "BLOOD", 100),
-            new Fixed("hbm:iv_xp", "hbm:iv_xp_empty", "XPJUICE", 100),
-            new Fixed(ItemIds.can_mug, "", "MUG", 100));
+    /**
+     * The fixed containers: the {@code hbm:fluid_container} item data map ({@link com.hbm.api.data.FluidDataMaps#FLUID_CONTAINER},
+     * 1.7's {@code FluidContainerRegistry.registerContainer} calls), read per use. An addon's bucket or drink is one entry.
+     */
+    private static List<Fixed> fixed() {
+        List<Fixed> rows = new ArrayList<>();
+        var map = com.hbm.api.data.FluidDataMaps.FLUID_CONTAINER.byId();
+        for (String full : new java.util.TreeSet<>(map.keySet())) {
+            com.hbm.api.data.FluidDataMaps.Container c = map.get(full);
+            FluidType type = Fluids.byRegistryName(c.fluid());
+            if (type == Fluids.NONE) continue;
+            rows.add(new Fixed(full, c.empty().orElse(""), type.getName(), c.amount()));
+        }
+        return rows;
+    }
 
     private static List<Typed> typed() {
         return List.of(
@@ -113,7 +105,7 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
     private boolean isFull(ItemStack stack, String fluid, int amount) {
         FluidType type = Fluids.fromName(fluid);
         if (type == null || type == Fluids.NONE) return false;
-        for (Fixed fixed : FIXED) {
+        for (Fixed fixed : fixed()) {
             if (fixed.fluid.equals(fluid) && fixed.amount == amount && stack.is(item(fixed.full).getItem())
                     && !item(fixed.full).isEmpty()) return true;
         }
@@ -134,7 +126,7 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
 
     @Override
     public ItemStack emptied(ItemStack stack) {
-        for (Fixed fixed : FIXED) {
+        for (Fixed fixed : fixed()) {
             ItemStack full = item(fixed.full);
             if (!full.isEmpty() && stack.is(full.getItem())) return item(fixed.container);
         }
@@ -151,7 +143,7 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
         List<ItemStack> examples = new ArrayList<>();
         FluidType type = Fluids.fromName(fluid);
         if (type == null || type == Fluids.NONE) return examples;
-        for (Fixed fixed : FIXED) {
+        for (Fixed fixed : fixed()) {
             if (fixed.fluid.equals(fluid) && fixed.amount == amount && !item(fixed.full).isEmpty()) {
                 examples.add(item(fixed.full));
             }
@@ -180,13 +172,14 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
     public record ForeignFill(Item empty, ItemFluidTank family, Predicate<FluidType> admits) {}
 
     /**
-     * The fixed rows whose full item is HBM's: vanilla's own items (buckets, bottles, potions) keep the handlers their
+     * The fixed rows whose full item is not vanilla's: vanilla's own items (buckets, bottles, potions) keep the handlers their
      * loader gives them. The empty item is whatever 1.7 left ({@link ItemStack#EMPTY} when the container is used up).
      */
     public List<ForeignRow> foreignRows() {
         List<ForeignRow> rows = new ArrayList<>();
-        for (Fixed fixed : FIXED) {
-            if (!fixed.full.startsWith(com.hbm.Constants.MOD_ID + ":")) continue;
+        for (Fixed fixed : fixed()) {
+            // vanilla's items only: an addon's container rows (V-040) get the foreign handler like HBM's
+            if (fixed.full.startsWith("minecraft:")) continue;
             ItemStack full = item(fixed.full);
             if (full.isEmpty()) continue;
             rows.add(new ForeignRow(full.getItem(), item(fixed.container), Fluids.fromName(fixed.fluid), fixed.amount));

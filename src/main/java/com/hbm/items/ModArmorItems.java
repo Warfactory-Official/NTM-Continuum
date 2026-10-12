@@ -289,9 +289,9 @@ public final class ModArmorItems {
     /**
      * Applies each suit's configuration, after registration so the items exist.
      *
-     * <p>This cannot happen in the item factory: {@code setRadResist} and {@code setHazardClass} write
-     * into registries keyed by {@code Item}, and an item is not a usable map key until it is registered.
-     * {@code Hazards.init} calls this alongside {@link ModGearItems#registerHazards()}.
+     * <p>Called from {@code Hazards.init}. Radiation resistance, hazard classes, full sets and damage resistance are the
+     * {@code hbm:radiation_resistance}, {@code hbm:protection_classes}, {@code hbm:armor_sets} and
+     * {@code hbm:damage_resistance} data maps; what is left here is suit behaviour.
      */
     public static void configure() {
         configurePlainSet(steel_helmet.get(), steel_plate.get(), steel_legs.get(), steel_boots.get(), 0.045D);
@@ -304,9 +304,7 @@ public final class ModArmorItems {
         ArmorFSB taurunHelmet = taurun_helmet.get()
                 .addEffect(Effects.instance(Effects.strength(), 20, 0))
                 .setStepSize(1)
-                .setHides(EnumPlayerPart.HAT)
-                .setHazardClass(FULL_PACKAGE)
-                .setRadResist(0.125D);
+                .setHides(EnumPlayerPart.HAT);
         taurun_plate.get().cloneStats(taurunHelmet);
         taurun_legs.get().cloneStats(taurunHelmet);
         taurun_boots.get().cloneStats(taurunHelmet);
@@ -317,15 +315,12 @@ public final class ModArmorItems {
                 .addEffect(Effects.instance(Effects.jumpBoost(), 20, 1))
                 .addEffect(Effects.instance(Effects.speed(), 20, 2));
         configurePlainSet(schrabHelmet, schrabidium_plate.get(), schrabidium_legs.get(), schrabidium_boots.get(), 3.0D);
-        schrabHelmet.setHazardClass(FULL_PACKAGE);
 
         ArmorFSB asbestosHelmet = asbestos_helmet.get().setOverlay(
                 dev.golem.core.Ids.of(Constants.MOD_ID, "textures/misc/overlay_asbestos.png"));
-        asbestosHelmet.setHazardClass(HazardClass.SAND, HazardClass.LIGHT);
 
         ArmorFSB paa = paa_plate.get().setNoHelmet(true)
-                .addEffect(Effects.instance(Effects.haste(), 30, 0))
-                .setRadResist(1.7D);
+                .addEffect(Effects.instance(Effects.haste(), 30, 0));
         paa_legs.get().cloneStats(paa);
         paa_boots.get().cloneStats(paa);
 
@@ -337,8 +332,6 @@ public final class ModArmorItems {
                 .addEffect(Effects.instance(Effects.strength(), 20, 0))
                 .setHides(EnumPlayerPart.HAT)
                 .setArmorModel("t51")
-                .setHazardClass(FULL_NO_LIGHT)
-                .setRadResist(1D /* 90% across the full set */)
                 .setStep(ModSounds.METAL_STEP)
                 .setJump(ModSounds.IRON_JUMP)
                 .setFall(ModSounds.IRON_LAND);
@@ -362,8 +355,7 @@ public final class ModArmorItems {
                  .addEffect(Effects.instanceRegistered(com.hbm.potion.ModEffects.RADX.get(), 30, 0))
                 .setStep(ModSounds.METAL_STEP)
                 .setJump(ModSounds.IRON_JUMP)
-                .setFall(ModSounds.IRON_LAND)
-                .setRadResist(1D);
+                .setFall(ModSounds.IRON_LAND);
         bj_plate.get().cloneStats(bjHelmet);
         bj_plate_jetpack.get().cloneStats(bjHelmet);
         bj_legs.get().cloneStats(bjHelmet);
@@ -378,15 +370,12 @@ public final class ModArmorItems {
                 .addEffect(Effects.instance(Effects.haste(), 20, 7))
                 .addEffect(Effects.instance(Effects.jumpBoost(), 20, 2))
                 .setHides(EnumPlayerPart.HAT)
-                .setHazardClass(FULL_PACKAGE)
-                .setRadResist(5D)
                 .setStep(ModSounds.METAL_STEP)
                 .setJump(ModSounds.IRON_JUMP)
                 .setFall(ModSounds.IRON_LAND);
         dns_plate.get().cloneStats(dnsHelmet);
         dns_legs.get().cloneStats(dnsHelmet);
         dns_boots.get().cloneStats(dnsHelmet);
-        ArmorUtil.registerHazmat2Set(dns_helmet.get(), dns_plate.get(), dns_legs.get(), dns_boots.get());
 
         // Client render registration consumes these neutral model names; the gameplay classes stay client-free.
         bjHelmet.setArmorModel("bj");
@@ -401,7 +390,7 @@ public final class ModArmorItems {
 
         ArmorFSBPowered rpa = rpa_helmet.get();
         rpa.addEffect(Effects.instance(Effects.strength(), 20, 2)).enableVATS(true)
-                .setHasGeigerSound(true).setHasHardLanding(true).setRadResist(2D)
+                .setHasGeigerSound(true).setHasHardLanding(true)
                 .setStep(ModSounds.STEP_POWERED)
                 .setJump(ModSounds.STEP_POWERED)
                 .setFall(ModSounds.STEP_POWERED);
@@ -412,7 +401,7 @@ public final class ModArmorItems {
 
         ArmorFSBPowered ncrpa = ncrpa_helmet.get();
         ncrpa.addEffect(Effects.instance(Effects.strength(), 20, 2)).enableVATS(true)
-                .setHasGeigerSound(true).setHasHardLanding(true).setRadResist(2D)
+                .setHasGeigerSound(true).setHasHardLanding(true)
                 .setStep(ModSounds.STEP_POWERED)
                 .setJump(ModSounds.STEP_POWERED)
                 .setFall(ModSounds.STEP_POWERED);
@@ -423,8 +412,6 @@ public final class ModArmorItems {
         ArmorPAWeapons.registerMelee(rpa_plate.get(), new com.hbm.items.armor.ArmorRPAMelee());
         ArmorPAWeapons.registerMelee(ncrpa_plate.get(), new com.hbm.items.armor.ArmorNCRPAMelee());
         ArmorPAWeapons.registerRanged(ncrpa_plate.get(), new com.hbm.items.armor.ArmorNCRPARanged());
-        ArmorUtil.registerHazmat2Set(rpa_helmet.get(), rpa_plate.get(), rpa_legs.get(), rpa_boots.get());
-        ArmorUtil.registerHazmat2Set(ncrpa_helmet.get(), ncrpa_plate.get(), ncrpa_legs.get(), ncrpa_boots.get());
         jetpack_fly.get().setArmorModel("jetpack_regular");
         jetpack_break.get().setArmorModel("jetpack_break");
         jetpack_vector.get().setArmorModel("jetpack_vector");
@@ -436,25 +423,12 @@ public final class ModArmorItems {
     private static void configurePlainSet(ArmorFSB helmet, ArmorFSB plate, ArmorFSB legs, ArmorFSB boots,
             double radiationResistance) {
         // Old HazmatRegistry registered 0.045 * the four slot weights for both metal sets.
-        helmet.setRadResist(radiationResistance);
         plate.cloneStats(helmet);
         legs.cloneStats(helmet);
         boots.cloneStats(helmet);
     }
 
-    /**
-     * Upstream's {@code ArmorUtil.FULL_NO_LIGHT}: everything a sealed suit stops, except blinding light.
-     * Copied verbatim, order included — note it contains neither {@code GAS_INERT} nor
-     * {@code NERVE_AGENT}, which are the two a sealed suit does <em>not</em> cover.
-     */
-    private static final HazardClass[] FULL_NO_LIGHT = {
-            HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_LUNG,
-            HazardClass.BACTERIA, HazardClass.GAS_BLISTERING, HazardClass.GAS_MONOXIDE, HazardClass.SAND};
 
-    private static final HazardClass[] FULL_PACKAGE = {
-            HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_LUNG,
-            HazardClass.BACTERIA, HazardClass.GAS_BLISTERING, HazardClass.GAS_MONOXIDE,
-            HazardClass.LIGHT, HazardClass.SAND};
 
     public static void init() {}
 }

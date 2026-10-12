@@ -296,7 +296,8 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
             if (this.output.amount + recipe.output.amount > maxOutput) return false;
         }
 
-        return true;
+        // hbm-space canBreathe = breatheAir(1), the last check (com.hbm.api.environment.Environment)
+        return com.hbm.api.environment.Environment.breatheAir(level, worldPosition, 1);
     }
 
     public void consumeItems(RotaryFurnaceRecipe recipe) {

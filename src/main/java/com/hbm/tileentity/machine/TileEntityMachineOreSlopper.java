@@ -59,7 +59,7 @@ import com.hbm.tileentity.ModProduction2BlockEntities;
  * plus 1,000 mB of water into slop and a fractional amount of each of the six graded BASE ores, paid out
  * whenever a whole item accumulates.
  */
-public final class TileEntityMachineOreSlopper extends TileEntityMachineBase
+public class TileEntityMachineOreSlopper extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, WorldlyContainer, IUpgradeInfoProvider {
 
     public long power;
@@ -85,7 +85,8 @@ public final class TileEntityMachineOreSlopper extends TileEntityMachineBase
     public int delay;
 
     public final FluidTankNTM[] tanks;
-    public final double[] ores = new double[BedrockOreType.VALUES.length];
+    /** Accumulated ore per registered type ({@code BedrockOreType.ordinal()}; an addon's types included). */
+    public final double[] ores = new double[BedrockOreType.values().size()];
 
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
 
@@ -138,7 +139,9 @@ public final class TileEntityMachineOreSlopper extends TileEntityMachineBase
                 te.progress -= 1F;
 
                 ItemStack input = te.inventory.getStackInSlot(2);
-                for (BedrockOreType type : BedrockOreType.VALUES) {
+                // hbm-space: the types the raw ore carries (its body's), else HBM's six
+                for (BedrockOreType type : ItemBedrockOreBase.types(input)) {
+                    if (type.ordinal() >= te.ores.length) continue;
                     te.ores[type.ordinal()] += (ItemBedrockOreBase.getOreAmount(input, type) * (1D + efficiency * 0.1));
                 }
 
@@ -171,7 +174,8 @@ public final class TileEntityMachineOreSlopper extends TileEntityMachineBase
             te.progress = 0;
         }
 
-        for (BedrockOreType type : BedrockOreType.VALUES) {
+        for (BedrockOreType type : BedrockOreType.values()) {
+            if (type.ordinal() >= te.ores.length || te.ores[type.ordinal()] < 1) continue;
             ItemStack output = new ItemStack(ModProduction2Blocks.bedrockOreBase(type));
             outer:
             while (te.ores[type.ordinal()] >= 1) {

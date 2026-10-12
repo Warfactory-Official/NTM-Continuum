@@ -18,14 +18,17 @@ public record BedrockOreDensity(double light, double heavy, double rare, double 
             Codec.DOUBLE.fieldOf("crystal").forGetter(BedrockOreDensity::crystal)
     ).apply(instance, BedrockOreDensity::new));
 
+    /**
+     * The amount of one of HBM's six types; 0 for any other type (an addon type keeps its amounts in its own item
+     * component, as the six are the overworld noise's channels and the stack's saved shape).
+     */
     public double get(BedrockOreType type) {
-        return switch (type) {
-            case LIGHT_METAL -> light;
-            case HEAVY_METAL -> heavy;
-            case RARE_EARTH -> rare;
-            case ACTINIDE -> actinide;
-            case NON_METAL -> nonmetal;
-            case CRYSTALLINE -> crystal;
-        };
+        if (type == BedrockOreType.LIGHT_METAL) return light;
+        if (type == BedrockOreType.HEAVY_METAL) return heavy;
+        if (type == BedrockOreType.RARE_EARTH) return rare;
+        if (type == BedrockOreType.ACTINIDE) return actinide;
+        if (type == BedrockOreType.NON_METAL) return nonmetal;
+        if (type == BedrockOreType.CRYSTALLINE) return crystal;
+        return 0D;
     }
 }

@@ -41,7 +41,7 @@ import com.hbm.tileentity.ModNuclearMiscBlockEntities;
  * The RTG that also cracks fluids and sterilises items: 10 pellet slots, fluid identifier in/out (10/11),
  * sterilisation in/out (12/13) and a battery slot (14). 1:1 with the 1.7 {@code TileEntityMachineRadiolysis}.
  */
-public final class TileEntityMachineRadiolysis extends TileEntityMachineBase
+public class TileEntityMachineRadiolysis extends TileEntityMachineBase
         implements MenuProvider, IEnergyProviderMK2, IFluidStandardTransceiverMK2, WorldlyContainer {
 
     public static final int maxPower = 1_000_000;

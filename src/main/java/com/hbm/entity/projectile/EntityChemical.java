@@ -452,7 +452,10 @@ public class EntityChemical extends EntityThrowableNT {
             if (state.is(Blocks.DIRT) || state.is(Blocks.COARSE_DIRT) || state.is(Blocks.PODZOL) || wasteEarth
                     || state.is(ModFallingBlocks.dirt_dead.get()) || state.is(ModFallingBlocks.dirt_oily.get())) {
                 BlockPos above = at.above();
-                if (LightLevels.combined(level, above) >= 9 && LightLevels.opacity(level, above) <= 2)
+                // hbm-space: only under an atmosphere grass can live in, turning its CO2 into air
+                // (com.hbm.api.environment.Environment.GROWTH; always on plain HBM)
+                if (LightLevels.combined(level, above) >= 9 && LightLevels.opacity(level, above) <= 2
+                        && com.hbm.api.environment.Environment.canGrow(level, at))
                     level.setBlockAndUpdate(at, Blocks.GRASS_BLOCK.defaultBlockState());
             }
             if (state.is(Blocks.COBBLESTONE)) level.setBlockAndUpdate(at, Blocks.MOSSY_COBBLESTONE.defaultBlockState());

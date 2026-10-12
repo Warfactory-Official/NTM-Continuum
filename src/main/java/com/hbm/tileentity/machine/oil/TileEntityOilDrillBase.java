@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine.oil;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.data.DepositDataMaps;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
@@ -190,8 +191,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
 
     public boolean trySuck(int y) {
         BlockPos startPos = new BlockPos(worldPosition.getX(), y, worldPosition.getZ());
-        Block startBlock = level.getBlockState(startPos).getBlock();
-        if (!canSuckBlock(startBlock)) return false;
+        if (!canSuckState(level.getBlockState(startPos))) return false;
         if (!this.canPump()) return true;
         Queue<BlockPos> queue = new ArrayDeque<>();
         processed.clear();
@@ -202,15 +202,20 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         while (!queue.isEmpty() && nodesVisited < 256) {
             BlockPos currentPos = queue.poll();
             nodesVisited++;
-            Block currentBlock = level.getBlockState(currentPos).getBlock();
-            if (currentBlock == ModOilBlocks.ore_oil.get()) {
+            BlockState currentState = level.getBlockState(currentPos);
+            Block currentBlock = currentState.getBlock();
+            // 1.7: a live deposit (ore_oil, or ore_bedrock_oil for the fracking tower) is sucked, a drained one searched
+            // through; both are hbm:fluid_deposit data now (DepositDataMaps), by block state where an addon's one block
+            // carries several deposits (hbm:fluid_deposit_states)
+            DepositDataMaps.Deposit deposit = DepositDataMaps.deposit(currentState);
+            if (deposit != null && reaches(deposit)) {
                 doSuck(currentPos);
                 return true;
             }
-            if (currentBlock != ModBlocks.ore_oil_empty.get()) continue;
+            if (!DepositDataMaps.isEmptyDeposit(currentBlock)) continue;
             for (ForgeDirection dir : getShuffledDirs()) {
                 BlockPos neighborPos = currentPos.offset(dir.offsetX, dir.offsetY, dir.offsetZ);
-                if (!processed.contains(neighborPos) && canSuckBlock(level.getBlockState(neighborPos).getBlock())) {
+                if (!processed.contains(neighborPos) && canSuckState(level.getBlockState(neighborPos))) {
                     processed.add(neighborPos);
                     queue.offer(neighborPos);
                 }
@@ -226,17 +231,58 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         return dirs;
     }
 
+    /** Whether this drill reaches fracking-only deposits (1.7: the fracking tower adds {@code ore_bedrock_oil}). */
+    protected boolean canFrack() {
+        return false;
+    }
+
+    private boolean reaches(DepositDataMaps.Deposit deposit) {
+        return canFrack() || !deposit.frackingOnly();
+    }
+
     public boolean canSuckBlock(Block b) {
-        return b == ModOilBlocks.ore_oil.get() || b == ModBlocks.ore_oil_empty.get();
+        DepositDataMaps.Deposit deposit = DepositDataMaps.deposit(b);
+        if (deposit != null) return reaches(deposit);
+        return DepositDataMaps.isEmptyDeposit(b);
+    }
+
+    /** {@link #canSuckBlock} for one state: a state deposit ({@code hbm:fluid_deposit_states}) decides first. */
+    public boolean canSuckState(BlockState state) {
+        DepositDataMaps.Deposit deposit = DepositDataMaps.deposit(state);
+        if (deposit != null) return reaches(deposit);
+        return DepositDataMaps.isEmptyDeposit(state.getBlock());
     }
 
     public void doSuck(BlockPos pos) {
-        if (level.getBlockState(pos).getBlock() == ModOilBlocks.ore_oil.get()) {
-            onSuck(pos);
-        }
+        DepositDataMaps.Deposit deposit = DepositDataMaps.deposit(level.getBlockState(pos));
+        if (deposit != null && reaches(deposit)) onSuck(pos, deposit);
     }
 
-    public abstract void onSuck(BlockPos pos);
+    public abstract void onSuck(BlockPos pos, DepositDataMaps.Deposit deposit);
+
+    /**
+     * 1.7's suck, shared by the three drills: {@code primary} of the deposit's first fluid, a secondary amount in
+     * [{@code secondaryMin}, {@code secondaryMax}] of its second (both the drill's 1.7 amounts scaled by the deposit's
+     * yield), then a {@code drainChance} (times the deposit's drain) of the deposit becoming its empty block. The random
+     * draws are 1.7's, in 1.7's order (the gas range, then the drain).
+     */
+    protected void suckDeposit(BlockPos pos, DepositDataMaps.Deposit deposit, int primary, int secondaryMin,
+                               int secondaryMax, double drainChance) {
+        com.hbm.inventory.fluid.FluidType first = deposit.primaryFluid();
+        com.hbm.inventory.fluid.FluidType second = deposit.secondaryFluid();
+        tanks[0].setTankType(first);
+        tanks[0].setFill(Math.min(tanks[0].getFill() + deposit.primaryAmount(primary), tanks[0].getMaxFill()));
+        if (second != com.hbm.inventory.fluid.Fluids.NONE) {
+            tanks[1].setTankType(second);
+            int min = deposit.secondaryAmount(secondaryMin);
+            int max = deposit.secondaryAmount(secondaryMax);
+            tanks[1].setFill(Math.min(tanks[1].getFill() + min + level.getRandom().nextInt(max - min + 1), tanks[1].getMaxFill()));
+        }
+        Block empty = deposit.emptyBlock();
+        if (empty != null && level.getRandom().nextDouble() < drainChance * deposit.drain()) {
+            level.setBlock(pos, DepositDataMaps.emptyState(level.getBlockState(pos), empty), 3);
+        }
+    }
 
     public abstract DirPos[] getConPos();
 

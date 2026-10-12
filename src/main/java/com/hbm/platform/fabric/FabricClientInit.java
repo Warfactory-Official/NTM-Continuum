@@ -54,29 +54,17 @@ public class FabricClientInit implements ClientModInitializer {
         HbmClientRegistrations.installGunAnimations();
         HbmClientRegistrations.installEntityEffects();
         HbmClientRegistrations.installArmorLayers();
-        HbmClientRegistrations.registerScreens(MenuScreens::register);
 
         // Look-overlay HUD (battery charge / duct type / ...) — drawn after the vanilla HUD each frame.
         HbmClientRegistrations.registerHud((id, renderer) ->
                 dev.golem.core.client.Hud.addLast("hbm", id, renderer::accept));
 
-        HbmClientRegistrations.registerRenderers(new com.hbm.client.render.HbmBlockEntityRenderers.Sink() {
-            @Override
-            public <T extends BlockEntity, S extends dev.golem.core.render.CompatRenderState> void register(
-                    BlockEntityType<? extends T> type, dev.golem.core.render.CompatBERProvider<T, S> provider) {
-                BlockEntityRendererRegistry.register(type, dev.golem.core.render.Renderers.toVanilla(provider));
-            }
-        }, new com.hbm.client.render.HbmEntityRenderers.Sink() {
-            @Override
-            public <T extends Entity> void register(EntityType<? extends T> type, EntityRendererProvider<T> provider) {
-                EntityRendererRegistry.register(type, provider);
-            }
-        });
+        HbmClientRegistrations.installScreensAndRenderers();
         // 26.1: block tint sources (sellafite shade tint) — fabric-api has no colour registry there, so
         // register directly on the vanilla BlockColors once the client instance is fully constructed.
         // Below 26.1: OBJ machine item models. 26.1 drives those through its special-model system
         // (registered by MixinSpecialModelRenderers); here the item definitions are parsed on reload and
-        // every HBM item gets a dynamic renderer. Only items whose generated model parents onto
+        // every item of a MachineItemNamespaces namespace gets a dynamic renderer. Only items whose generated model parents onto
         // builtin/entity actually reach it, so registering broadly is free.
         HbmClientRegistrations.registerBlockColors();
 //? if <26.1 {
@@ -96,11 +84,13 @@ public class FabricClientInit implements ClientModInitializer {
                     }
                 });
 
-        net.minecraft.core.registries.BuiltInRegistries.ITEM.entrySet().stream()
-                .filter(e -> e.getKey().location().getNamespace().equals(com.hbm.Constants.MOD_ID))
-                .forEach(e -> net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry.INSTANCE
-                        .register(e.getValue(), (stack, mode, poseStack, buffers, light, overlay) ->
-                                com.hbm.client.render.MachineItemRenderers.render(stack, mode, poseStack, buffers, light, overlay)));
+        // HBM's namespace and every addon namespace listed in MachineItemNamespaces (bound as it is added)
+        com.hbm.client.render.MachineItemNamespaces.bind(namespace ->
+                net.minecraft.core.registries.BuiltInRegistries.ITEM.entrySet().stream()
+                        .filter(e -> e.getKey().location().getNamespace().equals(namespace))
+                        .forEach(e -> net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry.INSTANCE
+                                .register(e.getValue(), (stack, mode, poseStack, buffers, light, overlay) ->
+                                        com.hbm.client.render.MachineItemRenderers.render(stack, mode, poseStack, buffers, light, overlay))));
         ^///?}
 
         // Hazard tooltips (radioactive/hot/etc. traits on items).

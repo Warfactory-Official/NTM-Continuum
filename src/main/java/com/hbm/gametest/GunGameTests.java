@@ -89,6 +89,14 @@ public final class GunGameTests {
         return ((ItemGunBaseNT) stack.getItem()).getPrimaryMagazine(stack, 0);
     }
 
+    /**
+     * Runs a firing check once the chunks around the shooter are entity-ticking: on 26.1 the shooter at (1, 1, 1) can
+     * stand in a chunk next to the test's own, where a fired bullet is not counted on tick 0 ({@link TestPlots}).
+     */
+    private static void inPlot(GameTestHelper helper, Runnable body) {
+        TestPlots.whenTicking(helper, new BlockPos(0, 0, 0), new BlockPos(3, 3, 3), body);
+    }
+
     private static List<EntityBulletBaseMK4> bullets(GameTestHelper helper, Player player) {
         return helper.getLevel().getEntitiesOfClass(EntityBulletBaseMK4.class,
                 player.getBoundingBox().inflate(64D));
@@ -226,6 +234,10 @@ public final class GunGameTests {
 
     /** Standard, Lacunae, and both dual-minigun rails must all reach their source firing callbacks. */
     public static void minigunFiringRoutes(GameTestHelper helper) {
+        inPlot(helper, () -> minigunFiringRoutesNow(helper));
+    }
+
+    private static void minigunFiringRoutesNow(GameTestHelper helper) {
         Player player = player(helper);
 
         ItemStack standard = armed(helper, player, ModGunItems.gun_minigun.get(),
@@ -267,6 +279,10 @@ public final class GunGameTests {
 
     /** LAG's source callback must retain its ordinary projectile fallback outside the inspect window. */
     public static void gunLagFiringRoute(GameTestHelper helper) {
+        inPlot(helper, () -> gunLagFiringRouteNow(helper));
+    }
+
+    private static void gunLagFiringRouteNow(GameTestHelper helper) {
         Player player = player(helper);
         ItemStack stack = armed(helper, player, ModGunItems.gun_lag.get(),
                 ModAmmoItems.p9_jhp.get(), 1);

@@ -70,11 +70,11 @@ public final class ModComponentRecipes {
                 key("T", item(ItemIds.ball_tnt)), key("S", item("hbm:ammo_arty")));
         componentShaped(NS, "ammo_arty_3", stack("hbm:ammo_arty_mini_nuke"),
                 rows(" P ", "NSN", " P "),
-                key("P", item(ItemIds.nugget_pu239)), key("N", item(ItemIds.neutron_reflector)),
+                key("P", tag(TagIds.nuggets_pu239)), key("N", item(ItemIds.neutron_reflector)),
                 key("S", item("hbm:ammo_arty")));
         componentShaped(NS, "ams_core_eyeofharmony", stack(ItemIds.ams_core_eyeofharmony), rows("ALA", "LSL", "ALA"),
                 key("A", item(ItemIds.plate_dalekanium)),
-                key("L", item(ItemIds.fluid_barrel).with(ComponentIds.fluid, "hbm:lava").with(ComponentIds.fluid_amount, 16000).remainder(ItemIds.fluid_barrel)),
+                key("L", item(ItemIds.fluid_barrel).with(ComponentIds.fluid, "minecraft:lava").with(ComponentIds.fluid_amount, 16000).remainder(ItemIds.fluid_barrel)),
                 key("S", item(ItemIds.black_hole)));
         // 1.7 CraftingManager:600/342/325 use cell_anti_schrabidium (fluid 34 ASCHRAB), not the antimatter cell
         componentShaped(NS, "ams_core_sing", stack(ItemIds.ams_core_sing), rows("EAE", "ASA", "EAE"),
@@ -210,9 +210,9 @@ public final class ModComponentRecipes {
                 key("L", fluid("LUBRICANT", 1000)));
         componentShaped(NS, "flame_conspiracy", stack(ItemIds.flame_conspiracy), rows(" S ", "STS", " S "),
                 key("S", fluid("KEROSENE", 1000)),
-                key("T", item(ItemIds.ingot_steel)));
+                key("T", tag(TagIds.ingots_steel)));
         componentShaped(NS, "jetpack_tank", stack(ItemIds.jetpack_tank), rows(" S ", "BKB", " S "),
-                key("S", item(ItemIds.plate_steel)), key("B", item(ItemIds.bolt_steel)),
+                key("S", tag(TagIds.plates_steel)), key("B", tag(TagIds.bolts_steel)),
                 key("K", fluid("KEROSENE", 1000)));
         // 1.7 CraftingManager: shapeless { KEY_ANYGLASS, P_RED.dust(), Fluids.TRITIUM.getDict(1_000), AL/S.dust() }
         componentShapeless(NS, "lamp_tritium_blue_off", stack(ItemIds.lamp_tritium_blue_off),
@@ -222,12 +222,12 @@ public final class ModComponentRecipes {
                 tag(TagIds.glass_blocks), tag(TagIds.dusts_red_phosphorus), fluid("TRITIUM", 1000),
                 tag(TagIds.dusts_sulfur));
         componentShaped(NS, "laser_crystal_cmb", stack(ItemIds.laser_crystal_cmb), rows("QBQ", "CSC", "QBQ"),
-                key("Q", item(ItemIds.glass_quartz)), key("B", item(ItemIds.ingot_combine_steel)),
-                key("C", item(ItemIds.ingot_schrabidate)),
+                key("Q", item(ItemIds.glass_quartz)), key("B", tag(TagIds.ingots_combine_steel)),
+                key("C", tag(TagIds.ingots_schrabidate)),
                 key("S", item(ItemIds.cell).with(ComponentIds.fluid, "hbm:aschrab").with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.cell)));
         componentShaped(NS, "laser_crystal_co2", stack(ItemIds.laser_crystal_co2), rows("QDQ", "NCN", "QDQ"),
-                key("Q", item(ItemIds.glass_quartz)), key("D", item(ItemIds.ingot_desh)),
-                key("N", item(ItemIds.ingot_niobium)),
+                key("Q", item(ItemIds.glass_quartz)), key("D", tag(TagIds.ingots_desh)),
+                key("N", tag(TagIds.ingots_niobium)),
                 key("C", item(ItemIds.fluid_tank).with(ComponentIds.fluid, "hbm:carbondioxide").with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)));
         componentShaped(NS, "lightstone_bricks", stack("hbm:lightstone_bricks", 4),
                 rows("CC", "CC"),
@@ -251,14 +251,14 @@ public final class ModComponentRecipes {
                 key("#", item("hbm:lightstone_tile")));
         componentShaped(NS, "part_generic_piston_hydraulic", stack(ItemIds.part_generic_piston_hydraulic, 4),
                 rows(" I ", "CPC", " I "),
-                key("I", item(ItemIds.ingot_steel)), key("C", item(ItemIds.ingot_titanium)),
+                key("I", tag(TagIds.ingots_steel)), key("C", tag(TagIds.ingots_titanium)),
                 key("P", fluid("LUBRICANT", 1000)));
         componentShaped(NS, "pellet_antimatter", stack(ItemIds.pellet_antimatter), rows("###", "###", "###"),
                 key("#", item(ItemIds.cell).with(ComponentIds.fluid, "hbm:amat").with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.cell)));
         componentShaped(NS, "press_preheater", stack(ItemIds.press_preheater), rows("CCC", "SLS", "TST"),
-                key("C", item(ItemIds.plate_copper)), key("S", item(VanillaIds.stone)),
+                key("C", tag(TagIds.plates_copper)), key("S", item(VanillaIds.stone)),
                 key("L", fluid("LAVA", 1000)),
-                key("T", item(ItemIds.ingot_tungsten)));
+                key("T", tag(TagIds.ingots_tungsten)));
         componentShaped(NS, "rod_dual_tritium_unload",
                 stack(ItemIds.cell, 2).with(ComponentIds.fluid, "hbm:tritium").with(ComponentIds.fluid_amount, 1000),
                 rows("RCC"),
@@ -275,17 +275,14 @@ public final class ModComponentRecipes {
                 key("R", item(ItemIds.rod_tritium)),
                 key("C", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount)));
         componentShaped(NS, "singularity", stack(ItemIds.singularity), rows("ESE", "SBS", "ESE"),
-                key("E", item(ItemIds.nugget_euphemium)),
+                key("E", tag(TagIds.nuggets_euphemium)),
                 key("S", item(ItemIds.cell).with(ComponentIds.fluid, "hbm:aschrab").with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.cell)),
-                key("B", item(ItemIds.block_schrabidium)));
-        componentShaped(NS, "struct_soyuz_core", stack(ItemIds.struct_soyuz_core), rows("CUC", "TST", "TBT"),
-                key("C", item(ItemIds.circuit_advanced)), key("U", item(ItemIds.upgrade_power_3)),
-                key("T", item(ItemIds.barrel_steel)), key("S", item(ItemIds.steel_scaffold)),
-                key("B", item(ItemIds.battery_lithium)));
+                key("B", tag(TagIds.storage_blocks_schrabidium)));
+        // no struct_soyuz_core crafting: 1.7 has no crafting recipe
         componentShaped(NS, "syringe_empty", stack(ItemIds.syringe_empty, 6), rows("P", "C", "B"),
                 key("B", item(VanillaIds.iron_bars)),
                 key("C", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount)),
-                key("P", item(ItemIds.plate_iron)));
+                key("P", tag(TagIds.plates_iron)));
     }
 
     private static final String FORGE_COUNT = "hbm:forge_count";
@@ -311,21 +308,21 @@ public final class ModComponentRecipes {
                 ItemIds.rod_zirnox_empty, ItemIds.billet_mox_fuel, ItemIds.billet_mox_fuel);
         copyShapeless(NS, "rod_zirnox_natural_uranium_fuel", ItemIds.rod_zirnox_natural_uranium_fuel,
                 ItemIds.rod_zirnox_empty,
-                ItemIds.rod_zirnox_empty, ItemIds.billet_uranium, ItemIds.billet_uranium);
+                ItemIds.rod_zirnox_empty, TagIds.billets_uranium, TagIds.billets_uranium);
         copyShapeless(NS, "rod_zirnox_plutonium_fuel", ItemIds.rod_zirnox_plutonium_fuel, ItemIds.rod_zirnox_empty,
                 ItemIds.rod_zirnox_empty, ItemIds.billet_plutonium_fuel, ItemIds.billet_plutonium_fuel);
         copyShapeless(NS, "rod_zirnox_th232_fuel", ItemIds.rod_zirnox_th232_fuel, ItemIds.rod_zirnox_empty,
-                ItemIds.rod_zirnox_empty, ItemIds.billet_th232, ItemIds.billet_th232);
+                ItemIds.rod_zirnox_empty, TagIds.billets_th232, TagIds.billets_th232);
         copyShapeless(NS, "rod_zirnox_thorium_fuel", ItemIds.rod_zirnox_thorium_fuel, ItemIds.rod_zirnox_empty,
                 ItemIds.rod_zirnox_empty, ItemIds.billet_thorium_fuel, ItemIds.billet_thorium_fuel);
         copyShapeless(NS, "rod_zirnox_u233_fuel", ItemIds.rod_zirnox_u233_fuel, ItemIds.rod_zirnox_empty,
-                ItemIds.rod_zirnox_empty, ItemIds.billet_u233, ItemIds.billet_u233);
+                ItemIds.rod_zirnox_empty, TagIds.billets_u233, TagIds.billets_u233);
         copyShapeless(NS, "rod_zirnox_u235_fuel", ItemIds.rod_zirnox_u235_fuel, ItemIds.rod_zirnox_empty,
-                ItemIds.rod_zirnox_empty, ItemIds.billet_u235, ItemIds.billet_u235);
+                ItemIds.rod_zirnox_empty, TagIds.billets_u235, TagIds.billets_u235);
         copyShapeless(NS, "rod_zirnox_uranium_fuel", ItemIds.rod_zirnox_uranium_fuel, ItemIds.rod_zirnox_empty,
                 ItemIds.rod_zirnox_empty, ItemIds.billet_uranium_fuel, ItemIds.billet_uranium_fuel);
         copyShapeless(NS, "rod_zirnox_zfb_mox_fuel", ItemIds.rod_zirnox_zfb_mox_fuel, ItemIds.rod_zirnox_empty,
-                ItemIds.rod_zirnox_empty, ItemIds.billet_mox_fuel, ItemIds.billet_zirconium);
+                ItemIds.rod_zirnox_empty, ItemIds.billet_mox_fuel, TagIds.billets_zirconium);
     }
 
     private static void programs() {

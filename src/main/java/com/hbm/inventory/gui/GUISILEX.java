@@ -81,7 +81,7 @@ public class GUISILEX extends dev.golem.core.gui.CompatContainerScreen<Container
         }
 
         if (te.mode != EnumWavelengths.NULL) {
-            float freq = 0.0125F * (float) Math.pow(2, te.mode.ordinal());
+            float freq = 0.0125F * (float) Math.pow(2, te.mode.strength());
             int color = te.mode != EnumWavelengths.VISIBLE ? te.mode.guiColor : rainbow(gameTime(), 50.0F, 1.0F);
             drawWave(graphics, 81, 46, 16, 84, 0.5F, freq, color);
         }

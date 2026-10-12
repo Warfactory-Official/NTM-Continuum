@@ -28,7 +28,7 @@ import com.hbm.tileentity.ModProduction2BlockEntities;
  * pellets. Progress advances by the summed pellet heat per tick (at least 15 to run) until 1,200. The
  * two-input recipe table is the port's {@link DiFurnaceRecipes} (1.7 {@code BlastFurnaceRecipes}).
  */
-public final class TileEntityDiFurnaceRTG extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
+public class TileEntityDiFurnaceRTG extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
 
     public short progress;
     private short processSpeed = 0;

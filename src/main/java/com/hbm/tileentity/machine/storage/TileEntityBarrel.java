@@ -212,6 +212,16 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         return type.isAntimatter();
     }
 
+    /** Replaces the blast of antimatter filled into a matter barrel (ADDON-API-INVENTORY H-68). */
+    @FunctionalInterface
+    public interface AntimatterBlast {
+        /** Called after the barrel was removed; return true when the listener made the blast. */
+        boolean explode(Level level, BlockPos pos, FluidType type);
+    }
+
+    /** The first listener answering true replaces 1.7's vanilla strength-5 explosion; HBM registers none. */
+    public static final dev.golem.core.hook.Hook<AntimatterBlast> ANTIMATTER_BLAST = dev.golem.core.hook.Hook.notifying();
+
     public void checkFluidInteraction() {
         if (level == null || level.isClientSide()) return;
         Block b = getBlockState().getBlock();
@@ -220,6 +230,9 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         // for when you fill antimatter into a matter tank
         if (b != ModFluidNetBlocks.barrel_antimatter.get() && isAntimatter(type)) {
             level.destroyBlock(pos, false);
+            for (AntimatterBlast listener : ANTIMATTER_BLAST) {
+                if (listener.explode(level, pos, type)) return;
+            }
             level.explode(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true, Level.ExplosionInteraction.TNT);
             return;
         }

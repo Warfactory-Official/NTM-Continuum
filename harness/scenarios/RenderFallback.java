@@ -71,15 +71,21 @@ public final class RenderFallback implements Scenario {
         // Every change to the client and world is undone in finally, so a failing Expect cannot leave later
         // scenarios in spectator mode, with a hidden HUD, a short render distance or the Flywheel backend off.
         try {
+            // The client options first, and the chunk renderer settled, before anything is built. Changing the render
+            // distance makes Sodium rebuild every section; a core placed while it did could be left out of its
+            // section's block-entity lists (2026-10-09: "owned:true, replayed:0, skipped:0" for whichever core landed
+            // in that window, on either 26.1 node; never with the distance already set). That is a test-made race,
+            // not the fallback under test, so the scene is built only once the rebuild is over.
+            hideGui = c.setOption("hide_gui", "true");
+            renderDistance = c.setOption("render_distance", "12");
+            fov = c.setOption("fov", "70");
             c.cmd("forceload add " + forceload);
+            waitSectionsBuilt(c);
             Fixtures.platform(c, X, Y, Z + 8, 44);
             c.cmd("time set 6000");
             c.cmd("gamerule doDaylightCycle false");
             c.cmd("gamerule advance_time false");
             c.cmd("weather clear");
-            hideGui = c.setOption("hide_gui", "true");
-            renderDistance = c.setOption("render_distance", "12");
-            fov = c.setOption("fov", "70");
 
             for (Machine m : MACHINES) {
                 Fixtures.setBlock(c, m.x, L, m.z, "hbm:" + m.id + "[facing=north]");
@@ -140,6 +146,20 @@ public final class RenderFallback implements Scenario {
             if (fov != null) c.setOption("fov", fov);
             c.cmd("forceload remove " + forceload);
         }
+    }
+
+    /** Waits (up to 30 s) until the chunk renderer has no section build queued or running. */
+    private static void waitSectionsBuilt(Client c) {
+        c.waitTicks(5);
+        for (int i = 0; i < 120; i++) {
+            JsonObject status = c.status();
+            if (status.has("sections_built") && status.get("sections_built").getAsBoolean()) {
+                c.waitTicks(5);
+                return;
+            }
+            c.waitTicks(5);
+        }
+        Expect.that(false, "chunk renderer still rebuilding sections 30 s after the render distance changed");
     }
 
     private static void shots(Client c, String suffix) {

@@ -231,6 +231,14 @@ public final class NukeBombGameTests {
             helper.fail("detonator ticket never made its unloaded target chunk resident");
             return;
         }
+        // The GameTest server runs its ticks back to back, so 400 ticks can pass in well under a second while a worker
+        // generates the virgin chunk 1.6M blocks out (26.1 NeoForge and Fabric both ran out, 2026-10-11). Give the
+        // worker wall-clock time per try: at most ~10 s; chunk completions still run on this thread between ticks.
+        try {
+            Thread.sleep(25);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         helper.runAfterDelay(1, () -> awaitLoadedDetonatorTarget(helper, target, triesLeft - 1, then));
     }
 

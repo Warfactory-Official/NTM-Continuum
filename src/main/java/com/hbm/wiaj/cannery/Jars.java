@@ -17,7 +17,21 @@ public class Jars {
 
     public static HashMap<Item, CanneryBase> canneries = new HashMap<>();
 
-    public static void initJars() {
+    /** Presentations addons registered, by item id, applied after HBM's on every (re)build. */
+    private static final java.util.Map<String, CanneryBase> ADDED = new java.util.LinkedHashMap<>();
+    private static boolean built;
+
+    /**
+     * Gives the item {@code itemId} a presentation (an addon's machine, or a replacement for one of HBM's). Client
+     * side, at start-up; it survives {@link #initJars} rebuilding the table.
+     */
+    public static synchronized void register(String itemId, CanneryBase cannery) {
+        ADDED.put(itemId, cannery);
+        built = false;
+    }
+
+    public static synchronized void initJars() {
+        built = true;
         canneries.clear();
         put("hbm:heater_firebox", new CanneryFirebox());
         put("hbm:machine_stirling", new CanneryStirling());
@@ -31,6 +45,8 @@ public class Jars {
 
         put("hbm:plant_item_mustardwillow", new CanneryWillow());
         put("hbm:plant_flower_cd0", new CanneryWillow());
+
+        ADDED.forEach(Jars::put);
     }
 
     private static void put(String id, CanneryBase cannery) {
@@ -41,7 +57,7 @@ public class Jars {
     /** The presentation {@code stack} opens, if any. */
     public static @Nullable CanneryBase get(ItemStack stack) {
         if (stack.isEmpty()) return null;
-        if (canneries.isEmpty()) initJars();
+        if (!built) initJars();
         return canneries.get(stack.getItem());
     }
 }

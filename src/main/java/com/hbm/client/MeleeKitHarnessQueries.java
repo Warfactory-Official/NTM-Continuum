@@ -24,6 +24,7 @@ public final class MeleeKitHarnessQueries {
         ImpactHarnessQueries.register(); // fix wave phase 6
         MobHarnessQueries.register(); // fix wave phase 7
         HooksHarnessQueries.register(); // wave 2 HOOKS
+        DosimeterGasHarnessQueries.register(); // 1.7 dosimeter clicks, ash-glasses gas clouds
         VisualHarnessQueries.register(); // wave 2 VISUAL
         ReleaseHarnessQueries.register(); // pre-release client wave (§19es-client)
     }

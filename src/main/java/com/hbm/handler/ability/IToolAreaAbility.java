@@ -44,6 +44,13 @@ public interface IToolAreaAbility extends IBaseAbility {
         }
     };
 
+    /**
+     * What {@code recursiveStone = false} keeps the vein miner off (ADDON-API-INVENTORY V-180): 1.7's plain stone.
+     * NTM: Space widens it to hbm-space's "stone" and "cobblestone" ore dictionary entries (the item tags).
+     */
+    java.util.concurrent.atomic.AtomicReference<java.util.function.Predicate<net.minecraft.world.level.block.state.BlockState>>
+            RECURSION_STONE = new java.util.concurrent.atomic.AtomicReference<>(state -> state.is(Blocks.STONE));
+
     IToolAreaAbility RECURSION = new IToolAreaAbility() {
         @Override public String getName() { return "tool.ability.recursion"; }
         @Override public boolean isAllowed() { return ToolConfig.abilityVein; }
@@ -62,7 +69,7 @@ public interface IToolAreaAbility extends IBaseAbility {
         public boolean onDig(int level, ServerLevel world, BlockPos ref, ServerPlayer player, ItemToolAbility tool) {
             Block b = world.getBlockState(ref).getBlock();
 
-            if (b == Blocks.STONE && !ToolConfig.recursiveStone) return false;
+            if (!ToolConfig.recursiveStone && RECURSION_STONE.get().test(world.getBlockState(ref))) return false;
             if (b == Blocks.NETHERRACK && !ToolConfig.recursiveNetherrack) return false;
 
             pos.clear();
@@ -215,12 +222,16 @@ public interface IToolAreaAbility extends IBaseAbility {
         }
     };
 
-    IToolAreaAbility[] abilities = { NONE, RECURSION, HAMMER, HAMMER_FLAT, EXPLOSION };
+    /**
+     * Every ability of this kind by its name ({@link #getName()}, which tool presets save), 1.7's in 1.7 order. An
+     * addon ability registers here ({@code REGISTRY.register(MY_ABILITY)}) at mod construction so a saved preset finds
+     * it again; giving it to a tool is the tool's own {@code addAbility}.
+     */
+    com.hbm.api.registry.NamedRegistry<IToolAreaAbility> REGISTRY = com.hbm.api.registry.NamedRegistry.of(
+            "tool area ability", IToolAreaAbility::getName, NONE, RECURSION, HAMMER, HAMMER_FLAT, EXPLOSION);
 
     static IToolAreaAbility getByName(String name) {
-        for (IToolAreaAbility ability : abilities) {
-            if (ability.getName().equals(name)) return ability;
-        }
-        return NONE;
+        IToolAreaAbility ability = REGISTRY.get(name);
+        return ability != null ? ability : NONE;
     }
 }

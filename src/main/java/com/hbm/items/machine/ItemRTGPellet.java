@@ -16,7 +16,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-/** A legacy RTG fuel pellet with exact half-life, output, and terminal-depletion semantics. */
+/**
+ * An RTG fuel pellet, 1:1 1.7 {@code ItemRTGPellet}: a fixed heat, a life in ticks that goes down by one per RTG tick, and
+ * a depleted pellet it turns into at zero. Output and radiation fall linearly with the life left (1.7 and NTM: Space
+ * alike; the earlier port followed 1.12.2's half-life curve).
+ */
 public final class ItemRTGPellet extends CompatItem {
     private static final String[] FACTS = {
             "One gram of Pu-238 costs $8,000.",
@@ -38,31 +42,41 @@ public final class ItemRTGPellet extends CompatItem {
     };
 
     private final short heat;
-    private final long halfLife;
     private final long lifespan;
     private final Supplier<? extends ItemRTGPelletDepleted> decayItem;
     private final String displayName;
 
-    public ItemRTGPellet(Properties properties, int heat, long halfLife, int halfLives,
+    /**
+     * 1.7 {@code new ItemRTGPellet(heat).setDecays(material, life)}: {@code lifespan} is 1.7's {@code life}, the pellet's
+     * whole life in ticks ({@code (long) (RTGUtil.getLifespan(halfLife, type, false) * 1.5)} for most pellets).
+     */
+    public ItemRTGPellet(Properties properties, int heat, long lifespan,
                          Supplier<? extends ItemRTGPelletDepleted> decayItem, String displayName) {
         super(properties);
         this.heat = (short) heat;
-        this.halfLife = halfLife;
-        this.lifespan = halfLife * halfLives;
+        this.lifespan = lifespan;
         this.decayItem = decayItem;
         this.displayName = displayName;
     }
 
-    public short getHeat() { return heat; }
-    public long getHalfLife() { return halfLife; }
-    public long getMaxLifespan() { return lifespan; }
-    public ItemRTGPelletDepleted getDecayItem() { return decayItem.get(); }
+    /** This pellet's {@code hbm:rtg_pellet} entry, or null when it has none (then its constructor values apply). */
+    private com.hbm.api.data.ReactorDataMaps.@org.jspecify.annotations.Nullable RTGPellet stats() {
+        return com.hbm.api.data.ReactorDataMaps.RTG_PELLET.get(this);
+    }
 
+    public short getHeat() { var s = stats(); return s != null ? (short) s.effectiveHeat() : heat; }
+    public long getMaxLifespan() { var s = stats(); return s != null ? s.lifespan() : lifespan; }
+    public net.minecraft.world.item.Item getDecayItem() {
+        var s = stats();
+        return s != null ? com.hbm.api.data.ReactorDataMaps.itemOf(s.decaysTo()) : decayItem.get();
+    }
+
+    /** 1.7 {@code getLifespan}: the remaining life, written as the full life on first read ({@code PELLET_DEPLETION}). */
     public long getLifespan(ItemStack stack) {
         if (!ModRtgContent.PELLET_DEPLETION.has(stack)) {
-            ModRtgContent.PELLET_DEPLETION.set(stack, lifespan);
+            ModRtgContent.PELLET_DEPLETION.set(stack, getMaxLifespan());
         }
-        return ModRtgContent.PELLET_DEPLETION.getOr(stack, lifespan);
+        return ModRtgContent.PELLET_DEPLETION.getOr(stack, getMaxLifespan());
     }
 
     public void setLifespan(ItemStack stack, long remaining) {
@@ -82,12 +96,17 @@ public final class ItemRTGPellet extends CompatItem {
         return stack;
     }
 
-    public static double getDecay(ItemRTGPellet pellet, ItemStack stack) {
-        return Math.pow(0.5D, (double) (pellet.lifespan - pellet.getLifespan(stack)) / (double) pellet.halfLife);
+    /**
+     * The fraction of the pellet's life left, {@code life / maxLife}: 1.7 decays linearly (its durability bar is
+     * {@code 1 - life / maxLife}, the RTG radiation modifier interpolates by that, the scaled power multiplies by this).
+     */
+    public static double getRemaining(ItemRTGPellet pellet, ItemStack stack) {
+        return (double) pellet.getLifespan(stack) / (double) pellet.getMaxLifespan();
     }
 
+    /** 1.7 {@code getScaledPower}: {@code ceil(heat * life / maxLife)}. */
     public static short getScaledPower(ItemRTGPellet pellet, ItemStack stack) {
-        return (short) Math.ceil(pellet.heat * getDecay(pellet, stack));
+        return (short) Math.ceil(pellet.getHeat() * getRemaining(pellet, stack));
     }
 
     @Override
@@ -106,41 +125,34 @@ public final class ItemRTGPellet extends CompatItem {
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return getLifespan(stack) != lifespan;
+        return getLifespan(stack) != getMaxLifespan();
     }
 
+    /** 1.7 {@code getDurabilityForDisplay} = {@code 1 - life / maxLife}, drawn as vanilla's 13-pixel bar. */
     @Override
     public int getBarWidth(ItemStack stack) {
-        return Math.max(0, Math.min(13, (int) Math.round(13D * getDecay(this, stack))));
+        return Math.max(0, Math.min(13, Math.round(13F * (float) getRemaining(this, stack))));
     }
 
+    /** 1.7 {@code addInformation}, line for line (the "Decays to" key's count argument was unused there too). */
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                           List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal("Power Level: " + (com.hbm.config.MachineConfig.scaleRTGPowerActive() ? getScaledPower(this, stack) : getHeat()))
-                .withStyle(ChatFormatting.RED));
-        double percentage = ((int) (getDecay(this, stack) * 100_000_000D)) / 1_000_000D;
-        tooltip.add(Component.literal("Fuel left: " + percentage + "%").withStyle(ChatFormatting.GREEN));
-        tooltip.add(Component.literal("Decays to: " + getDecayItem().getName(new ItemStack(getDecayItem())).getString()));
-        tooltip.add(Component.empty());
-        tooltip.add(Component.literal(getLifespan(stack) + " / " + lifespan + " ticks"));
-        tooltip.add(Component.literal("Half life:      " + date(halfLife)).withStyle(ChatFormatting.GREEN));
-        tooltip.add(Component.literal("Time remaining: " + date(getLifespan(stack))));
-        tooltip.add(Component.literal("Decay Time:     " + date(lifespan)));
-    }
-
-    private static String date(long ticks) {
-        int tickHour = 1_000;
-        int tickDay = 24 * tickHour;
-        int tickYear = 365 * tickDay;
-        long year = Math.floorDiv(ticks, tickYear);
-        int day = (int) Math.floorDiv(ticks - tickYear * year, tickDay);
-        int hour = (int) Math.floorDiv(ticks - tickYear * year - tickDay * day, tickHour);
-        double tickMinute = tickHour / 60D;
-        double tickSecond = tickHour / 3_600D;
-        int minute = (int) Math.floor((ticks - tickYear * year - tickDay * day - tickHour * hour) / tickMinute);
-        int second = (int) Math.floor((ticks - tickYear * year - tickDay * day - tickHour * hour
-                - minute * tickMinute) / tickSecond);
-        return String.format(Locale.ROOT, "%sy %sd %sh %sm %ss", year, day, hour, minute, second);
+        String desc = getDescriptionId() + ".desc";
+        tooltip.add(Component.translatable(desc));
+        tooltip.add(Component.literal("Power Level: "
+                + (com.hbm.config.MachineConfig.scaleRTGPowerActive() ? getScaledPower(this, stack) : getHeat())));
+        tooltip.add(Component.literal("Decays to: ").append(new ItemStack(getDecayItem()).getHoverName()));
+        // 1.7 BobMathUtil.toPercentage(life, maxLife): float division, the default locale's percent format
+        tooltip.add(Component.literal(java.text.NumberFormat.getPercentInstance()
+                .format((float) getLifespan(stack) / (float) getMaxLifespan())));
+        if (flag.isAdvanced()) {
+            tooltip.add(Component.literal("EXTENDED INFO:"));
+            tooltip.add(Component.literal(String.format(Locale.US, "%s / %s ticks", getLifespan(stack), getMaxLifespan())));
+            String[] timeLeft = com.hbm.util.BobMathUtil.ticksToDate(getLifespan(stack));
+            String[] maxLife = com.hbm.util.BobMathUtil.ticksToDate(getMaxLifespan());
+            tooltip.add(Component.literal(String.format(Locale.US, "Time remaining: %s y, %s d, %s h", (Object[]) timeLeft)));
+            tooltip.add(Component.literal(String.format(Locale.US, "Maximum life: %s y, %s d, %s h", (Object[]) maxLife)));
+        }
     }
 }

@@ -69,24 +69,7 @@ public final class NeoForgeClientInit {
                     (graphics, deltaTracker) -> renderer.accept(graphics)));
         });
 
-        modBus.addListener((RegisterMenuScreensEvent event) -> {
-            HbmClientRegistrations.registerScreens(event::register);
-        });
-
-        modBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> {
-            HbmClientRegistrations.registerRenderers(new com.hbm.client.render.HbmBlockEntityRenderers.Sink() {
-                @Override
-                public <T extends BlockEntity, S extends dev.golem.core.render.CompatRenderState> void register(
-                    BlockEntityType<? extends T> type, dev.golem.core.render.CompatBERProvider<T, S> provider) {
-                    event.registerBlockEntityRenderer(type, dev.golem.core.render.Renderers.toVanilla(provider));
-                }
-            }, new com.hbm.client.render.HbmEntityRenderers.Sink() {
-                @Override
-                public <T extends Entity> void register(EntityType<? extends T> type, EntityRendererProvider<T> provider) {
-                    event.registerEntityRenderer(type, provider);
-                }
-            });
-        });
+        HbmClientRegistrations.installScreensAndRenderers();
         // Block tint sources (sellafite shade tint) — Golem picks the era's colour API and the moment
         // this loader allows registering one.
         HbmClientRegistrations.registerBlockColors();
@@ -149,12 +132,16 @@ public final class NeoForgeClientInit {
                     return renderer;
                 }
             };
-            // Registering for every HBM item is harmless: vanilla only consults the custom renderer for
+            // Registering for every item of a bound namespace is harmless: vanilla only consults the custom renderer for
             // items whose baked model reports isCustomRenderer(), i.e. those the build gave a
             // builtin/entity parent, which is exactly the machine_obj set.
-            net.minecraft.core.registries.BuiltInRegistries.ITEM.entrySet().stream()
-                    .filter(e -> e.getKey().location().getNamespace().equals(com.hbm.Constants.MOD_ID))
-                    .forEach(e -> event.registerItem(extension, e.getValue()));
+            // HBM's namespace and every addon namespace listed in MachineItemNamespaces; the event is the only
+            // window, so binding stops with it
+            com.hbm.client.render.MachineItemNamespaces.bind(namespace ->
+                    net.minecraft.core.registries.BuiltInRegistries.ITEM.entrySet().stream()
+                            .filter(e -> e.getKey().location().getNamespace().equals(namespace))
+                            .forEach(e -> event.registerItem(extension, e.getValue())));
+            com.hbm.client.render.MachineItemNamespaces.bind(null);
         });
         *///?}
     }

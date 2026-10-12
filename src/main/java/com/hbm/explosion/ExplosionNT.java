@@ -28,21 +28,35 @@ public final class ExplosionNT {
 
     private ExplosionNT() {}
 
-    /** 1.7 {@code ExplosionNT.errosion}: what an eroding blast leaves of a block. Built on first use (registries). */
+    /**
+     * 1.7 {@code ExplosionNT.errosion}: what an eroding blast leaves of a block. The table is the {@code hbm:erosion}
+     * block data map ({@link com.hbm.api.data.WorldDataMaps#EROSION}); this is a live view of it, read per lookup.
+     */
     public static Map<Block, Block> errosion() {
-        return Holder.EROSION;
+        return EROSION_VIEW;
     }
 
-    private static final class Holder {
-        static final Map<Block, Block> EROSION = new HashMap<>();
-
-        static {
-            EROSION.put(ModBlocks.concrete.get(), Blocks.GRAVEL);
-            EROSION.put(ModBlocks.concrete_smooth.get(), Blocks.GRAVEL);
-            EROSION.put(ModHazardBlocks.brick_concrete.get(), ModBlocks.brick_concrete_broken.get());
-            EROSION.put(ModBlocks.brick_concrete_broken.get(), Blocks.GRAVEL);
+    private static final Map<Block, Block> EROSION_VIEW = new java.util.AbstractMap<>() {
+        @Override
+        public Block get(Object key) {
+            if (!(key instanceof Block block)) return null;
+            String to = com.hbm.api.data.WorldDataMaps.EROSION.get(block);
+            return to == null ? null : com.hbm.api.data.WorldDataMaps.blockOf(to);
         }
-    }
+
+        @Override
+        public boolean containsKey(Object key) {
+            return key instanceof Block block && com.hbm.api.data.WorldDataMaps.EROSION.get(block) != null;
+        }
+
+        @Override
+        public java.util.Set<Map.Entry<Block, Block>> entrySet() {
+            java.util.Set<Map.Entry<Block, Block>> set = new java.util.LinkedHashSet<>();
+            com.hbm.api.data.WorldDataMaps.EROSION.byId().forEach((from, to) -> set.add(Map.entry(
+                    com.hbm.api.data.WorldDataMaps.blockOf(from), com.hbm.api.data.WorldDataMaps.blockOf(to))));
+            return set;
+        }
+    };
 
     /**
      * {@code new ExplosionNT(world, exploder, x, y, z, size)} with {@code addAllAttrib(ExAttrib.ERRODE)} and

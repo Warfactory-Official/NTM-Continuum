@@ -35,17 +35,20 @@ public abstract class Satellite {
      */
     public String tx = "";
 
+    /**
+     * Data an addon keeps on the satellite, saved with it as {@code "extra"} (empty: not written). Keys are the addon's
+     * own, namespaced: NTM: Space keeps hbm-space's orbit settings (inclination, altitude, colour, ...) under
+     * {@code "ntmspace:orbit"}, set by an {@code XSatelliteRegistry.ORBITED} listener. Mutating it owes
+     * {@code SatelliteSavedData.setDirty()}.
+     */
+    public net.minecraft.nbt.CompoundTag extra = new net.minecraft.nbt.CompoundTag();
+
     /** 1.7 {@code XSatelliteRegistry.orbit}. */
     public static void orbit(ServerLevel level, ItemStack stack, int freq, double x, double y, double z) {
         XSatelliteRegistry.orbit(level, stack, freq, x, y, z);
     }
 
     public abstract SatelliteType type();
-
-    /** 1.7 {@code getID()}: the index into {@code XSatelliteRegistry.idToClass}. */
-    public int getID() {
-        return type().ordinal();
-    }
 
     /** The model name a ground station and the launch broadcast print for this satellite. */
     public abstract String getType();

@@ -20,6 +20,14 @@ import dev.golem.core.data.DataOut;
  */
 public class ExplosionTom {
 
+    /**
+     * How far from the impact the crater floods the ground below the old terrain with lava (ADDON-API-INVENTORY V-174).
+     * 1.7: everywhere the crater reaches; hbm-space gated it, like the clearing above, at 500 blocks (NTM: Space sets
+     * 500), so outside the rim the ejecta no longer turns into a lava sheet.
+     */
+    public static double lavaRadius = Double.POSITIVE_INFINITY;
+
+
     public int posX;
     public int posY;
     public int posZ;
@@ -161,7 +169,7 @@ public class ExplosionTom {
                         level.setBlock(new BlockPos(pX, y, pZ), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
                     }
                 }
-            } else {
+            } else if (distance < lavaRadius) {
                 for (int i = -2; i < 3; i++) {
                     for (int j = -2; j < 3; j++) {
                         for (int k = -2; k < 3; k++) {

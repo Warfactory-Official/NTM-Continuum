@@ -77,14 +77,37 @@ public class ItemPWRFuel extends CompatItem {
         this.fuel = fuel;
     }
 
+    /**
+     * The fuel values of {@code item}: the {@code hbm:pwr_fuel} item data map, else HBM's enum constant for its own rods;
+     * null when the item is not PWR fuel. An addon's fuel is any item with a data-map entry.
+     */
+    public static com.hbm.api.data.ReactorDataMaps.@org.jspecify.annotations.Nullable PWRFuel stats(net.minecraft.world.item.Item item) {
+        com.hbm.api.data.ReactorDataMaps.PWRFuel data = com.hbm.api.data.ReactorDataMaps.PWR_FUEL.get(item);
+        if (data != null) return data;
+        return codeStats(item);
+    }
+
+    /** The code defaults (constructor or enum values) that the data map entry overrides. */
+    public static com.hbm.api.data.ReactorDataMaps.@org.jspecify.annotations.Nullable PWRFuel codeStats(net.minecraft.world.item.Item item) {
+        if (!(item instanceof ItemPWRFuel rod) || rod.fuel.function == null) return null;
+        return new com.hbm.api.data.ReactorDataMaps.PWRFuel(rod.fuel.heatEmission, rod.fuel.function, rod.fuel.yield,
+                key(com.hbm.items.ModPwrItems.hot(rod.fuel)), key(com.hbm.items.ModPwrItems.depleted(rod.fuel)));
+    }
+
+    private static String key(net.minecraft.world.item.Item item) {
+        return net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).toString();
+    }
+
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context, List<Component> tooltip,
                                          TooltipFlag flag) {
+        com.hbm.api.data.ReactorDataMaps.PWRFuel fuel = stats(this);
+        if (fuel == null) return;
         tooltip.add(Component.literal("Heat per flux: ").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal(fuel.heatEmission + " TU").withStyle(ChatFormatting.WHITE)));
+                .append(Component.literal(fuel.heat() + " TU").withStyle(ChatFormatting.WHITE)));
         tooltip.add(Component.literal("Reaction function: ").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal(fuel.function.getLabelForFuel()).withStyle(ChatFormatting.WHITE)));
+                .append(Component.literal(fuel.function().getLabelForFuel()).withStyle(ChatFormatting.WHITE)));
         tooltip.add(Component.literal("Fuel type: ").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal(fuel.function.getDangerFromFuel()).withStyle(ChatFormatting.WHITE)));
+                .append(Component.literal(fuel.function().getDangerFromFuel()).withStyle(ChatFormatting.WHITE)));
     }
 }

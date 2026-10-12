@@ -45,6 +45,13 @@ public class MachineCapacitor extends CompatBlock implements TickingBlock, ILook
 
     public final long power;
 
+    /**
+     * hbm-space {@code MachineCapacitor.addInformation}: the capacity, charge and discharge lines come first, before the
+     * shared {@code tile.capacitor.desc} (ADDON-API-INVENTORY V-179). Off in plain HBM (desc first); NTM: Space turns it
+     * on. Read by {@code ModEnergyNetBlocks.capacitorInfo} and {@link #tooltip}.
+     */
+    public static boolean capacityFirst = false;
+
     public MachineCapacitor(Properties properties, long power) {
         super(properties);
         this.power = power;
@@ -123,6 +130,29 @@ public class MachineCapacitor extends CompatBlock implements TickingBlock, ILook
             ModEnergyNetContent.CAPACITOR_POWER.set(stack, capacitor.getPower());
         }
         return List.of(stack);
+    }
+
+    /**
+     * The whole item tooltip of a capacitor: {@code desc.capacitor.0/1} and {@link #persistentInfo}, in the order
+     * {@link #capacityFirst} picks; {@code extra} goes after the description (hbm-space's {@code capacitor_complex} lore).
+     */
+    public List<net.minecraft.network.chat.Component> tooltip(ItemStack stack, List<net.minecraft.network.chat.Component> extra) {
+        List<net.minecraft.network.chat.Component> desc = List.of(
+                net.minecraft.network.chat.Component.translatable("desc.capacitor.0").withStyle(net.minecraft.ChatFormatting.YELLOW),
+                net.minecraft.network.chat.Component.translatable("desc.capacitor.1").withStyle(net.minecraft.ChatFormatting.YELLOW));
+        List<net.minecraft.network.chat.Component> info = persistentInfo(stack);
+        List<net.minecraft.network.chat.Component> list = new ArrayList<>();
+        if (capacityFirst) {
+            list.addAll(info.subList(0, 3));
+            list.addAll(desc);
+            list.addAll(extra);
+            list.addAll(info.subList(3, info.size()));
+        } else {
+            list.addAll(desc);
+            list.addAll(extra);
+            list.addAll(info);
+        }
+        return list;
     }
 
     /** The item's persistent lines, as {@code IPersistentInfoProvider.addInformation} wrote them. */

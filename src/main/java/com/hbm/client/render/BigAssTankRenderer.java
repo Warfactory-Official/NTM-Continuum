@@ -50,7 +50,7 @@ public final class BigAssTankRenderer extends GiantTankRenderer<TileEntityMachin
 
     @Override
     protected void submitHazards(GiantTankRenderState state, PoseStack poseStack, SubmitSink collector) {
-        Hazard hazard = hazardFor(state.fluidType);
+        com.hbm.inventory.fluid.FluidHazard hazard = hazardFor(state.fluidType);
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(22.5F));
         for (int i = 0; i < 2; i++) {

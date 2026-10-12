@@ -59,6 +59,16 @@ public final class HbmParticleHandlers {
         HbmEffectNT.Jetpack_BJ.setHandler((level, x, y, z, data) -> spawnJetpack(level, data, 1));
         HbmEffectNT.Jetpack_DNS.setHandler((level, x, y, z, data) -> spawnJetpack(level, data, 2));
         HbmEffectNT.VanillaExt_BlockDust.setHandler(HbmParticleHandlers::spawnVanillaExtBlockDust);
+        // 1.7 ClientProxy vanillaExt "cloud"; BlockGasBase asks for the local player through this supplier
+        HbmEffectNT.VanillaExt_Cloud.setHandler((level, x, y, z, data) -> {
+            if (!(level instanceof ClientLevel clientLevel)) return;
+            ParticleGasCloud cloud = new ParticleGasCloud(clientLevel, x, y, z, Tags.getDoubleOr(data, "mX", 0D),
+                    Tags.getDoubleOr(data, "mY", 0D), Tags.getDoubleOr(data, "mZ", 0D));
+            if (data.contains("r")) cloud.reveal(Tags.getFloatOr(data, "r", 1F), Tags.getFloatOr(data, "g", 1F),
+                    Tags.getFloatOr(data, "b", 1F));
+            Particles.add(cloud);
+        });
+        com.hbm.blocks.generic.BlockGasBase.localPlayer = () -> Minecraft.getInstance().player;
         HbmEffectNT.Hadron.setHandler((level, x, y, z, data) -> {
             if (level instanceof ClientLevel clientLevel) dev.golem.core.render.Particles.add(new ParticleHadron(clientLevel, x, y, z));
         });
@@ -126,6 +136,11 @@ public final class HbmParticleHandlers {
 
         int maxAge = Tags.getIntOr(data, "maxAge", -1);
         if (maxAge > 0) flame.setMaxAge(maxAge);
+        // hbm-space's "color" key (an addon API, used by NTM: Space's DCM geyser); absent, the puff is 1.7's
+        if (data.contains("color")) {
+            int color = Tags.getIntOr(data, "color", 0);
+            flame.setCustomColor((color >> 16 & 255) / 255F, (color >> 8 & 255) / 255F, (color & 255) / 255F);
+        }
 
         Particles.add(flame);
     }

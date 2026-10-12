@@ -52,6 +52,24 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase {
     /** The bus animation the current transition plays, started at {@link #animStartTime}; client only. */
     public @Nullable BusAnimation currentAnimation;
 
+    /** A listener told that a door finished opening or closing; {@code core} is the door's core position. */
+    @FunctionalInterface
+    public interface Moved {
+        void moved(net.minecraft.server.level.ServerLevel level, BlockPos core, TileEntityDoorGeneric door);
+    }
+
+    /**
+     * Notified on the server when a door has finished opening ({@link #STATE_OPEN}) or closing ({@link #STATE_CLOSED}),
+     * after its cells' {@code open} state is final. hbm-space told its sealed-room atmosphere here
+     * ({@code IBlockSealable.updateSealedState}); plain HBM has no listener.
+     */
+    public static final dev.golem.core.hook.Hook<Moved> MOVED = dev.golem.core.hook.Hook.notifying();
+
+    private void moved() {
+        if (MOVED.isEmpty() || !(level instanceof net.minecraft.server.level.ServerLevel server)) return;
+        for (Moved listener : MOVED) listener.moved(server, worldPosition, this);
+    }
+
     public TileEntityDoorGeneric(BlockPos pos, BlockState state) {
         super(ModDoorBlockEntities.DOOR_GENERIC.get(), pos, state);
     }
@@ -131,9 +149,11 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase {
         }
         if (state == STATE_OPENING && openTicks == decl.timeToOpen()) {
             state = STATE_OPEN;
+            moved();
         }
         if (state == STATE_CLOSING && openTicks == 0) {
             state = STATE_CLOSED;
+            moved();
         }
 
         this.networkPackNT();

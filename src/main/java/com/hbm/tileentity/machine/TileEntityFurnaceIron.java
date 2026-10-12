@@ -80,7 +80,9 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements Menu
             }
         }
 
-        if (furnace.canSmelt(level)) {
+        // hbm-space: smelting also needs air, 1 mB of oxygen every 5 ticks (com.hbm.api.environment.Environment)
+        if (furnace.canSmelt(level) && com.hbm.api.environment.Environment.breatheAir(level, pos,
+                TickPhase.every(level, pos, 5L) ? 1 : 0)) {
             furnace.wasOn = true;
             furnace.progress++;
             furnace.burnTime--;

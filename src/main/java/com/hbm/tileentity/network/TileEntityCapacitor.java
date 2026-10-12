@@ -33,7 +33,12 @@ public class TileEntityCapacitor extends TileEntityLoadedBase implements IEnergy
     public long lastPowerSent;
 
     public TileEntityCapacitor(BlockPos pos, BlockState state) {
-        super(ModEnergyNetBlockEntities.CAPACITOR.get(), pos, state);
+        this(ModEnergyNetBlockEntities.CAPACITOR.get(), pos, state);
+    }
+
+    /** For an addon's own capacitor block, whose block entity type lists its block (NTM: Space's capacitor_complex). */
+    protected TileEntityCapacitor(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
         this.maxPower = state.getBlock() instanceof MachineCapacitor capacitor ? capacitor.power : 0L;
     }
 

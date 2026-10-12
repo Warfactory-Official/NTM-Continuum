@@ -50,6 +50,19 @@ public final class BossStatus {
         statusBarTime = 100;
     }
 
+    /**
+     * 1.7 {@code BossStatus.setBossStatus(IBossDisplayData, ...)} for a boss that is no entity (any
+     * {@code IBossDisplayData}: a name, health and max health), called every frame or tick it should show, as
+     * {@link #set(LivingEntity, BossEvent.BossBarColor)}. A max of 0 or less shows an empty bar. HBM itself calls only
+     * the entity form; NTM: Space's invasion ("Wave N", kills left) uses this.
+     */
+    public static void set(Component name, float health, float maxHealth, BossEvent.BossBarColor barColor) {
+        healthScale = maxHealth > 0F ? Math.max(0F, Math.min(1F, health / maxHealth)) : 0F;
+        bossName = name;
+        color = barColor;
+        statusBarTime = 100;
+    }
+
     /** 1.7 {@code GuiIngame.renderBossHealth}: one HUD frame. */
     public static void render(GuiGraphicsExtractor graphics) {
         Minecraft mc = Minecraft.getInstance();

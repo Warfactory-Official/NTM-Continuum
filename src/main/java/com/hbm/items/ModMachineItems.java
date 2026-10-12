@@ -151,7 +151,7 @@ public final class ModMachineItems {
             for (String pool : GenericRecipes.blueprintPools.keySet()) {
                 if (!pool.startsWith(GenericRecipes.POOL_PREFIX_SECRET)) list.add(ItemBlueprints.make(pool));
             }
-            for (FluidType fluid : Fluids.getAll()) {
+            for (FluidType fluid : Fluids.getInNiceOrder()) { // as 1.7's ItemFluidIDMulti.getSubItems
                 if (fluid == Fluids.NONE) continue;
                 list.add(ItemFluidId.make(fluid));
             }

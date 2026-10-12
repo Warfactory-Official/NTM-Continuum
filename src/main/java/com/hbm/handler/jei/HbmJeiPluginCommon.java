@@ -176,7 +176,7 @@ public final class HbmJeiPluginCommon {
      * would be searchable. (Modern equivalent of the old {@code FluidIconRecipeRegistryPlugin} seam.) */
     public static void registerExtraIngredients(IExtraIngredientRegistration reg) {
         List<ItemStack> icons = new ArrayList<>();
-        for (FluidType fluid : Fluids.getAll()) {
+        for (FluidType fluid : Fluids.getInNiceOrder()) { // 1.7 ItemFluidIcon.getSubItems
             if (fluid == Fluids.NONE) continue;
             ItemStack icon = ItemFluidIcon.make(fluid);
             if (!icon.isEmpty()) icons.add(icon);

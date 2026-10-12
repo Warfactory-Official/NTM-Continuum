@@ -18,6 +18,44 @@ public abstract class Function {
     protected double div = 1D;
     protected double off = 0D;
 
+    /**
+     * A curve as data: {@code {"type": "sqrt", "level": 22.5, "div": 1.0, "off": 0.0}}; types {@code linear},
+     * {@code sqrt}, {@code quadratic} (with {@code v_off}), {@code log}, {@code passive}. 1.7's falling square root is a
+     * {@code sqrt} with {@code level} 1/f and {@code off} f². Used by the reactor fuel data maps (PWR, Watz).
+     */
+    public static final com.mojang.serialization.Codec<Function> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.<Function>create(i -> i.group(
+            com.mojang.serialization.Codec.STRING.fieldOf("type").forGetter(Function::typeName),
+            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("level", 0D).forGetter(Function::levelValue),
+            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("v_off", 0D).forGetter(f -> f instanceof FunctionDoubleArg d ? d.vOff : 0D),
+            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("div", 1D).forGetter(f -> f.div),
+            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("off", 0D).forGetter(f -> f.off)
+    ).apply(i, (type, level, vOff, div, off) -> {
+        Function f = switch (type) {
+            case "linear" -> new FunctionLinear(level);
+            case "sqrt" -> new FunctionSqrt(level);
+            case "quadratic" -> new FunctionQuadratic(level, vOff);
+            case "log" -> new FunctionLogarithmic(level);
+            case "passive" -> new FunctionPassive(level);
+            default -> throw new IllegalArgumentException("Unknown function type " + type);
+        };
+        return f.withDiv(div).withOff(off);
+    }));
+
+    private String typeName() {
+        if (this instanceof FunctionLinear) return "linear";
+        if (this instanceof FunctionSqrt) return "sqrt";
+        if (this instanceof FunctionQuadratic) return "quadratic";
+        if (this instanceof FunctionLogarithmic) return "log";
+        if (this instanceof FunctionPassive) return "passive";
+        throw new IllegalStateException("Unnamed function " + getClass());
+    }
+
+    private double levelValue() {
+        if (this instanceof FunctionSingleArg s) return s.level;
+        if (this instanceof FunctionDoubleArg d) return d.level;
+        return 0D;
+    }
+
     /** The German pronunciation of f(x) — "F von X", tee hee. */
     public abstract double effonix(double x);
 

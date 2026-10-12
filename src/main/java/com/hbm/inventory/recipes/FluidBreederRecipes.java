@@ -1,32 +1,26 @@
 package com.hbm.inventory.recipes;
 
+import com.hbm.Constants;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.recipes.loader.DataGenericRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
-import com.hbm.inventory.recipes.loader.GenericRecipes;
 
-/** The fusion breeder's fluid-to-fluid irradiation table. */
-public final class FluidBreederRecipes extends GenericRecipes {
+/**
+ * The fusion breeder's fluid-to-fluid irradiation table (1.7 {@code FluidBreederRecipes}): the datapack table
+ * {@code hbm:fluid_breeder}, one file per row in {@code data/hbm/recipe/fluid_breeder/}, converted once from the former
+ * Java table and the source now.
+ */
+public final class FluidBreederRecipes extends DataGenericRecipes<GenericRecipe> {
 
     public static final FluidBreederRecipes INSTANCE = new FluidBreederRecipes();
 
-    private FluidBreederRecipes() {}
-
-    @Override
-    public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return;
-
-        register(new GenericRecipe("fluid_breeder.gas")
-                .inputFluids(new FluidStack(Fluids.GAS, 1_000))
-                .outputFluids(new FluidStack(Fluids.SYNGAS, 1_000)));
-        register(new GenericRecipe("fluid_breeder.lightoil")
-                .inputFluids(new FluidStack(Fluids.LIGHTOIL, 1_000))
-                .outputFluids(new FluidStack(Fluids.REFORMGAS, 1_000)));
-        register(new GenericRecipe("fluid_breeder.lightoil_crack")
-                .inputFluids(new FluidStack(Fluids.LIGHTOIL_CRACK, 1_000))
-                .outputFluids(new FluidStack(Fluids.REFORMGAS, 1_000)));
+    private FluidBreederRecipes() {
+        super(Constants.MOD_ID, "fluid_breeder");
     }
+
+    /** Declares the table at mod construction (its recipe type and serializer register with HBM's content). */
+    public static void declare() {}
 
     public GenericRecipe getRecipe(FluidType input) {
         registerRecipes();

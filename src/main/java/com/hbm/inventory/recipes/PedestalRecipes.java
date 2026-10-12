@@ -1,17 +1,122 @@
 package com.hbm.inventory.recipes;
 
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.TableCodecs;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 1.7 {@code PedestalRecipes}, as data: the ritual recipes whose sets the clay tablets reveal and the pedestal
- * ({@code BlockPedestal}) performs - the output, the nine inputs (an item id or a {@code #tag}; 1.7's enum-variant
- * items are items of their own here), the extra condition and the recipe set - in 1.7's registration order, which the
- * tablet's seeded draw and the pedestal's first-match search both depend on.
+ * ({@code BlockPedestal}) performs. The datapack table {@code hbm:pedestal}, one file per ritual in
+ * {@code data/hbm/recipe/pedestal/}:
+ * <pre>
+ * {"output": "hbm:gun_folly", "count": 1, "grid": ["", "#c:plates/lead", "", ...9 slots, row by row],
+ *  "extra": "full_moon", "set": 1, "order": 10}
+ * </pre>
+ * A grid slot is an item id or {@code #tag} (or {@code {"id", "count"}}; the pedestal wants exactly that count), or
+ * {@code ""} for a pedestal that must stay empty; {@code extra} names a {@link PedestalExtraCondition} (default
+ * {@code none}), {@code set} the tablet set that reveals it (default 0). {@code order} keeps 1.7's registration order,
+ * which both the tablet's seeded draw and the pedestal's first-match search depend on. Converted once from the Java
+ * table (1.7's 17 rituals; 1.7's enum-variant items are items of their own here). The output is an id resolved when the
+ * ritual completes, so a ritual for an item that is not registered simply never completes.
  */
 public final class PedestalRecipes {
 
-    public enum PedestalExtraCondition { NONE, FULL_MOON, NEW_MOON, SUN, GOOD_KARMA, BAD_KARMA }
+    /**
+     * A ritual's extra condition (1.7 {@code PedestalExtraCondition}), a registry of records so an addon can add one (a
+     * condition is a test of the ritual site, plus the icon the clay tablet shows for it). HBM's six keep 1.7's names
+     * and tests ({@code BlockPedestal.onNeighborBlockChange}); a ritual file names one in lower case ({@code "full_moon"}),
+     * an addon's by its registered name ({@code "ntmspace:eclipse"}). The moon tests read Golem {@code Skies}, so a
+     * dimension with its own sky answers them (H-40).
+     */
+    public static final class PedestalExtraCondition {
+
+        /** The ritual site: the moment and the players whose reputation the karma conditions read (within 20 blocks). */
+        public record Site(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos, float celestialAngle,
+                           int moonPhase, List<net.minecraft.world.entity.player.Player> nearbyPlayers) {}
+
+        @FunctionalInterface
+        public interface Test {
+            boolean holds(Site site);
+        }
+
+        /**
+         * The tablet's 16x16 icon: on HBM's tablet sheet at v ({@code sheet} null; u follows the tablet), or at (u, v) of
+         * an addon's own 256x256 {@code sheet}. Null for a condition the tablet does not show.
+         */
+        public record Icon(net.minecraft.resources.@org.jspecify.annotations.Nullable Identifier sheet, int u, int v) {}
+
+        public static final com.hbm.api.registry.NamedRegistry<PedestalExtraCondition> REGISTRY =
+                new com.hbm.api.registry.NamedRegistry<>("pedestal condition", PedestalExtraCondition::name);
+
+        private static boolean night(Site site) {
+            return site.celestialAngle() >= 0.35 && site.celestialAngle() <= 0.65;
+        }
+
+        private static boolean karma(Site site, java.util.function.IntPredicate reputation) {
+            for (net.minecraft.world.entity.player.Player player : site.nearbyPlayers()) {
+                if (reputation.test(com.hbm.extprop.HbmPlayerProps.getReputation(player))) return true;
+            }
+            return false;
+        }
+
+        public static final PedestalExtraCondition NONE = register("NONE", null, site -> true);
+        public static final PedestalExtraCondition FULL_MOON = register("FULL_MOON", new Icon(null, 0, 32),
+                site -> night(site) && site.moonPhase() == 0);
+        public static final PedestalExtraCondition NEW_MOON = register("NEW_MOON", new Icon(null, 0, 48),
+                site -> night(site) && site.moonPhase() == 4);
+        public static final PedestalExtraCondition SUN = register("SUN", new Icon(null, 0, 64),
+                site -> site.celestialAngle() <= 0.15 || site.celestialAngle() >= 0.85);
+        public static final PedestalExtraCondition GOOD_KARMA = register("GOOD_KARMA", null, site -> karma(site, r -> r >= 10));
+        public static final PedestalExtraCondition BAD_KARMA = register("BAD_KARMA", null, site -> karma(site, r -> r <= -10));
+
+        /** By name: HBM's in lower case ({@code "full_moon"}), an addon's as registered. */
+        public static final Codec<PedestalExtraCondition> CODEC = Codec.STRING.comapFlatMap(name -> {
+            PedestalExtraCondition condition = REGISTRY.get(name);
+            if (condition == null) condition = REGISTRY.get(name.toUpperCase(java.util.Locale.ROOT));
+            PedestalExtraCondition found = condition;
+            return found != null ? DataResult.success(found) : DataResult.error(() -> "unknown pedestal condition " + name);
+        }, condition -> REGISTRY.get(condition.name().toUpperCase(java.util.Locale.ROOT)) == condition
+                ? condition.name().toLowerCase(java.util.Locale.ROOT) : condition.name());
+
+        private final String name;
+        public final @org.jspecify.annotations.Nullable Icon icon;
+        private final Test test;
+
+        private PedestalExtraCondition(String name, @org.jspecify.annotations.Nullable Icon icon, Test test) {
+            this.name = name;
+            this.icon = icon;
+            this.test = test;
+        }
+
+        /** Registers a condition; an addon names it with its namespace. Call at mod construction, on both sides. */
+        public static PedestalExtraCondition register(String name, @org.jspecify.annotations.Nullable Icon icon, Test test) {
+            return REGISTRY.register(new PedestalExtraCondition(name, icon, test));
+        }
+
+        public boolean holds(Site site) {
+            return test.holds(site);
+        }
+
+        public String name() {
+            return name;
+        }
+
+        public static List<PedestalExtraCondition> values() {
+            return REGISTRY.values();
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
 
     /** One ingredient: {@code id} is an item id or a {@code #tag}. */
     public record Input(String id, int count) {}
@@ -33,112 +138,75 @@ public final class PedestalRecipes {
         public PedestalRecipe set(int set) { this.recipeSet = set; return this; }
     }
 
-    public static final List<PedestalRecipe> recipes = new ArrayList<>();
-    @SuppressWarnings("unchecked")
-    public static final ArrayList<PedestalRecipe>[] recipeSets = new ArrayList[2];
+    private static final Codec<Input> INPUT = Codec.either(Codec.STRING, RecordCodecBuilder.<Input>create(i -> i.group(
+            Codec.STRING.fieldOf("id").forGetter(Input::id),
+            Codec.INT.optionalFieldOf("count", 1).forGetter(Input::count)
+    ).apply(i, Input::new))).xmap(either -> either.map(id -> new Input(id, 1), input -> input),
+            input -> input.count() == 1 ? Either.left(input.id()) : Either.right(input));
+
+    /** A pedestal: an input, or {@code ""} for one that must stay empty. */
+    private static final Codec<Optional<Input>> SLOT = INPUT.xmap(
+            input -> input.id().isEmpty() ? Optional.<Input>empty() : Optional.of(input),
+            slot -> slot.orElse(new Input("", 1)));
+
+    public record Row(String output, int count, List<Optional<Input>> grid, PedestalExtraCondition extra, int set, int order) {}
+
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            Codec.STRING.fieldOf("output").forGetter(Row::output),
+            Codec.INT.optionalFieldOf("count", 1).forGetter(Row::count),
+            SLOT.listOf().comapFlatMap(grid -> grid.size() == 9 ? DataResult.success(grid)
+                    : DataResult.error(() -> "a pedestal ritual has 9 pedestals, not " + grid.size()), grid -> grid)
+                    .fieldOf("grid").forGetter(Row::grid),
+            PedestalExtraCondition.CODEC.optionalFieldOf("extra", PedestalExtraCondition.NONE)
+                    .forGetter(Row::extra),
+            Codec.INT.optionalFieldOf("set", 0).forGetter(Row::set),
+            Codec.INT.optionalFieldOf("order", TableCodecs.LAST).forGetter(Row::order)
+    ).apply(i, Row::new));
+
+    public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("pedestal", () -> CODEC);
+
+    /** The tablet sets (1.7 had two); a recipe's set is taken modulo this, as 1.7 did. */
+    public static final int SETS = 2;
+
+    private record Index(List<PedestalRecipe> recipes, List<List<PedestalRecipe>> sets) {}
+
+    private static volatile Index current = new Index(List.of(), List.of(List.of(), List.of()));
 
     static {
-        for (int i = 0; i < recipeSets.length; i++) recipeSets[i] = new ArrayList<>();
-        registerDefaults();
+        TABLE.changed.register(PedestalRecipes::reindex);
     }
 
     private PedestalRecipes() {}
 
-    private static Input i(String id) { return new Input(id, 1); }
-    private static Input i(String id, int count) { return new Input(id, count); }
+    /** Declares the table at mod construction. */
+    public static void declare() {}
 
-    // 1.7 weapon_mod_special metadata SCOPE / SILENCER / FURNITURE_BLACK, items of their own (History §19es-itemvariant)
-    private static final String SCOPE = "hbm:weapon_mod_special_scope";
-    private static final String SILENCER = "hbm:weapon_mod_special_silencer";
-    private static final String FURNITURE_BLACK = "hbm:weapon_mod_special_furniture_black";
+    private static void reindex() {
+        List<PedestalRecipe> all = new ArrayList<>();
+        List<List<PedestalRecipe>> sets = new ArrayList<>();
+        for (int set = 0; set < SETS; set++) sets.add(new ArrayList<>());
+        for (Row row : TableCodecs.ordered(TABLE.rows(), Row::order)) {
+            PedestalRecipe recipe = new PedestalRecipe(row.output(), row.count(),
+                    row.grid().stream().map(slot -> slot.orElse(null)).toArray(Input[]::new)).extra(row.extra()).set(row.set());
+            all.add(recipe);
+            sets.get(Math.abs(recipe.recipeSet) % SETS).add(recipe);
+        }
+        current = new Index(List.copyOf(all), sets.stream().map(List::copyOf).toList());
+    }
 
-    private static void registerDefaults() {
-        register(new PedestalRecipe("hbm:gun_light_revolver_dani", 1,
-                null, i("#c:plates/lead"), null,
-                i("#c:plates/gold"), i("hbm:gun_light_revolver"), i("#c:plates/gold"),
-                null, i("#c:plates/lead"), null));
+    private static Index index() {
+        if (current.recipes().isEmpty()) TABLE.rows();
+        return current;
+    }
 
-        register(new PedestalRecipe("hbm:gun_maresleg_broken", 1,
-                i("hbm:barbed_wire"), i("#c:plates/weaponsteel"), i("hbm:barbed_wire"),
-                i("#c:plates/weaponsteel"), i("hbm:gun_maresleg"), i("#c:plates/weaponsteel"),
-                i("hbm:barbed_wire"), i("#c:plates/weaponsteel"), i("hbm:barbed_wire")));
+    /** Every ritual in 1.7's order (the pedestal's first-match search). */
+    public static List<PedestalRecipe> recipes() {
+        return index().recipes();
+    }
 
-        register(new PedestalRecipe("hbm:gun_heavy_revolver_lilmac", 1,
-                null, i(SCOPE), null,
-                i("hbm:powder_magic"), i("hbm:gun_heavy_revolver"), i("#c:plates/weaponsteel"),
-                null, i("#c:grips/bone"), i("minecraft:apple", 3)));
-
-        register(new PedestalRecipe("hbm:gun_heavy_revolver_protege", 1,
-                i("hbm:dungeon_chain", 16), i("#c:gems/cinnabar"), i("hbm:dungeon_chain", 16),
-                i("hbm:scrap_nuclear"), i("hbm:gun_heavy_revolver"), i("hbm:scrap_nuclear"),
-                i("hbm:dungeon_chain", 16), i("#c:gems/cinnabar"), i("hbm:dungeon_chain", 16)));
-
-        register(new PedestalRecipe("hbm:gun_amat_subtlety", 1,
-                i("#c:ingots/starmetal"), i("#c:plates_cast/aluminium"), i("#c:ingots/starmetal"),
-                i("#c:plates_cast/aluminium"), i("hbm:gun_amat"), i("#c:plates_cast/aluminium"),
-                i("#c:ingots/starmetal"), i("#c:plates_cast/aluminium"), i("#c:ingots/starmetal")));
-
-        register(new PedestalRecipe("hbm:gun_amat_penance", 1,
-                i("#c:ingots/starmetal"), i("#c:plates_cast/dura_steel"), i("#c:ingots/starmetal"),
-                i(SILENCER), i("hbm:gun_amat"), i(FURNITURE_BLACK),
-                i("#c:ingots/starmetal"), i("#c:plates_cast/dura_steel"), i("#c:ingots/starmetal")));
-
-        register(new PedestalRecipe("hbm:gun_flamer_daybreaker", 1,
-                i("#c:plates_cast/gold"), i("hbm:canned_conserve_slime"), i("#c:plates_cast/gold"),
-                i("#c:ingots/phosphorus"), i("hbm:gun_flamer"), i("#c:ingots/phosphorus"),
-                i("#c:plates_cast/gold"), i("hbm:stick_dynamite"), i("#c:plates_cast/gold"))
-                .extra(PedestalExtraCondition.SUN));
-
-        register(new PedestalRecipe("hbm:gun_autoshotgun_sexy", 1,
-                i("hbm:bolt_spike", 16), i("hbm:wild_p"), i("hbm:bolt_spike", 16),
-                i("hbm:card_qos"), i("hbm:gun_autoshotgun"), i("hbm:card_aos"),
-                i("hbm:bolt_spike", 16), i("#c:ingots/starmetal", 16), i("hbm:bolt_spike", 16)));
-
-        register(new PedestalRecipe("hbm:gun_minigun_lacunae", 1,
-                null, i("hbm:powder_magic", 4), null,
-                i("hbm:item_secret_selenium_steel", 4), i("hbm:gun_minigun"), i("hbm:item_secret_selenium_steel", 4),
-                null, i("hbm:powder_magic", 4), null)
-                .extra(PedestalExtraCondition.FULL_MOON));
-
-        register(new PedestalRecipe("hbm:gun_laser_pistol_morning_glory", 1,
-                null, i("hbm:morning_glory"), null,
-                i("hbm:item_secret_selenium_steel", 2), i("hbm:gun_laser_pistol"), i("hbm:item_secret_selenium_steel", 2),
-                null, i("#c:gems/emerald", 16), null));
-
-        register(new PedestalRecipe("hbm:gun_folly", 1,
-                i("hbm:item_secret_folly", 4), i("hbm:item_secret_controller", 2), i("hbm:item_secret_folly", 4),
-                i("#c:ingots/bscco", 16), i("#c:storage_blocks/starmetal", 64), i("#c:ingots/bscco", 16),
-                i("hbm:item_secret_folly", 4), i("hbm:item_secret_controller", 2), i("hbm:item_secret_folly", 4))
-                .extra(PedestalExtraCondition.FULL_MOON).set(1));
-
-        register(new PedestalRecipe("hbm:gun_aberrator", 1,
-                null, i("hbm:item_secret_aberrator"), null,
-                i("hbm:item_secret_aberrator"), i("#c:mechanisms/saturnite", 4), i("hbm:item_secret_aberrator"),
-                null, i("hbm:item_secret_aberrator"), null).set(1));
-        register(new PedestalRecipe("hbm:gun_aberrator_eott", 1,
-                i("hbm:item_secret_aberrator"), i("hbm:item_secret_aberrator"), i("hbm:item_secret_aberrator"),
-                i("hbm:item_secret_aberrator"), i("#c:mechanisms/saturnite", 16), i("hbm:item_secret_aberrator"),
-                i("hbm:item_secret_aberrator"), i("hbm:item_secret_aberrator"), i("hbm:item_secret_aberrator"))
-                .extra(PedestalExtraCondition.GOOD_KARMA).set(1));
-
-        register(new PedestalRecipe("hbm:ammo_secret_folly_sm", 1,
-                i("#c:ingots/starmetal"), i("hbm:powder_magic"), i("#c:ingots/starmetal"),
-                i("hbm:powder_magic"), i("hbm:chunk_ore_moonstone"), i("hbm:powder_magic"),
-                i("#c:ingots/starmetal"), i("hbm:powder_magic"), i("#c:ingots/starmetal"))
-                .extra(PedestalExtraCondition.FULL_MOON).set(1));
-        register(new PedestalRecipe("hbm:ammo_secret_folly_nuke", 1,
-                i("#c:ingots/starmetal"), i("hbm:powder_magic"), i("#c:ingots/starmetal"),
-                i("hbm:powder_magic"), i("hbm:ammo_standard_nuke_high", 4), i("hbm:powder_magic"),
-                i("#c:ingots/starmetal"), i("hbm:powder_magic"), i("#c:ingots/starmetal"))
-                .extra(PedestalExtraCondition.FULL_MOON).set(1));
-        register(new PedestalRecipe("hbm:ammo_secret_p35_800", 5,
-                null, null, null,
-                null, i("hbm:item_secret_aberrator"), null,
-                null, null, null).set(1));
-        register(new PedestalRecipe("hbm:ammo_secret_p35_800_bl", 10,
-                null, null, null,
-                null, i("hbm:item_secret_aberrator", 3), null,
-                null, null, null).set(1));
+    /** The rituals tablet {@code set} reveals, in order (the tablet's seeded draw). */
+    public static List<PedestalRecipe> recipeSet(int set) {
+        return index().sets().get(Math.abs(set) % SETS);
     }
 
     /**
@@ -160,11 +228,5 @@ public final class PedestalRecipes {
         if (!net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(id)) return net.minecraft.world.item.ItemStack.EMPTY;
         return new net.minecraft.world.item.ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(id),
                 recipe.outputCount);
-    }
-
-    public static void register(PedestalRecipe recipe) {
-        recipes.add(recipe);
-        int set = Math.abs(recipe.recipeSet) % recipeSets.length;
-        recipeSets[set].add(recipe);
     }
 }

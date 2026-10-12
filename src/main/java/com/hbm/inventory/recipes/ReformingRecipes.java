@@ -2,16 +2,18 @@ package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.Fluids;
-
-import java.util.Collections;
-import java.util.LinkedHashMap;
+import com.hbm.inventory.recipes.loader.FluidRecipeCodecs;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import java.util.Map;
 
 /**
- * Catalytic reformer recipes — 1:1 port of the 1.12.2 {@code ReformingRecipes}. Per 100 mB input the
- * three fluid outputs (in mB). Consumed by the catalytic reformer (which additionally requires a
- * {@code catalytic_converter} in its catalyst slot and 20k HE + 100 mB per op).
+ * Catalytic reformer recipes: the datapack table {@code hbm:reforming}, one file per input fluid in
+ * {@code data/hbm/recipe/reforming/} ({@code {"input": fluid, "outputs": [three {type, amount}]}}): per 100 mB of input the
+ * three products. The machine also needs a {@code catalytic_converter} and 20k HE per operation. Converted once from the
+ * Java table (1.7 {@code ReformingRecipes}, 9 rows).
  */
 public final class ReformingRecipes {
 
@@ -20,40 +22,24 @@ public final class ReformingRecipes {
     /** Three fluid outputs per 100 mB input. */
     public record ReformingRecipe(FluidStack out1, FluidStack out2, FluidStack out3) {}
 
-    private static final Map<FluidType, ReformingRecipe> recipes = new LinkedHashMap<>();
-    private static boolean initialized = false;
+    public record Row(FluidType input, List<FluidStack> outputs) {}
+
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            GenericRecipeCodec.FLUID.fieldOf("input").forGetter(Row::input),
+            FluidRecipeCodecs.stacks(3).fieldOf("outputs").forGetter(Row::outputs)
+    ).apply(i, Row::new));
+
+    public static final FluidRecipeCodecs.ByFluid<Row, ReformingRecipe> TABLE = new FluidRecipeCodecs.ByFluid<>("reforming",
+            () -> CODEC, Row::input, row -> new ReformingRecipe(row.outputs().get(0), row.outputs().get(1), row.outputs().get(2)));
+
+    /** Declares the table at mod construction. */
+    public static void declare() {}
 
     public static ReformingRecipe getOutput(FluidType type) {
-        init();
-        return recipes.get(type);
+        return TABLE.get(type);
     }
 
     public static Map<FluidType, ReformingRecipe> getAll() {
-        init();
-        return Collections.unmodifiableMap(recipes);
-    }
-
-    private static synchronized void init() {
-        if (initialized) return;
-        initialized = true;
-
-        recipes.put(Fluids.HEATINGOIL, new ReformingRecipe(
-                new FluidStack(Fluids.NAPHTHA, 50), new FluidStack(Fluids.PETROLEUM, 15), new FluidStack(Fluids.HYDROGEN, 10)));
-        recipes.put(Fluids.NAPHTHA, new ReformingRecipe(
-                new FluidStack(Fluids.REFORMATE, 50), new FluidStack(Fluids.PETROLEUM, 15), new FluidStack(Fluids.HYDROGEN, 10)));
-        recipes.put(Fluids.NAPHTHA_CRACK, new ReformingRecipe(
-                new FluidStack(Fluids.REFORMATE, 50), new FluidStack(Fluids.AROMATICS, 10), new FluidStack(Fluids.HYDROGEN, 5)));
-        recipes.put(Fluids.NAPHTHA_COKER, new ReformingRecipe(
-                new FluidStack(Fluids.REFORMATE, 50), new FluidStack(Fluids.REFORMGAS, 10), new FluidStack(Fluids.HYDROGEN, 5)));
-        recipes.put(Fluids.LIGHTOIL, new ReformingRecipe(
-                new FluidStack(Fluids.AROMATICS, 50), new FluidStack(Fluids.REFORMGAS, 10), new FluidStack(Fluids.HYDROGEN, 15)));
-        recipes.put(Fluids.LIGHTOIL_CRACK, new ReformingRecipe(
-                new FluidStack(Fluids.AROMATICS, 50), new FluidStack(Fluids.REFORMGAS, 5), new FluidStack(Fluids.HYDROGEN, 20)));
-        recipes.put(Fluids.PETROLEUM, new ReformingRecipe(
-                new FluidStack(Fluids.UNSATURATEDS, 85), new FluidStack(Fluids.REFORMGAS, 10), new FluidStack(Fluids.HYDROGEN, 5)));
-        recipes.put(Fluids.SOURGAS, new ReformingRecipe(
-                new FluidStack(Fluids.SULFURIC_ACID, 75), new FluidStack(Fluids.PETROLEUM, 10), new FluidStack(Fluids.HYDROGEN, 15)));
-        recipes.put(Fluids.CHOLESTEROL, new ReformingRecipe(
-                new FluidStack(Fluids.ESTRADIOL, 50), new FluidStack(Fluids.REFORMGAS, 35), new FluidStack(Fluids.HYDROGEN, 15)));
+        return TABLE.all();
     }
 }

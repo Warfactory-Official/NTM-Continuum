@@ -229,17 +229,24 @@ public final class IdsGameTests {
         var registries = helper.getLevel().registryAccess();
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
 
-        // every fluid has a unique hbm:<lowercase name> and reads back from it
+        // every fluid has a unique name, its vanilla fluid id: hbm:<lowercase name>, and vanilla's ids for the three
+        // fluids that are vanilla's (§19fa-m1); it reads back from it
         Set<String> names = new HashSet<>();
         for (FluidType fluid : Fluids.getAll()) {
             String name = fluid.getRegistryName();
-            helper.assertTrue(name.equals("hbm:" + fluid.getName().toLowerCase(java.util.Locale.ROOT)), "registry name of " + fluid);
+            String expected = fluid == Fluids.NONE ? "minecraft:empty" : fluid == Fluids.WATER ? "minecraft:water"
+                    : fluid == Fluids.LAVA ? "minecraft:lava" : "hbm:" + fluid.getName().toLowerCase(java.util.Locale.ROOT);
+            helper.assertTrue(name.equals(expected), "registry name of " + fluid);
             helper.assertTrue(names.add(name), "duplicate fluid registry name " + name);
             helper.assertTrue(Fluids.byRegistryName(name) == fluid, name + " does not read back");
             Tag encoded = Fluids.CODEC.encodeStart(NbtOps.INSTANCE, fluid).result().orElseThrow();
             helper.assertTrue(!(encoded instanceof NumericTag) && Fluids.CODEC.parse(NbtOps.INSTANCE, encoded).result().orElseThrow() == fluid,
                     "the fluid codec must save " + name + " as its name, saved " + encoded);
         }
+
+        // saves from before 2026-10-08 named the three vanilla fluids hbm:none, hbm:water, hbm:lava
+        helper.assertTrue(Fluids.byRegistryName("hbm:water") == Fluids.WATER && Fluids.byRegistryName("hbm:lava") == Fluids.LAVA
+                && Fluids.byRegistryName("hbm:none") == Fluids.NONE, "the former hbm: names of water, lava and none still read");
 
         // barrel: tank saved by name, round trip, carried item data by name
         BlockState barrelState = ModFluidNetBlocks.barrel_steel.get().defaultBlockState();

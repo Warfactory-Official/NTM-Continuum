@@ -26,6 +26,19 @@ public final class ExplosionNukeCustom {
     private ExplosionNukeCustom() {
     }
 
+    /** Replaces the custom nuke's antimatter stage (ADDON-API-INVENTORY H-67). */
+    @FunctionalInterface
+    public interface AntimatterStage {
+        /**
+         * {@code x, y, z} are what {@link #explodeCustom} received (1.7 adds another half block when spawning) and
+         * {@code amat} the final, capped strength. Return true when the listener detonated the stage.
+         */
+        boolean detonate(Level level, double x, double y, double z, float amat);
+    }
+
+    /** The first listener that answers true replaces 1.7's balefire; HBM registers none. NTM: Space's is antimatter. */
+    public static final dev.golem.core.hook.Hook<AntimatterStage> ANTIMATTER = dev.golem.core.hook.Hook.notifying();
+
     public static void explodeCustom(Level level, double x, double y, double z, float tnt, float nuke, float hydro,
                                      float amat, float dirty, float schrab, float euph) {
 
@@ -65,6 +78,10 @@ public final class ExplosionNukeCustom {
 
             amat += hydro / 2 + nuke / 4 + tnt / 8;
             amat = Math.min(amat, MAX_AMAT);
+
+            for (AntimatterStage listener : ANTIMATTER) {
+                if (listener.detonate(level, x, y, z, amat)) return;
+            }
 
             EntityBalefire bf = new EntityBalefire(ModNtmEntities.BALEFIRE.get(), level);
             bf.setPos(x + 0.5, y + 0.5, z + 0.5);

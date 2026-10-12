@@ -5,6 +5,10 @@ import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.items.machine.ItemFluidIcon;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -32,12 +36,38 @@ public class GenericRecipe {
      * the roll happens per <i>item</i> in the stack, so a 50% ×4 output averages two items.
      */
     public float[] outputChance;
+    /**
+     * Index-aligned with {@link #outputItem}: an output that is the first item of a tag when the table rebuilds (1.7's
+     * {@code OreDictionary.getOres(name).get(0)} copied into a recipe), null for a plain output. Set with
+     * {@link #outputFirstOf}; the row should also {@link #requires} the tag, as 1.7 registered it only when the tag had one.
+     */
+    public TagKey<Item>[] outputTags;
+    /** The counts of the tag outputs, index-aligned with {@link #outputTags} (their stacks are empty while a tag is). */
+    private int[] outputTagCounts;
     /** Mutually exclusive weighted outputs for one result slot, matching ChanceOutputMulti. */
     public OutputChoice[] outputChoices;
     public int duration;
     public long power;
     public String autoSwitchGroup = null;
+    /** The pools in effect: {@link #blueprintPools528} while 528 mode is on and the row has them, else the normal ones. */
     public String[] blueprintPools = null;
+    /** 1.7 {@code inputItemsEx}: the inputs while {@code enableExpensiveMode} is on (null: the normal ones apply). */
+    public AStack[] inputItemEx = null;
+    /** 1.7 {@code inputFluidsEx}: the fluid inputs while {@code enableExpensiveMode} is on. */
+    public FluidStack[] inputFluidEx = null;
+    /** 1.7 {@code setPools528}: the pools that replace {@link #blueprintPools} while {@code enable528} is on. */
+    public String[] blueprintPools528 = null;
+    /**
+     * The flags a datapack row needs to be part of its table ({@code "requires"}, {@link RecipeConditions}): 1.7's config
+     * branches at registration ({@code if(!GeneralConfig.enable528)}, the LBSM ternaries, the PUREX naquadria gate), re-tested
+     * every time the table rebuilds. Null: always present.
+     */
+    public String[] requires = null;
+    /** The normal inputs and pools, kept once a mode's variants were first swapped in. */
+    private AStack[] inputItemNormal;
+    private FluidStack[] inputFluidNormal;
+    private String[] blueprintPoolsNormal;
+    private boolean normalKept;
     /** Translation key wrapping the icon's name for display, e.g. {@code purex.recycle} = "Reprocessing of %s". */
     public String nameWrapper = null;
     /**
@@ -46,6 +76,8 @@ public class GenericRecipe {
      */
     public boolean customLocalization = false;
     private ItemStack icon = ItemStack.EMPTY;
+    /** Display order in a machine's recipe list (ntm-next's {@code order}); ties sort by recipe id. */
+    public int order = Integer.MAX_VALUE;
 
     public GenericRecipe(String name) {
         this.name = name;
@@ -53,6 +85,27 @@ public class GenericRecipe {
 
     public GenericRecipe setup(int duration, long power) {
         this.duration = duration;
+        this.power = power;
+        return this;
+    }
+
+    /**
+     * The row's {@link #requires} flags: where 1.7 registered a recipe only under a config branch
+     * ({@code if(!GeneralConfig.enable528)}), the data row is always written and carries the branch as a flag.
+     */
+    public GenericRecipe requires(String... flags) {
+        this.requires = flags;
+        return this;
+    }
+
+    /** 1.7 {@code setDuration}: the processing time in ticks. */
+    public GenericRecipe setDuration(int duration) {
+        this.duration = duration;
+        return this;
+    }
+
+    /** 1.7 {@code setPower}: the power use per tick. */
+    public GenericRecipe setPower(long power) {
         this.power = power;
         return this;
     }
@@ -88,6 +141,33 @@ public class GenericRecipe {
 
     public record OutputChoice(ItemStack stack, float weight) { }
 
+    /**
+     * Makes output {@code index} (set by {@link #outputItems}; any placeholder there) {@code count} of the first item of
+     * {@code tag}, resolved whenever the table rebuilds.
+     */
+    @SuppressWarnings("unchecked")
+    public GenericRecipe outputFirstOf(int index, TagKey<Item> tag, int count) {
+        if (outputTags == null) {
+            outputTags = new TagKey[outputItem.length];
+            outputTagCounts = new int[outputItem.length];
+        }
+        outputTags[index] = tag;
+        outputTagCounts[index] = count;
+        outputItem[index] = firstOf(tag, count);
+        return this;
+    }
+
+    /** The count of output {@code index}: a tag output's even while its tag is empty. */
+    public int outputTagCount(int index) {
+        if (outputTagCounts != null && index < outputTagCounts.length && outputTags[index] != null) return outputTagCounts[index];
+        return outputItem[index].getCount();
+    }
+
+    private static ItemStack firstOf(TagKey<Item> tag, int count) {
+        for (Holder<Item> item : BuiltInRegistries.ITEM.getTagOrEmpty(tag)) return new ItemStack(item.value(), count);
+        return ItemStack.EMPTY;
+    }
+
     /** Drop chances (0..1) for the outputs set by {@link #outputItems}, in the same order. */
     public GenericRecipe outputChances(float... chances) {
         this.outputChance = chances;
@@ -104,34 +184,86 @@ public class GenericRecipe {
         return this;
     }
 
+    /** The recipe's blueprint pools; the table joins them when the recipe is registered, never while it is built. */
     public GenericRecipe setPools(String... pools) {
         this.blueprintPools = pools;
-        for (String pool : pools) GenericRecipes.addToPool(pool, this);
         return this;
     }
 
-    /** 1.7 {@code inputItemsEx}: replaces the inputs only while {@code enableExpensiveMode} is on (off by default). */
+    /**
+     * 1.7 {@code inputItemsEx}: the inputs while {@code enableExpensiveMode} is on (off by default). Always recorded, so a
+     * table can be written out with both variants; put in effect now when the mode is on, as 1.7 did.
+     */
     public GenericRecipe inputItemsEx(AStack... input) {
-        if (!com.hbm.config.GeneralConfig.enableExpensiveMode) return this;
-        return inputItems(input);
+        this.inputItemEx = input;
+        if (com.hbm.config.GeneralConfig.enableExpensiveMode) {
+            keepNormal();
+            this.inputItem = input;
+        }
+        return this;
     }
 
     /** 1.7 {@code inputFluidsEx}: the fluid counterpart of {@link #inputItemsEx}. */
     public GenericRecipe inputFluidsEx(FluidStack... input) {
-        if (!com.hbm.config.GeneralConfig.enableExpensiveMode) return this;
-        return inputFluids(input);
-    }
-
-    /** 1.7 {@code setPools528}: blueprint pools that exist only while {@code enable528} is on (off by default). */
-    public GenericRecipe setPools528(String... pools) {
-        if (!com.hbm.config.GeneralConfig.enable528) return this;
-        return setPools(pools);
-    }
-
-    public GenericRecipe setGroup(String autoSwitch, GenericRecipes set) {
-        this.autoSwitchGroup = autoSwitch;
-        set.addToGroup(autoSwitch, this);
+        this.inputFluidEx = input;
+        if (com.hbm.config.GeneralConfig.enableExpensiveMode) {
+            keepNormal();
+            this.inputFluid = input;
+        }
         return this;
+    }
+
+    /** 1.7 {@code setPools528}: blueprint pools that replace the normal ones while {@code enable528} is on (off by default). */
+    public GenericRecipe setPools528(String... pools) {
+        this.blueprintPools528 = pools;
+        if (com.hbm.config.GeneralConfig.enable528) {
+            keepNormal();
+            this.blueprintPools = pools;
+        }
+        return this;
+    }
+
+    /**
+     * The recipe's auto-switch group; the table joins it when the recipe is registered. {@code set} is 1.7's table
+     * argument, kept so 1.7's {@code setGroup(name, this)} reads unchanged; it is not used.
+     */
+    public GenericRecipe setGroup(String autoSwitch, Object set) {
+        this.autoSwitchGroup = autoSwitch;
+        return this;
+    }
+
+    private void keepNormal() {
+        if (normalKept) return;
+        inputItemNormal = inputItem;
+        inputFluidNormal = inputFluid;
+        blueprintPoolsNormal = blueprintPools;
+        normalKept = true;
+    }
+
+    /** The inputs outside expensive mode (what a file's {@code input_items} holds). */
+    public AStack[] normalInputItems() { return normalKept ? inputItemNormal : inputItem; }
+
+    /** The fluid inputs outside expensive mode. */
+    public FluidStack[] normalInputFluids() { return normalKept ? inputFluidNormal : inputFluid; }
+
+    /** The blueprint pools outside 528 mode. */
+    public String[] normalPools() { return normalKept ? blueprintPoolsNormal : blueprintPools; }
+
+    /**
+     * Puts the variants of the given config modes in effect: the expensive inputs ({@link #inputItemEx},
+     * {@link #inputFluidEx}) and the 528 pools ({@link #blueprintPools528}) where the recipe has them, else the normal
+     * ones. A data table calls it every time it rebuilds, so a changed config applies with the next rebuild.
+     */
+    public synchronized void applyModes(boolean expensive, boolean mode528) {
+        keepNormal();
+        this.inputItem = expensive && inputItemEx != null ? inputItemEx : inputItemNormal;
+        this.inputFluid = expensive && inputFluidEx != null ? inputFluidEx : inputFluidNormal;
+        this.blueprintPools = mode528 && blueprintPools528 != null ? blueprintPools528 : blueprintPoolsNormal;
+    }
+
+    /** Fields a subclass adds (fusion temperatures, plasma ignition...), for {@link GenericRecipeCodec#describe}. */
+    public String describeExtra() {
+        return "";
     }
 
     public GenericRecipe setIcon(ItemStack icon) {
@@ -159,6 +291,47 @@ public class GenericRecipe {
     }
 
     public String getInternalName() { return name; }
+
+    /** The icon set with {@link #setIcon}, or empty when the recipe shows its first output. */
+    public ItemStack iconOverride() { return icon; }
+
+    /**
+     * Outputs, weighted choices and icon read from a datapack file, as item + count + {@link ItemData}: 26.1 decodes
+     * recipes before item components are bound, when no {@link ItemStack} may be created yet. {@link #bindStacks} turns
+     * them into stacks; the table does it when it (re)builds, after the reload.
+     */
+    ItemSpec[] pendingOutputs;
+    ItemSpec[] pendingChoices;
+    float[] pendingChoiceWeights;
+    ItemSpec pendingIcon;
+
+    /**
+     * Builds the stacks of a recipe read from a datapack (see {@link #pendingOutputs}); a no-op otherwise. The specs are
+     * kept, and the stacks are built again on every call: a stack's data can depend on data that loads later than the
+     * recipes (a container's tint from {@code hbm:fluid_containers}, a tag output's first item).
+     */
+    public synchronized void bindStacks() {
+        if (pendingOutputs != null) {
+            ItemStack[] stacks = new ItemStack[pendingOutputs.length];
+            if (outputTags != null) outputTagCounts = new int[stacks.length];
+            for (int index = 0; index < stacks.length; index++) {
+                boolean tagged = outputTags != null && outputTags[index] != null;
+                if (tagged) outputTagCounts[index] = pendingOutputs[index].count();
+                stacks[index] = tagged ? firstOf(outputTags[index], pendingOutputs[index].count()) : pendingOutputs[index].stack();
+            }
+            this.outputItem = stacks;
+        }
+        if (pendingChoices != null) {
+            OutputChoice[] choices = new OutputChoice[pendingChoices.length];
+            for (int index = 0; index < choices.length; index++) {
+                choices[index] = new OutputChoice(pendingChoices[index].stack(), pendingChoiceWeights[index]);
+            }
+            outputChoices(choices);
+        }
+        if (pendingIcon != null) {
+            this.icon = pendingIcon.stack();
+        }
+    }
 
     public ItemStack getIcon() {
         if (!icon.isEmpty()) return icon;

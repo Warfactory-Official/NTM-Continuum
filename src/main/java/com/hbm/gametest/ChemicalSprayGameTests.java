@@ -253,15 +253,21 @@ public final class ChemicalSprayGameTests {
      * fluids alone (2,000 mB canister, 4,000 mB gland), ahead of its lead-container cut-off.
      */
     public static void dispersable(GameTestHelper helper) {
-        int dispersable = 0;
+        // HBM's (and vanilla's) fluids only, so the 1.7 counts hold with an addon's fluids loaded
+        int dispersable = 0, ours = 0;
         FluidType[] all = Fluids.getAll();
-        for (int i = 1; i < all.length; i++) if (all[i].isDispersable()) dispersable++;
-        helper.assertTrue(all.length == 156 && all[0] == Fluids.NONE, "156 (1.7) fluids with NONE first, have " + all.length);
+        for (int i = 1; i < all.length; i++) {
+            if (!FluidRecipeTableGameTests.ours(all[i])) continue;
+            if (all[i].isDispersable()) dispersable++;
+        }
+        for (FluidType type : all) if (FluidRecipeTableGameTests.ours(type)) ours++;
+        helper.assertTrue(ours == 156 && all[0] == Fluids.NONE, "156 (1.7) fluids with NONE first, have " + ours);
         helper.assertTrue(dispersable == 82, "82 fluids must be dispersable, counted " + dispersable);
 
         ItemDisperser canister = ModEntityItems.disperser_canister.get();
         ItemDisperser gland = ModEntityItems.glyphid_gland.get();
-        List<ItemStack> canisters = canister.creativeVariants();
+        List<ItemStack> canisters = canister.creativeVariants().stream()
+                .filter(s -> FluidRecipeTableGameTests.ours(canister.getContent(s))).toList();
         List<ItemStack> glands = gland.creativeVariants();
         helper.assertTrue(canisters.size() == 82, "82 creative disperser canisters, have " + canisters.size());
         helper.assertTrue(glands.size() == 2 && glands.stream().anyMatch(s -> gland.getContent(s) == Fluids.PHEROMONE)

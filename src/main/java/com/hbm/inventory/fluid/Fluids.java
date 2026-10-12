@@ -1,27 +1,7 @@
 package com.hbm.inventory.fluid;
 
 import com.hbm.Constants;
-import com.hbm.inventory.fluid.trait.FT_Coolable;
-import com.hbm.inventory.fluid.trait.FT_Corrosive;
-import com.hbm.inventory.fluid.trait.FT_Coolable.CoolingType;
-import com.hbm.inventory.fluid.trait.FT_Heatable;
-import com.hbm.inventory.fluid.trait.FT_Heatable.HeatingType;
-import com.hbm.inventory.fluid.trait.FT_PWRModerator;
-import com.hbm.inventory.fluid.trait.FT_Pheromone;
-import com.hbm.inventory.fluid.trait.FT_Poison;
-import com.hbm.inventory.fluid.trait.FT_Polluting;
-import com.hbm.inventory.fluid.trait.FT_VentRadiation;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple.*;
-import com.hbm.inventory.fluid.trait.FT_Toxin;
-import com.hbm.inventory.fluid.trait.FT_Toxin.ToxinDirectDamage;
-import com.hbm.inventory.fluid.trait.FT_Toxin.ToxinEffects;
-import com.hbm.lib.ModDamageSources;
-import com.hbm.potion.ModEffects;
-import com.hbm.util.ArmorRegistry.HazardClass;
-import dev.golem.core.world.Effects;
-import net.minecraft.world.effect.MobEffects;
-import com.hbm.handler.pollution.PollutionHandler;
-import com.hbm.handler.pollution.PollutionType;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
@@ -61,6 +41,8 @@ public class Fluids {
     private static final HashMap<String, FluidType> nameMapping = new HashMap<>();
     private static final HashMap<String, FluidType> registryMapping = new HashMap<>();
     private static final List<FluidType> registerOrder = new ArrayList<>();
+    /** 1.7 {@code metaOrder}: HBM's own fluids in 1.7's display order; see {@link #getInNiceOrder()}. */
+    private static final List<FluidType> metaOrder = new ArrayList<>();
     private static boolean initialized = false;
 
     public static FluidType NONE;
@@ -231,16 +213,21 @@ public class Fluids {
         // ALWAYS append new fluids at the bottom — IDs are positional and used to save tank state.
         NONE = new FluidType("NONE", 0x888888);
         WATER = new FluidType("WATER", 0x3333FF);
-        STEAM = new FluidType("STEAM", 0xe5e5e5).setTemp(100);
-        HOTSTEAM = new FluidType("HOTSTEAM", 0xE7D6D6).setTemp(300);
-        SUPERHOTSTEAM = new FluidType("SUPERHOTSTEAM", 0xE7B7B7).setTemp(450);
-        ULTRAHOTSTEAM = new FluidType("ULTRAHOTSTEAM", 0xE39393).setTemp(600);
+        STEAM = new FluidType("STEAM", 0xe5e5e5);
+        HOTSTEAM = new FluidType("HOTSTEAM", 0xE7D6D6);
+        SUPERHOTSTEAM = new FluidType("SUPERHOTSTEAM", 0xE7B7B7);
+        ULTRAHOTSTEAM = new FluidType("ULTRAHOTSTEAM", 0xE39393);
         COOLANT = new FluidType("COOLANT", 0xd8fcff);
-        LAVA = new FluidType("LAVA", 0xFF3300).setTemp(1200);
+        LAVA = new FluidType("LAVA", 0xFF3300);
+        // ntm-next's identity: the vanilla fluid registry. These three ARE vanilla's empty, water and lava, so they are
+        // saved under vanilla's ids; their former hbm: names (saves before 2026-10-08) still read as them.
+        vanillaName(NONE, "minecraft:empty");
+        vanillaName(WATER, "minecraft:water");
+        vanillaName(LAVA, "minecraft:lava");
         DEUTERIUM = new FluidType("DEUTERIUM", 0x0000FF);
         TRITIUM = new FluidType("TRITIUM", 0x000099);
         OIL = new FluidType("OIL", 0x020202);
-        HOTOIL = new FluidType("HOTOIL", 0x300900).setTemp(350);
+        HOTOIL = new FluidType("HOTOIL", 0x300900);
         HEAVYOIL = new FluidType("HEAVYOIL", 0x141312);
         BITUMEN = new FluidType("BITUMEN", 0x1f2426);
         SMEAR = new FluidType("SMEAR", 0x190f01);
@@ -266,33 +253,33 @@ public class Fluids {
         ASCHRAB = new FluidType("ASCHRAB", 0xb50000);
         PEROXIDE = new FluidType("PEROXIDE", 0xfff7aa);
         WATZ = new FluidType("WATZ", 0x86653E);
-        CRYOGEL = new FluidType("CRYOGEL", 0x32ffff).setTemp(-170);
-        HYDROGEN = new FluidType("HYDROGEN", 0x4286f4).setTemp(-260);
-        OXYGEN = new FluidType("OXYGEN", 0x98bdf9).setTemp(-100);
+        CRYOGEL = new FluidType("CRYOGEL", 0x32ffff);
+        HYDROGEN = new FluidType("HYDROGEN", 0x4286f4);
+        OXYGEN = new FluidType("OXYGEN", 0x98bdf9);
         XENON = new FluidType("XENON", 0xba45e8);
-        BALEFIRE = new FluidType("BALEFIRE", 0x28e02e).setTemp(1500);
+        BALEFIRE = new FluidType("BALEFIRE", 0x28e02e);
         MERCURY = new FluidType("MERCURY", 0x808080);
-        PAIN = new FluidType("PAIN", 0x938541).setTemp(300);
+        PAIN = new FluidType("PAIN", 0x938541);
         WASTEFLUID = new FluidType("WASTEFLUID", 0x544400);
         WASTEGAS = new FluidType("WASTEGAS", 0xB8B8B8);
         GASOLINE = new FluidType("GASOLINE", 0x445772);
         COALGAS = new FluidType("COALGAS", 0x445772);
         SPENTSTEAM = new FluidType("SPENTSTEAM", 0x445772);
         FRACKSOL = new FluidType("FRACKSOL", 0x798A6B);
-        PLASMA_DT = new FluidType("PLASMA_DT", 0xF7AFDE).setTemp(3250);
-        PLASMA_HD = new FluidType("PLASMA_HD", 0xF0ADF4).setTemp(2500);
-        PLASMA_HT = new FluidType("PLASMA_HT", 0xD1ABF2).setTemp(3000);
-        PLASMA_XM = new FluidType("PLASMA_XM", 0xC6A5FF).setTemp(4250);
-        PLASMA_BF = new FluidType("PLASMA_BF", 0xA7F1A3).setTemp(8500);
+        PLASMA_DT = new FluidType("PLASMA_DT", 0xF7AFDE);
+        PLASMA_HD = new FluidType("PLASMA_HD", 0xF0ADF4);
+        PLASMA_HT = new FluidType("PLASMA_HT", 0xD1ABF2);
+        PLASMA_XM = new FluidType("PLASMA_XM", 0xC6A5FF);
+        PLASMA_BF = new FluidType("PLASMA_BF", 0xA7F1A3);
         CARBONDIOXIDE = new FluidType("CARBONDIOXIDE", 0x404040);
-        PLASMA_DH3 = new FluidType("PLASMA_DH3", 0xFF83AA).setTemp(3480);
+        PLASMA_DH3 = new FluidType("PLASMA_DH3", 0xFF83AA);
         HELIUM3 = new FluidType("HELIUM3", 0xFCF0C4);
-        DEATH = new FluidType("DEATH", 0x717A88).setTemp(300);
+        DEATH = new FluidType("DEATH", 0x717A88);
         ETHANOL = new FluidType("ETHANOL", 0xe0ffff);
         HEAVYWATER = new FluidType("HEAVYWATER", 0x00a0b0);
         CRACKOIL = new FluidType("CRACKOIL", 0x020202);
         COALOIL = new FluidType("COALOIL", 0x020202);
-        HOTCRACKOIL = new FluidType("HOTCRACKOIL", 0x300900).setTemp(350);
+        HOTCRACKOIL = new FluidType("HOTCRACKOIL", 0x300900);
         NAPHTHA_CRACK = new FluidType("NAPHTHA_CRACK", 0x595744);
         LIGHTOIL_CRACK = new FluidType("LIGHTOIL_CRACK", 0x8c7451);
         DIESEL_CRACK = new FluidType("DIESEL_CRACK", 0xf2eed5);
@@ -305,16 +292,16 @@ public class Fluids {
         GASOLINE_LEADED = new FluidType("GASOLINE_LEADED", 0x445772);
         COALGAS_LEADED = new FluidType("COALGAS_LEADED", 0x445772);
         SULFURIC_ACID = new FluidType("SULFURIC_ACID", 0xB0AA64);
-        COOLANT_HOT = new FluidType("COOLANT_HOT", 0x99525E).setTemp(600);
+        COOLANT_HOT = new FluidType("COOLANT_HOT", 0x99525E);
         MUG = new FluidType("MUG", 0x4B2D28);
-        MUG_HOT = new FluidType("MUG_HOT", 0x6B2A20).setTemp(500);
+        MUG_HOT = new FluidType("MUG_HOT", 0x6B2A20);
         WOODOIL = new FluidType("WOODOIL", 0x847D54);
         COALCREOSOTE = new FluidType("COALCREOSOTE", 0x51694F);
         SEEDSLURRY = new FluidType("SEEDSLURRY", 0x7CC35E);
         NITRIC_ACID = new FluidType("NITRIC_ACID", 0xBB7A1E);
         SOLVENT = new FluidType("SOLVENT", 0xE4E3EF);
         BLOOD = new FluidType("BLOOD", 0xB22424);
-        BLOOD_HOT = new FluidType("BLOOD_HOT", 0xF22419).setTemp(666);
+        BLOOD_HOT = new FluidType("BLOOD_HOT", 0xF22419);
         SYNGAS = new FluidType("SYNGAS", 0x131313);
         OXYHYDROGEN = new FluidType("OXYHYDROGEN", 0x483FC1);
         RADIOSOLVENT = new FluidType("RADIOSOLVENT", 0xA4D7DD);
@@ -353,29 +340,29 @@ public class Fluids {
         SMOKE_LEADED = new FluidType("SMOKE_LEADED", 0x808080);
         SMOKE_POISON = new FluidType("SMOKE_POISON", 0x808080);
         HELIUM4 = new FluidType("HELIUM4", 0xE54B0A);
-        HEAVYWATER_HOT = new FluidType("HEAVYWATER_HOT", 0x4D007B).setTemp(600);
-        SODIUM = new FluidType("SODIUM", 0xCCD4D5).setTemp(400);
-        SODIUM_HOT = new FluidType("SODIUM_HOT", 0xE2ADC1).setTemp(1200);
-        THORIUM_SALT = new FluidType("THORIUM_SALT", 0x7A5542).setTemp(800);
-        THORIUM_SALT_HOT = new FluidType("THORIUM_SALT_HOT", 0x3E3627).setTemp(1600);
-        THORIUM_SALT_DEPLETED = new FluidType("THORIUM_SALT_DEPLETED", 0x302D1C).setTemp(800);
+        HEAVYWATER_HOT = new FluidType("HEAVYWATER_HOT", 0x4D007B);
+        SODIUM = new FluidType("SODIUM", 0xCCD4D5);
+        SODIUM_HOT = new FluidType("SODIUM_HOT", 0xE2ADC1);
+        THORIUM_SALT = new FluidType("THORIUM_SALT", 0x7A5542);
+        THORIUM_SALT_HOT = new FluidType("THORIUM_SALT_HOT", 0x3E3627);
+        THORIUM_SALT_DEPLETED = new FluidType("THORIUM_SALT_DEPLETED", 0x302D1C);
         FULLERENE = new FluidType("FULLERENE", 0xFF7FED);
         PHEROMONE = new FluidType("PHEROMONE", 0x5FA6E8);
         PHEROMONE_M = new FluidType("PHEROMONE_M", 0x48C9B0);
         OIL_DS = new FluidType("OIL_DS", 0x121212);
-        HOTOIL_DS = new FluidType("HOTOIL_DS", 0x3F180F).setTemp(350);
+        HOTOIL_DS = new FluidType("HOTOIL_DS", 0x3F180F);
         CRACKOIL_DS = new FluidType("CRACKOIL_DS", 0x2A1C11);
-        HOTCRACKOIL_DS = new FluidType("HOTCRACKOIL_DS", 0x3A1A28).setTemp(350);
+        HOTCRACKOIL_DS = new FluidType("HOTCRACKOIL_DS", 0x3A1A28);
         NAPHTHA_DS = new FluidType("NAPHTHA_DS", 0x63614E);
         LIGHTOIL_DS = new FluidType("LIGHTOIL_DS", 0x63543E);
         STELLAR_FLUX = new FluidType("STELLAR_FLUX", 0xE300FF);
         VITRIOL = new FluidType("VITRIOL", 0x6E5222);
         SLOP = new FluidType("SLOP", 0x929D45);
-        LEAD = new FluidType("LEAD", 0x666672).setTemp(350);
-        LEAD_HOT = new FluidType("LEAD_HOT", 0x776563).setTemp(1500);
-        PERFLUOROMETHYL = new FluidType("PERFLUOROMETHYL", 0xBDC8DC).setTemp(15);
-        PERFLUOROMETHYL_COLD = new FluidType("PERFLUOROMETHYL_COLD", 0x99DADE).setTemp(-150);
-        PERFLUOROMETHYL_HOT = new FluidType("PERFLUOROMETHYL_HOT", 0xB899DE).setTemp(250);
+        LEAD = new FluidType("LEAD", 0x666672);
+        LEAD_HOT = new FluidType("LEAD_HOT", 0x776563);
+        PERFLUOROMETHYL = new FluidType("PERFLUOROMETHYL", 0xBDC8DC);
+        PERFLUOROMETHYL_COLD = new FluidType("PERFLUOROMETHYL_COLD", 0x99DADE);
+        PERFLUOROMETHYL_HOT = new FluidType("PERFLUOROMETHYL_HOT", 0xB899DE);
         LYE = new FluidType("LYE", 0xFFECCC);
         SODIUM_ALUMINATE = new FluidType("SODIUM_ALUMINATE", 0xFFD191);
         BAUXITE_SOLUTION = new FluidType("BAUXITE_SOLUTION", 0xE2560F);
@@ -383,119 +370,195 @@ public class Fluids {
         AIR = new FluidType("AIR", 0xE7EAEB);
         CONCRETE = new FluidType("CONCRETE", 0xA2A2A2);
         DHC = new FluidType(153, "DHC", 0xD2AFFF);
-        AIRBLAST = new FluidType("AIRBLAST", 0xFFDADA).setTemp(1_200); // 1.7 Fluids.java:414
+        AIRBLAST = new FluidType("AIRBLAST", 0xFFDADA); // 1.7 Fluids.java:414
         FLUE = new FluidType(155, "FLUE", 0x131313); // 1.7 asserts id 155 here
 
-        registerHeatableTraits();
-        registerCoolableTraits();
-        registerPollutingTraits();
-        registerToxinTraits();
-        registerExposureTraits();
-        registerSimpleTraits();
+        // 1.7 Fluids.java:427-606, "AND DON'T FORGET THE META DOWN HERE": the display order (getInNiceOrder) used to
+        // list fluids in identifiers, creative tabs, NEI and the assembly machine's fluid packages. Every fluid exactly
+        // once; fluids 1.7 added late (DHC, AIRBLAST, FLUE, CONCRETE, ...) sit in their group, not at the end.
+        //null
+        metaOrder.add(NONE);
+        //vanilla
+        metaOrder.add(AIR);
+        metaOrder.add(AIRBLAST);
+        metaOrder.add(WATER);
+        metaOrder.add(HEAVYWATER);
+        metaOrder.add(HEAVYWATER_HOT);
+        metaOrder.add(LAVA);
+        //steams
+        metaOrder.add(STEAM);
+        metaOrder.add(HOTSTEAM);
+        metaOrder.add(SUPERHOTSTEAM);
+        metaOrder.add(ULTRAHOTSTEAM);
+        metaOrder.add(SPENTSTEAM);
+        //coolants
+        metaOrder.add(CARBONDIOXIDE);
+        metaOrder.add(COOLANT);
+        metaOrder.add(COOLANT_HOT);
+        metaOrder.add(PERFLUOROMETHYL);
+        metaOrder.add(PERFLUOROMETHYL_COLD);
+        metaOrder.add(PERFLUOROMETHYL_HOT);
+        metaOrder.add(CRYOGEL);
+        metaOrder.add(MUG);
+        metaOrder.add(MUG_HOT);
+        metaOrder.add(BLOOD);
+        metaOrder.add(BLOOD_HOT);
+        metaOrder.add(SODIUM);
+        metaOrder.add(SODIUM_HOT);
+        metaOrder.add(LEAD);
+        metaOrder.add(LEAD_HOT);
+        metaOrder.add(THORIUM_SALT);
+        metaOrder.add(THORIUM_SALT_HOT);
+        metaOrder.add(THORIUM_SALT_DEPLETED);
+        //pure elements, cyogenic gasses
+        metaOrder.add(HYDROGEN);
+        metaOrder.add(DEUTERIUM);
+        metaOrder.add(TRITIUM);
+        metaOrder.add(HELIUM3);
+        metaOrder.add(HELIUM4);
+        metaOrder.add(OXYGEN);
+        metaOrder.add(XENON);
+        metaOrder.add(CHLORINE);
+        metaOrder.add(MERCURY);
+        //oils, fuels
+        metaOrder.add(OIL);
+        metaOrder.add(OIL_DS);
+        metaOrder.add(CRACKOIL);
+        metaOrder.add(CRACKOIL_DS);
+        metaOrder.add(COALOIL);
+        metaOrder.add(OIL_COKER);
+        metaOrder.add(HOTOIL);
+        metaOrder.add(HOTOIL_DS);
+        metaOrder.add(HOTCRACKOIL);
+        metaOrder.add(HOTCRACKOIL_DS);
+        metaOrder.add(HEAVYOIL);
+        metaOrder.add(HEAVYOIL_VACUUM);
+        metaOrder.add(NAPHTHA);
+        metaOrder.add(NAPHTHA_DS);
+        metaOrder.add(NAPHTHA_CRACK);
+        metaOrder.add(NAPHTHA_COKER);
+        metaOrder.add(REFORMATE);
+        metaOrder.add(LIGHTOIL);
+        metaOrder.add(LIGHTOIL_DS);
+        metaOrder.add(LIGHTOIL_CRACK);
+        metaOrder.add(LIGHTOIL_VACUUM);
+        metaOrder.add(BITUMEN);
+        metaOrder.add(SMEAR);
+        metaOrder.add(HEATINGOIL);
+        metaOrder.add(HEATINGOIL_VACUUM);
+        metaOrder.add(RECLAIMED);
+        metaOrder.add(LUBRICANT);
+        metaOrder.add(FLUE);
+        metaOrder.add(GAS);
+        metaOrder.add(GAS_COKER);
+        metaOrder.add(PETROLEUM);
+        metaOrder.add(SOURGAS);
+        metaOrder.add(LPG);
+        metaOrder.add(SYNGAS);
+        metaOrder.add(OXYHYDROGEN);
+        metaOrder.add(AROMATICS);
+        metaOrder.add(UNSATURATEDS);
+        metaOrder.add(XYLENE);
+        metaOrder.add(REFORMGAS);
+        metaOrder.add(DIESEL);
+        metaOrder.add(DIESEL_REFORM);
+        metaOrder.add(DIESEL_CRACK);
+        metaOrder.add(DIESEL_CRACK_REFORM);
+        metaOrder.add(KEROSENE);
+        metaOrder.add(KEROSENE_REFORM);
+        metaOrder.add(PETROIL);
+        metaOrder.add(PETROIL_LEADED);
+        metaOrder.add(GASOLINE);
+        metaOrder.add(GASOLINE_LEADED);
+        metaOrder.add(COALGAS);
+        metaOrder.add(COALGAS_LEADED);
+        metaOrder.add(COALCREOSOTE);
+        metaOrder.add(WOODOIL);
+        metaOrder.add(BIOGAS);
+        metaOrder.add(BIOFUEL);
+        metaOrder.add(ETHANOL);
+        metaOrder.add(FISHOIL);
+        metaOrder.add(SUNFLOWEROIL);
+        metaOrder.add(NITAN);
+        metaOrder.add(DHC);
+        metaOrder.add(BALEFIRE);
+        //processing fluids
+        metaOrder.add(SALIENT);
+        metaOrder.add(SEEDSLURRY);
+        metaOrder.add(COLLOID);
+        metaOrder.add(VITRIOL);
+        metaOrder.add(SLOP);
+        metaOrder.add(IONGEL);
+        metaOrder.add(PEROXIDE);
+        metaOrder.add(SULFURIC_ACID);
+        metaOrder.add(NITRIC_ACID);
+        metaOrder.add(SOLVENT);
+        metaOrder.add(RADIOSOLVENT);
+        metaOrder.add(SCHRABIDIC);
+        metaOrder.add(UF6);
+        metaOrder.add(PUF6);
+        metaOrder.add(SAS3);
+        metaOrder.add(PAIN);
+        metaOrder.add(DEATH);
+        metaOrder.add(WATZ);
+        metaOrder.add(REDMUD);
+        metaOrder.add(FULLERENE);
+        metaOrder.add(EGG);
+        metaOrder.add(CHOLESTEROL);
+        metaOrder.add(CHLOROCALCITE_SOLUTION);
+        metaOrder.add(CHLOROCALCITE_MIX);
+        metaOrder.add(CHLOROCALCITE_CLEANED);
+        metaOrder.add(POTASSIUM_CHLORIDE);
+        metaOrder.add(CALCIUM_CHLORIDE);
+        metaOrder.add(CALCIUM_SOLUTION);
+        metaOrder.add(SODIUM_ALUMINATE);
+        metaOrder.add(BAUXITE_SOLUTION);
+        metaOrder.add(ALUMINA);
+        metaOrder.add(CONCRETE);
+        //solutions and working fluids
+        metaOrder.add(FRACKSOL);
+        metaOrder.add(LYE);
+        //the fun guys
+        metaOrder.add(PHOSGENE);
+        metaOrder.add(MUSTARDGAS);
+        metaOrder.add(ESTRADIOL);
+        metaOrder.add(NITROGLYCERIN);
+        //antimatter
+        metaOrder.add(AMAT);
+        metaOrder.add(ASCHRAB);
+        //nuclear waste
+        metaOrder.add(WASTEFLUID);
+        metaOrder.add(WASTEGAS);
+        //garbage
+        metaOrder.add(XPJUICE);
+        metaOrder.add(ENDERJUICE);
+        //plasma-esque
+        metaOrder.add(STELLAR_FLUX);
+        //plasma
+        metaOrder.add(PLASMA_DT);
+        metaOrder.add(PLASMA_HD);
+        metaOrder.add(PLASMA_HT);
+        metaOrder.add(PLASMA_DH3);
+        metaOrder.add(PLASMA_XM);
+        metaOrder.add(PLASMA_BF);
+        //smoke
+        metaOrder.add(SMOKE);
+        metaOrder.add(SMOKE_LEADED);
+        metaOrder.add(SMOKE_POISON);
+        //bug meth
+        metaOrder.add(PHEROMONE);
+        metaOrder.add(PHEROMONE_M);
+        // 1.7 then appends customFluids and foreignFluids; here addon and foreign fluids follow in registration
+        // order (getInNiceOrder).
+        if (metaOrder.size() != idMapping.size()) {
+            throw new IllegalStateException("The MetaOrder and Mappings are inconsistent! Mapping size: " + idMapping.size()
+                    + " / MetaOrder size: " + metaOrder.size());
+        }
 
+        // colour, tint, temperature and traits: HBM's fluid_property files (data/<ns>/fluid_property), applied here so
+        // they hold before any world; every datapack load applies the files of all datapacks again (FluidProperties)
+        FluidProperties.applyBundled(Fluids.class, new ArrayList<>(registerOrder));
         Constants.LOG.info("[HBM] Registered {} fluids", idMapping.size());
-    }
-
-    /** Complete upstream FT_Heatable data, including conversions not yet consumed by a machine. */
-    private static void registerHeatableTraits() {
-        // CE rates corrosion 0-100; above fifty eats iron, below only plastics. The whole list,
-        // at CE's own ratings.
-        UF6.addTraits(new FT_Corrosive(15));
-        PUF6.addTraits(new FT_Corrosive(15));
-        SAS3.addTraits(new FT_Corrosive(30));
-        SCHRABIDIC.addTraits(new FT_Corrosive(75));
-        PEROXIDE.addTraits(new FT_Corrosive(40));
-        WATZ.addTraits(new FT_Corrosive(60));
-        BALEFIRE.addTraits(new FT_Corrosive(50));
-        PAIN.addTraits(new FT_Corrosive(30));
-        FRACKSOL.addTraits(new FT_Corrosive(15));
-        DEATH.addTraits(new FT_Corrosive(80));
-        SULFURIC_ACID.addTraits(new FT_Corrosive(50));
-        NITRIC_ACID.addTraits(new FT_Corrosive(60));
-        SOLVENT.addTraits(new FT_Corrosive(30));
-        RADIOSOLVENT.addTraits(new FT_Corrosive(50));
-        CHLORINE.addTraits(new FT_Corrosive(25));
-        SOURGAS.addTraits(new FT_Corrosive(10));
-        REDMUD.addTraits(new FT_Corrosive(60));
-        CHLOROCALCITE_SOLUTION.addTraits(new FT_Corrosive(60));
-        CHLOROCALCITE_MIX.addTraits(new FT_Corrosive(60));
-        CHLOROCALCITE_CLEANED.addTraits(new FT_Corrosive(60));
-        POTASSIUM_CHLORIDE.addTraits(new FT_Corrosive(60));
-        CALCIUM_CHLORIDE.addTraits(new FT_Corrosive(60));
-        CALCIUM_SOLUTION.addTraits(new FT_Corrosive(60));
-        THORIUM_SALT.addTraits(new FT_Corrosive(65));
-        THORIUM_SALT_HOT.addTraits(new FT_Corrosive(65));
-        THORIUM_SALT_DEPLETED.addTraits(new FT_Corrosive(65));
-        FULLERENE.addTraits(new FT_Corrosive(65));
-        LYE.addTraits(new FT_Corrosive(40));
-        SODIUM_ALUMINATE.addTraits(new FT_Corrosive(30));
-        BAUXITE_SOLUTION.addTraits(new FT_Corrosive(40));
-
-        AIR.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).addStep(5, 1, AIRBLAST, 1));
-        WATER.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).setEff(HeatingType.HEATEXCHANGER, 0.25D).addStep(200, 1, STEAM, 100).addStep(220, 1, HOTSTEAM, 10).addStep(238, 1, SUPERHOTSTEAM, 1).addStep(2500, 10, ULTRAHOTSTEAM, 1));
-        // 1.7 gives STEAM/HOTSTEAM/SUPERHOTSTEAM no FT_Heatable (only FT_Coolable); the steam-upgrading steps are
-        // 1.12.2 additions, so a boiler, heater column or Hephaestus refuses steam as an input, as in 1.7.
-        OIL.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).setEff(HeatingType.HEATEXCHANGER, 1.0D).addStep(10, 1, HOTOIL, 1));
-        OIL_DS.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).setEff(HeatingType.HEATEXCHANGER, 1.0D).addStep(10, 1, HOTOIL_DS, 1));
-        CRACKOIL.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).setEff(HeatingType.HEATEXCHANGER, 1.0D).addStep(10, 1, HOTCRACKOIL, 1));
-        CRACKOIL_DS.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).setEff(HeatingType.HEATEXCHANGER, 1.0D).addStep(10, 1, HOTCRACKOIL_DS, 1));
-        COOLANT.addTraits(new FT_Heatable().setEff(HeatingType.HEATEXCHANGER, 1.0D).setEff(HeatingType.PWR, 1.0D).setEff(HeatingType.ICF, 1.0D).addStep(300, 1, COOLANT_HOT, 1));
-        PERFLUOROMETHYL_COLD.addTraits(new FT_Heatable().setEff(HeatingType.PA, 1.0D).addStep(300, 1, PERFLUOROMETHYL, 1));
-        PERFLUOROMETHYL.addTraits(new FT_Heatable().setEff(HeatingType.HEATEXCHANGER, 1.0D).setEff(HeatingType.PWR, 1.0D).setEff(HeatingType.ICF, 1.0D).addStep(300, 1, PERFLUOROMETHYL_HOT, 1));
-        MUG.addTraits(new FT_Heatable().setEff(HeatingType.HEATEXCHANGER, 1.0D).setEff(HeatingType.PWR, 1.0D).setEff(HeatingType.ICF, 1.25D).addStep(400, 1, MUG_HOT, 1), new FT_PWRModerator(1.15D));
-        BLOOD.addTraits(new FT_Heatable().setEff(HeatingType.HEATEXCHANGER, 1.0D).setEff(HeatingType.ICF, 1.25D).addStep(500, 1, BLOOD_HOT, 1));
-        HEAVYWATER.addTraits(new FT_Heatable().setEff(HeatingType.PWR, 1.0D).addStep(300, 1, HEAVYWATER_HOT, 1), new FT_PWRModerator(1.25D));
-        SODIUM.addTraits(new FT_Heatable().setEff(HeatingType.PWR, 2.5D).setEff(HeatingType.ICF, 3.0D).addStep(400, 1, SODIUM_HOT, 1));
-        LEAD.addTraits(new FT_Heatable().setEff(HeatingType.PWR, 0.75D).setEff(HeatingType.ICF, 4.0D).addStep(800, 1, LEAD_HOT, 1), new FT_PWRModerator(0.75D));
-        THORIUM_SALT.addTraits(new FT_Heatable().setEff(HeatingType.PWR, 1.0D).addStep(400, 1, THORIUM_SALT_HOT, 1), new FT_PWRModerator(2.5D));
-    }
-
-    public static final float SOOT_UNREFINED_OIL = PollutionHandler.SOOT_PER_SECOND * 0.1F;
-    public static final float SOOT_REFINED_OIL = PollutionHandler.SOOT_PER_SECOND * 0.025F;
-    public static final float SOOT_GAS = PollutionHandler.SOOT_PER_SECOND * 0.005F;
-    public static final float LEAD_FUEL = PollutionHandler.HEAVY_METAL_PER_SECOND * 0.025F;
-    public static final float POISON_OIL = PollutionHandler.POISON_PER_SECOND * 0.0025F;
-    public static final float POISON_EXTREME = PollutionHandler.POISON_PER_SECOND * 0.025F;
-    public static final float POISON_MINOR = PollutionHandler.POISON_PER_SECOND * 0.001F;
-
-    // 1.7 shares one instance per preset across every fluid that names it.
-    public static final FT_Polluting P_OIL = new FT_Polluting().burn(PollutionType.SOOT, SOOT_UNREFINED_OIL).release(PollutionType.POISON, POISON_OIL);
-    public static final FT_Polluting P_FUEL = new FT_Polluting().burn(PollutionType.SOOT, SOOT_REFINED_OIL).release(PollutionType.POISON, POISON_OIL);
-    public static final FT_Polluting P_FUEL_LEADED = new FT_Polluting().burn(PollutionType.SOOT, SOOT_REFINED_OIL).burn(PollutionType.HEAVYMETAL, LEAD_FUEL).release(PollutionType.POISON, POISON_OIL).release(PollutionType.HEAVYMETAL, LEAD_FUEL * 0.1F);
-    public static final FT_Polluting P_GAS = new FT_Polluting().burn(PollutionType.SOOT, SOOT_GAS).release(PollutionType.POISON, POISON_OIL);
-    public static final FT_Polluting P_LIQUID_GAS = new FT_Polluting().burn(PollutionType.SOOT, SOOT_GAS * 2F);
-
-    /** Every 1.7 {@code FT_Toxin} assignment, at 1.7's values (Fluids.java, straight after the meta order). */
-    private static void registerToxinTraits() {
-        CHLORINE.addTraits(new FT_Toxin().addEntry(new ToxinDirectDamage(ModDamageSources.CLOUD, 2F, 20, HazardClass.GAS_LUNG, false)));
-        PHOSGENE.addTraits(new FT_Toxin().addEntry(new ToxinDirectDamage(ModDamageSources.CLOUD, 4F, 20, HazardClass.GAS_LUNG, false)));
-        MUSTARDGAS.addTraits(new FT_Toxin().addEntry(new ToxinDirectDamage(ModDamageSources.CLOUD, 4F, 10, HazardClass.GAS_BLISTERING, false))
-                .addEntry(new ToxinEffects(HazardClass.GAS_BLISTERING, true).add(
-                        () -> Effects.instance(MobEffects.WITHER, 100, 1),
-                        () -> Effects.instance(MobEffects.NAUSEA, 100, 0))));
-        ESTRADIOL.addTraits(new FT_Toxin().addEntry(new ToxinEffects(HazardClass.PARTICLE_FINE, false).add(
-                () -> Effects.instanceRegistered(ModEffects.DEATH.get(), 60 * 60 * 20, 0))));
-        REDMUD.addTraits(new FT_Toxin().addEntry(new ToxinEffects(HazardClass.GAS_BLISTERING, false).add(
-                () -> Effects.instance(MobEffects.WITHER, 30 * 20, 2))));
-    }
-
-    /** Every 1.7 {@code FT_VentRadiation}, {@code FT_Poison} and {@code FT_Pheromone} assignment, at 1.7's values. */
-    private static void registerExposureTraits() {
-        TRITIUM.addTraits(new FT_VentRadiation(0.001F));
-        UF6.addTraits(new FT_VentRadiation(0.2F));
-        PUF6.addTraits(new FT_VentRadiation(0.1F));
-        SAS3.addTraits(new FT_VentRadiation(1F));
-        SCHRABIDIC.addTraits(new FT_VentRadiation(1F), new FT_Poison(true, 2));
-        WATZ.addTraits(new FT_VentRadiation(0.1F));
-        MERCURY.addTraits(new FT_Poison(false, 2));
-        PAIN.addTraits(new FT_Poison(true, 2));
-        WASTEFLUID.addTraits(new FT_VentRadiation(0.5F));
-        WASTEGAS.addTraits(new FT_VentRadiation(0.5F));
-        FRACKSOL.addTraits(new FT_Poison(false, 0));
-        DEATH.addTraits(new FT_Poison(true, 4));
-        SOURGAS.addTraits(new FT_Poison(false, 1));
-        PHEROMONE.addTraits(new FT_Pheromone(1));
-        PHEROMONE_M.addTraits(new FT_Pheromone(2));
     }
 
     // 1.7's shared simple-trait instances (Fluids.java: LIQUID, VISCOUS, EVAP, GASEOUS, PLASMA, ANTI, ...).
@@ -511,120 +574,9 @@ public class Fluids {
     public static final FT_Delicious DELICIOUS = new FT_Delicious();
     public static final FT_Unsiphonable UNSIPHONABLE = new FT_Unsiphonable();
 
-    /** Every 1.7 simple-trait assignment, fluid for fluid as 1.7's declarations list them. */
-    private static void registerSimpleTraits() {
-        for (FluidType type : new FluidType[]{WATER, COOLANT, LAVA, OIL, HOTOIL, HEAVYOIL, BITUMEN, SMEAR, HEATINGOIL,
-                RECLAIMED, PETROIL, LUBRICANT, NAPHTHA, DIESEL, LIGHTOIL, KEROSENE, LPG, BIOFUEL, NITAN, SAS3, SCHRABIDIC,
-                PEROXIDE, WATZ, CRYOGEL, HYDROGEN, OXYGEN, BALEFIRE, MERCURY, PAIN, WASTEFLUID, GASOLINE, COALGAS, FRACKSOL,
-                DEATH, ETHANOL, HEAVYWATER, CRACKOIL, COALOIL, HOTCRACKOIL, NAPHTHA_CRACK, LIGHTOIL_CRACK, DIESEL_CRACK,
-                AROMATICS, SALIENT, XPJUICE, ENDERJUICE, PETROIL_LEADED, GASOLINE_LEADED, COALGAS_LEADED, SULFURIC_ACID,
-                COOLANT_HOT, MUG, MUG_HOT, WOODOIL, COALCREOSOTE, SEEDSLURRY, NITRIC_ACID, SOLVENT, BLOOD, BLOOD_HOT,
-                RADIOSOLVENT, HEAVYOIL_VACUUM, REFORMATE, LIGHTOIL_VACUUM, XYLENE, HEATINGOIL_VACUUM, DIESEL_REFORM,
-                DIESEL_CRACK_REFORM, KEROSENE_REFORM, COLLOID, IONGEL, OIL_COKER, NAPHTHA_COKER, EGG, CHOLESTEROL,
-                ESTRADIOL, FISHOIL, SUNFLOWEROIL, NITROGLYCERIN, REDMUD, CHLOROCALCITE_SOLUTION, CHLOROCALCITE_MIX,
-                CHLOROCALCITE_CLEANED, POTASSIUM_CHLORIDE, CALCIUM_CHLORIDE, CALCIUM_SOLUTION, HEAVYWATER_HOT, SODIUM,
-                SODIUM_HOT, THORIUM_SALT, THORIUM_SALT_HOT, THORIUM_SALT_DEPLETED, FULLERENE, PHEROMONE, PHEROMONE_M,
-                OIL_DS, HOTOIL_DS, CRACKOIL_DS, HOTCRACKOIL_DS, NAPHTHA_DS, LIGHTOIL_DS, VITRIOL, SLOP, LEAD, LEAD_HOT,
-                PERFLUOROMETHYL, PERFLUOROMETHYL_COLD, PERFLUOROMETHYL_HOT, LYE, SODIUM_ALUMINATE, BAUXITE_SOLUTION,
-                ALUMINA, CONCRETE}) {
-            type.addTraits(LIQUID);
-        }
-        for (FluidType type : new FluidType[]{LAVA, OIL, HOTOIL, HEAVYOIL, BITUMEN, SMEAR, HEATINGOIL, RECLAIMED, NAPHTHA,
-                WATZ, CRYOGEL, BALEFIRE, PAIN, WASTEFLUID, FRACKSOL, DEATH, CRACKOIL, COALOIL, HOTCRACKOIL, NAPHTHA_CRACK,
-                AROMATICS, SALIENT, XPJUICE, WOODOIL, COALCREOSOTE, SEEDSLURRY, BLOOD, BLOOD_HOT, HEAVYOIL_VACUUM, REFORMATE,
-                XYLENE, HEATINGOIL_VACUUM, COLLOID, IONGEL, OIL_COKER, NAPHTHA_COKER, REDMUD, HEAVYWATER_HOT, SODIUM,
-                SODIUM_HOT, THORIUM_SALT, THORIUM_SALT_HOT, THORIUM_SALT_DEPLETED, OIL_DS, HOTOIL_DS, CRACKOIL_DS,
-                HOTCRACKOIL_DS, NAPHTHA_DS, VITRIOL, SLOP, LEAD, LEAD_HOT, BAUXITE_SOLUTION}) {
-            type.addTraits(VISCOUS);
-        }
-        for (FluidType type : new FluidType[]{STEAM, HOTSTEAM, SUPERHOTSTEAM, ULTRAHOTSTEAM, DEUTERIUM, TRITIUM, GAS,
-                PETROLEUM, BIOGAS, UF6, PUF6, AMAT, ASCHRAB, XENON, WASTEGAS, SPENTSTEAM, CARBONDIOXIDE, HELIUM3,
-                UNSATURATEDS, SYNGAS, OXYHYDROGEN, CHLORINE, SOURGAS, REFORMGAS, PHOSGENE, MUSTARDGAS, GAS_COKER, SMOKE,
-                SMOKE_LEADED, SMOKE_POISON, HELIUM4, STELLAR_FLUX, AIR, DHC, AIRBLAST, FLUE}) {
-            type.addTraits(GASEOUS);
-        }
-        for (FluidType type : new FluidType[]{HYDROGEN, OXYGEN}) type.addTraits(EVAP);
-        for (FluidType type : new FluidType[]{PLASMA_DT, PLASMA_HD, PLASMA_HT, PLASMA_XM, PLASMA_BF, PLASMA_DH3}) {
-            type.addTraits(PLASMA, NOCON, NOID);
-        }
-        for (FluidType type : new FluidType[]{AMAT, ASCHRAB, STELLAR_FLUX}) type.addTraits(ANTI);
-        for (FluidType type : new FluidType[]{DEATH, REDMUD}) type.addTraits(LEADCON);
-        for (FluidType type : new FluidType[]{WASTEFLUID, WASTEGAS, SPENTSTEAM, CHLOROCALCITE_SOLUTION, CHLOROCALCITE_MIX,
-                CHLOROCALCITE_CLEANED, POTASSIUM_CHLORIDE, CALCIUM_CHLORIDE, CALCIUM_SOLUTION}) {
-            type.addTraits(NOCON);
-        }
-        for (FluidType type : new FluidType[]{SMOKE, SMOKE_LEADED, SMOKE_POISON}) type.addTraits(NOCON, NOID);
-        for (FluidType type : new FluidType[]{SALIENT, MUG, MUG_HOT, BLOOD}) type.addTraits(DELICIOUS);
-        for (FluidType type : new FluidType[]{WATER, STEAM, HOTSTEAM, SUPERHOTSTEAM, ULTRAHOTSTEAM}) {
-            type.addTraits(UNSIPHONABLE);
-        }
-    }
-
-    /** Every 1.7 {@code FT_Polluting} assignment, with 1.7's presets and one-off tables. */
-    private static void registerPollutingTraits() {
-        for (FluidType type : new FluidType[]{OIL, HOTOIL, HEAVYOIL, BITUMEN, SMEAR, HEATINGOIL, LUBRICANT, CRACKOIL,
-                COALOIL, HOTCRACKOIL, WOODOIL, COALCREOSOTE, HEAVYOIL_VACUUM, HEATINGOIL_VACUUM, OIL_COKER, NAPHTHA_COKER,
-                OIL_DS, HOTOIL_DS, CRACKOIL_DS, HOTCRACKOIL_DS}) {
-            type.addTraits(P_OIL);
-        }
-        for (FluidType type : new FluidType[]{RECLAIMED, PETROIL, NAPHTHA, DIESEL, LIGHTOIL, KEROSENE, BIOFUEL, NITAN,
-                BALEFIRE, GASOLINE, COALGAS, ETHANOL, NAPHTHA_CRACK, LIGHTOIL_CRACK, DIESEL_CRACK, REFORMATE,
-                LIGHTOIL_VACUUM, XYLENE, DIESEL_REFORM, DIESEL_CRACK_REFORM, KEROSENE_REFORM, FISHOIL, SUNFLOWEROIL,
-                NAPHTHA_DS, LIGHTOIL_DS}) {
-            type.addTraits(P_FUEL);
-        }
-        for (FluidType type : new FluidType[]{PETROIL_LEADED, GASOLINE_LEADED, COALGAS_LEADED}) {
-            type.addTraits(P_FUEL_LEADED);
-        }
-        for (FluidType type : new FluidType[]{GAS, PETROLEUM, BIOGAS, AROMATICS, UNSATURATEDS, REFORMGAS, GAS_COKER}) {
-            type.addTraits(P_GAS);
-        }
-        LPG.addTraits(P_LIQUID_GAS);
-
-        WATZ.addTraits(new FT_Polluting().release(PollutionType.POISON, POISON_EXTREME));
-        CARBONDIOXIDE.addTraits(new FT_Polluting().release(PollutionType.POISON, POISON_MINOR));
-        NITRIC_ACID.addTraits(new FT_Polluting().release(PollutionType.POISON, POISON_EXTREME));
-        SOURGAS.addTraits(new FT_Polluting().burn(PollutionType.SOOT, SOOT_GAS).release(PollutionType.POISON, POISON_EXTREME));
-        PHOSGENE.addTraits(new FT_Polluting().release(PollutionType.POISON, POISON_EXTREME));
-        MUSTARDGAS.addTraits(new FT_Polluting().release(PollutionType.POISON, POISON_EXTREME));
-        REDMUD.addTraits(new FT_Polluting().release(PollutionType.POISON, POISON_EXTREME));
-        FULLERENE.addTraits(new FT_Polluting().release(PollutionType.POISON, POISON_MINOR));
-        FLUE.addTraits(new FT_Polluting().burn(PollutionType.SOOT, SOOT_GAS).release(PollutionType.SOOT, SOOT_GAS * 25));
-    }
-
-    /** Complete upstream FT_Coolable data, including the heat-exchanger-only coolant families. */
-    private static void registerCoolableTraits() {
-        double steamTurbineEfficiency = 1.0D;
-        double steamHeatExchangerEfficiency = 0.5D;
-
-        STEAM.addTraits(new FT_Coolable(SPENTSTEAM, 100, 1, 200)
-                .setEff(CoolingType.TURBINE, steamTurbineEfficiency)
-                .setEff(CoolingType.HEATEXCHANGER, steamHeatExchangerEfficiency));
-        HOTSTEAM.addTraits(new FT_Coolable(STEAM, 1, 10, 2)
-                .setEff(CoolingType.TURBINE, steamTurbineEfficiency)
-                .setEff(CoolingType.HEATEXCHANGER, steamHeatExchangerEfficiency));
-        SUPERHOTSTEAM.addTraits(new FT_Coolable(HOTSTEAM, 1, 10, 18)
-                .setEff(CoolingType.TURBINE, steamTurbineEfficiency)
-                .setEff(CoolingType.HEATEXCHANGER, steamHeatExchangerEfficiency));
-        ULTRAHOTSTEAM.addTraits(new FT_Coolable(SUPERHOTSTEAM, 1, 10, 120)
-                .setEff(CoolingType.TURBINE, steamTurbineEfficiency)
-                .setEff(CoolingType.HEATEXCHANGER, steamHeatExchangerEfficiency));
-
-        HOTOIL.addTraits(new FT_Coolable(OIL, 1, 1, 10).setEff(CoolingType.HEATEXCHANGER, 1.0D));
-        HOTOIL_DS.addTraits(new FT_Coolable(OIL_DS, 1, 1, 10).setEff(CoolingType.HEATEXCHANGER, 1.0D));
-        HOTCRACKOIL.addTraits(new FT_Coolable(CRACKOIL, 1, 1, 10).setEff(CoolingType.HEATEXCHANGER, 1.0D));
-        HOTCRACKOIL_DS.addTraits(new FT_Coolable(CRACKOIL_DS, 1, 1, 10).setEff(CoolingType.HEATEXCHANGER, 1.0D));
-
-        COOLANT_HOT.addTraits(new FT_Coolable(COOLANT, 1, 1, 300).setEff(CoolingType.HEATEXCHANGER, 1.0D));
-        PERFLUOROMETHYL_HOT.addTraits(new FT_Coolable(PERFLUOROMETHYL, 1, 1, 300)
-                .setEff(CoolingType.HEATEXCHANGER, 1.0D));
-        MUG_HOT.addTraits(new FT_Coolable(MUG, 1, 1, 400).setEff(CoolingType.HEATEXCHANGER, 1.0D));
-        BLOOD_HOT.addTraits(new FT_Coolable(BLOOD, 1, 1, 500).setEff(CoolingType.HEATEXCHANGER, 1.0D));
-        HEAVYWATER_HOT.addTraits(new FT_Coolable(HEAVYWATER, 1, 1, 300).setEff(CoolingType.HEATEXCHANGER, 1.0D));
-        SODIUM_HOT.addTraits(new FT_Coolable(SODIUM, 1, 1, 400).setEff(CoolingType.HEATEXCHANGER, 1.0D));
-        LEAD_HOT.addTraits(new FT_Coolable(LEAD, 1, 1, 680).setEff(CoolingType.HEATEXCHANGER, 1.0D));
-        THORIUM_SALT_HOT.addTraits(new FT_Coolable(THORIUM_SALT_DEPLETED, 1, 1, 400)
-                .setEff(CoolingType.HEATEXCHANGER, 1.0D));
+    private static void vanillaName(FluidType fluid, String id) {
+        fluid.useVanillaName(id);
+        registryMapping.put(id, fluid);
     }
 
     /** Registers a fluid, assigning it the next sequential ID. Called from the {@link FluidType} ctor. */
@@ -647,7 +599,7 @@ public class Fluids {
     }
 
     // ------------------------------------------------------------------------------------------------------------
-    // Identity. A fluid is SAVED by its registry name ("hbm:water") and nothing else (user rule 2026-10-03, History
+    // Identity. A fluid is SAVED by its registry name ("hbm:oil", "minecraft:water") and nothing else (user rule 2026-10-03, History
     // section 19ej-ids). The 1.7 number survives only as two read-only views: networkId (same-session packets and
     // synched entity data, never written to disk) and legacyId (places where 1.7 showed the number to a player or to
     // a computer, and 1.7 data files that carry it). Both are the frozen 1.7 registration order.
@@ -656,7 +608,13 @@ public class Fluids {
     /** The fluid saved under {@code name} ({@code hbm:water}; a bare {@code water} is read as {@code hbm:}). NONE if unknown. */
     public static FluidType byRegistryName(@Nullable String name) {
         if (name == null || name.isEmpty()) return NONE;
-        FluidType fluid = registryMapping.get(name.indexOf(':') < 0 ? Constants.MOD_ID + ":" + name.toLowerCase(Locale.ROOT) : name);
+        String id = name.indexOf(':') < 0 ? Constants.MOD_ID + ":" + name.toLowerCase(Locale.ROOT) : name;
+        FluidType fluid = registryMapping.get(id);
+        if (fluid == null) {
+            // the open model: any registered vanilla fluid is an HBM fluid too
+            var vanilla = net.minecraft.core.registries.BuiltInRegistries.FLUID.getOptional(dev.golem.core.Ids.parse(id));
+            if (vanilla.isPresent() && vanilla.get() != net.minecraft.world.level.material.Fluids.EMPTY) return fromVanilla(vanilla.get());
+        }
         if (fluid == null) {
             warnOnce("unknown:" + name, "Unknown fluid id '{}' in saved data - reading it as hbm:none", name);
             return NONE;
@@ -664,11 +622,26 @@ public class Fluids {
         return fluid;
     }
 
-    /** Runtime id for packets and synched entity data only. Never persist it. */
-    public static int networkId(FluidType fluid) { return fluid.numericId(); }
+    /**
+     * Runtime id for packets and synched entity data only. Never persist it. HBM's and addons' fluids use their fixed
+     * registration number (the same on both sides); another mod's fluid, which becomes an HBM fluid only when first met
+     * and so in no fixed order, uses {@link #FOREIGN_NETWORK_BASE} plus its synced vanilla registry id.
+     */
+    public static int networkId(FluidType fluid) {
+        if (!fluid.isForeign()) return fluid.numericId();
+        return FOREIGN_NETWORK_BASE + net.minecraft.core.registries.BuiltInRegistries.FLUID.getId(toVanilla(fluid));
+    }
+
+    /** Where foreign fluids' network ids start; far above any count of registered HBM fluids. */
+    public static final int FOREIGN_NETWORK_BASE = 1 << 20;
 
     /** Inverse of {@link #networkId}. */
     public static FluidType byNetworkId(int id) {
+        if (id >= FOREIGN_NETWORK_BASE) {
+            net.minecraft.world.level.material.Fluid vanilla =
+                    net.minecraft.core.registries.BuiltInRegistries.FLUID.byId(id - FOREIGN_NETWORK_BASE);
+            return vanilla == null ? NONE : fromVanilla(vanilla);
+        }
         FluidType fluid = idMapping.get(id);
         return fluid == null ? NONE : fluid;
     }
@@ -752,6 +725,20 @@ public class Fluids {
         return registerOrder.toArray(new FluidType[0]);
     }
 
+    /**
+     * 1.7 {@code Fluids.getInNiceOrder()}: every fluid in 1.7's display order ({@code metaOrder}), then the fluids 1.7
+     * has no entry for (addon fluids from {@link #register(String, String, int)} and other mods' fluids), in
+     * registration order, as 1.7 appends its custom and foreign fluids.
+     */
+    public static synchronized FluidType[] getInNiceOrder() {
+        List<FluidType> all = new ArrayList<>(registerOrder.size());
+        all.addAll(metaOrder);
+        java.util.Set<FluidType> listed = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        listed.addAll(metaOrder);
+        for (FluidType fluid : registerOrder) if (!listed.contains(fluid)) all.add(fluid);
+        return all.toArray(new FluidType[0]);
+    }
+
     // ------------------------------------------------------------------------------------------------------------
     // Vanilla Fluid registry entries (History section 19ek-fluids). Every FluidType is also a vanilla Fluid so other
     // mods' tanks, pipes and recipe viewers can name it: hbm:<key> as a Core TokenFluid (never placeable, no bucket),
@@ -772,16 +759,34 @@ public class Fluids {
         if (vanillaDeclared) return;
         vanillaDeclared = true;
         init();
+        List<FluidType> own = new ArrayList<>();
+        for (FluidType fluid : registerOrder) {
+            if (!isVanillaAlias(fluid) && fluid.getNamespace().equals(Constants.MOD_ID)) own.add(fluid);
+        }
+        declareVanilla(Constants.MOD_ID, own);
+    }
+
+    /**
+     * An addon's fluid: {@code <namespace>:<lower-case name>}, registered after HBM's own (whose 1.7 order is fixed), saved
+     * by that name and, once {@link #declareVanilla(String, List)} has run for the namespace, a vanilla {@code Fluid} too.
+     * Every HBM system (tanks, ducts, recipes, the fluid identifier) treats it like an HBM fluid. Call at mod construction.
+     */
+    public static synchronized FluidType register(String namespace, String name, int color) {
+        init();
+        if (registryMapping.containsKey(namespace + ":" + name.toLowerCase(Locale.US))) {
+            throw new IllegalStateException("Fluid " + namespace + ":" + name.toLowerCase(Locale.US) + " registered twice");
+        }
+        return new FluidType(namespace, name, color);
+    }
+
+    /** Declares {@code fluids} (all of {@code namespace}) as vanilla token fluids, as HBM does for its own. */
+    public static synchronized void declareVanilla(String namespace, List<FluidType> fluids) {
         List<dev.golem.core.fluid.TokenFluids.Spec> specs = new ArrayList<>();
-        for (FluidType fluid : registerOrder) {
-            if (isVanillaAlias(fluid)) continue;
-            specs.add(tokenSpec(fluid));
-        }
+        for (FluidType fluid : fluids) specs.add(tokenSpec(fluid));
         java.util.Map<String, dev.golem.core.registry.RegistryObject<net.minecraft.world.level.material.Fluid>> handles =
-                dev.golem.core.fluid.TokenFluids.register(Constants.MOD_ID, specs);
-        for (FluidType fluid : registerOrder) {
-            if (!isVanillaAlias(fluid)) VANILLA.put(fluid, handles.get(fluid.getKey()));
-        }
+                dev.golem.core.fluid.TokenFluids.register(namespace, specs);
+        for (FluidType fluid : fluids) VANILLA.put(fluid, handles.get(fluid.getKey()));
+        byVanilla = null;
     }
 
     /** NONE, WATER and LAVA are vanilla's empty, water and lava rather than fluids of their own. */
@@ -799,7 +804,7 @@ public class Fluids {
         boolean gaseous = fluid.hasTrait(FT_Gaseous.class) || fluid.hasTrait(FT_Gaseous_ART.class);
         boolean viscous = fluid.hasTrait(FT_Viscous.class);
         return new dev.golem.core.fluid.TokenFluids.Spec(fluid.getKey(), fluid.getTranslationKey(), fluid.getFallbackName(),
-                Constants.MOD_ID + ":gui/fluids/" + fluid.getKey(), 0xFFFFFFFF, fluid.temperature + 273,
+                fluid.getNamespace() + ":gui/fluids/" + fluid.getKey(), 0xFFFFFFFF, fluid.temperature + 273,
                 gaseous ? -1000 : 1000, viscous ? 6000 : 1000, gaseous);
     }
 
@@ -818,6 +823,7 @@ public class Fluids {
      */
     public static FluidType fromVanilla(net.minecraft.world.level.material.Fluid fluid) {
         if (fluid == null || fluid == net.minecraft.world.level.material.Fluids.EMPTY) return NONE;
+        if (fluid instanceof net.minecraft.world.level.material.FlowingFluid flowing) fluid = flowing.getSource();
         if (fluid == net.minecraft.world.level.material.Fluids.WATER || fluid == net.minecraft.world.level.material.Fluids.FLOWING_WATER) return WATER;
         if (fluid == net.minecraft.world.level.material.Fluids.LAVA || fluid == net.minecraft.world.level.material.Fluids.FLOWING_LAVA) return LAVA;
         java.util.Map<net.minecraft.world.level.material.Fluid, FluidType> map = byVanilla;
@@ -829,6 +835,30 @@ public class Fluids {
             byVanilla = map;
         }
         FluidType type = map.get(fluid);
-        return type == null ? NONE : type;
+        return type == null ? foreign(fluid) : type;
     }
+
+    /**
+     * The open model (ntm-next's): another mod's fluid is an HBM fluid too, created when HBM first meets it, named by
+     * its vanilla id and carrying no traits unless a {@code fluid_property} file gives it some. HBM's tanks, ducts and
+     * machines move it like any HBM fluid.
+     */
+    private static synchronized FluidType foreign(net.minecraft.world.level.material.Fluid fluid) {
+        FluidType known = FOREIGN.get(fluid);
+        if (known != null) return known;
+        var id = net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(fluid);
+        if (id == null) return NONE;
+        FluidType type = registryMapping.get(id.toString());
+        if (type == null) {
+            init();
+            type = new FluidType(id.getNamespace(), id.getPath(), 0xFFFFFF);
+            type.markForeign();
+        }
+        final net.minecraft.world.level.material.Fluid vanilla = fluid;
+        VANILLA.put(type, () -> vanilla);
+        FOREIGN.put(fluid, type);
+        return type;
+    }
+
+    private static final java.util.Map<net.minecraft.world.level.material.Fluid, FluidType> FOREIGN = new java.util.IdentityHashMap<>();
 }

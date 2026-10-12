@@ -6,4 +6,6 @@ import dev.golem.core.render.CompatRenderState;
 public final class CondenserRenderState extends CompatRenderState {
     public float yaw;
     public float spin;
+    /** An addon's wrecked view is drawn instead ({@link DamagedView}). */
+    public boolean damaged;
 }

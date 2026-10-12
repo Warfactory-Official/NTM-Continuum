@@ -75,6 +75,8 @@ public final class MainRegistry {
 
     public static void bootstrap() {
         loadConfig(new com.hbm.config.Configuration(configFile()));
+        // Golem Core recipe flags for the config branches of 1.7's crafting recipes ("golem:requires")
+        com.hbm.inventory.recipes.loader.RecipeConditions.init();
         // The fluid registry is a plain static map (not an MC registry); populate it first so any
         // fluid tile/recipe that references Fluids.* during registration finds the types ready.
         rollPolaroid();

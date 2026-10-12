@@ -4,9 +4,9 @@ import com.hbm.Constants;
 import com.hbm.blocks.machine.BlockMachineBattery;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
-import com.hbm.registration.BlockTag;
-import com.hbm.registration.Loot;
-import com.hbm.registration.Preset;
+import dev.golem.core.registry.BlockTag;
+import dev.golem.core.registry.Loot;
+import dev.golem.core.registry.Preset;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Models;
@@ -272,13 +272,7 @@ public final class ModEnergyNetBlocks {
 
     /** {@code tile.capacitor.desc} (shared by every capacitor) plus the persistent-charge lines. */
     private static Function<ItemStack, List<Component>> capacitorInfo(RegistryObject<MachineCapacitor> block) {
-        return stack -> {
-            List<Component> list = new ArrayList<>();
-            list.add(Component.translatable("desc.capacitor.0").withStyle(ChatFormatting.YELLOW));
-            list.add(Component.translatable("desc.capacitor.1").withStyle(ChatFormatting.YELLOW));
-            list.addAll(block.get().persistentInfo(stack));
-            return list;
-        };
+        return stack -> block.get().tooltip(stack, List.of());
     }
 
     /** 1.7 {@code MachineBattery.addInformation}: capacity, charge/discharge speed and the persistent charge. */

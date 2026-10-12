@@ -46,39 +46,42 @@ public final class RtgGameTests {
     public static void init() {}
 
     public static void variants(GameTestHelper helper) {
-        int[] heat = {3, 5, 10, 12, 16, 20, 25, 50, 200, 600, 6_000};
-        long[] halfLife = {14_016_000_000L, 876_000_000L, 768_252_000L, 252_200_400L, 46_176_588L,
-                190_705_200L, 3_786_072_000L, 3_321_024L, 64_728L, 3_253L, 1_000L};
-        int[] halfLives = {1, 2, 2, 2, 2, 2, 2, 3, 4, 6, 12};
+        // 1.7 ModItems (the balefire pellet is port-only, 1.12.2's 6,000 heat over 12 x 1,000 ticks)
+        int[] heat = {3, 5, 10, 15, 15, 20, 20, 50, 200, 600, 6_000};
+        long[] lifespan = {11_520_000_000L, 720_000_000L, 631_440_000L, 208_800_000L, 38_160_000L,
+                156_960_000L, 3_384_000_000L, 9_936_000L, 194_400L, 21_600L, 12_000L};
         DepletedRTGMaterial[] residual = {DepletedRTGMaterial.LEAD, DepletedRTGMaterial.LEAD,
-                DepletedRTGMaterial.LEAD, DepletedRTGMaterial.ZIRCONIUM, DepletedRTGMaterial.ZIRCONIUM,
+                DepletedRTGMaterial.LEAD, DepletedRTGMaterial.ZIRCONIUM, DepletedRTGMaterial.NICKEL,
                 DepletedRTGMaterial.LEAD, DepletedRTGMaterial.NEPTUNIUM, DepletedRTGMaterial.LEAD,
                 DepletedRTGMaterial.MERCURY, DepletedRTGMaterial.BISMUTH, DepletedRTGMaterial.NEPTUNIUM};
-        helper.assertTrue(ModRtgContent.PELLETS.size() == 11, "The old RTG family must contain eleven fuel pellets");
+        helper.assertTrue(ModRtgContent.PELLETS.size() == 11, "The RTG family must contain eleven fuel pellets");
         helper.assertTrue(ModRtgContent.DEPLETED.size() == 6, "The old depleted family must contain six materials");
         int index = 0;
         for (var registered : ModRtgContent.PELLETS.values()) {
             ItemRTGPellet pellet = registered.get();
             helper.assertTrue(pellet.getHeat() == heat[index]
-                            && pellet.getHalfLife() == halfLife[index]
-                            && pellet.getMaxLifespan() == halfLife[index] * halfLives[index]
-                            && pellet.getDecayItem().material == residual[index],
-                    "RTG pellet table drifted at index " + index);
+                            && pellet.getMaxLifespan() == lifespan[index]
+                            && pellet.getDecayItem() instanceof com.hbm.items.machine.ItemRTGPelletDepleted decayed && decayed.material == residual[index],
+                    "RTG pellet table drifted from 1.7 at index " + index + ": " + pellet.getHeat() + " / " + pellet.getMaxLifespan());
             index++;
         }
         helper.succeed();
     }
 
+    /** 1.7 decays linearly: {@code getScaledPower = ceil(heat * life / maxLife)}, one life tick per RTG tick. */
     public static void decay(GameTestHelper helper) {
         ItemRTGPellet plutonium = ModRtgContent.PELLET_RTG.get();
         ItemStack stack = new ItemStack(plutonium);
-        helper.assertTrue(plutonium.getLifespan(stack) == 1_536_504_000L
+        helper.assertTrue(plutonium.getLifespan(stack) == 631_440_000L
                         && ItemRTGPellet.getScaledPower(plutonium, stack) == 10,
-                "A fresh Pu-238 pellet must start at full life and 10 heat");
-        plutonium.setLifespan(stack, plutonium.getMaxLifespan() - plutonium.getHalfLife());
-        helper.assertTrue(ItemRTGPellet.getDecay(plutonium, stack) == 0.5D
+                "A fresh Pu-238 pellet must start at 1.7's full life and 10 heat");
+        plutonium.setLifespan(stack, plutonium.getMaxLifespan() / 2);
+        helper.assertTrue(ItemRTGPellet.getRemaining(plutonium, stack) == 0.5D
                         && ItemRTGPellet.getScaledPower(plutonium, stack) == 5,
-                "One elapsed half-life must produce exactly one-half output");
+                "Half the life must give half the output");
+        plutonium.setLifespan(stack, plutonium.getMaxLifespan() / 4);
+        helper.assertTrue(ItemRTGPellet.getScaledPower(plutonium, stack) == 3,
+                "A quarter of the life must give ceil(10 / 4) = 3 (linear, not a half-life curve)");
 
         ItemRTGPellet lead = ModRtgContent.PELLET_RTG_LEAD.get();
         ItemStack terminal = new ItemStack(lead);
@@ -93,13 +96,15 @@ public final class RtgGameTests {
         helper.assertTrue(RTGUtil.updateRTGs(inventory, new int[]{0}) == 600
                         && inventory.getStackInSlot(0).is(ModRtgContent.PELLET_RTG_DEPLETED_BISMUTH.get()),
                 "The zero-life tick must output once, then replace the pellet");
-        // with scaleRTGPower on, the same nearly spent pellet gives ceil(600 / 2^6) = 10
+        // with scaleRTGPower on, a lead pellet at 1 of 21,600 ticks gives ceil(600 / 21,600) = 1
         boolean scale = com.hbm.config.MachineConfig.scaleRTGPower;
         try {
             com.hbm.config.MachineConfig.scaleRTGPower = true;
             ItemStack spent = new ItemStack(lead);
             lead.setLifespan(spent, 1L);
-            helper.assertTrue(RTGUtil.getPower(lead, spent) == 10, "scaleRTGPower on: a spent lead pellet must give 10 heat");
+            helper.assertTrue(RTGUtil.getPower(lead, spent) == 1, "scaleRTGPower on: a spent lead pellet must give 1 heat");
+            lead.setLifespan(spent, 10_800L);
+            helper.assertTrue(RTGUtil.getPower(lead, spent) == 300, "scaleRTGPower on: a half-spent lead pellet must give 300 heat");
         } finally {
             com.hbm.config.MachineConfig.scaleRTGPower = scale;
         }
@@ -183,17 +188,17 @@ public final class RtgGameTests {
         ItemRTGPellet plutonium = ModRtgContent.PELLET_RTG.get();
         ItemStack stack = new ItemStack(plutonium);
         helper.assertTrue(close(radiation(stack), 15D), "Fresh Pu-238 pellet radiation must be 15 RAD/s");
-        plutonium.setLifespan(stack, plutonium.getMaxLifespan() - plutonium.getHalfLife());
-        helper.assertTrue(close(radiation(stack), 7.5D), "Pu-238 radiation must halve with its output");
+        plutonium.setLifespan(stack, plutonium.getMaxLifespan() / 2);
+        helper.assertTrue(close(radiation(stack), 7.5D), "Pu-238 radiation must fall linearly with its life (1.7)");
         plutonium.setLifespan(stack, 0L);
         ItemStack depletedLead = ItemRTGPellet.handleDecay(stack, plutonium);
-        helper.assertTrue(close(radiation(stack), 3.75D) && close(radiation(depletedLead), 0D),
-                "Pu-238 must reach its two-half-life radiation, then decay to inert lead");
+        helper.assertTrue(close(radiation(stack), 0D) && close(radiation(depletedLead), 0D),
+                "Pu-238 must reach its 0 RAD/s target at zero life, then decay to inert lead");
 
         ItemRTGPellet lead = ModRtgContent.PELLET_RTG_LEAD.get();
         ItemStack agedLead = new ItemStack(lead);
-        lead.setLifespan(agedLead, 0L);
-        helper.assertTrue(close(radiation(agedLead), 234.375D)
+        lead.setLifespan(agedLead, lead.getMaxLifespan() / 4);
+        helper.assertTrue(close(radiation(agedLead), 3_750D)
                         && close(HazardSystem.getHazardLevelFromStack(agedLead, HazardRegistry.HOT), 7D)
                         && close(HazardSystem.getHazardLevelFromStack(agedLead, HazardRegistry.BLINDING), 50D),
                 "Lead-209 radiation must decay while heat and blinding remain constant");

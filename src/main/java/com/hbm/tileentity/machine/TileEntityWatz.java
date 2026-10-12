@@ -85,7 +85,8 @@ public class TileEntityWatz extends TileEntityMachineBase
      * which here is exactly the pellet type — so the lock is the type, and null means "no filter".
      */
     public boolean isLocked = false;
-    private final EnumWatzType[] locks = new EnumWatzType[SLOTS];
+    /** Per slot, the fresh pellet item locked there (saved by item name). */
+    private final net.minecraft.world.item.Item[] locks = new net.minecraft.world.item.Item[SLOTS];
 
     /** 1.7 {@code fluxLastBase + fluxLastReaction}, what its OpenComputers {@code getFlux} answered. */
     public double getFluxLast() {
@@ -236,30 +237,30 @@ public class TileEntityWatz extends TileEntityMachineBase
             }
 
             double baseFlux = 0D;
-            for (ItemStack stack : pellets) baseFlux += typeOf(stack).passive;
+            for (ItemStack stack : pellets) baseFlux += typeOf(stack).passive();
 
             double inputFlux = baseFlux + fluxLastReaction;
             double addedFlux = 0D;
             double addedHeat = 0D;
 
             for (ItemStack stack : pellets) {
-                EnumWatzType type = typeOf(stack);
-                if (type.burnFunc == null) continue;
-                double div = type.heatDiv != null ? type.heatDiv.effonix(heat) : 1D;
-                double burn = type.burnFunc.effonix(inputFlux) / div;
+                com.hbm.api.data.ReactorDataMaps.WatzPellet type = typeOf(stack);
+                if (type.burn().isEmpty()) continue;
+                double div = type.heatDiv().isPresent() ? type.heatDiv().get().effonix(heat) : 1D;
+                double burn = type.burn().get().effonix(inputFlux) / div;
                 ItemWatzPellet.setYield(stack, ItemWatzPellet.getYield(stack) - burn);
                 addedFlux += burn;
-                addedHeat += type.heatEmission * burn;
-                shared[2].setFill(shared[2].getFill() + (int) Math.round(type.mudContent * burn));
+                addedHeat += type.heat() * burn;
+                shared[2].setFill(shared[2].getFill() + (int) Math.round(type.mud() * burn));
             }
 
             for (ItemStack stack : pellets) {
-                EnumWatzType type = typeOf(stack);
-                if (type.absorbFunc == null) continue;
-                double absorb = type.absorbFunc.effonix(baseFlux + fluxLastReaction);
+                com.hbm.api.data.ReactorDataMaps.WatzPellet type = typeOf(stack);
+                if (type.absorb().isEmpty()) continue;
+                double absorb = type.absorb().get().effonix(baseFlux + fluxLastReaction);
                 addedHeat += absorb;
                 ItemWatzPellet.setYield(stack, ItemWatzPellet.getYield(stack) - absorb);
-                shared[2].setFill(shared[2].getFill() + (int) Math.round(type.mudContent * absorb));
+                shared[2].setFill(shared[2].getFill() + (int) Math.round(type.mud() * absorb));
             }
 
             this.heat += (int) addedHeat;
@@ -274,7 +275,7 @@ public class TileEntityWatz extends TileEntityMachineBase
             ItemStack stack = inventory.getStackInSlot(i);
             if (isFreshPellet(stack) && ItemWatzPellet.getEnrichment(stack) <= 0) {
                 // Depleted pellets may persist for one tick, as upstream.
-                inventory.setStackInSlot(i, new ItemStack(ModWatzItems.depleted(typeOf(stack))));
+                inventory.setStackInSlot(i, new ItemStack(com.hbm.api.data.ReactorDataMaps.itemOf(typeOf(stack).depleted())));
             }
         }
 
@@ -300,15 +301,15 @@ public class TileEntityWatz extends TileEntityMachineBase
     }
 
     private static boolean isFreshPellet(ItemStack stack) {
-        return stack.getItem() instanceof ItemWatzPellet pellet && !pellet.depleted;
+        return stack.getItem() instanceof ItemWatzPellet pellet && !pellet.depleted && ItemWatzPellet.stats(pellet) != null;
     }
 
     private static boolean isDepletedPellet(ItemStack stack) {
         return stack.getItem() instanceof ItemWatzPellet pellet && pellet.depleted;
     }
 
-    private static EnumWatzType typeOf(ItemStack stack) {
-        return ((ItemWatzPellet) stack.getItem()).type;
+    private static com.hbm.api.data.ReactorDataMaps.WatzPellet typeOf(ItemStack stack) {
+        return ItemWatzPellet.stats(stack.getItem());
     }
 
     /** True when another segment sits directly above, which means that one drives the column. */
@@ -432,7 +433,7 @@ public class TileEntityWatz extends TileEntityMachineBase
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (!isFreshPellet(stack)) return false;
         if (!isLocked) return true;
-        return locks[slot] != null && locks[slot] == typeOf(stack);
+        return locks[slot] != null && locks[slot] == ItemWatzPellet.freshOf(stack.getItem());
     }
 
     @Override public int[] getSlotsForFace(Direction side) { return ALL_SLOTS; }
@@ -462,7 +463,7 @@ public class TileEntityWatz extends TileEntityMachineBase
         } else {
             for (int i = 0; i < SLOTS; i++) {
                 ItemStack stack = inventory.getStackInSlot(i);
-                locks[i] = stack.getItem() instanceof ItemWatzPellet pellet ? pellet.type : null;
+                locks[i] = ItemWatzPellet.freshOf(stack.getItem());
             }
         }
         isLocked = !isLocked;
@@ -519,7 +520,7 @@ public class TileEntityWatz extends TileEntityMachineBase
         output.putDouble("lastFluxR", fluxLastReaction);
         output.putBoolean("isLocked", isLocked);
         for (int i = 0; i < SLOTS; i++) {
-            if (locks[i] != null) com.hbm.util.SavedIds.putEnum(output, "lock" + i, locks[i]); // by name, never an ordinal
+            if (locks[i] != null) output.putString("lock" + i, net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(locks[i]).toString());
         }
     }
 
@@ -532,7 +533,11 @@ public class TileEntityWatz extends TileEntityMachineBase
         fluxLastReaction = input.getDoubleOr("lastFluxR", 0D);
         isLocked = input.getBooleanOr("isLocked", false);
         for (int i = 0; i < SLOTS; i++) {
-            locks[i] = com.hbm.util.SavedIds.getEnumOrNull(input, "lock" + i, EnumWatzType.class);
+            // by item name; a save from before the pellet data map holds the 1.7 type name ("SCHRABIDIUM")
+            String lock = input.getStringOr("lock" + i, "");
+            if (!lock.isEmpty() && !lock.contains(":")) lock = "hbm:watz_pellet_" + lock.toLowerCase(java.util.Locale.ROOT);
+            net.minecraft.world.item.Item item = lock.isEmpty() ? null : com.hbm.api.data.ReactorDataMaps.itemOf(lock);
+            locks[i] = item instanceof ItemWatzPellet ? item : null;
         }
         resetSharedTanks();
     }

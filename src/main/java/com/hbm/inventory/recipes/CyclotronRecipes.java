@@ -2,26 +2,58 @@ package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
-import com.hbm.inventory.RecipesCommon.TagStack;
-import com.hbm.items.ModFuelItems;
-import com.hbm.items.ModItems;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.tags.TagKey;
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec.ItemOut;
+import com.hbm.inventory.recipes.loader.RecipeText;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.hbm.inventory.OreDictManager.*;
-
-/** The portable portion of the 1.12.2 cyclotron recipe table. */
+/**
+ * Cyclotron recipes: the datapack table {@code hbm:cyclotron}, one file per row in {@code data/hbm/recipe/cyclotron/}:
+ *
+ * <pre>
+ * {"type": "hbm:cyclotron", "particle": "hbm:part_lithium", "input": {"ingredient": "#c:dusts/lithium"},
+ *  "output": "hbm:powder_beryllium", "antimatter": 50, "order": 0}
+ * </pre>
+ *
+ * The first row (by {@code order}, then recipe id) whose particle and input match wins, as 1.7 iterated its list. The
+ * 42 rows were converted once from the former Java table (1.7 {@code CyclotronRecipes}; {@code #c:dusts/phosphorus}
+ * matches only another mod's phosphorus dust, as 1.7's {@code dustPhosphorus}) and are the source now.
+ */
 public final class CyclotronRecipes {
 
     private CyclotronRecipes() {}
 
-    public static final List<CyclotronRecipe> recipes = new ArrayList<>();
-    private static boolean initialized;
+    /** One row: particle item, target ingredient, product and the antimatter (mB) one conversion yields. */
+    public record Row(Item particle, AStack input, ItemOut output, int antimatter, int order) {}
+
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            dev.golem.core.world.ItemStacks.itemCodec().fieldOf("particle").forGetter(Row::particle),
+            GenericRecipeCodec.STACK.fieldOf("input").forGetter(Row::input),
+            GenericRecipeCodec.ITEM_OUT.fieldOf("output").forGetter(Row::output),
+            Codec.INT.fieldOf("antimatter").forGetter(Row::antimatter),
+            Codec.INT.optionalFieldOf("order", Integer.MAX_VALUE).forGetter(Row::order)
+    ).apply(i, Row::new));
+
+    public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("cyclotron", () -> CODEC);
+
+    /** The current recipes in lookup order (rebuilt after every reload or sync). */
+    public static volatile List<CyclotronRecipe> recipes = List.of();
+
+    static {
+        TABLE.changed.register(CyclotronRecipes::reindex);
+    }
+
+    /** Declares the table at mod construction. */
+    public static void declare() {}
 
     public static final class CyclotronRecipe {
         public final ComparableStack particle;
@@ -29,7 +61,7 @@ public final class CyclotronRecipes {
         public final ItemStack output;
         public final int antimatter;
 
-        private CyclotronRecipe(ComparableStack particle, AStack input, ItemStack output, int antimatter) {
+        CyclotronRecipe(ComparableStack particle, AStack input, ItemStack output, int antimatter) {
             this.particle = particle;
             this.input = input;
             this.output = output;
@@ -37,70 +69,22 @@ public final class CyclotronRecipes {
         }
     }
 
-    public static synchronized void register() {
-        if (initialized) return;
-        initialized = true;
+    private static void reindex() {
+        List<CyclotronRecipe> next = new ArrayList<>();
+        for (Row row : RecipeText.ordered(TABLE.rows(), Row::order)) {
+            next.add(new CyclotronRecipe(new ComparableStack(row.particle()), row.input(), row.output().stack(), row.antimatter()));
+        }
+        recipes = List.copyOf(next);
+    }
 
-        // Lithium particle, 50 mB antimatter per conversion.
-        add(ModItems.part_lithium.get(), LI.dust(), ModItems.powder_beryllium.get(), 50);
-        add(ModItems.part_lithium.get(), BE.dust(), ModItems.powder_boron.get(), 50);
-        add(ModItems.part_lithium.get(), B.dust(), ModFuelItems.powder_coal.get(), 50);
-        add(ModItems.part_lithium.get(), dustTag("quartz"), ModFuelItems.powder_fire.get(), 50);
-        // 1.7 OreDictStack("dustPhosphorus"): HBM 1.7 registers nothing under that name (its phosphorus dicts are
-        // dustRedPhosphorus / ingotWhitePhosphorus), so like 1.7 this matches only another mod's phosphorus dust.
-        add(ModItems.part_lithium.get(), dustTag("phosphorus"), ModItems.sulfur.get(), 50);
-        add(ModItems.part_lithium.get(), IRON.dust(), ModItems.powder_cobalt.get(), 50);
-        add(ModItems.part_lithium.get(), exact(ModItems.powder_strontium.get()), ModItems.powder_zirconium.get(), 50);
-        // 1.7 ingot_mercury is registered as nugget_mercury (its nugget_mercury field is nugget_mercury_tiny).
-        add(ModItems.part_lithium.get(), GOLD.dust(), ModItems.nugget_mercury.get(), 50);
-        add(ModItems.part_lithium.get(), PO210.dust(), ModItems.powder_astatine.get(), 50);
-        add(ModItems.part_lithium.get(), LA.dust(), ModItems.powder_cerium.get(), 50);
-        add(ModItems.part_lithium.get(), AC227.dust(), ModItems.powder_thorium.get(), 50);
-        add(ModItems.part_lithium.get(), U.dust(), ModItems.powder_neptunium.get(), 50);
-        add(ModItems.part_lithium.get(), NP237.dust(), ModItems.powder_plutonium.get(), 50);
-
-        // Beryllium particle, 25 mB antimatter per conversion.
-        add(ModItems.part_beryllium.get(), LI.dust(), ModItems.powder_boron.get(), 25);
-        add(ModItems.part_beryllium.get(), dustTag("quartz"), ModItems.sulfur.get(), 25);
-        add(ModItems.part_beryllium.get(), TI.dust(), ModItems.powder_iron.get(), 25);
-        add(ModItems.part_beryllium.get(), CO.dust(), ModItems.powder_copper.get(), 25);
-        add(ModItems.part_beryllium.get(), exact(ModItems.powder_strontium.get()), ModItems.powder_niobium.get(), 25);
-        add(ModItems.part_beryllium.get(), exact(ModItems.powder_cerium.get()), ModItems.powder_neodymium.get(), 25);
-        add(ModItems.part_beryllium.get(), TH232.dust(), ModItems.powder_uranium.get(), 25);
-
-        // Carbon particle, 10 mB antimatter per conversion.
-        add(ModItems.part_carbon.get(), B.dust(), ModItems.powder_aluminium.get(), 10);
-        add(ModItems.part_carbon.get(), S.dust(), ModItems.powder_titanium.get(), 10);
-        add(ModItems.part_carbon.get(), TI.dust(), ModItems.powder_cobalt.get(), 10);
-        add(ModItems.part_carbon.get(), exact(ModItems.powder_caesium.get()), ModItems.powder_lanthanium.get(), 10);
-        add(ModItems.part_carbon.get(), exact(ModItems.powder_neodymium.get()), ModItems.powder_gold.get(), 10);
-        add(ModItems.part_carbon.get(), exact(ModItems.nugget_mercury.get()), ModItems.powder_polonium.get(), 10);
-        add(ModItems.part_carbon.get(), PB.dust(), ModItems.powder_ra226.get(), 10);
-        add(ModItems.part_carbon.get(), exact(ModItems.powder_astatine.get()), ModItems.powder_actinium.get(), 10);
-
-        // Copper particle, 15 mB antimatter per conversion.
-        add(ModItems.part_copper.get(), BE.dust(), ModItems.powder_quartz.get(), 15);
-        add(ModItems.part_copper.get(), dustTag("coal"), ModItems.powder_bromine.get(), 15);
-        add(ModItems.part_copper.get(), TI.dust(), ModItems.powder_strontium.get(), 15);
-        add(ModItems.part_copper.get(), IRON.dust(), ModItems.powder_niobium.get(), 15);
-        add(ModItems.part_copper.get(), exact(ModItems.powder_bromine.get()), ModItems.powder_iodine.get(), 15);
-        add(ModItems.part_copper.get(), exact(ModItems.powder_strontium.get()), ModItems.powder_neodymium.get(), 15);
-        add(ModItems.part_copper.get(), exact(ModItems.powder_niobium.get()), ModItems.powder_caesium.get(), 15);
-        add(ModItems.part_copper.get(), exact(ModItems.powder_iodine.get()), ModItems.powder_polonium.get(), 15);
-        add(ModItems.part_copper.get(), exact(ModItems.powder_caesium.get()), ModItems.powder_actinium.get(), 15);
-        add(ModItems.part_copper.get(), GOLD.dust(), ModItems.powder_uranium.get(), 15);
-
-        // Plutonium particle, 100 mB antimatter per conversion.
-        add(ModItems.part_plutonium.get(), dustTag("phosphorus"), ModItems.powder_tennessine.get(), 100); // 1.7 dustPhosphorus, as above
-        add(ModItems.part_plutonium.get(), PU.dust(), ModItems.powder_tennessine.get(), 100);
-        add(ModItems.part_plutonium.get(), exact(ModItems.powder_tennessine.get()), ModItems.powder_australium.get(), 100);
-        add(ModItems.part_plutonium.get(), exact(ModItems.pellet_charged.get()), ModItems.nugget_schrabidium.get(), 1_000);
-
+    /** Ensures the rows are loaded (kept for the existing callers; the table fills itself from the datapack). */
+    public static void register() {
+        TABLE.rows();
     }
 
     public static CyclotronRecipe getRecipe(ItemStack particle, ItemStack input) {
         if (particle == null || particle.isEmpty() || input == null || input.isEmpty()) return null;
-        if (!initialized) register();
+        register();
         for (CyclotronRecipe recipe : recipes) {
             if (recipe.particle.matchesRecipe(particle, true) && recipe.input.matchesRecipe(input, true)) return recipe;
         }
@@ -114,27 +98,26 @@ public final class CyclotronRecipes {
 
     public static boolean isAnyParticle(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return false;
-        if (!initialized) register();
+        register();
         for (CyclotronRecipe recipe : recipes) if (recipe.particle.matchesRecipe(stack, true)) return true;
         return false;
     }
 
     public static boolean isAnyInput(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return false;
-        if (!initialized) register();
+        register();
         for (CyclotronRecipe recipe : recipes) if (recipe.input.matchesRecipe(stack, true)) return true;
         return false;
     }
 
-    private static void add(Item particle, AStack input, Item output, int antimatter) {
-        recipes.add(new CyclotronRecipe(new ComparableStack(particle), input, new ItemStack(output), antimatter));
+    /** The row form of a recipe (for converting a table and for tests). */
+    public static Row toRow(CyclotronRecipe recipe, int order) {
+        return new Row(recipe.particle.item, recipe.input, ItemOut.of(recipe.output), recipe.antimatter, order);
     }
 
-    private static ComparableStack exact(Item item) {
-        return new ComparableStack(item);
-    }
-
-    private static TagStack dustTag(String name) {
-        return new TagStack(TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", "dusts/" + name)));
+    /** One line per recipe, for comparing a converted table with its source. */
+    public static String describe(CyclotronRecipe recipe) {
+        return RecipeText.describe(recipe.particle) + " + " + RecipeText.describe(recipe.input) + " -> "
+                + RecipeText.describe(recipe.output) + " am=" + recipe.antimatter;
     }
 }

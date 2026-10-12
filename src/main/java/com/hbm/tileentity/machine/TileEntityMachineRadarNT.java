@@ -605,6 +605,8 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
     public static final List<Function<Scan, RadarEntry>> converters = new ArrayList<>();
     public static final List<Class<?>> classes = new ArrayList<>();
     public static final List<Entity> matchingEntities = new ArrayList<>();
+    private static boolean classesRegistered;
+    private static boolean convertersRegistered;
 
     /**
      * Collects every loaded entity whose class is registered in {@link #classes}. From this short list the
@@ -626,15 +628,19 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
     }
 
     /** Registers a class that, if an entity inherits it, is picked up by the system. */
-    public static void registerEntityClasses() {
-        if (!classes.isEmpty()) return;
+    public static synchronized void registerEntityClasses() {
+        // a flag, not isEmpty(): an addon class added first must not drop HBM's (an addon entity usually just
+        // implements IRadarDetectableNT, or adds its class and a converter to these public lists)
+        if (classesRegistered) return;
+        classesRegistered = true;
         classes.add(IRadarDetectableNT.class);
         classes.add(Player.class);
     }
 
     /** Registers the converters: detectables first, then players. */
-    public static void registerConverters() {
-        if (!converters.isEmpty()) return;
+    public static synchronized void registerConverters() {
+        if (convertersRegistered) return;
+        convertersRegistered = true;
         // IRadarDetectableNT
         converters.add(x -> {
             if (x.entity() instanceof IRadarDetectableNT detectable) {

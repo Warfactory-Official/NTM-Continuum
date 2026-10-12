@@ -314,6 +314,19 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
         level.addFreshEntity(new ItemEntity(level, targetX + 0.5, targetY + 0.5, targetZ + 0.5, stack));
     }
 
+    /** A listener on each item the laser vacuums up (ADDON-API-INVENTORY H-69). */
+    @FunctionalInterface
+    public interface Pickup {
+        /**
+         * {@code ALLOW}: the listener consumed the item (discarded it, filled the tank ...); {@code DENY}: skip 1.7's
+         * nullifier and ore-oil rules and buffer the item; {@code PASS}: next listener, then 1.7's rules.
+         */
+        dev.golem.core.hook.Verdict pickUp(TileEntityMachineMiningLaser laser, ItemEntity item, boolean nullifier);
+    }
+
+    /** First non-PASS answer wins; HBM registers none. NTM: Space: any fluid ore fills the tank, the nullifier by tag. */
+    public static final dev.golem.core.hook.Hook<Pickup> PICKUP = dev.golem.core.hook.Hook.notifying();
+
     /** Vacuums drops around the target into the buffer (old suckDrops), and sets nearby mobs on fire. */
     private void suckDrops() {
 
@@ -327,20 +340,30 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
 
         for (ItemEntity item : items) {
 
-            if (nullifier && ItemMachineUpgrade.isScrap(item.getItem())) {
-                item.discard();
-                continue;
+            dev.golem.core.hook.Verdict verdict = dev.golem.core.hook.Verdict.PASS;
+            for (Pickup listener : PICKUP) {
+                verdict = listener.pickUp(this, item, nullifier);
+                if (verdict != dev.golem.core.hook.Verdict.PASS) break;
             }
+            if (verdict == dev.golem.core.hook.Verdict.ALLOW) continue;
+            if (verdict == dev.golem.core.hook.Verdict.PASS) {
 
-            // Mined oil deposits become 500 mB of crude in the output tank instead of an item.
-            if (item.getItem().is(com.hbm.blocks.ModOilBlocks.ore_oil.get().asItem())) {
+                if (nullifier && ItemMachineUpgrade.isScrap(item.getItem())) {
+                    item.discard();
+                    continue;
+                }
 
-                tank.setTankType(Fluids.OIL); // just to be sure
+                // Mined oil deposits become 500 mB of crude in the output tank instead of an item.
+                if (item.getItem().is(com.hbm.blocks.ModOilBlocks.ore_oil.get().asItem())) {
 
-                tank.setFill(Math.min(tank.getFill() + 500, tank.getMaxFill()));
+                    tank.setTankType(Fluids.OIL); // just to be sure
 
-                item.discard();
-                continue;
+                    tank.setFill(Math.min(tank.getFill() + 500, tank.getMaxFill()));
+
+                    item.discard();
+                    continue;
+                }
+
             }
 
             ItemStack rest = InventoryUtil.tryAddItemToInventory(inventory, 9, 29, item.getItem().copy());

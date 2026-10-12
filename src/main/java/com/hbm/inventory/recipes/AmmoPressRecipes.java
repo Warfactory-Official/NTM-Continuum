@@ -1,262 +1,102 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.RecipesCommon.AStack;
-import com.hbm.inventory.RecipesCommon.ComparableStack;
-import com.hbm.inventory.RecipesCommon.MaterialStack;
-import com.hbm.inventory.RecipesCommon.TagStack;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.Fluids;
-import com.hbm.items.ItemEnums.EnumCasingType;
-import com.hbm.items.machine.ItemFluidTank;
-import dev.golem.core.Ids;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.ItemSpec;
+import com.hbm.inventory.recipes.loader.TableCodecs;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.world.RecipeTables;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
+import java.util.Optional;
+import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
-import static com.hbm.inventory.OreDictManager.ANY_PLASTIC;
-import static com.hbm.inventory.OreDictManager.CU;
-import static com.hbm.inventory.OreDictManager.FERRO;
-import static com.hbm.inventory.OreDictManager.PB;
-import static com.hbm.inventory.OreDictManager.STEEL;
-import static com.hbm.inventory.OreDictManager.WEAPONSTEEL;
-import static com.hbm.inventory.OreDictManager.W;
-import static com.hbm.inventory.OreDictManager.U238;
-import static com.hbm.inventory.OreDictManager.PU239;
-import static com.hbm.inventory.OreDictManager.P_RED;
-
-/** The complete positional Ammo Press catalogue from original-hbm, filtered only by real dependencies. */
+/**
+ * The positional Ammo Press catalogue: the datapack table {@code hbm:ammo_press}, one file per recipe in
+ * {@code data/hbm/recipe/ammo_press/} ({@code {"output": {"id", "count"}, "grid": [9 slots], "order": n}}; a slot is an
+ * ingredient or {@code ""} for a slot that must stay empty, row by row). The press selects a recipe by its recipe id
+ * ({@code hbm:ammo_press/m357_bp}) and saves that id, so a reload that adds or reorders rows never changes what a press
+ * makes. Converted once from the Java port of original-hbm's 89 positional rows (each row whose items exist; 1.7's
+ * {@code Fluids.X.getDict(amount)} slots are {@code fluid_container} ingredients). {@code order} keeps 1.7's list order
+ * for the selection screen.
+ */
 public final class AmmoPressRecipes {
 
     /** Number of positional rows in original-hbm's default Ammo Press table. */
     public static final int SOURCE_RECIPE_COUNT = 89;
 
-    private static final TagKey<Item> ANY_SMOKELESS = TagKey.create(Registries.ITEM,
-            Ids.of("c", "dusts/any_smokeless"));
-    private static final TagKey<Item> ANY_HIGH_EXPLOSIVE = TagKey.create(Registries.ITEM,
-            Ids.of("c", "ingots/any_highexplosive"));
-
-    public static final List<AmmoPressRecipe> recipes = new ArrayList<>();
-    private static boolean initialized;
-    private static final AStack MISSING = new AStack() {
-        @Override public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) { return false; }
-        @Override public List<ItemStack> getDisplayStacks() { return List.of(); }
-    };
-
     private AmmoPressRecipes() {}
 
-    public static List<AmmoPressRecipe> getRecipes() {
-        register();
-        return Collections.unmodifiableList(recipes);
+    public record Row(ItemSpec output, List<Optional<AStack>> grid, int order) {}
+
+    private static final Codec<List<Optional<AStack>>> GRID = TableCodecs.SLOT.listOf().comapFlatMap(
+            grid -> grid.size() == 9 ? DataResult.success(grid) : DataResult.error(() -> "an ammo press grid has 9 slots, not " + grid.size()),
+            grid -> grid);
+
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            ItemSpec.CODEC.fieldOf("output").forGetter(Row::output),
+            GRID.fieldOf("grid").forGetter(Row::grid),
+            Codec.INT.optionalFieldOf("order", TableCodecs.LAST).forGetter(Row::order)
+    ).apply(i, Row::new));
+
+    public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("ammo_press", () -> CODEC);
+
+    private static volatile List<AmmoPressRecipe> current = List.of();
+
+    /** The recipes in selection-screen order, always the current rows (read-only). */
+    public static final List<AmmoPressRecipe> recipes = TableCodecs.view(AmmoPressRecipes::index);
+
+    static {
+        TABLE.changed.register(AmmoPressRecipes::reindex);
     }
 
-    public static synchronized void register() {
-        if (initialized) return;
-        initialized = true;
+    /** Declares the table at mod construction. */
+    public static void declare() {}
 
-        AStack lead = PB.ingot();
-        AStack nugget = PB.nugget();
-        AStack flechette = PB.bolt();
-        AStack steel = STEEL.ingot();
-        AStack weaponSteel = WEAPONSTEEL.ingot();
-        AStack copper = CU.ingot();
-        AStack plastic = ANY_PLASTIC.ingot();
-        AStack uranium = U238.ingot();
-        AStack ferro = FERRO.ingot();
-        AStack niobium = com.hbm.inventory.OreDictManager.NB.ingot();
-        AStack smokeless = smokeless();
-        AStack highExplosive = new TagStack(ANY_HIGH_EXPLOSIVE);
-        AStack whitePhosphorus = exact("ingot_phosphorus");
-        AStack redPhosphorus = P_RED.dust();
-        AStack pipe = STEEL.pipe();
-        AStack smoke = exact(Items.GUNPOWDER);
-        AStack rocket = exact("rocket_fuel");
-        AStack cSmall = casing(EnumCasingType.SMALL);
-        AStack cBig = casing(EnumCasingType.LARGE);
-        AStack sSmall = casing(EnumCasingType.SMALL_STEEL);
-        AStack sBig = casing(EnumCasingType.LARGE_STEEL);
-        AStack bpShell = casing(EnumCasingType.SHOTSHELL);
-        AStack pShell = casing(EnumCasingType.BUCKSHOT);
-        AStack sShell = casing(EnumCasingType.BUCKSHOT_ADVANCED);
-
-        add(standard("m357_bp"), 16, null, count(lead, 2), null, null, smoke, null, null, cSmall, null);
-        add(standard("m357_sp"), 8, null, lead, null, null, smokeless, null, null, cSmall, null);
-        add(standard("m357_fmj"), 8, null, steel, null, null, smokeless, null, null, cSmall, null);
-        add(standard("m357_jhp"), 8, plastic, copper, null, null, smokeless, null, null, cSmall, null);
-        add(standard("m357_ap"), 8, null, weaponSteel, null, null, count(smokeless, 2), null, null, sSmall, null);
-        add(standard("m357_express"), 8, null, steel, null, null, count(smokeless, 3), null, null, cSmall, null);
-
-        add(standard("m44_bp"), 12, null, count(lead, 2), null, null, smoke, null, null, cSmall, null);
-        add(standard("m44_sp"), 6, null, lead, null, null, smokeless, null, null, cSmall, null);
-        add(standard("m44_fmj"), 6, null, steel, null, null, smokeless, null, null, cSmall, null);
-        add(standard("m44_jhp"), 6, plastic, copper, null, null, smokeless, null, null, cSmall, null);
-        add(standard("m44_ap"), 6, null, weaponSteel, null, null, count(smokeless, 2), null, null, sSmall, null);
-        add(standard("m44_express"), 6, null, steel, null, null, count(smokeless, 3), null, null, cSmall, null);
-
-        add(standard("p22_sp"), 24, null, lead, null, null, smokeless, null, null, cSmall, null);
-        add(standard("p22_fmj"), 24, null, steel, null, null, smokeless, null, null, cSmall, null);
-        add(standard("p22_jhp"), 24, plastic, copper, null, null, smokeless, null, null, cSmall, null);
-        add(standard("p22_ap"), 24, null, weaponSteel, null, null, count(smokeless, 2), null, null, sSmall, null);
-
-        add(standard("p9_sp"), 12, null, lead, null, null, smokeless, null, null, cSmall, null);
-        add(standard("p9_fmj"), 12, null, steel, null, null, smokeless, null, null, cSmall, null);
-        add(standard("p9_jhp"), 12, plastic, copper, null, null, smokeless, null, null, cSmall, null);
-        add(standard("p9_ap"), 12, null, weaponSteel, null, null, count(smokeless, 2), null, null, sSmall, null);
-
-        add(standard("p45_sp"), 8, null, lead, null, null, smokeless, null, null, cSmall, null);
-        add(standard("p45_fmj"), 8, null, steel, null, null, smokeless, null, null, cSmall, null);
-        add(standard("p45_jhp"), 8, plastic, copper, null, null, smokeless, null, null, cSmall, null);
-        add(standard("p45_ap"), 8, null, weaponSteel, null, null, count(smokeless, 2), null, null, sSmall, null);
-        add(standard("p45_du"), 8, null, uranium, null, null, count(smokeless, 2), null, null, sSmall, null);
-
-        add(standard("r556_sp"), 16, null, count(lead, 2), null, null, count(smokeless, 2), null, null, count(cSmall, 2), null);
-        add(standard("r556_fmj"), 16, null, count(steel, 2), null, null, count(smokeless, 2), null, null, count(cSmall, 2), null);
-        add(standard("r556_jhp"), 16, plastic, count(copper, 2), null, null, count(smokeless, 2), null, null, count(cSmall, 2), null);
-        add(standard("r556_ap"), 16, null, count(weaponSteel, 2), null, null, count(smokeless, 4), null, null, count(sSmall, 2), null);
-
-        add(standard("r762_sp"), 12, null, count(lead, 2), null, null, count(smokeless, 2), null, null, count(cSmall, 2), null);
-        add(standard("r762_fmj"), 12, null, count(steel, 2), null, null, count(smokeless, 2), null, null, count(cSmall, 2), null);
-        add(standard("r762_jhp"), 12, plastic, count(copper, 2), null, null, count(smokeless, 2), null, null, count(cSmall, 2), null);
-        add(standard("r762_ap"), 12, null, count(weaponSteel, 2), null, null, count(smokeless, 4), null, null, count(sSmall, 2), null);
-        add(standard("r762_du"), 12, null, count(uranium, 2), null, null, count(smokeless, 4), null, null, count(sSmall, 2), null);
-        add(standard("r762_he"), 12, highExplosive, ferro, null, null, count(smokeless, 4), null, null, count(sSmall, 2), null);
-
-        add(standard("bmg50_sp"), 12, null, count(lead, 2), null, null, count(smokeless, 3), null, null, cBig, null);
-        add(standard("bmg50_fmj"), 12, null, count(steel, 2), null, null, count(smokeless, 3), null, null, cBig, null);
-        add(standard("bmg50_jhp"), 12, plastic, count(copper, 2), null, null, count(smokeless, 3), null, null, cBig, null);
-        add(standard("bmg50_ap"), 12, null, count(weaponSteel, 2), null, null, count(smokeless, 6), null, null, sBig, null);
-        add(standard("bmg50_du"), 12, null, count(uranium, 2), null, null, count(smokeless, 6), null, null, sBig, null);
-        add(standard("bmg50_he"), 12, highExplosive, ferro, null, null, count(smokeless, 6), null, null, sBig, null);
-
-        add(standard("g12_bp"), 6, null, count(nugget, 6), null, null, smoke, null, null, bpShell, null);
-        add(standard("g12_bp_magnum"), 6, null, count(nugget, 8), null, null, smoke, null, null, bpShell, null);
-        add(standard("g12_bp_slug"), 6, null, lead, null, null, smoke, null, null, bpShell, null);
-        add(standard("g12"), 6, null, count(nugget, 6), null, null, smokeless, null, null, pShell, null);
-        add(standard("g12_slug"), 6, null, lead, null, null, smokeless, null, null, pShell, null);
-        add(standard("g12_flechette"), 6, null, count(flechette, 12), null, null, smokeless, null, null, pShell, null);
-        add(standard("g12_magnum"), 6, null, count(nugget, 8), null, null, smokeless, null, null, sShell, null);
-        add(standard("g12_explosive"), 6, null, highExplosive, null, null, smokeless, null, null, sShell, null);
-        add(standard("g12_phosphorus"), 6, null, whitePhosphorus, null, null, smokeless, null, null, sShell, null);
-
-        add(standard("g10"), 4, null, count(nugget, 8), null, null, count(smokeless, 2), null, null, sShell, null);
-        add(standard("g10_shrapnel"), 4, plastic, count(nugget, 8), null, null, count(smokeless, 2), null, null, sShell, null);
-        add(standard("g10_du"), 4, null, uranium, null, null, count(smokeless, 2), null, null, sShell, null);
-        add(standard("g10_slug"), 4, null, lead, null, null, count(smokeless, 2), null, null, sShell, null);
-        add(standard("g10_explosive"), 4, highExplosive, ferro, null, null, count(smokeless, 2), null, null, sShell, null);
-
-        add(standard("g26_flare"), 4, null, redPhosphorus, null, null, smokeless, null, null, cBig, null);
-
-        add(standard("g40_he"), 4, null, exact("ball_dynamite"), null, null, smokeless, null, null, cBig, null);
-        add(standard("g40_heat"), 4, CU.plate(), highExplosive, null, null, smokeless, null, null, cBig, null);
-        add(standard("g40_demo"), 4, null, count(highExplosive, 2), null, null, smokeless, null, null, cBig, null);
-        add(standard("g40_inc"), 4, fluid("DIESEL", 1000), exact("ball_dynamite"), null, null, smokeless, null, null, cBig, null);
-        add(standard("g40_phosphorus"), 4, whitePhosphorus, highExplosive, null, null, smokeless, null, null, cBig, null);
-
-        add(standard("rocket_he"), 2, null, exact("ball_dynamite"), null, null, cBig, null, null, count(smokeless, 3), null);
-        add(standard("rocket_he"), 2, null, exact("ball_dynamite"), null, null, cBig, null, null, rocket, null);
-        add(standard("rocket_heat"), 2, CU.plate(), highExplosive, null, null, cBig, null, null, count(smokeless, 3), null);
-        add(standard("rocket_heat"), 2, CU.plate(), highExplosive, null, null, cBig, null, null, rocket, null);
-        add(standard("rocket_demo"), 2, null, count(highExplosive, 2), null, null, cBig, null, null, count(smokeless, 3), null);
-        add(standard("rocket_demo"), 2, null, count(highExplosive, 2), null, null, cBig, null, null, rocket, null);
-        add(standard("rocket_inc"), 2, fluid("DIESEL", 1000), exact("ball_dynamite"), null, null, cBig, null, null, count(smokeless, 3), null);
-        add(standard("rocket_inc"), 2, fluid("DIESEL", 1000), exact("ball_dynamite"), null, null, cBig, null, null, rocket, null);
-        add(standard("rocket_phosphorus"), 2, whitePhosphorus, highExplosive, null, null, cBig, null, null, count(smokeless, 3), null);
-        add(standard("rocket_phosphorus"), 2, whitePhosphorus, highExplosive, null, null, cBig, null, null, rocket, null);
-
-        AStack steelPlate = STEEL.plate();
-        AStack napalm = exact("canister_napalm");
-        AStack gas = fluid("GAS", 1000);
-        AStack balefire = fluid("BALEFIRE", 1000);
-        add(standard("flame_diesel"), 1, null, steelPlate, null, null, fluid("DIESEL", 1000), null, null, steelPlate, null);
-        add(standard("flame_napalm"), 1, null, steelPlate, null, null, napalm, null, null, steelPlate, null);
-        add(standard("flame_gas"), 1, null, steelPlate, null, null, gas, null, null, steelPlate, null);
-        add(standard("flame_balefire"), 1, null, steelPlate, null, null, balefire, null, null, steelPlate, null);
-
-        add(standard("capacitor"), 4, null, plastic, null, null, count(silicon(), 4), null, null, plastic, null);
-        add(standard("capacitor_overcharge"), 4, null, plastic, null, null, count(silicon(), 6), null, null, plastic, null);
-        add(standard("capacitor_ir"), 4, null, plastic, null, null, niobium, null, null, plastic, null);
-
-        add(standard("tau_uranium"), 16, null, PB.plate(), null, null, uranium, null, null, PB.plate(), null);
-        add(standard("coil_tungsten"), 4, null, null, null, null, tungsten(), null, null, null, null);
-        add(standard("coil_ferrouranium"), 4, null, null, null, null, ferro, null, null, null, null);
-
-        AStack shell = exact("assembly_nuke");
-        AStack tatb = exact("ball_tatb");
-        AStack plutonium = PU239.nugget();
-        add(standard("nuke_standard"), 1, null, plutonium, null, null, shell, null, null, null, null);
-        add(standard("nuke_demo"), 1, null, count(plutonium, 2), null, null, shell, null, null, null, null);
-        add(standard("nuke_high"), 1, null, count(plutonium, 4), null, null, shell, null, null, null, null);
-        add(standard("nuke_tots"), 1, null, count(plutonium, 2), null, null, count(tatb, 2), null, null, count(steelPlate, 4), null);
-        add(standard("nuke_hive"), 1, null, count(highExplosive, 8), null, null, count(sBig, 2), null, null, count(steelPlate, 4), null);
-        add(standard("nuke_balefire"), 1, null, exact("egg_balefire_shard"), null, null, shell, null, null, null, null);
-
-        add(standard("ct_hook"), 16, null, steel, null, null, pipe, null, null, smokeless, null);
-        add(standard("ct_mortar"), 4, null, count(highExplosive, 4), null, null, pipe, null, null, smokeless, null);
-    }
-
-    private static String standard(String suffix) {
-        return "ammo_standard_" + suffix;
-    }
-
-    private static AStack exact(Item item) {
-        return item == null ? MISSING : new ComparableStack(item);
-    }
-
-    private static AStack exact(String id) {
-        return exact(BuiltInRegistries.ITEM.getOptional(Ids.of("hbm", id)).orElse(null));
-    }
-
-    private static AStack casing(EnumCasingType type) {
-        return exact("casing_" + type.name().toLowerCase(Locale.ROOT));
-    }
-
-    private static AStack smokeless() {
-        return new TagStack(ANY_SMOKELESS);
-    }
-
-    /** 1.7 {@code new OreDictStack(Fluids.X.getDict(amount))}: any full container of that fluid and amount. */
-    private static AStack fluid(String name, int amount) {
-        if (Fluids.fromName(name) == Fluids.NONE) return MISSING;
-        return new com.hbm.inventory.FluidContainerStack(name, amount);
-    }
-
-    private static AStack silicon() {
-        return com.hbm.inventory.OreDictManager.SI.billet();
-    }
-
-    private static AStack tungsten() {
-        return W.ingot();
-    }
-
-    private static AStack count(AStack stack, int amount) {
-        if (stack instanceof TagStack tag) return new TagStack(tag.tag, amount);
-        if (stack instanceof ComparableStack comparable) return new ComparableStack(comparable.item, amount);
-        if (stack instanceof MaterialStack material) {
-            return new MaterialStack(material.material, material.shape, amount);
+    private static void reindex() {
+        List<AmmoPressRecipe> next = new ArrayList<>();
+        for (RecipeTables.Entry<Row> entry : TableCodecs.ordered(TABLE.entries(), entry -> entry.value().order())) {
+            AStack[] input = new AStack[9];
+            for (int slot = 0; slot < 9; slot++) input[slot] = entry.value().grid().get(slot).orElse(null);
+            next.add(new AmmoPressRecipe(entry.id(), entry.value().output().stack(), input));
         }
-        throw new IllegalArgumentException("unsupported Ammo Press ingredient: " + stack.getClass());
+        current = List.copyOf(next);
     }
 
-    private static void add(String outputId, int count, AStack... input) {
-        if (input.length != 9) throw new IllegalArgumentException("Ammo Press recipes require exactly nine inputs");
-        Item output = BuiltInRegistries.ITEM.getOptional(Ids.of("hbm", outputId)).orElse(null);
-        if (output == null) return;
-        for (AStack ingredient : input) if (ingredient == MISSING) return;
-        recipes.add(new AmmoPressRecipe(new ItemStack(output, count), input));
+    private static List<AmmoPressRecipe> index() {
+        if (current.isEmpty()) TABLE.rows();
+        return current;
+    }
+
+    public static List<AmmoPressRecipe> getRecipes() {
+        return Collections.unmodifiableList(index());
+    }
+
+    /** Loads the rows if nothing has yet (kept for the callers of the former Java table). */
+    public static void register() {
+        index();
+    }
+
+    /** The recipe with this recipe id, or null (none selected, or a row a reload removed). */
+    public static @Nullable AmmoPressRecipe byId(String id) {
+        if (id == null || id.isEmpty()) return null;
+        for (AmmoPressRecipe recipe : index()) if (recipe.id.equals(id)) return recipe;
+        return null;
     }
 
     public static final class AmmoPressRecipe {
+        /** The recipe id ({@code hbm:ammo_press/m357_bp}), how a press names its selection. */
+        public final String id;
         public final ItemStack output;
         public final AStack[] input;
 
-        private AmmoPressRecipe(ItemStack output, AStack[] input) {
+        private AmmoPressRecipe(String id, ItemStack output, AStack[] input) {
+            this.id = id;
             this.output = output;
             this.input = input;
         }

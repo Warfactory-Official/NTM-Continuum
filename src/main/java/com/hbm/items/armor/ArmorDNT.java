@@ -82,7 +82,9 @@ public class ArmorDNT extends ArmorFSBPowered {
             if (TickPhase.every(player, 4)) playThrustSound(level, player);
             if (!level.isClientSide()) JetpackHandler.sendExhaust(player, JetpackHandler.EXHAUST_DNS);
         }
-        if (player.isShiftKeyDown() && !player.onGround()) {
+        // hbm-space: in free fall sneaking only descends with the backpack on (com.hbm.api.environment.Environment)
+        if (player.isShiftKeyDown() && !player.onGround()
+                && (com.hbm.api.environment.Environment.gravity(player) > 0D || JetpackHandler.isBackpackEnabled(player))) {
             player.setDeltaMovement(player.getDeltaMovement().add(0, -0.1D, 0));
         }
     }

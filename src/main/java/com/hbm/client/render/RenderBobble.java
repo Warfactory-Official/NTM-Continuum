@@ -169,9 +169,12 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
 
     private void renderGuy(PoseStack pose, SubmitSink sink, Identifier skin, State state, int light) {
         int type = state.type;
-        BobbleFigure.Pose figure = BobbleFigure.pose(type);
-        String name = BobbleFigure.NAMES[type];
-        String suffix = BobbleFigure.suffix(type);
+        guy(pose, sink, skin, BobbleFigure.pose(type), BobbleFigure.NAMES[type], BobbleFigure.suffix(type), state.time, light, state);
+    }
+
+    /** 1.7 {@code renderGuy} for one figure: {@code name} picks the per-person extras, {@code state} holds a held prop. */
+    private void guy(PoseStack pose, SubmitSink sink, Identifier skin, BobbleFigure.Pose figure, String name, String suffix,
+                     long time, int light, @org.jspecify.annotations.Nullable State state) {
         RenderType culled = CompatRenderTypes.entityCutoutCull(skin);
         RenderType open = CompatRenderTypes.entityCutoutNoCull(skin);
 
@@ -200,8 +203,8 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
         double[] head = figure.head();
         pose.pushPose();
         pose.translate(0D, 1.75D, 0D);
-        pose.mulPose(Axis.XP.rotationDegrees((float) (Math.sin(state.time * speed) * amplitude)));
-        pose.mulPose(Axis.ZP.rotationDegrees((float) (Math.sin(state.time * speed + (Math.PI * 0.5)) * amplitude)));
+        pose.mulPose(Axis.XP.rotationDegrees((float) (Math.sin(time * speed) * amplitude)));
+        pose.mulPose(Axis.ZP.rotationDegrees((float) (Math.sin(time * speed + (Math.PI * 0.5)) * amplitude)));
         pose.mulPose(Axis.XP.rotationDegrees((float) head[0]));
         pose.mulPose(Axis.YP.rotationDegrees((float) head[1]));
         pose.mulPose(Axis.ZP.rotationDegrees((float) head[2]));
@@ -211,7 +214,7 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
         if (name.equals("VT")) part(pose, sink, bobble, open, "Horn", light);
         if (name.equals("PEEP")) part(pose, sink, bobble, open, "PeepHat", light);
 
-        if (name.equals("VAER")) {
+        if (name.equals("VAER") && state != null) {
             pose.translate(0.25D, 1.9D, 0.075D);
             pose.mulPose(Axis.ZP.rotationDegrees(-60F));
             pose.scale(0.5F, 0.5F, 0.5F);
@@ -353,14 +356,37 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
 
     private void renderSocket(PoseStack pose, SubmitSink sink, State state, int light) {
         BobbleType type = BobbleType.of(state.type);
+        label(pose, sink, type.label, type == BobbleType.VT ? 0xFFFF0000 : 0xFFFFFFFF, light);
+    }
+
+    /** 1.7 {@code renderSocket}'s engraving: {@code text} in the socket's front. */
+    private void label(PoseStack pose, SubmitSink sink, String text, int color, int light) {
         float f3 = 0.01F;
         pose.translate(0.63D, 0.175F, 0.0D);
         pose.scale(f3, -f3, f3);
-        pose.translate(0D, 0D, font.width(type.label) * 0.5D);
+        pose.translate(0D, 0D, font.width(text) * 0.5D);
         pose.mulPose(Axis.YP.rotationDegrees(90F));
         pose.translate(0F, 1F, 0F);
-        sink.submitText(pose, font, 0F, 0F, Component.literal(type.label).getVisualOrderText(), false,
-                Font.DisplayMode.POLYGON_OFFSET, light, type == BobbleType.VT ? 0xFFFF0000 : 0xFFFFFFFF, 0);
+        sink.submitText(pose, font, 0F, 0F, Component.literal(text).getVisualOrderText(), false,
+                Font.DisplayMode.POLYGON_OFFSET, light, color, 0);
+    }
+
+    /**
+     * An addon's bobblehead drawn with HBM's figure (ADDON-API-INVENTORY C-24): the socket, then (when {@code guy}) the
+     * player figure in {@code skin} at rest - 1.7 {@code renderGuy} with no per-person pose, its head bobbing on
+     * {@code time} (wall-clock milliseconds), the layered skin parts unless {@code layers} is false - and {@code label}
+     * engraved in white. Without {@code guy} the caller draws its own figure. The pose stack is the figure's space, as
+     * HBM's renderer sets it up (block centre, quarter scale, turned {@code -(22.5 * rotation + 90)}).
+     */
+    public static void renderFigure(PoseStack pose, SubmitSink sink, Identifier skin, boolean layers, boolean guy, String label,
+                                    long time, int light) {
+        if (itemRenderer == null) itemRenderer = new RenderBobble();
+        RenderBobble renderer = itemRenderer;
+        part(pose, sink, renderer.bobble, CompatRenderTypes.entityCutoutCull(SOCKET), "Socket", light);
+        if (guy) renderer.guy(pose, sink, skin, BobbleFigure.pose(0), "", layers ? "" : "17", time, light, null);
+        pose.pushPose();
+        renderer.label(pose, sink, label, 0xFFFFFFFF, light);
+        pose.popPose();
     }
 
     private static void part(PoseStack pose, SubmitSink sink, WavefrontObj model, RenderType type, String name, int light) {

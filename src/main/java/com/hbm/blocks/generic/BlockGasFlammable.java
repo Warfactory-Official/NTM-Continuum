@@ -48,6 +48,13 @@ public class BlockGasFlammable extends dev.golem.core.world.CompatBlock {
         super(properties);
     }
 
+    /** 1.7 {@code BlockGasBase.randomDisplayTick} (1.7's flammable gas is a BlockGasBase): the ash-glasses cloud. */
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        BlockGasBase.ashGlassesCloud(level, pos, random, BlockGasBase.FLAMMABLE_COLOR[0], BlockGasBase.FLAMMABLE_COLOR[1],
+                BlockGasBase.FLAMMABLE_COLOR[2]);
+    }
+
     // --- drops: a gas cell yields nothing, ever ---------------------------------------------------
 
     @Override

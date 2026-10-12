@@ -1,6 +1,6 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.registration.BlockTag;
+import dev.golem.core.registry.BlockTag;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -10,7 +10,7 @@ import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.Compat;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.SoundType;
-import com.hbm.registration.Loot;
+import dev.golem.core.registry.Loot;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 

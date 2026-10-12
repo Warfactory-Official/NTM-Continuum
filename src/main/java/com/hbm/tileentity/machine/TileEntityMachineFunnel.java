@@ -28,7 +28,7 @@ import java.util.List;
  * Faithful port of old {@code TileEntityMachineFunnel}. Each input slot automatically crafts a full 3x3
  * batch, or a 2x2 batch when configured for it, and places the result in its matching output slot.
  */
-public final class TileEntityMachineFunnel extends TileEntityMachineBase
+public class TileEntityMachineFunnel extends TileEntityMachineBase
         implements MenuProvider, WorldlyContainer {
 
     public static final int MODE_ALL = 0;

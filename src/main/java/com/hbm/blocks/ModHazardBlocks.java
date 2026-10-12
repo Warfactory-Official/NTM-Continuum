@@ -10,9 +10,9 @@ import com.hbm.blocks.generic.BlockHazard.DisplayEffect;
 import com.hbm.blocks.generic.BlockRadResistant;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
-import com.hbm.registration.BlockTag;
-import com.hbm.registration.Loot;
-import com.hbm.registration.Preset;
+import dev.golem.core.registry.BlockTag;
+import dev.golem.core.registry.Loot;
+import dev.golem.core.registry.Preset;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import com.hbm.hazard.HazardSystem;
@@ -67,6 +67,8 @@ public final class ModHazardBlocks {
     public static final RegistryObject<BlockHazard> block_neptunium = hazard("block_neptunium").transform(STORAGE);
     public static final RegistryObject<BlockHazard> block_polonium = hazard("block_polonium").transform(STORAGE);
     public static final RegistryObject<BlockHazard> block_ra226 = hazard("block_ra226").transform(STORAGE);
+    // 1.7 block_actinium = new BlockHazard().makeBeaconable() (resistance 10); beaconable through minecraft:beacon_base_blocks
+    public static final RegistryObject<BlockHazard> block_actinium = hazard("block_actinium").transform(STORAGE);
     public static final RegistryObject<BlockHazard> block_au198 = hazard("block_au198")
             .transform(Presets.cubeAll("minecraft:block/gold_block").viaItemModel()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockHazard> block_schrabidium = hazard("block_schrabidium", 300F).transform(STORAGE);
@@ -133,17 +135,8 @@ public final class ModHazardBlocks {
         REG.blockItem(block, p -> Compat.blockDescription(p)).tab(HbmTab.BLOCKS);
     }
 
-    /** Assigns each hazard block its radiation from the block‑item's configured RADIATION hazard (must run
-     * after HazardRegistry.registerItems). Corium's extra area pulse (rad3d) is set here directly. */
-    public static void initHazards() {
-        for (RegistryObject<? extends Block> ro : HAZARD_BLOCKS) {
-            Block b = ro.get();
-            if (b instanceof BlockHazard hazard) {
-                hazard.addRadiation((float) HazardSystem.getRawRadsFromBlock(b));
-            }
-        }
-        block_corium.get().addRad3d(150000F);
-    }
+    // Each hazard block's radiation is the hbm:radiation_emission block data map, read by BlockHazard at use time (1.7
+    // copied the block item's RADIATION hazard into the block once, at start-up; corium's 150,000 area pulse is there too).
 
     public static void init() {}
 }

@@ -89,7 +89,7 @@ public class SatelliteHorizons extends Satellite {
         if (used) return;
 
         used = true;
-        SatelliteSavedData.get(level).setDirty();
+        SatelliteSavedData.get(level, new net.minecraft.core.BlockPos(x, 0, z)).setDirty();
 
         EntityTom tom = new EntityTom(ModNtmEntities.TOM_THE_MOONSTONE.get(), level);
         tom.setPos(x + 0.5D, 600, z + 0.5D);

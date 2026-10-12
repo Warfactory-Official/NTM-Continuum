@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /** Precision assembler tile entity, ported from the old four-striker machine. */
-public final class TileEntityMachinePrecAss extends TileEntityMachineBase implements MenuProvider,
+public class TileEntityMachinePrecAss extends TileEntityMachineBase implements MenuProvider,
         IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IControlReceiver, WorldlyContainer, IUpgradeInfoProvider {
 
     private static final int[] IO_SLOTS = {

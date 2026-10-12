@@ -25,6 +25,18 @@ public class ItemBatteryPack extends CompatItem implements IBatteryItem {
 
     public final EnumBatteryPack pack;
 
+    /** The pack values: the {@code hbm:battery_pack} entry, else HBM's enum constant. */
+    public com.hbm.api.data.ReactorDataMaps.BatteryPack stats() {
+        com.hbm.api.data.ReactorDataMaps.BatteryPack data = com.hbm.api.data.ReactorDataMaps.BATTERY_PACK.get(this);
+        return data != null ? data : codeStats();
+    }
+
+    /** The code defaults (constructor or enum values) that the data map entry overrides. */
+    public com.hbm.api.data.ReactorDataMaps.BatteryPack codeStats() {
+        return new com.hbm.api.data.ReactorDataMaps.BatteryPack(pack.capacity, pack.chargeRate,
+                pack.dischargeRate, pack.isCapacitor(), pack.texture.toString());
+    }
+
     public ItemBatteryPack(Properties properties, EnumBatteryPack pack) {
         super(properties);
         this.pack = pack;
@@ -46,7 +58,7 @@ public class ItemBatteryPack extends CompatItem implements IBatteryItem {
 
     @Override
     public void setCharge(ItemStack stack, long i) {
-        long clamped = Math.max(0L, Math.min(i, pack.capacity));
+        long clamped = Math.max(0L, Math.min(i, stats().capacity()));
         ModDataComponents.batteryCharge(stack, clamped);
     }
 
@@ -57,17 +69,17 @@ public class ItemBatteryPack extends CompatItem implements IBatteryItem {
 
     @Override
     public long getMaxCharge(ItemStack stack) {
-        return pack.capacity;
+        return stats().capacity();
     }
 
     @Override
     public long getChargeRate(ItemStack stack) {
-        return pack.chargeRate;
+        return stats().chargeRate();
     }
 
     @Override
     public long getDischargeRate(ItemStack stack) {
-        return pack.dischargeRate;
+        return stats().dischargeRate();
     }
 
     // --- durability bar shows the fill level ---
@@ -91,10 +103,11 @@ public class ItemBatteryPack extends CompatItem implements IBatteryItem {
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          java.util.List<Component> tooltip, TooltipFlag flag) {
         long c = getCharge(stack);
-        tooltip.add(Component.literal("Energy stored: " + Library.getShortNumber(c) + "/" + Library.getShortNumber(pack.capacity)
-                + "HE (" + (pack.capacity <= 0 ? 0 : c * 100 / pack.capacity) + "%)").withStyle(ChatFormatting.GREEN));
-        tooltip.add(Component.literal("Charge rate: " + Library.getShortNumber(pack.chargeRate) + "HE/t").withStyle(ChatFormatting.YELLOW));
-        tooltip.add(Component.literal("Discharge rate: " + Library.getShortNumber(pack.dischargeRate) + "HE/t").withStyle(ChatFormatting.YELLOW));
+        var pack = stats();
+        tooltip.add(Component.literal("Energy stored: " + Library.getShortNumber(c) + "/" + Library.getShortNumber(pack.capacity())
+                + "HE (" + (pack.capacity() <= 0 ? 0 : c * 100 / pack.capacity()) + "%)").withStyle(ChatFormatting.GREEN));
+        tooltip.add(Component.literal("Charge rate: " + Library.getShortNumber(pack.chargeRate()) + "HE/t").withStyle(ChatFormatting.YELLOW));
+        tooltip.add(Component.literal("Discharge rate: " + Library.getShortNumber(pack.dischargeRate()) + "HE/t").withStyle(ChatFormatting.YELLOW));
     }
 
     /**

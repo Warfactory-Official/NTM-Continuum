@@ -26,9 +26,10 @@ public final class MultiblockHandlerXR {
                     if (a == placed.getX() && b == placed.getY() && c == placed.getZ()) continue;
                     if (!level.getBlockState(pos.set(a, b, c)).canBeReplaced()) return false;
                 }
-        AABB footprint = new AABB(ox - rot[4], oy - rot[1], oz - rot[2],
-                ox + rot[5] + 1, oy + rot[0] + 1, oz + rot[3] + 1);
-        return level.getEntitiesOfClass(net.minecraft.world.entity.player.Player.class, footprint).isEmpty();
+        // 1.7 checked blocks only: a player standing in the footprint does not stop the placement (vanilla already
+        // keeps the clicked cell clear of entities). The machine is built around them, as in 1.7; one with
+        // walkOutAfterPlacing (hbm-space's internalPlayers) lets them walk out through its cells.
+        return true;
     }
 
     /**

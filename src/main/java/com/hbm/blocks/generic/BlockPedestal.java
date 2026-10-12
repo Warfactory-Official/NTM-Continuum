@@ -128,31 +128,13 @@ public class BlockPedestal extends CompatBlock implements TickingBlock {
         float angle = Skies.celestialAngle(level, pos);
         int moon = Skies.moonPhase(level, pos);
 
-        outer:
-        for (PedestalRecipe recipe : PedestalRecipes.recipes) {
+        PedestalExtraCondition.Site site = new PedestalExtraCondition.Site(level, pos, angle, moon, nearbyPlayers);
 
-            /// EXTRA CONDITIONS ///
-            if (recipe.extra == PedestalExtraCondition.FULL_MOON) {
-                if (angle < 0.35 || angle > 0.65) continue;
-                if (moon != 0) continue;
-            }
-            if (recipe.extra == PedestalExtraCondition.NEW_MOON) {
-                if (angle < 0.35 || angle > 0.65) continue;
-                if (moon != 4) continue;
-            }
-            if (recipe.extra == PedestalExtraCondition.SUN) {
-                if (angle > 0.15 && angle < 0.85) continue;
-            }
-            if (recipe.extra == PedestalExtraCondition.BAD_KARMA) {
-                boolean matches = false;
-                for (Player player : nearbyPlayers) if (HbmPlayerProps.getReputation(player) <= -10) { matches = true; break; }
-                if (!matches) continue;
-            }
-            if (recipe.extra == PedestalExtraCondition.GOOD_KARMA) {
-                boolean matches = false;
-                for (Player player : nearbyPlayers) if (HbmPlayerProps.getReputation(player) >= 10) { matches = true; break; }
-                if (!matches) continue;
-            }
+        outer:
+        for (PedestalRecipe recipe : PedestalRecipes.recipes()) {
+
+            /// EXTRA CONDITIONS /// (1.7's five tests are HBM's entries of the condition registry)
+            if (!recipe.extra.holds(site)) continue;
 
             /// CHECK ITEMS ///
             for (int i = 0; i < 9; i++) {

@@ -109,46 +109,8 @@ public final class ModGearItems {
                 .mapToObj(ModGearItems::gear).toList());
     }
 
-    /** Wires the radiation-resistance coefficients + full-set membership (post-registration). */
-    public static void registerHazards() {
-        registerSet(HazmatRegistry.hazYellow, hazmat_helmet, hazmat_plate, hazmat_legs, hazmat_boots);
-        registerSet(HazmatRegistry.hazRed, hazmat_helmet_red, hazmat_plate_red, hazmat_legs_red, hazmat_boots_red);
-        registerSet(HazmatRegistry.hazGray, hazmat_helmet_grey, hazmat_plate_grey, hazmat_legs_grey, hazmat_boots_grey);
-        ArmorRegistry.registerHazard(gas_mask_filter_rag.get(), HazardClass.PARTICLE_COARSE);
-        ArmorRegistry.registerHazard(gas_mask_filter_piss.get(), HazardClass.PARTICLE_COARSE, HazardClass.GAS_LUNG);
-        ArmorRegistry.registerHazard(gas_mask_filter_mono.get(), HazardClass.PARTICLE_COARSE, HazardClass.GAS_MONOXIDE);
-        ArmorRegistry.registerHazard(gas_mask_filter.get(), HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE,
-                HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.BACTERIA);
-        ArmorRegistry.registerHazard(gas_mask_filter_combo.get(), HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE,
-                HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.BACTERIA, HazardClass.GAS_MONOXIDE);
-        ArmorRegistry.registerHazard(gas_mask.get(), HazardClass.SAND, HazardClass.LIGHT);
-        ArmorRegistry.registerHazard(gas_mask_m65.get(), HazardClass.SAND);
-        // 1.7 ArmorUtil.register: the three hazmat hoods keep sand out (and nothing else without a filter)
-        ArmorRegistry.registerHazard(hazmat_helmet.get(), HazardClass.SAND);
-        ArmorRegistry.registerHazard(hazmat_helmet_red.get(), HazardClass.SAND);
-        ArmorRegistry.registerHazard(hazmat_helmet_grey.get(), HazardClass.SAND);
-
-        // 1.7 HazmatRegistry.initDefault: the two gas masks and vanilla iron/gold armour (5% each set)
-        HazmatRegistry.registerHazmat(gas_mask.get(), 0.07);
-        HazmatRegistry.registerHazmat(gas_mask_m65.get(), 0.095);
-        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.IRON_HELMET, HazmatRegistry.iron * HazmatRegistry.helmet);
-        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.IRON_CHESTPLATE, HazmatRegistry.iron * HazmatRegistry.chest);
-        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.IRON_LEGGINGS, HazmatRegistry.iron * HazmatRegistry.legs);
-        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.IRON_BOOTS, HazmatRegistry.iron * HazmatRegistry.boots);
-        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.GOLDEN_HELMET, HazmatRegistry.gold * HazmatRegistry.helmet);
-        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.GOLDEN_CHESTPLATE, HazmatRegistry.gold * HazmatRegistry.chest);
-        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.GOLDEN_LEGGINGS, HazmatRegistry.gold * HazmatRegistry.legs);
-        HazmatRegistry.registerHazmat(net.minecraft.world.item.Items.GOLDEN_BOOTS, HazmatRegistry.gold * HazmatRegistry.boots);
-    }
-
-    private static void registerSet(double koeff, RegistryObject<Item> helmet, RegistryObject<Item> chest,
-                                    RegistryObject<Item> legs, RegistryObject<Item> boots) {
-        HazmatRegistry.registerHazmat(helmet.get(), koeff * HazmatRegistry.helmet);
-        HazmatRegistry.registerHazmat(chest.get(), koeff * HazmatRegistry.chest);
-        HazmatRegistry.registerHazmat(legs.get(), koeff * HazmatRegistry.legs);
-        HazmatRegistry.registerHazmat(boots.get(), koeff * HazmatRegistry.boots);
-        ArmorUtil.registerHazmatSet(helmet.get(), chest.get(), legs.get(), boots.get());
-    }
+    // 1.7 HazmatRegistry.initDefault / ArmorUtil.register for these items (hazmat sets, gas masks and filters, vanilla
+    // iron and gold armour) are the hbm:radiation_resistance, hbm:protection_classes and hbm:armor_sets data maps.
 
     public static void init() {}
 }

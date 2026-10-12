@@ -49,6 +49,23 @@ public final class LegacyStructurePalette {
 
     private LegacyStructurePalette() {}
 
+    private static final ThreadLocal<Boolean> SPOTLIGHTS_WORKING = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+    /**
+     * Runs {@code build} (an {@link NBTStructure} build on this thread) with 1.7's {@code Spotlight.disableOnGeneration}
+     * set to false: spotlights keep their block and are placed unbroken instead of broken and switched off (hbm-space
+     * built its "martian" base that way). Per thread, so builds on worldgen threads keep the default.
+     */
+    public static void withSpotlightsWorking(Runnable build) {
+        boolean previous = SPOTLIGHTS_WORKING.get();
+        SPOTLIGHTS_WORKING.set(Boolean.TRUE);
+        try {
+            build.run();
+        } finally {
+            SPOTLIGHTS_WORKING.set(previous);
+        }
+    }
+
     public enum Kind {
         /** Place {@link Resolved#state()} as-is. */
         STATE,
@@ -290,6 +307,9 @@ public final class LegacyStructurePalette {
     public static Legacy transform(String name, int meta, int coordBaseMode) {
         Rot rot = rotationOf(name);
         if (rot == Rot.SPOTLIGHT) {
+            if (SPOTLIGHTS_WORKING.get()) {
+                return new Legacy(name, INBTBlockTransformable.transformMetaDeco(meta >> 1, coordBaseMode) << 1);
+            }
             String n = name;
             if (n.equals("hbm:tile.spotlight_incandescent")) n = "hbm:tile.spotlight_incandescent_off";
             if (n.equals("hbm:tile.spotlight_fluoro")) n = "hbm:tile.spotlight_fluoro_off";
@@ -321,7 +341,13 @@ public final class LegacyStructurePalette {
         Rot vanilla = VANILLA_ROT.get(name);
         if (vanilla != null) return vanilla;
         String hbm = hbmName(name);
-        if (hbm == null) return Rot.NONE;
+        if (hbm == null) {
+            // an addon's block: no 1.7 rule names it, so only the class-based rotations apply
+            Block block = foreignBlock(name);
+            if (block instanceof BlockMultiblockCore) return Rot.DUMMYABLE;
+            if (block instanceof StairBlock) return Rot.STAIRS;
+            return Rot.NONE;
+        }
         Rule rule = RULES.get(hbm);
         if (rule != null) return rule.rot();
         if (hbm.startsWith("wand_jigsaw") || hbm.startsWith("wand_tandem")) return Rot.DECO;
@@ -354,8 +380,11 @@ public final class LegacyStructurePalette {
 
         String hbm = hbmName(name);
         if (hbm == null) {
-            // 1.7 registry names of other mods: the 1.7 port would load them only with that mod installed
-            return unknown(name);
+            // 1.7 registry names of other mods: the 1.7 port would load them only with that mod installed. An addon
+            // that ships palettes (NTM: Space's planet structures) names its own blocks as "ns:path" (a "tile." prefix
+            // is dropped like HBM's); they get the generic rules, there is no 1.7 table for them.
+            Block foreign = foreignBlock(name);
+            return foreign == null ? unknown(name) : fromBlock(foreign, meta);
         }
 
         // 1.7 NBTStructure.substitutions ("BOB PATCH"): ore_coal_oil became plain coal ore, metadata kept
@@ -369,7 +398,12 @@ public final class LegacyStructurePalette {
         BlockState base = block.defaultBlockState();
         if (rule != null && rule.door()) return new Resolved(base, Kind.DOOR);
         if (rule != null) return Resolved.of(rule.mapper().map(base, meta));
+        return fromBlock(block, meta);
+    }
 
+    /** The rule-less mapping: multiblock core/cell, stairs, otherwise the generic per-property rule. */
+    private static Resolved fromBlock(Block block, int meta) {
+        BlockState base = block.defaultBlockState();
         if (block instanceof BlockMultiblockCore) {
             // 1.7 BlockDummyable: the core carries ForgeDirection + 10; every other meta is a cell the core fills
             if (meta >= 12) return new Resolved(with(base, "facing", forge(meta - 10)), Kind.CORE);
@@ -482,6 +516,21 @@ public final class LegacyStructurePalette {
         if (name.startsWith("hbm:tile.")) return name.substring("hbm:tile.".length());
         if (name.startsWith("hbm:")) return name.substring("hbm:".length());
         return null;
+    }
+
+    /** A registered block of a namespace other than {@code minecraft} and {@code hbm}, or null. */
+    private static @org.jspecify.annotations.Nullable Block foreignBlock(String name) {
+        int colon = name.indexOf(':');
+        if (colon <= 0) return null;
+        String namespace = name.substring(0, colon);
+        String path = name.substring(colon + 1);
+        if (path.startsWith("tile.")) path = path.substring("tile.".length());
+        if (namespace.equals("minecraft") || namespace.equals("hbm") || !validId(namespace) || !validId(path)) return null;
+        return BuiltInRegistries.BLOCK.getOptional(Ids.of(namespace, path)).orElse(null);
+    }
+
+    private static boolean validId(String part) {
+        return part.chars().allMatch(ch -> ch == '_' || ch == '-' || ch == '.' || ch == '/' || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9'));
     }
 
     private static @org.jspecify.annotations.Nullable Block hbmBlock(String id) {

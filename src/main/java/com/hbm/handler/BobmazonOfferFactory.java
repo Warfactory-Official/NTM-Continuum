@@ -248,8 +248,47 @@ public final class BobmazonOfferFactory {
                 hbm("ammo_standard_capacitor_overcharge", 64),
                 hbm("ammo_standard_capacitor_overcharge", 64))), "Frenchie's Reward"), Requirement.HIDDEN, 32);
 
+        // addons append their offers after HBM's, in listener order; the lists are built the same on both sides, so
+        // the offer index the purchase packet carries stays the same offer
+        for (OfferSink sink : OFFERS.listeners()) sink.addOffers(std, spc);
+
         standard = std;
         special = spc;
+    }
+
+    /** Receives the catalogues while they are built (once per side): append {@link Offer}s to either list. */
+    @FunctionalInterface
+    public interface OfferSink {
+        void addOffers(List<Offer> standard, List<Offer> special);
+    }
+
+    /**
+     * Where an addon adds Bobmazon offers (NTM: Space's charged pellet): register at mod construction, on both sides,
+     * before anyone opens a catalogue. Each offer is a stack, a {@link Need} ({@link Requirement} or an
+     * {@link AdvancementNeed} for an addon's own advancement), a price in caps and a rating.
+     */
+    public static final dev.golem.core.hook.Hook<OfferSink> OFFERS = dev.golem.core.hook.Hook.notifying();
+
+    /** What a player must have done to buy an offer, and the icon the catalogue shows for it. */
+    public interface Need {
+        boolean fullfills(ServerPlayer player);
+
+        ItemStack icon();
+    }
+
+    /** An addon's requirement: the advancement {@code advancement} (any namespace), shown as the item {@code iconId}. */
+    public record AdvancementNeed(String advancement, String iconId) implements Need {
+
+        @Override
+        public boolean fullfills(ServerPlayer player) {
+            return Boolean.TRUE.equals(Advancements.isDone(player, advancement));
+        }
+
+        @Override
+        public ItemStack icon() {
+            int colon = iconId.indexOf(':');
+            return of(iconId.substring(0, colon), iconId.substring(colon + 1), 1);
+        }
     }
 
     public static List<Offer> getOffers(ItemStack stack) {
@@ -264,13 +303,13 @@ public final class BobmazonOfferFactory {
     public static final class Offer {
 
         public final ItemStack offer;
-        public final Requirement requirement;
+        public final Need requirement;
         public final int cost;
         public final int rating;
         public final String comment;
         public final String author;
 
-        public Offer(ItemStack offer, Requirement requirement, int cost, int rating, String comment, String author) {
+        public Offer(ItemStack offer, Need requirement, int cost, int rating, String comment, String author) {
             this.offer = offer;
             this.requirement = requirement;
             this.cost = cost;
@@ -279,7 +318,7 @@ public final class BobmazonOfferFactory {
             this.author = author;
         }
 
-        public Offer(ItemStack offer, Requirement requirement, int cost, int rating) {
+        public Offer(ItemStack offer, Need requirement, int cost, int rating) {
             this(offer, requirement, cost, rating, "No Ratings", "");
         }
     }
@@ -288,7 +327,7 @@ public final class BobmazonOfferFactory {
      * 1.7 {@code GUIScreenBobmazon.Requirement}: the achievement each offer needs and its icon. {@code NONE} was
      * "open your inventory", which every player has; it needs nothing here.
      */
-    public enum Requirement {
+    public enum Requirement implements Need {
 
         NONE(null, "minecraft:book"),
         STEEL("hbm:blast_furnace", "hbm:machine_blast_furnace"),
@@ -306,11 +345,13 @@ public final class BobmazonOfferFactory {
             this.icon = icon;
         }
 
+        @Override
         public boolean fullfills(ServerPlayer player) {
             if (advancement == null) return true;
             return Boolean.TRUE.equals(Advancements.isDone(player, advancement));
         }
 
+        @Override
         public ItemStack icon() {
             int colon = icon.indexOf(':');
             return of(icon.substring(0, colon), icon.substring(colon + 1), 1);

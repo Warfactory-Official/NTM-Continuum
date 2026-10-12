@@ -20,7 +20,7 @@ import com.mojang.serialization.Codec;
  * and whose net {@link FluidNetwork} rounds once per smoke (see {@link #types()}).
  *
  * <p>The datum is part of the level's saved graph, so it is saved by the fluid's registry name
- * ({@code "hbm:water"}), or {@link #SMOKE_ANY_NAME} for the exhaust - never by a numeric fluid id (History
+ * ({@code "hbm:oil"}, {@code "minecraft:water"}), or {@link #SMOKE_ANY_NAME} for the exhaust - never by a numeric fluid id (History
  * section 19ej-ids). An int left by a pre-2026-10-03 save reads as NONE with one WARN.
  */
 public record DuctData(FluidType fluid, boolean smokeAny) {

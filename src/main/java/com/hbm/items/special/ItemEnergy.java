@@ -67,9 +67,18 @@ public final class ItemEnergy extends CompatItem {
         if (player.getAbilities().instabuild) return stack;
 
         stack.shrink(1);
-        if (container == Container.NONE) return stack;
-
-        ItemStack empty = (container == Container.CAN ? ModItems.can_empty.get() : ModItems.bottle_empty.get()).getDefaultInstance();
+        ItemStack empty;
+        if (container == Container.NONE) {
+            Item given = null;
+            for (java.util.function.Function<String, Item> listener : EMPTY) {
+                given = listener.apply(id);
+                if (given != null) break;
+            }
+            if (given == null) return stack;
+            empty = given.getDefaultInstance();
+        } else {
+            empty = (container == Container.CAN ? ModItems.can_empty.get() : ModItems.bottle_empty.get()).getDefaultInstance();
+        }
         ItemStack cap = capFor(id);
         if (!stack.isEmpty()) {
             if (!player.getInventory().add(empty)) player.drop(empty, false);
@@ -79,6 +88,12 @@ public final class ItemEnergy extends CompatItem {
         if (cap != null && !player.getInventory().add(cap)) player.drop(cap, false);
         return stack;
     }
+
+    /**
+     * What a drink without a can or bottle leaves (ADDON-API-INVENTORY H-75), by its id ({@code "coffee"}); the first
+     * non-null item wins, none leaves nothing (1.7). HBM registers none; NTM: Space gives coffee its mug.
+     */
+    public static final dev.golem.core.hook.Hook<java.util.function.Function<String, Item>> EMPTY = dev.golem.core.hook.Hook.notifying();
 
     private static ItemStack capFor(String id) {
         return switch (id) {

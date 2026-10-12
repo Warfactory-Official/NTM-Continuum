@@ -107,10 +107,18 @@ public final class MachineExplosionDamage {
         return false;
     }
 
+    /**
+     * hbm-space's repair overlay rule (ADDON-API-INVENTORY V-173): a damaged machine always lists its repair, with a
+     * "Tool: Blowtorch" line while no blowtorch is held. False (1.7): the list shows only with a blowtorch in hand.
+     * NTM: Space sets it.
+     */
+    public static boolean alwaysShowRepair = false;
+
     /** 1.7 {@code IRepairable.addGenericOverlay}: with a blowtorch in hand, a damaged machine lists its repair. */
     public static ILookOverlay.@Nullable Data overlay(Level level, BlockPos pos, Player player, String title) {
         ItemStack held = player.getMainHandItem();
-        if (!(held.getItem() instanceof ItemBlowtorch)) return null;
+        boolean torch = held.getItem() instanceof ItemBlowtorch;
+        if (!torch && !alwaysShowRepair) return null;
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null) return null;
         BlockEntity be = level.getBlockEntity(core);
@@ -120,6 +128,7 @@ public final class MachineExplosionDamage {
         else return null;
         List<String> text = new ArrayList<>();
         text.add(ChatFormatting.GOLD + "Repair with:");
+        if (!torch) text.add("Tool: Blowtorch");
         for (AStack stack : materials) {
             try {
                 ItemStack display = stack.getCyclingDisplayStack();

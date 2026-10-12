@@ -1,9 +1,5 @@
 package com.hbm.items.machine;
 
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.Fluids;
-import com.hbm.inventory.material.Mats;
-import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.ModIcfItems;
 import com.hbm.util.BobMathUtil;
 import dev.golem.core.data.ModelData;
@@ -15,7 +11,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -31,57 +26,72 @@ import java.util.Locale;
  */
 public class ItemICFPellet extends CompatItem {
 
-    public enum EnumICFFuel {
+    /**
+     * An ICF fuel (1.7 {@code ItemICFPellet.EnumICFFuel}): pellet colour, reaction multiplier, depletion speed, fusing
+     * difficulty. A registry since addons add fuels: {@link #register} at mod construction, then name it (lower case) in
+     * the {@code hbm:icf_fuel} fluid and material data maps. Pellets save the fuel by name ({@code hbm:icf_type1/2}); HBM's
+     * names are the 1.7 ones.
+     */
+    public static final class EnumICFFuel {
 
-        HYDROGEN(0x4040FF, 1.00D, 0.85D, 1.00D),
-        DEUTERIUM(0x2828CB, 1.25D, 1.00D, 1.00D),
-        TRITIUM(0x000092, 1.50D, 1.00D, 1.05D),
-        HELIUM3(0xFFF09F, 1.75D, 1.00D, 1.25D),
-        HELIUM4(0xFF9B60, 2.00D, 1.00D, 1.50D),
-        LITHIUM(0xE9E9E9, 1.25D, 0.85D, 2.00D),
-        BERYLLIUM(0xA79D80, 2.00D, 1.00D, 2.50D),
-        BORON(0x697F89, 3.00D, 0.50D, 3.50D),
-        CARBON(0x454545, 2.00D, 1.00D, 5.00D),
-        OXYGEN(0xB4E2FF, 1.25D, 1.50D, 7.50D),
-        SODIUM(0xDFE4E7, 3.00D, 0.75D, 8.75D),
-        //aluminium, silicon, phosphorus
-        CHLORINE(0xDAE598, 2.50D, 1.00D, 9.25D),
-        CALCIUM(0xD2C7A9, 3.00D, 1.00D, 9.75D),
-        //titanium
-        ;
+        private static final java.util.Map<String, EnumICFFuel> BY_NAME = java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>());
 
+        public static final EnumICFFuel HYDROGEN = register("HYDROGEN", 0x4040FF, 1.00D, 0.85D, 1.00D);
+        public static final EnumICFFuel DEUTERIUM = register("DEUTERIUM", 0x2828CB, 1.25D, 1.00D, 1.00D);
+        public static final EnumICFFuel TRITIUM = register("TRITIUM", 0x000092, 1.50D, 1.00D, 1.05D);
+        public static final EnumICFFuel HELIUM3 = register("HELIUM3", 0xFFF09F, 1.75D, 1.00D, 1.25D);
+        public static final EnumICFFuel HELIUM4 = register("HELIUM4", 0xFF9B60, 2.00D, 1.00D, 1.50D);
+        public static final EnumICFFuel LITHIUM = register("LITHIUM", 0xE9E9E9, 1.25D, 0.85D, 2.00D);
+        public static final EnumICFFuel BERYLLIUM = register("BERYLLIUM", 0xA79D80, 2.00D, 1.00D, 2.50D);
+        public static final EnumICFFuel BORON = register("BORON", 0x697F89, 3.00D, 0.50D, 3.50D);
+        public static final EnumICFFuel CARBON = register("CARBON", 0x454545, 2.00D, 1.00D, 5.00D);
+        public static final EnumICFFuel OXYGEN = register("OXYGEN", 0xB4E2FF, 1.25D, 1.50D, 7.50D);
+        public static final EnumICFFuel SODIUM = register("SODIUM", 0xDFE4E7, 3.00D, 0.75D, 8.75D);
+        public static final EnumICFFuel CHLORINE = register("CHLORINE", 0xDAE598, 2.50D, 1.00D, 9.25D);
+        public static final EnumICFFuel CALCIUM = register("CALCIUM", 0xD2C7A9, 3.00D, 1.00D, 9.75D);
+
+        /** By lower-case name ({@code "deuterium"}; any case is read). */
+        public static final com.mojang.serialization.Codec<EnumICFFuel> CODEC = com.mojang.serialization.Codec.STRING.comapFlatMap(name -> {
+            EnumICFFuel fuel = byName(name);
+            return fuel != null ? com.mojang.serialization.DataResult.success(fuel)
+                    : com.mojang.serialization.DataResult.error(() -> "unknown ICF fuel " + name);
+        }, fuel -> fuel.name().toLowerCase(Locale.ROOT));
+
+        private final String name;
         public final int color;
         public final double reactionMult;
         public final double depletionSpeed;
         public final double fusingDifficulty;
 
-        EnumICFFuel(int color, double react, double depl, double laser) {
+        private EnumICFFuel(String name, int color, double react, double depl, double laser) {
+            this.name = name;
             this.color = color;
             this.reactionMult = react;
             this.depletionSpeed = depl;
             this.fusingDifficulty = laser;
         }
+
+        /** Registers a fuel; {@code name} is its id (an addon should use {@code <namespace>:<name>}). */
+        public static EnumICFFuel register(String name, int color, double react, double depl, double laser) {
+            EnumICFFuel fuel = new EnumICFFuel(name, color, react, depl, laser);
+            if (BY_NAME.putIfAbsent(name.toUpperCase(Locale.ROOT), fuel) != null) throw new IllegalStateException("ICF fuel " + name + " registered twice");
+            return fuel;
+        }
+
+        public static @org.jspecify.annotations.Nullable EnumICFFuel byName(String name) {
+            return name == null ? null : BY_NAME.get(name.toUpperCase(Locale.ROOT));
+        }
+
+        public static java.util.Collection<EnumICFFuel> values() {
+            synchronized (BY_NAME) { return java.util.List.copyOf(BY_NAME.values()); }
+        }
+
+        public String name() { return name; }
+        @Override public String toString() { return name; }
     }
 
-    public static final HashMap<FluidType, EnumICFFuel> fluidMap = new HashMap<>();
-    public static final HashMap<NTMMaterial, EnumICFFuel> materialMap = new HashMap<>();
-
-    public static void init() {
-        if (!fluidMap.isEmpty() && !materialMap.isEmpty()) return;
-        fluidMap.put(Fluids.HYDROGEN, EnumICFFuel.HYDROGEN);
-        fluidMap.put(Fluids.DEUTERIUM, EnumICFFuel.DEUTERIUM);
-        fluidMap.put(Fluids.TRITIUM, EnumICFFuel.TRITIUM);
-        fluidMap.put(Fluids.HELIUM3, EnumICFFuel.HELIUM3);
-        fluidMap.put(Fluids.HELIUM4, EnumICFFuel.HELIUM4);
-        materialMap.put(Mats.MAT_LITHIUM, EnumICFFuel.LITHIUM);
-        materialMap.put(Mats.MAT_BERYLLIUM, EnumICFFuel.BERYLLIUM);
-        materialMap.put(Mats.MAT_BORON, EnumICFFuel.BORON);
-        materialMap.put(Mats.MAT_GRAPHITE, EnumICFFuel.CARBON);
-        fluidMap.put(Fluids.OXYGEN, EnumICFFuel.OXYGEN);
-        materialMap.put(Mats.MAT_SODIUM, EnumICFFuel.SODIUM);
-        fluidMap.put(Fluids.CHLORINE, EnumICFFuel.CHLORINE);
-        materialMap.put(Mats.MAT_CALCIUM, EnumICFFuel.CALCIUM);
-    }
+    // 1.7 fluidMap / materialMap (which fluid or one-ingot material presses into which fuel) are the data maps
+    // hbm:fluid/icf_fuel and hbm:material/icf_fuel (MachineDataMaps), read by TileEntityICFPress
 
     public ItemICFPellet(Properties properties) {
         super(properties);
@@ -128,7 +138,8 @@ public class ItemICFPellet extends CompatItem {
         var component = first ? ModIcfItems.PELLET_TYPE1 : ModIcfItems.PELLET_TYPE2;
         if (!component.has(stack)) return first ? EnumICFFuel.DEUTERIUM : EnumICFFuel.TRITIUM;
         EnumICFFuel fallback = first ? EnumICFFuel.DEUTERIUM : EnumICFFuel.TRITIUM;
-        return com.hbm.util.SavedIds.byName(EnumICFFuel.class, component.getOr(stack, ""), fallback);
+        EnumICFFuel fuel = EnumICFFuel.byName(component.getOr(stack, ""));
+        return fuel != null ? fuel : fallback;
     }
 
     /** 1.7 {@code getColorFromItemStack} pass 0: the per-channel average of both fuels. */

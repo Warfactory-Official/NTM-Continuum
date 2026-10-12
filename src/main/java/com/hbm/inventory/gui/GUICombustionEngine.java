@@ -93,7 +93,7 @@ public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScree
             FluidCombustion.Combustible fuel = FluidCombustion.getCombustible(te.tank.getTankType());
             if (fuel != null) {
                 int g = fuel.grade().ordinal();
-                double eff = g < p.getVariant().eff.length ? p.getVariant().eff[g] : 0;
+                double eff = g < p.efficiency().length ? p.efficiency()[g] : 0;
                 power = te.setting * 0.2 * fuel.energyPerBucket() / 1_000D * eff;
             }
             String c = ChatFormatting.YELLOW + "";

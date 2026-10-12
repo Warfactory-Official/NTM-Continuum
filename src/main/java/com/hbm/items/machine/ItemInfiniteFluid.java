@@ -27,17 +27,60 @@ import java.util.function.Supplier;
  */
 public class ItemInfiniteFluid extends CompatItem implements IInfiniteFluidItem, IFillableItem {
 
+    /**
+     * hbm-space's {@code noAtmo}/{@code fluid} tags, saved by name: the water table found where a
+     * {@linkplain #requiresTable table-bound} item was last carried, present only while it does not match the item's
+     * fluid ({@link Fluids#NONE}: none at all, e.g. in orbit). Never set on plain HBM.
+     */
+    public static final dev.golem.core.data.GolemComponent<FluidType> WRONG_WATER_TABLE =
+            com.hbm.items.ModDataComponents.WRONG_WATER_TABLE;
+
     private final @Nullable Supplier<FluidType> type;
     private final int amount;
     private final int chance;
     private final boolean anyPressure;
+    /** hbm-space {@code requiresTable}: works only where the water table is its fluid (inf_water, inf_water_mk2). */
+    private final boolean requiresTable;
 
     public ItemInfiniteFluid(Properties properties, @Nullable Supplier<FluidType> type, int amount, int chance, boolean anyPressure) {
+        this(properties, type, amount, chance, anyPressure, false);
+    }
+
+    public ItemInfiniteFluid(Properties properties, @Nullable Supplier<FluidType> type, int amount, int chance,
+                             boolean anyPressure, boolean requiresTable) {
         super(properties);
         this.type = type;
         this.amount = amount;
         this.chance = chance;
         this.anyPressure = anyPressure;
+        this.requiresTable = requiresTable;
+    }
+
+    /**
+     * hbm-space {@code canOperate(stack)}: false once the item was carried where the water table is not its fluid
+     * (com.hbm.api.environment.Environment.GROUNDWATER, orbit included). Like hbm-space, the check is made while the
+     * item sits in an entity's inventory and remembered on the stack.
+     */
+    public static boolean canOperate(ItemStack stack) {
+        return !WRONG_WATER_TABLE.has(stack);
+    }
+
+    @Override
+    protected void compatInventoryTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
+                                       net.minecraft.world.entity.Entity owner,
+                                       net.minecraft.world.entity.EquipmentSlot slot, boolean held) {
+        checkWaterTable(stack, level, owner.blockPosition());
+    }
+
+    /** hbm-space {@code onUpdate}: remembers whether the water table at {@code pos} feeds this item. */
+    public void checkWaterTable(ItemStack stack, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
+        if (!requiresTable) return;
+        FluidType table = com.hbm.api.environment.Environment.declaredGroundwater(level, pos);
+        if (table == null || table == infiniteType()) {
+            if (WRONG_WATER_TABLE.has(stack)) WRONG_WATER_TABLE.remove(stack);
+        } else if (WRONG_WATER_TABLE.getOr(stack, null) != table) {
+            WRONG_WATER_TABLE.set(stack, table);
+        }
     }
 
     @Override public @Nullable FluidType infiniteType() { return type == null ? null : type.get(); }
@@ -53,7 +96,7 @@ public class ItemInfiniteFluid extends CompatItem implements IInfiniteFluidItem,
     @Override
     public boolean providesFluid(FluidType type, ItemStack stack) {
         FluidType mine = infiniteType();
-        return type != null && type != Fluids.NONE && (mine == null || mine == type);
+        return type != null && type != Fluids.NONE && (mine == null || mine == type) && canOperate(stack);
     }
 
     @Override
@@ -77,5 +120,15 @@ public class ItemInfiniteFluid extends CompatItem implements IInfiniteFluidItem,
         FluidType mine = infiniteType();
         String rate = chance <= 1 ? amount + " mB/t" : amount + " mB every " + chance + " ticks";
         tooltip.add(Component.literal((mine == null ? "Any fluid" : mine.getDisplayNameString()) + ", " + rate).withStyle(ChatFormatting.GRAY));
+        // hbm-space's lines for an item that found the wrong water table
+        FluidType table = WRONG_WATER_TABLE.getOr(stack, null);
+        if (table != null && mine != null) {
+            tooltip.add(Component.literal(table == Fluids.NONE ? "Current environment has insufficient vapor pressure"
+                    : "Current environment has an incompatible fluid table"));
+            tooltip.add(Component.literal("Requires: " + mine.getDisplayNameString() + " table"));
+            tooltip.add(Component.literal(table == Fluids.NONE
+                    ? "Releasing 0.2atm of vapor into the atmosphere will add a table on dry celestial bodies"
+                    : "Current environment: " + table.getDisplayNameString() + " table"));
+        }
     }
 }

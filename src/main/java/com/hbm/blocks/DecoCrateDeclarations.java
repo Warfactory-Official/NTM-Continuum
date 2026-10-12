@@ -131,7 +131,7 @@ public final class DecoCrateDeclarations {
         shaped(NS, "rad_absorber_red", "hbm:rad_absorber_red", rows("ICI", "CPC", "ICI"),
                 "I", TagIds.ingots_titanium, "C", TagIds.dusts_coal, "P", "hbm:rad_absorber");
         shaped(NS, "rad_absorber_green", "hbm:rad_absorber_green", rows("ICI", "CPC", "ICI"),
-                "I", TagIds.ingots_any_plastic, "C", TagIds.dusts_desh_mix, "P", "hbm:rad_absorber_red");
+                "I", TagIds.ingots_any_plastic, "C", ItemIds.powder_desh_mix, "P", "hbm:rad_absorber_red");
         shaped(NS, "rad_absorber_pink", "hbm:rad_absorber_pink", rows("ICI", "CPC", "ICI"),
                 "I", TagIds.ingots_saturnite, "C", ItemIds.powder_nitan_mix, "P", "hbm:rad_absorber_green");
         shaped(NS, "decon", ItemIds.decon, rows("BGB", "SAS", "BSB"),

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.environment.Environment;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.tile.IHeatSource;
@@ -68,8 +69,13 @@ public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting i
         }
 
         te.wasOn = false;
+        // hbm-space's canOperate: whether the fire got air this tick (com.hbm.api.environment.Environment). Plain HBM
+        // always breathes, which is 1.7. Without air a new fuel item still loads (hbm-space asks before loading but
+        // does not gate it), but a burning fire neither burns down nor stays lit.
+        boolean canOperate;
 
         if (te.burnTime <= 0) {
+            canOperate = Environment.breatheAir(level, pos, 0);
             for (int i = 0; i < 2; i++) {
                 ItemStack fuel = te.inventory.getStackInSlot(i);
                 if (fuel.isEmpty()) continue;
@@ -94,15 +100,25 @@ public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting i
             }
         } else {
             if (te.heatEnergy < te.getMaxHeat()) {
-                te.burnTime--;
-                if (TickPhase.every(level, pos, 20L)) te.pollute(PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 3);
+                // hbm-space: the firebox consumes 1 mB of oxygen every 5 ticks, the heating oven every tick
+                canOperate = Environment.breatheAir(level, pos,
+                        TickPhase.every(level, pos, 500 / te.getBaseHeat()) ? 1 : 0);
+                if (canOperate) {
+                    te.burnTime--;
+                    if (TickPhase.every(level, pos, 20L)) te.pollute(PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 3);
+                }
+            } else {
+                canOperate = Environment.breatheAir(level, pos, 0);
             }
-            te.wasOn = true;
 
-            if (level.getRandom().nextInt(15) == 0 && !te.muffled) {
-                level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                        SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS,
-                        1.0F, 0.5F + level.getRandom().nextFloat() * 0.5F);
+            if (canOperate) {
+                te.wasOn = true;
+
+                if (level.getRandom().nextInt(15) == 0 && !te.muffled) {
+                    level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                            SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS,
+                            1.0F, 0.5F + level.getRandom().nextFloat() * 0.5F);
+                }
             }
         }
 
@@ -110,7 +126,8 @@ public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting i
             te.heatEnergy = Math.min(te.heatEnergy + te.burnHeat, te.getMaxHeat());
         } else {
             te.heatEnergy = Math.max(te.heatEnergy - Math.max(te.heatEnergy / 1000, 1), 0);
-            te.burnHeat = 0;
+            // hbm-space keeps the burn heat of a fire that only lacks air, so it resumes at the same heat
+            if (canOperate) te.burnHeat = 0;
         }
 
         te.networkPackNT();

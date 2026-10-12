@@ -102,6 +102,9 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
             FluidCombustion.Combustible fuel = FluidCombustion.getCombustible(fan.tank.getTankType());
             if (fuel != null && fuel.grade() == FluidCombustion.FuelGrade.AERO) burnValue = fuel.energyPerBucket() / 1_000L;
 
+            // hbm-space: without air nothing burns (com.hbm.api.environment.Environment)
+            if (amountToBurn > 0 && !com.hbm.api.environment.Environment.breatheAir(level, pos, amountToBurn)) amountToBurn = 0;
+
             // Odd but 1.7: any fluid in the tank burns, at zero output unless it is AERO-grade fuel. The fan spins, the
             // tank drains and the burn pollutes all the same; only the exhaust (below) needs a burn value.
             if (amountToBurn > 0) {

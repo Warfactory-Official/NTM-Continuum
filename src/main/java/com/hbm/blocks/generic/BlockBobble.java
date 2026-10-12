@@ -91,11 +91,12 @@ public class BlockBobble extends BlockTrinket {
 
         public final String name;         // the title of the tooltip
         public final String label;        // the name engraved in the socket
-        public final String contribution; // what contributions this person has made, if applicable
+        /** Not final: an addon may restate it (ADDON-API-INVENTORY E-096; NTM: Space's MELLOW/PEEP credits). */
+        public String contribution; // what contributions this person has made, if applicable
         public final String inscription;  // the flavor text
         public final boolean skinLayers;
         /** 1.7 {@code ItemPlasticScrap.ScrapType} the shredder turns this figure into (the port has no scrap subtypes). */
-        public final String scrap;
+        public String scrap; // not final, see contribution (E-096)
         /** old-hbm {@code skinUuid}: the person whose Mojang skin the figure wears, or null for a modelled figure. */
         public final String skinUuid;
 

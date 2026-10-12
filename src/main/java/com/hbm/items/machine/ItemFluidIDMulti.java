@@ -48,7 +48,7 @@ public class ItemFluidIDMulti extends CompatItem implements IItemFluidId, IItemC
     /** 1.7 {@code getSubItems}: one identifier per identifiable fluid, primary set. */
     public static List<ItemStack> creativeStacks() {
         List<ItemStack> list = new ArrayList<>();
-        FluidType[] order = Fluids.getAll();
+        FluidType[] order = Fluids.getInNiceOrder();
         for (int i = 1; i < order.length; ++i) {
             if (!IFluidCopiable.ItemFluidIds.hasNoID(order[i])) {
                 ItemStack id = new ItemStack(ModUtilityToolItems.fluid_identifier_multi.get());

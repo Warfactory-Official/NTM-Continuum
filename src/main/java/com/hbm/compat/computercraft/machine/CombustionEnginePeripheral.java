@@ -41,9 +41,8 @@ public final class CombustionEnginePeripheral extends SnapshotPeripheral<TileEnt
         put(HAS_EFFICIENCY, known);
         if (known) {
             // 1.7 grabEnumSafely read any item's damage; only piston sets fit the slot here, so a stranger is STEEL
-            ItemPistons.Variant piston = stack.getItem() instanceof ItemPistons
-                    ? ((ItemPistons) stack.getItem()).getVariant() : ItemPistons.Variant.VALUES[0];
-            put(EFFICIENCY, piston.eff[fuel.grade().ordinal()]);
+            double[] eff = stack.getItem() instanceof ItemPistons piston ? piston.efficiency() : ItemPistons.Variant.VALUES[0].eff;
+            put(EFFICIENCY, eff[fuel.grade().ordinal()]);
         }
     }
 

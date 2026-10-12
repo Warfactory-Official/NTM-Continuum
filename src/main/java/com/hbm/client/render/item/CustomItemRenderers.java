@@ -27,7 +27,7 @@ public final class CustomItemRenderers {
     /** Packed light 1.7 got from {@code setLightmapTextureCoords(240, 240)}. */
     static final int FULLBRIGHT = 0xF000F0;
 
-    private static final Map<String, Supplier<CustomItemRenderer>> FACTORIES = Map.ofEntries(
+    private static final Map<String, Supplier<CustomItemRenderer>> FACTORIES = new java.util.concurrent.ConcurrentHashMap<>(Map.ofEntries(
             Map.entry("shim", ItemRenderShim::new),
             Map.entry("gavel", ItemRenderGavel::new),
             Map.entry("big_sword", ItemRenderBigSword::new),
@@ -42,11 +42,25 @@ public final class CustomItemRenderers {
             Map.entry("bobblehead", ItemRenderBobble::new),
             Map.entry("plushie", ItemRenderPlushie::new),
             Map.entry("hot", ItemRendererHot::new),
-            Map.entry("meteorite_sword", ItemRendererMeteorSword::new));
+            Map.entry("meteorite_sword", ItemRendererMeteorSword::new)));
 
     private static final Map<String, CustomItemRenderer> BUILT = new HashMap<>();
 
     private CustomItemRenderers() {}
+
+    /**
+     * Adds a renderer an item definition's {@code hbm:custom_item} model can name: how an addon brings its own ported
+     * 1.7 {@code IItemRenderer}s. An addon names its renderers {@code "<namespace>:<name>"} (HBM's are bare names), and
+     * registers from its client set-up, before the first resource load (definitions are checked against this list when
+     * they are read).
+     *
+     * @throws IllegalStateException if {@code name} is taken
+     */
+    public static void register(String name, Supplier<CustomItemRenderer> factory) {
+        if (FACTORIES.putIfAbsent(name, factory) != null) {
+            throw new IllegalStateException("hbm:custom_item renderer '" + name + "' is already registered");
+        }
+    }
 
     /** Whether a definition may name {@code name}. Checked at bake/parse time, before anything is built. */
     public static boolean exists(String name) {

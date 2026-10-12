@@ -157,6 +157,9 @@ public final class ItemCell extends CompatItem implements IFillableItem, com.hbm
      * Odd but 1.7: with {@code dropCell} off the dropped cell still vanishes, because {@code setDead} sat outside
      * the config check.
      */
+    /** The dropped antimatter cell's blast strength (1.7: 3; ADDON-API-INVENTORY V-172). NTM: Space sets hbm-space's 5. */
+    public static float antimatterDropStrength = 3F;
+
     public static void tickDropped(ItemEntity entity) {
         if (!(entity.getItem().getItem() instanceof ItemCell) || entity.level().isClientSide()) return;
         if (!entity.onGround() || !(entity.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
@@ -166,7 +169,7 @@ public final class ItemCell extends CompatItem implements IFillableItem, com.hbm
         double x = entity.getX(), y = entity.getY(), z = entity.getZ();
         if (WeaponConfig.dropCell) {
             if (fluid == Fluids.AMAT) {
-                new com.hbm.explosion.vanillant.ExplosionVNT(level, x, y, z, 3F).makeAmat().explode();
+                new com.hbm.explosion.vanillant.ExplosionVNT(level, x, y, z, antimatterDropStrength).makeAmat().explode();
             } else {
                 int radius = com.hbm.config.BombConfig.aSchrabRadius;
                 com.hbm.entity.logic.EntityNukeExplosionMK3 ex =

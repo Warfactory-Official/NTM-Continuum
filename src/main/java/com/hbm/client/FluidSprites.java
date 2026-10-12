@@ -40,16 +40,30 @@ public final class FluidSprites {
     /** The size an item slot draws an icon at, and so the size a droplet is expected at. */
     private static final int ICON_SIZE = 16;
 
-    /** Declares every fluid's droplet. Client only, before the first resource load. */
+    /** Declares every HBM fluid's droplet. Client only, before the first resource load. */
     public static void install() {
         Fluids.init();
-        FluidType[] fluids = Fluids.getAll();
-        Sprites.Remap remap = Sprites.remap(Sprites.Atlas.ITEMS).texture(ART).band(ART_LIGHT, ART_DARK);
-        for (FluidType fluid : fluids) {
+        install(Constants.MOD_ID);
+    }
+
+    /**
+     * Declares the droplet of every fluid registered in {@code namespace}: {@code <namespace>:items/fluid_icon_<key>},
+     * the id {@link FluidType#getIconSprite()} names. The output sits next to its source art, so an addon ships the
+     * greyscale droplet as {@code assets/<namespace>/textures/items/fluid_icon.png} (a copy of HBM's, or its own) and
+     * calls this from its client set-up after registering its fluids, before the first resource load.
+     */
+    public static void install(String namespace) {
+        Sprites.Remap remap = Sprites.remap(Sprites.Atlas.ITEMS).texture(namespace + ":" + FluidType.ICON_ART)
+                .band(ART_LIGHT, ART_DARK);
+        int count = 0;
+        for (FluidType fluid : Fluids.getAll()) {
+            if (!fluid.getNamespace().equals(namespace)) continue;
             remap.tint(fluid.getKey(), fluid.getColor());
+            count++;
         }
+        if (count == 0) return;
         remap.declare();
-        Constants.LOG.info("Declared {} fluid droplet sprite(s) for load-time generation", fluids.length);
+        Constants.LOG.info("Declared {} {} fluid droplet sprite(s) for load-time generation", count, namespace);
     }
 
     /** Draws {@code fluid}'s droplet at the size an item slot would have drawn it. */

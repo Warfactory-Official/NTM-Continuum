@@ -45,7 +45,7 @@ import com.hbm.tileentity.ModNuclearMiscBlockEntities;
  * 1.7 {@code TileEntityReactorResearch}; its OpenComputers component is
  * {@code com.hbm.compat.computercraft.machine.ResearchReactorPeripheral} on CC: Tweaked.
  */
-public final class TileEntityReactorResearch extends TileEntityMachineBase implements MenuProvider, IControlReceiver, WorldlyContainer {
+public class TileEntityReactorResearch extends TileEntityMachineBase implements MenuProvider, IControlReceiver, WorldlyContainer {
 
     /** 1.7 {@code lastLevel} / {@code level}; renamed because {@code level} is the BlockEntity world field. */
     public double lastRodLevel;
@@ -61,26 +61,33 @@ public final class TileEntityReactorResearch extends TileEntityMachineBase imple
 
     private static final int[] slot_io = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 
+    /** A server tick in which the reactor radiates (rods in, core hot, a side open), with its dose. */
+    @FunctionalInterface
+    public interface Radiating {
+        void radiating(Level level, BlockPos pos, TileEntityReactorResearch reactor, float rad);
+    }
+
+    /**
+     * Called after the chunk radiation of every radiating tick, with that dose ({@code heat / maxHeat * 50}) (H-78).
+     * Plain HBM registers none; NTM: Space irradiates the living things around it with neutrons (hbm-space).
+     */
+    public static final dev.golem.core.hook.Hook<Radiating> RADIATING = dev.golem.core.hook.Hook.notifying();
+
     public TileEntityReactorResearch(BlockPos pos, BlockState state) {
         super(ModNuclearMiscBlockEntities.REACTOR_RESEARCH.get(), pos, state, 12);
     }
 
-    private static Map<Item, ItemStack> fuelMap;
-
-    /** 1.7 {@code fuelMap}: fresh plate -> hot spent plate (metadata 1). */
-    private static Map<Item, ItemStack> fuelMap() {
-        if (fuelMap == null) {
-            Map<Item, ItemStack> map = new HashMap<>();
-            map.put(ModIngredientItems.plateFuel(PlateFuelType.U233), ItemDepletedFuel.makeHot(ModNuclearMiscItems.WASTE_PLATE_U233.get(), 1));
-            map.put(ModIngredientItems.plateFuel(PlateFuelType.U235), ItemDepletedFuel.makeHot(ModNuclearMiscItems.WASTE_PLATE_U235.get(), 1));
-            map.put(ModIngredientItems.plateFuel(PlateFuelType.MOX), ItemDepletedFuel.makeHot(ModNuclearMiscItems.WASTE_PLATE_MOX.get(), 1));
-            map.put(ModIngredientItems.plateFuel(PlateFuelType.PU239), ItemDepletedFuel.makeHot(ModNuclearMiscItems.WASTE_PLATE_PU239.get(), 1));
-            map.put(ModIngredientItems.plateFuel(PlateFuelType.SA326), ItemDepletedFuel.makeHot(ModNuclearMiscItems.WASTE_PLATE_SA326.get(), 1));
-            map.put(ModIngredientItems.plateFuel(PlateFuelType.RA226BE), ItemDepletedFuel.makeHot(ModNuclearMiscItems.WASTE_PLATE_RA226BE.get(), 1));
-            map.put(ModIngredientItems.plateFuel(PlateFuelType.PU238BE), ItemDepletedFuel.makeHot(ModNuclearMiscItems.WASTE_PLATE_PU238BE.get(), 1));
-            fuelMap = map;
-        }
-        return fuelMap;
+    /**
+     * 1.7 {@code fuelMap}, fresh plate -> spent plate (hot: metadata 1): the data map {@code hbm:item/research_reactor_fuel}
+     * (MachineDataMaps); null for an item that is no fuel or names an unknown waste.
+     */
+    public static @org.jspecify.annotations.Nullable ItemStack wasteOf(Item plate) {
+        var waste = com.hbm.api.data.MachineDataMaps.RESEARCH_REACTOR_FUEL.get(plate);
+        if (waste == null) return null;
+        Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.parse(waste.output())).orElse(null);
+        if (item == null) return null;
+        if (waste.hot()) return ItemDepletedFuel.makeHot(item, 1);
+        return new ItemStack(item);
     }
 
     @Override
@@ -102,8 +109,9 @@ public final class TileEntityReactorResearch extends TileEntityMachineBase imple
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         if (slot < 12 && slot >= 0) {
-            for (ItemStack waste : fuelMap().values()) {
-                if (waste.getItem() == stack.getItem()) return true;
+            String id = String.valueOf(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()));
+            for (var waste : com.hbm.api.data.MachineDataMaps.RESEARCH_REACTOR_FUEL.byId().values()) {
+                if (waste.output().equals(id)) return true;
             }
         }
         return false;
@@ -142,6 +150,7 @@ public final class TileEntityReactorResearch extends TileEntityMachineBase imple
                 && te.blocksRad(x, y + 1, z + 1) && te.blocksRad(x, y + 1, z - 1))) {
             float rad = (float) te.heat / (float) te.maxHeat * 50F;
             ChunkRadiationManager.proxy.incrementRad(level, pos, rad);
+            for (Radiating listener : RADIATING) listener.radiating(level, pos, te, rad);
         }
 
         te.setChanged();
@@ -221,9 +230,9 @@ public final class TileEntityReactorResearch extends TileEntityMachineBase imple
 
                 int[] neighborSlots = getNeighboringSlots(i);
 
-                if (ItemPlateFuel.getLifeTime(stack) > rod.lifeTime) {
-                    ItemStack waste = fuelMap().get(stack.getItem());
-                    inventory.setStackInSlot(i, waste == null ? ItemStack.EMPTY : waste.copy());
+                if (ItemPlateFuel.getLifeTime(stack) > rod.lifeTime()) {
+                    ItemStack waste = wasteOf(stack.getItem());
+                    inventory.setStackInSlot(i, waste == null ? ItemStack.EMPTY : waste);
                 }
 
                 for (int neighbor : neighborSlots) {

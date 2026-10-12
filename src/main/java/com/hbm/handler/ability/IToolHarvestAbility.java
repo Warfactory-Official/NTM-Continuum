@@ -211,12 +211,16 @@ public interface IToolHarvestAbility extends IBaseAbility {
         }
     };
 
-    IToolHarvestAbility[] abilities = { NONE, SILK, LUCK, SMELTER, SHREDDER, CENTRIFUGE, CRYSTALLIZER, MERCURY };
+    /**
+     * Every ability of this kind by its name ({@link #getName()}, which tool presets save), 1.7's in 1.7 order. An
+     * addon ability registers here ({@code REGISTRY.register(MY_ABILITY)}) at mod construction so a saved preset finds
+     * it again; giving it to a tool is the tool's own {@code addAbility}.
+     */
+    com.hbm.api.registry.NamedRegistry<IToolHarvestAbility> REGISTRY = com.hbm.api.registry.NamedRegistry.of(
+            "tool harvest ability", IToolHarvestAbility::getName, NONE, SILK, LUCK, SMELTER, SHREDDER, CENTRIFUGE, CRYSTALLIZER, MERCURY);
 
     static IToolHarvestAbility getByName(String name) {
-        for (IToolHarvestAbility ability : abilities) {
-            if (ability.getName().equals(name)) return ability;
-        }
-        return NONE;
+        IToolHarvestAbility ability = REGISTRY.get(name);
+        return ability != null ? ability : NONE;
     }
 }

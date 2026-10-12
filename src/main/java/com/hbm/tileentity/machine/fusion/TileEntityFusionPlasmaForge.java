@@ -73,8 +73,11 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
 
     /** The booster ingredients shown by the legacy empty-slot tooltip. */
     public static List<ItemStack> getBoosterDisplayStacks() {
+        // the hbm:plasma_forge_booster item data map (MachinePartDataMaps.PLASMA_FORGE_BOOSTER), in item registration order
         List<ItemStack> stacks = new java.util.ArrayList<>();
-        for (Booster booster : BOOSTERS) stacks.addAll(booster.ingredient.getDisplayStacks());
+        for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            if (com.hbm.api.data.MachinePartDataMaps.PLASMA_FORGE_BOOSTER.get(item) != null) stacks.add(new ItemStack(item));
+        }
         return stacks;
     }
 
@@ -88,27 +91,6 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
 
     public final ModuleMachinePlasma plasmaModule;
 
-    private static final List<Booster> BOOSTERS = List.of(
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.nugget_co60.get()), 20),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.billet_co60.get()), 120),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.ingot_co60.get()), 200),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.powder_co60.get()), 200),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.nugget_sr90.get()), 40),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.powder_sr90_tiny.get()), 40),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.billet_sr90.get()), 240),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.ingot_sr90.get()), 400),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.powder_sr90.get()), 400),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.nugget_au198.get()), 60),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.billet_au198.get()), 360),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.ingot_au198.get()), 600),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.powder_au198.get()), 600),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.powder_i131_tiny.get()), 60),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.powder_i131.get()), 600),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.powder_xe135_tiny.get()), 60),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.powder_xe135.get()), 600),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.powder_cs137_tiny.get()), 50),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.powder_cs137.get()), 500),
-            new Booster(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.powder_at209.get()), 1_200));
 
     public TileEntityFusionPlasmaForge(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUSION_PLASMA_FORGE.get(), pos, state, 16);
@@ -145,13 +127,14 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
 
 
         if (te.booster <= 0) {
-            for (Booster candidate : BOOSTERS) {
-                if (!candidate.ingredient.matchesRecipe(te.getItem(SLOT_BOOSTER), true)) continue;
-                te.booster = te.maxBooster = candidate.ticks;
-                ItemStack stack = te.getItem(SLOT_BOOSTER).copy();
+            ItemStack boosterStack = te.getItem(SLOT_BOOSTER);
+            Integer ticks = boosterStack.isEmpty() ? null
+                    : com.hbm.api.data.MachinePartDataMaps.PLASMA_FORGE_BOOSTER.get(boosterStack.getItem());
+            if (ticks != null) {
+                te.booster = te.maxBooster = ticks;
+                ItemStack stack = boosterStack.copy();
                 stack.shrink(1);
                 te.setItem(SLOT_BOOSTER, stack.getCount() <= 0 ? ItemStack.EMPTY : stack);
-                break;
             }
         }
 
@@ -241,7 +224,7 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         if (slot == SLOT_BATTERY) return true;
         if (slot == SLOT_BLUEPRINT) return stack.getItem() instanceof ItemBlueprints;
         if (plasmaModule.isItemValid(slot, stack)) return true;
-        if (slot == SLOT_BOOSTER) for (Booster booster : BOOSTERS) if (booster.ingredient.matchesRecipe(stack, true)) return true;
+        if (slot == SLOT_BOOSTER && !stack.isEmpty() && com.hbm.api.data.MachinePartDataMaps.PLASMA_FORGE_BOOSTER.get(stack.getItem()) != null) return true;
         return false;
     }
 
@@ -317,7 +300,6 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         super.setRemoved();
     }
 
-    private record Booster(com.hbm.inventory.RecipesCommon.AStack ingredient, int ticks) {}
 
     public static class ForgeArm {
         private final boolean striker;

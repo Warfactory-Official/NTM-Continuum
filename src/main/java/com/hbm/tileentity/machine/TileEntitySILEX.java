@@ -169,7 +169,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
      * {@code progress} to 0 in {@link #serverTick}, so interrupting the beam loses the partial roll.
      *
      * <p>The speed formula is upstream's, including its integer truncation:
-     * <pre>progress += Math.pow(2, mode.ordinal() - recipe.laserStrength.ordinal() + 1) / 2</pre>
+     * <pre>progress += Math.pow(2, mode.strength() - recipe.laserStrength.strength() + 1) / 2</pre>
      * At an exact wavelength match that is {@code 2^1 / 2 = 1} per tick; one step stronger gives 2,
      * two steps 4, and so on. Because it is a {@code double} added into an {@code int}, the value is
      * truncated — which is invisible here only because every result is already a whole number.
@@ -180,11 +180,11 @@ public class TileEntitySILEX extends TileEntityMachineBase
         SILEXRecipe recipe = SILEXRecipes.getOutput(current);
         if (recipe == null) return false;
         // the loaded wavelength must be at least as strong as the recipe demands
-        if (recipe.laserStrength.ordinal() > mode.ordinal()) return false;
+        if (recipe.laserStrength.strength() > mode.strength()) return false;
         if (currentFill < recipe.fluidConsumed) return false;
         if (!inventory.getStackInSlot(4).isEmpty()) return false;
 
-        progress += (int) (Math.pow(2, mode.ordinal() - recipe.laserStrength.ordinal() + 1) / 2);
+        progress += (int) (Math.pow(2, mode.strength() - recipe.laserStrength.strength() + 1) / 2);
 
         if (progress >= processTime) {
             currentFill -= recipe.fluidConsumed;

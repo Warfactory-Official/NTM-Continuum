@@ -50,7 +50,7 @@ public final class Hazard17GameTests {
     public static final GameTests.Function RADAWAY_17 =
             HazardGameTests.TESTS.function("radaway_17", 60, () -> Hazard17GameTests::radaway17);
     public static final GameTests.Function LUNG_DISEASE_17 =
-            HazardGameTests.TESTS.function("lung_disease_17", 60, () -> Hazard17GameTests::lungDisease17);
+            HazardGameTests.TESTS.function("lung_disease_17", 60, 4, () -> Hazard17GameTests::lungDisease17);
     public static final GameTests.Function HAZARD_REGISTRY_DUMP =
             HazardGameTests.TESTS.function("hazard_registry_dump", 20, () -> Hazard17GameTests::hazardRegistryDump);
 
@@ -195,6 +195,12 @@ public final class Hazard17GameTests {
 
     /** 1.7 maxBlacklung 2*60*60*20, healing below half of it, weakness III above 75% combined damage. */
     public static void lungDisease17(GameTestHelper helper) {
+        // the healing pig must tick (black lung heals in its living update); on 26.1 (3, 2, 3) can lie in the chunk next
+        // to the test's own, which need not be entity-ticking (TestPlots): "57600 -> 57600" was a pig that never ticked
+        TestPlots.whenTicking(helper, new BlockPos(0, 0, 0), new BlockPos(4, 3, 4), () -> lungDisease17Now(helper));
+    }
+
+    private static void lungDisease17Now(GameTestHelper helper) {
         helper.assertTrue(EntityHbmProps.MAX_BLACKLUNG == 2 * 60 * 60 * 20,
                 "max black lung must be 1.7's 144000, got " + EntityHbmProps.MAX_BLACKLUNG);
         LivingEntity healing = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(1, 2, 1));

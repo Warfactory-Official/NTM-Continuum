@@ -38,6 +38,22 @@ public class TileEntityMachineSatLinker extends TileEntityMachineBase implements
         return "container.satLinker";
     }
 
+    /** A listener copying its own data from the source chip to the copy; true where it changed the copy. */
+    @FunctionalInterface
+    public interface ChipCopy {
+        boolean copy(ItemStack source, ItemStack copy);
+    }
+
+    /**
+     * Run every tick both chip slots hold a chip, after the frequency is copied: hbm-space also copied a satellite's
+     * orbit settings from one satellite item to the other ({@code SatelliteBase.copyItemData}). Every listener runs.
+     */
+    public static final dev.golem.core.hook.Hook<ChipCopy> CHIP_COPY = dev.golem.core.hook.Hook.of(listeners -> (source, copy) -> {
+        boolean changed = false;
+        for (ChipCopy listener : listeners) changed |= listener.copy(source, copy);
+        return changed;
+    });
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineSatLinker linker) {
         ItemStack source = linker.inventory.getStackInSlot(0);
         ItemStack copy = linker.inventory.getStackInSlot(1);
@@ -48,11 +64,12 @@ public class TileEntityMachineSatLinker extends TileEntityMachineBase implements
                 ISatChip.setFreqS(copy, freq);
                 linker.setChanged();
             }
+            if (CHIP_COPY.invoker().copy(source, copy)) linker.setChanged();
         }
 
         ItemStack random = linker.inventory.getStackInSlot(2);
         if (!random.isEmpty() && random.getItem() instanceof ISatChip && level instanceof ServerLevel server) {
-            SatelliteSavedData satelliteData = SatelliteSavedData.get(server);
+            SatelliteSavedData satelliteData = SatelliteSavedData.get(server, linker.worldPosition); // hbm-space getData(world, x, z)
             int newId = level.getRandom().nextInt(100000);
             if (!satelliteData.isFreqTaken(newId)) {
                 ISatChip.setFreqS(random, newId);

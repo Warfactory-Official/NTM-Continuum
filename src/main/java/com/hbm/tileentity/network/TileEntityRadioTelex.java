@@ -32,7 +32,7 @@ import java.util.List;
  * The complete server-side TELEX state machine, ported from 1.12.2's {@code TileEntityRadioTelex}.
  * Characters are broadcast one at a time; {@link RTTYSystem} supplies the old one-tick delivery band.
  */
-public final class TileEntityRadioTelex extends TileEntityLoadedBase implements IControlReceiver, MenuProvider {
+public class TileEntityRadioTelex extends TileEntityLoadedBase implements IControlReceiver, MenuProvider {
     public static final int LINE_WIDTH = 33;
     public static final int LINE_COUNT = 5;
     public static final int CHANNEL_LENGTH = 10;

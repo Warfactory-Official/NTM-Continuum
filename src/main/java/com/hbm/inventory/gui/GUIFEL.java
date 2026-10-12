@@ -56,7 +56,7 @@ public class GUIFEL extends dev.golem.core.gui.CompatContainerScreen<ContainerFE
 
         // The in-GUI beam. NOTE the pow(2) gate: 1.7's server cost is 3^ordinal, so the GUI can show
         // a beam for one tick after the real one has already stopped. Preserved.
-        boolean beam = te.power > TileEntityFEL.powerReq * Math.pow(2, te.mode.ordinal())
+        boolean beam = te.power > TileEntityFEL.powerReq * Math.pow(2, te.mode.strength())
                 && te.isOn && te.mode != EnumWavelengths.NULL && te.distance > 0;
         if (beam) {
             int color = te.mode != EnumWavelengths.VISIBLE

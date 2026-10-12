@@ -170,7 +170,10 @@ public final class GapsBHarnessQueries {
             }
             case "bomblet" -> {
                 EntityBombletZeta bomblet = Entities.createTriggered(ModNtmEntities.BOMBLET_ZETA.get(), level);
-                bomblet.setType(i(p, "t", 1));
+                // the harness still names 1.7's bomblet type number: 0 he, 1 incendiary, 2 chlorine, 4 nuke
+                int t = i(p, "t", 1);
+                bomblet.setKind(t == 0 ? EntityBombletZeta.HE : t == 2 ? EntityBombletZeta.CHLORINE
+                        : t == 4 ? EntityBombletZeta.NUKE : EntityBombletZeta.INCENDIARY);
                 bomblet.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
                 json.addProperty("spawned", level.addFreshEntity(bomblet));
             }

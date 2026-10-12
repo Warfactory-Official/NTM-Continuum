@@ -63,6 +63,11 @@ public final class ExplosionNukeSmall {
             if (server.addFreshEntity(blast)) blast.startChunkLoading();
         }
 
+        // hbm-space: CelestialNukeShockHandler.trigger for a mini nuke
+        if (params.miniNuke && world instanceof ServerLevel server) {
+            com.hbm.api.environment.Environment.nuclearBlast(server, x, z, params.blastRadius);
+        }
+
         if (params.miniNuke) {
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (int i = -2; i <= 2; i++) {

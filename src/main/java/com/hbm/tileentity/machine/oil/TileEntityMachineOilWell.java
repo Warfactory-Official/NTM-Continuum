@@ -53,23 +53,10 @@ public class TileEntityMachineOilWell extends TileEntityOilDrillBase {
     @Override public int getDelay() { return delay; }
 
     @Override
-    public void onSuck(BlockPos pos) {
+    public void onSuck(BlockPos pos, com.hbm.api.data.DepositDataMaps.Deposit deposit) {
         level.playSound(null, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
                 SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 2.0F, 0.5F);
-        Block block = level.getBlockState(pos).getBlock();
-
-        if (block == ModOilBlocks.ore_oil.get()) {
-            tanks[0].setTankType(Fluids.OIL);
-            tanks[1].setTankType(Fluids.GAS);
-
-            tanks[0].setFill(Math.min(tanks[0].getFill() + oilPerDeposit, tanks[0].getMaxFill()));
-            tanks[1].setFill(Math.min(tanks[1].getFill()
-                    + (gasPerDepositMin + level.getRandom().nextInt(gasPerDepositMax - gasPerDepositMin + 1)), tanks[1].getMaxFill()));
-
-            if (level.getRandom().nextDouble() < drainChance) {
-                level.setBlock(pos, ModBlocks.ore_oil_empty.get().defaultBlockState(), 3);
-            }
-        }
+        suckDeposit(pos, deposit, oilPerDeposit, gasPerDepositMin, gasPerDepositMax, drainChance);
     }
 
     @Override

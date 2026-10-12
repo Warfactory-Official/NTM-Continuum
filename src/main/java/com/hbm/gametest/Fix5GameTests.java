@@ -79,7 +79,7 @@ public final class Fix5GameTests {
     public static final GameTests.Function MODS =
             TESTS.function("fix5_weapon_mods_and_names", 40, () -> Fix5GameTests::weaponModsAndNames);
     public static final GameTests.Function SECRET =
-            TESTS.function("fix5_secret_ammo_impacts", 200, () -> Fix5GameTests::secretAmmoImpacts);
+            TESTS.function("fix5_secret_ammo_impacts", 1200, () -> Fix5GameTests::secretAmmoImpacts);
 
     public static void init() {}
 
@@ -116,6 +116,12 @@ public final class Fix5GameTests {
 
     /** 1.7 {@code XFactory12ga}: the Liberator's {@code rounds(4)}; one pull fires 4 x 8 buckshot pellets. */
     private static void liberatorFourBarrels(GameTestHelper helper) {
+        // the shooter at (1, 1, 1) can stand in the chunk next to the test's own; on 26.1 its pellets are counted only
+        // once that chunk is entity-ticking (TestPlots)
+        TestPlots.whenTicking(helper, new BlockPos(0, 0, 0), new BlockPos(3, 3, 3), () -> liberatorFourBarrelsNow(helper));
+    }
+
+    private static void liberatorFourBarrelsNow(GameTestHelper helper) {
         Player player = player(helper);
         ItemStack stack = armed(player, ModGunItems.gun_liberator.get(), ModAmmoItems.g12.get(), 8);
         tick(helper, player, stack, 40);
@@ -226,9 +232,19 @@ public final class Fix5GameTests {
 
         flare.tickCount = 40;
         supply.onUpdate.accept(flare);
-        // The C-130 spawns ~200 blocks out; it becomes visible once its force-loaded chunk has loaded.
+        // The C-130 spawns ~200 blocks out on a random heading; it becomes visible once its force-loaded chunk has been
+        // generated on a worker thread. The GameTest server runs ticks back to back, so even 1,200 ticks can pass in about
+        // a second (a flake on 26.1 Fabric): each tick without the plane gives the worker 25 ms of wall-clock time (at
+        // most ~30 s); chunk completions still run on this thread between ticks. The assertion is unchanged.
         helper.succeedWhen(() -> {
             List<Entity> planes = near(level, ModNtmEntities.C130.get(), hit, 300, 300);
+            if (planes.isEmpty()) {
+                try {
+                    Thread.sleep(25);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
             helper.assertTrue(planes.size() == 1, "the supply flare calls one C-130 on tick 40, found " + planes.size());
             planes.forEach(Entity::discard);
         });

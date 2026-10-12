@@ -631,7 +631,7 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
      */
     private static boolean isPersistent(String key) {
         return key.startsWith(KEY_WEAR) || key.startsWith(KEY_MODE) || key.startsWith("mag")
-                || key.startsWith("KEY_MOD_LIST_") || key.equals("coincount") || key.equals("coincharge")
+                || key.startsWith("KEY_MOD_LIST_") || key.startsWith("KEY_MOD_NAMES_") || key.equals("coincount") || key.equals("coincharge")
                 || key.equals("colors");
     }
 

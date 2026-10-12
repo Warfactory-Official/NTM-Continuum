@@ -150,8 +150,9 @@ public final class Peripherals {
         return rows;
     }
 
-    /** HBM blocks that hold a block entity or are a folded cell of one. */
+    /** HBM blocks that hold a block entity or are a folded cell of one, and other mods' component blocks. */
     private static boolean carries(Block block) {
+        if (com.hbm.api.computer.ComputerComponents.carries(block)) return true;
         if (!(block instanceof EntityBlock) && !(block instanceof BlockMultiblockCore)
                 && !(block instanceof com.hbm.blocks.multiblock.BlockMultiblockCell)) return false;
         return Constants.MOD_ID.equals(BuiltInRegistries.BLOCK.getKey(block).getNamespace());
@@ -213,6 +214,14 @@ public final class Peripherals {
             Row<?> found = null;
             for (Class<?> c = type; c != null && c != BlockEntity.class && found == null; c = c.getSuperclass()) {
                 found = BY_TYPE.get(c);
+            }
+            if (found == null) {
+                // another mod's component (com.hbm.api.computer.ComputerComponents), registered at its declare()
+                com.hbm.api.computer.ComputerComponents.Component<?> component =
+                        com.hbm.api.computer.ComputerComponents.of(be);
+                if (component != null) {
+                    found = new Row<>(BlockEntity.class, machine -> new ComponentPeripheral(component, machine), Reach.BLOCK);
+                }
             }
             known = Optional.ofNullable(found);
             RESOLVED.put(type, known);

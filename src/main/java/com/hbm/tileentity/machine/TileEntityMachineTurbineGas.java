@@ -36,8 +36,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.HashMap;
-import java.util.Map;
 
 /** The legacy gas turbine: a slow-starting gas generator with a steam heat exchanger. */
 public class TileEntityMachineTurbineGas extends TileEntityMachineBase
@@ -69,13 +67,13 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
     private double fuelToConsume;
     private long powerBeforeNet;
 
-    private static final Map<FluidType, Double> FUEL_MAX_CONSUMPTION = new HashMap<>();
-
-    static {
-        FUEL_MAX_CONSUMPTION.put(Fluids.GAS, 50D);
-        FUEL_MAX_CONSUMPTION.put(Fluids.SYNGAS, 10D);
-        FUEL_MAX_CONSUMPTION.put(Fluids.OXYHYDROGEN, 100D);
-        FUEL_MAX_CONSUMPTION.put(Fluids.REFORMGAS, 5D);
+    /**
+     * 1.7 {@code fuelMaxCons}: mB burned per tick at full throttle, now the value map
+     * {@code data/hbm/value_maps/fluid/gas_turbine_fuel_consumption.json}; 5 for a fuel without a value (1.7's default).
+     */
+    static double maxFuelConsumption(FluidType fuel) {
+        Double value = com.hbm.api.data.FluidDataMaps.GAS_TURBINE_FUEL.get(fuel.getFluid());
+        return value == null ? 5D : value;
     }
 
     public TileEntityMachineTurbineGas(BlockPos pos, BlockState state) {
@@ -162,6 +160,12 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
     }
 
     private void startup(Level level) {
+        // hbm-space: no air, no ignition; the turbine drops straight back to off (com.hbm.api.environment.Environment)
+        if (!com.hbm.api.environment.Environment.breatheAir(level, worldPosition, 0)) {
+            state = 0;
+            return;
+        }
+
         counter++;
         if (counter <= 20) rpm = 5 * counter;
         else if (counter <= 40) rpm = 100 - 5 * (counter - 20);
@@ -221,12 +225,17 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
         if (TickPhase.every(level, worldPosition, 20) && tanks[0].getTankType() != Fluids.OXYHYDROGEN) {
             PollutionHandler.incrementPollution(level, worldPosition, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 3);
         }
-        makePower(level, FUEL_MAX_CONSUMPTION.getOrDefault(tanks[0].getTankType(), 5D), throttle);
+        makePower(level, maxFuelConsumption(tanks[0].getTankType()), throttle);
     }
 
     private void makePower(Level level, double maxConsumption, int throttle) {
         double consumption = maxConsumption * 0.05D + maxConsumption * throttle / 100D;
         fuelToConsume += consumption;
+        // hbm-space: the running turbine breathes as much oxygen as it burns fuel, and stops without it
+        if (!com.hbm.api.environment.Environment.breatheAir(level, worldPosition, (int) Math.floor(fuelToConsume))) {
+            state = 0;
+            return;
+        }
         int consumed = (int) Math.floor(fuelToConsume);
         tanks[0].setFill(tanks[0].getFill() - consumed);
         fuelToConsume -= consumed;

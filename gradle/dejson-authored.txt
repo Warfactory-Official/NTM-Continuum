@@ -6,10 +6,11 @@
 # transliterated into Element.box(...).face(...) chains or JsonObject calls.
 #
 # One path per line, relative to src/main/resources; a line ending in `/` exempts a whole folder.
-# Read by gradle/dejson.gradle.kts (dejsonOwnership: a listed file may be authored in a Dejson-owned folder, and a
-# listed path that does not exist fails the build) and by port-tools/generator_safety.py (generators may not
-# write these files either). Taking a file back from a declaration: add it here AND delete the declaration —
-# an authored file silently wins over a declaration at the same path.
+# Read by ../Golem-Core/gradle/mod/dejson.gradle.kts through golem.build.dejson.authored (dejsonOwnership: a
+# listed file may be authored in a Dejson-owned folder, and a listed path that does not exist fails the build)
+# and by port-tools/generator_safety.py (generators may not write these files either). Taking a file back from
+# a declaration: add it here AND delete the declaration — an authored file silently wins over a declaration at
+# the same path.
 #
 # Origin: 2026-09-30 (History §19eg-dejson-authored) restored the 251 files the §19ed-dejson / d607d2d5
 # migrations had turned into BlockModelDeclarations, ContentItemModels, ItemModelDeclarations and inline
@@ -267,3 +268,4 @@ assets/hbm/models/item/machine_obj_base.json
 assets/hbm/models/item/machine_obj_legacy.json
 assets/hbm/models/item/machine_weapon_table.json
 assets/hbm/models/item/pneumatic_tube.json
+# Machine recipe tables are not here: they are generated from src/recipes at build time (gradle/recipe-tables.gradle.kts).

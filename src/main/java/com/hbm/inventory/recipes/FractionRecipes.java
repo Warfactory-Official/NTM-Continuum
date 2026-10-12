@@ -2,16 +2,18 @@ package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.Fluids;
-
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Fraction tower recipes — 1:1 port of the full 1.12.2 {@code FractionRecipes} table (all 19 entries).
- * Each input (100 mB per fractionate op) splits into two fluids (mB amounts as given). All output
- * fluids exist in the port's 156-fluid registry, so nothing is skipped.
+ * Fraction tower recipes: the datapack table {@code hbm:fraction}, one file per input fluid in
+ * {@code data/hbm/recipe/fraction/} ({@code {"input": fluid, "left": {type, amount}, "right": {type, amount}}}; 100 mB of
+ * input per operation splits into the two outputs). Converted once from the Java table (1.7's 19 rows).
  */
 public final class FractionRecipes {
 
@@ -19,46 +21,43 @@ public final class FractionRecipes {
 
     public record FractionPair(FluidStack left, FluidStack right) {}
 
-    private static final Map<FluidType, FractionPair> fractions = new LinkedHashMap<>();
-    private static boolean initialized = false;
+    /** One row: the input fluid and its two fractions. */
+    public record Row(FluidType input, FluidStack left, FluidStack right) {}
+
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            GenericRecipeCodec.FLUID.fieldOf("input").forGetter(Row::input),
+            GenericRecipeCodec.FLUID_STACK.fieldOf("left").forGetter(Row::left),
+            GenericRecipeCodec.FLUID_STACK.fieldOf("right").forGetter(Row::right)
+    ).apply(i, Row::new));
+
+    public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("fraction", () -> CODEC);
+
+    private static volatile Map<FluidType, FractionPair> fractions = Map.of();
+
+    static {
+        TABLE.changed.register(FractionRecipes::reindex);
+    }
+
+    /** Declares the table at mod construction. */
+    public static void declare() {}
+
+    private static void reindex() {
+        Map<FluidType, FractionPair> next = new LinkedHashMap<>();
+        for (Row row : TABLE.rows()) next.put(row.input(), new FractionPair(row.left(), row.right()));
+        fractions = next;
+    }
+
+    private static Map<FluidType, FractionPair> index() {
+        if (fractions.isEmpty()) TABLE.rows();
+        return fractions;
+    }
 
     public static FractionPair getFractions(FluidType input) {
-        init();
-        return fractions.get(input);
+        return index().get(input);
     }
 
     /** Read-only view for JEI display. */
     public static Map<FluidType, FractionPair> getAll() {
-        init();
-        return Collections.unmodifiableMap(fractions);
-    }
-
-    private static void put(FluidType in, FluidType l, int lAmt, FluidType r, int rAmt) {
-        fractions.put(in, new FractionPair(new FluidStack(l, lAmt), new FluidStack(r, rAmt)));
-    }
-
-    private static synchronized void init() {
-        if (initialized) return;
-        initialized = true;
-
-        put(Fluids.HEAVYOIL, Fluids.BITUMEN, 30, Fluids.SMEAR, 70);
-        put(Fluids.HEAVYOIL_VACUUM, Fluids.SMEAR, 40, Fluids.HEATINGOIL_VACUUM, 60);
-        put(Fluids.SMEAR, Fluids.HEATINGOIL, 60, Fluids.LUBRICANT, 40);
-        put(Fluids.NAPHTHA, Fluids.HEATINGOIL, 40, Fluids.DIESEL, 60);
-        put(Fluids.NAPHTHA_DS, Fluids.XYLENE, 60, Fluids.DIESEL_REFORM, 40);
-        put(Fluids.NAPHTHA_CRACK, Fluids.HEATINGOIL, 30, Fluids.DIESEL_CRACK, 70);
-        put(Fluids.LIGHTOIL, Fluids.DIESEL, 40, Fluids.KEROSENE, 60);
-        put(Fluids.LIGHTOIL_DS, Fluids.DIESEL_REFORM, 60, Fluids.KEROSENE_REFORM, 40);
-        put(Fluids.LIGHTOIL_CRACK, Fluids.KEROSENE, 70, Fluids.PETROLEUM, 30);
-        put(Fluids.COALOIL, Fluids.COALGAS, 30, Fluids.OIL, 70);
-        put(Fluids.COALCREOSOTE, Fluids.COALOIL, 10, Fluids.BITUMEN, 90);
-        put(Fluids.REFORMATE, Fluids.AROMATICS, 40, Fluids.XYLENE, 60);
-        put(Fluids.LIGHTOIL_VACUUM, Fluids.KEROSENE, 70, Fluids.REFORMGAS, 30);
-        put(Fluids.EGG, Fluids.CHOLESTEROL, 50, Fluids.RADIOSOLVENT, 50);
-        put(Fluids.OIL_COKER, Fluids.CRACKOIL, 30, Fluids.HEATINGOIL, 70);
-        put(Fluids.NAPHTHA_COKER, Fluids.NAPHTHA_CRACK, 75, Fluids.LIGHTOIL_CRACK, 25);
-        put(Fluids.GAS_COKER, Fluids.AROMATICS, 25, Fluids.CARBONDIOXIDE, 75);
-        put(Fluids.CHLOROCALCITE_MIX, Fluids.CHLOROCALCITE_CLEANED, 50, Fluids.COLLOID, 50);
-        put(Fluids.BAUXITE_SOLUTION, Fluids.REDMUD, 50, Fluids.SODIUM_ALUMINATE, 50);
+        return Collections.unmodifiableMap(index());
     }
 }

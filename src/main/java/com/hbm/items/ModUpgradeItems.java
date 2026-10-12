@@ -46,7 +46,7 @@ public final class ModUpgradeItems {
     public static final RegistryObject<ItemMachineUpgrade> upgrade_fortune_2 = upgrade("upgrade_fortune_2", UpgradeType.FORTUNE, 2);
     public static final RegistryObject<ItemMachineUpgrade> upgrade_fortune_3 = upgrade("upgrade_fortune_3", UpgradeType.FORTUNE, 3);
     /** Deletes vacuumed scrap drops ({@link ItemMachineUpgrade#isScrap}) — the mining laser's trash filter. */
-    public static final RegistryObject<ItemMachineUpgrade> upgrade_nullifier = upgrade("upgrade_nullifier", UpgradeType.NULLIFIER, 1);
+    public static final RegistryObject<ItemMachineUpgrade> upgrade_nullifier = upgrade("upgrade_nullifier", UpgradeType.SPECIAL, 0); // 1.7 new ItemMachineUpgrade(): SPECIAL
     // The SPECIAL (tier-0) drop-processing chain (each crafts from the previous): smelter → shredder →
     // centrifuge → crystallizer. The mining laser processes mined drops through the matching recipe set.
     public static final RegistryObject<ItemMachineUpgrade> upgrade_smelter = upgrade("upgrade_smelter", UpgradeType.SPECIAL, 0);
@@ -58,7 +58,7 @@ public final class ModUpgradeItems {
     public static final RegistryObject<ItemMachineUpgrade> upgrade_gc_speed = upgrade("upgrade_gc_speed", UpgradeType.SPECIAL, 0);
     /** The Screaming Scientist upgrade — in the mining laser: ×4 cycles, ×4 speed, ×20 consumption, and
      * screams at the mined block each tick (1.12.2 {@code upgrade_screm}). */
-    public static final RegistryObject<ItemMachineUpgrade> upgrade_screm = upgrade("upgrade_screm", UpgradeType.SCREAM, 1);
+    public static final RegistryObject<ItemMachineUpgrade> upgrade_screm = upgrade("upgrade_screm", UpgradeType.SPECIAL, 0); // 1.7 new ItemMachineUpgrade(): SPECIAL
 
     /** Artificial Xen Crystal: 1.7 {@code ItemDrop} (a dangerous drop that lifts the ground it lands on); the Scream upgrade's ingredient. */
     public static final RegistryObject<com.hbm.items.special.ItemDrop> crystal_xen =

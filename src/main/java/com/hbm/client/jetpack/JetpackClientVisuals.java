@@ -392,12 +392,13 @@ public final class JetpackClientVisuals {
                 && !wings.murk;
         float sweep = (float) Math.sin(player.tickCount * 0.2D) * 20F;
         float trail = (float) Math.sin(player.tickCount * 0.2D - Math.PI * 0.5D) * 50F + 30F;
-        if (!limp && player.onGround()) {
+        boolean relax = relaxWings(player);
+        if (!limp && relax) {
             sweep = 20F;
             trail = 160F;
         }
         if (limp) {
-            if (player.onGround()) {
+            if (relax) {
                 sweep = 30F;
                 trail = -30F;
             } else if (player.getDeltaMovement().y < -0.1D) {
@@ -421,11 +422,21 @@ public final class JetpackClientVisuals {
         if (player == null) return;
         float sweep = (float) Math.sin(player.tickCount * 0.2D) * 20F;
         float trail = (float) Math.sin(player.tickCount * 0.2D - Math.PI * 0.5D) * 50F + 30F;
-        if (player.onGround()) {
+        if (relaxWings(player)) {
             sweep = 20F;
             trail = 160F;
         }
         JetpackWornModels.wings().submit(pose, sink, light, parts.body(), skin, sweep, trail);
+    }
+
+    /**
+     * hbm-space {@code ModelArmorWings}: the wings also fold while the wearer rides something
+     * ({@code relaxWings = onGround || ridingEntity != null}; ADDON-API-INVENTORY V-184). Off in plain HBM.
+     */
+    public static boolean relaxWhileRiding = false;
+
+    private static boolean relaxWings(Player player) {
+        return player.onGround() || relaxWhileRiding && player.isPassenger();
     }
 
     public static void submitLocalEffects(PoseStack pose, CameraInfo camera,

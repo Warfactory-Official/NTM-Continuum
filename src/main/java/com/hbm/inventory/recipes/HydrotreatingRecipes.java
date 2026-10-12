@@ -2,16 +2,19 @@ package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.Fluids;
-
-import java.util.Collections;
-import java.util.LinkedHashMap;
+import com.hbm.inventory.recipes.loader.FluidRecipeCodecs;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import java.util.Map;
 
 /**
- * Hydrotreater recipes — 1:1 port of the 1.12.2 {@code HydrotreatingRecipes}. Per 100 mB input +
- * {@code hydrogen} mB (at pressure 1) → the two outputs {@code out1}/{@code out2} (in mB). The machine
- * additionally requires a {@code catalytic_converter} and 20k HE per op (every 2 ticks).
+ * Hydrotreater recipes: the datapack table {@code hbm:hydrotreating}, one file per input fluid in
+ * {@code data/hbm/recipe/hydrotreating/} ({@code {"input": fluid, "hydrogen": {type, amount, pressure}, "outputs": [two
+ * {type, amount}]}}): per 100 mB of input plus the (pressurised) hydrogen, the two products. The machine also needs a
+ * {@code catalytic_converter} and 20k HE per operation. Converted once from the Java table (1.7
+ * {@code HydrotreatingRecipes}, 6 rows).
  */
 public final class HydrotreatingRecipes {
 
@@ -20,34 +23,26 @@ public final class HydrotreatingRecipes {
     /** Hydrogen requirement (pressurized) + two outputs, per 100 mB input. */
     public record HydrotreatingRecipe(FluidStack hydrogen, FluidStack out1, FluidStack out2) {}
 
-    private static final Map<FluidType, HydrotreatingRecipe> recipes = new LinkedHashMap<>();
-    private static boolean initialized = false;
+    public record Row(FluidType input, FluidStack hydrogen, List<FluidStack> outputs) {}
+
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            GenericRecipeCodec.FLUID.fieldOf("input").forGetter(Row::input),
+            GenericRecipeCodec.FLUID_STACK.fieldOf("hydrogen").forGetter(Row::hydrogen),
+            FluidRecipeCodecs.stacks(2).fieldOf("outputs").forGetter(Row::outputs)
+    ).apply(i, Row::new));
+
+    public static final FluidRecipeCodecs.ByFluid<Row, HydrotreatingRecipe> TABLE = new FluidRecipeCodecs.ByFluid<>(
+            "hydrotreating", () -> CODEC, Row::input,
+            row -> new HydrotreatingRecipe(row.hydrogen(), row.outputs().get(0), row.outputs().get(1)));
+
+    /** Declares the table at mod construction. */
+    public static void declare() {}
 
     public static HydrotreatingRecipe getOutput(FluidType type) {
-        init();
-        return recipes.get(type);
+        return TABLE.get(type);
     }
 
     public static Map<FluidType, HydrotreatingRecipe> getAll() {
-        init();
-        return Collections.unmodifiableMap(recipes);
-    }
-
-    private static synchronized void init() {
-        if (initialized) return;
-        initialized = true;
-
-        recipes.put(Fluids.OIL, new HydrotreatingRecipe(
-                new FluidStack(Fluids.HYDROGEN, 5, 1), new FluidStack(Fluids.OIL_DS, 90), new FluidStack(Fluids.SOURGAS, 15)));
-        recipes.put(Fluids.CRACKOIL, new HydrotreatingRecipe(
-                new FluidStack(Fluids.HYDROGEN, 5, 1), new FluidStack(Fluids.CRACKOIL_DS, 90), new FluidStack(Fluids.SOURGAS, 15)));
-        recipes.put(Fluids.GAS, new HydrotreatingRecipe(
-                new FluidStack(Fluids.HYDROGEN, 5, 1), new FluidStack(Fluids.PETROLEUM, 80), new FluidStack(Fluids.SOURGAS, 15)));
-        recipes.put(Fluids.DIESEL_CRACK, new HydrotreatingRecipe(
-                new FluidStack(Fluids.HYDROGEN, 10, 1), new FluidStack(Fluids.DIESEL, 80), new FluidStack(Fluids.SOURGAS, 30)));
-        recipes.put(Fluids.DIESEL_CRACK_REFORM, new HydrotreatingRecipe(
-                new FluidStack(Fluids.HYDROGEN, 10, 1), new FluidStack(Fluids.DIESEL_REFORM, 80), new FluidStack(Fluids.SOURGAS, 30)));
-        recipes.put(Fluids.COALOIL, new HydrotreatingRecipe(
-                new FluidStack(Fluids.HYDROGEN, 10, 1), new FluidStack(Fluids.COALGAS, 80), new FluidStack(Fluids.SOURGAS, 15)));
+        return TABLE.all();
     }
 }

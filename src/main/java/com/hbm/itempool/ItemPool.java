@@ -1,12 +1,13 @@
 package com.hbm.itempool;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.hbm.Constants;
 import com.hbm.inventory.fluid.Fluids;
 import com.mojang.serialization.JsonOps;
 import dev.golem.core.Ids;
+import dev.golem.core.data.DataFiles;
 import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -18,20 +19,20 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * The 1.7 weighted item pools (supply crates, Bobmazon, satellites, meteor safes), copied from ntm-next.
- * ntm-next bakes the 1.7 tables to {@code /hbm/item_pools.json} at datagen; the baked file ships here
- * as a plain resource.
+ * The 1.7 weighted item pools (supply crates, Bobmazon, satellites, meteor safes), copied from ntm-next, as a datapack
+ * folder: {@code data/<namespace>/item_pool/<pool>.json}, {@code {"replace": false, "entries": [{"item", "min", "max",
+ * "weight", "fluid"?, "components"?}, ...]}}. The pool's name is the file name upper-cased ({@code pool_ammo.json} is
+ * {@code POOL_AMMO}, the names code and saves use), in any namespace: an addon or a datapack adds rows to one of HBM's
+ * pools with a file of the same name in its own namespace (HBM's rows first, then other namespaces in id order, each
+ * pack's copy lowest priority first), or replaces the pool with {@code "replace": true}; a new name is a new pool.
+ * Golem Core {@code DataFiles} reads the folder on the server and sends it to clients (JEI's satellite page reads the
+ * same pools). ntm-next baked the 1.7 tables at datagen; the baked file was split into these files once.
  *
  * <p>Two deliberate deviations from ntm-next: an entry naming an item this port has not registered
  * yet is dropped with a debug line rather than failing the whole load (ntm-next's registry is a
@@ -40,14 +41,25 @@ import java.util.Map;
  */
 public class ItemPool {
 
-    public static final String RESOURCE = "/hbm/item_pools.json";
+    /** The datapack folder. */
+    public static final String FOLDER = "item_pool";
 
     public static final Map<String, ItemPool> POOLS = new HashMap<>();
 
-    private static final List<Entry> BACKUP_POOL = List.of(
-            Entry.of(Items.BREAD, 1, 3, 10),
-            Entry.of(Items.STICK, 2, 5, 10)
-    );
+    /** In a holder: the class is loaded at mod construction ({@link #declare}), before stacks can be built. */
+    private static final class Backup {
+        static final List<Entry> POOL = List.of(
+                Entry.of(Items.BREAD, 1, 3, 10),
+                Entry.of(Items.STICK, 2, 5, 10)
+        );
+    }
+
+    /** The merged rows of every pool, by pool name, as the datapacks gave them. */
+    private static volatile Map<String, JsonArray> raw = Map.of();
+    /** The registries the server decodes item components with; null until a server started. */
+    private static HolderLookup.@Nullable Provider decodeWith;
+    private static boolean decoded;
+
     public final String name;
     public List<Entry> pool = List.of();
 
@@ -56,34 +68,59 @@ public class ItemPool {
         POOLS.put(name, this);
     }
 
-    public static void load(HolderLookup.Provider registries) {
-        POOLS.clear();
-        RegistryOps<JsonElement> ops = net.minecraft.resources.RegistryOps.create(JsonOps.INSTANCE, registries);
-        JsonObject root = root();
-        if (root == null) return;
-        for (Map.Entry<String, JsonElement> pool : root.entrySet()) {
-            new ItemPool(pool.getKey()).pool = body(pool.getValue(), ops);
+    /** Declares the datapack folder at mod construction. */
+    public static void declare() {
+        DataFiles.stackedFolder(FOLDER, ItemPool::apply);
+    }
+
+    private static void apply(Map<String, List<JsonElement>> stacks) {
+        List<String> ids = new ArrayList<>(stacks.keySet());
+        // HBM's own rows first (1.7's order), then every other namespace in id order
+        ids.sort(java.util.Comparator.comparing((String id) -> !id.startsWith(Constants.MOD_ID + ":")).thenComparing(id -> id));
+        Map<String, JsonArray> merged = new java.util.LinkedHashMap<>();
+        for (String id : ids) {
+            String pool = id.substring(id.indexOf(':') + 1).toUpperCase(java.util.Locale.ROOT);
+            for (JsonElement file : stacks.get(id)) {
+                if (!file.isJsonObject()) continue;
+                PoolFile parsed = PoolFile.read(file.getAsJsonObject());
+                if (parsed.replace()) merged.remove(pool);
+                JsonArray rows = merged.computeIfAbsent(pool, p -> new JsonArray());
+                for (Row row : parsed.entries()) rows.add(row.write());
+            }
+        }
+        synchronized (ItemPool.class) {
+            raw = java.util.Collections.unmodifiableMap(merged);
+            decoded = false;
         }
     }
 
-    /** One baked pool, bypassing {@link #POOLS}: a remote client never runs {@link #load}. */
+    /** Decodes the pools with the server's registries (server start, {@code /ntmreload}). */
+    public static synchronized void load(HolderLookup.Provider registries) {
+        decodeWith = registries;
+        decoded = false;
+        decode();
+    }
+
+    private static synchronized void decode() {
+        if (decoded || decodeWith == null) return;
+        POOLS.clear();
+        RegistryOps<JsonElement> ops = net.minecraft.resources.RegistryOps.create(JsonOps.INSTANCE, decodeWith);
+        for (Map.Entry<String, JsonArray> pool : raw.entrySet()) {
+            new ItemPool(pool.getKey()).pool = body(pool.getValue(), ops);
+        }
+        decoded = true;
+    }
+
+    /** One pool decoded with {@code registries}, bypassing {@link #POOLS}: a remote client never runs {@link #load}. */
     public static List<Entry> read(HolderLookup.Provider registries, String name) {
-        JsonObject root = root();
-        JsonElement pool = root == null ? null : root.get(name);
-        if (pool == null) throw new IllegalArgumentException(RESOURCE + " holds no pool " + name);
+        JsonArray pool = raw.get(name);
+        if (pool == null) throw new IllegalArgumentException("no item pool " + name + " in data/*/" + FOLDER);
         return body(pool, net.minecraft.resources.RegistryOps.create(JsonOps.INSTANCE, registries));
     }
 
-    private static @Nullable JsonObject root() {
-        try (InputStream in = ItemPool.class.getResourceAsStream(RESOURCE)) {
-            if (in == null) {
-                Constants.LOG.warn("missing the baked pools at {} - every draw answers the backup pool", RESOURCE);
-                return null;
-            }
-            return JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject();
-        } catch (IOException e) {
-            throw new UncheckedIOException("reading " + RESOURCE, e);
-        }
+    /** Every pool's merged rows as loaded, by pool name. */
+    public static Map<String, JsonArray> rawPools() {
+        return raw;
     }
 
     private static List<Entry> body(JsonElement pool, RegistryOps<JsonElement> ops) {
@@ -95,31 +132,32 @@ public class ItemPool {
         return List.copyOf(body);
     }
 
-    private static @Nullable Entry entry(JsonObject row, RegistryOps<JsonElement> ops) {
-        int min = row.get("min").getAsInt();
-        int max = row.get("max").getAsInt();
-        int weight = row.get("weight").getAsInt();
-        if (!row.has("item")) return Entry.empty(min, max, weight);
-        Identifier id = Ids.parse(row.get("item").getAsString());
+    private static @Nullable Entry entry(JsonObject json, RegistryOps<JsonElement> ops) {
+        Row row = Row.read(json);
+        int min = row.min();
+        int max = row.max();
+        int weight = row.weight();
+        if (row.item() == null) return Entry.empty(min, max, weight);
+        Identifier id = Ids.parse(row.item());
         if (!BuiltInRegistries.ITEM.containsKey(id)) {
-            Constants.LOG.debug("{} names {}, which this port has not registered; entry skipped", RESOURCE, id);
+            Constants.LOG.debug("{} names {}, which this port has not registered; entry skipped", FOLDER, id);
             return null;
         }
         Item item = BuiltInRegistries.ITEM.getValue(id);
         ItemStack template = new ItemStack(item);
-        if (row.has("fluid")) {
+        if (row.fluid() != null) {
             // 1.7 metadata fluid containers (canister_full meta = fluid id, cell_deuterium ...): the port keeps the
             // fluid in components, which only the item itself knows how to write (fill, cell variant, tint).
-            template = filled(template, Fluids.fromName(row.get("fluid").getAsString()));
+            template = filled(template, Fluids.fromName(row.fluid()));
             if (template == null) {
-                Constants.LOG.warn("{} fills {} with {}, which it cannot hold; entry skipped", RESOURCE, id, row.get("fluid"));
+                Constants.LOG.warn("{} fills {} with {}, which it cannot hold; entry skipped", FOLDER, id, row.fluid());
                 return null;
             }
         }
-        if (row.has("components")) {
+        if (row.components() != null) {
             ItemStack base = template;
-            template = ItemStacks.withComponents(template, row.getAsJsonObject("components"), ops).orElseGet(() -> {
-                Constants.LOG.warn("{}: the components of {} do not decode; using the bare item", RESOURCE, id);
+            template = ItemStacks.withComponents(template, row.components(), ops).orElseGet(() -> {
+                Constants.LOG.warn("{}: the components of {} do not decode; using the bare item", FOLDER, id);
                 return base;
             });
         }
@@ -137,8 +175,12 @@ public class ItemPool {
      * Grabs the named pool, or the backup pool if it was never registered.
      */
     public static List<Entry> getPool(String name) {
-        ItemPool p = POOLS.get(name);
-        return p == null ? BACKUP_POOL : p.pool;
+        ItemPool p;
+        synchronized (ItemPool.class) {
+            decode();
+            p = POOLS.get(name);
+        }
+        return p == null ? Backup.POOL : p.pool;
     }
 
     public static ItemStack getStack(String name, RandomSource rand) {
@@ -168,6 +210,61 @@ public class ItemPool {
             if (roll < acc) return e;
         }
         throw new AssertionError();
+    }
+
+    /**
+     * One pool file as written: {@code {"replace"?, "entries": [...]}}. {@link #read} is what {@link #apply} parses and
+     * {@link #write} its exact inverse ({@code replace} is written only when true, the reader's default being false).
+     */
+    public record PoolFile(boolean replace, List<Row> entries) {
+
+        public static PoolFile read(JsonObject file) {
+            boolean replace = file.has("replace") && file.get("replace").getAsBoolean();
+            List<Row> entries = new ArrayList<>();
+            if (file.has("entries")) {
+                for (JsonElement row : file.getAsJsonArray("entries")) entries.add(Row.read(row.getAsJsonObject()));
+            }
+            return new PoolFile(replace, List.copyOf(entries));
+        }
+
+        public JsonObject write() {
+            JsonObject file = new JsonObject();
+            if (replace) file.addProperty("replace", true);
+            JsonArray rows = new JsonArray();
+            for (Row row : entries) rows.add(row.write());
+            file.add("entries", rows);
+            return file;
+        }
+    }
+
+    /**
+     * One row of a pool file as written: {@code {"item"?, "min", "max", "weight", "fluid"?, "components"?}}. A missing
+     * item is the EMPTY marker; {@code fluid} is a {@code Fluids} name the item is filled with; {@code components} is
+     * decoded with the server's registries. {@link #read} and {@link #write} are each other's inverse.
+     */
+    public record Row(@Nullable String item, int min, int max, int weight, @Nullable String fluid,
+                      @Nullable JsonObject components) {
+
+        public static Row read(JsonObject row) {
+            return new Row(
+                    row.has("item") ? row.get("item").getAsString() : null,
+                    row.get("min").getAsInt(),
+                    row.get("max").getAsInt(),
+                    row.get("weight").getAsInt(),
+                    row.has("fluid") ? row.get("fluid").getAsString() : null,
+                    row.has("components") ? row.getAsJsonObject("components") : null);
+        }
+
+        public JsonObject write() {
+            JsonObject row = new JsonObject();
+            if (item != null) row.addProperty("item", item);
+            row.addProperty("min", min);
+            row.addProperty("max", max);
+            row.addProperty("weight", weight);
+            if (fluid != null) row.addProperty("fluid", fluid);
+            if (components != null) row.add("components", components.deepCopy());
+            return row;
+        }
     }
 
     /**

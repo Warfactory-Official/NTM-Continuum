@@ -41,6 +41,12 @@ public class TileEntityNukeCustom extends TileEntityNukeBomb {
     public float nuke;
     public float hydro;
     public float amat;
+
+    /**
+     * The nuclear level below which the antimatter stage is void (1.7: 50; ADDON-API-INVENTORY V-171). NTM: Space sets
+     * 0: hbm-space commented the gate out, so antimatter arms on its own.
+     */
+    public static float amatNukeFloor = 50F;
     public float dirty;
     public float schrab;
     public float euph;
@@ -102,7 +108,7 @@ public class TileEntityNukeCustom extends TileEntityNukeBomb {
 
         if (tnt < 16) nuke = 0;
         if (nuke < 100) hydro = 0;
-        if (nuke < 50) amat = 0;
+        if (nuke < amatNukeFloor) amat = 0;
         if (nuke < 50) schrab = 0;
         if (schrab == 0) euph = 0;
 
@@ -256,116 +262,19 @@ public class TileEntityNukeCustom extends TileEntityNukeBomb {
         }
     }
 
-    /** Item-keyed entries (1.7 {@code ComparableStack} of a plain item or block). */
-    public static final Map<Item, CustomNukeEntry> entries = new HashMap<>();
-    /** The 1.7 metadata fluid cells, keyed by the fluid a full cell carries. */
-    public static final Map<FluidType, CustomNukeEntry> cellEntries = new HashMap<>();
-    private static boolean registered;
-
+    /**
+     * The ingredient value of {@code stack}: 1.7 {@code registerBombItems} as the data maps {@code hbm:item/custom_nuke}
+     * (items) and {@code hbm:fluid/custom_nuke} (a full fluid cell by its fluid; 1.7's metadata cells), MachineDataMaps.
+     */
     public static @Nullable CustomNukeEntry entryFor(ItemStack stack) {
-        registerBombItems();
+        com.hbm.api.data.MachineDataMaps.NukeEntry entry;
         if (stack.getItem() instanceof ItemCell) {
             FluidType fluid = ItemCell.getFluidType(stack);
-            return fluid == null || !ItemCell.isFullCell(stack, fluid) ? null : cellEntries.get(fluid);
+            if (fluid == null || !ItemCell.isFullCell(stack, fluid)) return null;
+            entry = com.hbm.api.data.MachineDataMaps.CUSTOM_NUKE_CELL.get(Fluids.toVanilla(fluid));
+        } else {
+            entry = com.hbm.api.data.MachineDataMaps.CUSTOM_NUKE.get(stack.getItem());
         }
-        return entries.get(stack.getItem());
-    }
-
-    /**
-     * 1.7 {@code registerBombItems}, resolved lazily once every family has flushed its items. Ids that another
-     * family has not ported yet ({@code det_cord}, {@code det_charge}, {@code block_waste}, ...) are skipped
-     * silently so the table degrades to "that ingredient does nothing" rather than failing to build.
-     */
-    public static synchronized void registerBombItems() {
-        if (registered) return;
-        registered = true;
-
-        add(Items.GUNPOWDER, EnumBombType.TNT, 0.8F);
-        add(Items.TNT, EnumBombType.TNT, 4F);
-        add("det_cord", EnumBombType.TNT, 1.5F);
-        add("ingot_semtex", EnumBombType.TNT, 8F);
-        add("det_charge", EnumBombType.TNT, 15F);
-        add("red_barrel", EnumBombType.TNT, 2.5F);
-        add("pink_barrel", EnumBombType.TNT, 4F);
-        add("custom_tnt", EnumBombType.TNT, 10F);
-
-        add("ingot_u233", EnumBombType.NUKE, 15F);
-        add("ingot_u235", EnumBombType.NUKE, 15F);
-        add("ingot_pu239", EnumBombType.NUKE, 25F);
-        add("ingot_pu241", EnumBombType.NUKE, 25F);
-        add("ingot_neptunium", EnumBombType.NUKE, 30F);
-        add("nugget_u233", EnumBombType.NUKE, 1.5F);
-        add("nugget_u235", EnumBombType.NUKE, 1.5F);
-        add("nugget_pu239", EnumBombType.NUKE, 2.5F);
-        add("nugget_pu241", EnumBombType.NUKE, 2.5F);
-        add("nugget_neptunium", EnumBombType.NUKE, 3.0F);
-        add("powder_neptunium", EnumBombType.NUKE, 30F);
-        add("custom_nuke", EnumBombType.NUKE, 30F);
-
-        cellEntries.put(Fluids.DEUTERIUM, new CustomNukeEntry(EnumBombType.HYDRO, 20F));
-        cellEntries.put(Fluids.TRITIUM, new CustomNukeEntry(EnumBombType.HYDRO, 30F));
-        add("lithium", EnumBombType.HYDRO, 20F);
-        add("custom_hydro", EnumBombType.HYDRO, 30F);
-
-        cellEntries.put(Fluids.AMAT, new CustomNukeEntry(EnumBombType.AMAT, 5F));
-        add("custom_amat", EnumBombType.AMAT, 15F);
-        add("egg_balefire_shard", EnumBombType.AMAT, 15F);
-        add("egg_balefire", EnumBombType.AMAT, 150F);
-
-        add("ingot_tungsten", EnumBombType.DIRTY, 1F);
-        add("custom_dirty", EnumBombType.DIRTY, 10F);
-
-        add("ingot_schrabidium", EnumBombType.SCHRAB, 5F);
-        add("block_schrabidium", EnumBombType.SCHRAB, 50F);
-        add("nugget_schrabidium", EnumBombType.SCHRAB, 0.5F);
-        add("powder_schrabidium", EnumBombType.SCHRAB, 5F);
-        cellEntries.put(Fluids.SAS3, new CustomNukeEntry(EnumBombType.SCHRAB, 7.5F));
-        cellEntries.put(Fluids.ASCHRAB, new CustomNukeEntry(EnumBombType.SCHRAB, 15F));
-        add("custom_schrab", EnumBombType.SCHRAB, 15F);
-
-        add("nugget_euphemium", EnumBombType.EUPH, 1F);
-        add("ingot_euphemium", EnumBombType.EUPH, 1F);
-
-        mult(Items.REDSTONE, EnumBombType.TNT, 1.05F);
-        mult(Items.REDSTONE_BLOCK, EnumBombType.TNT, 1.5F);
-
-        mult("ingot_uranium", EnumBombType.NUKE, 1.05F);
-        mult("ingot_plutonium", EnumBombType.NUKE, 1.15F);
-        mult("ingot_u238", EnumBombType.NUKE, 1.1F);
-        mult("ingot_pu238", EnumBombType.NUKE, 1.15F);
-        mult("nugget_uranium", EnumBombType.NUKE, 1.005F);
-        mult("nugget_plutonium", EnumBombType.NUKE, 1.15F);
-        mult("nugget_u238", EnumBombType.NUKE, 1.01F);
-        mult("nugget_pu238", EnumBombType.NUKE, 1.015F);
-        mult("powder_uranium", EnumBombType.NUKE, 1.05F);
-        mult("powder_plutonium", EnumBombType.NUKE, 1.15F);
-
-        mult("ingot_pu240", EnumBombType.DIRTY, 1.05F);
-        mult("nuclear_waste", EnumBombType.DIRTY, 1.025F);
-        mult("block_waste", EnumBombType.DIRTY, 1.25F);
-        mult("yellow_barrel", EnumBombType.DIRTY, 1.2F);
-    }
-
-    private static void add(Item item, EnumBombType type, float value) {
-        entries.put(item, new CustomNukeEntry(type, value));
-    }
-
-    private static void mult(Item item, EnumBombType type, float value) {
-        entries.put(item, new CustomNukeEntry(type, value, EnumEntryType.MULT));
-    }
-
-    private static void add(String hbmId, EnumBombType type, float value) {
-        Item item = resolve(hbmId);
-        if (item != null) add(item, type, value);
-    }
-
-    private static void mult(String hbmId, EnumBombType type, float value) {
-        Item item = resolve(hbmId);
-        if (item != null) mult(item, type, value);
-    }
-
-    private static @Nullable Item resolve(String hbmId) {
-        Item item = BuiltInRegistries.ITEM.getValue(Ids.of(Constants.MOD_ID, hbmId));
-        return item == null || item == Items.AIR ? null : item;
+        return entry == null ? null : new CustomNukeEntry(entry.type(), entry.value(), entry.op());
     }
 }

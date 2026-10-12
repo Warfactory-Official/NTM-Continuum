@@ -1,38 +1,48 @@
 package com.hbm.saveddata.satellites;
 
+import com.hbm.api.registry.NamedRegistry;
 import com.hbm.itempool.ItemPools;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.util.StringRepresentable;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * 1.7 {@code XSatelliteRegistry.idToClass}, in id order 0..11 ({@link #ordinal()} is 1.7's {@code getID()}).
- * Persistence keys on the serialized name rather than the index, so the order carries no save-format meaning.
- * Which item launches which satellite is {@link XSatelliteRegistry}'s job, as it was in 1.7.
+ * A kind of satellite: 1.7 {@code XSatelliteRegistry.idToClass}, as a registry of records keyed by the name saves
+ * carry ({@code "mapper"}, {@code "laser"}, ...). HBM registers 1.7's twelve in 1.7 id order; an addon registers its
+ * own under its namespace ({@code SatelliteType.register("ntmspace:dyson_relay", ...)}) at mod construction, and
+ * {@code SatelliteSavedData} saves and loads it by that name. Which item launches which satellite is
+ * {@link XSatelliteRegistry}'s job (the {@code hbm:satellite} item data map), as it was in 1.7.
+ *
+ * <p>1.7's numeric {@code getID()}/{@code createFromId(int)} are gone: nothing persisted or sent them (the saved form
+ * has always been the name), and an index would collide across addons.
  */
-public enum SatelliteType implements StringRepresentable {
+public final class SatelliteType {
 
-    MAPPER("mapper", SatelliteMapper::new, SatelliteMapper.CODEC, null),
-    SCANNER("scanner", SatelliteScanner::new, SatelliteScanner.CODEC, null),
-    RADAR("radar", SatelliteRadar::new, SatelliteRadar.CODEC, null),
+    /** Every satellite type, HBM's 1.7 twelve first. */
+    public static final NamedRegistry<SatelliteType> REGISTRY = new NamedRegistry<>("satellite type", SatelliteType::name);
+
+    public static final SatelliteType MAPPER = register("mapper", SatelliteMapper::new, SatelliteMapper.CODEC, null);
+    public static final SatelliteType SCANNER = register("scanner", SatelliteScanner::new, SatelliteScanner.CODEC, null);
+    public static final SatelliteType RADAR = register("radar", SatelliteRadar::new, SatelliteRadar.CODEC, null);
     /** 1.7 {@code SatelliteDeathRay}; "laser" is the name saves already carry. */
-    DEATH_RAY("laser", SatelliteDeathRay::new, SatelliteDeathRay.CODEC, null),
-    RESONATOR("resonator", SatelliteResonator::new, SatelliteResonator.CODEC, null),
-    RELAY("relay", SatelliteRelay::new, SatelliteRelay.CODEC, null),
-    MINER("miner", SatelliteMiner::new, SatelliteMiner.CODEC, ItemPools.POOL_SAT_MINER),
-    LUNAR_MINER("lunar_miner", SatelliteLunarMiner::new, SatelliteLunarMiner.CODEC, ItemPools.POOL_SAT_LUNAR),
-    HORIZONS("horizons", SatelliteHorizons::new, SatelliteHorizons.CODEC, null),
-    PRECISION_LASER("precision_laser", SatellitePrecisionLaser::new, SatellitePrecisionLaser.CODEC, null),
-    DETECTOR("detector", SatelliteDetector::new, SatelliteDetector.CODEC, null),
-    RAY_SCAN("ray_scan", SatelliteRayScan::new, SatelliteRayScan.CODEC, null);
+    public static final SatelliteType DEATH_RAY = register("laser", SatelliteDeathRay::new, SatelliteDeathRay.CODEC, null);
+    public static final SatelliteType RESONATOR = register("resonator", SatelliteResonator::new, SatelliteResonator.CODEC, null);
+    public static final SatelliteType RELAY = register("relay", SatelliteRelay::new, SatelliteRelay.CODEC, null);
+    public static final SatelliteType MINER = register("miner", SatelliteMiner::new, SatelliteMiner.CODEC, ItemPools.POOL_SAT_MINER);
+    public static final SatelliteType LUNAR_MINER = register("lunar_miner", SatelliteLunarMiner::new, SatelliteLunarMiner.CODEC, ItemPools.POOL_SAT_LUNAR);
+    public static final SatelliteType HORIZONS = register("horizons", SatelliteHorizons::new, SatelliteHorizons.CODEC, null);
+    public static final SatelliteType PRECISION_LASER = register("precision_laser", SatellitePrecisionLaser::new, SatellitePrecisionLaser.CODEC, null);
+    public static final SatelliteType DETECTOR = register("detector", SatelliteDetector::new, SatelliteDetector.CODEC, null);
+    public static final SatelliteType RAY_SCAN = register("ray_scan", SatelliteRayScan::new, SatelliteRayScan.CODEC, null);
 
-    public static final Codec<SatelliteType> CODEC = StringRepresentable.fromEnum(SatelliteType::values);
+    /** A satellite type by its saved name; an unknown name fails to decode. */
+    public static final Codec<SatelliteType> CODEC = REGISTRY.codec();
     /**
      * A satellite and its state, 1.7's {@code getID()} plus NBT blob in one. Declared HERE rather than on
-     * {@link Satellite}: a static on the base class would be read while this enum's own constants are still
+     * {@link Satellite}: a static on the base class would be read while this class's own constants are still
      * being built, and would see null.
      */
     public static final Codec<Satellite> DISPATCH_CODEC =
@@ -43,17 +53,35 @@ public enum SatelliteType implements StringRepresentable {
     private final MapCodec<? extends Satellite> codec;
     private final @Nullable String cargo;
 
-    SatelliteType(String name, Supplier<? extends Satellite> factory, MapCodec<? extends Satellite> codec,
-                  @Nullable String cargo) {
+    private SatelliteType(String name, Supplier<? extends Satellite> factory, MapCodec<? extends Satellite> codec,
+                          @Nullable String cargo) {
         this.name = name;
         this.factory = factory;
         this.codec = codec;
         this.cargo = cargo;
     }
 
-    /** 1.7 {@code XSatelliteRegistry.createFromId}. */
-    public static @Nullable SatelliteType fromId(int id) {
-        return id >= 0 && id < values().length ? values()[id] : null;
+    /**
+     * Registers a satellite type. {@code name} is its saved name (an addon uses {@code "<namespace>:<path>"}),
+     * {@code codec} its saved state, {@code cargo} the {@code ItemPool} it delivers, or null.
+     */
+    public static SatelliteType register(String name, Supplier<? extends Satellite> factory,
+                                         MapCodec<? extends Satellite> codec, @Nullable String cargo) {
+        return REGISTRY.register(new SatelliteType(name, factory, codec, cargo));
+    }
+
+    /** Every satellite type in registration order (1.7 id order first). */
+    public static List<SatelliteType> values() {
+        return REGISTRY.values();
+    }
+
+    /** The type saved as {@code name}, or null. */
+    public static @Nullable SatelliteType byName(String name) {
+        return REGISTRY.get(name);
+    }
+
+    public String name() {
+        return name;
     }
 
     public Satellite create() {
@@ -73,7 +101,7 @@ public enum SatelliteType implements StringRepresentable {
     }
 
     @Override
-    public String getSerializedName() {
+    public String toString() {
         return name;
     }
 }

@@ -1,7 +1,7 @@
 package com.hbm.blocks;
 
-import com.hbm.registration.BlockTag;
-import com.hbm.registration.Loot;
+import dev.golem.core.registry.BlockTag;
+import dev.golem.core.registry.Loot;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import com.hbm.Constants;

@@ -6,6 +6,7 @@ import com.hbm.saveddata.SatelliteSavedData;
 import com.hbm.saveddata.satellites.Satellite;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -39,7 +40,7 @@ public final class CommandSatellites {
 
     private static Iterable<String> frequencies(CommandSourceStack source) {
         if (!(source.getEntity() instanceof ServerPlayer)) return java.util.List.of();
-        return SatelliteSavedData.get(source.getLevel()).sats.keySet().stream().map(String::valueOf).toList();
+        return SatelliteSavedData.get(source.getLevel(), BlockPos.containing(source.getPosition())).sats.keySet().stream().map(String::valueOf).toList();
     }
 
     private static boolean notPlayer(CommandSourceStack source) {
@@ -70,7 +71,7 @@ public final class CommandSatellites {
 
     private static int descend(CommandSourceStack source, int freq) {
         if (notPlayer(source)) return 0;
-        SatelliteSavedData data = SatelliteSavedData.get(source.getLevel());
+        SatelliteSavedData data = SatelliteSavedData.get(source.getLevel(), BlockPos.containing(source.getPosition()));
         if (data.descend(freq)) {
             source.sendSuccess(() -> Component.translatable("commands.satellite.satellite_descended")
                     .withStyle(ChatFormatting.GREEN), false);
@@ -82,7 +83,7 @@ public final class CommandSatellites {
 
     private static int list(CommandSourceStack source) {
         if (notPlayer(source)) return 0;
-        SatelliteSavedData data = SatelliteSavedData.get(source.getLevel());
+        SatelliteSavedData data = SatelliteSavedData.get(source.getLevel(), BlockPos.containing(source.getPosition()));
         if (data.sats.isEmpty()) {
             source.sendFailure(Component.translatable("commands.satellite.no_active_satellites").withStyle(ChatFormatting.RED));
             return 0;

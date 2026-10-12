@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Server-side ROR command controller. */
-public final class TileEntityRadioTorchController extends TileEntityLoadedBase implements IControlReceiver, RadioTorchTicking,
+public class TileEntityRadioTorchController extends TileEntityLoadedBase implements IControlReceiver, RadioTorchTicking,
         net.minecraft.world.MenuProvider {
     public String channel = "";
     public String prev;

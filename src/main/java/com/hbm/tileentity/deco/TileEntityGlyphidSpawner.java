@@ -39,9 +39,18 @@ import java.util.function.Supplier;
 public class TileEntityGlyphidSpawner extends TileEntityLoadedBase {
 
     /** 1.7's {@code spawnMap}: each type with its {@code {base, soot scaling, soot threshold}} chances. */
-    private static final List<Entry> SPAWN_MAP = new ArrayList<>();
+    private static final List<Entry> SPAWN_MAP = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     private record Entry(Supplier<? extends EntityType<? extends EntityGlyphid>> type, int[] chance) {}
+
+    /**
+     * Adds a glyphid kind to every hive's swarm roll, after 1.7's eight: {@code chance} is {@code {base, soot scaling,
+     * soot threshold}} as in {@code MobConfig} (an array the addon may keep and change from its config). Call at mod
+     * construction.
+     */
+    public static void addSwarmMember(Supplier<? extends EntityType<? extends EntityGlyphid>> type, int[] chance) {
+        SPAWN_MAP.add(new Entry(type, chance));
+    }
 
     static {
         // big thanks to martin for the suggestion of using functions

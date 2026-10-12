@@ -12,7 +12,13 @@ import net.minecraft.world.level.block.state.BlockState;
 public class TileEntityDeuteriumTower extends TileEntityDeuteriumExtractor {
 
     public TileEntityDeuteriumTower(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MACHINE_DEUTERIUM_TOWER.get(), pos, state, 50_000, 5_000, 100_000);
+        this(ModBlockEntities.MACHINE_DEUTERIUM_TOWER.get(), pos, state);
+    }
+
+    /** For a subclass with its own block-entity type (NTM: Space's atmosphere tower extends this one). */
+    protected TileEntityDeuteriumTower(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos,
+                                       BlockState state) {
+        super(type, pos, state, 50_000, 5_000, 100_000);
     }
 
     public static void serverTick(net.minecraft.world.level.Level level, BlockPos pos, BlockState state,

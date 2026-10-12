@@ -106,9 +106,22 @@ public final class MultiblockPlacementHighlight {
         int originY = pY + sideHit.getStepY();
         int originZ = hit.getZ() + fd.offsetZ * o + sideHit.getStepZ();
 
-        boolean canPlace = block.canPlaceAt(mc.level,
-                new BlockPos(hit.getX() + sideHit.getStepX(), pY + sideHit.getStepY(), hit.getZ() + sideHit.getStepZ()),
-                facing);
+        boolean canPlace;
+        if (BlockMultiblockCore.wallPlacement) {
+            // hbm-space's highlight: the same wall/ceiling placement as BlockMultiblockCore.placement (V-175)
+            BlockMultiblockCore.Placement layout = block.placement(hit.relative(sideHit), sideHit, player.getYRot());
+            facing = layout.facing();
+            fd = ForgeDirection.getOrientation(facing);
+            lateral = fd.getRotation(ForgeDirection.UP);
+            originX = layout.core().getX();
+            originY = layout.core().getY();
+            originZ = layout.core().getZ();
+            canPlace = block.canPlace(mc.level, layout);
+        } else {
+            canPlace = block.canPlaceAt(mc.level,
+                    new BlockPos(hit.getX() + sideHit.getStepX(), pY + sideHit.getStepY(), hit.getZ() + sideHit.getStepZ()),
+                    facing);
+        }
 
         double timer = (System.currentTimeMillis() % (1000D * Math.PI)) / 250D;
         double sine = Math.sin(timer);
@@ -137,6 +150,7 @@ public final class MultiblockPlacementHighlight {
                     }
         }
 
+        ForgeDirection fdFinal = fd, lateralFinal = lateral; // the lambda below needs effectively final copies
         double[][] extras = block.getAABBExtras();
         double cX = originX - dX + 0.5;
         double cY = originY - dY;
@@ -207,12 +221,12 @@ public final class MultiblockPlacementHighlight {
                 double lft = extra[4];
                 double rgt = extra[5];
 
-                float x0 = (float) (cX + fwd * fd.offsetX + lft * lateral.offsetX);
-                float x1 = (float) (cX + bwd * fd.offsetX + rgt * lateral.offsetX);
+                float x0 = (float) (cX + fwd * fdFinal.offsetX + lft * lateralFinal.offsetX);
+                float x1 = (float) (cX + bwd * fdFinal.offsetX + rgt * lateralFinal.offsetX);
                 float y0 = (float) (cY + lwr);
                 float y1 = (float) (cY + upr);
-                float z0 = (float) (cZ + fwd * fd.offsetZ + lft * lateral.offsetZ);
-                float z1 = (float) (cZ + bwd * fd.offsetZ + rgt * lateral.offsetZ);
+                float z0 = (float) (cZ + fwd * fdFinal.offsetZ + lft * lateralFinal.offsetZ);
+                float z1 = (float) (cZ + bwd * fdFinal.offsetZ + rgt * lateralFinal.offsetZ);
                 int c = extraColor;
 
                 line(pose, buffer, x0, y0, z0, x0, y0, z1, c);

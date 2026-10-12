@@ -102,7 +102,9 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
             FluidType type = te.tank.getTankType();
             boolean flammable = FluidCombustion.isFlammable(type);
 
-            if (!te.doesBurn || !flammable) {
+            // hbm-space: a flame that gets no air vents instead of burning (com.hbm.api.environment.Environment)
+            if (!te.doesBurn || !flammable
+                    || !com.hbm.api.environment.Environment.breatheAir(level, pos, Math.min(maxBurn, te.tank.getFill()))) {
                 // vent path (gaseous only)
                 if (com.hbm.inventory.fluid.trait.FluidTraitSimple.isGaseousAny(type)) {
                     int eject = Math.min(maxVent, te.tank.getFill());
@@ -115,6 +117,9 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                     if (TickPhase.every(level, pos, 5) && eject > 0) {
                         FT_Polluting.pollute(level, pos, type, FluidReleaseType.SPILL, eject * 5);
                     }
+
+                    // hbm-space CelestialBody.emitGas: the vented gas goes into the planet's air
+                    com.hbm.api.environment.Environment.releaseGas(level, pos, type, eject);
                 }
             } else {
                 // burn path (flammable)

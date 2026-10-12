@@ -24,7 +24,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Locale;
 
-public final class TileEntityRadioTorchReader extends TileEntityLoadedBase
+public class TileEntityRadioTorchReader extends TileEntityLoadedBase
         implements IControlReceiver, net.minecraft.world.MenuProvider, RadioTorchTicking {
     public static final int MAPPING_SIZE = 8;
     public final String[] channels = new String[MAPPING_SIZE];

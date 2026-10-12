@@ -43,9 +43,10 @@ public class UpgradeManagerNT {
         if (valid == null) return;
 
         for (ItemStack stack : slots) {
-            if (stack.getItem() instanceof ItemMachineUpgrade item && valid.containsKey(item.type)) {
-                int level = upgrades.getOrDefault(item.type, 0) + item.tier;
-                upgrades.put(item.type, Math.min(level, valid.get(item.type)));
+            var item = stack.isEmpty() ? null : ItemMachineUpgrade.upgradeOf(stack.getItem());
+            if (item != null && valid.containsKey(item.type())) {
+                int level = upgrades.getOrDefault(item.type(), 0) + item.tier();
+                upgrades.put(item.type(), Math.min(level, valid.get(item.type())));
             }
         }
     }

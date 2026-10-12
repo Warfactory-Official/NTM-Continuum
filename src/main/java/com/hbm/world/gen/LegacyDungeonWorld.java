@@ -7,7 +7,6 @@ import com.hbm.world.gen.LegacyDungeonBlocks.Blocks;
 import com.hbm.world.gen.LegacyDungeonBlocks.ModBlocks;
 import com.hbm.world.gen.component.LegacyBlock;
 import com.hbm.world.gen.nbt.LegacyStructurePalette;
-import dev.golem.core.Ids;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.world.ItemStacks;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
@@ -323,8 +322,9 @@ public final class LegacyDungeonWorld {
         };
     }
 
+    /** A bare path is HBM's block; {@code "ns:path"} names an addon's (or vanilla's) block. */
     private static Resolved plain(String id) {
-        return new Resolved(BuiltInRegistries.BLOCK.getOptional(Ids.of("hbm", id)).map(Block::defaultBlockState)
+        return new Resolved(BuiltInRegistries.BLOCK.getOptional(com.hbm.lib.Library.parseId(id)).map(Block::defaultBlockState)
                 .orElse(net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()), false);
     }
 

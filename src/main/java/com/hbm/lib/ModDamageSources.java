@@ -127,7 +127,7 @@ public final class ModDamageSources {
 
     /**
      * The damage categories a bullet can belong to, ported from 1.12.2's
-     * {@code DamageResistanceHandler.DamageClass}. Upstream turns the enum's name into a damage-source
+     * 1.7 {@code DamageResistanceHandler.DamageClass} (the port kept one copy, this one). Upstream turns the enum's name into a damage-source
      * string at hit time and then sets projectile/fire/explosion flags on it; here each class is a real
      * {@code hbm:bullet_<name>} damage type, and those three flags are the vanilla {@code is_projectile}
      * / {@code is_fire} / {@code is_explosion} type tags.

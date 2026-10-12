@@ -46,12 +46,23 @@ public class GUIScreenToolAbility extends CompatScreen {
     protected int ySize;
     protected int insetWidth;
 
+    /**
+     * One switch of the ability GUI: the ability and its 16x16 icon at (u, v) (the lit icon 16 px right of it). HBM's
+     * icons are on {@link #texture}; an addon ability brings its own sheet (256x256) and adds an {@code AbilityInfo}
+     * to {@link #abilitiesArea} or {@link #abilitiesHarvest} from its client start-up.
+     */
     public static class AbilityInfo {
         public IBaseAbility ability;
         public int textureU, textureV;
+        public Identifier sheet;
 
         public AbilityInfo(IBaseAbility ability, int textureU, int textureV) {
+            this(ability, texture, textureU, textureV);
+        }
+
+        public AbilityInfo(IBaseAbility ability, Identifier sheet, int textureU, int textureV) {
             this.ability = ability;
+            this.sheet = sheet;
             this.textureU = textureU;
             this.textureV = textureV;
         }
@@ -203,7 +214,7 @@ public class GUIScreenToolAbility extends CompatScreen {
             boolean selected = abilityInfo.ability == selectedAbility;
 
             // Draw switch
-            GuiDraw.blit(graphics, texture, x + 20 * i, y, abilityInfo.textureU + (available ? 16 : 0),
+            GuiDraw.blit(graphics, abilityInfo.sheet, x + 20 * i, y, abilityInfo.textureU + (available ? 16 : 0),
                     abilityInfo.textureV, 16, 16, 256, 256);
 
             // Draw level LEDs

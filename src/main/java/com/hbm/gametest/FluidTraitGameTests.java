@@ -218,7 +218,8 @@ public final class FluidTraitGameTests {
 
     private static void count(GameTestHelper helper, Class<?> trait, int expected) {
         int n = 0;
-        for (FluidType type : Fluids.getAll()) if (type.hasTrait(trait)) n++;
+        // HBM's (and vanilla's) fluids only, so the 1.7 counts hold with an addon's fluids loaded
+        for (FluidType type : Fluids.getAll()) if (FluidRecipeTableGameTests.ours(type) && type.hasTrait(trait)) n++;
         helper.assertTrue(n == expected, "1.7 gives " + expected + " fluids " + trait.getSimpleName() + ", found " + n);
     }
 

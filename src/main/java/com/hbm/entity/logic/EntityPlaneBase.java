@@ -30,6 +30,16 @@ import net.minecraft.world.phys.Vec3;
  */
 public abstract class EntityPlaneBase extends CompatEntity {
 
+    /** A listener on a shot-down plane hitting the ground (ADDON-API-INVENTORY H-73), after 1.7's blast and sound. */
+    @FunctionalInterface
+    public interface Crash {
+        void crashed(EntityPlaneBase plane, double x, double y, double z);
+    }
+
+    /** Every listener runs; HBM registers none. NTM: Space adds hbm-space's large explosion effect. */
+    public static final dev.golem.core.hook.Hook<Crash> CRASH = dev.golem.core.hook.Hook.notifying();
+
+
     private static final EntityDataAccessor<Float> DATA_HEALTH =
             SynchedEntityData.defineId(EntityPlaneBase.class, EntityDataSerializers.FLOAT);
     // 1.12.2: 1-chunk sliding window - setChunkForced. NONE = unforced
@@ -112,6 +122,7 @@ public abstract class EntityPlaneBase extends CompatEntity {
                 discard();
                 new ExplosionVNT(level(), x, y, z, 15F).makeStandard().explode();
                 level().playSound(null, x, y, z, ModSounds.ENTITY_PLANE_CRASH.get(), SoundSource.NEUTRAL, 25.0F, 1.0F);
+                for (Crash listener : CRASH) listener.crashed(this, x, y, z);
                 return;
             }
         } else {

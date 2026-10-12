@@ -2,21 +2,15 @@ package com.hbm.platform.forge;
 
 //? if forge {
 
-/*import com.hbm.CommonClass;
-import com.hbm.creativetabs.ModTabs;
+/*import com.hbm.creativetabs.ModTabs;
 import com.hbm.hazard.HazardSystem;
-import com.hbm.hazard.Hazards;
 import com.hbm.packet.AnvilCraftPayload;
 import com.hbm.packet.ControlEventPayload;
-import com.hbm.packet.HbmPackets;
 import com.hbm.handler.radiation.RadiationSystemNT;
-import dev.golem.core.net.GolemNetwork;
-import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Supplier;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
@@ -39,10 +33,8 @@ import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.registries.RegisterEvent;
 
 /^* Forge 1.20.1 bootstrap; client code is only referenced after the physical-side check. ^/
 @Mod(com.hbm.Constants.MOD_ID)
@@ -51,10 +43,12 @@ public final class ForgeInit {
     public ForgeInit() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        CommonClass.init();
+        dev.golem.core.platform.ModEntries.start(new com.hbm.HbmEntry());
         com.hbm.gametest.HbmGameTestFunctions.init();
         com.hbm.gametest.FoodCatalystGameTests.init();
         com.hbm.gametest.OutgasGameTests.init();
+        com.hbm.gametest.DosimeterGasGameTests.init();
+        com.hbm.gametest.GeigerCounterGameTests.init();
         com.hbm.gametest.SteelStructureGameTests.init();
         com.hbm.gametest.HazardGameTests.init();
         com.hbm.gametest.ToolingGameTests.init();
@@ -87,6 +81,18 @@ public final class ForgeInit {
         com.hbm.gametest.SolarGameTests.init();
         com.hbm.gametest.IntakeFanGameTests.init();
         com.hbm.gametest.DiFurnaceGameTests.init();
+        com.hbm.gametest.RecipeTableGameTests.init();
+        com.hbm.gametest.FluidPropertyGameTests.init();
+        com.hbm.gametest.DataMapGameTests.init();
+        com.hbm.gametest.AddonEnumGameTests.init();
+        com.hbm.gametest.EnvironmentGameTests.init();
+        com.hbm.gametest.AddonContentGameTests.init();
+        com.hbm.gametest.GenericRecipeTableGameTests.init();
+        com.hbm.gametest.ItemProcessingTableGameTests.init();
+        com.hbm.gametest.ValueMapGameTests.init();
+        com.hbm.gametest.AddonSeamGameTests.init();
+        com.hbm.gametest.FluidRecipeTableGameTests.init();
+        com.hbm.gametest.ItemRecipeTableGameTests.init();
         com.hbm.gametest.MaterialCompletionGameTests.init();
         com.hbm.gametest.BedrockOreGameTests.init();
         com.hbm.gametest.ExplosiveContentGameTests.init();
@@ -121,15 +127,17 @@ public final class ForgeInit {
         com.hbm.gametest.PollutionGameTests.init();
         com.hbm.gametest.ToxinGameTests.init();
 
-        modBus.addListener(this::onRegister);
         modBus.addListener(this::onBuildTabContents);
-        modBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(Hazards::init));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.HbmGameTestFunctions.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.FoodCatalystGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.OutgasGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.DosimeterGasGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.GeigerCounterGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.SteelStructureGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
@@ -194,6 +202,30 @@ public final class ForgeInit {
                 com.hbm.gametest.IntakeFanGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.DiFurnaceGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.RecipeTableGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FluidPropertyGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.DataMapGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.AddonEnumGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.EnvironmentGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.AddonContentGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.GenericRecipeTableGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ItemProcessingTableGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ValueMapGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.AddonSeamGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FluidRecipeTableGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ItemRecipeTableGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.MaterialCompletionGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
@@ -269,8 +301,6 @@ public final class ForgeInit {
         // resolved, so registering before the registries flush is fine).
         dev.golem.core.registry.Fuels.register(com.hbm.items.ModFuelItems.BURN_TIMES);
 
-        HbmPackets.declare();
-        GolemNetwork.flushCommonRegistrations();
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ForgeClientInit.init(modBus);
@@ -371,16 +401,6 @@ public final class ForgeInit {
         } else {
             com.hbm.Constants.LOG.error("[HBM] Forge biome modifiers injected {}/{} modifier features; missing {}",
                     expected.size() - missing.size(), expected.size(), missing);
-        }
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private void onRegister(RegisterEvent event) {
-        for (DeferredRegister<?> register : DeferredRegister.all()) {
-            if (event.getRegistryKey().equals(register.getRegistryKey())) {
-                register.flushTo((registryKey, entryKey, value) ->
-                        event.register((ResourceKey) registryKey, dev.golem.core.Ids.keyId(entryKey), (Supplier) value));
-            }
         }
     }
 }

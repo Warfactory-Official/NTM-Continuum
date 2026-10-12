@@ -4,11 +4,7 @@ import com.hbm.handler.neutron.NeutronStream;
 
 /** A column which accepts a neutron stream and reacts during its own tick. */
 public interface IRBMKFluxReceiver {
+    // 1.7 declared the neutron types here as IRBMKFluxReceiver.NType; the port's one copy is ItemRBMKRod.NType (rods
+    // and columns read the same enum), a second identical copy here had no users.
     void receiveFlux(NeutronStream stream);
-
-    enum NType {
-        SLOW("trait.rbmk.neutron.slow"), FAST("trait.rbmk.neutron.fast"), ANY("trait.rbmk.neutron.any");
-        public final String unlocalized;
-        NType(String unlocalized) { this.unlocalized = unlocalized; }
-    }
 }

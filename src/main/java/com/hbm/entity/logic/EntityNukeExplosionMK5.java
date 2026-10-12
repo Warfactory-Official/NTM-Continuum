@@ -58,6 +58,8 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
 
     private IExplosionRay explosion;
     private boolean initialized = false;
+    /** {@link com.hbm.api.environment.Environment#NUCLEAR_BLAST} told (not saved: 1.7's ticksExisted was not either). */
+    private boolean announced = false;
 
     public UUID detonator;
 
@@ -110,6 +112,14 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
         if (level().isClientSide()) return;
 
         chunkLoader.tick();
+
+        // hbm-space CelestialNukeShockHandler.onEntityJoinWorld: announced once, on the blast's first server tick
+        if (!announced) {
+            announced = true;
+            if (level() instanceof net.minecraft.server.level.ServerLevel server) {
+                com.hbm.api.environment.Environment.nuclearBlast(server, getX(), getZ(), radius);
+            }
+        }
 
         if (strength == 0) {
             discard();

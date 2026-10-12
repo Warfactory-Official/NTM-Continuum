@@ -33,6 +33,12 @@ public class JetpackVectorized extends JetpackFueledBase {
         if (getFuel(stack) <= 0 || !isActive(player)) return;
         JetpackHandler.resetFlightTime(player);
         Vec3 motion = player.getDeltaMovement();
+        // 1.7 lifts by 0.1 below 0.4 before the vectored push (missing from the port until now); hbm-space shrinks the
+        // lift (never grows it) with gravity (com.hbm.api.environment.Environment.gravity)
+        if (motion.y < 0.4D) {
+            motion = motion.add(0, 0.1D * Math.min(com.hbm.api.environment.Environment.gravity(player), 1D), 0);
+            player.setDeltaMovement(motion);
+        }
         if (motion.length() < 2D) {
             Vec3 look = player.getViewVector(1.0F);
             player.setDeltaMovement(motion.add(look.scale(0.1D)));

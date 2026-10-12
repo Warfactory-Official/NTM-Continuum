@@ -350,6 +350,7 @@ public final class DejsonGameTests {
             if (path.contains("/loot_table/")) continue;
             *///?}
             JsonElement expected = unwrapped(folded.getOrDefault(path, declared.getValue()));
+            if (path.contains("/tags/") && tagMatches(copies, expected)) continue;
             if (copies.stream().noneMatch(copy -> unwrapped(withoutAddedOptionalBiomeTags(path, copy, expected)).equals(expected))) {
                 problems.add(path + " is on the classpath saying something other than "
                         + "what it was declared to say");
@@ -609,5 +610,33 @@ public final class DejsonGameTests {
         } catch (java.io.IOException failure) {
             throw new IllegalStateException("could not read " + path, failure);
         }
+    }
+
+    /**
+     * A tag declared by several mods (HBM and an addon both joining {@code minecraft:mineable/pickaxe}) is one merged
+     * declaration in game but one file per mod jar, merged by vanilla. It matches when every declared member is in the
+     * union of the classpath copies and some copy (the mod's own) holds nothing undeclared.
+     */
+    private static boolean tagMatches(List<JsonObject> copies, JsonElement expected) {
+        if (!(expected instanceof JsonObject declared) || !declared.has("values")) return false;
+        java.util.Set<String> wanted = tagValues(declared);
+        java.util.Set<String> union = new java.util.HashSet<>();
+        boolean ownCopy = false;
+        for (JsonObject copy : copies) {
+            JsonElement unwrapped = unwrapped(copy);
+            if (!(unwrapped instanceof JsonObject object) || !object.has("values")) continue;
+            java.util.Set<String> values = tagValues(object);
+            union.addAll(values);
+            if (wanted.containsAll(values)) ownCopy = true;
+        }
+        return ownCopy && union.containsAll(wanted);
+    }
+
+    private static java.util.Set<String> tagValues(JsonObject tag) {
+        java.util.Set<String> values = new java.util.HashSet<>();
+        for (JsonElement value : tag.getAsJsonArray("values")) {
+            values.add(value.isJsonObject() ? value.getAsJsonObject().get("id").getAsString() : value.getAsString());
+        }
+        return values;
     }
 }

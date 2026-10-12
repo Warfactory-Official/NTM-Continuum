@@ -49,9 +49,11 @@ public final class FluidNetworkGameTests {
             TESTS.function("fluid_net_identifier_sneak_spread", 40, 8, () -> FluidNetworkGameTests::identifierSpread);
     public static final GameTests.Function INTERIOR_RETYPE =
             TESTS.function("fluid_net_interior_retype", 40, 8, () -> FluidNetworkGameTests::interiorRetype);
+    public static final GameTests.Function MULTI_USER =
+            TESTS.function("fluid_net_multi_user_faces", 40, 8, () -> FluidNetworkGameTests::multiUser);
 
     private static final int Y = 5;
-    private static final int JOIN_Z = 6, SPLIT_Z = 12, TYPE_Z = 18, EXHAUST_Z = 24, SPREAD_Z = 30, INTERIOR_Z = 36;
+    private static final int JOIN_Z = 6, SPLIT_Z = 12, TYPE_Z = 18, EXHAUST_Z = 24, SPREAD_Z = 30, INTERIOR_Z = 36, MULTI_Z = 42;
 
     private FluidNetworkGameTests() {}
 
@@ -297,6 +299,64 @@ public final class FluidNetworkGameTests {
             if (helper.getLevel().getBlockState(port.getPos()).isAir()) return port;
         }
         throw new IllegalStateException("fluid tank exposes no free port");
+    }
+
+    /**
+     * A machine with a second receiver ({@link com.hbm.api.fluidmk2.IFluidMultiUserMK2}) keeps the two apart: 1.7
+     * served each subscribed receiver object on its own (hbm-space's transporter fills its fuel tanks only through the
+     * fuel receiver subscribed at {@code getTankPos}). Here a barrel's east face reaches a second tank; water through
+     * the east face fills that tank, water through the west face the barrel's own.
+     */
+    private static void multiUser(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos at = helper.absolutePos(new BlockPos(4, Y, MULTI_Z));
+        level.setBlock(at, ModFluidNetBlocks.barrel_steel.get().defaultBlockState(), 3);
+        TwoUserBarrel barrel = new TwoUserBarrel(at, level.getBlockState(at));
+        level.setBlockEntity(barrel);
+        helper.assertTrue(level.getBlockEntity(at) == barrel, "the test barrel was not placed");
+        barrel.tank.setTankType(Fluids.WATER);
+
+        duct(helper, at.east());
+        level.setBlock(at.east(2), ModMachineBlocks.creative_fluid_source.get().defaultBlockState(), 3);
+        settle(level);
+        helper.assertTrue(barrel.second.getFill() > 0 && barrel.tank.getFill() == 0,
+                "the east face must fill the second receiver's tank only: second " + barrel.second.getFill()
+                        + ", own " + barrel.tank.getFill());
+
+        int second = barrel.second.getFill();
+        duct(helper, at.west());
+        level.setBlock(at.west(2), ModMachineBlocks.creative_fluid_source.get().defaultBlockState(), 3);
+        settle(level);
+        helper.assertTrue(barrel.tank.getFill() > 0, "the west face must fill the barrel's own tank");
+        helper.assertTrue(barrel.second.getFill() >= second, "the second tank must keep what it had");
+        helper.succeed();
+    }
+
+    /** A steel barrel whose east face reaches a second receiver with a tank of its own. */
+    private static final class TwoUserBarrel extends TileEntityBarrel implements com.hbm.api.fluidmk2.IFluidMultiUserMK2 {
+
+        final com.hbm.inventory.fluid.tank.FluidTankNTM second =
+                new com.hbm.inventory.fluid.tank.FluidTankNTM(Fluids.WATER, 8_000);
+
+        private final com.hbm.api.fluidmk2.IFluidStandardReceiverMK2 secondReceiver =
+                new com.hbm.api.fluidmk2.IFluidStandardReceiverMK2() {
+                    @Override public com.hbm.inventory.fluid.tank.FluidTankNTM[] getReceivingTanks() {
+                        return new com.hbm.inventory.fluid.tank.FluidTankNTM[]{second};
+                    }
+                    @Override public com.hbm.inventory.fluid.tank.FluidTankNTM[] getAllTanks() {
+                        return getReceivingTanks();
+                    }
+                    @Override public boolean isLoaded() { return TwoUserBarrel.this.isLoaded(); }
+                };
+
+        TwoUserBarrel(BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+            super(pos, state);
+        }
+
+        @Override
+        public com.hbm.api.fluidmk2.IFluidUserMK2 fluidUserAt(BlockPos pos, Direction face) {
+            return face == Direction.EAST ? secondReceiver : null;
+        }
     }
 
     private static TileEntityMachineFluidTank tank(GameTestHelper helper, BlockPos relative, short mode) {

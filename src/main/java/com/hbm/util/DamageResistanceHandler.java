@@ -12,6 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
@@ -54,92 +56,27 @@ public final class DamageResistanceHandler {
     public static void init() {
         if (initialized) return;
         initialized = true;
-        ITEM_STATS.clear();
-        SET_STATS.clear();
-        ENTITY_STATS.clear();
-        ITEM_INFO_SETS.clear();
 
-        ENTITY_STATS.put(Creeper.class, new ResistanceStats().addCategory(CATEGORY_EXPLOSION, 2F, 0.25F));
-
-        registerSet(ModArmorItems.steel_helmet.get(), ModArmorItems.steel_plate.get(),
-                ModArmorItems.steel_legs.get(), ModArmorItems.steel_boots.get(),
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 2F, 0.1F));
-        registerSet(ModArmorItems.titanium_helmet.get(), ModArmorItems.titanium_plate.get(),
-                ModArmorItems.titanium_legs.get(), ModArmorItems.titanium_boots.get(),
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 3F, 0.1F));
-        registerSet(ModArmorItems.cobalt_helmet.get(), ModArmorItems.cobalt_plate.get(),
-                ModArmorItems.cobalt_legs.get(), ModArmorItems.cobalt_boots.get(),
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 2F, 0.1F));
-        registerSet(ModArmorItems.starmetal_helmet.get(), ModArmorItems.starmetal_plate.get(),
-                ModArmorItems.starmetal_legs.get(), ModArmorItems.starmetal_boots.get(),
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 3F, 0.25F)
-                        .setOther(1F, 0.1F));
-        registerSet(ModArmorItems.schrabidium_helmet.get(), ModArmorItems.schrabidium_plate.get(),
-                ModArmorItems.schrabidium_legs.get(), ModArmorItems.schrabidium_boots.get(),
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 10F, 0.65F)
-                        .setOther(5F, 0.5F));
-        registerSet(ModArmorItems.security_helmet.get(), ModArmorItems.security_plate.get(),
-                ModArmorItems.security_legs.get(), ModArmorItems.security_boots.get(),
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 5F, 0.5F)
-                        .addCategory(CATEGORY_EXPLOSION, 2F, 0.25F));
-        // 1.12.2 DamageResistanceHandler.java:239-244
-        registerSet(ModArmorItems.taurun_helmet.get(), ModArmorItems.taurun_plate.get(),
-                ModArmorItems.taurun_legs.get(), ModArmorItems.taurun_boots.get(),
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 2F, 0.15F)
-                        .addCategory(CATEGORY_FIRE, 0F, 0.25F)
-                        .addCategory(CATEGORY_EXPLOSION, 0F, 0.25F)
-                        .addExact("fall", 4F, 0.5F)
-                        .setOther(2F, 0.1F));
-        registerSet(ModArmorItems.robes_helmet.get(), ModArmorItems.robes_plate.get(),
-                ModArmorItems.robes_legs.get(), ModArmorItems.robes_boots.get(), new ResistanceStats());
-        registerSet(ModArmorItems.asbestos_helmet.get(), ModArmorItems.asbestos_plate.get(),
-                ModArmorItems.asbestos_legs.get(), ModArmorItems.asbestos_boots.get(),
-                new ResistanceStats().addCategory(CATEGORY_FIRE, 10F, 0.9F));
-        registerSet(ModArmorItems.t51_helmet.get(), ModArmorItems.t51_plate.get(),
-                ModArmorItems.t51_legs.get(), ModArmorItems.t51_boots.get(),
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 2F, 0.15F)
-                        .addCategory(CATEGORY_FIRE, 0.5F, 0.35F)
-                        .addCategory(CATEGORY_EXPLOSION, 5F, 0.25F)
-                        .addExact("fall", 0F, 1F)
-                        .setOther(0F, 0.1F));
-
-        ResistanceStats bj = new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 5F, 0.5F)
-                .addCategory(CATEGORY_FIRE, 2.5F, 0.5F).addCategory(CATEGORY_EXPLOSION, 10F, 0.25F)
-                .addExact("fall", 0F, 1F).setOther(2F, 0.15F);
-        registerSet(ModArmorItems.bj_helmet.get(), ModArmorItems.bj_plate.get(),
-                ModArmorItems.bj_legs.get(), ModArmorItems.bj_boots.get(), bj);
-        registerSet(ModArmorItems.bj_helmet.get(), ModArmorItems.bj_plate_jetpack.get(),
-                ModArmorItems.bj_legs.get(), ModArmorItems.bj_boots.get(), bj);
-        registerSet(ModArmorItems.dns_helmet.get(), ModArmorItems.dns_plate.get(),
-                ModArmorItems.dns_legs.get(), ModArmorItems.dns_boots.get(),
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 1000F, 1F)
-                        .addCategory(CATEGORY_EXPLOSION, 100F, 0.99F)
-                        .addCategory(CATEGORY_FIRE, 0F, 1F).setOther(1000F, 1F));
-        registerSet(ModArmorItems.rpa_helmet.get(), ModArmorItems.rpa_plate.get(),
-                ModArmorItems.rpa_legs.get(), ModArmorItems.rpa_boots.get(),
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 25F, 0.65F)
-                        .addCategory(CATEGORY_FIRE, 10F, 0.9F).addCategory(CATEGORY_EXPLOSION, 15F, 0.25F)
-                        .addCategory(CATEGORY_ENERGY, 25F, 0.75F).addExact("fall", 0F, 1F)
-                        .setOther(15F, 0.3F));
-        registerSet(ModArmorItems.ncrpa_helmet.get(), ModArmorItems.ncrpa_plate.get(),
-                ModArmorItems.ncrpa_legs.get(), ModArmorItems.ncrpa_boots.get(),
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 25F, 0.65F)
-                        .addCategory(CATEGORY_FIRE, 10F, 0.9F).addCategory(CATEGORY_EXPLOSION, 15F, 0.25F)
-                        .addCategory(CATEGORY_ENERGY, 10F, 0.5F).addExact("fall", 0F, 1F)
-                        .setOther(15F, 0.25F));
-
-        // The four legacy hazmat sets have intentionally empty resistance profiles; registering them
-        // keeps full-set identity available to the tooltip and to future profile overrides.
-        registerSet(ModGearItems.hazmat_helmet.get(), ModGearItems.hazmat_plate.get(),
-                ModGearItems.hazmat_legs.get(), ModGearItems.hazmat_boots.get(), new ResistanceStats());
-        registerSet(ModGearItems.hazmat_helmet_red.get(), ModGearItems.hazmat_plate_red.get(),
-                ModGearItems.hazmat_legs_red.get(), ModGearItems.hazmat_boots_red.get(), new ResistanceStats());
-        registerSet(ModGearItems.hazmat_helmet_grey.get(), ModGearItems.hazmat_plate_grey.get(),
-                ModGearItems.hazmat_legs_grey.get(), ModGearItems.hazmat_boots_grey.get(), new ResistanceStats());
-        com.hbm.items.ModArmorSetItems.registerResistances(); // final armor sets A: alloy..trenchmaster
-        com.hbm.items.ModArmorSetBItems.registerResistances(); // final armor B: suits, jackets, hat/no9 handlers
-
+        // The profiles (1.7 DamageResistanceHandler.initDefaults) are the hbm:damage_resistance item and entity data maps
+        // and the resistance of the hbm:armor_sets entries; registerItem/registerSet/ENTITY_STATS are a code layer below them.
         DamageEvents.install();
+    }
+
+    /** The code-registered item stats (read-only view). */
+    public static Map<Item, ResistanceStats> codeItemStats() {
+        return java.util.Collections.unmodifiableMap(ITEM_STATS);
+    }
+
+    /** The code-registered set stats as {helmet, chest, legs, boots} to stats, in registration order (read-only). */
+    public static Map<List<Item>, ResistanceStats> codeSetStats() {
+        Map<List<Item>, ResistanceStats> view = new LinkedHashMap<>();
+        SET_STATS.forEach((set, stats) -> view.put(java.util.Arrays.asList(set.helmet, set.chest, set.legs, set.boots), stats));
+        return java.util.Collections.unmodifiableMap(view);
+    }
+
+    /** The code-registered entity stats (read-only view). */
+    public static Map<Class<? extends Entity>, ResistanceStats> codeEntityStats() {
+        return java.util.Collections.unmodifiableMap(ENTITY_STATS);
     }
 
     /** 1.7 {@code itemStats.put}: resistances of a single worn piece, set or no set. */
@@ -160,9 +97,10 @@ public final class DamageResistanceHandler {
     public static void addInfo(ItemStack stack, List<Component> tooltip) {
         if (stack == null || stack.isEmpty()) return;
 
-        List<ArmorSet> sets = ITEM_INFO_SETS.get(stack.getItem());
+        ArmorSet dataSet = dataSetOf(stack.getItem());
+        List<ArmorSet> sets = dataSet != null ? List.of(dataSet) : ITEM_INFO_SETS.get(stack.getItem());
         if (sets != null && !sets.isEmpty()) {
-            ResistanceStats stats = SET_STATS.get(sets.get(0));
+            ResistanceStats stats = dataSet != null ? dataSetStats(dataSet.chest) : SET_STATS.get(sets.get(0));
             if (stats != null && !stats.isEmpty()) {
                 tooltip.add(Component.translatable("damage.inset").withStyle(ChatFormatting.DARK_PURPLE));
                 ArmorSet set = sets.get(0);
@@ -174,7 +112,7 @@ public final class DamageResistanceHandler {
             }
         }
 
-        ResistanceStats item = ITEM_STATS.get(stack.getItem());
+        ResistanceStats item = itemStats(stack.getItem());
         if (item != null && !item.isEmpty()) {
             tooltip.add(Component.translatable("damage.item").withStyle(ChatFormatting.DARK_PURPLE));
             appendStats(item, tooltip);
@@ -315,7 +253,8 @@ public final class DamageResistanceHandler {
 
         ArmorSet worn = new ArmorSet(item(entity, EquipmentSlot.HEAD), item(entity, EquipmentSlot.CHEST),
                 item(entity, EquipmentSlot.LEGS), item(entity, EquipmentSlot.FEET));
-        ResistanceStats set = SET_STATS.get(worn);
+        com.hbm.api.data.ArmorDataMaps.ArmorSet dataSet = com.hbm.handler.ArmorUtil.wornSet(entity);
+        ResistanceStats set = dataSet != null && dataSet.resistance().isPresent() ? dataSet.resistance().get() : SET_STATS.get(worn);
         if (set != null) {
             Resistance resistanceValue = set.getResistance(damage);
             if (resistanceValue != null) {
@@ -325,7 +264,7 @@ public final class DamageResistanceHandler {
         }
 
         for (EquipmentSlot slot : ARMOR_SLOTS) {
-            ResistanceStats stats = ITEM_STATS.get(entity.getItemBySlot(slot).getItem());
+            ResistanceStats stats = itemStats(entity.getItemBySlot(slot).getItem());
             if (stats == null) continue;
             Resistance resistanceValue = stats.getResistance(damage);
             if (resistanceValue != null) {
@@ -334,7 +273,8 @@ public final class DamageResistanceHandler {
             }
         }
 
-        ResistanceStats innate = ENTITY_STATS.get(entity.getClass());
+        ResistanceStats innate = com.hbm.api.data.ArmorDataMaps.ENTITY_DAMAGE_RESISTANCE.get(entity.getType());
+        if (innate == null) innate = ENTITY_STATS.get(entity.getClass());
         if (innate != null) {
             Resistance resistanceValue = innate.getResistance(damage);
             if (resistanceValue != null) {
@@ -343,6 +283,47 @@ public final class DamageResistanceHandler {
             }
         }
         return new float[] {threshold, resistance};
+    }
+
+    /** A piece's own stats: the data map's ({@code hbm:damage_resistance}), else a code registration. */
+    public static ResistanceStats itemStats(Item item) {
+        ResistanceStats data = com.hbm.api.data.ArmorDataMaps.DAMAGE_RESISTANCE.get(item);
+        return data != null ? data : ITEM_STATS.get(item);
+    }
+
+    /** Data-map sets with damage resistance, by piece, rebuilt when the map changes; each piece's first set by chest id. */
+    private static volatile Map<Item, ArmorSet> dataSetsByPiece;
+
+    static {
+        com.hbm.api.data.ArmorDataMaps.ARMOR_SETS.changed.register(() -> dataSetsByPiece = null);
+    }
+
+    private static ArmorSet dataSetOf(Item item) {
+        Map<Item, ArmorSet> index = dataSetsByPiece;
+        if (index == null) {
+            index = new java.util.HashMap<>();
+            java.util.List<String> chests = new java.util.ArrayList<>(com.hbm.api.data.ArmorDataMaps.ARMOR_SETS.byId().keySet());
+            java.util.Collections.sort(chests);
+            for (String chest : chests) {
+                com.hbm.api.data.ArmorDataMaps.ArmorSet value = com.hbm.api.data.ArmorDataMaps.ARMOR_SETS.byId().get(chest);
+                if (value.resistance().isEmpty()) continue;
+                ArmorSet set = new ArmorSet(piece(value.helmet()), piece(java.util.Optional.of(chest)), piece(value.legs()), piece(value.boots()));
+                for (Item piece : new Item[] {set.helmet, set.chest, set.legs, set.boots}) {
+                    if (piece != null) index.putIfAbsent(piece, set);
+                }
+            }
+            dataSetsByPiece = index;
+        }
+        return index.get(item);
+    }
+
+    private static ResistanceStats dataSetStats(Item chest) {
+        com.hbm.api.data.ArmorDataMaps.ArmorSet value = com.hbm.api.data.ArmorDataMaps.ARMOR_SETS.get(chest);
+        return value == null ? null : value.resistance().orElse(null);
+    }
+
+    private static Item piece(java.util.Optional<String> id) {
+        return id.map(s -> net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.parse(s))).orElse(null);
     }
 
     private static Item item(LivingEntity entity, EquipmentSlot slot) {
@@ -377,11 +358,26 @@ public final class DamageResistanceHandler {
         return Math.max(min, Math.min(max, value));
     }
 
-    public enum DamageClass {
-        PHYSICAL, FIRE, EXPLOSIVE, ELECTRIC, PLASMA, LASER, MICROWAVE, SUBATOMIC, OTHER
-    }
 
     public static final class ResistanceStats {
+        /**
+         * {@code {"category": {"PHYS": {"threshold": 2.0, "resistance": 0.1}}, "exact": {"fall": {...}}, "other": {...}}}:
+         * {@code category} keys are the four 1.7 groupings ({@code EXPL}, {@code FIRE}, {@code PHYS}, {@code EN}),
+         * {@code exact} keys a damage type's message id (an addon's own damage types need no new category), and
+         * {@code other} applies to anything else that armor can block. Map order is the tooltip's line order.
+         */
+        public static final Codec<ResistanceStats> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.unboundedMap(Codec.STRING, Resistance.CODEC).optionalFieldOf("category", Map.of()).forGetter(s -> s.category),
+                Codec.unboundedMap(Codec.STRING, Resistance.CODEC).optionalFieldOf("exact", Map.of()).forGetter(s -> s.exact),
+                Resistance.CODEC.optionalFieldOf("other").forGetter(s -> java.util.Optional.ofNullable(s.other))
+        ).apply(i, (category, exact, other) -> {
+            ResistanceStats stats = new ResistanceStats();
+            category.forEach((key, value) -> stats.addCategory(key, value.threshold(), value.resistance()));
+            exact.forEach((key, value) -> stats.addExact(key, value.threshold(), value.resistance()));
+            other.ifPresent(value -> stats.setOther(value.threshold(), value.resistance()));
+            return stats;
+        }));
+
         private final Map<String, Resistance> exact = new LinkedHashMap<>();
         private final Map<String, Resistance> category = new LinkedHashMap<>();
         private Resistance other;
@@ -416,7 +412,12 @@ public final class DamageResistanceHandler {
         }
     }
 
-    public record Resistance(float threshold, float resistance) {}
+    public record Resistance(float threshold, float resistance) {
+        public static final Codec<Resistance> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.FLOAT.optionalFieldOf("threshold", 0F).forGetter(Resistance::threshold),
+                Codec.FLOAT.optionalFieldOf("resistance", 0F).forGetter(Resistance::resistance)
+        ).apply(i, Resistance::new));
+    }
 
     private record ArmorSet(Item helmet, Item chest, Item legs, Item boots) {}
 }

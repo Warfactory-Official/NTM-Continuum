@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.math.BigInteger;
 
 /** Current FEnSU storage: the legacy arbitrary-precision six-port energy bank. */
-public final class TileEntityBatteryREDD extends TileEntityBatteryBase implements MenuProvider, WorldlyContainer {
+public class TileEntityBatteryREDD extends TileEntityBatteryBase implements MenuProvider, WorldlyContainer {
 
     public static final long MAX_POWER = Long.MAX_VALUE / 100L;
     private static final BigInteger TWO = BigInteger.valueOf(2L);

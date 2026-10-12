@@ -15,7 +15,7 @@ public final class ModDataComponents {
     private ModDataComponents() {}
 
     /**
-     * The fluid a container/identifier/icon item carries, saved as its registry name ({@code "hbm:water"}). Replaced
+     * The fluid a container/identifier/icon item carries, saved as its registry name ({@code "hbm:oil"}, {@code "minecraft:water"}). Replaced
      * the int {@code hbm:fluid_id} on 2026-10-03: numeric ids are never persisted (History section 19ej-ids).
      */
     public static final GolemComponent<com.hbm.inventory.fluid.FluidType> FLUID =
@@ -49,6 +49,9 @@ public final class ModDataComponents {
     public static final GolemComponent<Boolean> HAS_COG = GolemComponent.of(Constants.MOD_ID, "has_cog", Codec.BOOL);
     /** A sawmill still carrying its blade (1.7 metadata 0); absent means true. ntm-next HAS_BLADE. */
     public static final GolemComponent<Boolean> HAS_BLADE = GolemComponent.of(Constants.MOD_ID, "has_blade", Codec.BOOL);
+    /** hbm-space: the wrong water table a table-bound infinite water item found (ItemInfiniteFluid), saved by name. */
+    public static final GolemComponent<com.hbm.inventory.fluid.FluidType> WRONG_WATER_TABLE =
+            GolemComponent.of(Constants.MOD_ID, "wrong_water_table", () -> com.hbm.inventory.fluid.Fluids.CODEC);
     /** 1.7 ItemToolBox metadata 1: the box is open. ntm-next TOOLBOX_OPEN. */
     public static final GolemComponent<Boolean> TOOLBOX_OPEN = GolemComponent.of(Constants.MOD_ID, "toolbox_open", Codec.BOOL);
     /** An RBMK recycling pellet's depletion stage and xenon poisoning (1.7 metadata 0..9). ntm-next RBMK_PELLET. */

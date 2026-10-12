@@ -1,78 +1,79 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.RecipesCommon.AStack;
-import com.hbm.inventory.RecipesCommon.ComparableStack;
-import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.Fluids;
-import com.hbm.inventory.material.MaterialShapes;
-import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.Mats.MaterialStack;
-import com.hbm.items.ModItems;
-import dev.golem.core.Ids;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.hbm.inventory.recipes.loader.MaterialCodecs;
+import com.hbm.inventory.recipes.loader.RecipeText;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import static com.hbm.inventory.OreDictManager.*;
+import java.util.Optional;
 
 /**
- * The original {@code RotaryFurnaceRecipes} table: up to three unordered item inputs, an optional
- * fluid input, a molten-metal output, a duration in ticks and a steam draw per tick. The JSON
- * loader/writer half of the old {@code SerializableRecipe} is not carried; this is the curated default set.
+ * Rotary furnace recipes: the datapack table {@code hbm:rotary_furnace}, one file per row in
+ * {@code data/hbm/recipe/rotary_furnace/} (1.7 had this as a {@code SerializableRecipe} too):
+ *
+ * <pre>
+ * {"type": "hbm:rotary_furnace", "inputs": [{"ingredient": "#c:ingots/iron"}, {"ingredient": "#c:gems/coal"}],
+ *  "fluid": {"type": "hbm:lightoil", "amount": 100}, "output": {"material": "steel", "amount": 72},
+ *  "duration": 100, "steam": 100, "order": 0}
+ * </pre>
+ *
+ * Up to three unordered item inputs (counts required), an optional fluid, a molten-metal output, a duration in ticks
+ * and a steam draw per tick. The first row (by {@code order}, then recipe id) that matches wins, as 1.7 iterated its
+ * list. The 12 rows were converted once from the former Java table (1.7's defaults) and are the source now.
  */
 public final class RotaryFurnaceRecipes {
 
-    public static final List<RotaryFurnaceRecipe> recipes = new ArrayList<>();
-    /** 1.7 {@code ANY_COKE.gem()}: coal, lignite and petroleum coke. */
-    private static final TagKey<Item> ANY_COKE = TagKey.create(Registries.ITEM, Ids.of("c", "cokes"));
-    private static boolean initialized;
-
     private RotaryFurnaceRecipes() {}
 
-    public static synchronized void register() {
-        if (initialized) return;
-        initialized = true;
+    /** One row. */
+    public record Row(List<AStack> inputs, Optional<FluidStack> fluid, MaterialStack output, int duration, int steam,
+                      int order) {}
 
-        add(new MaterialStack(Mats.MAT_STEEL, MaterialShapes.INGOT.quantity * 1), 100, 100, IRON.ingot(), Mats.MAT_COAL.gem());
-        add(new MaterialStack(Mats.MAT_STEEL, MaterialShapes.INGOT.quantity * 1), 100, 100, IRON.ingot(), new TagStack(ANY_COKE));
+    public static final MapCodec<Row> CODEC = RecordCodecBuilder.<Row>mapCodec(i -> i.group(
+            GenericRecipeCodec.STACK.listOf().optionalFieldOf("inputs", List.of()).forGetter(Row::inputs),
+            GenericRecipeCodec.FLUID_STACK.optionalFieldOf("fluid").forGetter(Row::fluid),
+            MaterialCodecs.STACK.fieldOf("output").forGetter(Row::output),
+            Codec.INT.fieldOf("duration").forGetter(Row::duration),
+            Codec.INT.fieldOf("steam").forGetter(Row::steam),
+            Codec.INT.optionalFieldOf("order", Integer.MAX_VALUE).forGetter(Row::order)
+    ).apply(i, Row::new)).flatXmap(RotaryFurnaceRecipes::checkRow, RotaryFurnaceRecipes::checkRow);
 
-        add(new MaterialStack(Mats.MAT_STEEL, MaterialShapes.INGOT.quantity * 2), 200, 25, fragment(IRON, 9), Mats.MAT_COAL.gem());
-        add(new MaterialStack(Mats.MAT_STEEL, MaterialShapes.INGOT.quantity * 3), 200, 25, fragment(IRON, 9), new TagStack(ANY_COKE));
-        add(new MaterialStack(Mats.MAT_STEEL, MaterialShapes.INGOT.quantity * 4), 400, 25, fragment(IRON, 9), new TagStack(ANY_COKE),
-                new ComparableStack(ModItems.powder_flux.get()));
+    public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("rotary_furnace", () -> CODEC);
 
-        add(new MaterialStack(Mats.MAT_DESH, MaterialShapes.INGOT.quantity * 1), 100, 200, new FluidStack(Fluids.LIGHTOIL, 100),
-                new ComparableStack(ModItems.powder_desh_ready.get()));
+    /** The current recipes in lookup order (rebuilt after every reload or sync). */
+    public static volatile List<RotaryFurnaceRecipe> recipes = List.of();
 
-        add(new MaterialStack(Mats.MAT_GUNMETAL, MaterialShapes.INGOT.quantity * 4), 200, 100, CU.ingot().count(3), AL.ingot().count(1));
-        add(new MaterialStack(Mats.MAT_WEAPONSTEEL, MaterialShapes.INGOT.quantity * 1), 200, 400, new FluidStack(Fluids.GAS_COKER, 100),
-                STEEL.ingot().count(1), new ComparableStack(ModItems.powder_flux.get(), 2));
-        add(new MaterialStack(Mats.MAT_SATURNITE, MaterialShapes.INGOT.quantity * 2), 200, 400, new FluidStack(Fluids.REFORMGAS, 250),
-                DURA.dust().count(4), CU.dust());
-        add(new MaterialStack(Mats.MAT_SATURNITE, MaterialShapes.INGOT.quantity * 4), 200, 300, new FluidStack(Fluids.REFORMGAS, 250),
-                DURA.dust().count(4), CU.dust(), BORAX.dust());
-        add(new MaterialStack(Mats.MAT_ALUMINIUM, MaterialShapes.INGOT.quantity * 2), 100, 400, new FluidStack(Fluids.SODIUM_ALUMINATE, 150));
-        add(new MaterialStack(Mats.MAT_ALUMINIUM, MaterialShapes.INGOT.quantity * 3), 40, 200, new FluidStack(Fluids.SODIUM_ALUMINATE, 150),
-                new ComparableStack(ModItems.powder_flux.get(), 2));
+    static {
+        TABLE.changed.register(RotaryFurnaceRecipes::reindex);
     }
 
-    private static AStack fragment(com.hbm.inventory.material.NTMMaterial material, int count) {
-        return new TagStack(material.tag(MaterialShapes.FRAGMENT), count);
+    /** Declares the table at mod construction. */
+    public static void declare() {}
+
+    private static void reindex() {
+        List<RotaryFurnaceRecipe> next = new ArrayList<>();
+        for (Row row : RecipeText.ordered(TABLE.rows(), Row::order)) {
+            next.add(new RotaryFurnaceRecipe(row.output(), row.duration(), row.steam(), row.fluid().orElse(null),
+                    row.inputs().toArray(AStack[]::new)));
+        }
+        recipes = List.copyOf(next);
     }
 
-    private static void add(MaterialStack output, int duration, int steam, AStack... ingredients) {
-        recipes.add(new RotaryFurnaceRecipe(output, duration, steam, null, ingredients));
-    }
-
-    private static void add(MaterialStack output, int duration, int steam, FluidStack fluid, AStack... ingredients) {
-        recipes.add(new RotaryFurnaceRecipe(output, duration, steam, fluid, ingredients));
+    /** Ensures the rows are loaded (kept for the existing callers; the table fills itself from the datapack). */
+    public static void register() {
+        TABLE.rows();
     }
 
     /**
@@ -122,5 +123,26 @@ public final class RotaryFurnaceRecipes {
             this.duration = duration;
             this.steam = steam;
         }
+    }
+
+    /** The row form of a recipe (for converting a table and for tests). */
+    public static Row toRow(RotaryFurnaceRecipe recipe, int order) {
+        return new Row(List.of(recipe.ingredients), Optional.ofNullable(recipe.fluid), recipe.output, recipe.duration,
+                recipe.steam, order);
+    }
+
+    /** One line per recipe, for comparing a converted table with its source. */
+    public static String describe(RotaryFurnaceRecipe recipe) {
+        StringBuilder out = new StringBuilder("in=");
+        for (AStack stack : recipe.ingredients) out.append(RecipeText.describe(stack)).append(',');
+        out.append(" fluid=").append(recipe.fluid == null ? "-" : recipe.fluid.type.getKey() + "x" + recipe.fluid.fill
+                + "@" + recipe.fluid.pressure);
+        return out.append(" -> ").append(MaterialCodecs.describe(recipe.output)).append(" t=").append(recipe.duration)
+                .append(" steam=").append(recipe.steam).toString();
+    }
+
+    /** Rejects a row the machine cannot run (MapCodec.validate is missing from 1.20.1's DataFixerUpper). */
+    private static DataResult<Row> checkRow(Row row) {
+        return row.inputs().size() > 3 ? DataResult.error(() -> "a rotary furnace row has at most three inputs, not " + row.inputs().size()) : DataResult.success(row);
     }
 }

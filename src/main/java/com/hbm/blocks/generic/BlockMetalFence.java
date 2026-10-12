@@ -63,10 +63,26 @@ public class BlockMetalFence extends CompatBlock implements SimpleWaterloggedBlo
         return forcePost;
     }
 
-    /** 1.7.10 {@code BlockFence.canConnectFenceTo}: another metal fence, a fence gate, or an opaque normal cube. */
+    /**
+     * Blocks another mod adds to the fence's connections (block tag {@code hbm:metal_fence_connects}; HBM puts nothing
+     * in it): hbm-space's chain-link fence gate, which its {@code canConnectFenceTo} named. A holder, so the tag key is
+     * made only in a running game.
+     */
+    public static final class Connects {
+        private Connects() {}
+
+        public static final net.minecraft.tags.TagKey<Block> TAG = net.minecraft.tags.TagKey.create(
+                net.minecraft.core.registries.Registries.BLOCK, dev.golem.core.Ids.of("hbm", "metal_fence_connects"));
+    }
+
+    /**
+     * 1.7.10 {@code BlockFence.canConnectFenceTo}: another metal fence, a fence gate, or an opaque normal cube; and the
+     * {@link Connects#TAG} blocks.
+     */
     public boolean canConnectFenceTo(BlockGetter level, BlockPos neighbour, Direction towards) {
         BlockState state = level.getBlockState(neighbour);
         if (state.getBlock() instanceof BlockMetalFence || state.getBlock() instanceof FenceGateBlock) return true;
+        if (state.is(Connects.TAG)) return true;
         return !Block.isExceptionForConnection(state) && state.isFaceSturdy(level, neighbour, towards.getOpposite())
                 && dev.golem.core.world.Compat.isSolidRender(state);
     }

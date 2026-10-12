@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.hbm.api.data.HazardDataMaps;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.RadiationConfig;
 import com.hbm.hazard.modifier.IHazardModifier;
@@ -50,13 +51,21 @@ import org.jspecify.annotations.Nullable;
  */
 public class HazardSystem {
 
-    /** Tag-keyed hazards (the old ore-dict map), evaluated first in registration order. */
+    /**
+     * Code-registered tag hazards (the old ore-dict map), evaluated after the data map's tags, in registration order.
+     * HBM's own hazards are data ({@link HazardDataMaps#HAZARDS}); these maps are for a hazard whose type carries a
+     * payload, which a file cannot state.
+     */
     public static final LinkedHashMap<TagKey<Item>, HazardData> tagMap = new LinkedHashMap<>();
 
-    /** Item-keyed hazards, evaluated after tags. */
+    /** Code-registered item hazards, evaluated after the data map's value for the item. */
     public static final HashMap<Item, HazardData> itemMap = new HashMap<>();
 
-    /** Blacklisted items/tags never yield hazards. */
+    static {
+        HazardDataMaps.HAZARDS.changed.register(HazardSystem::clearCaches);
+    }
+
+    /** Code-blacklisted items/tags never yield hazards (the data form is an {@code "immune": true} value). */
     public static final HashSet<Item> itemBlacklist = new HashSet<>();
     public static final HashSet<TagKey<Item>> tagBlacklist = new HashSet<>();
 
@@ -121,6 +130,11 @@ public class HazardSystem {
 
     public static boolean isItemBlacklisted(ItemStack stack) {
         if (itemBlacklist.contains(stack.getItem())) return true;
+        HazardSpec own = HazardDataMaps.HAZARDS.byId().get(key(stack.getItem()));
+        if (own != null && own.immune()) return true;
+        for (Map.Entry<String, HazardSpec> entry : HazardDataMaps.HAZARDS.byTag()) {
+            if (entry.getValue().immune() && stack.is(tag(entry.getKey()))) return true;
+        }
         for (TagKey<Item> tag : tagBlacklist) {
             if (stack.is(tag)) return true;
         }
@@ -144,9 +158,15 @@ public class HazardSystem {
         List<HazardData> chronological = chronologyCache.computeIfAbsent(stack.getItem(), item -> {
             List<HazardData> data = new ArrayList<>();
             ItemStack probe = new ItemStack(item);
+            // data tags in the order the files give them, then code tags, then the item's own value (data, code)
+            for (Map.Entry<String, HazardSpec> entry : HazardDataMaps.HAZARDS.byTag()) {
+                if (!entry.getValue().immune() && probe.is(tag(entry.getKey()))) data.add(entry.getValue().toData());
+            }
             for (Map.Entry<TagKey<Item>, HazardData> entry : tagMap.entrySet()) {
                 if (probe.is(entry.getKey())) data.add(entry.getValue());
             }
+            HazardSpec own = HazardDataMaps.HAZARDS.byId().get(key(item));
+            if (own != null && !own.immune()) data.add(own.toData());
             HazardData itemData = itemMap.get(item);
             if (itemData != null) data.add(itemData);
             return Collections.unmodifiableList(data);
@@ -197,6 +217,10 @@ public class HazardSystem {
      */
     public static double getRawRadsFromBlock(Block b) {
         HazardData data = itemMap.get(b.asItem());
+        if (data == null) {
+            HazardSpec spec = HazardDataMaps.HAZARDS.byId().get(key(b.asItem()));
+            data = spec == null || spec.immune() ? null : spec.toData();
+        }
         if (data == null) return 0.0;
         double total = 0.0;
         for (HazardEntry entry : data.entries) {
@@ -301,6 +325,16 @@ public class HazardSystem {
      * the fold's inputs have changed, and the answers already memoised per slot were folded from the
      * old ones.
      */
+    private static String key(Item item) {
+        return net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).toString();
+    }
+
+    private static final Map<String, TagKey<Item>> TAGS = new ConcurrentHashMap<>();
+
+    private static TagKey<Item> tag(String id) {
+        return TAGS.computeIfAbsent(id, key -> TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.parse(key)));
+    }
+
     public static void clearCaches() {
         chronologyCache.clear();
         CARRIED.invalidate();

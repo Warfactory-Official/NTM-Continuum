@@ -38,8 +38,7 @@ public final class FuelPoolRecipes {
             ItemDepletedFuel.setHot(out, false);
             return out;
         }
-        EnumPWRFuel fuel = hotPwr(stack);
-        return ItemStacks.copyWithCount(new ItemStack(ModPwrItems.depleted(fuel)), stack.getCount());
+        return ItemStacks.copyWithCount(new ItemStack(hotPwr(stack)), stack.getCount());
     }
 
     /** One 1.7 FuelPool entry as the recipe browser shows it. */
@@ -64,27 +63,43 @@ public final class FuelPoolRecipes {
             ItemStack hot = ItemDepletedFuel.makeHot(plate.get(), 1);
             out.add(new Entry(hot, cool(hot)));
         }
-        for (EnumPWRFuel fuel : EnumPWRFuel.values()) {
-            ItemStack hot = new ItemStack(ModPwrItems.hot(fuel));
+        for (net.minecraft.world.item.Item fresh : pwrFuels()) {
+            ItemStack hot = new ItemStack(com.hbm.items.machine.ItemPWRFuel.stats(fresh).hotItem());
             out.add(new Entry(hot, cool(hot)));
         }
         for (var rodHandle : com.hbm.items.ModRBMKItems.PELLETS.keySet()) {
             com.hbm.items.machine.ItemRBMKRod rod = rodHandle.get();
             ItemStack hot = new ItemStack(rod);
-            com.hbm.items.machine.ItemRBMKRod.setYield(hot, 0.2 * rod.yield);
+            com.hbm.items.machine.ItemRBMKRod.setYield(hot, 0.2 * rod.stats().yield());
             com.hbm.items.machine.ItemRBMKRod.setCoreHeat(hot, 100);
             com.hbm.items.machine.ItemRBMKRod.setHullHeat(hot, 50);
             ItemStack cold = new ItemStack(rod);
-            com.hbm.items.machine.ItemRBMKRod.setYield(cold, 0.2 * rod.yield);
+            com.hbm.items.machine.ItemRBMKRod.setYield(cold, 0.2 * rod.stats().yield());
             out.add(new Entry(hot, cold));
         }
         return out;
     }
 
-    private static EnumPWRFuel hotPwr(ItemStack stack) {
-        for (EnumPWRFuel fuel : EnumPWRFuel.values()) {
-            if (stack.getItem() == ModPwrItems.hot(fuel)) return fuel;
+    /** The depleted rod a hot PWR rod cools into (the {@code hbm:pwr_fuel} entries' hot/depleted pairs), or null. */
+    private static net.minecraft.world.item.Item hotPwr(ItemStack stack) {
+        for (net.minecraft.world.item.Item fresh : pwrFuels()) {
+            com.hbm.api.data.ReactorDataMaps.PWRFuel fuel = com.hbm.items.machine.ItemPWRFuel.stats(fresh);
+            if (stack.getItem() == fuel.hotItem()) return fuel.depletedItem();
         }
         return null;
+    }
+
+    /** Every fresh PWR rod: HBM's in 1.7 order, then any other item the data map names. */
+    private static java.util.List<net.minecraft.world.item.Item> pwrFuels() {
+        java.util.List<net.minecraft.world.item.Item> fuels = new java.util.ArrayList<>();
+        for (EnumPWRFuel fuel : EnumPWRFuel.values()) {
+            net.minecraft.world.item.Item item = ModPwrItems.fuel(fuel);
+            if (com.hbm.items.machine.ItemPWRFuel.stats(item) != null) fuels.add(item);
+        }
+        for (String id : new java.util.TreeSet<>(com.hbm.api.data.ReactorDataMaps.PWR_FUEL.byId().keySet())) {
+            net.minecraft.world.item.Item item = com.hbm.api.data.ReactorDataMaps.itemOf(id);
+            if (!fuels.contains(item) && item != net.minecraft.world.item.Items.AIR) fuels.add(item);
+        }
+        return fuels;
     }
 }

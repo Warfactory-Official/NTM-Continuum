@@ -161,7 +161,8 @@ public final class RenderLPW2 extends GemBER<TileEntityMachineLPW2, LPW2RenderSt
         };
 
         long time = be.getLevel() == null ? 0L : be.getLevel().getGameTime() % 1000000;
-        double t = time + partialTicks;
+        // world time + partialTicks for HBM's own tile; an addon's engine may run its own clock (hbm-space's spin-up)
+        double t = be.animationTime(partialTicks);
 
         double swayTimer = (t / 3D) % (Math.PI * 4);
         state.sway = (float) ((Math.sin(swayTimer) + Math.sin(swayTimer * 2) + Math.sin(swayTimer * 4) + 2.23255D) * 0.5);
@@ -183,7 +184,7 @@ public final class RenderLPW2 extends GemBER<TileEntityMachineLPW2, LPW2RenderSt
         state.sx = (float) ((Math.sin(serverTimer + Math.PI) + Math.sin(serverTimer * 1.5D)) / 1.90596D);
         state.sy = (float) ((Math.sin(serverTimer) + Math.sin(serverTimer * 1.5D)) / 1.90596D);
 
-        double errorTimer = t / 3D;
+        double errorTimer = (time + partialTicks) / 3D;
         state.errorScroll = (float) ((sps(errorTimer) + errorTimer / 2D) % 1);
     }
 

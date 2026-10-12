@@ -70,8 +70,9 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
 
         ItemStack stack = be.syncStack;
         if (stack != null && stack.getItem() instanceof ItemBatteryPack battery) {
-            state.batteryPart = battery.pack.isCapacitor() ? "Capacitor" : "Battery";
-            state.batteryTexture = battery.pack.texture;
+            var pack = battery.stats();
+            state.batteryPart = pack.capacitor() ? "Capacitor" : "Battery";
+            state.batteryTexture = dev.golem.core.Ids.parse(pack.texture());
         } else if (stack != null && stack.getItem() instanceof com.hbm.items.machine.ItemBatterySC) {
             // 1.7 RenderBatterySocket: every radiovoltaic variant is the "Battery" body in battery_sc.png
             state.batteryPart = "Battery";

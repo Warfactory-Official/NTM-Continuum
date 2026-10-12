@@ -56,6 +56,26 @@ public class ItemPileRodMK2 extends ItemEnumMulti {
         }
     }
 
+    /**
+     * The rod values of the stack: the {@code hbm:pile_rod} item data map, else HBM's enum constant; null when the stack is
+     * not a pile rod. An addon's rod is any {@code ItemPileRodMK2} with an entry.
+     */
+    public static com.hbm.api.data.ReactorDataMaps.@org.jspecify.annotations.Nullable PileRod stats(ItemStack stack) {
+        if (stack.isEmpty() || !(stack.getItem() instanceof ItemPileRodMK2 item)) return null;
+        com.hbm.api.data.ReactorDataMaps.PileRod data = com.hbm.api.data.ReactorDataMaps.PILE_ROD.get(stack.getItem());
+        if (data != null) return data;
+        return codeStats(stack);
+    }
+
+    /** The code defaults (constructor or enum values) that the data map entry overrides. */
+    public static com.hbm.api.data.ReactorDataMaps.@org.jspecify.annotations.Nullable PileRod codeStats(ItemStack stack) {
+        if (stack.isEmpty() || !(stack.getItem() instanceof ItemPileRodMK2 item)) return null;
+        EnumPileRod rod = typeOf(stack);
+        java.util.Optional<String> into = rod.life <= 0 ? java.util.Optional.empty() : java.util.Optional.of(
+                net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item.of(EnumPileRod.VALUES[rod.turnsInto]).getItem()).toString());
+        return new com.hbm.api.data.ReactorDataMaps.PileRod(rod.reactionMult, rod.life, rod.heatMult, rod.neutronSource, into);
+    }
+
     public static EnumPileRod typeOf(ItemStack stack) {
         if (stack.isEmpty() || !(stack.getItem() instanceof ItemPileRodMK2 rod)) return null;
         return (EnumPileRod) rod.getType(stack);
@@ -65,10 +85,11 @@ public class ItemPileRodMK2 extends ItemEnumMulti {
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
         EnumPileRod rod = typeOf(stack);
-        if (rod == null) return;
+        var stats = stats(stack);
+        if (rod == null || stats == null) return;
 
-        if (rod.life > 0) {
-            tooltip.add(Component.literal("Lifetime: " + (int) Math.round(rod.life)));
+        if (stats.life() > 0) {
+            tooltip.add(Component.literal("Lifetime: " + (int) Math.round(stats.life())));
             double depletion = getDepletionPercent(stack);
             if (depletion > 0) tooltip.add(Component.literal("Depletion: " + (int) Math.round(depletion) + "%"));
         }
@@ -93,9 +114,9 @@ public class ItemPileRodMK2 extends ItemEnumMulti {
     }
 
     public static double getDepletionPercent(ItemStack stack) {
-        EnumPileRod rod = typeOf(stack);
-        if (rod == null || rod.life <= 0) return 0D;
-        return (getDepletion(stack) / rod.life) * 100D;
+        var rod = stats(stack);
+        if (rod == null || rod.life() <= 0) return 0D;
+        return (getDepletion(stack) / rod.life()) * 100D;
     }
 
     public static double getDepletion(ItemStack stack) {
@@ -112,29 +133,29 @@ public class ItemPileRodMK2 extends ItemEnumMulti {
 
     /** How many neutrons this rod emits at the given incoming flux: its source term plus its fission. */
     public static double getReactivity(ItemStack stack, double inFlux) {
-        EnumPileRod rod = typeOf(stack);
+        var rod = stats(stack);
         if (rod == null) return 0D;
-        double outFlux = rod.neutronSource;
-        if (rod.reactionMult > 0) outFlux += squirt(inFlux) * rod.reactionMult;
+        double outFlux = rod.source();
+        if (rod.reaction() > 0) outFlux += squirt(inFlux) * rod.reaction();
         return outFlux;
     }
 
     public static double getHeatPerNeutron(ItemStack stack) {
-        EnumPileRod rod = typeOf(stack);
-        return rod == null ? 0D : rod.heatMult;
+        var rod = stats(stack);
+        return rod == null ? 0D : rod.heat();
     }
 
     /** Advances the rod's burn-up, returning the rod it breeds into once it is spent. */
     public static ItemStack react(ItemStack stack, double inFlux) {
-        EnumPileRod rod = typeOf(stack);
-        if (rod == null || rod.life <= 0) return stack;
+        var rod = stats(stack);
+        if (rod == null || rod.life() <= 0) return stack;
 
         double depletion = getDepletion(stack) + inFlux;
-        if (depletion < rod.life) {
+        if (depletion < rod.life()) {
             setDepletion(stack, depletion);
             return stack;
         }
-        return ((ItemPileRodMK2) stack.getItem()).of(EnumPileRod.VALUES[rod.turnsInto]);
+        return rod.turnsInto().map(id -> new ItemStack(com.hbm.api.data.ReactorDataMaps.itemOf(id))).orElse(stack);
     }
 
     /** Upstream's {@code BobMathUtil.squirt}: a square root that stays finite and smooth through zero. */

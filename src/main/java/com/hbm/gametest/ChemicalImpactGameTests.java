@@ -296,6 +296,9 @@ public final class ChemicalImpactGameTests {
             helper.assertTrue(LightLevels.opacity(level, dark) > 2, "stone must read opacity > 2, has "
                     + LightLevels.opacity(level, dark));
 
+            // placed again: covered by stone, waste earth turns to dirt on a random tick (1.7 BlockWasteEarth), which
+            // can come in the five ticks above now that the whole plot ticks from the start (Golem TestChunks)
+            helper.setBlock(new BlockPos(5, 2, 3), ModFalloutBlocks.waste_earth.get());
             impact(helper, Fluids.SEEDSLURRY, new BlockPos(4, 3, 4));
 
             helper.assertTrue(is(helper, new BlockPos(3, 2, 3), Blocks.GRASS_BLOCK), "lit dirt becomes grass");

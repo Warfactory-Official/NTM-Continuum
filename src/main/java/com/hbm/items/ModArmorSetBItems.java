@@ -186,10 +186,6 @@ public final class ModArmorSetBItems {
         return ro;
     }
 
-    private static final HazardClass[] FULL_PACKAGE = {
-            HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_LUNG,
-            HazardClass.BACTERIA, HazardClass.GAS_BLISTERING, HazardClass.GAS_MONOXIDE,
-            HazardClass.LIGHT, HazardClass.SAND};
 
     /** Set bonuses, hazard classes and radiation resistance; run once the registries are flushed. */
     public static void configure() {
@@ -197,8 +193,6 @@ public final class ModArmorSetBItems {
                 .setHasHardLanding(true)
                 .addEffect(Effects.instance(Effects.haste(), 20, 4))
                 .setHides(EnumPlayerPart.HAT)
-                .setHazardClass(FULL_PACKAGE)
-                .setRadResist(1.3D /* 95% */)
                 .setArmorModel("steamsuit");
         steamsuit_plate.get().cloneStats(steam);
         steamsuit_legs.get().cloneStats(steam);
@@ -218,50 +212,18 @@ public final class ModArmorSetBItems {
                 .addEffect(Effects.instance(Effects.speed(), 20, 1))
                 .addEffect(Effects.instance(Effects.jumpBoost(), 20, 0))
                 .setHides(EnumPlayerPart.HAT)
-                .setHazardClass(FULL_PACKAGE)
-                .setRadResist(1.0D /* 90% */)
                 .setArmorModel("envsuit");
         envsuit_plate.get().cloneStats(env);
         envsuit_legs.get().cloneStats(env);
         envsuit_boots.get().cloneStats(env);
 
         // 1.7 ArmorUtil.register
-        ArmorRegistry.registerHazard(mask_rag.get(), HazardClass.PARTICLE_COARSE);
-        ArmorRegistry.registerHazard(mask_piss.get(), HazardClass.PARTICLE_COARSE, HazardClass.GAS_LUNG);
-        ArmorRegistry.registerHazard(goggles.get(), HazardClass.LIGHT, HazardClass.SAND);
-        ArmorRegistry.registerHazard(ashglasses.get(), HazardClass.LIGHT, HazardClass.SAND);
         // 1.7 HazmatRegistry
-        HazmatRegistry.registerHazmat(jackt.get(), 0.1);
-        HazmatRegistry.registerHazmat(jackt2.get(), 0.1);
-        // 1.7 TileEntityLockableBase: either jacket multiplies the lock-pick chance by 100
-        TileEntityLockableBase.LOCKPICK_JACKETS.add(jackt);
-        TileEntityLockableBase.LOCKPICK_JACKETS.add(jackt2);
+        // 1.7 TileEntityLockableBase: either jacket multiplies the lock-pick chance by 100 (hbm:lockpick_jacket data map)
     }
 
     /** 1.7 {@code DamageResistanceHandler.initDefaults}, the entries for these ids. */
     public static void registerResistances() {
-        DamageResistanceHandler.registerItem(jackt.get(), new ResistanceStats()
-                .addCategory(CATEGORY_PHYSICAL, 1F, 0.20F));
-        DamageResistanceHandler.registerItem(jackt2.get(), new ResistanceStats()
-                .addCategory(CATEGORY_PHYSICAL, 2F, 0.25F));
-        DamageResistanceHandler.registerSet(steamsuit_helmet.get(), steamsuit_plate.get(), steamsuit_legs.get(),
-                steamsuit_boots.get(), new ResistanceStats()
-                        .addCategory(CATEGORY_PHYSICAL, 2F, 0.15F)
-                        .addCategory(CATEGORY_FIRE, 0.5F, 0.25F)
-                        .addExact("fall", 5F, 0.25F)
-                        .setOther(0F, 0.1F));
-        DamageResistanceHandler.registerSet(dieselsuit_helmet.get(), dieselsuit_plate.get(), dieselsuit_legs.get(),
-                dieselsuit_boots.get(), new ResistanceStats()
-                        .addCategory(CATEGORY_PHYSICAL, 1F, 0.15F)
-                        .addCategory(CATEGORY_FIRE, 0.5F, 0.5F)
-                        .addCategory(CATEGORY_EXPLOSION, 2F, 0.15F)
-                        .setOther(0F, 0.1F));
-        DamageResistanceHandler.registerSet(envsuit_helmet.get(), envsuit_plate.get(), envsuit_legs.get(),
-                envsuit_boots.get(), new ResistanceStats()
-                        .addCategory(CATEGORY_FIRE, 2F, 0.75F)
-                        .addExact("drown", 0F, 1F)
-                        .addExact("fall", 5F, 0.75F)
-                        .setOther(0F, 0.1F));
 
         // 1.7 ModEventHandler.onEntityAttacked / onEntityDamaged: every worn IAttackHandler / IDamageHandler.
         DamageEvents.onAttack(event -> {

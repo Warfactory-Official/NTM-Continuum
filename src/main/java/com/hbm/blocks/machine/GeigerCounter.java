@@ -31,14 +31,15 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The wall-mounted Geiger counter, ported from 1.12.2's {@code GeigerCounter}.
+ * 1.7 {@code GeigerCounter}: the placed Geiger counter, facing the placer's look direction.
  *
- * <p>Right-clicking prints the same survey readout the handheld counter does; the comparator reports the
- * live chunk dose on a fifth-of-a-rad ladder, capped at 15.
+ * <p>Right-clicking without sneaking plays {@code hbm:item.techBoop} at the player (1.7 {@code playSoundAtEntity}, as
+ * the handheld counter does) and prints the same GEIGER COUNTER readout ({@link ContaminationUtil#printGeigerData});
+ * sneaking passes the click on. The comparator reads the chunk radiation live, +1 per 5 RAD/s rounded up, capped at 15
+ * ({@link TileEntityGeiger#comparatorLevel}); the block entity's ten-tick sample only triggers the comparator update.
  *
- * <p><b>Deviation from the fork.</b> The fork's blockstate points at a {@code hbm:geiger} model that does
- * not exist in its assets, so the block is untextured there; this port supplies a JSON model matching the
- * collision box the fork already declares.
+ * <p>Like 1.7 (render type -1, a TESR), the block has no model of its own: the OBJ is drawn by
+ * {@code HbmBlockEntityRenderers}' {@code BlockObjRenderer}. The shapes are 1.7's metadata bounds.
  */
 public class GeigerCounter extends dev.golem.core.world.CompatBlock implements dev.golem.core.registry.TickingBlock {
 
@@ -85,7 +86,9 @@ public class GeigerCounter extends dev.golem.core.world.CompatBlock implements d
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         if (!level.isClientSide()) {
-            level.playSound(null, pos, ModSounds.TECH_BOOP.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+            // 1.7: world.playSoundAtEntity(player, "hbm:item.techBoop", 1.0F, 1.0F), at the player, not the block
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BOOP.get(),
+                    SoundSource.PLAYERS, 1.0F, 1.0F);
             ContaminationUtil.printGeigerData(player);
         }
         return InteractionResult.SUCCESS;
@@ -99,7 +102,7 @@ public class GeigerCounter extends dev.golem.core.world.CompatBlock implements d
     @Override
     protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
         if (!(level.getBlockEntity(pos) instanceof TileEntityGeiger geiger)) return 0;
-        return Math.min((int) Math.ceil(geiger.check() / 5.0D), 15);
+        return TileEntityGeiger.comparatorLevel(geiger.check());
     }
 
     @Override

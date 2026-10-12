@@ -6,10 +6,8 @@ import dev.golem.core.dejson.DataMaps;
  * NeoForge's {@code neoforge:furnace_fuels} data map for hbm's fuels, declared through Golem Core's
  * {@code dejson} vocabulary instead of written as JSON. Touches no Minecraft class.
  *
- * <p>The same burn times reach Fabric and Forge at registration from {@link ModFuelItems#BURN_TIMES}; this
- * is the NeoForge half, which is data. The two cannot share one table because that one holds registry
- * suppliers, which a plain JVM cannot load. <b>Keep the two in sync</b>: an item added there without a line
- * here burns everywhere but NeoForge.
+ * <p>{@link #BURN_TIMES} is the single table: it holds item ids, not registry suppliers, so the plain-JVM Dejson
+ * pass can read it, and {@link ModFuelItems#BURN_TIMES} resolves the same ids for Fabric and Forge.
  */
 public final class FuelDataMapDeclarations {
 
@@ -17,50 +15,63 @@ public final class FuelDataMapDeclarations {
 
     private FuelDataMapDeclarations() {}
 
+    /**
+     * Every HBM furnace fuel and its burn time in ticks (1.7 {@code FuelHandler}; vanilla coal = 1600). The one table: the
+     * NeoForge {@code neoforge:furnace_fuels} data map below is declared from it, and Fabric and Forge register it at
+     * start-up through Golem Core's {@code Fuels} ({@code ModFuelItems.BURN_TIMES}). An addon's fuel is a
+     * {@code neoforge:furnace_fuels} entry of its own on NeoForge and a {@code Fuels.register} call elsewhere.
+     */
+    public static final java.util.Map<String, Integer> BURN_TIMES = burnTimes();
+
+    private static java.util.Map<String, Integer> burnTimes() {
+        java.util.Map<String, Integer> t = new java.util.LinkedHashMap<>();
+        t.put("hbm:powder_lignite", 1200);
+        t.put("hbm:powder_coal", 1600);
+        t.put("hbm:powder_fire", 6400);
+        t.put("hbm:biomass", 400);
+        t.put("hbm:biomass_compressed", 800);
+        t.put("hbm:coal_infernal", 4800);
+        t.put("hbm:solid_fuel", 3200);
+        t.put("hbm:solid_fuel_presto", 8000);
+        t.put("hbm:solid_fuel_presto_triplet", 40000);
+        t.put("hbm:rocket_fuel", 6400);
+        t.put("hbm:lignite", 1200);
+        t.put("hbm:crystal_coal", 6400);
+        t.put("hbm:briquette_coal", 2000);
+        t.put("hbm:briquette_lignite", 1600);
+        t.put("hbm:briquette_wood", 400);
+        t.put("hbm:solid_fuel_bf", 32000);
+        t.put("hbm:solid_fuel_presto_bf", 80000);
+        t.put("hbm:solid_fuel_presto_triplet_bf", 400000);
+        t.put("hbm:scrap", 50);
+        t.put("hbm:dust", 25);
+        t.put("hbm:block_scrap", 400);
+        t.put("hbm:coke_coal", 3200);
+        t.put("hbm:block_coke_coal", 32000);
+        t.put("hbm:coke_lignite", 3200);
+        t.put("hbm:block_coke_lignite", 32000);
+        t.put("hbm:coke_petroleum", 3200);
+        t.put("hbm:block_coke_petroleum", 32000);
+        t.put("hbm:book_guide_test", 200);
+        t.put("hbm:book_guide_rbmk", 200);
+        t.put("hbm:book_guide_hadron", 200);
+        t.put("hbm:book_guide_starter", 200);
+        t.put("hbm:coal_eternal", 3200);
+        t.put("hbm:powder_sawdust", 100);
+        t.put("hbm:powder_ash_wood", 100);
+        t.put("hbm:powder_ash_coal", 200);
+        t.put("hbm:powder_ash_misc", 100);
+        t.put("hbm:powder_ash_fly", 200);
+        t.put("hbm:powder_ash_soot", 100);
+        return java.util.Collections.unmodifiableMap(t);
+    }
+
     public static void declare() {
         if (declared) return;
         declared = true;
 
-        DataMaps.furnaceFuels()
-                .burnTime("hbm:powder_lignite", 1200)
-                .burnTime("hbm:powder_coal", 1600)
-                .burnTime("hbm:powder_fire", 6400)
-                .burnTime("hbm:biomass", 400)
-                .burnTime("hbm:biomass_compressed", 800)
-                .burnTime("hbm:coal_infernal", 4800)
-                .burnTime("hbm:solid_fuel", 3200)
-                .burnTime("hbm:solid_fuel_presto", 8000)
-                .burnTime("hbm:solid_fuel_presto_triplet", 40000)
-                .burnTime("hbm:rocket_fuel", 6400)
-                .burnTime("hbm:lignite", 1200)
-                .burnTime("hbm:crystal_coal", 6400)
-                .burnTime("hbm:briquette_coal", 2000)
-                .burnTime("hbm:briquette_lignite", 1600)
-                .burnTime("hbm:briquette_wood", 400)
-                .burnTime("hbm:solid_fuel_bf", 32000)
-                .burnTime("hbm:solid_fuel_presto_bf", 80000)
-                .burnTime("hbm:solid_fuel_presto_triplet_bf", 400000)
-                .burnTime("hbm:scrap", 50)
-                .burnTime("hbm:dust", 25)
-                .burnTime("hbm:block_scrap", 400)
-                .burnTime("hbm:coke_coal", 3200)
-                .burnTime("hbm:block_coke_coal", 32000)
-                .burnTime("hbm:coke_lignite", 3200)
-                .burnTime("hbm:block_coke_lignite", 32000)
-                .burnTime("hbm:coke_petroleum", 3200)
-                .burnTime("hbm:block_coke_petroleum", 32000)
-                // 1.7 book_guide (every metadata), one item per book here (History §19es-itemvariant)
-                .burnTime("hbm:book_guide_test", 200)
-                .burnTime("hbm:book_guide_rbmk", 200)
-                .burnTime("hbm:book_guide_hadron", 200)
-                .burnTime("hbm:book_guide_starter", 200)
-                .burnTime("hbm:coal_eternal", 3200)
-                .burnTime("hbm:powder_sawdust", 100)
-                .burnTime("hbm:powder_ash_wood", 100)
-                .burnTime("hbm:powder_ash_coal", 200)
-                .burnTime("hbm:powder_ash_misc", 100)
-                .burnTime("hbm:powder_ash_fly", 200)
-                .burnTime("hbm:powder_ash_soot", 100)
-                .register();
+        var fuels = DataMaps.furnaceFuels();
+        BURN_TIMES.forEach(fuels::burnTime);
+        fuels.register();
     }
 }

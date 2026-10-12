@@ -49,7 +49,7 @@ public class ItemFluidDuct extends CompatItem {
     /** 1.7 getSubItems: one duct per fluid that has an identifier, NONE excluded. */
     public static List<ItemStack> creativeStacks(Item item) {
         List<ItemStack> list = new ArrayList<>();
-        FluidType[] all = Fluids.getAll();
+        FluidType[] all = Fluids.getInNiceOrder();
         for (int i = 1; i < all.length; ++i) {
             if (!all[i].hasNoID()) list.add(make(item, all[i], 1));
         }

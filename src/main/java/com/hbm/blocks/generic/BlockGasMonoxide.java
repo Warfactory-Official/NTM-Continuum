@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BlockGasMonoxide extends BlockGasBase {
     public BlockGasMonoxide(Properties properties) {
         super(properties);
+        cloudColor(0.1F, 0.1F, 0.1F);
     }
 
     @Override

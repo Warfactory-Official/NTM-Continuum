@@ -53,6 +53,7 @@ public final class RenderBomber extends CompatEntityRenderer<EntityBomber, Rende
         state.yaw = Mth.rotLerp(partialTicks, entity.renderYawO, entity.renderYaw);
         state.pitch = Mth.lerp(partialTicks, entity.renderPitchO, entity.renderPitch);
         state.style = entity.getStyle();
+        state.skin = entity.getSkin();
         state.wobble = (float) Math.sin((entity.tickCount + partialTicks) * 0.05D) * 10F;
         state.light = state.lightCoords;
     }
@@ -66,7 +67,10 @@ public final class RenderBomber extends CompatEntityRenderer<EntityBomber, Rende
         pose.mulPose(Axis.XP.rotationDegrees(state.wobble));
         RenderType type = CompatRenderTypes.entityCutoutNoCull(texture(state.style));
         int light = state.light;
-        if (state.style >= 0 && state.style <= 4) {
+        Skin custom = state.skin.isEmpty() ? null : SKINS.get(state.skin);
+        if (custom != null) {
+            custom.render(pose, sink, light);
+        } else if (state.style >= 0 && state.style <= 4) {
             pose.scale(5F, 5F, 5F);
             pose.mulPose(Axis.YP.rotationDegrees(-90F));
             sink.submitCustomGeometry(pose, type, (p, buffer) ->
@@ -80,7 +84,24 @@ public final class RenderBomber extends CompatEntityRenderer<EntityBomber, Rende
         pose.popPose();
     }
 
+    /**
+     * An addon's airframe (ADDON-API-INVENTORY C-25), drawn after the bomber's own heading, roll and wobble (1.7's
+     * transforms up to the per-style branch) in place of HBM's Dornier/B-29.
+     */
+    @FunctionalInterface
+    public interface Skin {
+        void render(PoseStack pose, SubmitSink sink, int light);
+    }
+
+    private static final java.util.Map<String, Skin> SKINS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Registers the skin a bomber named {@code name} ({@code EntityBomber.setSkin}) is drawn with. Client only. */
+    public static void registerSkin(String name, Skin skin) {
+        if (SKINS.putIfAbsent(name, skin) != null) throw new IllegalStateException("Bomber skin " + name + " registered twice");
+    }
+
     public static final class State extends CompatEntityRenderState {
+        String skin = "";
         float yaw;
         float pitch;
         float wobble;

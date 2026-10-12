@@ -158,12 +158,30 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
     }
 
     /** Both blades must be present and not spent, and at least one input must have somewhere to go. */
+    /** A listener on each input the shredder checks, in slot order (ADDON-API-INVENTORY H-70). */
+    @FunctionalInterface
+    public interface Intercept {
+        /**
+         * Called for each non-empty input slot while the blades work, before the slot is considered; true stops the
+         * check (no shredding this tick; the listener has done what it does, e.g. blown the machine up).
+         */
+        boolean intercept(TileEntityMachineShredder shredder, int slot, ItemStack stack);
+    }
+
+    /** Every listener in order; HBM registers none. NTM: Space's Gwen bobblehead blows the shredder up. */
+    public static final dev.golem.core.hook.Hook<Intercept> INTERCEPT = dev.golem.core.hook.Hook.notifying();
+
     public boolean canProcess() {
         int left = gearState(SLOT_BLADE_LEFT), right = gearState(SLOT_BLADE_RIGHT);
         if (left <= 0 || left >= 3 || right <= 0 || right >= 3) return false;
 
         for (int i = 0; i < 9; i++) {
             ItemStack stack = inventory.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                for (Intercept listener : INTERCEPT) {
+                    if (listener.intercept(this, i, stack)) return false;
+                }
+            }
             if (!stack.isEmpty() && hasSpace(stack)) return true;
         }
         return false;

@@ -128,7 +128,9 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
     private void generate(Level level) {
         if (!this.isOn) return;
         if (level.hasNeighborSignal(worldPosition)) return;
-        if (hasAcceptableFuel() && tank.getFill() > 0) {
+        // hbm-space: if(!breatheAir(1)) return, after the fuel checks (com.hbm.api.environment.Environment)
+        if (hasAcceptableFuel() && tank.getFill() > 0
+                && com.hbm.api.environment.Environment.breatheAir(level, worldPosition, 1)) {
             this.wasOn = true;
             tank.setFill(Math.max(tank.getFill() - 1, 0));
 

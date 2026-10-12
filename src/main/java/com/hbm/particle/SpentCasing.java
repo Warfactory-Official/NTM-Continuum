@@ -75,6 +75,7 @@ public class SpentCasing implements Cloneable {
     public int[] getColors() { return colors; }
     public CasingType getType() { return type; }
     public String getSound() { return bounceSound; }
+    /** The bounce sound's id: a bare path is HBM's ({@code "casing.small"}), an addon names its own as {@code "ns:path"}. */
     public SpentCasing setSound(String sound) { bounceSound = sound; return this; }
     public float getBounceYaw() { return bounceYaw; }
     public float getBouncePitch() { return bouncePitch; }

@@ -58,14 +58,12 @@ public final class FelGameTests {
     }
 
     private static net.minecraft.world.item.Item crystalFor(EnumWavelengths mode) {
-        return switch (mode) {
-            case IR -> ModMachineItems.laser_crystal_co2.get();
-            case VISIBLE -> ModMachineItems.laser_crystal_bismuth.get();
-            case UV -> ModMachineItems.laser_crystal_cmb.get();
-            case GAMMA -> ModMachineItems.laser_crystal_bale.get();
-            case DRX -> ModMachineItems.laser_crystal_digamma.get();
-            default -> Items.AIR;
-        };
+        if (mode == EnumWavelengths.IR) return ModMachineItems.laser_crystal_co2.get();
+        if (mode == EnumWavelengths.VISIBLE) return ModMachineItems.laser_crystal_bismuth.get();
+        if (mode == EnumWavelengths.UV) return ModMachineItems.laser_crystal_cmb.get();
+        if (mode == EnumWavelengths.GAMMA) return ModMachineItems.laser_crystal_bale.get();
+        if (mode == EnumWavelengths.DRX) return ModMachineItems.laser_crystal_digamma.get();
+        return Items.AIR;
     }
 
     // ---------------------------------------------------------------- the SILEX handshake

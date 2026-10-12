@@ -21,11 +21,31 @@ import java.util.List;
  */
 public class GUIScreenBobble extends CompatScreen {
 
-    private final TileEntityBobble bobble;
+    private final String name;
+    private final @org.jspecify.annotations.Nullable String contribution;
+    private final @org.jspecify.annotations.Nullable String inscription;
+    private final boolean mellow;
 
     public GUIScreenBobble(TileEntityBobble bobble) {
+        this(bobble.type().name, bobble.type().contribution, bobble.type().inscription, bobble.type() == BobbleType.MELLOW);
+    }
+
+    /**
+     * The same panel for an addon's bobblehead (ADDON-API-INVENTORY C-24): its name, contribution and inscription ('$' a
+     * line break, null for none).
+     */
+    public GUIScreenBobble(String name, @org.jspecify.annotations.Nullable String contribution,
+                           @org.jspecify.annotations.Nullable String inscription) {
+        this(name, contribution, inscription, false);
+    }
+
+    private GUIScreenBobble(String name, @org.jspecify.annotations.Nullable String contribution,
+                            @org.jspecify.annotations.Nullable String inscription, boolean mellow) {
         super(Component.literal("Bobblehead"));
-        this.bobble = bobble;
+        this.name = name;
+        this.contribution = contribution;
+        this.inscription = inscription;
+        this.mellow = mellow;
     }
 
     @Override
@@ -47,26 +67,25 @@ public class GUIScreenBobble extends CompatScreen {
         centered(graphics, "Nuclear Tech Commemorative Bobblehead", left, sizeX, nextLevel, 0x00ff00);
         nextLevel += 10;
 
-        BobbleType type = bobble.type();
-        String bobbleName = type.name;
-        if (type == BobbleType.MELLOW) bobbleName = anagramIt(bobbleName, "GEORGEWILLIAMPATON");
+        String bobbleName = name;
+        if (mellow) bobbleName = anagramIt(bobbleName, "GEORGEWILLIAMPATON");
         centered(graphics, bobbleName, left, sizeX, nextLevel, 0x009900);
         nextLevel += 20;
 
-        if (type.contribution != null) {
+        if (contribution != null) {
             centered(graphics, "Has contributed", left, sizeX, nextLevel, 0x00ff00);
             nextLevel += 10;
-            for (String text : type.contribution.split("\\$")) {
+            for (String text : contribution.split("\\$")) {
                 centered(graphics, text, left, sizeX, nextLevel, 0x009900);
                 nextLevel += 10;
             }
             nextLevel += 10;
         }
 
-        if (type.inscription != null) {
+        if (inscription != null) {
             centered(graphics, "On the bottom is the following inscription:", left, sizeX, nextLevel, 0x00ff00);
             nextLevel += 10;
-            for (String text : type.inscription.split("\\$")) {
+            for (String text : inscription.split("\\$")) {
                 centered(graphics, text, left, sizeX, nextLevel, 0x009900);
                 nextLevel += 10;
             }

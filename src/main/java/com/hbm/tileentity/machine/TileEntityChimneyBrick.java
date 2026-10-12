@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** 13-high brick chimney: fly ash only and 0.25 pollution multiplier when pollution is integrated. */
-public final class TileEntityChimneyBrick extends TileEntityChimneyBase {
+public class TileEntityChimneyBrick extends TileEntityChimneyBase {
 
     public TileEntityChimneyBrick(BlockPos pos, BlockState state) {
         super(SmokeChainRegistration.CHIMNEY_BRICK.get(), pos, state);

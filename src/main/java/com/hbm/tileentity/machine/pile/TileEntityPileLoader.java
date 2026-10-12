@@ -234,8 +234,8 @@ public class TileEntityPileLoader extends TileEntityPileDeviceBase implements Wo
             return "" + (int) Math.round(ItemPileRodMK2.getDepletionPercent(channelStack));
         }
         if ((PREFIX_VALUE + "lifetime").equals(name)) {
-            EnumPileRod rod = ItemPileRodMK2.typeOf(channelStack);
-            return rod == null ? "0" : "" + (int) Math.round(rod.life);
+            var rod = ItemPileRodMK2.stats(channelStack);
+            return rod == null ? "0" : "" + (int) Math.round(rod.life());
         }
         if ((PREFIX_VALUE + "temp").equals(name)) {
             return "" + (int) Math.round(this.channelTemp);

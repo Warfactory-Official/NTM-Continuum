@@ -50,7 +50,7 @@ public final class SmallGameTests {
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
     public static final GameTests.Function SOUND = TESTS.function("small_tesla_shoot_sound", 20, () -> SmallGameTests::sound);
-    public static final GameTests.Function FIRE = TESTS.function("small_fire_ability_fire_protection", 40, () -> SmallGameTests::fire);
+    public static final GameTests.Function FIRE = TESTS.function("small_fire_ability_fire_protection", 200, () -> SmallGameTests::fire);
     public static final GameTests.Function CHESTS = TESTS.function("small_chest_loot_1710_totals", 200, () -> SmallGameTests::chests);
     public static final GameTests.Function FALLOUT = TESTS.function("small_fallout_layer_17", 100, () -> SmallGameTests::fallout);
     public static final GameTests.Function DEBRIS = TESTS.function("small_zirnox_debris_17", 100, () -> SmallGameTests::debris);
@@ -73,6 +73,12 @@ public final class SmallGameTests {
      * (15% per level of the best piece): Fire Protection IV gives 200 - floor(200 * 0.6) = 80 ticks; bare, 200.
      */
     private static void fire(GameTestHelper helper) {
+        // the armoured pig must tick (its equipment change applies the burning_time modifier); on 26.1 (3, 1, 1) can lie
+        // in the chunk next to the test's own, which need not be entity-ticking (TestPlots)
+        TestPlots.whenTicking(helper, new BlockPos(0, 0, 0), new BlockPos(4, 2, 2), () -> fireNow(helper));
+    }
+
+    private static void fireNow(GameTestHelper helper) {
         LivingEntity bare = helper.spawn(EntityType.PIG, new BlockPos(1, 1, 1));
         LivingEntity armored = helper.spawn(EntityType.PIG, new BlockPos(3, 1, 1));
         ItemStack boots = new ItemStack(Items.IRON_BOOTS);

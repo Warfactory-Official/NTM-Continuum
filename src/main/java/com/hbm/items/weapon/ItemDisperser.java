@@ -83,11 +83,11 @@ public class ItemDisperser extends ItemFluidTank {
 
     /**
      * The creative-tab stacks, one full item per {@link #isCreativeVariant} fluid. 1.7 walked
-     * {@code Fluids.getInNiceOrder()}; the port has no nice order, so this is registration order.
+     * {@code Fluids.getInNiceOrder()}, as the port does.
      */
     public java.util.List<ItemStack> creativeVariants() {
         java.util.List<ItemStack> list = new java.util.ArrayList<>();
-        for (FluidType fluid : Fluids.getAll()) {
+        for (FluidType fluid : Fluids.getInNiceOrder()) {
             if (isCreativeVariant(fluid)) list.add(make(fluid, capacity));
         }
         return list;

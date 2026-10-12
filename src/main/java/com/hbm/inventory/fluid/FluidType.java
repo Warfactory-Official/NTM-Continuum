@@ -42,11 +42,11 @@ public class FluidType {
      */
     private int id;
     /** The stable namespaced id this fluid is saved under ({@code hbm:<lowercase name>}). */
-    private final String registryName;
+    private String registryName;
     /** The internal/string name (e.g. {@code "water"}). */
     private final String stringId;
     /** Approximate HEX colour of the fluid, used for pipe/GUI rendering. */
-    private final int color;
+    private int color;
     /** Unlocalized translation key. */
     private final String unlocalized;
     /** Title-cased id, used only when a fluid has no {@code hbmfluid.*} entry. */
@@ -57,7 +57,8 @@ public class FluidType {
     private final String key;
     private final Identifier texture;
     private final Identifier icon;
-    private final Map<Class<?>, Object> traits = new HashMap<>();
+    // replaced whole (never mutated in place) so a reload on one thread never tears a read on another
+    private volatile Map<Class<?>, Object> traits = Map.of();
 
     /**
      * The greyscale droplet art every fluid's icon sprite is recoloured from, and therefore the stem of
@@ -72,17 +73,35 @@ public class FluidType {
     public int temperature = ROOM_TEMPERATURE;
 
     public FluidType(String name, int color) {
+        this(Constants.MOD_ID, name, color);
+    }
+
+    /**
+     * A fluid of {@code namespace} ({@code <namespace>:<key>}, key = lower-case name). An addon creates its fluids through
+     * {@link Fluids#register(String, String, int)}, which keeps HBM's own fluids first. Its GUI texture is
+     * {@code <namespace>:textures/gui/fluids/<key>.png} and its name the translation of {@code <namespace>fluid.<key>}
+     * (HBM's own: {@code hbmfluid.<key>}).
+     */
+    FluidType(String namespace, String name, int color) {
         this.stringId = name;
         this.color = color;
         this.guiTint = color;
         this.key = name.toLowerCase(Locale.US);
-        this.registryName = Constants.MOD_ID + ":" + this.key;
-        this.unlocalized = "hbmfluid." + this.key;
+        this.namespace = namespace;
+        this.registryName = namespace + ":" + this.key;
+        this.unlocalized = namespace + "fluid." + this.key;
         this.fallbackName = titleCase(name);
-        this.texture = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/gui/fluids/" + this.key + ".png");
-        this.icon = dev.golem.core.Ids.of(Constants.MOD_ID, ICON_ART + "_" + this.key);
+        this.texture = dev.golem.core.Ids.of(namespace, "textures/gui/fluids/" + this.key + ".png");
+        // in the fluid's own namespace like the texture: an addon fluid named like one of HBM's ("xenon") must not
+        // share HBM's droplet sprite. com.hbm.client.FluidSprites#install(String) mints it.
+        this.icon = dev.golem.core.Ids.of(namespace, ICON_ART + "_" + this.key);
         this.id = Fluids.registerSelf(this);
     }
+
+    private final String namespace;
+
+    /** The namespace this fluid is registered in ({@code hbm}, or an addon's). */
+    public String getNamespace() { return this.namespace; }
 
     /** Constructor with an asserted ID, mirroring the 1.12.2 safeguard against fluid-ID drift. */
     public FluidType(int forcedId, String name, int color) {
@@ -105,8 +124,21 @@ public class FluidType {
     /** The 1.7 number; package-private so no caller outside {@link Fluids} can persist it by accident. */
     int numericId() { return this.id; }
 
-    /** The stable namespaced id, e.g. {@code hbm:water}: the only form in which a fluid is ever saved. */
+    /**
+     * The stable namespaced id, the only form in which a fluid is ever saved: its vanilla fluid id ({@code hbm:oil},
+     * {@code minecraft:water}, another mod's {@code othermod:x}).
+     */
     public String getRegistryName() { return this.registryName; }
+
+    private boolean foreign;
+
+    /** Whether this is another mod's fluid that HBM met at run time (the open model), not one registered with HBM. */
+    public boolean isForeign() { return this.foreign; }
+
+    void markForeign() { this.foreign = true; }
+
+    /** Fluids.init: NONE, WATER and LAVA are vanilla's own fluids and are named by vanilla's ids. */
+    void useVanillaName(String id) { this.registryName = id; }
 
     // A FluidType is a data component value (ModDataComponents.FLUID), and 26.1 refuses component values that do not
     // declare value equality. One instance exists per fluid, so identity is the value equality.
@@ -187,8 +219,39 @@ public class FluidType {
 
     public boolean isHot() { return this.temperature >= 100; }
 
-    public FluidType addTraits(Object... traits) {
-        for (Object trait : traits) this.traits.put(trait.getClass(), trait);
+    public synchronized FluidType addTraits(Object... traits) {
+        Map<Class<?>, Object> next = new HashMap<>(this.traits);
+        for (Object trait : traits) next.put(trait.getClass(), trait);
+        this.traits = Map.copyOf(next);
+        return this;
+    }
+
+    /** Every trait this fluid has, in no particular order. */
+    public java.util.Collection<Object> traits() { return this.traits.values(); }
+
+    /**
+     * {@link FluidProperties}: replaces colour, GUI tint, temperature, hazard diamond and every trait with a
+     * {@code fluid_property} file's values (a datapack load replaces, it does not merge; patches are merged into the
+     * file's values before this is called).
+     */
+    synchronized void applyProperties(int color, int tint, int temperature, FluidHazard hazard, java.util.List<Object> traits) {
+        this.color = color;
+        this.guiTint = tint;
+        this.temperature = temperature;
+        this.hazard = java.util.Objects.requireNonNull(hazard);
+        Map<Class<?>, Object> next = new HashMap<>();
+        for (Object trait : traits) next.put(trait.getClass(), trait);
+        this.traits = Map.copyOf(next);
+    }
+
+    private volatile FluidHazard hazard = FluidHazard.NONE;
+
+    /** 1.7's {@code poison}, {@code flammability}, {@code reactivity} and {@code symbol}: the hazard diamond's values. */
+    public FluidHazard getHazard() { return this.hazard; }
+
+    /** A code default for a fluid without a {@code fluid_property} file (1.7's constructor arguments {@code p, f, r, symbol}). */
+    public FluidType setHazard(FluidHazard hazard) {
+        this.hazard = java.util.Objects.requireNonNull(hazard);
         return this;
     }
 
@@ -231,7 +294,7 @@ public class FluidType {
         FT_Corrosive corrosive = getTrait(FT_Corrosive.class);
         if (corrosive != null) corrosive.addInfo(info);
 
-        // FT_Flammable / FT_Combustible live in FluidCombustion; their lines are 1.7's.
+        // FT_Flammable / FT_Combustible (read through FluidCombustion); their lines are 1.7's.
         if (FluidCombustion.isFlammable(this)) {
             long energy = FluidCombustion.getFlammableEnergy(this);
             info.add(bracketed("hbmfluid.trait.flammable", ChatFormatting.YELLOW));
@@ -296,6 +359,15 @@ public class FluidType {
         if (delicious != null) hidden(info, hidden, shiftHeld, delicious::addInfoHidden);
         FluidTraitSimple.FT_Unsiphonable unsiphonable = getTrait(FluidTraitSimple.FT_Unsiphonable.class);
         if (unsiphonable != null) hidden(info, hidden, shiftHeld, unsiphonable::addInfoHidden);
+
+        // Traits another mod added to the format (FluidProperties.registerTrait/registerFlag), after HBM's, in their
+        // registration order: 1.7 had one traitList that hbm-space appended to, so its lines follow the same rule.
+        for (Class<?> type : FluidProperties.addonTraitTypes()) {
+            if (getTrait(type) instanceof com.hbm.api.fluid.TooltipTrait trait) {
+                trait.addInfo(info);
+                hidden(info, hidden, shiftHeld, trait::addInfoHidden);
+            }
+        }
 
         if (!hidden.isEmpty() && !shiftHeld) {
             info.add(Component.literal("Hold <").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)

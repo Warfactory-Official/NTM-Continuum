@@ -67,7 +67,7 @@ import java.util.List;
 public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, WorldlyContainer {
 
     public static final long maxPower = 20_000_000L;
-    /** Base draw; the real cost is {@code powerReq * 3^mode.ordinal()} (0 for NULL). */
+    /** Base draw; the real cost is {@code powerReq * 3^mode.strength()} (0 for NULL). */
     public static final int powerReq = 1250;
     /** Hard cap on beam length, in blocks. */
     public static final int RANGE = 24;
@@ -120,7 +120,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
 
     /** 1.7: {@code (int) (powerReq * (ordinal == 0 ? 0 : 3^ordinal))}. */
     public static int requiredPower(EnumWavelengths mode) {
-        return (int) (powerReq * ((mode.ordinal() == 0) ? 0 : Math.pow(3, mode.ordinal())));
+        return (int) (powerReq * ((mode.strength() == 0D) ? 0 : Math.pow(3, mode.strength())));
     }
 
     /** Everything living between the emitter and the beam's end takes the wavelength's effect. */
@@ -137,18 +137,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
 
         List<LivingEntity> list = level.getEntitiesOfClass(LivingEntity.class, new AABB(blx, bly, blz, bux, buy, buz));
         for (LivingEntity entity : list) {
-            switch (mode) {
-                // 1.7 switch fall-through, kept: VISIBLE blinds AND falls into the IR/UV ignite case.
-                case VISIBLE -> {
-                    dev.golem.core.world.Effects.add(entity, MobEffects.BLINDNESS, 60 * 60 * 65536, 0);
-                    dev.golem.core.world.Effects.ignite(entity, 10);
-                }
-                case IR, UV -> dev.golem.core.world.Effects.ignite(entity, 10);
-                case GAMMA -> ContaminationUtil.contaminate(entity, ContaminationUtil.HazardType.RADIATION,
-                        ContaminationUtil.ContaminationType.CREATIVE, 25);
-                case DRX -> ContaminationUtil.applyDigammaData(entity, 0.1F);
-                default -> { }
-            }
+            mode.beamEffect.apply(entity); // 1.7's switch: one effect per wavelength (EnumWavelengths)
         }
     }
 
@@ -294,7 +283,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
         }
 
         // NOTE: pow(2), not the server's 3^ordinal — 1.7's inconsistency, preserved.
-        boolean firing = te.power > powerReq * Math.pow(2, te.mode.ordinal())
+        boolean firing = te.power > powerReq * Math.pow(2, te.mode.strength())
                 && te.isOn && te.mode != EnumWavelengths.NULL && te.distance - 3 > 0;
         te.audioDuration = net.minecraft.util.Mth.clamp(te.audioDuration + (firing ? 2 : -3), 0, 60);
         com.hbm.client.sound.FELSoundHandler.tickLoop(te);

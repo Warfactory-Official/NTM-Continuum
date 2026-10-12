@@ -264,49 +264,7 @@ public final class ModShapelessRecipes {
                 VanillaIds.sugar, ItemIds.powder_sawdust, ItemIds.powder_sawdust, VanillaIds.melon);
         shapeless(NS, "block_c4_1", ItemIds.ingot_c4, 9, ItemIds.block_c4);
         shapeless(NS, "block_semtex_1", ItemIds.ingot_semtex, 9, ItemIds.block_semtex);
-        shapeless(NS, "brick_asbestos", ItemIds.brick_asbestos, 3,
-                ItemIds.brick_asbestos_stairs, ItemIds.brick_asbestos_stairs, ItemIds.brick_asbestos_stairs,
-                ItemIds.brick_asbestos_stairs);
-        shapeless(NS, "brick_asbestos_1", ItemIds.brick_asbestos,
-                ItemIds.brick_asbestos_slab, ItemIds.brick_asbestos_slab);
-        shapeless(NS, "brick_compound", ItemIds.brick_compound, 3,
-                ItemIds.brick_compound_stairs, ItemIds.brick_compound_stairs, ItemIds.brick_compound_stairs,
-                ItemIds.brick_compound_stairs);
-        shapeless(NS, "brick_compound_1", ItemIds.brick_compound,
-                ItemIds.brick_compound_slab, ItemIds.brick_compound_slab);
-        shapeless(NS, "brick_concrete", ItemIds.brick_concrete, 3,
-                ItemIds.brick_concrete_stairs, ItemIds.brick_concrete_stairs, ItemIds.brick_concrete_stairs,
-                ItemIds.brick_concrete_stairs);
-        shapeless(NS, "brick_concrete_1", ItemIds.brick_concrete,
-                ItemIds.brick_concrete_slab, ItemIds.brick_concrete_slab);
-        shapeless(NS, "brick_concrete_broken", ItemIds.brick_concrete_broken, 3,
-                ItemIds.brick_concrete_broken_stairs, ItemIds.brick_concrete_broken_stairs,
-                ItemIds.brick_concrete_broken_stairs, ItemIds.brick_concrete_broken_stairs);
-        shapeless(NS, "brick_concrete_broken_1", ItemIds.brick_concrete_broken,
-                ItemIds.brick_concrete_broken_slab, ItemIds.brick_concrete_broken_slab);
-        shapeless(NS, "brick_concrete_cracked", ItemIds.brick_concrete_cracked, 3,
-                ItemIds.brick_concrete_cracked_stairs, ItemIds.brick_concrete_cracked_stairs,
-                ItemIds.brick_concrete_cracked_stairs, ItemIds.brick_concrete_cracked_stairs);
-        shapeless(NS, "brick_concrete_cracked_1", ItemIds.brick_concrete_cracked,
-                ItemIds.brick_concrete_cracked_slab, ItemIds.brick_concrete_cracked_slab);
-        shapeless(NS, "brick_concrete_mossy", ItemIds.brick_concrete_mossy, 3,
-                ItemIds.brick_concrete_mossy_stairs, ItemIds.brick_concrete_mossy_stairs,
-                ItemIds.brick_concrete_mossy_stairs, ItemIds.brick_concrete_mossy_stairs);
-        shapeless(NS, "brick_concrete_mossy_1", ItemIds.brick_concrete_mossy,
-                ItemIds.brick_concrete_mossy_slab, ItemIds.brick_concrete_mossy_slab);
-        shapeless(NS, "brick_fire", ItemIds.brick_fire, 3,
-                ItemIds.brick_fire_stairs, ItemIds.brick_fire_stairs, ItemIds.brick_fire_stairs,
-                ItemIds.brick_fire_stairs);
-        shapeless(NS, "brick_fire_1", ItemIds.brick_fire, ItemIds.brick_fire_slab, ItemIds.brick_fire_slab);
-        shapeless(NS, "brick_light", ItemIds.brick_light, 3,
-                ItemIds.brick_light_stairs, ItemIds.brick_light_stairs, ItemIds.brick_light_stairs,
-                ItemIds.brick_light_stairs);
-        shapeless(NS, "brick_light_1", ItemIds.brick_light, ItemIds.brick_light_slab, ItemIds.brick_light_slab);
-        shapeless(NS, "brick_obsidian", ItemIds.brick_obsidian, 3,
-                ItemIds.brick_obsidian_stairs, ItemIds.brick_obsidian_stairs, ItemIds.brick_obsidian_stairs,
-                ItemIds.brick_obsidian_stairs);
-        shapeless(NS, "brick_obsidian_1", ItemIds.brick_obsidian,
-                ItemIds.brick_obsidian_slab, ItemIds.brick_obsidian_slab);
+        // no stairs/slab-to-block recipes for 1.7's own stairs and slabs (BlockGenericStairs, BlockMultiSlab, BlockPinkSlab): 1.7 has none
         shapeless(NS, "catalyst_clay", ItemIds.catalyst_clay, TagIds.dusts_iron, VanillaIds.clay_ball);
         shapeless(NS, "charge_c4", ItemIds.charge_c4,
                 ItemIds.stick_c4, ItemIds.stick_c4, ItemIds.stick_c4, ItemIds.ducttape);
@@ -347,14 +305,6 @@ public final class ModShapelessRecipes {
                 ItemIds.cmb_brick_reinforced_stairs, ItemIds.cmb_brick_reinforced_stairs);
         shapeless(NS, "cmb_brick_reinforced_1", ItemIds.cmb_brick_reinforced,
                 ItemIds.cmb_brick_reinforced_slab, ItemIds.cmb_brick_reinforced_slab);
-        shapeless(NS, "concrete", ItemIds.concrete, 3,
-                ItemIds.concrete_stairs, ItemIds.concrete_stairs, ItemIds.concrete_stairs, ItemIds.concrete_stairs);
-        shapeless(NS, "concrete_1", ItemIds.concrete, ItemIds.concrete_slab, ItemIds.concrete_slab);
-        shapeless(NS, "concrete_asbestos", ItemIds.concrete_asbestos, 3,
-                ItemIds.concrete_asbestos_stairs, ItemIds.concrete_asbestos_stairs, ItemIds.concrete_asbestos_stairs,
-                ItemIds.concrete_asbestos_stairs);
-        shapeless(NS, "concrete_asbestos_1", ItemIds.concrete_asbestos,
-                ItemIds.concrete_asbestos_slab, ItemIds.concrete_asbestos_slab);
         shapeless(NS, "concrete_colored_ext_stairs_bronze_from_stairs",
                 stack("hbm:concrete_ext_bronze", 3),
                 ItemIds.concrete_colored_ext_stairs_bronze, ItemIds.concrete_colored_ext_stairs_bronze,
@@ -502,11 +452,6 @@ public final class ModShapelessRecipes {
                 stack("hbm:concrete_yellow", 3),
                 ItemIds.concrete_colored_stairs_yellow, ItemIds.concrete_colored_stairs_yellow,
                 ItemIds.concrete_colored_stairs_yellow, ItemIds.concrete_colored_stairs_yellow);
-        shapeless(NS, "concrete_smooth", ItemIds.concrete_smooth, 3,
-                ItemIds.concrete_smooth_stairs, ItemIds.concrete_smooth_stairs, ItemIds.concrete_smooth_stairs,
-                ItemIds.concrete_smooth_stairs);
-        shapeless(NS, "concrete_smooth_1", ItemIds.concrete_smooth,
-                ItemIds.concrete_smooth_slab, ItemIds.concrete_smooth_slab);
         shapeless(NS, "crayon_black", ItemIds.crayon_black, 4,
                 ItemIds.chemical_dye_black, TagIds.tars, VanillaIds.paper);
         shapeless(NS, "crayon_blue", ItemIds.crayon_blue, 4, ItemIds.chemical_dye_blue, TagIds.tars, VanillaIds.paper);
@@ -529,8 +474,7 @@ public final class ModShapelessRecipes {
         shapeless(NS, "crayon_red", ItemIds.crayon_red, 4, ItemIds.chemical_dye_red, TagIds.tars, VanillaIds.paper);
         shapeless(NS, "crayon_silver", ItemIds.crayon_silver, 4,
                 ItemIds.chemical_dye_silver, TagIds.tars, VanillaIds.paper);
-        shapeless(NS, "crayon_white", ItemIds.crayon_white, 4,
-                ItemIds.chemical_dye_white, TagIds.tars, VanillaIds.paper);
+        // no crayon_white: 1.7 PowderRecipes:100 loops i < 15, so WHITE (15) has no recipe
         shapeless(NS, "crayon_yellow", ItemIds.crayon_yellow, 4,
                 ItemIds.chemical_dye_yellow, TagIds.tars, VanillaIds.paper);
         shapeless(NS, "deco_pipe_1", ItemIds.deco_pipe, ItemIds.deco_pipe_rim);
@@ -544,23 +488,15 @@ public final class ModShapelessRecipes {
         shapeless(NS, "detonator_deadman", ItemIds.detonator_deadman,
                 ItemIds.detonator, ItemIds.defuser, ItemIds.ducttape);
         shapeless(NS, "detonator_multi", ItemIds.detonator_multi, ItemIds.detonator, ItemIds.circuit_advanced);
-        shapeless(NS, "ducrete", ItemIds.ducrete, 3,
-                ItemIds.ducrete_stairs, ItemIds.ducrete_stairs, ItemIds.ducrete_stairs, ItemIds.ducrete_stairs);
-        shapeless(NS, "ducrete_1", ItemIds.ducrete, ItemIds.ducrete_slab, ItemIds.ducrete_slab);
-        shapeless(NS, "ducrete_smooth", ItemIds.ducrete_smooth, 3,
-                ItemIds.ducrete_smooth_stairs, ItemIds.ducrete_smooth_stairs, ItemIds.ducrete_smooth_stairs,
-                ItemIds.ducrete_smooth_stairs);
-        shapeless(NS, "ducrete_smooth_1", ItemIds.ducrete_smooth,
-                ItemIds.ducrete_smooth_slab, ItemIds.ducrete_smooth_slab);
         shapeless(NS, "fence_metal_1", ItemIds.fence_metal, ItemIds.fence_metal_post);
         shapeless(NS, "fence_metal_post", ItemIds.fence_metal_post, ItemIds.fence_metal);
         shapeless(NS, "fluid_duct_gauge", ItemIds.fluid_duct_gauge,
                 ItemIds.fluid_duct_paintable, TagIds.ingots_steel, ItemIds.circuit_basic);
         shapeless(NS, "fmn", ItemIds.fmn, TagIds.dusts_coal, TagIds.dusts_polonium, TagIds.dusts_strontium);
         shapeless(NS, "foundry_outlet", ItemIds.foundry_outlet, ItemIds.foundry_channel, TagIds.plates_steel);
-        shapeless(NS, "foundry_slagtap", ItemIds.foundry_slagtap, ItemIds.foundry_channel, VanillaIds.stone_bricks);
+        shapeless(NS, "foundry_slagtap", ItemIds.foundry_slagtap, ItemIds.foundry_channel, "#minecraft:stone_bricks");
         shapeless(NS, "fuse", ItemIds.fuse, TagIds.plates_steel, ItemIds.plate_polymer, TagIds.wires_tungsten);
-        shapeless(NS, "fusion_heater", ItemIds.fusion_heater, ItemIds.fusion_hatch);
+        // no fusion_heater crafting: 1.7 has no crafting recipe
         shapeless(NS, "gneiss_chiseled", ItemIds.gneiss_chiseled, ItemIds.gneiss_tile);
         shapeless(NS, "gunpowder", VanillaIds.gunpowder, 3, TagIds.dusts_sulfur, TagIds.dusts_niter, TagIds.gems_coal);
         shapeless(NS, "gunpowder_1", VanillaIds.gunpowder, 3,
@@ -597,7 +533,7 @@ public final class ModShapelessRecipes {
         shapeless(NS, "lightstone", stack("hbm:lightstone_unrefined", 4),
                 VanillaIds.stone, VanillaIds.stone, VanillaIds.stone, ItemIds.powder_limestone);
         shapeless(NS, "loops", ItemIds.loops, ItemIds.flame_pony, VanillaIds.wheat, VanillaIds.sugar);
-        shapeless(NS, "machine_industrial_turbine", ItemIds.machine_industrial_turbine, ItemIds.machine_large_turbine);
+        // no machine_industrial_turbine crafting: 1.7 has no crafting recipe
         shapeless(NS, "marshmallow", ItemIds.marshmallow, VanillaIds.stick, VanillaIds.sugar, VanillaIds.wheat_seeds);
         shapeless(NS, "med_ipecac", ItemIds.med_ipecac, VanillaIds.glass_bottle, VanillaIds.nether_wart);
         shapeless(NS, "med_ptsd", ItemIds.med_ptsd, ItemIds.med_ipecac);
@@ -612,9 +548,6 @@ public final class ModShapelessRecipes {
                 ItemIds.particle_empty, TagIds.dusts_lead, ItemIds.pellet_charged);
         shapeless(NS, "pellet_gas", ItemIds.pellet_gas, 2,
                 VanillaIds.water_bucket, VanillaIds.glowstone_dust, TagIds.plates_steel);
-        shapeless(NS, "pink_planks", ItemIds.pink_planks, 3,
-                ItemIds.pink_stairs, ItemIds.pink_stairs, ItemIds.pink_stairs, ItemIds.pink_stairs);
-        shapeless(NS, "pink_planks_1", ItemIds.pink_planks, ItemIds.pink_slab, ItemIds.pink_slab);
         shapeless(NS, "platemetal_base_from_black", ItemIds.platemetal_base, ItemIds.platemetal_black);
         shapeless(NS, "platemetal_base_from_blue", ItemIds.platemetal_base, ItemIds.platemetal_blue);
         shapeless(NS, "platemetal_base_from_cyan", ItemIds.platemetal_base, ItemIds.platemetal_cyan);
@@ -633,14 +566,14 @@ public final class ModShapelessRecipes {
                 TagIds.dusts_limestone, VanillaIds.clay_ball, VanillaIds.clay_ball, VanillaIds.clay_ball);
         shapeless(NS, "powder_desh_ready", ItemIds.powder_desh_ready,
                 ItemIds.powder_desh_mix, ItemIds.nugget_mercury, ItemIds.nugget_mercury, TagIds.dusts_coal);
-        shapeless(NS, "powder_flux", ItemIds.powder_flux, VanillaIds.charcoal, TagIds.minecraft_sand);
-        shapeless(NS, "powder_flux_1", ItemIds.powder_flux, 2, TagIds.dusts_coal, TagIds.minecraft_sand);
-        shapeless(NS, "powder_flux_2", ItemIds.powder_flux, 4, TagIds.dusts_fluorite, TagIds.minecraft_sand);
+        shapeless(NS, "powder_flux", ItemIds.powder_flux, VanillaIds.charcoal, TagIds.sands);
+        shapeless(NS, "powder_flux_1", ItemIds.powder_flux, 2, TagIds.dusts_coal, TagIds.sands);
+        shapeless(NS, "powder_flux_2", ItemIds.powder_flux, 4, TagIds.dusts_fluorite, TagIds.sands);
         shapeless(NS, "powder_flux_3", ItemIds.powder_flux, 8,
-                TagIds.dusts_lead, TagIds.dusts_sulfur, TagIds.minecraft_sand);
-        shapeless(NS, "powder_flux_4", ItemIds.powder_flux, 12, TagIds.dusts_limestone, TagIds.minecraft_sand);
-        shapeless(NS, "powder_flux_5", ItemIds.powder_flux, 12, TagIds.dusts_calcium, TagIds.minecraft_sand);
-        shapeless(NS, "powder_flux_6", ItemIds.powder_flux, 16, TagIds.dusts_borax, TagIds.minecraft_sand);
+                TagIds.dusts_lead, TagIds.dusts_sulfur, TagIds.sands);
+        shapeless(NS, "powder_flux_4", ItemIds.powder_flux, 12, TagIds.dusts_limestone, TagIds.sands);
+        shapeless(NS, "powder_flux_5", ItemIds.powder_flux, 12, TagIds.dusts_calcium, TagIds.sands);
+        shapeless(NS, "powder_flux_6", ItemIds.powder_flux, 16, TagIds.dusts_borax, TagIds.sands);
         shapeless(NS, "powder_ice", ItemIds.powder_ice, 4,
                 VanillaIds.snowball, TagIds.dusts_niter, TagIds.dusts_redstone);
         shapeless(NS, "powder_meteorite_1", ItemIds.powder_meteorite, 4,
@@ -684,9 +617,9 @@ public final class ModShapelessRecipes {
                 ItemIds.billet_australium_greater, ItemIds.billet_australium_greater, ItemIds.billet_australium_greater,
                 ItemIds.billet_australium_greater, ItemIds.billet_australium_greater, ItemIds.billet_australium_greater);
         shapeless(NS, "rbmk_fuel_hen", ItemIds.rbmk_fuel_hen,
-                ItemIds.rbmk_fuel_empty, ItemIds.billet_neptunium, ItemIds.billet_neptunium, ItemIds.billet_neptunium,
-                ItemIds.billet_neptunium, ItemIds.billet_neptunium, ItemIds.billet_neptunium, ItemIds.billet_neptunium,
-                ItemIds.billet_neptunium);
+                ItemIds.rbmk_fuel_empty, TagIds.billets_neptunium, TagIds.billets_neptunium, TagIds.billets_neptunium,
+                TagIds.billets_neptunium, TagIds.billets_neptunium, TagIds.billets_neptunium, TagIds.billets_neptunium,
+                TagIds.billets_neptunium); // 1.7 RodRecipes:106 addRBMKRod(NP237, ...): NP237.billet()
         shapeless(NS, "rbmk_fuel_hep", ItemIds.rbmk_fuel_hep,
                 ItemIds.rbmk_fuel_empty, TagIds.billets_pu239, TagIds.billets_pu239, TagIds.billets_pu239,
                 TagIds.billets_pu239, TagIds.billets_pu239, TagIds.billets_pu239, TagIds.billets_pu239,
@@ -786,21 +719,11 @@ public final class ModShapelessRecipes {
                 ItemIds.red_pylon_medium_steel, ItemIds.plate_polymer, ItemIds.coil_copper);
         shapeless(NS, "red_pylon_medium_wood_transformer", ItemIds.red_pylon_medium_wood_transformer,
                 ItemIds.red_pylon_medium_wood, ItemIds.plate_polymer, ItemIds.coil_copper);
-        shapeless(NS, "reinforced_brick", ItemIds.reinforced_brick, 3,
-                ItemIds.reinforced_brick_stairs, ItemIds.reinforced_brick_stairs, ItemIds.reinforced_brick_stairs,
-                ItemIds.reinforced_brick_stairs);
-        shapeless(NS, "reinforced_brick_1", ItemIds.reinforced_brick,
-                ItemIds.reinforced_brick_slab, ItemIds.reinforced_brick_slab);
         shapeless(NS, "reinforced_sand", ItemIds.reinforced_sand, 3,
                 ItemIds.reinforced_sand_stairs, ItemIds.reinforced_sand_stairs, ItemIds.reinforced_sand_stairs,
                 ItemIds.reinforced_sand_stairs);
         shapeless(NS, "reinforced_sand_1", ItemIds.reinforced_sand,
                 ItemIds.reinforced_sand_slab, ItemIds.reinforced_sand_slab);
-        shapeless(NS, "reinforced_stone", ItemIds.reinforced_stone, 3,
-                ItemIds.reinforced_stone_stairs, ItemIds.reinforced_stone_stairs, ItemIds.reinforced_stone_stairs,
-                ItemIds.reinforced_stone_stairs);
-        shapeless(NS, "reinforced_stone_1", ItemIds.reinforced_stone,
-                ItemIds.reinforced_stone_slab, ItemIds.reinforced_stone_slab);
     }
 
     private static void shapeless3() {
@@ -997,25 +920,25 @@ public final class ModShapelessRecipes {
         shapeless(NS, "rune_thurisaz", ItemIds.rune_thurisaz,
                 ItemIds.rune_blank, ItemIds.powder_spark_mix, ItemIds.black_hole);
         shapeless(NS, "sand_boron", ItemIds.sand_boron, 8,
-                TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand,
-                TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand,
+                TagIds.sands, TagIds.sands, TagIds.sands, TagIds.sands,
+                TagIds.sands, TagIds.sands, TagIds.sands, TagIds.sands,
                 TagIds.dusts_boron);
         shapeless(NS, "sand_lead", ItemIds.sand_lead, 8,
-                TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand,
-                TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand,
+                TagIds.sands, TagIds.sands, TagIds.sands, TagIds.sands,
+                TagIds.sands, TagIds.sands, TagIds.sands, TagIds.sands,
                 TagIds.dusts_lead);
         shapeless(NS, "sand_polonium", ItemIds.sand_polonium, 8,
-                TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand,
-                TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand,
+                TagIds.sands, TagIds.sands, TagIds.sands, TagIds.sands,
+                TagIds.sands, TagIds.sands, TagIds.sands, TagIds.sands,
                 TagIds.dusts_polonium);
         shapeless(NS, "sand_quartz", ItemIds.sand_quartz,
-                TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.dusts_quartz, TagIds.dusts_quartz);
+                TagIds.sands, TagIds.sands, TagIds.dusts_quartz, TagIds.dusts_quartz);
         shapeless(NS, "sand_uranium", ItemIds.sand_uranium, 8,
-                TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand,
-                TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand,
+                TagIds.sands, TagIds.sands, TagIds.sands, TagIds.sands,
+                TagIds.sands, TagIds.sands, TagIds.sands, TagIds.sands,
                 TagIds.dusts_uranium);
         shapeless(NS, "sandbags", ItemIds.sandbags, 4,
-                ItemIds.plate_polymer, TagIds.minecraft_sand, TagIds.minecraft_sand, TagIds.minecraft_sand);
+                ItemIds.plate_polymer, TagIds.sands, TagIds.sands, TagIds.sands);
         shapeless(NS, "solid_fuel_presto_triplet", ItemIds.solid_fuel_presto_triplet,
                 ItemIds.solid_fuel_presto, ItemIds.solid_fuel_presto, ItemIds.solid_fuel_presto, ItemIds.ball_dynamite);
         shapeless(NS, "solid_fuel_presto_triplet_bf", ItemIds.solid_fuel_presto_triplet_bf,

@@ -18,6 +18,16 @@ public class FluidContainerStack extends RecipesCommon.AStack {
         this.amount = amount;
     }
 
+    /** The 1.7 fluid name ({@code "LUBRICANT"}), for the recipe file form. */
+    public String fluid() {
+        return fluid;
+    }
+
+    /** The amount a matching container holds, in mB. */
+    public int amount() {
+        return amount;
+    }
+
     @Override
     public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
         return stack != null && !stack.isEmpty() && FluidContainerRegistry.INSTANCE.holds(stack, fluid, amount)

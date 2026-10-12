@@ -47,6 +47,11 @@ public class TileEntityMachineBigAssTank extends TileEntityMachineGiantTank {
 
     private void checkTilt(Level level) {
         if (!TickPhase.every(level, worldPosition, 20L)) return;
+        // hbm-space TileEntityLoadedBase.checkTilt: nothing tilts in orbit (com.hbm.api.environment.Environment)
+        if (com.hbm.api.environment.Environment.inOrbit(level)) {
+            tilted = false;
+            return;
+        }
         if (tiltBlocksChecked >= getFloorCount()) {
             boolean wasTilted = tilted;
             tilted = tiltBlocksValid < tiltBlocksChecked * 0.95D;

@@ -175,26 +175,19 @@ public final class ModArmorModItems {
      * other armor configuration.
      */
     public static void configure() {
-        ArmorRegistry.registerHazard(attachment_mask.get(), HazardClass.SAND);
 
         ArmorHazmatMask paa = hazmat_paa_helmet.get();
         paa.setOverlay(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/misc/overlay_hazmat.png"));
-        paa.setRadResist(1.7D);
         hazmat_paa_plate.get().cloneStats(paa);
         hazmat_paa_legs.get().cloneStats(paa);
         hazmat_paa_boots.get().cloneStats(paa);
-        ArmorRegistry.registerHazard(paa, HazardClass.LIGHT, HazardClass.SAND);
-        ArmorUtil.registerHazmat2Set(paa, hazmat_paa_plate.get(), hazmat_paa_legs.get(), hazmat_paa_boots.get());
 
         ArmorLiquidatorMask liquidator = liquidator_helmet.get();
         liquidator.setStep(ModSounds.METAL_STEP).setJump(ModSounds.IRON_JUMP).setFall(ModSounds.IRON_LAND);
         liquidator.setOverlay(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/misc/overlay_dark.png"));
-        liquidator.setRadResist(2.4D);
         liquidator_plate.get().cloneStats(liquidator);
         liquidator_legs.get().cloneStats(liquidator);
         liquidator_boots.get().cloneStats(liquidator);
-        ArmorRegistry.registerHazard(liquidator, HazardClass.LIGHT, HazardClass.SAND);
-        ArmorUtil.registerHazmat2Set(liquidator, liquidator_plate.get(), liquidator_legs.get(), liquidator_boots.get());
     }
 
     public static void init() {

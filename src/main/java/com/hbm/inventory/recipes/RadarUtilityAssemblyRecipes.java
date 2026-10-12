@@ -79,21 +79,4 @@ public final class RadarUtilityAssemblyRecipes {
         // curated recipes win; a later generator run that emits the same name is skipped here
         if (recipes.getRecipe(recipe.name) == null) recipes.registerGenerated(recipe);
     }
-
-    /** 1.7 {@code SolderingRecipes}: the two forcefield upgrades, template + four dusts over chips and capacitors. */
-    public static void registerSoldering() {
-        solder(new ItemStack(ModRadarUtilityItems.upgrade_radius.get()),
-                new TagStack(TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", "dusts/glowstone")), 4));
-        solder(new ItemStack(ModRadarUtilityItems.upgrade_health.get()), LI.dust().count(4));
-    }
-
-    private static void solder(ItemStack output, AStack dust) {
-        AStack[] top = {new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CHIP), 4),
-                new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CAPACITOR), 4)};
-        AStack[] board = {new ComparableStack(ModItems.upgrade_template.get()), dust};
-        AStack[] sold = {};
-        SolderingRecipes.recipes.add(new SolderingRecipes.SolderingRecipe(output, 200, 1_000, null, top, board, sold));
-        Collections.addAll(SolderingRecipes.toppings, top);
-        Collections.addAll(SolderingRecipes.pcb, board);
-    }
 }

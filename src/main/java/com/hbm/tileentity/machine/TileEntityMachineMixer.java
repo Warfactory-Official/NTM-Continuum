@@ -50,7 +50,12 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
     public long power;
     public int progress;
     public int processTime;
-    public int recipeIndex;
+    /**
+     * The selected row of the output fluid by its name ({@link MixerRecipe#name}), empty for that fluid's first row.
+     * 1.7 kept an index ({@code recipeIndex}); a name survives a datapack reload that changes the table, and is what is
+     * synced and saved.
+     */
+    public String recipeName = "";
     public float rotation;
     public float prevRotation;
     public boolean wasOn;
@@ -128,7 +133,7 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         FluidType type = fluidId.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), identifier);
         if (type != null && type != tanks[2].getTankType()) {
             tanks[2].setTankType(type);
-            recipeIndex = 0;
+            recipeName = "";
             progress = 0;
             processTime = 0;
             setChanged();
@@ -223,9 +228,10 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
     @Override
     public void receiveControl(CompoundTag data) {
         if (data.contains("toggle")) {
+            // 1.7: the next row of the output fluid, wrapping
             MixerRecipe[] recipes = MixerRecipes.getOutput(tanks[2].getTankType());
-            recipeIndex = recipes == null || recipes.length == 0
-                    ? 0 : Math.floorMod(recipeIndex + 1, recipes.length);
+            recipeName = recipes == null || recipes.length == 0
+                    ? "" : recipes[(recipeIndex() + 1) % recipes.length].name;
             progress = 0;
             setChanged();
         }
@@ -242,22 +248,30 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         return keys;
     }
 
-    /** Resolves and immediately normalizes the persisted selector, matching the old modulo behavior. */
-    private MixerRecipe selectedRecipe() {
+    /** The selected row's position among the output fluid's rows (the GUI's "n / m"); 0 when the name is unknown. */
+    public int recipeIndex() {
+        return Math.max(0, MixerRecipes.indexOf(tanks[2].getTankType(), recipeName));
+    }
+
+    /**
+     * The selected row, normalising the selection: a name the output fluid has no row for (none chosen yet, or a reload
+     * removed it) falls back to the first row, as 1.7's index did when it was out of range.
+     */
+    public MixerRecipe selectedRecipe() {
         MixerRecipe[] recipes = MixerRecipes.getOutput(tanks[2].getTankType());
         if (recipes == null || recipes.length == 0) {
-            if (recipeIndex != 0) {
-                recipeIndex = 0;
+            if (!recipeName.isEmpty()) {
+                recipeName = "";
                 setChanged();
             }
             return null;
         }
-        int normalized = Math.floorMod(recipeIndex, recipes.length);
-        if (recipeIndex != normalized) {
-            recipeIndex = normalized;
+        MixerRecipe recipe = recipes[recipeIndex()];
+        if (!recipe.name.equals(recipeName)) {
+            recipeName = recipe.name;
             setChanged();
         }
-        return recipes[recipeIndex];
+        return recipe;
     }
 
     @Override
@@ -307,7 +321,7 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         buf.writeLong(power);
         buf.writeInt(processTime);
         buf.writeInt(progress);
-        buf.writeInt(recipeIndex);
+        buf.writeUtf(recipeName);
         buf.writeBoolean(wasOn);
         for (FluidTankNTM tank : tanks) tank.serialize(buf);
     }
@@ -318,7 +332,7 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         power = buf.readLong();
         processTime = buf.readInt();
         progress = buf.readInt();
-        recipeIndex = buf.readInt();
+        recipeName = buf.readUtf();
         wasOn = buf.readBoolean();
         for (FluidTankNTM tank : tanks) tank.deserialize(buf);
     }
@@ -329,8 +343,8 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         output.putLong("power", power);
         output.putInt("progress", progress);
         output.putInt("processTime", processTime);
-        // the chosen alternative by its inputs, never its index (History section 19ej-ids)
-        output.putString("recipe", com.hbm.util.SavedIds.listKey(signatures(tanks[2].getTankType()), recipeIndex));
+        // the chosen row by its name, never its index (History sections 19ej-ids, 19fa-m2)
+        output.putString("recipe", recipeName);
         for (int i = 0; i < tanks.length; i++) tanks[i].writeToNBT(output, "tank" + i);
     }
 
@@ -342,6 +356,13 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         processTime = input.getIntOr("processTime", 0);
         for (int i = 0; i < tanks.length; i++) tanks[i].readFromNBT(input, "tank" + i);
         if (input.getIntOr("recipe", Integer.MIN_VALUE) != Integer.MIN_VALUE) com.hbm.util.SavedIds.warnNumeric("recipe index", "recipe");
-        recipeIndex = Math.max(0, com.hbm.util.SavedIds.fromListKey(signatures(tanks[2].getTankType()), input.getStringOr("recipe", "")));
+        String saved = input.getStringOr("recipe", "");
+        if (saved.contains("#") && MixerRecipes.indexOf(tanks[2].getTankType(), saved) < 0) {
+            // a save from before the recipes were data names the row by its inputs and occurrence ("hbm:water+-+true#0")
+            int index = com.hbm.util.SavedIds.fromListKey(signatures(tanks[2].getTankType()), saved);
+            MixerRecipe[] recipes = MixerRecipes.getOutput(tanks[2].getTankType());
+            saved = index < 0 || recipes == null ? "" : recipes[index].name;
+        }
+        recipeName = saved;
     }
 }
