@@ -53,10 +53,20 @@ jobs:
       # Golem Core first: the obfuscated Fabric nodes resolve its jar at configuration time and refuse
       # one older than its sources (checkGolemJarIsFresh), so it must be on disk before HBM configures.
       - name: Build Golem Core
+        # ModDevGradle builds Minecraft through its binary pipeline whenever CI=true (GitHub always sets
+        # it). That jar keeps Forge's signature digests over remapped classes (SecurityException in the
+        # 1.20.1 Forge tests) and loses parameter names, so build with the local recompile pipeline.
+        env:
+          CI: "false"
         working-directory: Golem-Core
         run: bash ./gradlew chiseledBuild --no-daemon --stacktrace
 
       - name: Build HBM
+        # ModDevGradle builds Minecraft through its binary pipeline whenever CI=true (GitHub always sets
+        # it). That jar keeps Forge's signature digests over remapped classes (SecurityException in the
+        # 1.20.1 Forge tests) and loses parameter names, so build with the local recompile pipeline.
+        env:
+          CI: "false"
         working-directory: new-hbm
         run: bash ./gradlew chiseledBuild --no-daemon --stacktrace
 
