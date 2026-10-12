@@ -14,7 +14,8 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    # Not the pre-release workflow's v<version>-build.<n> tags.
+    tags: ['v*', '!v*-build.*']
   workflow_dispatch:
     inputs:
       type:

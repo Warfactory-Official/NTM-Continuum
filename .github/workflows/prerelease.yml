@@ -100,3 +100,19 @@ jobs:
             Each `hbm-<loader>-<mc>` jar needs the matching `golemcore-<loader>-<mc>` jar (included,
             built from Golem Core `${{ steps.jars.outputs.golem }}`).
           files: dist/*.jar
+
+      # Keep only the newest automated build: delete every older pre-release this workflow made (its tags
+      # end in -build.<run number>) along with its tag. Real releases and beta/alpha tags never match.
+      - name: Delete previous pre-releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          KEEP: ${{ steps.jars.outputs.tag }}
+        run: |
+          gh release list --repo "$REPO" --limit 200 --json tagName,isPrerelease \
+            --jq '.[] | select(.isPrerelease) | .tagName' \
+            | { grep -E '^v.+-build\.[0-9]+$' || true; } | { grep -vxF "$KEEP" || true; } \
+            | while read -r tag; do
+                echo "Deleting pre-release $tag"
+                gh release delete "$tag" --repo "$REPO" --cleanup-tag --yes
+              done
