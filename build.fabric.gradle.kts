@@ -591,6 +591,9 @@ apply(from = rootProject.file("../Golem-Core/gradle/mod/generated-data.gradle.kt
 
 apply(from = rootProject.file("../Golem-Core/gradle/mod/mixin-validation.gradle.kts"))
 
+// Modrinth + CurseForge upload of this node's jar; run every node with the root `publishAllMods`.
+apply(from = rootProject.file("../Golem-Core/gradle/mod/publish.gradle.kts"))
+
 dependencies {
     // NeoForge ships jspecify transitively on 26.1 but not on older versions, and HBM uses @Nullable in
     // ~156 files. Declared explicitly so the shared tree compiles on every node; annotations-only jar,

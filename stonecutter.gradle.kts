@@ -12,6 +12,14 @@ tasks.register("chiseledBuild") {
     dependsOn(stonecutter.tasks.named("build"))
 }
 
+// Uploads every node's jar to Modrinth and CurseForge (Golem-Core/gradle/mod/publish.gradle.kts). Add
+// -Ppublish.dryRun=true to build and log the uploads without making them.
+tasks.register("publishAllMods") {
+    group = "publishing"
+    description = "Publishes every version/loader node to Modrinth and CurseForge."
+    dependsOn(stonecutter.tasks.named("publishMods"))
+}
+
 stonecutter parameters {
     val loader = node.metadata.project.substringAfterLast('-')
 

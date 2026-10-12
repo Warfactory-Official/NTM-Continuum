@@ -256,6 +256,9 @@ apply(from = rootProject.file("../Golem-Core/gradle/mod/dejson.gradle.kts"))
 apply(from = rootProject.file("../Golem-Core/gradle/mod/generated-data.gradle.kts"))
 apply(from = rootProject.file("../Golem-Core/gradle/mod/mixin-validation.gradle.kts"))
 
+// Modrinth + CurseForge upload of this node's jar; run every node with the root `publishAllMods`.
+apply(from = rootProject.file("../Golem-Core/gradle/mod/publish.gradle.kts"))
+
 dependencies { compileOnly("org.jspecify:jspecify:1.0.0") }
 
 // The id constants recipe declarations are written against. Generated from the live registry by
