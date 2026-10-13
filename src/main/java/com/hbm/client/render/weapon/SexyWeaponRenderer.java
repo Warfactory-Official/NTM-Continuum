@@ -7,12 +7,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
 
-/** Exact Gem port of original-hbm ItemRenderSexy; the constructor selects Sexy or Heretic skin. */
+/** Exact Gem port of 1.7 ItemRenderSexy; the constructor selects Sexy or Heretic skin. */
 public final class SexyWeaponRenderer extends WeaponRenderer {
-    private static final net.minecraft.resources.Identifier MODEL_ID=Ids.of("hbm","models/weapons/sexy.obj");
+    private static final Identifier MODEL_ID=Ids.of("hbm","models/weapons/sexy.obj");
     private final Surface body;
     private static final Surface WHISKEY=Surface.cutout("hbm:textures/models/weapons/whiskey.png");
     private WavefrontObj model,whiskey;

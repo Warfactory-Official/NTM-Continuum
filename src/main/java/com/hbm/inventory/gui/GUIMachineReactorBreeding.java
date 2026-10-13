@@ -2,6 +2,8 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMachineReactorBreeding;
 import com.hbm.tileentity.machine.TileEntityMachineReactorBreeding;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -12,9 +14,9 @@ import java.util.List;
 import java.util.Optional;
 
 /** The 176x166 breeder screen: the 70-wide progress arrow and the flux readout above it. */
-public final class GUIMachineReactorBreeding extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineReactorBreeding> {
+public final class GUIMachineReactorBreeding extends CompatContainerScreen<ContainerMachineReactorBreeding> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_breeder.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_breeder.png");
 
     public GUIMachineReactorBreeding(ContainerMachineReactorBreeding menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 166);

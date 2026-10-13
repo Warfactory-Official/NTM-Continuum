@@ -7,6 +7,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.world.ItemStacks;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,7 @@ public final class LemegetonRecipes {
 
     public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             GenericRecipeCodec.INGREDIENT.fieldOf("input").forGetter(Row::input),
-            dev.golem.core.world.ItemStacks.itemCodec().fieldOf("output").forGetter(Row::output),
+            ItemStacks.itemCodec().fieldOf("output").forGetter(Row::output),
             Codec.INT.optionalFieldOf("order", TableCodecs.LAST).forGetter(Row::order)
     ).apply(i, Row::new));
 

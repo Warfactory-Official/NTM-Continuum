@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Client-side audio for the ore acidizer — a single looping operating sound while it's processing
+ * Client-side audio for the ore acidizer: a single looping operating sound while it's processing
  * (the chemical-plant loop at a lower pitch, like the 1.12.2 tile). Driven from the machine's client
- * ticker. Client-only — never referenced from a server tick path, so a dedicated server never loads it.
+ * ticker. Client-only, never referenced from a server tick path, so a dedicated server never loads it.
  */
 public final class CrystallizerSoundHandler {
 

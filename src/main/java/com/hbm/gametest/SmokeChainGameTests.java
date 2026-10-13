@@ -1,5 +1,7 @@
 package com.hbm.gametest;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.hbm.blocks.machine.MachineAshpit;
 import com.hbm.blocks.machine.MachineChimneyBrick;
 import com.hbm.blocks.machine.MachineChimneyIndustrial;
@@ -9,14 +11,19 @@ import com.hbm.items.ItemEnums.EnumAshType;
 import com.hbm.items.ModIngredientItems;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.smoke.SmokeChainRegistration;
 import com.hbm.tileentity.machine.TileEntityAshpit;
 import com.hbm.tileentity.machine.TileEntityChimneyBrick;
 import com.hbm.tileentity.machine.TileEntityChimneyIndustrial;
+import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.net.GolemBuffers;
+import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 
 import java.io.IOException;
@@ -24,6 +31,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import com.hbm.blocks.machine.ModMachineBlocks;
 
 /** Feature-local contracts for the smokestack-to-ashpit chain. */
 public final class SmokeChainGameTests {
@@ -32,11 +40,11 @@ public final class SmokeChainGameTests {
 
     public static void layouts(GameTestHelper helper) {
         BlockPos brickPos = new BlockPos(3, 1, 3);
-        MachineChimneyBrick brick = SmokeChainRegistration.chimney_brick.get();
+        MachineChimneyBrick brick = ModMachineBlocks.chimney_brick.get();
         FoldedTestSupport.assemble(helper, brick, brickPos);
 
         BlockPos industrialPos = new BlockPos(12, 1, 3);
-        MachineChimneyIndustrial industrial = SmokeChainRegistration.chimney_industrial.get();
+        MachineChimneyIndustrial industrial = ModMachineBlocks.chimney_industrial.get();
         FoldedTestSupport.assemble(helper, industrial, industrialPos);
 
         helper.assertTrue(Arrays.equals(brick.getDimensions(), new int[]{12, 0, 1, 1, 1, 1}),
@@ -52,7 +60,7 @@ public final class SmokeChainGameTests {
 
     public static void portsAndCapture(GameTestHelper helper) {
         TileEntityChimneyBrick chimney = placeBrick(helper, new BlockPos(3, 3, 3));
-        MachineChimneyBrick brick = SmokeChainRegistration.chimney_brick.get();
+        MachineChimneyBrick brick = ModMachineBlocks.chimney_brick.get();
         BlockPos core = chimney.getBlockPos();
         helper.assertTrue(chimney.getPollutionMod() == 0.25D,
                 "Brick chimney pollution multiplier changed");
@@ -77,7 +85,7 @@ public final class SmokeChainGameTests {
                     "Brick chimney exposed a vertical smoke port");
         }
 
-        MachineAshpit ashpitBlock = SmokeChainRegistration.machine_ashpit.get();
+        MachineAshpit ashpitBlock = ModMachineBlocks.machine_ashpit.get();
         BlockPos ashpitPos = helper.absolutePos(new BlockPos(3, 2, 3));
         helper.getLevel().setBlock(ashpitPos,
                 ashpitBlock.defaultBlockState(), 3);
@@ -114,23 +122,23 @@ public final class SmokeChainGameTests {
                 "Ashpit did not preserve the legacy empty-slot extra subtraction");
         helper.assertTrue(ashpit.isFull, "Ashpit full indicator did not follow non-empty output slots");
 
-        MachineAshpit block = SmokeChainRegistration.machine_ashpit.get();
-        net.minecraft.world.WorldlyContainer exposed = block.getContainer(
+        MachineAshpit block = ModMachineBlocks.machine_ashpit.get();
+        WorldlyContainer exposed = block.getContainer(
                 helper.getLevel().getBlockState(ashpit.getBlockPos().east()), helper.getLevel(), ashpit.getBlockPos().east());
-        helper.assertTrue(exposed == ashpit && exposed.getSlotsForFace(net.minecraft.core.Direction.DOWN).length == 5,
+        helper.assertTrue(exposed == ashpit && exposed.getSlotsForFace(Direction.DOWN).length == 5,
                 "Ashpit did not expose all five output slots through its dummy cells");
         helper.assertFalse(exposed.canPlaceItemThroughFace(0,
-                        new net.minecraft.world.item.ItemStack(ModIngredientItems.ash(EnumAshType.WOOD)),
-                        net.minecraft.core.Direction.DOWN),
+                        new ItemStack(ModIngredientItems.ash(EnumAshType.WOOD)),
+                        Direction.DOWN),
                 "Ashpit accepted hopper insertion into an output slot");
         helper.assertTrue(exposed.canTakeItemThroughFace(0, ashpit.inventory.getStackInSlot(0),
-                        net.minecraft.core.Direction.DOWN), "Ashpit did not allow hopper extraction");
+                        Direction.DOWN), "Ashpit did not allow hopper extraction");
         helper.succeed();
     }
 
     public static void menuAndSync(GameTestHelper helper) {
         TileEntityAshpit ashpit = placeAshpit(helper, new BlockPos(3, 1, 3));
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ContainerAshpit menu = new ContainerAshpit(0, player.getInventory(), ashpit);
         helper.assertTrue(menu.slots.size() == 41
                         && menu.slots.get(0).x == 44 && menu.slots.get(0).y == 27
@@ -138,7 +146,7 @@ public final class SmokeChainGameTests {
                         && menu.slots.get(5).x == 8 && menu.slots.get(5).y == 86
                         && menu.slots.get(40).x == 152 && menu.slots.get(40).y == 144,
                 "Ashpit menu layout changed");
-        helper.assertFalse(menu.slots.get(0).mayPlace(new net.minecraft.world.item.ItemStack(
+        helper.assertFalse(menu.slots.get(0).mayPlace(new ItemStack(
                         ModIngredientItems.ash(EnumAshType.WOOD))), "Ashpit output slot accepted GUI insertion");
         helper.assertTrue(ashpit.playersUsing == 1, "Ashpit menu did not increment playersUsing");
         menu.removed(player);
@@ -146,11 +154,11 @@ public final class SmokeChainGameTests {
 
         ashpit.playersUsing = 2;
         ashpit.isFull = true;
-        RegistryFriendlyByteBuf buffer = dev.golem.core.net.GolemBuffers.wrap(
-                io.netty.buffer.Unpooled.buffer(), helper.getLevel());
+        RegistryFriendlyByteBuf buffer = GolemBuffers.wrap(
+                Unpooled.buffer(), helper.getLevel());
         ashpit.serialize(buffer);
         TileEntityAshpit copy = new TileEntityAshpit(BlockPos.ZERO,
-                SmokeChainRegistration.machine_ashpit.get().defaultBlockState());
+                ModMachineBlocks.machine_ashpit.get().defaultBlockState());
         copy.deserialize(buffer);
         helper.assertTrue(copy.playersUsing == 2 && copy.isFull,
                 "Ashpit GUI sync fields did not round-trip");
@@ -169,23 +177,23 @@ public final class SmokeChainGameTests {
 
     private static TileEntityChimneyBrick placeBrick(GameTestHelper helper, BlockPos relative) {
         BlockPos pos = helper.absolutePos(relative);
-        MachineChimneyBrick block = SmokeChainRegistration.chimney_brick.get();
+        MachineChimneyBrick block = ModMachineBlocks.chimney_brick.get();
         FoldedTestSupport.assemble(helper, block, relative);
         return (TileEntityChimneyBrick) helper.getLevel().getBlockEntity(pos);
     }
 
     private static TileEntityChimneyIndustrial placeIndustrial(GameTestHelper helper, BlockPos relative) {
         BlockPos pos = helper.absolutePos(relative);
-        MachineChimneyIndustrial block = SmokeChainRegistration.chimney_industrial.get();
+        MachineChimneyIndustrial block = ModMachineBlocks.chimney_industrial.get();
         FoldedTestSupport.assemble(helper, block, relative);
         return (TileEntityChimneyIndustrial) helper.getLevel().getBlockEntity(pos);
     }
 
     private static TileEntityAshpit placeAshpit(GameTestHelper helper, BlockPos relative) {
         BlockPos pos = helper.absolutePos(relative);
-        MachineAshpit block = SmokeChainRegistration.machine_ashpit.get();
+        MachineAshpit block = ModMachineBlocks.machine_ashpit.get();
         helper.getLevel().setBlock(pos, block.defaultBlockState(), 3);
-        block.fillSpace(helper.getLevel(), pos, net.minecraft.core.Direction.NORTH);
+        block.fillSpace(helper.getLevel(), pos, Direction.NORTH);
         return (TileEntityAshpit) helper.getLevel().getBlockEntity(pos);
     }
 
@@ -217,12 +225,12 @@ public final class SmokeChainGameTests {
                                         double scale, double yaw, boolean legacy) {
         try (InputStream stream = SmokeChainGameTests.class.getClassLoader()
                 .getResourceAsStream("assets/hbm/items/" + name + ".json")) {
-            com.google.gson.JsonObject root = stream == null ? null
-                    : com.google.gson.JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8))
+            JsonObject root = stream == null ? null
+                    : JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8))
                     .getAsJsonObject();
-            com.google.gson.JsonObject outer = root == null ? null : root.getAsJsonObject("model");
+            JsonObject outer = root == null ? null : root.getAsJsonObject("model");
             boolean direct = outer != null && "hbm:machine_obj".equals(outer.get("type").getAsString());
-            com.google.gson.JsonObject model = direct ? outer
+            JsonObject model = direct ? outer
                     : outer == null ? null : outer.getAsJsonObject("model");
             boolean shape = direct == legacy && (direct
                     || (outer != null && "minecraft:special".equals(outer.get("type").getAsString())

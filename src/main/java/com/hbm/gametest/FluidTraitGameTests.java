@@ -6,6 +6,7 @@ import com.hbm.entity.effect.EntityMist;
 import com.hbm.entity.mob.glyphid.EntityGlyphid;
 import com.hbm.entity.projectile.EntityChemical;
 import com.hbm.handler.radiation.ChunkRadiationManager;
+import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.trait.FT_Pheromone;
@@ -23,15 +24,17 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * The 1.7 fluid traits the port gained in the 2026-10-01 fluid-traits pass: {@code FT_VentRadiation},
+ * The 1.7 fluid traits: {@code FT_VentRadiation},
  * {@code FT_Poison}, {@code FT_Pheromone} and the {@code FluidTraitSimple} tags, with hand-computed 1.7 values,
  * and 1.7's {@code traitList} tooltip order. Registered from {@link HbmGameTestFunctions}.
  */
@@ -54,11 +57,11 @@ public final class FluidTraitGameTests {
         mist.tick();
     }
 
-    private static LivingEntity floating(GameTestHelper helper, EntityType<? extends net.minecraft.world.entity.Mob> type,
+    private static LivingEntity floating(GameTestHelper helper, EntityType<? extends Mob> type,
             BlockPos pos) {
         LivingEntity mob = helper.spawnWithNoFreeWill(type, pos);
         mob.setNoGravity(true);
-        mob.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+        mob.setDeltaMovement(Vec3.ZERO);
         return mob;
     }
 
@@ -188,8 +191,8 @@ public final class FluidTraitGameTests {
     }
 
     /**
-     * Every simple tag on exactly 1.7's fluid count (Fluids.java declarations), and the predicates that used to
-     * keep private copies of these lists now read the traits.
+     * Every simple tag on exactly 1.7's fluid count (Fluids.java declarations), and the predicates that
+     * keep private copies of these lists read the traits.
      */
     public static void simpleTraitCounts(GameTestHelper helper) {
         count(helper, FluidTraitSimple.FT_Liquid.class, 113);
@@ -208,10 +211,10 @@ public final class FluidTraitGameTests {
         count(helper, FT_Pheromone.class, 2);
         helper.assertTrue(Fluids.STELLAR_FLUX.isAntimatter() && Fluids.HYDROGEN.hasTrait(FluidTraitSimple.FT_Gaseous_ART.class)
                         && FluidTraitSimple.isGaseousAny(Fluids.HYDROGEN)
-                        && !com.hbm.inventory.fluid.FluidCombustion.isGaseous(Fluids.HYDROGEN),
+                        && !FluidCombustion.isGaseous(Fluids.HYDROGEN),
                 "stellar flux is antimatter; hydrogen is gaseous-at-room-temperature, not FT_Gaseous");
-        helper.assertTrue(!com.hbm.inventory.fluid.FluidCombustion.isLiquidAndViscous(Fluids.NITAN)
-                        && com.hbm.inventory.fluid.FluidCombustion.isLiquidAndViscous(Fluids.OIL),
+        helper.assertTrue(!FluidCombustion.isLiquidAndViscous(Fluids.NITAN)
+                        && FluidCombustion.isLiquidAndViscous(Fluids.OIL),
                 "1.7 NITAN is liquid but not viscous; crude oil is both");
         helper.succeed();
     }
@@ -227,8 +230,8 @@ public final class FluidTraitGameTests {
      * 1.7 {@code FluidType.addInfo} walks {@code FluidTrait.traitList} in registration order. Tritium:
      * flammable 5,000 TU and combustible HIGH 10,000 HE ({@code BobMathUtil.getShortNumber}: 5.0k / 10.0k), then
      * vent radiation, then the Shift-only gaseous tag. MUG: the heatable block (400 TU per 1 mB; heat exchanger
-     * 100%, PWR 100%, ICF 125%) comes before the PWR moderator — whose core flux is {@code (int) (1.15 * 100 - 100)},
-     * 14 in double arithmetic, not 15 — then liquid, then delicious.
+     * 100%, PWR 100%, ICF 125%) comes before the PWR moderator, whose core flux is {@code (int) (1.15 * 100 - 100)},
+     * 14 in double arithmetic, not 15. Then liquid, then delicious.
      */
     public static void tooltipOrder(GameTestHelper helper) {
         exact(helper, lines(Fluids.TRITIUM, true), List.of(

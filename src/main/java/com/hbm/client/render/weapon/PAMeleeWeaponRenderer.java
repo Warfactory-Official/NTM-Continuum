@@ -10,6 +10,7 @@ import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 /** GEM port of the armor-provided NCR/RPA melee arm renderer. */
@@ -38,8 +39,8 @@ public final class PAMeleeWeaponRenderer extends WeaponRenderer {
         WavefrontObj rpaModel = rpa();
         Gem.Part<WeaponPose> rest = declaration.joint()
                 .visibleIf(state -> !state.animated
-                        && state.context != net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_RIGHT_HAND
-                        && state.context != net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_LEFT_HAND)
+                        && state.context != ItemDisplayContext.THIRD_PERSON_RIGHT_HAND
+                        && state.context != ItemDisplayContext.THIRD_PERSON_LEFT_HAND)
                 .scale(0.3125F)
                 .rotate(Gem.Axes.X, 90F);
         rest.child(ncrModel.part("LeftArm"), NCR_SKIN).translate(-2F, -5.5F, 0F);

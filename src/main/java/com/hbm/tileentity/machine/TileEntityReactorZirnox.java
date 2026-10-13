@@ -1,5 +1,12 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.advancement.DetonationTrigger;
+import com.hbm.advancement.HbmCriteria;
+import com.hbm.api.data.ReactorDataMaps;
+import com.hbm.config.MobConfig;
+import com.hbm.extprop.HbmPlayerProps;
+import com.hbm.items.ModAbilityToolItems;
+import com.hbm.saveddata.satellites.SatelliteRayScan;
 import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
@@ -27,7 +34,9 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.sound.ModSounds;
 import com.hbm.Constants;
+import dev.golem.core.world.ItemStacks;
 import java.util.List;
+import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -46,6 +55,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import net.minecraft.world.phys.AABB;
 
 /** Server simulation for the 24-channel carbon-dioxide moderated ZIRNOX reactor. */
 public class TileEntityReactorZirnox extends TileEntityMachineBase implements IFluidStandardTransceiverMK2, WorldlyContainer, MenuProvider, IRORValueProvider, IRORInteractive {
@@ -58,7 +68,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
             {5, 11, 13, 19}, {6, 12, 20}, {7, 15, 21}, {8, 14, 16, 22}, {9, 15, 23},
             {10, 18}, {11, 17, 19}, {12, 18, 20}, {13, 19}, {14, 22}, {15, 21, 23}, {16, 22}
     };
-    private static final int[] ROD_SLOTS = java.util.stream.IntStream.range(0, 24).toArray();
+    private static final int[] ROD_SLOTS = IntStream.range(0, 24).toArray();
 
     public int heat;
     public int pressure;
@@ -107,14 +117,14 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
     }
 
     @Override
-    public boolean isItemValidForSlot(int slot, net.minecraft.world.item.ItemStack stack) {
+    public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot < 24) return stack.getItem() instanceof ItemZirnoxRod;
         if (slot == 24) return providesFluid(stack, Fluids.CARBONDIOXIDE);
         if (slot == 25) return providesFluid(stack, Fluids.WATER);
         return false;
     }
 
-    private static boolean providesFluid(net.minecraft.world.item.ItemStack stack, com.hbm.inventory.fluid.FluidType fluid) {
+    private static boolean providesFluid(ItemStack stack, FluidType fluid) {
         return stack.getItem() instanceof IFillableItem fillable && fillable.providesFluid(fluid, stack)
                 || stack.getItem() instanceof ItemFluidBucket && ItemFluidBucket.getFluid(stack) == fluid;
     }
@@ -135,8 +145,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
                 + (int) ((float) te.heat * ((float) te.carbonDioxide.getFill() / te.carbonDioxide.getMaxFill()));
         if (te.heat > 0 && te.heat < MAX_HEAT) {
             if (te.water.getFill() > 0 && te.carbonDioxide.getFill() > 0 && te.steam.getFill() < te.steam.getMaxFill()) {
-                // 1.7.10 generateSteam: only above 10,256 heat, factor 25 * mult with mult = 7.5F ("was 5
-                // originally" — the 125 factor the port carried was the pre-7.5 value).
+                // 1.7.10 generateSteam: only above 10,256 heat, factor 25 * mult with mult = 7.5F (not 5).
                 if (te.heat > 10_256) {
                     float mult = 7.5F;
                     int cycle = (int) (((te.heat - 10_256F) / MAX_HEAT)
@@ -150,8 +159,8 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
             }
 
             if (level.getGameTime() % 100 == 0)
-                com.hbm.saveddata.satellites.SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(),
-                        com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent.INFO_NUCLEAR, 200);
+                SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(),
+                        SatelliteRayScan.RayEvent.INFO_NUCLEAR, 200);
         }
         for (DirPos port : te.getConPos()) {
             te.tryProvide(te.steam, level, port);
@@ -169,7 +178,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
         if (input.isEmpty()) return;
 
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, input)) {
+        if (MachineFluidContainerIO.loadInfinite(tank, input)) {
             setChanged();
             return;
         }
@@ -178,7 +187,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
             if (held <= 0 || fillable.getFirstFluidType(input) != expected) return;
             int addable = tank.fill(expected, held, false);
             if (addable <= 0) return;
-            ItemStack result = dev.golem.core.world.ItemStacks.copyWithCount(input, 1);
+            ItemStack result = ItemStacks.copyWithCount(input, 1);
             int taken = fillable.tryEmpty(expected, addable, result);
             if (taken <= 0 || !inventory.insertItem(outputSlot, result.copy(), true).isEmpty()) return;
             tank.fill(expected, taken, true);
@@ -198,18 +207,18 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
 
     private void decayRods() {
         for (int slot = 0; slot < 24; slot++) {
-            net.minecraft.world.item.ItemStack stack = inventory.getStackInSlot(slot);
+            ItemStack stack = inventory.getStackInSlot(slot);
             // 1.7: while on, a bred meteorite sword in a rod slot becomes the irradiated one
-            if (stack.is(com.hbm.items.ModAbilityToolItems.meteorite_sword_bred.get())) {
-                inventory.setStackInSlot(slot, new net.minecraft.world.item.ItemStack(
-                        com.hbm.items.ModAbilityToolItems.meteorite_sword_irradiated.get()));
+            if (stack.is(ModAbilityToolItems.meteorite_sword_bred.get())) {
+                inventory.setStackInSlot(slot, new ItemStack(
+                        ModAbilityToolItems.meteorite_sword_irradiated.get()));
                 continue;
             }
             if (!(stack.getItem() instanceof ItemZirnoxRod rod)) continue;
-            com.hbm.api.data.ReactorDataMaps.ZirnoxFuel fuel = rod.stats();
+            ReactorDataMaps.ZirnoxFuel fuel = rod.stats();
             int operations = fuel.breeding() ? 0 : 1;
             for (int neighbour : NEIGHBOURS[slot]) {
-                net.minecraft.world.item.ItemStack near = inventory.getStackInSlot(neighbour);
+                ItemStack near = inventory.getStackInSlot(neighbour);
                 if (near.getItem() instanceof ItemZirnoxRod other && !other.stats().breeding()) operations++;
             }
             for (int i = 0; i < operations; i++) {
@@ -218,8 +227,8 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
                 rod.setLife(stack, life);
                 if (life > fuel.maxLife()) {
                     // 1.7: thorium-232 breeds into a thorium rod, lithium into a tritium rod, every other rod depletes
-                    inventory.setStackInSlot(slot, new net.minecraft.world.item.ItemStack(
-                            com.hbm.api.data.ReactorDataMaps.itemOf(fuel.depletesInto())));
+                    inventory.setStackInSlot(slot, new ItemStack(
+                            ReactorDataMaps.itemOf(fuel.depletesInto())));
                     break;
                 }
             }
@@ -229,7 +238,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
     private void meltdown(Level level, BlockPos pos, BlockState state) {
         isOn = false;
         for (int slot = 0; slot < inventory.getSlots(); slot++) {
-            inventory.setStackInSlot(slot, net.minecraft.world.item.ItemStack.EMPTY);
+            inventory.setStackInSlot(slot, ItemStack.EMPTY);
         }
 
         // Remove the upper live shell and core before forming the two-block-tall wreck.
@@ -289,11 +298,11 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
 
     private static void grantMeltdownAdvancement(Level level, BlockPos pos) {
         for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class,
-                new net.minecraft.world.phys.AABB(pos).inflate(100.0D))) {
+                new AABB(pos).inflate(100.0D))) {
             // 1.7 achZIRNOXBoom: every player in the core's box grown by 100
-            com.hbm.advancement.HbmCriteria.detonation(player, com.hbm.advancement.DetonationTrigger.Kind.ZIRNOX);
+            HbmCriteria.detonation(player, DetonationTrigger.Kind.ZIRNOX);
             // 1.7: the same players are marked for BossSpawnHandler's radiation beasts
-            if (com.hbm.config.MobConfig.enableElementals) com.hbm.extprop.HbmPlayerProps.getData(player).radMark = true;
+            if (MobConfig.enableElementals) HbmPlayerProps.getData(player).radMark = true;
         }
     }
 
@@ -345,8 +354,8 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{steam}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{water, steam, carbonDioxide}; }
     @Override public int[] getSlotsForFace(Direction side) { return ROD_SLOTS; }
-    @Override public boolean canPlaceItemThroughFace(int slot, net.minecraft.world.item.ItemStack stack, Direction side) { return isItemValidForSlot(slot, stack); }
-    @Override public boolean canTakeItemThroughFace(int slot, net.minecraft.world.item.ItemStack stack, Direction side) { return slot < 24 && !(stack.getItem() instanceof ItemZirnoxRod); }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return isItemValidForSlot(slot, stack); }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot < 24 && !(stack.getItem() instanceof ItemZirnoxRod); }
 
     @Override public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf); buf.writeInt(heat); buf.writeInt(pressure); buf.writeBoolean(isOn); buf.writeBoolean(redstonePowered);

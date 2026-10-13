@@ -6,6 +6,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.network.TileEntityPipeAnchor;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.CompatRenderTypes;
@@ -39,8 +40,8 @@ public class RenderPipeAnchor extends GemBER<TileEntityPipeAnchor, RenderPipeAnc
         public final List<Integer> colors = new ArrayList<>();
     }
 
-    private static final Identifier TEX = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/network/pipe_anchor.png");
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/network/pipe_anchor.obj"));
+    private static final Identifier TEX = Ids.of(Constants.MOD_ID, "textures/models/network/pipe_anchor.png");
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/network/pipe_anchor.obj"));
 
     @Override
     protected void setup(Gem.Model<State> declaration) {

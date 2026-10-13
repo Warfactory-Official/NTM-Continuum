@@ -11,10 +11,14 @@ import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.items.machine.ItemFluidId;
 import com.hbm.lib.DirPos;
 import com.hbm.tileentity.machine.TileEntitySILEX;
+import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 
 /**
@@ -30,7 +34,7 @@ public final class SilexGameTests {
     private static TileEntitySILEX place(GameTestHelper helper, BlockPos pos) {
         helper.setBlock(pos, ModMachineBlocks.machine_silex.get().defaultBlockState()
                 .setValue(BlockMultiblockCore.FACING, Direction.NORTH));
-        TileEntitySILEX te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntitySILEX.class);
+        TileEntitySILEX te = GameTestHelpers.blockEntity(helper, pos, TileEntitySILEX.class);
         helper.assertTrue(te != null, "SILEX BlockEntity was not created");
         return te;
     }
@@ -47,7 +51,7 @@ public final class SilexGameTests {
         }
     }
 
-    // ---------------------------------------------------------------- process speed
+    // Process speed
 
     /**
      * The speed formula {@code progress += 2^(mode − required + 1) / 2}: exactly +1/tick at a matching
@@ -94,15 +98,15 @@ public final class SilexGameTests {
 
     /** Fills the solution pool directly so the test measures processing, not loading. */
     private static void primePool(TileEntitySILEX te, SILEXRecipe recipe) {
-        te.current = dev.golem.core.world.ItemStacks.copyWithCount(recipe.input.getDisplayStack(), 1);
+        te.current = ItemStacks.copyWithCount(recipe.input.getDisplayStack(), 1);
         te.currentFill = TileEntitySILEX.maxFill;
     }
 
-    // ---------------------------------------------------------------- loading
+    // Loading
 
     /**
      * The item-dissolving path: with peroxide in the tank, one input item becomes exactly
-     * {@code recipe.fluidProduced} mB of solution and costs the same amount of peroxide — and it only
+     * {@code recipe.fluidProduced} mB of solution and costs the same amount of peroxide, and it only
      * happens on the tick the 20-tick {@code loadDelay} wraps to 0, never every tick.
      */
     public static void silexLoad(GameTestHelper helper) {
@@ -117,7 +121,7 @@ public final class SilexGameTests {
 
         int peroxideBefore = te.tank.getFill();
         // The dissolve step fires on the tick loadDelay wraps to 0. Upstream increments FIRST, then
-        // resets when the counter exceeds 20 — so the counter runs 1..20 without firing and only wraps
+        // resets when the counter exceeds 20, so the counter runs 1..20 without firing and only wraps
         // on the 21st tick. The period is 21 ticks, not 20; that off-by-one is upstream's and is kept.
         run(helper, te, pos, EnumWavelengths.NULL, 20);
         helper.assertTrue(te.currentFill == 0,
@@ -156,7 +160,7 @@ public final class SilexGameTests {
         helper.succeed();
     }
 
-    // ---------------------------------------------------------------- weights
+    // Weights
 
     /**
      * 1.7.10 output selection is deterministic: {@code recipeIndex} walks the weighted table in steps of
@@ -192,7 +196,7 @@ public final class SilexGameTests {
         helper.succeed();
     }
 
-    // ---------------------------------------------------------------- queue + slots
+    // Queue + slots
 
     /**
      * The output queue: a finished item merges into a matching partial stack first, then takes the
@@ -232,7 +236,7 @@ public final class SilexGameTests {
 
     /**
      * The slot matrix and sided access: only slot 0 accepts insertion (and only a real recipe input),
-     * and automation may only pull from the 5–10 queue — never the raw input or the staging output.
+     * and automation may only pull from the 5–10 queue, never the raw input or the staging output.
      */
     public static void silexSlots(GameTestHelper helper) {
         SILEXRecipes.register();
@@ -241,7 +245,7 @@ public final class SilexGameTests {
 
         helper.assertTrue(te.isItemValidForSlot(0, new ItemStack(ModItems.ingot_uranium.get())),
                 "Slot 0 must accept a dissolvable input");
-        helper.assertFalse(te.isItemValidForSlot(0, new ItemStack(net.minecraft.world.item.Items.STICK)),
+        helper.assertFalse(te.isItemValidForSlot(0, new ItemStack(Items.STICK)),
                 "Slot 0 must reject an item with no SILEX recipe");
         helper.assertTrue(te.isItemValidForSlot(1, ItemFluidId.make(Fluids.PEROXIDE)),
                 "Slot 1 must accept a fluid identifier");
@@ -252,13 +256,13 @@ public final class SilexGameTests {
                     "Queue slot " + i + " must reject insertion");
         }
 
-        int[] sided = te.getSlotsForFace(net.minecraft.core.Direction.NORTH);
+        int[] sided = te.getSlotsForFace(Direction.NORTH);
         helper.assertTrue(sided.length == 7, "Sided access should expose 7 slots (0 + the queue), got " + sided.length);
-        helper.assertTrue(te.canPlaceItemThroughFace(0, new ItemStack(ModItems.ingot_uranium.get()), net.minecraft.core.Direction.NORTH),
+        helper.assertTrue(te.canPlaceItemThroughFace(0, new ItemStack(ModItems.ingot_uranium.get()), Direction.NORTH),
                 "Automation must be able to insert into slot 0");
-        helper.assertFalse(te.canTakeItemThroughFace(0, ItemStack.EMPTY, net.minecraft.core.Direction.NORTH),
+        helper.assertFalse(te.canTakeItemThroughFace(0, ItemStack.EMPTY, Direction.NORTH),
                 "Automation must NOT be able to pull the raw input back out of slot 0");
-        helper.assertTrue(te.canTakeItemThroughFace(5, ItemStack.EMPTY, net.minecraft.core.Direction.NORTH),
+        helper.assertTrue(te.canTakeItemThroughFace(5, ItemStack.EMPTY, Direction.NORTH),
                 "Automation must be able to pull from the queue");
 
         helper.succeed();
@@ -268,7 +272,7 @@ public final class SilexGameTests {
     public static void silexMenu(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         TileEntitySILEX te = place(helper, pos);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ContainerSILEX menu = new ContainerSILEX(1, player.getInventory(), te);
 
         int[][] expected = {{80, 12}, {8, 24}, {26, 24}, {44, 24}, {116, 90},
@@ -289,11 +293,11 @@ public final class SilexGameTests {
         helper.succeed();
     }
 
-    // ---------------------------------------------------------------- layout + the FEL link
+    // Layout + the FEL link
 
     /**
      * The footprint and the two fluid ports at {@code ±2} along the axis perpendicular to the facing,
-     * at {@code y+1} — built through the real placement path, not by poking blocks.
+     * at {@code y+1}, built through the real placement path, not by poking blocks.
      */
     public static void silexLayout(GameTestHelper helper) {
         var block = ModMachineBlocks.machine_silex.get();
@@ -301,13 +305,13 @@ public final class SilexGameTests {
         // setPlacedBy resolves facing from the placer's yaw (0 -> NORTH) and puts the core `offset`
         // blocks along it: NORTH with offset 1 -> one block +Z from the clicked cell.
         var core = clicked.offset(0, 0, 1);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
         helper.setBlock(clicked, block.defaultBlockState());
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,
                 new ItemStack(block));
 
-        TileEntitySILEX te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntitySILEX.class);
+        TileEntitySILEX te = GameTestHelpers.blockEntity(helper, core, TileEntitySILEX.class);
         helper.assertTrue(te != null, "SILEX did not form through the real placement path");
 
         DirPos[] ports = te.getConPos();
@@ -322,13 +326,13 @@ public final class SilexGameTests {
         helper.assertTrue(dx + dz == 4, "The two ports should be 4 blocks apart across the machine, got " + (dx + dz));
 
         // A duct placed at either port must actually connect. A DirPos direction is the machine's side
-        // FACING the pipe, so the machine cell is one step back along it — if the direction were stored
+        // FACING the pipe, so the machine cell is one step back along it. If the direction were stored
         // inverted (as the FEL's was), isPort would reject the match and no duct would ever attach.
         Fluids.init();
         for (DirPos dp : ports) {
             var outward = dp.getDir();
             BlockPos pipe = dp.getPos();
-            BlockPos machineCell = pipe.subtract(new net.minecraft.core.Vec3i(
+            BlockPos machineCell = pipe.subtract(new Vec3i(
                     outward.offsetX, outward.offsetY, outward.offsetZ));
             helper.assertTrue(helper.getLevel().getBlockState(machineCell).is(block),
                     "The SILEX fluid-port cell " + machineCell + " is not part of the machine");

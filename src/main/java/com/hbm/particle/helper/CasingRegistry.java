@@ -1,5 +1,6 @@
 package com.hbm.particle.helper;
 
+import com.hbm.Constants;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.particle.SpentCasing;
@@ -192,6 +193,6 @@ public final class CasingRegistry {
     }
 
     private static BulletConfig config(String id) {
-        return BulletConfigs.get(com.hbm.Constants.MOD_ID + ":" + id);
+        return BulletConfigs.get(Constants.MOD_ID + ":" + id);
     }
 }

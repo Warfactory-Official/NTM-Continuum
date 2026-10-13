@@ -11,8 +11,8 @@ import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguratio
  * {@code hbm:legacy_ore}: one 1.7 {@code WorldGenMinable} vein at the placed position, through
  * {@link OreVeinPlacer#placeVein} (the vanilla-1.7 ellipsoid, {@code +8} offset included).
  *
- * <p>This is the vein half of 1.7's {@code DungeonToolbox.generateOre}. The loop half — {@code veinCount} times a
- * random in-chunk x/z and {@code y = minHeight + rand.nextInt(variance)}, or a {@code rand.nextInt(n) == 0} gate —
+ * <p>This is the vein half of 1.7's {@code DungeonToolbox.generateOre}. The loop half ({@code veinCount} times a
+ * random in-chunk x/z and {@code y = minHeight + rand.nextInt(variance)}, or a {@code rand.nextInt(n) == 0} gate)
  * is the placed feature's {@code count} / {@code rarity_filter} + {@code in_square} + uniform {@code height_range}
  * (see {@code ModBiomeModifiers}), so every ore is its own placed feature and {@code /place feature hbm:<ore>}
  * places exactly one vein.

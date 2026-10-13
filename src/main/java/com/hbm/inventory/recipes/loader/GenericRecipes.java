@@ -1,5 +1,6 @@
 package com.hbm.inventory.recipes.loader;
 
+import com.hbm.Constants;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.Map;
 
 /**
  * Base recipe registry for a machine, ported (trimmed) from HBM's {@code GenericRecipes}. Holds the
- * name→recipe map, the blueprint pools (which template unlocks which recipes) and the auto-switch
+ * name->recipe map, the blueprint pools (which template unlocks which recipes) and the auto-switch
  * groups (a machine swaps to the matching recipe in a group based on the inserted ingredient).
  */
 public abstract class GenericRecipes {
@@ -25,12 +26,12 @@ public abstract class GenericRecipes {
     public final Map<String, GenericRecipe> recipeNameMap = new HashMap<>();
     public final Map<String, List<GenericRecipe>> autoSwitchGroups = new HashMap<>();
 
-    /** pool name → recipe internal names in that pool. */
+    /** pool name -> recipe internal names in that pool. */
     public static final Map<String, List<String>> blueprintPools = new HashMap<>();
-    /** recipe internal name → recipe, for blueprint tooltip display. */
+    /** recipe internal name -> recipe, for blueprint tooltip display. */
     public static final Map<String, GenericRecipe> pooledBlueprints = new HashMap<>();
 
-    /** Populates {@link #recipeNameMap}/{@link #recipeOrderedList} — implemented per machine. */
+    /** Populates {@link #recipeNameMap}/{@link #recipeOrderedList}, implemented per machine. */
     public abstract void registerRecipes();
 
     /** Adds a recipe built in code and joins its blueprint pools and auto-switch group. */
@@ -72,7 +73,7 @@ public abstract class GenericRecipes {
         autoSwitchGroups.clear();
         for (GenericRecipe recipe : recipes) {
             if (recipeNameMap.containsKey(recipe.getInternalName())) {
-                com.hbm.Constants.LOG.warn("Recipe name {} appears twice in {}; keeping the first",
+                Constants.LOG.warn("Recipe name {} appears twice in {}; keeping the first",
                         recipe.getInternalName(), getClass().getSimpleName());
                 continue;
             }

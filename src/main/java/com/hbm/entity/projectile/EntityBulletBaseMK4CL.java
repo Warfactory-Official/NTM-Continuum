@@ -9,6 +9,7 @@ import dev.golem.core.data.DataOut;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The original MK4 bullet with the original entity-backed chunk claim.  The claim follows the bullet in
@@ -33,7 +34,7 @@ public class EntityBulletBaseMK4CL extends EntityBulletBaseMK4 implements IChunk
         float pitch = shooter.getXRot();
         setYRot(yaw);
         setXRot(pitch);
-        var offset = new net.minecraft.world.phys.Vec3(sideOffset, heightOffset, frontOffset)
+        var offset = new Vec3(sideOffset, heightOffset, frontOffset)
                 .xRot(-pitch * ((float) Math.PI / 180F))
                 .yRot(-yaw * ((float) Math.PI / 180F));
         setPos(shooter.getX() + offset.x, shooter.getEyeY() + offset.y, shooter.getZ() + offset.z);

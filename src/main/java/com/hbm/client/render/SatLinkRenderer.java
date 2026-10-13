@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineSatLink;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -23,7 +24,7 @@ public class SatLinkRenderer extends GemBER<TileEntityMachineSatLink, SatLinkRen
     private static final float PIVOT = 7.375F;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/satlink.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/satlink.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/satlink.png");
 

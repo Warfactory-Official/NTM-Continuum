@@ -16,6 +16,7 @@ import com.hbm.items.weapon.sedna.factory.XFactory40mm;
 import com.hbm.items.weapon.sedna.factory.XFactory44;
 import com.hbm.items.weapon.sedna.factory.XFactory50;
 import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -60,7 +61,7 @@ import java.util.StringJoiner;
 import java.util.TreeMap;
 
 /**
- * Fix wave phase 5 (2026-10-03, History section 19ej-5): guns, ammunition and weapon mods against original-hbm
+ * Weapon contracts: guns, ammunition and weapon mods against 1.7
  * (1.7.10). Every Sedna gun's configs and receivers and every registered bullet config are flattened into
  * {@code key=value} pairs with the same key scheme as the 1.7 interpreter that produced {@link Gun17Expectations};
  * the test compares every expected key and fails on any difference that is not an explained port spelling.
@@ -83,10 +84,10 @@ public final class Fix5GameTests {
 
     public static void init() {}
 
-    // ------------------------------------------------------------------ behaviour
+    // Behaviour
 
     private static Player player(GameTestHelper helper) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         BlockPos origin = helper.absolutePos(new BlockPos(1, 1, 1));
         player.setPos(origin.getX() + 0.5D, origin.getY(), origin.getZ() + 0.5D);
         return player;
@@ -250,7 +251,7 @@ public final class Fix5GameTests {
         });
     }
 
-    // ------------------------------------------------------------------ flattening
+    // Flattening
 
     private static String f(float v) { return Float.toString(v); }
     private static String f(double v) { return Float.toString((float) v); }
@@ -426,7 +427,7 @@ public final class Fix5GameTests {
         return out;
     }
 
-    // ------------------------------------------------------------------ comparison
+    // Comparison
 
     private static boolean same(String expected, String actual) {
         if (expected.equals(actual)) return true;
@@ -468,7 +469,7 @@ public final class Fix5GameTests {
         } catch (IOException ignored) {
             // The dump is a diagnostic convenience; the assertion below is the test.
         }
-        helper.assertTrue(diffs.isEmpty(), diffs.size() + " gun/bullet value(s) differ from original-hbm 1.7.10, first: "
+        helper.assertTrue(diffs.isEmpty(), diffs.size() + " gun/bullet value(s) differ from 1.7, first: "
                 + (diffs.isEmpty() ? "" : diffs.get(0)) + " (full list in fix5_gun_diffs.txt)");
         helper.succeed();
     }

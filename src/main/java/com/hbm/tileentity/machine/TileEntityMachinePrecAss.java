@@ -18,7 +18,7 @@ import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
-import com.hbm.modules.machine.ModuleMachinePrecAss;
+import com.hbm.module.machine.ModuleMachinePrecAss;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -59,7 +59,7 @@ public class TileEntityMachinePrecAss extends TileEntityMachineBase implements M
     public final ModuleMachinePrecAss assemblerModule;
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
 
-    // Client-only animation state. It intentionally keeps the old shared four-striker state machine.
+    // Client-only animation state. It keeps the shared four-striker state machine.
     public double prevRing;
     public double ring;
     public double ringSpeed;
@@ -101,7 +101,7 @@ public class TileEntityMachinePrecAss extends TileEntityMachineBase implements M
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
         for (DirPos connection : te.getConPos()) {
             te.trySubscribe(level, connection);
-            if (te.inputTank.getTankType() != com.hbm.inventory.fluid.Fluids.NONE) te.trySubscribe(te.inputTank.getTankType(), level, connection);
+            if (te.inputTank.getTankType() != Fluids.NONE) te.trySubscribe(te.inputTank.getTankType(), level, connection);
             if (te.outputTank.getFill() > 0) te.tryProvide(te.outputTank, level, connection);
         }
 

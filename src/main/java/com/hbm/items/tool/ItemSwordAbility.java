@@ -33,7 +33,7 @@ public class ItemSwordAbility extends CompatSwordItem {
         this(properties, damage, Tools.SWORD_SPEED, movement, material);
     }
 
-    /** With an explicit attack-speed modifier (old-hbm's crucible named none: 0). */
+    /** With an explicit attack-speed modifier (1.12.2's crucible named none: 0). */
     protected ItemSwordAbility(Properties properties, float damage, float attackSpeed, double movement, ToolTier material) {
         super(properties, material, damage, attackSpeed, movement);
         this.damage = damage;

@@ -4,6 +4,17 @@ import com.hbm.blocks.DecoCrateDeclarations;
 import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.blocks.generic.BlockPlushie;
 import com.hbm.blocks.generic.BlockSnowglobe;
+import com.hbm.items.machine.ItemPileRodMK2;
+import com.hbm.items.machine.ItemSatellite;
+import com.hbm.items.special.ItemHolotapeImage;
+import com.hbm.items.special.ItemWasteStorage;
+import com.hbm.items.tool.ItemGuideBook;
+import com.hbm.items.weapon.ItemAmmoArty;
+import com.hbm.items.weapon.ItemAmmoHIMARS;
+import com.hbm.items.weapon.sedna.factory.GunFactory;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
@@ -11,9 +22,9 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * 1.7's {@code (item, metadata)} pairs of the metadata families that are one registered item per type here (History
- * §19es-itemvariant): the 1.7 item id and its metadata answer the port's item id. For readers of 1.7 data that still
- * name items that way - the QMAW manual pages - never for saves.
+ * 1.7's {@code (item, metadata)} pairs of the metadata families that are one registered item per type here:
+ * the 1.7 item id and its metadata answer the port's item id. For readers of 1.7 data that still
+ * name items that way (the QMAW manual pages), never for saves.
  */
 public final class LegacyMetaIds {
 
@@ -30,10 +41,10 @@ public final class LegacyMetaIds {
     }
 
     /** Every port id ({@code hbm:...}) of the split family 1.7 called {@code hbm:<path>}, or an empty list. */
-    public static java.util.List<String> members(String path) {
+    public static List<String> members(String path) {
         String[] ids = table().get(path);
-        if (ids == null) return java.util.List.of();
-        java.util.List<String> out = new java.util.ArrayList<>();
+        if (ids == null) return List.of();
+        List<String> out = new ArrayList<>();
         for (String id : ids) if (id != null) out.add("hbm:" + id);
         return out;
     }
@@ -47,17 +58,17 @@ public final class LegacyMetaIds {
         Map<String, String[]> t = table;
         if (t != null) return t;
         t = new HashMap<>();
-        t.put("ammo_arty", names(com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType.values(), c -> c.name));
-        t.put("ammo_himars", names(com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.values(), c -> "ammo_himars_" + c.name));
-        t.put("satellite", lower("satellite", com.hbm.items.machine.ItemSatellite.EnumSatType.values()));
+        t.put("ammo_arty", names(ItemAmmoArty.ArtilleryShellType.values(), c -> c.name));
+        t.put("ammo_himars", names(ItemAmmoHIMARS.HIMARSRocketType.values(), c -> "ammo_himars_" + c.name));
+        t.put("satellite", lower("satellite", ItemSatellite.EnumSatType.values()));
         t.put("missile_soyuz", new String[] {"missile_soyuz_0", "missile_soyuz_1", "missile_soyuz_2"});
-        t.put("pile_rod", lower("pile_rod_mk2", com.hbm.items.machine.ItemPileRodMK2.EnumPileRod.values()));
-        t.put("holotape_image", lower("holotape_image", com.hbm.items.special.ItemHolotapeImage.EnumHoloImage.values()));
-        t.put("book_guide", lower("book_guide", com.hbm.items.tool.ItemGuideBook.BookType.values()));
-        t.put("weapon_mod_test", lower("weapon_mod_test", com.hbm.items.weapon.sedna.factory.GunFactory.EnumModTest.values()));
-        t.put("weapon_mod_generic", lower("weapon_mod_generic", com.hbm.items.weapon.sedna.factory.GunFactory.EnumModGeneric.values()));
-        t.put("weapon_mod_special", lower("weapon_mod_special", com.hbm.items.weapon.sedna.factory.GunFactory.EnumModSpecial.values()));
-        t.put("weapon_mod_caliber", lower("weapon_mod_caliber", com.hbm.items.weapon.sedna.factory.GunFactory.EnumModCaliber.values()));
+        t.put("pile_rod", lower("pile_rod_mk2", ItemPileRodMK2.EnumPileRod.values()));
+        t.put("holotape_image", lower("holotape_image", ItemHolotapeImage.EnumHoloImage.values()));
+        t.put("book_guide", lower("book_guide", ItemGuideBook.BookType.values()));
+        t.put("weapon_mod_test", lower("weapon_mod_test", GunFactory.EnumModTest.values()));
+        t.put("weapon_mod_generic", lower("weapon_mod_generic", GunFactory.EnumModGeneric.values()));
+        t.put("weapon_mod_special", lower("weapon_mod_special", GunFactory.EnumModSpecial.values()));
+        t.put("weapon_mod_caliber", lower("weapon_mod_caliber", GunFactory.EnumModCaliber.values()));
         t.put("clay_tablet", new String[] {"clay_tablet", "clay_tablet_1"});
         t.put("blueprint_folder", new String[] {"blueprint_folder", "blueprint_folder_discover"});
         t.put("gear_large", new String[] {"gear_large", "gear_large_steel"});
@@ -81,17 +92,17 @@ public final class LegacyMetaIds {
         t.put("glyphid_spawner", new String[] {"glyphid_spawner", "glyphid_spawner_infested", "glyphid_spawner_rad"});
         for (String base : new String[] {"nuclear_waste_long", "nuclear_waste_long_tiny", "nuclear_waste_long_depleted",
                 "nuclear_waste_long_depleted_tiny"}) {
-            t.put(base, lower(base, com.hbm.items.special.ItemWasteStorage.LongWasteClass.values()));
+            t.put(base, lower(base, ItemWasteStorage.LongWasteClass.values()));
         }
         for (String base : new String[] {"nuclear_waste_short", "nuclear_waste_short_tiny", "nuclear_waste_short_depleted",
                 "nuclear_waste_short_depleted_tiny"}) {
-            t.put(base, lower(base, com.hbm.items.special.ItemWasteStorage.ShortWasteClass.values()));
+            t.put(base, lower(base, ItemWasteStorage.ShortWasteClass.values()));
         }
         table = t;
         return t;
     }
 
-    private static <E extends Enum<E>> String[] names(E[] values, java.util.function.Function<E, String> id) {
+    private static <E extends Enum<E>> String[] names(E[] values, Function<E, String> id) {
         String[] ids = new String[values.length];
         for (int i = 0; i < values.length; i++) ids[i] = id.apply(values[i]);
         return ids;

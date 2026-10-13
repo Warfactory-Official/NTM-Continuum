@@ -13,6 +13,9 @@ import com.hbm.inventory.container.ContainerCrystallizer;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.MachineCore;
+import dev.golem.core.world.ItemStacks;
+import java.util.HashMap;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -45,12 +48,12 @@ import dev.golem.core.data.DataOut;
 import net.minecraft.world.phys.AABB;
 
 /**
- * Ore Acidizer (1.12.2 {@code TileEntityMachineCrystallizer}) — dissolves one input item in the acid
+ * Ore Acidizer (1.12.2 {@code TileEntityMachineCrystallizer}): dissolves one input item in the acid
  * held by its 8,000 mB tank (peroxide by default, retyped by a fluid identifier) at 1,000 HE/t. The
  * tank's fluid <i>selects</i> the recipe, so recipes sharing an input (e.g. peroxide vs sulfuric
  * refinement) are distinguished by what acid is loaded.
  *
- * <p>Slot roles: 0 input, 1 battery, 2 output (take-only), 3 fluid-container in → 4 emptied-container
+ * <p>Slot roles: 0 input, 1 battery, 2 output (take-only), 3 fluid-container in, 4 emptied-container
  * out, 5–6 upgrades (SPEED/EFFECT/OVERDRIVE, 1.12.2 formulas: -25% duration and +1,000 HE/t per speed
  * level; ×(level+2) acid and 5%/level free-op chance for EFFECT; +2 process cycles/tick per OVERDRIVE
  * level, capped at 7), 7 fluid identifier (kept in-slot). Slim port (deferred): fluid-ID copying.
@@ -150,7 +153,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
 
         ItemStack out = inventory.getStackInSlot(2);
         if (out.isEmpty()) return true;
-        if (!dev.golem.core.world.ItemStacks.sameItemAndData(out, recipe.output)) return false;
+        if (!ItemStacks.sameItemAndData(out, recipe.output)) return false;
         return out.getCount() + recipe.output.getCount() <= out.getMaxStackSize();
     }
 
@@ -170,7 +173,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         }
     }
 
-    // --- upgrade-scaled parameters (1.12.2 getRequiredAcid/getFreeChance/getDuration/getPowerRequired/getCycleCount) ---
+    // Upgrade-scaled parameters (1.12.2 getRequiredAcid/getFreeChance/getDuration/getPowerRequired/getCycleCount)
 
     public int getRequiredAcid(int base) {
         int efficiency = Math.min(upgradeManager.getLevel(UpgradeType.EFFECT), 3);
@@ -213,14 +216,14 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         }
     }
 
-    /** Drains a full container in slot 3 INTO the tank, emptied container → slot 4 (the 1.12.2
+    /** Drains a full container in slot 3 INTO the tank, emptied container to slot 4 (the 1.12.2
      * {@code loadTank(3, 4)}). Handles the universal tank/barrel ({@link IFillableItem}) and buckets. */
     private void fillTankFromSlot() {
         ItemStack in = inventory.getStackInSlot(3);
         if (in.isEmpty()) return;
 
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
             setChanged();
             return;
         }
@@ -276,7 +279,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         setChanged();
     }
 
-    /** The 8 network-connection positions on the tower's four sides at ±2 (ported verbatim). */
+    /** The 8 network-connection positions on the tower's four sides at ±2 (ported unchanged). */
     public DirPos[] getConPos() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
         return new DirPos[]{
@@ -287,7 +290,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
     }
 
     /**
-     * Slot roles: 0 input (any recipe input, regardless of the loaded acid — the player may load the
+     * Slot roles: 0 input (any recipe input, regardless of the loaded acid; the player may load the
      * matching acid after), 1 battery, 3 fluid-container in, 7 identifier. Slot 4 must return true so
      * the machine's own insertItem can place the emptied container there (player insertion is blocked
      * by the take-only slot in {@link ContainerCrystallizer}); 2 (output, written via setStackInSlot)
@@ -306,7 +309,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         };
     }
 
-    // --- WorldlyContainer: hoppers/pipes feed the input, pull the output + emptied containers ---
+    // WorldlyContainer: hoppers/pipes feed the input, pull the output + emptied containers
 
     @Override public int[] getSlotsForFace(Direction side) { return IO_SLOTS; }
 
@@ -317,7 +320,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
 
     @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot == 2 || slot == 4; }
 
-    // --- IClimbable: the ladder column up the tower's side (ported from the 1.12.2 tile) ---
+    // IClimbable: the ladder column up the tower's side (ported from the 1.12.2 tile)
 
     private void ensureClimbRegistered() {
         if (!climbRegistered) {
@@ -348,7 +351,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         unregisterClimbable();
     }
 
-    // --- IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo) ---
+    // IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo)
 
     @Override
     protected int[] getUpgradeSlotRange() {
@@ -361,7 +364,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
     }
 
     @Override
-    public void provideInfo(UpgradeType type, int level, java.util.List<Component> info, boolean extendedInfo) {
+    public void provideInfo(UpgradeType type, int level, List<Component> info, boolean extendedInfo) {
         info.add(IUpgradeInfoProvider.getStandardLabel(ModMachineBlocks.machine_crystallizer.get()));
         if (type == UpgradeType.SPEED) {
             info.add(Component.translatable(KEY_DELAY, "-" + (level * 25) + "%").withStyle(ChatFormatting.GREEN));
@@ -377,27 +380,27 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
     }
 
     @Override
-    public java.util.HashMap<UpgradeType, Integer> getValidUpgrades() {
-        java.util.HashMap<UpgradeType, Integer> upgrades = new java.util.HashMap<>();
+    public HashMap<UpgradeType, Integer> getValidUpgrades() {
+        HashMap<UpgradeType, Integer> upgrades = new HashMap<>();
         upgrades.put(UpgradeType.SPEED, 3);
         upgrades.put(UpgradeType.EFFECT, 3);
         upgrades.put(UpgradeType.OVERDRIVE, 3);
         return upgrades;
     }
 
-    // --- IEnergyReceiverMK2 ---
+    // IEnergyReceiverMK2
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
     @Override public long getMaxPower() { return MAX_POWER; }
     @Override public long getReceiverSpeed() { return MAX_POWER; }
 
-    // --- IFluidStandardReceiverMK2 ---
+    // IFluidStandardReceiverMK2
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
 
-    // --- MenuProvider ---
+    // MenuProvider
 
     @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_crystallizer"); }
 
@@ -406,7 +409,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         return new ContainerCrystallizer(containerId, playerInventory, this);
     }
 
-    // --- sync (BufPacket) + persistence ---
+    // Sync (BufPacket) + persistence
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

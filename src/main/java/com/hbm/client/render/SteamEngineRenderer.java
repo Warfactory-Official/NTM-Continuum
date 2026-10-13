@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineSteamEngine;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -14,7 +15,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Steam engine: flywheel, shaft, and the connecting rod and piston the crank drives.
  *
- * <p>The rod's anchor moves on two axes at once, which is two slides rather than one — translations
+ * <p>The rod's anchor moves on two axes at once, which is two slides rather than one: translations
  * commute, so splitting upstream's single call in two is the same placement written where the
  * declaration can read it.
  */
@@ -22,8 +23,8 @@ public final class SteamEngineRenderer
         extends GemBER<TileEntityMachineSteamEngine, SteamEngineRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/steam_engine.obj"));
-    /** old-hbm disabled GL face culling around every steam-engine part, including the hollow backs. */
+            Ids.of(Constants.MOD_ID, "models/machines/steam_engine.obj"));
+    /** 1.12.2 disabled GL face culling around every steam-engine part, including the hollow backs. */
     private final Surface surface = Surface.cutoutNoCull(
             Constants.MOD_ID + ":textures/models/machines/steam_engine.png");
 

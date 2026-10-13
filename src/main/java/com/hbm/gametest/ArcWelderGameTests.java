@@ -6,20 +6,26 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.inventory.container.ContainerMachineArcWelder;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;
+import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.ArcWelderRecipes;
+import com.hbm.items.ItemEnums;
 import com.hbm.items.ModAutogenItems;
 import com.hbm.items.ModBatteryItems;
+import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModUpgradeItems;
+import com.hbm.items.machine.ItemBatteryPack;
 import com.hbm.items.machine.ItemFluidId;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineArcWelder;
 import dev.golem.core.gametest.GameTestHelpers;
+import java.util.Arrays;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.Container;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -33,13 +39,13 @@ public final class ArcWelderGameTests {
 
     public static void feasibleCatalogueAndMatching(GameTestHelper helper) {
         ArcWelderRecipes.register();
-        // 42 = the 1.7 ArcWelderRecipes catalogue (original-hbm registerDefaults: 2 LDE, reflector, 3 dense wires,
+        // 42 = the 1.7 ArcWelderRecipes catalogue (1.7 registerDefaults: 2 LDE, reflector, 3 dense wires,
         // 11 welded plates, 3 thrusters, 3 tanks, 18 missiles incl. missile_emp_strong, plus the motor). The 1.12.2
-        // satellite welds went with 1.7 (satellites assemble in the assembly machine); the port previously carried a
-        // bogus HDE weld (really the Plasma Forge recipe plsm.hde) and lacked the reflector weld.
+        // satellite welds are not in 1.7 (satellites assemble in the assembly machine). HDE is really the
+        // Plasma Forge recipe plsm.hde, and the reflector weld is part of the 42.
         helper.assertTrue(ArcWelderRecipes.recipes.size() == 42,
                 "Arc Welder must retain the 42 1.7 recipes, found " + ArcWelderRecipes.recipes.size());
-        helper.assertTrue(ArcWelderRecipes.recipes.stream().noneMatch(r -> r.output.is(com.hbm.items.ModIngredientItems.part(com.hbm.items.ItemEnums.EnumPartType.HDE))),
+        helper.assertTrue(ArcWelderRecipes.recipes.stream().noneMatch(r -> r.output.is(ModIngredientItems.part(ItemEnums.EnumPartType.HDE))),
                 "HDE is a Plasma Forge recipe, not an Arc Welder one");
         helper.assertTrue(ArcWelderRecipes.recipes.stream().anyMatch(r -> r.output.is(ModItems.neutron_reflector.get())
                         && r.output.getCount() == 2),
@@ -47,7 +53,7 @@ public final class ArcWelderGameTests {
 
         // 1.7 values the port once got wrong: the osmiridium weld costs 50M HE (not 20M) and thruster_large's third
         // input is 12 tungsten carbide ingots (not 12 neutron reflectors).
-        Item osmiridiumPlate = ModAutogenItems.get(MaterialShapes.WELDEDPLATE, com.hbm.inventory.material.Mats.MAT_OSMIRIDIUM);
+        Item osmiridiumPlate = ModAutogenItems.get(MaterialShapes.WELDEDPLATE, Mats.MAT_OSMIRIDIUM);
         var osmiridium = ArcWelderRecipes.recipes.stream().filter(r -> r.output.is(osmiridiumPlate)).findFirst().orElse(null);
         helper.assertTrue(osmiridium != null && osmiridium.consumption == 50_000_000L && osmiridium.duration == 6_000
                         && osmiridium.fluid != null && osmiridium.fluid.fill == 16_000,
@@ -64,7 +70,7 @@ public final class ArcWelderGameTests {
                 new ItemStack(ModItems.sat_head_scanner.get()), ItemStack.EMPTY);
         helper.assertTrue(scanner == null, "1.7 has no arc-welder satellite recipe");
 
-        Item wire = ModAutogenItems.get(MaterialShapes.DENSEWIRE, com.hbm.inventory.material.Mats.MAT_RED_COPPER);
+        Item wire = ModAutogenItems.get(MaterialShapes.DENSEWIRE, Mats.MAT_RED_COPPER);
         var motor = ArcWelderRecipes.getRecipe(
                 new ItemStack(wire, 2), new ItemStack(ModItems.plate_steel.get(), 2), ItemStack.EMPTY);
         helper.assertTrue(motor != null && motor.output.is(ModItems.motor.get()) && motor.output.getCount() == 2,
@@ -77,8 +83,8 @@ public final class ArcWelderGameTests {
 
     public static void processingAndFluidAtomicity(GameTestHelper helper) {
         TileEntityMachineArcWelder welder = place(helper, new BlockPos(2, 1, 2));
-        Item cast = ModAutogenItems.get(MaterialShapes.CASTPLATE, com.hbm.inventory.material.Mats.MAT_TCALLOY);
-        Item welded = ModAutogenItems.get(MaterialShapes.WELDEDPLATE, com.hbm.inventory.material.Mats.MAT_TCALLOY);
+        Item cast = ModAutogenItems.get(MaterialShapes.CASTPLATE, Mats.MAT_TCALLOY);
+        Item welded = ModAutogenItems.get(MaterialShapes.WELDEDPLATE, Mats.MAT_TCALLOY);
         welder.inventory.setStackInSlot(0, new ItemStack(cast, 2));
         welder.tank.setTankType(Fluids.OXYGEN);
         welder.tank.setFill(999);
@@ -108,7 +114,7 @@ public final class ArcWelderGameTests {
         helper.succeed();
     }
 
-    private static void assertUpgrade(GameTestHelper helper, BlockPos relative, net.minecraft.world.item.Item upgrade,
+    private static void assertUpgrade(GameTestHelper helper, BlockPos relative, Item upgrade,
                                       int processTime, long consumption, long maxPower) {
         TileEntityMachineArcWelder welder = place(helper, relative);
         configureMotor(welder);
@@ -151,9 +157,9 @@ public final class ArcWelderGameTests {
 
     private static void assertSlots(GameTestHelper helper, Container container, int[] expected) {
         helper.assertTrue(container != null, "Arc Welder hopper proxy is missing");
-        int[] actual = ((net.minecraft.world.WorldlyContainer) container).getSlotsForFace(Direction.NORTH);
-        helper.assertTrue(java.util.Arrays.equals(actual, expected),
-                "Arc Welder hopper slots changed: " + java.util.Arrays.toString(actual));
+        int[] actual = ((WorldlyContainer) container).getSlotsForFace(Direction.NORTH);
+        helper.assertTrue(Arrays.equals(actual, expected),
+                "Arc Welder hopper slots changed: " + Arrays.toString(actual));
     }
 
     public static void menuTransferAndDisplay(GameTestHelper helper) {
@@ -166,7 +172,7 @@ public final class ArcWelderGameTests {
                         && menu.getSlot(3).x == 107 && menu.getSlot(3).y == 36,
                 "Arc Welder input/output coordinates changed");
         helper.assertTrue(menu.getSlot(4).mayPlace(new ItemStack(ModBatteryItems.PACKS.get(
-                com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack.CAPACITOR_SPARK).get())),
+                ItemBatteryPack.EnumBatteryPack.CAPACITOR_SPARK).get())),
                 "Arc Welder battery slot must accept a battery");
         helper.assertTrue(menu.getSlot(5).mayPlace(ItemFluidId.make(Fluids.OXYGEN)),
                 "Arc Welder fluid identifier slot must accept a fluid identifier");
@@ -186,7 +192,7 @@ public final class ArcWelderGameTests {
     }
 
     private static void configureMotor(TileEntityMachineArcWelder welder) {
-        Item wire = ModAutogenItems.get(MaterialShapes.DENSEWIRE, com.hbm.inventory.material.Mats.MAT_RED_COPPER);
+        Item wire = ModAutogenItems.get(MaterialShapes.DENSEWIRE, Mats.MAT_RED_COPPER);
         welder.inventory.setStackInSlot(0, new ItemStack(ModItems.plate_steel.get(), 2));
         welder.inventory.setStackInSlot(1, new ItemStack(wire, 2));
     }

@@ -13,7 +13,7 @@ import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 /**
- * The gneiss (schist) band — 1.7.10's {@code SchistStratum} (hard-coded threshold 5, factor 3, fold at 4,
+ * The gneiss (schist) band: 1.7.10's {@code SchistStratum} (hard-coded threshold 5, factor 3, fold at 4,
  * y 30; 1.12.2 generalised it as {@code new SchistStratum(stone_gneiss, 0.01, 5, 8, 30)}).
  *
  * <p>A 2D Perlin field over the chunk decides, per column, how thick a slab of {@code stone_gneiss} to
@@ -27,7 +27,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
  *   fill y in [30 - range, 30 + range] where the block is a solid rock cube
  * </pre>
  *
- * <p><b>This must run before the gneiss ores</b> — the gneiss {@code hbm:legacy_ore} veins target
+ * <p><b>This must run before the gneiss ores</b>: the gneiss {@code hbm:legacy_ore} veins target
  * {@code stone_gneiss} exactly and find nothing if the band is not down yet. That ordering is why this
  * feature is injected at the {@code UNDERGROUND_DECORATION} step while the ores sit at
  * {@code UNDERGROUND_ORES}.
@@ -35,7 +35,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
  * <p>The noise is 1.7's {@code new NoiseGeneratorPerlin(new Random(worldSeed), 4)}: the world seed, unsalted
  * (1.12.2 had moved it to the decoration event's random). The only deviation is the missing +8 decoration
  * offset: the field is in world coordinates, so the band is the same, and laying each chunk's own columns
- * keeps it ahead of that chunk's gneiss ores. History §19ej-6.
+ * keeps it ahead of that chunk's gneiss ores.
  */
 public class SchistStratumFeature extends Feature<NoneFeatureConfiguration> {
 

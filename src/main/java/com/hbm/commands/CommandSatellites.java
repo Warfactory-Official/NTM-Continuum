@@ -6,6 +6,8 @@ import com.hbm.saveddata.SatelliteSavedData;
 import com.hbm.saveddata.satellites.Satellite;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import dev.golem.core.command.Permissions;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -29,7 +31,7 @@ public final class CommandSatellites {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("ntmsatellites")
-                .requires(dev.golem.core.command.Permissions.level(4))
+                .requires(Permissions.level(4))
                 .then(Commands.literal("orbit").executes(ctx -> orbit(ctx.getSource())))
                 .then(Commands.literal("descend")
                         .then(Commands.argument("frequency", IntegerArgumentType.integer())
@@ -39,7 +41,7 @@ public final class CommandSatellites {
     }
 
     private static Iterable<String> frequencies(CommandSourceStack source) {
-        if (!(source.getEntity() instanceof ServerPlayer)) return java.util.List.of();
+        if (!(source.getEntity() instanceof ServerPlayer)) return List.of();
         return SatelliteSavedData.get(source.getLevel(), BlockPos.containing(source.getPosition())).sats.keySet().stream().map(String::valueOf).toList();
     }
 

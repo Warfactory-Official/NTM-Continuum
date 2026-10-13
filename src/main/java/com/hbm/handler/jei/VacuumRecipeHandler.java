@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-/** JEI category for the vacuum distiller — 1 hot-oil input droplet → the 4 vacuum fraction droplets. */
+/** JEI category for the vacuum distiller: 1 hot-oil input droplet to the 4 vacuum fraction droplets. */
 public class VacuumRecipeHandler extends JEIUniversalHandler<VacuumRecipeHandler.Entry> {
 
     public record Entry(FluidType input, RefineryRecipes.VacuumRecipe recipe) {}

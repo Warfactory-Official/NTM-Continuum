@@ -12,12 +12,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -84,7 +86,7 @@ public abstract class RadioTorchBase extends CompatBlock implements TickingBlock
     protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
                                        Direction direction, BlockPos neighbourPos, BlockState neighbourState) {
         return direction == state.getValue(FACING).getOpposite() && !state.canSurvive(level, pos)
-                ? net.minecraft.world.level.block.Blocks.AIR.defaultBlockState() : state;
+                ? Blocks.AIR.defaultBlockState() : state;
     }
 
     @Override
@@ -98,7 +100,7 @@ public abstract class RadioTorchBase extends CompatBlock implements TickingBlock
                                                   BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
-                && level.getBlockEntity(pos) instanceof net.minecraft.world.MenuProvider provider) {
+                && level.getBlockEntity(pos) instanceof MenuProvider provider) {
             Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;

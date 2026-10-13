@@ -5,6 +5,7 @@ import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState;
 import com.hbm.items.weapon.sedna.Receiver;
+import dev.golem.core.world.Navigations;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -50,7 +51,7 @@ public final class EntityAIFireGun extends Goal {
         ItemGunBaseNT gun = getYerGun();
         if (target == null || gun == null || !(host.level() instanceof ServerLevel level)) return;
 
-        // 26.2: ItemGunBaseNT's 1.7 onUpdate server body is inventoryTick.
+        // 26.1: ItemGunBaseNT's 1.7 onUpdate server body is inventoryTick.
         gun.tickInventoryCompat(stack, level, host, EquipmentSlot.MAINHAND);
 
         double distanceToTargetSquared = host.distanceToSqr(target.getX(), target.getY(), target.getZ());
@@ -61,7 +62,7 @@ public final class EntityAIFireGun extends Goal {
         if (distanceToTargetSquared < maxRange * maxRange && attackTimer > 20) {
             host.getNavigation().stop();
         } else {
-            dev.golem.core.world.Navigations.navigateTo(host.getNavigation(), target, attackMoveSpeed);
+            Navigations.navigateTo(host.getNavigation(), target, attackMoveSpeed);
         }
         host.getLookControl().setLookAt(target, 30F, 30F);
 
@@ -115,7 +116,7 @@ public final class EntityAIFireGun extends Goal {
             // 1.7: direct rotationPitch write; setXRot clamps
             host.setXRot(host.getXRot() + (host.getRandom().nextFloat() - 0.5F) * spread);
             // 1.7: "turn body to face firing direction, since the gun is attached to that, not the head". Writing
-            // rotationYaw was enough there because renderYawOffset chased it; 26.2 renders off yBodyRot, which
+            // rotationYaw was enough there because renderYawOffset chased it; 26.1 renders off yBodyRot, which
             // BodyRotationControl only pulls toward the head while the mob walks, so a mob firing from a standstill
             // drew its gun pointing somewhere else entirely.
             host.setYRot(host.yHeadRot);

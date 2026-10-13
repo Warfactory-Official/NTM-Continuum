@@ -10,6 +10,7 @@ import com.hbm.util.ContaminationUtil.HazardType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,11 +18,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluids;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The 1.7 {@code RadBlock} ({@code rad_lava_block}): the sellafield counterpart of the volcanic lava.
+ * The 1.7 {@code RadBlock} ({@code rad_lava_block}): the sellafield counterpart of the volcanic lava, flowing the
+ * same way (its own fluid, {@code hbm:rad_lava_fluid}).
  * Contact contaminates (5 rads); it slakes into {@code sellafield_slaked} (shade 5–7), rarely a
  * sellafield diamond/emerald ore, or the radgem ore where it is fully surrounded; diamond ore becomes
  * radgem ore and uranium ore is scorched (or, one time in five, schrabidium ore).
@@ -29,7 +30,7 @@ import org.jspecify.annotations.Nullable;
 public class BlockRadLava extends BlockVolcanicLava {
 
     public BlockRadLava(Properties properties) {
-        super(properties);
+        super(properties, ModWorldFluids.RAD_LAVA);
     }
 
     @Override
@@ -68,7 +69,7 @@ public class BlockRadLava extends BlockVolcanicLava {
     @Override
     protected @Nullable BlockState getReaction(Level level, BlockPos pos) {
         BlockState b = level.getBlockState(pos);
-        if (b.getFluidState().is(Fluids.WATER) || b.getFluidState().is(Fluids.FLOWING_WATER)) return Blocks.STONE.defaultBlockState();
+        if (b.liquid() && b.getFluidState().is(FluidTags.WATER)) return Blocks.STONE.defaultBlockState(); // 1.7 Material.water
         if (b.is(BlockTags.LOGS)) return ModFalloutBlocks.waste_log.get().defaultBlockState();
         if (b.is(BlockTags.PLANKS)) return ModBlocks.waste_planks.get().defaultBlockState();
         if (b.is(BlockTags.LEAVES)) return Blocks.FIRE.defaultBlockState();

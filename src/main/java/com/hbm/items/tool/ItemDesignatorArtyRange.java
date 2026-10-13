@@ -26,7 +26,7 @@ import net.minecraft.world.phys.HitResult;
  * The artillery designator: right-click a gun to bind to it, then right-click anywhere within five
  * hundred blocks to queue that as a fire mission.
  *
- * <p>The binding half follows {@link ItemRBMKTool} — a linked multiblock core stored as a packed
+ * <p>The binding half follows {@link ItemRBMKTool}, a linked multiblock core stored as a packed
  * position on the stack, resolved through {@link MultiblockSurface#coreOfAny} so clicking any cell of
  * the emplacement works. Without this item the guns' manual mode is unreachable in game: nothing else
  * ported issues a command to an {@link com.hbm.api.block.IRadarCommandReceiver}.

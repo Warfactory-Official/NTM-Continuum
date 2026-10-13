@@ -2,6 +2,7 @@ package com.hbm.items.armor;
 
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.items.ModDataComponents;
+import dev.golem.core.data.Tags;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.DamageEvents;
@@ -38,7 +39,7 @@ public class ArmorNo9 extends ArmorModel implements IAttackHandler, IDamageHandl
     /** The 1.7 {@code isOn} tag, kept in the stack's persistent-data compound. */
     public static boolean isOn(ItemStack stack) {
         CompoundTag tag = ModDataComponents.PERSISTENT_DATA.getOr(stack, null);
-        return tag != null && dev.golem.core.data.Tags.getBooleanOr(tag, "isOn", false);
+        return tag != null && Tags.getBooleanOr(tag, "isOn", false);
     }
 
     private static void setOn(ItemStack stack, boolean on) {

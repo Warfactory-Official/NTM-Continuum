@@ -9,6 +9,7 @@ import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemEntityRenderer;
 import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.util.Mth;
 
 /** The shell in flight: the grenade mesh stretched fivefold along its axis and laid on the velocity. */
 public class RenderArtilleryShell
@@ -39,8 +40,8 @@ public class RenderArtilleryShell
 
     @Override
     public void extract(EntityArtilleryShell shell, State state, float partialTicks) {
-        state.yaw = net.minecraft.util.Mth.rotLerp(partialTicks, shell.yRotO, shell.getYRot());
-        state.pitch = net.minecraft.util.Mth.lerp(partialTicks, shell.xRotO, shell.getXRot());
+        state.yaw = Mth.rotLerp(partialTicks, shell.yRotO, shell.getYRot());
+        state.pitch = Mth.lerp(partialTicks, shell.xRotO, shell.getXRot());
     }
 
     public static final class State extends CompatEntityRenderState {

@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatItemRenderState;
 import dev.golem.core.render.CompatRenderState;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
@@ -9,7 +10,7 @@ public class BatterySocketRenderState extends CompatRenderState {
     public float yaw;
     public boolean frame;
     public boolean creative;
-    public final dev.golem.core.render.CompatItemRenderState other = new dev.golem.core.render.CompatItemRenderState();
+    public final CompatItemRenderState other = new CompatItemRenderState();
     public long gameTime;
     public float interp;
     /** The OBJ part to draw for the inserted item ("Battery" / "Capacitor"), or null if empty. */

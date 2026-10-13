@@ -23,7 +23,10 @@ import com.hbm.items.machine.ItemPWRFuel.EnumPWRFuel;
 import com.hbm.items.machine.ItemPileRodMK2.EnumPileRod;
 import com.hbm.items.machine.ZirnoxFuel;
 import com.hbm.inventory.recipes.loader.GenericTableSource;
+import dev.golem.core.Ids;
 import dev.golem.core.world.ItemStacks;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -32,8 +35,8 @@ public final class PurexTable extends GenericTableSource<GenericRecipe> {
 
     /** 1.7 {@code OreDictionary.getOres("nuggetNaquadria").size() != 0}: another mod supplies a naquadria nugget. */
     private static final String NAQUADRIA = "#c:nuggets/naquadria";
-    private static final net.minecraft.tags.TagKey<Item> NAQUADRIA_NUGGETS = net.minecraft.tags.TagKey.create(
-            net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "nuggets/naquadria"));
+    private static final TagKey<Item> NAQUADRIA_NUGGETS = TagKey.create(
+            Registries.ITEM, Ids.of("c", "nuggets/naquadria"));
 
     public PurexTable() {
         super(PUREXRecipes.INSTANCE);

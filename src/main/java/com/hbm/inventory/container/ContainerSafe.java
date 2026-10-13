@@ -1,8 +1,10 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.ModDecoCrateMenus;
+import com.hbm.inventory.ModHeldCrateMenus;
 import com.hbm.tileentity.machine.storage.TileEntityCrateBase;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import org.jspecify.annotations.Nullable;
@@ -20,8 +22,8 @@ public class ContainerSafe extends ContainerCrateBase {
     }
 
     /** The safe opened from the hand ({@code /ntmserver CRATE_OPEN_HELD}). */
-    public ContainerSafe(int containerId, Inventory inventory, net.minecraft.world.Container held, int heldSlot) {
-        super(com.hbm.inventory.ModHeldCrateMenus.SAFE_HELD.get(), containerId, held, 15, heldSlot);
+    public ContainerSafe(int containerId, Inventory inventory, Container held, int heldSlot) {
+        super(ModHeldCrateMenus.SAFE_HELD.get(), containerId, held, 15, heldSlot);
         layout(inventory);
     }
 

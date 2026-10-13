@@ -1,5 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.items.ModItems;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineHydrotreater;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -12,12 +15,13 @@ import net.minecraft.world.entity.player.Inventory;
 
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.world.item.ItemStack;
 
-/** Screen for the hydrotreater — 1.7.10 {@code GUIMachineHydrotreater} (texture copied from 1.7) (176×238 panel on a 256×256
+/** Screen for the hydrotreater, 1.7.10 {@code GUIMachineHydrotreater} (texture copied from 1.7) (176×238 panel on a 256×256
  * texture). Power bar at x=17; 4 tank bars at x=35/53/125/143 (bottom y=70). */
-public class GUIMachineHydrotreater extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineHydrotreater> {
+public class GUIMachineHydrotreater extends CompatContainerScreen<ContainerMachineHydrotreater> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_hydrotreater.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/gui_hydrotreater.png");
     private static final int[] TANK_X = {35, 53, 125, 143};
 
     public GUIMachineHydrotreater(ContainerMachineHydrotreater menu, Inventory playerInventory, Component title) {
@@ -83,7 +87,7 @@ public class GUIMachineHydrotreater extends dev.golem.core.gui.CompatContainerSc
         // 1.7: hovering the empty catalyst slot (10) with nothing carried names the catalytic converter.
         if (this.menu.getCarried().isEmpty() && !this.menu.getSlot(10).hasItem() && this.isHovering(89, 36, 16, 16, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, this.font, List.of(
-                    new net.minecraft.world.item.ItemStack(com.hbm.items.ModItems.catalytic_converter.get()).getHoverName()),
+                    new ItemStack(ModItems.catalytic_converter.get()).getHoverName()),
                     Optional.empty(), mouseX, mouseY);
             return;
         }

@@ -6,6 +6,8 @@ import com.hbm.entity.projectile.EntityBulletBeamBase;
 import com.hbm.items.weapon.sedna.factory.ConfettiUtil;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.util.DamageResistanceHandler;
+import dev.golem.core.Ids;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -40,11 +42,11 @@ public final class BulletImpact {
 
     /**
      * Glass a bullet punches straight through. Upstream tests {@code material == GLASS} plus an
-     * explosion resistance under 0.6 — materials are gone, so the set is a tag and the resistance guard
-     * is kept, which is what actually excludes reinforced glass.
+     * explosion resistance under 0.6. There are no materials, so the set is a tag and the resistance guard
+     * is kept; the guard is what excludes reinforced glass.
      */
     public static final TagKey<Block> SHATTERS_WHEN_SHOT =
-            TagKey.create(Registries.BLOCK, dev.golem.core.Ids.of(Constants.MOD_ID, "shatters_when_shot"));
+            TagKey.create(Registries.BLOCK, Ids.of(Constants.MOD_ID, "shatters_when_shot"));
 
     private static final float SHATTER_RESISTANCE_LIMIT = 0.6F;
 
@@ -123,7 +125,7 @@ public final class BulletImpact {
         float intendedDamage = bullet.damage;
         if (config.headshotMult > 1F) {
             // "Head" is the band above eye level, mirrored to the same thickness above the eyes as
-            // below the top of the box — upstream's own approximation of a head hitbox.
+            // below the top of the box (upstream's approximation of a head hitbox).
             double head = living.getBbHeight() - living.getEyeHeight();
             if (living.isAlive() && hit.getLocation().y > living.getY() + living.getBbHeight() - head * 2D) {
                 intendedDamage *= config.headshotMult;
@@ -161,15 +163,14 @@ public final class BulletImpact {
             if (!living.isAlive()) ConfettiUtil.decideConfetti(living, source);
             return;
         }
-        dev.golem.core.world.Compat.hurt(victim, level, source, beam.damage);
+        Compat.hurt(victim, level, source, beam.damage);
     }
 
     /**
      * Applies one bullet's damage, honouring its armour piercing and knockback multiplier.
      *
-     * <p>The resistance layer receives the original damage source and the two Sedna piercing values. This
-     * matters because splitting into a bypass-armor source loses threshold negation and changes exact
-     * source/category precedence.
+     * <p>The resistance layer receives the original damage source and the two Sedna piercing values; splitting
+     * into a bypass-armor source would lose threshold negation and change source/category precedence.
      */
     private static void attack(ServerLevel level, LivingEntity victim, EntityBulletBaseMK4 bullet,
                                DamageSource source, float amount) {
@@ -194,7 +195,7 @@ public final class BulletImpact {
      */
     private static void hurt(ServerLevel level, Entity victim, DamageSource source, float amount) {
         victim.invulnerableTime = 0;
-        dev.golem.core.world.Compat.hurt(victim, level, source, amount);
+        Compat.hurt(victim, level, source, amount);
     }
 
     private static DamageSource source(Level level, ResourceKey<DamageType> type, EntityBulletBaseMK4 bullet) {

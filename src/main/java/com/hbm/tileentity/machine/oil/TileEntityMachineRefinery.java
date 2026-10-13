@@ -1,5 +1,11 @@
 package com.hbm.tileentity.machine.oil;
 
+import com.hbm.interfaces.IRepairable;
+import com.hbm.inventory.RecipesCommon;
+import com.hbm.items.ModItems;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.tileentity.machine.MachineFluidContainerIO;
+import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -20,12 +26,22 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import dev.golem.core.world.Effects;
+import dev.golem.core.world.ItemStacks;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -39,10 +55,11 @@ import com.hbm.sound.AudioWrapper;
 import com.hbm.sound.MachineAudio;
 import com.hbm.sound.ModSounds;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.phys.AABB;
 
 /**
- * Refinery — 1:1 port of the 1.12.2 {@code TileEntityMachineRefinery}: a 3×3×9 tower that fractionates
- * a HOT oil into four products. 13 slots (0 battery, 1→2 input container pair, 3→4/5→6/7→8/9→10 four
+ * Refinery: 1:1 port of the 1.12.2 {@code TileEntityMachineRefinery}: a 3×3×9 tower that fractionates
+ * a HOT oil into four products. 13 slots (0 battery, 1 and 2 the input container pair, 3/4, 5/6, 7/8 and 9/10 four
  * output container pairs, 11 sulfur/byproduct out, 12 fluid identifier). Tanks: {@code [0] HOTOIL 64k}
  * input + 4×24k outputs conformed to the recipe. {@link #refine} needs {@code power ≥ 5} and
  * {@code tank0 ≥ 100} and all four outputs to fit; each op drains 100 mB + 5 HE and produces the
@@ -51,11 +68,11 @@ import net.minecraft.sounds.SoundSource;
  * <p>1.7's explosion damage is ported ({@link #hasExploded}: the first explosion that reaches it blows it open, it
  * burns off its tanks until extinguished and is repaired with a blowtorch, eight steel plates and four duct tape).
  * Refining adds {@code SOOT_PER_SECOND * 5} soot a second, as in 1.7.
- * Deferred (§20): the meta&lt;12 self-heal branch and checkTilt.
+ * Not ported: the meta&lt;12 self-heal branch and checkTilt.
  */
 public class TileEntityMachineRefinery extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, WorldlyContainer,
-        com.hbm.interfaces.IRepairable {
+        IRepairable {
 
     /** 1.7 {@code hasExploded}: blown open by an explosion; stops refining and burns off its tanks until repaired. */
     public boolean hasExploded = false;
@@ -146,18 +163,18 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
                 hasFuel = true;
             }
         }
-        if (!hasFuel || !(level instanceof net.minecraft.server.level.ServerLevel server)) return;
+        if (!hasFuel || !(level instanceof ServerLevel server)) return;
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
-        for (net.minecraft.world.entity.Entity e : server.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,
-                new net.minecraft.world.phys.AABB(x - 1.5, y, z - 1.5, x + 2.5, y + 8, z + 2.5))) {
-            dev.golem.core.world.Effects.ignite(e, 5);
+        for (Entity e : server.getEntitiesOfClass(Entity.class,
+                new AABB(x - 1.5, y, z - 1.5, x + 2.5, y + 8, z + 2.5))) {
+            Effects.ignite(e, 5);
         }
-        net.minecraft.util.RandomSource rand = server.getRandom();
-        net.minecraft.nbt.CompoundTag flame = new net.minecraft.nbt.CompoundTag();
+        RandomSource rand = server.getRandom();
+        CompoundTag flame = new CompoundTag();
         flame.putDouble("moX", rand.nextGaussian() * 0.05);
         flame.putDouble("moY", 0.1);
         flame.putDouble("moZ", rand.nextGaussian() * 0.05);
-        com.hbm.particle.helper.HbmEffectNT.GasFlame.send(server, x + rand.nextDouble(), y + 1.5 + rand.nextDouble() * 3,
+        HbmEffectNT.GasFlame.send(server, x + rand.nextDouble(), y + 1.5 + rand.nextDouble() * 3,
                 z + rand.nextDouble(), flame, 150);
 
         if (TickPhase.every(level, pos, 20L)) {
@@ -197,14 +214,14 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         return this.hasExploded;
     }
 
-    private final java.util.List<com.hbm.inventory.RecipesCommon.AStack> repair = new java.util.ArrayList<>();
+    private final List<RecipesCommon.AStack> repair = new ArrayList<>();
 
     /** 1.7 {@code getRepairMaterials}: eight steel plates and four duct tape. */
-    public java.util.List<com.hbm.inventory.RecipesCommon.AStack> getRepairMaterials() {
+    public List<RecipesCommon.AStack> getRepairMaterials() {
         if (!repair.isEmpty()) return repair;
-        repair.add(new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(
-                net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "plates/steel")), 8));
-        repair.add(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.ducttape.get(), 4));
+        repair.add(new RecipesCommon.TagStack(TagKey.create(
+                Registries.ITEM, Ids.of("c", "plates/steel")), 8));
+        repair.add(new RecipesCommon.ComparableStack(ModItems.ducttape.get(), 4));
         return repair;
     }
 
@@ -257,7 +274,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
                 ItemStack cur = inventory.getStackInSlot(11);
                 if (cur.isEmpty()) {
                     inventory.setStackInSlot(11, out.copy());
-                } else if (dev.golem.core.world.ItemStacks.sameItemAndData(cur, out) && cur.getCount() + out.getCount() <= cur.getMaxStackSize()) {
+                } else if (ItemStacks.sameItemAndData(cur, out) && cur.getCount() + out.getCount() <= cur.getMaxStackSize()) {
                     cur.grow(out.getCount());
                     inventory.setStackInSlot(11, cur);
                 }
@@ -280,14 +297,14 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         }
     }
 
-    /** Drains a fluid container in slot 1 INTO tank 0, emptied container → slot 2. */
+    /** Drains a fluid container in slot 1 INTO tank 0, emptied container to slot 2. */
     private void loadInput() {
         ItemStack in = inventory.getStackInSlot(1);
         if (in.isEmpty()) return;
         FluidTankNTM tank = tanks[0];
 
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
             setChanged();
             return;
         }
@@ -318,7 +335,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         }
     }
 
-    /** Fills a container in {@code loadSlot} FROM {@code tanks[tank]}, result → {@code outSlot}. */
+    /** Fills a container in {@code loadSlot} FROM {@code tanks[tank]}, result to {@code outSlot}. */
     private void unloadTank(int tank, int loadSlot, int outSlot) {
         FluidTankNTM t = tanks[tank];
         FluidType fluid = t.getTankType();
@@ -355,7 +372,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return Library.isBattery(stack);
         if (slot == 12) return stack.getItem() instanceof IItemFluidId;
-        // The container-out slots (2/4/6/8/10) stay TRUE — the machine writes them via
+        // The container-out slots (2/4/6/8/10) stay TRUE. The machine writes them via
         // inventory.insertItem, which validates against this method; the menu's take-only slots block
         // the player. Slot 11 (byproduct) is written via setStackInSlot (no validation) so it can stay
         // false.

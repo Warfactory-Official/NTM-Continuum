@@ -1,5 +1,8 @@
 package com.hbm.items.machine;
 
+import com.hbm.blocks.network.BlockFluidDuct;
+import com.hbm.tileentity.network.TileEntityFluidDuctNT;
+import com.hbm.tileentity.network.TileEntityFluidValve;
 import dev.golem.core.data.ModelData;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
@@ -9,7 +12,10 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMachineItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.ItemStack;
@@ -21,14 +27,13 @@ import java.util.List;
 
 /**
  * A fluid identifier: stamps a tank/duct with one fixed {@link FluidType} (right-click a duct or drop it
- * in a tank's identifier slot). Each fluid has its <b>own dedicated</b> identifier — a single registered
- * item carries the fluid in {@link ModDataComponents#FLUID}, and the creative menu shows one variant
- * per fluid (see {@link ModMachineItems}), exactly as the 1.12.2 {@code ItemFluidIDMulti} listed one
- * metadata subtype per fluid.
+ * in a tank's identifier slot). One registered item carries the fluid in {@link ModDataComponents#FLUID}, and
+ * the creative menu shows one variant per fluid (see {@link ModMachineItems}), as the 1.12.2
+ * {@code ItemFluidIDMulti} listed one metadata subtype per fluid.
  *
  * <p>Icon: the base {@code fluid_identifier_multi} sprite under a {@code fluid_identifier_overlay} tinted
  * by the fluid colour (stored in the vanilla {@code custom_model_data} colour list, read by the item-model
- * definition's {@code minecraft:custom_model_data} tint source) — the 26.1 replacement for the original's
+ * definition's {@code minecraft:custom_model_data} tint source), in place of the original's
  * {@code IItemColor} handler. No cycling, no per-fluid model.
  */
 public class ItemFluidId extends CompatItem implements IItemFluidId {
@@ -63,13 +68,13 @@ public class ItemFluidId extends CompatItem implements IItemFluidId {
         var pos = context.getClickedPos();
         var entity = level.getBlockEntity(pos);
         FluidType before;
-        if (entity instanceof com.hbm.tileentity.network.TileEntityFluidDuctNT duct) before = duct.getFluidType();
-        else if (entity instanceof com.hbm.tileentity.network.TileEntityFluidValve valve) before = valve.getFluidType();
+        if (entity instanceof TileEntityFluidDuctNT duct) before = duct.getFluidType();
+        else if (entity instanceof TileEntityFluidValve valve) before = valve.getFluidType();
         else return super.useOn(context);
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         FluidType hand = getFluid(context.getItemInHand());
         if (hand != before) {
-            com.hbm.blocks.network.BlockFluidDuct.spreadType(level, pos, hand, before, 256);
+            BlockFluidDuct.spreadType(level, pos, hand, before, 256);
             player.sendSystemMessage(Component.literal("Duct fluid: ").append(hand.getDisplayName())
                     .withStyle(ChatFormatting.AQUA));
         }
@@ -82,9 +87,9 @@ public class ItemFluidId extends CompatItem implements IItemFluidId {
      * alone and rendered untinted; the first server tick in an inventory now stores the fluid's colour.
      */
     @Override
-    protected void compatInventoryTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
-                                       net.minecraft.world.entity.Entity owner,
-                                       net.minecraft.world.entity.EquipmentSlot slot, boolean held) {
+    protected void compatInventoryTick(ItemStack stack, ServerLevel level,
+                                       Entity owner,
+                                       EquipmentSlot slot, boolean held) {
         syncColor(stack);
     }
 

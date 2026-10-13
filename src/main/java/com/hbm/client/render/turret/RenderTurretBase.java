@@ -17,8 +17,8 @@ import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Draws a turret from its core. Everything visible — the pad, its edge plugs, the carriage and the gun
- * — comes from here, which is why the block itself has no model.
+ * Draws a turret from its core. Everything visible (the pad, its edge plugs, the carriage and the gun)
+ * comes from here, which is why the block itself has no model.
  *
  * <p>A turret's shape is not fixed: how many plugs it shows depends on its pad, and a HIMARS shows one
  * rocket cap per round still loaded. So the declaration is a fixed run of slots and the emitted
@@ -67,7 +67,7 @@ public abstract class RenderTurretBase<T extends TileEntityTurretBaseNT>
 
     protected abstract TurretState.Emitter<T> emitter();
 
-    /** Non-rigid extras drawn in the turret's own space — a beam, say — after its parts. */
+    /** Non-rigid extras drawn in the turret's own space (a beam, say), after its parts. */
     protected void submitEffects(TurretRenderState<T> state, PoseStack poseStack, SubmitSink sink) {}
 
     @Override

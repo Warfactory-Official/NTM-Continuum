@@ -3,6 +3,7 @@ package com.hbm.inventory.container;
 import com.hbm.inventory.ModMenus;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.entity.train.TrainCargoTram;
+import com.hbm.lib.Library;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -85,7 +86,7 @@ public class MenuTrainCargoTram extends AbstractContainerMenu {
 
         if (index < cargo) {
             if (!moveItemStackTo(stack, cargo, slots.size(), true)) return ItemStack.EMPTY;
-        } else if (com.hbm.lib.Library.isBattery(original)) {
+        } else if (Library.isBattery(original)) {
             if (!moveItemStackTo(stack, TrainCargoTram.SLOT_CHARGE, cargo, false)) return ItemStack.EMPTY;
         } else {
             if (!moveItemStackTo(stack, 0, TrainCargoTram.SLOT_CHARGE, false)) return ItemStack.EMPTY;

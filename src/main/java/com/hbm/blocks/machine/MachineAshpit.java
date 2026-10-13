@@ -2,7 +2,6 @@ package com.hbm.blocks.machine;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.smoke.SmokeChainRegistration;
 import com.hbm.tileentity.machine.TileEntityAshpit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,7 +36,7 @@ public final class MachineAshpit extends BlockMultiblockMachine implements World
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                   BlockHitResult hit) {
-        // The old standardOpenBehavior deliberately made shift-right-click a no-op.
+        // Shift-right-click does nothing, as in the old standardOpenBehavior.
         return player.isShiftKeyDown() ? InteractionResult.SUCCESS : super.onUseWithoutItem(state, level, pos, player, hit);
     }
 

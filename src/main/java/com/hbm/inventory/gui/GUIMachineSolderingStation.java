@@ -1,5 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineSolderingStation;
 import com.hbm.tileentity.machine.TileEntityMachineSolderingStation;
@@ -10,13 +13,13 @@ import net.minecraft.world.entity.player.Inventory;
 
 
 /**
- * Client screen for the soldering station — 1.7.10 {@code GUIMachineSolderingStation}
+ * Client screen for the soldering station: 1.7.10 {@code GUIMachineSolderingStation}
  * ({@code processing/gui_soldering_station.png}, 176x204). Not ported: 1.7's recipe-collision-prevention toggle
- * at (5,66) 10x10 (sprite (192,14)) — the block entity does not implement {@code collisionPrevention} yet.
+ * at (5,66) 10x10 (sprite (192,14)). The block entity does not implement {@code collisionPrevention} yet.
  */
-public class GUIMachineSolderingStation extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineSolderingStation> implements IUpgradeInfoProviderSource {
+public class GUIMachineSolderingStation extends CompatContainerScreen<ContainerMachineSolderingStation> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_soldering_station.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_soldering_station.png");
     // Fluid gauge (GUI-relative), matching the 1.12.2 layout: a 34×16 area at (35, 63).
     private static final int FLUID_X = 35, FLUID_TOP = 63, FLUID_W = 34, FLUID_H = 16;
     // "Acceptable Upgrades" info-panel glyph (1.12.2 drawInfoPanel at 78, 67).
@@ -46,7 +49,7 @@ public class GUIMachineSolderingStation extends dev.golem.core.gui.CompatContain
         }
 
         GuiUtil.drawInfoPanel(graphics, this.leftPos + INFO_X, this.topPos + INFO_Y, 8);
-        // 1.7: solderer.tank.renderTank(guiLeft + 35, guiTop + 79, z, 34, 16, 1) — horizontal, y is the bottom edge.
+        // 1.7: solderer.tank.renderTank(guiLeft + 35, guiTop + 79, z, 34, 16, 1). Horizontal, y is the bottom edge.
         GuiUtil.tankHorizontal(graphics, te.tank, this.leftPos + FLUID_X, this.topPos + FLUID_TOP + FLUID_H, FLUID_W, FLUID_H);
     }
 
@@ -73,7 +76,7 @@ public class GUIMachineSolderingStation extends dev.golem.core.gui.CompatContain
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getStation();
     }
 }

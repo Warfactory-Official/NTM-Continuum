@@ -2,13 +2,26 @@ package com.hbm.items.armor;
 
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.ISatChip;
+import com.hbm.saveddata.SatelliteSavedData;
+import com.hbm.saveddata.satellites.SatelliteScanner;
+import com.hbm.util.OverheadMarkers;
+import dev.golem.core.Ids;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 /**
  * 1.7 {@code ItemModLens} (Neutrino Lens): a satellite chip for a helmet's special slot. While a scanner satellite
@@ -55,46 +68,46 @@ public class ItemModLens extends ItemArmorMod implements ISatChip {
     };
 
     @Override
-    public void modUpdate(net.minecraft.world.entity.LivingEntity entity, ItemStack armor) {
-        if (!(entity instanceof net.minecraft.server.level.ServerPlayer player)) return;
-        if (!(player.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
-        ItemStack lens = com.hbm.handler.ArmorModHandler.pryMods(armor)[com.hbm.handler.ArmorModHandler.extra];
+    public void modUpdate(LivingEntity entity, ItemStack armor) {
+        if (!(entity instanceof ServerPlayer player)) return;
+        if (!(player.level() instanceof ServerLevel level)) return;
+        ItemStack lens = ArmorModHandler.pryMods(armor)[ArmorModHandler.extra];
         if (lens == null || lens.isEmpty()) return;
 
         int freq = getFreq(lens);
-        if (!(com.hbm.saveddata.SatelliteSavedData.get(level).getSatFromFreq(freq)
-                instanceof com.hbm.saveddata.satellites.SatelliteScanner)) return;
+        if (!(SatelliteSavedData.get(level).getSatFromFreq(freq)
+                instanceof SatelliteScanner)) return;
 
-        int x = net.minecraft.util.Mth.floor(player.getX());
-        int y = net.minecraft.util.Mth.floor(player.getY());
-        int z = net.minecraft.util.Mth.floor(player.getZ());
+        int x = Mth.floor(player.getX());
+        int y = Mth.floor(player.getY());
+        int z = Mth.floor(player.getZ());
         int range = 3;
         int cX = x >> 4;
         int cZ = z >> 4;
         int height = Math.max(Math.min(y + 10, 255), 64);
         int seg = (int) (level.getGameTime() % height);
 
-        net.minecraft.world.level.block.Block[] blocks = new net.minecraft.world.level.block.Block[TARGETS.length];
+        Block[] blocks = new Block[TARGETS.length];
         for (int i = 0; i < TARGETS.length; i++) {
-            blocks[i] = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getOptional(dev.golem.core.Ids.parse((String) TARGETS[i][0]))
-                    .orElse(net.minecraft.world.level.block.Blocks.AIR);
+            blocks[i] = BuiltInRegistries.BLOCK.getOptional(Ids.parse((String) TARGETS[i][0]))
+                    .orElse(Blocks.AIR);
         }
 
         int hits = 0;
-        net.minecraft.core.BlockPos.MutableBlockPos pos = new net.minecraft.core.BlockPos.MutableBlockPos();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int chunkX = cX - range; chunkX <= cX + range; chunkX++) {
             for (int chunkZ = cZ - range; chunkZ <= cZ + range; chunkZ++) {
-                net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunkSource().getChunkNow(chunkX, chunkZ);
+                LevelChunk chunk = level.getChunkSource().getChunkNow(chunkX, chunkZ);
                 if (chunk == null) continue;
                 for (int ix = 0; ix < 16; ix++) {
                     for (int iz = 0; iz < 16; iz++) {
                         int aX = (chunkX << 4) + ix;
                         int aZ = (chunkZ << 4) + iz;
-                        net.minecraft.world.level.block.Block b = chunk.getBlockState(pos.set(aX, seg, aZ)).getBlock();
+                        Block b = chunk.getBlockState(pos.set(aX, seg, aZ)).getBlock();
                         for (int i = 0; i < TARGETS.length; i++) {
-                            if (blocks[i] == net.minecraft.world.level.block.Blocks.AIR || blocks[i] != b) continue;
+                            if (blocks[i] == Blocks.AIR || blocks[i] != b) continue;
                             if (player.getRandom().nextInt((Integer) TARGETS[i][1]) == 0) {
-                                com.hbm.util.OverheadMarkers.send(player, new net.minecraft.core.BlockPos(aX, seg, aZ),
+                                OverheadMarkers.send(player, new BlockPos(aX, seg, aZ),
                                         (Integer) TARGETS[i][3], (String) TARGETS[i][2], 15_000, 300D);
                                 hits++;
                             }

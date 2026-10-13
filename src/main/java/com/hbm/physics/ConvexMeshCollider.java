@@ -1,7 +1,7 @@
 package com.hbm.physics;
 
 /**
- * old-hbm {@code physics.ConvexMeshCollider}: a convex triangle mesh with its volume, centre of mass and inertia
+ * 1.12.2 {@code physics.ConvexMeshCollider}: a convex triangle mesh with its volume, centre of mass and inertia
  * tensor (melax.github.io/volint, as the old class cited), and the support function GJK queries.
  */
 public final class ConvexMeshCollider extends Collider {

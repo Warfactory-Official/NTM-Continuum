@@ -50,7 +50,7 @@ public final class RTTYSystem {
     }
     /**
      * Publishes only the named pending channels for deterministic GameTests. Unlike the server-tick
-     * driver, this deliberately does not publish the synthetic melody or clear unrelated channels.
+     * driver, this does not publish the synthetic melody or clear unrelated channels.
      */
     public static void updateTestChannels(MinecraftServer server, String... channelNames) {
         Set<String> requested = new HashSet<>(Arrays.asList(channelNames));
@@ -70,12 +70,12 @@ public final class RTTYSystem {
     public static void clearChannel(Level level, String channelName) { clearChannel(level.dimension(), channelName); }
     public static void clearChannel(ResourceKey<Level> level, String channelName) { ChannelKey key = new ChannelKey(level, channelName); broadcast.remove(key); newMessages.remove(key); }
     public static void onServerStopping() { broadcast.clear(); newMessages.clear(); }
-    /* Song of Storms at 300 BPM. This is deliberately literal: octave differences are part of the wire signal. */
+    /* Song of Storms at 300 BPM. This is kept literal: octave differences are part of the wire signal. */
     private static final Object[] TEST_SENDER_MELODY;
     static {
         int tempo = 4;
         TEST_SENDER_MELODY = new Object[tempo * 160];
-        java.util.Arrays.fill(TEST_SENDER_MELODY, "");
+        Arrays.fill(TEST_SENDER_MELODY, "");
 
         Instrument flute = Instrument.PIANO;
         Instrument accordion = Instrument.BASSGUITAR;

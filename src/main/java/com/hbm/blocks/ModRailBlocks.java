@@ -24,6 +24,7 @@ import com.hbm.tileentity.BlockEntityRail;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import java.util.function.Function;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -54,7 +55,7 @@ public final class ModRailBlocks {
     private static final Reg REG = Reg.of(BLOCKS, ITEMS, BLOCK_ENTITIES);
 
     /**
-     * The blockstate is deliberately empty: the rail BER owns the OBJ, while the state still has to enumerate
+     * The blockstate is empty: the rail BER owns the OBJ, while the state still has to enumerate
      * every {@code cell/facing/waterlogged} combination so the client never falls back to a missing model.
      */
     private static final Preset RAIL = Presets.rendered(Variants.product(
@@ -65,7 +66,7 @@ public final class ModRailBlocks {
     public static final List<RegistryObject<? extends BlockRailNTM>> RAILS = new ArrayList<>();
 
     private static <B extends BlockRailNTM> RegistryObject<B> rail(String name,
-            java.util.function.Function<BlockBehaviour.Properties, B> factory) {
+            Function<BlockBehaviour.Properties, B> factory) {
         RegistryObject<B> block = REG.block(name, factory,
                         p -> p.strength(5.0F, 6.0F).noOcclusion().requiresCorrectToolForDrops())
                 .transform(RAIL)

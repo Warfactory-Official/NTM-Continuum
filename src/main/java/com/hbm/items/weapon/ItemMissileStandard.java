@@ -1,6 +1,7 @@
 package com.hbm.items.weapon;
 
 import com.hbm.items.special.ItemCustomLore;
+import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import net.minecraft.ChatFormatting;
@@ -9,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
 /**
- * A launchable missile, as an item — 1.12.2's {@code ItemMissileStandard}.
+ * A launchable missile, as an item, from 1.12.2's {@code ItemMissileStandard}.
  *
  * <p>The item <em>is</em> the datasheet. A launch pad reads three things off it and needs nothing else:
  * the {@link MissileFormFactor} (which pad it fits and how big it is drawn), the {@link MissileTier}
@@ -66,9 +67,9 @@ public class ItemMissileStandard extends ItemCustomLore {
         }
 
         // Port-specific: a missile whose warhead needs an unported subsystem has no flying entity, so a
-        // launch pad refuses it at the slot. Without this line the refusal is silent and reads as a bug
-        // — and the first five missiles in the creative tab are all in that state.
-        if (!com.hbm.tileentity.bomb.TileEntityLaunchPadBase.canBeInstantiated(this)) {
+        // launch pad refuses it at the slot. Without this line the refusal is silent and reads as a bug,
+        // and the first five missiles in the creative tab are all in that state.
+        if (!TileEntityLaunchPadBase.canBeInstantiated(this)) {
             tooltip.add(Component.translatable("desc.missile.unimplemented").withStyle(ChatFormatting.RED));
             return;
         }

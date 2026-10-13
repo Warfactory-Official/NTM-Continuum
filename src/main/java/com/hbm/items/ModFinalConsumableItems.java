@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -57,7 +58,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 
 /**
- * The final food, consumable, record, battery, loose-material and machine-upgrade wave, straight from 1.7
+ * The final food, consumable, record, battery, loose-material and machine-upgrade items, straight from 1.7
  * {@code ModItems}. Metadata families are flattened the port's way, {@code <base>_<variant>} in lower case:
  * {@code canned_conserve_beef}, {@code briquette_coal}, {@code item_secret_selenium_steel},
  * {@code circuit_star_piece_cpu_cache}, {@code stamp_book_printing1}, {@code parts_legendary_tier2},
@@ -90,7 +91,7 @@ public final class ModFinalConsumableItems {
         return reg(id, tab, Item::new, props);
     }
 
-    // ------------------------------------------------------------------ food
+    // Food
 
     /** 1.7 {@code ItemFood(heal, saturation, wolf)}; {@code ItemFood(heal, wolf)} means 0.6 saturation. */
     private static UnaryOperator<Item.Properties> food(int nutrition, float saturation, boolean alwaysEdible) {
@@ -168,11 +169,11 @@ public final class ModFinalConsumableItems {
 
     static {
         for (EnumFoodType type : EnumFoodType.values()) {
-            String id = "canned_conserve_" + type.name().toLowerCase(java.util.Locale.US);
+            String id = "canned_conserve_" + type.name().toLowerCase(Locale.US);
             // ItemConserve names its sprites canned_<constant>
             CANNED.put(type, reg(id, HbmTab.CONSUMABLES, p -> new ItemConserve(p, type),
                     food(type.foodLevel, type.saturation, false))
-                    .transform(Presets.sprite("hbm:items/canned_" + type.name().toLowerCase(java.util.Locale.US))));
+                    .transform(Presets.sprite("hbm:items/canned_" + type.name().toLowerCase(Locale.US))));
         }
     }
 
@@ -212,7 +213,7 @@ public final class ModFinalConsumableItems {
             p -> new ItemRepairKit(p, () -> ModSounds.REPAIR.get()), p -> p.durability(100 - 1))
             .transform(Presets.sprite());
 
-    // ------------------------------------------------------------------ records
+    // Records
 
     /** Song path -> (sound, length in seconds). Lengths are the Ogg streams' own. */
     public static final Map<String, RegistryObject<Item>> RECORDS = new LinkedHashMap<>();
@@ -233,7 +234,7 @@ public final class ModFinalConsumableItems {
     public static final RegistryObject<Item> record_vc = record("record_vc", "vc", () -> ModSounds.RECORD_VORTAL_COMBAT.get(), 195, HbmTab.CONSUMABLES);
     public static final RegistryObject<Item> record_glass = record("record_glass", "glass", () -> ModSounds.MUSIC_TRANSMISSION.get(), 63, null);
 
-    // ------------------------------------------------------------------ batteries
+    // Batteries
 
     public static final RegistryObject<ItemBattery> battery_potato = reg("battery_potato", HbmTab.CONTROL,
             p -> new ItemBattery(p, 1000, 0, 100), p -> p.stacksTo(1))
@@ -252,7 +253,7 @@ public final class ModFinalConsumableItems {
             p -> new ItemFusionCore(p, 150000), p -> p.stacksTo(4))
             .transform(Presets.sprite());
 
-    // ------------------------------------------------------------------ loose materials
+    // Loose materials
 
     public static final RegistryObject<ItemRag> rag = reg("rag", HbmTab.MATERIALS, ItemRag::new, p -> p)
             .transform(Presets.sprite());
@@ -331,7 +332,7 @@ public final class ModFinalConsumableItems {
         return FLAT.get(id).get();
     }
 
-    // ------------------------------------------------------------------ upgrades
+    // Upgrades
 
     public static final RegistryObject<ItemMachineUpgrade> upgrade_5g = reg("upgrade_5g", HbmTab.CONTROL,
             p -> new ItemMachineUpgrade(ItemMachineUpgrade.UpgradeType.SPECIAL, 0, p), p -> p.stacksTo(1))

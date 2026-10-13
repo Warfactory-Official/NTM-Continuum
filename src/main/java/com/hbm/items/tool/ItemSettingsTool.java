@@ -16,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -158,7 +159,7 @@ public class ItemSettingsTool extends CompatItem {
         return InteractionResult.SUCCESS;
     }
 
-    private static net.minecraft.network.chat.MutableComponent prefix() {
+    private static MutableComponent prefix() {
         return Component.literal("[").withStyle(ChatFormatting.DARK_AQUA)
                 .append(Component.translatable("item.hbm.settings_tool").withStyle(ChatFormatting.DARK_AQUA))
                 .append(Component.literal("] ").withStyle(ChatFormatting.DARK_AQUA));

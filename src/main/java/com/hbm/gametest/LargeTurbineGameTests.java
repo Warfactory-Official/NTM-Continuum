@@ -2,13 +2,17 @@ package com.hbm.gametest;
 
 import com.hbm.blocks.machine.MachineLargeTurbine;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.container.ContainerMachineLargeTurbine;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.machine.ItemFluidId;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineLargeTurbine;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.level.GameType;
 
 /** GameTests for the legacy four-long turbine's layout, ports, conversion, and menu. */
 public final class LargeTurbineGameTests {
@@ -77,15 +81,15 @@ public final class LargeTurbineGameTests {
 
     public static void menu(GameTestHelper helper) {
         TileEntityMachineLargeTurbine turbine = place(helper, new BlockPos(3, 1, 3));
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
-                net.minecraft.world.level.GameType.SURVIVAL);
-        var menu = new com.hbm.inventory.container.ContainerMachineLargeTurbine(0, player.getInventory(), turbine);
+        var player = GameTestHelpers.mockPlayer(helper,
+                GameType.SURVIVAL);
+        var menu = new ContainerMachineLargeTurbine(0, player.getInventory(), turbine);
         helper.assertTrue(menu.slots.size() == 43, "Large turbine menu must have 7 machine slots + player inventory");
         helper.assertTrue(menu.slots.get(0).x == 8 && menu.slots.get(0).y == 17,
                 "Large turbine identifier slot is misplaced");
         helper.assertTrue(menu.slots.get(6).x == 152 && menu.slots.get(6).y == 53,
                 "Large turbine output canister slot is misplaced");
-        helper.assertFalse(menu.slots.get(1).mayPlace(com.hbm.items.machine.ItemFluidId.make(Fluids.STEAM)),
+        helper.assertFalse(menu.slots.get(1).mayPlace(ItemFluidId.make(Fluids.STEAM)),
                 "Large turbine identifier output must be take-only");
         helper.succeed();
     }
@@ -100,7 +104,7 @@ public final class LargeTurbineGameTests {
     private static TileEntityMachineLargeTurbine placeCore(GameTestHelper helper, BlockPos pos) {
         MachineLargeTurbine block = ModMachineBlocks.machine_large_turbine.get();
         helper.setBlock(pos, block.defaultBlockState());
-        return dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
+        return GameTestHelpers.blockEntity(helper, pos,
                 TileEntityMachineLargeTurbine.class);
     }
 

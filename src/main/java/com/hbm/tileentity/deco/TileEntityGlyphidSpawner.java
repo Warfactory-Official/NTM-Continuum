@@ -10,11 +10,13 @@ import com.hbm.entity.mob.glyphid.EntityGlyphidBrawler;
 import com.hbm.entity.mob.glyphid.EntityGlyphidDigger;
 import com.hbm.entity.mob.glyphid.EntityGlyphidScout;
 import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
 import com.hbm.tileentity.ModDecoCrateBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.registry.Entities;
+import java.util.concurrent.CopyOnWriteArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
@@ -39,7 +41,7 @@ import java.util.function.Supplier;
 public class TileEntityGlyphidSpawner extends TileEntityLoadedBase {
 
     /** 1.7's {@code spawnMap}: each type with its {@code {base, soot scaling, soot threshold}} chances. */
-    private static final List<Entry> SPAWN_MAP = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final List<Entry> SPAWN_MAP = new CopyOnWriteArrayList<>();
 
     private record Entry(Supplier<? extends EntityType<? extends EntityGlyphid>> type, int[] chance) {}
 
@@ -91,7 +93,7 @@ public class TileEntityGlyphidSpawner extends TileEntityLoadedBase {
         BlockPos p = worldPosition;
         List<EntityGlyphid> list = level.getEntitiesOfClass(EntityGlyphid.class,
                 new AABB(p.getX() - 5, p.getY() + 1, p.getZ() - 5, p.getX() + 6, p.getY() + 7, p.getZ() + 6));
-        float soot = PollutionHandler.getPollution(level, p, com.hbm.handler.pollution.PollutionType.SOOT);
+        float soot = PollutionHandler.getPollution(level, p, PollutionType.SOOT);
 
         int subtype = state.getValue(BlockGlyphid.TYPE).ordinal();
         if (list.size() <= 3 || subtype == EntityGlyphid.TYPE_RADIOACTIVE) {

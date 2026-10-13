@@ -1,5 +1,8 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.inventory.recipes.loader.GenericRecipe;
+import com.hbm.items.ModAbilityToolItems;
+import com.hbm.util.BobMathUtil;
 import dev.golem.core.data.Tags;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
@@ -13,6 +16,8 @@ import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineChemicalPlant;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import java.util.HashMap;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -21,7 +26,7 @@ import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
-import com.hbm.modules.machine.ModuleMachineChemplant;
+import com.hbm.module.machine.ModuleMachineChemplant;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -43,13 +48,13 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Chemical Plant — the first functional <b>fluid</b> machine, built on the assembly machine's recipe
- * framework (selector + control packet) plus the fluid I/O added to {@link ModuleMachineChemplant}/
- * {@link com.hbm.modules.machine.ModuleMachineBase}. 22 slots: battery, blueprint, 2 upgrades, 3 item-in,
- * 3 item-out, 3 fluid-in (bucket fill → empty out) and 3 fluid-out (empty bucket in → full out). It has 3
- * input + 3 output tanks; the selected recipe {@link com.hbm.modules.machine.ModuleMachineBase#setupTanks
- * conforms} them to its fluids, then the {@link #serverTick} feeds the input tanks from the fluid network
- * (and from buckets) and pushes the output tanks back out.
+ * Chemical Plant: built on the assembly machine's recipe framework (selector + control packet) plus the fluid
+ * I/O in {@link ModuleMachineChemplant}/{@link com.hbm.module.machine.ModuleMachineBase}. 22 slots: battery,
+ * blueprint, 2 upgrades, 3 item-in, 3 item-out, 3 fluid-in (full container in, empty out) and 3 fluid-out (empty
+ * container in, full out). It has 3 input + 3 output tanks; the selected recipe
+ * {@link com.hbm.module.machine.ModuleMachineBase#setupTanks conforms} them to its fluids, then
+ * {@link #serverTick} feeds the input tanks from the fluid network (and from buckets) and pushes the output tanks
+ * back out.
  *
  * <p>As 1.7.10: a battery in slot 0 charges the machine and the buffer is {@code max(power, recipe.power ×
  * 100, 100,000)}. Container I/O covers HBM/vanilla buckets and {@code IFillableItem} tanks. Upgrades
@@ -99,15 +104,15 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         if (te.maxPower <= 0) te.maxPower = 1_000_000;
         // 1.7: the buffer floats to the selected recipe's power x100, never below the stored power or 100k,
         // and a battery in slot 0 charges the machine.
-        com.hbm.inventory.recipes.loader.GenericRecipe recipe = te.chemplantModule.getRecipe();
+        GenericRecipe recipe = te.chemplantModule.getRecipe();
         if (recipe != null) te.maxPower = recipe.power * 100;
-        te.maxPower = com.hbm.util.BobMathUtil.max(te.power, te.maxPower, 100_000);
+        te.maxPower = BobMathUtil.max(te.power, te.maxPower, 100_000);
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.maxPower);
 
         // Fluid network: subscribe input tanks to matching nets, push output tanks out, plus bucket I/O.
         for (DirPos dp : te.getConPos()) {
             te.trySubscribe(level, dp);
-            for (FluidTankNTM tank : te.inputTanks) if (tank.getTankType() != com.hbm.inventory.fluid.Fluids.NONE) te.trySubscribe(tank.getTankType(), level, dp);
+            for (FluidTankNTM tank : te.inputTanks) if (tank.getTankType() != Fluids.NONE) te.trySubscribe(tank.getTankType(), level, dp);
             for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, dp);
         }
         te.fillInputTanks();
@@ -127,8 +132,8 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         te.chemplantModule.update(speed, pow, true, blueprint);
         te.didProcess = te.chemplantModule.didProcess;
         // 1.7: every working tick turns a machined meteorite sword in the battery slot into the treated one
-        if (te.didProcess && te.inventory.getStackInSlot(0).is(com.hbm.items.ModAbilityToolItems.meteorite_sword_machined.get())) {
-            te.inventory.setStackInSlot(0, new ItemStack(com.hbm.items.ModAbilityToolItems.meteorite_sword_treated.get()));
+        if (te.didProcess && te.inventory.getStackInSlot(0).is(ModAbilityToolItems.meteorite_sword_machined.get())) {
+            te.inventory.setStackInSlot(0, new ItemStack(ModAbilityToolItems.meteorite_sword_treated.get()));
         }
 
         if (te.chemplantModule.markDirty) te.setChanged();
@@ -143,7 +148,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     }
 
     /** Drains a full container in each fluid-in load slot (10..12) INTO that input tank, emptied container
-     * → out slot (13..15). Handles HBM/vanilla buckets and the universal tank/barrel ({@link IFillableItem}). */
+     * to out slot (13..15). Handles HBM/vanilla buckets and the universal tank/barrel ({@link IFillableItem}). */
     private void fillInputTanks() {
         for (int i = 0; i < 3; i++) {
             ItemStack in = inventory.getStackInSlot(10 + i);
@@ -151,7 +156,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
             FluidTankNTM tank = inputTanks[i];
 
             // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-            if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+            if (MachineFluidContainerIO.loadInfinite(tank, in)) {
                 setChanged();
                 continue;
             }
@@ -179,7 +184,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     }
 
     /** Fills an empty container in each fluid-out load slot (16..18) FROM that output tank, filled container
-     * → out slot (19..21). Handles the universal tank/barrel ({@link IFillableItem}) and empty buckets. */
+     * to out slot (19..21). Handles the universal tank/barrel ({@link IFillableItem}) and empty buckets. */
     private void unloadOutputTanks() {
         for (int i = 0; i < 3; i++) {
             FluidTankNTM tank = outputTanks[i];
@@ -280,7 +285,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     }
 
     @Override
-    public void provideInfo(UpgradeType type, int level, java.util.List<Component> info, boolean extendedInfo) {
+    public void provideInfo(UpgradeType type, int level, List<Component> info, boolean extendedInfo) {
         info.add(IUpgradeInfoProvider.getStandardLabel(ModMachineBlocks.machine_chemical_plant.get()));
         if (type == UpgradeType.SPEED) {
             info.add(Component.translatable(KEY_SPEED, "+" + (level * 100 / 3) + "%").withStyle(ChatFormatting.GREEN));
@@ -295,8 +300,8 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     }
 
     @Override
-    public java.util.HashMap<UpgradeType, Integer> getValidUpgrades() {
-        java.util.HashMap<UpgradeType, Integer> upgrades = new java.util.HashMap<>();
+    public HashMap<UpgradeType, Integer> getValidUpgrades() {
+        HashMap<UpgradeType, Integer> upgrades = new HashMap<>();
         upgrades.put(UpgradeType.SPEED, 3);
         upgrades.put(UpgradeType.POWER, 3);
         upgrades.put(UpgradeType.OVERDRIVE, 3);
@@ -351,7 +356,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
 
     @Override
     public boolean hasPermission(Player player) {
-        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMachineChemicalPlant menu
+        return player.containerMenu instanceof ContainerMachineChemicalPlant menu
                 && menu.getChemplant() == this && menu.stillValid(player);
     }
 

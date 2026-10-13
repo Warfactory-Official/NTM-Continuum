@@ -1,6 +1,8 @@
 package com.hbm.entity.train;
 
+import dev.golem.core.data.Inventories;
 import dev.golem.core.data.SynchedData;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -84,7 +86,7 @@ public abstract class EntityRailCarCargo extends EntityRailCarBase implements Co
     @Override
     public void setItem(int slot, ItemStack stack) {
         this.slots.set(slot, stack);
-        dev.golem.core.world.ItemStacks.limitSize(stack, this.getMaxStackSize()); // 26.1 Container.getMaxStackSize(ItemStack)
+        ItemStacks.limitSize(stack, this.getMaxStackSize()); // 26.1 Container.getMaxStackSize(ItemStack)
     }
 
     @Override
@@ -103,14 +105,14 @@ public abstract class EntityRailCarCargo extends EntityRailCarBase implements Co
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        dev.golem.core.data.Inventories.save(output, this.slots, true);
+        Inventories.save(output, this.slots, true);
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
         this.slots = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-        dev.golem.core.data.Inventories.load(input, this.slots);
+        Inventories.load(input, this.slots);
         this.entityData.set(OCCUPIED, this.countOccupiedSlots());
     }
 }

@@ -1,5 +1,6 @@
 package com.hbm.items.special;
 
+import dev.golem.core.registry.BlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -22,7 +23,7 @@ public final class CarriedBlockItems {
         if (!owner.startsWith("net.minecraft.") && !owner.startsWith("com.hbm.")) return null;
         BlockEntity blockEntity = ((EntityBlock) state.getBlock()).newBlockEntity(pos, state);
         // Like BlockEntity.loadStatic, this copy has no level: inventory edits cannot notify its old world position.
-        dev.golem.core.registry.BlockEntities.loadWithComponents(blockEntity, data, registries);
+        BlockEntities.loadWithComponents(blockEntity, data, registries);
         return blockEntity;
     }
 }

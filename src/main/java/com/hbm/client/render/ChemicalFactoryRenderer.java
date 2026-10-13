@@ -6,6 +6,7 @@ import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalFactory;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
@@ -22,7 +23,7 @@ public final class ChemicalFactoryRenderer
 
     private static final float BASE_YAW = 90F;
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/chemical_factory.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/chemical_factory.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/chemical_factory.png");
 

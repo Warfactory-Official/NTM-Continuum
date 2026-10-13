@@ -5,6 +5,7 @@ import com.hbm.items.ISatChip;
 import com.hbm.saveddata.SatelliteSavedData;
 import com.hbm.tileentity.ModSatelliteBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import dev.golem.core.hook.Hook;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -48,7 +49,7 @@ public class TileEntityMachineSatLinker extends TileEntityMachineBase implements
      * Run every tick both chip slots hold a chip, after the frequency is copied: hbm-space also copied a satellite's
      * orbit settings from one satellite item to the other ({@code SatelliteBase.copyItemData}). Every listener runs.
      */
-    public static final dev.golem.core.hook.Hook<ChipCopy> CHIP_COPY = dev.golem.core.hook.Hook.of(listeners -> (source, copy) -> {
+    public static final Hook<ChipCopy> CHIP_COPY = Hook.of(listeners -> (source, copy) -> {
         boolean changed = false;
         for (ChipCopy listener : listeners) changed |= listener.copy(source, copy);
         return changed;

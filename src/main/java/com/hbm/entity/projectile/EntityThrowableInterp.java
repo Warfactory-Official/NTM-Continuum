@@ -5,7 +5,7 @@ import dev.golem.core.world.EntityInterpolation;
 import net.minecraft.world.level.Level;
 
 /**
- * 26.2: 1.7's hand-rolled tracker lerping is exactly vanilla's EntityInterpolation now, so the body collapses to the override.
+ * 26.1: 1.7's hand-rolled tracker lerping is exactly vanilla's EntityInterpolation now, so the body collapses to the override.
  */
 public abstract class EntityThrowableInterp extends EntityThrowableNT {
 

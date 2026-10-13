@@ -1,6 +1,7 @@
 package com.hbm.world.chunk;
 
 import com.hbm.Constants;
+import com.hbm.api.event.HbmEvents;
 import com.hbm.interfaces.IBomb;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -138,7 +139,7 @@ public final class PendingDetonations extends CompatSavedData<PendingDetonations
                 continue;
             }
 
-            IBomb.BombReturnCode result = com.hbm.api.event.HbmEvents.detonate(bomb, level, pos, player, entry.detonator());
+            IBomb.BombReturnCode result = HbmEvents.detonate(bomb, level, pos, player, entry.detonator());
             if (player != null) {
                 Component message = result.getUnlocalizedMessage().isEmpty()
                         ? Component.translatable("chat.detonated")

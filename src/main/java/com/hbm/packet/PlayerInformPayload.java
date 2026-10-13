@@ -16,9 +16,9 @@ import java.util.List;
  * 1.7 {@code PlayerInformPacket}: a short message for the client's info HUD
  * ({@code RenderInfoSystem}), keyed by an id so a newer message of the same kind replaces the older one.
  *
- * <p>The message is sent as its parts — literal text or a translation key — plus one colour, which is
- * every message HBM sends this way. That keeps the wire format identical on every target instead of
- * depending on the component codec, whose buffer type changed with 1.20.5.
+ * <p>The message is sent as its parts (literal text or a translation key) plus one colour, which is
+ * every message HBM sends this way. The wire format is therefore identical on every target and does not
+ * depend on the component codec, whose buffer type changed with 1.20.5.
  */
 public record PlayerInformPayload(int infoId, int millis, String color, List<String> parts, List<Boolean> translated,
                                   List<String> partColors)

@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.blocks.machine.IntakeFanDirections;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityMachineIntake;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -13,7 +14,7 @@ import net.minecraft.world.phys.Vec3;
 public final class IntakeRenderer extends GemBER<TileEntityMachineIntake, IntakeRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/intake.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/intake.obj"));
     private final Surface surface = Surface.cutoutNoCull(
             Constants.MOD_ID + ":textures/models/machines/intake.png");
 

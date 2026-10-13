@@ -11,11 +11,12 @@ import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.Compat;
+import java.util.function.Supplier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
-/** The ten plain {@code BlockBeaconable} storage blocks from old HBM. */
+/** The ten plain {@code BlockBeaconable} storage blocks from 1.12.2. */
 public final class ModBeaconBlocks {
 
     private ModBeaconBlocks() {}
@@ -66,7 +67,7 @@ public final class ModBeaconBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    private static Reg.Handle<BlockBeaconable> beacon(String id, float hardness, float resistance, java.util.function.Supplier<SoundType> sound) {
+    private static Reg.Handle<BlockBeaconable> beacon(String id, float hardness, float resistance, Supplier<SoundType> sound) {
         Reg.Handle<BlockBeaconable> block = REG.block(id, BlockBeaconable::new,
                 p -> p.strength(hardness, resistance).sound(sound.get()).requiresCorrectToolForDrops());
         Reg.Handle<BlockItem> item = REG.blockItem(block, Compat::blockDescription);

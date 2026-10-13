@@ -1,6 +1,7 @@
 package com.hbm.items.armor;
 
 import com.hbm.handler.ArmorModHandler;
+import dev.golem.core.world.Armors;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import net.minecraft.ChatFormatting;
@@ -39,7 +40,7 @@ public class ItemModObsidian extends ItemArmorMod {
     public static void protectDropped(ItemEntity entity) {
         if (entity.isInvulnerable()) return;
         ItemStack stack = entity.getItem();
-        if (!dev.golem.core.world.Armors.isArmor(stack) || !ArmorModHandler.hasMods(stack)) return;
+        if (!Armors.isArmor(stack) || !ArmorModHandler.hasMods(stack)) return;
 
         if (ArmorModHandler.pryMod(stack, ArmorModHandler.cladding).getItem() instanceof ItemModObsidian) {
             entity.setInvulnerable(true);

@@ -18,18 +18,17 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>An effect is a <i>name plus a bag of parameters</i>, not a particle: {@code ExplosionSmall}
  * spawns fireballs and block debris together, and the tag it carries says how big and how
- * fast. The server never touches a particle class — it names an effect here and
+ * fast. The server never touches a particle class: it names an effect here and
  * {@link #send} puts it on the wire; the client looks the name up in its handler table and builds
  * whatever that effect means (see {@code com.hbm.client.particle.HbmParticleHandlers}).
  *
  * <p><b>This class must stay server-safe.</b> It holds the handler as a plain {@link Object} and the
  * handler interface takes no client types, so nothing here drags {@code Minecraft} onto a dedicated
- * server's class path. That split is the port's own — 1.12.2 used {@code @SideOnly} to strip the
- * client half out of the server jar, which has no equivalent in a single source set.
+ * server's class path. (1.12.2 used {@code @SideOnly} to strip the client half out of the server jar;
+ * a single source set has no equivalent.)
  *
- * <p>Only the effects this port actually implements are listed. Upstream declares roughly a hundred;
- * adding one is a constant here plus a handler registration on the client, so the rest arrive with
- * the systems that emit them rather than as dead names.
+ * <p>Only the effects this port implements are listed. Upstream declares roughly a hundred; adding
+ * one is a constant here plus a handler registration on the client.
  *
  * <p>A registry of records rather than an enum (ADDON-API-INVENTORY E-046): an addon adds its own effects with
  * {@link #register} under a namespaced name and they travel in HBM's particle payload like HBM's. The constants keep
@@ -57,7 +56,7 @@ public final class HbmEffectNT {
     public static final HbmEffectNT Giblets = hbm("Giblets");
     /** The full-size RBMK meltdown cloud. */
     public static final HbmEffectNT RBMKMush = hbm("RBMKMush");
-    /** The old small-nuke wave, flare and delayed cloud effect. */
+    /** The 1.7 small-nuke wave, flare and delayed cloud effect. */
     public static final HbmEffectNT Muke = hbm("Muke");
     /** The tiny-tot wave and immediate small-nuke cloud effect. */
     public static final HbmEffectNT TinyTot = hbm("TinyTot");
@@ -127,7 +126,7 @@ public final class HbmEffectNT {
     /** 1.7 {@code launchSmoke} (G-C): one {@code ParticleSmokePlume}, played client-side by a launcher. Tag: {@code moX/moY/moZ}. */
     public static final HbmEffectNT LaunchSmoke = hbm("LaunchSmoke");
     /**
-     * old-hbm {@code VanillaBurst_BlockDust}: {@code count} block-dust particles of block id {@code block}, each with
+     * 1.12.2 {@code VanillaBurst_BlockDust}: {@code count} block-dust particles of block id {@code block}, each with
      * motion {@code gaussian * motion} (+0.2 up) and a 50..99 tick life. The crucible's killing hit.
      */
     public static final HbmEffectNT VanillaBurst_BlockDust = hbm("VanillaBurst_BlockDust");
@@ -135,7 +134,7 @@ public final class HbmEffectNT {
     public static final HbmEffectNT DeadLeaf = hbm("DeadLeaf");
     /**
      * 1.7 {@code radFog}: one {@code ParticleRadiationFog}, rolled once a second over chunks holding more than
-     * {@code fogRad} (History §19ej-6, {@code RadiationFog}).
+     * {@code fogRad} ({@code RadiationFog}).
      */
     public static final HbmEffectNT RadFog = hbm("RadFog");
     /**
@@ -234,7 +233,7 @@ public final class HbmEffectNT {
 
     /**
      * Runs this effect's client handler. Client only, and a no-op for an effect whose handler was
-     * never registered — an unimplemented effect should be invisible, not a crash.
+     * never registered: an unimplemented effect is invisible, not a crash.
      */
     public void summonParticle(Level level, double x, double y, double z, @Nullable CompoundTag data) {
         if (this.handler == null) return;
@@ -256,7 +255,7 @@ public final class HbmEffectNT {
         double radiusSquared = range * range;
         for (ServerPlayer player : serverLevel.players()) {
             // level.players() includes a GameTest's bare mock player without the channel; sendToPlayer skips it
-            // (NeoForge would otherwise throw - crashed the 2026-10-02 full run from a leaking fluid tank).
+            // (NeoForge would otherwise throw for that player).
             if (player.distanceToSqr(x, y, z) <= radiusSquared)
                 GolemNetwork.sendToPlayer(player, ParticlePayload.CODEC, payload);
         }

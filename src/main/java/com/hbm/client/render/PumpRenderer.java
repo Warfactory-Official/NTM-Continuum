@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.PumpAnimationState;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -18,7 +19,7 @@ public final class PumpRenderer<T extends BlockEntity & PumpAnimationState>
         extends GemBER<T, PumpRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/pump.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/pump.obj"));
     private final Surface surface;
 
     public PumpRenderer(Identifier texture) {

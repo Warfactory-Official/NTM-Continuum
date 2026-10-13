@@ -5,6 +5,10 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.golem.core.Ids;
 import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.gem.Geometry;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.TreeSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 
@@ -21,7 +25,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Minimal Wavefront OBJ loader + immediate-mode renderer for the new render pipeline. Ported from the
  * old mod's {@code HFRWavefrontObject} but stripped of the LWJGL VBO/VAO machinery (which has no 26.1
- * equivalent) — instead it emits geometry straight into a {@link VertexConsumer}, so it works inside a
+ * equivalent); instead it emits geometry straight into a {@link VertexConsumer}, so it works inside a
  * {@link net.minecraft.client.renderer.blockentity.BlockEntityRenderer}'s submit pass.
  *
  * <p>Geometry is grouped by OBJ {@code o}/{@code g} objects so a renderer can draw the whole model
@@ -75,12 +79,11 @@ public final class WavefrontObj {
     /**
      * The bounding box of everything except the named parts, as {@code {min, max}}.
      *
-     * <p>Needed when a model is drawn in pieces: an armour suit's OBJ holds all eight body parts, but a
-     * helmet's inventory icon draws one of them. Framing that icon by the <em>whole</em> model's bounds
-     * centres the slot on the suit's waist and leaves the helmet somewhere above the frame. An empty
-     * exclusion set gives the whole-model bounds, so callers can pass one unconditionally.
+     * <p>For models drawn in pieces: an armour suit's OBJ holds all eight body parts but a helmet's
+     * inventory icon draws one, and framing it by the <em>whole</em> model's bounds would centre the slot on
+     * the suit's waist. An empty exclusion set gives the whole-model bounds.
      */
-    public float[][] boundsExcluding(java.util.Set<String> excluded) {
+    public float[][] boundsExcluding(Set<String> excluded) {
         float[][] bounds = boundsExcludingExact(excluded);
         return bounds == null ? new float[][] {min, max} : bounds;
     }
@@ -218,17 +221,17 @@ public final class WavefrontObj {
         return names;
     }
 
-    /** Draws every face run using the given material (for multi-texture OBJs — one call per material). */
+    /** Draws every face run using the given material (for multi-texture OBJs, one call per material). */
     public void renderMaterial(String material, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay) {
         for (Group g : groups) if (g.material.equals(material)) drawGroup(g, pose, buffer, light, overlay);
     }
 
     /**
-     * Parses a Wavefront .mtl next to the OBJ and maps material name → texture id (each {@code map_Kd}
+     * Parses a Wavefront .mtl next to the OBJ and maps material name to texture id (each {@code map_Kd}
      * like {@code hbm:blocks/foo} resolved to {@code hbm:textures/blocks/foo.png}).
      */
-    public static java.util.Map<String, Identifier> loadMtl(Identifier mtlLocation) {
-        java.util.Map<String, Identifier> map = new java.util.LinkedHashMap<>();
+    public static Map<String, Identifier> loadMtl(Identifier mtlLocation) {
+        Map<String, Identifier> map = new LinkedHashMap<>();
         try (InputStream in = Minecraft.getInstance().getResourceManager().getResourceOrThrow(mtlLocation).open();
              BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
             String line;
@@ -261,12 +264,12 @@ public final class WavefrontObj {
 
     /** Draws every part of the model. */
     public void renderAll(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay) {
-        renderExcept(pose, buffer, light, overlay, java.util.Set.of());
+        renderExcept(pose, buffer, light, overlay, Set.of());
     }
 
     /** Draws every part and optionally emits reversed faces for legacy double-sided models. */
     public void renderAll(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, boolean doubleSided) {
-        renderExcept(pose, buffer, light, overlay, java.util.Set.of(), doubleSided);
+        renderExcept(pose, buffer, light, overlay, Set.of(), doubleSided);
     }
 
     /** Draws every part tinted with an ARGB vertex colour. */
@@ -274,19 +277,19 @@ public final class WavefrontObj {
         for (Group g : groups) drawGroup(g, pose, buffer, light, overlay, color);
     }
 
-    /** Draws every part tinted, with the texture scrolled by {@code (uOffset, vOffset)} — see {@link #renderPart}. */
+    /** Draws every part tinted, with the texture scrolled by {@code (uOffset, vOffset)}; see {@link #renderPart}. */
     public void renderAll(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color,
                           float uOffset, float vOffset) {
         for (Group g : groups) drawGroup(g, pose, buffer, light, overlay, color, false, uOffset, vOffset);
     }
 
     /** Draws every part except those named in {@code exclude} (e.g. dynamic parts like a fluid overlay). */
-    public void renderExcept(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, java.util.Set<String> exclude) {
+    public void renderExcept(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, Set<String> exclude) {
         renderExcept(pose, buffer, light, overlay, exclude, false);
     }
 
     public void renderExcept(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
-                             java.util.Set<String> exclude, boolean doubleSided) {
+                             Set<String> exclude, boolean doubleSided) {
         for (Group g : groups) if (!exclude.contains(g.name)) drawGroup(g, pose, buffer, light, overlay, -1, doubleSided);
     }
 
@@ -314,11 +317,10 @@ public final class WavefrontObj {
      * Draws a named part with the texture scrolled by {@code (uOffset, vOffset)} and, optionally, both
      * faces emitted.
      *
-     * <p>The scroll is baked into the vertices rather than set on the render type. A 1.12 renderer would
-     * translate the GL texture matrix, and 26.1's nearest equivalent ({@code energySwirl}) folds the
-     * offset into the {@code RenderType} itself — which means a continuously animated offset mints a new
-     * RenderType every frame, and vanilla memoizes those forever. Baking keeps one stable, cached type
-     * per texture. The texture wraps, so offsets outside 0..1 tile exactly as they did before.
+     * <p>The scroll is baked into the vertices, not set on the render type: 1.12 translated the GL texture
+     * matrix, and 26.1's nearest equivalent ({@code energySwirl}) folds the offset into the
+     * {@code RenderType}, so an animated offset would mint a new RenderType every frame and vanilla
+     * memoizes those forever. The texture wraps, so offsets outside 0..1 tile as before.
      */
     public void renderPart(String name, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
                            int color, float uOffset, float vOffset, boolean doubleSided) {
@@ -355,7 +357,7 @@ public final class WavefrontObj {
 
     /**
      * Every part, optionally with each triangle emitted a second time wound the other way. That is
-     * reversed geometry, not a no-cull material — the duplicate carries a flipped normal and shades
+     * reversed geometry, not a no-cull material. The duplicate carries a flipped normal and shades
      * differently, which is what {@code doubleSided()} looked like in 1.12.2.
      */
     public Geometry all(boolean doubleSided) {
@@ -371,7 +373,7 @@ public final class WavefrontObj {
         return new ObjGeometry(null, Set.of(), false, name);
     }
 
-    /** Every part except those named — a fluid overlay or a conditional frame drawn separately. */
+    /** Every part except those named: a fluid overlay or a conditional frame drawn separately. */
     public Geometry allExcept(Set<String> exclude) {
         return new ObjGeometry(null, Set.copyOf(exclude), false);
     }
@@ -382,7 +384,7 @@ public final class WavefrontObj {
 
     /** The names of every group this model actually holds, for declarations to be checked against. */
     public Set<String> partNames() {
-        Set<String> names = new java.util.LinkedHashSet<>();
+        Set<String> names = new LinkedHashSet<>();
         for (Group g : groups) if (!g.faces.isEmpty()) names.add(g.name);
         return names;
     }
@@ -410,8 +412,8 @@ public final class WavefrontObj {
             this.doubleSided = doubleSided;
             this.material = material;
             String selection = material != null ? "=" + material
-                    : include != null ? "+" + String.join(",", new java.util.TreeSet<>(include))
-                    : exclude.isEmpty() ? "*" : "-" + String.join(",", new java.util.TreeSet<>(exclude));
+                    : include != null ? "+" + String.join(",", new TreeSet<>(include))
+                    : exclude.isEmpty() ? "*" : "-" + String.join(",", new TreeSet<>(exclude));
             this.name = source + "#" + selection + (doubleSided ? "#2" : "");
         }
 

@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * The missile launcher. Its rack holds seventeen rounds and takes five seconds to refill, so the
- * count is worth syncing on its own — the renderer draws one missile per loaded round.
+ * count is worth syncing on its own: the renderer draws one missile per loaded round.
  *
  * <p>Its rockets steer: each one leaves the tube locked onto whatever the turret was tracking.
  */

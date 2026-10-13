@@ -1,7 +1,7 @@
 package com.hbm.blocks.network;
 
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.radio.RadioTargets;
+import com.hbm.tileentity.network.RadioTargets;
 import com.hbm.tileentity.network.TileEntityRadioTorchController;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

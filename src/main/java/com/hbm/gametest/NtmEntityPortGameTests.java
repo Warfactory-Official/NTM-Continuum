@@ -1,13 +1,18 @@
 package com.hbm.gametest;
 
 import com.hbm.entity.ModNtmEntities;
+import com.hbm.entity.mob.EntityMaskMan;
+import com.hbm.items.weapon.sedna.factory.XFactoryNPC;
+import com.hbm.items.weapon.sedna.factory.XFactoryWarhead;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.Entities;
 import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.world.Compat;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -42,9 +47,9 @@ public final class NtmEntityPortGameTests {
      * class has no value equality the moment it is set, which is only reached by killing him.
      */
     public static void bossDeathLoot(GameTestHelper helper) {
-        com.hbm.entity.mob.EntityMaskMan maskMan = helper.spawn(ModNtmEntities.MASK_MAN.get(),
-                new net.minecraft.core.BlockPos(1, 2, 1));
-        dev.golem.core.world.Compat.kill(maskMan, helper.getLevel());
+        EntityMaskMan maskMan = helper.spawn(ModNtmEntities.MASK_MAN.get(),
+                new BlockPos(1, 2, 1));
+        Compat.kill(maskMan, helper.getLevel());
         helper.runAfterDelay(2, () -> {
             helper.assertTrue(!maskMan.isAlive(), "mask man should be dead after kill()");
             helper.succeed();
@@ -53,11 +58,11 @@ public final class NtmEntityPortGameTests {
 
     /** Every bullet config an NPC fires must be initialised, or the first shot constructs a bullet on null. */
     public static void npcBulletConfigs(GameTestHelper helper) {
-        com.hbm.items.weapon.sedna.factory.XFactoryNPC.class.getName();
-        helper.assertTrue(com.hbm.items.weapon.sedna.factory.XFactoryNPC.worm_laser != null, "XFactoryNPC.worm_laser is null");
-        helper.assertTrue(com.hbm.items.weapon.sedna.factory.XFactoryNPC.maskman_orb != null, "XFactoryNPC.maskman_orb is null");
-        helper.assertTrue(com.hbm.items.weapon.sedna.factory.XFactoryNPC.ufo_rocket != null, "XFactoryNPC.ufo_rocket is null");
-        helper.assertTrue(com.hbm.items.weapon.sedna.factory.XFactoryWarhead.warhead_turbine != null,
+        XFactoryNPC.class.getName();
+        helper.assertTrue(XFactoryNPC.worm_laser != null, "XFactoryNPC.worm_laser is null");
+        helper.assertTrue(XFactoryNPC.maskman_orb != null, "XFactoryNPC.maskman_orb is null");
+        helper.assertTrue(XFactoryNPC.ufo_rocket != null, "XFactoryNPC.ufo_rocket is null");
+        helper.assertTrue(XFactoryWarhead.warhead_turbine != null,
                 "XFactoryWarhead.warhead_turbine is null");
         helper.succeed();
     }
@@ -79,8 +84,8 @@ public final class NtmEntityPortGameTests {
 
     public static void allTypesRegistered(GameTestHelper helper) {
         List<EntityType<?>> types = portedTypes();
-        // 99: the 100 ntm-next port types less hbm:beam_discharge, deleted in §19es-gameplay (1.7 has no discharge
-        // entity; the battery socket fires a BulletConfig beam).
+        // 99: the 100 ntm-next port types less hbm:beam_discharge (1.7 has no discharge entity; the
+        // battery socket fires a BulletConfig beam).
         helper.assertTrue(types.size() >= 99, "expected the 99 ntm-next port types, found " + types.size());
         for (EntityType<?> type : types) {
             String id = EntityType.getKey(type).toString();

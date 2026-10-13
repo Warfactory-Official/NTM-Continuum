@@ -1,5 +1,6 @@
 package com.hbm.entity.grenade;
 
+import com.hbm.blocks.generic.BlockFallout;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.blocks.ModNuclearBlocks;
 import com.hbm.blocks.ModFalloutBlocks;
@@ -56,7 +57,7 @@ public class EntityWastePearl extends EntityGrenadeBase {
 
                     // 1.7 isReplaceable also let water through, where the ash is washed out (with a drop)
                     // at once; canOccupy is the same test minus cells holding fluid.
-                    if (random.nextInt(3) == 0 && com.hbm.blocks.generic.BlockFallout.canOccupy(state)
+                    if (random.nextInt(3) == 0 && BlockFallout.canOccupy(state)
                             && falloutState.canSurvive(level(), pos)) {
                         level().setBlockAndUpdate(pos, falloutState);
                     } else if (state.isAir()) {

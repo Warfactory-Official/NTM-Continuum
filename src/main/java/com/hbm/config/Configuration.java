@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ import java.util.TreeMap;
 
 /**
  * The part of Forge 1.7.10's {@code net.minecraftforge.common.config.Configuration} that 1.7 HBM used for
- * {@code hbm.cfg}, so the 1.7 {@code loadFromConfig} bodies port verbatim and a 1.7 user finds the same file, the same
+ * {@code hbm.cfg}, so the 1.7 {@code loadFromConfig} bodies port unchanged and a 1.7 user finds the same file, the same
  * categories ({@code 01_general} .. {@code 18_weapons}, {@code 528}, {@code LESS BULLSHIT MODE}), the same keys and the
  * same comments. The file format is Forge's: a {@code # Configuration file} header, categories in natural string
  * order, properties sorted by name inside each category, {@code B:}/{@code I:}/{@code D:}/{@code S:} type prefixes,
@@ -26,7 +27,7 @@ import java.util.TreeMap;
  * boxed category comment. Unknown properties already in the file are kept, as Forge kept them.
  *
  * <p>Plain Java on every node: the file lives in the loader's config directory ({@code ConfigFiles.configDir()}), as
- * 1.7's {@code event.getSuggestedConfigurationFile()} did. History §19ej-8.
+ * 1.7's {@code event.getSuggestedConfigurationFile()} did.
  */
 public final class Configuration {
 
@@ -47,7 +48,7 @@ public final class Configuration {
         return file;
     }
 
-    // ------------------------------------------------------------------------------------------------ properties
+    // properties
 
     public enum Type {
         STRING('S'), INTEGER('I'), BOOLEAN('B'), DOUBLE('D');
@@ -186,7 +187,7 @@ public final class Configuration {
     /** Every property of a category, sorted by name (for checks and tests). */
     public Map<String, Property> properties(String category) {
         Category cat = categories.get(category);
-        return cat == null ? Map.of() : java.util.Collections.unmodifiableMap(cat.properties);
+        return cat == null ? Map.of() : Collections.unmodifiableMap(cat.properties);
     }
 
     private Property scalar(String category, String key, String def, String comment, Type type) {
@@ -281,7 +282,7 @@ public final class Configuration {
         return list(category, key, def, comment, Type.STRING);
     }
 
-    // ------------------------------------------------------------------------------------------------ value checks
+    // value checks
 
     static boolean isIntValue(String s) {
         if (s == null) return false;
@@ -315,7 +316,7 @@ public final class Configuration {
         return isDoubleValue(s) ? Double.parseDouble(s.trim()) : def;
     }
 
-    // ------------------------------------------------------------------------------------------------ file
+    // file
 
     /** Forge's {@code allowedProperties}: Java letters/digits and {@code ._-}; anything else is quoted. */
     private static String quoted(String name) {

@@ -29,8 +29,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>The aim is a closed-form ballistic solution rather than a look-at, and it is solved from the
  * <b>muzzle</b>: over three thousand blocks a nine-block barrel is worth a visible angle. The mode
- * picks which of the two solutions to take — the high arc for artillery, the low one for the cannon —
- * which is the whole difference between the two.
+ * picks which of the two solutions to take: the high arc for artillery, the low one for the cannon.
  */
 public class TileEntityTurretArty extends TileEntityTurretBaseArtillery {
 
@@ -153,7 +152,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery {
 
     @Override
     protected void alignTurret() {
-        // Upstream deliberately uses +pitch for aim compensation, while firing uses -pitch.
+        // Upstream uses +pitch for aim compensation, while firing uses -pitch.
         Vec3 muzzle = getTurretPos().add(toWorldDirection(new Vec3(getBarrelLength(), 0D, 0D)
                 .zRot((float) rotationPitch)
                 .yRot((float) -(rotationYaw + Math.PI * 0.5D))));
@@ -232,7 +231,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery {
         super.tickClient();
     }
 
-    /** @see TileEntityTurretHIMARS#tickServer — the same reason it does not call {@code super}. */
+    /** @see TileEntityTurretHIMARS#tickServer, the same reason it does not call {@code super}. */
     @Override
     protected void tickServer() {
         if (mode == MODE_MANUAL) {

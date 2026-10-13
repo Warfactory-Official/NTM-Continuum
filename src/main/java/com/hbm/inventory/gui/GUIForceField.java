@@ -3,6 +3,7 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerForceField;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityForceField;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
@@ -23,7 +24,7 @@ import java.util.Optional;
  */
 public class GUIForceField extends CompatContainerScreen<ContainerForceField> {
 
-    public static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_field.png");
+    public static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/gui_field.png");
 
     public GUIForceField(ContainerForceField menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 168);

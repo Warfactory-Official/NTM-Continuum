@@ -1,5 +1,8 @@
 package com.hbm.items;
 
+import com.hbm.creativetabs.HbmTab;
+import com.hbm.creativetabs.ModTabs;
+import com.hbm.items.weapon.sedna.factory.GunStateDecider;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import com.hbm.Constants;
@@ -40,6 +43,7 @@ import com.hbm.items.weapon.GunB92;
 import com.hbm.items.weapon.GunB92Cell;
 import com.hbm.sound.ModSounds;
 import com.hbm.sound.ModGunSounds;
+import dev.golem.core.Ids;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.item.Item;
@@ -47,21 +51,18 @@ import net.minecraft.world.item.Item;
 /**
  * The Sedna guns.
  *
- * <p>Entries are ports of upstream's own declarations, stat for stat — {@code gun_debug} from
+ * <p>Entries are ports of upstream's own declarations, stat for stat: {@code gun_debug} from
  * {@code GunFactory}, the revolver from {@code XFactory357}, and the automatic/akimbo examples from
- * the per-calibre factories. They are the proving pair
- * for the gun engine: the debug gun is the smallest complete weapon in the mod (one receiver, one
- * round), and the revolver is the reference implementation of the standard fire path, so anything that
- * works for it works for the other sixty-odd guns as data.
+ * the per-calibre factories. The debug gun is the smallest complete weapon in the mod (one receiver, one
+ * round) and the revolver is the reference implementation of the standard fire path.
  *
  * <p>The bullet configs a magazine names must exist first, so {@link GunFactory#init()} runs before the
- * suppliers here are resolved. Registry suppliers are only called during registration, which is well
- * after mod bootstrap calls it.
+ * suppliers here are resolved. Registry suppliers are only called during registration, after mod bootstrap
+ * calls it.
  *
-     * <p>Weapon mods apply through {@code XWeaponModManager.eval}, and the 1.7 name mutators are set on their guns
-     * (fix wave 5). The server-safe orchestra
-     * timelines are attached below; their client loop/casing/muzzle effects are intentionally separate.
-     * The item JSONs point at the shared OBJ renderer instead of inventing sprite placeholders.
+ * <p>Weapon mods apply through {@code XWeaponModManager.eval}, and the 1.7 name mutators are set on their
+ * guns. The server-safe orchestra timelines are attached below; their client loop/casing/muzzle effects are
+ * separate. The item JSONs point at the shared OBJ renderer instead of inventing sprite placeholders.
  */
 public final class ModGunItems {
 
@@ -99,12 +100,12 @@ public final class ModGunItems {
                      .decider(GunFactory.LAMBDA_DEBUG_DECIDER)
                        .orchestra(Orchestras.DEBUG_ORCHESTRA)), p -> p);
 
-    /** Original-hbm's separately implemented charged B92 energy pistol. */
+    /** 1.7's separately implemented charged B92 energy pistol. */
     public static final RegistryObject<GunB92> gun_b92 = REG.item("gun_b92", GunB92::new, p -> p);
     public static final RegistryObject<GunB92Cell> gun_b92_ammo = REG.item("gun_b92_ammo",
             props -> new GunB92Cell(props), p -> p).transform(Presets.sprite("hbm:items/gun_b92_ammo_alt"));
 
-    /** The break-action .357 — upstream's reference weapon for the standard configuration. */
+    /** The break-action .357, upstream's reference weapon for the standard configuration. */
     public static final RegistryObject<ItemGunBaseNT> gun_light_revolver = REG.item("gun_light_revolver", props ->
             new ItemGunBaseNT(props, WeaponQuality.A_SIDE, new GunConfig()
                     .dura(300).draw(4).inspect(23).crosshair(Crosshair.CIRCLE)
@@ -144,7 +145,7 @@ public final class ModGunItems {
                                     .offset(0.75, -0.0625, 0.3125D)
                                     .setupStandardFire().recoil(XFactory357.LAMBDA_RECOIL_DANI))
                             .pp(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
-                             .decider(com.hbm.items.weapon.sedna.factory.GunStateDecider.LAMBDA_STANDARD_DECIDER)
+                             .decider(GunStateDecider.LAMBDA_STANDARD_DECIDER)
                               .orchestra(Orchestras.ORCHESTRA_DANI),
                     new GunConfig().dura(30_000).draw(20).inspect(23).crosshair(Crosshair.CIRCLE)
                             .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -155,7 +156,7 @@ public final class ModGunItems {
                                     .offset(0.75, -0.0625, -0.3125D)
                                     .setupStandardFire().recoil(XFactory357.LAMBDA_RECOIL_DANI))
                             .ps(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
-                             .decider(com.hbm.items.weapon.sedna.factory.GunStateDecider.LAMBDA_STANDARD_DECIDER)
+                             .decider(GunStateDecider.LAMBDA_STANDARD_DECIDER)
                               .orchestra(Orchestras.ORCHESTRA_DANI))
                 .setDefaultAmmo(ModAmmoItems.m357_express, 24), p -> p);
 
@@ -245,7 +246,7 @@ public final class ModGunItems {
 
     /** Real factory-backed utility guns; fire extinguisher, drill, and PA remain dependency-bound. */
      public static final RegistryObject<ItemGunBaseNT> gun_charge_thrower =
-             com.hbm.items.weapon.sedna.factory.NtmToolGunCatalog.gun_charge_thrower;
+             NtmToolGunCatalog.gun_charge_thrower;
     public static final RegistryObject<ItemGunBaseNT> gun_chemthrower = REG.item("gun_chemthrower", props ->
             new ItemGunChemthrower(props, WeaponQuality.A_SIDE,
                     XFactoryFlamer.chemthrowerConfig().orchestra(Orchestras.ORCHESTRA_CHEMTHROWER)), p -> p);
@@ -319,7 +320,7 @@ public final class ModGunItems {
                                      .offset(1, -0.0625 * 2.5, 0.375D)
                                      .setupStandardFire().recoil(XFactory9mm.LAMBDA_RECOIL_UZI))
                             .pp(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
-                             .decider(com.hbm.items.weapon.sedna.factory.GunStateDecider.LAMBDA_STANDARD_DECIDER)
+                             .decider(GunStateDecider.LAMBDA_STANDARD_DECIDER)
                              .orchestra(Orchestras.ORCHESTRA_UZI_AKIMBO),
                     new GunConfig().dura(3_000).draw(15).inspect(31).crosshair(Crosshair.CIRCLE)
                             .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -351,14 +352,14 @@ public final class ModGunItems {
                             .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                             .rec(starReceiver(0, 0.25D))
                             .pp(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
-                             .decider(com.hbm.items.weapon.sedna.factory.GunStateDecider.LAMBDA_STANDARD_DECIDER)
+                             .decider(GunStateDecider.LAMBDA_STANDARD_DECIDER)
                              .orchestra(Orchestras.ORCHESTRA_STAR_F_AKIMBO),
                     new GunConfig()
                             .dura(15 * 25).draw(15).inspect(38).crosshair(Crosshair.CIRCLE)
                             .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                             .rec(starReceiver(1, -0.25D))
                             .ps(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
-                             .decider(com.hbm.items.weapon.sedna.factory.GunStateDecider.LAMBDA_STANDARD_DECIDER)
+                             .decider(GunStateDecider.LAMBDA_STANDARD_DECIDER)
                                .orchestra(Orchestras.ORCHESTRA_STAR_F_AKIMBO))
                 .setDefaultAmmo(ModAmmoItems.p22_sp, 30), p -> p);
 
@@ -408,7 +409,7 @@ public final class ModGunItems {
     public static final RegistryObject<ItemGunBaseNT> gun_heavy_revolver_lilmac = REG.item("gun_heavy_revolver_lilmac", props ->
             new ItemGunBaseNT(props, WeaponQuality.LEGENDARY, new GunConfig()
                     .dura(31_000).draw(10).inspect(23).crosshair(Crosshair.L_CLASSIC)
-                    .scopeTexture(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/misc/scope_44.png"))
+                    .scopeTexture(Ids.of(Constants.MOD_ID, "textures/misc/scope_44.png"))
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(new Receiver(0)
                             .dmg(30F).delay(14).reload(46).jam(23)
@@ -462,78 +463,78 @@ public final class ModGunItems {
     }
 
     static {
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_debug);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_b92);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_b92_ammo);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_light_revolver);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_light_revolver_atlas);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_light_revolver_dani);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_pepperbox);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_g3);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_am180);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_greasegun);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_lag);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_uzi);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_uzi_akimbo);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_star_f);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_star_f_akimbo);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_henry);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_henry_lincoln);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_heavy_revolver);
-        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_heavy_revolver_lilmac);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_heavy_revolver_protege);
-          com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_hangman);
-          com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_chemthrower);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_g3_zebra);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_stg77);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_carbine);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_mas36);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_minigun);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_minigun_lacunae);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_minigun_dual);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_m2);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_maresleg);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_maresleg_akimbo);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_maresleg_broken);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_liberator);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_spas12);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_autoshotgun);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_autoshotgun_shredder);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_autoshotgun_sexy);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_flaregun);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_congolake);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_mk108);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_amat);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_amat_subtlety);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_amat_penance);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_bolter);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_double_barrel);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_double_barrel_sacred_dragon);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_autoshotgun_heretic);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_aberrator);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_aberrator_eott);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_panzerschreck);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_stinger);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_quadro);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_missile_launcher);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_fatman);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_flamer);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_flamer_topaz);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_flamer_daybreaker);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_tesla_cannon);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_laser_pistol);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_laser_pistol_pew_pew);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_laser_pistol_morning_glory);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_lasrifle);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_tau);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_coilgun);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_n_i_4_n_i);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_folly);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_fireext);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_drill);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_pa_melee);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_pa_ranged);
-         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_charge_thrower);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_debug);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_b92);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_b92_ammo);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_light_revolver);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_light_revolver_atlas);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_light_revolver_dani);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_pepperbox);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_g3);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_am180);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_greasegun);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_lag);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_uzi);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_uzi_akimbo);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_star_f);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_star_f_akimbo);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_henry);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_henry_lincoln);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_heavy_revolver);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_heavy_revolver_lilmac);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_heavy_revolver_protege);
+          ModTabs.addTo(HbmTab.WEAPONS, gun_hangman);
+          ModTabs.addTo(HbmTab.WEAPONS, gun_chemthrower);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_g3_zebra);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_stg77);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_carbine);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_mas36);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_minigun);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_minigun_lacunae);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_minigun_dual);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_m2);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_maresleg);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_maresleg_akimbo);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_maresleg_broken);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_liberator);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_spas12);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_autoshotgun);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_autoshotgun_shredder);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_autoshotgun_sexy);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_flaregun);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_congolake);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_mk108);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_amat);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_amat_subtlety);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_amat_penance);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_bolter);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_double_barrel);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_double_barrel_sacred_dragon);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_autoshotgun_heretic);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_aberrator);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_aberrator_eott);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_panzerschreck);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_stinger);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_quadro);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_missile_launcher);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_fatman);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_flamer);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_flamer_topaz);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_flamer_daybreaker);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_tesla_cannon);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_laser_pistol);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_laser_pistol_pew_pew);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_laser_pistol_morning_glory);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_lasrifle);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_tau);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_coilgun);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_n_i_4_n_i);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_folly);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_fireext);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_drill);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_pa_melee);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_pa_ranged);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_charge_thrower);
       }
 
     public static void init() {}

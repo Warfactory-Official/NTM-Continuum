@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockDecoContainer;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.storage.TileEntityFileCabinet;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -24,7 +25,7 @@ public final class RenderFileCabinet extends GemBER<TileEntityFileCabinet, Rende
         public float upper;
     }
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/file_cabinet.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/file_cabinet.obj"));
     private final Surface green = Surface.cutoutCull(Constants.MOD_ID + ":textures/models/file_cabinet.png");
     private final Surface steel = Surface.cutoutCull(Constants.MOD_ID + ":textures/models/file_cabinet_steel.png");
 

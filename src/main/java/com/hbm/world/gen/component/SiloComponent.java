@@ -2,7 +2,11 @@ package com.hbm.world.gen.component;
 
 import com.hbm.itempool.ItemPool;
 import com.hbm.itempool.ItemPools;
+import com.hbm.items.ModItems;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.bomb.TileEntityLandmine;
+import com.hbm.tileentity.bomb.TileEntityLaunchPadRusted;
+import com.hbm.tileentity.network.TileEntityRadioTorchBase;
 import com.hbm.world.gen.NTMComponentStructures;
 import com.hbm.world.gen.ProceduralStructureStart;
 import com.hbm.world.gen.ProceduralStructureStart.ProceduralComponent;
@@ -1241,7 +1245,7 @@ public class SiloComponent extends Component {
 
 	/** 1.7 {@code new WeightedRandomChestContent(ModItems.launch_key, 0, 1, 1, 1)}; built on use (items register late). */
 	public static List<ItemPool.Entry> launchKey() {
-		return List.of(ItemPool.Entry.of(com.hbm.items.ModItems.launch_key.get(), 1, 1, 1));
+		return List.of(ItemPool.Entry.of(ModItems.launch_key.get(), 1, 1, 1));
 	}
 	
 	protected void setRTTYFreq(WorldGenLevel world, BoundingBox box, int featureX, int featureY, int featureZ, int freq) {
@@ -1251,7 +1255,7 @@ public class SiloComponent extends Component {
 		
 		if(!box.isInside(posX, posY, posZ)) return;
 		
-		if(getTileEntity(world, posX, posY, posZ) instanceof com.hbm.tileentity.network.TileEntityRadioTorchBase torch) {
+		if(getTileEntity(world, posX, posY, posZ) instanceof TileEntityRadioTorchBase torch) {
 			//for some reason, the silo hatch torch stays at signal 15, despite the others not doing so.
 			//this is only an issue with this method changing the existing TE, so it will never occur during natural generation.
 			torch.channel = String.valueOf(freq); //int for convenience
@@ -1368,7 +1372,7 @@ public class SiloComponent extends Component {
 						if(rand.nextInt(15) == 0 && getState(world, posX, posY, posZ).isAir() && !getState(world, posX, posY - 1, posZ).isAir()) {
 							setBlock(world, posX, posY, posZ, Mod.mine_ap, 0);
 							
-							if(getTileEntity(world, posX, posY, posZ) instanceof com.hbm.tileentity.bomb.TileEntityLandmine mine) {
+							if(getTileEntity(world, posX, posY, posZ) instanceof TileEntityLandmine mine) {
 								mine.waitingForPlayer = true;
 								mine.setChanged();
 							}
@@ -1391,7 +1395,7 @@ public class SiloComponent extends Component {
 		dir = getDirection(dir.getOpposite());
 		setBlock(world, posX, posY, posZ, block, dir.ordinal() + 10); // BlockDummyable.offset
 		
-		if(getTileEntity(world, posX, posY, posZ) instanceof com.hbm.tileentity.bomb.TileEntityLaunchPadRusted launchpad) {
+		if(getTileEntity(world, posX, posY, posZ) instanceof TileEntityLaunchPadRusted launchpad) {
 			launchpad.missileLoaded = true;
 			launchpad.setChanged();
 		}

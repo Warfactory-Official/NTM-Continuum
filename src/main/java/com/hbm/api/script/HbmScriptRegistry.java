@@ -27,8 +27,8 @@ import org.jspecify.annotations.Nullable;
  * {@code c:plates/zinc}, ...), so tag existing items (another mod's ingots, KubeJS items) with them. Script materials get
  * no auto-generated items ({@code setAutogen}): those items need models that HBM generates at build time.
  *
- * <p><b>Fluids</b> are not made here: a fluid registered by KubeJS's own startup fluid builder is an HBM fluid already
- * (HBM's open model), and its HBM properties (temperature, colour, traits, hazard) come from the datapack file
+ * <p><b>Fluids</b> are not made here: a fluid registered by KubeJS's startup fluid builder is an HBM fluid already,
+ * and its HBM properties (temperature, colour, traits, hazard) come from the datapack file
  * {@code data/<namespace>/fluid_property/<name>.json}. New trait <i>types</i> are Java (an addon's
  * {@code FluidProperties.registerTrait}).
  */

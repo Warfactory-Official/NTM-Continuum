@@ -5,6 +5,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -54,9 +56,9 @@ public class FluidPipeAnchor extends BlockFluidDuct {
     }
 
     @Override
-    public net.minecraft.world.level.block.RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         // 1.7 render type -1: RenderPipeAnchor draws the OBJ anchor and its pipelines
-        return net.minecraft.world.level.block.RenderShape.INVISIBLE;
+        return RenderShape.INVISIBLE;
     }
 
     @Override
@@ -105,7 +107,7 @@ public class FluidPipeAnchor extends BlockFluidDuct {
                         BlockFluidDuct.spreadType(level, next, type, prev, 63);
                     }
                     // 1.7 changeTypeRecursively also followed every linked pipeline
-                    for (BlockPos linked : java.util.List.copyOf(anchor.getConnected())) {
+                    for (BlockPos linked : List.copyOf(anchor.getConnected())) {
                         if (level.getBlockEntity(linked) instanceof TileEntityPipeAnchor other && other.getFluidType() == prev) {
                             BlockFluidDuct.spreadType(level, linked, type, prev, 63);
                         }

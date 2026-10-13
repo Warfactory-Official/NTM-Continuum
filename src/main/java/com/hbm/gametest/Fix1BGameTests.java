@@ -1,10 +1,12 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.MKUCraftingRecipe;
+import com.hbm.items.LegacyMetaIds;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModEntityItems;
 import com.hbm.items.ModFluidItems;
@@ -33,8 +35,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 /**
- * Fix wave phase 1B (2026-10-03, History §19ej-1b): crafting/smelting recipes and 1.7 IRecipe handlers restored from
- * original-hbm (1.7.10). Expected values are the 1.7 recipe outputs.
+ * Crafting/smelting recipes and 1.7 IRecipe handlers from 1.7.
+ * Expected values are the 1.7 recipe outputs.
  */
 public final class Fix1BGameTests {
 
@@ -79,9 +81,9 @@ public final class Fix1BGameTests {
         return new ItemStack(items.get(0));
     }
 
-    /** 1.7 {@code (id, metadata)}: the split family's item (History §19es-itemvariant). */
+    /** 1.7 {@code (id, metadata)}: the split family's item. */
     private static ItemStack variant(String id, int variant) {
-        return of(com.hbm.items.LegacyMetaIds.lookup(id.substring(4), variant));
+        return of(LegacyMetaIds.lookup(id.substring(4), variant));
     }
 
     private static List<ItemStack> grid(int size, ItemStack... stacks) {
@@ -227,7 +229,7 @@ public final class Fix1BGameTests {
         ItemStack[] grid = new ItemStack[9];
         for (int i = 0; i < 9; i++) grid[i] = arrangement[i] == null ? ItemStack.EMPTY : MKUCraftingRecipe.ingredientStack(arrangement[i]);
         expect(helper, craft(helper, grid), "hbm:syringe_mkunicorn", 1, "MKU in the seed's arrangement");
-        // swap two slots: the secret arrangement no longer matches
+        // swap two slots: the secret arrangement does not match
         int a = -1, b = -1;
         for (int i = 0; i < 9 && b < 0; i++) {
             if (arrangement[i] == null) continue;
@@ -296,12 +298,12 @@ public final class Fix1BGameTests {
      * off) the LBSM and 528 recipes are absent and the default ones present.
      */
     public static void configBranches(GameTestHelper helper) {
-        boolean crafting = com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMSimpleCrafting;
-        boolean armor = com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMSimpleArmorRecipes;
-        boolean tool = com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMSimpleToolRecipes;
-        boolean medicine = com.hbm.config.GeneralConfig.enableLBSM
-                && com.hbm.config.GeneralConfig.enableLBSMSimpleMedicineRecipes;
-        boolean m528 = com.hbm.config.GeneralConfig.enable528;
+        boolean crafting = GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSimpleCrafting;
+        boolean armor = GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSimpleArmorRecipes;
+        boolean tool = GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSimpleToolRecipes;
+        boolean medicine = GeneralConfig.enableLBSM
+                && GeneralConfig.enableLBSMSimpleMedicineRecipes;
+        boolean m528 = GeneralConfig.enable528;
         String[][] cases = {
                 {"plate_iron_lbsm", String.valueOf(crafting)}, {"wire_fine_copper_lbsm", String.valueOf(crafting)},
                 {"ore_uranium_lbsm", String.valueOf(crafting)}, {"powder_dura_steel_lbsm", String.valueOf(crafting)},

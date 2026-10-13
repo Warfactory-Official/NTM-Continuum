@@ -12,6 +12,7 @@ import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.special.ItemAutogen;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import java.util.Arrays;
 import org.jspecify.annotations.Nullable;
 
 import java.util.LinkedHashMap;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The auto-generated metal-shape items — one registered {@link ItemAutogen} per (material, shape), built
+ * The auto-generated metal-shape items, one registered {@link ItemAutogen} per (material, shape), built
  * by iterating {@link Mats} × the autogen shapes (gated by each material's {@link NTMMaterial#autogen}
  * set). Registry id is {@code <shape-base>_<material>} (e.g. {@code plate_cast_iron}), which is also the
  * sprite id {@link com.hbm.client.AutogenSprites} computes for it at load time.
@@ -40,14 +41,12 @@ public final class ModAutogenItems {
      *
      * <p>These sprites are not files. Golem Core recolours one greyscale plate per shape onto every
      * material's own light and dark colours while the atlas is stitched, which is what the 1.12.2
-     * {@code ItemAutogen} did with a mutable atlas icon and what this mod did with 187 pre-baked PNGs
-     * until they were deleted. {@link com.hbm.client.AutogenSprites} declares the remap; this says the
-     * same thing to the build, so the sprite check holds the model against the art it is derived from
-     * instead of reporting a file that is never going to be there.
+     * {@code ItemAutogen} did with a mutable atlas icon. {@link com.hbm.client.AutogenSprites} declares the remap;
+     * this tells the build the same thing, so the sprite check holds the model against the art it is derived from.
      *
-     * <p>{@code bedrock_ore_fragment_bismuth} is deliberately absent: bismuth declares one flat colour
-     * for both ends of its band, so a remap would hand it a silhouette. 1.7 answered that with an
-     * authored sprite ({@code ItemAutogen.aot}) and so does this — it stays a file.
+     * <p>{@code bedrock_ore_fragment_bismuth} is absent: bismuth declares one flat colour for both ends of its
+     * band, so a remap would hand it a silhouette. 1.7 used an authored sprite ({@code ItemAutogen.aot}) and so
+     * does this; it stays a file.
      */
     private static final Map<String, String[]> REMAPPED_SHAPES = new LinkedHashMap<>();
 
@@ -111,7 +110,7 @@ public final class ModAutogenItems {
     /** Whether this material-shape item's sprite is a computed remap (its model is then the plain sprite). */
     private static boolean remapped(String base, String material) {
         String[] materials = REMAPPED_SHAPES.get(base);
-        return materials != null && java.util.Arrays.asList(materials).contains(material);
+        return materials != null && Arrays.asList(materials).contains(material);
     }
 
     /** The autogen shapes and their registry-name base, which also names the shape art each is drawn from. */
@@ -203,7 +202,7 @@ public final class ModAutogenItems {
     }
 
     /**
-     * The registry-name base for a shape — {@code plate_cast} for {@link MaterialShapes#CASTPLATE}.
+     * The registry-name base for a shape, {@code plate_cast} for {@link MaterialShapes#CASTPLATE}.
      *
      * <p>It names the greyscale art too ({@code hbm:items/plate_cast}), which is what lets
      * {@code com.hbm.client.AutogenSprites} derive every sprite id from the same table the items are

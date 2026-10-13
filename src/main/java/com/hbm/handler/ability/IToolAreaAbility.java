@@ -1,10 +1,13 @@
 package com.hbm.handler.ability;
 
+import com.hbm.api.registry.NamedRegistry;
 import com.hbm.config.ToolConfig;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
 import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
 import com.hbm.items.tool.ItemToolAbility;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -48,8 +51,8 @@ public interface IToolAreaAbility extends IBaseAbility {
      * What {@code recursiveStone = false} keeps the vein miner off (ADDON-API-INVENTORY V-180): 1.7's plain stone.
      * NTM: Space widens it to hbm-space's "stone" and "cobblestone" ore dictionary entries (the item tags).
      */
-    java.util.concurrent.atomic.AtomicReference<java.util.function.Predicate<net.minecraft.world.level.block.state.BlockState>>
-            RECURSION_STONE = new java.util.concurrent.atomic.AtomicReference<>(state -> state.is(Blocks.STONE));
+    AtomicReference<Predicate<BlockState>>
+            RECURSION_STONE = new AtomicReference<>(state -> state.is(Blocks.STONE));
 
     IToolAreaAbility RECURSION = new IToolAreaAbility() {
         @Override public String getName() { return "tool.ability.recursion"; }
@@ -227,7 +230,7 @@ public interface IToolAreaAbility extends IBaseAbility {
      * addon ability registers here ({@code REGISTRY.register(MY_ABILITY)}) at mod construction so a saved preset finds
      * it again; giving it to a tool is the tool's own {@code addAbility}.
      */
-    com.hbm.api.registry.NamedRegistry<IToolAreaAbility> REGISTRY = com.hbm.api.registry.NamedRegistry.of(
+    NamedRegistry<IToolAreaAbility> REGISTRY = NamedRegistry.of(
             "tool area ability", IToolAreaAbility::getName, NONE, RECURSION, HAMMER, HAMMER_FLAT, EXPLOSION);
 
     static IToolAreaAbility getByName(String name) {

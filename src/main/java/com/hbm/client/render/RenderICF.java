@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityICF;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -21,7 +22,7 @@ public final class RenderICF extends GemBER<TileEntityICF, RenderICF.State> {
         public float yaw;
     }
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/reactors/icf.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/reactors/icf.obj"));
     private final Surface skin = Surface.cutoutCull(Constants.MOD_ID + ":textures/models/machines/icf.png");
 
     /** The vessel is 17 blocks long; it must stay drawn while its core cell is off screen. */

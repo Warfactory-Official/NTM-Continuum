@@ -4,11 +4,16 @@ import com.hbm.inventory.container.ContainerMixer;
 import com.hbm.inventory.recipes.MixerRecipes;
 import com.hbm.inventory.recipes.MixerRecipes.MixerRecipe;
 import com.hbm.packet.ControlEventPayload;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.machine.TileEntityMachineMixer;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -17,14 +22,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Mixer screen — 1.7.10 {@code GUIMixer} ({@code processing/gui_mixer.png}, 176x204): power bar (12,18) 16x52,
+ * Mixer screen: 1.7.10 {@code GUIMixer} ({@code processing/gui_mixer.png}, 176x204): power bar (12,18) 16x52,
  * progress (71,31) up to 52x44 from (192,0), tanks at x=52/61 (7 wide) and 126 (16 wide), bottom y=70, the
  * recipe-cycling button (71,17) 12x12 and the upgrade info panel (152,55).
  */
-public class GUIMixer extends dev.golem.core.gui.CompatContainerScreen<ContainerMixer>
+public class GUIMixer extends CompatContainerScreen<ContainerMixer>
         implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_mixer.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_mixer.png");
 
     public GUIMixer(ContainerMixer menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 204);
@@ -59,12 +64,12 @@ public class GUIMixer extends dev.golem.core.gui.CompatContainerScreen<Container
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         TileEntityMachineMixer mixer = menu.getMixer();
         // 1.7: x [71,83), y (17,29].
         if (mixer != null && GuiUtil.hover(event.x(), event.y(), leftPos + 71, topPos + 17, 12, 12)) {
             GuiUtil.playClickSound();
-            net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+            CompoundTag data = new CompoundTag();
             data.putBoolean("toggle", true);
             GolemNetwork.sendToServer(ControlEventPayload.CODEC,
                     new ControlEventPayload(mixer.getBlockPos(), data));
@@ -113,7 +118,7 @@ public class GUIMixer extends dev.golem.core.gui.CompatContainerScreen<Container
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return menu.getMixer();
     }
 }

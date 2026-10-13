@@ -33,7 +33,6 @@ public final class HbmEvents {
 
     private HbmEvents() {}
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Explosions
 
     /**
@@ -54,7 +53,6 @@ public final class HbmEvents {
         for (Consumer<Explosion> listener : EXPLOSION) listener.accept(event);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Bombs
 
     /**
@@ -96,7 +94,6 @@ public final class HbmEvents {
         for (Consumer<BombDetonated> listener : BOMB_DETONATED) listener.accept(event);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Missiles
 
     /**
@@ -141,7 +138,6 @@ public final class HbmEvents {
         for (Consumer<MissileImpact> listener : MISSILE_IMPACT) listener.accept(event);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Machines
 
     /**
@@ -172,7 +168,6 @@ public final class HbmEvents {
         for (Consumer<MachineRecipeCompleted> listener : MACHINE_RECIPE_COMPLETED) listener.accept(event);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Contamination
 
     /**
@@ -200,7 +195,6 @@ public final class HbmEvents {
         for (Consumer<EntityIrradiated> listener : ENTITY_IRRADIATED) listener.accept(event);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
 
     private static String blockId(Level level, BlockPos pos) {
         var id = BuiltInRegistries.BLOCK.getKey(level.getBlockState(pos).getBlock());

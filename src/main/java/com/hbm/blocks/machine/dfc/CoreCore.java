@@ -2,8 +2,11 @@ package com.hbm.blocks.machine.dfc;
 
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.dfc.TileEntityCore;
+import dev.golem.core.gui.Menus;
+import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -18,7 +21,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The reaction chamber. Invisible as a block; the orb inside it is the renderer's whole job. */
-public class CoreCore extends CompatBlock implements dev.golem.core.registry.TickingBlock {
+public class CoreCore extends CompatBlock implements TickingBlock {
 
     public CoreCore(Properties properties) {
         super(properties);
@@ -35,9 +38,9 @@ public class CoreCore extends CompatBlock implements dev.golem.core.registry.Tic
                                                  BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
-        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+        if (player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }

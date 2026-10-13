@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 import net.minecraft.world.item.Item;
 
 /**
- * Registry-owned part of the special Sedna wave.
+ * Registry-owned part of the special Sedna guns.
  *
  * <p>The old game kept these rounds on two metadata items.  Their flattened registry identities are
  * declared by {@link com.hbm.items.ModAmmoItems}; this class only owns the subset of gun entries whose
@@ -52,8 +52,8 @@ public final class SpecialGunCatalog {
     }
 
     /**
-     * Registers the ordinary projectile-backed special guns. Beam, fluid and PA guns are deliberately
-     * not made into generic stand-ins here; their required item/entity seams are listed in the handoff.
+     * Registers the ordinary projectile-backed special guns. Beam, fluid and PA guns are
+     * not made into generic stand-ins here.
      */
     public static synchronized void registerSupportedGuns() {
         if (gunsRegistered) return;

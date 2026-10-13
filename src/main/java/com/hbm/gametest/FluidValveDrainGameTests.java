@@ -2,6 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.api.fluidmk2.DuctData;
 import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.machine.MachineDrain;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.network.BlockFluidDuct;
@@ -62,7 +63,7 @@ public final class FluidValveDrainGameTests {
 
     public static void identifierSpreadsPipeType(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockFluidDuct block = com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get();
+        BlockFluidDuct block = ModFluidNetBlocks.fluid_duct_neo.get();
         BlockPos first = helper.absolutePos(new BlockPos(2, 1, 3));
         BlockPos second = first.east();
         BlockPos third = second.east();

@@ -2,6 +2,7 @@ package com.hbm.client.render.item;
 
 import com.hbm.blocks.generic.BlockPlushie.PlushieType;
 import com.hbm.client.render.RenderPlushie;
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModDataComponents;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.SubmitSink;
@@ -25,7 +26,7 @@ final class ItemRenderPlushie implements CustomItemRenderer {
     public void render(ItemStack stack, Type type, PoseStack pose, SubmitSink sink, int light, int overlay,
                        @Nullable LivingEntity owner) {
         PlushieType[] types = PlushieType.values();
-        int ordinal = com.hbm.items.LegacyMeta.of(stack);
+        int ordinal = LegacyMeta.of(stack);
         // 1.7 EnumUtil.grabEnumSafely: abs(index % length)
         PlushieType plushie = types[Math.abs(ordinal % types.length)];
 

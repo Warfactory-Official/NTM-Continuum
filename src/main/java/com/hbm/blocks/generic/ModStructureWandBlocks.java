@@ -108,7 +108,7 @@ public final class ModStructureWandBlocks {
                 Component.literal("Use hand drill to cycle forwards through the interaction list, shift click to go back").withStyle(ChatFormatting.GOLD),
                 Component.literal("Use a detonator to transform").withStyle(ChatFormatting.YELLOW)));
         REG.blockItem(wand_tandem, Compat::blockDescription);
-        // 1.7 wand_structure metadata 0/1 (save/load), one item each (1.7 texture names; History §19es-itemvariant)
+        // 1.7 wand_structure metadata 0/1 (save/load), one item each
         REG.item("wand_structure_load", p -> new MaterialCompletionBlockItem(wand_structure.get(), p,
                         "wand_structure", 1, "load"), Compat::blockDescription)
                 .icon(d -> d.models(Models.blockItem("hbm:block/wand_structure_load")));

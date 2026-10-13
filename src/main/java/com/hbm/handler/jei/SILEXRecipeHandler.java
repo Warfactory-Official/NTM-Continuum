@@ -12,14 +12,14 @@ import java.util.List;
 /**
  * JEI category for the SILEX, on the universal handler.
  *
- * <p>Upstream split this into <b>six</b> categories — a general one plus one per wavelength — so that
+ * <p>Upstream split this into <b>six</b> categories (a general one plus one per wavelength) so that
  * clicking a laser crystal showed exactly the recipes that crystal unlocks. That split existed because
  * 1.12.2 JEI had no way to filter within a category. Here it is a single category and each recipe
  * states its own requirement on the stat lines, which is both simpler and more honest: a recipe listed
  * under "IR" also runs on every stronger wavelength.
  *
  * <p>Stat lines mirror the old {@code JeiRecipes} wrapper: the required wavelength, and the
- * multiplier {@code fluidProduced / fluidConsumed} — how many output rolls one input item yields.
+ * multiplier {@code fluidProduced / fluidConsumed}, how many output rolls one input item yields.
  * Per-output percentages come from the weights.
  */
 public class SILEXRecipeHandler extends JEIUniversalHandler<SILEXRecipes.SILEXRecipe> {

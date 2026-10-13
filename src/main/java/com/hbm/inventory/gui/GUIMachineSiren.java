@@ -3,6 +3,7 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerMachineSiren;
 import com.hbm.items.machine.ItemCassette.TrackType;
 import com.hbm.tileentity.machine.TileEntityMachineSiren;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -13,7 +14,7 @@ import net.minecraft.world.entity.player.Inventory;
 /** 1.7 {@code GUIMachineSiren}: {@code gui_siren.png}, 176x166; the cassette's title, type and range in its colour. */
 public final class GUIMachineSiren extends CompatContainerScreen<ContainerMachineSiren> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_siren.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/gui_siren.png");
 
     public GUIMachineSiren(ContainerMachineSiren menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 166);

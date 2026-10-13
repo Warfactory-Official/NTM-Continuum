@@ -8,27 +8,29 @@ import com.hbm.lib.ModDamageSources.DamageClass;
 import com.hbm.particle.SpentCasing;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.HitResult;
 
 /**
  * Everything about one <em>round of ammunition</em>: how fast it flies, how it spreads, what it does on
  * impact, and which item feeds it into a magazine. The gun contributes base damage (on its
- * {@link Receiver}) and the round multiplies it — so the same receiver firing AP instead of FMJ is the
+ * {@link Receiver}) and the round multiplies it, so the same receiver firing AP instead of FMJ is the
  * whole difference between those two rounds.
  *
- * <p>Ported from 1.12.2 {@code com.hbm.items.weapon.sedna.BulletConfig}. Two deliberate changes:
+ * <p>Ported from 1.12.2 {@code com.hbm.items.weapon.sedna.BulletConfig}, with two changes:
  *
  * <ul>
  *   <li><b>Identity.</b> Upstream keeps a mutable {@code static List<BulletConfig> configs} and stores
- *       the <i>list index</i> in both the gun's NBT and the bullet entity's synched data — the source
+ *       the <i>list index</i> in both the gun's NBT and the bullet entity's synched data; the source
  *       itself carries a {@code //TODO: replace with named tags to avoid ID shifting}. Here every config
  *       is registered under an {@link Identifier} in {@link BulletConfigs}, so save data and packets
  *       survive any change in declaration order.
  *   <li><b>Ammo matching.</b> Upstream's {@code ComparableStack(ammo_standard, 1, meta)} relies on item
- *       metadata, which no longer exists; each ammo variant is its own item, so the binding is a plain
+ *       metadata, which does not exist; each ammo variant is its own item, so the binding is a plain
  *       {@link net.minecraft.world.item.Item}.
  * </ul>
  *
@@ -52,17 +54,16 @@ public class BulletConfig {
     /**
      * The item one round is loaded from, held as a supplier.
      *
-     * <p>Lazy on purpose: bullet configs are declared during mod bootstrap so that a gun's magazine can
-     * name them while the gun item is being built, but items themselves are not registered until later.
-     * Resolving the item eagerly here throws "Missing key in ResourceKey[minecraft:item …]" before the
-     * game finishes loading.
+     * <p>Lazy: bullet configs are declared during mod bootstrap so that a gun's magazine can name them while the
+     * gun item is built, but items are registered later. Resolving the item eagerly throws "Missing key in
+     * ResourceKey[minecraft:item …]".
      */
-    public java.util.function.Supplier<net.minecraft.world.item.Item> ammo;
+    public Supplier<Item> ammo;
     /** Spent casing item and the number of shots represented by one casing drop. */
     public ItemStack casingItem;
-    private java.util.function.Supplier<ItemStack> casingSupplier;
+    private Supplier<ItemStack> casingSupplier;
     public int casingAmount;
-    /** Original-hbm's shell casing renderer data; retained even while its world entity is deferred. */
+    /** 1.7's shell casing renderer data; retained even while its world entity is deferred. */
     public CasingProfile casingProfile;
     /** The source casing definition selected by this ammunition config. */
     public SpentCasing casing;
@@ -104,13 +105,13 @@ public class BulletConfig {
     public boolean blackPowder = false;
     public boolean renderRotations = true;
 
-    /* SETTERS — one per field, chained in the XFactory declarations. */
+    /* Setters: one per field, chained in the XFactory declarations. */
 
-    public BulletConfig setItem(java.util.function.Supplier<net.minecraft.world.item.Item> ammo) { this.ammo = ammo; return this; }
+    public BulletConfig setItem(Supplier<Item> ammo) { this.ammo = ammo; return this; }
     public BulletConfig setBeam() { this.pType = ProjectileType.BEAM; return this; }
     public BulletConfig setChunkloading() { this.pType = ProjectileType.BULLET_CHUNKLOADING; return this; }
     public BulletConfig setCasing(ItemStack item, int amount) { this.casingItem = item; this.casingSupplier = null; this.casingAmount = amount; return this; }
-    public BulletConfig setCasing(java.util.function.Supplier<ItemStack> item, int amount) { this.casingItem = null; this.casingSupplier = item; this.casingAmount = amount; return this; }
+    public BulletConfig setCasing(Supplier<ItemStack> item, int amount) { this.casingItem = null; this.casingSupplier = item; this.casingAmount = amount; return this; }
     public BulletConfig setCasing(ItemEnums.EnumCasingType item, int amount) {
         return setCasing(() -> ModCasingItems.casing(item, 1), amount);
     }
@@ -174,7 +175,7 @@ public class BulletConfig {
     }
 
     /** The item one round is loaded from, or null before item registration has run. */
-    public net.minecraft.world.item.Item ammoItem() {
+    public Item ammoItem() {
         return ammo == null ? null : ammo.get();
     }
 
@@ -188,7 +189,7 @@ public class BulletConfig {
 
     /** One round of this type, for tooltips and the ammo HUD. */
     public ItemStack toStack() {
-        net.minecraft.world.item.Item item = ammoItem();
+        Item item = ammoItem();
         return item == null ? ItemStack.EMPTY : new ItemStack(item);
     }
 

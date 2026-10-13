@@ -3,12 +3,13 @@ package com.hbm.client.render.projectile;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.entity.projectile.EntityCoin;
 import dev.golem.core.Ids;
+import dev.golem.core.render.CompatEntityRenderState;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemEntityRenderer;
 import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 
-/** GEM port of original-hbm's RenderCoin, retaining the authored chip mesh. */
+/** GEM port of 1.7's RenderCoin, retaining the authored chip mesh. */
 public final class CoinProjectileRenderer extends GemEntityRenderer<EntityCoin, CoinProjectileRenderer.State> {
     private static final String MODEL_PATH = "models/trinkets/chip.obj";
     private static final String TEXTURE_PATH = "textures/models/trinkets/chip_gold.png";
@@ -41,7 +42,7 @@ public final class CoinProjectileRenderer extends GemEntityRenderer<EntityCoin, 
         state.roll = (entity.tickCount + partialTicks) * 45F;
     }
 
-    public static final class State extends dev.golem.core.render.CompatEntityRenderState {
+    public static final class State extends CompatEntityRenderState {
         public float yaw;
         public float roll;
     }

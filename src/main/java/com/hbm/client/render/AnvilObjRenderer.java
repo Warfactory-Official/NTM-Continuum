@@ -5,6 +5,7 @@ import com.hbm.blocks.ModAnvilBlocks;
 import com.hbm.blocks.machine.NTMAnvil;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.TileEntityAnvil;
+import dev.golem.core.Ids;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -25,9 +26,9 @@ import java.util.Map;
  * renderer serves all of them (the per-block model + texture are looked up from the BE's block, like
  * {@link DecoObjRenderer}).
  *
- * <p>The anvil OBJs are authored in 0..1 block-local space, so the per-facing yaw (taken verbatim from
- * the old blockstate variants: west=0 / north=90 / east=180 / south=270, applied as the vanilla
- * clockwise blockstate "y" rotation) spins around the block centre.
+ * <p>The anvil OBJs are authored in 0..1 block-local space, so the per-facing yaw (west=0 / north=90 / east=180 /
+ * south=270, from the 1.12.2 blockstate variants, applied as the vanilla clockwise blockstate "y" rotation) spins
+ * around the block centre.
  */
 public class AnvilObjRenderer extends GemBER<TileEntityAnvil, AnvilRenderState> {
 
@@ -42,7 +43,7 @@ public class AnvilObjRenderer extends GemBER<TileEntityAnvil, AnvilRenderState> 
     /**
      * One anvil-shaped slot in the model, filled with whichever of the twelve anvils this block is.
      *
-     * <p>Vanilla blockstate "y" rotations are clockwise seen from above — negative around +Y, about the
+     * <p>Vanilla blockstate "y" rotations are clockwise seen from above, negative around +Y, about the
      * block centre, since the OBJ vertices are in 0..1 corner space.
      */
     @Override
@@ -50,7 +51,7 @@ public class AnvilObjRenderer extends GemBER<TileEntityAnvil, AnvilRenderState> 
         for (RegistryObject<NTMAnvil> anvil : ModAnvilBlocks.ANVILS) {
             String id = anvil.getId().getPath();
             tiers.put(anvil.get(), new Tier(
-                    WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/anvils/" + id + ".obj")).all(),
+                    WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/anvils/" + id + ".obj")).all(),
                     Surface.cutout(Constants.MOD_ID + ":textures/models/anvils/" + id + ".png")));
         }
         Tier fallback = tiers.get(ModAnvilBlocks.ANVILS.get(0).get());

@@ -5,8 +5,10 @@ import dev.golem.core.dejson.Atlases;
 import dev.golem.core.dejson.Dejson;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Slots;
+import dev.golem.core.dejson.Variants;
 import dev.golem.core.render.display.DisplaySlot;
 import dev.golem.core.render.display.Pose17;
+import java.util.EnumMap;
 import org.joml.Matrix4f;
 
 import java.util.LinkedHashMap;
@@ -17,13 +19,13 @@ import java.util.Map;
  * The item models that have no registration chain to live on, declared through Golem Core's
  * {@code dejson} vocabulary instead of written as JSON: the shared sprite atlases, the OBJ machine/gun
  * frames and base models, layered sprites of items whose owners cannot initialise in Dejson's plain JVM,
- * and a few ids registered elsewhere (a GameTest fixture, a gun). Since the 2026-10-01 Reg migration
+ * and a few ids registered elsewhere (a GameTest fixture, a gun). With the Reg chains
  * almost every item states its model on its own registration ({@link com.hbm.registration.Reg}).
  *
  * <p>Items whose block owns them are not here either; a block's own item is declared beside the block in
  * its registration chain ({@link com.hbm.registration.Reg}), so the two cannot drift apart. Neither are the items whose
- * 26.1 definition is a {@code select}, a {@code condition} or a {@code special} — a gun or an RBMK
- * column drawn from an OBJ by its own renderer says something this vocabulary deliberately cannot.
+ * 26.1 definition is a {@code select}, a {@code condition} or a {@code special}: a gun or an RBMK
+ * column drawn from an OBJ by its own renderer says something this vocabulary cannot.
  */
 public final class ModItemModels {
 
@@ -39,9 +41,9 @@ public final class ModItemModels {
      * cube is stated here.
      */
     private static void gameTestFixtures() {
-        dev.golem.core.dejson.Dejson.block(NS, "test_fan_blowable")
+        Dejson.block(NS, "test_fan_blowable")
                 .models(Models.cubeAll("minecraft:block/stone"))
-                .states(dev.golem.core.dejson.Variants.simple())
+                .states(Variants.simple())
                 .blockItem()
                 .register();
     }
@@ -61,7 +63,7 @@ public final class ModItemModels {
         gameTestFixtures();
         // 1.7 names block sprites textures/blocks (any file there), outside the block/ directory vanilla stitches. The 1.7 GUI tank
         // textures (every file under textures/gui/fluids) are stitched too: they are what other mods draw an HBM fluid with
-        // (Fluids.tokenSpec, History section 19ek-fluids), and a fluid sprite must be in the block atlas.
+        // (Fluids.tokenSpec), and a fluid sprite must be in the block atlas.
         Atlases.directories("minecraft", "blocks", "blocks", "blocks/", "gui/fluids", "gui/fluids/");
         // The fourteen rail/tower/compressor OBJ item definitions are authored JSON (assets/hbm/items/,
         // listed in gradle/dejson-authored.txt): hand-tuned transforms stay files, not JsonObject calls.
@@ -474,21 +476,21 @@ public final class ModItemModels {
     /**
      * The two base models an OBJ machine item wears its frame on.
      *
-     * <p>A machine icon is a frame times a body. The body is the item's own verbatim 1.7
+     * <p>A machine icon is a frame times a body. The body is the item's own 1.7
      * {@code renderInventory}/{@code renderCommon} numbers, which its item definition carries and
      * {@code MachineItemModel} applies at draw time. The frame is what 1.7's {@code ItemRenderBase}
-     * wrapped around every such body, and it is shared — so it lives here, once, and every machine
-     * inherits it by pointing at one of these two models.
+     * wrapped around every such body. It is shared, so it lives here once and every machine inherits it by
+     * pointing at one of these two models.
      *
      * <p>Two spellings of one frame because the renderer differs, not the pose. 26.1 reads display
      * properties off {@code machine_obj_context_base} through the special-model system; below 1.21.4
      * the same items are routed to a per-loader BEWLR, which vanilla only reaches for a model whose
      * parent chain ends at {@code minecraft:builtin/entity}.
      *
-     * <p>Composed rather than written out. A {@code display{}} entry is a translate/rotate/scale triple
+     * <p>Composed, not written out. A {@code display{}} entry is a translate/rotate/scale triple
      * applied as {@code T . R . S}; the 1.7 chains are not in that shape until
      * {@link dev.golem.core.render.display.DisplayFrame} decomposes them, and copying one field by
-     * field is how these icons ended up most of a slot too high.
+     * field puts the icons too high.
      */
     private static void machineFrames() {
         machineFrame("machine", Pose17.Klass.ITEM_RENDER_BASE);
@@ -504,14 +506,14 @@ public final class ModItemModels {
     }
 
     /**
-     * The {@code teisr} frame: where 1.12 handed a {@code TEISRBase} item renderer its pose, old-hbm
+     * The {@code teisr} frame: where 1.12 handed a {@code TEISRBase} item renderer its pose, 1.12.2
      * {@code BakedModelTransforms.defaultItemTransforms()} (third person {@code 0, 3/16, 1/16} at 0.55, first person
      * rotated {@code 0, -90, 25}, translated {@code 1.13, 3.2, 1.13}/16 at 0.68, ground {@code 0, 2/16, 0} at 0.5, head and
      * frame turned 180, GUI identity) followed by the builtin renderer's {@code translate(-0.5, -0.5, -0.5)}. The
      * renderer's lighting in the GUI was off (the TEISR's layer model is not gui3d), which {@code front} light is.
      */
     private static void teisrFrame() {
-        Map<DisplaySlot, Matrix4f> frame = new java.util.EnumMap<>(DisplaySlot.class);
+        Map<DisplaySlot, Matrix4f> frame = new EnumMap<>(DisplaySlot.class);
         frame.put(DisplaySlot.GUI, new Matrix4f());
         frame.put(DisplaySlot.GROUND, vanillaPose(DisplaySlot.GROUND, 0, 0, 0, 0, 2, 0, 0.5F));
         frame.put(DisplaySlot.HEAD, vanillaPose(DisplaySlot.HEAD, 0, 180, 0, 0, 13, 7, 1F));
@@ -541,7 +543,7 @@ public final class ModItemModels {
      * about the block centre, which is where a {@code Pose17} frame puts vanilla's display.
      */
     private static void spriteFrames() {
-        Map<DisplaySlot, Matrix4f> generated = new java.util.EnumMap<>(DisplaySlot.class);
+        Map<DisplaySlot, Matrix4f> generated = new EnumMap<>(DisplaySlot.class);
         generated.put(DisplaySlot.GUI, new Matrix4f());
         generated.put(DisplaySlot.GROUND, vanillaPose(DisplaySlot.GROUND, 0, 0, 0, 0, 2, 0, 0.5F));
         generated.put(DisplaySlot.HEAD, vanillaPose(DisplaySlot.HEAD, 0, 180, 0, 0, 13, 7, 1F));
@@ -552,7 +554,7 @@ public final class ModItemModels {
         for (DisplaySlot slot : new DisplaySlot[]{DisplaySlot.FIRST_PERSON_RIGHT_HAND, DisplaySlot.FIRST_PERSON_LEFT_HAND}) {
             generated.put(slot, vanillaPose(slot, 0, -90, 25, 1.13F, 3.2F, 1.13F, 0.68F));
         }
-        Map<DisplaySlot, Matrix4f> handheld = new java.util.EnumMap<>(generated);
+        Map<DisplaySlot, Matrix4f> handheld = new EnumMap<>(generated);
         handheld.put(DisplaySlot.THIRD_PERSON_RIGHT_HAND,
                 vanillaPose(DisplaySlot.THIRD_PERSON_RIGHT_HAND, 0, -90, 55, 0, 4, 0.5F, 0.85F));
         handheld.put(DisplaySlot.THIRD_PERSON_LEFT_HAND,
@@ -617,8 +619,8 @@ public final class ModItemModels {
      *
      * <p>{@link Pose17.Klass#ITEM_RENDER_WEAPON} is the engine slot alone, so this carries none of
      * {@code ItemRenderWeaponBase}'s setup chain and none of any weapon's own: those are calls, and they
-     * live in {@code WeaponRenderer}. What this replaces is a hand-fitted {@code display{}} that stood
-     * in for all of it — one pose shared by sixty-six guns, in place of the fifty-two the oracle has.
+     * live in {@code WeaponRenderer}. This frame is one pose shared by sixty-six guns, where the 1.7
+     * oracle has fifty-two.
      */
     private static void gunFrame() {
         Dejson.item(NS, "gun_obj_base")
@@ -650,7 +652,7 @@ public final class ModItemModels {
      * The other slots are vanilla {@code block/block} about the block centre, the hand poses every block item has.
      */
     private static Map<DisplaySlot, Matrix4f> blockFrames() {
-        Map<DisplaySlot, Matrix4f> frame = new java.util.EnumMap<>(DisplaySlot.class);
+        Map<DisplaySlot, Matrix4f> frame = new EnumMap<>(DisplaySlot.class);
         frame.put(DisplaySlot.GUI, new Matrix4f().translate(0.5F, 0.5F, 0.5F)
                 .rotateX((float) Math.toRadians(30)).rotateY((float) Math.toRadians(-45)).scale(0.625F));
         frame.put(DisplaySlot.GROUND, vanillaPose(DisplaySlot.GROUND, 0, 0, 0, 0, 3, 0, 0.25F));
@@ -681,7 +683,7 @@ public final class ModItemModels {
 
     /**
      * The funnel's inventory icon is the old block OBJ with separate Top/Bottom/Side skins. Dejson's
-     * ordinary item vocabulary intentionally does not claim renderer-owned special models, so this
+     * ordinary item vocabulary does not claim renderer-owned special models, so this
      * declaration owns both the legacy marker and the special-model definition from the same registry.
      * {@link Models#blockItem(String)} emits the {@code builtin/entity} marker directly, while the
      * legacy-assets pass also recognises the special definition and keeps that marker authoritative.
@@ -693,7 +695,7 @@ public final class ModItemModels {
 
         // Dejson.itemDefinition returns the object stored in its definition registry (not a copy), and
         // DejsonWriter writes that same object. This is the narrow escape hatch for the custom OBJ
-        // definition that the generic model-shape vocabulary deliberately cannot represent.
+        // definition that the generic model-shape vocabulary cannot represent.
         JsonObject definition = Dejson.itemDefinition("hbm:item/machine_funnel");
         JsonObject machine = new JsonObject();
         machine.addProperty("type", "hbm:machine_obj");
@@ -705,7 +707,7 @@ public final class ModItemModels {
         partTextures.addProperty("Side", "hbm:textures/blocks/machine_funnel_side.png");
         machine.add("partTextures", partTextures);
         // 1.7 RenderRail -> MachineFunnel.renderInventory: translate(0, -0.5, 0), Top/Bottom/Side, in the 3D
-        // block-item frame (icon-P2 2026-10-01)
+        // block-item frame
         machine.addProperty("frame", "block");
         machine.addProperty("rawLegacyTransform", true);
         machine.addProperty("scale", 1.0F);

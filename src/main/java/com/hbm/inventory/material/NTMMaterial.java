@@ -3,6 +3,7 @@ package com.hbm.inventory.material;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.MaterialStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
+import dev.golem.core.Ids;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
@@ -13,21 +14,21 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * A material in HBM's material system — the modern tag-system port of {@code NTMMaterial}. Identified by a
+ * A material in HBM's material system, the modern tag-system port of {@code NTMMaterial}. Identified by a
  * snake-case {@link #name} (matching the ported item naming, e.g. {@code combine_steel}); combining it with
  * a {@link MaterialShapes shape} yields a recipe ingredient ({@link AStack}):
  *
  * <ul>
- *   <li>Shapes with real, taggable items (ingot/plate/dust/nugget/gem/block) → a {@link TagStack} on the
+ *   <li>Shapes with real, taggable items (ingot/plate/dust/nugget/gem/block): a {@link TagStack} on the
  *       {@code c:<plural>/<name>} common item tag (cross-mod, the old {@code "ingotIron"} equivalent).</li>
- *   <li>HBM "autogen" shapes (cast/welded plate, shell, pipe, fine/dense wire, …) → a {@link MaterialStack}
+ *   <li>HBM "autogen" shapes (cast/welded plate, shell, pipe, fine/dense wire, …): a {@link MaterialStack}
  *       on the single {@link com.hbm.items.special.ItemAutogen} item for that shape, matched by its material
  *       data component (these aren't taggable per-material since they're one item recoloured per material).</li>
  * </ul>
  *
- * <p>The {@link #solidColorLight} drives the autogen icon tint. The crucible half of the 1.12.2 class —
+ * <p>The {@link #solidColorLight} drives the autogen icon tint. The crucible half of the 1.12.2 class, namely
  * {@link SmeltingBehavior} plus the {@link #smeltsInto}/{@link #convIn}/{@link #convOut} conversion triple
- * (how a material behaves when melted, e.g. coal → carbon at 2:1) — is ported for the foundry system;
+ * (how a material behaves when melted, e.g. coal to carbon at 2:1) is ported for the foundry system;
  * traits remain deferred.
  */
 public final class NTMMaterial {
@@ -103,10 +104,10 @@ public final class NTMMaterial {
 
     /** The {@code c:<plural>/<name>} item tag for this material in the given shape. */
     public TagKey<Item> tag(MaterialShapes shape) {
-        return TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", shape.tagPlural + "/" + name));
+        return TagKey.create(Registries.ITEM, Ids.of("c", shape.tagPlural + "/" + name));
     }
 
-    // --- tag-backed shapes (real items + cross-mod c: tags) ---
+    // Tag-backed shapes (real items + cross-mod c: tags)
 
     public AStack nugget()  { return new TagStack(tag(MaterialShapes.NUGGET)); }
     public AStack billet()  { return new TagStack(tag(MaterialShapes.BILLET)); }
@@ -118,7 +119,7 @@ public final class NTMMaterial {
     public AStack block()   { return new TagStack(tag(MaterialShapes.BLOCK)); }
     public AStack ore()     { return new TagStack(tag(MaterialShapes.ORE)); }
 
-    // --- HBM autogen shapes (one item per shape, matched by the material data component) ---
+    // HBM autogen shapes (one item per shape, matched by the material data component)
 
     public AStack plateCast()   { return autogenStack(MaterialShapes.CASTPLATE); }
     public AStack plateWelded() { return autogenStack(MaterialShapes.WELDEDPLATE); }
@@ -145,7 +146,7 @@ public final class NTMMaterial {
         return "NTMMaterial[" + name + "]";
     }
 
-    /** 1.12.2 {@code NTMMaterial.SmeltingBehavior}, verbatim. */
+    /** 1.12.2 {@code NTMMaterial.SmeltingBehavior}, unchanged. */
     public enum SmeltingBehavior {
         NOT_SMELTABLE,  // anything that can't be smelted or otherwise doesn't belong in a smelter, like diamond
         VAPORIZES,      // can't be smelted because the material would skadoodle

@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.struct;
 
+import com.hbm.lib.Library;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.BlockGetter;
@@ -13,20 +14,20 @@ import java.util.function.Supplier;
 
 /**
  * The declarative shape a {@link BlockStruct} core waits for before it transmutes into a finished
- * multiblock. This replaces the hand-rolled {@code cbr(block, meta, dx, dy, dz)} ladders in 1.12.2's
- * {@code TileEntityWatzStruct} / {@code TileEntityFusionTorusStruct}: the same coordinates, but stated
+ * multiblock. It takes the place of the hand-rolled {@code cbr(block, meta, dx, dy, dz)} ladders in 1.12.2's
+ * {@code TileEntityWatzStruct} / {@code TileEntityFusionTorusStruct}: the same coordinates, stated
  * once so both the scan and the ghost preview read from them.
  *
- * <p>Two construction routes, matching the two shapes upstream actually uses:
+ * <p>Two construction routes, matching the two shapes upstream uses:
  * <ul>
- *   <li>{@link #builder()} — explicit per-cell offsets (the Watz's four-armed cross).</li>
- *   <li>{@link Builder#mask} — a vertically mirrored stack of layer masks, where each layer is a
+ *   <li>{@link #builder()}, explicit per-cell offsets (the Watz's four-armed cross).</li>
+ *   <li>{@link Builder#mask}, a vertically mirrored stack of layer masks, where each layer is a
  *       square {@code int[][]} of component indices and {@code 0} means "leave empty" (the fusion
  *       torus's 15×15 layout, three authored layers mirrored into five).</li>
  * </ul>
  *
  * <p>Offsets are relative to the struct core block itself, and the core's own cell is never part of
- * the pattern — it is occupied by the struct block until the moment it becomes the multiblock core.
+ * the pattern: the struct block occupies it until it becomes the multiblock core.
  */
 public final class StructPattern {
 
@@ -87,7 +88,7 @@ public final class StructPattern {
      * {@code "ns:name"}.
      */
     public static Identifier blockTexture(String name) {
-        return com.hbm.lib.Library.parseId(name, "textures/blocks/", ".png");
+        return Library.parseId(name, "textures/blocks/", ".png");
     }
 
     public static final class Builder {
@@ -114,7 +115,7 @@ public final class StructPattern {
          * {@code int l = iy > 2 ? 4 - iy : iy} fold in {@code MachineFusionTorus}. The mask is centred
          * on the core, so mask index {@code i} maps to offset {@code i - size / 2}.
          *
-         * <p>The core's own cell ({@code 0, 0, 0}) is skipped — the struct block lives there.
+         * <p>The core's own cell ({@code 0, 0, 0}) is skipped; the struct block lives there.
          */
         public Builder mask(int[][][] layers, int height, PaletteEntry[] palette) {
             int size = layers[0].length;

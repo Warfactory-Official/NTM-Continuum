@@ -1,5 +1,6 @@
 package com.hbm.entity.mob;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.items.ModGunItems;
 import com.hbm.items.ModGearItems;
 import com.hbm.items.ModArmorItems;
@@ -7,7 +8,9 @@ import com.hbm.config.MobConfig;
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.CompatMonster;
 import com.hbm.entity.mob.ai.EntityAIBreaking;
-import com.hbm.tags.HbmBlockTags;
+import com.hbm.lib.HbmBlockTags;
+import dev.golem.core.world.Effects;
+import dev.golem.core.world.Navigations;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
@@ -52,7 +55,7 @@ public class EntityFBI extends CompatMonster implements RangedAttackMob {
 
     public EntityFBI(EntityType<? extends EntityFBI> type, Level level) {
         super(type, level);
-        dev.golem.core.world.Navigations.setCanOpenDoors(getNavigation(), true); // 1.7 setBreakDoors
+        Navigations.setCanOpenDoors(getNavigation(), true); // 1.7 setBreakDoors
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -123,7 +126,7 @@ public class EntityFBI extends CompatMonster implements RangedAttackMob {
         // 1.7 swapped to the vacuum loadout outside the overworld, glass helmet included
         // 1.7: the space suit outside the overworld; hbm-space: wherever the agent cannot breathe. An addon answers
         // com.hbm.api.environment.Environment.BREATHING; unanswered, 1.7's rule decides.
-        if (!com.hbm.api.environment.Environment.breatheAir(level(), blockPosition(), 0, level().dimension() == Level.OVERWORLD)) {
+        if (!Environment.breatheAir(level(), blockPosition(), 0, level().dimension() == Level.OVERWORLD)) {
             setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.GLASS));
             setItemSlot(EquipmentSlot.CHEST, ModArmorItems.paa_plate.get().getDefaultInstance());
             setItemSlot(EquipmentSlot.LEGS, ModArmorItems.paa_legs.get().getDefaultInstance());
@@ -168,7 +171,7 @@ public class EntityFBI extends CompatMonster implements RangedAttackMob {
             // 1.7 PathFinderUtils ground-snap: an unreachable endpoint slows the walk to a crawl
             y = snapToGround(level, x, y, z, true);
             if (y == Integer.MIN_VALUE) y = snapToGround(level, x, Mth.floor(getY() + bearing.y), z, false);
-            if (y != Integer.MIN_VALUE) dev.golem.core.world.Navigations.navigateTo(getNavigation(), x + 0.5D, y, z + 0.5D, 1.0D);
+            if (y != Integer.MIN_VALUE) Navigations.navigateTo(getNavigation(), x + 0.5D, y, z + 0.5D, 1.0D);
         }
     }
 
@@ -180,7 +183,7 @@ public class EntityFBI extends CompatMonster implements RangedAttackMob {
 
         for (int i = start; i > end; i--) {
             pos.set(x, i, z);
-            if (!dev.golem.core.world.Compat.isSolidRender(level.getBlockState(pos)) && dev.golem.core.world.Compat.isSolidRender(level.getBlockState(pos.move(0, -1, 0)))) {
+            if (!Compat.isSolidRender(level.getBlockState(pos)) && Compat.isSolidRender(level.getBlockState(pos.move(0, -1, 0)))) {
                 return i;
             }
         }
@@ -203,7 +206,7 @@ public class EntityFBI extends CompatMonster implements RangedAttackMob {
         List<ItemEntity> items = level().getEntitiesOfClass(ItemEntity.class,
                 new AABB(getX(), getY(), getZ(), getX(), getY(), getZ()).inflate(range, range, range));
 
-        for (ItemEntity item : items) dev.golem.core.world.Effects.ignite(item, 10);
+        for (ItemEntity item : items) Effects.ignite(item, 10);
     }
 
     private void breakNearbyMachine() {

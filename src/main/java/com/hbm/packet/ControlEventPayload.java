@@ -9,7 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 
 /**
- * Cross-loader C2S payload carrying a {@link BlockPos} plus a control {@link CompoundTag} — the 26.1
+ * Cross-loader C2S payload carrying a {@link BlockPos} plus a control {@link CompoundTag}, the 26.1
  * equivalent of HBM's old {@code NBTControlPacket}. The server resolves the tile at {@code pos} and, if
  * it is an {@link com.hbm.interfaces.IControlReceiver}, feeds it the tag (see
  * {@link HbmPackets#handleControl}).

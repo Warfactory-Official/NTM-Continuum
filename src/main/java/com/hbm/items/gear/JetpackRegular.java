@@ -1,6 +1,8 @@
 package com.hbm.items.gear;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.handler.JetpackHandler;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.armor.JetpackFueledBase;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.world.CompatTooltipContext;
@@ -15,7 +17,7 @@ import net.minecraft.world.level.Level;
 /** Regular jetpack: simple upward momentum, five-tick fuel cadence. */
 public class JetpackRegular extends JetpackFueledBase {
 
-    public JetpackRegular(com.hbm.inventory.fluid.FluidType fuel, int maxFuel, Properties properties) {
+    public JetpackRegular(FluidType fuel, int maxFuel, Properties properties) {
         super(fuel, maxFuel, properties);
     }
 
@@ -33,7 +35,7 @@ public class JetpackRegular extends JetpackFueledBase {
         player.fallDistance = 0;
         // hbm-space: thrust scaled up (never down) with gravity, and in free fall the jet pushes along the view
         // (com.hbm.api.environment.Environment.gravity, 1 on plain HBM: 1.7's +0.1 below 0.4)
-        double gravity = com.hbm.api.environment.Environment.gravity(player);
+        double gravity = Environment.gravity(player);
         if (gravity == 0D) {
             player.setDeltaMovement(player.getDeltaMovement().add(player.getViewVector(1.0F).scale(0.05D)));
         } else if (player.getDeltaMovement().y < 0.4D) {

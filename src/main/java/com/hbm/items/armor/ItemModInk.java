@@ -8,6 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -56,7 +57,7 @@ public class ItemModInk extends ItemArmorMod {
 
     /** 1.7 {@code entityDropItem(stack, 1.0F)}: an item entity one block above the entity's feet. */
     static void drop(LivingEntity entity, ItemStack stack) {
-        net.minecraft.world.entity.item.ItemEntity item = new net.minecraft.world.entity.item.ItemEntity(
+        ItemEntity item = new ItemEntity(
                 entity.level(), entity.getX(), entity.getY() + 1.0D, entity.getZ(), stack);
         item.setDefaultPickUpDelay();
         entity.level().addFreshEntity(item);

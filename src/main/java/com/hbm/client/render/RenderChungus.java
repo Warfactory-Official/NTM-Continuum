@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.machine.TileEntityChungus;
 import com.hbm.tileentity.MachineCore;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -24,7 +25,7 @@ public final class RenderChungus extends GemBER<TileEntityChungus, ChungusRender
     private @org.jspecify.annotations.Nullable DamagedView damagedView;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/chungus.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/chungus.obj"));
     private final Surface surface = Surface.cutoutCull(
             Constants.MOD_ID + ":textures/models/machines/chungus.png");
 
@@ -46,7 +47,7 @@ public final class RenderChungus extends GemBER<TileEntityChungus, ChungusRender
         damagedView = DAMAGED;
         if (damagedView != null) {
             machine.joint().visibleIf(state -> state.damaged).rotate(Gem.Axes.Y, damagedView.extraYaw())
-                    .child(WavefrontObj.load(dev.golem.core.Ids.parse(damagedView.model())).all(!damagedView.cull()),
+                    .child(WavefrontObj.load(Ids.parse(damagedView.model())).all(!damagedView.cull()),
                             damagedView.cull() ? Surface.cutoutCull(damagedView.texture()) : Surface.cutoutNoCull(damagedView.texture()));
         }
     }

@@ -1,5 +1,6 @@
 package com.hbm.world.gen;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.config.WorldConfig;
 import dev.golem.core.dejson.Features;
@@ -26,10 +27,10 @@ import static dev.golem.core.dejson.Features.uniformHeight;
 /**
  * HBM's world features as data: every configured feature, placed feature, feature biome tag and biome modifier, declared
  * through Golem Core's {@code dejson} vocabulary (plain JVM, no Minecraft class) and written at build time. One
- * declaration serves all three loaders — NeoForge and Forge read the emitted {@code biome_modifier} files, Fabric gets
+ * declaration serves all three loaders: NeoForge and Forge read the emitted {@code biome_modifier} files, Fabric gets
  * the same list from {@code dev.golem.core.world.BiomeFeatures.install()}.
  *
- * <p>The specification is original-hbm (1.7) {@code HbmWorldGen.generateSurface/generateNether/generateEnd},
+ * <p>The specification is 1.7 {@code HbmWorldGen.generateSurface/generateNether/generateEnd},
  * {@code HbmWorld.registerNTMTerrain} and {@code MainRegistry}'s noise features, at 1.7's config defaults
  * ({@link WorldConfig}). Every 1.7 {@code rand.nextInt(n) == 0} chunk gate is a {@code rarity_filter}, every vein count a
  * {@code count}, every random in-chunk column an {@code in_square}, every {@code minY + rand(variance)} a uniform
@@ -52,7 +53,7 @@ public final class ModBiomeModifiers {
 
     private static final String NS = "hbm";
 
-    /** How many data files the pre-2026-09-25 declarations stood in for; kept for {@code DejsonGameTests}. */
+    /** How many data files the declarations stand in for; checked by {@code DejsonGameTests}. */
     static final int FILES_REPLACED = 18;
 
     private static boolean declared;
@@ -67,7 +68,7 @@ public final class ModBiomeModifiers {
 
         biomeTags();
 
-        // ------------------------------------------------ chain-loaded terrain (1.7 HbmWorld.registerNTMTerrain)
+        // Chain-loaded terrain (1.7 HbmWorld.registerNTMTerrain)
         List<String> terrain = new ArrayList<>();
         // the MapGen origins read their own chance; hbm:config only keeps 1.7's "> 0" and enableRad guards
         terrain.add(once("sellafield_crater", "sellafield_crater", cfgSwitch(WorldgenKeys.RAD_HOTSPOT), cfgSwitch(WorldgenKeys.RAD_HOTSPOT_RATE)));
@@ -76,7 +77,7 @@ public final class ModBiomeModifiers {
         terrain.add(once("oil_sand_bubble", "oil_sand_bubble"));
         addFeatures(NS, "terrain", "#minecraft:is_overworld", terrain, RAW_GENERATION);
 
-        // ------------------------------------------------ noise strata (1.7 MainRegistry, DecorateBiomeEvent.Pre)
+        // Noise strata (1.7 MainRegistry, DecorateBiomeEvent.Pre)
         addFeatures(NS, "strata", "#minecraft:is_overworld",
                 List.of(once("schist_stratum", "schist_stratum"), once("ore_caves", "ore_caves"), once("ore_layers", "ore_layers")),
                 LOCAL_MODIFICATIONS);
@@ -91,7 +92,7 @@ public final class ModBiomeModifiers {
         surface();
     }
 
-    // ================================================================================================ ores
+    // Ores
 
     private static JsonObject stoneHost() {
         return Features.tagMatch("minecraft:base_stone_overworld");
@@ -131,7 +132,7 @@ public final class ModBiomeModifiers {
         out.add(vein("ore_gneiss_copper", "hbm:ore_gneiss_copper", on, cfgCount(WorldgenKeys.COPPER, 3), 6, 30, 10, gneiss));
         out.add(vein("ore_gneiss_asbestos", "hbm:ore_gneiss_asbestos", on, cfgCount(WorldgenKeys.ASBESTOS, 3), 6, 30, 10, gneiss));
         out.add(vein("ore_gneiss_lithium", "hbm:ore_gneiss_lithium", on, cfgCount(WorldgenKeys.LITHIUM, 1), 6, 30, 10, gneiss));
-        // 1.7 places rare earths here. (1.12 placed asbestos a second time, which the port copied until 2026-09-25.)
+        // 1.7 places rare earths here. (1.12 placed asbestos a second time, which the port does not copy.)
         out.add(vein("ore_gneiss_rare", "hbm:ore_gneiss_rare", on, cfgCount(WorldgenKeys.RARE_EARTH, 1), 6, 30, 10, gneiss));
         out.add(vein("ore_gneiss_gas", "hbm:ore_gneiss_gas", on, cfgCount(WorldgenKeys.GAS_SHALE, 3), 10, 30, 10, gneiss));
 
@@ -173,9 +174,9 @@ public final class ModBiomeModifiers {
         out.add(once("australium", "australium", cfgSwitch(WorldgenKeys.OVERWORLD_ORES)));
 
         // keyhole stone: rand.nextInt(4) == 0, y 6 + rand(13), only into plain stone (isReplaceableOreGen(stone));
-        // y 6..8 is the deepslate blend in a modern world, and deepslate is 1.7's stone at depth (History §19ej-6)
+        // y 6..8 is the deepslate blend in a modern world, and deepslate is 1.7's stone at depth
         JsonObject keyhole = new JsonObject();
-        com.google.gson.JsonArray targets = new com.google.gson.JsonArray();
+        JsonArray targets = new JsonArray();
         for (String host : new String[] {"minecraft:stone", "minecraft:deepslate"}) {
             JsonObject target = new JsonObject();
             target.add("target", Features.blockMatch(host));
@@ -225,7 +226,7 @@ public final class ModBiomeModifiers {
      * 1.7 {@code DungeonToolbox.generateOre(..., veinCount, amount, minHeight, variance, block, target)}: {@code gates}
      * (switches and chance gates, in 1.7's order) then {@code count} (null: one vein), a column in the chunk, a uniform
      * height and the biome check. Always declared and always listed: a config value of 0 makes {@code hbm:config} place
-     * nothing, so {@code hbm.cfg} works without rebuilding the data pack (History §19ej-8).
+     * nothing, so {@code hbm.cfg} works without rebuilding the data pack.
      */
     private static String vein(String name, String block, List<JsonObject> gates, JsonObject count, int size, int minY, int variance,
                                JsonObject host) {
@@ -305,7 +306,7 @@ public final class ModBiomeModifiers {
         return NS + ":" + name;
     }
 
-    // ================================================================================================ surface
+    // Surface
 
     /**
      * Biome tags for 1.7's biome tests. 1.7 tested classes ({@code instanceof BiomeGenForest}) or identities

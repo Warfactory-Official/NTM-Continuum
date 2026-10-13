@@ -11,6 +11,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.uninos.graph.EndpointRegistry;
 import com.hbm.uninos.graph.LevelNodeGraph;
+import com.hbm.util.SavedIds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -22,12 +23,12 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Base for HBM "energy storage" machines that act as a conductor on the power grid — they own a graph
+ * Base for HBM "energy storage" machines that act as a conductor on the power grid. They own a graph
  * cell at every port position, and a configurable I/O mode decides which of the two roles they answer
  * in. Ported from 1.12.2's {@code TileEntityBatteryBase}.
  *
- * <p>Two mode slots — {@link #redLow} (while <b>not</b> redstone-powered) and {@link #redHigh} (while
- * powered) — each one of input / buffer / output / none, plus a connection {@link #priority}. Subclasses
+ * <p>Two mode slots: {@link #redLow} (while <b>not</b> redstone-powered) and {@link #redHigh} (while
+ * powered), each one of input / buffer / output / none, plus a connection {@link #priority}. Subclasses
  * supply the storage ({@link #getPower}/{@link #setPower}/{@link #getMaxPower}) and the multiblock's port
  * geometry ({@link #getPortPos}/{@link #getConPos}); the energy-storage <em>block battery</em>
  * ({@code machine_battery}) keeps its own standalone implementation, so this base is currently the
@@ -63,7 +64,7 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
 
     public abstract DirPos[] getConPos();
 
-    /** Walks the I/O state machine — keeps the footprint's graph cells and the mode the roles read. */
+    /** Walks the I/O state machine; keeps the footprint's graph cells and the mode the roles read. */
     protected void serverTickBattery(Level level) {
         if (priority == null || priority.ordinal() == 0 || priority.ordinal() == 4) {
             priority = ConnectionPriority.LOW; // LOWEST/HIGHEST aren't selectable; clamp to LOW
@@ -151,8 +152,8 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
     }
 
     /**
-     * Re-reads the redstone the mode is picked from. The gather asks three times a round — for each
-     * speed and for the buffer flag — and every answer is six neighbour lookups, so it is read once a
+     * Re-reads the redstone the mode is picked from. The gather asks three times a round, for each
+     * speed and for the buffer flag, and every answer is six neighbour lookups, so it is read once a
      * tick and cached.
      */
     public void refreshMode() {
@@ -216,7 +217,7 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
         output.putShort("redLow", redLow);
         output.putShort("redHigh", redHigh);
         output.putByte("lastRedstone", lastRedstone);
-        com.hbm.util.SavedIds.putEnum(output, "priority", priority); // by name, never an ordinal
+        SavedIds.putEnum(output, "priority", priority); // by name, never an ordinal
     }
 
     @Override
@@ -225,6 +226,6 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
         redLow = (short) input.getShortOr("redLow", (short) mode_input);
         redHigh = (short) input.getShortOr("redHigh", (short) mode_output);
         lastRedstone = input.getByteOr("lastRedstone", (byte) 0);
-        priority = com.hbm.util.SavedIds.getEnum(input, "priority", ConnectionPriority.LOW);
+        priority = SavedIds.getEnum(input, "priority", ConnectionPriority.LOW);
     }
 }

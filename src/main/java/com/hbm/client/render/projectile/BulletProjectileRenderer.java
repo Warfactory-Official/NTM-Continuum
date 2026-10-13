@@ -1,12 +1,16 @@
 package com.hbm.client.render.projectile;
 
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
+import com.hbm.items.weapon.sedna.BulletConfig;
+import com.mojang.math.Axis;
+import dev.golem.core.render.CompatEntityRenderState;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemEntityRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.SubmitSink;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import org.joml.Quaternionf;
 
 /**
  * Submit-API adapter for the source {@code RenderBulletMK4}; per-config geometry is client-owned by
@@ -38,20 +42,20 @@ public final class BulletProjectileRenderer extends GemEntityRenderer<EntityBull
         if (state.config == null) return;
         state.cameraOrientation = camera.orientation;
         if (state.config.renderRotations) {
-            pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(state.yaw - 90F));
-            pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(state.pitch + 180F));
+            pose.mulPose(Axis.YP.rotationDegrees(state.yaw - 90F));
+            pose.mulPose(Axis.ZP.rotationDegrees(state.pitch + 180F));
         }
         TracerRegistry.BulletTracer tracer = TracerRegistry.bullet(state.config.id);
         if (tracer != null) tracer.draw(state, pose, sink);
     }
 
-    public static final class State extends dev.golem.core.render.CompatEntityRenderState {
-        public com.hbm.items.weapon.sedna.BulletConfig config;
+    public static final class State extends CompatEntityRenderState {
+        public BulletConfig config;
         public double length;
         public float yaw;
         public float pitch;
         public float age;
-        public org.joml.Quaternionf cameraOrientation;
+        public Quaternionf cameraOrientation;
         public boolean wire;
         public double wireX, wireY, wireZ;
         public int[] wireLight;

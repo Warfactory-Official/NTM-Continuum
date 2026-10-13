@@ -1,5 +1,6 @@
 package com.hbm.hazard.transformer;
 
+import com.hbm.api.data.ReactorDataMaps;
 import com.hbm.hazard.HazardEntry;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.items.machine.ItemZirnoxRod;
@@ -17,7 +18,7 @@ public final class HazardTransformerZirnox implements IHazardTransformer {
     @Override
     public void transformPost(ItemStack stack, List<HazardEntry> entries) {
         if (stack.getItem() instanceof ItemZirnoxRod rod) {
-            com.hbm.api.data.ReactorDataMaps.ZirnoxFuel fuel = rod.stats();
+            ReactorDataMaps.ZirnoxFuel fuel = rod.stats();
             float progress = Math.min(1F, (float) rod.getLife(stack) / fuel.maxLife());
             float radiation = (float) (fuel.baseRadiation()
                     + (fuel.depletedRadiation() - fuel.baseRadiation()) * Math.pow(progress, 0.4D));

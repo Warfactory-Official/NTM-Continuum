@@ -14,22 +14,21 @@ import java.util.List;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Press recipes — shared by the burner press, the electric press and the conveyor press. A recipe is keyed by
+ * Press recipes, shared by the burner press, the electric press and the conveyor press. A recipe is keyed by
  * (ingredient, {@link StampType}): inserting an ingredient plus a stamp of the matching type yields the output. The
  * datapack table {@code hbm:press}, one file per recipe in {@code data/hbm/recipe/press/}
  * ({@code {"stamp": "flat", "input": ingredient, "output": item, "order": n}}; the first match by {@code order} wins).
  *
- * <p>Converted once from the Java port of 1.7's {@code PressRecipes} defaults: the flat-stamp table, the meteorite
- * sword (formerly {@code AbilityToolMachineRecipes.press}), the three briquettes and eight printing-press pages
- * (formerly {@code FinalConsumableMachineRecipes.press}), the metal-plate family, the casing family and the material
- * fine-wire loop. 1.7 built the wire rows from {@code Mats.orderedList} (every material with a WIRE shape and an
- * ingot); they are literal rows now, one per material, as that loop gave them.
+ * <p>The rows are 1.7's {@code PressRecipes} defaults: the flat-stamp table, the meteorite sword, the three
+ * briquettes and eight printing-press pages, the metal-plate family, the casing family and the material fine-wire
+ * loop. 1.7 built the wire rows from {@code Mats.orderedList} (every material with a WIRE shape and an ingot); here
+ * they are literal rows, one per material, in the order that loop gave them.
  */
 public final class PressRecipes {
 
     private PressRecipes() {}
 
-    /** One press recipe: a stamp type + an ingredient matcher → an output stack. */
+    /** One press recipe: a stamp type + an ingredient matcher -> an output stack. */
     public record PressRecipe(StampType type, AStack input, ItemStack output) {}
 
     public record Row(StampType stamp, AStack input, ItemSpec output, int order) {}

@@ -13,6 +13,7 @@ import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
@@ -25,7 +26,7 @@ import net.minecraft.world.phys.Vec3;
 public final class RBMKIndicatorRenderer extends GemBER<BlockEntityRBMKIndicator, RBMKIndicatorRenderer.State> {
     private static final WavefrontObj MODEL = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/rbmk/indicator.obj"));
     private static final String TEXTURE = Ids.of(Constants.MOD_ID, "textures/models/network/indicator.png").toString();
-    private final Font font = net.minecraft.client.Minecraft.getInstance().font;
+    private final Font font = Minecraft.getInstance().font;
 
     @Override protected void setup(Gem.Model<State> declaration) {
         Surface skin = Surface.solid(TEXTURE);

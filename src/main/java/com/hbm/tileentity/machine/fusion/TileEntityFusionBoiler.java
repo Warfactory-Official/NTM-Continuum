@@ -21,11 +21,11 @@ import com.hbm.sound.ModSounds;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * Fusion boiler — turns a torus's plasma output into superheated steam.
+ * Fusion boiler: turns a torus's plasma output into superheated steam.
  *
  * <p>It is the simplest plasma consumer: water in, superhot steam out, one millibucket per
  * {@link HeatRecipes#getBoilerStep water heat step} of plasma energy. Note it goes straight from water
- * to <b>superhot</b> steam rather than walking the usual boiler ladder — the plasma is hot enough that
+ * to <b>superhot</b> steam rather than walking the usual boiler ladder: the plasma is hot enough that
  * the intermediate stages do not apply.
  *
  * <p>All the work happens in {@link #receiveFusionPower}, which the torus calls; the tick only keeps
@@ -88,7 +88,7 @@ public class TileEntityFusionBoiler extends TileEntityLoadedBase
 
         int waterCycles = Math.min(tanks[0].getFill(), tanks[1].getMaxFill() - tanks[1].getFill());
         // The min is folded into the division rather than applied afterwards, so a torus putting out a
-        // truly absurd amount of power cannot overflow the cast — water cycles are capped by the buffer.
+        // truly absurd amount of power cannot overflow the cast; water cycles are capped by the buffer.
         int steamCycles = (int) Math.min(fusionPower / step.heatReq(), waterCycles);
 
         if (steamCycles <= 0) return;

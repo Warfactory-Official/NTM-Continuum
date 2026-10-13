@@ -7,6 +7,7 @@ import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.BlockTickScheduler;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -39,11 +40,11 @@ import java.util.Map;
  * The 1.7 {@code FoundryTank} (foundry storage basin): a firebrick basin that holds molten metal poured
  * in from above and spreads it between neighbouring basins (see {@link TileEntityFoundryTank}). Its
  * walls disappear where another basin touches, and show an outlet notch where a {@code foundry_outlet}
- * points away from it — which the 1.12 port spelled as ten boolean state properties and a multipart
+ * points away from it. The 1.12 port spelled that as ten boolean state properties and a multipart
  * blockstate (copied here, {@code blockstates/foundry_tank.json}). The molten pool is drawn by the
  * renderer. A shovel scoops the contents out as scraps; breaking it drops them.
  */
-public class FoundryTank extends dev.golem.core.world.CompatBlock implements TickingBlock, ICrucibleAcceptor {
+public class FoundryTank extends CompatBlock implements TickingBlock, ICrucibleAcceptor {
 
     public static final BooleanProperty UP = BlockStateProperties.UP;
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
@@ -142,7 +143,7 @@ public class FoundryTank extends dev.golem.core.world.CompatBlock implements Tic
         return new TileEntityFoundryTank(pos, state);
     }
 
-    // --- ICrucibleAcceptor: pour only, delegated to the tile ---
+    // ICrucibleAcceptor: pour only, delegated to the tile
 
     @Override
     public boolean canAcceptPartialPour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, MaterialStack stack) {

@@ -3,6 +3,7 @@ package com.hbm.items.armor;
 import com.hbm.handler.ArmorModHandler;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.DamageEvents;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -67,12 +68,12 @@ public final class ItemModInsert extends ItemArmorMod {
 
     @Override
     public void addArmorModDescription(List<Component> tooltip, ItemStack stack, ItemStack armor) {
-        List<String> descriptions = new java.util.ArrayList<>();
+        List<String> descriptions = new ArrayList<>();
         if (damageMod != 1F) descriptions.add((damageMod < 1F ? "-" : "+")
                 + Math.abs(Math.round((1F - damageMod) * 100)) + "% dmg");
         if (projectileMod != 1F) descriptions.add("-" + Math.round((1F - projectileMod) * 100) + "% proj");
         if (explosionMod != 1F) descriptions.add("-" + Math.round((1F - explosionMod) * 100) + "% exp");
-        // The old condition intentionally checked explosionMod here, not speed.
+        // The old condition checked explosionMod here, not speed.
         if (explosionMod != 1F) descriptions.add("-" + Math.round((1F - speed) * 100) + "% speed");
         String details = String.join(" / ", descriptions);
         tooltip.add(Component.literal("  ").append(stack.getHoverName().copy().withStyle(ChatFormatting.DARK_PURPLE))

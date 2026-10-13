@@ -9,7 +9,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * C2S: old-hbm {@code AuxButtonPacket(0, 0, 0, value, 1000)} from {@code ItemCrucible.updateClient}: whether the holder
+ * C2S: 1.12.2 {@code AuxButtonPacket(0, 0, 0, value, 1000)} from {@code ItemCrucible.updateClient}: whether the holder
  * is drawing a cut (or swinging one), which the server keeps as {@code doSpecialClick}.
  */
 public record CrucibleClickPayload(boolean clicked) implements GolemPayload {

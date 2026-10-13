@@ -12,6 +12,7 @@ import com.hbm.blocks.ModOreBlocks;
 import com.hbm.blocks.ModGlassBlocks;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.inventory.material.MaterialShapes;
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModFuelItems;
 import com.hbm.inventory.material.Mats;
@@ -34,6 +35,8 @@ import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMedicineItems;
 import com.hbm.items.ModOilItems;
+import com.hbm.items.material.FuelAdditiveItem;
+import com.hbm.items.special.BedrockOreType;
 import com.hbm.items.special.ItemAutogen;
 import com.hbm.items.material.FuelAdditiveItems;
 import com.hbm.inventory.recipes.material.FuelAdditiveRecipes;
@@ -53,6 +56,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import com.hbm.inventory.fluid.Fluids;
@@ -102,11 +106,11 @@ public final class MaterialCompletionGameTests {
         BlockConcreteColored block = MaterialCompletionRegistrations.CONCRETE_COLORED.get();
         for (int variant = 0; variant < DyeColor.values().length; variant++) {
             ItemStack stack = MaterialCompletionRegistrations.concreteColoredItem(variant);
-            helper.assertTrue(com.hbm.items.LegacyMeta.of(stack) == variant,
+            helper.assertTrue(LegacyMeta.of(stack) == variant,
                     "Concrete item lost variant " + variant);
             helper.assertTrue(BlockConcreteColored.variant(block.stateForItem(stack)) == variant,
                     "Concrete placement changed variant " + variant);
-            ItemStack clone = block.pickBlockStack((net.minecraft.world.level.BlockGetter) null,
+            ItemStack clone = block.pickBlockStack((BlockGetter) null,
                     BlockPos.ZERO, block.stateForVariant(variant));
             helper.assertTrue(ItemStack.isSameItem(clone, stack),
                     "Concrete clone lost variant " + variant);
@@ -154,7 +158,7 @@ public final class MaterialCompletionGameTests {
                     "Lightstone placement changed variant " + variant);
             helper.assertTrue(block.stateForVariant(variant).getLightEmission() == 0,
                     "Legacy lightstone variant unexpectedly emits light: " + variant);
-            ItemStack clone = block.pickBlockStack((net.minecraft.world.level.BlockGetter) null,
+            ItemStack clone = block.pickBlockStack((BlockGetter) null,
                     BlockPos.ZERO, block.stateForVariant(variant));
             helper.assertTrue(ItemStack.isSameItem(clone, stack),
                     "Lightstone clone lost variant " + variant);
@@ -189,7 +193,7 @@ public final class MaterialCompletionGameTests {
                 "Fuel additive must retain exactly two variants");
         for (FuelAdditiveItems.Variant variant : FuelAdditiveItems.Variant.values()) {
             var item = FuelAdditiveItems.get(variant);
-            helper.assertTrue(item.getClass().equals(com.hbm.items.material.FuelAdditiveItem.class),
+            helper.assertTrue(item.getClass().equals(FuelAdditiveItem.class),
                     "Fuel additive is not a plain feature item");
             helper.assertTrue(BuiltInRegistries.ITEM.getKey(item).equals(Ids.of("hbm", variant.id)),
                     "Wrong fuel additive id for " + variant);
@@ -197,22 +201,22 @@ public final class MaterialCompletionGameTests {
         helper.assertTrue(FuelAdditiveItems.get(FuelAdditiveItems.Variant.ANTIKNOCK)
                         != FuelAdditiveItems.get(FuelAdditiveItems.Variant.DEICER),
                 "Flattened fuel additives must be distinct items");
-        // the two chemical plant rows are datapack recipes since §19fa-m1 (data/hbm/recipe/chemical_plant/tel, deicer)
-        com.hbm.inventory.recipes.ChemicalPlantRecipes.INSTANCE.registerRecipes();
-        var tel = com.hbm.inventory.recipes.ChemicalPlantRecipes.INSTANCE.getRecipe("chem.tel");
-        var deicer = com.hbm.inventory.recipes.ChemicalPlantRecipes.INSTANCE.getRecipe("chem.deicer");
+        // the two chemical plant rows are datapack recipes (data/hbm/recipe/chemical_plant/tel, deicer)
+        ChemicalPlantRecipes.INSTANCE.registerRecipes();
+        var tel = ChemicalPlantRecipes.INSTANCE.getRecipe("chem.tel");
+        var deicer = ChemicalPlantRecipes.INSTANCE.getRecipe("chem.deicer");
         helper.assertTrue(tel != null && deicer != null
                         && tel.outputItem[0].getItem() == FuelAdditiveItems.get(FuelAdditiveItems.Variant.ANTIKNOCK)
                         && deicer.outputItem[0].getItem() == FuelAdditiveItems.get(FuelAdditiveItems.Variant.DEICER),
                 "Fuel additive chemical recipe IDs changed");
         var mixer = FuelAdditiveRecipes.mixerRecipes();
         helper.assertTrue(mixer.size() == 3
-                        && mixer.get(0).output() == com.hbm.inventory.fluid.Fluids.PETROIL_LEADED
-                        && mixer.get(1).output() == com.hbm.inventory.fluid.Fluids.GASOLINE_LEADED
-                        && mixer.get(2).output() == com.hbm.inventory.fluid.Fluids.COALGAS_LEADED
-                        && mixer.get(0).input() == com.hbm.inventory.fluid.Fluids.PETROIL
-                        && mixer.get(1).input() == com.hbm.inventory.fluid.Fluids.GASOLINE
-                        && mixer.get(2).input() == com.hbm.inventory.fluid.Fluids.COALGAS
+                        && mixer.get(0).output() == Fluids.PETROIL_LEADED
+                        && mixer.get(1).output() == Fluids.GASOLINE_LEADED
+                        && mixer.get(2).output() == Fluids.COALGAS_LEADED
+                        && mixer.get(0).input() == Fluids.PETROIL
+                        && mixer.get(1).input() == Fluids.GASOLINE
+                        && mixer.get(2).input() == Fluids.COALGAS
                         && mixer.stream().allMatch(recipe ->
                         recipe.additive() == FuelAdditiveItems.Variant.ANTIKNOCK
                                 && recipe.outputAmount() == 12_000
@@ -395,7 +399,7 @@ public final class MaterialCompletionGameTests {
         // + 1.7's bedrock-ore washing/acid grades: 37 per ore type (2 washed, 2 sulfuric, 3 solvent, 4 rad,
         // 3+3+3 byproduct washes, 8 hydrogen, 8 chlorine, 1 slop crumb recovery) over the six types.
         // + the 23 plastic-scrap -> circuit-piece recipes (1.7 :126, fix phase 3)
-        int crystallizerExpected = 82 + 1 + 1 + 23 + 37 * com.hbm.items.special.BedrockOreType.VALUES.length;
+        int crystallizerExpected = 82 + 1 + 1 + 23 + 37 * BedrockOreType.VALUES.length;
         helper.assertTrue(CrystallizerRecipes.recipes.size() == crystallizerExpected,
                 "Crystallizer catalogue must contain exactly " + crystallizerExpected
                         + " dependency-complete defaults, found " + CrystallizerRecipes.recipes.size());

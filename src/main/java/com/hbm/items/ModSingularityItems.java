@@ -1,5 +1,6 @@
 package com.hbm.items;
 
+import com.hbm.items.special.CellVariants;
 import dev.golem.core.dejson.Models;
 import com.hbm.registration.Reg;
 import com.hbm.registration.Presets;
@@ -26,11 +27,11 @@ public final class ModSingularityItems {
     /**
      * The fluid cell: {@code hbm:model_state} case <i>n</i> (computed from the fluid) is {@code CellVariants} <i>n</i>, the 1.7 cell item of that
      * declaration order (empty, uf6, puf6, antimatter, deuterium, tritium, sas3, anti_schrabidium). The
-     * variant is the cell's own index, never the fluid id — see {@link com.hbm.items.special.CellVariants}.
+     * variant is the cell's own index, never the fluid id. See {@link com.hbm.items.special.CellVariants}.
      */
     private static Models.Group cellModels() {
         Models.Group models = Models.group();
-        String[] names = com.hbm.items.special.CellVariants.NAMES;
+        String[] names = CellVariants.NAMES;
         for (int i = 0; i < names.length; i++) {
             models = models.and(i == 0 ? "" : "_" + names[i], Models.generated(Constants.MOD_ID + ":items/cell_" + names[i]));
         }

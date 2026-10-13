@@ -1,7 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.inventory.container.ContainerFirebox;
-import com.hbm.modules.ModuleBurnTime;
+import com.hbm.module.ModuleBurnTime;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -11,8 +11,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Firebox (1.12.2 {@code TileEntityHeaterFirebox}) — the tier-1 solid-fuel heater. Constants + fuel
- * bonuses verbatim: base 100 TU/t, 100k TU cap; lignite/coal/coke ×1.25 time ×2 heat, solid fuel
+ * Firebox (1.12.2 {@code TileEntityHeaterFirebox}), the tier-1 solid-fuel heater. Constants and fuel
+ * bonuses as in the 1.12.2 class: base 100 TU/t, 100k TU cap; lignite/coal/coke ×1.25 time ×2 heat, solid fuel
  * ×1.5/×3, rocket fuel ×1.5/×5, balefire ×0.5/×15. The {@code IConfigurableMachine} JSON config is
  * deferred (values hardcoded at the old defaults).
  */

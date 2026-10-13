@@ -1,8 +1,10 @@
 package com.hbm.world.gen;
 
 import com.hbm.blocks.generic.TrappedBrick;
+import com.hbm.blocks.generic.Waterlogging;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.itempool.ItemPool;
+import com.hbm.lib.Library;
 import com.hbm.world.gen.LegacyDungeonBlocks.Blocks;
 import com.hbm.world.gen.LegacyDungeonBlocks.ModBlocks;
 import com.hbm.world.gen.component.LegacyBlock;
@@ -47,16 +49,16 @@ import java.util.function.Consumer;
  * <p><b>Why a virtual world.</b> 1.7's {@code HbmWorldGen} ran each builder once, on the whole world, reading the
  * blocks it had just written ({@code if(world.getBlock(..) == Blocks.chest)}, the jungle rooms' trap and hole tests,
  * the tomb's tunnel lining) and the terrain around it ({@code getHeightValue}, the spawn-site tests). Modern world
- * generation builds a structure one chunk at a time and may only touch that chunk, so the builder runs here instead:
+ * generation builds a structure one chunk at a time and may only touch that chunk, so the builder runs here:
  * every write lands in a buffer, every read answers from that buffer or else from the generator's own terrain (the
- * noise column before any surface rule, carver or feature: {@link Terrain}). The run depends on nothing but the piece's
- * seed and the world's generator, so every chunk of the structure sees the same result; each chunk then copies its
+ * noise column before any surface rule, carver or feature: {@link Terrain}). The run depends only on the piece's
+ * seed and the world's generator, so every chunk of the structure sees the same result; each chunk copies its
  * share of the buffer into the world ({@link Result#apply}). The builders themselves are 1.7's, call for call.
  *
  * <p><b>Terrain.</b> Before surface rules the generator knows only solid, water, lava and air. A solid answers as
- * {@code Blocks.stone}, which every 1.7 spawn-site list accepts (grass, dirt, sand and stone were all valid tops), so the
- * site tests reduce to their real content: ground at the right height, air above it, no water. {@code getHeightValue}
- * is the generator's {@code WORLD_SURFACE_WG} height (1.7's height map counted water), raised by what the builder wrote.
+ * {@code Blocks.stone}, which every 1.7 spawn-site list accepts, so the site tests reduce to ground at the right
+ * height, air above it, no water. {@code getHeightValue} is the generator's {@code WORLD_SURFACE_WG} height (1.7's
+ * height map counted water), raised by what the builder wrote.
  *
  * <p><b>Random streams.</b> 1.7 had three: the populate random handed to the builder, {@code world.rand} (the jungle
  * dungeon, {@code DungeonToolbox.generateBox} lists, the arctic vault) and {@code Library.rand} (the random concrete).
@@ -100,7 +102,7 @@ public final class LegacyDungeonWorld {
         this.topWritten.defaultReturnValue(Integer.MIN_VALUE);
     }
 
-    // ================================================================================================ 1.7 World
+    // 1.7 World
 
     public boolean setBlock(int x, int y, int z, LegacyBlock block) {
         return setBlock(x, y, z, block, 0, 3);
@@ -150,7 +152,7 @@ public final class LegacyDungeonWorld {
         return top;
     }
 
-    // ================================================================================================ 1.7 helpers
+    // 1.7 helpers
 
     /** 1.7 {@code Library.getRandomConcrete()}, on its own random. */
     public LegacyBlock getRandomConcrete() {
@@ -273,7 +275,7 @@ public final class LegacyDungeonWorld {
         final List<Consumer<BlockEntity>> actions = new ArrayList<>();
     }
 
-    // ================================================================================================ result
+    // Result
 
     public boolean isEmpty() {
         return blocks.isEmpty();
@@ -324,7 +326,7 @@ public final class LegacyDungeonWorld {
 
     /** A bare path is HBM's block; {@code "ns:path"} names an addon's (or vanilla's) block. */
     private static Resolved plain(String id) {
-        return new Resolved(BuiltInRegistries.BLOCK.getOptional(com.hbm.lib.Library.parseId(id)).map(Block::defaultBlockState)
+        return new Resolved(BuiltInRegistries.BLOCK.getOptional(Library.parseId(id)).map(Block::defaultBlockState)
                 .orElse(net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()), false);
     }
 
@@ -415,7 +417,7 @@ public final class LegacyDungeonWorld {
                         if (!box.isInside(pos) || level.isOutsideBuildHeight(pos)) continue;
                         Placed p = blocks.get(key);
                         Resolved r = resolve(p, doorOther(key, p));
-                        level.setBlock(pos, com.hbm.blocks.generic.Waterlogging.inWorld(r.state(), level, pos),
+                        level.setBlock(pos, Waterlogging.inWorld(r.state(), level, pos),
                                 Block.UPDATE_CLIENTS);
                         placed.add(pos);
                         Tile tile = tiles.get(key);
@@ -463,7 +465,7 @@ public final class LegacyDungeonWorld {
         }
     }
 
-    // ================================================================================================ terrain
+    // Terrain
 
     /**
      * The generator's terrain before surface rules: solid (as stone), water, lava, air. Columns are cached for the run.

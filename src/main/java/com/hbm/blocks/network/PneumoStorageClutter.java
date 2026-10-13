@@ -1,6 +1,9 @@
 package com.hbm.blocks.network;
 
+import com.hbm.blocks.generic.CrateKeepContents;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
@@ -20,9 +23,9 @@ public class PneumoStorageClutter extends PneumaticStorageBlockBase {
 
     /** 1.7 {@code removedByPlayer} with {@code /ntmserver CRATE_KEEP_CONTENTS} off: see {@link com.hbm.blocks.generic.CrateKeepContents}. */
     @Override
-    protected void onPlayerWillDestroy(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos,
-                                       net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.entity.player.Player player) {
-        com.hbm.blocks.generic.CrateKeepContents.breakLoose(level, pos, state, player);
+    protected void onPlayerWillDestroy(Level level, BlockPos pos,
+                                       BlockState state, Player player) {
+        CrateKeepContents.breakLoose(level, pos, state, player);
         super.onPlayerWillDestroy(level, pos, state, player);
     }
 }

@@ -17,8 +17,8 @@ import net.minecraft.world.phys.Vec3;
  * <p>{@link GemMachineRenderer} states the same thing for a machine and takes its facing from the
  * multiblock core's own property. A plain block states its facing the vanilla way, which that lookup
  * cannot see: it answers {@code UNKNOWN} and the model would sit at a fixed yaw whichever way the block
- * was placed. This reads {@link BlockStateProperties#HORIZONTAL_FACING} and maps it through 1.7's table —
- * north 0°, west 90°, south 180°, east 270° — and leaves a block that has no facing at zero.
+ * was placed. This reads {@link BlockStateProperties#HORIZONTAL_FACING} and maps it through 1.7's table:
+ * north 0°, west 90°, south 180°, east 270°, and leaves a block that has no facing at zero.
  *
  * <p>The body is placed at the cell centre because these meshes are authored about the origin, which is
  * the frame 1.7's own handlers compensate for: a {@code TileEntitySpecialRenderer} opens with

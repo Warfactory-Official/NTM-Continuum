@@ -32,7 +32,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class TileEntityMultiblock extends TileEntityStructBase {
 
     private static final StructPattern COMPACT = compactPattern();
-    /** The ring plus the scaffold column on side 0 (+X), 1 (+Z), 2 (-X), 3 (-Z) — RenderMultiblock's cycle order. */
+    /** The ring plus the scaffold column on side 0 (+X), 1 (+Z), 2 (-X), 3 (-Z), matching RenderMultiblock's cycle order. */
     private static final StructPattern[] TABLE = {
             tablePattern(3, 0), tablePattern(0, 3), tablePattern(-3, 0), tablePattern(0, -3)};
 
@@ -75,7 +75,7 @@ public class TileEntityMultiblock extends TileEntityStructBase {
         }
         BlockMultiblockCore.withoutTeardown(() ->
                 MultiblockHandlerXR.placeAssembled(level, pos, ModCustomMissileBlocks.launch_table.get(), facing));
-        // `te` no longer exists after this point.
+        // `te` is not valid after this point.
     }
 
     private boolean isCompact(BlockGetter level, BlockPos pos) {

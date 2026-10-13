@@ -1,6 +1,8 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerFileCabinet;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -8,9 +10,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 /** 1.7 {@code GUIFileCabinet}: 176x170, dark labels. */
-public class GUIFileCabinet extends dev.golem.core.gui.CompatContainerScreen<ContainerFileCabinet> {
+public class GUIFileCabinet extends CompatContainerScreen<ContainerFileCabinet> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_file_cabinet.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_file_cabinet.png");
 
     public GUIFileCabinet(ContainerFileCabinet menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 170);

@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.blocks.network.CranePartitioner;
 import com.hbm.tileentity.network.TileEntityCranePartitioner;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -20,7 +21,7 @@ public class PartitionerRenderer extends GemBER<TileEntityCranePartitioner, Part
 
     private static final String T = Constants.MOD_ID + ":textures/blocks/";
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/blocks/crane_buffer.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/blocks/crane_buffer.obj"));
 
     @Override
     protected void setup(Gem.Model<State> declaration) {

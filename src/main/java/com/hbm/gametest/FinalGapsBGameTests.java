@@ -1,11 +1,14 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.api.block.IToolable;
+import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.blocks.ModDecoCrateBlocks;
 import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.blocks.ModExplosivesBlocks;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.bomb.ModBombBlocks;
+import com.hbm.blocks.generic.BlockLanternBehemoth;
 import com.hbm.blocks.generic.BlockSkeletonHolder;
 import com.hbm.blocks.generic.CrateKeepContents;
 import com.hbm.blocks.machine.MachineExplosionDamage;
@@ -24,7 +27,10 @@ import com.hbm.entity.mob.EntityRADBeast;
 import com.hbm.entity.projectile.EntityBombletZeta;
 import com.hbm.extprop.HbmPlayerProps;
 import com.hbm.handler.BossSpawnHandler;
+import com.hbm.interfaces.IRepairable;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.ItemEnums;
+import com.hbm.items.ModIntermediateItems;
 import com.hbm.potion.ModEffects;
 import com.hbm.tileentity.bomb.TileEntityLandmine;
 import com.hbm.tileentity.deco.TileEntityBobble;
@@ -35,33 +41,45 @@ import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import com.hbm.tileentity.machine.storage.TileEntityCrate;
 import com.hbm.tileentity.network.TileEntityPipeAnchor;
 import com.hbm.world.gen.nbt.LegacyStructureTiles;
+import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.Entities;
+import dev.golem.core.world.Advancements;
+import dev.golem.core.world.Compat;
 import dev.golem.core.world.Effects;
 import dev.golem.core.world.ItemStacks;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.phys.AABB;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * Contracts of gap batch B (§19ed-gaps-b), each against the 1.7 code it ports: BossSpawnHandler's raid, radiation
+ * Contracts for these 1.7 behaviours, checked against the 1.7 code each ports: BossSpawnHandler's raid, radiation
  * beast and ghost spawns and the FBI mark; the lantern reputation (repair, destroy, bonus) and its respawn copy; tank and
  * refinery explosion damage, leaking, repair and the napalm route to {@code inferno}; the {@code /ntmserver} keys; the
  * 1.7 tile-entity data of structure files; pipe anchor pipelines; and the saved-chunk height read the radar uses.
@@ -88,7 +106,7 @@ public final class FinalGapsBGameTests {
     public static void init() {}
 
     /** Logs the stack of an unexpected exception (the test reporter keeps only its message). */
-    private static java.util.function.Consumer<GameTestHelper> logged(java.util.function.Consumer<GameTestHelper> test) {
+    private static Consumer<GameTestHelper> logged(Consumer<GameTestHelper> test) {
         return helper -> {
             try {
                 test.accept(helper);
@@ -100,7 +118,7 @@ public final class FinalGapsBGameTests {
     }
 
     /** A mock player with a mod-aware mock connection (hbm payloads may be sent to it), closed by {@link #close}. */
-    private static final java.util.Map<ServerPlayer, GameTestHelpers.MockServerPlayer> MOCKS = new java.util.IdentityHashMap<>();
+    private static final Map<ServerPlayer, GameTestHelpers.MockServerPlayer> MOCKS = new IdentityHashMap<>();
 
     private static ServerPlayer playerAt(GameTestHelper helper, BlockPos relative) {
         GameTestHelpers.MockServerPlayer mock = GameTestHelpers.mockServerPlayer(helper);
@@ -157,11 +175,11 @@ public final class FinalGapsBGameTests {
             helper.assertTrue(copy.radMark && copy.fbiMark == props.fbiMark, "fbiMark and radMark survive the respawn copy");
         } finally {
             MobConfig.raidAttackDistance = distance;
-            List<net.minecraft.world.entity.Entity> spawned = new java.util.ArrayList<>();
+            List<Entity> spawned = new ArrayList<>();
             for (var e : level.getAllEntities()) {
                 if (e instanceof EntityFBI || e instanceof EntityFBIDrone || e instanceof EntityRADBeast || e instanceof EntityGhost) spawned.add(e);
             }
-            spawned.forEach(net.minecraft.world.entity.Entity::discard);
+            spawned.forEach(Entity::discard);
             close(player);
         }
         helper.succeed();
@@ -187,8 +205,8 @@ public final class FinalGapsBGameTests {
         lantern.isBroken = true;
         giveRepairMaterials(player);
         boolean repaired = block.onScrew(level, player, helper.absolutePos(rel), Direction.UP,
-                net.minecraft.world.phys.Vec3.ZERO, net.minecraft.world.InteractionHand.MAIN_HAND,
-                com.hbm.api.block.IToolable.ToolType.TORCH);
+                Vec3.ZERO, InteractionHand.MAIN_HAND,
+                IToolable.ToolType.TORCH);
         helper.assertTrue(repaired && !lantern.isBroken && lantern.comTimer == 400, "the blowtorch repairs the lantern");
         helper.assertTrue(HbmPlayerProps.getReputation(player) == 1, "a repair earns one reputation, got "
                 + HbmPlayerProps.getReputation(player));
@@ -196,12 +214,12 @@ public final class FinalGapsBGameTests {
         HbmPlayerProps.setReputation(player, 25);
         lantern.isBroken = true;
         giveRepairMaterials(player);
-        block.onScrew(level, player, helper.absolutePos(rel), Direction.UP, net.minecraft.world.phys.Vec3.ZERO,
-                net.minecraft.world.InteractionHand.MAIN_HAND, com.hbm.api.block.IToolable.ToolType.TORCH);
+        block.onScrew(level, player, helper.absolutePos(rel), Direction.UP, Vec3.ZERO,
+                InteractionHand.MAIN_HAND, IToolable.ToolType.TORCH);
         helper.assertTrue(HbmPlayerProps.getReputation(player) == 25, "reputation stops at 25");
 
         level.removeBlock(helper.absolutePos(rel), false);
-        com.hbm.blocks.generic.BlockLanternBehemoth.settleRemovals(); // the end-of-tick settlement, run now
+        BlockLanternBehemoth.settleRemovals(); // the end-of-tick settlement, run now
         helper.assertTrue(HbmPlayerProps.getReputation(player) == 24, "a destroyed lantern costs one reputation, got "
                 + HbmPlayerProps.getReputation(player));
 
@@ -215,9 +233,9 @@ public final class FinalGapsBGameTests {
 
     /** The old lantern's repair: two steel plates and a basic circuit. */
     private static void giveRepairMaterials(Player player) {
-        player.getInventory().add(new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(
-                dev.golem.core.Ids.of("hbm", "plate_steel")), 2));
-        player.getInventory().add(com.hbm.items.ModIntermediateItems.circuit(com.hbm.items.ItemEnums.EnumCircuitType.BASIC, 1));
+        player.getInventory().add(new ItemStack(BuiltInRegistries.ITEM.getValue(
+                Ids.of("hbm", "plate_steel")), 2));
+        player.getInventory().add(ModIntermediateItems.circuit(ItemEnums.EnumCircuitType.BASIC, 1));
     }
 
     private static TileEntityMachineFluidTank placeTank(GameTestHelper helper, BlockPos relative) {
@@ -245,7 +263,7 @@ public final class FinalGapsBGameTests {
         helper.assertTrue(MachineExplosionDamage.hit(level, helper.absolutePos(rel), blast, bomblet) && tank.hasExploded
                         && level.getBlockState(helper.absolutePos(rel)).is(ModMachineBlocks.machine_fluidtank.get()),
                 "the same explosion hits the tank only once");
-        Boolean inferno = dev.golem.core.world.Advancements.isDone(player, "hbm:inferno");
+        Boolean inferno = Advancements.isDone(player, "hbm:inferno");
         close(player);
         helper.assertTrue(inferno == null || inferno, "a napalm bomblet exploding a flammable tank grants inferno");
 
@@ -288,13 +306,13 @@ public final class FinalGapsBGameTests {
         helper.assertTrue(MachineExplosionDamage.hit(level, helper.absolutePos(rel.above(4)), new Object(), bomblet),
                 "the refinery owns the hit on its tower");
         helper.assertTrue(refinery.hasExploded && refinery.onFire, "the refinery blows open and burns");
-        Boolean inferno = dev.golem.core.world.Advancements.isDone(player, "hbm:inferno");
+        Boolean inferno = Advancements.isDone(player, "hbm:inferno");
         close(player);
         helper.assertTrue(inferno == null || inferno, "a napalm bomblet exploding the refinery grants inferno");
         TileEntityMachineRefinery.serverTick(level, refinery.getBlockPos(), refinery.getBlockState(), refinery);
         helper.assertTrue(refinery.tanks[0].getFill() == 490, "a burning refinery loses 10 mB a tick per tank, got "
                 + refinery.tanks[0].getFill());
-        refinery.tryExtinguish(level, refinery.getBlockPos(), com.hbm.interfaces.IRepairable.EnumExtinguishType.FOAM);
+        refinery.tryExtinguish(level, refinery.getBlockPos(), IRepairable.EnumExtinguishType.FOAM);
         helper.assertTrue(!refinery.onFire, "foam puts it out");
         helper.assertTrue(refinery.getRepairMaterials().size() == 2, "eight steel plates and four duct tape");
         helper.succeed();
@@ -315,7 +333,7 @@ public final class FinalGapsBGameTests {
             ServerConfig.ITEM_HAZARD_DROP_TICKRATE.set(tickrate);
 
             // ENABLE_MKU off: nobody is infected
-            var zombie = helper.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new BlockPos(2, 2, 2));
+            var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 2, 2));
             HbmLivingProps.getData(zombie).setContagion(1000);
             ServerConfig.ENABLE_MKU.set(false);
             helper.assertTrue(HbmLivingProps.getContagion(zombie) == 0, "no MKU without ENABLE_MKU");
@@ -326,7 +344,7 @@ public final class FinalGapsBGameTests {
             for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) {
                 helper.setBlock(new BlockPos(4 + dx, 1, 4 + dz), Blocks.STONE.defaultBlockState());
             }
-            var cow = helper.spawn(net.minecraft.world.entity.EntityType.COW, new BlockPos(4, 2, 4));
+            var cow = helper.spawn(EntityType.COW, new BlockPos(4, 2, 4));
             ServerConfig.TAINT_TRAILS.set(true);
             Effects.addRegistered(cow, ModEffects.TAINT.get(), 40, 0);
             // the batch's explosion tests run beside this one and fling the cow off its stone: hold it in place, and
@@ -340,8 +358,8 @@ public final class FinalGapsBGameTests {
             // had its ticks, and gives the chunk back only if it forced it (the forced set is one flag per chunk).
             BlockPos cowAt = helper.absolutePos(new BlockPos(4, 2, 4));
             int cowChunkX = cowAt.getX() >> 4, cowChunkZ = cowAt.getZ() >> 4;
-            boolean forcedByTest = !dev.golem.core.world.Compat.isChunkForced(level, cowChunkX, cowChunkZ);
-            if (forcedByTest) dev.golem.core.world.Compat.updateChunkForced(level, cowChunkX, cowChunkZ, true);
+            boolean forcedByTest = !Compat.isChunkForced(level, cowChunkX, cowChunkZ);
+            if (forcedByTest) Compat.updateChunkForced(level, cowChunkX, cowChunkZ, true);
             double[] pushed = new double[1];
             boolean[] done = new boolean[1];
             // the effect acts every second tick of the cow's own, so 20 of them are ten chances; the test timeout
@@ -352,8 +370,8 @@ public final class FinalGapsBGameTests {
                 final int tick = t;
                 helper.runAfterDelay(t, () -> {
                     if (done[0]) return;
-                    pushed[0] = Math.max(pushed[0], cow.position().distanceTo(net.minecraft.world.phys.Vec3.atBottomCenterOf(cowAt)));
-                    cow.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                    pushed[0] = Math.max(pushed[0], cow.position().distanceTo(Vec3.atBottomCenterOf(cowAt)));
+                    cow.setDeltaMovement(Vec3.ZERO);
                     cow.snapTo(cowAt.getX() + 0.5, cowAt.getY(), cowAt.getZ() + 0.5, cow.getYRot(), cow.getXRot());
                     boolean tainted = false;
                     for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) {
@@ -361,15 +379,15 @@ public final class FinalGapsBGameTests {
                     }
                     if (!tainted && cow.tickCount < cowTicks && tick < last) return;
                     done[0] = true;
-                    if (forcedByTest) dev.golem.core.world.Compat.updateChunkForced(level, cowChunkX, cowChunkZ, false);
+                    if (forcedByTest) Compat.updateChunkForced(level, cowChunkX, cowChunkZ, false);
                     try {
                         helper.assertTrue(tainted,
                                 "a tainted mob on stone leaves taint with TAINT_TRAILS (cow at " + cow.blockPosition() + ", effect "
-                                        + dev.golem.core.world.Effects.hasRegistered(cow, ModEffects.TAINT.get()) + ", pushed up to "
+                                        + Effects.hasRegistered(cow, ModEffects.TAINT.get()) + ", pushed up to "
                                         + pushed[0] + " blocks, key " + ServerConfig.TAINT_TRAILS.get() + ", below "
                                         + level.getBlockState(cowAt.below()) + ", cow ticks " + cow.tickCount + ", effect left "
-                                        + (dev.golem.core.world.Effects.getRegistered(cow, ModEffects.TAINT.get()) == null ? -1
-                                        : dev.golem.core.world.Effects.getRegistered(cow, ModEffects.TAINT.get()).getDuration())
+                                        + (Effects.getRegistered(cow, ModEffects.TAINT.get()) == null ? -1
+                                        : Effects.getRegistered(cow, ModEffects.TAINT.get()).getDuration())
                                         + ", removed " + cow.getRemovalReason() + ", in level " + (level.getEntity(cow.getUUID()) == cow)
                                         + ", entity-ticking " + level.isPositionEntityTicking(cowAt) + ", zombie ticks " + zombie.tickCount
                                         + " removed " + zombie.getRemovalReason() + ", after " + tick + " ticks)");
@@ -472,8 +490,8 @@ public final class FinalGapsBGameTests {
         items.add(pipe);
         crateNbt.put("items", items);
         LegacyStructureTiles.apply(level, helper.absolutePos(cratePos), crate, crateNbt, palette, 0);
-        String slot14 = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(crate.getItem(14).getItem()).toString();
-        String slot20 = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(crate.getItem(20).getItem()).toString();
+        String slot14 = BuiltInRegistries.ITEM.getKey(crate.getItem(14).getItem()).toString();
+        String slot20 = BuiltInRegistries.ITEM.getKey(crate.getItem(20).getItem()).toString();
         helper.assertTrue(slot14.equals("hbm:launch_code_piece") && slot20.equals("hbm:pipe_iron")
                         && crate.getItem(20).getCount() == 2,
                 "crate items relinked: " + slot14 + ", " + slot20);
@@ -518,7 +536,7 @@ public final class FinalGapsBGameTests {
         LegacyStructureTiles.apply(level, helper.absolutePos(skullPos), level.getBlockEntity(helper.absolutePos(skullPos)),
                 skullNbt, palette, 0);
         helper.assertTrue(helper.getBlockState(skullPos).is(Blocks.ZOMBIE_HEAD)
-                        && helper.getBlockState(skullPos).getValue(net.minecraft.world.level.block.SkullBlock.ROTATION) == 4,
+                        && helper.getBlockState(skullPos).getValue(SkullBlock.ROTATION) == 4,
                 "1.7 zombie skull at rotation 4");
 
         // an unknown id is reported, not silently dropped
@@ -551,7 +569,7 @@ public final class FinalGapsBGameTests {
                 "7 m links, and the fluid-less anchor takes the other's fluid");
         first.addConnection(second.getBlockPos());
         second.addConnection(first.getBlockPos());
-        var graph = com.hbm.api.fluidmk2.FluidGraph.get(level);
+        var graph = FluidGraph.get(level);
         var netA = graph.networkAt(first.getBlockPos().asLong());
         helper.assertTrue(netA != null && netA == graph.networkAt(second.getBlockPos().asLong()),
                 "the two anchors are one fluid network over the pipe");

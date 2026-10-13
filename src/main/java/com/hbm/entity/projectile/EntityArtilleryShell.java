@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.entity.IRadarDetectableNT;
@@ -10,11 +11,13 @@ import com.hbm.sound.ModSounds;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.SynchedData;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -29,10 +32,10 @@ import net.minecraft.world.phys.Vec3;
  * and falls under gravity the whole way, which is why the gun aims from the muzzle rather than the
  * pivot.
  *
- * <p>It whistles shortly before it lands — the sound plays at the <em>target</em>, not at the shell,
+ * <p>It whistles shortly before it lands. The sound plays at the <em>target</em>, not at the shell,
  * so the people about to be hit hear it rather than the gunner. A cargo shell carries a stack that
- * survives the flight and can be taken back off it, which is also why that one variant sticks in the
- * ground instead of despawning.
+ * survives the flight and can be taken back off it, so that variant sticks in the ground instead of
+ * despawning.
  */
 public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoader, IRadarDetectableNT {
 
@@ -238,7 +241,7 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
     }
 
     @Override
-    protected InteractionResult onInteract(Player player, net.minecraft.world.InteractionHand hand) {
+    protected InteractionResult onInteract(Player player, InteractionHand hand) {
         if (!level().isClientSide()) {
             if (!this.cargo.isEmpty()) player.getInventory().add(this.cargo.copy());
             discard();
@@ -274,26 +277,26 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        // by enum name, never the ordinal (History section 19ek-small)
-        com.hbm.util.SavedIds.putEnum(output, "type", ItemAmmoArty.byIndex(getShellType()));
+        // by enum name, never the ordinal
+        SavedIds.putEnum(output, "type", ItemAmmoArty.byIndex(getShellType()));
         output.putBoolean("shouldWhistle", this.shouldWhistle);
         output.putBoolean("didWhistle", this.didWhistle);
         output.putDouble("targetX", this.targetX);
         output.putDouble("targetY", this.targetY);
         output.putDouble("targetZ", this.targetZ);
-        if (!this.cargo.isEmpty()) output.store("cargo", dev.golem.core.world.ItemStacks.optionalCodec(), this.cargo);
+        if (!this.cargo.isEmpty()) output.store("cargo", ItemStacks.optionalCodec(), this.cargo);
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        this.entityData.set(TYPE, com.hbm.util.SavedIds.getEnum(input, "type", ItemAmmoArty.ArtilleryShellType.values()[0]).ordinal());
+        this.entityData.set(TYPE, SavedIds.getEnum(input, "type", ItemAmmoArty.ArtilleryShellType.values()[0]).ordinal());
         this.shouldWhistle = input.getBooleanOr("shouldWhistle", false);
         this.didWhistle = input.getBooleanOr("didWhistle", false);
         this.targetX = input.getDoubleOr("targetX", 0D);
         this.targetY = input.getDoubleOr("targetY", 0D);
         this.targetZ = input.getDoubleOr("targetZ", 0D);
-        setCargo(input.read("cargo", dev.golem.core.world.ItemStacks.optionalCodec()).orElse(ItemStack.EMPTY));
+        setCargo(input.read("cargo", ItemStacks.optionalCodec()).orElse(ItemStack.EMPTY));
         chunkLoader.markRestoredFromNbt();
     }
 }

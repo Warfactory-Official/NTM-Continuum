@@ -13,11 +13,11 @@ import net.minecraft.world.phys.HitResult;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The stealth missile — a tier-2 airframe with a modest warhead whose value is that radar cannot see
+ * The stealth missile: a tier-2 airframe with a modest warhead whose value is that radar cannot see
  * it, and that an {@link EntityMissileAntiBallistic} refuses to lock onto it.
  *
  * <p>Its rare drop upstream is ash ({@code powder_ash} with the MISC subtype), which is part of the
- * un-ported {@code ItemEnums} ash family; it drops nothing rare until that lands.
+ * un-ported {@code ItemEnums} ash family, so it drops nothing rare.
  */
 public class EntityMissileStealth extends EntityMissileBaseNT {
 

@@ -5,6 +5,9 @@ import dev.golem.core.data.Tags;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModBlocks;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
@@ -60,12 +63,12 @@ public class ExplosionBalefire {
         default void floor(ExplosionBalefire explosion, int x, int depth, int z, int dist, int layer) {}
     }
 
-    private static final java.util.Map<Identifier, Variant> VARIANTS =
-            new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<Identifier, Variant> VARIANTS =
+            new ConcurrentHashMap<>();
 
     /** Registers a crater variant under {@code id} (a second registration of one id is an error). */
     public static void registerVariant(Identifier id, Variant variant) {
-        if (VARIANTS.putIfAbsent(id, java.util.Objects.requireNonNull(variant)) != null) {
+        if (VARIANTS.putIfAbsent(id, Objects.requireNonNull(variant)) != null) {
             throw new IllegalStateException("Balefire variant " + id + " registered twice");
         }
     }

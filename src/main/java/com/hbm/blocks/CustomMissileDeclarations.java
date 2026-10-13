@@ -2,6 +2,7 @@ package com.hbm.blocks;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.hbm.items.ItemRendererDeclarations;
 import com.hbm.items.MachineObjModel;
 import com.hbm.items.weapon.MissilePartTable;
 import com.hbm.lib.ItemIds;
@@ -21,7 +22,7 @@ import static dev.golem.core.dejson.Crafting.shaped;
  * stated on their registrations in {@link ModCustomMissileBlocks} (Reg).
  *
  * <p>Every part with a body gets upstream's {@code ItemRenderMissilePart}, which is not a frame of its own: its
- * inventory pose is the bare 1.7 pixel slot — the same GUI frame the launchable missiles use — with the chain
+ * inventory pose is the bare 1.7 pixel slot, the same GUI frame the launchable missiles use, with the chain
  * {@code T(h/2*s, 0, 0) Rz(135) Rx(145) [T(0, h/8*s) warhead | T(0, h/4*s) fuselage] T(3.5, 14, 0) S(-s)} and a
  * {@code -t/25} degree spin, {@code s = 10 / guiHeight}. That chain is re-expressed as one rotation, translation
  * and scale, which is the shape a context transform takes. In hand and on the ground the part renderer used
@@ -76,9 +77,8 @@ public final class CustomMissileDeclarations {
             model.add("passes", passes);
             item("launch_pad_large", model);
         }
-        // 1.7 ItemRenderLibrary drew the assembly station and both launchers as OBJ items (icon audit 2026-10-01; the
-        // port had drawn them as flat block sprites). Each is ItemRenderBase: renderInventory -> gui*, renderCommon ->
-        // scale/yaw and the further pieces.
+        // 1.7 ItemRenderLibrary draws the assembly station and both launchers as OBJ items.
+        // Each is ItemRenderBase: renderInventory -> gui*, renderCommon -> scale/yaw and the further pieces.
         // machine_missile_assembly: renderInventory T(0,-2.5,0) S(10); common: cull off, the assembly OBJ
         Dejson.item(NS, "machine_missile_assembly")
                 .definition(MachineObjModel.of("hbm:models/missile_assembly.obj", "hbm:textures/models/missile_assembly.png")
@@ -118,7 +118,7 @@ public final class CustomMissileDeclarations {
         }
         // the five chips (mp_c_1..5) are plain sprites, stated on their registrations (ModCustomMissileItems)
         // 1.7 ItemRenderMissile draws the assembled missile from its parts in every slot
-        com.hbm.items.ItemRendererDeclarations.model("missile_custom", "missile_custom", "weapon");
+        ItemRendererDeclarations.model("missile_custom", "missile_custom", "weapon");
     }
 
     /** One part's {@code hbm:machine_obj} model on the missile frame; see the class comment for the algebra. */
@@ -164,8 +164,8 @@ public final class CustomMissileDeclarations {
         JsonObject t = new JsonObject();
         t.add("rotation", numbers(rx, ry, rz));
         t.add("translation", numbers(tx, ty, tz));
-        // Widened on purpose: a Float property is written with Float.toString's short digits, which read back
-        // as a different double, so the shipped file would no longer equal its declaration (dejson_item_parity).
+        // Widened: a Float property is written with Float.toString's short digits, which read back
+        // as a different double, so the shipped file would not equal its declaration (dejson_item_parity).
         t.addProperty("scale", (double) scale);
         return t;
     }

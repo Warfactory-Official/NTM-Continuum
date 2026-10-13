@@ -1,6 +1,7 @@
 package com.hbm.items.special;
 
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModJetpackDependencyItems;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -20,10 +21,10 @@ public final class ItemSteelDusted extends ItemHot {
 
     /**
      * An ingot forged {@code variant} times. 1.7 kept the count in the damage value; here it is {@code hbm:forge_count}
-     * (ntm-next's FORGE_COUNT, a count, not an id), absent for an unforged ingot (History §19es-itemvariant).
+     * (ntm-next's FORGE_COUNT, a count, not an id), absent for an unforged ingot.
      */
     public static ItemStack stack(int variant) {
-        ItemStack stack = new ItemStack(com.hbm.items.ModJetpackDependencyItems.ingot_steel_dusted.get());
+        ItemStack stack = new ItemStack(ModJetpackDependencyItems.ingot_steel_dusted.get());
         int count = Math.max(0, Math.min(VARIANTS - 1, variant));
         if (count > 0) ModDataComponents.FORGE_COUNT.set(stack, count);
         return stack;

@@ -1,7 +1,9 @@
 package com.hbm.client.render;
 
+import com.hbm.inventory.fluid.FluidHazard;
 import com.hbm.tileentity.machine.TileEntityMachineBigAssTank;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -50,7 +52,7 @@ public final class BigAssTankRenderer extends GiantTankRenderer<TileEntityMachin
 
     @Override
     protected void submitHazards(GiantTankRenderState state, PoseStack poseStack, SubmitSink collector) {
-        com.hbm.inventory.fluid.FluidHazard hazard = hazardFor(state.fluidType);
+        FluidHazard hazard = hazardFor(state.fluidType);
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(22.5F));
         for (int i = 0; i < 2; i++) {
@@ -82,7 +84,7 @@ public final class BigAssTankRenderer extends GiantTankRenderer<TileEntityMachin
         });
     }
 
-    private static void fluidVertex(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
+    private static void fluidVertex(VertexConsumer buffer, PoseStack.Pose pose,
                                     float x, float y, float z, float u, float v) {
         Vertexes.vertex(buffer, pose, x, y, z, 0xFFFFFFFF, u, v,
                 OverlayTexture.NO_OVERLAY, 0x00F000F0, 0F, 1F, 0F);

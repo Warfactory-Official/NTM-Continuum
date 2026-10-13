@@ -7,6 +7,7 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineSteamEngine;
 import net.minecraft.core.BlockPos;
@@ -56,7 +57,7 @@ public class MachineSteamEngine extends BlockMultiblockMachine
         return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 
-    private static String tankLine(com.hbm.inventory.fluid.tank.FluidTankNTM tank) {
+    private static String tankLine(FluidTankNTM tank) {
         return tank.getTankType().getDisplayNameString() + ": " + tank.getFill() + "/" + tank.getMaxFill() + "mB";
     }
 

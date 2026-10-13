@@ -17,7 +17,7 @@ import java.util.function.UnaryOperator;
 /**
  * The press stamps (dies). Hand-registered (kept out of the generated {@link com.hbm.items.ModItems})
  * because they need a {@link ItemStamp} subclass carrying a {@link StampType}. Durability mirrors the
- * 1.12.2 originals (stone 32 → obsidian 512; desh/casing stamps are unbreakable). All live in the
+ * 1.12.2 originals (stone 32 -> obsidian 512; desh/casing stamps are unbreakable). All live in the
  * CONTROL creative tab, matching the old {@code controlTab}.
  */
 public final class ModStampItems {
@@ -27,7 +27,7 @@ public final class ModStampItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    /** Every registered stamp, in registration order — used by the press recipe display/JEI later. */
+    /** Every registered stamp, in registration order, used by the press recipe display/JEI later. */
     public static final List<RegistryObject<Item>> ALL = new ArrayList<>();
 
     public static final RegistryObject<Item> stamp_stone_flat = stamp("stamp_stone_flat", 32, StampType.FLAT)

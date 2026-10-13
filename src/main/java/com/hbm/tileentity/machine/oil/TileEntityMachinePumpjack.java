@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.oil;
 
+import com.hbm.api.data.DepositDataMaps;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -25,7 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 
 /**
- * Pumpjack — 1:1 port of the 1.12.2 {@code TileEntityMachinePumpjack} (config name "pumpjack"):
+ * Pumpjack, 1:1 port of the 1.12.2 {@code TileEntityMachinePumpjack} (config name "pumpjack"):
  * maxPower 250k, 200 HE per eligible tick, delay 25t, 750 mB oil + 50-250 mB gas per deposit, 2.5%
  * drain chance. The beam animation speed is computed server-side ({@code 5 + 2*speed + (over-1)*10},
  * 0 when idle) and appended to the sync packet; the client ticker integrates it into {@code rot}.
@@ -85,7 +86,7 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
     }
 
     @Override
-    public void onSuck(BlockPos pos, com.hbm.api.data.DepositDataMaps.Deposit deposit) {
+    public void onSuck(BlockPos pos, DepositDataMaps.Deposit deposit) {
         suckDeposit(pos, deposit, oilPerDeposit, gasPerDepositMin, gasPerDepositMax, drainChance);
     }
 
@@ -96,12 +97,12 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
         ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
         BlockPos pos = worldPosition;
 
-        // The 4 fluid/power ports sit on the 4 `makeExtra` corner cells of the pump base — at
-        // {@code core + rot*3 ± 1} on both world axes (see MachinePumpjack.fillSpace) — each exposing
+        // The 4 fluid/power ports sit on the 4 `makeExtra` corner cells of the pump base, at
+        // {@code core + rot*3 ± 1} on both world axes (see MachinePumpjack.fillSpace), each exposing
         // its face along the machine's facing axis. (The 1.12.2 getConPos derived these with a
         // ±2/±4 offset formula that only lands all 4 for N/S‑facing pumpjacks; for E/W facings its
-        // ×4 term aimed 2 ports at non‑existent cells — the "missing 2 ports" bug. Recomputed from the
-        // corner cells so all 4 ports work at every facing; N/S behaviour is unchanged. §20 deviation.)
+        // ×4 term aims 2 ports at non‑existent cells. Recomputed from the
+        // corner cells so all 4 ports work at every facing; N/S behaviour is unchanged.)
         int bx = pos.getX() + rot.offsetX * 3;
         int bz = pos.getZ() + rot.offsetZ * 3;
         DirPos[] ports = new DirPos[4];

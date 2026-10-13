@@ -3,6 +3,7 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -24,7 +25,7 @@ public class TankGlassRenderer<T extends BlockEntity> extends GemBER<T, TankGlas
     private final Function<T, FluidTankNTM> tankGetter;
 
     public TankGlassRenderer(String objName, String texName, Function<T, FluidTankNTM> tankGetter) {
-        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/" + objName + ".obj"));
+        this.model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/machines/" + objName + ".obj"));
         String texture = Constants.MOD_ID + ":textures/models/machines/" + texName + ".png";
         this.body = Surface.cutout(texture);
         this.glass = Surface.translucent(texture);

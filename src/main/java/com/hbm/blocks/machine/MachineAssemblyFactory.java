@@ -2,9 +2,9 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.assemblyfactory.AssemblyFactoryPorts;
-import com.hbm.assemblyfactory.AssemblyFactoryRegistrations;
-import com.hbm.assemblyfactory.AssemblyFactorySidedContainer;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.tileentity.machine.AssemblyFactoryPorts;
+import com.hbm.tileentity.machine.AssemblyFactorySidedContainer;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockMaskTable;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -17,6 +17,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -55,7 +56,7 @@ public final class MachineAssemblyFactory extends BlockMultiblockMachine
     }
 
     @Override
-    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineAssemblyFactory factory)) return null;
 
         for (DirPos port : factory.getCoolPos()) {
@@ -129,8 +130,8 @@ public final class MachineAssemblyFactory extends BlockMultiblockMachine
     public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
         BlockPos cell = new BlockPos(x, y, z);
         if (!super.canConnect(type, world, x, y, z, dir)) return false;
-        return type == com.hbm.inventory.fluid.Fluids.WATER
-                || type == com.hbm.inventory.fluid.Fluids.SPENTSTEAM
+        return type == Fluids.WATER
+                || type == Fluids.SPENTSTEAM
                 || !coolantAnchor(world, cell);
     }
 

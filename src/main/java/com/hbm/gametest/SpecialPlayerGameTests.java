@@ -1,5 +1,7 @@
 package com.hbm.gametest;
 
+import com.hbm.blocks.generic.BlockBobble;
+import com.hbm.blocks.generic.BobbleFigure;
 import com.hbm.client.render.util.RenderAccessoryUtility;
 import com.hbm.handler.HazmatRegistry;
 import com.hbm.handler.SpecialPlayers;
@@ -50,9 +52,9 @@ public final class SpecialPlayerGameTests {
         Identifier bob = RenderAccessoryUtility.getCloakFromPlayer(UUID.fromString(ShadyUtil.HbMinecraft), "x");
         helper.assertTrue(bob != null && (bob.getPath().endsWith("capehbm3.png") || bob.getPath().endsWith("capehbm2.png")),
                 "Bob does not wear CapeHbm3/CapeHbm2: " + bob);
-        expect(helper, ShadyUtil.Dr_Nostalgia, "x", "capenostalgia2"); // 1.7 over old-hbm's CapeNostalgia
-        expect(helper, ShadyUtil.Hoboy03new, "x", "capehoboy_mk3"); // 1.7 over old-hbm's CapeHoboy
-        expect(helper, ShadyUtil.Golem, "x", "capegolem"); // old-hbm addition
+        expect(helper, ShadyUtil.Dr_Nostalgia, "x", "capenostalgia2"); // 1.7 over 1.12.2's CapeNostalgia
+        expect(helper, ShadyUtil.Hoboy03new, "x", "capehoboy_mk3"); // 1.7 over 1.12.2's CapeHoboy
+        expect(helper, ShadyUtil.Golem, "x", "capegolem"); // 1.12.2 addition
         expect(helper, "06ab7c03-55ce-43f8-9d3c-2850e3c652de", "x", "capewiki");
         expect(helper, stranger.toString(), "Dev", "capetest");
         expect(helper, stranger.toString(), "Player512", "capetest");
@@ -143,28 +145,28 @@ public final class SpecialPlayerGameTests {
     }
 
     /**
-     * old-hbm's Community Edition bobbleheads: the figure table ({@code BobbleFigure}, indexed by ordinal) still lines
+     * 1.12.2's Community Edition bobbleheads: the figure table ({@code BobbleFigure}, indexed by ordinal) still lines
      * up with the enum, the three skinned figures name their person's UUID, and Leafia's model is shipped.
      */
     public static void bobbleheads(GameTestHelper helper) {
-        var types = com.hbm.blocks.generic.BlockBobble.BobbleType.VALUES;
-        helper.assertTrue(types.length == com.hbm.blocks.generic.BobbleFigure.NAMES.length,
-                "BobbleFigure.NAMES has " + com.hbm.blocks.generic.BobbleFigure.NAMES.length + " entries for " + types.length + " types");
+        var types = BlockBobble.BobbleType.VALUES;
+        helper.assertTrue(types.length == BobbleFigure.NAMES.length,
+                "BobbleFigure.NAMES has " + BobbleFigure.NAMES.length + " entries for " + types.length + " types");
         for (var type : types) {
             int i = type.ordinal();
-            helper.assertTrue(com.hbm.blocks.generic.BobbleFigure.NAMES[i].equals(type.name()),
-                    "figure " + i + " is " + com.hbm.blocks.generic.BobbleFigure.NAMES[i] + ", type is " + type.name());
-            com.hbm.blocks.generic.BobbleFigure.suffix(i); // LAYERS covers every type
-            boolean skinned = com.hbm.blocks.generic.BobbleFigure.body(i) == com.hbm.blocks.generic.BobbleFigure.Body.SKIN;
+            helper.assertTrue(BobbleFigure.NAMES[i].equals(type.name()),
+                    "figure " + i + " is " + BobbleFigure.NAMES[i] + ", type is " + type.name());
+            BobbleFigure.suffix(i); // LAYERS covers every type
+            boolean skinned = BobbleFigure.body(i) == BobbleFigure.Body.SKIN;
             helper.assertTrue(skinned == (type.skinUuid != null), type + " skin body/uuid mismatch");
         }
-        helper.assertTrue(ShadyUtil.movblock.equals(com.hbm.blocks.generic.BlockBobble.BobbleType.MOVBLOCK.skinUuid)
-                && ShadyUtil.Hacker6329.equals(com.hbm.blocks.generic.BlockBobble.BobbleType.HACKER6329.skinUuid)
-                && ShadyUtil.EOS.equals(com.hbm.blocks.generic.BlockBobble.BobbleType.EOS.skinUuid),
+        helper.assertTrue(ShadyUtil.movblock.equals(BlockBobble.BobbleType.MOVBLOCK.skinUuid)
+                && ShadyUtil.Hacker6329.equals(BlockBobble.BobbleType.HACKER6329.skinUuid)
+                && ShadyUtil.EOS.equals(BlockBobble.BobbleType.EOS.skinUuid),
                 "the skinned bobbleheads name the wrong people");
-        helper.assertTrue(com.hbm.blocks.generic.BlockBobble.BobbleType.LEAFIA.skinUuid == null
-                && com.hbm.blocks.generic.BobbleFigure.body(com.hbm.blocks.generic.BlockBobble.BobbleType.LEAFIA.ordinal())
-                        == com.hbm.blocks.generic.BobbleFigure.Body.LEAFIA, "Leafia is not the modelled figure");
+        helper.assertTrue(BlockBobble.BobbleType.LEAFIA.skinUuid == null
+                && BobbleFigure.body(BlockBobble.BobbleType.LEAFIA.ordinal())
+                        == BobbleFigure.Body.LEAFIA, "Leafia is not the modelled figure");
         helper.assertTrue(GameTestHelpers.resourceExists(SpecialPlayerGameTests.class, "assets/hbm/models/trinkets/leafia.obj")
                 && GameTestHelpers.resourceExists(SpecialPlayerGameTests.class, "assets/hbm/textures/models/trinkets/leafia.png"),
                 "Leafia's model or texture is missing");

@@ -7,12 +7,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
 
-/** Exact Gem port of original-hbm ItemRenderMK108, including its procedural grenade belt. */
+/** Exact Gem port of 1.7 ItemRenderMK108, including its procedural grenade belt. */
 public final class Mk108WeaponRenderer extends WeaponRenderer {
-    private static final net.minecraft.resources.Identifier MODEL_ID=Ids.of("hbm","models/weapons/mk108.obj");
+    private static final Identifier MODEL_ID=Ids.of("hbm","models/weapons/mk108.obj");
     private static final Surface BODY=Surface.cutout("hbm:textures/models/weapons/mk108.png");
     private WavefrontObj model;
     private WavefrontObj model(){if(model==null)model=WavefrontObj.load(MODEL_ID);return model;}

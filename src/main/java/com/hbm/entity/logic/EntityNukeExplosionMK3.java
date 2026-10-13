@@ -1,5 +1,8 @@
 package com.hbm.entity.logic;
 
+import com.hbm.Constants;
+import com.hbm.packet.PlasmaBlastPayload;
+import com.hbm.saveddata.satellites.SatelliteDetector;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.ModNtmEntities;
@@ -91,7 +94,7 @@ public class EntityNukeExplosionMK3 extends EntityExplosionChunkloading {
                         world.playSound(null, ix, iy, iz, ModSounds.UFO_BLAST.get(), SoundSource.BLOCKS, 15.0F,
                                 0.7F + world.getRandom().nextFloat() * 0.2F);
 
-                        com.hbm.packet.PlasmaBlastPayload.send(server, ix, iy, iz, 0.0F, 0.75F, 1.0F, 0F, 0F, 7.5F);
+                        PlasmaBlastPayload.send(server, ix, iy, iz, 0.0F, 0.75F, 1.0F, 0F, 0F, 7.5F);
                     }
                 }
 
@@ -121,12 +124,12 @@ public class EntityNukeExplosionMK3 extends EntityExplosionChunkloading {
                 AwardRegions.inLevel(server, p -> HbmCriteria.detonation(p, DetonationTrigger.Kind.NUKE));
             }
             if (!level().isClientSide() && GeneralConfig.enableExtendedLogging)
-                com.hbm.Constants.LOG.info("[NUKE] Initialized mk3 explosion at {} / {} / {} with strength {}!",
+                Constants.LOG.info("[NUKE] Initialized mk3 explosion at {} / {} / {} with strength {}!",
                         getX(), getY(), getZ(), destructionRange);
 
             initExplosion();
-            com.hbm.saveddata.satellites.SatelliteDetector.reportEvent(level(), com.hbm.saveddata.satellites.SatelliteDetector.DURATION_HIGH,
-                    com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity.HIGH, getX(), getZ());
+            SatelliteDetector.reportEvent(level(), SatelliteDetector.DURATION_HIGH,
+                    SatelliteDetector.BurstIntensity.HIGH, getX(), getZ());
             this.did = true;
         }
 
@@ -144,7 +147,7 @@ public class EntityNukeExplosionMK3 extends EntityExplosionChunkloading {
                 }
         }
 
-        // 26.2: server-only; no client copy to gate
+        // 26.1: server-only; no client copy to gate
         if (!level().isClientSide()) {
             level().playSound(null, getX(), getY(), getZ(), SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.WEATHER,
                     10000.0F, 0.8F + this.random.nextFloat() * 0.2F);

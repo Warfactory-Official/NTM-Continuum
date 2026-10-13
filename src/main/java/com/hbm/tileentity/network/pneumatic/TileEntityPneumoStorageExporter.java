@@ -16,6 +16,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Containers;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -406,7 +407,7 @@ public class TileEntityPneumoStorageExporter extends TileEntityPneumaticMachineB
         for (int i = 9; i < SLOT_COUNT; i++) {
             ItemStack stack = getItem(i);
             if (stack.isEmpty()) continue;
-            net.minecraft.world.Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
+            Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
         }
     }
 }

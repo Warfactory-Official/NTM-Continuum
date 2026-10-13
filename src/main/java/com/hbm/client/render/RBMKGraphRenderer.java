@@ -8,11 +8,13 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderState;
+import dev.golem.core.render.LineRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
@@ -25,7 +27,7 @@ import net.minecraft.world.phys.Vec3;
  * <p>The original set {@code glLineWidth(2)}: two pixels, whatever the window size (Core {@code LineRenderTypes}).
  */
 public final class RBMKGraphRenderer extends GemBER<BlockEntityRBMKGraph, RBMKGraphRenderer.State> {
-    private final Font font = net.minecraft.client.Minecraft.getInstance().font;
+    private final Font font = Minecraft.getInstance().font;
 
     @Override protected void setup(Gem.Model<State> declaration) {
         Surface skin = Surface.solid(RBMKNumitronRenderer.TEXTURE);
@@ -61,7 +63,7 @@ public final class RBMKGraphRenderer extends GemBER<BlockEntityRBMKGraph, RBMKGr
             pose.translate(.25D, i * -.5D + .25D, 0D);
             final long[] values = state.values[i];
             final long lowest = state.lowest[i], highest = state.highest[i];
-            sink.submitCustomGeometry(pose, dev.golem.core.render.LineRenderTypes.lines(2F), (last, buffer) -> lines(last, buffer, values, lowest, highest));
+            sink.submitCustomGeometry(pose, LineRenderTypes.lines(2F), (last, buffer) -> lines(last, buffer, values, lowest, highest));
 
             pose.pushPose();
             double lineScale = 0.0025D;

@@ -16,15 +16,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * JEI category for the shredder — a faithful port of the 1.12.2 {@code ShredderRecipeHandler}: its own
- * {@code gui_nei_shredder.png} background, input at {@code (39,24)} → output at {@code (129,24)}, the two
+ * JEI category for the shredder, a port of the 1.12.2 {@code ShredderRecipeHandler}: its own
+ * {@code gui_nei_shredder.png} background, input at {@code (39,24)} and output at {@code (129,24)}, the two
  * blade slots above/below the centre at {@code (84,6)}/{@code (84,42)} cycling the blade items, the
  * animated power bar {@code (36,86,16,52)} at {@code (3,6)} and grind progress bar {@code (100,118,24,16)}
  * at {@code (80,23)}. The universal scrap fallback is not enumerated (it would list every item).
  */
 public class ShredderRecipeHandler extends HbmRecipeCategory<ShredderRecipeHandler.ShredderPair> {
 
-    /** One shredder recipe row (input item → output stack). */
+    /** One shredder recipe row (input item to output stack). */
     public record ShredderPair(ItemStack input, ItemStack output) {}
 
     private final Drawable powerBar;

@@ -1,6 +1,8 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerNukeMike;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import java.util.List;
 import java.util.Optional;
@@ -10,10 +12,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 /** Ivy Mike's 176x217 legacy assembly schematic and installed-component overlays. */
-public class GUINukeMike extends dev.golem.core.gui.CompatContainerScreen<ContainerNukeMike> {
+public class GUINukeMike extends CompatContainerScreen<ContainerNukeMike> {
 
     private static final Identifier TEXTURE =
-            dev.golem.core.Ids.of("hbm", "textures/gui/weapon/ivymikeschematic.png");
+            Ids.of("hbm", "textures/gui/weapon/ivymikeschematic.png");
 
     public GUINukeMike(ContainerNukeMike menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 217);

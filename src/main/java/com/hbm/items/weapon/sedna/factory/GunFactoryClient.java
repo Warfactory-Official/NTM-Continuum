@@ -4,6 +4,8 @@ import com.hbm.items.ModGunItems;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.hud.HUDComponentAmmoCounter;
 import com.hbm.items.weapon.sedna.hud.HUDComponentDurabilityBar;
+import com.hbm.items.weapon.sedna.hud.IHUDComponent;
+import java.util.function.Supplier;
 
 /** Client-only source catalogue for explicit Sedna HUD component assignment. */
 public final class GunFactoryClient {
@@ -96,8 +98,8 @@ public final class GunFactoryClient {
         hud(ModGunItems.gun_aberrator_eott, 1, HUD_COMPONENT_AMMO);
     }
 
-    private static void hud(java.util.function.Supplier<? extends ItemGunBaseNT> item, int config,
-            com.hbm.items.weapon.sedna.hud.IHUDComponent... components) {
+    private static void hud(Supplier<? extends ItemGunBaseNT> item, int config,
+            IHUDComponent... components) {
         item.get().getConfig(null, config).hud(components);
     }
 }

@@ -1,5 +1,6 @@
 package com.hbm.entity.mob.ai;
 
+import dev.golem.core.world.Navigations;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
@@ -46,6 +47,6 @@ public class EntityAIWanderConditional extends Goal {
 
     @Override
     public void start() {
-        dev.golem.core.world.Navigations.navigateTo(creature.getNavigation(), xPosition, yPosition, zPosition, speed);
+        Navigations.navigateTo(creature.getNavigation(), xPosition, yPosition, zPosition, speed);
     }
 }

@@ -3,6 +3,7 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.network.TileEntityConnector;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.phys.Vec3;
@@ -18,7 +19,7 @@ public class RenderConnector<T extends TileEntityConnector> extends RenderPylonB
 
     public RenderConnector(boolean superConnector) {
         String name = superConnector ? "connector_super" : "connector";
-        model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/network/" + name + ".obj"));
+        model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/network/" + name + ".obj"));
         surface = Surface.cutoutCull(Constants.MOD_ID + ":textures/models/network/" + name + ".png");
     }
 

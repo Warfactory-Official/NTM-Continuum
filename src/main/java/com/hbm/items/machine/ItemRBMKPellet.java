@@ -1,7 +1,10 @@
 package com.hbm.items.machine;
 
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModelState;
 import com.hbm.items.special.ItemNuclearWaste;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -15,15 +18,15 @@ import java.util.List;
  * {@code hbm:rbmk_pellet} component here ({@link Stage}, ntm-next's shape); {@link #getVariant}/{@link #of(int)} still
  * speak the 1.7 number at run time for the recipe tables written against it.
  */
-public class ItemRBMKPellet extends ItemNuclearWaste implements com.hbm.items.ModelState {
+public class ItemRBMKPellet extends ItemNuclearWaste implements ModelState {
 
     /** ntm-next {@code ItemRBMKPellet.Stage}: depletion 0..4 and the xenon flag, saved as two named fields. */
     public record Stage(int depletion, boolean xenon) {
         public static final Stage FRESH = new Stage(0, false);
-        public static final com.mojang.serialization.Codec<Stage> CODEC =
-                com.mojang.serialization.codecs.RecordCodecBuilder.create(i -> i.group(
-                        com.mojang.serialization.Codec.intRange(0, 4).optionalFieldOf("depletion", 0).forGetter(Stage::depletion),
-                        com.mojang.serialization.Codec.BOOL.optionalFieldOf("xenon", false).forGetter(Stage::xenon)
+        public static final Codec<Stage> CODEC =
+                RecordCodecBuilder.create(i -> i.group(
+                        Codec.intRange(0, 4).optionalFieldOf("depletion", 0).forGetter(Stage::depletion),
+                        Codec.BOOL.optionalFieldOf("xenon", false).forGetter(Stage::xenon)
                 ).apply(i, Stage::new));
 
         /** The stage 1.7 metadata {@code meta} named ({@code abs(meta) % 10}). */

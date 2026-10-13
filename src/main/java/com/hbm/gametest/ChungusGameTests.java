@@ -7,6 +7,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityChungus;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 
@@ -140,7 +141,7 @@ public final class ChungusGameTests {
 
     private static TileEntityChungus place(GameTestHelper helper) {
         FoldedTestSupport.assemble(helper, chungusBlock(), CORE);
-        TileEntityChungus chungus = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityChungus chungus = GameTestHelpers.blockEntity(
                 helper, CORE, TileEntityChungus.class);
         helper.assertTrue(chungus != null, "Leviathan turbine core BlockEntity was not created");
         return chungus;
@@ -154,6 +155,6 @@ public final class ChungusGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        return dev.golem.core.gametest.GameTestHelpers.resourceExists(ChungusGameTests.class, path);
+        return GameTestHelpers.resourceExists(ChungusGameTests.class, path);
     }
 }

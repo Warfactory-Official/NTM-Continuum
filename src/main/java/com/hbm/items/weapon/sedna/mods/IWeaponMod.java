@@ -3,7 +3,7 @@ package com.hbm.items.weapon.sedna.mods;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerLevel;
 
-/** A stack-installed weapon modifier. Lower-level stat evaluation is intentionally generic. */
+/** A stack-installed weapon modifier. Lower-level stat evaluation is generic. */
 public interface IWeaponMod {
     int getModPriority();
     String[] getSlots();

@@ -9,9 +9,9 @@ import net.minecraft.world.item.ItemStack;
  * {@link com.hbm.items.ModDataComponents#BATTERY_CHARGE} data component (implemented by
  * {@link com.hbm.items.machine.ItemBatteryPack}).
  *
- * <p>Do not use {@code instanceof} checks on this interface directly in hot paths — the original
- * guidance was to route through {@code Library.isBattery}; here a plain {@code instanceof} on the item
- * is fine since there is a single implementation.
+ * <p>Do not use {@code instanceof} checks on this interface directly in hot paths. The 1.12.2
+ * guidance was to route through {@code Library.isBattery}; a plain {@code instanceof} on the item is fine
+ * here since there is a single implementation.
  */
 public interface IBatteryItem {
 

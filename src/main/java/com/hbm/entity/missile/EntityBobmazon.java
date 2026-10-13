@@ -7,6 +7,7 @@ import com.hbm.interfaces.StoredItems;
 import com.hbm.client.ClientEffects;
 import com.hbm.explosion.ExplosionLarge;
 import com.hbm.sound.ModSounds;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -26,7 +27,7 @@ import dev.golem.core.data.DataOut;
  * 1.7 entity/missile/EntityBobmazon - the parody delivery drone: dropped at y=300 over the customer, free-falls
  * straight down on hand-rolled integration, and once ground is under its nose it throws a particle blast, plays
  * the old-explosion stinger and parachutes its payload stack as an ItemEntity.
- * 1.7's ignoreFrustumCheck/setSize(1,3) are renderer/type-dimension concerns in 26.2 (registration's job).
+ * 1.7's ignoreFrustumCheck/setSize(1,3) are renderer/type-dimension concerns in 26.1 (registration's job).
  */
 public class EntityBobmazon extends CompatEntity implements StoredItems {
 
@@ -106,16 +107,16 @@ public class EntityBobmazon extends CompatEntity implements StoredItems {
 
     @Override
     protected void loadData(DataIn input) {
-        this.payload = input.read("payload", dev.golem.core.world.ItemStacks.optionalCodec()).orElse(ItemStack.EMPTY);
+        this.payload = input.read("payload", ItemStacks.optionalCodec()).orElse(ItemStack.EMPTY);
     }
 
     @Override
     protected void saveData(DataOut output) {
         // 1.7 wrote unconditionally and NPE'd on a null payload; EMPTY is simply skipped instead
-        if (!payload.isEmpty()) output.store("payload", dev.golem.core.world.ItemStacks.optionalCodec(), payload);
+        if (!payload.isEmpty()) output.store("payload", ItemStacks.optionalCodec(), payload);
     }
 
-    // 26.2: hurt() final; 1.7 leaves Entity's default (immune)
+    // 26.1: hurt() final; 1.7 leaves Entity's default (immune)
     @Override
     protected boolean onHurt(DamageSource source, float amount) {
         return false;

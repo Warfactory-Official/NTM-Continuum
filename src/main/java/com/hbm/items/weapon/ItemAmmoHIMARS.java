@@ -1,6 +1,8 @@
 package com.hbm.items.weapon;
 
+import com.hbm.Constants;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.generic.BlockSlag;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
@@ -15,23 +17,26 @@ import com.hbm.explosion.vanillant.standard.EntityProcessorCross;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import com.hbm.items.ItemEnumMulti;
 import com.hbm.particle.helper.ExplosionCreator;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.ModEffects;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.Ids;
+import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.Effects;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
@@ -41,11 +46,9 @@ import net.minecraft.world.phys.Vec3;
  * The eight HIMARS rocket pods. 1.12.2 keeps them as a damage-indexed array of anonymous classes; here
  * they are enum constants carrying the same behaviour, one item each ({@code ammo_himars_<name>}, ntm-next).
  *
- * <p>One deviation, about a block this slice does not have. {@link HIMARSRocketType#SMALL_LAVA}
- * fills its crater with magma rather than upstream's {@code volcanic_lava_block}, which is a finite
- * fluid on a whole system that is not ported — vanilla flowing lava would run out of the crater and
- * across the map, which is exactly what the finite fluid exists to avoid. The white-phosphorus round's ten
- * scattered haze puffs are sent as 1.7 sent them ({@code HbmEffectNT.Haze}).
+ * <p>{@link HIMARSRocketType#SMALL_LAVA} fills its crater with 1.7's {@code volcanic_lava_block} (a flowing
+ * world fluid). The white-phosphorus round's ten scattered haze puffs are sent as 1.7 sent them
+ * ({@code HbmEffectNT.Haze}).
  */
 public class ItemAmmoHIMARS extends ItemEnumMulti {
 
@@ -54,8 +57,8 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
     }
 
     @Override
-    protected void appendCompatHoverText(ItemStack stack, dev.golem.core.world.CompatTooltipContext context,
-                                         java.util.List<Component> tooltip, TooltipFlag flag) {
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         List<Component> tooltip, TooltipFlag flag) {
         // the 1.7 tooltip keys, item.hbm.ammo_himars.<type>.desc.<n>, kept as they were
         String desc = "item.hbm.ammo_himars." + getType(stack).name().toLowerCase(Locale.US) + ".desc.";
         switch ((HIMARSRocketType) getType(stack)) {
@@ -83,7 +86,7 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
         }
     }
 
-    private static void line(java.util.List<Component> tooltip, String desc, int index, ChatFormatting color) {
+    private static void line(List<Component> tooltip, String desc, int index, ChatFormatting color) {
         tooltip.add(Component.translatable(desc + index).withStyle(color));
     }
 
@@ -117,7 +120,7 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
                 playBoom(rocket);
                 standardExplosion(rocket, hit, 20F, 3F, false, SLAG_CRACKED);
                 ExplosionLarge.spawnShrapnels(level, where.x, where.y, where.z, 30);
-                if (level instanceof net.minecraft.server.level.ServerLevel server) // 1.7: (int)-truncated hit vector
+                if (level instanceof ServerLevel server) // 1.7: (int)-truncated hit vector
                     ExplosionChaos.igniteAllBlocks(server, (int) where.x, (int) where.y, (int) where.z, 20);
 
                 int radius = 30;
@@ -132,7 +135,7 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
 
                 // 1.7: ten haze clouds scattered 15 blocks (gaussian) around the hit, sent 150 blocks around the rocket
                 for (int i = 0; i < 10; i++) {
-                    com.hbm.particle.helper.HbmEffectNT.Haze.sendAround(level,
+                    HbmEffectNT.Haze.sendAround(level,
                             where.x + level.getRandom().nextGaussian() * 15, where.y,
                             where.z + level.getRandom().nextGaussian() * 15, null, x, y, z, 150D);
                 }
@@ -153,7 +156,7 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
         SMALL_LAVA("standard_lava", "himars_standard_lava", 0) {
             @Override
             public void onImpact(EntityArtilleryRocket rocket, HitResult hit) {
-                standardExplosion(rocket, hit, 20F, 3F, true, MAGMA);
+                standardExplosion(rocket, hit, 20F, 3F, true, VOLCANIC_LAVA);
             }
         },
         SMALL_MINI_NUKE("standard_mini_nuke", "himars_standard_mini_nuke", 0) {
@@ -199,7 +202,7 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
 
         HIMARSRocketType(String name, String texture, int type) {
             this.name = name;
-            this.texture = Ids.of(com.hbm.Constants.MOD_ID, "textures/models/projectiles/" + texture + ".png");
+            this.texture = Ids.of(Constants.MOD_ID, "textures/models/projectiles/" + texture + ".png");
             this.amount = type == 0 ? 6 : 1;
             this.modelType = type;
         }
@@ -212,7 +215,7 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
     private static final Supplier<BlockState> SLAG_CRACKED =
             () -> ModBlocks.block_slag.get().defaultBlockState().setValue(BlockSlag.CRACKED, true);
 
-    private static final Supplier<BlockState> MAGMA = () -> Blocks.MAGMA_BLOCK.defaultBlockState();
+    private static final Supplier<BlockState> VOLCANIC_LAVA = () -> ModFluidNetBlocks.volcanic_lava_block.get().defaultBlockState();
 
     public static HIMARSRocketType byIndex(int index) {
         HIMARSRocketType[] values = HIMARSRocketType.values();

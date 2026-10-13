@@ -1,19 +1,107 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.api.block.IToolable;
+import com.hbm.api.energymk2.IBatteryItem;
+import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
+import com.hbm.blocks.ModFluidNetBlocks;
+import com.hbm.blocks.ModNuclearBlocks;
+import com.hbm.blocks.machine.fusion.MachineFusionTorus;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.creativetabs.ModTabs;
+import com.hbm.entity.projectile.EntityZirnoxDebris;
+import com.hbm.inventory.container.ContainerFurnaceCombination;
+import com.hbm.inventory.container.ContainerMachinePUREX;
+import com.hbm.inventory.container.ContainerMachinePlasmaForge;
+import com.hbm.inventory.container.ContainerMachineTurbine;
+import com.hbm.inventory.container.ContainerStorageDrum;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.material.MaterialShapes;
+import com.hbm.inventory.material.Mats;
+import com.hbm.inventory.recipes.CombinationRecipes;
 import com.hbm.inventory.recipes.CoolingRecipes;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.recipes.FusionRecipe;
+import com.hbm.inventory.recipes.FusionRecipes;
+import com.hbm.inventory.recipes.PUREXRecipes;
+import com.hbm.inventory.recipes.PlasmaForgeRecipe;
+import com.hbm.inventory.recipes.PlasmaForgeRecipes;
+import com.hbm.inventory.recipes.StorageDrumRecipes;
+import com.hbm.items.ItemEnumMulti;
+import com.hbm.items.ItemEnums;
+import com.hbm.items.ModAutogenItems;
+import com.hbm.items.ModBatteryItems;
+import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModItems;
+import com.hbm.items.ModMachineItems;
+import com.hbm.items.ModOilItems;
+import com.hbm.items.ModStorageDrumItems;
+import com.hbm.items.ModToolItems;
+import com.hbm.items.ModUpgradeItems;
 import com.hbm.items.ModZirnoxItems;
+import com.hbm.items.machine.IItemFluidId;
+import com.hbm.items.machine.ItemBatteryPack;
+import com.hbm.items.machine.ItemFluidBucket;
+import com.hbm.items.machine.ItemFluidId;
+import com.hbm.items.machine.ItemZirnoxRod;
 import com.hbm.items.machine.ZirnoxFuel;
+import com.hbm.items.special.ItemWasteStorage;
+import com.hbm.items.tool.ItemBlowtorch;
+import com.hbm.lib.DirPos;
+import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.machine.TileEntityCondenser;
+import com.hbm.tileentity.machine.TileEntityCondenserPowered;
+import com.hbm.tileentity.machine.TileEntityFurnaceCombination;
+import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.tileentity.machine.TileEntityMachinePUREX;
 import com.hbm.tileentity.machine.TileEntityMachineTurbine;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
+import com.hbm.tileentity.machine.TileEntityStorageDrum;
+import com.hbm.tileentity.machine.TileEntityWatz;
+import com.hbm.tileentity.machine.TileEntityZirnoxDestroyed;
+import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
+import com.hbm.tileentity.machine.fusion.TileEntityFusionBoiler;
+import com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder;
+import com.hbm.tileentity.machine.fusion.TileEntityFusionCollector;
+import com.hbm.tileentity.machine.fusion.TileEntityFusionKlystron;
+import com.hbm.tileentity.machine.fusion.TileEntityFusionMHDT;
+import com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge;
+import com.hbm.tileentity.machine.fusion.TileEntityFusionTorus;
+import com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct;
+import com.hbm.tileentity.machine.struct.TileEntityWatzStruct;
+import com.hbm.tileentity.network.TileEntityFluidDuctNT;
+import com.hbm.util.ContaminationUtil;
 import com.hbm.world.biome.ModBiomes;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.Biomes;
+import dev.golem.core.world.ItemStacks;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 /** Shared, server-only GameTest functions and execution budgets. */
 public final class HbmGameTestFunctions {
@@ -487,7 +575,7 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function SILEX_MODE_RESET =
             TESTS.function("silex_mode_reset", 100, () -> SilexGameTests::silexModeReset);
 
-    // --- ingredient item wave (implementations live in IngredientGameTests) ---
+    // Ingredient items (implementations in IngredientGameTests)
     public static final GameTests.Function INGREDIENT_REGISTRY =
             TESTS.function("ingredient_registry", 20, () -> IngredientGameTests::registry);
     public static final GameTests.Function INGREDIENT_PLATE_FUEL =
@@ -497,7 +585,7 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function INGREDIENT_ANVIL =
             TESTS.function("ingredient_anvil", 20, () -> IngredientGameTests::plateFuelAnvilRecipes);
 
-    // --- material catalogue/integration wave ---
+    // Material catalogue and integration
     public static final GameTests.Function MATERIAL_CATALOGUE_COMPLETE =
             TESTS.function("material_catalogue_complete", 40, () -> MaterialCompletionGameTests::materialCatalogueComplete);
     public static final GameTests.Function MATERIAL_AUTOGEN_SHAPES_COMPLETE =
@@ -556,7 +644,7 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function CENTRIFUGE_MENU =
             TESTS.function("centrifuge_menu", 40, () -> CentrifugeGameTests::menu);
 
-    // --- 2026-09-30 machine-recipe gaps (PUREX / SILEX / crystallizer / crafting back to 1.7) ---
+    // Machine recipes (PUREX, SILEX, crystallizer, crafting)
     public static final GameTests.Function RECIPE_GAP_PUREX_TABLE =
             TESTS.function("recipe_gap_purex_table", 20, () -> RecipeGapGameTests::purexTable);
     public static final GameTests.Function RECIPE_GAP_PUREX_PLATE =
@@ -1067,7 +1155,7 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function CONVEYOR_ROUTE_VERTICAL_THEN_TURN =
             TESTS.function("conveyor_route_vertical_then_turn", 40, 16, () -> ConveyorRouteGameTests::verticalThenTurn);
 
-    // --- 2026-09-29 playtest fixes (implementations live in PickAndFalloutGameTests) ---
+    // Pick and fallout (implementations in PickAndFalloutGameTests)
     public static final GameTests.Function PICK_BOBBLEHEAD_TYPE =
             TESTS.function("pick_bobblehead_type", 20, () -> PickAndFalloutGameTests::bobblePick);
     public static final GameTests.Function PICK_CONVEYOR_WAND =
@@ -1092,6 +1180,24 @@ public final class HbmGameTestFunctions {
             TESTS.function("volcano_shrapnel_pools_lava", 80, 16, () -> VolcanoGameTests::volcanoShrapnelPoolsLavaAndMonoxide);
     public static final GameTests.Function VOLCANO_LAVA_BLAST =
             TESTS.function("volcano_lava_blast", 20, 24, () -> VolcanoGameTests::lavaBlastFillsDestroyedCubesOnly);
+
+    // World fluid flow (implementations in FlowingFluidGameTests)
+    public static final GameTests.Function FLUID_MUD_REACH =
+            TESTS.function("fluid_mud_reach", 400, 14, () -> FlowingFluidGameTests::mudReach);
+    public static final GameTests.Function FLUID_TOXIC_REACH =
+            TESTS.function("fluid_toxic_reach", 400, 14, () -> FlowingFluidGameTests::toxicReach);
+    public static final GameTests.Function FLUID_SCHRABIDIC_REACH =
+            TESTS.function("fluid_schrabidic_reach", 400, 14, () -> FlowingFluidGameTests::schrabidicReach);
+    public static final GameTests.Function FLUID_SULFURIC_REACH =
+            TESTS.function("fluid_sulfuric_reach", 400, 14, () -> FlowingFluidGameTests::sulfuricReach);
+    public static final GameTests.Function FLUID_CORIUM_VOLUME =
+            TESTS.function("fluid_corium_volume", 40, 14, () -> FlowingFluidGameTests::coriumConservesVolume);
+    public static final GameTests.Function FLUID_ACID_DISSOLVES =
+            TESTS.function("fluid_acid_dissolves", 40, 14, () -> FlowingFluidGameTests::acidDissolvesNeighbours);
+    public static final GameTests.Function FLUID_VOLCANIC_LAVA =
+            TESTS.function("fluid_volcanic_lava", 620, 14, () -> FlowingFluidGameTests::volcanicLavaFlowsAndSets);
+    public static final GameTests.Function FLUID_REGISTRATION =
+            TESTS.function("fluid_registration", 20, () -> FlowingFluidGameTests::registration);
 
     // --- chunk loading + missiles (implementations live in MissileGameTests) ---
     public static final GameTests.Function CHUNK_REFCOUNTING =
@@ -1180,7 +1286,7 @@ public final class HbmGameTestFunctions {
             TESTS.function("nuke_ray_resume_equivalence", 20 * 90,
                     () -> NukePerfGameTests::rayResumeEquivalence);
 
-    // --- fix wave 1D: explosion values from 1.7 (Fix1DGameTests) ---
+    // Explosion values from 1.7 (Fix1DGameTests)
     public static final GameTests.Function FIX1D_SMALL_NUKE_RADIATION =
             TESTS.function("fix1d_small_nuke_radiation", 20, () -> Fix1DGameTests::smallNukeRadiation);
     public static final GameTests.Function FIX1D_CROSS_SMOOTH_DENSITY =
@@ -1196,7 +1302,7 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function FIX1D_TOREX_SCALE =
             TESTS.function("fix1d_torex_scale", 20, () -> Fix1DGameTests::torexScale);
 
-    /** setBlock vs direct section write — the number behind the destruction-phase design. */
+    /** setBlock vs direct section write: the number behind the destruction-phase design. */
     public static final GameTests.Function NUKE_WRITE_THROUGHPUT =
             TESTS.function("nuke_write_throughput", 20 * 90, () -> NukePerfGameTests::writeThroughput);
 
@@ -1432,7 +1538,7 @@ public final class HbmGameTestFunctions {
     /** The 85% / 6000 mB-per-tick turbine math, per steam stage, plus the buffer clamp. */
     private static void turbineConversion(GameTestHelper helper) {
         Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
 
         // STEAM: ops = min(64000/100, 128000/1, 6000/100) = 60 -> 6000 mB in, 60 mB out, 60*200*0.85 HE
         TileEntityMachineTurbine turbine = placeTurbine(helper, pos);
@@ -1473,19 +1579,19 @@ public final class HbmGameTestFunctions {
     /** The fluid identifier picks the steam stage and passes from slot 0 to slot 1. */
     private static void turbineFluidId(GameTestHelper helper) {
         Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
 
         TileEntityMachineTurbine turbine = placeTurbine(helper, pos);
-        turbine.inventory.setStackInSlot(0, com.hbm.items.machine.ItemFluidId.make(Fluids.SUPERHOTSTEAM));
+        turbine.inventory.setStackInSlot(0, ItemFluidId.make(Fluids.SUPERHOTSTEAM));
         tick(helper, pos, turbine);
         helper.assertTrue(turbine.input.getTankType() == Fluids.SUPERHOTSTEAM, "Identifier did not retype the input tank");
         helper.assertTrue(turbine.inventory.getStackInSlot(0).isEmpty(), "Consumed identifier must leave slot 0");
-        helper.assertTrue(turbine.inventory.getStackInSlot(1).getItem() instanceof com.hbm.items.machine.IItemFluidId,
+        helper.assertTrue(turbine.inventory.getStackInSlot(1).getItem() instanceof IItemFluidId,
                 "Identifier must pass down into slot 1");
 
         // a fluid the turbine cannot cool: no power, and the output tank goes NONE (the GUI's warning state)
         turbine = placeTurbine(helper, pos);
-        turbine.inventory.setStackInSlot(0, com.hbm.items.machine.ItemFluidId.make(Fluids.WATER));
+        turbine.inventory.setStackInSlot(0, ItemFluidId.make(Fluids.WATER));
         tick(helper, pos, turbine);
         helper.assertTrue(turbine.input.getTankType() == Fluids.WATER, "Identifier must retype even to a non-coolable fluid");
         helper.assertTrue(turbine.output.getTankType() == Fluids.NONE, "Non-coolable input must blank the output tank");
@@ -1496,13 +1602,13 @@ public final class HbmGameTestFunctions {
     /** Slot validity, both canister bays and the battery slot. */
     private static void turbineSlots(GameTestHelper helper) {
         Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         TileEntityMachineTurbine turbine = placeTurbine(helper, pos);
 
-        var identifier = com.hbm.items.machine.ItemFluidId.make(Fluids.STEAM);
-        var bucket = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BUCKET);
-        var battery = new net.minecraft.world.item.ItemStack(
-                com.hbm.items.ModBatteryItems.PACKS.get(com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack.BATTERY_LEAD).get());
+        var identifier = ItemFluidId.make(Fluids.STEAM);
+        var bucket = new ItemStack(Items.BUCKET);
+        var battery = new ItemStack(
+                ModBatteryItems.PACKS.get(ItemBatteryPack.EnumBatteryPack.BATTERY_LEAD).get());
         helper.assertTrue(turbine.isItemValidForSlot(0, identifier) && !turbine.isItemValidForSlot(0, bucket),
                 "Slot 0 must take fluid identifiers only");
         helper.assertTrue(turbine.isItemValidForSlot(2, bucket) && !turbine.isItemValidForSlot(2, identifier),
@@ -1514,21 +1620,21 @@ public final class HbmGameTestFunctions {
 
         // input bay: a full container drains into the input tank (WATER so the conversion stays out of it)
         turbine.input.setTankType(Fluids.WATER);
-        turbine.inventory.setStackInSlot(2, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.WATER_BUCKET));
+        turbine.inventory.setStackInSlot(2, new ItemStack(Items.WATER_BUCKET));
         tick(helper, pos, turbine);
         helper.assertTrue(turbine.input.getFill() == 1_000, "Input canister bay did not drain into the tank");
         helper.assertTrue(turbine.inventory.getStackInSlot(2).isEmpty()
-                        && turbine.inventory.getStackInSlot(3).is(net.minecraft.world.item.Items.BUCKET),
+                        && turbine.inventory.getStackInSlot(3).is(Items.BUCKET),
                 "Emptied container must move to slot 3");
 
         // output bay: an empty bucket comes back filled with the spent steam
         turbine = placeTurbine(helper, pos);
         turbine.output.setFill(2_000);
-        turbine.inventory.setStackInSlot(5, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BUCKET));
+        turbine.inventory.setStackInSlot(5, new ItemStack(Items.BUCKET));
         tick(helper, pos, turbine);
         helper.assertTrue(turbine.output.getFill() == 1_000, "Output canister bay did not drain the output tank");
         helper.assertTrue(turbine.inventory.getStackInSlot(5).isEmpty()
-                        && com.hbm.items.machine.ItemFluidBucket.getFluid(turbine.inventory.getStackInSlot(6)) == Fluids.SPENTSTEAM,
+                        && ItemFluidBucket.getFluid(turbine.inventory.getStackInSlot(6)) == Fluids.SPENTSTEAM,
                 "Filled spent-steam bucket must move to slot 6");
 
         // battery slot: the buffer empties into the item
@@ -1538,20 +1644,20 @@ public final class HbmGameTestFunctions {
         tick(helper, pos, turbine);
         helper.assertTrue(turbine.power == 0, "Turbine must push its buffer into the battery slot");
         var charged = turbine.inventory.getStackInSlot(4);
-        helper.assertTrue(((com.hbm.api.energymk2.IBatteryItem) charged.getItem()).getCharge(charged) == 5_000,
+        helper.assertTrue(((IBatteryItem) charged.getItem()).getCharge(charged) == 5_000,
                 "Battery did not receive the turbine's power");
         helper.succeed();
     }
 
-    /** The menu layout — the old container's slot count and coordinates. */
+    /** The menu layout: the old container's slot count and coordinates. */
     private static void turbineMenu(GameTestHelper helper) {
         Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         TileEntityMachineTurbine turbine = placeTurbine(helper, pos);
-        helper.assertTrue(turbine instanceof net.minecraft.world.MenuProvider, "The turbine must open a menu");
+        helper.assertTrue(turbine instanceof MenuProvider, "The turbine must open a menu");
 
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
-        var menu = new com.hbm.inventory.container.ContainerMachineTurbine(0, player.getInventory(), turbine);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var menu = new ContainerMachineTurbine(0, player.getInventory(), turbine);
         helper.assertTrue(menu.slots.size() == 7 + 36, "Turbine menu must have 7 machine slots + the player inventory");
         assertSlot(helper, menu, 0, 8, 17);
         assertSlot(helper, menu, 1, 8, 53);
@@ -1560,12 +1666,12 @@ public final class HbmGameTestFunctions {
         assertSlot(helper, menu, 4, 98, 53);
         assertSlot(helper, menu, 5, 152, 17);
         assertSlot(helper, menu, 6, 152, 53);
-        helper.assertFalse(menu.slots.get(1).mayPlace(com.hbm.items.machine.ItemFluidId.make(Fluids.STEAM)),
+        helper.assertFalse(menu.slots.get(1).mayPlace(ItemFluidId.make(Fluids.STEAM)),
                 "The identifier output slot must be take-only");
         helper.succeed();
     }
 
-    private static void assertSlot(GameTestHelper helper, net.minecraft.world.inventory.AbstractContainerMenu menu,
+    private static void assertSlot(GameTestHelper helper, AbstractContainerMenu menu,
                                    int index, int x, int y) {
         var slot = menu.slots.get(index);
         helper.assertTrue(slot.x == x && slot.y == y,
@@ -1575,11 +1681,11 @@ public final class HbmGameTestFunctions {
     /** The condenser closes the loop: spent steam in, the same amount of water out. */
     private static void condenserConversion(GameTestHelper helper) {
         Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         helper.setBlock(pos, ModMachineBlocks.machine_condenser.get().defaultBlockState());
-        var condenser = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, com.hbm.tileentity.machine.TileEntityCondenser.class);
+        var condenser = GameTestHelpers.blockEntity(helper, pos, TileEntityCondenser.class);
         condenser.input.setFill(100);
-        com.hbm.tileentity.machine.TileEntityCondenser.serverTick(helper.getLevel(), helper.absolutePos(pos),
+        TileEntityCondenser.serverTick(helper.getLevel(), helper.absolutePos(pos),
                 condenser.getBlockState(), condenser);
         helper.assertTrue(condenser.input.getFill() == 0, "Condenser must consume the spent steam");
         helper.assertTrue(condenser.output.getTankType() == Fluids.WATER && condenser.output.getFill() == 100,
@@ -1587,13 +1693,13 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    private static TileEntityMachineTurbine placeTurbine(GameTestHelper helper, net.minecraft.core.BlockPos pos) {
-        helper.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+    private static TileEntityMachineTurbine placeTurbine(GameTestHelper helper, BlockPos pos) {
+        helper.setBlock(pos, Blocks.AIR.defaultBlockState());
         helper.setBlock(pos, ModMachineBlocks.machine_turbine.get().defaultBlockState());
-        return dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityMachineTurbine.class);
+        return GameTestHelpers.blockEntity(helper, pos, TileEntityMachineTurbine.class);
     }
 
-    private static void tick(GameTestHelper helper, net.minecraft.core.BlockPos pos, TileEntityMachineTurbine turbine) {
+    private static void tick(GameTestHelper helper, BlockPos pos, TileEntityMachineTurbine turbine) {
         TileEntityMachineTurbine.serverTick(helper.getLevel(), helper.absolutePos(pos), turbine.getBlockState(), turbine);
     }
 
@@ -1602,7 +1708,7 @@ public final class HbmGameTestFunctions {
     /** One full ZIRNOX reprocessing cycle: 100 ticks at 1000 HE/t, exact reagent draw and the four products. */
     private static void purexRecipeCycle(GameTestHelper helper) {
         Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         TileEntityMachinePUREX purex = placePurex(helper, pos);
 
         purex.purexModule.recipe = "purex.zirnoxnu";
@@ -1613,8 +1719,8 @@ public final class HbmGameTestFunctions {
 
         purex.inputTanks[0].setFill(24_000);
         purex.inputTanks[1].setFill(24_000);
-        purex.inventory.setStackInSlot(4, new net.minecraft.world.item.ItemStack(
-                com.hbm.items.ModZirnoxItems.waste(ZirnoxFuel.NATURAL_URANIUM)));
+        purex.inventory.setStackInSlot(4, new ItemStack(
+                ModZirnoxItems.waste(ZirnoxFuel.NATURAL_URANIUM)));
         purex.power = 1_000_000;
 
         for (int i = 0; i < 100; i++) tick(helper, pos, purex);
@@ -1623,26 +1729,26 @@ public final class HbmGameTestFunctions {
         helper.assertTrue(purex.inputTanks[0].getFill() == 23_500 && purex.inputTanks[1].getFill() == 23_750,
                 "PUREX must consume 500 mB kerosene + 250 mB nitric acid per cycle");
         helper.assertTrue(purex.inventory.getStackInSlot(4).isEmpty(), "PUREX must consume the spent-fuel input");
-        assertOutput(helper, purex, 7, com.hbm.items.ModItems.nugget_u238.get(), 1);
-        assertOutput(helper, purex, 8, com.hbm.items.ModItems.nugget_pu_mix.get(), 2);
-        assertOutput(helper, purex, 9, com.hbm.items.ModItems.nugget_pu239.get(), 1);
-        assertOutput(helper, purex, 10, com.hbm.items.ModItems.nuclear_waste_tiny.get(), 2);
+        assertOutput(helper, purex, 7, ModItems.nugget_u238.get(), 1);
+        assertOutput(helper, purex, 8, ModItems.nugget_pu_mix.get(), 2);
+        assertOutput(helper, purex, 9, ModItems.nugget_pu239.get(), 1);
+        assertOutput(helper, purex, 10, ModItems.nuclear_waste_tiny.get(), 2);
         helper.succeed();
     }
 
-    /** Hot spent fuel must be cooled in a waste drum first — the recipes only match cold stacks. */
+    /** Hot spent fuel must be cooled in a waste drum first; the recipes only match cold stacks. */
     private static void purexHotWasteRejected(GameTestHelper helper) {
         Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         TileEntityMachinePUREX purex = placePurex(helper, pos);
         purex.purexModule.recipe = "purex.zirnoxnu";
 
-        var cold = new net.minecraft.world.item.ItemStack(com.hbm.items.ModZirnoxItems.waste(ZirnoxFuel.NATURAL_URANIUM));
+        var cold = new ItemStack(ModZirnoxItems.waste(ZirnoxFuel.NATURAL_URANIUM));
         var hot = cold.copy();
-        com.hbm.items.ModDataComponents.wasteHot(hot, true);
+        ModDataComponents.wasteHot(hot, true);
 
-        helper.assertTrue(com.hbm.inventory.recipes.PUREXRecipes.INSTANCE.matchesInput(cold), "Cold waste must match a PUREX recipe");
-        helper.assertFalse(com.hbm.inventory.recipes.PUREXRecipes.INSTANCE.matchesInput(hot), "Hot waste must not match any PUREX recipe");
+        helper.assertTrue(PUREXRecipes.INSTANCE.matchesInput(cold), "Cold waste must match a PUREX recipe");
+        helper.assertFalse(PUREXRecipes.INSTANCE.matchesInput(hot), "Hot waste must not match any PUREX recipe");
         helper.assertTrue(purex.isItemValidForSlot(4, cold), "Cold waste must be insertable");
         helper.assertFalse(purex.isItemValidForSlot(4, hot), "Hot waste must be rejected by the input slot");
         helper.succeed();
@@ -1651,27 +1757,27 @@ public final class HbmGameTestFunctions {
     /** The 1.12.2 upgrade formulas, pinned through observable speed (progress/tick) and draw (HE/tick). */
     private static void purexUpgrades(GameTestHelper helper) {
         Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
 
         // SPEED 3: speed 2.0 (progress 0.02/t), pow 4.0 (4000 HE/t)
-        assertUpgradeRun(helper, pos, com.hbm.items.ModUpgradeItems.upgrade_speed_3.get(), 25, 0.5D, 4_000L * 25);
+        assertUpgradeRun(helper, pos, ModUpgradeItems.upgrade_speed_3.get(), 25, 0.5D, 4_000L * 25);
         // POWER 3: speed 1.0 (progress 0.01/t), pow 0.25 (250 HE/t)
-        assertUpgradeRun(helper, pos, com.hbm.items.ModUpgradeItems.upgrade_power_3.get(), 25, 0.25D, 250L * 25);
+        assertUpgradeRun(helper, pos, ModUpgradeItems.upgrade_power_3.get(), 25, 0.25D, 250L * 25);
         // OVERDRIVE 3: speed 4.0 (progress 0.04/t), pow 11.0 (11000 HE/t)
-        assertUpgradeRun(helper, pos, com.hbm.items.ModUpgradeItems.upgrade_overdrive_3.get(), 20, 0.8D, 11_000L * 20);
+        assertUpgradeRun(helper, pos, ModUpgradeItems.upgrade_overdrive_3.get(), 20, 0.8D, 11_000L * 20);
         helper.succeed();
     }
 
-    private static void assertUpgradeRun(GameTestHelper helper, net.minecraft.core.BlockPos pos,
-                                         net.minecraft.world.item.Item upgrade, int ticks, double expectedProgress, long expectedDraw) {
+    private static void assertUpgradeRun(GameTestHelper helper, BlockPos pos,
+                                         Item upgrade, int ticks, double expectedProgress, long expectedDraw) {
         TileEntityMachinePUREX purex = placePurex(helper, pos);
         purex.purexModule.recipe = "purex.zirnoxnu";
-        purex.inventory.setStackInSlot(2, new net.minecraft.world.item.ItemStack(upgrade));
+        purex.inventory.setStackInSlot(2, new ItemStack(upgrade));
         tick(helper, pos, purex);
         purex.inputTanks[0].setFill(24_000);
         purex.inputTanks[1].setFill(24_000);
-        purex.inventory.setStackInSlot(4, new net.minecraft.world.item.ItemStack(
-                com.hbm.items.ModZirnoxItems.waste(ZirnoxFuel.NATURAL_URANIUM), 64));
+        purex.inventory.setStackInSlot(4, new ItemStack(
+                ModZirnoxItems.waste(ZirnoxFuel.NATURAL_URANIUM), 64));
         purex.power = 1_000_000;
 
         for (int i = 0; i < ticks; i++) tick(helper, pos, purex);
@@ -1686,7 +1792,7 @@ public final class HbmGameTestFunctions {
     /** The dynamic power ceiling: {@code recipe.power * 100}, floored at the buffer and at 1,000,000. */
     private static void purexMaxPower(GameTestHelper helper) {
         Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
 
         TileEntityMachinePUREX purex = placePurex(helper, pos);
         purex.purexModule.recipe = "purex.zirnoxnu"; // 1000 HE/t -> 100k, floored to the 1M base
@@ -1710,14 +1816,14 @@ public final class HbmGameTestFunctions {
     /** A recipe with a fluid product fills the output tank, and that tank is offered to the network. */
     private static void purexOutputFluid(GameTestHelper helper) {
         Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         TileEntityMachinePUREX purex = placePurex(helper, pos);
 
         purex.purexModule.recipe = "purex.icf";
         tick(helper, pos, purex);
-        purex.inventory.setStackInSlot(4, new net.minecraft.world.item.ItemStack(com.hbm.items.ModItems.icf_pellet_depleted.get()));
+        purex.inventory.setStackInSlot(4, new ItemStack(ModItems.icf_pellet_depleted.get()));
         // 305 ticks, not 300: progress accumulates 1/300 per tick in double precision, so the sum reaches
-        // 1.0 a tick or two late — the machine is not tick-exact, and the assertion should not pretend it is.
+        // 1.0 a tick or two late. The machine is not tick-exact, so the assertion does not pretend it is.
         for (int i = 0; i < 305; i++) {
             purex.power = purex.maxPower; // the ICF recipe draws 10k HE/t throughout
             tick(helper, pos, purex);
@@ -1727,23 +1833,23 @@ public final class HbmGameTestFunctions {
                 "The ICF recipe must leave 1250 mB of helium-4 in the product tank");
         helper.assertTrue(purex.getSendingTanks().length == 1 && purex.getSendingTanks()[0] == purex.outputTanks[0],
                 "The product tank must be offered to the fluid network");
-        assertOutput(helper, purex, 7, com.hbm.items.ModItems.icf_pellet_empty.get(), 1);
+        assertOutput(helper, purex, 7, ModItems.icf_pellet_empty.get(), 1);
         helper.succeed();
     }
 
     /** The 13-slot layout: what each slot accepts, and what automation may reach. */
     private static void purexSlots(GameTestHelper helper) {
         Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         TileEntityMachinePUREX purex = placePurex(helper, pos);
         purex.purexModule.recipe = "purex.zirnoxnu";
 
-        var battery = new net.minecraft.world.item.ItemStack(
-                com.hbm.items.ModBatteryItems.PACKS.get(com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack.BATTERY_LEAD).get());
-        var blueprint = new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.blueprint_plate.get());
-        var upgrade = new net.minecraft.world.item.ItemStack(com.hbm.items.ModUpgradeItems.upgrade_speed_3.get());
-        var waste = new net.minecraft.world.item.ItemStack(com.hbm.items.ModZirnoxItems.waste(ZirnoxFuel.NATURAL_URANIUM));
-        var junk = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STONE);
+        var battery = new ItemStack(
+                ModBatteryItems.PACKS.get(ItemBatteryPack.EnumBatteryPack.BATTERY_LEAD).get());
+        var blueprint = new ItemStack(ModMachineItems.blueprint_plate.get());
+        var upgrade = new ItemStack(ModUpgradeItems.upgrade_speed_3.get());
+        var waste = new ItemStack(ModZirnoxItems.waste(ZirnoxFuel.NATURAL_URANIUM));
+        var junk = new ItemStack(Items.STONE);
 
         helper.assertTrue(purex.isItemValidForSlot(0, battery) && !purex.isItemValidForSlot(0, junk), "Slot 0 takes batteries only");
         helper.assertTrue(purex.isItemValidForSlot(1, blueprint) && !purex.isItemValidForSlot(1, junk), "Slot 1 takes blueprints only");
@@ -1751,29 +1857,29 @@ public final class HbmGameTestFunctions {
         helper.assertTrue(purex.isItemValidForSlot(4, waste) && !purex.isItemValidForSlot(4, junk),
                 "Slot 4 takes the selected recipe's ingredients only");
 
-        int[] faceSlots = purex.getSlotsForFace(net.minecraft.core.Direction.NORTH);
+        int[] faceSlots = purex.getSlotsForFace(Direction.NORTH);
         helper.assertTrue(faceSlots.length == 9 && faceSlots[0] == 4 && faceSlots[8] == 12,
                 "Automation must see slots 4..12");
-        helper.assertTrue(purex.canPlaceItemThroughFace(4, waste, net.minecraft.core.Direction.NORTH)
-                        && !purex.canPlaceItemThroughFace(7, waste, net.minecraft.core.Direction.NORTH),
+        helper.assertTrue(purex.canPlaceItemThroughFace(4, waste, Direction.NORTH)
+                        && !purex.canPlaceItemThroughFace(7, waste, Direction.NORTH),
                 "Automation may only insert into the item inputs");
-        helper.assertTrue(purex.canTakeItemThroughFace(7, waste, net.minecraft.core.Direction.NORTH),
+        helper.assertTrue(purex.canTakeItemThroughFace(7, waste, Direction.NORTH),
                 "Automation must be able to pull the outputs");
 
         // an unusable item in an input slot must be extractable again, or it would deadlock the machine
         purex.inventory.setStackInSlot(5, junk.copy());
-        helper.assertTrue(purex.canTakeItemThroughFace(5, junk, net.minecraft.core.Direction.NORTH),
+        helper.assertTrue(purex.canTakeItemThroughFace(5, junk, Direction.NORTH),
                 "A clogged input slot must be extractable");
         helper.succeed();
     }
 
-    /** The menu layout — the original slot count and coordinates. */
+    /** The menu layout: the original slot count and coordinates. */
     private static void purexMenu(GameTestHelper helper) {
         Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         TileEntityMachinePUREX purex = placePurex(helper, pos);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
-        var menu = new com.hbm.inventory.container.ContainerMachinePUREX(0, player.getInventory(), purex);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var menu = new ContainerMachinePUREX(0, player.getInventory(), purex);
 
         helper.assertTrue(menu.slots.size() == 13 + 36, "PUREX menu must have 13 machine slots + the player inventory");
         assertSlot(helper, menu, 0, 152, 81);
@@ -1784,7 +1890,7 @@ public final class HbmGameTestFunctions {
         assertSlot(helper, menu, 6, 44, 90);
         assertSlot(helper, menu, 7, 80, 36);
         assertSlot(helper, menu, 12, 98, 72);
-        helper.assertFalse(menu.slots.get(7).mayPlace(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STONE)),
+        helper.assertFalse(menu.slots.get(7).mayPlace(new ItemStack(Items.STONE)),
                 "PUREX output slots must be take-only");
         helper.succeed();
     }
@@ -1793,17 +1899,17 @@ public final class HbmGameTestFunctions {
     private static void purexLayout(GameTestHelper helper) {
         Fluids.init();
         var block = ModMachineBlocks.machine_purex.get();
-        var clicked = new net.minecraft.core.BlockPos(4, 1, 2);
-        // setPlacedBy resolves the facing from the placer's yaw (0 → NORTH) and puts the core `offset`
-        // blocks along it: NORTH with offset 2 → two blocks +Z from the clicked cell.
+        var clicked = new BlockPos(4, 1, 2);
+        // setPlacedBy resolves the facing from the placer's yaw (0 maps to NORTH) and puts the core `offset`
+        // blocks along it: NORTH with offset 2 gives two blocks +Z from the clicked cell.
         var core = clicked.offset(0, 0, 2);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
         helper.setBlock(clicked, block.defaultBlockState());
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,
-                new net.minecraft.world.item.ItemStack(block));
+                new ItemStack(block));
 
-        TileEntityMachinePUREX purex = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityMachinePUREX.class);
+        TileEntityMachinePUREX purex = GameTestHelpers.blockEntity(helper, core, TileEntityMachinePUREX.class);
         helper.assertTrue(purex != null, "PUREX controller setup failed");
 
         int cells = 0;
@@ -1816,39 +1922,39 @@ public final class HbmGameTestFunctions {
 
         helper.assertTrue(purex.getConPos().length == 20, "PUREX must expose 20 network ports");
         var eastEdge = helper.absolutePos(core.offset(2, 0, 0));
-        helper.assertTrue(block.canConnect(helper.getLevel(), eastEdge, com.hbm.lib.ForgeDirection.EAST),
+        helper.assertTrue(block.canConnect(helper.getLevel(), eastEdge, ForgeDirection.EAST),
                 "The east edge cell must accept a connection outward");
-        helper.assertFalse(block.canConnect(helper.getLevel(), eastEdge, com.hbm.lib.ForgeDirection.WEST),
+        helper.assertFalse(block.canConnect(helper.getLevel(), eastEdge, ForgeDirection.WEST),
                 "An edge cell must not connect back into the machine");
         helper.succeed();
     }
 
-    private static TileEntityMachinePUREX placePurex(GameTestHelper helper, net.minecraft.core.BlockPos pos) {
-        helper.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+    private static TileEntityMachinePUREX placePurex(GameTestHelper helper, BlockPos pos) {
+        helper.setBlock(pos, Blocks.AIR.defaultBlockState());
         helper.setBlock(pos, ModMachineBlocks.machine_purex.get().defaultBlockState());
-        return dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityMachinePUREX.class);
+        return GameTestHelpers.blockEntity(helper, pos, TileEntityMachinePUREX.class);
     }
 
-    private static void tick(GameTestHelper helper, net.minecraft.core.BlockPos pos, TileEntityMachinePUREX purex) {
+    private static void tick(GameTestHelper helper, BlockPos pos, TileEntityMachinePUREX purex) {
         TileEntityMachinePUREX.serverTick(helper.getLevel(), helper.absolutePos(pos), purex.getBlockState(), purex);
     }
 
     private static void assertOutput(GameTestHelper helper, TileEntityMachinePUREX purex, int slot,
-                                     net.minecraft.world.item.Item item, int count) {
+                                     Item item, int count) {
         var stack = purex.inventory.getStackInSlot(slot);
         helper.assertTrue(stack.is(item) && stack.getCount() == count,
                 "PUREX output slot " + slot + " holds " + stack + ", expected " + count + "x " + item);
     }
 
     private static void zirnoxGoldenTick(GameTestHelper helper) {
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         helper.setBlock(pos, ModMachineBlocks.machine_zirnox.get().defaultBlockState());
-        TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityReactorZirnox.class);
+        TileEntityReactorZirnox reactor = GameTestHelpers.blockEntity(helper, pos, TileEntityReactorZirnox.class);
         reactor.heat = 50_000;
         reactor.isOn = true;
         reactor.carbonDioxide.setFill(14_000);
         reactor.water.setFill(32_000);
-        reactor.inventory.setStackInSlot(0, new net.minecraft.world.item.ItemStack(ModZirnoxItems.active(ZirnoxFuel.NATURAL_URANIUM)));
+        reactor.inventory.setStackInSlot(0, new ItemStack(ModZirnoxItems.active(ZirnoxFuel.NATURAL_URANIUM)));
         TileEntityReactorZirnox.serverTick(helper.getLevel(), helper.absolutePos(pos), reactor.getBlockState(), reactor);
         helper.assertTrue(reactor.pressure == 71_776, "ZIRNOX pressure formula regressed");
         // 1.7.10 factor 25 * 7.5: (50,030 - 10,256) / 100,000 * 187.5 = 74.6 -> 74 mB per tick
@@ -1866,27 +1972,26 @@ public final class HbmGameTestFunctions {
     /**
      * Every fluid must have a real {@code hbmfluid.*} name, not the title-cased id.
      *
-     * <p>The two are indistinguishable for the 39 fluids whose name happens to match their id, which is
-     * exactly why this rotted unnoticed: a spot check on {@code DEUTERIUM} passes either way. The guard
-     * is that the key <b>resolves at all</b>, plus a handful of fluids whose real name is nothing like
-     * the id, so a regression cannot hide behind the coincidental matches.
+     * <p>The two are indistinguishable for the 39 fluids whose name happens to match their id, so a spot check on
+     * {@code DEUTERIUM} passes either way. The guard is that the key <b>resolves at all</b>, plus a handful of
+     * fluids whose real name is nothing like the id.
      */
     /**
-     * Every registered {@code hbm:} item must have a lang entry — an item whose name renders as
+     * Every registered {@code hbm:} item must have a lang entry: an item whose name renders as
      * {@code item.hbm.foo} is shipped-looking but unfinished, and nothing else catches it.
      */
     private static void langCoverage(GameTestHelper helper) {
-        java.util.List<String> missing = new java.util.ArrayList<>();
-        for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
-            net.minecraft.resources.Identifier id =
-                    net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item);
-            if (id == null || !com.hbm.Constants.MOD_ID.equals(id.getNamespace())) continue;
+        List<String> missing = new ArrayList<>();
+        for (Item item : BuiltInRegistries.ITEM) {
+            Identifier id =
+                    BuiltInRegistries.ITEM.getKey(item);
+            if (id == null || !Constants.MOD_ID.equals(id.getNamespace())) continue;
             // The EFFECTIVE name, not the key: the autogen material items and the fluid containers
             // build their name in getName() and legitimately have no lang entry of their own.
             String shown = item.getName(item.getDefaultInstance()).getString();
             if (shown.equals(item.getDescriptionId())) missing.add(id.getPath());
         }
-        java.util.Collections.sort(missing);
+        Collections.sort(missing);
         helper.assertTrue(missing.isEmpty(),
                 missing.size() + " hbm items have no lang entry: " + missing);
         helper.succeed();
@@ -1896,61 +2001,60 @@ public final class HbmGameTestFunctions {
      * Every fluid's droplet sprite is the shared art plus that fluid's own key, and no two fluids name
      * the same sprite.
      *
-     * <p>Two places have to agree on that id and neither can see the other: {@link com.hbm.client.FluidSprites}
-     * mints it while the atlas is stitched, by handing the remap the fluid's key as a permutation name,
-     * and a screen asks {@link com.hbm.inventory.fluid.FluidType#getIconSprite()} for it at draw time.
-     * Change the shape on one side and the other keeps minting the old one — every lookup then quietly
-     * returns the missing-texture sprite, on a client, with nothing logged. The client class itself
-     * cannot be named from here (loading it on a dedicated server pulls in {@code GuiGraphicsExtractor}), so what
-     * is pinned is the shape both sides build.
+     * <p>Two places must agree on that id and neither can see the other: {@link com.hbm.client.FluidSprites}
+     * mints it while the atlas is stitched (the fluid's key is the remap's permutation name), and a screen asks
+     * {@link com.hbm.inventory.fluid.FluidType#getIconSprite()} for it at draw time. If the shapes differ, every
+     * lookup quietly returns the missing-texture sprite on a client with nothing logged. The client class cannot
+     * be named here (loading it on a dedicated server pulls in {@code GuiGraphicsExtractor}), so the test pins
+     * the shape both sides build.
      */
     private static void enumMultiTabVariants(GameTestHelper helper) {
-        java.util.List<net.minecraft.world.item.ItemStack> shown = new java.util.ArrayList<>();
-        for (var entry : com.hbm.creativetabs.ModTabs.CONTENTS.entrySet()) {
+        List<ItemStack> shown = new ArrayList<>();
+        for (var entry : ModTabs.CONTENTS.entrySet()) {
             for (var item : entry.getValue()) {
-                if (com.hbm.creativetabs.ModTabs.shouldDisplay(entry.getKey(), item.get())) {
-                    shown.add(new net.minecraft.world.item.ItemStack(item.get()));
+                if (ModTabs.shouldDisplay(entry.getKey(), item.get())) {
+                    shown.add(new ItemStack(item.get()));
                 }
             }
         }
-        com.hbm.creativetabs.ModTabs.STACK_CONTENTS.values()
+        ModTabs.STACK_CONTENTS.values()
                 .forEach(list -> list.forEach(supplier -> shown.addAll(supplier.get())));
-        for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
-            if (!(item instanceof com.hbm.items.ItemEnumMulti family)) continue;
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (!(item instanceof ItemEnumMulti family)) continue;
             boolean anywhere = shown.stream().anyMatch(stack -> stack.is(item));
             if (!anywhere) continue;
             for (Enum<?> variant : family.theEnum.getEnumConstants()) {
-                net.minecraft.world.item.ItemStack wanted = family.of(variant);
+                ItemStack wanted = family.of(variant);
                 helper.assertTrue(
-                        shown.stream().anyMatch(stack -> dev.golem.core.world.ItemStacks.sameItemAndData(stack, wanted)),
-                        net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item) + " is in a creative tab "
-                                + "but its " + variant.name().toLowerCase(java.util.Locale.US) + " variant is not");
+                        shown.stream().anyMatch(stack -> ItemStacks.sameItemAndData(stack, wanted)),
+                        BuiltInRegistries.ITEM.getKey(item) + " is in a creative tab "
+                                + "but its " + variant.name().toLowerCase(Locale.US) + " variant is not");
             }
         }
         helper.succeed();
     }
 
     private static void fluidDropletSprites(GameTestHelper helper) {
-        java.util.Map<String, String> bySprite = new java.util.HashMap<>();
-        for (com.hbm.inventory.fluid.FluidType fluid : com.hbm.inventory.fluid.Fluids.getAll()) {
+        Map<String, String> bySprite = new HashMap<>();
+        for (FluidType fluid : Fluids.getAll()) {
             String sprite = fluid.getIconSprite().toString();
             // in the fluid's own namespace (an addon fluid gets its own droplet, minted by FluidSprites.install(ns))
             String expected = fluid.getNamespace() + ":"
-                    + com.hbm.inventory.fluid.FluidType.ICON_ART + "_" + fluid.getKey();
+                    + FluidType.ICON_ART + "_" + fluid.getKey();
             helper.assertTrue(sprite.equals(expected),
                     "Fluid " + fluid.getName() + " must name the droplet " + expected + ", names " + sprite);
             String clash = bySprite.put(sprite, fluid.getName());
             helper.assertTrue(clash == null,
                     "Fluids " + clash + " and " + fluid.getName() + " both name the droplet " + sprite);
         }
-        helper.assertTrue(bySprite.size() == com.hbm.inventory.fluid.Fluids.getAll().length,
+        helper.assertTrue(bySprite.size() == Fluids.getAll().length,
                 "Every fluid must have its own droplet, " + bySprite.size() + " for "
-                        + com.hbm.inventory.fluid.Fluids.getAll().length + " fluids");
+                        + Fluids.getAll().length + " fluids");
         helper.succeed();
     }
 
     private static void fluidDisplayNames(GameTestHelper helper) {
-        for (com.hbm.inventory.fluid.FluidType type : com.hbm.inventory.fluid.Fluids.getAll()) {
+        for (FluidType type : Fluids.getAll()) {
             String key = type.getTranslationKey();
             String shown = type.getDisplayNameString();
             helper.assertTrue(!shown.equals(key),
@@ -1960,15 +2064,15 @@ public final class HbmGameTestFunctions {
 
         // Fluids whose real name is not a title-cased id. If a call site ever falls back to the id
         // again, these are the ones that catch it.
-        record Named(com.hbm.inventory.fluid.FluidType type, String expected) {}
+        record Named(FluidType type, String expected) {}
         Named[] cases = {
-                new Named(com.hbm.inventory.fluid.Fluids.OIL, "Crude Oil"),
-                new Named(com.hbm.inventory.fluid.Fluids.HEAVYOIL, "Heavy Oil"),
-                new Named(com.hbm.inventory.fluid.Fluids.SMEAR, "Industrial Oil"),
-                new Named(com.hbm.inventory.fluid.Fluids.GAS, "Natural Gas"),
-                new Named(com.hbm.inventory.fluid.Fluids.WATZ, "Poisonous Mud"),
-                new Named(com.hbm.inventory.fluid.Fluids.UF6, "Uranium Hexafluoride"),
-                new Named(com.hbm.inventory.fluid.Fluids.HOTSTEAM, "Dense Steam"),
+                new Named(Fluids.OIL, "Crude Oil"),
+                new Named(Fluids.HEAVYOIL, "Heavy Oil"),
+                new Named(Fluids.SMEAR, "Industrial Oil"),
+                new Named(Fluids.GAS, "Natural Gas"),
+                new Named(Fluids.WATZ, "Poisonous Mud"),
+                new Named(Fluids.UF6, "Uranium Hexafluoride"),
+                new Named(Fluids.HOTSTEAM, "Dense Steam"),
         };
         for (Named c : cases) {
             helper.assertTrue(c.expected().equals(c.type().getDisplayNameString()),
@@ -1979,13 +2083,13 @@ public final class HbmGameTestFunctions {
     }
 
     private static void blowtorchFuel(GameTestHelper helper) {
-        var torch = com.hbm.items.ModToolItems.blowtorch.get();
-        var stack = new net.minecraft.world.item.ItemStack(torch);
-        helper.assertTrue(torch.getFill(stack) == com.hbm.items.tool.ItemBlowtorch.MAX_FILL,
+        var torch = ModToolItems.blowtorch.get();
+        var stack = new ItemStack(torch);
+        helper.assertTrue(torch.getFill(stack) == ItemBlowtorch.MAX_FILL,
                 "A fresh blowtorch must be full, was " + torch.getFill(stack));
 
-        torch.setFill(stack, com.hbm.items.tool.ItemBlowtorch.COST);
-        helper.assertTrue(torch.getFill(stack) == com.hbm.items.tool.ItemBlowtorch.COST,
+        torch.setFill(stack, ItemBlowtorch.COST);
+        helper.assertTrue(torch.getFill(stack) == ItemBlowtorch.COST,
                 "Blowtorch fill did not round-trip");
 
         torch.setFill(stack, 0);
@@ -1993,38 +2097,37 @@ public final class HbmGameTestFunctions {
                 "An emptied blowtorch must stay empty, read " + torch.getFill(stack));
 
         // Welding a raw fusion component consumes exactly one charge and swaps the block.
-        var cell = new net.minecraft.core.BlockPos(1, 1, 1);
+        var cell = new BlockPos(1, 1, 1);
         helper.setBlock(cell, ModMachineBlocks.fusion_component.get().defaultBlockState());
-        var full = new net.minecraft.world.item.ItemStack(torch);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.CREATIVE);
+        var full = new ItemStack(torch);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.CREATIVE);
         // The conversion also wants a steel cast plate; hand the player one.
-        player.getInventory().add(new net.minecraft.world.item.ItemStack(
-                com.hbm.items.ModAutogenItems.get(com.hbm.inventory.material.MaterialShapes.CASTPLATE,
-                        com.hbm.inventory.material.Mats.MAT_STEEL)));
+        player.getInventory().add(new ItemStack(
+                ModAutogenItems.get(MaterialShapes.CASTPLATE,
+                        Mats.MAT_STEEL)));
 
         boolean welded = ModMachineBlocks.fusion_component.get().onScrew(helper.getLevel(), player,
-                helper.absolutePos(cell), net.minecraft.core.Direction.UP,
-                net.minecraft.world.phys.Vec3.ZERO, net.minecraft.world.InteractionHand.MAIN_HAND,
-                com.hbm.api.block.IToolable.ToolType.TORCH);
+                helper.absolutePos(cell), Direction.UP,
+                Vec3.ZERO, InteractionHand.MAIN_HAND,
+                IToolable.ToolType.TORCH);
         helper.assertTrue(welded, "Blowtorch failed to weld a raw fusion component");
         helper.assertTrue(helper.getBlockState(cell).getBlock() == ModMachineBlocks.fusion_component_bscco_welded.get(),
                 "Welded component did not become the BSCCO coil");
 
-        torch.setFill(full, torch.getFill(full) - com.hbm.items.tool.ItemBlowtorch.COST);
-        helper.assertTrue(torch.getFill(full) == com.hbm.items.tool.ItemBlowtorch.MAX_FILL
-                        - com.hbm.items.tool.ItemBlowtorch.COST,
+        torch.setFill(full, torch.getFill(full) - ItemBlowtorch.COST);
+        helper.assertTrue(torch.getFill(full) == ItemBlowtorch.MAX_FILL
+                        - ItemBlowtorch.COST,
                 "A weld must cost exactly one charge, left " + torch.getFill(full));
         helper.succeed();
     }
 
     /**
      * A multiblock's menu range must reach every cell of its own structure. The menu binds to the CORE,
-     * but the player stands at whatever cell they clicked — so measuring vanilla's interaction range to
+     * but the player stands at whatever cell they clicked, so measuring vanilla's interaction range to
      * the core locks you out of a big machine while you are pressed against it.
      *
-     * <p>Checks all three axes deliberately: the first version of this fix used the horizontal footprint
-     * only, which left the tall machines (coker 22 high over a 1-block footprint, gas flare, oil well)
-     * just as broken as before.
+     * <p>Checks all three axes: the horizontal footprint alone would miss the tall machines (coker 22 high over a
+     * 1-block footprint, gas flare, oil well).
      */
     private static void multiblockInteractionRange(GameTestHelper helper) {
         // Every multiblock must be usable from any cell it occupies, plus a player's reach.
@@ -2064,11 +2167,11 @@ public final class HbmGameTestFunctions {
                 "The coker is 22 blocks tall; its range must exceed that, was " + Math.round(coker));
 
         // And the live predicate must agree, at the torus's edge and at the top of a tall machine.
-        var core = new net.minecraft.core.BlockPos(8, 1, 8);
+        var core = new BlockPos(8, 1, 8);
         var torus = ModMachineBlocks.fusion_torus.get();
         FoldedTestSupport.assemble(helper, torus, core);
 
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         var absCore = helper.absolutePos(core);
         player.setPos(absCore.getX() + 8.5D, absCore.getY(), absCore.getZ() + 0.5D);
         helper.assertTrue(BlockMultiblockCore.isWithinInteractionRange(helper.getLevel(), absCore, player),
@@ -2080,7 +2183,7 @@ public final class HbmGameTestFunctions {
 
         // The fracking tower is the case a dimensions-derived radius cannot cover: getDimensions says
         // three and the derrick is twenty-four tall. The reach comes off the baked footprint instead.
-        var towerCore = new net.minecraft.core.BlockPos(2, 1, 2);
+        var towerCore = new BlockPos(2, 1, 2);
         var tower = ModMachineBlocks.machine_fracking_tower.get();
         FoldedTestSupport.assemble(helper, tower, towerCore);
         var absTower = helper.absolutePos(towerCore);
@@ -2102,42 +2205,42 @@ public final class HbmGameTestFunctions {
 
     /** The long/short metadata families, byproduct amounts, and neutron-contamination input gate. */
     private static void storageDrumRecipes(GameTestHelper helper) {
-        com.hbm.inventory.fluid.Fluids.init();
-        com.hbm.inventory.recipes.StorageDrumRecipes.registerRecipes();
-        helper.assertTrue(com.hbm.inventory.recipes.StorageDrumRecipes.getAll().size() == 32,
+        Fluids.init();
+        StorageDrumRecipes.registerRecipes();
+        helper.assertTrue(StorageDrumRecipes.getAll().size() == 32,
                 "Storage drum available recipe count regressed");
 
-        var input = com.hbm.items.ModStorageDrumItems.make(
-                com.hbm.items.ModStorageDrumItems.nuclear_waste_short.get(),
-                com.hbm.items.special.ItemWasteStorage.ShortWasteClass.PLUTONIUM240.ordinal(), 1);
-        var output = com.hbm.inventory.recipes.StorageDrumRecipes.getOutput(input);
-        var waste = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(input);
+        var input = ModStorageDrumItems.make(
+                ModStorageDrumItems.nuclear_waste_short.get(),
+                ItemWasteStorage.ShortWasteClass.PLUTONIUM240.ordinal(), 1);
+        var output = StorageDrumRecipes.getOutput(input);
+        var waste = StorageDrumRecipes.getWaste(input);
         helper.assertTrue(output != null
-                        && com.hbm.items.ModStorageDrumItems.nuclear_waste_short_depleted.is(output.getItem())
-                        && ((com.hbm.items.special.ItemWasteStorage) output.getItem()).variant(output)
-                                == com.hbm.items.special.ItemWasteStorage.ShortWasteClass.PLUTONIUM240.ordinal(),
+                        && ModStorageDrumItems.nuclear_waste_short_depleted.is(output.getItem())
+                        && ((ItemWasteStorage) output.getItem()).variant(output)
+                                == ItemWasteStorage.ShortWasteClass.PLUTONIUM240.ordinal(),
                 "Short-waste transformation lost its subtype");
         // 1.7 VersatileConfig.getShortDecayChance: 15 min (the 1.12.2 table had 3 h)
         helper.assertTrue(waste != null && waste[0] == 18_000 && waste[1] == 350 && waste[2] == 1_000,
                 "Short-waste liquid/gas output regressed");
 
-        var longTinyInput = com.hbm.items.ModStorageDrumItems.make(
-                com.hbm.items.ModStorageDrumItems.nuclear_waste_long_tiny.get(),
-                com.hbm.items.special.ItemWasteStorage.LongWasteClass.URANIUM233.ordinal(), 1);
-        var longTinyOutput = com.hbm.inventory.recipes.StorageDrumRecipes.getOutput(longTinyInput);
-        var longTinyWaste = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(longTinyInput);
+        var longTinyInput = ModStorageDrumItems.make(
+                ModStorageDrumItems.nuclear_waste_long_tiny.get(),
+                ItemWasteStorage.LongWasteClass.URANIUM233.ordinal(), 1);
+        var longTinyOutput = StorageDrumRecipes.getOutput(longTinyInput);
+        var longTinyWaste = StorageDrumRecipes.getWaste(longTinyInput);
         helper.assertTrue(longTinyOutput != null
-                        && com.hbm.items.ModStorageDrumItems.nuclear_waste_long_depleted_tiny.is(longTinyOutput.getItem())
-                        && ((com.hbm.items.special.ItemWasteStorage) longTinyOutput.getItem()).variant(longTinyOutput)
-                                == com.hbm.items.special.ItemWasteStorage.LongWasteClass.URANIUM233.ordinal()
+                        && ModStorageDrumItems.nuclear_waste_long_depleted_tiny.is(longTinyOutput.getItem())
+                        && ((ItemWasteStorage) longTinyOutput.getItem()).variant(longTinyOutput)
+                                == ItemWasteStorage.LongWasteClass.URANIUM233.ordinal()
                         && longTinyWaste != null && longTinyWaste[0] == 21_600
                         && longTinyWaste[1] == 0 && longTinyWaste[2] == 5,
                 "Long-tiny waste must scale liquid and gas by 0.1");
 
-        var shortTinyInput = com.hbm.items.ModStorageDrumItems.make(
-                com.hbm.items.ModStorageDrumItems.nuclear_waste_short_tiny.get(),
-                com.hbm.items.special.ItemWasteStorage.ShortWasteClass.PLUTONIUM240.ordinal(), 1);
-        var shortTinyWaste = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(shortTinyInput);
+        var shortTinyInput = ModStorageDrumItems.make(
+                ModStorageDrumItems.nuclear_waste_short_tiny.get(),
+                ItemWasteStorage.ShortWasteClass.PLUTONIUM240.ordinal(), 1);
+        var shortTinyWaste = StorageDrumRecipes.getWaste(shortTinyInput);
         helper.assertTrue(shortTinyWaste != null && shortTinyWaste[0] == 1_800
                         && shortTinyWaste[1] == 35 && shortTinyWaste[2] == 100,
                 "Short-tiny waste must scale liquid and gas by 0.1");
@@ -2148,10 +2251,10 @@ public final class HbmGameTestFunctions {
         int[][] wrapped = {{5, 0, 100}, {6, 50, 100}, {7, 150, 500}};
         for (int[] w : wrapped) {
             for (boolean tiny : new boolean[]{false, true}) {
-                var stack = com.hbm.items.ModStorageDrumItems.make(tiny
-                        ? com.hbm.items.ModStorageDrumItems.nuclear_waste_short_tiny.get()
-                        : com.hbm.items.ModStorageDrumItems.nuclear_waste_short.get(), w[0], 1);
-                var out = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(stack);
+                var stack = ModStorageDrumItems.make(tiny
+                        ? ModStorageDrumItems.nuclear_waste_short_tiny.get()
+                        : ModStorageDrumItems.nuclear_waste_short.get(), w[0], 1);
+                var out = StorageDrumRecipes.getWaste(stack);
                 int div = tiny ? 10 : 1;
                 helper.assertTrue(out != null && out[1] == w[1] / div && out[2] == w[2] / div,
                         "Short waste class " + w[0] + (tiny ? " (tiny)" : "") + " must release 1.7's wrapped "
@@ -2162,32 +2265,32 @@ public final class HbmGameTestFunctions {
 
         // 1.7 TileEntityStorageDrum: Au-198 decays into the mercury droplet (ingot_mercury = hbm:nugget_mercury) at
         // shortChance / 20, the Pb-209 / Sr-90 ingots, nuggets and powder into bismuth / zirconium.
-        var au = com.hbm.inventory.recipes.StorageDrumRecipes.getOutput(
-                new net.minecraft.world.item.ItemStack(com.hbm.items.ModItems.ingot_au198.get()));
-        var auWaste = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(
-                new net.minecraft.world.item.ItemStack(com.hbm.items.ModItems.ingot_au198.get()));
-        helper.assertTrue(au != null && au.getItem() == com.hbm.items.ModItems.nugget_mercury.get()
+        var au = StorageDrumRecipes.getOutput(
+                new ItemStack(ModItems.ingot_au198.get()));
+        var auWaste = StorageDrumRecipes.getWaste(
+                new ItemStack(ModItems.ingot_au198.get()));
+        helper.assertTrue(au != null && au.getItem() == ModItems.nugget_mercury.get()
                         && auWaste != null && auWaste[0] == 900 && auWaste[1] == 0 && auWaste[2] == 0,
                 "Au-198 must decay into the mercury droplet at 1.7's 900-tick chance");
-        var sr = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(
-                new net.minecraft.world.item.ItemStack(com.hbm.items.ModItems.nugget_sr90.get()));
+        var sr = StorageDrumRecipes.getWaste(
+                new ItemStack(ModItems.nugget_sr90.get()));
         helper.assertTrue(sr != null && sr[0] == 360, "Sr-90 nugget must decay at shortChance / 50");
 
-        var contaminated = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_INGOT);
-        com.hbm.util.ContaminationUtil.neutronActivateItem(contaminated, 1F, 1F);
-        helper.assertTrue(com.hbm.util.ContaminationUtil.isContaminated(contaminated),
+        var contaminated = new ItemStack(Items.IRON_INGOT);
+        ContaminationUtil.neutronActivateItem(contaminated, 1F, 1F);
+        helper.assertTrue(ContaminationUtil.isContaminated(contaminated),
                 "Neutron-contaminated items must remain valid drum inputs");
         helper.succeed();
     }
 
     /** The original six-by-six ring's 24 slots and player-inventory coordinates. */
     private static void storageDrumMenu(GameTestHelper helper) {
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
-        helper.setBlock(pos, com.hbm.blocks.machine.ModMachineBlocks.machine_storage_drum.get().defaultBlockState());
-        var drum = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
-                com.hbm.tileentity.machine.TileEntityStorageDrum.class);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
-        var menu = new com.hbm.inventory.container.ContainerStorageDrum(0, player.getInventory(), drum);
+        var pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, ModMachineBlocks.machine_storage_drum.get().defaultBlockState());
+        var drum = GameTestHelpers.blockEntity(helper, pos,
+                TileEntityStorageDrum.class);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var menu = new ContainerStorageDrum(0, player.getInventory(), drum);
         helper.assertTrue(menu.slots.size() == 60, "Storage drum menu must have 24 + 36 slots");
         int[][] expected = {
                 {71, 24}, {89, 24},
@@ -2198,7 +2301,7 @@ public final class HbmGameTestFunctions {
                 {71, 114}, {89, 114}
         };
         for (int i = 0; i < expected.length; i++) assertSlot(helper, menu, i, expected[i][0], expected[i][1]);
-        helper.assertTrue(drum.getSlotsForFace(net.minecraft.core.Direction.UP).length == 24,
+        helper.assertTrue(drum.getSlotsForFace(Direction.UP).length == 24,
                 "All storage drum slots must be sided-accessible");
         helper.assertTrue(drum.liquid.getMaxFill() == 16_000 && drum.gas.getMaxFill() == 16_000,
                 "Storage drum tank capacity regressed");
@@ -2207,20 +2310,20 @@ public final class HbmGameTestFunctions {
 
     /** Powered condenser conversion is blocked below 10 HE per mB and consumes exactly that amount. */
     private static void poweredCondenserConversion(GameTestHelper helper) {
-        com.hbm.inventory.fluid.Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
-        var state = com.hbm.blocks.machine.ModMachineBlocks.machine_condenser_powered.get().defaultBlockState();
+        Fluids.init();
+        var pos = new BlockPos(1, 1, 1);
+        var state = ModMachineBlocks.machine_condenser_powered.get().defaultBlockState();
         helper.setBlock(pos, state);
-        var condenser = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
-                com.hbm.tileentity.machine.TileEntityCondenserPowered.class);
+        var condenser = GameTestHelpers.blockEntity(helper, pos,
+                TileEntityCondenserPowered.class);
         condenser.input.setFill(100);
         condenser.power = 999;
-        com.hbm.tileentity.machine.TileEntityCondenserPowered.serverTick(helper.getLevel(), helper.absolutePos(pos),
+        TileEntityCondenserPowered.serverTick(helper.getLevel(), helper.absolutePos(pos),
                 state, condenser);
         helper.assertTrue(condenser.input.getFill() == 100 && condenser.output.getFill() == 0,
                 "Powered condenser must be energy-gated");
         condenser.power = 1_000;
-        com.hbm.tileentity.machine.TileEntityCondenserPowered.serverTick(helper.getLevel(), helper.absolutePos(pos),
+        TileEntityCondenserPowered.serverTick(helper.getLevel(), helper.absolutePos(pos),
                 state, condenser);
         helper.assertTrue(condenser.input.getFill() == 0 && condenser.output.getFill() == 100
                         && condenser.power == 0 && condenser.waterTimer == 20,
@@ -2230,97 +2333,97 @@ public final class HbmGameTestFunctions {
 
     /** The six anchored fluid/power positions are the legacy powered-condenser ports. */
     private static void poweredCondenserPorts(GameTestHelper helper) {
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
-        var state = com.hbm.blocks.machine.ModMachineBlocks.machine_condenser_powered.get().defaultBlockState();
+        var pos = new BlockPos(1, 1, 1);
+        var state = ModMachineBlocks.machine_condenser_powered.get().defaultBlockState();
         helper.setBlock(pos, state);
-        var condenser = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
-                com.hbm.tileentity.machine.TileEntityCondenserPowered.class);
+        var condenser = GameTestHelpers.blockEntity(helper, pos,
+                TileEntityCondenserPowered.class);
         var ports = condenser.getConPos();
         helper.assertTrue(ports.length == 6, "Powered condenser must expose six ports");
         helper.assertTrue(ports[0].getPos().equals(helper.absolutePos(pos).offset(4, 1, 0))
-                        && ports[0].getDir() == com.hbm.lib.ForgeDirection.EAST,
+                        && ports[0].getDir() == ForgeDirection.EAST,
                 "Powered condenser lateral port geometry regressed");
         helper.assertTrue(ports[2].getPos().equals(helper.absolutePos(pos).offset(-1, 1, -2))
-                        && ports[2].getDir() == com.hbm.lib.ForgeDirection.NORTH,
+                        && ports[2].getDir() == ForgeDirection.NORTH,
                 "Powered condenser front port geometry regressed");
         helper.succeed();
     }
 
     private static void combinationRecipes(GameTestHelper helper) {
-        var recipes = com.hbm.inventory.recipes.CombinationRecipes.getRecipes();
+        var recipes = CombinationRecipes.getRecipes();
         helper.assertTrue(recipes.size() == 20, "Expected 20 feasible combination recipes, found " + recipes.size());
-        var coal = com.hbm.inventory.recipes.CombinationRecipes.getOutput(
-                new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.COAL));
-        helper.assertTrue(coal != null && coal.itemOutput().is(com.hbm.items.ModOilItems.coke(
-                        com.hbm.items.ItemEnums.EnumCokeType.COAL))
-                        && coal.fluidOutput().type == com.hbm.inventory.fluid.Fluids.COALCREOSOTE
+        var coal = CombinationRecipes.getOutput(
+                new ItemStack(Items.COAL));
+        helper.assertTrue(coal != null && coal.itemOutput().is(ModOilItems.coke(
+                        ItemEnums.EnumCokeType.COAL))
+                        && coal.fluidOutput().type == Fluids.COALCREOSOTE
                         && coal.fluidOutput().fill == 100,
                 "Coal must produce coal coke and 100 mB of coal creosote");
-        helper.assertTrue(com.hbm.inventory.recipes.CombinationRecipes.getOutput(
-                new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND)) == null,
+        helper.assertTrue(CombinationRecipes.getOutput(
+                new ItemStack(Items.DIAMOND)) == null,
                 "Unregistered items must not match a combination recipe");
         helper.succeed();
     }
 
     private static void combinationTick(GameTestHelper helper) {
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         var block = ModMachineBlocks.machine_furnace_combination.get();
         helper.setBlock(pos, block.defaultBlockState());
-        var furnace = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
-                com.hbm.tileentity.machine.TileEntityFurnaceCombination.class);
-        furnace.inventory.setStackInSlot(0, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.COAL));
+        var furnace = GameTestHelpers.blockEntity(helper, pos,
+                TileEntityFurnaceCombination.class);
+        furnace.inventory.setStackInSlot(0, new ItemStack(Items.COAL));
         furnace.heat = 200;
-        furnace.progress = com.hbm.tileentity.machine.TileEntityFurnaceCombination.processTime - 1;
-        com.hbm.tileentity.machine.TileEntityFurnaceCombination.serverTick(helper.getLevel(),
+        furnace.progress = TileEntityFurnaceCombination.processTime - 1;
+        TileEntityFurnaceCombination.serverTick(helper.getLevel(),
                 helper.absolutePos(pos), furnace.getBlockState(), furnace);
         helper.assertTrue(furnace.inventory.getStackInSlot(0).isEmpty(), "A completed cycle must consume one input");
-        helper.assertTrue(furnace.inventory.getStackInSlot(1).is(com.hbm.items.ModOilItems.coke(
-                com.hbm.items.ItemEnums.EnumCokeType.COAL)), "A completed cycle must write the item output");
-        helper.assertTrue(furnace.tank.getTankType() == com.hbm.inventory.fluid.Fluids.COALCREOSOTE
+        helper.assertTrue(furnace.inventory.getStackInSlot(1).is(ModOilItems.coke(
+                ItemEnums.EnumCokeType.COAL)), "A completed cycle must write the item output");
+        helper.assertTrue(furnace.tank.getTankType() == Fluids.COALCREOSOTE
                         && furnace.tank.getFill() == 100, "A completed cycle must write its fluid byproduct");
         helper.succeed();
     }
 
     private static void combinationMenu(GameTestHelper helper) {
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         var block = ModMachineBlocks.machine_furnace_combination.get();
         helper.setBlock(pos, block.defaultBlockState());
-        var furnace = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
-                com.hbm.tileentity.machine.TileEntityFurnaceCombination.class);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
-        var menu = new com.hbm.inventory.container.ContainerFurnaceCombination(0, player.getInventory(), furnace);
+        var furnace = GameTestHelpers.blockEntity(helper, pos,
+                TileEntityFurnaceCombination.class);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var menu = new ContainerFurnaceCombination(0, player.getInventory(), furnace);
         helper.assertTrue(menu.slots.size() == 40, "Combination furnace menu must have 4 machine slots + 36 player slots");
         assertSlot(helper, menu, 0, 26, 36);
         assertSlot(helper, menu, 1, 89, 36);
         assertSlot(helper, menu, 2, 136, 18);
         assertSlot(helper, menu, 3, 136, 54);
-        helper.assertFalse(menu.slots.get(1).mayPlace(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STONE)),
+        helper.assertFalse(menu.slots.get(1).mayPlace(new ItemStack(Items.STONE)),
                 "The item output must be take-only");
-        helper.assertFalse(menu.slots.get(3).mayPlace(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BUCKET)),
+        helper.assertFalse(menu.slots.get(3).mayPlace(new ItemStack(Items.BUCKET)),
                 "The filled-container output must be take-only");
         helper.assertFalse(furnace.isItemValidForSlot(3,
-                        new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STONE)),
+                        new ItemStack(Items.STONE)),
                 "The filled-container output must reject direct insertion");
         helper.succeed();
     }
 
-    /** The fuel cycles must actually be registered - they were dead data until the torus asked for them. */
+    /** The fuel cycles must be registered, or they are dead data until the torus asks for them. */
     private static void fusionRecipes(GameTestHelper helper) {
-        var set = com.hbm.inventory.recipes.FusionRecipes.INSTANCE;
+        var set = FusionRecipes.INSTANCE;
         set.registerRecipes();
         helper.assertTrue(set.recipeOrderedList.size() == 10,
                 "Expected 10 fusion fuel cycles, found " + set.recipeOrderedList.size());
 
         var dd = set.getRecipe("fus.dd");
-        helper.assertTrue(dd instanceof com.hbm.inventory.recipes.FusionRecipe, "fus.dd must be a FusionRecipe");
-        var fusion = (com.hbm.inventory.recipes.FusionRecipe) dd;
+        helper.assertTrue(dd instanceof FusionRecipe, "fus.dd must be a FusionRecipe");
+        var fusion = (FusionRecipe) dd;
         helper.assertTrue(fusion.ignitionTemp == 750_000L, "D-D ignition must be 750k, was " + fusion.ignitionTemp);
         helper.assertTrue(fusion.outputTemp == 1_000_000L, "D-D output must be 1M, was " + fusion.outputTemp);
 
         // maxInput drives the creative klystron, so it must be the largest ignition of the set.
         long highest = 0;
         for (var recipe : set.recipeOrderedList) {
-            if (recipe instanceof com.hbm.inventory.recipes.FusionRecipe f) highest = Math.max(highest, f.ignitionTemp);
+            if (recipe instanceof FusionRecipe f) highest = Math.max(highest, f.ignitionTemp);
         }
         helper.assertTrue(set.maxInput == highest && highest == 10_000_000L,
                 "maxInput must be the highest ignition (10M), was " + set.maxInput);
@@ -2333,31 +2436,31 @@ public final class HbmGameTestFunctions {
      * each machine on its own proves nothing.
      */
     private static void fusionChain(GameTestHelper helper) {
-        var torusCore = new net.minecraft.core.BlockPos(9, 1, 9);
+        var torusCore = new BlockPos(9, 1, 9);
         var torus = ModMachineBlocks.fusion_torus.get();
         FoldedTestSupport.assemble(helper, torus, torusCore);
-        var torusTe = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, torusCore,
-                com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class);
+        var torusTe = GameTestHelpers.blockEntity(helper, torusCore,
+                TileEntityFusionTorus.class);
         helper.assertTrue(torusTe != null, "Torus setup failed");
 
         // Pick a cycle and stock it: D-D burns deuterium alone.
-        com.hbm.inventory.recipes.FusionRecipes.INSTANCE.registerRecipes();
+        FusionRecipes.INSTANCE.registerRecipes();
         torusTe.fusionModule.recipe = "fus.dd";
         torusTe.fusionModule.setupTanks(torusTe.fusionModule.getRecipe());
         torusTe.tanks[0].setFill(torusTe.tanks[0].getMaxFill());
         torusTe.power = torusTe.getMaxPower();
         torusTe.coolantTanks[0].setFill(torusTe.coolantTanks[0].getMaxFill());
         // Chill it below the operating threshold; otherwise it spends the test warming up.
-        torusTe.temperature = com.hbm.tileentity.machine.albion.TileEntityCooledBase.temperature_target;
+        torusTe.temperature = TileEntityCooledBase.temperature_target;
 
         // The klystron beam is delivered straight into the torus, exactly as the network does it.
-        torusTe.receiveKlystronEnergy(com.hbm.inventory.recipes.FusionRecipes.INSTANCE.maxInput);
+        torusTe.receiveKlystronEnergy(FusionRecipes.INSTANCE.maxInput);
 
-        var boilerCore = new net.minecraft.core.BlockPos(2, 1, 2);
+        var boilerCore = new BlockPos(2, 1, 2);
         var boiler = ModMachineBlocks.fusion_boiler.get();
         FoldedTestSupport.assemble(helper, boiler, boilerCore);
-        var boilerTe = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, boilerCore,
-                com.hbm.tileentity.machine.fusion.TileEntityFusionBoiler.class);
+        var boilerTe = GameTestHelpers.blockEntity(helper, boilerCore,
+                TileEntityFusionBoiler.class);
         helper.assertTrue(boilerTe != null, "Boiler setup failed");
         boilerTe.tanks[0].setFill(boilerTe.tanks[0].getMaxFill());
 
@@ -2371,8 +2474,8 @@ public final class HbmGameTestFunctions {
                 "The boiler must have consumed water");
 
         // The collector boosts without consuming; the coupler consumes like any other receiver.
-        var collector = new com.hbm.tileentity.machine.fusion.TileEntityFusionCollector(
-                net.minecraft.core.BlockPos.ZERO, ModMachineBlocks.fusion_collector.get().defaultBlockState());
+        var collector = new TileEntityFusionCollector(
+                BlockPos.ZERO, ModMachineBlocks.fusion_collector.get().defaultBlockState());
         helper.assertFalse(collector.receivesFusionPower(), "The collector must not take a share of the output");
         helper.assertTrue(collector.providesCollectorBonus(), "The collector must grant the reactor its bonus");
         helper.succeed();
@@ -2384,68 +2487,68 @@ public final class HbmGameTestFunctions {
      * machine's own mass is worse than no port, because the machine looks connectable and is not.
      */
     private static void fusionPorts(GameTestHelper helper) {
-        checkPorts(helper, new net.minecraft.core.BlockPos(9, 1, 9), ModMachineBlocks.fusion_torus.get(),
-                te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionTorus) te).getConPos());
-        checkPorts(helper, new net.minecraft.core.BlockPos(9, 1, 27), ModMachineBlocks.fusion_plasma_forge.get(),
-                te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge) te).getConPos());
-        checkPorts(helper, new net.minecraft.core.BlockPos(2, 1, 2), ModMachineBlocks.fusion_klystron.get(),
-                te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionKlystron) te).getConPos());
-        checkPorts(helper, new net.minecraft.core.BlockPos(2, 1, 16), ModMachineBlocks.fusion_boiler.get(),
-                te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionBoiler) te).getConPos());
-        checkPorts(helper, new net.minecraft.core.BlockPos(20, 1, 2), ModMachineBlocks.fusion_mhdt.get(),
-                te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionMHDT) te).getConPos());
-        checkPorts(helper, new net.minecraft.core.BlockPos(20, 1, 16), ModMachineBlocks.fusion_breeder.get(),
-                te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder) te).getConPos());
+        checkPorts(helper, new BlockPos(9, 1, 9), ModMachineBlocks.fusion_torus.get(),
+                te -> ((TileEntityFusionTorus) te).getConPos());
+        checkPorts(helper, new BlockPos(9, 1, 27), ModMachineBlocks.fusion_plasma_forge.get(),
+                te -> ((TileEntityFusionPlasmaForge) te).getConPos());
+        checkPorts(helper, new BlockPos(2, 1, 2), ModMachineBlocks.fusion_klystron.get(),
+                te -> ((TileEntityFusionKlystron) te).getConPos());
+        checkPorts(helper, new BlockPos(2, 1, 16), ModMachineBlocks.fusion_boiler.get(),
+                te -> ((TileEntityFusionBoiler) te).getConPos());
+        checkPorts(helper, new BlockPos(20, 1, 2), ModMachineBlocks.fusion_mhdt.get(),
+                te -> ((TileEntityFusionMHDT) te).getConPos());
+        checkPorts(helper, new BlockPos(20, 1, 16), ModMachineBlocks.fusion_breeder.get(),
+                te -> ((TileEntityFusionBreeder) te).getConPos());
         helper.succeed();
     }
 
     private static void fusionPlasmaForgeRecipes(GameTestHelper helper) {
-        var recipes = com.hbm.inventory.recipes.PlasmaForgeRecipes.INSTANCE;
+        var recipes = PlasmaForgeRecipes.INSTANCE;
         recipes.registerRecipes();
-        // 20 before the final-content wave; +12 ICF parts (plsm.icf*) and plsm.schrabhammer make 33 of
-        // the original's 34; plsm.gerald (the construction satellite, §19ec-satellites) completes them; 1.7's 35th,
-        // ass.fensusan (the REDD), was restored in fix phase 3.
+        // 20 base recipes; +12 ICF parts (plsm.icf*) and plsm.schrabhammer make 33 of
+        // the original's 34; plsm.gerald (the construction satellite) completes them; the 35th is
+        // ass.fensusan (the REDD).
         helper.assertTrue(recipes.recipeOrderedList.size() == 35,
                 "Expected 35 plasma-forge recipes, found " + recipes.recipeOrderedList.size());
-        helper.assertTrue(recipes.autoSwitchGroups.getOrDefault("autoswitch.weldPlates", java.util.List.of()).size() == 11,
+        helper.assertTrue(recipes.autoSwitchGroups.getOrDefault("autoswitch.weldPlates", List.of()).size() == 11,
                 "Expected 11 welded-plate variants in the auto-switch group");
 
-        var euphemium = (com.hbm.inventory.recipes.PlasmaForgeRecipe) recipes.getRecipe("plsm.plateeuphemium");
+        var euphemium = (PlasmaForgeRecipe) recipes.getRecipe("plsm.plateeuphemium");
         helper.assertTrue(euphemium != null && euphemium.ignitionTemp == 1_000_000L
                         && euphemium.duration == 600 && euphemium.power == 10_000_000L
                         && euphemium.outputItem[0].getCount() == 4,
                 "Euphemium plate recipe lost its legacy timing, ignition, power, or output");
 
-        var dfcCore = (com.hbm.inventory.recipes.PlasmaForgeRecipe) recipes.getRecipe("plsm.dfccore");
+        var dfcCore = (PlasmaForgeRecipe) recipes.getRecipe("plsm.dfccore");
         helper.assertTrue(dfcCore != null && dfcCore.ignitionTemp == 50_000_000L
                         && dfcCore.duration == 12_000 && dfcCore.power == 100_000_000L
                         && dfcCore.inputFluid.length == 1
-                        && dfcCore.inputFluid[0].type == com.hbm.inventory.fluid.Fluids.STELLAR_FLUX
+                        && dfcCore.inputFluid[0].type == Fluids.STELLAR_FLUX
                         && dfcCore.inputFluid[0].fill == 12_000,
                 "Dark fusion core recipe lost its legacy timing, ignition, power, or stellar flux");
 
-        var hde = (com.hbm.inventory.recipes.PlasmaForgeRecipe) recipes.getRecipe("plsm.hde");
+        var hde = (PlasmaForgeRecipe) recipes.getRecipe("plsm.hde");
         helper.assertTrue(hde != null && hde.inputFluid.length == 1
-                        && hde.inputFluid[0].type == com.hbm.inventory.fluid.Fluids.STELLAR_FLUX
+                        && hde.inputFluid[0].type == Fluids.STELLAR_FLUX
                         && hde.inputFluid[0].fill == 4_000,
                 "HDE must require 4,000 mB of stellar flux");
         helper.assertTrue(!recipes.getRecipe("plsm.weldsteel").isPooled(),
                 "Feasible plasma-forge recipes must not require an unavailable blueprint pool");
 
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         var block = ModMachineBlocks.fusion_plasma_forge.get();
         helper.setBlock(pos, block.defaultBlockState());
-        var forge = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
-                com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.class);
+        var forge = GameTestHelpers.blockEntity(helper, pos,
+                TileEntityFusionPlasmaForge.class);
         forge.plasmaModule.recipe = hde.getInternalName();
-        com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.serverTick(
+        TileEntityFusionPlasmaForge.serverTick(
                 helper.getLevel(), helper.absolutePos(pos), forge.getBlockState(), forge);
         helper.assertTrue(forge.maxPower == hde.power * 100L,
                 "Plasma-forge capacity did not follow the selected high-power recipe");
 
-        var weldIron = (com.hbm.inventory.recipes.PlasmaForgeRecipe) recipes.getRecipe("plsm.weldiron");
+        var weldIron = (PlasmaForgeRecipe) recipes.getRecipe("plsm.weldiron");
         forge.plasmaModule.recipe = weldIron.getInternalName();
-        com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.serverTick(
+        TileEntityFusionPlasmaForge.serverTick(
                 helper.getLevel(), helper.absolutePos(pos), forge.getBlockState(), forge);
         helper.assertTrue(forge.maxPower == 100_000L,
                 "Plasma-forge capacity did not decrease when switching to a lower-power recipe");
@@ -2453,55 +2556,55 @@ public final class HbmGameTestFunctions {
     }
 
     private static void fusionPlasmaForgeMenu(GameTestHelper helper) {
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         var block = ModMachineBlocks.fusion_plasma_forge.get();
         helper.setBlock(pos, block.defaultBlockState());
-        var forge = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
-                com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.class);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
-        var menu = new com.hbm.inventory.container.ContainerMachinePlasmaForge(0, player.getInventory(), forge);
+        var forge = GameTestHelpers.blockEntity(helper, pos,
+                TileEntityFusionPlasmaForge.class);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var menu = new ContainerMachinePlasmaForge(0, player.getInventory(), forge);
 
         helper.assertTrue(menu.slots.size() == 52,
                 "Plasma-forge menu must have 16 machine slots plus 36 player slots");
-        helper.assertFalse(menu.slots.get(com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.SLOT_OUTPUT)
-                        .mayPlace(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_INGOT)),
+        helper.assertFalse(menu.slots.get(TileEntityFusionPlasmaForge.SLOT_OUTPUT)
+                        .mayPlace(new ItemStack(Items.IRON_INGOT)),
                 "The plasma-forge output slot must be take-only");
-        var castIron = com.hbm.items.ModAutogenItems.get(
-                com.hbm.inventory.material.MaterialShapes.CASTPLATE,
-                com.hbm.inventory.material.Mats.MAT_IRON);
+        var castIron = ModAutogenItems.get(
+                MaterialShapes.CASTPLATE,
+                Mats.MAT_IRON);
         forge.plasmaModule.recipe = "plsm.weldiron";
         helper.assertTrue(forge.isItemValidForSlot(
-                        com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.FIRST_INPUT,
-                        new net.minecraft.world.item.ItemStack(castIron)),
+                        TileEntityFusionPlasmaForge.FIRST_INPUT,
+                        new ItemStack(castIron)),
                 "A welded-plate cast input must be accepted by the plasma-forge input area");
         helper.succeed();
     }
 
     private static void fusionPlasmaForgeProcessing(GameTestHelper helper) {
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         var block = ModMachineBlocks.fusion_plasma_forge.get();
         helper.setBlock(pos, block.defaultBlockState());
-        var forge = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
-                com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.class);
-        var castIron = com.hbm.items.ModAutogenItems.get(
-                com.hbm.inventory.material.MaterialShapes.CASTPLATE,
-                com.hbm.inventory.material.Mats.MAT_IRON);
-        var weldedIron = com.hbm.items.ModAutogenItems.get(
-                com.hbm.inventory.material.MaterialShapes.WELDEDPLATE,
-                com.hbm.inventory.material.Mats.MAT_IRON);
+        var forge = GameTestHelpers.blockEntity(helper, pos,
+                TileEntityFusionPlasmaForge.class);
+        var castIron = ModAutogenItems.get(
+                MaterialShapes.CASTPLATE,
+                Mats.MAT_IRON);
+        var weldedIron = ModAutogenItems.get(
+                MaterialShapes.WELDEDPLATE,
+                Mats.MAT_IRON);
         forge.plasmaModule.recipe = "plsm.weldiron";
         forge.power = 5_000L;
-        forge.inventory.setStackInSlot(com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.FIRST_INPUT,
-                new net.minecraft.world.item.ItemStack(castIron, 2));
+        forge.inventory.setStackInSlot(TileEntityFusionPlasmaForge.FIRST_INPUT,
+                new ItemStack(castIron, 2));
 
         for (int tick = 0; tick < 50; tick++) forge.plasmaModule.update(1D, 1D, true,
-                net.minecraft.world.item.ItemStack.EMPTY);
+                ItemStack.EMPTY);
 
         helper.assertTrue(forge.inventory.getStackInSlot(
-                        com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.SLOT_OUTPUT).is(weldedIron),
+                        TileEntityFusionPlasmaForge.SLOT_OUTPUT).is(weldedIron),
                 "A complete 50-tick iron weld must produce a welded iron plate");
         helper.assertTrue(forge.inventory.getStackInSlot(
-                        com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.FIRST_INPUT).isEmpty(),
+                        TileEntityFusionPlasmaForge.FIRST_INPUT).isEmpty(),
                 "A completed weld must consume both cast plates");
         helper.assertTrue(forge.power == 0L,
                 "The weld must consume exactly 5,000 HE over 50 ticks, left " + forge.power);
@@ -2509,37 +2612,37 @@ public final class HbmGameTestFunctions {
     }
 
     private static void fusionBreeder(GameTestHelper helper) {
-        var core = new net.minecraft.core.BlockPos(2, 1, 2);
+        var core = new BlockPos(2, 1, 2);
         var block = ModMachineBlocks.fusion_breeder.get();
         FoldedTestSupport.assemble(helper, block, core);
 
-        var breeder = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
-                com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder.class);
+        var breeder = GameTestHelpers.blockEntity(helper, core,
+                TileEntityFusionBreeder.class);
         helper.assertTrue(breeder != null, "Breeder setup failed");
         helper.assertFalse(breeder.receivesFusionPower(), "Breeder must not consume a plasma power share");
 
-        breeder.inventory.setStackInSlot(1, new net.minecraft.world.item.ItemStack(
-                net.minecraft.world.item.Items.GOLD_NUGGET));
-        breeder.receiveFusionPower(0L, com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder.CAPACITY + 1D,
+        breeder.inventory.setStackInSlot(1, new ItemStack(
+                Items.GOLD_NUGGET));
+        breeder.receiveFusionPower(0L, TileEntityFusionBreeder.CAPACITY + 1D,
                 0F, 0F, 0F);
         helper.assertTrue(breeder.inventory.getStackInSlot(2).is(
-                        com.hbm.items.ModItems.nugget_au198.get()),
+                        ModItems.nugget_au198.get()),
                 "Gold nugget irradiation must produce gold-198");
 
-        breeder.tanks[0].setTankType(com.hbm.inventory.fluid.Fluids.GAS);
+        breeder.tanks[0].setTankType(Fluids.GAS);
         breeder.tanks[0].setFill(1_000);
-        breeder.receiveFusionPower(0L, com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder.CAPACITY + 1D,
+        breeder.receiveFusionPower(0L, TileEntityFusionBreeder.CAPACITY + 1D,
                 0F, 0F, 0F);
-        helper.assertTrue(breeder.tanks[1].getTankType() == com.hbm.inventory.fluid.Fluids.SYNGAS
+        helper.assertTrue(breeder.tanks[1].getTankType() == Fluids.SYNGAS
                         && breeder.tanks[1].getFill() == 1_000,
                 "Gas irradiation must produce 1,000 mB of syngas");
         helper.succeed();
     }
 
-    private static void checkPorts(GameTestHelper helper, net.minecraft.core.BlockPos core,
-                                   net.minecraft.world.level.block.Block block,
-                                   java.util.function.Function<net.minecraft.world.level.block.entity.BlockEntity,
-                                           java.util.List<com.hbm.lib.DirPos>> ports) {
+    private static void checkPorts(GameTestHelper helper, BlockPos core,
+                                   Block block,
+                                   Function<BlockEntity,
+                                           List<DirPos>> ports) {
         String name = block.getName().getString();
         FoldedTestSupport.assemble(helper, (BlockMultiblockCore) block, core);
         var te = helper.getLevel().getBlockEntity(helper.absolutePos(core));
@@ -2548,7 +2651,7 @@ public final class HbmGameTestFunctions {
         var declared = ports.apply(te);
         helper.assertFalse(declared.isEmpty(), name + " declares no ports at all");
 
-        for (com.hbm.lib.DirPos port : declared) {
+        for (DirPos port : declared) {
             var dir = port.getDir();
             // The cell that hosts this connection is the one the pipe would touch.
             var cell = port.getPos().offset(-dir.offsetX, -dir.offsetY, -dir.offsetZ);
@@ -2560,12 +2663,12 @@ public final class HbmGameTestFunctions {
             helper.assertFalse(helper.getLevel().getBlockState(port.getPos()).getBlock() == block,
                     name + " port at " + port.getPos() + " is buried inside the machine");
 
-            if (block instanceof com.hbm.api.fluidmk2.IFluidConnectorBlockMK2 fluid) {
-                helper.assertTrue(fluid.canConnect(com.hbm.inventory.fluid.Fluids.WATER, helper.getLevel(),
+            if (block instanceof IFluidConnectorBlockMK2 fluid) {
+                helper.assertTrue(fluid.canConnect(Fluids.WATER, helper.getLevel(),
                                 cell.getX(), cell.getY(), cell.getZ(), dir),
                         name + " refuses a fluid connection at its own port " + port.getPos());
             }
-            if (block instanceof com.hbm.api.energymk2.IEnergyConnectorBlock energy) {
+            if (block instanceof IEnergyConnectorBlock energy) {
                 helper.assertTrue(energy.canConnect(helper.getLevel(), cell, dir),
                         name + " refuses an energy connection at its own port " + port.getPos());
             }
@@ -2575,17 +2678,17 @@ public final class HbmGameTestFunctions {
     // --- Fusion torus ---
 
     private static void fusionTorusLayout(GameTestHelper helper) {
-        var core = new net.minecraft.core.BlockPos(8, 1, 8);
+        var core = new BlockPos(8, 1, 8);
         var block = ModMachineBlocks.fusion_torus.get();
         FoldedTestSupport.assemble(helper, block, core);
-        helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
-                com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class) != null, "Torus controller setup failed");
+        helper.assertTrue(GameTestHelpers.blockEntity(helper, core,
+                TileEntityFusionTorus.class) != null, "Torus controller setup failed");
 
-        // Every non-zero mask cell must be filled, and every zero one must not be — that hollow centre
+        // Every non-zero mask cell must be filled, and every zero one must not be. That hollow centre
         // is what makes it a torus rather than a cylinder.
         int occupied = 0;
-        for (int iy = 0; iy < com.hbm.blocks.machine.fusion.MachineFusionTorus.HEIGHT; iy++) {
-            int[][] layer = com.hbm.blocks.machine.fusion.MachineFusionTorus.layerFor(iy);
+        for (int iy = 0; iy < MachineFusionTorus.HEIGHT; iy++) {
+            int[][] layer = MachineFusionTorus.layerFor(iy);
             int half = layer.length / 2;
             for (int ix = 0; ix < layer.length; ix++) {
                 for (int iz = 0; iz < layer[ix].length; iz++) {
@@ -2610,18 +2713,18 @@ public final class HbmGameTestFunctions {
             }
         }
 
-        var torus = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
-                com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class);
+        var torus = GameTestHelpers.blockEntity(helper, core,
+                TileEntityFusionTorus.class);
         helper.assertTrue(torus.getConPos().size() == 26,
                 "Torus must expose 26 ports, found " + torus.getConPos().size());
         helper.succeed();
     }
 
     private static void fusionStructAssembly(GameTestHelper helper) {
-        var seed = new net.minecraft.core.BlockPos(8, 1, 8);
+        var seed = new BlockPos(8, 1, 8);
         helper.setBlock(seed, ModMachineBlocks.struct_torus_core.get().defaultBlockState());
-        var struct = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, seed,
-                com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct.class);
+        var struct = GameTestHelpers.blockEntity(helper, seed,
+                TileEntityFusionTorusStruct.class);
         helper.assertTrue(struct != null, "Torus struct core setup failed");
         // 924 component blocks: the whole mask except the seed's own cell.
         helper.assertTrue(struct.pattern().cells().size() == 924,
@@ -2634,10 +2737,10 @@ public final class HbmGameTestFunctions {
             var block = ModMachineBlocks.fusion_torus.get();
             helper.assertTrue(helper.getBlockState(seed).getBlock() == block,
                     "Torus struct core did not become a fusion reactor");
-            helper.assertBlockProperty(seed, com.hbm.blocks.multiblock.BlockMultiblockCore.FACING,
-                    net.minecraft.core.Direction.NORTH);
-            helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, seed,
-                    com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class) != null,
+            helper.assertBlockProperty(seed, BlockMultiblockCore.FACING,
+                    Direction.NORTH);
+            helper.assertTrue(GameTestHelpers.blockEntity(helper, seed,
+                    TileEntityFusionTorus.class) != null,
                     "Assembled torus has no controller");
             helper.assertTrue(helper.getBlockState(seed.offset(7, 0, 0)).getBlock() == block,
                     "Assembled torus did not fill its outer ring");
@@ -2648,9 +2751,9 @@ public final class HbmGameTestFunctions {
     // --- Watz power plant + the struct-core assembly framework ---
 
     /** Builds the reactor's component shape around {@code seed}, which must be a struct core. */
-    private static void buildWatzShape(GameTestHelper helper, net.minecraft.core.BlockPos seed) {
-        var struct = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, seed,
-                com.hbm.tileentity.machine.struct.TileEntityWatzStruct.class);
+    private static void buildWatzShape(GameTestHelper helper, BlockPos seed) {
+        var struct = GameTestHelpers.blockEntity(helper, seed,
+                TileEntityWatzStruct.class);
         helper.assertTrue(struct != null, "Watz struct core setup failed");
         for (var cell : struct.pattern().cells()) {
             helper.setBlock(seed.offset(cell.offset()), cell.block().get().defaultBlockState());
@@ -2658,11 +2761,11 @@ public final class HbmGameTestFunctions {
     }
 
     private static void watzLayout(GameTestHelper helper) {
-        var core = new net.minecraft.core.BlockPos(4, 1, 4);
+        var core = new BlockPos(4, 1, 4);
         var block = ModMachineBlocks.watz.get();
         FoldedTestSupport.assemble(helper, block, core);
-        helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
-                com.hbm.tileentity.machine.TileEntityWatz.class) != null, "Watz controller setup failed");
+        helper.assertTrue(GameTestHelpers.blockEntity(helper, core,
+                TileEntityWatz.class) != null, "Watz controller setup failed");
         // The cross: |x| + |z| reaches 3 along the axes and 2 on the diagonals, three blocks tall.
         int occupied = 0;
         for (int dx = -3; dx <= 3; dx++) {
@@ -2681,20 +2784,20 @@ public final class HbmGameTestFunctions {
             FoldedTestSupport.assertPort(helper, core, core.offset(p[0], p[1], p[2]));
         }
 
-        var watz = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
-                com.hbm.tileentity.machine.TileEntityWatz.class);
+        var watz = GameTestHelpers.blockEntity(helper, core,
+                TileEntityWatz.class);
         var ports = watz.getConPos();
         helper.assertTrue(ports.size() == 10, "Watz must expose five intake and five outlet ports, found " + ports.size());
         helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.above(3)))
-                && p.getDir() == com.hbm.lib.ForgeDirection.UP), "Missing centre coolant intake");
+                && p.getDir() == ForgeDirection.UP), "Missing centre coolant intake");
         helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.below()))
-                && p.getDir() == com.hbm.lib.ForgeDirection.DOWN), "Missing centre outlet");
+                && p.getDir() == ForgeDirection.DOWN), "Missing centre outlet");
         helper.succeed();
     }
 
     /** The whole struct ritual: build the shape, wait a second, get a reactor. */
     private static void watzStructAssembly(GameTestHelper helper) {
-        var seed = new net.minecraft.core.BlockPos(4, 1, 4);
+        var seed = new BlockPos(4, 1, 4);
         helper.setBlock(seed, ModMachineBlocks.struct_watz_core.get().defaultBlockState());
         buildWatzShape(helper, seed);
 
@@ -2703,10 +2806,10 @@ public final class HbmGameTestFunctions {
             var block = ModMachineBlocks.watz.get();
             helper.assertTrue(helper.getBlockState(seed).getBlock() == block,
                     "Struct core did not become a Watz reactor");
-            helper.assertBlockProperty(seed, com.hbm.blocks.multiblock.BlockMultiblockCore.FACING,
-                    net.minecraft.core.Direction.NORTH);
-            helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, seed,
-                    com.hbm.tileentity.machine.TileEntityWatz.class) != null, "Assembled Watz has no controller");
+            helper.assertBlockProperty(seed, BlockMultiblockCore.FACING,
+                    Direction.NORTH);
+            helper.assertTrue(GameTestHelpers.blockEntity(helper, seed,
+                    TileEntityWatz.class) != null, "Assembled Watz has no controller");
             // The shell must have formed too, not just the core.
             helper.assertTrue(helper.getBlockState(seed.offset(3, 0, 0)).getBlock() == block,
                     "Assembled Watz did not fill its dummy shell");
@@ -2716,7 +2819,7 @@ public final class HbmGameTestFunctions {
 
     /** One wrong block must keep the seed a seed, however long it waits. */
     private static void structPartialNoAssembly(GameTestHelper helper) {
-        var seed = new net.minecraft.core.BlockPos(4, 1, 4);
+        var seed = new BlockPos(4, 1, 4);
         helper.setBlock(seed, ModMachineBlocks.struct_watz_core.get().defaultBlockState());
         buildWatzShape(helper, seed);
         // Swap one riveted casing cell for the un-riveted kind: correct block family, wrong variant.
@@ -2730,10 +2833,10 @@ public final class HbmGameTestFunctions {
     }
 
     private static void zirnoxLayout(GameTestHelper helper) {
-        var core = new net.minecraft.core.BlockPos(3, 1, 3);
+        var core = new BlockPos(3, 1, 3);
         var block = ModMachineBlocks.machine_zirnox.get();
         FoldedTestSupport.assemble(helper, block, core);
-        helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class) != null,
+        helper.assertTrue(GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class) != null,
                 "ZIRNOX controller setup failed");
         int occupied = 0;
         for (int dx = -2; dx <= 2; dx++) {
@@ -2755,64 +2858,64 @@ public final class HbmGameTestFunctions {
         FoldedTestSupport.assertPort(helper, core, core.offset(-2, 1, 0));
         FoldedTestSupport.assertPort(helper, core, core.offset(-2, 3, 0));
         FoldedTestSupport.assertProxy(helper, core, core.above(4),
-                com.hbm.blocks.multiblock.BlockMultiblockCore.PASSIVE_ITEMS);
+                BlockMultiblockCore.PASSIVE_ITEMS);
 
-        TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
+        TileEntityReactorZirnox reactor = GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         var ports = reactor.getConPos();
         helper.assertTrue(ports.size() == 4, "ZIRNOX must expose four lateral duct ports");
         helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.offset(3, 1, 0)))
-                        && p.getDir() == com.hbm.lib.ForgeDirection.EAST), "Missing lower east port");
+                        && p.getDir() == ForgeDirection.EAST), "Missing lower east port");
         helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.offset(3, 3, 0)))
-                        && p.getDir() == com.hbm.lib.ForgeDirection.EAST), "Missing upper east port");
+                        && p.getDir() == ForgeDirection.EAST), "Missing upper east port");
         helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.offset(-3, 1, 0)))
-                        && p.getDir() == com.hbm.lib.ForgeDirection.WEST), "Missing lower west port");
+                        && p.getDir() == ForgeDirection.WEST), "Missing lower west port");
         helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.offset(-3, 3, 0)))
-                        && p.getDir() == com.hbm.lib.ForgeDirection.WEST), "Missing upper west port");
+                        && p.getDir() == ForgeDirection.WEST), "Missing upper west port");
         var lowerEastCell = helper.absolutePos(core.offset(2, 1, 0));
         helper.assertTrue(block.canConnect(Fluids.WATER, helper.getLevel(), lowerEastCell.getX(), lowerEastCell.getY(),
-                lowerEastCell.getZ(), com.hbm.lib.ForgeDirection.EAST), "Lower east shell must connect to its external duct");
+                lowerEastCell.getZ(), ForgeDirection.EAST), "Lower east shell must connect to its external duct");
         helper.assertFalse(block.canConnect(Fluids.WATER, helper.getLevel(), lowerEastCell.getX(), lowerEastCell.getY(),
-                lowerEastCell.getZ(), com.hbm.lib.ForgeDirection.NORTH), "Port must not connect through the wrong shell face");
+                lowerEastCell.getZ(), ForgeDirection.NORTH), "Port must not connect through the wrong shell face");
         helper.succeed();
     }
 
     private static void zirnoxWorldTick(GameTestHelper helper) {
-        var core = new net.minecraft.core.BlockPos(3, 1, 3);
+        var core = new BlockPos(3, 1, 3);
         var block = ModMachineBlocks.machine_zirnox.get();
         FoldedTestSupport.assemble(helper, block, core);
-        TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
+        TileEntityReactorZirnox reactor = GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         helper.assertTrue(reactor != null, "ZIRNOX controller setup failed");
-        var rod = new net.minecraft.world.item.ItemStack(ModZirnoxItems.active(ZirnoxFuel.NATURAL_URANIUM));
+        var rod = new ItemStack(ModZirnoxItems.active(ZirnoxFuel.NATURAL_URANIUM));
         reactor.inventory.setStackInSlot(0, rod);
         reactor.isOn = true;
 
         helper.succeedWhen(() -> {
             helper.assertTrue(reactor.heat > 0, "Registered ZIRNOX world ticker did not generate heat");
-            helper.assertTrue(((com.hbm.items.machine.ItemZirnoxRod) rod.getItem()).getLife(rod) > 0,
+            helper.assertTrue(((ItemZirnoxRod) rod.getItem()).getLife(rod) > 0,
                     "Registered ZIRNOX world ticker did not consume rod life");
         });
     }
 
     private static void zirnoxSteamOutput(GameTestHelper helper) {
-        var core = new net.minecraft.core.BlockPos(3, 1, 3);
+        var core = new BlockPos(3, 1, 3);
         var reactorBlock = ModMachineBlocks.machine_zirnox.get();
         FoldedTestSupport.assemble(helper, reactorBlock, core);
-        TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
+        TileEntityReactorZirnox reactor = GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         helper.assertTrue(reactor != null, "ZIRNOX controller setup failed");
 
         var reactorDuctPos = core.offset(3, 1, 0);
         var tankDuctPos = core.offset(4, 1, 0);
-        helper.setBlock(reactorDuctPos, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState());
-        helper.setBlock(tankDuctPos, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState());
-        var reactorDuct = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, reactorDuctPos, com.hbm.tileentity.network.TileEntityFluidDuctNT.class);
-        var tankDuct = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, tankDuctPos, com.hbm.tileentity.network.TileEntityFluidDuctNT.class);
+        helper.setBlock(reactorDuctPos, ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState());
+        helper.setBlock(tankDuctPos, ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState());
+        var reactorDuct = GameTestHelpers.blockEntity(helper, reactorDuctPos, TileEntityFluidDuctNT.class);
+        var tankDuct = GameTestHelpers.blockEntity(helper, tankDuctPos, TileEntityFluidDuctNT.class);
         reactorDuct.setFluidType(Fluids.SUPERHOTSTEAM);
         tankDuct.setFluidType(Fluids.SUPERHOTSTEAM);
 
         var tankCore = core.offset(6, 1, 1);
         helper.setBlock(tankCore, ModMachineBlocks.machine_fluidtank.get().defaultBlockState()
-                .setValue(BlockMultiblockCore.FACING, net.minecraft.core.Direction.SOUTH));
-        var tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, tankCore, com.hbm.tileentity.machine.TileEntityMachineFluidTank.class);
+                .setValue(BlockMultiblockCore.FACING, Direction.SOUTH));
+        var tank = GameTestHelpers.blockEntity(helper, tankCore, TileEntityMachineFluidTank.class);
         helper.assertTrue(tank != null, "Fluid tank controller setup failed");
         tank.mode = 1; // Buffer mode owns the network node at its physical port cells.
         tank.tank.setTankType(Fluids.SUPERHOTSTEAM);
@@ -2832,44 +2935,44 @@ public final class HbmGameTestFunctions {
     }
 
     private static void zirnoxMeltdown(GameTestHelper helper) {
-        var core = new net.minecraft.core.BlockPos(3, 1, 3);
+        var core = new BlockPos(3, 1, 3);
         var block = ModMachineBlocks.machine_zirnox.get();
         FoldedTestSupport.assemble(helper, block, core);
-        TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
+        TileEntityReactorZirnox reactor = GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         helper.assertTrue(reactor != null, "ZIRNOX controller setup failed");
         reactor.heat = TileEntityReactorZirnox.MAX_HEAT + 1;
         TileEntityReactorZirnox.serverTick(helper.getLevel(), helper.absolutePos(core), reactor.getBlockState(), reactor);
 
         helper.assertTrue(helper.getBlockState(core).getBlock() == ModMachineBlocks.zirnox_destroyed.get(),
                 "Meltdown did not form the destroyed ZIRNOX core");
-        var debris = helper.getLevel().getEntitiesOfClass(com.hbm.entity.projectile.EntityZirnoxDebris.class,
-                new net.minecraft.world.phys.AABB(helper.absolutePos(core)).inflate(16.0D));
+        var debris = helper.getLevel().getEntitiesOfClass(EntityZirnoxDebris.class,
+                new AABB(helper.absolutePos(core)).inflate(16.0D));
         helper.assertTrue(debris.size() == 72, "Expected 72 ZIRNOX debris entities, found " + debris.size());
-        assertDebrisCount(helper, debris, com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType.EXCHANGER, 2);
-        assertDebrisCount(helper, debris, com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType.CONCRETE, 20);
-        assertDebrisCount(helper, debris, com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType.BLANK, 20);
-        assertDebrisCount(helper, debris, com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType.ELEMENT, 10);
-        assertDebrisCount(helper, debris, com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType.GRAPHITE, 10);
-        assertDebrisCount(helper, debris, com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType.SHRAPNEL, 10);
+        assertDebrisCount(helper, debris, EntityZirnoxDebris.DebrisType.EXCHANGER, 2);
+        assertDebrisCount(helper, debris, EntityZirnoxDebris.DebrisType.CONCRETE, 20);
+        assertDebrisCount(helper, debris, EntityZirnoxDebris.DebrisType.BLANK, 20);
+        assertDebrisCount(helper, debris, EntityZirnoxDebris.DebrisType.ELEMENT, 10);
+        assertDebrisCount(helper, debris, EntityZirnoxDebris.DebrisType.GRAPHITE, 10);
+        assertDebrisCount(helper, debris, EntityZirnoxDebris.DebrisType.SHRAPNEL, 10);
         helper.succeed();
     }
 
     private static void assertDebrisCount(GameTestHelper helper,
-                                          java.util.List<com.hbm.entity.projectile.EntityZirnoxDebris> debris,
-                                          com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType type, int expected) {
+                                          List<EntityZirnoxDebris> debris,
+                                          EntityZirnoxDebris.DebrisType type, int expected) {
         long count = debris.stream().filter(entity -> entity.getDebrisType() == type).count();
         helper.assertTrue(count == expected, "Expected " + expected + " " + type + " debris, found " + count);
     }
 
     private static void zirnoxWreckHazards(GameTestHelper helper) {
-        var core = new net.minecraft.core.BlockPos(3, 1, 3);
+        var core = new BlockPos(3, 1, 3);
         helper.setBlock(core, ModMachineBlocks.zirnox_destroyed.get().defaultBlockState());
-        var wreck = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, com.hbm.tileentity.machine.TileEntityZirnoxDestroyed.class);
+        var wreck = GameTestHelpers.blockEntity(helper, core, TileEntityZirnoxDestroyed.class);
         helper.assertTrue(wreck != null && wreck.isOnFire(), "Fresh ZIRNOX wreck must start burning");
         wreck.extinguish();
         helper.assertFalse(wreck.isOnFire(), "ZIRNOX wreck extinguish did not persist");
-        helper.setBlock(core.above(), com.hbm.blocks.ModNuclearBlocks.gas_meltdown.get().defaultBlockState());
-        helper.assertBlockPresent(com.hbm.blocks.ModNuclearBlocks.gas_meltdown.get(), core.above());
+        helper.setBlock(core.above(), ModNuclearBlocks.gas_meltdown.get().defaultBlockState());
+        helper.assertBlockPresent(ModNuclearBlocks.gas_meltdown.get(), core.above());
         helper.succeed();
     }
 
@@ -2890,27 +2993,27 @@ public final class HbmGameTestFunctions {
         helper.assertTrue(ModBiomes.changeFor(10.0, 100, ModBiomes.holder(registries, ModBiomes.Type.INNER)) == null,
                 "Inner crater must be preserved");
 
-        var position = helper.absolutePos(new net.minecraft.core.BlockPos(1, 1, 1));
+        var position = helper.absolutePos(new BlockPos(1, 1, 1));
         var chunk = helper.getLevel().getChunk(position.getX() >> 4, position.getZ() >> 4);
         var target = ModBiomes.holder(registries, ModBiomes.Type.INNER);
-        boolean changed = Biomes.apply(chunk, java.util.List.of(new Biomes.Change(
+        boolean changed = Biomes.apply(chunk, List.of(new Biomes.Change(
                 position.getX(), position.getZ(), target, holder -> false)));
         helper.assertTrue(changed, "Biome section mutation did not report a change");
         helper.assertTrue(chunk.getNoiseBiome(position.getX() >> 2, position.getY() >> 2, position.getZ() >> 2)
                         .is(ModBiomes.crater_inner),
                 "Biome section mutation did not write the requested holder");
 
-        boolean preserved = Biomes.apply(chunk, java.util.List.of(new Biomes.Change(
+        boolean preserved = Biomes.apply(chunk, List.of(new Biomes.Change(
                 position.getX(), position.getZ(), ModBiomes.holder(registries, ModBiomes.Type.OUTER),
                 ModBiomes.preserve(ModBiomes.Type.OUTER))));
         helper.assertFalse(preserved, "Outer crater must preserve an existing inner crater cell");
 
         // GameTest origins are not quart-aligned; choose a second column explicitly inside the same
         // quart cell so this assertion does not depend on the random test placement.
-        var quartOrigin = new net.minecraft.core.BlockPos((position.getX() >> 2) << 2, position.getY(),
+        var quartOrigin = new BlockPos((position.getX() >> 2) << 2, position.getY(),
                 (position.getZ() >> 2) << 2);
         var secondColumn = quartOrigin.offset(1, 0, 1);
-        boolean sameQuartCell = Biomes.apply(chunk, java.util.List.of(
+        boolean sameQuartCell = Biomes.apply(chunk, List.of(
                 new Biomes.Change(position.getX(), position.getZ(), ModBiomes.holder(registries, ModBiomes.Type.OUTER),
                         holder -> false),
                 new Biomes.Change(secondColumn.getX(), secondColumn.getZ(), target, holder -> false)));
@@ -2921,8 +3024,8 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    private static void check(GameTestHelper helper, com.hbm.inventory.fluid.FluidType input, int inputAmount,
-                              com.hbm.inventory.fluid.FluidType output, int outputAmount, int heat) {
+    private static void check(GameTestHelper helper, FluidType input, int inputAmount,
+                              FluidType output, int outputAmount, int heat) {
         CoolingRecipes.CoolingRecipe recipe = CoolingRecipes.get(input);
         helper.assertTrue(recipe != null, "Missing cooling recipe for " + input.getName());
         helper.assertTrue(recipe.inputAmount() == inputAmount && recipe.output() == output

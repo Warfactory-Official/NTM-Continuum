@@ -6,6 +6,7 @@ import com.hbm.inventory.container.ContainerLaunchTable;
 import com.hbm.items.weapon.ItemCustomMissilePart.PartSize;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModCustomMissileBlockEntities;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -85,13 +86,13 @@ public class TileEntityLaunchTable extends TileEntityCustomMissileLauncher imple
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        com.hbm.util.SavedIds.putEnum(output, "padSize", padSize); // by name, never an ordinal
+        SavedIds.putEnum(output, "padSize", padSize); // by name, never an ordinal
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        padSize = com.hbm.util.SavedIds.getEnum(input, "padSize", PartSize.SIZE_10);
+        padSize = SavedIds.getEnum(input, "padSize", PartSize.SIZE_10);
     }
 
     @Override

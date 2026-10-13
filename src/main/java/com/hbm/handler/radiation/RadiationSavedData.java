@@ -13,10 +13,10 @@ import net.minecraft.world.level.ChunkPos;
 import dev.golem.core.world.CompatSavedData;
 
 /**
- * The world blob radiation used to live in, kept only to empty it. Radiation is now stored per chunk in
+ * The legacy world blob that held radiation, kept only to empty it. Radiation is stored per chunk in
  * its own region files ({@link RadiationPayload}, through {@code ChunkSidecar}); a world saved before
  * that move still has its parked densities here, and {@link RadiationSystemNT} drains them across on the
- * first load. Nothing writes to it any more, so once drained it saves empty and stays that way.
+ * first load. Nothing writes to it, so once drained it saves empty.
  */
 public final class RadiationSavedData extends CompatSavedData<RadiationSavedData> {
 
@@ -24,7 +24,7 @@ public final class RadiationSavedData extends CompatSavedData<RadiationSavedData
 
     private final Long2ObjectMap<double[][]> data = new Long2ObjectOpenHashMap<>();
 
-    // ---- codec ----
+    // Codec
     private record SecRow(int section, List<Double> d) {}
     private record ChunkRow(long chunk, List<SecRow> secs) {}
 
@@ -70,7 +70,7 @@ public final class RadiationSavedData extends CompatSavedData<RadiationSavedData
         setDirty();
     }
 
-    // ---- codec conversion ----
+    // Codec conversion
     private List<ChunkRow> toRows() {
         List<ChunkRow> rows = new ArrayList<>(data.size());
         for (Long2ObjectMap.Entry<double[][]> e : data.long2ObjectEntrySet()) {

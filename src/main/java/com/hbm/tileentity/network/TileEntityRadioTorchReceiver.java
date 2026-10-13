@@ -1,13 +1,13 @@
 package com.hbm.tileentity.network;
 
-import com.hbm.radio.ModRadioBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.ModBlockEntities;
 
 public class TileEntityRadioTorchReceiver extends TileEntityRadioTorchBase {
     public TileEntityRadioTorchReceiver(BlockPos pos, BlockState state) {
-        super(ModRadioBlockEntities.RADIO_TORCH_RECEIVER.get(), pos, state);
+        super(ModBlockEntities.RADIO_TORCH_RECEIVER.get(), pos, state);
     }
 
     @Override

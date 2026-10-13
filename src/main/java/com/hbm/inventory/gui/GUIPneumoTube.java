@@ -1,6 +1,6 @@
 package com.hbm.inventory.gui;
 
-import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.module.ModulePatternMatcher;
 import com.hbm.inventory.container.ContainerPneumoTube;
 import com.hbm.uninos.networkproviders.PneumaticNetwork;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube;

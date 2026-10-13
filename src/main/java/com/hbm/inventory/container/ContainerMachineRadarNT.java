@@ -3,6 +3,7 @@ package com.hbm.inventory.container;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.inventory.ModRadarUtilityMenus;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -38,7 +39,7 @@ public final class ContainerMachineRadarNT extends AbstractContainerMenu {
         this.addSlot(new Slot(machine, 8, 26, 44));
         this.addSlot(new Slot(machine, 9, 152, 44));
 
-        dev.golem.core.world.Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 103);
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 103);
     }
 
     public @Nullable TileEntityMachineRadarNT getRadar() { return radar; }

@@ -2,6 +2,9 @@ package com.hbm.items.tool;
 
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.item.EntityBoatRubber;
+import dev.golem.core.registry.Entities;
+import dev.golem.core.world.Compat;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.stats.Stats;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -22,7 +25,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
-// 26.2: BoatItem requires an entity type before the fixed entity handles bind, so this class follows its use
+// 26.1: BoatItem requires an entity type before the fixed entity handles bind, so this class follows its use
 // flow with a deferred rubber-boat lookup.
 public class ItemBoatRubber extends CompatItem {
 
@@ -53,11 +56,11 @@ public class ItemBoatRubber extends CompatItem {
 
         if (hit.getType() != HitResult.Type.BLOCK) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
-        EntityBoatRubber boat = dev.golem.core.registry.Entities.create(ModNtmEntities.BOAT_RUBBER.get(), level, EntitySpawnReason.SPAWN_ITEM_USE);
+        EntityBoatRubber boat = Entities.create(ModNtmEntities.BOAT_RUBBER.get(), level, EntitySpawnReason.SPAWN_ITEM_USE);
         if (boat == null) return InteractionResult.FAIL;
 
         Vec3 at = hit.getLocation();
-        dev.golem.core.world.Compat.setInitialPos(boat, at.x, at.y, at.z);
+        Compat.setInitialPos(boat, at.x, at.y, at.z);
         boat.setYRot(player.getYRot());
         if (level instanceof ServerLevel server) {
             EntityType.<EntityBoatRubber>createDefaultStackConfig(server, stack, player).accept(boat);
@@ -68,7 +71,7 @@ public class ItemBoatRubber extends CompatItem {
         if (!level.isClientSide()) {
             level.addFreshEntity(boat);
             level.gameEvent(player, GameEvent.ENTITY_PLACE, at);
-            dev.golem.core.world.ItemStacks.consume(stack, 1, player);
+            ItemStacks.consume(stack, 1, player);
         }
 
         player.awardStat(Stats.ITEM_USED.get(this));

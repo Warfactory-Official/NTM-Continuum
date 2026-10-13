@@ -3,9 +3,11 @@ package com.hbm.entity.missile;
 import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.registry.DeferredRegister;
+import dev.golem.core.registry.Entities;
 import dev.golem.core.registry.RegistryObject;
 import java.util.function.Function;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Level;
@@ -18,7 +20,7 @@ import net.minecraft.world.level.Level;
  * <ul>
  *   <li><b>{@code clientTrackingRange(64)}.</b> Upstream asks for 1000 blocks so a launch is visible
  *       across a base. The server clamps tracking to its view distance regardless, so 64 chunks is the
- *       honest spelling of "as far as the server will send it" — the same clamp the Torex cloud took.
+ *       honest spelling of "as far as the server will send it".
  *   <li><b>{@code updateInterval(1)}.</b> The client does not simulate the flight (see
  *       {@link EntityMissileBaseNT}), so it needs a position every tick for vanilla's interpolation to
  *       draw a smooth arc. This is the setting that replaces upstream's hand-written interpolation and
@@ -92,15 +94,15 @@ public final class ModMissileEntities {
             missile("entity_missile_stealth", EntityMissileStealth::new);
     /** Taller and thinner than the rest: upstream sizes the interceptor 1 × 8. */
     public static final RegistryObject<EntityType<EntityMissileAntiBallistic>> MISSILE_ANTI_BALLISTIC =
-            REG.entity("entity_missile_ab", key -> dev.golem.core.registry.Entities.build(
+            REG.entity("entity_missile_ab", key -> Entities.build(
                     EntityType.Builder.<EntityMissileAntiBallistic>of(EntityMissileAntiBallistic::new, MobCategory.MISC)
                             .sized(1.0F, 8.0F)
                             .clientTrackingRange(64)
                             .updateInterval(1), key));
 
-    private static <T extends net.minecraft.world.entity.Entity> RegistryObject<EntityType<T>> missile(
+    private static <T extends Entity> RegistryObject<EntityType<T>> missile(
             String id, EntityType.EntityFactory<T> factory) {
-        return REG.entity(id, key -> dev.golem.core.registry.Entities.build(
+        return REG.entity(id, key -> Entities.build(
                 EntityType.Builder.of(factory, MobCategory.MISC)
                         .sized(1.5F, 1.5F)
                         .clientTrackingRange(64)

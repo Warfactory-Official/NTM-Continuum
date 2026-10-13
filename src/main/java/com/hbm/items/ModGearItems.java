@@ -26,7 +26,7 @@ import dev.golem.core.world.GolemArmorMaterial;
 
 /**
  * Hand-registered gear: the radiation diagnostic tools (geiger counter / dosimeter) and the three hazmat
- * armor sets — the FIRST armor of the port. Kept separate from the generated {@link ModItems} so codegen
+ * armor sets. Kept separate from the generated {@link ModItems} so codegen
  * never clobbers them. {@link #registerHazards()} wires the {@code HazmatRegistry} resistance coefficients
  * + {@code ArmorUtil} full-set membership (called post-registration by {@code Hazards.init}).
  */
@@ -37,12 +37,12 @@ public final class ModGearItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    // ---- diagnostic tools ----
+    // Diagnostic tools
     public static final RegistryObject<ItemGeigerCounter> geiger_counter =
             REG.item("geiger_counter", ItemGeigerCounter::new, p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<ItemDosimeter> dosimeter =
             REG.item("dosimeter", ItemDosimeter::new, p -> p.stacksTo(1)).transform(Presets.sprite());
-    // 1.7 gear_large metadata 0/1, one item each (ntm-next ids; History §19es-itemvariant)
+    // 1.7 gear_large metadata 0/1, one item each
     public static final RegistryObject<ItemGear> gear_large =
             REG.item("gear_large", p -> new ItemGear(p, 0));
     public static final RegistryObject<ItemGear> gear_large_steel =
@@ -53,7 +53,7 @@ public final class ModGearItems {
         return new ItemStack(variant == 1 ? gear_large_steel.get() : gear_large.get());
     }
 
-    // ---- hazmat suits (yellow / red / grey) ----
+    // Hazmat suits (yellow / red / grey)
     public static final RegistryObject<Item> hazmat_helmet = armor("hazmat_helmet", () -> HbmArmorMaterials.HAZMAT, ArmorSlot.HELMET);
     public static final RegistryObject<Item> hazmat_plate = armor("hazmat_plate", () -> HbmArmorMaterials.HAZMAT, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<Item> hazmat_legs = armor("hazmat_legs", () -> HbmArmorMaterials.HAZMAT, ArmorSlot.LEGGINGS);
@@ -69,7 +69,7 @@ public final class ModGearItems {
     public static final RegistryObject<Item> hazmat_legs_grey = armor("hazmat_legs_grey", () -> HbmArmorMaterials.HAZMAT_GREY, ArmorSlot.LEGGINGS);
     public static final RegistryObject<Item> hazmat_boots_grey = armor("hazmat_boots_grey", () -> HbmArmorMaterials.HAZMAT_GREY, ArmorSlot.BOOTS);
 
-    // ---- gas masks and replaceable filters ----
+    // Gas masks and replaceable filters
     public static final RegistryObject<ItemGasMask> gas_mask = gasMask("gas_mask", "hbm:items/gas_mask", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
     public static final RegistryObject<ItemGasMask> gas_mask_m65 = gasMask("gas_mask_m65", "hbm:items/gas_mask_m65", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
     public static final RegistryObject<ItemGasMask> gas_mask_mono = gasMask("gas_mask_mono", "hbm:items/gas_mask_mono", List.of(HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT, HazardClass.BACTERIA));

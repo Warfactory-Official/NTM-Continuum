@@ -3,6 +3,7 @@ package com.hbm.wiaj.actors;
 import com.hbm.wiaj.JarScene;
 import com.hbm.wiaj.WorldInAJar;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.SubmitSink;
@@ -25,7 +26,7 @@ import java.util.List;
  */
 public class ActorFancyPanel implements ISpecialActor {
 
-    static final Identifier guiUtil = dev.golem.core.Ids.of("hbm", "textures/gui/gui_utility.png");
+    static final Identifier guiUtil = Ids.of("hbm", "textures/gui/gui_utility.png");
 
     List<Object[]> lines = new ArrayList<>();
     Font font;

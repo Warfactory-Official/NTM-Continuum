@@ -1,6 +1,8 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMassStorage;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
 import net.minecraft.client.Minecraft;
@@ -14,9 +16,9 @@ import java.util.Locale;
 import java.util.Optional;
 
 /** The old 176x221 mass-storage screen, including the stockpile gauge and two controls. */
-public class GUIMassStorage extends dev.golem.core.gui.CompatContainerScreen<ContainerMassStorage> {
+public class GUIMassStorage extends CompatContainerScreen<ContainerMassStorage> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_mass_storage.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_mass_storage.png");
 
     public GUIMassStorage(ContainerMassStorage menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 221);

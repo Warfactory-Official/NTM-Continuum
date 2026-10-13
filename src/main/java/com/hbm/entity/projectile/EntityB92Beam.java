@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import com.hbm.entity.ModEntities;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
@@ -11,6 +12,7 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -40,18 +42,18 @@ public final class EntityB92Beam extends CompatEntity {
     }
 
     public EntityB92Beam(Level level, LivingEntity shooter, float velocity) {
-        this(com.hbm.entity.ModEntities.BEAM_BOMB.get(), level);
+        this(ModEntities.BEAM_BOMB.get(), level);
         this.shootingEntity = shooter;
         setPos(shooter.getX(), shooter.getY() + shooter.getEyeHeight(), shooter.getZ());
-        setPos(getX() - net.minecraft.util.Mth.cos(shooter.getYRot() / 180F * (float) Math.PI) * 0.16F,
+        setPos(getX() - Mth.cos(shooter.getYRot() / 180F * (float) Math.PI) * 0.16F,
                 getY() - 0.1D,
-                getZ() - net.minecraft.util.Mth.sin(shooter.getYRot() / 180F * (float) Math.PI) * 0.16F);
+                getZ() - Mth.sin(shooter.getYRot() / 180F * (float) Math.PI) * 0.16F);
 
-        double motionX = -net.minecraft.util.Mth.sin(shooter.getYRot() / 180F * (float) Math.PI)
-                * net.minecraft.util.Mth.cos(shooter.getXRot() / 180F * (float) Math.PI);
-        double motionZ = net.minecraft.util.Mth.cos(shooter.getYRot() / 180F * (float) Math.PI)
-                * net.minecraft.util.Mth.cos(shooter.getXRot() / 180F * (float) Math.PI);
-        double motionY = -net.minecraft.util.Mth.sin(shooter.getXRot() / 180F * (float) Math.PI);
+        double motionX = -Mth.sin(shooter.getYRot() / 180F * (float) Math.PI)
+                * Mth.cos(shooter.getXRot() / 180F * (float) Math.PI);
+        double motionZ = Mth.cos(shooter.getYRot() / 180F * (float) Math.PI)
+                * Mth.cos(shooter.getXRot() / 180F * (float) Math.PI);
+        double motionY = -Mth.sin(shooter.getXRot() / 180F * (float) Math.PI);
         setThrowableHeading(motionX, motionY, motionZ, velocity * 1.5F, 1.0F);
     }
 

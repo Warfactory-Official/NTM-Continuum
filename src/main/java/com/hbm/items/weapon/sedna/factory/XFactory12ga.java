@@ -1,8 +1,10 @@
 package com.hbm.items.weapon.sedna.factory;
 
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.entity.projectile.EntityBulletBeamBase;
+import com.hbm.entity.projectile.EntityDuchessGambit;
 import com.hbm.items.ItemEnums.EnumCasingType;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
@@ -12,9 +14,13 @@ import com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT.LambdaContext;
 import com.hbm.items.weapon.sedna.GunAnimation;
 import com.hbm.items.weapon.sedna.Receiver;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.lib.ModDamageSources;
+import com.hbm.packet.PlasmaBlastPayload;
+import com.hbm.sound.ModGunSounds;
 import com.hbm.util.DamageResistanceHandler;
 import com.hbm.util.EntityDamageUtil;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -65,11 +71,11 @@ public final class XFactory12ga {
 
     /** 1.7 {@code LAMBDA_BOAT}: the Duchess Gambit spawned 50 blocks above the hit, with the boat sound. */
     public static final BiConsumer<EntityBulletBaseMK4, HitResult> LAMBDA_BOAT = (bullet, hit) -> {
-        Entity pippo = XFactory44.dropFromSky(bullet, hit, new com.hbm.entity.projectile.EntityDuchessGambit(
-                com.hbm.entity.ModNtmEntities.DUCHESS_GAMBIT.get(), bullet.level()));
+        Entity pippo = XFactory44.dropFromSky(bullet, hit, new EntityDuchessGambit(
+                ModNtmEntities.DUCHESS_GAMBIT.get(), bullet.level()));
         // 1.7 plays it at the boat's y + 50 (100 above the hit); kept as written. 1.7 category "player".
         bullet.level().playSound(null, pippo.getX(), pippo.getY() + 50, pippo.getZ(),
-                com.hbm.sound.ModGunSounds.BOAT.get(), net.minecraft.sounds.SoundSource.PLAYERS, 100F, 1F);
+                ModGunSounds.BOAT.get(), SoundSource.PLAYERS, 100F, 1F);
         bullet.discard();
     };
 
@@ -290,7 +296,7 @@ public final class XFactory12ga {
         return length == 0D ? 0D : Math.toDegrees(Math.acos(Math.max(-1D, Math.min(1D, a.dot(b) / length))));
     }
 
-    /** Sends the source's oriented plasma shockwave; this is deliberately not a generic explosion. */
+    /** Sends the source's oriented plasma shockwave; this is not a generic explosion. */
     public static void spawnPulse(Level world, HitResult hit, float yaw, float pitch) {
         double x = hit.getLocation().x;
         double y = hit.getLocation().y;
@@ -310,7 +316,7 @@ public final class XFactory12ga {
             z += side.getStepZ() * 0.05D;
         }
 
-        com.hbm.packet.PlasmaBlastPayload.send(world, x, y, z, 0.5F, 0.5F, 1.0F,
+        PlasmaBlastPayload.send(world, x, y, z, 0.5F, 0.5F, 1.0F,
                 pitch, yaw, 0.75F);
     }
 
@@ -379,6 +385,6 @@ public final class XFactory12ga {
     static String mutated(ItemStack stack, String suffix) { return stack.getItem().getDescriptionId() + suffix; }
 
     /** 1.7 {@code LAMBDA_NAME_MARESLEG}. */
-    public static final java.util.function.Function<ItemStack, String> LAMBDA_NAME_MARESLEG = stack ->
-            com.hbm.items.weapon.sedna.mods.XWeaponModManager.hasUpgrade(stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SAWED_OFF) ? mutated(stack, "_short") : null;
+    public static final Function<ItemStack, String> LAMBDA_NAME_MARESLEG = stack ->
+            XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SAWED_OFF) ? mutated(stack, "_short") : null;
 }

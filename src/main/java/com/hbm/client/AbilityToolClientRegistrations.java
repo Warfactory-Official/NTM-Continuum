@@ -13,6 +13,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.KeyMappings;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import dev.golem.core.net.GolemNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -50,7 +51,7 @@ public final class AbilityToolClientRegistrations {
     public static void registerKeys() {
         abilityAltKey = KeyMappings.register("hbm", "key.hbm.abilityAlt", InputConstants.KEY_LALT, "hbm");
         ClientTicks.onEndTick(AbilityToolClientRegistrations::tick);
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_info", (mc, params) -> {
+        HarnessQueryRegistry.register("hbm_info", (mc, params) -> {
             JsonObject json = new JsonObject();
             JsonArray lines = new JsonArray();
             RenderInfoSystem.currentTexts().forEach(lines::add);

@@ -10,7 +10,7 @@ import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
-/** Block-entity type of the final armour wave B's one block, the {@code statue_elb_f} statue. */
+/** Block-entity type of the armour set B block, the {@code statue_elb_f} statue. */
 public final class ModArmorSetBBlockEntities {
 
     private ModArmorSetBBlockEntities() {}

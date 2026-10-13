@@ -8,6 +8,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModSingularityItems;
+import com.hbm.items.ModelState;
 import com.hbm.items.special.CellVariants;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.special.ItemStarterKit;
@@ -29,7 +30,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Regression contracts for the 2026-09-25 cell / Bobmazon correction.
+ * Regression contracts for cells and Bobmazon.
  *
  * <p>Cells: every full cell (the eight 1.7 cell items folded into one component-backed {@code hbm:cell})
  * selects its own model variant and name, independent of the port's fluid ids, carries its 1.7 hazards,
@@ -48,14 +49,13 @@ public final class FinalCellHudFixGameTests {
 
     /**
      * The two hidden-catalogue satellite offers, {@code hbm:sat_laser} (1.7 {@code ModItems.sat_laser}, 8 caps) and
-     * {@code hbm:sat_gerald} (1.7 {@code ModItems.sat_gerald}, 32 caps). They were withdrawn with the satellites
-     * until §19ec-satellites ported them; they must now resolve.
+     * {@code hbm:sat_gerald} (1.7 {@code ModItems.sat_gerald}, 32 caps). Both must resolve in the registry.
      */
     private static final Set<String> SATELLITE_OFFERS = Set.of("hbm:sat_laser", "hbm:sat_gerald");
 
     /**
      * The HIDDEN requirement's icon, 1.7 {@code achievement_icon:QUESTIONMARK} (the bobHidden achievement's icon),
-     * is one of the icon/dummy registrations §19ea excluded on purpose; that row draws no icon. It is an icon,
+     * is one of the icon/dummy registrations excluded on purpose; that row draws no icon. It is an icon,
      * not an offer, and is the only exception.
      */
     private static final String EXCLUDED_ICON = "hbm:achievement_icon";
@@ -80,8 +80,8 @@ public final class FinalCellHudFixGameTests {
             String name = (String) row[2];
             ItemStack stack = fluid == null ? new ItemStack(ModSingularityItems.cell.get()) : ItemCell.getFullCell(fluid);
             helper.assertTrue(CellVariants.NAMES[variant].equals(name), "variant " + variant + " is not " + name);
-            helper.assertTrue(com.hbm.items.ModelState.of(stack) == variant,
-                    "cell_" + name + " selects model state " + com.hbm.items.ModelState.of(stack)
+            helper.assertTrue(ModelState.of(stack) == variant,
+                    "cell_" + name + " selects model state " + ModelState.of(stack)
                             + ", expected " + variant);
             if (fluid != null) {
                 helper.assertTrue(ItemCell.isFullCell(stack, fluid) && ModDataComponents.fluid(stack) == fluid,
@@ -121,7 +121,7 @@ public final class FinalCellHudFixGameTests {
 
         List<ItemStack> kit = ItemStarterKit.contents(ItemStarterKit.Kind.PROTOTYPE);
         helper.assertTrue(kit.stream().anyMatch(s -> s.getCount() == 4 && ItemCell.isFullCell(s, Fluids.SAS3)
-                        && com.hbm.items.ModelState.of(s) == CellVariants.SAS3),
+                        && ModelState.of(s) == CellVariants.SAS3),
                 "prototype kit lost its four SAS3 cells");
         helper.succeed();
     }

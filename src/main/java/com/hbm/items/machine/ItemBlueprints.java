@@ -4,6 +4,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMachineItems;
+import com.hbm.items.ModelState;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
@@ -22,11 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A machine template ("blueprint") — inserting it into a machine unlocks the recipes in its
+ * A machine template ("blueprint"): inserting it into a machine unlocks the recipes in its
  * {@link #pool}. Fixed templates keep their pool on the item, while the legacy dynamic item carries it in
  * {@link com.hbm.items.ModDataComponents#BLUEPRINT_POOL}; {@link #grabPool} reads either form.
  */
-public class ItemBlueprints extends CompatItem implements com.hbm.items.ModelState {
+public class ItemBlueprints extends CompatItem implements ModelState {
 
     public final String pool;
 

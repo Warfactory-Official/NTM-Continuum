@@ -15,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
-/** Menu for the pyro oven — 1.12.2 {@code ContainerPyroOven} layout (176×204). */
+/** Menu for the pyro oven, 1.12.2 {@code ContainerPyroOven} layout (176×204). */
 public class ContainerPyroOven extends AbstractContainerMenu {
 
     public static final int MACHINE_SLOTS = 6;

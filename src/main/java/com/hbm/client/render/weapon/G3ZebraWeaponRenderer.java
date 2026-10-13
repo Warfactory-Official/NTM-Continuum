@@ -7,11 +7,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
-/** Exact original-hbm G3 renderer with the Zebra's permanent scope and silencer skin. */
+/** Exact 1.7 G3 renderer with the Zebra's permanent scope and silencer skin. */
 public final class G3ZebraWeaponRenderer extends WeaponRenderer {
-    private static final net.minecraft.resources.Identifier MODEL_ID=Ids.of("hbm","models/weapons/g3.obj");
+    private static final Identifier MODEL_ID=Ids.of("hbm","models/weapons/g3.obj");
     private static final Surface BODY=Surface.cutout("hbm:textures/models/weapons/g3_zebra.png");
     private static final Surface ATTACHMENTS=Surface.cutout("hbm:textures/models/weapons/g3_attachments.png");
     private WavefrontObj model;

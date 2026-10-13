@@ -5,6 +5,7 @@ import com.hbm.interfaces.ILookOverlay;
 import com.hbm.handler.NTMToolHandler;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.util.InventoryUtil;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -18,7 +19,7 @@ import java.util.List;
 
 /**
  * A plain building block that a construction tool can upgrade in place, per the
- * {@link NTMToolHandler} table — the 1.12.2 {@code BlockToolConversion} / the {@code onScrew} half of
+ * {@link NTMToolHandler} table. Ports the 1.12.2 {@code BlockToolConversion} and the {@code onScrew} half of
  * {@code BlockFusionComponent}. Hitting it with the right tool while carrying the required materials
  * consumes them and swaps the block for its upgraded form.
  *
@@ -26,7 +27,7 @@ import java.util.List;
  * raw fusion component are craftable, but the reactor only accepts the bolted / welded versions, which
  * exist solely as the output of a conversion.
  */
-public class BlockToolConvertible extends dev.golem.core.world.CompatBlock implements IToolable, ILookOverlay {
+public class BlockToolConvertible extends CompatBlock implements IToolable, ILookOverlay {
 
     public BlockToolConvertible(Properties properties) {
         super(properties);

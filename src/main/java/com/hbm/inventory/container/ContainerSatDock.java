@@ -3,6 +3,7 @@ package com.hbm.inventory.container;
 import com.hbm.inventory.ModSatelliteMenus;
 import com.hbm.items.machine.ItemSatChip;
 import com.hbm.tileentity.machine.TileEntityMachineSatDock;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -46,7 +47,7 @@ public final class ContainerSatDock extends AbstractContainerMenu {
             }
         });
 
-        dev.golem.core.world.Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 104);
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 104);
     }
 
     public @Nullable TileEntityMachineSatDock getDock() {

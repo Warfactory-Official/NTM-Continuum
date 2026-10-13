@@ -7,6 +7,7 @@ import dev.golem.core.data.DataMaps;
 import dev.golem.core.data.DataMaps.DataMap;
 import java.util.Optional;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.material.Fluid;
 
 /**
@@ -49,7 +50,7 @@ public final class FluidDataMaps {
      * {@code fluid} (a fluid registry name), and the item crafting leaves ({@code empty}; absent when the item is
      * used up).
      */
-    public static final DataMap<net.minecraft.world.item.Item, Container> FLUID_CONTAINER = DataMaps.map(FluidDataMaps.class,
+    public static final DataMap<Item, Container> FLUID_CONTAINER = DataMaps.map(FluidDataMaps.class,
             Constants.MOD_ID, "fluid_container", "item", () -> BuiltInRegistries.ITEM, Container.CODEC);
 
     public record Container(String fluid, int amount, Optional<String> empty) {

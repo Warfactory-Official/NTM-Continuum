@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.config.MachineConfig;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyConnectorMK2;
@@ -24,7 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * The legacy grey RTG's 15 fuel cells. 1.7.10 spec (original-hbm TileEntityMachineRTG): heatMax is
+ * The legacy grey RTG's 15 fuel cells. 1.7.10 spec (1.7 TileEntityMachineRTG): heatMax is
  * {@code VersatileConfig.rtgDecay() ? 600 : 200}; pellets always decay in the port (the 1.7 default
  * {@code doRTGsDecay = true}), so the cap is 600. The output buffer is 100,000 HE. (The previous 6,000 /
  * 1,000,000 values were not in the 1.7 source.)
@@ -36,7 +37,7 @@ public class TileEntityMachineRTG extends TileEntityInventoryBase
 
     /** 1.7 {@code heatMax = VersatileConfig.rtgDecay() ? 600 : 200}: the cap drops to 200 when pellets do not decay. */
     public static int heatMax() {
-        return com.hbm.config.MachineConfig.rtgDecay() ? HEAT_MAX : 200;
+        return MachineConfig.rtgDecay() ? HEAT_MAX : 200;
     }
     public static final long MAX_POWER = 100_000L;
     private static final int[] FUEL_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};

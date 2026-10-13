@@ -7,7 +7,7 @@ import dev.golem.core.net.GolemPayload;
 import net.minecraft.resources.Identifier;
 
 /**
- * S2C: old-hbm {@code PacketSpecialDeath}: an entity id, an effect id and a float array. Effect 3 is the cut mob
+ * S2C: 1.12.2 {@code PacketSpecialDeath}: an entity id, an effect id and a float array. Effect 3 is the cut mob
  * ({@code nx, ny, nz, d, Float.intBitsToFloat(tex)}: the plane in the victim's space and the cap texture); effect 4
  * (bullet gibs, with an extra hit list) belongs to the guns and is not sent by anything ported.
  */

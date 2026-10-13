@@ -6,6 +6,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityBlockICF;
 import com.hbm.tileentity.machine.TileEntityICFController;
 import com.hbm.util.BobMathUtil;
+import com.hbm.util.OverheadMarkers;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.ChatFormatting;
@@ -204,7 +205,7 @@ public class MachineICFController extends CompatBlock implements TickingBlock, I
     private static void sendError(BlockPos pos, String message, @Nullable Player player) {
         // 1.7: a red RenderOverhead marker on the offending block, labelled, for five seconds within 128 blocks (G-C)
         if (player instanceof ServerPlayer serverPlayer) {
-            com.hbm.util.OverheadMarkers.send(serverPlayer, pos, 0xff0000, message, 5_000, 128D);
+            OverheadMarkers.send(serverPlayer, pos, 0xff0000, message, 5_000, 128D);
         }
     }
 

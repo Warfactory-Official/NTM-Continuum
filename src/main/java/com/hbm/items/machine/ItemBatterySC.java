@@ -1,9 +1,12 @@
 package com.hbm.items.machine;
 
+import com.hbm.api.data.ReactorDataMaps;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.lib.Library;
+import dev.golem.core.Ids;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.Locale;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -52,12 +55,12 @@ public class ItemBatterySC extends CompatItem implements IBatteryItem {
 
         /** 1.7 {@code ItemEnumMulti} texture/lang suffix: the lowercase enum name. */
         public String id() {
-            return "battery_sc_" + name().toLowerCase(java.util.Locale.US);
+            return "battery_sc_" + name().toLowerCase(Locale.US);
         }
     }
 
     /** 1.7 {@code ResourceManager.battery_sc_tex}: the socket's battery body texture for every variant. */
-    public static final Identifier SOCKET_TEXTURE = dev.golem.core.Ids.of("hbm", "textures/models/machines/battery_sc.png");
+    public static final Identifier SOCKET_TEXTURE = Ids.of("hbm", "textures/models/machines/battery_sc.png");
 
     @Override public void chargeBattery(ItemStack stack, long i) {}
     @Override public void setCharge(ItemStack stack, long i) {}
@@ -67,7 +70,7 @@ public class ItemBatterySC extends CompatItem implements IBatteryItem {
     @Override public long getDischargeRate(ItemStack stack) { return getMaxCharge(stack); }
     /** The output: the {@code hbm:betavoltaic} entry, else HBM's enum constant. */
     public long power() {
-        Long data = com.hbm.api.data.ReactorDataMaps.BETAVOLTAIC.get(this);
+        Long data = ReactorDataMaps.BETAVOLTAIC.get(this);
         return data != null ? data : pack.power;
     }
 

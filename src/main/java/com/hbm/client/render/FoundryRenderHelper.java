@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.util.GameTime;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.Vertexes;
@@ -9,7 +10,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 
 /**
  * Shared molten-metal quad emitters for the foundry renderers (crucible pool, channel/caster levels,
- * pour streams). Draw these with {@code CompatRenderTypes.entityTranslucentEmissive} — that pipeline is
+ * pour streams). Draw these with {@code CompatRenderTypes.entityTranslucentEmissive}. That pipeline is
  * no-cull (one winding shows both sides) and emissive (uniform brightness, the modern stand-in for the
  * old lighting-off + lightmap-240 TESR state). Do NOT emit reversed duplicate quads: two coplanar
  * windings z-fight, and the back face renders at 40% brightness (dark shimmer).
@@ -53,16 +54,16 @@ public final class FoundryRenderHelper {
     }
 
     /**
-     * The falling molten stream — the 1.12.2 {@code ParticleFoundry} geometry, verbatim: a boxy
+     * The falling molten stream, the 1.12.2 {@code ParticleFoundry} geometry: a boxy
      * vertical column falling {@code length} blocks from the local origin, joined by a bent "faucet"
      * segment rising {@code base} and leaning {@code offset} back toward the machine (dir = the pour
      * direction). The texture V coordinate scrolls with real time (the old flowing animation), and the
      * colour is the molten colour brightened 70% toward white (the old particle's tint).
      * Draw at the pour point with the emissive lava_gray render type.
      */
-    public static void pourStream(PoseStack.Pose pose, VertexConsumer buffer, com.hbm.lib.ForgeDirection dir,
+    public static void pourStream(PoseStack.Pose pose, VertexConsumer buffer, ForgeDirection dir,
                                   float length, float base, float offset, int moltenColor) {
-        com.hbm.lib.ForgeDirection rot = dir.getRotation(com.hbm.lib.ForgeDirection.UP);
+        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
         float w = 0.09375F;  // the old particle animated 0.0625..0.125 over its life; fixed midpoint
         float g = 0.0625F;   // the old girth shrank 0.125..0; fixed midpoint
 
@@ -81,7 +82,7 @@ public final class FoundryRenderHelper {
         float add = (int) (GameTime.now() / 100 % 16) / 16F;
 
         // Each quad is emitted DOUBLE-wound (front + reversed): drawn on entitySolid (which culls, and
-        // uses the vertex normal — all up — for uniform brightness), the cull keeps exactly the outward
+        // uses the vertex normal, which points all up, for uniform brightness), the cull keeps exactly the outward
         // face, so nothing disappears and every face is the same fullbright colour. (The old particle got
         // this for free with disableCull + fixed-function fullbright.)
 

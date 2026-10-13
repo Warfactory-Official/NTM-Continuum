@@ -51,7 +51,7 @@ public final class HbmArmorMaterials {
      * [boots, legs, chest, helmet] order, enchantability 0, toughness 2.0.
      *
      * <p>The repair tag is the same armour plate the suit is built from. Enchantability is zero because
-     * upstream refuses enchantments on power armour outright — see {@code ArmorFSBPowered}.
+     * upstream refuses enchantments on power armour outright; see {@code ArmorFSBPowered}.
      */
     public static final GolemArmorMaterial T51 = new GolemArmorMaterial(
             Constants.MOD_ID, "t51", 150, 3, 8, 6, 3, 0, 2.0F, 0.0F, "repairs/t51");
@@ -99,7 +99,7 @@ public final class HbmArmorMaterials {
     public static final GolemArmorMaterial PAA = new GolemArmorMaterial(
             Constants.MOD_ID, "paa", 75, 3, 8, 6, 3, 25, 2.0F, 0.0F, "repairs/paa");
 
-    // ---- final armor sets A (1.7 MainRegistry / ModItemsArmor). 1.7 defense arrays are {helmet, chest,
+    // Armor sets A (1.7 MainRegistry / ModItemsArmor). 1.7 defense arrays are {helmet, chest,
     // legs, boots}; 1.7 has no toughness, so these materials declare 0. Each EnumHelper call made its own
     // enum constant, and set identity is reference equality, so every 1.7 material is its own object here.
 

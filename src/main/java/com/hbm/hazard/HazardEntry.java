@@ -17,16 +17,14 @@ import org.jspecify.annotations.Nullable;
  * A single hazard on an item: type + base level + modifiers + payload. Ported from 1.12.2, with the
  * payload added.
  *
- * <p>The payload is whatever the {@link HazardType} that produced this entry declared — a fuse
- * length, a damage source, a table of effects — and is handed back to that type's lambdas on every
- * application. It is fixed at registration, shared by every stack that resolves to this entry, and
- * therefore never per-stack state: a hazard that needs to remember something about one stack still
- * writes it into that stack's components. Build a typed one with {@link HazardType#entry}; the raw
- * constructor exists for entries that carry none.
+ * <p>The payload is whatever the {@link HazardType} that produced this entry declared (a fuse length, a
+ * damage source, a table of effects). It is handed back to that type's lambdas on every application. It is
+ * fixed at registration and shared by every stack that resolves to this entry, so it is never per-stack
+ * state: a hazard that must remember something about one stack writes it into that stack's components.
+ * Build a typed one with {@link HazardType#entry}; the raw constructor is for entries that carry none.
  *
- * <p>The three {@code apply}/{@code addInformation} methods are the only places the payload is
- * threaded into a type, so a caller cannot half-use the feature by reaching for
- * {@link IHazardType#onUpdate} directly.
+ * <p>The three {@code apply}/{@code addInformation} methods are the only places the payload is threaded
+ * into a type, so callers must not reach for {@link IHazardType#onUpdate} directly.
  */
 public class HazardEntry implements Cloneable {
 
@@ -68,7 +66,7 @@ public class HazardEntry implements Cloneable {
         type.updateEntity(item, IHazardModifier.evalAllModifiers(stack, null, baseLevel, mods), payload);
     }
 
-    /** Tooltip lines for this entry. The base level is passed through — types evaluate the mods themselves. */
+    /** Tooltip lines for this entry. The base level is passed through; types evaluate the mods themselves. */
     public void addInformation(final Player player, final List<Component> list, final ItemStack stack) {
         type.addHazardInformation(player, list, baseLevel, stack, mods, payload);
     }

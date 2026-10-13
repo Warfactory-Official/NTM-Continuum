@@ -1,5 +1,6 @@
 package com.hbm.client.render.entity;
 
+import com.hbm.client.BossStatus;
 import com.hbm.entity.mob.EntityHunterChopper;
 import com.hbm.main.ResourceManager;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -14,6 +15,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
+import net.minecraft.world.BossEvent;
 
 /**
  * 1.7 RenderHunterChopper: a bare {@code Render}, not a {@code RenderLiving}, so the chopper gets none of the living
@@ -48,7 +50,7 @@ public class RenderHunterChopper extends CompatEntityRenderer<EntityHunterChoppe
 
     @Override
     public void extract(EntityHunterChopper entity, State state, float partialTicks) {
-        com.hbm.client.BossStatus.set(entity, net.minecraft.world.BossEvent.BossBarColor.PINK); // 1.7 render-pushed BossStatus
+        BossStatus.set(entity, BossEvent.BossBarColor.PINK); // 1.7 render-pushed BossStatus
         state.yaw = Mth.rotLerp(partialTicks, entity.yRotO, entity.getYRot());
         state.pitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
         state.age = entity.tickCount + partialTicks;

@@ -18,10 +18,10 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Fractioning Tower — 1:1 port of the 1.12.2 {@code TileEntityMachineFractionTower}: no power, no GUI,
+ * Fractioning Tower, a 1:1 port of the 1.12.2 {@code TileEntityMachineFractionTower}: no power, no GUI,
  * no inventory. 3 tanks × 4000 (0 = feed, 1/2 = the two fractions). When another tower sits 3 blocks
  * above, its tank types are forced to match and feed moves up / fractions pull down (so a stack of
- * towers shares one column). {@link #fractionate()} runs every 10 ticks: −100 mB feed → +both fractions
+ * towers shares one column). {@link #fractionate()} runs every 10 ticks: it takes 100 mB feed and adds both fractions
  * if they fit. The input tank type is set by a fluid-identifier right-click on the bottom segment (the
  * old onBlockActivated, in {@link com.hbm.blocks.machine.MachineFractionTower}).
  */

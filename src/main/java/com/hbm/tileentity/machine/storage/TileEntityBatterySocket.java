@@ -3,15 +3,32 @@ package com.hbm.tileentity.machine.storage;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
+import com.hbm.entity.projectile.EntityBulletBeamBase;
+import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.standard.EntityProcessorCrossSmooth;
+import com.hbm.explosion.vanillant.standard.ExplosionEffectStandard;
+import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import com.hbm.inventory.container.ContainerBatterySocket;
+import com.hbm.items.machine.ItemBatterySC;
+import com.hbm.items.weapon.sedna.BulletConfig;
+import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.ModDamageSources;
+import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
+import dev.golem.core.world.ItemStacks;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -20,10 +37,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The Battery Socket multiblock's core BlockEntity. Unlike the {@code machine_battery} block (which stores
- * its own {@code long power}), the socket holds <b>no internal energy</b> — its power IS the charge of the
+ * its own {@code long power}), the socket holds <b>no internal energy</b>; its power IS the charge of the
  * {@link IBatteryItem} placed in slot 0. {@link #getPower()}/{@link #setPower(long)}/{@link #getMaxPower()}
  * read and write that item's charge, so charging the socket from the grid literally fills the battery item,
  * which can then be carried away full. Acts as a cable: all 8 connection ports share one network.
@@ -32,7 +53,7 @@ import dev.golem.core.data.DataOut;
  * {@code com.hbm.compat.computercraft.storage.BatterySocketPeripheral}. A loaded radiovoltaic battery
  * ({@code battery_sc_*}, not the empty one) fluctuates its output ({@code scPowerMult}, 0.1..1, drifting by up to 1% a
  * tick) and every 1 to 3 minutes discharges: electric beams at every living thing within 15 blocks, each ending in a
- * small electric explosion, plus one explosion at the socket (History §19ek-hooks).
+ * small electric explosion, plus one explosion at the socket.
  */
 public class TileEntityBatterySocket extends TileEntityBatteryBase implements MenuProvider, IRORValueProvider, IRORInteractive {
 
@@ -49,39 +70,39 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
     public double scPowerMult = 1D;
 
     /** 1.7 {@code discharge}: the beam config of the discharge arcs, registered with the gun configs (GunFactory). */
-    public static com.hbm.items.weapon.sedna.BulletConfig discharge;
+    public static BulletConfig discharge;
 
     /** 1.7 {@code BEAM_DISCHARGE_HIT}: a block hit breaks the block (no drops); block or entity, an explosion. */
-    public static final java.util.function.BiConsumer<com.hbm.entity.projectile.EntityBulletBeamBase, net.minecraft.world.phys.HitResult>
+    public static final BiConsumer<EntityBulletBeamBase, HitResult>
             BEAM_DISCHARGE_HIT = (beam, mop) -> {
-                if (mop.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK
-                        && mop instanceof net.minecraft.world.phys.BlockHitResult blockHit) {
+                if (mop.getType() == HitResult.Type.BLOCK
+                        && mop instanceof BlockHitResult blockHit) {
                     beam.level().destroyBlock(blockHit.getBlockPos(), false);
                     explodeDischarge(beam.level(), mop.getLocation().x, mop.getLocation().y, mop.getLocation().z);
                 }
-                if (mop.getType() == net.minecraft.world.phys.HitResult.Type.ENTITY) {
+                if (mop.getType() == HitResult.Type.ENTITY) {
                     explodeDischarge(beam.level(), mop.getLocation().x, mop.getLocation().y, mop.getLocation().z);
                 }
             };
 
     public static synchronized void registerDischarge() {
         if (discharge != null) return;
-        discharge = com.hbm.items.weapon.sedna.BulletConfigs.register("battery_socket_discharge",
-                new com.hbm.items.weapon.sedna.BulletConfig()
-                        .setupDamageClass(com.hbm.lib.ModDamageSources.DamageClass.ELECTRIC).setBeam().setSpread(0.0F)
+        discharge = BulletConfigs.register("battery_socket_discharge",
+                new BulletConfig()
+                        .setupDamageClass(ModDamageSources.DamageClass.ELECTRIC).setBeam().setSpread(0.0F)
                         .setLife(3).setThresholdNegation(20F).setArmorPiercing(0.5F).setRenderRotations(false)
                         .setDoesPenetrate(true).setOnBeamImpact(BEAM_DISCHARGE_HIT));
     }
 
     /** 1.7 {@code explodeDischarge}: a size 5 VNT whose entity damage is the electric cross-smooth 20, and the UFO blast. */
     public static void explodeDischarge(Level level, double x, double y, double z) {
-        new com.hbm.explosion.vanillant.ExplosionVNT(level, x, y, z, 5F)
-                .setEntityProcessor(new com.hbm.explosion.vanillant.standard.EntityProcessorCrossSmooth(1D, 20F)
-                        .setDamageClass(com.hbm.lib.ModDamageSources.DamageClass.ELECTRIC))
-                .setPlayerProcessor(new com.hbm.explosion.vanillant.standard.PlayerProcessorStandard())
-                .setSFX(new com.hbm.explosion.vanillant.standard.ExplosionEffectStandard())
+        new ExplosionVNT(level, x, y, z, 5F)
+                .setEntityProcessor(new EntityProcessorCrossSmooth(1D, 20F)
+                        .setDamageClass(ModDamageSources.DamageClass.ELECTRIC))
+                .setPlayerProcessor(new PlayerProcessorStandard())
+                .setSFX(new ExplosionEffectStandard())
                 .explode();
-        level.playSound(null, x, y, z, com.hbm.sound.ModSounds.UFO_BLAST.get(), net.minecraft.sounds.SoundSource.BLOCKS, 5F,
+        level.playSound(null, x, y, z, ModSounds.UFO_BLAST.get(), SoundSource.BLOCKS, 5F,
                 0.9F + level.getRandom().nextFloat() * 0.2F);
     }
 
@@ -114,12 +135,12 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
         socket.syncStack = socket.inventory.getStackInSlot(0);
     }
 
-    // --- 1.7 radiovoltaic discharge ---
+    // 1.7 radiovoltaic discharge
 
     public boolean hasSCLoaded() {
         ItemStack stack = battery();
-        return stack.getItem() instanceof com.hbm.items.machine.ItemBatterySC sc
-                && sc.pack != com.hbm.items.machine.ItemBatterySC.EnumBatterySC.EMPTY;
+        return stack.getItem() instanceof ItemBatterySC sc
+                && sc.pack != ItemBatterySC.EnumBatterySC.EMPTY;
     }
 
     protected void pickNewSCTarget() {
@@ -141,23 +162,23 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
         double z = zCoord + 0.5 - dir.offsetZ * 0.5 + rot.offsetX * 0.5; // 1.7 adds rot.offsetX here too; ported as written
 
         double range = 15;
-        java.util.List<net.minecraft.world.entity.LivingEntity> potentialTargets = level.getEntitiesOfClass(
-                net.minecraft.world.entity.LivingEntity.class,
-                new net.minecraft.world.phys.AABB(x, y, z, x, y, z).inflate(range, range, range));
-        java.util.Collections.shuffle(potentialTargets);
+        List<LivingEntity> potentialTargets = level.getEntitiesOfClass(
+                LivingEntity.class,
+                new AABB(x, y, z, x, y, z).inflate(range, range, range));
+        Collections.shuffle(potentialTargets);
 
-        for (net.minecraft.world.entity.LivingEntity target : potentialTargets) {
-            net.minecraft.world.phys.Vec3 initialDelta = new net.minecraft.world.phys.Vec3(target.getX() - x,
+        for (LivingEntity target : potentialTargets) {
+            Vec3 initialDelta = new Vec3(target.getX() - x,
                     target.getY() + target.getBbHeight() / 2 - y, target.getZ() - z);
             if (initialDelta.length() > range) continue;
-            com.hbm.entity.projectile.EntityBulletBeamBase sub =
-                    new com.hbm.entity.projectile.EntityBulletBeamBase(level, discharge, 50F);
+            EntityBulletBeamBase sub =
+                    new EntityBulletBeamBase(level, discharge, 50F);
             initialDelta = initialDelta.normalize();
             double dominantAxis = Math.max(Math.abs(initialDelta.x), Math.max(Math.abs(initialDelta.y), Math.abs(initialDelta.z)));
             initialDelta = initialDelta.scale(1.125D / dominantAxis); // move 1.125 blocks outwards
             // 1.7 starts the arc from the block corner, not from the arc point above
             sub.setPos(xCoord + initialDelta.x, yCoord + initialDelta.y, zCoord + initialDelta.z);
-            net.minecraft.world.phys.Vec3 actualDelta = new net.minecraft.world.phys.Vec3(target.getX() - sub.getX(),
+            Vec3 actualDelta = new Vec3(target.getX() - sub.getX(),
                     target.getY() + target.getBbHeight() / 2 - sub.getY(), target.getZ() - sub.getZ());
             sub.setRotationsFromVector(actualDelta);
             sub.performHitscanExternal(actualDelta.length());
@@ -171,10 +192,10 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
     protected void fluctuate() {
         double steppy = 1D / 100D;
         this.scPowerMult += (steppy * (level.getRandom().nextDouble() * 2 - 1));
-        this.scPowerMult = net.minecraft.util.Mth.clamp(scPowerMult, 0.1D, 1D);
+        this.scPowerMult = Mth.clamp(scPowerMult, 0.1D, 1D);
     }
 
-    // --- the inserted battery item IS the storage ---
+    // The inserted battery item IS the storage
 
     private ItemStack battery() {
         return inventory.getStackInSlot(0);
@@ -232,7 +253,7 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
         return new int[]{0};
     }
 
-    // --- multiblock port geometry (ported verbatim from the 1.12.2 socket) ---
+    // Multiblock port geometry (ported unchanged from the 1.12.2 socket)
 
     private ForgeDirection facing() {
         return MachineCore.facing(getBlockState());
@@ -279,24 +300,24 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
         return new ContainerBatterySocket(containerId, playerInventory, this);
     }
 
-    // --- sync (BufPacket) + persistence: add delta + the carried stack on top of the base fields ---
+    // Sync (BufPacket) + persistence: add delta + the carried stack on top of the base fields
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
         buf.writeLong(delta);
-        dev.golem.core.world.ItemStacks.writeOptional(buf, inventory.getStackInSlot(0));
+        ItemStacks.writeOptional(buf, inventory.getStackInSlot(0));
     }
 
     @Override
     public void deserialize(RegistryFriendlyByteBuf buf) {
         super.deserialize(buf);
         delta = buf.readLong();
-        syncStack = dev.golem.core.world.ItemStacks.readOptional(buf);
+        syncStack = ItemStacks.readOptional(buf);
     }
 
     @Override
-    protected void saveData(dev.golem.core.data.DataOut output) {
+    protected void saveData(DataOut output) {
         super.saveData(output);
         output.putInt("damageTimer", damageTimer);
         output.putInt("damageTarget", damageTarget);
@@ -304,7 +325,7 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
     }
 
     @Override
-    protected void loadData(dev.golem.core.data.DataIn input) {
+    protected void loadData(DataIn input) {
         super.loadData(input);
         damageTimer = input.getIntOr("damageTimer", 0);
         damageTarget = input.getIntOr("damageTarget", 0);

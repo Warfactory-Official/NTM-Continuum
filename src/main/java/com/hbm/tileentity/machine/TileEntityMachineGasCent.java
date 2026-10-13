@@ -1,5 +1,8 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.client.sound.GasCentrifugeSoundHandler;
+import com.hbm.inventory.container.ContainerMachineGasCent;
+import com.hbm.inventory.fluid.FluidType;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -111,7 +114,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineGasCent te) {
         te.audioDuration += te.isProgressing ? 2 : -3;
         te.audioDuration = Math.max(0, Math.min(60, te.audioDuration));
-        com.hbm.client.sound.GasCentrifugeSoundHandler.tickLoop(te);
+        GasCentrifugeSoundHandler.tickLoop(te);
     }
 
     private boolean canEnrich() {
@@ -197,7 +200,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
     private void setTankTypeFromIdentifier() {
         ItemStack id = inventory.getStackInSlot(5);
         if (!(id.getItem() instanceof IItemFluidId identifier)) return;
-        com.hbm.inventory.fluid.FluidType type = identifier.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
+        FluidType type = identifier.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         PseudoFluidType pseudo = GasCentrifugeRecipes.FLUID_CONVERSIONS.get(type);
         if (pseudo == null || tank.getTankType() == type) return;
         tank.setTankType(type);
@@ -238,7 +241,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
 
     @Override public Component getDisplayName() { return Component.translatable("container.gasCentrifuge"); }
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new com.hbm.inventory.container.ContainerMachineGasCent(id, inventory, this);
+        return new ContainerMachineGasCent(id, inventory, this);
     }
 
     @Override public long getPower() { return power; }

@@ -3,6 +3,7 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.blocks.machine.MachineFan;
 import com.hbm.client.model.WavefrontObj;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -19,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
 public final class FanRenderer extends GemBER<MachineFan.TileEntityFan, FanRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/fan.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/fan.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/fan.png");
 

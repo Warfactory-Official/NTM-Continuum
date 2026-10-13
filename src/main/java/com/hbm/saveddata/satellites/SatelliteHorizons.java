@@ -8,6 +8,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -89,7 +90,7 @@ public class SatelliteHorizons extends Satellite {
         if (used) return;
 
         used = true;
-        SatelliteSavedData.get(level, new net.minecraft.core.BlockPos(x, 0, z)).setDirty();
+        SatelliteSavedData.get(level, new BlockPos(x, 0, z)).setDirty();
 
         EntityTom tom = new EntityTom(ModNtmEntities.TOM_THE_MOONSTONE.get(), level);
         tom.setPos(x + 0.5D, 600, z + 0.5D);

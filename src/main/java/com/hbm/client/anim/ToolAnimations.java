@@ -19,7 +19,7 @@ import org.jspecify.annotations.Nullable;
  * The client half of 1.7 {@code HbmAnimationPacket.handleItem} and the {@code getAnimation} tables of the
  * {@code IAnimatedItem} tools: chainsaw ({@code ItemChainsaw}) and boltgun ({@code ItemBoltgun}). Each table is
  * transcribed from its item; the renderers read the buses ({@code SWING_ROT}/{@code SWING_TRANS}, {@code RECOIL}).
- * The crucible is old-hbm's now and animates through {@code com.hbm.client.crucible.CrucibleClient}.
+ * The crucible is 1.12.2's now and animates through {@code com.hbm.client.crucible.CrucibleClient}.
  */
 public final class ToolAnimations {
 

@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.machine.TileEntityICFPress;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -35,7 +36,7 @@ public class MachineICFPress extends CompatBlock implements TickingBlock {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof TileEntityICFPress press) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, press, pos);
+            Menus.openWithPos(serverPlayer, press, pos);
         }
         return InteractionResult.CONSUME;
     }

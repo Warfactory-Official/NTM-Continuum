@@ -1,7 +1,8 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
-import com.hbm.foundry.FoundryExpansion;
+import com.hbm.inventory.container.ContainerMachineStrandCaster;
+import com.hbm.inventory.container.Containers;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.machine.ItemMold;
 import com.hbm.items.machine.ItemScraps;
@@ -17,6 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -27,10 +29,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
+import com.hbm.tileentity.ModBlockEntities;
 
 /** Seven-slot Strand Caster core: one mold, six output slots, four fluid ports, and old batching. */
 public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
-        implements net.minecraft.world.MenuProvider, WorldlyContainer, IFluidStandardTransceiverMK2 {
+        implements MenuProvider, WorldlyContainer, IFluidStandardTransceiverMK2 {
 
     public final FluidTankNTM water = new FluidTankNTM(Fluids.WATER, 64_000);
     public final FluidTankNTM steam = new FluidTankNTM(Fluids.SPENTSTEAM, 64_000);
@@ -40,7 +43,7 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
     public final ItemStack[] syncOutputs = new ItemStack[6];
 
     public TileEntityMachineStrandCaster(BlockPos pos, BlockState state) {
-        super(FoundryExpansion.STRAND_CASTER_BE.get(), pos, state, 7);
+        super(ModBlockEntities.MACHINE_STRAND_CASTER.get(), pos, state, 7);
         for (int i = 0; i < syncOutputs.length; i++) syncOutputs[i] = ItemStack.EMPTY;
     }
 
@@ -224,7 +227,7 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
     }
 
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new com.hbm.inventory.container.ContainerMachineStrandCaster(id, inventory, this);
+        return new ContainerMachineStrandCaster(id, inventory, this);
     }
 
     @Override public int getContainerSize() { return 7; }
@@ -241,7 +244,7 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
 
     @Override public boolean stillValid(Player player) {
         return level != null && level.getBlockEntity(worldPosition) == this
-                && com.hbm.inventory.container.Containers.inRangeOfMultiblock(level, worldPosition, player);
+                && Containers.inRangeOfMultiblock(level, worldPosition, player);
     }
 
     @Override
@@ -250,7 +253,7 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
         water.serialize(buf);
         steam.serialize(buf);
         for (int i = 1; i < syncOutputs.length; i++) {
-            dev.golem.core.world.ItemStacks.writeOptional(buf, syncOutputs[i]);
+            ItemStacks.writeOptional(buf, syncOutputs[i]);
         }
     }
 
@@ -261,7 +264,7 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
         steam.deserialize(buf);
         syncOutputs[0] = syncOutput;
         for (int i = 1; i < syncOutputs.length; i++) {
-            syncOutputs[i] = dev.golem.core.world.ItemStacks.readOptional(buf);
+            syncOutputs[i] = ItemStacks.readOptional(buf);
         }
     }
 

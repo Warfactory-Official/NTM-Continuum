@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.packet.ControlEventPayload;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
@@ -26,7 +27,7 @@ import com.hbm.tileentity.network.TileEntityCraneInserter;
 /** 1.7 {@code GUICraneInserter}. */
 public class GUICraneInserter extends CompatContainerScreen<ContainerCraneInserter> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_crane_inserter.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_crane_inserter.png");
 
     public GUICraneInserter(ContainerCraneInserter menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 185);

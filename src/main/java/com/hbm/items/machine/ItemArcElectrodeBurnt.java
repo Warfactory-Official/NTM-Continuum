@@ -1,11 +1,12 @@
 package com.hbm.items.machine;
 
+import dev.golem.core.world.CompatItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /** The spent metadata variants emitted when a fresh arc electrode is exhausted. */
-public class ItemArcElectrodeBurnt extends dev.golem.core.world.CompatItem {
+public class ItemArcElectrodeBurnt extends CompatItem {
 
     public final ItemArcElectrode.ElectrodeType type;
 

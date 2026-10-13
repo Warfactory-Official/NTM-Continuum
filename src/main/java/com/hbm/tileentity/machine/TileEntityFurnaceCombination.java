@@ -25,6 +25,7 @@ import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -124,7 +125,7 @@ public class TileEntityFurnaceCombination extends TileEntityMachinePolluting imp
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFurnaceCombination furnace) {
         if (furnace.wasOn && level.getRandom().nextInt(15) == 0) {
-            level.addParticle(net.minecraft.core.particles.ParticleTypes.LAVA,
+            level.addParticle(ParticleTypes.LAVA,
                     pos.getX() + 0.5D + level.getRandom().nextGaussian() * 0.5D, pos.getY() + 2D,
                     pos.getZ() + 0.5D + level.getRandom().nextGaussian() * 0.5D, 0D, 0D, 0D);
         }

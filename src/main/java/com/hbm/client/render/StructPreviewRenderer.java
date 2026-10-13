@@ -7,6 +7,8 @@ import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
@@ -16,18 +18,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Draws the still-unbuilt part of a {@link StructPattern} as translucent ghost cubes, replacing
- * 1.12.2's {@code RenderWatzMultiblock} / {@code RenderFusionTorusMultiblock}. Those two hard-coded
- * their machine's shape; this one reads it from the pattern, so every struct-built multiblock gets a
- * preview for free.
+ * Draws the still-unbuilt part of a {@link StructPattern} as translucent ghost cubes. 1.12.2's
+ * {@code RenderWatzMultiblock} / {@code RenderFusionTorusMultiblock} hard-coded their machine's shape; this one
+ * reads it from the pattern, so every struct-built multiblock gets a preview.
  *
- * <p>One deliberate improvement over upstream, which redrew every cell of the shape unconditionally:
- * cells that already hold the right block are skipped. Ghosting over a real block would z-fight, and
- * the preview reads much better when it shrinks as you build.
+ * <p>Unlike upstream, which redrew every cell unconditionally, cells that already hold the right block are
+ * skipped: ghosting over a real block would z-fight, and the preview shrinks as you build.
  */
 public class StructPreviewRenderer<T extends TileEntityStructBase> implements CompatBER<T, StructPreviewRenderState> {
 
-    /** Ghosts ignore world light — a half-built reactor pit is dark and the preview has to be readable. */
+    /** Ghosts ignore world light: a half-built reactor pit is dark and the preview has to be readable. */
     private static final int FULL_BRIGHT = 0xF000F0;
     /** Upstream's ghost alpha (its {@code GlStateManager.color(1, 1, 1, 0.75F)}). */
     private static final float ALPHA = 0.75F;
@@ -73,11 +73,11 @@ public class StructPreviewRenderer<T extends TileEntityStructBase> implements Co
 
         // Batch by texture: one submission per distinct texture rather than per cube, since each
         // texture is its own RenderType.
-        Map<Identifier, java.util.List<BlockPos>> sides = new LinkedHashMap<>();
-        Map<Identifier, java.util.List<BlockPos>> ends = new LinkedHashMap<>();
+        Map<Identifier, List<BlockPos>> sides = new LinkedHashMap<>();
+        Map<Identifier, List<BlockPos>> ends = new LinkedHashMap<>();
         for (StructPreviewRenderState.Ghost ghost : state.missing) {
-            sides.computeIfAbsent(ghost.side(), k -> new java.util.ArrayList<>()).add(ghost.offset());
-            ends.computeIfAbsent(ghost.top(), k -> new java.util.ArrayList<>()).add(ghost.offset());
+            sides.computeIfAbsent(ghost.side(), k -> new ArrayList<>()).add(ghost.offset());
+            ends.computeIfAbsent(ghost.top(), k -> new ArrayList<>()).add(ghost.offset());
         }
 
         sides.forEach((texture, offsets) -> sink.submitCustomGeometry(poseStack,

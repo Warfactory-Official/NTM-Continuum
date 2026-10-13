@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -14,7 +15,7 @@ import net.minecraft.world.phys.Vec3;
 public class CrystallizerRenderer extends GemBER<TileEntityMachineCrystallizer, CrystallizerRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/crystallizer.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/crystallizer.obj"));
     private final Surface body = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/crystallizer.png");
     private final Surface acid = Surface.translucent(
@@ -40,7 +41,7 @@ public class CrystallizerRenderer extends GemBER<TileEntityMachineCrystallizer, 
         return new CrystallizerRenderState();
     }
 
-    /** The 1.12.2 RenderCrystallizer facing map, which differs from the chem plant's — no base yaw. */
+    /** The 1.12.2 RenderCrystallizer facing map, which differs from the chem plant's, with no base yaw. */
     @Override
     public void extract(TileEntityMachineCrystallizer be, CrystallizerRenderState state, float partialTicks,
                         Vec3 cameraPosition) {

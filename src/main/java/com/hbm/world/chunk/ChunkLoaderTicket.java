@@ -6,12 +6,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 
 /**
- * One holder's claim on a set of chunks — the port's replacement for {@code ForgeChunkManager.Ticket}.
+ * One holder's claim on a set of chunks, the port's replacement for {@code ForgeChunkManager.Ticket}.
  *
  * <p>A ticket is obtained from {@link ChunkLoadingManager#requestTicket}, told which chunks it wants
  * ({@link #force}/{@link #setChunks}), and {@link #release}d when its owner dies. Chunks are
  * reference-counted by the manager, so two missiles over the same chunk do not unforce it from under
- * each other — which is the one thing vanilla's flat forced-chunk set cannot express on its own.
+ * each other, which is the one thing vanilla's flat forced-chunk set cannot express on its own.
  *
  * <p>Releasing a ticket twice is a no-op, and a released ticket ignores further {@code force} calls:
  * upstream's contract note 4 ("if init receives a duplicate ticket, release it rather than leaking it")
@@ -66,7 +66,7 @@ public final class ChunkLoaderTicket {
      *
      * <p>Upstream's {@code loadNeighboringChunks} unforced everything and re-forced the new set every
      * tick. Doing that literally here would drop each chunk's refcount to zero for an instant and let
-     * the chunk actually unload mid-flight, so the set is diffed instead — same end state, without the
+     * the chunk actually unload mid-flight, so the set is diffed instead, which reaches the same end state without the
      * gap.
      */
     public void setChunks(LongOpenHashSet wanted) {

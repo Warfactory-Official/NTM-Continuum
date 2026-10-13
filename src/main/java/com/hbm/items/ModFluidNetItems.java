@@ -10,19 +10,20 @@ import com.hbm.inventory.FluidContainers;
 import com.hbm.items.machine.ItemFluidContainerNT;
 import com.hbm.items.machine.ItemFluidSiphon;
 import com.hbm.items.machine.ItemInfiniteFluid;
-import com.hbm.items.tool.ItemModBucket;
+import com.hbm.blocks.fluid.ModWorldFluids;
+import dev.golem.core.fluid.WorldFluids;
+import net.minecraft.world.item.BucketItem;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.blocks.ModHazardBlocks;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-import com.hbm.blocks.ModFluidNetBlocks;
 
 /**
  * The fluid-container items of the 1.7 {@code items/machine} and {@code items/tool} packages that the
@@ -37,26 +38,26 @@ public final class ModFluidNetItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    // --- buckets (1.7 blockTab) ---
+    // --- buckets (1.7 blockTab): vanilla buckets of the world fluids; an empty bucket picks a source up again ---
 
-    public static final RegistryObject<ItemModBucket> bucket_mud = REG.item("bucket_mud",
-            p -> new ItemModBucket(p, ModHazardBlocks.mud_block), p -> p.stacksTo(1).craftRemainder(Items.BUCKET))
+    public static final RegistryObject<BucketItem> bucket_mud = REG.item("bucket_mud",
+            p -> WorldFluids.bucket(ModWorldFluids.MUD, p), p -> p.stacksTo(1).craftRemainder(Items.BUCKET))
             .transform(Presets.sprite())
             .tab(HbmTab.BLOCKS);
-    public static final RegistryObject<ItemModBucket> bucket_acid = REG.item("bucket_acid",
-            p -> new ItemModBucket(p, ModFluidNetBlocks.acid_block), p -> p.stacksTo(1).craftRemainder(Items.BUCKET))
+    public static final RegistryObject<BucketItem> bucket_acid = REG.item("bucket_acid",
+            p -> WorldFluids.bucket(ModWorldFluids.ACID, p), p -> p.stacksTo(1).craftRemainder(Items.BUCKET))
             .transform(Presets.sprite())
             .tab(HbmTab.BLOCKS);
-    public static final RegistryObject<ItemModBucket> bucket_toxic = REG.item("bucket_toxic",
-            p -> new ItemModBucket(p, ModFluidNetBlocks.toxic_block), p -> p.stacksTo(1).craftRemainder(Items.BUCKET))
+    public static final RegistryObject<BucketItem> bucket_toxic = REG.item("bucket_toxic",
+            p -> WorldFluids.bucket(ModWorldFluids.TOXIC, p), p -> p.stacksTo(1).craftRemainder(Items.BUCKET))
             .transform(Presets.sprite())
             .tab(HbmTab.BLOCKS);
-    public static final RegistryObject<ItemModBucket> bucket_schrabidic_acid = REG.item("bucket_schrabidic_acid",
-            p -> new ItemModBucket(p, ModFluidNetBlocks.schrabidic_block), p -> p.stacksTo(1).craftRemainder(Items.BUCKET))
+    public static final RegistryObject<BucketItem> bucket_schrabidic_acid = REG.item("bucket_schrabidic_acid",
+            p -> WorldFluids.bucket(ModWorldFluids.SCHRABIDIC, p), p -> p.stacksTo(1).craftRemainder(Items.BUCKET))
             .transform(Presets.sprite())
             .tab(HbmTab.BLOCKS);
-    public static final RegistryObject<ItemModBucket> bucket_sulfuric_acid = REG.item("bucket_sulfuric_acid",
-            p -> new ItemModBucket(p, ModFluidNetBlocks.sulfuric_acid_block), p -> p.stacksTo(1).craftRemainder(Items.BUCKET))
+    public static final RegistryObject<BucketItem> bucket_sulfuric_acid = REG.item("bucket_sulfuric_acid",
+            p -> WorldFluids.bucket(ModWorldFluids.SULFURIC_ACID, p), p -> p.stacksTo(1).craftRemainder(Items.BUCKET))
             .transform(Presets.sprite())
             .tab(HbmTab.BLOCKS);
 
@@ -77,7 +78,7 @@ public final class ModFluidNetItems {
             .transform(Presets.sprite())
             .tab(HbmTab.CONTROL);
     public static final RegistryObject<ItemInfiniteFluid> chlorine_pinwheel = REG.item("chlorine_pinwheel",
-            (net.minecraft.world.item.Item.Properties p) -> new ItemInfiniteFluid(p, () -> Fluids.CHLORINE, 1, 2, false))
+            (Item.Properties p) -> new ItemInfiniteFluid(p, () -> Fluids.CHLORINE, 1, 2, false))
             .transform(Presets.sprite())
             .tab(HbmTab.MATERIALS);
     public static final RegistryObject<ItemInfiniteFluid> fluid_barrel_infinite = REG.item("fluid_barrel_infinite",

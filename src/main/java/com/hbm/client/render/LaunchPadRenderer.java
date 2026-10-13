@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.bomb.TileEntityLaunchPad;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Geometry;
@@ -16,18 +17,16 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
- * The launch pad: the silo, plus <b>the missile standing on it</b> — 1.12.2's {@code RenderLaunchPad}.
+ * The launch pad: the silo, plus <b>the missile standing on it</b>, as 1.12.2's {@code RenderLaunchPad} draws it.
  *
- * <p>The missile half is the point. A pad with a missile loaded shows it sitting on the pad, which is
- * how a player reads at a glance what is armed and whether the pad is loaded at all; the generic OBJ
- * renderer this replaces drew the silo alone, so a loaded pad looked identical to an empty one.
+ * <p>A loaded pad shows its missile sitting on it, so a player can see at a glance whether the pad is loaded.
  *
- * <p>Upstream's geometry exactly: the silo at the pad's facing, then {@code translate(0, 1, 0)} and the
- * missile body drawn <em>inside the same matrix</em>, so it inherits the pad's rotation. Which body and
- * at what scale comes from {@link MissileModels}.
+ * <p>Upstream's geometry: the silo at the pad's facing, then {@code translate(0, 1, 0)} and the missile body drawn
+ * <em>inside the same matrix</em>, so it inherits the pad's rotation. Which body and at what scale comes from
+ * {@link MissileModels}.
  *
  * <p>The missile comes from {@code TileEntityLaunchPad.toRender}, which the block entity syncs from
- * slot 0 in its network pack — the client never sees the pad's inventory otherwise.
+ * slot 0 in its network pack. The client never sees the pad's inventory otherwise.
  */
 public class LaunchPadRenderer extends GemBER<TileEntityLaunchPad, LaunchPadRenderState> {
 
@@ -35,7 +34,7 @@ public class LaunchPadRenderer extends GemBER<TileEntityLaunchPad, LaunchPadRend
     private static final float BASE_YAW = 90F;
 
     private final WavefrontObj silo = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/weapons/launch_pad_silo.obj"));
+            Ids.of(Constants.MOD_ID, "models/weapons/launch_pad_silo.obj"));
     private final Surface siloSurface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/launchpad/silo.png");
 

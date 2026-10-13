@@ -25,7 +25,7 @@ public class RecipesCommon {
     public static abstract class AStack {
         public int stacksize = 1;
 
-        /** Fluent setter for the required count — so one ingredient consumes {@code n} from a single stack
+        /** Fluent setter for the required count, so one ingredient consumes {@code n} from a single stack
          * (e.g. {@code mat.plate().count(3)} = 3 plates in ONE slot, not 3 separate inputs). */
         public AStack count(int n) {
             this.stacksize = n;
@@ -36,7 +36,7 @@ public class RecipesCommon {
         public abstract boolean matchesRecipe(ItemStack stack, boolean ignoreSize);
 
         /** Every real stack this ingredient matches (one item for {@link ComparableStack}, all tag members
-         * for {@link TagStack}) — for ghost-slot / icon display. */
+         * for {@link TagStack}), for ghost-slot / icon display. */
         public abstract List<ItemStack> getDisplayStacks();
 
         /** A single representative stack (the first match). */
@@ -47,7 +47,7 @@ public class RecipesCommon {
 
         /**
          * The display stack <b>cycling</b> through all matches over time (so a tag ingredient blinks between
-         * e.g. the vanilla and HBM copper ingots) — the 26.1 port of the original {@code extractForCyclingDisplay}.
+         * e.g. the vanilla and HBM copper ingots). This is the 26.1 port of the original {@code extractForCyclingDisplay}.
          * Switches every {@code CYCLE_MS} via the wall clock.
          */
         public ItemStack getCyclingDisplayStack() {
@@ -108,7 +108,7 @@ public class RecipesCommon {
     public static class TagStack extends AStack {
         public final TagKey<Item> tag;
 
-        /** Cached tag membership for display — resolved lazily once the tag is non-empty (tags load with
+        /** Cached tag membership for display, resolved lazily once the tag is non-empty (tags load with
          * the world; computing this fresh every frame for each ghost slot would scan the whole item registry). */
         private List<ItemStack> displayCache;
 
@@ -129,7 +129,7 @@ public class RecipesCommon {
                 ItemStack s = new ItemStack(item, stacksize);
                 if (s.is(tag)) list.add(s);
             }
-            // Only cache once non-empty — before the world (and its tags) load this scan finds nothing.
+            // Only cache once non-empty. Before the world (and its tags) load, this scan finds nothing.
             if (!list.isEmpty()) displayCache = list;
             return list;
         }
@@ -137,7 +137,7 @@ public class RecipesCommon {
 
     /**
      * Matches an HBM <b>autogen</b> metal-shape item ({@link ItemAutogen}) of a given {@link NTMMaterial} +
-     * {@link MaterialShapes shape} — the ingredient for shapes that are one item recoloured per material
+     * {@link MaterialShapes shape}: the ingredient for shapes that are one item recoloured per material
      * (cast/welded plate, shell, pipe, wire, …) and so can't be distinguished by item tags. Matching is by
      * the item's {@link com.hbm.items.ModDataComponents#MATERIAL} component.
      */

@@ -1,5 +1,8 @@
 package com.hbm.entity.projectile;
 
+import com.hbm.api.registry.NamedRegistry;
+import com.hbm.particle.helper.EntityEffects;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
 
 import dev.golem.core.data.SynchedData;
@@ -11,6 +14,7 @@ import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.*;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.sound.ModSounds;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -24,7 +28,7 @@ import dev.golem.core.data.DataOut;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * 1.7 EntityBombletZeta. Its manual movement intentionally does not reuse EntityThrowableNT.
+ * 1.7 EntityBombletZeta. Its manual movement does not reuse EntityThrowableNT.
  */
 public class EntityBombletZeta extends CompatEntity {
 
@@ -32,10 +36,10 @@ public class EntityBombletZeta extends CompatEntity {
      * What a bomblet does when it lands: 1.7's bomblet {@code type} 0, 1, 2 and 4, as a registry of records keyed by
      * the name the bomblet saves (1.7 saved the number). An addon's bomber may drop HBM's kinds or register its own.
      */
-    public record Kind(String name, java.util.function.Consumer<EntityBombletZeta> impact) {}
+    public record Kind(String name, Consumer<EntityBombletZeta> impact) {}
 
-    public static final com.hbm.api.registry.NamedRegistry<Kind> KINDS =
-            new com.hbm.api.registry.NamedRegistry<>("bomblet kind", Kind::name);
+    public static final NamedRegistry<Kind> KINDS =
+            new NamedRegistry<>("bomblet kind", Kind::name);
 
     /** 1.7 type 0: a small HE blast. */
     public static final Kind HE = KINDS.register(new Kind("he", zeta -> zeta.blast(false, 3.5F, 1.25F)));
@@ -48,7 +52,7 @@ public class EntityBombletZeta extends CompatEntity {
 
     private Kind kind = HE;
 
-    // 26.2: Entity.setXRot clamps to +-90; 1.7:99 writes rotationPitch raw and a steep dive needs -180..-90.
+    // 26.1: Entity.setXRot clamps to +-90; 1.7:99 writes rotationPitch raw and a steep dive needs -180..-90.
     public float renderPitch;
     public float renderPitchO;
 
@@ -66,8 +70,8 @@ public class EntityBombletZeta extends CompatEntity {
 
     @Override
     protected void loadData(DataIn input) {
-        // by name; a pre-2026-10-08 numeric type falls back to HE with one WARN
-        if (input.getIntOr("type", Integer.MIN_VALUE) != Integer.MIN_VALUE) com.hbm.util.SavedIds.warnNumeric("bomblet kind", "type");
+        // by name; a legacy numeric type falls back to HE with one WARN
+        if (input.getIntOr("type", Integer.MIN_VALUE) != Integer.MIN_VALUE) SavedIds.warnNumeric("bomblet kind", "type");
         Kind saved = KINDS.get(input.getStringOr("kind", HE.name()));
         kind = saved != null ? saved : HE;
     }
@@ -82,7 +86,7 @@ public class EntityBombletZeta extends CompatEntity {
         return distance < 25000D;
     }
 
-    // 26.2: hurt() final; not damageable in flight
+    // 26.1: hurt() final; not damageable in flight
     @Override
     protected boolean onHurt(DamageSource source, float amount) {
         return false;
@@ -90,7 +94,7 @@ public class EntityBombletZeta extends CompatEntity {
 
     @Override
     public void tick() {
-        // 26.2: Entity.baseTick dropped the prev-rotation bookkeeping 1.7 Entity.onEntityUpdate:404-405 ran
+        // 26.1: Entity.baseTick dropped the prev-rotation bookkeeping 1.7 Entity.onEntityUpdate:404-405 ran
         renderPitchO = renderPitch;
         yRotO = getYRot();
         xo = getX();
@@ -130,7 +134,7 @@ public class EntityBombletZeta extends CompatEntity {
         level().addFreshEntity(EntityNukeExplosionMK5.statFac(level(),
                 (int) (BombConfig.fatmanRadius * 1.5F), getX(), getY(), getZ()));
         if (level() instanceof ServerLevel server) {
-            com.hbm.particle.helper.EntityEffects.muke(server, getX(), getY() + 0.5D, getZ(), false, random.nextInt(100) == 0, 250);
+            EntityEffects.muke(server, getX(), getY() + 0.5D, getZ(), false, random.nextInt(100) == 0, 250);
         }
         level().playSound(null, getX(), getY(), getZ(), ModSounds.MUKE_EXPLOSION.get(), SoundSource.BLOCKS,
                 15F, 1F);

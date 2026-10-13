@@ -1,11 +1,15 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.IRelocatable;
 import com.hbm.tileentity.ModRadarUtilityBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.Ids;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.SubLevels;
 import dev.golem.core.world.Teleports;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -32,13 +36,13 @@ import java.util.List;
  * reflective tracker packet are what vanilla's own teleport does now; the move goes through
  * {@link Teleports}, and a same-level move of a non-player is pushed to trackers with {@link Compat#syncPosition}.
  */
-public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements IEnergyReceiverMK2, com.hbm.tileentity.IRelocatable {
+public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements IEnergyReceiverMK2, IRelocatable {
 
     /** A sub-level move carried this teleporter; its destination follows only when the block there was carried too. */
     @Override
-    public void relocate(dev.golem.core.world.SubLevels.Move move) {
+    public void relocate(SubLevels.Move move) {
         if (targetY == -1) return;
-        net.minecraft.core.BlockPos target = com.hbm.tileentity.IRelocatable.follow(move, new net.minecraft.core.BlockPos(targetX, targetY, targetZ));
+        BlockPos target = IRelocatable.follow(move, new BlockPos(targetX, targetY, targetZ));
         targetX = target.getX(); targetY = target.getY(); targetZ = target.getZ();
         setChanged();
     }
@@ -57,7 +61,7 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTeleporter tele) {
-        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             tele.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
         }
         if (tele.targetY != -1) {
@@ -88,7 +92,7 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements
         double x = this.targetX + 0.5D;
         double y = this.targetY + 1.5D;
         double z = this.targetZ + 0.5D;
-        String here = dev.golem.core.Ids.keyId(level.dimension()).toString();
+        String here = Ids.keyId(level.dimension()).toString();
 
         if (here.equals(this.targetDim)) {
             if (entity instanceof ServerPlayer player) {
@@ -99,7 +103,7 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements
             }
         } else {
             ServerLevel target = level.getServer().getLevel(
-                    ResourceKey.create(Registries.DIMENSION, dev.golem.core.Ids.parse(this.targetDim)));
+                    ResourceKey.create(Registries.DIMENSION, Ids.parse(this.targetDim)));
             if (target != null) Teleports.toLevel(entity, target, x, y, z);
         }
 

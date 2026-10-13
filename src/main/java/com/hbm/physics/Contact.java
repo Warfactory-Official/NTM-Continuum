@@ -1,6 +1,6 @@
 package com.hbm.physics;
 
-/** old-hbm {@code physics.Contact}: one contact point and its normal and two friction constraints. */
+/** 1.12.2 {@code physics.Contact}: one contact point and its normal and two friction constraints. */
 public final class Contact {
 
     public final RigidBody bodyA;

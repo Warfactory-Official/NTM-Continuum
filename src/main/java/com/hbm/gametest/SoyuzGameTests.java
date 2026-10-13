@@ -1,10 +1,12 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
+import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.missile.EntitySoyuz;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ISatChip;
 import com.hbm.items.ItemEnums.SoyuzSkinType;
+import com.hbm.items.ModItems;
 import com.hbm.items.ModSatelliteItems;
 import com.hbm.items.machine.ItemSatellite.EnumSatType;
 import com.hbm.lib.ForgeDirection;
@@ -12,13 +14,16 @@ import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteRayScan;
 import com.hbm.saveddata.SatelliteSavedData;
 import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.io.InputStream;
+import net.minecraft.world.phys.AABB;
 
 /**
  * GameTests for the launch path: what the complex refuses to launch without, what leaves the pad when it
@@ -82,7 +87,7 @@ public final class SoyuzGameTests {
                 "The launch should have burnt the propellant");
 
         var rockets = helper.getLevel().getEntitiesOfClass(EntitySoyuz.class,
-                new net.minecraft.world.phys.AABB(helper.absolutePos(LAUNCHER)).inflate(16));
+                new AABB(helper.absolutePos(LAUNCHER)).inflate(16));
         helper.assertTrue(rockets.size() == 1, "Exactly one rocket should have left the pad");
         EntitySoyuz rocket = rockets.get(0);
         helper.assertTrue(rocket.getSkin() == SoyuzSkinType.LUNAR.ordinal(),
@@ -102,7 +107,7 @@ public final class SoyuzGameTests {
         ISatChip.setFreqS(satellite, FREQ);
 
         EntitySoyuz rocket = new EntitySoyuz(
-                com.hbm.entity.ModNtmEntities.SOYUZ.get(), helper.getLevel());
+                ModNtmEntities.SOYUZ.get(), helper.getLevel());
         rocket.setSat(satellite);
         BlockPos pad = helper.absolutePos(LAUNCHER);
         rocket.snapTo(pad.getX() + 0.5, EntitySoyuz.ORBIT_ALTITUDE + 1, pad.getZ() + 0.5, 0F, 0F);
@@ -128,10 +133,10 @@ public final class SoyuzGameTests {
         launcher.power = launcher.getMaxPower();
 
         launcher.inventory.setStackInSlot(TileEntitySoyuzLauncher.SLOT_SATELLITE,
-                new ItemStack(com.hbm.items.ModSatelliteItems.sat_gerald.get()));
+                new ItemStack(ModSatelliteItems.sat_gerald.get()));
         helper.assertTrue(launcher.orbital() == 1 && !launcher.canLaunch(), "Gerald without the orbital module must not launch");
         launcher.inventory.setStackInSlot(TileEntitySoyuzLauncher.SLOT_ORBITAL,
-                new ItemStack(com.hbm.items.ModItems.missile_soyuz_lander.get()));
+                new ItemStack(ModItems.missile_soyuz_lander.get()));
         helper.assertTrue(launcher.orbital() == 2 && launcher.canLaunch(), "Gerald with the orbital module is ready");
 
         launcher.handleButtonPacket(1, 0);
@@ -148,10 +153,10 @@ public final class SoyuzGameTests {
         helper.assertTrue(launcher.starting, "the launch button starts the countdown");
         for (int i = 0; i <= TileEntitySoyuzLauncher.maxCount; i++) tick(helper, launcher);
         var rockets = helper.getLevel().getEntitiesOfClass(EntitySoyuz.class,
-                new net.minecraft.world.phys.AABB(helper.absolutePos(LAUNCHER)).inflate(16));
+                new AABB(helper.absolutePos(LAUNCHER)).inflate(16));
         helper.assertTrue(rockets.size() == 1, "the countdown ends in a liftoff, rockets: " + rockets.size()
                 + " countdown " + launcher.countdown + " starting " + launcher.starting);
-        rockets.forEach(net.minecraft.world.entity.Entity::discard);
+        rockets.forEach(Entity::discard);
         helper.succeed();
     }
 
@@ -169,7 +174,7 @@ public final class SoyuzGameTests {
                 "assets/hbm/sounds/entity/soyuztakeoff.ogg",
                 "assets/hbm/sounds/block/soyuzready.ogg",
                 "data/hbm/loot_table/blocks/struct_soyuz_core.json",
-                // no data/hbm/recipe/struct_soyuz_core.json: 1.7 has no crafting recipe for it (fix wave 2026-10-12)
+                // no data/hbm/recipe/struct_soyuz_core.json: 1.7 has no crafting recipe for it
                 "data/hbm/damage_type/exhaust.json",
         };
         for (String path : required) {
@@ -178,11 +183,11 @@ public final class SoyuzGameTests {
         helper.succeed();
     }
 
-    // --- helpers ---
+    // Helpers
 
     private static TileEntitySoyuzLauncher place(GameTestHelper helper) {
         FoldedTestSupport.assemble(helper, ModSoyuzBlocks.soyuz_launcher.get(), LAUNCHER, Direction.EAST);
-        TileEntitySoyuzLauncher launcher = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntitySoyuzLauncher launcher = GameTestHelpers.blockEntity(
                 helper, LAUNCHER, TileEntitySoyuzLauncher.class);
         helper.assertTrue(launcher != null, "Soyuz launcher BlockEntity was not created");
         return launcher;
@@ -202,6 +207,6 @@ public final class SoyuzGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        return dev.golem.core.gametest.GameTestHelpers.resourceExists(SoyuzGameTests.class, path);
+        return GameTestHelpers.resourceExists(SoyuzGameTests.class, path);
     }
 }

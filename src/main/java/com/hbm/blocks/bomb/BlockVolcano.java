@@ -6,6 +6,7 @@ import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.Block;
@@ -65,7 +66,7 @@ public class BlockVolcano extends CompatBlock implements TickingBlock {
     public static final class VolcanoItem extends CompatBlockItem {
         private final Mode mode;
 
-        public VolcanoItem(Block block, net.minecraft.world.item.Item.Properties properties, Mode mode) {
+        public VolcanoItem(Block block, Item.Properties properties, Mode mode) {
             super(block, properties);
             this.mode = mode;
         }

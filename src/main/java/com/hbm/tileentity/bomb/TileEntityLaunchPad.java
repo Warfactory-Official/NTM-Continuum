@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -19,7 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * The small launch pad — 1.12.2's {@code TileEntityLaunchPad}. A 3×3 pad that fires anything from a V2
+ * The small launch pad: 1.12.2's {@code TileEntityLaunchPad}. A 3×3 pad that fires anything from a V2
  * to an Atlas, with a 100-tick reload between launches.
  *
  * <p>The reload is also the "missing" timer: any tick without a fuelled, valid missile resets it to
@@ -65,12 +66,12 @@ public class TileEntityLaunchPad extends TileEntityLaunchPadBase implements Menu
     }
 
     @Override
-    public void finalizeLaunch(net.minecraft.world.entity.Entity missile) {
+    public void finalizeLaunch(Entity missile) {
         super.finalizeLaunch(missile);
         this.delay = 100;
     }
 
-    /** The eight cable/pipe anchors around the 3×3 pad — two per side, one block out from each corner. */
+    /** The eight cable/pipe anchors around the 3×3 pad, two per side, one block out from each corner. */
     @Override
     public DirPos[] getConPos() {
         int x = worldPosition.getX();

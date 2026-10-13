@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.fusion;
 
+import com.hbm.api.data.MachinePartDataMaps;
 import com.hbm.capability.MachineCaps;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -16,13 +17,17 @@ import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.modules.machine.ModuleMachinePlasma;
+import com.hbm.module.machine.ModuleMachinePlasma;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
+import java.util.ArrayList;
+import java.util.Arrays;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -31,8 +36,10 @@ import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
@@ -74,9 +81,9 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
     /** The booster ingredients shown by the legacy empty-slot tooltip. */
     public static List<ItemStack> getBoosterDisplayStacks() {
         // the hbm:plasma_forge_booster item data map (MachinePartDataMaps.PLASMA_FORGE_BOOSTER), in item registration order
-        List<ItemStack> stacks = new java.util.ArrayList<>();
-        for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
-            if (com.hbm.api.data.MachinePartDataMaps.PLASMA_FORGE_BOOSTER.get(item) != null) stacks.add(new ItemStack(item));
+        List<ItemStack> stacks = new ArrayList<>();
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (MachinePartDataMaps.PLASMA_FORGE_BOOSTER.get(item) != null) stacks.add(new ItemStack(item));
         }
         return stacks;
     }
@@ -133,7 +140,7 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         if (te.booster <= 0) {
             ItemStack boosterStack = te.getItem(SLOT_BOOSTER);
             Integer ticks = boosterStack.isEmpty() ? null
-                    : com.hbm.api.data.MachinePartDataMaps.PLASMA_FORGE_BOOSTER.get(boosterStack.getItem());
+                    : MachinePartDataMaps.PLASMA_FORGE_BOOSTER.get(boosterStack.getItem());
             if (ticks != null) {
                 te.booster = te.maxBooster = ticks;
                 ItemStack stack = boosterStack.copy();
@@ -150,7 +157,7 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
 
         long powerReceived = (long) Math.ceil(te.plasmaEnergySync * 0.75D);
         ForgeDirection out = FusionNodes.facing(te.getBlockState());
-        net.minecraft.world.level.block.entity.BlockEntity downstream =
+        BlockEntity downstream =
                 FusionLink.at(level, beam(pos, out), MachineCaps.PLASMA_IN);
         te.connected = downstream != null;
         if (powerReceived > 0 && downstream instanceof IFusionPowerReceiver receiver) {
@@ -228,15 +235,15 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         if (slot == SLOT_BATTERY) return true;
         if (slot == SLOT_BLUEPRINT) return stack.getItem() instanceof ItemBlueprints;
         if (plasmaModule.isItemValid(slot, stack)) return true;
-        if (slot == SLOT_BOOSTER && !stack.isEmpty() && com.hbm.api.data.MachinePartDataMaps.PLASMA_FORGE_BOOSTER.get(stack.getItem()) != null) return true;
+        if (slot == SLOT_BOOSTER && !stack.isEmpty() && MachinePartDataMaps.PLASMA_FORGE_BOOSTER.get(stack.getItem()) != null) return true;
         return false;
     }
 
-    @Override public int[] getSlotsForFace(net.minecraft.core.Direction side) { return IO_SLOTS; }
-    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+    @Override public int[] getSlotsForFace(Direction side) { return IO_SLOTS; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
         return slot >= SLOT_BOOSTER && slot < SLOT_OUTPUT && isItemValidForSlot(slot, stack);
     }
-    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         return slot == SLOT_OUTPUT || plasmaModule.isSlotClogged(slot);
     }
 
@@ -251,7 +258,7 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
 
     @Override
     public boolean hasPermission(Player player) {
-        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMachinePlasmaForge menu
+        return player.containerMenu instanceof ContainerMachinePlasmaForge menu
                 && menu.getForge() == this && menu.stillValid(player);
     }
 
@@ -331,7 +338,7 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
             if (state == ArmState.RETIRE) delay = 0;
             if (delay-- > 0) return;
             switch (state) {
-                case RETIRE -> { java.util.Arrays.fill(targetAngles, 0D); if (move()) { delay = 10; state = ArmState.REPOSITION; choose(); } }
+                case RETIRE -> { Arrays.fill(targetAngles, 0D); if (move()) { delay = 10; state = ArmState.REPOSITION; choose(); } }
                 case REPOSITION -> { if (move()) { delay = striker ? 5 : 20; if (striker) { state = ArmState.EXTEND1; targetAngles[4] = 0.5D; } else choose(); } }
                 case EXTEND1 -> { if (move()) { state = ArmState.RETRACT1; targetAngles[4] = 0D; } }
                 case RETRACT1 -> { if (move()) { state = ArmState.EXTEND2; targetAngles[5] = 0.5D; } }
@@ -385,7 +392,7 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         return pos.offset(facing.offsetX * 5, 2, facing.offsetZ * 5);
     }
 
-    /** Where this forge emits, five blocks out the back — and one further, where its own beam lands. */
+    /** Where this forge emits, five blocks out the back, and one further, where its own beam lands. */
     private static BlockPos outlet(BlockPos pos, ForgeDirection facing) {
         return pos.offset(-facing.offsetX * 5, 2, -facing.offsetZ * 5);
     }

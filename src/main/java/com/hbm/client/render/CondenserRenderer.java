@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityCondenserPowered;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -21,7 +22,7 @@ public final class CondenserRenderer extends GemBER<TileEntityCondenserPowered, 
     private @org.jspecify.annotations.Nullable DamagedView damagedView;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/condenser.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/condenser.obj"));
     private final Surface surface = Surface.cutoutNoCull(
             Constants.MOD_ID + ":textures/models/machines/condenser.png");
 
@@ -41,7 +42,7 @@ public final class CondenserRenderer extends GemBER<TileEntityCondenserPowered, 
         damagedView = DAMAGED;
         if (damagedView != null) {
             machine.joint().visibleIf(state -> state.damaged).rotate(Gem.Axes.Y, damagedView.extraYaw())
-                    .child(WavefrontObj.load(dev.golem.core.Ids.parse(damagedView.model())).all(!damagedView.cull()),
+                    .child(WavefrontObj.load(Ids.parse(damagedView.model())).all(!damagedView.cull()),
                             damagedView.cull() ? Surface.cutoutCull(damagedView.texture()) : Surface.cutoutNoCull(damagedView.texture()));
         }
     }

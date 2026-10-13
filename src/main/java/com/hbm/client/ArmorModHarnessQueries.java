@@ -3,11 +3,14 @@ package com.hbm.client;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.handler.ArmorModEvents;
 import com.hbm.handler.ArmorModHandler;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -21,7 +24,7 @@ public final class ArmorModHarnessQueries {
     private ArmorModHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_armor", (mc, params) -> query(mc));
+        HarnessQueryRegistry.register("hbm_armor", (mc, params) -> query(mc));
     }
 
     private static JsonObject query(Minecraft mc) {
@@ -40,7 +43,7 @@ public final class ArmorModHarnessQueries {
         json.addProperty("attack_damage", attribute(player, "attack_damage"));
         json.addProperty("movement_speed", attribute(player, "movement_speed"));
         json.addProperty("shield", HbmLivingProps.getData(player).shield);
-        json.addProperty("max_shield", com.hbm.handler.ArmorModEvents.effectiveMaxShield(player));
+        json.addProperty("max_shield", ArmorModEvents.effectiveMaxShield(player));
         json.addProperty("radiation", HbmLivingProps.getRadiation(player));
         json.addProperty("digamma", HbmLivingProps.getDigamma(player));
 
@@ -75,9 +78,9 @@ public final class ArmorModHarnessQueries {
     private static double attribute(Player player, String name) {
         var instance = switch (name) {
             case "knockback_resistance" ->
-                    player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE);
-            case "attack_damage" -> player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
-            default -> player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+                    player.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
+            case "attack_damage" -> player.getAttribute(Attributes.ATTACK_DAMAGE);
+            default -> player.getAttribute(Attributes.MOVEMENT_SPEED);
         };
         return instance == null ? -1 : instance.getValue();
     }

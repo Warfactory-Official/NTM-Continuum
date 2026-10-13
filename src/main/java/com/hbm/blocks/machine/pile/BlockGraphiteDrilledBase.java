@@ -2,6 +2,7 @@ package com.hbm.blocks.machine.pile;
 
 import com.hbm.api.block.IInsertable;
 import com.hbm.api.block.IToolable;
+import com.hbm.blocks.generic.OreDrops;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.ModAutogenItems;
 import com.hbm.items.ModFuelItems;
@@ -11,6 +12,8 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.blocks.ModNuclearMiscBlocks;
 import com.hbm.items.ModNuclearMiscItems;
 import com.hbm.sound.ModSounds;
+import dev.golem.core.world.Compat;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -23,6 +26,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -31,6 +35,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -45,7 +50,7 @@ import com.hbm.tileentity.machine.pile.TileEntityPileNeutronDetector;
  * here that is {@link #AXIS}, {@link #ALUMINUM} and {@link #OUT}.
  */
 @Deprecated
-public abstract class BlockGraphiteDrilledBase extends dev.golem.core.world.CompatBlock implements IToolable, IInsertable {
+public abstract class BlockGraphiteDrilledBase extends CompatBlock implements IToolable, IInsertable {
 
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
     /** The old meta bit 4: shrouded in aluminium (Windscale). */
@@ -120,8 +125,8 @@ public abstract class BlockGraphiteDrilledBase extends dev.golem.core.world.Comp
      * keeps those three whole; the tile-entity variants (fuel, source, detector, breeding fuel) cannot be silk-harvested.
      */
     @Override
-    public List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder params) {
-        if (!(this instanceof net.minecraft.world.level.block.EntityBlock) && com.hbm.blocks.generic.OreDrops.silkTouch(params)) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+        if (!(this instanceof EntityBlock) && OreDrops.silkTouch(params)) {
             return List.of(new ItemStack(this));
         }
         List<ItemStack> drops = getDrops(state);
@@ -199,7 +204,7 @@ public abstract class BlockGraphiteDrilledBase extends dev.golem.core.world.Comp
                 if (base.getInsertedItem(istate).isEmpty()) break; // if there's nothing to push
                 else if (i >= 3) return false; // if there is stuff to push and we reach our limit
             } else {
-                if (dev.golem.core.world.Compat.isSolidRender(istate, level, ipos)) return false; // obstructions
+                if (Compat.isSolidRender(istate, level, ipos)) return false; // obstructions
                 else break; // empty space? no need to search
             }
         }

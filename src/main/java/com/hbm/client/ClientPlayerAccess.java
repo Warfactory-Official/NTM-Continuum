@@ -1,5 +1,6 @@
 package com.hbm.client;
 
+import com.hbm.inventory.gui.GUIWeaponTable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
@@ -16,6 +17,6 @@ public final class ClientPlayerAccess {
 
     /** The original tooltip lists accepted modifiers only while the weapon table screen is open. */
     public static boolean weaponTableOpen() {
-        return Minecraft.getInstance().screen instanceof com.hbm.inventory.gui.GUIWeaponTable;
+        return Minecraft.getInstance().screen instanceof GUIWeaponTable;
     }
 }

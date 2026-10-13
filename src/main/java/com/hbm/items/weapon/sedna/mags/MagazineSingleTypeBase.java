@@ -15,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
  * A magazine holding one ammo type at a time: load AP and it is AP until you empty it.
  *
  * <p>Ported from 1.12.2 {@code MagazineSingleTypeBase}. The stored type is the {@link BulletConfig}'s
- * <b>registry id</b> rather than upstream's index into a mutable static list — see {@link BulletConfigs}
+ * <b>registry id</b> rather than upstream's index into a mutable static list; see {@link BulletConfigs}
  * for why. The key names ({@code magcount}, {@code magtype}, {@code magprev}, {@code magafter}) are kept
  * so the shape of the saved data still matches the original.
  *
@@ -29,7 +29,7 @@ public abstract class MagazineSingleTypeBase implements IMagazine<BulletConfig> 
     public static final String KEY_MAG_PREV = "magprev";
     public static final String KEY_MAG_AFTER = "magafter";
 
-    /** Rounds this magazine accepts, in priority order — an empty magazine adopts the first match. */
+    /** Rounds this magazine accepts, in priority order; an empty magazine adopts the first match. */
     public List<BulletConfig> acceptedBullets = new ArrayList<>();
 
     /** Distinguishes several magazines on one gun. */
@@ -50,7 +50,7 @@ public abstract class MagazineSingleTypeBase implements IMagazine<BulletConfig> 
      * The round currently chambered, or the first this magazine accepts when nothing is.
      *
      * <p>Upstream stores an index into the global config list and a stack that has never been loaded
-     * carries zero, which is a real config — one this magazine almost never accepts, so the answer is
+     * carries zero, which is a real config (one this magazine almost never accepts), so the answer is
      * its first accepted round. Here the stored type is a registry id and an unloaded stack carries no
      * id at all, which is the same state and has to give the same answer: without the fallback a gun
      * that has not been reloaded yet reports no ammo type, and the HUD next to its round counter is
@@ -97,7 +97,7 @@ public abstract class MagazineSingleTypeBase implements IMagazine<BulletConfig> 
     /**
      * Moves up to {@code loadLimit} items' worth of rounds out of the inventory and into the magazine.
      *
-     * <p>With no inventory at all the magazine simply fills itself — that is how a turret or a creative
+     * <p>With no inventory at all the magazine fills itself, which is how a turret or a creative
      * magazine reloads.
      */
     public void standardReload(ItemStack stack, Container inventory, int loadLimit) {
@@ -119,7 +119,7 @@ public abstract class MagazineSingleTypeBase implements IMagazine<BulletConfig> 
                 loadLimit -= used;
             }
             if (loadLimit <= 0) return;
-            if (slot.getItem() instanceof com.hbm.items.tool.ItemAmmoBag bag) {
+            if (slot.getItem() instanceof ItemAmmoBag bag) {
                 ItemAmmoBag.InventoryAmmoBag contents = new ItemAmmoBag.InventoryAmmoBag(slot);
                 for (int j = 0; j < contents.getSlots() && loadLimit > 0; j++) {
                     ItemStack nested = contents.getStackInSlot(j);
@@ -167,7 +167,7 @@ public abstract class MagazineSingleTypeBase implements IMagazine<BulletConfig> 
             if (slot.isEmpty()) continue;
             BulletConfig direct = getAmount(stack, null) == 0 ? acceptedConfig(slot) : getType(stack, null);
             if (direct != null && direct.ammoItem() == slot.getItem()) return direct;
-            if (slot.getItem() instanceof com.hbm.items.tool.ItemAmmoBag) {
+            if (slot.getItem() instanceof ItemAmmoBag) {
                 ItemAmmoBag.InventoryAmmoBag contents = new ItemAmmoBag.InventoryAmmoBag(slot);
                 for (int j = 0; j < contents.getSlots(); j++) {
                     ItemStack nested = contents.getStackInSlot(j);
@@ -197,7 +197,7 @@ public abstract class MagazineSingleTypeBase implements IMagazine<BulletConfig> 
     @Override public void setAmountAfterReload(ItemStack stack, int amount) { ItemGunBaseNT.setValueInt(stack, KEY_MAG_AFTER + index, amount); }
     @Override public int getAmountAfterReload(ItemStack stack) { return ItemGunBaseNT.getValueInt(stack, KEY_MAG_AFTER + index); }
 
-    // MAG TYPE — a registry id, not an index, so declaration order can never reinterpret saved ammo.
+    // MAG TYPE: a registry id, not an index, so declaration order can never reinterpret saved ammo.
     public static String getMagType(ItemStack stack, int index) { return ItemGunBaseNT.getValueString(stack, KEY_MAG_TYPE + index); }
     public static void setMagType(ItemStack stack, int index, String value) { ItemGunBaseNT.setValueString(stack, KEY_MAG_TYPE + index, value); }
 

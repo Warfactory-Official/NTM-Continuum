@@ -6,12 +6,11 @@ package com.hbm.config;
  * config-file default; a chance is the {@code n} in {@code rand.nextInt(n) == 0}, i.e. one per {@code n} chunks, and 0
  * turns the spawn off.
  *
- * <p>{@code hbm.cfg} (History §19ej-8): the switches and the scattered-block chances (vault, landmine, broadcaster,
+ * <p>{@code hbm.cfg}: the switches and the scattered-block chances (vault, landmine, broadcaster,
  * capsule) are read by {@code GeneralConfig}/{@code WorldConfig.loadFromConfig} and reach the placed features through
  * {@code hbm:config} at generation time. The legacy dungeon chances ({@code 4.01}..{@code 4.24}) are read by
  * {@code WorldConfig.loadFromConfig} and reach each dungeon's structure set through {@code hbm:config_spread} at
- * generation time (History §19ek-hooks). This class must not
- * touch a Minecraft class (the Dejson generator reads it in a plain JVM).
+ * generation time. This class must not touch a Minecraft class (the Dejson generator reads it in a plain JVM).
  */
 public final class DungeonConfig {
 

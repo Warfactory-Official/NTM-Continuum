@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerRtgFurnace;
 import com.hbm.tileentity.machine.TileEntityRtgFurnace;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -12,7 +13,7 @@ import net.minecraft.world.entity.player.Inventory;
 /** 1.7 {@code GUIRtgFurnace}: {@code RTGfurnace.png}, 176x166. */
 public final class GUIRtgFurnace extends CompatContainerScreen<ContainerRtgFurnace> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/RTGfurnace.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/RTGfurnace.png");
 
     public GUIRtgFurnace(ContainerRtgFurnace menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 166);

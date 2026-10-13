@@ -9,6 +9,7 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -20,11 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Fluid Burner ({@code heater_oilburner}) — 1:1 port of the 1.12.2 {@code HeaterOilburner}: a 2-tall
+ * Fluid Burner ({@code heater_oilburner}), a 1:1 port of the 1.12.2 {@code HeaterOilburner}: a 2-tall
  * 3×3 the folded core (dims {@code {1,0,1,1,1,1}}, offset 1) with the 4 side cells and the
  * top-center marked as extras (fluid ports + the heat cell the consumer above polls through). Look
  * overlay shows setting, tank and stored heat. IToolable (screwdriver setting) is replaced by GUI
- * buttons — documented deviation.
+ * buttons. This is a documented deviation.
  */
 public class HeaterOilburner extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay {
 
@@ -48,7 +49,7 @@ public class HeaterOilburner extends BlockMultiblockMachine implements IFluidCon
     }
 
     @Override
-    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityHeaterOilburner heater)) return null;
 
         List<String> text = new ArrayList<>();

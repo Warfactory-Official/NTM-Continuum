@@ -3,23 +3,30 @@ package com.hbm.client;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModArmorSetBItems;
+import com.hbm.items.ModGearItems;
 import com.hbm.items.armor.ArmorNo9;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.gear.ArmorFSBFueled;
 import com.hbm.items.gear.ArmorFSBPowered;
 import com.hbm.util.EnchantmentUtil;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Client half of the final armour wave B: the goggles' blur overlay (1.7 {@code ArmorModel.renderHelmetOverlay})
+ * Client half of armour set B: the goggles' blur overlay (1.7 {@code ArmorModel.renderHelmetOverlay})
  * and the {@code hbm_armor_set_b} harness query.
  */
 public final class ArmorSetBClient {
@@ -31,13 +38,13 @@ public final class ArmorSetBClient {
     private static final Identifier[] MASK_BLURS = new Identifier[6];
 
     static {
-        for (int i = 0; i < 6; i++) BLURS[i] = dev.golem.core.Ids.of("hbm", "textures/misc/overlay_goggles_" + i + ".png");
-        for (int i = 0; i < 6; i++) MASK_BLURS[i] = dev.golem.core.Ids.of("hbm", "textures/misc/overlay_gasmask_" + i + ".png");
+        for (int i = 0; i < 6; i++) BLURS[i] = Ids.of("hbm", "textures/misc/overlay_goggles_" + i + ".png");
+        for (int i = 0; i < 6; i++) MASK_BLURS[i] = Ids.of("hbm", "textures/misc/overlay_gasmask_" + i + ".png");
     }
 
     public static void registerHud(HbmClientRegistrations.HudSink sink) {
         sink.register("goggles_blur", ArmorSetBClient::renderGogglesBlur);
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_armor_set_b", (mc, params) -> query(mc));
+        HarnessQueryRegistry.register("hbm_armor_set_b", (mc, params) -> query(mc));
     }
 
     /**
@@ -54,9 +61,9 @@ public final class ArmorSetBClient {
         ItemStack helmet = mc.player.getItemBySlot(EquipmentSlot.HEAD);
         Identifier[] blurs;
         if (helmet.getItem() == ModArmorSetBItems.goggles.get()
-                || helmet.getItem() == com.hbm.items.ModGearItems.gas_mask_m65.get()) {
+                || helmet.getItem() == ModGearItems.gas_mask_m65.get()) {
             blurs = BLURS;
-        } else if (helmet.getItem() == com.hbm.items.ModGearItems.gas_mask.get()) {
+        } else if (helmet.getItem() == ModGearItems.gas_mask.get()) {
             blurs = MASK_BLURS;
         } else {
             return;
@@ -81,19 +88,19 @@ public final class ArmorSetBClient {
         json.addProperty("hud_enabled", HbmLivingProps.getEnableHUD(server));
         json.addProperty("fsb", ArmorFSB.hasFSBArmor(server));
         json.addProperty("speed_server",
-                server.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED));
+                server.getAttributeValue(Attributes.MOVEMENT_SPEED));
         json.addProperty("speed_client",
-                mc.player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED));
+                mc.player.getAttributeValue(Attributes.MOVEMENT_SPEED));
         json.addProperty("knockback_server",
-                server.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE));
+                server.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
         json.addProperty("in_water", server.isInWater());
         json.addProperty("camera", mc.options.getCameraType().name());
-        json.addProperty("steam_id", com.hbm.inventory.fluid.Fluids.STEAM.getRegistryName());
-        json.addProperty("diesel_crack_id", com.hbm.inventory.fluid.Fluids.DIESEL_CRACK.getRegistryName());
-        json.addProperty("night_vision", server.hasEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION));
+        json.addProperty("steam_id", Fluids.STEAM.getRegistryName());
+        json.addProperty("diesel_crack_id", Fluids.DIESEL_CRACK.getRegistryName());
+        json.addProperty("night_vision", server.hasEffect(MobEffects.NIGHT_VISION));
         json.addProperty("sprinting", server.isSprinting());
         JsonArray effects = new JsonArray();
-        for (net.minecraft.world.effect.MobEffectInstance effect : server.getActiveEffects()) {
+        for (MobEffectInstance effect : server.getActiveEffects()) {
             effects.add(effect.getDescriptionId() + "@" + effect.getAmplifier());
         }
         json.add("effects", effects);

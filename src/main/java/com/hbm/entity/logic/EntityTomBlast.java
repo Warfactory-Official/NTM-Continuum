@@ -1,5 +1,7 @@
 package com.hbm.entity.logic;
 
+import com.hbm.Constants;
+import com.hbm.api.environment.Environment;
 import dev.golem.core.data.Tags;
 
 import com.hbm.config.GeneralConfig;
@@ -68,7 +70,7 @@ public class EntityTomBlast extends EntityExplosionChunkloading {
         if (!this.did) {
 
             if (!level().isClientSide() && GeneralConfig.enableExtendedLogging)
-                com.hbm.Constants.LOG.info("[NUKE] Initialized TOM explosion at {} / {} / {} with strength {}!",
+                Constants.LOG.info("[NUKE] Initialized TOM explosion at {} / {} / {} with strength {}!",
                         getX(), getY(), getZ(), destructionRange);
 
             exp = new ExplosionTom((int) this.getX(), (int) this.getY(), (int) this.getZ(), level(),
@@ -76,7 +78,7 @@ public class EntityTomBlast extends EntityExplosionChunkloading {
 
             // hbm-space marked the body as impacted here (CBT_Impact); addons listen on Environment.IMPACT
             if (level() instanceof ServerLevel server) {
-                com.hbm.api.environment.Environment.impact(server, this.blockPosition());
+                Environment.impact(server, this.blockPosition());
             }
 
             this.did = true;
@@ -86,7 +88,7 @@ public class EntityTomBlast extends EntityExplosionChunkloading {
 
         boolean flag = false;
 
-        // 26.2: 1.7 drove the explosion on both sides - TomSaveData.forWorld took either. TomSaveData.get is
+        // 26.1: 1.7 drove the explosion on both sides - TomSaveData.forWorld took either. TomSaveData.get is
         // ServerLevel-only, and ExplosionTom writes blocks, so the tracked client copy must not drive it.
         if (level() instanceof ServerLevel server) {
             for (int i = 0; i < this.speed; i++) {

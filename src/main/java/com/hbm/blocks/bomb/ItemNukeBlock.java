@@ -47,7 +47,7 @@ public class ItemNukeBlock extends CompatBlockItem {
         return radius * (1 + BombConfig.falloutRange / 100);
     }
 
-    /** N2's old per-charge display value, also intentionally integer arithmetic. */
+    /** N2's old per-charge display value, also integer arithmetic. */
     public static int n2ChargeRadius() {
         return BombConfig.n2Radius / 12;
     }

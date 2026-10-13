@@ -19,7 +19,7 @@ public final class ExplosionCreator {
     }
 
     /**
-     * The mushroom cloud at the scale the caller states: every 1.12.2 sender picks its own — 35 and 20
+     * The mushroom cloud at the scale the caller states. Every 1.12.2 sender picks its own: 35 and 20
      * for the two thermobaric HIMARS rockets, 15 for the white-phosphorus one, 9 for a meltdown.
      */
     public static void composeEffectRBMKMush(Level level, double x, double y, double z, float scale) {

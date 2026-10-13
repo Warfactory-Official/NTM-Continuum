@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ItemEnums.SoyuzSkinType;
+import com.hbm.items.ItemFamily;
 import com.hbm.items.special.ItemSoyuz;
 import dev.golem.core.registry.Loot;
 import com.hbm.registration.Presets;
@@ -13,6 +14,8 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzStruct;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.registry.TickingBlock;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.Level;
@@ -59,13 +62,12 @@ public final class ModSoyuzBlocks {
                     .tab(HbmTab.MISSILES);
 
     /**
-     * 1.7 {@code missile_soyuz} metadata 0..2 (its paint), one item each as in ntm-next ({@code missile_soyuz_0/1/2};
-     * History §19es-itemvariant), each with its 1.7 sprite.
+     * 1.7 {@code missile_soyuz} metadata 0..2 (its paint), one item each as in ntm-next ({@code missile_soyuz_0/1/2}), each with its 1.7 sprite.
      */
-    public static final com.hbm.items.ItemFamily<SoyuzSkinType, ItemSoyuz> missile_soyuz = com.hbm.items.ItemFamily.of(
+    public static final ItemFamily<SoyuzSkinType, ItemSoyuz> missile_soyuz = ItemFamily.of(
             SoyuzSkinType.class, type -> REG.item("missile_soyuz_" + type.ordinal(), p -> new ItemSoyuz(p, type),
                             p -> p.stacksTo(1))
-                    .transform(com.hbm.registration.Presets.sprite("hbm:items/missile_soyuz_" + switch (type) {
+                    .transform(Presets.sprite("hbm:items/missile_soyuz_" + switch (type) {
                         case NORMAL -> "normal";
                         case LUNAR -> "lunar";
                         case POST_WAR -> "post_war";
@@ -76,7 +78,7 @@ public final class ModSoyuzBlocks {
     }
 
     /** The seed block: an ordinary block whose entity watches for the complex to be finished around it. */
-    public static final class SoyuzStruct extends dev.golem.core.world.CompatBlock implements dev.golem.core.registry.TickingBlock {
+    public static final class SoyuzStruct extends CompatBlock implements TickingBlock {
 
         public SoyuzStruct(Properties properties) {
             super(properties);

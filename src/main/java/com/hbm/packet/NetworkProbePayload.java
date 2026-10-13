@@ -12,15 +12,12 @@ import net.minecraft.resources.Identifier;
 /**
  * A liveness probe, and the mod's one off-thread handler.
  *
- * <p>Its handler is the shape that earns the network thread: it writes a nonce and the sender's id
- * into a concurrent map and touches nothing else. No level, no entity, no item, no renderer — so
- * there is nothing for it to race against, and it costs no scheduled task and no tick of latency.
+ * <p>Its handler writes a nonce and the sender's id into a concurrent map and touches nothing else (no level,
+ * entity, item or renderer), so nothing can race against it and it needs no scheduled task or tick of latency.
  *
- * <p>Everything else this mod sends is the opposite shape. A block-entity sync resolves a block
- * entity, a particle payload reaches the particle engine, a gun cue reads the held stack: all of them
- * must run where those are safe to touch, and all of them stay on the game thread. The reference
- * implementation this was taken from reaches the same conclusion — of its forty-six channels, exactly
- * one runs off-thread, and that one only logs.
+ * <p>Every other payload resolves a block entity, reaches the particle engine or reads the held stack, so it
+ * runs on the game thread. In the reference implementation, exactly one of forty-six channels runs off-thread,
+ * and that one only logs.
  */
 public record NetworkProbePayload(long nonce, long sentAtMillis) implements GolemPayload {
 

@@ -19,9 +19,9 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Electric heating unit (1.12.2 {@code TileEntityHeaterElectric}) — turns HE into heat, and also relays
- * heat from an {@link IHeatSource} below at 85% efficiency (so it can boost a firebox). Constants
- * verbatim: consumption = {@code setting^1.4 × 200} HE/t, heat generated = {@code setting × 100} TU/t,
+ * Electric heating unit (1.12.2 {@code TileEntityHeaterElectric}): turns HE into heat, and also relays
+ * heat from an {@link IHeatSource} below at 85% efficiency (so it can boost a firebox). The constants
+ * are 1.7's: consumption = {@code setting^1.4 × 200} HE/t, heat generated = {@code setting × 100} TU/t,
  * buffer = 20 ticks of consumption, reservoir decays ×0.999/t, setting 0–10. The port has no
  * screwdriver/hand-drill tools, so the setting is cycled by right-clicking the block (sneak = down).
  */

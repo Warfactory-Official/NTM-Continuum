@@ -10,6 +10,7 @@ import com.hbm.tileentity.bomb.TileEntityLaunchPad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -23,16 +24,14 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>As an {@link IBomb} it is "detonated" by launching: a detonator aimed at any block of the pad
  * fires the missile at whatever the installed designator points to. Redstone does the same through
- * {@link #onNeighborChanged} — every block of the multiblock reports its own powered state to the core,
+ * {@link #onNeighborChanged}: every block of the multiblock reports its own powered state to the core,
  * which counts them so one lever produces one launch rather than nine.
  *
- * <p><b>Cables and ducts attach at the four corner cells only</b>, one block further out — the eight
- * positions in {@link com.hbm.tileentity.bomb.TileEntityLaunchPad#getConPos()}. That is upstream's own
- * geometry: in 1.12.2 the corners were the cells {@code makeExtra} flagged, and only those carried a
- * {@code TileEntityProxyCombo} forwarding power, fluid and inventory to the core. The port has no
- * proxies — a cable asks the neighbouring <em>block</em> whether that face is a port — so the pad has to
- * answer through {@link IEnergyConnectorBlock}/{@link IFluidConnectorBlockMK2}. Without them the pad
- * looks like a plain block to a cable and nothing connects.
+ * <p><b>Cables and ducts attach at the four corner cells only</b>, one block further out: the eight
+ * positions in {@link com.hbm.tileentity.bomb.TileEntityLaunchPad#getConPos()}. As upstream, only the corner cells
+ * forward power, fluid and inventory to the core. The port has no proxy block entities: a cable asks the
+ * neighbouring <em>block</em> whether that face is a port, so the pad answers through
+ * {@link IEnergyConnectorBlock}/{@link IFluidConnectorBlockMK2}.
  */
 public class LaunchPad extends BlockMultiblockMachine implements IBomb, IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
@@ -51,7 +50,7 @@ public class LaunchPad extends BlockMultiblockMachine implements IBomb, IEnergyC
 
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityLaunchPad pad) {
-            pad.detonator = detonator instanceof net.minecraft.world.entity.LivingEntity living ? living : null;
+            pad.detonator = detonator instanceof LivingEntity living ? living : null;
             return pad.launchFromDesignator();
         }
         return BombReturnCode.UNDEFINED;

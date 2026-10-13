@@ -1,5 +1,6 @@
 package com.hbm.api.entity;
 
+import dev.golem.core.Ids;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -50,7 +51,7 @@ public class RadarEntry {
     }
 
     public static String dimOf(Entity entity) {
-        return dev.golem.core.Ids.keyId(entity.level().dimension()).toString();
+        return Ids.keyId(entity.level().dimension()).toString();
     }
 
     public void fromBytes(RegistryFriendlyByteBuf buf) {

@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerCore;
 import com.hbm.tileentity.machine.dfc.TileEntityCore;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -17,7 +18,7 @@ import java.util.List;
  */
 public class GUICore extends GUIDFCBase<ContainerCore> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/dfc/gui_core.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/dfc/gui_core.png");
 
     public GUICore(ContainerCore menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 166);

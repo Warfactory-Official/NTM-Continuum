@@ -1,5 +1,7 @@
 package com.hbm.client;
 
+import com.hbm.config.ClientConfig;
+import com.hbm.interfaces.IEntityLookOverlay;
 import com.hbm.interfaces.IItemLookOverlay;
 import com.hbm.interfaces.ILookOverlay;
 import dev.golem.core.gui.GuiDraw;
@@ -11,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 /**
@@ -27,15 +30,15 @@ public final class HbmLookOverlay {
     public static void render(GuiGraphicsExtractor graphics) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null || mc.screen != null || mc.options.hideGui) return;
-        if (!com.hbm.config.ClientConfig.DODD_RBMK_DIAGNOSTIC) return; // 1.7: the whole hook sits behind this toggle
+        if (!ClientConfig.DODD_RBMK_DIAGNOSTIC) return; // 1.7: the whole hook sits behind this toggle
 
         HitResult hit = mc.hitResult;
         if (hit == null) return;
 
         // 1.7: an entity looked at (mop.entityHit instanceof ILookOverlay) gives its own readout
         if (hit.getType() == HitResult.Type.ENTITY) {
-            ILookOverlay.Data data = com.hbm.interfaces.IEntityLookOverlay.of(
-                    ((net.minecraft.world.phys.EntityHitResult) hit).getEntity(), mc.player);
+            ILookOverlay.Data data = IEntityLookOverlay.of(
+                    ((EntityHitResult) hit).getEntity(), mc.player);
             if (data != null) render(graphics, data);
             return;
         }

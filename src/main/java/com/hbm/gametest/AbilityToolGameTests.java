@@ -6,11 +6,14 @@ import com.hbm.handler.ability.IToolHarvestAbility;
 import com.hbm.handler.ability.IWeaponAbility;
 import com.hbm.handler.ability.ToolPreset;
 import com.hbm.items.ModAbilityToolItems;
+import com.hbm.items.tool.ItemChainsaw;
 import com.hbm.items.tool.ItemToolAbility;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -48,7 +51,7 @@ public final class AbilityToolGameTests {
     public static void init() {}
 
     /** 1.7 Configuration.reset: the none preset first, then one per ability, sorted harvest-then-area. */
-    public static void presets(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void presets(GameTestHelper helper) {
         ItemStack stack = new ItemStack(ModAbilityToolItems.cmb_pickaxe.get());
         ItemToolAbility tool = (ItemToolAbility) stack.getItem();
         ItemToolAbility.Configuration config = tool.getConfiguration(stack);
@@ -76,12 +79,12 @@ public final class AbilityToolGameTests {
     }
 
     /** HAMMER level 0 (range 1): the whole 3x3x3 cube around the mined block goes. */
-    public static void hammer(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void hammer(GameTestHelper helper) {
         ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ItemStack stack = new ItemStack(ModAbilityToolItems.starmetal_pickaxe.get());
         ItemToolAbility tool = (ItemToolAbility) stack.getItem();
         select(tool, stack, new ToolPreset(IToolAreaAbility.HAMMER, 0, IToolHarvestAbility.NONE, 0));
-        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack);
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
 
         BlockPos centre = helper.absolutePos(new BlockPos(2, 3, 2));
         for (BlockPos p : BlockPos.betweenClosed(centre.offset(-1, -1, -1), centre.offset(1, 1, 1))) {
@@ -99,7 +102,7 @@ public final class AbilityToolGameTests {
     }
 
     /** Vein miner plus smelter in survival: every connected iron ore becomes an iron ingot at the mined block. */
-    public static void veinSmelter(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void veinSmelter(GameTestHelper helper) {
         ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
         player.setGameMode(GameType.SURVIVAL);
         if (player.isCreative()) {
@@ -110,7 +113,7 @@ public final class AbilityToolGameTests {
         ItemStack stack = new ItemStack(ModAbilityToolItems.schrabidium_pickaxe.get());
         ItemToolAbility tool = (ItemToolAbility) stack.getItem();
         select(tool, stack, new ToolPreset(IToolAreaAbility.RECURSION, 0, IToolHarvestAbility.SMELTER, 0));
-        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack);
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
 
         BlockPos start = helper.absolutePos(new BlockPos(1, 3, 2));
         for (int i = 0; i < 4; i++) helper.getLevel().setBlock(start.east(i), Blocks.IRON_ORE.defaultBlockState(), 3);
@@ -137,15 +140,14 @@ public final class AbilityToolGameTests {
     /**
      * 1.7 ItemToolAbilityFueled: {@code setMaxDamage(1)} and a {@code setDamage} that burns fuel, so a hit through the
      * real attack path costs {@code consumption} mB and no durability, and the stack the hand renderer shows is still
-     * "the same held item" afterwards (no re-equip per hit, the 2026-10-02 stutter). The chainsaw asks for 1.7's
-     * undipped raise.
+     * "the same held item" afterwards (no re-equip per hit). The chainsaw asks for 1.7's undipped raise.
      */
-    public static void chainsawWear(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void chainsawWear(GameTestHelper helper) {
         ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
         player.setGameMode(GameType.SURVIVAL);
         ItemStack stack = new ItemStack(ModAbilityToolItems.chainsaw.get());
-        com.hbm.items.tool.ItemChainsaw saw = ModAbilityToolItems.chainsaw.get();
-        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack);
+        ItemChainsaw saw = ModAbilityToolItems.chainsaw.get();
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
         ItemStack before = stack.copy();
         LivingEntity golem = helper.spawnWithNoFreeWill(EntityType.IRON_GOLEM, new BlockPos(1, 2, 1));
         player.attack(golem);
@@ -162,7 +164,7 @@ public final class AbilityToolGameTests {
     }
 
     /** STUN level 0: slowness and weakness V for 2 seconds. */
-    public static void weapon(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void weapon(GameTestHelper helper) {
         ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
         LivingEntity pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(1, 2, 1));
         IWeaponAbility.STUN.onHit(0, helper.getLevel(), player, pig, ModAbilityToolItems.steel_sword.get());

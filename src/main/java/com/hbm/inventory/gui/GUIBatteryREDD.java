@@ -2,7 +2,10 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerBatteryREDD;
 import com.hbm.lib.Library;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -12,10 +15,10 @@ import net.minecraft.world.entity.player.Inventory;
 
 import java.util.Locale;
 
-/** The FEnSU (REDD) screen — 1.7.10 {@code GUIBatteryREDD} ({@code storage/gui_battery_redd.png}, 176x181). 1.7 has no hover tooltips here. */
-public final class GUIBatteryREDD extends dev.golem.core.gui.CompatContainerScreen<ContainerBatteryREDD> {
+/** The FEnSU (REDD) screen, ported from 1.7.10 {@code GUIBatteryREDD} ({@code storage/gui_battery_redd.png}, 176x181). 1.7 has no hover tooltips here. */
+public final class GUIBatteryREDD extends CompatContainerScreen<ContainerBatteryREDD> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of(
+    private static final Identifier TEXTURE = Ids.of(
             "hbm", "textures/gui/storage/gui_battery_redd.png");
 
     public GUIBatteryREDD(ContainerBatteryREDD menu, Inventory playerInventory, Component title) {
@@ -53,7 +56,7 @@ public final class GUIBatteryREDD extends dev.golem.core.gui.CompatContainerScre
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         int button = -1;
         // 1.7 checkClick boxes: x [x, x+w), y (y, y+h].
         if (GuiUtil.hover(event.x(), event.y(), leftPos + 133, topPos + 16, 18, 18)) button = 0;

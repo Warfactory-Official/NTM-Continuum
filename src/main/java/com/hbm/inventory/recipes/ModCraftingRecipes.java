@@ -12,20 +12,17 @@ import static dev.golem.core.dejson.Crafting.smelt;
  * The hbm recipes whose shape carries no decision, declared through Golem Core's {@code dejson}
  * vocabulary instead of written as JSON.
  *
- * <p>{@value #FILES_REPLACED} recipe files have been deleted for these: 183 that pack nine of
- * something into a block, 54 that unpack it again, and 121 furnace recipes. Every one was a fixed
- * arrangement around two ids and a number — a full three-by-three grid of one ingredient, a single
- * shapeless ingredient making nine, two hundred ticks and an experience value — so the file was
- * seven lines of punctuation around the two facts that mattered.
+ * <p>This class stands in for {@value #FILES_REPLACED} recipe files: 183 that pack nine of something into
+ * a block, 54 that unpack it again, and 121 furnace recipes. Each is a fixed arrangement around two ids
+ * and a number: a full three-by-three grid of one ingredient, a single shapeless ingredient making nine,
+ * two hundred ticks and an experience value.
  *
- * <p>The rest of the mod's crafting follows in {@link ModShapedRecipes}, {@link ModShapelessRecipes}
- * and {@link ModComponentRecipes}. Nothing under {@code data/hbm/recipe/} is written by hand any
- * more; what those three add over this class is a pattern and a set of symbols, which are the part
- * of a recipe somebody actually decided.
+ * <p>The rest of the mod's crafting is in {@link ModShapedRecipes}, {@link ModShapelessRecipes} and
+ * {@link ModComponentRecipes}. Nothing under {@code data/hbm/recipe/} is written by hand; those three add
+ * a pattern and a set of symbols, the part of a recipe somebody actually decided.
  *
- * <p>Recipe ids are carried through unchanged rather than derived from the output. They are visible
- * — the recipe book remembers them, JEI bookmarks them — so renaming {@code ingot_actinium_1} to
- * something tidier would reset progress for no gain.
+ * <p>Recipe ids are not derived from the output. They are visible (the recipe book remembers them, JEI
+ * bookmarks them), so renaming {@code ingot_actinium_1} to something tidier would reset progress for no gain.
  */
 public final class ModCraftingRecipes {
 

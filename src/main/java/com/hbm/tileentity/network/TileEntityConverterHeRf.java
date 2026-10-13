@@ -2,6 +2,7 @@ package com.hbm.tileentity.network;
 
 import com.hbm.api.energymk2.IEnergyConductorMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModEnergyBedrockBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
@@ -52,7 +53,7 @@ public class TileEntityConverterHeRf extends TileEntityLoadedBase implements IEn
         if (converter.power > 0) converter.power = (long) (converter.power * (1D - inputDecay));
         if (rfCreated > 0) converter.setChanged();
 
-        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             converter.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
         }
 

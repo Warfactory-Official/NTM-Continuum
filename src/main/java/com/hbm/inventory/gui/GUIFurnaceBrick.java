@@ -2,6 +2,8 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerFurnaceBrick;
 import com.hbm.tileentity.machine.TileEntityFurnaceBrick;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -9,8 +11,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 /** Brick furnace screen, preserving the old 176x166 layout. */
-public class GUIFurnaceBrick extends dev.golem.core.gui.CompatContainerScreen<ContainerFurnaceBrick> {
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_furnace_brick.png");
+public class GUIFurnaceBrick extends CompatContainerScreen<ContainerFurnaceBrick> {
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_furnace_brick.png");
 
     public GUIFurnaceBrick(ContainerFurnaceBrick menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 166);

@@ -22,7 +22,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Client halves of original-hbm (1.7.10) {@code ClientProxy.effectNT} types {@code sweat}, {@code vomit},
+ * Client halves of 1.7 {@code ClientProxy.effectNT} types {@code sweat}, {@code vomit},
  * {@code radiation}, {@code exhaust}, {@code haze} and {@code ufo}.
  *
  * <p>1.7 drew sweat and vomit with vanilla {@code EntityBlockDustFX} and forced {@code particleMaxAge} to

@@ -1,5 +1,9 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineAssemblyMachine;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
@@ -7,6 +11,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyMachine;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -22,9 +27,9 @@ import java.util.Optional;
  * BlockEntity for the power and progress bars and the two horizontal 52×16 fluid tanks (input at (8,99),
  * output at (80,99)); the recipe selector button opens the shared selector popup.
  */
-public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineAssemblyMachine> implements IUpgradeInfoProviderSource {
+public class GUIMachineAssemblyMachine extends CompatContainerScreen<ContainerMachineAssemblyMachine> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_assembler.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_assembler.png");
 
     public GUIMachineAssemblyMachine(ContainerMachineAssemblyMachine menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 256);
@@ -60,7 +65,7 @@ public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContaine
 
         // Status LEDs (3×6 each): LEFT = a recipe is configured, RIGHT = enough power for it; each turns
         // from amber/orange (u=192, "ready/idle") to green (u=195, "processing"). Ported from the 1.12.2
-        // GUI — but where the original kept a manually-picked recipe selected (so the orange standby light
+        // GUI, but where the original kept a manually-picked recipe selected (so the orange standby light
         // showed whenever idle), this port auto-selects and clears the recipe between cycles, so the LEDs
         // key off the inserted blueprint template (a recipe pool is configured) so the orange standby
         // light is actually visible, not just the rare 1-tick gap between auto-selected recipes.
@@ -69,13 +74,13 @@ public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContaine
         boolean powered = recipe != null ? te.power >= recipe.power : te.power > 0;
         boolean processing = te.didProcess;
 
-        // LEFT LED — recipe configured
+        // Left LED: recipe configured
         if (processing) {
             led(graphics, 51, 195);
         } else if (configured) {
             led(graphics, 51, 192);
         }
-        // RIGHT LED — enough power
+        // Right LED: enough power
         if (processing) {
             led(graphics, 56, 195);
         } else if (configured && powered) {
@@ -106,7 +111,7 @@ public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContaine
     }
 
     /** 1.7 {@code renderTank(x, y + 16, z, 52, 16, 1)}: a horizontal tank filling left to right, tinted. */
-    private void drawHorizontalTank(GuiGraphicsExtractor graphics, com.hbm.inventory.fluid.tank.FluidTankNTM tank, int x, int y) {
+    private void drawHorizontalTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y) {
         int max = tank.getMaxFill();
         int w = max <= 0 ? 0 : tank.getFill() * 52 / max;
         if (w <= 0) return;
@@ -124,7 +129,7 @@ public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContaine
     private static final int BTN_X = 7, BTN_Y = 125, BTN_W = 18, BTN_H = 18;
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         TileEntityMachineAssemblyMachine te = this.menu.getAssembler();
         if (te != null && this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
             GUIScreenRecipeSelector.openSelector(AssemblyMachineRecipes.INSTANCE, te.getBlockPos(),
@@ -162,12 +167,12 @@ public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContaine
                         Optional.empty(), mouseX, mouseY);
             }
         }
-        // (No "Acceptable Upgrades" info panel here — the 1.12.2 assembly GUI has none; the upgrade item's
+        // (No "Acceptable Upgrades" info panel here: the 1.12.2 assembly GUI has none; the upgrade item's
         // own tooltip [ItemMachineUpgrade + IUpgradeInfoProviderSource] shows this machine's numbers.)
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getAssembler();
     }
 

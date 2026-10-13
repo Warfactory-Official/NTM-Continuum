@@ -8,17 +8,15 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
 
 /**
- * One puff of a missile's exhaust trail — 1.12.2's {@code ParticleRocketFlame}.
+ * One puff of a missile's exhaust trail, from 1.12.2's {@code ParticleRocketFlame}.
  *
- * <p><b>This is not one quad.</b> Each puff draws <b>ten</b>, scattered by a Gaussian whose spread
- * grows with age, from a {@link Random} re-seeded with the particle's fixed seed every frame — so the
- * cloud is stable in the world rather than boiling, and the offsets must be recomputed at render time
- * rather than stored. {@code CompatParticle.emitQuads} is the seam that allows it.
+ * <p>Each puff draws <b>ten</b> quads, scattered by a Gaussian whose spread grows with age, from a {@link Random}
+ * re-seeded with the particle's fixed seed every frame. The cloud is stable in the world rather than boiling, so
+ * the offsets are recomputed at render time ({@code CompatParticle.emitQuads}).
  *
- * <p><b>The {@code scale} scales the whole cloud, not one quad.</b> Upstream multiplies three separate
- * things by it — how far the ten quads scatter, how big each one is, and a fixed quarter-block offset
- * on X and Z — so a scale of five is a fireball rather than five contrail puffs. That offset biases the
- * cloud off the spawn point the same way the {@code -1} on each Gaussian does.
+ * <p>{@code scale} scales the whole cloud: upstream multiplies the scatter distance, each quad's size and a fixed
+ * quarter-block offset on X and Z by it, so a scale of five is a fireball rather than five contrail puffs. That
+ * offset biases the cloud off the spawn point the same way the {@code -1} on each Gaussian does.
  */
 public class ParticleRocketFlame extends CompatParticle {
 

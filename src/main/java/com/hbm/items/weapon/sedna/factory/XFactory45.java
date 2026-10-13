@@ -3,7 +3,7 @@ package com.hbm.items.weapon.sedna.factory;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
 
-/** The ordinary .45 ACP bullet family from original-hbm's XFactory45. */
+/** The ordinary .45 ACP bullet family from 1.7's XFactory45. */
 public final class XFactory45 {
 
     public static BulletConfig p45_sp;

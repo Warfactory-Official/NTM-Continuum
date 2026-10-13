@@ -1,5 +1,8 @@
 package com.hbm.entity.explosive;
 
+import com.hbm.blocks.ModExplosivesBlocks;
+import com.hbm.blocks.ModFluidNetBlocks;
+import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.bomb.BlockTNTBase;
@@ -12,6 +15,8 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -25,13 +30,13 @@ import org.jspecify.annotations.Nullable;
 public class EntityPrimedExplosive extends CompatEntity {
 
     private static final EntityDataAccessor<Integer> FUSE =
-            net.minecraft.network.syncher.SynchedEntityData.defineId(EntityPrimedExplosive.class,
+            SynchedEntityData.defineId(EntityPrimedExplosive.class,
                     EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> KIND =
-            net.minecraft.network.syncher.SynchedEntityData.defineId(EntityPrimedExplosive.class,
+            SynchedEntityData.defineId(EntityPrimedExplosive.class,
                     EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> ARMED =
-            net.minecraft.network.syncher.SynchedEntityData.defineId(EntityPrimedExplosive.class,
+            SynchedEntityData.defineId(EntityPrimedExplosive.class,
                     EntityDataSerializers.BOOLEAN);
 
     private int fuse = 80;
@@ -57,7 +62,7 @@ public class EntityPrimedExplosive extends CompatEntity {
     }
 
     @Override
-    protected void defineData(dev.golem.core.data.SynchedData data) {
+    protected void defineData(SynchedData data) {
         data.define(FUSE, 80);
         data.define(KIND, 0);
         data.define(ARMED, false);
@@ -128,14 +133,14 @@ public class EntityPrimedExplosive extends CompatEntity {
             case 1 -> ModBombBlocks.dynamite.get();
             case 2 -> ModBombBlocks.semtex.get();
             case 3 -> ModBombBlocks.c4.get();
-            case 4 -> com.hbm.blocks.ModExplosivesBlocks.fissure_bomb.get(); // com.hbm.explosives
+            case 4 -> ModExplosivesBlocks.fissure_bomb.get(); // com.hbm.explosives
             // The effect barrels of com.hbm.fluidnet (kinds 20-25).
-            case 20 -> com.hbm.blocks.ModFluidNetBlocks.red_barrel.get();
-            case 21 -> com.hbm.blocks.ModFluidNetBlocks.pink_barrel.get();
-            case 22 -> com.hbm.blocks.ModFluidNetBlocks.yellow_barrel.get();
-            case 23 -> com.hbm.blocks.ModFluidNetBlocks.vitrified_barrel.get();
-            case 24 -> com.hbm.blocks.ModFluidNetBlocks.lox_barrel.get();
-            case 25 -> com.hbm.blocks.ModFluidNetBlocks.taint_barrel.get();
+            case 20 -> ModFluidNetBlocks.red_barrel.get();
+            case 21 -> ModFluidNetBlocks.pink_barrel.get();
+            case 22 -> ModFluidNetBlocks.yellow_barrel.get();
+            case 23 -> ModFluidNetBlocks.vitrified_barrel.get();
+            case 24 -> ModFluidNetBlocks.lox_barrel.get();
+            case 25 -> ModFluidNetBlocks.taint_barrel.get();
             default -> ModBombBlocks.tnt.get();
         };
         return block.defaultBlockState().setValue(BlockTNTBase.ARMED, entityData.get(ARMED));
@@ -143,7 +148,7 @@ public class EntityPrimedExplosive extends CompatEntity {
 
     public @Nullable LivingEntity getOwnerEntity() {
         if (ownerId == null) return null;
-        if (level() instanceof net.minecraft.server.level.ServerLevel server) {
+        if (level() instanceof ServerLevel server) {
             Entity entity = server.getEntity(ownerId);
             return entity instanceof LivingEntity living ? living : null;
         }

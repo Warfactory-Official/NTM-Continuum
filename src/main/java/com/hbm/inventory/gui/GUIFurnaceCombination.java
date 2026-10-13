@@ -2,6 +2,8 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerFurnaceCombination;
 import com.hbm.tileentity.machine.TileEntityFurnaceCombination;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -13,9 +15,9 @@ import java.util.Locale;
 import java.util.Optional;
 
 /** Screen for the combination furnace, preserving the 176x186 legacy layout. */
-public class GUIFurnaceCombination extends dev.golem.core.gui.CompatContainerScreen<ContainerFurnaceCombination> {
+public class GUIFurnaceCombination extends CompatContainerScreen<ContainerFurnaceCombination> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_furnace_combination.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_furnace_combination.png");
 
     public GUIFurnaceCombination(ContainerFurnaceCombination menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 186);
@@ -39,7 +41,7 @@ public class GUIFurnaceCombination extends dev.golem.core.gui.CompatContainerScr
         int heat = furnace.getHeatScaled(37);
         if (heat > 0) GuiDraw.blit(graphics, TEXTURE, leftPos + 45, topPos + 46, 176F, 5F, heat, 5, 256, 256);
 
-        // 1.7: furnace.tank.renderTank(guiLeft + 118, guiTop + 70, z, 16, 52) — tinted, bottom-anchored.
+        // 1.7: furnace.tank.renderTank(guiLeft + 118, guiTop + 70, z, 16, 52), tinted and bottom-anchored.
         Production2Gui.drawTank(graphics, furnace.tank, leftPos + 118, topPos + 70, 16, 52);
     }
 

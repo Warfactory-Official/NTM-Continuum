@@ -6,7 +6,7 @@ import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 
-/** The thirty-one folded cells of an artillery emplacement — full cubes, unlike the gun turrets' pad. */
+/** The thirty-one folded cells of an artillery emplacement: full cubes, unlike the gun turrets' pad. */
 public class BlockTurretEmplacement extends BlockMultiblockCell implements IEnergyConnectorBlock {
 
     public BlockTurretEmplacement(Properties properties) {

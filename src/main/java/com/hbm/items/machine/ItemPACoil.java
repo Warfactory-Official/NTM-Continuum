@@ -1,5 +1,6 @@
 package com.hbm.items.machine;
 
+import com.hbm.api.data.MachinePartDataMaps;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
@@ -31,18 +32,18 @@ public class ItemPACoil extends CompatItem {
     }
 
     /** The coil values of {@code stack}: its {@code hbm:pa_coil} entry, else HBM's enum constant; null when not a coil. */
-    public static com.hbm.api.data.MachinePartDataMaps.@Nullable Coil stats(ItemStack stack) {
+    public static MachinePartDataMaps.@Nullable Coil stats(ItemStack stack) {
         if (!(stack.getItem() instanceof ItemPACoil coil)) return null;
-        com.hbm.api.data.MachinePartDataMaps.Coil data = com.hbm.api.data.MachinePartDataMaps.PA_COIL.get(coil);
+        MachinePartDataMaps.Coil data = MachinePartDataMaps.PA_COIL.get(coil);
         if (data != null) return data;
         return codeStats(stack);
     }
 
     /** The code defaults (constructor or enum values) that the data map entry overrides. */
-    public static com.hbm.api.data.MachinePartDataMaps.@Nullable Coil codeStats(ItemStack stack) {
+    public static MachinePartDataMaps.@Nullable Coil codeStats(ItemStack stack) {
         if (!(stack.getItem() instanceof ItemPACoil coil)) return null;
         EnumCoilType t = coil.type;
-        return new com.hbm.api.data.MachinePartDataMaps.Coil(t.quadMin, t.quadMax, t.diMin, t.diMax, t.diDistMin);
+        return new MachinePartDataMaps.Coil(t.quadMin, t.quadMax, t.diMin, t.diMax, t.diDistMin);
     }
 
     /** The coil grade of {@code stack}, or null when it is not a coil. */

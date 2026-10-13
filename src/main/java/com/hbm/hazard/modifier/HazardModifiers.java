@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.data.Codecs;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,7 +27,7 @@ public final class HazardModifiers {
         IDS.put(type, id);
     }
 
-    public static final Codec<IHazardModifier> CODEC = dev.golem.core.data.Codecs.<String, IHazardModifier>partialDispatch(Codec.STRING, "type",
+    public static final Codec<IHazardModifier> CODEC = Codecs.<String, IHazardModifier>partialDispatch(Codec.STRING, "type",
             modifier -> {
                 String id = IDS.get(modifier.getClass());
                 return id != null ? DataResult.success(id) : DataResult.error(() -> "Unnamed hazard modifier " + modifier.getClass());

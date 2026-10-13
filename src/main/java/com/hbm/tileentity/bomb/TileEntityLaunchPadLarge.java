@@ -10,6 +10,7 @@ import com.hbm.sound.MachineAudio;
 import com.hbm.sound.ModDoorSounds;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModCustomMissileBlockEntities;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -241,7 +242,7 @@ public class TileEntityLaunchPadLarge extends TileEntityLaunchPadBase implements
         output.putBoolean("readyToLoad", readyToLoad);
         output.putFloat("lift", lift);
         output.putFloat("erector", erector);
-        if (formFactor >= 0) com.hbm.util.SavedIds.putEnum(output, "formFactor", MissileFormFactor.values()[formFactor]); // by name
+        if (formFactor >= 0) SavedIds.putEnum(output, "formFactor", MissileFormFactor.values()[formFactor]); // by name
     }
 
     @Override
@@ -251,7 +252,7 @@ public class TileEntityLaunchPadLarge extends TileEntityLaunchPadBase implements
         readyToLoad = input.getBooleanOr("readyToLoad", false);
         lift = input.getFloatOr("lift", 1F);
         erector = input.getFloatOr("erector", 90F);
-        MissileFormFactor savedForm = com.hbm.util.SavedIds.getEnumOrNull(input, "formFactor", MissileFormFactor.class);
+        MissileFormFactor savedForm = SavedIds.getEnumOrNull(input, "formFactor", MissileFormFactor.class);
         formFactor = savedForm == null ? -1 : savedForm.ordinal();
         syncLift = prevLift = lift;
         syncErector = prevErector = erector;

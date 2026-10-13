@@ -19,7 +19,7 @@ public final class TorexClientEffects {
 
     private TorexClientEffects() {}
 
-    /** The vanilla lightning sky flash — old {@code world.setLastLightningBolt(2)}. */
+    /** The vanilla lightning sky flash, as in the old {@code world.setLastLightningBolt(2)}. */
     public static void skyFlash(Level level) {
         if (level instanceof ClientLevel client) {
             client.setSkyFlashTime(2);
@@ -47,7 +47,7 @@ public final class TorexClientEffects {
      * hides the biome's {@code downfall} float behind a private nested record (no public getter, and a
      * Mixin accessor can't name the type / reflection isn't Fabric-production-safe), so we approximate
      * from the public {@link Biome#hasPrecipitation()}: humid (raining/snowing) biomes get the rings,
-     * dry ones don't. A documented divergence — the original scaled ring density by the exact 0..1 value.
+     * dry ones don't. A known divergence: the original scaled ring density by the exact 0..1 value.
      */
     public static float humidity(EntityNukeTorex torex) {
         BlockPos pos = torex.blockPosition();

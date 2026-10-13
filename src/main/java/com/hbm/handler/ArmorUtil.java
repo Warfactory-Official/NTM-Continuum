@@ -1,24 +1,39 @@
 package com.hbm.handler;
 
+import com.hbm.api.data.ArmorDataMaps;
+import com.hbm.items.ModArmorModItems;
+import com.hbm.items.ModArmorSetBItems;
+import com.hbm.items.ModMeleeKitItems;
+import com.hbm.potion.ModEffects;
+import dev.golem.core.hook.Hook;
+import dev.golem.core.world.Durability;
+import dev.golem.core.world.Effects;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
 import com.hbm.api.item.IGasMask;
+import java.util.Optional;
+import java.util.function.Predicate;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /**
  * Armor-set checks, ported (subset) from 1.12.2's {@code ArmorUtil}. The old class hardcoded every
  * armor set; here full-set membership is <b>registered</b> (by {@code ModGearItems} and future armor
- * waves) so the checks grow with the ported catalogue:
+ * sets) so the checks grow with the ported catalogue:
  *
  * <ul>
  * <li>{@link #registerHazmatSet}: counts for {@code checkForHazmat} + {@code checkForHazmatOnly} (the
  * yellow/red/grey hazmat suits; later schrabidium etc. via {@code registerHazmat2Set}).</li>
- * <li>{@link #registerHazmat2Set}: the "heavy hazmat" tier (old paa/liquidator/euphemium/rpa/fau/dns) —
+ * <li>{@link #registerHazmat2Set}: the "heavy hazmat" tier (old paa/liquidator/euphemium/rpa/fau/dns):
  * counts for {@code checkForHaz2} (and implies hazmat).</li>
  * </ul>
  *
@@ -42,7 +57,7 @@ public class ArmorUtil {
 
     /** The code-registered hazmat sets (read-only view). */
     public static List<Item[]> codeHazmatSets(boolean heavy) {
-        return java.util.Collections.unmodifiableList(heavy ? hazmat2Sets : hazmatSets);
+        return Collections.unmodifiableList(heavy ? hazmat2Sets : hazmatSets);
     }
 
     /** Substrings of armor translation keys that count as conductive "faraday cage" armor. */
@@ -75,24 +90,24 @@ public class ArmorUtil {
      * The full set the entity wears, from the {@code hbm:armor_sets} data map (keyed by the chestplate), or null. Every
      * piece must match; a piece the set leaves out must be an empty slot.
      */
-    public static com.hbm.api.data.ArmorDataMaps.@org.jspecify.annotations.Nullable ArmorSet wornSet(LivingEntity entity) {
+    public static ArmorDataMaps.@org.jspecify.annotations.Nullable ArmorSet wornSet(LivingEntity entity) {
         ItemStack chest = entity.getItemBySlot(EquipmentSlot.CHEST);
         if (chest.isEmpty()) return null;
-        com.hbm.api.data.ArmorDataMaps.ArmorSet set = com.hbm.api.data.ArmorDataMaps.ARMOR_SETS.get(chest.getItem());
+        ArmorDataMaps.ArmorSet set = ArmorDataMaps.ARMOR_SETS.get(chest.getItem());
         if (set == null) return null;
         return piece(entity, EquipmentSlot.HEAD, set.helmet()) && piece(entity, EquipmentSlot.LEGS, set.legs())
                 && piece(entity, EquipmentSlot.FEET, set.boots()) ? set : null;
     }
 
-    private static boolean piece(LivingEntity entity, EquipmentSlot slot, java.util.Optional<String> id) {
+    private static boolean piece(LivingEntity entity, EquipmentSlot slot, Optional<String> id) {
         ItemStack worn = entity.getItemBySlot(slot);
         if (id.isEmpty()) return worn.isEmpty();
-        return !worn.isEmpty() && net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(worn.getItem()).toString().equals(id.get());
+        return !worn.isEmpty() && BuiltInRegistries.ITEM.getKey(worn.getItem()).toString().equals(id.get());
     }
 
     /** Whether the entity wears a full data-map set that satisfies {@code check} ({@code hazmat}, {@code hazmat2}, ...). */
     public static boolean wearsSet(LivingEntity entity, String check) {
-        com.hbm.api.data.ArmorDataMaps.ArmorSet set = wornSet(entity);
+        ArmorDataMaps.ArmorSet set = wornSet(entity);
         return set != null && set.checks().contains(check);
     }
 
@@ -105,7 +120,7 @@ public class ArmorUtil {
     }
 
     public static boolean isFaradayArmor(ItemStack stack) {
-        Boolean data = com.hbm.api.data.ArmorDataMaps.FARADAY_ARMOR.get(stack.getItem());
+        Boolean data = ArmorDataMaps.FARADAY_ARMOR.get(stack.getItem());
         if (data != null) return data || HazmatRegistry.getCladding(stack) > 0;
         String name = stack.getItem().getDescriptionId();
         for (String metal : metals) if (name.toLowerCase(Locale.US).contains(metal)) return true;
@@ -116,8 +131,8 @@ public class ArmorUtil {
     /** Any full hazmat set (basic or heavy), or the mutation effect (1.7 {@code checkForHazmat}). */
     public static boolean checkForHazmat(LivingEntity entity) {
         if (wearsSet(entity, "hazmat") || checkAnySet(entity, hazmatSets) || checkForHaz2(entity)) return true;
-        if (dev.golem.core.world.Effects.hasRegistered(entity, com.hbm.potion.ModEffects.MUTATION.get())) return true;
-        for (java.util.function.Predicate<LivingEntity> listener : HAZMAT) {
+        if (Effects.hasRegistered(entity, ModEffects.MUTATION.get())) return true;
+        for (Predicate<LivingEntity> listener : HAZMAT) {
             if (listener.test(entity)) return true;
         }
         return false;
@@ -127,7 +142,7 @@ public class ArmorUtil {
      * More reasons an entity counts as wearing hazmat (ADDON-API-INVENTORY H-71), asked after 1.7's suits and mutation;
      * any true answer wins. HBM registers none. NTM: Space: its {@code nitan} effect (hbm-space {@code ArmorUtil}).
      */
-    public static final dev.golem.core.hook.Hook<java.util.function.Predicate<LivingEntity>> HAZMAT = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<Predicate<LivingEntity>> HAZMAT = Hook.notifying();
 
     /** Only the true hazmat suits (yellow/red/grey/paa/liquidator), not the metal power armors. */
     public static boolean checkForHazmatOnly(LivingEntity entity) {
@@ -142,7 +157,7 @@ public class ArmorUtil {
     /** 1.7 {@code checkForDigamma}: the full Fau or DNT-nano suit, or the stability effect. */
     public static boolean checkForDigamma(LivingEntity entity) {
         if (wearsSet(entity, "digamma")) return true; // the Fau and DNT-nano suits (hbm:armor_sets)
-        return dev.golem.core.world.Effects.hasRegistered(entity, com.hbm.potion.ModEffects.STABILITY.get());
+        return Effects.hasRegistered(entity, ModEffects.STABILITY.get());
     }
 
     /**
@@ -151,13 +166,13 @@ public class ArmorUtil {
      */
     public static boolean checkForDigamma2(LivingEntity entity) {
         if (!wearsSet(entity, "digamma2")) return false; // the robes (hbm:armor_sets)
-        if (!dev.golem.core.world.Effects.hasRegistered(entity, com.hbm.potion.ModEffects.STABILITY.get())) return false;
+        if (!Effects.hasRegistered(entity, ModEffects.STABILITY.get())) return false;
 
         for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD}) {
             ItemStack armor = entity.getItemBySlot(slot);
             if (!armor.isEmpty() && ArmorModHandler.hasMods(armor)) {
                 ItemStack cladding = ArmorModHandler.pryMod(armor, ArmorModHandler.cladding);
-                if (cladding.getItem() != com.hbm.items.ModArmorModItems.cladding_iron.get()) return false;
+                if (cladding.getItem() != ModArmorModItems.cladding_iron.get()) return false;
             }
         }
 
@@ -174,34 +189,34 @@ public class ArmorUtil {
      * Fiend achievement, which the port states as an advancement criterion of the same shape.
      */
     public static boolean checkForFiend(LivingEntity entity) {
-        return entity.getItemBySlot(EquipmentSlot.CHEST).getItem() == com.hbm.items.ModArmorSetBItems.jackt.get()
-                && entity.getMainHandItem().getItem() == com.hbm.items.ModMeleeKitItems.shimmer_sledge.get();
+        return entity.getItemBySlot(EquipmentSlot.CHEST).getItem() == ModArmorSetBItems.jackt.get()
+                && entity.getMainHandItem().getItem() == ModMeleeKitItems.shimmer_sledge.get();
     }
 
     /** 1.7 {@code checkForFiend2}: the second jacket and the shimmer axe. */
     public static boolean checkForFiend2(LivingEntity entity) {
-        return entity.getItemBySlot(EquipmentSlot.CHEST).getItem() == com.hbm.items.ModArmorSetBItems.jackt2.get()
-                && entity.getMainHandItem().getItem() == com.hbm.items.ModMeleeKitItems.shimmer_axe.get();
+        return entity.getItemBySlot(EquipmentSlot.CHEST).getItem() == ModArmorSetBItems.jackt2.get()
+                && entity.getMainHandItem().getItem() == ModMeleeKitItems.shimmer_axe.get();
     }
 
     /**
      * 1.7 {@code ArmorUtil.addGasMaskTooltip}: the installed filter and its remaining life. The filter's
      * own lore lines, which upstream appended in yellow, are not reproduced.
      */
-    public static void addGasMaskTooltip(ItemStack mask, List<net.minecraft.network.chat.Component> list) {
+    public static void addGasMaskTooltip(ItemStack mask, List<Component> list) {
         if (mask.isEmpty() || !(mask.getItem() instanceof IGasMask gasMask)) return;
         ItemStack filter = gasMask.getFilter(mask);
         if (filter.isEmpty()) {
-            list.add(net.minecraft.network.chat.Component.literal("No filter installed!")
-                    .withStyle(net.minecraft.ChatFormatting.RED));
+            list.add(Component.literal("No filter installed!")
+                    .withStyle(ChatFormatting.RED));
             return;
         }
-        list.add(net.minecraft.network.chat.Component.literal("Installed filter:")
-                .withStyle(net.minecraft.ChatFormatting.GOLD));
+        list.add(Component.literal("Installed filter:")
+                .withStyle(ChatFormatting.GOLD));
         int meta = filter.getDamageValue();
         int max = filter.getMaxDamage();
         String append = max > 0 ? " (" + ((max - meta) * 100 / max) + "%)" : "";
-        list.add(net.minecraft.network.chat.Component.literal("  ").append(filter.getHoverName()).append(append));
+        list.add(Component.literal("  ").append(filter.getHoverName()).append(append));
     }
 
     /**
@@ -244,13 +259,13 @@ public class ArmorUtil {
     public static void damageWholeSuit(LivingEntity entity, int damage) {
         if (damage <= 0) return;
         // 1.7 damageItem skips creative players; the modern LivingEntity overload only checks a ServerPlayer.
-        if (entity instanceof net.minecraft.world.entity.player.Player player && player.isCreative()) return;
+        if (entity instanceof Player player && player.isCreative()) return;
         // Named rather than filtered on the slot's type: that enum constant was renamed at 1.21.2.
         for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.FEET, EquipmentSlot.LEGS,
                 EquipmentSlot.CHEST, EquipmentSlot.HEAD}) {
             ItemStack piece = entity.getItemBySlot(slot);
             if (piece.isEmpty() || !piece.isDamageableItem()) continue;
-            dev.golem.core.world.Durability.hurt(piece, damage, entity, slot);
+            Durability.hurt(piece, damage, entity, slot);
         }
     }
 }

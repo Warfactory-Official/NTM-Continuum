@@ -1,12 +1,15 @@
 package com.hbm.items.food;
 
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.config.VersatileConfig;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.potion.ModEffects;
+import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.Effects;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
@@ -14,6 +17,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
@@ -30,7 +34,7 @@ public final class ItemPill extends CompatItem {
 
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
-        if (com.hbm.config.VersatileConfig.hasPotionSickness(player)) {
+        if (VersatileConfig.hasPotionSickness(player)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         return compatVanillaUse(level, player, hand);
@@ -50,7 +54,7 @@ public final class ItemPill extends CompatItem {
 
     private void apply(Player player, Level level) {
         // 1.7 VersatileConfig: off at the default PotionConfig.potionSickness
-        com.hbm.config.VersatileConfig.applyPotionSickness(player, 5);
+        VersatileConfig.applyPotionSickness(player, 5);
 
         switch (id) {
             case "pill_iodine" -> {
@@ -67,11 +71,11 @@ public final class ItemPill extends CompatItem {
             case "plan_c" -> {
                 for (int i = 0; i < 10; i++) {
                     if (level.getRandom().nextBoolean()) {
-                        dev.golem.core.world.Compat.hurt(player, (net.minecraft.server.level.ServerLevel) level,
-                                ModDamageSources.euthanizedSelf((net.minecraft.server.level.ServerLevel) level), 1000F);
+                        Compat.hurt(player, (ServerLevel) level,
+                                ModDamageSources.euthanizedSelf((ServerLevel) level), 1000F);
                     } else {
-                        dev.golem.core.world.Compat.hurt(player, (net.minecraft.server.level.ServerLevel) level,
-                                ModDamageSources.euthanizedSelf2((net.minecraft.server.level.ServerLevel) level), 1000F);
+                        Compat.hurt(player, (ServerLevel) level,
+                                ModDamageSources.euthanizedSelf2((ServerLevel) level), 1000F);
                     }
                 }
             }
@@ -97,8 +101,8 @@ public final class ItemPill extends CompatItem {
                     Math.max(HbmLivingProps.getDigamma(player) - 0.5D, 0D));
             case "chocolate" -> {
                 if (level.getRandom().nextInt(25) == 0) {
-                    dev.golem.core.world.Compat.hurt(player, (net.minecraft.server.level.ServerLevel) level,
-                            ModDamageSources.overdose((net.minecraft.server.level.ServerLevel) level), 1000F);
+                    Compat.hurt(player, (ServerLevel) level,
+                            ModDamageSources.overdose((ServerLevel) level), 1000F);
                 }
                 Effects.add(player, Effects.haste(), 60 * 20, 3);
                 Effects.add(player, Effects.speed(), 60 * 20, 3);
@@ -119,7 +123,7 @@ public final class ItemPill extends CompatItem {
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-                                         List<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+                                         List<Component> tooltip, TooltipFlag flag) {
         switch (id) {
             case "pill_iodine" -> tooltip.add(Component.literal("Removes negative effects"));
             case "plan_c" -> tooltip.add(Component.literal("Deadly"));

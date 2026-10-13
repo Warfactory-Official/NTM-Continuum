@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import java.awt.Color;
 import java.util.Set;
 
 import com.hbm.blocks.ModFalloutBlocks;
@@ -12,12 +13,12 @@ import net.minecraft.world.level.block.state.properties.Property;
 
 /**
  * Cross-loader registration of HBM's block tint sources (same Sink pattern as
- * {@link HbmEntityRenderers}). 26.1 replaced the old per-quad {@code BlockColor} callback with
- * {@link BlockTint} (a state-keyed provider registered on {@code BlockColors}); NeoForge hooks
+ * {@link HbmEntityRenderers}). 26.1 has no per-quad {@code BlockColor} callback; it uses
+ * {@link BlockTint} (a state-keyed provider registered on {@code BlockColors}). NeoForge hooks
  * it via {@code RegisterColorHandlersEvent.BlockTintSources}, Fabric by registering directly on
  * {@code Minecraft.getBlockColors()} once the client has started.
  *
- * <p>Currently only the sellafite family: a grayscale tint darkening with the {@code SHADE} state —
+ * <p>Only the sellafite family: a grayscale tint darkening with the {@code SHADE} state:
  * {@code brightness = 1 − shade/15}, the old {@code BlockSellafieldSlaked} {@code IBlockColor}
  * (divisor stays 15 although only shades 0..9 are used, so shade 9 is dark grey, not black).
  * Client-only.
@@ -31,7 +32,7 @@ public final class HbmBlockColors {
         @Override
         public int color(BlockState state) {
             int shade = state.getValue(BlockSellafieldSlaked.SHADE);
-            return 0xFF000000 | java.awt.Color.HSBtoRGB(0F, 0F, 1F - shade / 15F);
+            return 0xFF000000 | Color.HSBtoRGB(0F, 0F, 1F - shade / 15F);
         }
 
         @Override

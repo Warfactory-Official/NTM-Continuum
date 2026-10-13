@@ -2,20 +2,32 @@ package com.hbm.gametest;
 
 import com.hbm.blocks.machine.MachineCyclotron;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.container.ContainerMachineCyclotron;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.CyclotronRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.ModItems;
+import com.hbm.lib.DirPos;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
+import dev.golem.core.Ids;
+import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.net.GolemBuffers;
+import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Arrays;
+import net.minecraft.world.level.GameType;
 
 /** Focused contracts for the standard cyclotron. */
 public final class CyclotronGameTests {
@@ -27,11 +39,11 @@ public final class CyclotronGameTests {
         helper.assertTrue(CyclotronRecipes.recipes.size() == 42,
                 "cyclotron must have 1.7's 42 recipes, has " + CyclotronRecipes.recipes.size());
         // The two 1.7 dustPhosphorus inputs are the c:dusts/phosphorus tag (empty with HBM alone, as in 1.7).
-        net.minecraft.tags.TagKey<net.minecraft.world.item.Item> phosphorus = net.minecraft.tags.TagKey.create(
-                net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dusts/phosphorus"));
+        TagKey<Item> phosphorus = TagKey.create(
+                Registries.ITEM, Ids.of("c", "dusts/phosphorus"));
         int lithiumSulfur = 0, plutoniumTennessine = 0;
         for (CyclotronRecipes.CyclotronRecipe r : CyclotronRecipes.recipes) {
-            if (!(r.input instanceof com.hbm.inventory.RecipesCommon.TagStack tag) || !tag.tag.equals(phosphorus)) continue;
+            if (!(r.input instanceof RecipesCommon.TagStack tag) || !tag.tag.equals(phosphorus)) continue;
             if (r.particle.matchesRecipe(new ItemStack(ModItems.part_lithium.get()), true)
                     && r.output.is(ModItems.sulfur.get()) && r.antimatter == 50) lithiumSulfur++;
             if (r.particle.matchesRecipe(new ItemStack(ModItems.part_plutonium.get()), true)
@@ -60,7 +72,7 @@ public final class CyclotronGameTests {
         BlockPos core = helper.absolutePos(new BlockPos(3, 1, 3));
         TileEntityMachineCyclotron cyclotron = (TileEntityMachineCyclotron) helper.getLevel().getBlockEntity(core);
 
-        for (com.hbm.lib.DirPos connection : cyclotron.getConPos()) {
+        for (DirPos connection : cyclotron.getConPos()) {
             BlockPos cell = connection.getPos().offset(-connection.getDir().offsetX,
                     -connection.getDir().offsetY, -connection.getDir().offsetZ);
             helper.assertTrue(block.canConnect(helper.getLevel(), cell, connection.getDir()),
@@ -69,16 +81,16 @@ public final class CyclotronGameTests {
                             connection.getDir()),
                     "cyclotron fluid port did not connect at " + connection.getPos());
         }
-        helper.assertFalse(block.canConnect(helper.getLevel(), core.offset(2, 0, 0), com.hbm.lib.ForgeDirection.EAST),
+        helper.assertFalse(block.canConnect(helper.getLevel(), core.offset(2, 0, 0), ForgeDirection.EAST),
                 "cyclotron connected a non-port perimeter face");
 
         WorldlyContainer corner = block.getContainer(helper.getLevel().getBlockState(core.offset(2, 0, 1)),
                 helper.getLevel(), core.offset(2, 0, 1));
         WorldlyContainer middle = block.getContainer(helper.getLevel().getBlockState(core.offset(2, 0, 0)),
                 helper.getLevel(), core.offset(2, 0, 0));
-        helper.assertTrue(corner != null && Arrays.equals(corner.getSlotsForFace(net.minecraft.core.Direction.NORTH),
+        helper.assertTrue(corner != null && Arrays.equals(corner.getSlotsForFace(Direction.NORTH),
                         new int[]{0, 3, 6, 7, 8}), "cyclotron corner hopper row is incorrect");
-        helper.assertTrue(middle != null && Arrays.equals(middle.getSlotsForFace(net.minecraft.core.Direction.NORTH),
+        helper.assertTrue(middle != null && Arrays.equals(middle.getSlotsForFace(Direction.NORTH),
                         new int[]{1, 4, 6, 7, 8}), "cyclotron middle hopper row is incorrect");
         helper.succeed();
     }
@@ -132,8 +144,8 @@ public final class CyclotronGameTests {
 
     public static void menu(GameTestHelper helper) {
         TileEntityMachineCyclotron cyclotron = placeStructureAndGet(helper, new BlockPos(3, 1, 3));
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
-                net.minecraft.world.level.GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper,
+                GameType.SURVIVAL);
         ContainerMachineCyclotron menu = new ContainerMachineCyclotron(0, player.getInventory(), cyclotron);
 
         helper.assertTrue(menu.slots.size() == ContainerMachineCyclotron.MACHINE_SLOTS + 36,
@@ -164,7 +176,7 @@ public final class CyclotronGameTests {
 
         TileEntityMachineCyclotron copy = new TileEntityMachineCyclotron(BlockPos.ZERO,
                 ModMachineBlocks.machine_cyclotron.get().defaultBlockState());
-        var buffer = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
+        var buffer = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         original.serialize(buffer);
         copy.deserialize(buffer);
 

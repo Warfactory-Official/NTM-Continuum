@@ -8,12 +8,15 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineAutosaw;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -31,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The single-block autosaw and its legacy fluid-typing, suspension, and look-overlay hooks. */
-public class MachineAutosaw extends dev.golem.core.world.CompatBlock
+public class MachineAutosaw extends CompatBlock
         implements TickingBlock, IFluidConnectorBlockMK2, IToolable, ILookOverlay {
 
     public MachineAutosaw(Properties properties) {
@@ -51,7 +54,7 @@ public class MachineAutosaw extends dev.golem.core.world.CompatBlock
 
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
-                                          InteractionHand hand, net.minecraft.world.item.ItemStack stack,
+                                          InteractionHand hand, ItemStack stack,
                                           BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.SUCCESS;
         if (!(stack.getItem() instanceof IItemFluidId identifier)) {
@@ -82,7 +85,7 @@ public class MachineAutosaw extends dev.golem.core.world.CompatBlock
     }
 
     @Override
-    public boolean onScrew(Level level, Player player, BlockPos pos, net.minecraft.core.Direction side,
+    public boolean onScrew(Level level, Player player, BlockPos pos, Direction side,
                            Vec3 hit, InteractionHand hand, ToolType tool) {
         if (tool != ToolType.SCREWDRIVER
                 || !(level.getBlockEntity(pos) instanceof TileEntityMachineAutosaw saw)) return false;

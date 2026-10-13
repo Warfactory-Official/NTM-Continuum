@@ -3,9 +3,12 @@ package com.hbm.items.tool;
 import com.hbm.items.ModDataComponents;
 import com.hbm.interfaces.IItemLookOverlay;
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.util.SavedIds;
+import dev.golem.core.data.Inventories;
 import dev.golem.core.data.Tags;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -105,7 +108,7 @@ public class ItemConveyorWand extends CompatItem implements IItemLookOverlay {
         CompoundTag run = run(stack);
         if (run == null) return null;
         return new Run(new BlockPos(Tags.getIntOr(run, "run_x", 0), Tags.getIntOr(run, "run_y", 0), Tags.getIntOr(run, "run_z", 0)),
-                com.hbm.util.SavedIds.getEnum(run, "run_side", Direction.UP), Tags.getIntOr(run, "run_count", 0));
+                SavedIds.getEnum(run, "run_side", Direction.UP), Tags.getIntOr(run, "run_count", 0));
     }
 
     private static final String[] RUN_KEYS = {"run_x", "run_y", "run_z", "run_side", "run_count"};
@@ -191,7 +194,7 @@ public class ItemConveyorWand extends CompatItem implements IItemLookOverlay {
             nbt.putInt("run_x", pos.getX());
             nbt.putInt("run_y", pos.getY());
             nbt.putInt("run_z", pos.getZ());
-            com.hbm.util.SavedIds.putEnum(nbt, "run_side", side);
+            SavedIds.putEnum(nbt, "run_side", side);
             nbt.putInt("run_count", budget(player, stack));
             setRun(stack, nbt);
             return InteractionResult.SUCCESS;
@@ -234,7 +237,7 @@ public class ItemConveyorWand extends CompatItem implements IItemLookOverlay {
 
         ConveyorRoute.setBelt(level, target, toPlace.defaultBlockState()
                 .setValue(BlockConveyorBase.FACING, player.getDirection()));
-        dev.golem.core.world.ItemStacks.consume(stack, 1, player);
+        ItemStacks.consume(stack, 1, player);
     }
 
     /** 1.7: creative carries 256, survival the wands of this exact type held in the main inventory. */
@@ -242,7 +245,7 @@ public class ItemConveyorWand extends CompatItem implements IItemLookOverlay {
         if (player.getAbilities().instabuild) return 256;
 
         int count = 0;
-        for (ItemStack carried : dev.golem.core.data.Inventories.main(player.getInventory())) {
+        for (ItemStack carried : Inventories.main(player.getInventory())) {
             if (!carried.isEmpty() && carried.getItem() == stack.getItem()) count += carried.getCount();
         }
         return count;
@@ -263,7 +266,7 @@ public class ItemConveyorWand extends CompatItem implements IItemLookOverlay {
             int toRemove = ConveyorRoute.construct(level, true, type, player, anchor, anchorSide, end, endSide, count);
 
             if (!player.getAbilities().instabuild) {
-                for (ItemStack carried : dev.golem.core.data.Inventories.main(player.getInventory())) {
+                for (ItemStack carried : Inventories.main(player.getInventory())) {
                     if (!carried.isEmpty() && carried.getItem() == stack.getItem()) {
                         int removing = Math.min(toRemove, carried.getCount());
                         carried.shrink(removing);

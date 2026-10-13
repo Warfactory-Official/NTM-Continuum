@@ -8,7 +8,7 @@ import net.minecraft.world.phys.HitResult;
 
 public class EntityCombineBallNT extends EntityThrowableInterp {
 
-    // 1.7: EntityBulletBaseNT.overrideDamage, folded into the impact damage roll - consumed once the legacy bullet-config wave lands
+    // 1.7: EntityBulletBaseNT.overrideDamage, folded into the impact damage roll; unread until a bullet-config port exists
     public float overrideDamage;
 
     public EntityCombineBallNT(EntityType<? extends EntityCombineBallNT> type, Level level) {
@@ -35,7 +35,7 @@ public class EntityCombineBallNT extends EntityThrowableInterp {
 
     @Override
     protected void onImpact(HitResult mop) {
-        // 1.7 resolves the hit through EntityBulletBaseNT's BulletConfiguration. Unported, deliberately: nothing
+        // 1.7 resolves the hit through EntityBulletBaseNT's BulletConfiguration. Unported: nothing
         // in 1.7 constructs this class - no EntityMappings entry, no BulletConfigSyncingUtil id, no call site -
         // so a sedna BulletConfig here would be an invented weapon. Wire one if a shooter ever lands.
         if (!this.level().isClientSide()) {
@@ -43,7 +43,7 @@ public class EntityCombineBallNT extends EntityThrowableInterp {
         }
     }
 
-    // 26.2: 1.7's setDead() explosion rides remove(), destroy-gated like EntityBulletBaseMK4.
+    // 26.1: 1.7's setDead() explosion rides remove(), destroy-gated like EntityBulletBaseMK4.
     @Override
     public void remove(Entity.RemovalReason reason) {
         super.remove(reason);

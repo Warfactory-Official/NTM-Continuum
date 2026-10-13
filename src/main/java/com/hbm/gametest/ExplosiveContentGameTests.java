@@ -15,8 +15,13 @@ import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.items.ModBombItems;
 import com.hbm.tileentity.bomb.TileEntityNukeMike;
+import com.mojang.serialization.Codec;
+import dev.golem.core.data.DataIn;
+import dev.golem.core.data.DataOut;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.registry.Entities;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +33,16 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -155,7 +163,7 @@ public final class ExplosiveContentGameTests {
         source.write(new MapWriter(saved));
         PersistenceProbe copy = new PersistenceProbe(helper);
         copy.read(new MapReader(saved));
-        // This deliberately verifies repairs to old-hbm's mismatched fuse key, ineffective state load,
+        // This verifies repairs to 1.12.2's mismatched fuse key, ineffective state load,
         // and omitted owner/collision fields rather than claiming persistence parity with those bugs.
         helper.assertTrue(copy.getFuse() == 37
                         && copy.getExplosiveState().is(ModBombBlocks.semtex.get())
@@ -200,7 +208,7 @@ public final class ExplosiveContentGameTests {
                         && ModBombBlocks.tnt.get().blastStrength() == 10F
                         && ModBombBlocks.semtex.get().blastStrength() == 12F
                         && ModBombBlocks.c4.get().blastStrength() == 15F,
-                "conventional explosive strengths no longer match old-hbm");
+                "conventional explosive strengths no longer match 1.12.2");
 
         BlockPos relative = new BlockPos(5, 3, 22);
         BlockPos pos = helper.absolutePos(relative);
@@ -213,16 +221,16 @@ public final class ExplosiveContentGameTests {
                 if (explosive == ModBombBlocks.tnt.get()) {
                     source = fixture.player();
                 } else if (explosive == ModBombBlocks.dynamite.get()) {
-                    source = new net.minecraft.world.entity.item.PrimedTnt(helper.getLevel(),
+                    source = new PrimedTnt(helper.getLevel(),
                             pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, fixture.player());
                 } else if (explosive == ModBombBlocks.semtex.get()) {
                     source = new EntityPrimedExplosive(helper.getLevel(), pos.getX() + 0.5D,
                             pos.getY() + 0.5D, pos.getZ() + 0.5D, fixture.player(),
                             ModBombBlocks.tnt.get().defaultBlockState());
                 } else {
-                    net.minecraft.world.entity.projectile.Projectile projectile =
-                            dev.golem.core.registry.Entities.createTriggered(
-                                    net.minecraft.world.entity.EntityType.SNOWBALL, helper.getLevel());
+                    Projectile projectile =
+                            Entities.createTriggered(
+                                    EntityType.SNOWBALL, helper.getLevel());
                     projectile.setOwner(fixture.player());
                     source = projectile;
                 }
@@ -335,8 +343,8 @@ public final class ExplosiveContentGameTests {
         new ExplosionVNT(level, occluder.getX(), occluder.getY(), occluder.getZ(), 1F)
                 .setBlockAllocator((explosion, world, x, y, z, size) -> {
                     phases.add("allocate");
-                    it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<BlockPos> blocks =
-                            new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>();
+                    ObjectOpenHashSet<BlockPos> blocks =
+                            new ObjectOpenHashSet<>();
                     blocks.add(occluder);
                     return blocks;
                 })
@@ -413,14 +421,14 @@ public final class ExplosiveContentGameTests {
         private PersistenceProbe(GameTestHelper helper) {
             super(ModExplosiveEntities.PRIMED_EXPLOSIVE.get(), helper.getLevel());
         }
-        private PersistenceProbe(GameTestHelper helper, Player owner, net.minecraft.world.level.block.state.BlockState state) {
+        private PersistenceProbe(GameTestHelper helper, Player owner, BlockState state) {
             super(helper.getLevel(), 2.5, 3, 14.5, owner, state);
         }
-        private void write(dev.golem.core.data.DataOut output) { saveData(output); }
-        private void read(dev.golem.core.data.DataIn input) { loadData(input); }
+        private void write(DataOut output) { saveData(output); }
+        private void read(DataIn input) { loadData(input); }
     }
 
-    private record MapWriter(Map<String, Object> values) implements dev.golem.core.data.DataOut {
+    private record MapWriter(Map<String, Object> values) implements DataOut {
         @Override public void putBoolean(String name, boolean value) { values.put(name, value); }
         @Override public void putByte(String name, byte value) { values.put(name, value); }
         @Override public void putShort(String name, short value) { values.put(name, value); }
@@ -430,18 +438,18 @@ public final class ExplosiveContentGameTests {
         @Override public void putDouble(String name, double value) { values.put(name, value); }
         @Override public void putString(String name, String value) { values.put(name, value); }
         @Override public void putIntArray(String name, int[] value) { values.put(name, value.clone()); }
-        @Override public <T> void store(String name, com.mojang.serialization.Codec<T> codec, T value) {
+        @Override public <T> void store(String name, Codec<T> codec, T value) {
             values.put(name, value);
         }
-        @Override public <T> void storeNullable(String name, com.mojang.serialization.Codec<T> codec, T value) {
+        @Override public <T> void storeNullable(String name, Codec<T> codec, T value) {
             if (value != null) values.put(name, value);
         }
-        @Override public dev.golem.core.data.DataOut child(String name) { return new MapWriter(new HashMap<>()); }
+        @Override public DataOut child(String name) { return new MapWriter(new HashMap<>()); }
         @Override public ChildList childrenList(String name) { return () -> new MapWriter(new HashMap<>()); }
         @Override public void discard(String name) { values.remove(name); }
     }
 
-    private record MapReader(Map<String, Object> values) implements dev.golem.core.data.DataIn {
+    private record MapReader(Map<String, Object> values) implements DataIn {
         @Override public boolean getBooleanOr(String name, boolean fallback) { return value(name, Boolean.class).orElse(fallback); }
         @Override public byte getByteOr(String name, byte fallback) { return number(name).map(Number::byteValue).orElse(fallback); }
         @Override public short getShortOr(String name, short fallback) { return number(name).map(Number::shortValue).orElse(fallback); }
@@ -452,12 +460,12 @@ public final class ExplosiveContentGameTests {
         @Override public String getStringOr(String name, String fallback) { return value(name, String.class).orElse(fallback); }
         @Override public Optional<int[]> getIntArray(String name) { return value(name, int[].class).map(int[]::clone); }
         @Override @SuppressWarnings("unchecked") public <T> Optional<T> read(
-                String name, com.mojang.serialization.Codec<T> codec) {
+                String name, Codec<T> codec) {
             return Optional.ofNullable((T) values.get(name));
         }
-        @Override public Optional<dev.golem.core.data.DataIn> child(String name) { return Optional.empty(); }
-        @Override public dev.golem.core.data.DataIn childOrEmpty(String name) { return new MapReader(Map.of()); }
-        @Override public List<dev.golem.core.data.DataIn> childrenListOrEmpty(String name) { return List.of(); }
+        @Override public Optional<DataIn> child(String name) { return Optional.empty(); }
+        @Override public DataIn childOrEmpty(String name) { return new MapReader(Map.of()); }
+        @Override public List<DataIn> childrenListOrEmpty(String name) { return List.of(); }
         private Optional<Number> number(String name) { return value(name, Number.class); }
         private <T> Optional<T> value(String name, Class<T> type) {
             Object value = values.get(name);

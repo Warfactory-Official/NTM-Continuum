@@ -10,6 +10,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.data.DataMaps;
 import dev.golem.core.data.DataMaps.DataMap;
+import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
@@ -33,7 +34,7 @@ public final class MachineDataMaps {
         return DataMaps.map(MachineDataMaps.class, Constants.MOD_ID, name, "fluid", () -> BuiltInRegistries.FLUID, codec);
     }
 
-    // ---- ICF pellet press (1.7 ItemICFPellet.fluidMap / materialMap) ----
+    // ICF pellet press (1.7 ItemICFPellet.fluidMap / materialMap)
 
     /** The ICF fuel a fluid presses into (1,000 mB per pellet half), by vanilla fluid id ({@code hbm:deuterium}). */
     public static final DataMap<Fluid, EnumICFFuel> ICF_FUEL_FLUID = fluid("icf_fuel", EnumICFFuel.CODEC);
@@ -56,11 +57,11 @@ public final class MachineDataMaps {
     }
 
     /** Every material-keyed ICF fuel, by material name. */
-    public static java.util.Map<String, EnumICFFuel> icfMaterialFuels() {
+    public static Map<String, EnumICFFuel> icfMaterialFuels() {
         return ICF_FUEL_MATERIAL.byId();
     }
 
-    // ---- custom nuke (1.7 TileEntityNukeCustom.registerBombItems) ----
+    // Custom nuke (1.7 TileEntityNukeCustom.registerBombItems)
 
     /** One custom nuke ingredient: the stage it feeds, its value and whether it adds or multiplies. */
     public record NukeEntry(EnumBombType type, float value, EnumEntryType op) {
@@ -78,7 +79,7 @@ public final class MachineDataMaps {
     /** Full fluid cells as custom nuke ingredients, by the fluid they hold (1.7's metadata cells). */
     public static final DataMap<Fluid, NukeEntry> CUSTOM_NUKE_CELL = fluid("custom_nuke", NukeEntry.CODEC);
 
-    // ---- radiation generator (1.7 TileEntityMachineRadGen fuels) ----
+    // Radiation generator (1.7 TileEntityMachineRadGen fuels)
 
     /**
      * A radiation generator fuel: HE per tick, ticks, and what is left over (an item id and count; none for nothing). The
@@ -96,7 +97,7 @@ public final class MachineDataMaps {
 
     public static final DataMap<Item, RadGenFuel> RADGEN_FUEL = item("radgen_fuel", RadGenFuel.CODEC);
 
-    // ---- research reactor (1.7 TileEntityReactorResearch.fuelMap) ----
+    // Research reactor (1.7 TileEntityReactorResearch.fuelMap)
 
     /** What a spent research reactor plate becomes: an item id, and whether it comes out hot (1.7 metadata 1). */
     public record ResearchReactorWaste(String output, boolean hot) {

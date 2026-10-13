@@ -10,6 +10,7 @@ import com.hbm.items.machine.ItemMold.Mold;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityFoundryCastingBase;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -34,7 +35,7 @@ import java.util.List;
  * right-click with a shovel empties the molten content to scraps. The look-overlay shows the installed
  * mold + fill state.
  */
-public abstract class FoundryCastingBase extends dev.golem.core.world.CompatBlock implements TickingBlock, ICrucibleAcceptor, ILookOverlay {
+public abstract class FoundryCastingBase extends CompatBlock implements TickingBlock, ICrucibleAcceptor, ILookOverlay {
 
     protected FoundryCastingBase(Properties properties) {
         super(properties);

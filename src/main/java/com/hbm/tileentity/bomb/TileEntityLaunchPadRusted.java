@@ -1,5 +1,6 @@
 package com.hbm.tileentity.bomb;
 
+import com.hbm.api.event.HbmEvents;
 import com.hbm.api.item.IDesignatorItem;
 import com.hbm.entity.missile.EntityMissileTier4;
 import com.hbm.interfaces.IBomb.BombReturnCode;
@@ -13,6 +14,7 @@ import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
+import dev.golem.core.world.SubLevels;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -69,20 +71,20 @@ public class TileEntityLaunchPadRusted extends TileEntityMachineBase implements 
             if (codes.getItem() == ModItems.launch_code.get() && key.getItem() == ModItems.launch_key.get()) {
                 if (designatorStack.getItem() instanceof IDesignatorItem designator) {
                     // Range and launch point are the pad as the world sees it (it may ride a moving sub-level).
-                    BlockPos inWorld = dev.golem.core.world.SubLevels.toWorldBlock(level, worldPosition);
+                    BlockPos inWorld = SubLevels.toWorldBlock(level, worldPosition);
                     if (!designator.isReady(level, designatorStack, inWorld)) return BombReturnCode.ERROR_MISSING_COMPONENT;
 
                     Vec3 coords = designator.getCoords(level, designatorStack, inWorld);
                     int targetX = (int) Math.floor(coords.x);
                     int targetZ = (int) Math.floor(coords.z);
 
-                    Vec3 launch = dev.golem.core.world.SubLevels.toWorld(level, worldPosition.getX() + 0.5D,
+                    Vec3 launch = SubLevels.toWorld(level, worldPosition.getX() + 0.5D,
                             worldPosition.getY() + 1D, worldPosition.getZ() + 0.5D);
                     EntityMissileTier4.EntityMissileDoomsdayRusted missile = new EntityMissileTier4.EntityMissileDoomsdayRusted(
                             level, (float) launch.x, (float) launch.y, (float) launch.z,
                             targetX, targetZ);
                     level.addFreshEntity(missile);
-                    com.hbm.api.event.HbmEvents.missileLaunched(level, worldPosition, missile, targetX, targetZ, null);
+                    HbmEvents.missileLaunched(level, worldPosition, missile, targetX, targetZ, null);
                     level.playSound(null, worldPosition.getX() + 0.5, worldPosition.getY(), worldPosition.getZ() + 0.5,
                             ModSounds.MISSILE_TAKEOFF.get(), SoundSource.BLOCKS, 2.0F, 1.0F);
                     this.missileLoaded = false;

@@ -4,6 +4,7 @@ import com.hbm.inventory.container.ContainerPASource;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
 import com.hbm.tileentity.machine.albion.TileEntityPASource;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
@@ -29,7 +30,7 @@ import java.util.Locale;
 public class GUIPASource extends GUIPABase<ContainerPASource> {
 
     private static final Identifier TEXTURE =
-            dev.golem.core.Ids.of("hbm", "textures/gui/particleaccelerator/gui_source.png");
+            Ids.of("hbm", "textures/gui/particleaccelerator/gui_source.png");
 
     public GUIPASource(ContainerPASource menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);

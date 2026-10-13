@@ -25,7 +25,7 @@ import java.util.function.Supplier;
  * <p>1.7's {@code cbarp(block, meta, widthwise, y, lengthwise, dir)} ladder is the {@link StructPattern} here,
  * one per facing: lengthwise runs along {@code dir.getRotation(UP)} from -8 to 8, widthwise along {@code dir}. Per
  * slice: three stability elements (meta 0) across the ground row (the seed itself is the gap in the middle row),
- * a welded vessel wall three up the middle, and the five-row hull from y 1 to 5 around it — welded vessel walls
+ * a welded vessel wall three up the middle, and the five-row hull from y 1 to 5 around it: welded vessel walls
  * (meta 2) within two slices of the middle, riveted casing (meta 4) outside that. The ghost preview reads the
  * same pattern ({@code RenderICFMultiblock} hard-coded the same ladder).
  */
@@ -111,6 +111,6 @@ public class TileEntityICFStruct extends TileEntityStructBase {
         Direction facing = te.facing();
         BlockMultiblockCore machine = te.target();
         BlockMultiblockCore.withoutTeardown(() -> MultiblockHandlerXR.placeAssembled(level, pos, machine, facing));
-        // `te` no longer exists — setBlock above destroyed this BlockEntity.
+        // `te` is gone: the setBlock above destroyed this BlockEntity.
     }
 }

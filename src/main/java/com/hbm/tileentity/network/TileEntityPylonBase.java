@@ -1,5 +1,7 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.tileentity.IRelocatable;
+import com.hbm.tileentity.MachineCore;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.CableData;
@@ -10,6 +12,7 @@ import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -30,7 +33,7 @@ import com.hbm.blocks.network.PylonDyes;
  * {@code PowerNode.addConnection(DirPos UNKNOWN)} became. A pylon with several cells (the substation's
  * corners) links them to its core cell the way the battery socket ties its ports together.
  */
-public abstract class TileEntityPylonBase extends TileEntityLoadedBase implements IEnergyConductorMK2, com.hbm.tileentity.IRelocatable {
+public abstract class TileEntityPylonBase extends TileEntityLoadedBase implements IEnergyConductorMK2, IRelocatable {
 
     /**
      * A sub-level move carried this pylon. Wires to pylons carried with it follow them; a wire to a pylon left
@@ -38,8 +41,8 @@ public abstract class TileEntityPylonBase extends TileEntityLoadedBase implement
      * (1.7's {@code disconnectAll}). The graph links are restated by the {@code clearRemoved} that follows.
      */
     @Override
-    public void relocate(dev.golem.core.world.SubLevels.Move move) {
-        java.util.List<BlockPos> kept = new java.util.ArrayList<>();
+    public void relocate(SubLevels.Move move) {
+        List<BlockPos> kept = new ArrayList<>();
         for (BlockPos peer : connected) if (move.carried(peer)) kept.add(move.apply(peer));
         connected.clear();
         connected.addAll(kept);
@@ -172,7 +175,7 @@ public abstract class TileEntityPylonBase extends TileEntityLoadedBase implement
 
     /** The 1.7 metadata the renderers and mount tables keyed on: the facing's ForgeDirection ordinal (2..5). */
     public int facingMeta() {
-        return com.hbm.tileentity.MachineCore.facingOrdinal(getBlockState(), 2);
+        return MachineCore.facingOrdinal(getBlockState(), 2);
     }
 
     @Override

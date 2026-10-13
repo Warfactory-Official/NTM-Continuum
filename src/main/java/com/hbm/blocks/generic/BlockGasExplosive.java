@@ -13,13 +13,13 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * Explosive gas pocket — the 1.12.2 {@code BlockGasExplosive}. Identical drift and ignition triggers to
+ * Explosive gas pocket, the 1.12.2 {@code BlockGasExplosive}. Identical drift and ignition triggers to
  * {@link BlockGasFlammable}; only {@link #combust} differs: instead of quietly turning into fire, the
  * whole connected pocket detonates in one pass.
  *
  * <p>The old flood fill is ported exactly: a BFS from the ignition point over same-block neighbours,
  * <b>capped at 128 cells</b>, each turned to fire and given a 3.0-power block-breaking explosion. The
- * {@code ThreadLocal} re-entry guard is kept — the explosions destroy neighbouring gas cells, which
+ * {@code ThreadLocal} re-entry guard is kept, because the explosions destroy neighbouring gas cells, which
  * would otherwise re-enter {@code combust} through {@code neighborChanged} mid-fill.
  */
 public class BlockGasExplosive extends BlockGasFlammable {

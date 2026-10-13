@@ -7,12 +7,14 @@ import com.google.gson.stream.JsonWriter;
 import com.hbm.Constants;
 import com.hbm.tileentity.IConfigurableMachine;
 
+import com.hbm.tileentity.machine.TileEntityICFController;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * 1.7 {@code MachineDynConfig}: {@code <config>/hbmConfig/hbmMachines.json}. Read once at start: every registered
@@ -29,8 +31,8 @@ public final class MachineDynConfig {
     public static final Gson gson = new Gson();
 
     /** Every machine in {@code hbmMachines.json}, in file order: HBM's, then any an addon {@link #register}s. */
-    public static final List<IConfigurableMachine> CONFIGURABLES = new java.util.concurrent.CopyOnWriteArrayList<>(List.of(
-            com.hbm.tileentity.machine.TileEntityICFController.CONFIG));
+    public static final List<IConfigurableMachine> CONFIGURABLES = new CopyOnWriteArrayList<>(List.of(
+            TileEntityICFController.CONFIG));
 
     /**
      * Adds an addon's machine to {@code hbmMachines.json} (1.7 {@code CustomMachineConfigJSON}-style dynamic config). Call

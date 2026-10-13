@@ -1,5 +1,8 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import com.hbm.entity.projectile.EntityRBMKDebris;
+import com.hbm.saveddata.satellites.SatelliteRayScan;
+import com.hbm.tileentity.ModRBMKBlockEntities;
 import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.ModHazardBlocks;
@@ -23,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -34,13 +38,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-/** Fuel channel tick order is deliberately burn, fuel heat, column tick, fail-safe, then stream emission. */
+/** Fuel channel tick order is burn, fuel heat, column tick, fail-safe, then stream emission. */
 public class BlockEntityRBMKRod extends BlockEntityRBMKBase implements IRBMKFluxReceiver, IRBMKLoadable, MenuProvider, IRORValueProvider {
     public static final Vec3[] fluxDirs = {new Vec3(0,0,-1), new Vec3(1,0,0), new Vec3(0,0,1), new Vec3(-1,0,0)};
     public double fluxFastRatio, fluxQuantity, lastFluxQuantity, lastFluxRatio, lastFluxOut;
     public boolean hasRod;
     public int rodColor;
-    public BlockEntityRBMKRod(BlockPos pos, BlockState state) { this(com.hbm.tileentity.ModRBMKBlockEntities.RBMK_ROD.get(), pos, state); }
+    public BlockEntityRBMKRod(BlockPos pos, BlockState state) { this(ModRBMKBlockEntities.RBMK_ROD.get(), pos, state); }
     protected BlockEntityRBMKRod(BlockEntityType<?> type, BlockPos pos, BlockState state) { super(type, pos, state, 1); }
     @Override public boolean isModerated() { return getBlockState().getBlock() instanceof RBMKRod rod && rod.moderated; }
     @Override public int trackingRange() { return 25; }
@@ -51,8 +55,8 @@ public class BlockEntityRBMKRod extends BlockEntityRBMKBase implements IRBMKFlux
         if (fuel.getItem() instanceof ItemRBMKRod rod) {
             rodColor = rod.stats().tint();
             if (fluxQuantity > 0 && level.getGameTime() % 200 == 0)
-                com.hbm.saveddata.satellites.SatelliteRayScan.reportEvent(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
-                        com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent.INFO_NUCLEAR, 300);
+                SatelliteRayScan.reportEvent(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
+                        SatelliteRayScan.RayEvent.INFO_NUCLEAR, 300);
             double outputRatio = rod.stats().neutronOut() == ItemRBMKRod.NType.SLOW ? 0D : 1D;
             double output = rod.burn(level, fuel, fluxFor(rod.stats().neutronIn()));
             rod.updateHeat(level, fuel, 1D); heat += rod.provideHeat(level, fuel, heat, 1D);
@@ -74,9 +78,9 @@ public class BlockEntityRBMKRod extends BlockEntityRBMKBase implements IRBMKFlux
     @Override public void onMelt(int reduce) {
         boolean moderated = isModerated(), fuelled = inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod;
         boolean drx = inventory.getStackInSlot(0).is(ModRBMKItems.rbmk_fuel_drx.get()); inventory.setStackInSlot(0, ItemStack.EMPTY); if (drx) RBMKBase.digamma = true;
-        if (fuelled) { int h = RBMKDials.getColumnHeight(level); reduce = net.minecraft.util.Mth.clamp(reduce, 1, h); if (level.getRandom().nextInt(3) == 0) reduce++; BlockState melt = (drx ? ModRBMKBlocks.rbmk_debris_digamma : ModHazardBlocks.block_corium).get().defaultBlockState(); for (int i = h; i >= 0; i--) level.setBlock(worldPosition.above(i), i <= h + 1 - reduce ? melt : Blocks.AIR.defaultBlockState(), 3); for (int i = 0, n = 1 + level.getRandom().nextInt(h); i < n; i++) spawnDebris(com.hbm.entity.projectile.EntityRBMKDebris.DebrisType.FUEL); } else standardMelt(reduce);
-        if (moderated) for (int i = 0, n = 2 + level.getRandom().nextInt(2); i < n; i++) spawnDebris(com.hbm.entity.projectile.EntityRBMKDebris.DebrisType.GRAPHITE);
-        spawnDebris(com.hbm.entity.projectile.EntityRBMKDebris.DebrisType.ELEMENT); if (RBMKBase.lidOf(getBlockState()) == RBMKBase.Lid.CONCRETE) spawnDebris(com.hbm.entity.projectile.EntityRBMKDebris.DebrisType.LID);
+        if (fuelled) { int h = RBMKDials.getColumnHeight(level); reduce = Mth.clamp(reduce, 1, h); if (level.getRandom().nextInt(3) == 0) reduce++; BlockState melt = (drx ? ModRBMKBlocks.rbmk_debris_digamma : ModHazardBlocks.block_corium).get().defaultBlockState(); for (int i = h; i >= 0; i--) level.setBlock(worldPosition.above(i), i <= h + 1 - reduce ? melt : Blocks.AIR.defaultBlockState(), 3); for (int i = 0, n = 1 + level.getRandom().nextInt(h); i < n; i++) spawnDebris(EntityRBMKDebris.DebrisType.FUEL); } else standardMelt(reduce);
+        if (moderated) for (int i = 0, n = 2 + level.getRandom().nextInt(2); i < n; i++) spawnDebris(EntityRBMKDebris.DebrisType.GRAPHITE);
+        spawnDebris(EntityRBMKDebris.DebrisType.ELEMENT); if (RBMKBase.lidOf(getBlockState()) == RBMKBase.Lid.CONCRETE) spawnDebris(EntityRBMKDebris.DebrisType.LID);
     }
     @Override public RBMKType getRBMKType() { return RBMKType.ROD; }
     @Override public RBMKColumnType getConsoleType() { return RBMKColumnType.FUEL; }

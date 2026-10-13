@@ -4,6 +4,7 @@ import dev.golem.core.data.CompatBlockEntity;
 import com.hbm.api.tile.ILoadedTile;
 import com.hbm.lib.Library;
 import com.hbm.packet.BlockEntitySyncPayload;
+import dev.golem.core.net.GolemBuffers;
 import dev.golem.core.net.GolemSync;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.HolderLookup;
@@ -32,10 +33,10 @@ import net.minecraft.core.BlockPos;
  *       {@link #networkPackMK2()}, the 26.1 replacement for the old off-thread {@code BufPacket}.</li>
  * </ul>
  *
- * <p>Unlike the old class, the buf sync runs <em>synchronously</em> on the server thread (the old
- * off-thread packet pool has no cross-loader equivalent and was a frequent source of CMEs), and the
- * chunk-load path uses vanilla NBT rather than the {@code hbmSync} byte[] trick (which can't survive
- * {@code DataOut}, see IMPLEMENTATION.md §20).
+ * <p>The buf sync runs <em>synchronously</em> on the server thread (the old off-thread packet pool has
+ * no cross-loader equivalent and was a frequent source of CMEs), and the chunk-load path uses vanilla
+ * NBT rather than the {@code hbmSync} byte[] trick (which can't survive {@code DataOut}, see
+ * IMPLEMENTATION.md §20).
  */
 public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTile, IBufPacketReceiver, GraphResident {
 
@@ -112,8 +113,8 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
 
     /**
      * Compiles this tile's {@link #serialize} payload and publishes it to every player tracking the
-     * chunk. No-op on the client, and no-op while nobody is tracking — the payload is not even built
-     * then, which is the whole point of asking first. Skips the broadcast when the payload is
+     * chunk. No-op on the client, and no-op while nobody is tracking: the payload is not even built
+     * then. Skips the broadcast when the payload is
      * byte-identical to the previous one; {@link GolemSync} replays that last payload to players who
      * arrive later, so skipping an unchanged send does not strand them.
      */
@@ -153,7 +154,7 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
     }
 
     private byte[] compilePayload() {
-        var buf = dev.golem.core.net.GolemBuffers.wrap(Unpooled.buffer(), level);
+        var buf = GolemBuffers.wrap(Unpooled.buffer(), level);
         try {
             serialize(buf);
             byte[] data = new byte[buf.readableBytes()];

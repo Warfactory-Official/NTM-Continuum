@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.data.MachineDataMaps;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.inventory.container.ContainerICFPress;
 import com.hbm.inventory.fluid.FluidType;
@@ -136,7 +137,7 @@ public class TileEntityICFPress extends TileEntityMachineBase
 
     public @Nullable EnumICFFuel getFuel(FluidTankNTM tank, ItemStack slot, int index) {
         usedFluid[index] = false;
-        EnumICFFuel fluidFuel = com.hbm.api.data.MachineDataMaps.ICF_FUEL_FLUID.get(Fluids.toVanilla(tank.getTankType()));
+        EnumICFFuel fluidFuel = MachineDataMaps.ICF_FUEL_FLUID.get(Fluids.toVanilla(tank.getTankType()));
         if (tank.getFill() >= 1000 && fluidFuel != null) {
             usedFluid[index] = true;
             return fluidFuel;
@@ -146,7 +147,7 @@ public class TileEntityICFPress extends TileEntityMachineBase
         if (mats == null || mats.size() != 1) return null;
         MaterialStack mat = mats.get(0);
         if (mat.amount != MaterialShapes.INGOT.quantity) return null;
-        return com.hbm.api.data.MachineDataMaps.icfFuel(mat.material);
+        return MachineDataMaps.icfFuel(mat.material);
     }
 
     /** 1.7 {@code tank.setType(slot, slots)}: a new identifier retypes the tank and empties it. */

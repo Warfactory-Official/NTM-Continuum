@@ -1,10 +1,11 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.fluidmk2.IFluidMultiUserMK2;
+import com.hbm.inventory.container.ContainerMachineChemicalFactory;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.chemicalfactory.ChemicalFactoryRegistrations;
 import com.hbm.client.sound.ChemicalFactorySoundHandler;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.UpgradeManagerNT;
@@ -17,7 +18,7 @@ import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.modules.machine.ModuleMachineChemplant;
+import com.hbm.module.machine.ModuleMachineChemplant;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.TickPhase;
@@ -41,11 +42,13 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.tileentity.ModBlockEntities;
 
 /** Four-lane Chemical Factory, ported from the legacy TileEntityMachineChemicalFactory. */
 public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IControlReceiver,
-        WorldlyContainer, IUpgradeInfoProvider, IRORValueProvider, com.hbm.api.fluidmk2.IFluidMultiUserMK2 {
+        WorldlyContainer, IUpgradeInfoProvider, IRORValueProvider, IFluidMultiUserMK2 {
 
     /**
      * 1.7: a duct at a coolant position reached the coolant {@code delegate} (water in, low-pressure steam out), not
@@ -97,7 +100,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
     private DirPos[] ioPos;
 
     public TileEntityMachineChemicalFactory(BlockPos pos, BlockState state) {
-        super(ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY_BE.get(), pos, state, MACHINE_SLOTS);
+        super(ModBlockEntities.MACHINE_CHEMICAL_FACTORY.get(), pos, state, MACHINE_SLOTS);
         ChemicalPlantRecipes.INSTANCE.registerRecipes();
 
         for (int i = 0; i < inputTanks.length; i++) {
@@ -353,7 +356,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
 
     @Override
     public void provideInfo(UpgradeType type, int level, List<Component> info, boolean extendedInfo) {
-        info.add(IUpgradeInfoProvider.getStandardLabel(ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY.get()));
+        info.add(IUpgradeInfoProvider.getStandardLabel(ModMachineBlocks.machine_chemical_factory.get()));
         if (type == UpgradeType.SPEED) {
             info.add(Component.translatable(KEY_SPEED, "+" + (level * 100 / 3) + "%").withStyle(ChatFormatting.GREEN));
             info.add(Component.translatable(KEY_CONSUMPTION, "+" + (level * 50) + "%").withStyle(ChatFormatting.RED));
@@ -386,7 +389,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
 
     @Override
     public boolean hasPermission(Player player) {
-        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMachineChemicalFactory menu
+        return player.containerMenu instanceof ContainerMachineChemicalFactory menu
                 && menu.getFactory() == this && menu.stillValid(player);
     }
 
@@ -413,7 +416,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
                 : Component.translatable("block.hbm.machine_chemical_factory");
     }
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new com.hbm.inventory.container.ContainerMachineChemicalFactory(id, inventory, this);
+        return new ContainerMachineChemicalFactory(id, inventory, this);
     }
 
     @Override

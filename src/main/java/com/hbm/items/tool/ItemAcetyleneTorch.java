@@ -10,6 +10,8 @@ import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -119,7 +121,7 @@ public class ItemAcetyleneTorch extends CompatItem implements IFillableItem {
     @Override public boolean isBarVisible(ItemStack stack) { return frac(stack) < 1D; }
     @Override public int getBarWidth(ItemStack stack) { return (int) Math.round(13.0D * frac(stack)); }
     @Override public int getBarColor(ItemStack stack) {
-        return net.minecraft.util.Mth.hsvToRgb((float) (frac(stack) / 3.0D), 1.0F, 1.0F);
+        return Mth.hsvToRgb((float) (frac(stack) / 3.0D), 1.0F, 1.0F);
     }
 
     @Override
@@ -129,7 +131,7 @@ public class ItemAcetyleneTorch extends CompatItem implements IFillableItem {
         list.add(gauge(stack, Fluids.OXYGEN).withStyle(ChatFormatting.AQUA));
     }
 
-    private net.minecraft.network.chat.MutableComponent gauge(ItemStack stack, FluidType type) {
+    private MutableComponent gauge(ItemStack stack, FluidType type) {
         return Component.empty().append(type.getDisplayName()).append(": "
                 + String.format(Locale.US, "%,d", getFill(stack, type)) + " / "
                 + String.format(Locale.US, "%,d", getMaxFill(type)));

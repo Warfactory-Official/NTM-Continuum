@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * The Watz coolant pump's block entity. It holds no state and runs no logic — it exists because the
+ * The Watz coolant pump's block entity. It holds no state and runs no logic: it exists because the
  * pump is a folded multiblock, whose core cell must carry a block entity, and
  * because the OBJ renderer hangs off it. The reactor detects the pump by looking up this block, not
  * the other way round.

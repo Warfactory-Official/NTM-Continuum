@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import com.hbm.blocks.generic.BlockLantern;
 import dev.golem.core.dejson.When;
 import dev.golem.core.dejson.Variant;
 import dev.golem.core.dejson.States;
@@ -25,6 +26,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RotatedPillarBlock;
@@ -72,10 +74,9 @@ import com.hbm.tileentity.ModDecoBlockEntities;
  * crates. Registry ids are the original {@code setBlockName} strings; metadata families are flattened
  * to {@code <base>_<variant>} ({@code vinyl_tile_large}, {@code platemetal_black}, ...).
  *
- * <p>Hardness/resistance numbers are copied literally from {@code ModBlocks} 1.7, as the rest of the
- * port does. {@code Material.iron} blocks require a pickaxe and sit in the mineable tag. Each block's
- * models, blockstate, item model, loot and tags are stated on its registration (Reg; emitted by Dejson at
- * build time). Authored files this class leans on: the four {@code template_pipe*} element models, the two
+ * <p>Hardness and resistance are copied from 1.7 {@code ModBlocks}. {@code Material.iron} blocks require a
+ * pickaxe. Models, blockstate, item model, loot and tags are stated on each registration (Reg, emitted by
+ * Dejson at build time). Authored files used here: the four {@code template_pipe*} element models, the two
  * {@code template_chain*} models, the glass-pane multipart blockstates and models, and the
  * {@code hbm:machine_obj} item definitions of the OBJ-drawn blocks ({@code ObjItemDeclarations}).
  */
@@ -115,7 +116,7 @@ public final class ModDecoContent {
     private static final Supplier<Component> SPEEDY = () -> Component.literal("Increases speed by 50%").withStyle(ChatFormatting.BLUE);
     private static final Supplier<Component> GRATE_WIDE = () -> Component.translatable("tile.steel_grate_wide.desc");
 
-    // ---- declaration bundles ----
+    // Declaration bundles
     /** One texture all round ({@code hbm:blocks/<id>}), single state, dropping itself. */
     private static final Preset CUBE = Presets.cubeAll().and(handle -> handle.loot(Loot.self()));
     /** A spotlight fixture: renderer-drawn (facing x broken). */
@@ -132,8 +133,8 @@ public final class ModDecoContent {
                 .and(handle -> handle.loot(Loot.self()));
     }
 
-    // ---- decorative pipes (BlockPipe: Material.iron, grate sound, 2/5): an authored octagonal template per
-    // rType, textured per colour ----
+    // Decorative pipes (BlockPipe: Material.iron, grate sound, 2/5): an authored octagonal template per
+    // rType, textured per colour
     public static final RegistryObject<DecoPipe> deco_pipe = pipe("deco_pipe", DecoPipe.Style.PLAIN, "pipe_top", "pipe_side");
     public static final RegistryObject<DecoPipe> deco_pipe_rusted = pipe("deco_pipe_rusted", DecoPipe.Style.PLAIN, "pipe_top_rusty", "pipe_side_rusty");
     public static final RegistryObject<DecoPipe> deco_pipe_green = pipe("deco_pipe_green", DecoPipe.Style.PLAIN, "pipe_top_green", "pipe_side_green");
@@ -159,7 +160,7 @@ public final class ModDecoContent {
     public static final RegistryObject<DecoPipe> deco_pipe_quad_red = pipe("deco_pipe_quad_red", DecoPipe.Style.QUAD, "pipe_top_red", "pipe_side_red");
     public static final RegistryObject<DecoPipe> deco_pipe_quad_marked = pipe("deco_pipe_quad_marked", DecoPipe.Style.QUAD, "pipe_top_marked", "pipe_side_marked");
 
-    // ---- rotatable pillars (BlockRotatablePillar) ----
+    // Rotatable pillars (BlockRotatablePillar)
     public static final RegistryObject<RotatedPillarBlock> block_schrabidium_cluster = pillar("block_schrabidium_cluster",
             p -> p.strength(5.0F, 60000.0F).requiresCorrectToolForDrops(), i -> i.rarity(Rarity.RARE))
             .transform(pillarModel("block_schrabidium_cluster_top", "block_schrabidium_cluster_side")).tag(BlockTag.PICKAXE);
@@ -182,7 +183,7 @@ public final class ModDecoContent {
             p -> p.strength(15.0F, 360.0F).requiresCorrectToolForDrops(), UnaryOperator.identity())
             .transform(pillarModel("meteor_pillar_top", "meteor_pillar")).tag(BlockTag.PICKAXE);
 
-    // ---- lamps (a lit block drops, and is picked as, its unlit twin) ----
+    // Lamps (a lit block drops, and is picked as, its unlit twin)
     public static final RegistryObject<Block> reinforced_light = plain("reinforced_light", Block::new,
             p -> p.strength(15.0F, 80.0F).lightLevel(s -> 15).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(CUBE).tag(BlockTag.PICKAXE);
@@ -212,10 +213,10 @@ public final class ModDecoContent {
      * {@code Material.iron}, hardness 3, metal sound; the light comes from the lamp cell, not the base.
      * Drawn entirely by LanternRenderer, so the blockstate exists only because vanilla demands one
      * (FACING x CELL is BlockMultiblockMachine's state space). The item is RenderLantern's OBJ item renderer, the
-     * typed definition in ObjItemDeclarations (it was the flat block_steel sprite until the 2026-10-01 icon audit).
+     * typed definition in ObjItemDeclarations.
      */
-    public static final RegistryObject<com.hbm.blocks.generic.BlockLantern> lantern =
-            plain("lantern", com.hbm.blocks.generic.BlockLantern::new,
+    public static final RegistryObject<BlockLantern> lantern =
+            plain("lantern", BlockLantern::new,
                     p -> p.strength(3.0F).sound(SoundType.METAL).lightLevel(s -> 15).noOcclusion()
                             .requiresCorrectToolForDrops()
                             .isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false),
@@ -232,8 +233,8 @@ public final class ModDecoContent {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    // ---- spotlights (Material.iron, hardness 0.5; lit by default, redstone switches them off): renderer-drawn;
-    // the off block drops the on block (1.7 getItemDropped -> getOn) ----
+    // Spotlights (Material.iron, hardness 0.5; lit by default, redstone switches them off): renderer-drawn;
+    // the off block drops the on block (1.7 getItemDropped -> getOn)
     public static final RegistryObject<Spotlight> spotlight_incandescent = spotlight("spotlight_incandescent", 2, Spotlight.LightType.INCANDESCENT, true,
             () -> ModDecoContent.spotlight_incandescent_off.get(), () -> ModDecoContent.spotlight_incandescent.get())
             .transform(FIXTURE).loot(Loot.self()).tag(BlockTag.PICKAXE);
@@ -278,7 +279,7 @@ public final class ModDecoContent {
                 .isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false).noLootTable();
     }
 
-    // ---- bricks and concrete ----
+    // Bricks and concrete
     /**
      * Red Room brick: no creative tab, no drop, blast resistance 10,000. The marked face follows the six-way
      * facing; up/down use the "_top" icon set. plain=true is 1.7 meta 6 (no marked face, brick_base all round),
@@ -330,7 +331,7 @@ public final class ModDecoContent {
             p -> p.strength(10.0F, 20.0F).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(CUBE).tag(BlockTag.PICKAXE);
 
-    // ---- asphalt (BlockSpeedy x1.5) ----
+    // Asphalt (BlockSpeedy x1.5)
     public static final RegistryObject<BlockSpeedy> asphalt = plain("asphalt", p -> new BlockSpeedy(p, 1.5),
             p -> p.strength(15.0F, 120.0F).requiresCorrectToolForDrops(), HbmTab.BLOCKS, SPEEDY)
             .transform(CUBE).tag(BlockTag.PICKAXE);
@@ -350,14 +351,14 @@ public final class ModDecoContent {
             .loot(Loot.slab())
             .tag(BlockTag.PICKAXE);
 
-    // ---- vinyl tile / platemetal (flattened enum blocks; the dotted 1.7 texture names are kept) ----
+    // Vinyl tile / platemetal (flattened enum blocks; the dotted 1.7 texture names are kept)
     public static final RegistryObject<Block> vinyl_tile_large = plain("vinyl_tile_large", Block::new,
             p -> p.strength(10.0F, 60.0F).sound(SoundType.GLASS).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(Presets.cubeAll("hbm:blocks/vinyl_tile.large")).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> vinyl_tile_small = plain("vinyl_tile_small", Block::new,
             p -> p.strength(10.0F, 60.0F).sound(SoundType.GLASS).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(Presets.cubeAll("hbm:blocks/vinyl_tile.small")).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final java.util.Map<String, RegistryObject<Block>> platemetal = new java.util.LinkedHashMap<>();
+    public static final Map<String, RegistryObject<Block>> platemetal = new LinkedHashMap<>();
 
     static {
         for (String color : PLATEMETAL_COLORS) {
@@ -367,14 +368,14 @@ public final class ModDecoContent {
         }
     }
 
-    // ---- depth bricks (unbreakable, blast resistance 10 / 60,000 for DNT) ----
+    // Depth bricks (unbreakable, blast resistance 10 / 60,000 for DNT)
     public static final RegistryObject<BlockDepth> depth_brick = depth("depth_brick", 10.0F);
     public static final RegistryObject<BlockDepth> depth_tiles = depth("depth_tiles", 10.0F);
     public static final RegistryObject<BlockDepth> depth_nether_brick = depth("depth_nether_brick", 10.0F);
     public static final RegistryObject<BlockDepth> depth_nether_tiles = depth("depth_nether_tiles", 10.0F);
     public static final RegistryObject<BlockDepth> depth_dnt = depth("depth_dnt", 60000.0F);
 
-    // ---- steel odds and ends ----
+    // Steel odds and ends
     /** Item grate: the ten authored steel_grate heights, re-skinned with the wide top. */
     public static final RegistryObject<BlockGrateWide> steel_grate_wide = plain("steel_grate_wide", BlockGrateWide::new,
             p -> p.strength(2.0F, 5.0F).sound(Sounds.GRATE_SOUND).noOcclusion().requiresCorrectToolForDrops()
@@ -414,7 +415,7 @@ public final class ModDecoContent {
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.CLIMBABLE);
 
-    // ---- terrain ----
+    // Terrain
     /** HBM's dirt, named "Dirt", drops vanilla dirt, no creative tab (the red-crate easter egg). */
     public static final RegistryObject<BlockNTMDirt> ntm_dirt = REG.block("ntm_dirt", BlockNTMDirt::new,
                     p -> p.strength(0.5F).sound(SoundType.GRAVEL))
@@ -428,7 +429,7 @@ public final class ModDecoContent {
             // 1.7 BlockDirt: one dirt, no fortune; silk touch keeps the block
             .loot(Loot.oreNoFortune("minecraft:dirt", 1, 1))
             .tag(BlockTag.SHOVEL);
-    /** The two {@code sand_mix} subtypes the earlier waves did not carry (boron/lead/quartz already exist). */
+    /** The two {@code sand_mix} subtypes; boron, lead and quartz already exist. */
     public static final RegistryObject<BlockFallingBase> sand_uranium = plain("sand_uranium", BlockFallingBase::new,
             p -> p.strength(0.5F).sound(SoundType.SAND), HbmTab.MACHINES)
             .transform(CUBE).tag(BlockTag.SHOVEL);
@@ -436,7 +437,7 @@ public final class ModDecoContent {
             p -> p.strength(0.5F).sound(SoundType.SAND), HbmTab.MACHINES)
             .transform(CUBE).tag(BlockTag.SHOVEL);
 
-    // ---- loot crates ----
+    // Loot crates
     public static final RegistryObject<BlockCrate> crate_weapon = plain("crate_weapon", p -> new BlockCrate(p, BlockCrate.Kind.WEAPON),
             p -> p.strength(5.0F, 10.0F).sound(SoundType.WOOD), HbmTab.CONSUMABLES)
             .transform(CUBE);
@@ -459,7 +460,7 @@ public final class ModDecoContent {
             p -> p.strength(1.0F, 2.5F).sound(SoundType.STONE).requiresCorrectToolForDrops(), HbmTab.CONSUMABLES) // 1.7 Material.rock
             .transform(CUBE).tag(BlockTag.PICKAXE);
 
-    // ---- OBJ-drawn decorations (invisible block + TileEntityDecoModel + DecoModelRenderer) ----
+    // OBJ-drawn decorations (invisible block + TileEntityDecoModel + DecoModelRenderer)
     public static final RegistryObject<DecoModelBlock> steel_poles = model("steel_poles", DecoModelBlock.Pole::new, 5.0F, 15.0F, true);
     public static final RegistryObject<DecoModelBlock> pole_top = model("pole_top", DecoModelBlock.Kind.TOP, 5.0F, 15.0F, true);
     /** 1.7 render type -1 with no item renderer: the item is the block's flat {@code deco_satellite_receiver} icon. */
@@ -506,7 +507,7 @@ public final class ModDecoContent {
         REG.blockItem(asphalt_slab, Compat::blockDescription).tab(HbmTab.BLOCKS);
     }
 
-    // ---- blockstate tables ----
+    // Blockstate tables
 
     private static Map<String, List<Placement>> redBrickStates() {
         Map<String, List<Placement>> redBrick = new LinkedHashMap<>();
@@ -554,12 +555,12 @@ public final class ModDecoContent {
         return chain;
     }
 
-    // ---- helpers ----
+    // Helpers
 
     private static Reg.Handle<DecoPipe> pipe(String id, DecoPipe.Style style, String top, String side) {
         Reg.Handle<DecoPipe> block = REG.block(id, p -> new DecoPipe(p, style),
                 p -> p.strength(2.0F, 5.0F).sound(Sounds.GRATE_SOUND).noOcclusion().requiresCorrectToolForDrops());
-        REG.item(id, (net.minecraft.world.item.Item.Properties p) -> new DecoBlockItem(block.get(), Compat.blockDescription(p), List.of(PURELY_DECORATIVE)))
+        REG.item(id, (Item.Properties p) -> new DecoBlockItem(block.get(), Compat.blockDescription(p), List.of(PURELY_DECORATIVE)))
                 .tab(HbmTab.BLOCKS);
         return block
                 .transform(Presets.shape(Models.parented("hbm:block/" + style.template,
@@ -570,7 +571,7 @@ public final class ModDecoContent {
     }
 
     private static Reg.Handle<RotatedPillarBlock> pillar(String id, UnaryOperator<BlockBehaviour.Properties> props,
-                                                         UnaryOperator<net.minecraft.world.item.Item.Properties> itemProps) {
+                                                         UnaryOperator<Item.Properties> itemProps) {
         Reg.Handle<RotatedPillarBlock> block = REG.block(id, RotatedPillarBlock::new, props);
         REG.blockItem(block, p -> itemProps.apply(Compat.blockDescription(p))).tab(HbmTab.BLOCKS);
         return block;
@@ -634,7 +635,7 @@ public final class ModDecoContent {
                                                          UnaryOperator<BlockBehaviour.Properties> props, HbmTab tab,
                                                          Supplier<Component>... lines) {
         Reg.Handle<B> block = REG.block(id, factory, props);
-        Reg.Handle<DecoBlockItem> item = REG.item(id, (net.minecraft.world.item.Item.Properties p) -> new DecoBlockItem(block.get(), Compat.blockDescription(p), List.of(lines)));
+        Reg.Handle<DecoBlockItem> item = REG.item(id, (Item.Properties p) -> new DecoBlockItem(block.get(), Compat.blockDescription(p), List.of(lines)));
         if (tab != null) item.tab(tab);
         return block;
     }
@@ -670,7 +671,7 @@ public final class ModDecoContent {
     }
 
     public static void init() {
-        // Registers flush in creation order: the grate/platemetal sound types used to be fields here, so
+        // Registers flush in creation order: the grate and platemetal sound types are fields here, so
         // initialising this class created ModSounds' and then ModDecoSounds' registers. Keep that order.
         ModSounds.init();
         ModDecoSounds.init();

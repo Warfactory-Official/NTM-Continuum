@@ -3,6 +3,7 @@ package com.hbm.items.machine;
 import com.hbm.blocks.ModNuclearMiscBlocks;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.data.GolemComponent;
+import dev.golem.core.hook.Hook;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
@@ -69,7 +70,7 @@ public class ItemReactorSensor extends CompatItem {
      * Addon hook: the sensor used on another block (NTM: Space's StarDar and its remote console). Asked after the
      * research-reactor check; the first non-null answer is the use's result. Plain HBM registers nothing.
      */
-    public static final dev.golem.core.hook.Hook<Use> USE = dev.golem.core.hook.Hook.of(listeners -> context -> {
+    public static final Hook<Use> USE = Hook.of(listeners -> context -> {
         for (Use listener : listeners) {
             InteractionResult result = listener.useOn(context);
             if (result != null) return result;

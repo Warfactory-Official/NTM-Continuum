@@ -26,8 +26,8 @@ import net.minecraft.world.level.Level;
  * <ul>
  * <li><b>A fresh suit is full.</b> Reading the charge of a stack that has never stored one yields
  *     {@link #getMaxCharge}. Upstream implemented this by <i>writing</i> the tag inside the getter; here
- *     it is a read-side default, because a component write marks the stack dirty and resyncs it — doing
- *     that from a getter would resync every frame the tooltip is drawn.
+ *     it is a read-side default, because a component write marks the stack dirty and resyncs it, and
+ *     doing that from a getter would resync every frame the tooltip is drawn.
  * <li><b>Damage drains power, not durability.</b> {@code setDamage} is redirected into
  *     {@link #dischargeBattery} at {@code consumption} HE per point, and the item has no real
  *     durability. This is why a power suit never breaks: it goes flat instead.
@@ -35,8 +35,8 @@ import net.minecraft.world.level.Level;
  *     does anything in creative.
  * </ul>
  *
-     * <p>The deprecated held {@code ItemSelfcharger} subtraction is retained: its fixed discharge rate is
-     * divided by four before the complete-set drain, including the old negative-drain edge case.
+ * <p>The deprecated held {@code ItemSelfcharger} subtraction is retained: its fixed discharge rate is
+ * divided by four before the complete-set drain, including the old negative-drain edge case.
  */
 public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
 
@@ -62,7 +62,7 @@ public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
 
     @Override
     public long getCharge(ItemStack stack) {
-        // The read-side "spawns full" default — see the class comment for why this does not write.
+        // The read-side "spawns full" default; see the class comment for why this does not write.
         return ModDataComponents.ARMOR_CHARGE.getOr(stack, getMaxCharge(stack));
     }
 
@@ -108,9 +108,8 @@ public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
      * The idle drain, one tick's worth, charged to every piece of a complete set.
      *
      * <p>1.7.10 {@code ArmorFSBPowered.onArmorTick} calls {@code super.onArmorTick} first, so a powered suit with
-     * {@code setHasGeigerSound} (AJR, AJR-O, HEV, RPA, ...) clicks like any other FSB suit. An earlier port followed
-     * 1.12.2 here, which skips the super call and leaves the built-in counter silent (found by the harness sound log,
-     * History §19es-client).
+     * {@code setHasGeigerSound} (AJR, AJR-O, HEV, RPA, ...) clicks like any other FSB suit. 1.12.2 skips the
+     * super call and leaves the built-in counter silent.
      */
     @Override
     public void armorTick(Level level, Player player, ItemStack stack) {
@@ -150,7 +149,7 @@ public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
 
     // Power armour cannot be enchanted. Upstream said so four ways (getItemEnchantability, isEnchantable,
     // canApplyAtEnchantingTable, isBookEnchantable); from 26.1 enchantability is a data component and
-    // there is nothing to override — an enchantment value of 0 on the material is the whole statement,
+    // there is nothing to override. An enchantment value of 0 on the material is the whole statement,
     // which is what HbmArmorMaterials.T51 declares.
 
     @Override

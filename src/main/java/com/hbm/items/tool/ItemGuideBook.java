@@ -1,5 +1,6 @@
 package com.hbm.items.tool;
 
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModUtilityToolItems;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
@@ -15,12 +16,12 @@ import net.minecraft.world.level.Level;
 
 /**
  * 1.7 {@code ItemGuideBook}: the guide books; the {@link BookType} was the metadata and is one item per type here
- * ({@code book_guide_<type>}, as ntm-next registers them; History §19es-itemvariant). Right-click opens {@code GUIScreenGuide}. The creative tab shows the RBMK and
- * starter books only (1.7 skipped the test and hadron books in {@code getSubItems}).
+ * ({@code book_guide_<type>}, as ntm-next registers them). Right-click opens {@code GUIScreenGuide}.
+ * The creative tab shows the RBMK and starter books only (1.7 skipped the test and hadron books in {@code getSubItems}).
  *
  * <p>Page contents are kept as texture paths ({@code hbm:textures/...}) so this class names no client type.
  */
-public class ItemGuideBook extends CompatItem implements com.hbm.items.LegacyMeta {
+public class ItemGuideBook extends CompatItem implements LegacyMeta {
 
     private final BookType type;
 

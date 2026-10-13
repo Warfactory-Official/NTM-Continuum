@@ -3,8 +3,10 @@ package com.hbm.items.tool;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.trait.FT_Corrosive;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModUtilityToolItems;
+import com.hbm.items.ModelState;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import dev.golem.core.data.ModelData;
 import dev.golem.core.data.Tags;
@@ -27,7 +29,7 @@ import net.minecraft.world.level.Level;
  * accept antimatter. State rides {@code hbm:pipette} ({@code type}, {@code fill}, {@code capacity}, 1.7's NBT
  * keys, stored as ints: the legacy tag reader takes ints only); the icon picks its filled overlay through {@code hbm:model_state} (from the fill) and tints it with the fluid's colour.
  */
-public class ItemPipette extends CompatItem implements IFillableItem, com.hbm.items.ModelState {
+public class ItemPipette extends CompatItem implements IFillableItem, ModelState {
 
     public ItemPipette(Properties properties) {
         super(properties);
@@ -150,7 +152,7 @@ public class ItemPipette extends CompatItem implements IFillableItem, com.hbm.it
 
     public boolean willFizzle(FluidType type) {
         if (this != ModUtilityToolItems.pipette.get()) return false;
-        return type.hasTrait(com.hbm.inventory.fluid.trait.FT_Corrosive.class) && type != Fluids.PEROXIDE;
+        return type.hasTrait(FT_Corrosive.class) && type != Fluids.PEROXIDE;
     }
 
     @Override

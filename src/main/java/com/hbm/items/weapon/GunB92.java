@@ -1,5 +1,7 @@
 package com.hbm.items.weapon;
 
+import com.hbm.entity.effect.EntityCloudFleijaRainbow;
+import com.hbm.entity.logic.EntityNukeExplosionMK3;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
@@ -7,9 +9,15 @@ import com.hbm.entity.projectile.EntityB92Beam;
 import com.hbm.items.ModDataComponents;
 import com.hbm.sound.ModGunSounds;
 import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
+import dev.golem.core.world.CompatWeaponItem;
+import dev.golem.core.world.Tools;
+import java.util.List;
 import java.util.Random;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -20,15 +28,17 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * The original-hbm B92 energy pistol.
+ * The 1.7 B92 energy pistol.
  *
- * <p>This is intentionally not a Sedna gun. The source weapon stores charge in its own two integer
+ * <p>This is not a Sedna gun. The source weapon stores charge in its own two integer
  * values, reloads by holding right click, and creates one explosive beam per stored charge.
  */
-public final class GunB92 extends dev.golem.core.world.CompatWeaponItem {
+public final class GunB92 extends CompatWeaponItem {
 
     private static final String ANIMATION = "b92_animation";
     private static final String ENERGY = "b92_energy";
@@ -36,7 +46,7 @@ public final class GunB92 extends dev.golem.core.world.CompatWeaponItem {
 
     public GunB92(Properties properties) {
         // 1.7 getItemAttributeModifiers: a +3.5 attack-damage "Weapon modifier"; sword speed is the port's convention.
-        super(properties.stacksTo(1).rarity(Rarity.UNCOMMON), 3.5F, dev.golem.core.world.Tools.SWORD_SPEED);
+        super(properties.stacksTo(1).rarity(Rarity.UNCOMMON), 3.5F, Tools.SWORD_SPEED);
     }
 
     @Override
@@ -88,7 +98,7 @@ public final class GunB92 extends dev.golem.core.world.CompatWeaponItem {
     }
 
     @Override
-    protected void compatInventoryTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
+    protected void compatInventoryTick(ItemStack stack, ServerLevel level,
                                        Entity owner, EquipmentSlot slot, boolean held) {
         int animation = getAnim(stack);
         if (animation <= 0) return;
@@ -101,14 +111,14 @@ public final class GunB92 extends dev.golem.core.world.CompatWeaponItem {
             if (power > 10) {
                 setPower(stack, 0);
                 // 1.7 GunB92: an overcharged B92 sets off a radius-50 F.L.E.I.J.A. field with the rainbow cloud.
-                com.hbm.entity.logic.EntityNukeExplosionMK3 blast = com.hbm.entity.logic.EntityNukeExplosionMK3
+                EntityNukeExplosionMK3 blast = EntityNukeExplosionMK3
                         .statFacFleija(level, owner.getX(), owner.getY(), owner.getZ(), 50);
                 if (!blast.isRemoved()) {
                     level.playSound(null, owner.getX(), owner.getY(), owner.getZ(),
                             SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 100.0F,
                             level.getRandom().nextFloat() * 0.1F + 0.9F);
                     level.addFreshEntity(blast);
-                    level.addFreshEntity(com.hbm.entity.effect.EntityCloudFleijaRainbow.statFac(level, 50,
+                    level.addFreshEntity(EntityCloudFleijaRainbow.statFac(level, 50,
                             owner.getX(), owner.getY(), owner.getZ()));
                 }
             }
@@ -118,14 +128,14 @@ public final class GunB92 extends dev.golem.core.world.CompatWeaponItem {
     }
 
     @Override
-    protected boolean compatCanDestroyBlock(ItemStack stack, net.minecraft.world.level.block.state.BlockState state,
-                                             Level level, net.minecraft.core.BlockPos pos, LivingEntity user) {
+    protected boolean compatCanDestroyBlock(ItemStack stack, BlockState state,
+                                             Level level, BlockPos pos, LivingEntity user) {
         return false;
     }
 
     @Override
-    protected void appendCompatHoverText(ItemStack stack, dev.golem.core.world.CompatTooltipContext context,
-                                         java.util.List<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         List<Component> tooltip, TooltipFlag flag) {
         for (int i = 0; i < 11; i++) tooltip.add(Component.translatable("item.hbm.gun_b92.desc." + i));
         tooltip.add(Component.translatable("item.hbm.gun_b92.legendary"));
     }
@@ -167,7 +177,7 @@ public final class GunB92 extends dev.golem.core.world.CompatWeaponItem {
 
     private static int getValue(ItemStack stack, String key) {
         CompoundTag tag = ModDataComponents.GUN_STATE.getOr(stack, new CompoundTag());
-        return dev.golem.core.data.Tags.getIntOr(tag, key, 0);
+        return Tags.getIntOr(tag, key, 0);
     }
 
     private static void setValue(ItemStack stack, String key, int value) {

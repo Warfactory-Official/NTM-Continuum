@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.environment.Environment;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
@@ -16,7 +17,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.modules.ModuleBurnTime;
+import com.hbm.module.ModuleBurnTime;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -24,8 +25,10 @@ import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -41,7 +44,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Coal/airblast furnace, ported from HBM's {@code TileEntityMachineBlastFurnace}. The old airblast
- * cooling and flue-gas overflow behavior are intentionally retained.
+ * cooling and flue-gas overflow behavior are kept.
  */
 public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
         implements MenuProvider, IFluidStandardTransceiverMK2, WorldlyContainer {
@@ -93,7 +96,7 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
         if (recipe != null && furnace.fuel >= FUEL_RATE && furnace.hasQuantities(recipe)
                 && furnace.canOutput(recipe)
                 // hbm-space breatheAir(1): the blast needs air (com.hbm.api.environment.Environment)
-                && com.hbm.api.environment.Environment.breatheAir(level, pos, 1)) {
+                && Environment.breatheAir(level, pos, 1)) {
             furnace.speed = MthClamp.clamp(0.5F + furnace.tanks[0].getFill() * 8F / furnace.tanks[0].getMaxFill(), 0.5F, 5F);
             furnace.isProgressing = true;
             furnace.progress += furnace.speed / recipe.duration;
@@ -126,7 +129,7 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineBlastFurnace furnace) {
         if (!level.getBlockState(pos.above(7)).isAir() || !furnace.isProgressing || !TickPhase.every(level, pos, 2)) return;
-        level.addParticle(net.minecraft.core.particles.ParticleTypes.LAVA,
+        level.addParticle(ParticleTypes.LAVA,
                 pos.getX() + 0.25D + level.getRandom().nextDouble() * 0.5D, pos.getY() + 7.25D,
                 pos.getZ() + 0.25D + level.getRandom().nextDouble() * 0.5D, 0D, 0D, 0D);
     }
@@ -159,7 +162,7 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
             ItemStack slot = inventory.getStackInSlot(3 + i);
             int limit = Math.min(inventory.getSlotLimit(3 + i), out.getMaxStackSize());
             if (out.getCount() > limit) return false;
-            if (!slot.isEmpty() && (!dev.golem.core.world.ItemStacks.sameItemAndData(slot, out)
+            if (!slot.isEmpty() && (!ItemStacks.sameItemAndData(slot, out)
                     || slot.getCount() + out.getCount() > limit)) return false;
         }
         return true;
@@ -211,7 +214,7 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
         if (slot == 1 || slot == 2) {
             int other = slot == 1 ? 2 : 1;
             if (!inventory.getStackInSlot(other).isEmpty()
-                    && dev.golem.core.world.ItemStacks.sameItemAndData(stack, inventory.getStackInSlot(other))) return false;
+                    && ItemStacks.sameItemAndData(stack, inventory.getStackInSlot(other))) return false;
             for (GenericRecipe recipe : BlastFurnaceRecipesNT.INSTANCE.recipeOrderedList) {
                 for (AStack input : recipe.inputItem) if (input.matchesRecipe(stack, true)) return true;
             }

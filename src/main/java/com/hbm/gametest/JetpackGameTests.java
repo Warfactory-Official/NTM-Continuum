@@ -1,24 +1,34 @@
 package com.hbm.gametest;
 
+import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.handler.JetpackHandler;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.items.ModArmorItems;
+import com.hbm.items.ModCustomMissileItems;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModJetpackDependencyItems;
 import com.hbm.items.ModMedicineItems;
 import com.hbm.items.armor.ArmorBJJetpack;
 import com.hbm.items.armor.JetpackFueledBase;
 import com.hbm.items.armor.WingsMurk;
+import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.gear.JetpackGlider;
 import com.hbm.items.gear.JetpackRegular;
 import com.hbm.items.special.ItemHot;
 import com.hbm.items.special.ItemSteelDusted;
+import com.hbm.items.weapon.ItemCustomMissilePart;
+import com.hbm.packet.JetpackInputPayload;
 import dev.golem.core.Ids;
+import dev.golem.core.data.ItemContents;
 import dev.golem.core.gametest.GameTestHelpers;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -45,10 +55,10 @@ public final class JetpackGameTests {
                 "booster capacity is not 32,000");
         helper.assertTrue(JetpackHandler.getMaxFuel(new ItemStack(ModArmorItems.jetpack_glider.get())) == 20_000,
                 "glider capacity is not 20,000");
-        helper.assertTrue(JetpackHandler.getSpeed(com.hbm.inventory.fluid.Fluids.KEROSENE) == 0.3F
-                        && JetpackHandler.getSpeed(com.hbm.inventory.fluid.Fluids.KEROSENE_REFORM) == 0.4F
-                        && JetpackHandler.getSpeed(com.hbm.inventory.fluid.Fluids.NITAN) == 0.5F
-                        && JetpackHandler.getSpeed(com.hbm.inventory.fluid.Fluids.BALEFIRE) == 1.5F,
+        helper.assertTrue(JetpackHandler.getSpeed(Fluids.KEROSENE) == 0.3F
+                        && JetpackHandler.getSpeed(Fluids.KEROSENE_REFORM) == 0.4F
+                        && JetpackHandler.getSpeed(Fluids.NITAN) == 0.5F
+                        && JetpackHandler.getSpeed(Fluids.BALEFIRE) == 1.5F,
                 "glider fuel speeds changed");
         helper.succeed();
     }
@@ -62,13 +72,13 @@ public final class JetpackGameTests {
         ItemStack chest = new ItemStack(ModArmorItems.t51_plate.get());
         player.setItemSlot(EquipmentSlot.CHEST, chest);
 
-        helper.assertTrue(glider.tryFill(com.hbm.inventory.fluid.Fluids.KEROSENE, 1_000, gliderStack) == 0,
+        helper.assertTrue(glider.tryFill(Fluids.KEROSENE, 1_000, gliderStack) == 0,
                 "glider rejected kerosene");
         ArmorModHandler.applyMod(chest, gliderStack);
         helper.assertTrue(glider.getFill(gliderStack) == 1_000
-                        && glider.getFirstFluidType(gliderStack) == com.hbm.inventory.fluid.Fluids.KEROSENE,
+                        && glider.getFirstFluidType(gliderStack) == Fluids.KEROSENE,
                 "glider did not retain its fuel type and amount");
-        helper.assertTrue(glider.tryFill(com.hbm.inventory.fluid.Fluids.NITAN, 1_000, gliderStack) == 1_000,
+        helper.assertTrue(glider.tryFill(Fluids.NITAN, 1_000, gliderStack) == 1_000,
                 "glider accepted a mixed fuel");
 
         JetpackHandler.handleKeybind(player, EnumKeybind.JETPACK, true);
@@ -100,18 +110,18 @@ public final class JetpackGameTests {
         helper.assertTrue(JetpackHandler.hasJetpack(player)
                         && JetpackHandler.getFuel(ArmorModHandler.pryMod(armor, ArmorModHandler.plate_only)) == 777,
                 "jetpack module was not retained in the chestplate");
-        var fillable = (com.hbm.api.fluidmk2.IFillableItem) armor.getItem();
-        helper.assertTrue(fillable.tryFill(com.hbm.inventory.fluid.Fluids.KEROSENE, 223, armor) == 0
+        var fillable = (IFillableItem) armor.getItem();
+        helper.assertTrue(fillable.tryFill(Fluids.KEROSENE, 223, armor) == 0
                         && JetpackHandler.getFuel(player) == 1_000,
                 "machine-facing armor contract did not refill the attached ordinary jetpack");
         ArmorModHandler.applyMod(armor, new ItemStack(ModArmorItems.jetpack_glider.get()));
-        helper.assertTrue(fillable.tryFill(com.hbm.inventory.fluid.Fluids.NITAN, 25_000, armor) == 5_000
+        helper.assertTrue(fillable.tryFill(Fluids.NITAN, 25_000, armor) == 5_000
                         && JetpackHandler.getFuel(player) == 20_000,
                 "attached glider refill did not preserve capacity/remainder");
         ItemStack snapshot = armor.copy();
-        helper.assertTrue(fillable.tryFill(com.hbm.inventory.fluid.Fluids.KEROSENE, 100, armor) == 100
+        helper.assertTrue(fillable.tryFill(Fluids.KEROSENE, 100, armor) == 100
                         && ItemStack.matches(snapshot, armor), "attached glider accepted mixed fuel");
-        helper.assertTrue(fillable.tryEmpty(com.hbm.inventory.fluid.Fluids.NITAN, 1_000, armor) == 1_000
+        helper.assertTrue(fillable.tryEmpty(Fluids.NITAN, 1_000, armor) == 1_000
                         && JetpackHandler.getFuel(player) == 19_000,
                 "attached glider drain did not write back its module");
         helper.succeed();
@@ -145,20 +155,20 @@ public final class JetpackGameTests {
                         && ItemHot.getHeat(output) == 1D,
                 "chainsteel anvil output did not retain full averaged heat");
 
-        com.hbm.items.weapon.ItemCustomMissilePart thruster = com.hbm.items.ModCustomMissileItems.mp_thruster_10_xenon.get();
-        helper.assertTrue(thruster.fuelType() == com.hbm.items.weapon.ItemCustomMissilePart.FuelType.XENON
+        ItemCustomMissilePart thruster = ModCustomMissileItems.mp_thruster_10_xenon.get();
+        helper.assertTrue(thruster.fuelType() == ItemCustomMissilePart.FuelType.XENON
                         && thruster.consumption() == 1F && (Float) thruster.attributes[2] == 1.5F
-                        && thruster.health == 5F && thruster.top == com.hbm.items.weapon.ItemCustomMissilePart.PartSize.SIZE_10,
+                        && thruster.health == 5F && thruster.top == ItemCustomMissilePart.PartSize.SIZE_10,
                 "xenon size-10 thruster attributes changed");
         helper.succeed();
     }
 
     public static void inputPayloadIsBounded(GameTestHelper helper) {
-        com.hbm.packet.JetpackInputPayload input = new com.hbm.packet.JetpackInputPayload(
+        JetpackInputPayload input = new JetpackInputPayload(
                 Float.NaN, Float.POSITIVE_INFINITY, true, false, true);
         helper.assertTrue(input.forward() == 0F && input.strafe() == 0F,
                 "non-finite flight input was not rejected");
-        input = new com.hbm.packet.JetpackInputPayload(-4F, 4F, false, true, false);
+        input = new JetpackInputPayload(-4F, 4F, false, true, false);
         helper.assertTrue(input.forward() == -1F && input.strafe() == 1F,
                 "flight input was not clamped to [-1,1]");
         helper.succeed();
@@ -167,7 +177,7 @@ public final class JetpackGameTests {
     public static void equivalentClientSnapshotKeepsSource(GameTestHelper helper) {
         ItemStack original = new ItemStack(ModArmorItems.jetpack_glider.get());
         JetpackGlider glider = (JetpackGlider) original.getItem();
-        glider.tryFill(com.hbm.inventory.fluid.Fluids.KEROSENE, 123, original);
+        glider.tryFill(Fluids.KEROSENE, 123, original);
         ItemStack snapshot = original.copy();
         helper.assertTrue(JetpackHandler.isEquivalentClientSource(original, snapshot),
                 "equivalent client stack snapshot was treated as a source swap");
@@ -177,16 +187,16 @@ public final class JetpackGameTests {
         ItemStack armor = new ItemStack(ModArmorItems.t51_plate.get());
         ArmorModHandler.applyMod(armor, original);
         var contents = ModDataComponents.ARMOR_MODS.get(armor).orElseThrow();
-        var ops = net.minecraft.resources.RegistryOps.create(net.minecraft.nbt.NbtOps.INSTANCE,
+        var ops = RegistryOps.create(NbtOps.INSTANCE,
                 helper.getLevel().registryAccess());
-        var encoded = dev.golem.core.data.ItemContents.CODEC.encodeStart(ops, contents).result().orElseThrow();
-        var decoded = dev.golem.core.data.ItemContents.CODEC.parse(ops, encoded).result().orElseThrow();
+        var encoded = ItemContents.CODEC.encodeStart(ops, contents).result().orElseThrow();
+        var decoded = ItemContents.CODEC.parse(ops, encoded).result().orElseThrow();
         ItemStack received = armor.copy();
         ModDataComponents.ARMOR_MODS.set(received, decoded);
         helper.assertTrue(ItemStack.matches(armor, received) && contents.hashCode() == decoded.hashCode(),
                 "identical decoded armor modules look like an equipment change");
         var exposed = decoded.copies();
-        glider.tryEmpty(com.hbm.inventory.fluid.Fluids.KEROSENE, 1, exposed.get(ArmorModHandler.plate_only));
+        glider.tryEmpty(Fluids.KEROSENE, 1, exposed.get(ArmorModHandler.plate_only));
         helper.assertTrue(ItemStack.matches(armor, received), "component exposed mutable nested stacks");
         ArmorModHandler.applyMod(received, exposed.get(ArmorModHandler.plate_only));
         helper.assertFalse(ItemStack.matches(armor, received), "actual module fuel change was hidden by equality");
@@ -224,7 +234,7 @@ public final class JetpackGameTests {
         Player player = player(helper);
         ItemStack stack = new ItemStack(ModArmorItems.jetpack_glider.get());
         JetpackGlider glider = (JetpackGlider) stack.getItem();
-        glider.tryFill(com.hbm.inventory.fluid.Fluids.KEROSENE, 1_000, stack);
+        glider.tryFill(Fluids.KEROSENE, 1_000, stack);
         ItemStack chest = new ItemStack(ModArmorItems.t51_plate.get());
         ArmorModHandler.applyMod(chest, stack);
         player.setItemSlot(EquipmentSlot.CHEST, chest);
@@ -294,7 +304,7 @@ public final class JetpackGameTests {
         Player player = player(helper);
         ItemStack gliderStack = new ItemStack(ModArmorItems.jetpack_glider.get());
         JetpackGlider glider = (JetpackGlider) gliderStack.getItem();
-        glider.tryFill(com.hbm.inventory.fluid.Fluids.KEROSENE, 1_000, gliderStack);
+        glider.tryFill(Fluids.KEROSENE, 1_000, gliderStack);
         ItemStack chest = new ItemStack(ModArmorItems.t51_plate.get());
         ArmorModHandler.applyMod(chest, gliderStack);
         player.setItemSlot(EquipmentSlot.CHEST, chest);
@@ -370,8 +380,8 @@ public final class JetpackGameTests {
     }
 
     public static void smokeSessionRestoresOwnedState(GameTestHelper helper) {
-        try (dev.golem.core.gametest.GameTestHelpers.MockServerPlayer fixture =
-                     dev.golem.core.gametest.GameTestHelpers.mockServerPlayer(helper)) {
+        try (GameTestHelpers.MockServerPlayer fixture =
+                     GameTestHelpers.mockServerPlayer(helper)) {
             Player player = fixture.player();
             Vec3 originalMotion = new Vec3(0.1D, 0.2D, 0.3D);
             player.setDeltaMovement(originalMotion);
@@ -379,7 +389,7 @@ public final class JetpackGameTests {
 
             JetpackHandler.startSmoke(fixture.player());
             helper.assertTrue(JetpackHandler.hasGlider(player)
-                            && player.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof com.hbm.items.gear.ArmorFSB,
+                            && player.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof ArmorFSB,
                     "smoke session did not install its owned glider module");
             helper.assertTrue(player.isNoGravity(), "smoke session did not apply its temporary no-gravity state");
             helper.assertTrue(JetpackHandler.stopSmoke(fixture.player()), "smoke session did not stop explicitly");
@@ -394,7 +404,7 @@ public final class JetpackGameTests {
 
     private static Player player(GameTestHelper helper) {
         Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
-        var origin = helper.absolutePos(new net.minecraft.core.BlockPos(1, 1, 1));
+        var origin = helper.absolutePos(new BlockPos(1, 1, 1));
         player.setPos(origin.getX() + 0.5D, origin.getY(), origin.getZ() + 0.5D);
         return player;
     }

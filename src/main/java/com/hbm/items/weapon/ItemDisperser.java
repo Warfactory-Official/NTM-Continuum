@@ -4,6 +4,9 @@ import com.hbm.entity.grenade.EntityDisperserCanister;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemFluidTank;
+import dev.golem.core.world.ItemStacks;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
@@ -53,7 +56,7 @@ public class ItemDisperser extends ItemFluidTank {
             canister.setDisperserItem(this);
             canister.setFluid(getContent(stack));
             level.addFreshEntity(canister);
-            dev.golem.core.world.ItemStacks.consume(stack, 1, player);
+            ItemStacks.consume(stack, 1, player);
         }
 
         return InteractionResult.SUCCESS;
@@ -85,8 +88,8 @@ public class ItemDisperser extends ItemFluidTank {
      * The creative-tab stacks, one full item per {@link #isCreativeVariant} fluid. 1.7 walked
      * {@code Fluids.getInNiceOrder()}, as the port does.
      */
-    public java.util.List<ItemStack> creativeVariants() {
-        java.util.List<ItemStack> list = new java.util.ArrayList<>();
+    public List<ItemStack> creativeVariants() {
+        List<ItemStack> list = new ArrayList<>();
         for (FluidType fluid : Fluids.getInNiceOrder()) {
             if (isCreativeVariant(fluid)) list.add(make(fluid, capacity));
         }

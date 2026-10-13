@@ -14,10 +14,13 @@ import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.phys.Vec3;
 
 public final class RBMKGaugeRenderer extends GemBER<BlockEntityRBMKGauge, RBMKGaugeRenderer.State> {
@@ -26,7 +29,7 @@ public final class RBMKGaugeRenderer extends GemBER<BlockEntityRBMKGauge, RBMKGa
     private final Font font;
 
     public RBMKGaugeRenderer() {
-        font = net.minecraft.client.Minecraft.getInstance().font;
+        font = Minecraft.getInstance().font;
     }
     @Override protected void setup(Gem.Model<State> declaration) {
         Surface face = Surface.solid(TEXTURE.toString());
@@ -105,16 +108,16 @@ public final class RBMKGaugeRenderer extends GemBER<BlockEntityRBMKGauge, RBMKGa
         }
         pose.popPose();
     }
-    private static float yaw(net.minecraft.core.Direction direction) {
+    private static float yaw(Direction direction) {
         return switch (direction) { case NORTH -> 90F; case WEST -> 180F; case SOUTH -> 270F; default -> 0F; };
     }
-    private static net.minecraft.util.FormattedCharSequence line(long value) {
+    private static FormattedCharSequence line(long value) {
         return Component.literal(Long.toString(value)).getVisualOrderText();
     }
     public static final class State extends CompatRenderState {
         final boolean[] active = new boolean[4]; final int[] color = new int[4]; final float[] angle = new float[4];
-        final net.minecraft.util.FormattedCharSequence[] lower = new net.minecraft.util.FormattedCharSequence[4];
-        final net.minecraft.util.FormattedCharSequence[] upper = new net.minecraft.util.FormattedCharSequence[4];
-        final net.minecraft.util.FormattedCharSequence[] label = new net.minecraft.util.FormattedCharSequence[4]; float yaw;
+        final FormattedCharSequence[] lower = new FormattedCharSequence[4];
+        final FormattedCharSequence[] upper = new FormattedCharSequence[4];
+        final FormattedCharSequence[] label = new FormattedCharSequence[4]; float yaw;
     }
 }

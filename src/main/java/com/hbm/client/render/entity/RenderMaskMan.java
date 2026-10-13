@@ -1,5 +1,6 @@
 package com.hbm.client.render.entity;
 
+import com.hbm.client.BossStatus;
 import com.hbm.entity.mob.EntityMaskMan;
 import com.hbm.main.ResourceManager;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -13,6 +14,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
+import net.minecraft.world.BossEvent;
 
 /**
  * 1.7 {@code RenderMaskMan} plus its {@code ModelMaskMan}: seven named OBJ parts posed by hand off the limb swing.
@@ -38,7 +40,7 @@ public class RenderMaskMan extends CompatEntityRenderer<EntityMaskMan, RenderMas
 
     @Override
     public void extract(EntityMaskMan entity, State state, float partialTicks) {
-        com.hbm.client.BossStatus.set(entity, net.minecraft.world.BossEvent.BossBarColor.RED); // 1.7 render-pushed BossStatus
+        BossStatus.set(entity, BossEvent.BossBarColor.RED); // 1.7 render-pushed BossStatus
         // 1.7 read limbSwing/limbSwingAmount straight off the entity inside the model
         float swing = entity.walkAnimation.position(partialTicks);
         float amount = entity.walkAnimation.speed(partialTicks) * 0.5F;

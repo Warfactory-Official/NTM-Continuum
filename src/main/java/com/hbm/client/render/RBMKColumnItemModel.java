@@ -52,10 +52,10 @@ public final class RBMKColumnItemModel {
     /**
      * Four casing sections, each with the element's inner tube and cap inside it.
      *
-     * <p>Two framing details survive from the baked model this replaces. The casing is one extent, not
-     * four — the sections tile, so the column's box is recorded against the first of them. And the OBJ
-     * parts are authored centred on the origin (x/z in [-0.5, 0.5]) while the casing boxes span [0, 1],
-     * so they are shifted into block space or they ride half a block off the shell.
+     * <p>Two framing details. The casing is one extent, not four: the sections tile, so the column's box
+     * is recorded against the first of them. And the OBJ parts are authored centred on the origin (x/z in
+     * [-0.5, 0.5]) while the casing boxes span [0, 1], so they are shifted into block space or they ride
+     * half a block off the shell.
      */
     private static ItemGem declare(Surface side, Surface top, Surface inner, Surface fuel) {
         ItemGem.Builder builder = ItemGem.builder();

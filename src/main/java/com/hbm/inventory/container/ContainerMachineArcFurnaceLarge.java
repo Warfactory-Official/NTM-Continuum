@@ -1,6 +1,5 @@
 package com.hbm.inventory.container;
 
-import com.hbm.foundry.FoundryExpansion;
 import com.hbm.items.machine.ItemArcElectrode;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.Library;
@@ -17,6 +16,8 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.ModMenus;
 
 /** Large Arc Furnace menu: three electrodes, battery, upgrade, 20-cell grid, and five-cell queue. */
 public class ContainerMachineArcFurnaceLarge extends AbstractContainerMenu {
@@ -40,7 +41,7 @@ public class ContainerMachineArcFurnaceLarge extends AbstractContainerMenu {
     private ContainerMachineArcFurnaceLarge(int id, Inventory playerInventory,
                                             @Nullable TileEntityMachineArcFurnaceLarge furnace,
                                             ContainerLevelAccess access) {
-        super(FoundryExpansion.ARC_FURNACE_MENU.get(), id);
+        super(ModMenus.MACHINE_ARC_FURNACE.get(), id);
         this.furnace = furnace;
         this.machine = furnace == null ? new SimpleContainer(MACHINE_SLOTS) : furnace;
         this.access = access;
@@ -52,7 +53,7 @@ public class ContainerMachineArcFurnaceLarge extends AbstractContainerMenu {
             int index = 5 + row * 5 + col;
             this.addSlot(new Slot(machine, index, 44 + col * 18, 54 + row * 18) {
                 @Override public boolean mayPlace(ItemStack stack) {
-                    // The old SlotArcFurnace deliberately allowed any hand-inserted stack in liquid mode;
+                    // 1.7's SlotArcFurnace allowed any hand-inserted stack in liquid mode;
                     // the recipe gate still applies to the queue and to processing.
                     return furnace != null && furnace.liquidMode || machine.canPlaceItem(index, stack);
                 }
@@ -86,7 +87,7 @@ public class ContainerMachineArcFurnaceLarge extends AbstractContainerMenu {
     public @Nullable TileEntityMachineArcFurnaceLarge getFurnace() { return furnace; }
 
     @Override public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, FoundryExpansion.ARC_FURNACE.get());
+        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_arc_furnace.get());
     }
 
     @Override

@@ -31,14 +31,13 @@ import org.slf4j.LoggerFactory;
 /^*
  * Draws a {@linkplain Gem declared model} through the published engine, on the nodes that have one.
  *
- * <p>This is the same adapter Core ships for its vendored engine, written against
- * {@code dev.engine_room} instead. Both read the same declaration and run the same {@code extract},
- * which is the whole point of a renderer declaring rather than drawing: the two backends cannot
- * disagree about what a machine looks like, because there is only one description of it.
+ * <p>This is the adapter Core ships for its vendored engine, written against {@code dev.engine_room}
+ * instead. Both read the same declaration and run the same {@code extract}, so the two backends cannot
+ * disagree about what a machine looks like.
  *
  * <p>Instancing is an addition, never a replacement. Any failure marks the visual unhealthy, drops its
- * instances and lets the vanilla renderer have the block back, so the worst case is a machine that
- * draws the slow way rather than a hole in the world.
+ * instances and lets the vanilla renderer have the block back: the worst case is a machine that draws
+ * the slow way.
  ^/
 final class GemFlywheelVisual<T extends BlockEntity, S extends CompatRenderState>
         extends AbstractBlockEntityVisual<T> implements SimpleDynamicVisual {
@@ -46,8 +45,8 @@ final class GemFlywheelVisual<T extends BlockEntity, S extends CompatRenderState
     /^*
      * The live visuals, so {@link dev.golem.core.render.Visuals#owns} can answer for this engine.
      *
-     * <p>The vanilla renderer is never skipped outright — its {@code submitUndeclared} geometry has no
-     * resident mesh and has to keep being submitted — so what it needs to know is narrower: whether
+     * <p>The vanilla renderer is never skipped outright. Its {@code submitUndeclared} geometry has no
+     * resident mesh and has to keep being submitted, so what it needs to know is narrower: whether
      * this block's <em>declared</em> parts are already on the GPU. A visual that has failed, or that
      * has not written its instances yet, answers no and the machine draws the slow way.
      ^/
@@ -79,9 +78,9 @@ final class GemFlywheelVisual<T extends BlockEntity, S extends CompatRenderState
     /^*
      * The slot each part started at last walk.
      *
-     * <p>Slots are positional, so a part earlier in the walk that stops drawing — a mesh chooser is
-     * allowed to hand back nothing — shifts every slot after it by one. A subtree proved unchanged is
-     * still holding the right values, but no longer in the right slots, so the cursor has to agree
+     * <p>Slots are positional, so a part earlier in the walk that stops drawing (a mesh chooser is
+     * allowed to hand back nothing) shifts every slot after it by one. A subtree proved unchanged is
+     * still holding the right values, but not in the right slots, so the cursor has to agree
      * before stepping over it.
      ^/
     private final int[] slotAt;
@@ -142,14 +141,14 @@ final class GemFlywheelVisual<T extends BlockEntity, S extends CompatRenderState
      * Writes one part and its children, depth first, and returns the next free slot.
      *
      * <p>Slots are keyed by position in that walk rather than by identity, because the walk is over a
-     * sealed tree: part <i>n</i> is the same part every frame, so its instance can simply be reused.
+     * sealed tree: part <i>n</i> is the same part every frame, so its instance can be reused.
      ^/
     private int write(Gem.Part<S> part, Matrix4f parent, int slot, boolean parentVisible,
                       boolean parentUnchanged) {
         int node = walked++;
 
         // Nothing above this part moved, nothing in it or under it reads the render state, and the
-        // model-wide channels every part falls back to are fixed too — so this subtree is already on
+        // model-wide channels every part falls back to are fixed too, so this subtree is already on
         // the GPU holding the values it would be handed again. A spinning blade should cost a blade,
         // not the machine it is bolted to.
         if (parentUnchanged && channelsFixed && slot == slotAt[node] && part.rigidTree()) {
@@ -247,7 +246,7 @@ final class GemFlywheelVisual<T extends BlockEntity, S extends CompatRenderState
     /^*
      * One instance in the bucket for this (mesh, surface) pair. A part that chooses its mesh or its
      * skin from the render state moves between buckets, which is a delete and a fresh allocation
-     * rather than a property on the instance — the bucket is what a draw call is.
+     * rather than a property on the instance. The bucket is what a draw call is.
      ^/
     private Slot allocate(Geometry geometry, Surface surface) {
         Instancer<TransformedInstance> instancer = instancerProvider()

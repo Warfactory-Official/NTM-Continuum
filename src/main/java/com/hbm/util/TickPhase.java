@@ -11,8 +11,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
  * <p>A bare {@code getGameTime() % 20 == 0} reads the same clock in every subject, so every machine
  * of a kind does its once-a-second work on the same tick and idles for the other nineteen. The cost
  * is invisible in a test world with one machine and is the whole of the cost in a base with two
- * hundred. Nothing about the rate changes here — only which tick of each period a given subject
- * takes.
+ * hundred. The rate does not change, only which tick of each period a given subject takes.
  *
  * <p>The offset comes from the <b>position</b>, never a counter. Two reasons, both load-bearing: a
  * block entity that gates client work and server work on the same period needs the two sides to

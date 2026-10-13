@@ -1,26 +1,45 @@
 package com.hbm.client;
 
+import com.hbm.Constants;
+import com.hbm.client.anim.ToolAnimations;
+import com.hbm.client.crucible.CrucibleClient;
+import com.hbm.client.particle.ParticleHadron;
+import com.hbm.client.particle.ParticleSmokePlume;
+import com.hbm.client.particle.SparkParticles;
+import com.hbm.client.particle.TextParticles;
+import com.hbm.client.render.RenderOverhead;
+import com.hbm.client.render.entity.EntityItemRenderers;
+import com.hbm.extprop.HbmPlayerProps;
 import com.hbm.handler.ArmorModEvents;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.packet.KeybindPayload;
 import com.hbm.packet.ToolAnimationPayload;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.mojang.blaze3d.platform.InputConstants;
+import dev.golem.core.Ids;
+import dev.golem.core.client.ClientResourceReloads;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.KeyMappings;
+import dev.golem.core.client.VanillaHud;
+import dev.golem.core.data.Tags;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.net.GolemNetwork;
+import dev.golem.core.render.Particles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 /** G-C (rendering and input gaps): the client halves - packet handlers, key mappings, overlays and world renderers. */
 public final class RenderInputClientRegistrations {
 
-    private static final Identifier MISC = dev.golem.core.Ids.of("hbm", "textures/misc/overlay_misc.png");
+    private static final Identifier MISC = Ids.of("hbm", "textures/misc/overlay_misc.png");
 
     /** 1.7 {@code HbmKeybinds.magnetKey}: "hbm.key.toggleMagnet" on Z. */
     public static KeyMappings.Mapping magnetKey;
@@ -31,8 +50,8 @@ public final class RenderInputClientRegistrations {
     /** Called from {@code HbmPackets.registerClientHandlers}. */
     public static void registerPacketHandlers() {
         GolemNetwork.registerPlayToClient(ToolAnimationPayload.CODEC,
-                (payload, context) -> com.hbm.client.anim.ToolAnimations.handle(payload));
-        com.hbm.client.crucible.CrucibleClient.registerPacketHandlers(); // old-hbm crucible anims and cut mobs
+                (payload, context) -> ToolAnimations.handle(payload));
+        CrucibleClient.registerPacketHandlers(); // 1.12.2 crucible anims and cut mobs
     }
 
     /** Called from {@code HbmClientRegistrations.installKeybinds}. */
@@ -67,9 +86,8 @@ public final class RenderInputClientRegistrations {
      * 79 / max) wide) and the shield to one decimal in 0xFFFF80 over a four-way black outline.
      *
      * <p>1.7 drew it in the ARMOR overlay's slot (Forge's {@code left_height}) and raised the left stack by ten, so the
-     * armour row moved up above it. No loader here lets an overlay take part in that stacking on every node, so the bar
-     * goes to the row above vanilla's armour row when armour shows (at the armour row otherwise): same bar, rows
-     * swapped.
+     * armour row moved up above it. No loader here lets an overlay join that stacking on every node, so the bar goes
+     * to the row above vanilla's armour row when armour shows (at the armour row otherwise): same bar, rows swapped.
      */
     public static void renderShieldBar(GuiGraphicsExtractor graphics) {
         Minecraft mc = Minecraft.getInstance();
@@ -77,7 +95,7 @@ public final class RenderInputClientRegistrations {
         if (player == null || mc.options.hideGui || mc.gameMode == null || !mc.gameMode.canHurtPlayer()) return;
         float max = ArmorModEvents.effectiveMaxShield(player);
         if (max <= 0) return;
-        float shield = com.hbm.extprop.HbmPlayerProps.getData(player).shield;
+        float shield = HbmPlayerProps.getData(player).shield;
 
         int width = mc.getWindow().getGuiScaledWidth();
         int height = mc.getWindow().getGuiScaledHeight();
@@ -89,7 +107,7 @@ public final class RenderInputClientRegistrations {
         int rows = Mth.ceil((maxHealth + absorb) / 2.0F / 10.0F);
         int rowHeight = Math.max(10 - (rows - 2), 3);
         int armorRow = height - 39 - (rows - 1) * rowHeight - 10;
-        boolean armorShows = player.getArmorValue() > 0 && !dev.golem.core.client.VanillaHud.hideArmor();
+        boolean armorShows = player.getArmorValue() > 0 && !VanillaHud.hideArmor();
         int top = armorShows ? armorRow - 10 : armorRow;
 
         GuiDraw.blit(graphics, MISC, left, top, 146, 0, 81, 9, 256, 256);
@@ -109,48 +127,48 @@ public final class RenderInputClientRegistrations {
     /** Called from {@code HbmClientRegistrations.installEntityEffects}. */
     public static void install() {
         // 1.7 Forge IItemRenderer items on pedestals, skeleton holders and belts (FramedItem's CUSTOM arm)
-        dev.golem.core.client.ClientResourceReloads.register(com.hbm.Constants.MOD_ID, "framed_item_routing",
-                com.hbm.client.render.entity.EntityItemRenderers::reload);
+        ClientResourceReloads.register(Constants.MOD_ID, "framed_item_routing",
+                EntityItemRenderers::reload);
         // 1.7 ClientProxy "tau": count line sparks (random gaussian * 0.05 sideways, 0.05 up) and one hadron flash
-        com.hbm.client.particle.SparkParticles.register();
-        com.hbm.particle.helper.HbmEffectNT.Tau.setHandler((level, x, y, z, data) -> {
-            if (!(level instanceof net.minecraft.client.multiplayer.ClientLevel client)) return;
-            boolean small = dev.golem.core.data.Tags.getBooleanOr(data, "small", false);
-            int count = dev.golem.core.data.Tags.getByteOr(data, "count", (byte) 0);
-            net.minecraft.util.RandomSource rand = client.getRandom();
+        SparkParticles.register();
+        HbmEffectNT.Tau.setHandler((level, x, y, z, data) -> {
+            if (!(level instanceof ClientLevel client)) return;
+            boolean small = Tags.getBooleanOr(data, "small", false);
+            int count = Tags.getByteOr(data, "count", (byte) 0);
+            RandomSource rand = client.getRandom();
             for (int i = 0; i < count; i++) {
-                com.hbm.client.particle.SparkParticles.spawn(client, x, y, z, rand.nextGaussian() * 0.05, 0.05,
+                SparkParticles.spawn(client, x, y, z, rand.nextGaussian() * 0.05, 0.05,
                         rand.nextGaussian() * 0.05, small);
             }
-            dev.golem.core.render.Particles.add(new com.hbm.client.particle.ParticleHadron(client, x, y, z).makeSmall(small));
+            Particles.add(new ParticleHadron(client, x, y, z).makeSmall(small));
         });
-        com.hbm.client.GapsCHarnessQueries.register(); // harness query hbm_gapsc (FinalGapsC)
-        com.hbm.client.ConnectedTextureHarnessQueries.register(); // harness query hbm_ct (ConnectedTextures17)
-        com.hbm.client.IconAuditHarnessQueries.register(); // harness query hbm_icon_audit (ItemIconAudit)
+        GapsCHarnessQueries.register(); // harness query hbm_gapsc (FinalGapsC)
+        ConnectedTextureHarnessQueries.register(); // harness query hbm_ct (ConnectedTextures17)
+        IconAuditHarnessQueries.register(); // harness query hbm_icon_audit (ItemIconAudit)
         // 1.7 IBlockCT connected textures: hadron coils, coated wire, ICF/PWR shells, deco metals, CT glass, platemetal, pile
-        com.hbm.client.ConnectedTextureRegistrations.register();
+        ConnectedTextureRegistrations.register();
         // 1.7 RenderOverhead markers ("marker" aux effect) and ParticleText ("debug")
-        com.hbm.client.render.RenderOverhead.register();
-        com.hbm.client.particle.TextParticles.register();
-        com.hbm.particle.helper.HbmEffectNT.Marker.setHandler((level, x, y, z, data) -> {
-            int expires = dev.golem.core.data.Tags.getIntOr(data, "expires", 0);
-            String label = dev.golem.core.data.Tags.getStringOr(data, "label", "");
-            com.hbm.client.render.RenderOverhead.queue(net.minecraft.core.BlockPos.containing(x, y, z),
-                    new com.hbm.client.render.RenderOverhead.Marker(dev.golem.core.data.Tags.getIntOr(data, "color", 0))
-                            .setDist(dev.golem.core.data.Tags.getDoubleOr(data, "dist", 0D))
+        RenderOverhead.register();
+        TextParticles.register();
+        HbmEffectNT.Marker.setHandler((level, x, y, z, data) -> {
+            int expires = Tags.getIntOr(data, "expires", 0);
+            String label = Tags.getStringOr(data, "label", "");
+            RenderOverhead.queue(BlockPos.containing(x, y, z),
+                    new RenderOverhead.Marker(Tags.getIntOr(data, "color", 0))
+                            .setDist(Tags.getDoubleOr(data, "dist", 0D))
                             .setExpire(expires > 0 ? System.currentTimeMillis() + expires : 0)
                             .withLabel(label.isEmpty() ? null : label));
         });
-        com.hbm.particle.helper.HbmEffectNT.LaunchSmoke.setHandler((level, x, y, z, data) -> {
-            if (!(level instanceof net.minecraft.client.multiplayer.ClientLevel client)) return;
-            dev.golem.core.render.Particles.add(new com.hbm.client.particle.ParticleSmokePlume(client, x, y, z,
-                    dev.golem.core.data.Tags.getDoubleOr(data, "moX", 0D), dev.golem.core.data.Tags.getDoubleOr(data, "moY", 0D),
-                    dev.golem.core.data.Tags.getDoubleOr(data, "moZ", 0D)));
+        HbmEffectNT.LaunchSmoke.setHandler((level, x, y, z, data) -> {
+            if (!(level instanceof ClientLevel client)) return;
+            Particles.add(new ParticleSmokePlume(client, x, y, z,
+                    Tags.getDoubleOr(data, "moX", 0D), Tags.getDoubleOr(data, "moY", 0D),
+                    Tags.getDoubleOr(data, "moZ", 0D)));
         });
-        com.hbm.particle.helper.HbmEffectNT.DebugText.setHandler((level, x, y, z, data) -> {
-            if (!(level instanceof net.minecraft.client.multiplayer.ClientLevel client)) return;
-            com.hbm.client.particle.TextParticles.spawn(client, x, y, z, dev.golem.core.data.Tags.getIntOr(data, "color", 0),
-                    dev.golem.core.data.Tags.getStringOr(data, "text", ""), dev.golem.core.data.Tags.getFloatOr(data, "scale", 1F));
+        HbmEffectNT.DebugText.setHandler((level, x, y, z, data) -> {
+            if (!(level instanceof ClientLevel client)) return;
+            TextParticles.spawn(client, x, y, z, Tags.getIntOr(data, "color", 0),
+                    Tags.getStringOr(data, "text", ""), Tags.getFloatOr(data, "scale", 1F));
         });
     }
 }

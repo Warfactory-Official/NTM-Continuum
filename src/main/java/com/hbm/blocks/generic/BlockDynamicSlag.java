@@ -12,6 +12,7 @@ import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
@@ -30,12 +31,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Dynamic slag (1.12.2 {@code BlockDynamicSlag}) — a variable-height pile of molten waste deposited by
+ * Dynamic slag (1.12.2 {@code BlockDynamicSlag}): a variable-height pile of molten waste deposited by
  * the foundry slagtap. On scheduled ticks it flows: down into replaceable blocks (the whole pile
  * moves), merges into same-material slag below, and spreads sideways once ≥ 1/5 full. Rendered by a
  * BER as a tinted box at {@code amount / maxAmount} height; drops its content as scraps.
  */
-public class BlockDynamicSlag extends dev.golem.core.world.CompatBlock implements TickingBlock {
+public class BlockDynamicSlag extends CompatBlock implements TickingBlock {
 
     public BlockDynamicSlag(Properties properties) {
         super(properties);
@@ -170,7 +171,7 @@ public class BlockDynamicSlag extends dev.golem.core.world.CompatBlock implement
         @Override
         protected void saveData(DataOut output) {
             super.saveData(output);
-            Mats.write(output, "mat", mat); // by name, never the numeric id (History 19ej-ids)
+            Mats.write(output, "mat", mat); // by name, never the numeric id
             output.putInt("amount", amount);
         }
 

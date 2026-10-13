@@ -1,10 +1,12 @@
 package com.hbm.tileentity.machine.storage;
 
+import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.inventory.container.ContainerMachineFENSU;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -98,7 +100,7 @@ public class TileEntityMachineFENSU extends TileEntityBatteryBase implements Men
         return MAX_POWER;
     }
 
-    /** Avoid the default {@code power * scale} overflow at the FEnSU's intentionally absurd capacity. */
+    /** Avoid the default {@code power * scale} overflow at the FEnSU's oversized capacity. */
     public long getPowerRemainingScaled(long scale) {
         if (scale <= 0L || power <= 0L) return 0L;
         if (power >= MAX_POWER) return scale;
@@ -171,7 +173,7 @@ public class TileEntityMachineFENSU extends TileEntityBatteryBase implements Men
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        if (stack.getItem() instanceof com.hbm.api.energymk2.IBatteryItem battery) {
+        if (stack.getItem() instanceof IBatteryItem battery) {
             if (slot == 0 && battery.getCharge(stack) == 0) return true;
             if (slot == 1 && battery.getCharge(stack) == battery.getMaxCharge(stack)) return true;
         }
@@ -209,7 +211,7 @@ public class TileEntityMachineFENSU extends TileEntityBatteryBase implements Men
         super.saveData(output);
         output.putLong("power", power);
         output.putLong("prevPowerState", prevPowerState);
-        com.hbm.util.SavedIds.putEnum(output, "color", color); // by name, never an ordinal
+        SavedIds.putEnum(output, "color", color); // by name, never an ordinal
     }
 
     @Override
@@ -217,6 +219,6 @@ public class TileEntityMachineFENSU extends TileEntityBatteryBase implements Men
         super.loadData(input);
         power = Math.max(0L, Math.min(input.getLongOr("power", 0L), MAX_POWER));
         prevPowerState = input.getLongOr("prevPowerState", 0L);
-        color = com.hbm.util.SavedIds.getEnum(input, "color", DyeColor.LIGHT_BLUE);
+        color = SavedIds.getEnum(input, "color", DyeColor.LIGHT_BLUE);
     }
 }

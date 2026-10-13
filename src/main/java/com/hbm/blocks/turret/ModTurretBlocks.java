@@ -11,7 +11,9 @@ import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Variants;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /** The turret pad cell and the turrets that stand on it. */
 public final class ModTurretBlocks {
@@ -145,12 +147,12 @@ public final class ModTurretBlocks {
 
     private ModTurretBlocks() {}
 
-    private static void blockItem(String name, RegistryObject<? extends net.minecraft.world.level.block.Block> turret) {
+    private static void blockItem(String name, RegistryObject<? extends Block> turret) {
         REG.blockItem(turret).tab(HbmTab.WEAPONS);
     }
 
-    private static net.minecraft.world.level.block.state.BlockBehaviour.Properties turretProperties(
-            net.minecraft.world.level.block.state.BlockBehaviour.Properties p) {
+    private static BlockBehaviour.Properties turretProperties(
+            BlockBehaviour.Properties p) {
         return p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
                 .isSuffocating((state, world, pos) -> false)
                 .isViewBlocking((state, world, pos) -> false);

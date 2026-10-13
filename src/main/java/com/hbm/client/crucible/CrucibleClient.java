@@ -1,37 +1,68 @@
 package com.hbm.client.crucible;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.hbm.Constants;
 import com.hbm.items.weapon.ItemCrucible;
 import com.hbm.items.weapon.ItemSwordCutter;
+import com.hbm.items.weapon.MobSlicer;
+import com.hbm.lib.ModDamageSources;
 import com.hbm.packet.CrucibleAnimPayload;
 import com.hbm.packet.CrucibleClickPayload;
 import com.hbm.packet.MobSlicerPayload;
 import com.hbm.packet.SpecialDeathPayload;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.physics.V3;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
+import dev.golem.core.client.AttackInput;
+import dev.golem.core.client.ClientResourceReloads;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.EquipProgress;
 import dev.golem.core.client.Frames;
+import dev.golem.core.client.PlayerSkins;
+import dev.golem.core.data.Tags;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.render.Bloom;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.LineRenderTypes;
+import dev.golem.core.render.NoiseDisplacedRenderType;
+import dev.golem.core.render.Poses;
 import dev.golem.core.render.ScreenDistortion;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.WorldEffects;
 import dev.golem.core.render.anim.BusAnimation;
 import dev.golem.core.render.anim.BusAnimationSequence;
+import dev.golem.core.render.display.DisplaySlot;
+import dev.golem.core.render.display.Pose17;
+import dev.golem.core.world.Compat;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -41,7 +72,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The client half of old-hbm's sword cutters and crucible, in one place:
+ * The client half of 1.12.2's sword cutters and crucible, in one place:
  *
  * <ul>
  *   <li>{@code ItemSwordCutter}'s client statics ({@code startPos}, {@code clicked}, {@code canClick},
@@ -66,7 +97,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
     private static final Identifier NOISE_FLAT = Ids.of("hbm", "textures/misc/noise_flat.png");
     private static final String LIGHTNING_SHADER = "hbm:crucible_lightning";
 
-    // ---- ItemSwordCutter statics ----
+    // ItemSwordCutter statics
     static @Nullable Vec3 startPos;
     static boolean clicked;
     static boolean canClick = true;
@@ -110,20 +141,20 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         ClientTicks.onEndTick(CrucibleClient::clientTick);
         // the left click that confirms a drawn cut (use key still held) only swings: no attack packet, no block breaking,
         // whatever is under the crosshair; the swing sends the cut (swingClient)
-        dev.golem.core.client.AttackInput.consumeWhile(() -> {
+        AttackInput.consumeWhile(() -> {
             LocalPlayer player = Minecraft.getInstance().player;
             return player != null && INSTANCE.cutting(player);
         });
         WorldEffects.init();
         WorldEffects.onBegin(camera -> frame());
-        dev.golem.core.client.ClientResourceReloads.register(com.hbm.Constants.MOD_ID, "crucible_equip", () -> {
+        ClientResourceReloads.register(Constants.MOD_ID, "crucible_equip", () -> {
             CrucibleEquipModel.reset();
             resetModelCaches();
             CrucibleLightning.CpuReference.reset();
         });
         SlicedMobs.register();
-        com.hbm.particle.helper.HbmEffectNT.VanillaBurst_BlockDust.setHandler(CrucibleClient::blockDustBurst);
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_crucible", (mc, params) -> {
+        HbmEffectNT.VanillaBurst_BlockDust.setHandler(CrucibleClient::blockDustBurst);
+        HarnessQueryRegistry.register("hbm_crucible", (mc, params) -> {
             harnessControl(mc, params);
             return harnessQuery(mc);
         });
@@ -134,17 +165,17 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
     /** Harness only: leave out the blade's bloom and distortion passes (animated), to compare lightning pixels. */
     static boolean isolate;
     /** Harness only: the last End fight snapshot (taken on the server thread). */
-    private static volatile com.google.gson.JsonObject endFight = new com.google.gson.JsonObject();
+    private static volatile JsonObject endFight = new JsonObject();
     /** Harness only: the 1.7 swing pinned at this many ms ({@code -1}: live), with this offset. */
     static int freezeSwingMs = -1, freezeSwingOffset;
     /** Harness only: draw the 1.7 renderer's first-person crucible (reference for the swing mapping). */
     static boolean reference17;
     /** Harness only: the last server-side swing snapshot of the local player. */
-    private static volatile com.google.gson.JsonObject serverSwing = new com.google.gson.JsonObject();
+    private static volatile JsonObject serverSwing = new JsonObject();
 
     /** Server thread: the fight's state and the podium's egg/portal blocks, reading only loaded chunks. */
-    private static com.google.gson.JsonObject endFightSnapshot(net.minecraft.server.level.ServerLevel end) {
-        com.google.gson.JsonObject json = new com.google.gson.JsonObject();
+    private static JsonObject endFightSnapshot(ServerLevel end) {
+        JsonObject json = new JsonObject();
         int alive = 0;
         for (var dragon : end.getDragons()) if (dragon.isAlive()) alive++;
         json.addProperty("dragons", alive);
@@ -154,12 +185,12 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         int eggs = 0, portal = 0;
         boolean loaded = true;
         for (int x = -4; x <= 4; x++) for (int z = -4; z <= 4; z++) {
-            net.minecraft.core.BlockPos column = new net.minecraft.core.BlockPos(x, 64, z);
+            BlockPos column = new BlockPos(x, 64, z);
             if (!end.hasChunkAt(column)) { loaded = false; continue; }
             for (int y = 30; y <= 110; y++) {
-                var state = end.getBlockState(new net.minecraft.core.BlockPos(x, y, z));
-                if (state.is(net.minecraft.world.level.block.Blocks.DRAGON_EGG)) eggs++;
-                else if (state.is(net.minecraft.world.level.block.Blocks.END_PORTAL)) portal++;
+                var state = end.getBlockState(new BlockPos(x, y, z));
+                if (state.is(Blocks.DRAGON_EGG)) eggs++;
+                else if (state.is(Blocks.END_PORTAL)) portal++;
             }
         }
         json.addProperty("podium_loaded", loaded);
@@ -173,7 +204,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
      * particles by one fixed bolt (seed 4815162342, age 4, from (0, 0.05, 0.6) along -z) and stops ticking and spawning,
      * false resumes.
      */
-    private static void harnessControl(Minecraft mc, com.google.gson.JsonObject params) {
+    private static void harnessControl(Minecraft mc, JsonObject params) {
         if (params.has("lightning_mode")) lightningCpu = "cpu".equals(params.get("lightning_mode").getAsString());
         if (params.has("lightning_clear")) FirstPersonParticles.PARTICLES.clear();
         if (params.has("isolate")) isolate = params.get("isolate").getAsBoolean();
@@ -183,12 +214,12 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
             boolean slice = params.has("slice_dragons");
             var server = mc.getSingleplayerServer();
             if (server != null) server.execute(() -> {
-                net.minecraft.server.level.ServerLevel end = server.getLevel(net.minecraft.world.level.Level.END);
+                ServerLevel end = server.getLevel(Level.END);
                 if (end == null) return;
                 if (slice) {
                     for (var dragon : List.copyOf(end.getDragons())) {
-                        com.hbm.items.weapon.MobSlicer.kill(dragon,
-                                com.hbm.lib.ModDamageSources.source(end, com.hbm.lib.ModDamageSources.CRUCIBLE));
+                        MobSlicer.kill(dragon,
+                                ModDamageSources.source(end, ModDamageSources.CRUCIBLE));
                     }
                 }
                 endFight = endFightSnapshot(end);
@@ -198,11 +229,11 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         // cancelled, so the server broadcast it to every tracking player
         if (params.has("server_swing_probe")) {
             var server = mc.getSingleplayerServer();
-            java.util.UUID id = mc.player == null ? null : mc.player.getUUID();
+            UUID id = mc.player == null ? null : mc.player.getUUID();
             if (server != null && id != null) server.execute(() -> {
                 var sp = server.getPlayerList().getPlayer(id);
                 if (sp == null) return;
-                com.google.gson.JsonObject json = new com.google.gson.JsonObject();
+                JsonObject json = new JsonObject();
                 json.addProperty("swinging", sp.swinging);
                 json.addProperty("swing_time", sp.swingTime);
                 serverSwing = json;
@@ -234,8 +265,8 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
      * elapsed, bus playing, the swing buses now), the cut being drawn, the aux particles, the hand's equip progress and
      * the cut-mob counters. Inert unless the harness runs.
      */
-    private static com.google.gson.JsonObject harnessQuery(Minecraft mc) {
-        com.google.gson.JsonObject json = new com.google.gson.JsonObject();
+    private static JsonObject harnessQuery(Minecraft mc) {
+        JsonObject json = new JsonObject();
         LocalPlayer player = mc.player;
         if (player == null) return json;
         ItemStack held = player.getMainHandItem();
@@ -277,14 +308,14 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         // the 1.7 swing: its bus values now, the time into it and the offset it was started with
         double[] rot = transformation("SWING_ROT", InteractionHand.MAIN_HAND);
         double[] trans = transformation("SWING_TRANS", InteractionHand.MAIN_HAND);
-        com.google.gson.JsonArray swing = new com.google.gson.JsonArray();
+        JsonArray swing = new JsonArray();
         for (int i = 0; i < 3; i++) swing.add(rot[i]);
         for (int i = 0; i < 3; i++) swing.add(trans[i]);
         json.add("swing17", swing);
         json.addProperty("swing17_offset", lastSwingOffset);
         json.addProperty("swing17_ms", anim != null && anim.animation != null && anim.animation.getBus("SWING_ROT") != null
                 ? now - anim.startMillis : -1);
-        json.addProperty("attack_clicks_consumed", dev.golem.core.client.AttackInput.consumedClicks());
+        json.addProperty("attack_clicks_consumed", AttackInput.consumedClicks());
         json.addProperty("third_person_draws", thirdPersonDraws);
         json.addProperty("third_person_bolts", thirdPersonBoltDraws);
         int others = 0;
@@ -300,11 +331,11 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         GolemNetwork.registerPlayToClient(SpecialDeathPayload.CODEC, (payload, context) -> SlicedMobs.handle(payload));
     }
 
-    // ------------------------------------------------------------------ animations
+    // Animations
 
     private static int slot(Player player, InteractionHand hand) {
         if (hand == InteractionHand.OFF_HAND) return 9;
-        int slot = dev.golem.core.world.Compat.selectedSlot(player);
+        int slot = Compat.selectedSlot(player);
         return slot >= 0 && slot < 9 ? slot : Math.abs(slot) % 9;
     }
 
@@ -339,9 +370,9 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
             HOTBAR[slot] = new Anim(held, now, null, true);
         } else if (mode == CrucibleAnimPayload.CSWING) {
             if (transformation("SWING_ROT", InteractionHand.MAIN_HAND)[0] == 0) {
-                // user decision (2026-10-02): the standard attack in first person is the 1.7 crucible's swing
-                // (original-hbm ItemCrucible.getAnimation(SWING)), not old-hbm's cSwing re-tuning of it
-                // (60 - offset, 60 - offset, -55 / trans 0, -10, 0). The cue, its condition and the sound stay old-hbm's.
+                // The standard attack in first person is the 1.7 crucible's swing
+                // (1.7 ItemCrucible.getAnimation(SWING)), not 1.12.2's cSwing re-tuning of it
+                // (60 - offset, 60 - offset, -55 / trans 0, -10, 0). The cue, its condition and the sound stay 1.12.2's.
                 int offset = player.level().getRandom().nextInt(80) - 20;
                 lastSwingOffset = offset;
                 overlay(slot, held, swing17(offset), now);
@@ -353,7 +384,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
     static int lastSwingOffset;
 
     /**
-     * original-hbm {@code ItemCrucible.getAnimation(ToolAnimation.SWING)}: {@code offset = itemRand.nextInt(80) - 20},
+     * 1.7 {@code ItemCrucible.getAnimation(ToolAnimation.SWING)}: {@code offset = itemRand.nextInt(80) - 20},
      * SWING_ROT {@code (90 - offset, 90 - offset, 35)} at 75 ms, {@code (90 + offset, 90 - offset, -45)} 150 ms later,
      * back to 0 over 500 ms; SWING_TRANS {@code (-3, 0, 0)}, {@code (8, 0, 0)}, {@code 0} on the same clock. The values are
      * the 1.7 OBJ crucible's own frame; {@link #renderFirstPerson} applies them there (see {@link #swingInScene}).
@@ -391,7 +422,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         }
     }
 
-    /** {@code RenderGameOverlayEvent} ALL: drop finished buses, and a deploy whose item is no longer held. */
+    /** {@code RenderGameOverlayEvent} ALL: drop finished buses, and a deploy whose item is not held. */
     private static void cleanUp(LocalPlayer player) {
         long now = System.currentTimeMillis();
         for (int i = 0; i < HOTBAR.length; i++) {
@@ -408,7 +439,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         }
     }
 
-    // ------------------------------------------------------------------ ItemSwordCutter.Client
+    // ItemSwordCutter.Client
 
     @Override
     public void rightClick(Player player) {
@@ -447,7 +478,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         return anim != null && anim.animation != null;
     }
 
-    // ------------------------------------------------------------------ ticks and frames
+    // Ticks and frames
 
     private static void clientTick() {
         Minecraft mc = Minecraft.getInstance();
@@ -478,7 +509,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         int slot = slot(player, InteractionHand.MAIN_HAND);
         Anim anim = HOTBAR[slot];
         boolean special = clicked || (anim != null && anim.animation != null && anim.animation.getBus("SWING") != null);
-        // old-hbm sent AuxButton 1000 every tick; the server only keeps the last value, so a change is enough
+        // 1.12.2 sent AuxButton 1000 every tick; the server only keeps the last value, so a change is enough
         if (!clickSentOnce || special != lastClickSent) {
             GolemNetwork.sendToServer(CrucibleClickPayload.CODEC, new CrucibleClickPayload(special));
             lastClickSent = special;
@@ -588,7 +619,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         }
     }
 
-    // ------------------------------------------------------------------ first-person draw
+    // First-person draw
 
     /** {@code GlStateManager.color(1, 0.5, 0.5, 1)} for the sparks' first pass and {@code (1, 0.2, 0.2)} for bloom. */
     private static final int SPARK_COLOR = 0xFFFF7F7F;
@@ -603,7 +634,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
         // 1.7 ItemRenderCrucible: player.isSwingInProgress = false in its first-person branch. The swing itself is
-        // vanilla's again (ItemCrucible no longer cancels it, so F5 and other players see the arm swing); in first person
+        // vanilla's again (ItemCrucible does not cancel it, so F5 and other players see the arm swing); in first person
         // the 1.7 swing bus is the attack animation, so the vanilla arm swing never advances here. The swing starts with
         // swingTime -1 and attackAnim 0, so clearing it before the next tick leaves no vanilla swing frame on screen.
         player.swinging = false;
@@ -653,8 +684,8 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         CrucibleEquipModel model = CrucibleEquipModel.get();
         CrucibleEquipModel.Playhead head = model.playhead(deployElapsed(anim, stack, model));
         Matrix4f swing = swingInScene(model, head);
-        if (swing != null) dev.golem.core.render.Poses.mulPose(pose, swing);
-        Identifier skin = dev.golem.core.client.PlayerSkins.texture((AbstractClientPlayer) player);
+        if (swing != null) Poses.mulPose(pose, swing);
+        Identifier skin = PlayerSkins.texture((AbstractClientPlayer) player);
         float partial = Frames.partialTick();
         model.walk(head, pose, (name, nodePose) -> {
             if (name.startsWith("Guard")) {
@@ -673,10 +704,10 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
      * The deploy clock as the draw reads it: {@code now - wrapperStart}, with 1.12's two overrides applied at the same
      * instant. 1.12 set {@code startTime = now - 400} (empty) and the STAY clamp inside {@code renderByItem}, right before
      * {@code renderAnimated} read the clock again, so both reads were the same millisecond. Here the wrapper is updated in
-     * {@link #firstPersonFrame} at the start of the world frame and the hand is drawn after the whole level, a few to
-     * tens of milliseconds later; reading the clock again then gave the empty crucible 400..4xx ms, a different point of
-     * the still-moving deploy every frame (the jitter; measured 400/401/402 alternating on minimized clients, more under
-     * a real frame time). A charged crucible was unaffected only because the playhead clamps past the last keyframe.
+     * {@link #firstPersonFrame} at the start of the world frame and the hand is drawn after the whole level, tens of
+     * milliseconds later; reading the clock again would give the empty crucible 400..4xx ms, a different point of the
+     * still-moving deploy every frame (jitter). A charged crucible is unaffected because the playhead clamps past the
+     * last keyframe.
      */
     static long deployElapsed(Anim anim, ItemStack stack, CrucibleEquipModel model) {
         if (ItemCrucible.getCharges(stack) == 0) return 400;
@@ -684,15 +715,15 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
     }
 
     /**
-     * The 1.7 swing ({@link #swing17}) as a transform of the old-hbm scene, or null while no swing plays.
+     * The 1.7 swing ({@link #swing17}) as a transform of the 1.12.2 scene, or null while no swing plays.
      *
      * <p>1.7 drew the OBJ crucible alone and applied {@code translate(SWING_TRANS) rotate(x) rotate(z) rotate(y)} right
      * before the OBJ, i.e. in the crucible's own model frame, pivoting about the OBJ origin (the hilt's base line).
-     * Here the crucible is the Collada scene's {@code Hilt} node holding the same mesh, with the arms around it. The swing
-     * is applied in that same frame: {@code N W N^-1} at the scene root, where {@code N} is the hilt node's scene matrix
-     * at this playhead times {@link CrucibleEquipModel#OBJ_IN_HILT} (OBJ coordinates to node coordinates). The whole
-     * scene (hilt, guards, blade and both arms) moves rigidly with it, so the arms keep holding the hilt; the
-     * translations stay in OBJ units (scaled with the model) and the rotations about the OBJ axes, as in 1.7.
+     * Here the crucible is the Collada scene's {@code Hilt} node holding the same mesh, with the arms around it, and the
+     * swing is applied in that frame: {@code N W N^-1} at the scene root, where {@code N} is the hilt node's scene matrix
+     * at this playhead times {@link CrucibleEquipModel#OBJ_IN_HILT} (OBJ to node coordinates). The whole scene moves
+     * rigidly, so the arms keep holding the hilt; translations stay in OBJ units (scaled with the model) and rotations
+     * about the OBJ axes, as in 1.7.
      */
     static @Nullable Matrix4f swingInScene(CrucibleEquipModel model, CrucibleEquipModel.Playhead head) {
         Matrix4f w = swing17Matrix();
@@ -731,7 +762,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
     /**
      * Harness reference: the 1.7 {@code ItemRenderCrucible} first-person body (charged, guards open, blade cutout) in the
      * 1.7 weapon frame, reached from the {@code teisr} frame the pose is in: {@code teisr^-1 * weapon}, both frames being
-     * maps from the same hand pose ({@code Pose17} ITEM_RENDER_WEAPON and old-hbm's first-person display).
+     * maps from the same hand pose ({@code Pose17} ITEM_RENDER_WEAPON and 1.12.2's first-person display).
      */
     private static void renderReference17(PoseStack pose, SubmitSink sink, int light, int overlay) {
         if (obj17 == null) obj17 = com.hbm.client.model.WavefrontObj.load(Ids.of("hbm", "models/weapons/crucible.obj"));
@@ -741,15 +772,15 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
                 .rotateXYZ(0F, (float) Math.toRadians(-90), (float) Math.toRadians(25))
                 .scale(0.68F)
                 .translate(-0.5F, -0.5F, -0.5F);
-        Matrix4f weapon = dev.golem.core.render.display.Pose17.frame(dev.golem.core.render.display.Pose17.Klass.ITEM_RENDER_WEAPON,
-                dev.golem.core.render.display.DisplaySlot.FIRST_PERSON_RIGHT_HAND);
-        dev.golem.core.render.Poses.mulPose(pose, teisr.invert().mul(weapon));
+        Matrix4f weapon = Pose17.frame(Pose17.Klass.ITEM_RENDER_WEAPON,
+                DisplaySlot.FIRST_PERSON_RIGHT_HAND);
+        Poses.mulPose(pose, teisr.invert().mul(weapon));
         pose.translate(1.5D, -0.3D, 0D);
         pose.scale(0.3F, 0.3F, 0.3F);
         pose.mulPose(Axis.ZP.rotationDegrees(45F));
         pose.mulPose(Axis.YP.rotationDegrees(90F));
         Matrix4f w = swing17Matrix();
-        if (w != null) dev.golem.core.render.Poses.mulPose(pose, w);
+        if (w != null) Poses.mulPose(pose, w);
         com.hbm.client.model.WavefrontObj obj = obj17;
         sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutoutCull(HILT), (p, b) -> obj.renderPart("Hilt", p, b, light, overlay));
         sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutoutCull(GUARD), (p, b) -> obj.renderPart("GuardLeft", p, b, light, overlay));
@@ -779,9 +810,9 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
             });
             // the crucible_lightning shader pair, SRC_ALPHA / ONE, in the blade's space (its offsets are object-space)
             boolean cpu = lightningCpu;
-            dev.golem.core.render.NoiseDisplacedRenderType.localMatrix(m);
+            NoiseDisplacedRenderType.localMatrix(m);
             sink.submitCustomGeometry(pose,
-                    dev.golem.core.render.NoiseDisplacedRenderType.of(LIGHTNING_SHADER, cpu ? NOISE_FLAT : NOISE, false), (p, buffer) -> {
+                    NoiseDisplacedRenderType.of(LIGHTNING_SHADER, cpu ? NOISE_FLAT : NOISE, false), (p, buffer) -> {
                 for (FirstPersonParticles.Particle particle : particles) {
                     if (particle instanceof FirstPersonParticles.Lightning bolt) {
                         CrucibleLightning.render(bolt.node, playerPos, 0.0015F, bolt.shaderTime(), p, buffer, cpu);
@@ -791,7 +822,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
             // 1.12 drew the lightning into bloomData in the same onRender, before the blade wrote depth (bloomData shares
             // the main depth attachment): order 0, or the depth-written 0.7 blade (order 1) hides the bolt's bloom
             if (!isolate) sink.submitCustomGeometry(pose,
-                    dev.golem.core.render.NoiseDisplacedRenderType.of(LIGHTNING_SHADER, cpu ? NOISE_FLAT : NOISE, true), (p, buffer) -> {
+                    NoiseDisplacedRenderType.of(LIGHTNING_SHADER, cpu ? NOISE_FLAT : NOISE, true), (p, buffer) -> {
                 for (FirstPersonParticles.Particle particle : particles) {
                     if (particle instanceof FirstPersonParticles.Lightning bolt) {
                         CrucibleLightning.render(bolt.node, playerPos, 0.0015F, bolt.shaderTime(), p, buffer, cpu);
@@ -834,7 +865,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
      * {@code z * zScale + d >= 0} ({@code zScale} is the shell's own z scale, applied after the plane was set). Each
      * kept piece is a triangle, emitted as a degenerate quad.
      */
-    private static void clippedBlade(PoseStack.Pose pose, com.mojang.blaze3d.vertex.VertexConsumer buffer, float[] tri,
+    private static void clippedBlade(PoseStack.Pose pose, VertexConsumer buffer, float[] tri,
                                      float zScale, float d, int color, int overlay) {
         for (int t = 0; t + 24 <= tri.length; t += 24) {
             float[][] in = new float[3][];
@@ -871,12 +902,12 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         return out;
     }
 
-    private static void emit(PoseStack.Pose pose, com.mojang.blaze3d.vertex.VertexConsumer buffer, float[] v, int color,
+    private static void emit(PoseStack.Pose pose, VertexConsumer buffer, float[] v, int color,
                              int overlay) {
         Vertexes.vertex(buffer, pose, v[0], v[1], v[2], color, v[3], v[4], overlay, 0xF000F0, v[5], v[6], v[7]);
     }
 
-    // ------------------------------------------------------------------ third person (port addition, user decision)
+    // Third person (port addition)
 
     /**
      * The lightning of other players' crucibles, by entity id. The local player's bolts are the first-person ones
@@ -884,7 +915,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
      * player's client state is unknown here, so their charged crucible spawns bolts at the same rate (1 in 20 per tick)
      * from the same positions, as if fully deployed.
      */
-    private static final java.util.Map<Integer, List<FirstPersonParticles.Lightning>> OTHER_BOLTS = new java.util.HashMap<>();
+    private static final Map<Integer, List<FirstPersonParticles.Lightning>> OTHER_BOLTS = new HashMap<>();
     /** Next free {@code NoiseDisplacedRenderType} slot this frame; slot 0 is first person's. */
     private static int nextSlot = 1;
     /** Harness: third-person effect draws since the last query. */
@@ -915,7 +946,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
             OTHER_BOLTS.clear();
             return;
         }
-        java.util.Set<Integer> present = new java.util.HashSet<>();
+        Set<Integer> present = new HashSet<>();
         var rand = mc.level.getRandom();
         for (Player other : mc.level.players()) {
             if (other == mc.player) continue;
@@ -945,16 +976,15 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
     }
 
     /**
-     * The first-person blade's effects on the third-person OBJ crucible (port addition; old-hbm drew them in first person
+     * The first-person blade's effects on the third-person OBJ crucible (port addition; 1.12.2 drew them in first person
      * only): the blade translucent at alpha 0.7 (order 1), the lightning before it (order 0, both the main-target and
      * the bloom pass, through this player's own local-matrix slot) and after it the blade's bloom and, above 60% of the
      * deploy, its heat-distortion shell (order 2), as {@link #renderFirstPerson}'s blade does. {@code pose} is the OBJ
      * crucible's space with the blade's 0.005 nudge. The OBJ blade is the Collada blade node's mesh at
      * {@link #bladeNodeInObj()}: the shell is the node's {@code (1.15, 1.15, 1.05)} about its centre, and the bolts are
      * the first-person bolts (same seed, same main chain) drawn in that node's space with their forks following the
-     * chain ({@code Lightning.thirdPersonNode}): 1.12's forks all leave along the node's {@code -y}, which first person
-     * sees head-on but which in the held third-person pose points at the ground, so the bolts hung down from the hilt
-     * (user reports 2026-10-02 and 2026-10-03); main pass and bloom pass at order 0, before the blade.
+     * chain ({@code Lightning.thirdPersonNode}). 1.12's forks all leave along the node's {@code -y}, which first person
+     * sees head-on but which points at the ground in the held third-person pose.
      */
     public static void renderThirdPerson(LivingEntity owner, PoseStack pose, SubmitSink sink, int overlay,
                                          com.hbm.client.model.WavefrontObj crucible) {
@@ -977,13 +1007,13 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         thirdPersonDraws++;
 
         pose.pushPose();
-        dev.golem.core.render.Poses.mulPose(pose, bladeNodeInObj());
-        if (!bolts.isEmpty() && nextSlot < dev.golem.core.render.NoiseDisplacedRenderType.SLOTS) {
+        Poses.mulPose(pose, bladeNodeInObj());
+        if (!bolts.isEmpty() && nextSlot < NoiseDisplacedRenderType.SLOTS) {
             int slot = nextSlot++;
             Matrix4f m = new Matrix4f(pose.last().pose());
             Vector4f eye = new Matrix4f(m).invert().transform(new Vector4f(0, 0, 0, 1));
             V3 eyePos = new V3(eye.x, eye.y, eye.z);
-            dev.golem.core.render.NoiseDisplacedRenderType.localMatrix(slot, m);
+            NoiseDisplacedRenderType.localMatrix(slot, m);
             boolean cpu = lightningCpu;
             SubmitSink.CustomGeometry draw = (p, buffer) -> {
                 for (FirstPersonParticles.Lightning bolt : bolts) {
@@ -991,8 +1021,8 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
                 }
             };
             Identifier noise = cpu ? NOISE_FLAT : NOISE;
-            sink.submitCustomGeometry(pose, dev.golem.core.render.NoiseDisplacedRenderType.of(LIGHTNING_SHADER, noise, false, slot), draw);
-            if (!isolate) sink.submitCustomGeometry(pose, dev.golem.core.render.NoiseDisplacedRenderType.of(LIGHTNING_SHADER, noise, true, slot), draw);
+            sink.submitCustomGeometry(pose, NoiseDisplacedRenderType.of(LIGHTNING_SHADER, noise, false, slot), draw);
+            if (!isolate) sink.submitCustomGeometry(pose, NoiseDisplacedRenderType.of(LIGHTNING_SHADER, noise, true, slot), draw);
             thirdPersonBoltDraws += bolts.size();
         }
         boolean distort = diffN > 0.6F;
@@ -1007,23 +1037,23 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
             // the node's scale (1.15, 1.15, 1.05) about its origin (the blade's centre), in OBJ space
             pose.pushPose();
             Matrix4f node = bladeNodeInObj();
-            dev.golem.core.render.Poses.mulPose(pose, new Matrix4f(node).scale(1.15F, 1.15F, 1.05F).mul(new Matrix4f(node).invert()));
+            Poses.mulPose(pose, new Matrix4f(node).scale(1.15F, 1.15F, 1.05F).mul(new Matrix4f(node).invert()));
             layers.submitCustomGeometry(pose, ScreenDistortion.of(BLADE_BLOOM, NOISE),
                     (p, buffer) -> crucible.renderPart("Blade", p, buffer, 0xF000F0, overlay, DISTORTION_AMOUNT));
             pose.popPose();
         }
     }
 
-    // ------------------------------------------------------------------ the killing hit's dust
+    // The killing hit's dust
 
-    /** old-hbm {@code VanillaBurst_BlockDust}: exact motion {@code gaussian * motion} (+0.2 up), life 50..99. */
-    private static void blockDustBurst(net.minecraft.world.level.Level level, double x, double y, double z,
-                                       net.minecraft.nbt.CompoundTag data) {
-        if (!(level instanceof net.minecraft.client.multiplayer.ClientLevel)) return;
-        double motion = dev.golem.core.data.Tags.getDoubleOr(data, "motion", 0D);
-        int count = dev.golem.core.data.Tags.getIntOr(data, "count", 0);
-        var block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.byId(dev.golem.core.data.Tags.getIntOr(data, "block", 0));
-        var option = new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK,
+    /** 1.12.2 {@code VanillaBurst_BlockDust}: exact motion {@code gaussian * motion} (+0.2 up), life 50..99. */
+    private static void blockDustBurst(Level level, double x, double y, double z,
+                                       CompoundTag data) {
+        if (!(level instanceof ClientLevel)) return;
+        double motion = Tags.getDoubleOr(data, "motion", 0D);
+        int count = Tags.getIntOr(data, "count", 0);
+        var block = BuiltInRegistries.BLOCK.byId(Tags.getIntOr(data, "block", 0));
+        var option = new BlockParticleOption(ParticleTypes.BLOCK,
                 block.defaultBlockState());
         var rand = level.getRandom();
         for (int i = 0; i < count; i++) {

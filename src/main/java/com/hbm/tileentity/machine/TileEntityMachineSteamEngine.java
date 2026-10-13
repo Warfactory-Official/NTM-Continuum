@@ -15,6 +15,7 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -69,7 +70,7 @@ public class TileEntityMachineSteamEngine extends TileEntityMachineBase
         if (engine.rotor >= 360F) {
             engine.rotor -= 360F;
             level.playSound(null, pos, ModSounds.STEAM_ENGINE_OPERATE.get(),
-                    net.minecraft.sounds.SoundSource.BLOCKS, 1F, 0.5F + engine.acceleration / 80F);
+                    SoundSource.BLOCKS, 1F, 0.5F + engine.acceleration / 80F);
         }
 
         for (DirPos connection : engine.getConPos()) {

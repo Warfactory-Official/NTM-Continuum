@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the FEL — the 1.12.2 {@code ContainerFEL} layout, coordinates verbatim: the battery bay at
+ * Menu for the FEL, the 1.12.2 {@code ContainerFEL} layout, with its coordinates: the battery bay at
  * (182, 144) and the laser-crystal slot at (141, 23), with the player inventory at (8, 83).
  *
  * <p>The GUI is 203px wide, which is why the battery sits so far right.

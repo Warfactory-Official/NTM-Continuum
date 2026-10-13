@@ -1,5 +1,11 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.data.HbmDataMaps;
+import com.hbm.api.environment.Environment;
+import com.hbm.blocks.machine.MachineFurnaceBrick;
+import com.hbm.items.ItemEnums;
+import com.hbm.items.ModIngredientItems;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.Tags;
 
 import com.hbm.inventory.container.ContainerFurnaceBrick;
@@ -8,11 +14,13 @@ import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.Recipes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -51,8 +59,8 @@ public class TileEntityFurnaceBrick extends TileEntityMachineBase implements Men
         boolean wasBurning = furnace.burnTime > 0;
         // hbm-space breatheAir: 1 mB of oxygen every 5 ticks while burning; without air no fuel is lit and nothing
         // smelts, while the burn time still runs down (com.hbm.api.environment.Environment, always air on plain HBM)
-        boolean canOperate = com.hbm.api.environment.Environment.breatheAir(level, pos,
-                wasBurning && com.hbm.util.TickPhase.every(level, pos, 5L) ? 1 : 0);
+        boolean canOperate = Environment.breatheAir(level, pos,
+                wasBurning && TickPhase.every(level, pos, 5L) ? 1 : 0);
         boolean dirty = false;
 
         if (furnace.burnTime > 0) furnace.burnTime--;
@@ -64,15 +72,15 @@ public class TileEntityFurnaceBrick extends TileEntityMachineBase implements Men
                 int burn = Compat.burnDuration(level, fuel);
                 if (burn > 0) {
                     furnace.maxBurnTime = furnace.burnTime = burn;
-                    com.hbm.items.ItemEnums.EnumAshType type = TileEntityFireboxBase.getAshFromFuel(fuel);
-                    if (type == com.hbm.items.ItemEnums.EnumAshType.WOOD) furnace.ashLevelWood += burn;
-                    if (type == com.hbm.items.ItemEnums.EnumAshType.COAL) furnace.ashLevelCoal += burn;
-                    if (type == com.hbm.items.ItemEnums.EnumAshType.MISC) furnace.ashLevelMisc += burn;
+                    ItemEnums.EnumAshType type = TileEntityFireboxBase.getAshFromFuel(fuel);
+                    if (type == ItemEnums.EnumAshType.WOOD) furnace.ashLevelWood += burn;
+                    if (type == ItemEnums.EnumAshType.COAL) furnace.ashLevelCoal += burn;
+                    if (type == ItemEnums.EnumAshType.MISC) furnace.ashLevelMisc += burn;
 
                     int threshold = 2_000;
-                    if (furnace.processAsh(furnace.ashLevelWood, com.hbm.items.ItemEnums.EnumAshType.WOOD, threshold)) furnace.ashLevelWood -= threshold;
-                    if (furnace.processAsh(furnace.ashLevelCoal, com.hbm.items.ItemEnums.EnumAshType.COAL, threshold)) furnace.ashLevelCoal -= threshold;
-                    if (furnace.processAsh(furnace.ashLevelMisc, com.hbm.items.ItemEnums.EnumAshType.MISC, threshold)) furnace.ashLevelMisc -= threshold;
+                    if (furnace.processAsh(furnace.ashLevelWood, ItemEnums.EnumAshType.WOOD, threshold)) furnace.ashLevelWood -= threshold;
+                    if (furnace.processAsh(furnace.ashLevelCoal, ItemEnums.EnumAshType.COAL, threshold)) furnace.ashLevelCoal -= threshold;
+                    if (furnace.processAsh(furnace.ashLevelMisc, ItemEnums.EnumAshType.MISC, threshold)) furnace.ashLevelMisc -= threshold;
 
                     ItemStack remainder = Compat.craftingRemainder(fuel);
                     fuel.shrink(1);
@@ -95,9 +103,9 @@ public class TileEntityFurnaceBrick extends TileEntityMachineBase implements Men
 
         boolean burning = furnace.burnTime > 0;
         if (wasBurning != burning) {
-            if (state.hasProperty(com.hbm.blocks.machine.MachineFurnaceBrick.LIT)
-                    && state.getValue(com.hbm.blocks.machine.MachineFurnaceBrick.LIT) != burning) {
-                level.setBlock(pos, state.setValue(com.hbm.blocks.machine.MachineFurnaceBrick.LIT, burning), 3);
+            if (state.hasProperty(MachineFurnaceBrick.LIT)
+                    && state.getValue(MachineFurnaceBrick.LIT) != burning) {
+                level.setBlock(pos, state.setValue(MachineFurnaceBrick.LIT, burning), 3);
             }
             dirty = true;
         }
@@ -107,9 +115,9 @@ public class TileEntityFurnaceBrick extends TileEntityMachineBase implements Men
 
     public int getBurnSpeed() {
         // per-input speed: data/hbm/value_maps/item/brick_furnace_speed.json (1.7 values: clay, fireclay, netherrack 4; cobble, sand 2)
-        Integer speed = com.hbm.api.data.HbmDataMaps.BRICK_FURNACE_SPEED.get(inventory.getStackInSlot(0).getItem());
+        Integer speed = HbmDataMaps.BRICK_FURNACE_SPEED.get(inventory.getStackInSlot(0).getItem());
         if (speed != null) return speed;
-        return inventory.getStackInSlot(0).is(net.minecraft.tags.ItemTags.LOGS) ? 2 : 1;
+        return inventory.getStackInSlot(0).is(ItemTags.LOGS) ? 2 : 1;
     }
 
     public boolean canSmelt(Level level) {
@@ -118,7 +126,7 @@ public class TileEntityFurnaceBrick extends TileEntityMachineBase implements Men
         if (result.isEmpty()) return false;
         ItemStack output = inventory.getStackInSlot(2);
         if (output.isEmpty()) return true;
-        if (!dev.golem.core.world.ItemStacks.sameItemAndData(output, result)) return false;
+        if (!ItemStacks.sameItemAndData(output, result)) return false;
         return output.getCount() + result.getCount() <= 64
                 && output.getCount() + result.getCount() <= output.getMaxStackSize();
     }
@@ -132,9 +140,9 @@ public class TileEntityFurnaceBrick extends TileEntityMachineBase implements Men
         inventory.getStackInSlot(0).shrink(1);
     }
 
-    protected boolean processAsh(int level, com.hbm.items.ItemEnums.EnumAshType type, int threshold) {
+    protected boolean processAsh(int level, ItemEnums.EnumAshType type, int threshold) {
         if (level < threshold) return false;
-        ItemStack ash = new ItemStack(com.hbm.items.ModIngredientItems.ash(type));
+        ItemStack ash = new ItemStack(ModIngredientItems.ash(type));
         ItemStack output = inventory.getStackInSlot(3);
         if (output.isEmpty()) {
             inventory.setStackInSlot(3, ash);

@@ -1,5 +1,6 @@
 package com.hbm.items.armor;
 
+import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState;
@@ -32,7 +33,7 @@ public final class ArmorNCRPARanged implements IPARanged {
         }
         magazine.useUpAmmo(stack, player.getInventory(), 1);
         float side = player.getRandom().nextBoolean() ? -0.25F : 0.25F;
-        player.level().addFreshEntity(new com.hbm.entity.projectile.EntityBulletBaseMK4(player, config, 25F, 0F, side, 0D, 0D));
+        player.level().addFreshEntity(new EntityBulletBaseMK4(player, config, 25F, 0F, side, 0D, 0D));
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(), ModGunSounds.FIRE_ROCKET.get(), SoundSource.PLAYERS, 0.5F, 0.9F + player.getRandom().nextFloat() * 0.2F);
     }
 }

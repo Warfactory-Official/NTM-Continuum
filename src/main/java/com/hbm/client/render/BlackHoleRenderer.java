@@ -1,12 +1,14 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
+import com.hbm.client.model.WavefrontObj;
 import com.hbm.entity.effect.EntityBlackHole;
 import com.hbm.entity.effect.EntityQuasar;
 import com.hbm.entity.effect.EntityRagingVortex;
 import com.hbm.entity.effect.EntityVortex;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
@@ -39,11 +41,11 @@ public final class BlackHoleRenderer extends GemEntityRenderer<EntityBlackHole, 
     /** How far out the world is bent, as a fraction of 4 Einstein radii plus 2 shadow radii (user: halved). */
     private static final float LENS_RANGE = 0.5F;
 
-    private final com.hbm.client.model.WavefrontObj sphere;
+    private final WavefrontObj sphere;
 
     public BlackHoleRenderer(EntityRendererProvider.Context context) {
         super(context);
-        sphere = com.hbm.client.model.WavefrontObj.load(
+        sphere = WavefrontObj.load(
                 Ids.of(Constants.MOD_ID, "models/sphere.obj"));
     }
 
@@ -110,10 +112,9 @@ public final class BlackHoleRenderer extends GemEntityRenderer<EntityBlackHole, 
      * crossing of the field's plane shows the 1.7 disc or swirl at that point, so the primary image, the arcs over
      * and under the shadow and the thin higher-order rings come from the paths themselves; a path that escapes
      * shows the copied scene where it lands, with the background assumed {@link #LENS_BACKGROUND} blocks behind.
-     * The jets are traced too, so the shadow and the disc hide what lies behind them (as geometry drawn after the
-     * impostor they were tested only against the world's depth and drew over both). Seen through water or glass,
+     * The jets are traced too, so the shadow and the disc hide what lies behind them. Seen through water or glass,
      * Core tests the impostor against the world under the translucent layer and the shader lays that layer back
-     * over the hole (drawn after translucency, it was hidden behind any water surface; 2026-10-07).
+     * over the hole (drawn after translucency, it would be hidden behind any water surface).
      */
     private static final class Lens {
         private final Matrix4f viewToBase;
@@ -271,7 +272,7 @@ public final class BlackHoleRenderer extends GemEntityRenderer<EntityBlackHole, 
         pose.mulPose(Axis.YP.rotationDegrees((entity.tickCount + partial) * speed));
     }
 
-    private static void ring(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
+    private static void ring(VertexConsumer buffer, PoseStack.Pose pose,
                              float inner, float outer, int innerColor, int outerColor) {
         for (int i = 0; i < 16; i++) {
             double a0 = i * Math.PI * 2D / 16D;
@@ -291,7 +292,7 @@ public final class BlackHoleRenderer extends GemEntityRenderer<EntityBlackHole, 
     }
 
     /** Disc UVs are fixed to the old .25/.5 radii; only the geometry radius shrinks per iteration. */
-    private static void discRing(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
+    private static void discRing(VertexConsumer buffer, PoseStack.Pose pose,
                                  float inner, float outer, int innerColor, int outerColor) {
         for (int i = 0; i < 16; i++) {
             double a0 = i * Math.PI * 2D / 16D;

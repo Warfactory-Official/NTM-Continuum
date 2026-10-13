@@ -1,6 +1,7 @@
 package com.hbm.client;
 
 import com.hbm.config.RadiationConfig;
+import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.Fogs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -33,7 +34,7 @@ public final class SmogFog implements Fogs.Modifier {
     public static synchronized void register() {
         if (registered) return;
         registered = true;
-        dev.golem.core.client.ClientTicks.onEndTick(SmogFog::tick);
+        ClientTicks.onEndTick(SmogFog::tick);
         Fogs.addModifier(new SmogFog());
     }
 

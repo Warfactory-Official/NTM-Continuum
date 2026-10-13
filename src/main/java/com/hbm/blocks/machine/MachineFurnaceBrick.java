@@ -1,11 +1,14 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.ModBlockEntities;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityFurnaceBrick;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -28,7 +31,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The single-block brick furnace; lit is a block state rather than a second registered block. */
-public class MachineFurnaceBrick extends dev.golem.core.world.CompatBlock implements TickingBlock {
+public class MachineFurnaceBrick extends CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
@@ -56,9 +59,9 @@ public class MachineFurnaceBrick extends dev.golem.core.world.CompatBlock implem
     }
 
     @Override protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }

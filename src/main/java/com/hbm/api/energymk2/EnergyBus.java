@@ -5,7 +5,7 @@ import com.hbm.uninos.graph.Distribution;
 import java.util.List;
 
 /**
- * Arbitration for the ENERGY net - 1.7's law in one pass: SURPLUS gives everyone full demand, SHORTAGE walks tiers HIGHEST first; 1.7's cumulative-subtraction slip is deliberately not reproduced.
+ * Arbitration for the ENERGY net, following 1.7's law in one pass: SURPLUS gives everyone full demand, SHORTAGE walks tiers HIGHEST first; 1.7's cumulative-subtraction slip is not reproduced.
  */
 public final class EnergyBus {
 

@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.packet.ControlEventPayload;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
@@ -22,12 +23,12 @@ import java.util.List;
 import java.util.Optional;
 import com.hbm.inventory.container.ContainerCraneExtractor;
 import com.hbm.tileentity.network.TileEntityCraneExtractor;
-import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.module.ModulePatternMatcher;
 
 /** 1.7 {@code GUICraneExtractor} ("Conveyor Ejector"): 212 wide. */
 public class GUICraneExtractor extends CompatContainerScreen<ContainerCraneExtractor> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_crane_ejector.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_crane_ejector.png");
 
     public GUICraneExtractor(ContainerCraneExtractor menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 212, 185);

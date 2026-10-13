@@ -18,6 +18,7 @@ import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.util.ContaminationUtil;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import dev.golem.core.Ids;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -57,7 +58,6 @@ public final class HbmScriptApi {
 
     private HbmScriptApi() {}
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Entities (HbmLivingProps)
 
     /** Accumulated radiation in RAD (0..2500). */
@@ -167,7 +167,6 @@ public final class HbmScriptApi {
         return HazmatRegistry.getResistance(stack);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Chunk radiation (RadiationSystemNT; server levels only, 0 / no-op on a client)
 
     public double getChunkRadiation(Level level, BlockPos pos) {
@@ -207,7 +206,6 @@ public final class HbmScriptApi {
         removeChunkRadiation(level, BlockPos.containing(x, y, z), rad);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Fluids
 
     /** Every HBM fluid id, in HBM's display order ({@code Fluids.getInNiceOrder}), {@code hbm:none} excluded. */
@@ -279,7 +277,6 @@ public final class HbmScriptApi {
         return fluid == null ? 0 : fluid.getColor();
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Materials (Mats)
 
     /** Every material name, in registration order. */
@@ -319,7 +316,6 @@ public final class HbmScriptApi {
         return Collections.unmodifiableMap(info);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Item hazards (HazardSystem)
 
     /**
@@ -343,7 +339,7 @@ public final class HbmScriptApi {
         if (stack == null || stack.isEmpty() || type == null) return 0D;
         IHazardType hazard;
         try {
-            hazard = HazardRegistry.getType(dev.golem.core.Ids.parse(type.indexOf(':') < 0 ? "hbm:" + type : type));
+            hazard = HazardRegistry.getType(Ids.parse(type.indexOf(':') < 0 ? "hbm:" + type : type));
         } catch (RuntimeException invalid) {
             return 0D;
         }
@@ -362,7 +358,6 @@ public final class HbmScriptApi {
         return Collections.unmodifiableList(ids);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
 
     private static boolean server(Entity entity) {
         return entity != null && !entity.level().isClientSide();
@@ -388,7 +383,7 @@ public final class HbmScriptApi {
             }
         }
         try {
-            if (!BuiltInRegistries.FLUID.containsKey(dev.golem.core.Ids.parse(full))) return null;
+            if (!BuiltInRegistries.FLUID.containsKey(Ids.parse(full))) return null;
         } catch (RuntimeException invalid) {
             return null;
         }

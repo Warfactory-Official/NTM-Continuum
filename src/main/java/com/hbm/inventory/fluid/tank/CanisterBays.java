@@ -1,10 +1,12 @@
 package com.hbm.inventory.fluid.tank;
 
+import com.hbm.api.fluidmk2.IInfiniteFluidItem;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.inventory.NTMItemHandler;
+import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -12,7 +14,7 @@ import net.minecraft.world.item.Items;
  * The canister bay every tank-backed machine shares: a container in one slot is emptied into, or filled
  * from, the machine's tank and the result lands in another slot.
  *
- * <p>A bay is bidirectional — a full container drains in, an empty one fills out — so a machine's two
+ * <p>A bay is bidirectional: a full container drains in, an empty one fills out, so a machine's two
  * bays are interchangeable rather than the fork's directional load/unload pair. Nothing moves unless the
  * out slot can hold the whole result, so a bay never destroys a container it cannot place.
  *
@@ -39,8 +41,8 @@ public final class CanisterBays {
 
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item (inf_water, the infinite barrel...) feeds the tank from where it
         // sits and is never consumed or moved. It is also an IFillableItem, which without this would carry it to the out slot.
-        if (in.getItem() instanceof com.hbm.api.fluidmk2.IInfiniteFluidItem) {
-            if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in) && tank.getTankType() != tankType) {
+        if (in.getItem() instanceof IInfiniteFluidItem) {
+            if (MachineFluidContainerIO.loadInfinite(tank, in) && tank.getTankType() != tankType) {
                 onTypeChange.accept(tankType);
             }
             return;

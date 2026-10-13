@@ -1,5 +1,6 @@
 package com.hbm.client;
 
+import com.hbm.client.anim.HbmAnimations;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.GunAnimation;
 import com.hbm.items.weapon.sedna.impl.ItemGunChemthrower;
@@ -9,6 +10,8 @@ import com.hbm.packet.CasingEjectPayload;
 import com.hbm.packet.GunCasingEjectPayload;
 import com.hbm.packet.MuzzleFlashPayload;
 import com.hbm.sound.ModGunSounds;
+import com.hbm.sound.ModSounds;
+import com.hbm.util.GameTime;
 import dev.golem.core.client.ClientTicks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
@@ -65,7 +68,7 @@ public final class GunEffectState {
         if (level == null) return;
         LivingEntity entity = entity(level, payload.entityId());
         if (entity == null || entity == minecraft.player || !(entity.getMainHandItem().getItem() instanceof ItemGunBaseNT)) return;
-        flashMap.put(entity, com.hbm.util.GameTime.millis(level));
+        flashMap.put(entity, GameTime.millis(level));
     }
 
     public static long flashAt(LivingEntity entity) {
@@ -85,7 +88,7 @@ public final class GunEffectState {
             clear();
             return;
         }
-        long now = com.hbm.util.GameTime.millis(level);
+        long now = GameTime.millis(level);
         if (level.getGameTime() % 30L == 0L) flashMap.values().removeIf(stamp -> now - stamp >= 150L);
         ItemStack stack = minecraft.player.getMainHandItem();
         if (stack.getItem() instanceof ItemGunStinger
@@ -100,8 +103,8 @@ public final class GunEffectState {
             int timer = ItemGunBaseNT.getAnimTimer(stack, 0);
             updateLoop(minecraft.player, ModGunSounds.TAU_LOOP.get(), 1F, 0.75F + timer * 0.01F);
         } else if (stack.getItem() instanceof ItemGunDrill) {
-            double speed = com.hbm.client.anim.HbmAnimations.getRelevantTransformation("SPEED")[0];
-            if (speed > 0D) updateLoop(minecraft.player, com.hbm.sound.ModSounds.ELECTRIC_HUM.get(),
+            double speed = HbmAnimations.getRelevantTransformation("SPEED")[0];
+            if (speed > 0D) updateLoop(minecraft.player, ModSounds.ELECTRIC_HUM.get(),
                     (float) speed, (float) speed);
             else stopLoop(minecraft.player);
         } else {

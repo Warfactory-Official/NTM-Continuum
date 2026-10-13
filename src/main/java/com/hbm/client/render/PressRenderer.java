@@ -27,8 +27,8 @@ import java.util.function.ToIntFunction;
  * <p>Whether the head turns with the body is per-machine: the e-press repeats the body's facing switch
  * on its head, the press does not.
  *
- * <p>The ingredient is the one thing here that is not a resident mesh — it is whatever the input slot
- * holds, baked by the item pipeline — so it is drawn in {@link #submitUndeclared}. Its placement is
+ * <p>The ingredient is the one thing here that is not a resident mesh: it is whatever the input slot
+ * holds, baked by the item pipeline. It is drawn in {@link #submitUndeclared}. Its placement is
  * 1.12.2's rather than 1.7's: 1.7 offsets it by {@code 0.0625 * 165/100} to clear the depth its own
  * extruded-sprite renderer added, which the modern item pipeline does not add, and 1.12.2 re-derived the
  * chain without it. The two differ by 1.65 pixels off the anvil's centre.

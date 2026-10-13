@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * 1.12.2's {@code ModEventHandlerClient} GUI-shake block (which translated the in-progress overlay pose).
  *
  * <p>26.1 built the HUD by extracting element positions through the {@link GuiGraphicsExtractor} pose, so
- * shifting that pose during extraction moves the whole HUD — the cross-loader equivalent of the old GL
+ * shifting that pose during extraction moves the whole HUD, the cross-loader equivalent of the old GL
  * translate. Divergence from 1.12.2: the original only shifted from the hotbar onward (a GL-state leak);
  * this shifts the entire HUD.
  */
@@ -35,7 +35,7 @@ public class MixinGui {
 
     // The injector's parameters and target name must match the target method's descriptor exactly, so
     // both differ per version: 26.1 extracts the HUD through a GuiGraphicsExtractor, older versions
-    // render it directly. The pose type differs too — a Matrix3x2fStack versus a PoseStack.
+    // render it directly. The pose type differs too: a Matrix3x2fStack versus a PoseStack.
     //? if >=26.1 {
     @Inject(method = "extractRenderState", at = @At("HEAD"))
     private void hbm$shakePush(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {

@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticReformer;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -15,7 +16,7 @@ public final class CatalyticReformerRenderer
         extends GemBER<TileEntityMachineCatalyticReformer, CatalyticReformerRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/catalytic_reformer.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/catalytic_reformer.obj"));
     private final Surface surface = Surface.cutoutNoCull(
             Constants.MOD_ID + ":textures/models/machines/catalytic_reformer.png");
 

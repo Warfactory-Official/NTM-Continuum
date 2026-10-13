@@ -1,9 +1,11 @@
 package com.hbm.tileentity.machine.pile;
 
+import com.hbm.tileentity.IRelocatable;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -14,13 +16,13 @@ import org.jspecify.annotations.Nullable;
  * that a device docked anywhere on the face can walk straight to the simulation, and so that the whole
  * structure collapses back to graphite the moment the core goes.
  */
-public class TileEntityPileBaseMK2 extends TileEntityLoadedBase implements com.hbm.tileentity.IRelocatable {
+public class TileEntityPileBaseMK2 extends TileEntityLoadedBase implements IRelocatable {
 
     /** A sub-level move carried this block; the pile core follows when it was carried too. */
     @Override
-    public void relocate(dev.golem.core.world.SubLevels.Move move) {
+    public void relocate(SubLevels.Move move) {
         if (coreY == NO_CORE) return;
-        net.minecraft.core.BlockPos core = com.hbm.tileentity.IRelocatable.follow(move, new net.minecraft.core.BlockPos(coreX, coreY, coreZ));
+        BlockPos core = IRelocatable.follow(move, new BlockPos(coreX, coreY, coreZ));
         coreX = core.getX(); coreY = core.getY(); coreZ = core.getZ();
         cachedCore = null;
         setChanged();

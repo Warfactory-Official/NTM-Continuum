@@ -1,6 +1,7 @@
 package com.hbm.client.render.weapon;
 
 import com.hbm.client.anim.HbmAnimations;
+import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -62,7 +63,7 @@ public final class WeaponPose {
         this.hand = hand;
         this.modTable = false;
         this.tableIndex = 0;
-        if (stack.getItem() instanceof com.hbm.items.weapon.sedna.ItemGunBaseNT gun) {
+        if (stack.getItem() instanceof ItemGunBaseNT gun) {
             this.lastShot = gun.lastShotByHand[hand.ordinal()].clone();
             this.shotRand = (float) gun.shotRandByHand[hand.ordinal()];
         } else {

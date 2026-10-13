@@ -17,6 +17,7 @@ import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -25,7 +26,7 @@ import net.minecraft.world.phys.Vec3;
  * full brightness and stretched by 8/7 so the grid fills the panel face.
  */
 public final class RBMKDisplayRenderer extends GemBER<BlockEntityRBMKDisplay, RBMKDisplayRenderer.State> {
-    private static final net.minecraft.resources.Identifier WHITE = Ids.of(Constants.MOD_ID, "textures/models/misc/white.png");
+    private static final Identifier WHITE = Ids.of(Constants.MOD_ID, "textures/models/misc/white.png");
 
     @Override protected void setup(Gem.Model<State> declaration) { declaration.offScreen(); }
 

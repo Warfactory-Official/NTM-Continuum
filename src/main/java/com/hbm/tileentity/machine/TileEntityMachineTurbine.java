@@ -29,9 +29,9 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Steam Turbine — the original single-block 85%-efficient turbine, generalized over
+ * Steam Turbine: the original single-block 85%-efficient turbine, generalized over
  * {@link CoolingRecipes}. 1:1 port of the 1.12.2 {@code TileEntityMachineTurbine}: the player picks the
- * steam stage with a fluid identifier (slot 0 → 1), the input tank is drained at most 6000 mB/tick into
+ * steam stage with a fluid identifier (slot 0 to 1), the input tank is drained at most 6000 mB/tick into
  * the cooled-down output fluid, and 85% of the released heat energy becomes HE pushed to all six sides.
  *
  * <p>7 slots: 0/1 fluid identifier in/out, 2/3 input canister bay, 4 battery (charged from the buffer),
@@ -52,7 +52,7 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
 
     @Override public String getDefaultName() { return "container.machineTurbine"; }
 
-    /** The old {@code getPowerScaled(int)} — the GUI's power-bar fill. */
+    /** The old {@code getPowerScaled(int)}, the GUI's power-bar fill. */
     public long getPowerScaled(long i) {
         return (power * i) / MAX_POWER;
     }
@@ -100,7 +100,7 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
 
     /**
      * Slot 0 holds a fluid identifier; adopt its type for the input tank and pass the identifier down to
-     * slot 1 — the 1.12.2 {@code tanksNew[0].setType(0, 1, inventory)}. Retyping resets the output tank so
+     * slot 1: the 1.12.2 {@code tanksNew[0].setType(0, 1, inventory)}. Retyping resets the output tank so
      * the next {@link #convert()} re-derives it from the new steam stage.
      */
     private void updateTypeFromFluidId() {
@@ -119,7 +119,7 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
     }
 
     /**
-     * Processes one canister bay {@code (in → out)} against {@code tank}: a <b>full</b> container drains
+     * Processes one canister bay {@code (in to out)} against {@code tank}: a <b>full</b> container drains
      * into the tank, an <b>empty</b> one is filled from it, and the modified single container moves to
      * {@code out}. Covers the universal tank/barrel ({@link IFillableItem}) and buckets (HBM
      * {@link ItemFluidBucket} + vanilla). The old machine had a directional {@code loadTank(2,3)} /
@@ -132,7 +132,7 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
         FluidType tankType = tank.getTankType();
 
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
             setChanged();
             return;
         }
@@ -217,7 +217,7 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
     /**
      * Slot roles: 0/1 identifier in/out, 2/5 canister bays, 4 battery. Slots 3 and 6 are the bays' result
      * outputs and must return {@code true}: the machine places the emptied/filled container there through
-     * {@link com.hbm.inventory.NTMItemHandler#insertItem}, which validates against this method — player
+     * {@link com.hbm.inventory.NTMItemHandler#insertItem}, which validates against this method: player
      * insertion is blocked by the take-only slots in {@link ContainerMachineTurbine} instead.
      */
     @Override
@@ -226,7 +226,7 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
             case 0, 1 -> stack.getItem() instanceof IItemFluidId;
             case 2, 5 -> isFluidContainer(stack);
             case 4 -> Library.isBattery(stack);
-            default -> true; // 3 + 6: bay outputs — the machine writes them; the menu keeps players out
+            default -> true; // 3 + 6: bay outputs. The machine writes them; the menu keeps players out
         };
     }
 

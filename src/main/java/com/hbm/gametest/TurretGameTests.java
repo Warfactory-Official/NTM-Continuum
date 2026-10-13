@@ -4,13 +4,24 @@ import com.hbm.Constants;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.turret.ModTurretBlocks;
+import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.WeaponConfig;
+import com.hbm.entity.effect.EntityFireLingering;
+import com.hbm.entity.effect.EntityMist;
 import com.hbm.entity.missile.EntityMissileTier1;
+import com.hbm.entity.projectile.EntityArtilleryRocket;
+import com.hbm.entity.projectile.EntityArtilleryShell;
+import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.inventory.container.ContainerTurretBase;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.trait.FT_Corrosive;
 import com.hbm.items.ModAmmoItems;
+import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.ModUpgradeItems;
+import com.hbm.items.weapon.ItemAmmoArty;
+import com.hbm.items.weapon.ItemAmmoHIMARS;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory50;
 import com.hbm.items.weapon.sedna.factory.XFactory556mm;
@@ -46,11 +57,19 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import io.netty.buffer.Unpooled;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 /**
  * Behavioural contracts for the turret pad, its menu and the target loop. The turret is the first
@@ -120,7 +139,7 @@ public final class TurretGameTests {
     /** Places a turret the way a player does, and hands back the core position. */
     private static BlockPos place(GameTestHelper helper, BlockPos relative, BlockMultiblockCore block) {
         BlockPos clicked = helper.absolutePos(relative);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
         player.setPos(clicked.getX() - 6D, clicked.getY(), clicked.getZ() - 6D);
         helper.getLevel().setBlock(clicked, block.defaultBlockState(), 3);
@@ -189,7 +208,7 @@ public final class TurretGameTests {
         BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_chekhov.get());
         TileEntityTurretChekhov turret =
                 (TileEntityTurretChekhov) helper.getLevel().getBlockEntity(core);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setPos(core.getX() + 0.5D, core.getY(), core.getZ() + 0.5D);
 
         ContainerTurretBase menu = new ContainerTurretBase(1, player.getInventory(), turret);
@@ -355,7 +374,7 @@ public final class TurretGameTests {
         turret.isOn = true;
         turret.setPower(turret.getMaxPower());
         tick(helper, turret, state, core, 2);
-        helper.assertTrue(turret.target instanceof net.minecraft.world.entity.monster.Enemy,
+        helper.assertTrue(turret.target instanceof Enemy,
                 "A powered turret did not acquire the hostile in front of it");
 
         double before = turret.rotationYaw;
@@ -439,9 +458,9 @@ public final class TurretGameTests {
                 "The sentry must carry its block entity without any multiblock step");
         helper.assertTrue(ModTurretBlocks.turret_sentry.get()
                         .getCollisionShape(helper.getLevel().getBlockState(pos), helper.getLevel(), pos,
-                                net.minecraft.world.phys.shapes.CollisionContext.empty())
+                                CollisionContext.empty())
                         .max(Direction.Axis.Y) == 1D,
-                "The sentry must retain old-hbm's full-block collision shape");
+                "The sentry must retain 1.12.2's full-block collision shape");
         TileEntityTurretSentry sentry = (TileEntityTurretSentry) helper.getLevel().getBlockEntity(pos);
 
         DirPos[] ports = sentry.getConPos();
@@ -476,8 +495,8 @@ public final class TurretGameTests {
         damaged.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST,
                 new ItemStack(ModAmmoItems.bmg50_sp.get()));
         helper.getLevel().removeBlock(wreck, false);
-        helper.assertTrue(helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
-                        new net.minecraft.world.phys.AABB(wreck).inflate(2D)).isEmpty(),
+        helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class,
+                        new AABB(wreck).inflate(2D)).isEmpty(),
                 "The damaged sentry must not drop an inventory when broken");
         helper.succeed();
     }
@@ -487,10 +506,10 @@ public final class TurretGameTests {
         TileEntityTurretHoward howard = (TileEntityTurretHoward) helper.getLevel().getBlockEntity(core);
 
         helper.assertTrue(howard.getDetectorRange() == 300D,
-                "The Howard must use old-hbm's 300-block machine range");
+                "The Howard must use 1.12.2's 300-block machine range");
         howard.targetPlayers = true;
         helper.assertTrue(howard.getDetectorRange() == 48D,
-                "The Howard's player-target mode must use old-hbm's 48-block range");
+                "The Howard's player-target mode must use 1.12.2's 48-block range");
         howard.targetPlayers = false;
 
         helper.assertTrue(howard.getFirstConfigLoaded() == null, "An empty CIWS must report no belt");
@@ -633,7 +652,7 @@ public final class TurretGameTests {
         helper.assertTrue(zombie.getHealth() < before,
                 "The MASER takes no ammunition, so power alone must be enough to hurt a target");
         // As in 1.7: the five upgrade chains it reacts to, three tiers each, then the 5G and screm
-        // upgrades (both ported in the final-content wave).
+        // upgrades.
         helper.assertTrue(maxwell.getAmmoTypesForDisplay().size() == 17,
                 "The MASER's slot panel lists the five upgrade chains (three tiers each) plus 5G and screm, got "
                         + maxwell.getAmmoTypesForDisplay().size());
@@ -641,8 +660,8 @@ public final class TurretGameTests {
     }
 
     public static void jeremy(GameTestHelper helper) {
-        // The Jeremy refuses anything inside its 16-block grace, so the zombie has to be far out —
-        // but not outside the 24-wide plot, which is where it used to sit (x = 24) and where a
+        // The Jeremy refuses anything inside its 16-block grace, so the zombie has to be far out,
+        // but not outside the 24-wide plot, which is where it would otherwise sit (x = 24) and where a
         // neighbouring test could clear it before this one ever looked.
         BlockPos core = place(helper, new BlockPos(1, 1, 2), ModTurretBlocks.turret_jeremy.get());
         TileEntityTurretJeremy jeremy = (TileEntityTurretJeremy) helper.getLevel().getBlockEntity(core);
@@ -705,8 +724,8 @@ public final class TurretGameTests {
                 "The launcher tracked its target but never fired");
 
         var rockets = helper.getLevel().getEntitiesOfClass(
-                com.hbm.entity.projectile.EntityBulletBaseMK4.class,
-                new net.minecraft.world.phys.AABB(core).inflate(48D));
+                EntityBulletBaseMK4.class,
+                new AABB(core).inflate(48D));
         helper.assertTrue(!rockets.isEmpty() && rockets.get(0).lockonTarget != null,
                 "A launched rocket must carry the turret's lock");
         helper.succeed();
@@ -780,14 +799,14 @@ public final class TurretGameTests {
         zombie.setNoGravity(true);
         zombie.setNoAi(true);
 
-        var fire = new com.hbm.entity.effect.EntityFireLingering(level)
+        var fire = new EntityFireLingering(level)
                 .setArea(6, 2).setDuration(300)
-                .setFireType(com.hbm.entity.effect.EntityFireLingering.TYPE_DIESEL);
+                .setFireType(EntityFireLingering.TYPE_DIESEL);
         fire.setPos(zombie.getX(), zombie.getY(), zombie.getZ());
         level.addFreshEntity(fire);
 
         fire.tick();
-        helper.assertTrue(com.hbm.capability.HbmLivingProps.getFire(zombie) == 60,
+        helper.assertTrue(HbmLivingProps.getFire(zombie) == 60,
                 "Standing in diesel fire must set a sixty-tick burn");
 
         float before = zombie.getHealth();
@@ -807,13 +826,13 @@ public final class TurretGameTests {
     }
 
     public static void lingeringEffectExpiry(GameTestHelper helper) {
-        var fire = new com.hbm.entity.effect.EntityFireLingering(helper.getLevel())
+        var fire = new EntityFireLingering(helper.getLevel())
                 .setArea(2, 1).setDuration(3)
-                .setFireType(com.hbm.entity.effect.EntityFireLingering.TYPE_DIESEL);
+                .setFireType(EntityFireLingering.TYPE_DIESEL);
         fire.setPos(helper.absolutePos(new BlockPos(2, 2, 2)).getCenter());
 
-        var mist = new com.hbm.entity.effect.EntityMist(helper.getLevel());
-        mist.setType(com.hbm.inventory.fluid.Fluids.CHLORINE);
+        var mist = new EntityMist(helper.getLevel());
+        mist.setType(Fluids.CHLORINE);
         mist.setArea(2F, 1F);
         mist.setDuration(3);
         mist.setPos(helper.absolutePos(new BlockPos(5, 2, 2)).getCenter());
@@ -829,8 +848,8 @@ public final class TurretGameTests {
 
     /**
      * The artillery emplacement: a 4x4 footprint two courses tall, thirty-one of whose thirty-two
-     * cells are folded. Unlike the gun turrets the core is not the clicked cell — the block's offset
-     * moves it one back — so this asserts where the core actually lands as well as what fills the rest.
+     * cells are folded. Unlike the gun turrets the core is not the clicked cell; the block's offset
+     * moves it one back. The test asserts where the core lands as well as what fills the rest.
      */
     public static void himarsStructure(GameTestHelper helper) {
         BlockPos core = place(helper, new BlockPos(7, 1, 4), ModTurretBlocks.turret_himars.get());
@@ -898,7 +917,7 @@ public final class TurretGameTests {
 
     /**
      * The reload cycle. The crane has to run all the way out before a pod is drawn, and all the way
-     * back before the gun can fire — which is why this walks it rather than asserting a single tick.
+     * back before the gun can fire, which is why this walks it rather than asserting a single tick.
      */
     public static void himarsReload(GameTestHelper helper) {
         BlockPos core = place(helper, new BlockPos(7, 1, 4), ModTurretBlocks.turret_himars.get());
@@ -916,12 +935,12 @@ public final class TurretGameTests {
         helper.assertTrue(himars.mode == TileEntityTurretHIMARS.MODE_AUTO,
                 "The HIMARS mode button must wrap back to automatic mode");
 
-        ItemStack pod = ModAmmoItems.ammo_himars.stack(com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.SMALL_HE, 2);
+        ItemStack pod = ModAmmoItems.ammo_himars.stack(ItemAmmoHIMARS.HIMARSRocketType.SMALL_HE, 2);
         himars.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST, pod);
         himars.isOn = true;
 
         helper.assertTrue(himars.getSpareRocket()
-                        == com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.SMALL_HE.ordinal(),
+                        == ItemAmmoHIMARS.HIMARSRocketType.SMALL_HE.ordinal(),
                 "The gun must read the variant off the stack, not the item");
 
         boolean craneExtended = false;
@@ -934,7 +953,7 @@ public final class TurretGameTests {
         helper.assertTrue(craneExtended, "The crane must run all the way out before a pod is drawn");
         helper.assertTrue(himars.hasAmmo(), "The gun never loaded; crane at " + himars.crane);
         helper.assertTrue(himars.typeLoaded
-                        == com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.SMALL_HE.ordinal(),
+                        == ItemAmmoHIMARS.HIMARSRocketType.SMALL_HE.ordinal(),
                 "The loaded type must be the one that was in the slot; got " + himars.typeLoaded);
         helper.assertTrue(himars.ammo == 6, "A small pod holds six rockets; got " + himars.ammo);
         helper.assertTrue(himars.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount() == 1,
@@ -953,7 +972,7 @@ public final class TurretGameTests {
         himars.isOn = true;
         himars.setPower(himars.getMaxPower());
         himars.mode = TileEntityTurretHIMARS.MODE_MANUAL;
-        himars.typeLoaded = com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.SMALL.ordinal();
+        himars.typeLoaded = ItemAmmoHIMARS.HIMARSRocketType.SMALL.ordinal();
         himars.ammo = 6;
         himars.crane = 0F;
 
@@ -974,12 +993,12 @@ public final class TurretGameTests {
         for (int cx = minChunkX; cx <= maxChunkX; cx++) {
             for (int cz = minChunkZ; cz <= maxChunkZ; cz++) level.setChunkForced(cx, cz, true);
         }
-        com.hbm.entity.projectile.EntityArtilleryRocket[] seen = {null};
+        EntityArtilleryRocket[] seen = {null};
         for (int t = 5; t <= 295; t += 5) {
             helper.runAfterDelay(t, () -> {
                 if (seen[0] != null) return;
-                var rockets = level.getEntitiesOfClass(com.hbm.entity.projectile.EntityArtilleryRocket.class,
-                        new net.minecraft.world.phys.AABB(core).inflate(160D));
+                var rockets = level.getEntitiesOfClass(EntityArtilleryRocket.class,
+                        new AABB(core).inflate(160D));
                 if (!rockets.isEmpty()) seen[0] = rockets.get(0);
             });
         }
@@ -995,7 +1014,7 @@ public final class TurretGameTests {
 
             var rocket = seen[0];
             helper.assertTrue(rocket.getTypeIndex()
-                            == com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.SMALL.ordinal(),
+                            == ItemAmmoHIMARS.HIMARSRocketType.SMALL.ordinal(),
                     "The rocket must carry the loaded warhead; got " + rocket.getTypeIndex());
             var aim = rocket.getLastTarget();
             helper.assertTrue(aim != null && Math.abs(aim.x - aimX) < 1D && Math.abs(aim.z - aimZ) < 1D,
@@ -1005,8 +1024,8 @@ public final class TurretGameTests {
     }
 
     /**
-     * The three fire modes. Each one re-specifies the gun — range, grace, search interval, whether it
-     * checks line of sight, and which branch of the ballistic solution it takes — so this asserts the
+     * The three fire modes. Each one re-specifies the gun: range, grace, search interval, whether it
+     * checks line of sight, and which branch of the ballistic solution it takes. The test asserts the
      * whole set moves together rather than that the field changed.
      */
     public static void artyModes(GameTestHelper helper) {
@@ -1048,7 +1067,7 @@ public final class TurretGameTests {
      * <p>Driven synchronously rather than on real ticks, because the numbers do not fit in a gametest
      * otherwise: artillery mode reloads for three hundred ticks and only counts them while aligned,
      * and the pitch has to walk to a high-arc solution at half a degree a tick. Nothing here keys off
-     * {@code tickCount}, so the loop is faithful — the gun counts its own timer.
+     * {@code tickCount}, so the loop is faithful: the gun counts its own timer.
      */
     public static void artyFire(GameTestHelper helper) {
         BlockPos core = place(helper, new BlockPos(7, 1, 4), ModTurretBlocks.turret_arty.get());
@@ -1058,7 +1077,7 @@ public final class TurretGameTests {
         arty.isOn = true;
         arty.mode = TileEntityTurretArty.MODE_MANUAL;
         arty.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST,
-                ModAmmoItems.ammo_arty.stack(com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType.CARGO, 4));
+                ModAmmoItems.ammo_arty.stack(ItemAmmoArty.ArtilleryShellType.CARGO, 4));
 
         helper.assertTrue(arty.sendCommandPosition(core.getX(), core.getY(), core.getZ() + 200),
                 "The gun must accept a fire mission inside its range");
@@ -1080,13 +1099,13 @@ public final class TurretGameTests {
                         + arty.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount());
 
         var shells = helper.getLevel().getEntitiesOfClass(
-                com.hbm.entity.projectile.EntityArtilleryShell.class,
-                new net.minecraft.world.phys.AABB(core).inflate(64D));
+                EntityArtilleryShell.class,
+                new AABB(core).inflate(64D));
         helper.assertTrue(!shells.isEmpty(), "A fired shell must exist in the world");
 
         var shell = shells.get(0);
         helper.assertTrue(shell.getShellType()
-                        == com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType.CARGO.ordinal(),
+                        == ItemAmmoArty.ArtilleryShellType.CARGO.ordinal(),
                 "The shell must carry the loaded warhead; got " + shell.getShellType());
         helper.assertTrue(shell.getWhistle(), "A lobbed shell announces itself; a flat one does not");
         helper.succeed();
@@ -1094,8 +1113,7 @@ public final class TurretGameTests {
 
     /**
      * The chemical payload. Chlorine is corrosive in CE, so its cloud is the one gas this port can
-     * still make lethal — phosgene and mustard route their whole effect through pollution, which is
-     * deferred.
+     * make lethal. Phosgene and mustard route their whole effect through pollution.
      */
     public static void artyMist(GameTestHelper helper) {
         var level = helper.getLevel();
@@ -1116,15 +1134,15 @@ public final class TurretGameTests {
         zombie.setNoAi(true);
         float before = zombie.getHealth();
 
-        var mist = new com.hbm.entity.effect.EntityMist(level);
-        mist.setType(com.hbm.inventory.fluid.Fluids.CHLORINE);
+        var mist = new EntityMist(level);
+        mist.setType(Fluids.CHLORINE);
         mist.setArea(8F, 4F);
         mist.setDuration(200);
         mist.setPos(zombie.getX(), zombie.getY(), zombie.getZ());
         level.addFreshEntity(mist);
 
-        helper.assertTrue(com.hbm.inventory.fluid.Fluids.CHLORINE.getTrait(
-                        com.hbm.inventory.fluid.trait.FT_Corrosive.class) != null,
+        helper.assertTrue(Fluids.CHLORINE.getTrait(
+                        FT_Corrosive.class) != null,
                 "Chlorine must carry the corrosive trait its cloud dispatches on");
 
         helper.runAfterDelay(40, () -> {
@@ -1142,7 +1160,7 @@ public final class TurretGameTests {
     }
 
     /**
-     * The designator, which is the only thing that can hand a gun a fire mission — and therefore the
+     * The designator, which is the only thing that can hand a gun a fire mission, and therefore the
      * only way manual mode is reachable in game. Binding is asserted through a folded emplacement
      * cell rather than the core, because that is what a player actually clicks.
      */
@@ -1152,21 +1170,21 @@ public final class TurretGameTests {
         arty.mode = TileEntityTurretArty.MODE_MANUAL;
 
         ItemStack designator = new ItemStack(ModAmmoItems.designator_arty_range.get());
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
-        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, designator);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, designator);
 
         BlockPos cell = core.offset(1, 0, 1);
         helper.assertTrue(helper.getLevel().getBlockState(cell).getBlock()
                         == ModTurretBlocks.turret_emplacement.get(),
                 "Expected a folded emplacement cell at " + cell);
 
-        var context = new net.minecraft.world.item.context.UseOnContext(helper.getLevel(), player,
-                net.minecraft.world.InteractionHand.MAIN_HAND, designator,
-                new net.minecraft.world.phys.BlockHitResult(
-                        net.minecraft.world.phys.Vec3.atCenterOf(cell), Direction.UP, cell, false));
+        var context = new UseOnContext(helper.getLevel(), player,
+                InteractionHand.MAIN_HAND, designator,
+                new BlockHitResult(
+                        Vec3.atCenterOf(cell), Direction.UP, cell, false));
         ModAmmoItems.designator_arty_range.get().useOn(context);
 
-        Long linked = com.hbm.items.ModDataComponents.ARTY_DESIGNATOR_TARGET.get(designator).orElse(null);
+        Long linked = ModDataComponents.ARTY_DESIGNATOR_TARGET.get(designator).orElse(null);
         helper.assertTrue(linked != null && BlockPos.of(linked).equals(core),
                 "Clicking any emplacement cell must bind the designator to the core; got " + linked);
 
@@ -1297,6 +1315,6 @@ public final class TurretGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        return dev.golem.core.gametest.GameTestHelpers.resourceExists(TurretGameTests.class, path);
+        return GameTestHelpers.resourceExists(TurretGameTests.class, path);
     }
 }

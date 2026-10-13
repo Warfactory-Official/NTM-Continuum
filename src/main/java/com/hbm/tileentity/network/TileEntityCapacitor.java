@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import com.hbm.blocks.machine.MachineCapacitor;
 import com.hbm.blocks.machine.MachineCapacitorBus;
@@ -37,7 +38,7 @@ public class TileEntityCapacitor extends TileEntityLoadedBase implements IEnergy
     }
 
     /** For an addon's own capacitor block, whose block entity type lists its block (NTM: Space's capacitor_complex). */
-    protected TileEntityCapacitor(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    protected TileEntityCapacitor(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         this.maxPower = state.getBlock() instanceof MachineCapacitor capacitor ? capacitor.power : 0L;
     }

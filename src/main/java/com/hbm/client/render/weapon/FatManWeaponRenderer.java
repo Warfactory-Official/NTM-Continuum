@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.hbm.client.render.BalefireGlint;
 import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
@@ -7,6 +8,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 /** GEM port of ItemRenderFatMan. */
@@ -84,14 +86,14 @@ public final class FatManWeaponRenderer extends WeaponRenderer {
         if (!SpecialWeaponRenderers.ammoPath(state).equals("nuke_balefire")) return;
         Gem.walk(gem(), state, poseStack, (part, geometry, posed) -> {
             if (BALEFIRE.equals(part.surfaceOf(state)))
-                com.hbm.client.render.BalefireGlint.fatMan(posed, collector.order(part.order() + 1), geometry);
+                BalefireGlint.fatMan(posed, collector.order(part.order() + 1), geometry);
         });
     }
 
     /** The glint scrolls with the clock, so a GUI icon is redrawn every frame (26.1 caches still ones). */
     @Override
-    public boolean animated(net.minecraft.world.item.ItemDisplayContext context) {
-        return context == net.minecraft.world.item.ItemDisplayContext.GUI;
+    public boolean animated(ItemDisplayContext context) {
+        return context == ItemDisplayContext.GUI;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
@@ -18,17 +19,17 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Cave spike — the 1.12.2 {@code BlockStalagmite}, scattered by the sulfur/asbestos cave feature.
+ * Cave spike, the 1.12.2 {@code BlockStalagmite}, scattered by the sulfur/asbestos cave feature.
  * A cross-model, non-solid, walk-through decoration that needs a solid face to hang off: stalagmites
  * attach to the block below, stalactites to the block above, and either pops when its anchor goes.
  *
- * <p>The old block was two registrations ({@code stalagmite}/{@code stalactite}) × two
- * {@code EnumStalagmiteType} metas; flattened here into four ({@code stalagmite_sulfur},
+ * <p>The 1.12.2 block was two registrations ({@code stalagmite}/{@code stalactite}) × two
+ * {@code EnumStalagmiteType} metas; here they are four ({@code stalagmite_sulfur},
  * {@code stalagmite_asbestos}, {@code stalactite_sulfur}, {@code stalactite_asbestos}).
  *
  * <p>Drops one {@code sulfur} or {@code powder_asbestos}; Silk Touch returns the spike itself.
  */
-public class BlockStalagmite extends dev.golem.core.world.CompatBlock {
+public class BlockStalagmite extends CompatBlock {
 
     /** Face the spike hangs from: {@code DOWN} for a stalagmite (stands on the floor), {@code UP} for a stalactite. */
     private final Direction anchor;

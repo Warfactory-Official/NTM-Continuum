@@ -3,6 +3,7 @@ package com.hbm.client;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import dev.golem.core.render.ConnectedTextures;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -20,7 +21,7 @@ public final class ConnectedTextureHarnessQueries {
     private ConnectedTextureHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_ct", ConnectedTextureHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_ct", ConnectedTextureHarnessQueries::query);
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {

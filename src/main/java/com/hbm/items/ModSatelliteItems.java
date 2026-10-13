@@ -13,6 +13,8 @@ import com.hbm.items.tool.ItemSatInterface;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import java.util.List;
+import java.util.Locale;
 import net.minecraft.world.item.Item;
 
 import java.util.Arrays;
@@ -31,10 +33,10 @@ public final class ModSatelliteItems {
 
     /**
      * 1.7 {@code satellite}, one item per {@link EnumSatType} as in ntm-next ({@code satellite_spy} ...
-     * {@code satellite_ray_scan}; History §19es-itemvariant), each drawn with its 1.7 sprite.
+     * {@code satellite_ray_scan}), each drawn with its 1.7 sprite.
      */
     public static final ItemFamily<EnumSatType, ItemSatellite> satellite = ItemFamily.of(EnumSatType.class, type -> {
-        String id = "satellite_" + type.name().toLowerCase(java.util.Locale.ROOT);
+        String id = "satellite_" + type.name().toLowerCase(Locale.ROOT);
         return REG.item(id, p -> new ItemSatellite(p, type), p -> p.stacksTo(1))
                 .transform(Presets.sprite("hbm:items/" + id));
     });
@@ -64,7 +66,7 @@ public final class ModSatelliteItems {
 
     static {
         ModTabs.addStacksTo(HbmTab.MISSILES, satellite::stacks);
-        for (RegistryObject<? extends Item> item : java.util.List.of(sat_gerald, sat_chip, sat_coord, sat_designator,
+        for (RegistryObject<? extends Item> item : List.of(sat_gerald, sat_chip, sat_coord, sat_designator,
                 sat_relay)) {
             ModTabs.addTo(HbmTab.MISSILES, item);
         }

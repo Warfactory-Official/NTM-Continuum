@@ -1,7 +1,27 @@
 package com.hbm.handler;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import com.hbm.Constants;
+import com.hbm.api.data.ArmorDataMaps;
+import com.hbm.config.CustomMachineConfigJSON;
+import com.hbm.items.armor.ItemModCladding;
+import com.hbm.util.ShadyUtil;
+import dev.golem.core.Ids;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 
+import java.util.Map;
+import java.util.TreeMap;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -9,13 +29,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import com.hbm.potion.ModEffects;
 import dev.golem.core.world.Effects;
+import net.minecraft.world.item.Items;
 
 /**
  * Per-armor-item radiation-resistance coefficients, ported from 1.12.2's {@code HazmatRegistry}. The
  * total per-entity resistance is the sum over the 4 worn pieces; the radiation reduction factor is
  * {@code 10^-resistance} (see {@code ContaminationUtil.calculateRadiationMod}).
  *
- * <p>Coefficients copied verbatim: hazmat yellow 0.6, red 1.0, grey 2.0 (per set — split over the 4
+ * <p>Coefficients copied: hazmat yellow 0.6, red 1.0, grey 2.0 (per set, split over the 4
  * slots by the {@code helmet .2 / chest .4 / legs .3 / boots .1} weights); vanilla iron/gold 0.0225.
  * Registration happens where the armor items are created ({@code ModGearItems}). The cladding modules and the
  * Rad-X bonus are below; {@link #registerHazmats} is 1.7's {@code hbmRadResist.json} override.
@@ -45,15 +66,15 @@ public class HazmatRegistry {
     private static final HashMap<Item, Double> entries = new HashMap<>();
 
     /** {@code config/hbmConfig/hbmRadResist.json}: per-item overrides above everything else. */
-    private static volatile java.util.Map<Item, Double> configOverrides = java.util.Map.of();
+    private static volatile Map<Item, Double> configOverrides = Map.of();
 
     public static void registerHazmat(Item item, double resistance) {
         entries.put(item, resistance);
     }
 
     /** The code-registered resistances (read-only view). */
-    public static java.util.Map<Item, Double> codeEntries() {
-        return java.util.Collections.unmodifiableMap(entries);
+    public static Map<Item, Double> codeEntries() {
+        return Collections.unmodifiableMap(entries);
     }
 
     public static double getResistance(ItemStack stack) {
@@ -68,7 +89,7 @@ public class HazmatRegistry {
     /** A piece's own resistance: the config override, else the data map, else a code registration; null if none. */
     public static Double rawResistance(Item item) {
         Double f = configOverrides.get(item);
-        if (f == null) f = com.hbm.api.data.ArmorDataMaps.RADIATION_RESISTANCE.get(item);
+        if (f == null) f = ArmorDataMaps.RADIATION_RESISTANCE.get(item);
         if (f == null) f = entries.get(item);
         return f;
     }
@@ -76,38 +97,38 @@ public class HazmatRegistry {
     /** Returns radiation cladding from the ordered armor-module component, if installed. */
     public static double getCladding(ItemStack stack) {
         ItemStack mod = ArmorModHandler.pryMod(stack, ArmorModHandler.cladding);
-        return mod.getItem() instanceof com.hbm.items.armor.ItemModCladding cladding ? cladding.rad : 0D;
+        return mod.getItem() instanceof ItemModCladding cladding ? cladding.rad : 0D;
     }
 
     /**
      * 1.7 {@code HazmatRegistry.registerHazmats}, run once every default is registered: with no
      * {@code config/hbmConfig/hbmRadResist.json} it writes the defaults to {@code _hbmRadResist.json} as a template;
      * with one, that file's entries override the items it names. 1.7's file replaced the whole table, which also
-     * dropped every resistance another mod had registered; the defaults are a data map now, so the config is an
+     * dropped every resistance another mod had registered; the defaults are a data map, so the config is an
      * override layer above it (an item set to 0 there has none).
      */
     public static void registerHazmats() {
-        java.nio.file.Path folder = com.hbm.config.CustomMachineConfigJSON.configHbmDir();
-        java.nio.file.Path config = folder.resolve("hbmRadResist.json");
-        if (!java.nio.file.Files.exists(config)) {
+        Path folder = CustomMachineConfigJSON.configHbmDir();
+        Path config = folder.resolve("hbmRadResist.json");
+        if (!Files.exists(config)) {
             writeDefault(folder.resolve("_hbmRadResist.json"));
         } else {
             HashMap<Item, Double> conf = readConfig(config);
-            if (conf != null) configOverrides = java.util.Map.copyOf(conf);
+            if (conf != null) configOverrides = Map.copyOf(conf);
         }
     }
 
-    private static void writeDefault(java.nio.file.Path file) {
-        try (java.io.Writer out = java.nio.file.Files.newBufferedWriter(file, java.nio.charset.StandardCharsets.UTF_8);
-             com.google.gson.stream.JsonWriter writer = new com.google.gson.stream.JsonWriter(out)) {
+    private static void writeDefault(Path file) {
+        try (Writer out = Files.newBufferedWriter(file, StandardCharsets.UTF_8);
+             JsonWriter writer = new JsonWriter(out)) {
             writer.setIndent("  ");
             writer.beginObject();
             writer.name("comment").value("Template file, remove the underscore ('_') from the name to enable the config.");
             writer.name("entries").beginArray();
-            java.util.Map<String, Double> defaults = new java.util.TreeMap<>(com.hbm.api.data.ArmorDataMaps.RADIATION_RESISTANCE.byId());
+            Map<String, Double> defaults = new TreeMap<>(ArmorDataMaps.RADIATION_RESISTANCE.byId());
             entries.forEach((item, value) -> defaults.putIfAbsent(
-                    net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).toString(), value));
-            for (java.util.Map.Entry<String, Double> entry : defaults.entrySet()) {
+                    BuiltInRegistries.ITEM.getKey(item).toString(), value));
+            for (Map.Entry<String, Double> entry : defaults.entrySet()) {
                 writer.beginObject();
                 writer.name("item").value(entry.getKey());
                 writer.name("resistance").value(entry.getValue());
@@ -115,34 +136,34 @@ public class HazmatRegistry {
             }
             writer.endArray();
             writer.endObject();
-        } catch (java.io.IOException e) {
-            com.hbm.Constants.LOG.error("Unable to write {}", file, e);
+        } catch (IOException e) {
+            Constants.LOG.error("Unable to write {}", file, e);
         }
     }
 
-    private static HashMap<Item, Double> readConfig(java.nio.file.Path config) {
-        try (java.io.Reader reader = java.nio.file.Files.newBufferedReader(config, java.nio.charset.StandardCharsets.UTF_8)) {
-            com.google.gson.JsonObject json = new com.google.gson.Gson().fromJson(reader, com.google.gson.JsonObject.class);
+    private static HashMap<Item, Double> readConfig(Path config) {
+        try (Reader reader = Files.newBufferedReader(config, StandardCharsets.UTF_8)) {
+            JsonObject json = new Gson().fromJson(reader, JsonObject.class);
             HashMap<Item, Double> conf = new HashMap<>();
-            for (com.google.gson.JsonElement element : json.get("entries").getAsJsonArray()) {
+            for (JsonElement element : json.get("entries").getAsJsonArray()) {
                 try {
-                    com.google.gson.JsonObject object = element.getAsJsonObject();
+                    JsonObject object = element.getAsJsonObject();
                     String name = object.get("item").getAsString();
                     // 1.7 names were "hbm:x" / "minecraft:x" as well; a bare name is read as minecraft's.
-                    Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.parse(name));
+                    Item item = BuiltInRegistries.ITEM.getValue(Ids.parse(name));
                     double resistance = object.get("resistance").getAsDouble();
-                    if (item != null && item != net.minecraft.world.item.Items.AIR) {
+                    if (item != null && item != Items.AIR) {
                         conf.put(item, resistance);
                     } else {
-                        com.hbm.Constants.LOG.error("Tried loading unknown item {} for hazmat entry.", name);
+                        Constants.LOG.error("Tried loading unknown item {} for hazmat entry.", name);
                     }
                 } catch (Exception ex) {
-                    com.hbm.Constants.LOG.error("Encountered {} trying to read hazmat entry {}", ex, element);
+                    Constants.LOG.error("Encountered {} trying to read hazmat entry {}", ex, element);
                 }
             }
             return conf;
         } catch (Exception ex) {
-            com.hbm.Constants.LOG.error("Unable to read {}", config, ex);
+            Constants.LOG.error("Unable to read {}", config, ex);
         }
         return null;
     }
@@ -151,7 +172,7 @@ public class HazmatRegistry {
         float res = 0.0F;
 
         // 1.7: Pu_238 carries 0.4 of his own
-        if (com.hbm.util.ShadyUtil.is(entity.getUUID(), com.hbm.util.ShadyUtil.Pu_238)) res += 0.4F;
+        if (ShadyUtil.is(entity.getUUID(), ShadyUtil.Pu_238)) res += 0.4F;
 
         if (entity instanceof Player player) {
             res += (float) getResistance(player.getItemBySlot(EquipmentSlot.HEAD));

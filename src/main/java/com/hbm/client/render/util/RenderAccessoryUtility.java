@@ -11,14 +11,13 @@ import org.jspecify.annotations.Nullable;
  * 1.7 {@code RenderAccessoryUtility.getCloakFromPlayer}: the HBM cape each listed player wears, installed through
  * Core's {@link dev.golem.core.client.Capes}.
  *
- * <p>1.7's table, plus old-hbm's one addition (Golem). Where the two disagree 1.7 is kept: Bob's {@code CapeHbm3}
- * (old-hbm used {@code CapeHbm} and inverted the polaroid swap), {@code CapeNostalgia2}, {@code CapeHoboy_mk3}, and
- * ShimmeringBlaze's polaroid variant. Alcater's cape is not ported (user decision, 2026-10-06). Pheo's
+ * <p>1.7's table, plus 1.12.2's one addition (Golem). Where the two disagree 1.7 is kept: Bob's {@code CapeHbm3}
+ * (1.12.2 used {@code CapeHbm} and inverted the polaroid swap), {@code CapeNostalgia2}, {@code CapeHoboy_mk3}, and
+ * ShimmeringBlaze's polaroid variant. Alcater's cape is not ported. Pheo's
  * {@code CapePheo} stays commented out as in 1.7.
  *
- * <p>The test cape went to any name starting with "Player", which is what a 1.7 dev client was called. The port's
- * dev clients are {@code Player###} on Fabric and {@code Dev} on NeoForge/Forge, so {@code Dev} wears it too (user
- * decision, 2026-10-06).
+ * <p>The test cape goes to any name starting with "Player", which is what a 1.7 dev client is called. The port's
+ * dev clients are {@code Player###} on Fabric and {@code Dev} on NeoForge/Forge, so {@code Dev} wears it too.
  */
 public final class RenderAccessoryUtility {
 
@@ -52,7 +51,7 @@ public final class RenderAccessoryUtility {
     private static final Identifier vaer = cape("capevaer");
     private static final Identifier adam = cape("capeadam");
     private static final Identifier jame = cape("capejame");
-    private static final Identifier golem = cape("capegolem"); // old-hbm
+    private static final Identifier golem = cape("capegolem"); // 1.12.2
 
     private static Identifier cape(String name) {
         return Ids.of("hbm", "textures/models/capes/" + name + ".png");

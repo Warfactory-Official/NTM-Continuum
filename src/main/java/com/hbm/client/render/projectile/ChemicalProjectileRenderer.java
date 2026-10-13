@@ -2,6 +2,7 @@ package com.hbm.client.render.projectile;
 
 import com.hbm.entity.projectile.EntityChemical;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
@@ -18,7 +19,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
-/** Submit-API port of original-hbm's RenderChemical. */
+/** Submit-API port of 1.7's RenderChemical. */
 public final class ChemicalProjectileRenderer
         extends GemEntityRenderer<EntityChemical, ChemicalProjectileRenderer.State> {
 
@@ -115,7 +116,7 @@ public final class ChemicalProjectileRenderer
         pose.popPose();
     }
 
-    private static void face(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
+    private static void face(VertexConsumer buffer, PoseStack.Pose pose,
                              float ax, float ay, float az, float bx, float by, float bz,
                              float cx, float cy, float cz, float dx, float dy, float dz,
                              int near, int far) {
@@ -127,7 +128,7 @@ public final class ChemicalProjectileRenderer
         Vertexes.color(buffer, pose, dx, dy, dz, far);
     }
 
-    private static void vertex(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
+    private static void vertex(VertexConsumer buffer, PoseStack.Pose pose,
                                float x, float y, float z, int color, float u, float v) {
         Vertexes.vertex(buffer, pose, x, y, z, color, u, v, 0, 0x00F000F0, 0F, 1F, 0F);
     }

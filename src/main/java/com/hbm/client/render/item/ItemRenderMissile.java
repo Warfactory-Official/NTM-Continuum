@@ -16,7 +16,7 @@ import org.jspecify.annotations.Nullable;
  * degree every 25 ms; in hand and on the ground it is a fifth of its size.
  *
  * <p>1.7 only declined a stack whose struct was null, and {@code getStruct} returns a struct for every custom
- * missile — one of four empty parts for a stack with no parts recorded. Such a stack therefore drew nothing at
+ * missile, one of four empty parts for a stack with no parts recorded. Such a stack therefore drew nothing at
  * all, not its sprite: an empty slot icon. That is odd, but it is what 1.7 did, and the port keeps it.
  */
 final class ItemRenderMissile implements CustomItemRenderer {

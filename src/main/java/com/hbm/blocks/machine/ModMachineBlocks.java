@@ -1,5 +1,17 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.generic.BlockDynamicSlag;
+import com.hbm.blocks.machine.fusion.MachineFusionBoiler;
+import com.hbm.blocks.machine.fusion.MachineFusionBreeder;
+import com.hbm.blocks.machine.fusion.MachineFusionCollector;
+import com.hbm.blocks.machine.fusion.MachineFusionCoupler;
+import com.hbm.blocks.machine.fusion.MachineFusionKlystron;
+import com.hbm.blocks.machine.fusion.MachineFusionKlystronCreative;
+import com.hbm.blocks.machine.fusion.MachineFusionMHDT;
+import com.hbm.blocks.machine.fusion.MachineFusionPlasmaForge;
+import com.hbm.blocks.machine.fusion.MachineFusionTorus;
+import com.hbm.items.block.EnergyNetBlockItem;
+import com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct;
 import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockToolConvertible;
@@ -29,17 +41,36 @@ import dev.golem.core.dejson.Variant;
 import dev.golem.core.dejson.Variants;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.world.CompatBlockItem;
+import dev.golem.core.world.CompatTooltipContext;
+import java.util.List;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import com.hbm.blocks.network.RadioAUTOCAL;
+import com.hbm.blocks.network.RadioTelex;
+import com.hbm.blocks.network.RadioTorchController;
+import com.hbm.blocks.network.RadioTorchCounter;
+import com.hbm.blocks.network.RadioTorchLogic;
+import com.hbm.blocks.network.RadioTorchReader;
+import com.hbm.blocks.network.RadioTorchReceiver;
+import com.hbm.blocks.network.RadioTorchSender;
+import com.hbm.items.block.ItemBlockAutosaw;
+import com.hbm.items.block.RadioBlockItem;
+import dev.golem.core.dejson.Shape;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /**
  * Registry for HBM machine blocks (blocks backed by a BlockEntity). Separate from the auto-generated
  * {@link com.hbm.blocks.ModBlocks} (which holds the simple blocks) so codegen never clobbers them.
  *
- * <p>Each block's model, blockstate, loot and tool tags are stated on its registration (Reg; emitted by
- * Dejson at build time), pickaxe membership included.
- * The block items register in the trailing static block, in its own (creative-tab) order.
+ * <p>Each block's model, blockstate, loot and tool tags (pickaxe included) are stated on its registration
+ * (Reg; emitted by Dejson at build time). The block items register in the trailing static block, in
+ * creative-tab order.
  */
 public final class ModMachineBlocks {
 
@@ -103,10 +134,10 @@ public final class ModMachineBlocks {
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockItem> machine_rtg_grey_item = REG.<MachineRTG, BlockItem>blockItem(
             machine_rtg_grey,
-            (block, p) -> new dev.golem.core.world.CompatBlockItem(block, p) {
+            (block, p) -> new CompatBlockItem(block, p) {
                 @Override
-                public net.minecraft.network.chat.Component getName(net.minecraft.world.item.ItemStack stack) {
-                    return net.minecraft.network.chat.Component.literal("RT Generator");
+                public Component getName(ItemStack stack) {
+                    return Component.literal("RT Generator");
                 }
             }, p -> Compat.blockDescription(p));
     public static final RegistryObject<RadSensor> radsensor = REG.<RadSensor>block(
@@ -248,7 +279,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
-    /** Accident-only replacement for a melted-down ZIRNOX; intentionally has no block item. */
+    /** Accident-only replacement for a melted-down ZIRNOX; has no block item. */
     public static final RegistryObject<MachineZirnoxDestroyed> zirnox_destroyed = REG.<MachineZirnoxDestroyed>block(
             "zirnox_destroyed", MachineZirnoxDestroyed::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -279,7 +310,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    // --- Multiblock structure components (hand-built machines: Watz, fusion torus) ---
+    // Multiblock structure components (hand-built machines: Watz, fusion torus)
     // The plain forms are craftable; the upgraded forms exist only as the output of an in-world tool
     // conversion (NTMToolHandler), and the reactors' structure patterns only accept the upgraded ones.
 
@@ -347,65 +378,65 @@ public final class ModMachineBlocks {
      * The fusion torus. 1.7 registers it with a creative tab and {@code MachineFusionTorus} has no drop override,
      * so the {@code BlockDummyable} harvest drops the block itself (it is not a Watz-style "struct core only" block).
      */
-    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionTorus> fusion_torus = REG.<com.hbm.blocks.machine.fusion.MachineFusionTorus>block(
-            "fusion_torus", com.hbm.blocks.machine.fusion.MachineFusionTorus::new,
+    public static final RegistryObject<MachineFusionTorus> fusion_torus = REG.<MachineFusionTorus>block(
+            "fusion_torus", MachineFusionTorus::new,
             p -> dummyable(p.strength(5.0F, 60.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
-    // --- The fusion family: what feeds the torus and what consumes its plasma. ---
-    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionCoupler> fusion_coupler = REG.<com.hbm.blocks.machine.fusion.MachineFusionCoupler>block(
-            "fusion_coupler", com.hbm.blocks.machine.fusion.MachineFusionCoupler::new,
+    // The fusion family: what feeds the torus and what consumes its plasma.
+    public static final RegistryObject<MachineFusionCoupler> fusion_coupler = REG.<MachineFusionCoupler>block(
+            "fusion_coupler", MachineFusionCoupler::new,
             p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
-    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionCollector> fusion_collector = REG.<com.hbm.blocks.machine.fusion.MachineFusionCollector>block(
-            "fusion_collector", com.hbm.blocks.machine.fusion.MachineFusionCollector::new,
+    public static final RegistryObject<MachineFusionCollector> fusion_collector = REG.<MachineFusionCollector>block(
+            "fusion_collector", MachineFusionCollector::new,
             p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
-    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionKlystron> fusion_klystron = REG.<com.hbm.blocks.machine.fusion.MachineFusionKlystron>block(
-            "fusion_klystron", com.hbm.blocks.machine.fusion.MachineFusionKlystron::new,
+    public static final RegistryObject<MachineFusionKlystron> fusion_klystron = REG.<MachineFusionKlystron>block(
+            "fusion_klystron", MachineFusionKlystron::new,
             p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
-    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionKlystronCreative> fusion_klystron_creative = REG.<com.hbm.blocks.machine.fusion.MachineFusionKlystronCreative>block(
-            "fusion_klystron_creative", com.hbm.blocks.machine.fusion.MachineFusionKlystronCreative::new,
+    public static final RegistryObject<MachineFusionKlystronCreative> fusion_klystron_creative = REG.<MachineFusionKlystronCreative>block(
+            "fusion_klystron_creative", MachineFusionKlystronCreative::new,
             p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
-    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionBoiler> fusion_boiler = REG.<com.hbm.blocks.machine.fusion.MachineFusionBoiler>block(
-            "fusion_boiler", com.hbm.blocks.machine.fusion.MachineFusionBoiler::new,
+    public static final RegistryObject<MachineFusionBoiler> fusion_boiler = REG.<MachineFusionBoiler>block(
+            "fusion_boiler", MachineFusionBoiler::new,
             p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
-    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionBreeder> fusion_breeder = REG.<com.hbm.blocks.machine.fusion.MachineFusionBreeder>block(
-            "fusion_breeder", com.hbm.blocks.machine.fusion.MachineFusionBreeder::new,
+    public static final RegistryObject<MachineFusionBreeder> fusion_breeder = REG.<MachineFusionBreeder>block(
+            "fusion_breeder", MachineFusionBreeder::new,
             p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
-    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionMHDT> fusion_mhdt = REG.<com.hbm.blocks.machine.fusion.MachineFusionMHDT>block(
-            "fusion_mhdt", com.hbm.blocks.machine.fusion.MachineFusionMHDT::new,
+    public static final RegistryObject<MachineFusionMHDT> fusion_mhdt = REG.<MachineFusionMHDT>block(
+            "fusion_mhdt", MachineFusionMHDT::new,
             p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
-    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionPlasmaForge> fusion_plasma_forge = REG.<com.hbm.blocks.machine.fusion.MachineFusionPlasmaForge>block(
-            "fusion_plasma_forge", com.hbm.blocks.machine.fusion.MachineFusionPlasmaForge::new,
+    public static final RegistryObject<MachineFusionPlasmaForge> fusion_plasma_forge = REG.<MachineFusionPlasmaForge>block(
+            "fusion_plasma_forge", MachineFusionPlasmaForge::new,
             p -> dummyable(p.strength(5.0F, 60.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
@@ -422,7 +453,7 @@ public final class ModMachineBlocks {
             .tag(BlockTag.NEEDS_IRON_TOOL);
     public static final RegistryObject<BlockStruct> struct_torus_core = REG.<BlockStruct>block(
             "struct_torus_core",
-            p -> new BlockStruct(p, com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct::new,
+            p -> new BlockStruct(p, TileEntityFusionTorusStruct::new,
                     () -> ModBlockEntities.STRUCT_TORUS_CORE.get()),
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).lightLevel(state -> 15))
             .transform(Presets.cubeAll())
@@ -430,7 +461,7 @@ public final class ModMachineBlocks {
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
-    // --- Phase C: fluid network demo (duct conductor + infinite source + receiving tank) ---
+    // Fluid network blocks (duct conductor + infinite source + receiving tank)
 
     public static final RegistryObject<BlockCreativeFluidSource> creative_fluid_source = REG.<BlockCreativeFluidSource>block(
             "creative_fluid_source", BlockCreativeFluidSource::new,
@@ -488,7 +519,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    // --- scaffold machines: placeable, directional, BlockEntity-backed; logic deferred (§18) ---
+    // Placeable, directional, BlockEntity-backed machines
 
     public static final RegistryObject<MachineElectricFurnace> machine_electric_furnace_off = REG.<MachineElectricFurnace>block(
             "machine_electric_furnace_off", MachineElectricFurnace::new,
@@ -538,7 +569,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Shredder — a plain JSON-model cube (no BER), unlike the multiblocks below. */
+    /** Shredder: a plain JSON-model cube (no BER), unlike the multiblocks below. */
     public static final RegistryObject<MachineShredder> machine_shredder = REG.<MachineShredder>block(
             "machine_shredder", MachineShredder::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
@@ -554,7 +585,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    // Folded multiblock machines — invisible core+cell blocks drawn by a BlockEntityRenderer.
+    // Folded multiblock machines: invisible core+cell blocks drawn by a BlockEntityRenderer.
     public static final RegistryObject<MachineEPress> machine_epress = REG.<MachineEPress>block(
             "machine_epress", MachineEPress::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -588,6 +619,12 @@ public final class ModMachineBlocks {
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<MachineAssemblyFactory> machine_assembly_factory = REG.<MachineAssemblyFactory>block(
+            "machine_assembly_factory", MachineAssemblyFactory::new,
+            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachinePrecAss> machine_precass = REG.<MachinePrecAss>block(
             "machine_precass", MachinePrecAss::new,
             p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -598,6 +635,12 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineChemicalPlant> machine_chemical_plant = REG.<MachineChemicalPlant>block(
             "machine_chemical_plant", MachineChemicalPlant::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<MachineChemicalFactory> machine_chemical_factory = REG.<MachineChemicalFactory>block(
+            "machine_chemical_factory", MachineChemicalFactory::new,
+            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -632,7 +675,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Diesel Generator — burns combustible fluids into HE (the first real energy producer). */
+    /** Diesel Generator: burns combustible fluids into HE. */
     public static final RegistryObject<MachineDiesel> machine_diesel = REG.<MachineDiesel>block(
             "machine_diesel", MachineDiesel::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
@@ -640,7 +683,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Flare Stack — vents or burns gas for power; 12-tall 3×3 tower. */
+    /** Flare Stack: vents or burns gas for power; 12-tall 3×3 tower. */
     public static final RegistryObject<MachineGasFlare> machine_flare = REG.<MachineGasFlare>block(
             "machine_flare", MachineGasFlare::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -648,7 +691,21 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Fractioning Tower — splits a hot fraction into two; stacks 3 apart via the spacer. */
+    /** Brick and industrial chimneys: take the smoke ducted to them and vent it high up. */
+    public static final RegistryObject<MachineChimneyBrick> chimney_brick = REG.<MachineChimneyBrick>block(
+            "chimney_brick", MachineChimneyBrick::new,
+            p -> p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<MachineChimneyIndustrial> chimney_industrial = REG.<MachineChimneyIndustrial>block(
+            "chimney_industrial", MachineChimneyIndustrial::new,
+            p -> p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+
+    /** Fractioning Tower: splits a hot fraction into two; stacks 3 apart via the spacer. */
     public static final RegistryObject<MachineFractionTower> machine_fraction_tower = REG.<MachineFractionTower>block(
             "machine_fraction_tower", MachineFractionTower::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -656,7 +713,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Fractioning Tower Separator — a logic-less spacer raising the tower stack. */
+    /** Fractioning Tower Separator: a logic-less spacer raising the tower stack. */
     public static final RegistryObject<FractionSpacer> fraction_spacer = REG.<FractionSpacer>block(
             "fraction_spacer", FractionSpacer::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -664,7 +721,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Liquefactor — items → fluid. */
+    /** Liquefactor: items to fluid. */
     public static final RegistryObject<MachineLiquefactor> machine_liquefactor = REG.<MachineLiquefactor>block(
             "machine_liquefactor", MachineLiquefactor::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -672,7 +729,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Solidifier — fluid → items. */
+    /** Solidifier: fluid to items. */
     public static final RegistryObject<MachineSolidifier> machine_solidifier = REG.<MachineSolidifier>block(
             "machine_solidifier", MachineSolidifier::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -680,7 +737,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Refinery — fractionates HOT oils into 4 products; 3×3×9 tower. */
+    /** Refinery: fractionates HOT oils into 4 products; 3×3×9 tower. */
     public static final RegistryObject<MachineRefinery> machine_refinery = REG.<MachineRefinery>block(
             "machine_refinery", MachineRefinery::new, // resistance: 1.7 setResistance(20) = 60/5 = 12 against explosions
             p -> dummyable(p.strength(5.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -688,7 +745,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Heat Boiler (old id {@code heat_boiler}) — the OIL→HOTOIL / water→steam converter. */
+    /** Heat Boiler (old id {@code heat_boiler}): the OIL to HOTOIL and water to steam converter. */
     public static final RegistryObject<MachineHeatBoiler> machine_boiler = REG.<MachineHeatBoiler>block(
             "heat_boiler", MachineHeatBoiler::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -696,7 +753,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Industrial heat boiler — the five-port, high-capacity variant. */
+    /** Industrial heat boiler: the five-port, high-capacity variant. */
     public static final RegistryObject<MachineHeatBoilerIndustrial> machine_industrial_boiler = REG.<MachineHeatBoilerIndustrial>block(
             "machine_industrial_boiler", MachineHeatBoilerIndustrial::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -704,7 +761,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Fluid Burner — burns flammable fluids into an IHeatSource reservoir. */
+    /** Fluid Burner: burns flammable fluids into an IHeatSource reservoir. */
     public static final RegistryObject<HeaterOilburner> heater_oilburner = REG.<HeaterOilburner>block(
             "heater_oilburner", HeaterOilburner::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -712,7 +769,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Wood Burner — solid fuel or WOODOIL generator with a 100k HE buffer. */
+    /** Wood Burner: solid fuel or WOODOIL generator with a 100k HE buffer. */
     public static final RegistryObject<MachineWoodBurner> machine_wood_burner = REG.<MachineWoodBurner>block(
             "machine_wood_burner", MachineWoodBurner::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -720,7 +777,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    // --- oil wave: extraction drills ---
+    // Extraction drills
     public static final RegistryObject<MachineOilWell> machine_well = REG.<MachineOilWell>block(
             "machine_well", MachineOilWell::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -735,7 +792,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    // --- advanced oil wave ---
+    // Advanced oil machines
 
     public static final RegistryObject<MachineFrackingTower> machine_fracking_tower = REG.<MachineFrackingTower>block(
             "machine_fracking_tower", MachineFrackingTower::new,
@@ -793,6 +850,13 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
+    public static final RegistryObject<MachineAutosaw> machine_autosaw = REG.<MachineAutosaw>block(
+            "machine_autosaw", MachineAutosaw::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            .transform(RENDERED_SIMPLE)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+
     public static final RegistryObject<MachineCombustionEngine> machine_combustion_engine = REG.<MachineCombustionEngine>block(
             "machine_combustion_engine", MachineCombustionEngine::new,
             p -> dummyable(p.strength(5.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -807,7 +871,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Compressor — raises fluid pressure; the gate the vacuum refinery (OIL @2) + hydrotreater (H @1) need. */
+    /** Compressor: raises fluid pressure; the gate the vacuum refinery (OIL @2) + hydrotreater (H @1) need. */
     public static final RegistryObject<MachineCompressor> machine_compressor = REG.<MachineCompressor>block(
             "machine_compressor", MachineCompressor::new,
             p -> dummyable(p.strength(10.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -837,6 +901,20 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
+    /** Solar boiler and the mirrors that heat it. */
+    public static final RegistryObject<MachineSolarBoiler> machine_solar_boiler = REG.<MachineSolarBoiler>block(
+            "machine_solar_boiler", MachineSolarBoiler::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<SolarMirror> solar_mirror = REG.<SolarMirror>block(
+            "solar_mirror", SolarMirror::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            .transform(RENDERED_SIMPLE)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+
     /** Compact pressure compressor; same processing/menu path, with the old six-port ring footprint. */
     public static final RegistryObject<MachineCompressorCompact> machine_compressor_compact = REG.<MachineCompressorCompact>block(
             "machine_compressor_compact", MachineCompressorCompact::new,
@@ -846,6 +924,14 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineSolderingStation> machine_soldering_station = REG.<MachineSolderingStation>block(
             "machine_soldering_station", MachineSolderingStation::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+
+    /** Large arc furnace. */
+    public static final RegistryObject<MachineArcFurnaceLarge> machine_arc_furnace = REG.<MachineArcFurnaceLarge>block(
+            "machine_arc_furnace", MachineArcFurnaceLarge::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
@@ -881,7 +967,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Standard item centrifuge — a 1×1×4 tower with four output streams. */
+    /** Standard item centrifuge: a 1×1×4 tower with four output streams. */
     public static final RegistryObject<MachineCentrifuge> machine_centrifuge = REG.<MachineCentrifuge>block(
             "machine_centrifuge", MachineCentrifuge::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -895,7 +981,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Gas centrifuge — a dedicated four-block cascade machine for UF6/PUF6/WATZ. */
+    /** Gas centrifuge: a dedicated four-block cascade machine for UF6/PUF6/WATZ. */
     public static final RegistryObject<MachineGasCent> machine_gascent = REG.<MachineGasCent>block(
             "machine_gascent", MachineGasCent::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -918,7 +1004,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** SILEX — the laser isotope separation chamber. Fluid-only (peroxide); the laser supplies the energy. */
+    /** SILEX: the laser isotope separation chamber. Fluid-only (peroxide); the laser supplies the energy. */
     public static final RegistryObject<MachineSILEX> machine_silex = REG.<MachineSILEX>block(
             "machine_silex", MachineSILEX::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -926,7 +1012,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Free Electron Laser — the SILEX's power source. Energy only; no fluids, no internal recipes. */
+    /** Free Electron Laser: the SILEX's power source. Energy only; no fluids, no internal recipes. */
     public static final RegistryObject<MachineFEL> machine_fel = REG.<MachineFEL>block(
             "machine_fel", MachineFEL::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -934,7 +1020,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    // --- crucible / foundry ---
+    // Crucible / foundry
 
     public static final RegistryObject<MachineCrucible> machine_crucible = REG.<MachineCrucible>block(
             "machine_crucible", MachineCrucible::new,
@@ -997,17 +1083,65 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Dynamic slag — the world waste pile the slagtap deposits (no block item). */
-    public static final RegistryObject<com.hbm.blocks.generic.BlockDynamicSlag> slag = REG.<com.hbm.blocks.generic.BlockDynamicSlag>block(
-            "slag", com.hbm.blocks.generic.BlockDynamicSlag::new,
+    public static final RegistryObject<MachineStrandCaster> machine_strand_caster = REG.<MachineStrandCaster>block(
+            "machine_strand_caster", MachineStrandCaster::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+
+    /** The fuel-fired DiFurnace: one registered block; LIT replaces the old _off/_on block swap. */
+    public static final RegistryObject<MachineDiFurnace> machine_difurnace_off = REG.<MachineDiFurnace>block(
+            "machine_difurnace_off", MachineDiFurnace::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(MachineDiFurnace.LIT) ? 1 : 0))
+            .loot(Loot.self())
+            .andThen(h -> States.variants(h.namespace(), h.path())
+                    .variant("facing=north,lit=false,ext=false", new Variant("hbm:block/machine_difurnace_off"))
+                    .variant("facing=east,lit=false,ext=false", new Variant("hbm:block/machine_difurnace_off", 0, 90, false))
+                    .variant("facing=south,lit=false,ext=false", new Variant("hbm:block/machine_difurnace_off", 0, 180, false))
+                    .variant("facing=west,lit=false,ext=false", new Variant("hbm:block/machine_difurnace_off", 0, 270, false))
+                    .variant("facing=north,lit=true,ext=false", new Variant("hbm:block/machine_difurnace_on"))
+                    .variant("facing=east,lit=true,ext=false", new Variant("hbm:block/machine_difurnace_on", 0, 90, false))
+                    .variant("facing=south,lit=true,ext=false", new Variant("hbm:block/machine_difurnace_on", 0, 180, false))
+                    .variant("facing=west,lit=true,ext=false", new Variant("hbm:block/machine_difurnace_on", 0, 270, false))
+                    .variant("facing=north,lit=false,ext=true", new Variant("hbm:block/machine_difurnace_off_tall"))
+                    .variant("facing=east,lit=false,ext=true", new Variant("hbm:block/machine_difurnace_off_tall", 0, 90, false))
+                    .variant("facing=south,lit=false,ext=true", new Variant("hbm:block/machine_difurnace_off_tall", 0, 180, false))
+                    .variant("facing=west,lit=false,ext=true", new Variant("hbm:block/machine_difurnace_off_tall", 0, 270, false))
+                    .variant("facing=north,lit=true,ext=true", new Variant("hbm:block/machine_difurnace_on_tall"))
+                    .variant("facing=east,lit=true,ext=true", new Variant("hbm:block/machine_difurnace_on_tall", 0, 90, false))
+                    .variant("facing=south,lit=true,ext=true", new Variant("hbm:block/machine_difurnace_on_tall", 0, 180, false))
+                    .variant("facing=west,lit=true,ext=true", new Variant("hbm:block/machine_difurnace_on_tall", 0, 270, false))
+                    .register())
+            .icon(d -> d.shares("hbm:block/machine_difurnace_off"))
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<MachineDiFurnaceExtension> machine_difurnace_ext = REG.<MachineDiFurnaceExtension>block(
+            "machine_difurnace_ext", MachineDiFurnaceExtension::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.STONE).noOcclusion()))
+            .transform(RENDERED_SIMPLE)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+
+    /** Dynamic slag: the world waste pile the slagtap deposits (no block item). */
+    public static final RegistryObject<BlockDynamicSlag> slag = REG.<BlockDynamicSlag>block(
+            "slag", BlockDynamicSlag::new,
             p -> p.strength(1.0F, 2.0F).sound(SoundType.METAL).noOcclusion())
             .transform(RENDERED_SIMPLE);
 
-    // --- foundry heat sources ---
+    // Foundry heat sources
 
     public static final RegistryObject<HeaterFirebox> heater_firebox = REG.<HeaterFirebox>block(
             "heater_firebox", HeaterFirebox::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+
+    /** Collects the ash of the heater above it. */
+    public static final RegistryObject<MachineAshpit> machine_ashpit = REG.<MachineAshpit>block(
+            "machine_ashpit", MachineAshpit::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -1040,7 +1174,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    // --- mining laser ---
+    // Mining laser
 
     public static final RegistryObject<MachineMiningLaser> machine_mining_laser = REG.<MachineMiningLaser>block(
             "machine_mining_laser", MachineMiningLaser::new,
@@ -1049,13 +1183,13 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Sandbags — the mining laser's flood dam ({@code buildDam}). Simplified full cube; the 1.12.2
-     * connected/baked model is deferred. Registered here (not the generated ModBlocks) because the old
-     * {@code BlockSandbags} isn't a BlockBase and the codegen doesn't parse it. */
+    /** Sandbags: the mining laser's flood dam ({@code buildDam}). A simplified full cube, not the 1.12.2
+     * connected/baked model. Registered here, not in the generated ModBlocks, because {@code BlockSandbags}
+     * isn't a BlockBase and the codegen doesn't parse it. */
     public static final RegistryObject<Block> sandbags = REG.<Block>block(
             "sandbags", Block::new, p -> p.strength(5.0F, 30.0F))
             .transform(Presets.cubeAll().noItem())
-            // the 1.7 inventory icon: BlockSandbags' 0.75-wide box in the 3D block-item pose (icon-P2 2026-10-01)
+            // the 1.7 inventory icon: BlockSandbags' 0.75-wide box in the 3D block-item pose
             .transform(Presets.shares("hbm:item/sandbags_inventory"))
             .loot(Loot.self());
 
@@ -1087,7 +1221,7 @@ public final class ModMachineBlocks {
     static {
         // 1.7 MachineBattery.addInformation: capacity, charge/discharge speed and the item's persistent charge.
         REG.<BlockMachineBattery, BlockItem>blockItem(machine_battery,
-                        (block, p) -> new com.hbm.items.block.EnergyNetBlockItem(block, p, 0,
+                        (block, p) -> new EnergyNetBlockItem(block, p, 0,
                                 stack -> machine_battery.get().persistentInfo(stack)),
                         p -> Compat.blockDescription(p))
                 .tab(HbmTab.MACHINES);
@@ -1163,8 +1297,10 @@ public final class ModMachineBlocks {
          tabItem(machine_ammo_press);
          tabItem(machine_sawmill);
         tabItem(machine_assembly_machine);
+        tabItem(machine_assembly_factory);
          tabItem(machine_precass);
           tabItem(machine_chemical_plant);
+        tabItem(machine_chemical_factory);
          tabItem(machine_electrolyser);
         tabItem(machine_mixer);
         tabItem(machine_exposure_chamber);
@@ -1180,6 +1316,8 @@ public final class ModMachineBlocks {
         tabItem(machine_coker);
         tabItem(machine_furnace_combination);
         tabItem(machine_pyrooven);
+        REG.<MachineAutosaw, ItemBlockAutosaw>blockItem(machine_autosaw, ItemBlockAutosaw::new, Compat::blockDescription)
+                .tab(HbmTab.MACHINES);
         tabItem(machine_combustion_engine);
         tabItem(refueler);
          tabItem(machine_compressor);
@@ -1187,8 +1325,12 @@ public final class ModMachineBlocks {
          tabItem(machine_tower_small);
          tabItem(machine_tower_large);
          tabItem(decon);
+        tabItem(machine_solar_boiler);
+        tabItem(solar_mirror);
         tabItem(machine_diesel);
         tabItem(machine_flare);
+        tabItem(chimney_brick);
+        tabItem(chimney_industrial);
         tabItem(machine_fraction_tower);
         tabItem(fraction_spacer);
         tabItem(machine_liquefactor);
@@ -1198,6 +1340,7 @@ public final class ModMachineBlocks {
          tabItem(machine_industrial_boiler);
         tabItem(heater_oilburner);
         tabItem(machine_soldering_station);
+        tabItem(machine_arc_furnace);
         tabItem(machine_arc_welder);
         tabItem(machine_intake);
         tabItem(fan);
@@ -1211,30 +1354,119 @@ public final class ModMachineBlocks {
         tabItem(machine_fel);
         tabItem(machine_crucible);
           tabItem(heater_firebox);
+        tabItem(machine_ashpit);
           tabItem(heater_oven);
            tabItem(heater_electric);
           tabItem(heater_heatex);
          tabItem(machine_wood_burner);
+        tabItem(machine_strand_caster);
         tabItem(foundry_channel);
         tabItem(foundry_mold);
         tabItem(foundry_basin);
         tabItem(foundry_outlet);
         tabItem(foundry_slagtap);
+        tabItem(machine_difurnace_off);
+        tabItem(machine_difurnace_ext);
         tabItem(HbmTab.MISSILES, launch_pad);
         // Mining laser item carries the old addInformation tooltip and the legacy Forge renderer bridge.
         REG.<MachineMiningLaser, BlockItem>blockItem(machine_mining_laser,
-                (block, p) -> new dev.golem.core.world.CompatBlockItem(block, p) {
+                (block, p) -> new CompatBlockItem(block, p) {
                     @Override
-                    protected void appendCompatHoverText(net.minecraft.world.item.ItemStack stack,
-                                                         dev.golem.core.world.CompatTooltipContext context,
-                                                         java.util.List<net.minecraft.network.chat.Component> tooltip,
-                                                         net.minecraft.world.item.TooltipFlag flag) {
-                        tooltip.add(net.minecraft.network.chat.Component.translatable("desc.mininglaser1"));
-                        tooltip.add(net.minecraft.network.chat.Component.translatable("desc.mininglaser2"));
+                    protected void appendCompatHoverText(ItemStack stack,
+                                                         CompatTooltipContext context,
+                                                         List<Component> tooltip,
+                                                         TooltipFlag flag) {
+                        tooltip.add(Component.translatable("desc.mininglaser1"));
+                        tooltip.add(Component.translatable("desc.mininglaser2"));
                     }
                 }, p -> Compat.blockDescription(p))
                 .tab(HbmTab.MACHINES);
         tabItem(HbmTab.BLOCKS, sandbags);
+    }
+
+    // Redstone over Radio. The torches ride the radio torch's element model over their 1.7 rtty_* sprite and
+    // their items are that flat sprite; TELEX and AUTOCAL are renderer-drawn (their OBJ item definitions are typed
+    // data in ObjItemDeclarations). Declared after the item list above, so their blocks and items follow it.
+
+    public static final RegistryObject<RadioTorchSender> radio_torch_sender = REG.block(
+            "radio_torch_sender", RadioTorchSender::new,
+            properties -> properties.strength(0.1F, 10.0F).sound(SoundType.WOOD)
+                    .noCollision().noOcclusion())
+            .transform(radioSwitching("rtty_sender_off", "rtty_sender_on"));
+    public static final RegistryObject<RadioTorchReceiver> radio_torch_receiver = REG.block(
+            "radio_torch_receiver", RadioTorchReceiver::new,
+            properties -> properties.strength(0.1F, 10.0F).sound(SoundType.WOOD)
+                    .noCollision().noOcclusion())
+            .transform(radioSwitching("rtty_rec_off", "rtty_rec_on"));
+    public static final RegistryObject<RadioTorchReader> radio_torch_reader = REG.block(
+            "radio_torch_reader", RadioTorchReader::new,
+            properties -> properties.strength(0.1F, 10.0F).sound(SoundType.WOOD)
+                    .noCollision().noOcclusion())
+            .transform(radioSteady("rtty_reader"));
+    public static final RegistryObject<RadioTorchLogic> radio_torch_logic = REG.block(
+            "radio_torch_logic", RadioTorchLogic::new,
+            properties -> properties.strength(0.1F, 10.0F).sound(SoundType.WOOD)
+                    .noCollision().noOcclusion())
+            .transform(radioSwitching("rtty_logic_off", "rtty_logic_on"));
+    public static final RegistryObject<RadioTorchCounter> radio_torch_counter = REG.block(
+            "radio_torch_counter", RadioTorchCounter::new,
+            properties -> properties.strength(0.1F, 10.0F).sound(SoundType.WOOD)
+                    .noCollision().noOcclusion())
+            .transform(radioSteady("rtty_counter"));
+    public static final RegistryObject<RadioTorchController> radio_torch_controller = REG.block(
+            "radio_torch_controller", RadioTorchController::new,
+            properties -> properties.strength(0.1F, 10.0F).sound(SoundType.WOOD)
+                    .noCollision().noOcclusion())
+            .transform(radioSteady("rtty_controller"));
+    public static final RegistryObject<RadioTelex> radio_telex = REG.block(
+            "radio_telex", RadioTelex::new,
+            properties -> properties.strength(3.0F, 10.0F).sound(SoundType.WOOD).noOcclusion())
+            .transform(FOLDED)
+            .loot(Loot.self());
+    public static final RegistryObject<RadioAUTOCAL> radio_autocal = REG.block(
+            "radio_autocal", RadioAUTOCAL::new,
+            properties -> properties.strength(3.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            .transform(FOLDED)
+            .loot(Loot.self());
+
+    static {
+        radioItem("radio_torch_sender", radio_torch_sender, "rtty_sender_on");
+        radioItem("radio_torch_receiver", radio_torch_receiver, "rtty_rec_on");
+        radioItem("radio_torch_reader", radio_torch_reader, "rtty_reader");
+        radioItem("radio_torch_logic", radio_torch_logic, "rtty_logic_on");
+        radioItem("radio_torch_counter", radio_torch_counter, "rtty_counter");
+        radioItem("radio_torch_controller", radio_torch_controller, "rtty_controller");
+        radioItem("radio_telex", radio_telex, null);
+        radioItem("radio_autocal", radio_autocal, null);
+    }
+
+    /** A radio block's item: the old dollar-separated info text as lines; a torch's item is its flat sprite. */
+    private static void radioItem(String name, RegistryObject<? extends Block> block, String sprite) {
+        Reg.Handle<RadioBlockItem> item = REG.item(name,
+                (Item.Properties properties) -> new RadioBlockItem(block.get(), Compat.blockDescription(properties)));
+        if (sprite != null) item.transform(Presets.sprite("hbm:blocks/" + sprite));
+        item.tab(HbmTab.MACHINES);
+    }
+
+    /** A radio torch that shows whether it is lit: two torch models over the off/on sprites. */
+    private static Preset radioSwitching(String off, String on) {
+        return Presets.shape(Models.group().and("_off", radioTorch(off)).and("_on", radioTorch(on)))
+                .states(Variants.product(Variants.facingUp(), Variants.select("lit", "false", "_off", "true", "_on")))
+                .noItem()
+                .and(handle -> handle.loot(Loot.self()));
+    }
+
+    /** A radio torch with one sprite in either state. */
+    private static Preset radioSteady(String sprite) {
+        return Presets.shape(radioTorch(sprite))
+                .states(Variants.product(Variants.facingUp(), Variants.uniform("lit", "false", "true")))
+                .noItem()
+                .and(handle -> handle.loot(Loot.self()));
+    }
+
+    private static Shape radioTorch(String sprite) {
+        return Models.renderType("minecraft:cutout",
+                Models.parented("hbm:block/radio_torch_template", Slots.of("torch", "hbm:blocks/" + sprite)));
     }
 
     /**
@@ -1242,8 +1474,8 @@ public final class ModMachineBlocks {
      * suffocating/view-blocking, or 26.1's push-out-of-block logic shoves entities that overlap them
      * (the 1.12.2 original set {@code isNormalCube=false} for the same reason).
      */
-    private static net.minecraft.world.level.block.state.BlockBehaviour.Properties dummyable(
-            net.minecraft.world.level.block.state.BlockBehaviour.Properties p) {
+    private static BlockBehaviour.Properties dummyable(
+            BlockBehaviour.Properties p) {
         return p.isSuffocating((state, world, pos) -> false).isViewBlocking((state, world, pos) -> false);
     }
 

@@ -1,12 +1,16 @@
 package com.hbm.items.machine;
 
+import com.hbm.api.data.ReactorDataMaps;
+import com.hbm.items.ModPwrItems;
 import com.hbm.util.Function;
 import com.hbm.util.Function.FunctionLogarithmic;
 import com.hbm.util.Function.FunctionSqrt;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
@@ -81,27 +85,27 @@ public class ItemPWRFuel extends CompatItem {
      * The fuel values of {@code item}: the {@code hbm:pwr_fuel} item data map, else HBM's enum constant for its own rods;
      * null when the item is not PWR fuel. An addon's fuel is any item with a data-map entry.
      */
-    public static com.hbm.api.data.ReactorDataMaps.@org.jspecify.annotations.Nullable PWRFuel stats(net.minecraft.world.item.Item item) {
-        com.hbm.api.data.ReactorDataMaps.PWRFuel data = com.hbm.api.data.ReactorDataMaps.PWR_FUEL.get(item);
+    public static ReactorDataMaps.@org.jspecify.annotations.Nullable PWRFuel stats(Item item) {
+        ReactorDataMaps.PWRFuel data = ReactorDataMaps.PWR_FUEL.get(item);
         if (data != null) return data;
         return codeStats(item);
     }
 
     /** The code defaults (constructor or enum values) that the data map entry overrides. */
-    public static com.hbm.api.data.ReactorDataMaps.@org.jspecify.annotations.Nullable PWRFuel codeStats(net.minecraft.world.item.Item item) {
+    public static ReactorDataMaps.@org.jspecify.annotations.Nullable PWRFuel codeStats(Item item) {
         if (!(item instanceof ItemPWRFuel rod) || rod.fuel.function == null) return null;
-        return new com.hbm.api.data.ReactorDataMaps.PWRFuel(rod.fuel.heatEmission, rod.fuel.function, rod.fuel.yield,
-                key(com.hbm.items.ModPwrItems.hot(rod.fuel)), key(com.hbm.items.ModPwrItems.depleted(rod.fuel)));
+        return new ReactorDataMaps.PWRFuel(rod.fuel.heatEmission, rod.fuel.function, rod.fuel.yield,
+                key(ModPwrItems.hot(rod.fuel)), key(ModPwrItems.depleted(rod.fuel)));
     }
 
-    private static String key(net.minecraft.world.item.Item item) {
-        return net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).toString();
+    private static String key(Item item) {
+        return BuiltInRegistries.ITEM.getKey(item).toString();
     }
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context, List<Component> tooltip,
                                          TooltipFlag flag) {
-        com.hbm.api.data.ReactorDataMaps.PWRFuel fuel = stats(this);
+        ReactorDataMaps.PWRFuel fuel = stats(this);
         if (fuel == null) return;
         tooltip.add(Component.literal("Heat per flux: ").withStyle(ChatFormatting.GOLD)
                 .append(Component.literal(fuel.heat() + " TU").withStyle(ChatFormatting.WHITE)));

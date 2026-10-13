@@ -6,6 +6,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 
@@ -18,7 +19,7 @@ public final class IndustrialTurbineGameTests {
         BlockPos core = new BlockPos(3, 1, 3);
         MachineIndustrialTurbine block = ModMachineBlocks.machine_industrial_turbine.get();
         FoldedTestSupport.assemble(helper, block, core);
-        TileEntityMachineIndustrialTurbine turbine = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityMachineIndustrialTurbine turbine = GameTestHelpers.blockEntity(
                 helper, core, TileEntityMachineIndustrialTurbine.class);
         helper.assertTrue(turbine != null, "Industrial turbine core BlockEntity was not created");
 
@@ -80,7 +81,7 @@ public final class IndustrialTurbineGameTests {
     private static TileEntityMachineIndustrialTurbine place(GameTestHelper helper, BlockPos pos) {
         MachineIndustrialTurbine block = ModMachineBlocks.machine_industrial_turbine.get();
         FoldedTestSupport.assemble(helper, block, pos);
-        TileEntityMachineIndustrialTurbine turbine = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityMachineIndustrialTurbine turbine = GameTestHelpers.blockEntity(
                 helper, pos, TileEntityMachineIndustrialTurbine.class);
         helper.assertTrue(turbine != null, "Industrial turbine core BlockEntity was not created");
         return turbine;

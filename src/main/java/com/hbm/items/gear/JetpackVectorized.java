@@ -1,6 +1,8 @@
 package com.hbm.items.gear;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.handler.JetpackHandler;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.armor.JetpackFueledBase;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.world.CompatTooltipContext;
@@ -16,7 +18,7 @@ import net.minecraft.world.phys.Vec3;
 /** Vectorized jetpack: capped look-direction acceleration, three-tick fuel cadence. */
 public class JetpackVectorized extends JetpackFueledBase {
 
-    public JetpackVectorized(com.hbm.inventory.fluid.FluidType fuel, int maxFuel, Properties properties) {
+    public JetpackVectorized(FluidType fuel, int maxFuel, Properties properties) {
         super(fuel, maxFuel, properties);
     }
 
@@ -36,7 +38,7 @@ public class JetpackVectorized extends JetpackFueledBase {
         // 1.7 lifts by 0.1 below 0.4 before the vectored push (missing from the port until now); hbm-space shrinks the
         // lift (never grows it) with gravity (com.hbm.api.environment.Environment.gravity)
         if (motion.y < 0.4D) {
-            motion = motion.add(0, 0.1D * Math.min(com.hbm.api.environment.Environment.gravity(player), 1D), 0);
+            motion = motion.add(0, 0.1D * Math.min(Environment.gravity(player), 1D), 0);
             player.setDeltaMovement(motion);
         }
         if (motion.length() < 2D) {

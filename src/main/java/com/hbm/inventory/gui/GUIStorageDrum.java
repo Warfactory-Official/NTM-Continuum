@@ -1,5 +1,7 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerStorageDrum;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -10,9 +12,9 @@ import net.minecraft.world.entity.player.Inventory;
 
 
 /** Storage-drum screen, 1.7 {@code GUIStorageDrum} ({@code processing/gui_drum.png}, 176x234). */
-public class GUIStorageDrum extends dev.golem.core.gui.CompatContainerScreen<ContainerStorageDrum> {
+public class GUIStorageDrum extends CompatContainerScreen<ContainerStorageDrum> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_drum.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_drum.png");
 
     public GUIStorageDrum(ContainerStorageDrum menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 234);

@@ -5,6 +5,8 @@ import com.hbm.blocks.ModNuclearBlocks;
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.blocks.ModOutgasBlocks;
 import com.hbm.config.GeneralConfig;
+import dev.golem.core.world.CompatBlock;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -17,7 +19,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** The old multi-source outgassing block: twelve registrations and four emission triggers. */
-public class BlockOutgas extends dev.golem.core.world.CompatBlock {
+public class BlockOutgas extends CompatBlock {
     private final boolean randomTick;
     private final int rate;
     private final boolean onBreak;
@@ -103,7 +105,7 @@ public class BlockOutgas extends dev.golem.core.world.CompatBlock {
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         super.onBlockRemoved(state, level, pos, movedByPiston);
         // Carried by a sub-level system, not mined: nothing escapes at the old position.
-        if (level.isClientSide() || !onBreak || dev.golem.core.world.SubLevels.isMoving(level)) return;
+        if (level.isClientSide() || !onBreak || SubLevels.isMoving(level)) return;
         Block gas = getGas();
         if (gas != Blocks.AIR) level.setBlock(pos, gas.defaultBlockState(), 3);
 

@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityFurnaceIron;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -15,7 +16,7 @@ public final class FurnaceIronRenderer extends GemBER<TileEntityFurnaceIron, Fur
     private static final int FULLBRIGHT = 0x00F000F0;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/furnace_iron.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/furnace_iron.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/furnace_iron.png");
 

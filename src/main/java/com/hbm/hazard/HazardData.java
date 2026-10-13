@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
 /** A set of {@link HazardEntry} with override/mutex semantics, ported 1:1 from 1.12.2. */
 public class HazardData {
 
-    /** Purges all previously fetched data when read — for items that fully override tag data. */
+    /** Purges all fetched data when read, for items that fully override tag data. */
     boolean doesOverride = false;
 
     /**

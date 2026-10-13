@@ -55,12 +55,12 @@ public class FabricClientInit implements ClientModInitializer {
         HbmClientRegistrations.installEntityEffects();
         HbmClientRegistrations.installArmorLayers();
 
-        // Look-overlay HUD (battery charge / duct type / ...) — drawn after the vanilla HUD each frame.
+        // Look-overlay HUD (battery charge / duct type / ...), drawn after the vanilla HUD each frame.
         HbmClientRegistrations.registerHud((id, renderer) ->
                 dev.golem.core.client.Hud.addLast("hbm", id, renderer::accept));
 
         HbmClientRegistrations.installScreensAndRenderers();
-        // 26.1: block tint sources (sellafite shade tint) — fabric-api has no colour registry there, so
+        // 26.1: block tint sources (sellafite shade tint): fabric-api has no colour registry there, so
         // register directly on the vanilla BlockColors once the client instance is fully constructed.
         // Below 26.1: OBJ machine item models. 26.1 drives those through its special-model system
         // (registered by MixinSpecialModelRenderers); here the item definitions are parsed on reload and

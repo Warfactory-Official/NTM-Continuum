@@ -23,7 +23,7 @@ public class CrystalVirus extends CompatBlock {
         super(properties);
     }
 
-    /** air, virus, hardened crystal or pulsar — the blocks the virus leaves alone. */
+    /** air, virus, hardened crystal or pulsar: the blocks the virus leaves alone. */
     public static boolean isInert(BlockState state) {
         Block b = state.getBlock();
         return state.isAir() || b instanceof CrystalVirus || b == ModBlocks.crystal_hardened.get() || b instanceof CrystalPulsar;

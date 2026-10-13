@@ -64,7 +64,7 @@ public final class MachineItemRenderers {
 
         if (clipped) {
             // The scissor only binds while the draw actually reaches GL, and a buffer source defers that
-            // to its batch end — which would otherwise happen after the scissor is dropped.
+            // to its batch end, which would otherwise happen after the scissor is dropped.
             if (buffers instanceof MultiBufferSource.BufferSource batched) batched.endBatch();
             dev.golem.core.gui.Scissors.pop();
         }
@@ -74,22 +74,20 @@ public final class MachineItemRenderers {
      * Clips drawing to the 16x16 slot this item is being rendered into, returning whether a scissor was
      * actually set.
      *
-     * <p>26.1 gives every GUI item a bounding rectangle — {@code GuiItemRenderState.bounds}, which for an
-     * ordinary item is exactly its slot — and an item may only exceed it by declaring
-     * {@code oversized_in_gui}. Nothing equivalent exists here: a custom item renderer draws wherever its
-     * geometry reaches, so a machine model spills over the surrounding inventory frame. Re-imposing the
-     * slot reproduces 26.1's default — and reading the same {@code oversized_in_gui} flag reproduces the
-     * opt-out, which the machines framed from 1.7 need: 1.7 clipped nothing, and its inventory scales put
-     * the larger multiblocks a few pixels outside the slot on purpose.
+     * <p>26.1 gives every GUI item a bounding rectangle, {@code GuiItemRenderState.bounds}, which for an
+     * ordinary item is its slot, and an item may only exceed it by declaring {@code oversized_in_gui}.
+     * A custom item renderer here draws wherever its geometry reaches, so a machine model would spill over
+     * the inventory frame. Re-imposing the slot reproduces 26.1's default, and reading the same
+     * {@code oversized_in_gui} flag reproduces the opt-out, which the machines framed from 1.7 need: 1.7
+     * clipped nothing, and its inventory scales put the larger multiblocks a few pixels outside the slot.
      *
-     * <p>The rectangle is recovered from the pose rather than passed in, because the callback is never
-     * told which slot it is drawing into. By the time vanilla calls a custom renderer it has translated to
-     * the slot centre, scaled by 16, applied the model's GUI display transform and then shifted by
-     * {@code (-0.5,-0.5,-0.5)} — so the model-space point {@code (0.5,0.5,0.5)} is the slot centre moved by
-     * that display transform's translation, which is applied outermost ({@code T . R . S}). The machine frames
-     * translate (machine_obj_context_base: -0.707, -1.567 px), so that translation is taken back out: without
-     * it the clip sat 1.6 px low and cut the top of tall icons that 26.1, whose bound is the slot itself, keeps
-     * (icon audit 2026-10-01: trenchmaster/fau antennas).
+     * <p>The rectangle is recovered from the pose because the callback is never told which slot it draws
+     * into. By the time vanilla calls a custom renderer it has translated to the slot centre, scaled by 16,
+     * applied the model's GUI display transform and shifted by {@code (-0.5,-0.5,-0.5)}, so the model-space
+     * point {@code (0.5,0.5,0.5)} is the slot centre moved by that display transform's translation, which is
+     * applied outermost ({@code T . R . S}). The machine frames translate (machine_obj_context_base: -0.707,
+     * -1.567 px), so that translation is taken back out; otherwise the clip sits 1.6 px low and cuts the top
+     * of tall icons (the trenchmaster and fau antennas) that 26.1, whose bound is the slot itself, keeps.
      ^/
     private static boolean clipToSlot(PoseStack poseStack, ItemStack stack) {
         Minecraft minecraft = Minecraft.getInstance();

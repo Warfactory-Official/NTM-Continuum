@@ -57,7 +57,7 @@ public class EntityChopperMine extends CompatEntity {
         // 1.7: entityInit empty - no tracked data
     }
 
-    // 26.2: hurt() final; not damageable in flight
+    // 26.1: hurt() final; not damageable in flight
     @Override
     protected boolean onHurt(DamageSource source, float amount) {
         return false;
@@ -67,7 +67,7 @@ public class EntityChopperMine extends CompatEntity {
     public void tick() {
         super.tick();
 
-        // 26.2: baseTick no longer rolls prev-position, manual move below needs it
+        // 26.1: baseTick does not roll prev-position, so the manual move below needs it
         this.xo = getX();
         this.yo = getY();
         this.zo = getZ();
@@ -92,7 +92,7 @@ public class EntityChopperMine extends CompatEntity {
             for (int i = 0; i < list.size(); ++i) {
                 Entity candidate = list.get(i);
 
-                // 26.2: 1.7's no-arg canBeCollidedWith(), which EntityLivingBase answered true, is isPickable();
+                // 26.1: 1.7's no-arg canBeCollidedWith(), which EntityLivingBase answered true, is isPickable();
                 // the surviving canBeCollidedWith(Entity) is a collision-push test no LivingEntity opts into.
                 if (candidate.isPickable() && candidate != this.shooter) {
                     float slack = 0.3F;
@@ -131,7 +131,7 @@ public class EntityChopperMine extends CompatEntity {
         // 1.7 assigns posX/Y/Z directly and never calls setPosition, so its AABB stays at the world origin
         // (STALE_BOX); the proximity sweep above reproduces that. setPos here only keeps tracking and
         // rendering on the mine.
-        // 1.7: raw integration, no collision resolution - flies through geometry until the air check fires
+        // 1.7: raw integration, no collision resolution, so it flies through geometry until the air check fires
         this.setPos(getX() + motion.x, getY() + motion.y, getZ() + motion.z);
 
         if (level().isClientSide()) {

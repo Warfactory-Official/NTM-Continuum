@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the vacuum distiller — 1.7.10 {@code ContainerMachineVacuumDistill} layout (176×238), 12 machine
+ * Menu for the vacuum distiller, 1.7.10 {@code ContainerMachineVacuumDistill} layout (176×238), 12 machine
  * slots. Slots 1/2 (input canisters) are 1.7's {@code SlotDeprecated} (input requires pressurisation):
  * they accept nothing and are neither drawn nor hoverable.
  */

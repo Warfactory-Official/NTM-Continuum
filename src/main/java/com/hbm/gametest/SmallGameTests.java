@@ -10,10 +10,12 @@ import com.hbm.entity.projectile.EntityArtilleryShell;
 import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.handler.ability.IWeaponAbility;
 import com.hbm.handler.radiation.ChunkRadiationManager;
+import com.hbm.items.ModGunItems;
 import com.hbm.items.ModZirnoxItems;
 import com.hbm.items.machine.ZirnoxFuel;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.potion.ModEffects;
+import com.hbm.world.gen.NTMStructureDeclarations;
 import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
 import dev.golem.core.gametest.GameTestHelpers;
@@ -30,6 +32,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -42,7 +45,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Set;
 
 /**
- * Wave 2 small items (2026-10-04, History §19ek-small), each against original-hbm (1.7.10).
+ * Small items, each checked against 1.7.
  */
 public final class SmallGameTests {
 
@@ -171,7 +174,7 @@ public final class SmallGameTests {
         BlockPos rel = new BlockPos(2, 1, 2);
         BlockPos abs = helper.absolutePos(rel);
         double before = ChunkRadiationManager.proxy.getRadiation(level, abs);
-        net.minecraft.world.entity.Mob pig = helper.spawn(EntityType.PIG, rel);
+        Mob pig = helper.spawn(EntityType.PIG, rel);
         pig.setNoAi(true); // a wandering pig can leave the 2.5-block aura within 40 ticks
         EntityZirnoxDebris debris = helper.spawn(ModEntities.ZIRNOX_DEBRIS.get(), new Vec3(2.5, 1.1, 3.5));
         debris.setDebrisType(EntityZirnoxDebris.DebrisType.ELEMENT);
@@ -191,7 +194,7 @@ public final class SmallGameTests {
     /** The lock-on target is stored as the entity's UUID (never its network id) and resolves back on the server. */
     private static void lockon(GameTestHelper helper) {
         LivingEntity pig = helper.spawn(EntityType.PIG, new BlockPos(1, 1, 1));
-        ItemStack stinger = new ItemStack(com.hbm.items.ModGunItems.gun_stinger.get());
+        ItemStack stinger = new ItemStack(ModGunItems.gun_stinger.get());
         ItemGunBaseNT.setLockonTarget(stinger, pig);
         helper.assertTrue(pig.getUUID().toString().equals(ItemGunBaseNT.getLockonTarget(stinger)),
                 "lockontarget is not the target's UUID: " + ItemGunBaseNT.getLockonTarget(stinger));
@@ -237,16 +240,16 @@ public final class SmallGameTests {
         String[] spawns = {"dish", "water_pump", "factory", "crane", "plane1", "plane2", "forest_post", "forestchem",
                 "tower_base", "labolatory", "radio", "broadcaster_tower", "spire"};
         for (String biome : new String[] {"minecraft:meadow", "minecraft:grove", "minecraft:snowy_slopes", "minecraft:cherry_grove"}) {
-            var row = com.hbm.world.gen.NTMStructureDeclarations.legacy(biome);
+            var row = NTMStructureDeclarations.legacy(biome);
             helper.assertTrue(row != null, biome + " has no table row");
             for (String spawn : spawns) {
-                var predicate = com.hbm.world.gen.NTMStructureDeclarations.predicate(spawn);
+                var predicate = NTMStructureDeclarations.predicate(spawn);
                 helper.assertTrue(predicate == null || !predicate.test(row), spawn + " may start in " + biome + " (buried below its terrain)");
             }
         }
         // a real 1.7 plains biome still takes them
-        helper.assertTrue(com.hbm.world.gen.NTMStructureDeclarations.predicate("dish").test(
-                com.hbm.world.gen.NTMStructureDeclarations.legacy("minecraft:plains")), "dish no longer starts in plains");
+        helper.assertTrue(NTMStructureDeclarations.predicate("dish").test(
+                NTMStructureDeclarations.legacy("minecraft:plains")), "dish no longer starts in plains");
         helper.succeed();
     }
 }

@@ -91,7 +91,7 @@ public final class ContainerMachineDiFurnaceRTG extends CompatContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return com.hbm.inventory.container.Containers.stillValidMultiblock(access, player,
+        return Containers.stillValidMultiblock(access, player,
                 ModProduction2Blocks.MACHINE_DIFURNACE_RTG.get());
     }
 

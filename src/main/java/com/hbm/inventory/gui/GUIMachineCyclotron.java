@@ -1,7 +1,10 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMachineCyclotron;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -11,10 +14,10 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.Optional;
 
 /** Cyclotron screen, 1.7 {@code GUIMachineCyclotron} ({@code machine/gui_cyclotron.png}, 190x215). */
-public class GUIMachineCyclotron extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineCyclotron>
+public class GUIMachineCyclotron extends CompatContainerScreen<ContainerMachineCyclotron>
         implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_cyclotron.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/machine/gui_cyclotron.png");
 
     public GUIMachineCyclotron(ContainerMachineCyclotron menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 190, 215);
@@ -74,7 +77,7 @@ public class GUIMachineCyclotron extends dev.golem.core.gui.CompatContainerScree
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return menu.getCyclotron();
     }
 }

@@ -2,12 +2,15 @@ package com.hbm.gametest;
 
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
+import com.hbm.api.redstoneoverradio.RORFunctionException;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.machine.albion.BlockPASource;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.ParticleAcceleratorRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemPACoil;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.albion.IParticleUser;
@@ -26,6 +29,7 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -33,7 +37,7 @@ import java.io.InputStream;
 
 /**
  * Behavioural contracts for the Albion particle accelerator. The beam is a server-side walk rather than
- * an entity, so most of these drive one component at a time with a hand-made {@link Particle} — that is
+ * an entity, so most of these drive one component at a time with a hand-made {@link Particle}: that is
  * the same call sequence {@link TileEntityPASource#steppy()} makes, and it keeps each test inside one
  * gametest plot.
  */
@@ -62,14 +66,14 @@ public final class AlbionGameTests {
         return new Particle(source, pos, dir, ItemStack.EMPTY, ItemStack.EMPTY);
     }
 
-    // --- structure ---
+    // Structure
 
     public static void structure(GameTestHelper helper) {
         ForgeDirection beam = beam();
 
         TileEntityPASource source = place(helper, new BlockPos(9, 3, 9), ModMachineBlocks.pa_source.get(), TileEntityPASource.class);
         BlockPos core = source.getBlockPos();
-        com.hbm.blocks.machine.albion.BlockPASource block = ModMachineBlocks.pa_source.get();
+        BlockPASource block = ModMachineBlocks.pa_source.get();
 
         helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), core)),
                 "The particle source core must resolve to itself");
@@ -283,8 +287,8 @@ public final class AlbionGameTests {
                 "The detector must spend the empty capsule the product needs");
 
         Particle unknown = particleAt(source, entry, beam);
-        unknown.input1 = new ItemStack(net.minecraft.world.item.Items.STONE);
-        unknown.input2 = new ItemStack(net.minecraft.world.item.Items.STONE);
+        unknown.input1 = new ItemStack(Items.STONE);
+        unknown.input2 = new ItemStack(Items.STONE);
         unknown.momentum = 100_000;
         detector.onEnter(unknown, beam);
         helper.assertTrue(source.state == PAState.CRASH_NORECIPE,
@@ -366,7 +370,7 @@ public final class AlbionGameTests {
         helper.succeed();
     }
 
-    // --- redstone over radio ---
+    // Redstone over radio
 
     public static void redstoneOverRadio(GameTestHelper helper) {
         TileEntityPASource source = place(helper, new BlockPos(9, 3, 9), ModMachineBlocks.pa_source.get(), TileEntityPASource.class);
@@ -398,7 +402,7 @@ public final class AlbionGameTests {
         boolean rejected = false;
         try {
             dipole.runRORFunction(IRORInteractive.PREFIX_FUNCTION + "setthreshold", new String[]{"-5"});
-        } catch (com.hbm.api.redstoneoverradio.RORFunctionException e) {
+        } catch (RORFunctionException e) {
             rejected = true;
         }
         helper.assertTrue(rejected && dipole.threshold == 12_345,
@@ -426,7 +430,7 @@ public final class AlbionGameTests {
         helper.succeed();
     }
 
-    // --- content ---
+    // Content
 
     public static void recipes(GameTestHelper helper) {
         ParticleAcceleratorRecipes.register();
@@ -474,12 +478,12 @@ public final class AlbionGameTests {
     }
 
     public static void coils(GameTestHelper helper) {
-        helper.assertTrue(com.hbm.items.machine.ItemPACoil.typeOf(new ItemStack(ModItems.pa_coil_gold.get()))
-                        == com.hbm.items.machine.ItemPACoil.EnumCoilType.GOLD,
+        helper.assertTrue(ItemPACoil.typeOf(new ItemStack(ModItems.pa_coil_gold.get()))
+                        == ItemPACoil.EnumCoilType.GOLD,
                 "The gold coil item must resolve to its grade");
-        helper.assertTrue(com.hbm.items.machine.ItemPACoil.typeOf(new ItemStack(ModItems.particle_amat.get())) == null,
+        helper.assertTrue(ItemPACoil.typeOf(new ItemStack(ModItems.particle_amat.get())) == null,
                 "A non-coil item must not resolve to a coil grade");
-        helper.assertTrue(com.hbm.items.machine.ItemPACoil.EnumCoilType.CHLOROPHYTE.diDistMin == 51,
+        helper.assertTrue(ItemPACoil.EnumCoilType.CHLOROPHYTE.diDistMin == 51,
                 "The chlorophyte coil must keep its 51-block minimum side length");
         helper.succeed();
     }
@@ -526,7 +530,7 @@ public final class AlbionGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        return dev.golem.core.gametest.GameTestHelpers.resourceExists(AlbionGameTests.class, path);
+        return GameTestHelpers.resourceExists(AlbionGameTests.class, path);
     }
 
     /** Every accelerator component the beam walks through has to be reachable as an {@link IParticleUser}. */

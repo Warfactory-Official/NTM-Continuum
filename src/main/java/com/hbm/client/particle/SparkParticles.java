@@ -12,7 +12,9 @@ import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.WorldEffects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -126,7 +128,7 @@ public final class SparkParticles {
             double lastY = motionY;
             Vec3 from = new Vec3(x, y, z);
             Vec3 to = from.add(motionX, motionY, motionZ);
-            net.minecraft.world.entity.Entity viewer = Minecraft.getInstance().player;
+            Entity viewer = Minecraft.getInstance().player;
             if (viewer == null) return false;
             // the viewer only supplies the collision context (scaffolding and the like); block shapes are what count
             BlockHitResult hit = level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, viewer));
@@ -140,7 +142,7 @@ public final class SparkParticles {
                     case X -> motionX = 0;
                     case Z -> motionZ = 0;
                     case Y -> {
-                        onGround = hit.getDirection() == net.minecraft.core.Direction.UP;
+                        onGround = hit.getDirection() == Direction.UP;
                         motionY = 0;
                     }
                 }

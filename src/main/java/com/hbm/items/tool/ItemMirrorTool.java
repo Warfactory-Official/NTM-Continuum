@@ -1,10 +1,9 @@
 package com.hbm.items.tool;
 
-import com.hbm.blocks.machine.solar.MachineSolarBoiler;
-import com.hbm.blocks.machine.solar.SolarMirror;
+import com.hbm.blocks.machine.MachineSolarBoiler;
+import com.hbm.blocks.machine.SolarMirror;
 import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.items.solar.SolarDataComponents;
-import com.hbm.tileentity.machine.solar.TileEntitySolarMirror;
+import com.hbm.tileentity.machine.TileEntitySolarMirror;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
@@ -18,6 +17,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
+import com.hbm.items.ModDataComponents;
 
 /** The old solar-boiler/mirror coordinate linker. */
 public class ItemMirrorTool extends CompatItem {
@@ -46,7 +46,7 @@ public class ItemMirrorTool extends CompatItem {
             BlockPos core = MultiblockSurface.coreOfAny(level, clicked);
             if (core != null && !level.isClientSide()) {
                 // The legacy mirror aims at one block above the boiler core, then resolves tY - 1.
-                SolarDataComponents.MIRROR_TARGET.set(stack, core.above());
+                ModDataComponents.MIRROR_TARGET.set(stack, core.above());
                 if (player != null) {
                     player.sendSystemMessage(Component.translatable("item.hbm.mirror_tool.linked")
                             .withStyle(ChatFormatting.YELLOW));
@@ -56,10 +56,10 @@ public class ItemMirrorTool extends CompatItem {
         }
 
         if (!shifting && level.getBlockState(clicked).getBlock() instanceof SolarMirror
-                && SolarDataComponents.MIRROR_TARGET.has(stack)) {
+                && ModDataComponents.MIRROR_TARGET.has(stack)) {
             if (!level.isClientSide()
                     && level.getBlockEntity(clicked) instanceof TileEntitySolarMirror mirror) {
-                BlockPos target = SolarDataComponents.MIRROR_TARGET.getOr(stack, BlockPos.ZERO);
+                BlockPos target = ModDataComponents.MIRROR_TARGET.getOr(stack, BlockPos.ZERO);
                 double dx = clicked.getX() - target.getX();
                 double dy = clicked.getY() - target.getY();
                 double dz = clicked.getZ() - target.getZ();

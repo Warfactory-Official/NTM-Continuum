@@ -5,6 +5,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.pile.TileEntityPileBaseMK2;
 import com.hbm.tileentity.machine.pile.TileEntityPileCore;
 import com.hbm.tileentity.machine.pile.TileEntityPileCore.PileOrientation;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -18,9 +19,9 @@ import net.minecraft.world.phys.Vec3;
  * whole box into a live pile with that cell as its core.
  *
  * <p>The measurement runs outward from the clicked block, so where the player drills decides where the
- * core sits — and with it which way the fuel channels run and how deep they are.
+ * core sits, and with it which way the fuel channels run and how deep they are.
  */
-public class BlockPileBrick extends dev.golem.core.world.CompatBlock implements IToolable {
+public class BlockPileBrick extends CompatBlock implements IToolable {
 
     public static final int MIN_V_SIZE = 5;
     public static final int MIN_H_SIZE = 5;

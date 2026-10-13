@@ -5,10 +5,16 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.hbm.Constants;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.machine.ItemFluidTank;
+import com.hbm.items.special.ItemCell;
 import com.mojang.serialization.JsonOps;
 import dev.golem.core.Ids;
 import dev.golem.core.data.DataFiles;
 import dev.golem.core.world.ItemStacks;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.Locale;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -76,10 +82,10 @@ public class ItemPool {
     private static void apply(Map<String, List<JsonElement>> stacks) {
         List<String> ids = new ArrayList<>(stacks.keySet());
         // HBM's own rows first (1.7's order), then every other namespace in id order
-        ids.sort(java.util.Comparator.comparing((String id) -> !id.startsWith(Constants.MOD_ID + ":")).thenComparing(id -> id));
-        Map<String, JsonArray> merged = new java.util.LinkedHashMap<>();
+        ids.sort(Comparator.comparing((String id) -> !id.startsWith(Constants.MOD_ID + ":")).thenComparing(id -> id));
+        Map<String, JsonArray> merged = new LinkedHashMap<>();
         for (String id : ids) {
-            String pool = id.substring(id.indexOf(':') + 1).toUpperCase(java.util.Locale.ROOT);
+            String pool = id.substring(id.indexOf(':') + 1).toUpperCase(Locale.ROOT);
             for (JsonElement file : stacks.get(id)) {
                 if (!file.isJsonObject()) continue;
                 PoolFile parsed = PoolFile.read(file.getAsJsonObject());
@@ -89,7 +95,7 @@ public class ItemPool {
             }
         }
         synchronized (ItemPool.class) {
-            raw = java.util.Collections.unmodifiableMap(merged);
+            raw = Collections.unmodifiableMap(merged);
             decoded = false;
         }
     }
@@ -104,7 +110,7 @@ public class ItemPool {
     private static synchronized void decode() {
         if (decoded || decodeWith == null) return;
         POOLS.clear();
-        RegistryOps<JsonElement> ops = net.minecraft.resources.RegistryOps.create(JsonOps.INSTANCE, decodeWith);
+        RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, decodeWith);
         for (Map.Entry<String, JsonArray> pool : raw.entrySet()) {
             new ItemPool(pool.getKey()).pool = body(pool.getValue(), ops);
         }
@@ -115,7 +121,7 @@ public class ItemPool {
     public static List<Entry> read(HolderLookup.Provider registries, String name) {
         JsonArray pool = raw.get(name);
         if (pool == null) throw new IllegalArgumentException("no item pool " + name + " in data/*/" + FOLDER);
-        return body(pool, net.minecraft.resources.RegistryOps.create(JsonOps.INSTANCE, registries));
+        return body(pool, RegistryOps.create(JsonOps.INSTANCE, registries));
     }
 
     /** Every pool's merged rows as loaded, by pool name. */
@@ -166,8 +172,8 @@ public class ItemPool {
 
     private static @Nullable ItemStack filled(ItemStack stack, com.hbm.inventory.fluid.@Nullable FluidType fluid) {
         if (fluid == null || fluid == Fluids.NONE) return null;
-        if (stack.getItem() instanceof com.hbm.items.special.ItemCell) return com.hbm.items.special.ItemCell.getFullCell(fluid);
-        if (stack.getItem() instanceof com.hbm.items.machine.ItemFluidTank tank) return tank.make(fluid, tank.capacity);
+        if (stack.getItem() instanceof ItemCell) return ItemCell.getFullCell(fluid);
+        if (stack.getItem() instanceof ItemFluidTank tank) return tank.make(fluid, tank.capacity);
         return null;
     }
 

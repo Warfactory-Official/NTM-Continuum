@@ -1,12 +1,14 @@
 package com.hbm.tileentity.deco;
 
 import com.hbm.entity.missile.EntityBobmazon;
+import com.hbm.extprop.HbmPlayerProps;
 import com.hbm.interfaces.IRepairable;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ItemEnums.EnumCircuitType;
+import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemKitCustom;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModDungeonBlockEntities;
@@ -20,6 +22,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -27,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.phys.AABB;
 
 /**
  * 1.7 {@code TileEntityLanternBehemoth}: the old lantern's core. A broken lantern ({@code isBroken}, set by the
@@ -54,18 +58,18 @@ public class TileEntityLanternBehemoth extends TileEntityLoadedBase implements I
 
         if (t == 0) {
             // 1.7: the first player within 10 blocks decides the bonus - alexandrite instead of diamonds at reputation >= 10
-            java.util.List<net.minecraft.world.entity.player.Player> players = level.getEntitiesOfClass(
-                    net.minecraft.world.entity.player.Player.class, new net.minecraft.world.phys.AABB(
+            List<Player> players = level.getEntitiesOfClass(
+                    Player.class, new AABB(
                             pos.getX() - 10, pos.getY() - 10, pos.getZ() - 10, pos.getX() + 11, pos.getY() + 11, pos.getZ() + 11));
-            net.minecraft.world.entity.player.Player first = players.isEmpty() ? null : players.get(0);
-            boolean bonus = first != null && com.hbm.extprop.HbmPlayerProps.getReputation(first) >= 10;
+            Player first = players.isEmpty() ? null : players.get(0);
+            boolean bonus = first != null && HbmPlayerProps.getReputation(first) >= 10;
             EntityBobmazon shuttle = new EntityBobmazon(level);
             shuttle.setPos(pos.getX() + 0.5 + level.getRandom().nextGaussian() * 10, 300,
                     pos.getZ() + 0.5 + level.getRandom().nextGaussian() * 10);
             shuttle.payload = ItemKitCustom.create("Supplies", null, 0xffffff, 0x008000,
                     ModIntermediateItems.circuit(EnumCircuitType.BASIC, 4 + level.getRandom().nextInt(4)),
                     ModIntermediateItems.circuit(EnumCircuitType.ADVANCED, 4 + level.getRandom().nextInt(2)),
-                    bonus ? new ItemStack(com.hbm.items.ModItems.gem_alexandrite.get()) : new ItemStack(Items.DIAMOND, 6 + level.getRandom().nextInt(6)),
+                    bonus ? new ItemStack(ModItems.gem_alexandrite.get()) : new ItemStack(Items.DIAMOND, 6 + level.getRandom().nextInt(6)),
                     new ItemStack(Items.POPPY));
             level.addFreshEntity(shuttle);
         }

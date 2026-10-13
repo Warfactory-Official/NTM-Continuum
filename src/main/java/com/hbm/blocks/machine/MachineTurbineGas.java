@@ -6,6 +6,7 @@ import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineTurbineGas;
@@ -42,7 +43,7 @@ public class MachineTurbineGas extends BlockMultiblockMachine
     @Override
     public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
         return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityMachineTurbineGas turbine
-                && IEnergyConnectorBlock.isPort(new com.hbm.lib.DirPos[]{turbine.getPowerPos()}, pos, dir);
+                && IEnergyConnectorBlock.isPort(new DirPos[]{turbine.getPowerPos()}, pos, dir);
     }
 
     @Override

@@ -170,7 +170,7 @@ public class EntityGlyphidDigger extends EntityGlyphid {
                 float k = b.getExplosionResistance();
 
                 // 1.7: one BlockDummyable covered the whole footprint, which the port splits into siblings
-                if (k < concreteResistance() && dev.golem.core.world.Compat.isSolidRender(state)
+                if (k < concreteResistance() && Compat.isSolidRender(state)
                         && !(b instanceof BlockMultiblockCore) && !(b instanceof BlockMultiblockCell)
                         && level().getBlockEntity(pos) == null && level() instanceof ServerLevel server
                         && Compat.canEntityDestroyBlock(server, pos, state, this)) {

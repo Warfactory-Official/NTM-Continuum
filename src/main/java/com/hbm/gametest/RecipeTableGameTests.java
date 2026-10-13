@@ -2,15 +2,19 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
+import com.hbm.inventory.recipes.FractionRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
 import dev.golem.core.gametest.GameTests;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import net.minecraft.gametest.framework.GameTestHelper;
 
 /**
- * Machine recipes as datapack tables (§19fa-m1): the chemical plant table loads from {@code data/hbm/recipe/chemical_plant}
+ * Machine recipes as datapack tables: the chemical plant table loads from {@code data/hbm/recipe/chemical_plant}
  * exactly as converted from the former Java table, and every row survives the file format and the client sync format.
  */
 public final class RecipeTableGameTests {
@@ -38,9 +42,9 @@ public final class RecipeTableGameTests {
                 + "lightoil_vacuum:kerosene70,reformgas30 egg:cholesterol50,radiosolvent50 oil_coker:crackoil30,heatingoil70 "
                 + "naphtha_coker:naphtha_crack75,lightoil_crack25 gas_coker:aromatics25,carbondioxide75 "
                 + "chlorocalcite_mix:chlorocalcite_cleaned50,colloid50 bauxite_solution:redmud50,sodium_aluminate50";
-        java.util.Set<String> want = new java.util.TreeSet<>(java.util.Arrays.asList(expected.split(" ")));
-        java.util.Set<String> have = new java.util.TreeSet<>();
-        for (var e : com.hbm.inventory.recipes.FractionRecipes.getAll().entrySet()) {
+        Set<String> want = new TreeSet<>(Arrays.asList(expected.split(" ")));
+        Set<String> have = new TreeSet<>();
+        for (var e : FractionRecipes.getAll().entrySet()) {
             have.add(e.getKey().getKey() + ":" + e.getValue().left().type.getKey() + e.getValue().left().fill + ","
                     + e.getValue().right().type.getKey() + e.getValue().right().fill);
         }
@@ -51,10 +55,10 @@ public final class RecipeTableGameTests {
     public static void chemicalPlant(GameTestHelper helper) {
         ChemicalPlantRecipes plant = ChemicalPlantRecipes.INSTANCE;
         plant.registerRecipes();
-        // 74 rows converted from the Java table on 2026-10-08 (1.7 curated, fuel additives, the generated 1.12.2 bulk)
+        // 74 rows from the Java table (1.7 curated, fuel additives, the generated 1.12.2 bulk)
         helper.assertTrue(plant.recipeOrderedList.size() == 74,
                 "chemical plant table holds " + plant.recipeOrderedList.size() + " rows, expected 74");
-        // 1.7's first row (the table is in 1.7's registration order since History §19fc)
+        // 1.7's first row (the table is in 1.7's registration order)
         helper.assertTrue(plant.recipeOrderedList.get(0).getInternalName().equals("chem.hydrogen"),
                 "chemical plant display order changed: first row " + plant.recipeOrderedList.get(0).getInternalName());
         String oxygen = GenericRecipeCodec.describe(plant.getRecipe("chem.oxygen"));

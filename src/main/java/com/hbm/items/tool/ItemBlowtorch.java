@@ -7,6 +7,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -23,9 +24,9 @@ import net.minecraft.world.level.block.Block;
 import java.util.Locale;
 
 /**
- * Gas blowtorch — the {@link IToolable.ToolType#TORCH} tool. Right-clicking a {@link IToolable} block
- * welds it into its upgraded form, spending {@link #COST} mB of {@link Fluids#GAS}. Its one job in this
- * wave is turning a raw fusion component into a welded BSCCO magnet coil.
+ * Gas blowtorch: the {@link IToolable.ToolType#TORCH} tool. Right-clicking a {@link IToolable} block
+ * welds it into its upgraded form, spending {@link #COST} mB of {@link Fluids#GAS}. Its one job is
+ * turning a raw fusion component into a welded BSCCO magnet coil.
  *
  * <p>Reduced from the 1.12.2 original, which also backed the acetylene torch (a second fuel pair) and
  * spawned a Tau particle burst on use. The gas variant, its fill semantics and the 250&nbsp;mB cost are
@@ -74,12 +75,11 @@ public class ItemBlowtorch extends CompatItem implements IFillableItem {
         ModDataComponents.fluidAmount(stack, Math.max(0, Math.min(amount, MAX_FILL)));
     }
 
-    // --- IFillableItem ---
+    // IFillableItem
 
     /**
-     * Absence of the component means <b>full</b>, not empty — the 1.12.2 original lazily ran
-     * {@code initNBT} on first read, which filled a pristine torch to capacity, so one taken from the
-     * creative tab or crafted is ready to use. Defaulting to zero instead makes every new torch inert.
+     * Absence of the component means <b>full</b>, not empty: the 1.12.2 original lazily ran {@code initNBT} on
+     * first read, which filled a pristine torch to capacity. Defaulting to zero would make every new torch inert.
      */
     @Override public int getFill(ItemStack stack) {
         return Math.max(0, ModDataComponents.FLUID_AMOUNT.getOr(stack, MAX_FILL));
@@ -97,7 +97,7 @@ public class ItemBlowtorch extends CompatItem implements IFillableItem {
         return amount - added;
     }
 
-    // --- display ---
+    // Display
 
     @Override public boolean isBarVisible(ItemStack stack) { return getFill(stack) < MAX_FILL; }
     @Override public int getBarWidth(ItemStack stack) { return Math.round(getFill(stack) * 13.0F / MAX_FILL); }
@@ -105,7 +105,7 @@ public class ItemBlowtorch extends CompatItem implements IFillableItem {
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-                                         java.util.List<Component> tooltip, TooltipFlag flag) {
+                                         List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal(String.format(Locale.US, "%,d / %,d mB", getFill(stack), MAX_FILL))
                 .withStyle(ChatFormatting.YELLOW));
     }

@@ -46,7 +46,7 @@ import java.util.UUID;
  *       this entity, carrying the block's six parts, placer and facing, and already on the player's lead.
  *   <li>Vanilla does the rest of the carrying: sneak-using the happy ghast moves the lead over
  *       ({@code Entity.interact}), and {@link Leashable#tickLeash} pulls it along on four ropes, as for a boat.
- *   <li>When a happy ghast loses it — shears on the bomb or the ghast, the lead snapping, the ghast dying — it
+ *   <li>When a happy ghast loses it (shears on the bomb or the ghast, the lead snapping, the ghast dying) it
  *       {@linkplain #arm() arms} and falls by the custom nuke's drop rule ({@code EntityFallingNuke}, the
  *       {@code custom_fall} upgrade), detonating as the Fat Man ({@link NukeMan#detonate}) where it lands.
  *   <li>Released by anything else (a player, a fence knot, a ghast merely unloaded) it stays a harmless carried bomb;
@@ -66,8 +66,8 @@ public class EntityRiggedFatMan extends Entity implements Leashable {
      * The model's turn inside the entity frame: +90 degrees about Y puts the OBJ's nose (-X) on the entity's +Z, which
      * is forward for every entity (yRot 0 looks along +Z). A happy ghast's harness corners and these rope ends share the
      * boat's layout ({@link Leashable#createQuadLeashOffsets}: length on Z, width on X), so the ropes settle the bomb
-     * with its yaw on the ghast's and the nose facing the way the ghast faces (user, 2026-10-05). The stored heading
-     * takes the turn back off ({@link #yRotForModelYaw}), so lifting the bomb off its block still does not move it.
+     * with its yaw on the ghast's and the nose facing the way the ghast faces. The stored heading takes the turn
+     * back off ({@link #yRotForModelYaw}), so lifting the bomb off its block does not move it.
      */
     public static final float MODEL_YAW = 90F;
 
@@ -110,7 +110,7 @@ public class EntityRiggedFatMan extends Entity implements Leashable {
         this.yRotO = getYRot();
     }
 
-    // --- block <-> entity ---
+    // Block <-> entity
 
     /** {@code BombObjRenderer}'s Fat Man yaw map: legacy facing 2 -> 270, 3 -> 90, 4 -> 0, 5 -> 180. */
     static float yawForFacing(int facing) {
@@ -160,13 +160,13 @@ public class EntityRiggedFatMan extends Entity implements Leashable {
         return true;
     }
 
-    // --- falling (the custom nuke's drop) ---
+    // Falling (the custom nuke's drop)
 
     public boolean isFalling() {
         return entityData.get(FALLING);
     }
 
-    /** Lets go of the bomb as a drop: from now on it falls and detonates on the first non-air block. */
+    /** Lets go of the bomb as a drop: it falls and detonates on the first non-air block. */
     void arm() {
         if (isFalling()) return;
         entityData.set(FALLING, true);
@@ -195,7 +195,7 @@ public class EntityRiggedFatMan extends Entity implements Leashable {
         }
     }
 
-    // --- carried ---
+    // Carried
 
     /** Boat-like in air (AbstractBoat.floatBoat, IN_AIR): gravity 0.04 and horizontal drag 0.9; it sinks in water. */
     private void tickCarried() {
@@ -234,7 +234,7 @@ public class EntityRiggedFatMan extends Entity implements Leashable {
         return interpolation;
     }
 
-    // --- leash ---
+    // Leash
 
     @Override
     public Leashable.@Nullable LeashData getLeashData() {
@@ -289,12 +289,12 @@ public class EntityRiggedFatMan extends Entity implements Leashable {
         return LEASH_OFFSET;
     }
 
-    // --- interaction ---
+    // Interaction
 
     /**
      * Sneak + empty hand on a loose bomb sets it back down as the block. Any other sneak use is swallowed, so the bomb
-     * never becomes a leash holder for the player's other leashed mobs (vanilla's first branch); everything else —
-     * leads, shears, untying — is vanilla.
+     * never becomes a leash holder for the player's other leashed mobs (vanilla's first branch). Leads, shears and
+     * untying are vanilla.
      */
     @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
@@ -341,7 +341,7 @@ public class EntityRiggedFatMan extends Entity implements Leashable {
         return distance < 25000D; // 1.7 EntityFallingNuke.isInRangeToRenderDist
     }
 
-    // --- data ---
+    // Data
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {

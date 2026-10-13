@@ -2,6 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import dev.golem.core.dejson.BlockStates;
+import java.lang.reflect.Method;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.level.block.Block;
@@ -17,26 +18,22 @@ import java.util.Set;
 /**
  * Checks that a block carrying orientation has <em>said</em> what a rotation does to it.
  *
- * <p>{@code Block.rotate} defaults to returning the state unchanged. Where orientation lives in a
- * property vanilla recognises, vanilla's own blocks override it; a mod block that does not is
- * indistinguishable from one that has decided not to turn, and the difference shows up only when a
- * structure template is placed at a rotation — a cable whose arms face the authored direction while
- * its neighbours face the placed one is a run that is visibly broken and a network that never forms.
+ * <p>{@code Block.rotate} defaults to returning the state unchanged. A mod block that does not override it is
+ * indistinguishable from one that decided not to turn, and the difference shows up only when a structure template
+ * is placed at a rotation: a cable whose arms face the authored direction while its neighbours face the placed one
+ * is visibly broken and its network never forms.
  *
- * <p>So the assertion is not "every directional block turns". It is "every directional block states
- * what it does", which is a question with an answer: did any class between this block and
- * {@code Block} declare {@code rotate}? A stated no-op passes — {@code RBMKBase} returns the state
- * unchanged because an RBMK column is symmetric, and that is a decision. Silence fails.
+ * <p>So the assertion is not "every directional block turns" but "every directional block states what it does":
+ * did any class between this block and {@code Block} declare {@code rotate}? A stated no-op passes
+ * ({@code RBMKBase} returns the state unchanged because an RBMK column is symmetric). Silence fails.
  *
- * <p>What counts as orientation is <em>measured, not listed</em>. Every vanilla block is driven
- * through its own {@code rotate}, and the property objects that move are what this version of the
- * game considers directional; any property whose values are {@link Direction}s counts too, by
- * definition. Identity rather than name matters: a chest's {@code type} rotates and a slab's
- * {@code type} does not, and they are different properties that happen to share a word.
+ * <p>What counts as orientation is <em>measured, not listed</em>. Every vanilla block is driven through its own
+ * {@code rotate}, and the property objects that move are what this version considers directional; any property
+ * whose values are {@link Direction}s counts too. Identity rather than name matters: a chest's {@code type}
+ * rotates and a slab's {@code type} does not.
  *
- * <p>The blind spot is a direction the block encodes as something else — an integer, a set of
- * booleans that vanilla does not also use. Nothing can measure that, which is the strongest argument
- * against encoding one that way.
+ * <p>The blind spot is a direction encoded as something else (an integer, a set of booleans vanilla does not also
+ * use), which nothing can measure.
  */
 public final class RotationGameTests {
 
@@ -108,7 +105,7 @@ public final class RotationGameTests {
      */
     private static boolean statesRotation(Block block) {
         for (Class<?> type = block.getClass(); type != null && type != Block.class; type = type.getSuperclass()) {
-            for (java.lang.reflect.Method method : type.getDeclaredMethods()) {
+            for (Method method : type.getDeclaredMethods()) {
                 if (method.getName().equals("rotate") && method.getParameterCount() == 2
                         && method.getParameterTypes()[0] == BlockState.class
                         && method.getParameterTypes()[1] == Rotation.class) {

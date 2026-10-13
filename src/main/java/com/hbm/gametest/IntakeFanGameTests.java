@@ -12,6 +12,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineIntake;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -25,6 +26,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
@@ -102,7 +104,7 @@ public final class IntakeFanGameTests {
         MachineFan.TileEntityFan fan = (MachineFan.TileEntityFan) helper.getLevel().getBlockEntity(pos);
         helper.assertTrue(fan != null, "Fan BlockEntity was not created");
 
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         helper.assertTrue(block.onScrew(helper.getLevel(), player, pos, Direction.NORTH,
                         Vec3.atCenterOf(pos), InteractionHand.MAIN_HAND, ToolType.SCREWDRIVER),
                 "Fan screwdriver action was rejected");
@@ -199,7 +201,7 @@ public final class IntakeFanGameTests {
         }
 
         @Override
-        public void applyFan(net.minecraft.world.level.Level level, BlockPos pos,
+        public void applyFan(Level level, BlockPos pos,
                              ForgeDirection direction, int distance) {
             calls++;
             BlowableBlock.distance = distance;

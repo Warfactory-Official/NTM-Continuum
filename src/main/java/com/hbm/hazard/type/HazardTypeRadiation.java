@@ -1,5 +1,6 @@
 package com.hbm.hazard.type;
 
+import dev.golem.core.hook.Hook;
 import java.util.List;
 
 import com.hbm.hazard.helper.HazardHelper;
@@ -7,6 +8,7 @@ import com.hbm.hazard.modifier.IHazardModifier;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
+import java.util.function.ToDoubleFunction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,14 +24,14 @@ public class HazardTypeRadiation implements IHazardType {
      * listeners' answers are summed. Plain HBM registers none; NTM: Space adds hbm-space's neutron activation, which
      * hbm-space's {@code HazardTypeRadiation} read from the stack's {@code ntmNeutron} tag at exactly these two points.
      */
-    public static final dev.golem.core.hook.Hook<java.util.function.ToDoubleFunction<ItemStack>> STACK_RADIATION =
-            dev.golem.core.hook.Hook.notifying();
+    public static final Hook<ToDoubleFunction<ItemStack>> STACK_RADIATION =
+            Hook.notifying();
 
     /** The sum of {@link #STACK_RADIATION} for {@code stack}; 0 with no listener. */
     public static double stackRadiation(final ItemStack stack) {
         if (STACK_RADIATION.isEmpty()) return 0D;
         double extra = 0D;
-        for (java.util.function.ToDoubleFunction<ItemStack> listener : STACK_RADIATION) extra += listener.applyAsDouble(stack);
+        for (ToDoubleFunction<ItemStack> listener : STACK_RADIATION) extra += listener.applyAsDouble(stack);
         return extra;
     }
 

@@ -102,7 +102,6 @@ public final class HbmScripts {
         });
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Materials from startup scripts
 
     /** Script materials' runtime numbers start here, far above HBM's 1.7 numbers and any addon's. */

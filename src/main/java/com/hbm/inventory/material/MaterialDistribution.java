@@ -25,9 +25,8 @@ import net.minecraft.world.item.Item;
  * The crucible, the foundry and the arc furnace read it through {@link Mats#getMaterialsFromItem}: a tag row (1.7
  * {@code registerOre}) is checked against the item's tags before the {@code c:<shape>/<material>} scan and replaces it,
  * an item row (1.7 {@code registerEntry}) adds to whatever the tags gave. A second row for the same item or tag replaces
- * the first in recipe-id order (1.7's {@code put}). The rows were converted once from the former Java table
- * ({@code Mats.ensureSmeltingEntries}, 1.7 {@code registerDefaults} restricted to ported content); the shape scan,
- * autogen items and scraps stay rules in {@link Mats}.
+ * the first in recipe-id order (1.7's {@code put}). The rows are 1.7's {@code registerDefaults} restricted to
+ * ported content; the shape scan, autogen items and scraps are rules in {@link Mats}.
  */
 public final class MaterialDistribution {
 

@@ -1,5 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.blocks.machine.MachineElectricFurnace;
 import com.hbm.inventory.container.ContainerMachineElectricFurnace;
@@ -18,9 +21,9 @@ import java.util.Optional;
  * client {@link TileEntityMachineElectricFurnace} (BufPacket); the flames follow the block's LIT state, as 1.7
  * checked for the {@code machine_electric_furnace_on} block.
  */
-public class GUIMachineElectricFurnace extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineElectricFurnace> implements IUpgradeInfoProviderSource {
+public class GUIMachineElectricFurnace extends CompatContainerScreen<ContainerMachineElectricFurnace> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_electric_furnace.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_electric_furnace.png");
 
     // 1.7 drawInfoPanel(guiLeft + 115, guiTop + 19, 8, 8, 8).
     private static final int INFO_X = 115, INFO_Y = 19;
@@ -79,7 +82,7 @@ public class GUIMachineElectricFurnace extends dev.golem.core.gui.CompatContaine
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getFurnace();
     }
 }

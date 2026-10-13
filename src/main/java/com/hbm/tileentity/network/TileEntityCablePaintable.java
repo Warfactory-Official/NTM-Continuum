@@ -1,5 +1,6 @@
 package com.hbm.tileentity.network;
 
+import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
 
 import com.hbm.interfaces.ICopiable;
@@ -70,7 +71,7 @@ public class TileEntityCablePaintable extends TileEntityCableClassic implements 
 
     private static @Nullable Block resolve(String id) {
         if (id.isEmpty()) return null;
-        Block found = BuiltInRegistries.BLOCK.getOptional(dev.golem.core.Ids.parse(id)).orElse(null);
+        Block found = BuiltInRegistries.BLOCK.getOptional(Ids.parse(id)).orElse(null);
         return found == null || found == Blocks.AIR ? null : found;
     }
 
@@ -83,8 +84,8 @@ public class TileEntityCablePaintable extends TileEntityCableClassic implements 
 
     @Override
     public void pasteSettings(CompoundTag nbt, int index, Level level, Player player, BlockPos pos) {
-        if (dev.golem.core.data.Tags.contains(nbt, "paintblock")) {
-            setPaint(resolve(dev.golem.core.data.Tags.getStringOr(nbt, "paintblock", "")));
+        if (Tags.contains(nbt, "paintblock")) {
+            setPaint(resolve(Tags.getStringOr(nbt, "paintblock", "")));
         }
     }
 }

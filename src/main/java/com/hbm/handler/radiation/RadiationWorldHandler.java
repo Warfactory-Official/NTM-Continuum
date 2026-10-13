@@ -1,9 +1,13 @@
 package com.hbm.handler.radiation;
 
+import com.hbm.api.data.WorldDataMaps;
 import com.hbm.blocks.ModFalloutBlocks;
+import com.hbm.config.RadiationConfig;
+import com.hbm.util.SavedIds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoublePlantBlock;
@@ -17,15 +21,15 @@ import net.minecraft.world.level.levelgen.Heightmap;
 /**
  * The environmental-change half of the radiation system, ported from the fork's
  * {@code RadiationWorldHandler}: pockets holding ≥5 RAD are occasionally queued during the decay pass
- * (see {@code SectionRad.decay}); each server tick ONE queued pocket per level is drained here — its
+ * (see {@code SectionRad.decay}); each server tick ONE queued pocket per level is drained here. Its
  * section's 4096 blocks are sampled at 1-in-3, and any sampled surface block (top of the heightmap
- * column ± 1) belonging to that pocket decays: grass → dead grass, plants pop, leaves wither into
+ * column ± 1) belonging to that pocket decays: grass turns to dead grass, plants pop, leaves wither into
  * dead leaves.
  *
  * <p>Surface note: 1.12 keyed on the light/motion heightmap ({@code getHeightValue}); {@code MOTION_BLOCKING}
- * is the faithful analog — it ignores non-motion-blocking plants (tall grass, ferns, flowers), so every
- * surface grass block lands at {@code topY} and converts uniformly. (An earlier {@code WORLD_SURFACE} pass
- * counted those plants and left grass under 2-tall foliage permanently out-of-band → patchy, slow decay.)
+ * is the closest analog, and it ignores non-motion-blocking plants (tall grass, ferns, flowers), so every
+ * surface grass block lands at {@code topY} and converts uniformly. ({@code WORLD_SURFACE} is wrong here: it
+ * counts those plants and leaves grass under 2-tall foliage permanently out-of-band, giving patchy, slow decay.)
  */
 final class RadiationWorldHandler {
 
@@ -35,13 +39,12 @@ final class RadiationWorldHandler {
 
     /**
      * Drains up to {@link com.hbm.config.RadiationConfig#worldRad} queued pockets per level per tick and
-     * applies their sampled surface decay. Server thread only. The fork drained one pocket per tick, which
-     * crawled over a nuke-sized irradiated area; {@code worldRad} ("block operations per tick", default 10)
-     * is the config that was meant to govern this — draining several pockets per tick restores the
-     * throughput the original had.
+     * applies their sampled surface decay. Server thread only. {@code worldRad} ("block operations per tick",
+     * default 10) governs the count; the fork drained one pocket per tick, which crawls over a nuke-sized
+     * irradiated area.
      */
     static void handleWorldDestruction(RadiationSystemNT.WorldRadiationData data) {
-        int budget = Math.max(1, com.hbm.config.RadiationConfig.worldRad);
+        int budget = Math.max(1, RadiationConfig.worldRad);
         for (int n = 0; n < budget; n++) {
             if (!drainOnePocket(data)) return; // queue empty
         }
@@ -53,9 +56,9 @@ final class RadiationWorldHandler {
         if (key == null) return false;
         int cx = key[0], sy = key[1], cz = key[2], pocketIndex = key[3];
 
-        // Re-resolve the section — stale keys (chunk unloaded / section rebuilt since the roll) drop silently
+        // Re-resolve the section. Stale keys (chunk unloaded / section rebuilt since the roll) drop silently
         // but still count as a consumed poll (return true so the caller keeps draining the queue).
-        RadiationSystemNT.ChunkRad cr = data.chunks.get(net.minecraft.world.level.ChunkPos.pack(cx, cz));
+        RadiationSystemNT.ChunkRad cr = data.chunks.get(ChunkPos.pack(cx, cz));
         if (cr == null) return true;
         int idx = sy - data.minSectionY;
         if (idx < 0 || idx >= cr.sections.length) return true;
@@ -81,7 +84,7 @@ final class RadiationWorldHandler {
             // MOTION_BLOCKING is the faithful analog of 1.12's getHeightValue: it ignores non-motion-blocking
             // plants (tall grass, ferns, flowers) so a surface grass block is always at topY. WORLD_SURFACE
             // counted those plants, pushing topY above the ground and leaving grass under 2-tall plants
-            // permanently out-of-band → patchy, throttled decay.
+            // permanently out-of-band, giving patchy, throttled decay.
             int topY = chunk.getHeight(Heightmap.Types.MOTION_BLOCKING, lx, lz);
             if (myY < topY - 1 || myY > topY) continue;             // surface band only (top block ± 1)
 
@@ -99,11 +102,11 @@ final class RadiationWorldHandler {
 
         // A block named in the hbm:radiation_decay data map follows its value; the 1.7 rules below key on block
         // classes and tags, and stay the default for everything else.
-        com.hbm.api.data.WorldDataMaps.Decay decay = com.hbm.api.data.WorldDataMaps.RADIATION_DECAY.get(block);
+        WorldDataMaps.Decay decay = WorldDataMaps.RADIATION_DECAY.get(block);
         if (decay != null) {
             if (decay.to().isEmpty()) return;
             BlockState to = decay.chance() >= 1F || level.getRandom().nextFloat() < decay.chance()
-                    ? com.hbm.util.SavedIds.stateFromName(decay.to(), AIR) : AIR;
+                    ? SavedIds.stateFromName(decay.to(), AIR) : AIR;
             level.setBlock(pos, to, Block.UPDATE_CLIENTS);
             return;
         }

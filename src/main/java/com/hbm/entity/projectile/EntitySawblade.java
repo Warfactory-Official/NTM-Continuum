@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.ModEntities;
@@ -18,6 +19,8 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.AABB;
@@ -43,7 +46,7 @@ public class EntitySawblade extends CompatEntity {
     }
 
     @Override
-    protected void defineData(dev.golem.core.data.SynchedData data) {
+    protected void defineData(SynchedData data) {
         data.define(ORIENTATION, 0);
     }
 
@@ -90,9 +93,9 @@ public class EntitySawblade extends CompatEntity {
     }
 
     @Override
-    protected InteractionResult onInteract(net.minecraft.world.entity.player.Player player, InteractionHand hand) {
+    protected InteractionResult onInteract(Player player, InteractionHand hand) {
         if (level().isClientSide()) return InteractionResult.SUCCESS;
-        if (player.getInventory().add(new net.minecraft.world.item.ItemStack(ModItems.sawblade.get()))) discard();
+        if (player.getInventory().add(new ItemStack(ModItems.sawblade.get()))) discard();
         return InteractionResult.SUCCESS;
     }
 

@@ -3,6 +3,8 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerFusionBreeder;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder;
 import com.hbm.util.BobMathUtil;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.ChatFormatting;
@@ -14,10 +16,10 @@ import java.util.List;
 import java.util.Optional;
 
 /** Fusion breeder control panel, ported from 1.7 {@code GUIFusionBreeder} (176 x 200). */
-public class GUIFusionBreeder extends dev.golem.core.gui.CompatContainerScreen<ContainerFusionBreeder> {
+public class GUIFusionBreeder extends CompatContainerScreen<ContainerFusionBreeder> {
 
     private static final Identifier TEXTURE =
-            dev.golem.core.Ids.of("hbm", "textures/gui/reactors/gui_fusion_breeder.png");
+            Ids.of("hbm", "textures/gui/reactors/gui_fusion_breeder.png");
 
     public GUIFusionBreeder(ContainerFusionBreeder menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 200);

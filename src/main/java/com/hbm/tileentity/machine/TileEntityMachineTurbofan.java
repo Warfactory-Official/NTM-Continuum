@@ -1,5 +1,9 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.environment.Environment;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.client.sound.TurbofanSoundHandler;
+import com.hbm.sound.ModSounds;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
@@ -27,9 +31,11 @@ import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.MenuProvider;
@@ -103,7 +109,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
             if (fuel != null && fuel.grade() == FluidCombustion.FuelGrade.AERO) burnValue = fuel.energyPerBucket() / 1_000L;
 
             // hbm-space: without air nothing burns (com.hbm.api.environment.Environment)
-            if (amountToBurn > 0 && !com.hbm.api.environment.Environment.breatheAir(level, pos, amountToBurn)) amountToBurn = 0;
+            if (amountToBurn > 0 && !Environment.breatheAir(level, pos, amountToBurn)) amountToBurn = 0;
 
             // Odd but 1.7: any fluid in the tank burns, at zero output unless it is AERO-grade fuel. The fan spins, the
             // tank drains and the burn pollutes all the same; only the exhaust (below) needs a burn value.
@@ -140,7 +146,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
             fan.spin -= 360F;
             fan.lastSpin -= 360F;
         }
-        com.hbm.client.sound.TurbofanSoundHandler.tickLoop(fan);
+        TurbofanSoundHandler.tickLoop(fan);
     }
 
     private void updateFuelType() {
@@ -153,7 +159,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
     private void loadTank(Level level) {
         ItemStack in = inventory.getStackInSlot(0);
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (!in.isEmpty() && com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+        if (!in.isEmpty() && MachineFluidContainerIO.loadInfinite(tank, in)) {
             setChanged();
             return;
         }
@@ -177,7 +183,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         ForgeDirection dir = getFacing().getRotation(ForgeDirection.UP);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
         if (afterburner > 90 && level.getRandom().nextInt(30) == 0) {
-            level.playSound(null, worldPosition.above(), com.hbm.sound.ModSounds.TURBOFAN_DAMAGE.get(),
+            level.playSound(null, worldPosition.above(), ModSounds.TURBOFAN_DAMAGE.get(),
                     SoundSource.BLOCKS, 3.0F, 0.95F + level.getRandom().nextFloat() * 0.2F);
         }
         affectBox(level, exhaustBox(dir, rot, -3.5D, -19.5D, 1.5D), entity -> {
@@ -189,7 +195,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         });
         affectBox(level, exhaustBox(dir, rot, 3.5D, 8.5D, 1.5D), entity -> push(entity, dir));
         affectBox(level, exhaustBox(dir, rot, 3.5D, 3.75D, 1.5D), entity -> {
-            if (Compat.hurt(entity, (net.minecraft.server.level.ServerLevel) level, ModDamageSources.turbofan(level), 1000F)
+            if (Compat.hurt(entity, (ServerLevel) level, ModDamageSources.turbofan(level), 1000F)
                     && !entity.isAlive()
                     && entity instanceof LivingEntity) {
                 level.playSound(null, entity.blockPosition(), SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, SoundSource.BLOCKS,
@@ -205,7 +211,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         entity.setDeltaMovement(entity.getDeltaMovement().add(-dir.offsetX * 0.2D, 0D, -dir.offsetZ * 0.2D));
     }
 
-    private void affectBox(Level level, AABB box, java.util.function.Consumer<Entity> action) {
+    private void affectBox(Level level, AABB box, Consumer<Entity> action) {
         for (Entity entity : level.getEntitiesOfClass(Entity.class, box)) action.accept(entity);
     }
 
@@ -257,7 +263,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         return type == ItemMachineUpgrade.UpgradeType.AFTERBURN;
     }
     @Override public void provideInfo(ItemMachineUpgrade.UpgradeType type, int level, List<Component> info, boolean extendedInfo) {
-        info.add(IUpgradeInfoProvider.getStandardLabel(com.hbm.blocks.machine.ModMachineBlocks.machine_turbofan.get()));
+        info.add(IUpgradeInfoProvider.getStandardLabel(ModMachineBlocks.machine_turbofan.get()));
         if (type == ItemMachineUpgrade.UpgradeType.AFTERBURN) {
             info.add(Component.translatable(IUpgradeInfoProvider.KEY_EFFICIENCY,
                     "+" + (int) (level * 100 * (1 + Math.min(level / 3D, 4D)))));

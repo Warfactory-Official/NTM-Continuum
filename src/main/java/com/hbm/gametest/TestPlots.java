@@ -10,11 +10,11 @@ import net.minecraft.server.level.ServerLevel;
  * <p>26.1 starts a test once the chunk of its 1x1x1 structure is entity-ticking, and a position a block or more away
  * can lie in the next chunk, loaded but not entity-ticking: an entity there is not returned by {@code getEntitiesOfClass}
  * and never ticks. Such tests passed or failed at random (a gun's bullets "not fired" on tick 0, a pig the reactor did
- * not see). Golem Core now holds every test declared through {@code GameTests} until all chunks of its plot (structure
+ * not see). Golem Core holds every test declared through {@code GameTests} until all chunks of its plot (structure
  * plus padding, at least 16 blocks) are entity-ticking ({@code dev.golem.core.gametest.TestChunks}), before its first
- * tick; below 26.1 the padded template covers the room. This used to force the chunks and wait inside the body; it is
- * now only the check that the box really is ticking when the body starts, so a box outside the held plot fails with a
- * clear message instead of an entity that silently never ticked.
+ * tick; below 26.1 the padded template covers the room. This class only checks that the box is ticking when the
+ * body starts, so a box outside the held plot fails with a clear message instead of an entity that silently
+ * never ticked.
  */
 public final class TestPlots {
 

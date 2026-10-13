@@ -1,6 +1,7 @@
 package com.hbm.client.render.item;
 
 import com.hbm.client.render.RenderBobble;
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModDataComponents;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.SubmitSink;
@@ -36,7 +37,7 @@ final class ItemRenderBobble implements CustomItemRenderer {
             pose.scale(10F, 10F, 10F);
         }
         pose.scale(0.5F, 0.5F, 0.5F);
-        RenderBobble.renderItem(pose, sink, com.hbm.items.LegacyMeta.of(stack), light);
+        RenderBobble.renderItem(pose, sink, LegacyMeta.of(stack), light);
         pose.popPose();
     }
 }

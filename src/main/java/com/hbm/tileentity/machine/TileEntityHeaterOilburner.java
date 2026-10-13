@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.environment.Environment;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFillableItem;
@@ -35,13 +36,13 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Oil-Fired Heater — 1:1 port of the 1.12.2 {@code TileEntityHeaterOilburner}: burns any
+ * Oil-Fired Heater, a 1:1 port of the 1.12.2 {@code TileEntityHeaterOilburner}: burns any
  * {@code FT_Flammable} fluid (default HEATINGOIL, 16k tank) at 1-100 mB/t ({@code setting}) into a
  * 100k TU {@link IHeatSource} reservoir; heat is polled by the consumer above (boiler/crucible).
- * 3 slots: 0→1 fluid container drain pair, 2 fluid identifier (types the tank). Passively cools
+ * 3 slots: 0 to 1 fluid container drain pair, 2 fluid identifier (types the tank). Passively cools
  * ({@code max(heat/1000, 1)}) when not burning and below cap. isOn toggles via the GUI burn button;
- * the mB/t setting wraps 1→100 in both directions (old screwdriver IToolable → GUI clicks, documented
- * deviation). Every fifth burning tick the fuel's {@code FT_Polluting} burn table goes into the 100 mB smoke
+ * the mB/t setting wraps 1 to 100 in both directions (the 1.12.2 screwdriver IToolable is GUI clicks here, a
+ * documented deviation). Every fifth burning tick the fuel's {@code FT_Polluting} burn table goes into the 100 mB smoke
  * tanks, which leave through the four fuel ports.
  */
 public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implements MenuProvider, IHeatSource, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive {
@@ -79,7 +80,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
             // hbm-space breatheAir(toBurn): without air nothing burns and the heater cools
             // (com.hbm.api.environment.Environment). hbm-space also cooled with an empty tank (toBurn 0); that is
             // not 1.7, so an empty tank still holds its heat here.
-            if (energyPerBucket > 0 && (toBurn <= 0 || com.hbm.api.environment.Environment.breatheAir(level, pos, toBurn))) {
+            if (energyPerBucket > 0 && (toBurn <= 0 || Environment.breatheAir(level, pos, toBurn))) {
                 te.tank.setFill(te.tank.getFill() - toBurn);
 
                 int heat = (int) (energyPerBucket / 1000);
@@ -102,13 +103,13 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
         te.networkPackNT();
     }
 
-    /** Drains a fluid container in slot 0 INTO the tank, emptied container → slot 1 (old tank.loadTank(0,1)). */
+    /** Drains a fluid container in slot 0 INTO the tank, emptied container to slot 1 (old tank.loadTank(0,1)). */
     private void loadTank() {
         ItemStack in = inventory.getStackInSlot(0);
         if (in.isEmpty()) return;
 
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
             setChanged();
             return;
         }
@@ -183,7 +184,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        // Slot 1 (emptied-container out) stays TRUE — the machine fills it via inventory.insertItem,
+        // Slot 1 (emptied-container out) stays TRUE. The machine fills it via inventory.insertItem,
         // which validates against this method; the menu's take-only slot blocks the player.
         if (slot == 2) return stack.getItem() instanceof IItemFluidId;
         return true;

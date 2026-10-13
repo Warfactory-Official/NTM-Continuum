@@ -8,7 +8,7 @@ import com.hbm.client.render.SecurityObjRenderer;
 /**
  * A do-nothing block entity so the OBJ-drawn perimeter blocks (barbed wire, spikes) can carry a
  * {@code SecurityObjRenderer}. 1.7.10 drew these with a static {@code ISimpleBlockRenderingHandler};
- * the port has no cross-loader static OBJ block model, so — like {@code TileEntityDeco} — the mesh
+ * the port has no cross-loader static OBJ block model, so, like {@code TileEntityDeco}, the mesh
  * is drawn by a block-entity renderer keyed on this entity's block.
  */
 public class TileEntitySecurityObj extends BlockEntity {

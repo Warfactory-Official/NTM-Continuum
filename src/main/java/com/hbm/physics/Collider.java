@@ -1,6 +1,6 @@
 package com.hbm.physics;
 
-/** old-hbm {@code physics.Collider}: a convex shape in body space with its mass properties. */
+/** 1.12.2 {@code physics.Collider}: a convex shape in body space with its mass properties. */
 public abstract class Collider {
 
     public float mass;

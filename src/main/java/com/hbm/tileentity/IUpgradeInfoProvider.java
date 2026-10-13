@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.Block;
  * {@link com.hbm.inventory.UpgradeManagerNT}, which clamps stacked levels to {@link #getValidUpgrades()})
  * and the GUI info:
  * <ul>
- *   <li>{@code level > 0}: hovering an upgrade item inside the machine's GUI —
+ *   <li>{@code level > 0}: hovering an upgrade item inside the machine's GUI:
  *       {@link #provideInfo} prints the exact effect numbers for that item's tier.</li>
  *   <li>{@code level == 0}: the sentinel the "Acceptable Upgrades" slot-hover panel uses to probe
  *       which types the machine reacts to (see {@code GuiUtil.upgradeInfo}).</li>
@@ -43,7 +43,7 @@ public interface IUpgradeInfoProvider {
         return Component.literal(">>> ").append(block.getName()).append(" <<<").withStyle(ChatFormatting.YELLOW);
     }
 
-    /** 1.12.2 {@code BobMathUtil.getBlink()} — drives the blinking OVERDRIVE "YES" line. */
+    /** 1.12.2 {@code BobMathUtil.getBlink()}, which drives the blinking OVERDRIVE "YES" line. */
     static boolean getBlink() {
         return System.currentTimeMillis() % 1000 < 500;
     }

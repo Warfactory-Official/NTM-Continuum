@@ -32,14 +32,14 @@ import org.joml.Vector3fc;
  * arrives through a codec. Older versions have no such system: {@code MachineItemModels} parses the same
  * item-definition JSON itself and a per-loader BEWLR draws it. Both paths end here.
  *
- * <p>The body is a {@link Gem.Model}, the same vocabulary the placed machine declares in. The frame —
- * the item display transform — stays on the pose stack where the caller left it, as a block entity's
- * placement does. {@link #extents} is therefore the same walk as the draw; it used to be a second
- * traversal reproducing the first, and the two had drifted.
+ * <p>The body is a {@link Gem.Model}, the same vocabulary the placed machine declares in. The frame,
+ * the item display transform, stays on the pose stack where the caller left it, as a block entity's
+ * placement does. {@link #extents} is the same walk as the draw, not a second traversal that could
+ * drift from the first.
  */
 public final class MachineItemModel {
 
-    /** The arm pitch the old autosaw item renderer posed its icon at — {@code 80 - rotationPitch}, at rest. */
+    /** The arm pitch the old autosaw item renderer posed its icon at: {@code 80 - rotationPitch}, at rest. */
     private static final float AUTOSAW_PITCH = 80F;
 
     /** Phases sampled over one turn when framing a model that moves. See {@link #sampleExtents}. */
@@ -64,14 +64,14 @@ public final class MachineItemModel {
     private final float ty;
     /** Legacy item translation applied in item space, before the model's facing rotation. */
     private final Vector3f itemTranslate;
-    /** Legacy pre-translation, rotated by yaw but deliberately not scaled. */
+    /** Legacy pre-translation, rotated by yaw but not scaled. */
     private final Vector3f itemPreTranslate;
     /** Extra transform applied only by the legacy inventory/GUI path. */
     private final Vector3f guiTranslate;
     private final float guiScale;
     private final float guiYaw;
     private final Set<String> exclude;
-    /** The caller's exclusions only — what the icon is framed on. See the constructor. */
+    /** The caller's exclusions only: what the icon is framed on. See the constructor. */
     private final Set<String> userExclude;
     /** Optional second texture + the parts drawn with it (e.g. a tank body vs its frame); may be null. */
     private final @Nullable Surface overlaySurface;
@@ -87,7 +87,7 @@ public final class MachineItemModel {
     /** Parts that use the legacy inventory spin around {@link #spinPivot}. */
     private final List<String> spinParts;
     private final Vector3f spinPivot;
-    /** Multi-texture mode ({@code "mtl": true}): material name → its surface, from the OBJ's .mtl. */
+    /** Multi-texture mode ({@code "mtl": true}): material name maps to its surface, from the OBJ's .mtl. */
     private final Map<String, Surface> materialSurfaces;
     /** Explicit OBJ-part texture overrides for models whose sockets do not use an .mtl file. */
     private final Map<String, Surface> partSurfaces;
@@ -104,7 +104,7 @@ public final class MachineItemModel {
     private final List<ModelPass> passes;
     /**
      * Degrees per millisecond for the old GUI-only continuous spin, zero when unused. The wrap is taken at a
-     * whole turn — 1.7 wrote each of these as its own millisecond expression, and the two rates in the tree
+     * whole turn. 1.7 wrote each of these as its own millisecond expression, and the two rates in the tree
      * ({@code % 3600 / 10} and {@code / 15 % 360}) differ in period as well as in speed.
      */
     private final float guiSpinSpeed;
@@ -233,7 +233,7 @@ public final class MachineItemModel {
         this.passes = List.copyOf(passes);
         this.guiSpinSpeed = guiSpinSpeed;
         // Framing is centred on what is actually drawn, which is everything except the caller's own
-        // exclusions — not the merged set below, since overlay and rotated parts are still on screen.
+        // exclusions, not the merged set below, since overlay and rotated parts are still on screen.
         this.userExclude = Set.copyOf(exclude);
         // The overlay parts are textured separately, so the base pass must skip them. Rotated parts are
         // also drawn in their own pass, so exclude them from both static passes.
@@ -281,12 +281,11 @@ public final class MachineItemModel {
     /**
      * The box the icon is framed on, held once it is known.
      *
-     * <p>26.1 turns this box into the oversized-item rectangle, and does so in whole GUI pixels: it floors
-     * the corner and ceils the size. A box taken at the current instant therefore quantised differently
-     * from frame to frame, and since that rectangle is both the picture-in-picture texture and the offset
-     * the model is centred at inside it, the drawing jumped a pixel at a time. So the box is not the
-     * model's pose now, it is the box the whole animation stays inside: the union over a turn of the GUI
-     * spin and a cycle of the body, reduced back to one axis-aligned box.
+     * <p>26.1 turns this box into the oversized-item rectangle in whole GUI pixels (floored corner, ceiled
+     * size). A box taken at the current instant would quantise differently from frame to frame, and that
+     * rectangle is both the picture-in-picture texture and the offset the model is centred at, so the drawing
+     * would jump a pixel at a time. So the box is the one the whole animation stays inside: the union over a
+     * turn of the GUI spin and a cycle of the body, reduced to one axis-aligned box.
      */
     private Vector3fc[] sampleExtents(@Nullable ItemDisplayContext context) {
         int spins = context == ItemDisplayContext.GUI && guiSpinSpeed != 0F ? ANIMATION_SAMPLES : 1;
@@ -325,7 +324,7 @@ public final class MachineItemModel {
         return animatedBody() || (context == ItemDisplayContext.GUI && guiSpinSpeed != 0F);
     }
 
-    /** Whether the declared body itself moves — the branches of {@link #declare()} that read the clock. */
+    /** Whether the declared body itself moves: the branches of {@link #declare()} that read the clock. */
     private boolean animatedBody() {
         return "pump".equals(animation) || "autosaw".equals(animation) || "radar_large".equals(animation)
                 || "lantern".equals(animation) || "thresher".equals(animation)
@@ -548,7 +547,7 @@ public final class MachineItemModel {
     private void body(ItemGem.Builder builder) {
         if (passes.isEmpty()) {
             // The declared "parts"/"translate" hold without extra passes too (charger, red pylons, spotlights...):
-            // this branch used to pass List.of() and a zero vector, so such an icon drew every OBJ group, unmoved.
+            // so this branch passes them; List.of() and a zero vector would draw every OBJ group, unmoved.
             pass(builder, model, surface, primaryParts, exclude, primaryTranslation);
             return;
         }
@@ -710,8 +709,8 @@ public final class MachineItemModel {
 
         if (rawLegacyTransform || !blockFramed) {
             // Direct context-aware models and explicit raw callbacks both reproduce the old OBJ item
-            // geometry. Do not add the block centre or recenter on OBJ bounds: legacy models deliberately
-            // used their authored coordinates, with the display matrix supplying the outer item frame.
+            // geometry. Do not add the block centre or recenter on OBJ bounds: legacy models use
+            // their authored coordinates, with the display matrix supplying the outer item frame.
             poseStack.translate(itemTranslate.x, ty + itemTranslate.y, itemTranslate.z);
             poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
             poseStack.translate(itemPreTranslate.x, itemPreTranslate.y, itemPreTranslate.z);
@@ -723,7 +722,7 @@ public final class MachineItemModel {
         // The nested base model (block/block) frames content authored in 0..1 block space, centred at 0.5. The
         // OBJ has an arbitrary origin (often a corner), so: move its bounding-box centre to the block
         // centre (0.5,0.5,0.5), then rotate/scale, then re-centre the model on its own bounds. Without
-        // the final translate the model's corner — not its middle — sits at the slot centre.
+        // the final translate the model's corner, not its middle, sits at the slot centre.
         float[][] bounds = model.boundsExcluding(userExclude);
         float[] mn = bounds[0];
         float[] mx = bounds[1];

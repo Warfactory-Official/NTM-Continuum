@@ -70,7 +70,7 @@ public final class ModNuclearMiscItems {
                     (Item.Properties p) -> new ItemUnstable(p, 350, 200))
             .transform(Presets.sprite());
     // 1.7 ingot_u238m2 metadata 1..3 (ELEMENTS / ARSENIC / VAULT), the Brittle Spade's inert easter eggs: plain items of
-    // their own as ntm-next registers them (History §19es-itemvariant). 1.7 skipped every ItemUnstable behaviour for them.
+    // their own as ntm-next registers them. 1.7 skipped every ItemUnstable behaviour for them.
     public static final RegistryObject<Item> HS_ELEMENTS = REG.simpleItem("hs_elements", p -> p)
             .transform(Presets.sprite("hbm:items/hs-elements"));
     public static final RegistryObject<Item> HS_ARSENIC = REG.simpleItem("hs_arsenic", p -> p)

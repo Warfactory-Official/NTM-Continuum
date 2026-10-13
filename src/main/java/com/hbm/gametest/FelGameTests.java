@@ -5,18 +5,23 @@ import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.network.BlockCable;
 import com.hbm.inventory.container.ContainerFEL;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.lib.DirPos;
 import com.hbm.tileentity.machine.TileEntityFEL;
 import com.hbm.tileentity.machine.TileEntitySILEX;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 /**
@@ -33,7 +38,7 @@ public final class FelGameTests {
     private static TileEntityFEL placeFel(GameTestHelper helper, BlockPos pos) {
         helper.setBlock(pos, ModMachineBlocks.machine_fel.get().defaultBlockState()
                 .setValue(BlockMultiblockCore.FACING, Direction.NORTH));
-        TileEntityFEL te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityFEL.class);
+        TileEntityFEL te = GameTestHelpers.blockEntity(helper, pos, TileEntityFEL.class);
         helper.assertTrue(te != null, "FEL BlockEntity was not created");
         return te;
     }
@@ -41,7 +46,7 @@ public final class FelGameTests {
     private static TileEntitySILEX placeSilex(GameTestHelper helper, BlockPos pos, Direction facing) {
         helper.setBlock(pos, ModMachineBlocks.machine_silex.get().defaultBlockState()
                 .setValue(BlockMultiblockCore.FACING, facing));
-        TileEntitySILEX te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntitySILEX.class);
+        TileEntitySILEX te = GameTestHelpers.blockEntity(helper, pos, TileEntitySILEX.class);
         helper.assertTrue(te != null, "SILEX BlockEntity was not created");
         return te;
     }
@@ -57,7 +62,7 @@ public final class FelGameTests {
         te.power = TileEntityFEL.maxPower;
     }
 
-    private static net.minecraft.world.item.Item crystalFor(EnumWavelengths mode) {
+    private static Item crystalFor(EnumWavelengths mode) {
         if (mode == EnumWavelengths.IR) return ModMachineItems.laser_crystal_co2.get();
         if (mode == EnumWavelengths.VISIBLE) return ModMachineItems.laser_crystal_bismuth.get();
         if (mode == EnumWavelengths.UV) return ModMachineItems.laser_crystal_cmb.get();
@@ -66,10 +71,10 @@ public final class FelGameTests {
         return Items.AIR;
     }
 
-    // ---------------------------------------------------------------- the SILEX handshake
+    // The SILEX handshake
 
     /**
-     * A correctly placed SILEX — same axis, at least 5 blocks out — receives the laser's wavelength
+     * A correctly placed SILEX (same axis, at least 5 blocks out) receives the laser's wavelength
      * every tick, and the FEL clears its "no valid SILEX" error flag.
      */
     public static void felBeam(GameTestHelper helper) {
@@ -124,7 +129,7 @@ public final class FelGameTests {
         helper.succeed();
     }
 
-    // ---------------------------------------------------------------- power
+    // Power
 
     /**
      * The 1.7.10 {@code 1250 * 3^ordinal} curve: 3,750 HE/t on IR up to 303,750 on DRX, out of a 20 MHE
@@ -161,7 +166,7 @@ public final class FelGameTests {
                 mode + " should draw " + expected + " HE/t, but drew " + drained);
     }
 
-    // ---------------------------------------------------------------- burn rule
+    // Burn rule
 
     /**
      * 1.7: the first opaque block stops the beam and, under explosion resistance 75, catches fire 1-in-5
@@ -218,7 +223,7 @@ public final class FelGameTests {
         helper.succeed();
     }
 
-    // ---------------------------------------------------------------- layout + slots
+    // Layout + slots
 
     /** The lopsided footprint and the single rear power port, built through the real placement path. */
     public static void felLayout(GameTestHelper helper) {
@@ -226,13 +231,13 @@ public final class FelGameTests {
         var clicked = new BlockPos(3, 1, 1);
         // NORTH facing with offset 2 -> the core sits two blocks +Z from the clicked cell.
         var core = clicked.offset(0, 0, 2);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
         helper.setBlock(clicked, block.defaultBlockState());
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,
                 new ItemStack(block));
 
-        TileEntityFEL te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityFEL.class);
+        TileEntityFEL te = GameTestHelpers.blockEntity(helper, core, TileEntityFEL.class);
         helper.assertTrue(te != null, "The FEL did not form through the real placement path");
 
         DirPos[] ports = te.getConPos();
@@ -246,7 +251,7 @@ public final class FelGameTests {
     }
 
     /**
-     * A cable placed at the FEL's rear power port must actually connect to it — both the block-level
+     * A cable placed at the FEL's rear power port must actually connect to it, both the block-level
      * check the cable's model uses and the real subscription that moves power.
      *
      * <p>The port sits one block <b>behind</b> the machine's rearmost cell, so the machine's side facing
@@ -257,19 +262,19 @@ public final class FelGameTests {
         var block = ModMachineBlocks.machine_fel.get();
         var clicked = new BlockPos(3, 1, 1);
         var core = clicked.offset(0, 0, 2);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
         helper.setBlock(clicked, block.defaultBlockState());
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,
                 new ItemStack(block));
 
-        TileEntityFEL te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityFEL.class);
+        TileEntityFEL te = GameTestHelpers.blockEntity(helper, core, TileEntityFEL.class);
         helper.assertTrue(te != null, "The FEL did not form");
 
         DirPos port = te.getConPos()[0];
-        BlockPos cable = port.getPos();                       // absolute — where the cable goes
+        BlockPos cable = port.getPos();                       // absolute, where the cable goes
         var outward = port.getDir();                          // machine cell -> cable
-        BlockPos machineCell = cable.subtract(new net.minecraft.core.Vec3i(
+        BlockPos machineCell = cable.subtract(new Vec3i(
                 outward.offsetX, outward.offsetY, outward.offsetZ));
 
         // The machine must actually occupy the cell the port hangs off. If the "extra" dummy never got
@@ -289,13 +294,13 @@ public final class FelGameTests {
         // straight onto the level at the absolute port position (it can sit outside the test area), then
         // shape-refreshed so its six connection booleans are recomputed from its neighbours.
         helper.getLevel().setBlock(cable, ModMachineBlocks.red_cable.get().defaultBlockState(), 3);
-        var cableState = net.minecraft.world.level.block.Block.updateFromNeighbourShapes(
+        var cableState = Block.updateFromNeighbourShapes(
                 helper.getLevel().getBlockState(cable), helper.getLevel(), cable);
         helper.assertTrue(cableState.is(ModMachineBlocks.red_cable.get()),
                 "The cable was not placed at the port position " + cable);
-        net.minecraft.core.Direction toMachine = outward.getOpposite().toDirection();
+        Direction toMachine = outward.getOpposite().toDirection();
         Boolean connected = cableState.getValue(
-                com.hbm.blocks.network.BlockCable.PROPERTY_BY_DIRECTION.get(toMachine));
+                BlockCable.PROPERTY_BY_DIRECTION.get(toMachine));
         helper.assertTrue(connected, "The cable must report a connection toward the FEL on " + toMachine);
 
         helper.succeed();
@@ -319,7 +324,7 @@ public final class FelGameTests {
     public static void felMenu(GameTestHelper helper) {
         BlockPos pos = new BlockPos(2, 1, 8);
         TileEntityFEL te = placeFel(helper, pos);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ContainerFEL menu = new ContainerFEL(1, player.getInventory(), te);
 
         helper.assertTrue(menu.getSlot(0).x == 182 && menu.getSlot(0).y == 144,

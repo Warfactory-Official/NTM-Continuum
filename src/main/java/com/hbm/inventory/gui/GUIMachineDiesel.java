@@ -1,28 +1,33 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineDiesel;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityMachineDiesel;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Screen for the diesel generator — 1.7.10 {@code GUIMachineDiesel} (texture
+ * Screen for the diesel generator, 1.7.10 {@code GUIMachineDiesel} (texture
  * {@code gui/generators/gui_diesel.png}, 176×203, no title line). Power bar 16×52 at (141,17) (u=176), tank
  * 16×52 at (35,17), the on/off switch (79,61) lit from (192,16) while {@code isOn}, the flame (89,42)
  * from (192,0) while burning, a consumption info panel at (-8,36) and an unsupported-fuel warning at (-8,68).
  * Clicking (89..105, 62..75) toggles the generator.
  */
-public class GUIMachineDiesel extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineDiesel> {
+public class GUIMachineDiesel extends CompatContainerScreen<ContainerMachineDiesel> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/generators/gui_diesel.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/generators/gui_diesel.png");
 
     public GUIMachineDiesel(ContainerMachineDiesel menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 203);
@@ -56,11 +61,11 @@ public class GUIMachineDiesel extends dev.golem.core.gui.CompatContainerScreen<C
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         Minecraft mc = Minecraft.getInstance();
         double x = event.x(), y = event.y();
         if (mc.gameMode != null && leftPos + 89 <= x && leftPos + 89 + 16 > x && topPos + 61 < y && topPos + 61 + 14 >= y) {
-            mc.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             mc.gameMode.handleInventoryButtonClick(this.menu.containerId, 0);
             return true;
         }

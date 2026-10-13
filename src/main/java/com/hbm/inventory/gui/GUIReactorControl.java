@@ -3,6 +3,8 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerReactorControl;
 import com.hbm.tileentity.machine.TileEntityReactorControl;
 import com.hbm.packet.ControlEventPayload;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
@@ -16,9 +18,9 @@ import net.minecraft.world.entity.player.Inventory;
 import com.hbm.module.NumberDisplay;
 
 /** The 176x166 remote-control screen: three readouts, the four set-point fields, function buttons and the curve. */
-public final class GUIReactorControl extends dev.golem.core.gui.CompatContainerScreen<ContainerReactorControl> {
+public final class GUIReactorControl extends CompatContainerScreen<ContainerReactorControl> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_reactor_control.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/gui_reactor_control.png");
     private static final int GREEN = 0xFF08FF00;
 
     private final NumberDisplay[] displays = new NumberDisplay[3];

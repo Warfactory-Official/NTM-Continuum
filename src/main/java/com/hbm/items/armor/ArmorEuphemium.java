@@ -16,10 +16,10 @@ import net.minecraft.world.level.Level;
  *
  * <p>Upstream is a bare {@code ItemArmor}, not an {@code ArmorFSB}; it extends {@link ArmorFSB} here only
  * because the port's per-piece armour tick ({@code EntityEffectHandler.handleArmor}) dispatches through that
- * class — the old {@code onArmorTick} hook no longer exists. No FSB configuration is declared, so the base
+ * class; the old {@code onArmorTick} hook does not exist. No FSB configuration is declared, so the base
  * class contributes no effects, sounds or tooltip bonus lines.
  *
- * <p>Behaviour is upstream's verbatim, including its oddities: every worn piece runs the check, so a full
+ * <p>Behaviour matches upstream, including its oddities: every worn piece runs the check, so a full
  * set re-applies the four level-128 effects four times a tick (harmless), and the fall clamp only kicks in
  * past -0.25 blocks/tick. Upstream's no-op {@code setDamage} is the unbreakable property the items are
  * registered with; the items sit in no creative tab ({@code setCreativeTab(null)}), reachable through the

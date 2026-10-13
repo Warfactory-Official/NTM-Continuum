@@ -8,6 +8,7 @@ import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ContaminationUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -29,7 +30,7 @@ public class BlockGasMeltdown extends BlockGasBase {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         super.animateTick(state, level, pos, random);
-        level.addParticle(net.minecraft.core.particles.ParticleTypes.MYCELIUM, pos.getX() + random.nextFloat(),
+        level.addParticle(ParticleTypes.MYCELIUM, pos.getX() + random.nextFloat(),
                 pos.getY() + random.nextFloat(), pos.getZ() + random.nextFloat(), 0.0D, 0.0D, 0.0D);
     }
 

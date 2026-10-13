@@ -2,8 +2,16 @@ package com.hbm.client;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.hbm.handler.radiation.ChunkRadiationManager;
+import com.hbm.handler.radiation.RadiationFog;
+import com.hbm.main.ModEventHandlerImpact;
+import com.hbm.world.feature.OreCaveFeature;
+import com.hbm.world.gen.LegacyBiomes;
+import dev.golem.core.Ids;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -11,7 +19,7 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.phys.AABB;
 
 /**
- * The {@code hbm_small} harness query (wave 2 small items, History §19ek-small). Inert unless the harness listener runs.
+ * The {@code hbm_small} harness query. Inert unless the harness listener runs.
  * <ul>
  *   <li>{@code boss}: the client's 1.7 {@link BossStatus} bar (showing, name).</li>
  *   <li>{@code fog}: radiation fog effects sent so far; {@code set_rad} sets the chunk radiation at the player first.</li>
@@ -24,7 +32,7 @@ public final class SmallHarnessQueries {
     private SmallHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_small", SmallHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_small", SmallHarnessQueries::query);
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {
@@ -45,14 +53,14 @@ public final class SmallHarnessQueries {
                         if (player != null && p.has("set_rad")) {
                             BlockPos at = p.has("y") ? new BlockPos(p.get("x").getAsInt(), p.get("y").getAsInt(), p.get("z").getAsInt())
                                     : player.blockPosition();
-                            com.hbm.handler.radiation.ChunkRadiationManager.proxy.setRadiation(level, at, p.get("set_rad").getAsDouble());
+                            ChunkRadiationManager.proxy.setRadiation(level, at, p.get("set_rad").getAsDouble());
                         }
-                        json.addProperty("sent", com.hbm.handler.radiation.RadiationFog.sent);
+                        json.addProperty("sent", RadiationFog.sent);
                         if (player != null) json.addProperty("chunk_rad",
-                                com.hbm.handler.radiation.ChunkRadiationManager.proxy.getRadiation(level, player.blockPosition()));
+                                ChunkRadiationManager.proxy.getRadiation(level, player.blockPosition()));
                     }
                     case "spawns" -> {
-                        json.addProperty("denied", com.hbm.main.ModEventHandlerImpact.denied);
+                        json.addProperty("denied", ModEventHandlerImpact.denied);
                         int radius = p.has("radius") ? p.get("radius").getAsInt() : 96;
                         int tall = 0, small = 0;
                         JsonObject types = new JsonObject();
@@ -61,7 +69,7 @@ public final class SmallHarnessQueries {
                                     e -> e instanceof LivingEntity && e.getType().getCategory() == MobCategory.MONSTER)) {
                                 if (e.getBbHeight() >= 0.85F || e.getBbWidth() >= 0.85F) tall++;
                                 else small++;
-                                String id = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).toString();
+                                String id = BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).toString();
                                 types.addProperty(id, (types.has(id) ? types.get(id).getAsInt() : 0) + 1);
                             }
                         }
@@ -71,7 +79,7 @@ public final class SmallHarnessQueries {
                     }
                     case "sulfur" -> {
                         JsonArray cols = new JsonArray();
-                        for (int[] c : com.hbm.world.feature.OreCaveFeature.sulfurColumns(level.getSeed(),
+                        for (int[] c : OreCaveFeature.sulfurColumns(level.getSeed(),
                                 p.get("x").getAsInt(), p.get("z").getAsInt(), p.get("radius").getAsInt(),
                                 p.has("step") ? p.get("step").getAsInt() : 8, p.has("limit") ? p.get("limit").getAsInt() : 64)) {
                             JsonArray a = new JsonArray();
@@ -80,8 +88,8 @@ public final class SmallHarnessQueries {
                             a.add(c[2]);
                             // the biome at the stratum's centre (noise only): oceans fill their caves with water
                             var generator = level.getChunkSource().getGenerator();
-                            a.add(com.hbm.world.gen.LegacyBiomes.biomeAt(generator.getBiomeSource(), level.getChunkSource().randomState(),
-                                    c[0], 64, c[1]).unwrapKey().map(k -> dev.golem.core.Ids.keyId(k).toString()).orElse("?"));
+                            a.add(LegacyBiomes.biomeAt(generator.getBiomeSource(), level.getChunkSource().randomState(),
+                                    c[0], 64, c[1]).unwrapKey().map(k -> Ids.keyId(k).toString()).orElse("?"));
                             cols.add(a);
                         }
                         json.add("columns", cols);

@@ -1,9 +1,13 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerFEL;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.tileentity.machine.TileEntityFEL;
+import dev.golem.core.gui.MouseInput;
+import java.awt.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -17,14 +21,14 @@ import java.util.Optional;
  *
  * <p>Beyond the vertical power bar it shows two pieces of status text the original leans on heavily:
  * <b>LIVE</b> in green whenever the laser is switched on, and <b>ERR.</b> in red when it is on but has
- * never found a valid SILEX — the player's only feedback that the beam is misaimed.
+ * never found a valid SILEX: the player's only feedback that the beam is misaimed.
  *
  * <p>The horizontal streak across the middle is the in-GUI beam, drawn in the current wavelength's
  * colour (VISIBLE cycles the hue).
  */
-public class GUIFEL extends dev.golem.core.gui.CompatContainerScreen<ContainerFEL> {
+public class GUIFEL extends CompatContainerScreen<ContainerFEL> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_fel.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/machine/gui_fel.png");
 
     private static final int POWER_X = 182, POWER_Y = 27, POWER_W = 16, POWER_H = 113;
     private static final int TOGGLE_X = 142, TOGGLE_Y = 41, TOGGLE_W = 29, TOGGLE_H = 17;
@@ -61,7 +65,7 @@ public class GUIFEL extends dev.golem.core.gui.CompatContainerScreen<ContainerFE
         if (beam) {
             int color = te.mode != EnumWavelengths.VISIBLE
                     ? te.mode.guiColor
-                    : java.awt.Color.HSBtoRGB(gameTime() / 50.0F, 0.5F, 1.0F) & 0xFFFFFF;
+                    : Color.HSBtoRGB(gameTime() / 50.0F, 0.5F, 1.0F) & 0xFFFFFF;
             int argb = 0xFF000000 | (color & 0xFFFFFF);
             // 1.7 draws two GL lines at y = 31.5 with glLineWidth(5): five framebuffer pixels thick, whatever the
             // GUI scale. The second segment starts at the screen's left edge (x = 0), not at the GUI's.
@@ -110,7 +114,7 @@ public class GUIFEL extends dev.golem.core.gui.CompatContainerScreen<ContainerFE
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         int x = (int) event.x() - this.leftPos;
         int y = (int) event.y() - this.topPos;
         // 1.7 hit box: x in [142, 171), y in (41, 58].

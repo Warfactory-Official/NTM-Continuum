@@ -10,11 +10,13 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -85,13 +87,13 @@ public class MachineOrbus extends BlockMultiblockMachine implements IFluidConnec
     @Override
     protected void onPlayerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         super.onPlayerWillDestroy(level, pos, state, player);
-        if (!(level instanceof net.minecraft.server.level.ServerLevel server) || !state.getValue(CELL)
+        if (!(level instanceof ServerLevel server) || !state.getValue(CELL)
                 || playerPreventsBlockDrops(player) || !player.hasCorrectToolForDrops(state)) return;
         BlockPos core = coreOf(level, pos, state);
         if (core == null) return;
         BlockState coreState = level.getBlockState(core);
         if (coreState.getBlock() != this) return;
-        net.minecraft.world.level.block.Block.dropResources(coreState, server, pos, server.getBlockEntity(core), player,
+        Block.dropResources(coreState, server, pos, server.getBlockEntity(core), player,
                 player.getMainHandItem());
     }
 

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.block.ICrucibleAcceptor;
@@ -24,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Foundry channel (1.12.2 {@code TileEntityFoundryChannel}) — carries molten metal horizontally.
+ * Foundry channel (1.12.2 {@code TileEntityFoundryChannel}): carries molten metal horizontally.
  * Every 5 ticks it first tries to {@code flow} into an adjacent non-channel acceptor (caster, outlet),
  * else equalises/swaps with neighbouring channels. A contiguous run of channels keeps a single
  * {@code neighborType} (clog protection: a run holding one material rejects pours of another), which
@@ -102,7 +103,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
                             acc.lastFlow = dir.getOpposite().ordinal();
 
                             if (level.getRandom().nextInt(5) == 0 || te.amount == 1) { // force swaps with single quanta to keep them moving
-                                // 1:5 chance the fill states are simply swapped — promotes faster spreading
+                                // 1:5 chance the fill states are swapped, which promotes faster spreading
                                 int buf = te.amount;
                                 te.amount = acc.amount;
                                 acc.amount = buf;
@@ -171,7 +172,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 
         boolean hasMaterial = propagateMaterial(propType, visited, false);
 
-        // fully clear → safe to unassign the contiguous channel type
+        // Fully clear, so it is safe to unassign the contiguous channel type
         if (propType == null && !hasMaterial) {
             for (TileEntityFoundryChannel acc : visited) {
                 acc.neighborType = null;
@@ -221,7 +222,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        com.hbm.util.SavedIds.putEnum(output, "flow", ForgeDirection.getOrientation(this.lastFlow)); // by name, never an ordinal
+        SavedIds.putEnum(output, "flow", ForgeDirection.getOrientation(this.lastFlow)); // by name, never an ordinal
         Mats.write(output, "nType", this.neighborType);
         output.putBoolean("init", hasCheckedNeighbors);
     }
@@ -229,7 +230,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        this.lastFlow = com.hbm.util.SavedIds.getEnum(input, "flow", ForgeDirection.DOWN).ordinal();
+        this.lastFlow = SavedIds.getEnum(input, "flow", ForgeDirection.DOWN).ordinal();
         this.neighborType = Mats.read(input, "nType");
         this.hasCheckedNeighbors = input.getBooleanOr("init", false);
     }

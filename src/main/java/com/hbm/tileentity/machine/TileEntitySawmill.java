@@ -107,7 +107,7 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
                         sawmill.inventory.setStackInSlot(1, result);
 
                         if (chance > 0F && level.getRandom().nextFloat() < chance) {
-                            sawmill.inventory.setStackInSlot(2, new ItemStack(com.hbm.items.ModItems.powder_sawdust.get()));
+                            sawmill.inventory.setStackInSlot(2, new ItemStack(ModItems.powder_sawdust.get()));
                         }
                         sawmill.setChanged();
                     }
@@ -122,7 +122,7 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
                     if (sawmill.overspeed > 60 && sawmill.warnCooldown == 0) {
                         sawmill.warnCooldown = 100;
                         level.playSound(null, pos, ModSounds.WARN_OVERSPEED.get(),
-                                net.minecraft.sounds.SoundSource.BLOCKS, 2F, 1F);
+                                SoundSource.BLOCKS, 2F, 1F);
                     }
                     if (sawmill.overspeed > 300) {
                         sawmill.hasBlade = false;

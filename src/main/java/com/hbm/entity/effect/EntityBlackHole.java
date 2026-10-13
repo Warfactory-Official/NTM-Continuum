@@ -3,11 +3,13 @@ package com.hbm.entity.effect;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.entity.ModEntities;
 import com.hbm.items.ModItems;
+import com.hbm.items.ModSingularityItems;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.entity.projectile.EntityRubble;
 import dev.golem.core.data.CompatEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.data.SynchedData;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -16,6 +18,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -59,7 +62,7 @@ public class EntityBlackHole extends CompatEntity {
     }
 
     @Override
-    protected void defineData(dev.golem.core.data.SynchedData data) {
+    protected void defineData(SynchedData data) {
         data.define(SIZE, 0.5F);
     }
 
@@ -130,9 +133,9 @@ public class EntityBlackHole extends CompatEntity {
 
             if (distance < size * 1.5F && level() instanceof ServerLevel server) {
                 Compat.hurt(entity, server, ModDamageSources.blackhole(server), 1000F);
-                if (!(entity instanceof net.minecraft.world.entity.LivingEntity)) entity.discard();
+                if (!(entity instanceof LivingEntity)) entity.discard();
                 if (entity instanceof ItemEntity item && (item.getItem().is(ModItems.flame_pony.get())
-                        || item.getItem().is(com.hbm.items.ModSingularityItems.pellet_antimatter.get()))) {
+                        || item.getItem().is(ModSingularityItems.pellet_antimatter.get()))) {
                     discard();
                     server.explode(null, getX(), getY(), getZ(), 5F, true,
                             Level.ExplosionInteraction.TNT);

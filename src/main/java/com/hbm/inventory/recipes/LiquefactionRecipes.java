@@ -7,10 +7,12 @@ import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.world.ItemStacks;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -76,10 +78,10 @@ public final class LiquefactionRecipes {
             if (stack.is(e.getKey())) return e.getValue();
         }
         // 1.7 getOutput: any ItemFood gives SALIENT, food value x saturation modifier x 2 (constant) x 10 (quanta)
-        net.minecraft.world.food.FoodProperties food = dev.golem.core.world.ItemStacks.foodProperties(stack);
+        FoodProperties food = ItemStacks.foodProperties(stack);
         if (food != null) {
-            int salient = (int) (dev.golem.core.world.ItemStacks.foodNutrition(food)
-                    * dev.golem.core.world.ItemStacks.foodSaturationModifier(food) * 20F);
+            int salient = (int) (ItemStacks.foodNutrition(food)
+                    * ItemStacks.foodSaturationModifier(food) * 20F);
             // 1.7 would return an empty 0 mB stack for a zero-saturation food; the port's tanks reject a 0 mB fill
             if (salient > 0) return new FluidStack(Fluids.SALIENT, salient);
         }

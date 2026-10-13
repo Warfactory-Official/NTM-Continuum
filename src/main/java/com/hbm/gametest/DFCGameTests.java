@@ -3,6 +3,7 @@ package com.hbm.gametest;
 import com.hbm.blocks.machine.dfc.CoreComponent;
 import com.hbm.blocks.machine.dfc.ModDFCBlocks;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.ModCatalystItems;
 import com.hbm.items.machine.ItemLens;
 import com.hbm.items.special.ItemAMSCore;
 import com.hbm.tileentity.machine.dfc.TileEntityCore;
@@ -10,11 +11,13 @@ import com.hbm.tileentity.machine.dfc.TileEntityCoreEmitter;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreInjector;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreReceiver;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreStabilizer;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -83,7 +86,7 @@ public final class DFCGameTests {
             core.inventory.setStackInSlot(1, ItemStack.EMPTY);
             helper.assertTrue(core.burn(1_000_000L) == 1_000_000L,
                     "Without an exotic core the beam should pass through untouched");
-            // The direct burn above intentionally leaves heat behind to prove the reaction.  Quench the
+            // The direct burn above leaves heat behind to prove the reaction.  Quench the
             // fixture before returning: the real block entity keeps ticking after helper.succeed(), and
             // would otherwise detonate on the next server tick while the suite is running.
             helper.succeed();
@@ -221,7 +224,7 @@ public final class DFCGameTests {
         helper.succeed();
     }
 
-    // --- helpers ---
+    // Helpers
 
     /** Places the chamber with an emitter, receiver, injector and stabiliser all aimed at it. */
     private static TileEntityCore build(GameTestHelper helper) {
@@ -231,12 +234,12 @@ public final class DFCGameTests {
         aim(helper, INJECTOR, ModDFCBlocks.dfc_injector.get(), Direction.SOUTH);
         aim(helper, STABILIZER, ModDFCBlocks.dfc_stabilizer.get(), Direction.NORTH);
 
-        TileEntityCore core = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, CORE, TileEntityCore.class);
+        TileEntityCore core = GameTestHelpers.blockEntity(helper, CORE, TileEntityCore.class);
         helper.assertTrue(core != null, "Dark fusion core BlockEntity was not created");
         return core;
     }
 
-    private static void aim(GameTestHelper helper, BlockPos pos, net.minecraft.world.level.block.Block block,
+    private static void aim(GameTestHelper helper, BlockPos pos, Block block,
                            Direction facing) {
         helper.setBlock(pos, block.defaultBlockState().setValue(CoreComponent.FACING, facing));
     }
@@ -249,12 +252,12 @@ public final class DFCGameTests {
     }
 
     private static void catalysts(TileEntityCore core) {
-        ItemStack catalyst = new ItemStack(com.hbm.items.ModCatalystItems.iron.get());
+        ItemStack catalyst = new ItemStack(ModCatalystItems.iron.get());
         core.inventory.setStackInSlot(0, catalyst.copy());
         core.inventory.setStackInSlot(2, catalyst.copy());
     }
 
-    /** Stop the deliberately overheated test core from detonating after its assertions complete. */
+    /** Stop the overheated test core from detonating after its assertions complete. */
     private static void quench(TileEntityCore core) {
         core.heat = 0;
         core.field = 0;
@@ -263,7 +266,7 @@ public final class DFCGameTests {
     }
 
     private static <T extends BlockEntity> T be(GameTestHelper helper, BlockPos pos, Class<T> type) {
-        T be = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, type);
+        T be = GameTestHelpers.blockEntity(helper, pos, type);
         helper.assertTrue(be != null, "No " + type.getSimpleName() + " at " + pos);
         return be;
     }
@@ -278,6 +281,6 @@ public final class DFCGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        return dev.golem.core.gametest.GameTestHelpers.resourceExists(DFCGameTests.class, path);
+        return GameTestHelpers.resourceExists(DFCGameTests.class, path);
     }
 }

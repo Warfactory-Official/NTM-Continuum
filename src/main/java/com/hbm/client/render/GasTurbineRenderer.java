@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineTurbineGas;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -15,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
 public final class GasTurbineRenderer extends GemBER<TileEntityMachineTurbineGas, GasTurbineRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/turbinegas.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/turbinegas.obj"));
     private final Surface surface = Surface.cutoutNoCull(
             Constants.MOD_ID + ":textures/models/machines/turbinegas.png");
 

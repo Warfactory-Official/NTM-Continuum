@@ -2,6 +2,7 @@ package com.hbm.inventory.recipes;
 
 import com.hbm.Constants;
 import com.hbm.inventory.recipes.loader.DataGenericRecipes;
+import dev.golem.core.world.RecipeFields;
 
 /**
  * The fusion plasma forge (1.7 {@code PlasmaForgeRecipes}, with its ICF block, {@code ICFRecipes}): the datapack table
@@ -14,8 +15,8 @@ public final class PlasmaForgeRecipes extends DataGenericRecipes<PlasmaForgeReci
     public static final PlasmaForgeRecipes INSTANCE = new PlasmaForgeRecipes();
 
     private PlasmaForgeRecipes() {
-        super(Constants.MOD_ID, "plasma_forge", PlasmaForgeRecipe::codec, dev.golem.core.world.RecipeFields.of()
-                .add(dev.golem.core.world.RecipeFields.field("ignition_temp", dev.golem.core.world.RecipeFields.Kind.LONG).optional().alias("ignitionTemp")));
+        super(Constants.MOD_ID, "plasma_forge", PlasmaForgeRecipe::codec, RecipeFields.of()
+                .add(RecipeFields.field("ignition_temp", RecipeFields.Kind.LONG).optional().alias("ignitionTemp")));
     }
 
     /** Declares the table at mod construction (its recipe type and serializer register with HBM's content). */

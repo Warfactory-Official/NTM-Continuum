@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerLevel;
  * <p>1.12.2 had Forge's ticket system: a ticket was persisted by the loader, and on world load Forge
  * handed it back to the mod through {@code LoadingCallback} so the entity could rebind (see the
  * contract in {@link com.hbm.entity.logic.IChunkLoader}). Modern Minecraft has no ticket ownership at
- * all — {@code ServerLevel.setChunkForced} is a flat boolean set with no notion of who asked — so the
+ * all: {@code ServerLevel.setChunkForced} is a flat boolean set with no notion of who asked, so the
  * ownership half has to be kept here. This is that half: a plain record of "these chunks are forced
  * because HBM asked", which {@link ChunkLoadingManager} replays at level load and expires if nothing
  * claims them (the analogue of Forge dropping an unclaimed ticket).

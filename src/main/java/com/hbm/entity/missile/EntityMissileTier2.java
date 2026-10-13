@@ -1,12 +1,15 @@
 package com.hbm.entity.missile;
 
+import com.hbm.entity.ModNtmEntities;
 import com.hbm.explosion.ExplosionChaos;
 import com.hbm.explosion.ExplosionLarge;
 import com.hbm.entity.logic.EntityEMP;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMissileItems;
+import com.hbm.particle.helper.ExplosionCreator;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -39,7 +42,7 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
         public EntityMissileStrong(Level world, float x, float y, float z, int a, int b) {
             super(ModMissileEntities.MISSILE_STRONG.get(), world, x, y, z, a, b);
         }
-        @Override public void onMissileImpact(HitResult hit) { this.explodeStandard(30F, 32, false); com.hbm.particle.helper.ExplosionCreator.composeEffectStandard(level(), getX(), getY(), getZ()); }
+        @Override public void onMissileImpact(HitResult hit) { this.explodeStandard(30F, 32, false); ExplosionCreator.composeEffectStandard(level(), getX(), getY(), getZ()); }
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_generic_medium.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_strong.get()); }
     }
@@ -52,9 +55,9 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
         }
         @Override public void onMissileImpact(HitResult hit) {
             this.explodeStandard(30F, 32, true);
-            com.hbm.particle.helper.ExplosionCreator.composeEffectStandard(level(), getX(), getY(), getZ());
+            ExplosionCreator.composeEffectStandard(level(), getX(), getY(), getZ());
             // 1.7 Tier2:57 - the float-truncated centre is 1.7's
-            if (level() instanceof net.minecraft.server.level.ServerLevel server) ExplosionChaos.igniteFlammableBlocks(server,
+            if (level() instanceof ServerLevel server) ExplosionChaos.igniteFlammableBlocks(server,
                     (int) ((float) getX() + 0.5F), (int) ((float) getY() + 0.5F), (int) ((float) getZ() + 0.5F), 25);
         }
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_incendiary_medium.get()); }
@@ -101,14 +104,14 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
             this.isCluster = true;
         }
         public EntityMissileClusterStrong(Level level, float x, float y, float z, int targetX, int targetZ) {
-            super(com.hbm.entity.ModNtmEntities.MISSILE_CLUSTER_STRONG.get(), level, x, y, z, targetX, targetZ);
+            super(ModNtmEntities.MISSILE_CLUSTER_STRONG.get(), level, x, y, z, targetX, targetZ);
             this.isCluster = true;
         }
 
         @Override
         public void onMissileImpact(HitResult mop) {
             level().explode(this, getX(), getY(), getZ(), 15F, Level.ExplosionInteraction.TNT);
-            com.hbm.explosion.ExplosionChaos.cluster(level(), getX(), getY(), getZ(), 50, getYRot(), getXRot(),
+            ExplosionChaos.cluster(level(), getX(), getY(), getZ(), 50, getYRot(), getXRot(),
                     (float) Math.PI * 0.25F, (float) Math.PI * 0.25F, 1F);
         }
 

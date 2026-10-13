@@ -1,5 +1,6 @@
 package com.hbm.explosion;
 
+import com.hbm.potion.ModEffects;
 import dev.golem.core.world.Compat;
 import com.hbm.entity.particle.EntityCloudFX;
 import com.hbm.entity.particle.EntityOrangeFX;
@@ -10,6 +11,8 @@ import com.hbm.util.ArmorRegistry.HazardClass;
 import com.hbm.items.weapon.sedna.factory.XFactoryCatapult;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.util.ArmorRegistry;
+import dev.golem.core.world.Effects;
+import dev.golem.core.world.Fires;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -105,7 +108,7 @@ public final class ExplosionChaos {
                     if (yySq + zz * zz >= threshold) continue;
                     pos.set(x + xx, y + yy, z + zz);
                     // 1.7: ExplosionChaos:78 passes the squared offsets as isFlammable's coordinates; the cell's own is meant
-                    if (!dev.golem.core.world.Fires.isFlammable(level, pos, level.getBlockState(pos), Direction.UP)) continue;
+                    if (!Fires.isFlammable(level, pos, level.getBlockState(pos), Direction.UP)) continue;
                     BlockPos above = pos.above();
                     if (level.getBlockState(above).isAir()) {
                         level.setBlock(above, Blocks.FIRE.defaultBlockState(), 3); // 1.7 setBlock(fire)
@@ -177,10 +180,10 @@ public final class ExplosionChaos {
 
             if (ArmorUtil.checkForHazmat(entity)) continue;
 
-            if (dev.golem.core.world.Effects.hasRegistered(entity, com.hbm.potion.ModEffects.TAINT.get())) {
-                dev.golem.core.world.Effects.removeRegistered(entity, com.hbm.potion.ModEffects.TAINT.get());
-                entity.addEffect(dev.golem.core.world.Effects.instanceRegistered(
-                        com.hbm.potion.ModEffects.MUTATION.get(), 60 * 60 * 20, 0, false, false));
+            if (Effects.hasRegistered(entity, ModEffects.TAINT.get())) {
+                Effects.removeRegistered(entity, ModEffects.TAINT.get());
+                entity.addEffect(Effects.instanceRegistered(
+                        ModEffects.MUTATION.get(), 60 * 60 * 20, 0, false, false));
             }
 
             if (level instanceof ServerLevel server) {

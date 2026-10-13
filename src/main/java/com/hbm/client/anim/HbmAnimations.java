@@ -2,6 +2,8 @@ package com.hbm.client.anim;
 
 import com.hbm.util.GameTime;
 import dev.golem.core.render.anim.BusAnimation;
+import dev.golem.core.world.Compat;
+import java.util.Arrays;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
@@ -13,9 +15,9 @@ import net.minecraft.world.item.ItemStack;
  *
  * <p>Ported from 1.12.2 {@code HbmAnimationsSedna}, including the reason it is shaped this way. Flan's
  * Mod and its descendants keep a single animation timer per client, so reloading and then switching
- * weapons replays the reload on the <em>new</em> weapon. Upstream's fix is one timer per hotbar slot —
- * nine slots × eight parallel rails — and a key check: if the item in the slot is not the item the
- * animation was started for, the animation simply does not apply. You can still confuse it by moving a
+ * weapons replays the reload on the <em>new</em> weapon. Upstream's fix is one timer per hotbar slot
+ * (nine slots × eight parallel rails) and a key check: if the item in the slot is not the item the
+ * animation was started for, the animation does not apply. You can still confuse it by moving a
  * weapon between slots mid-animation, which cancels it rather than misplaying it.
  *
  * <p>Client-only, and single-threaded by construction (render thread).
@@ -42,7 +44,7 @@ public final class HbmAnimations {
         public final Item key;
         public final long startMillis;
         public final BusAnimation animation;
-        /** Stay on the last frame instead of ending — for poses that persist until replaced. */
+        /** Stay on the last frame instead of ending, for poses that persist until replaced. */
         public final boolean holdLastFrame;
 
         public Animation(Item key, long startMillis, BusAnimation animation, boolean holdLastFrame) {
@@ -99,7 +101,7 @@ public final class HbmAnimations {
             HANDS[hand.ordinal()][slot][rail] = null;
             return null;
         }
-        // The slot's animation belongs to a different item — the player swapped. Do not replay it.
+        // The slot's animation belongs to a different item: the player swapped. Do not replay it.
         return animation.key == stack.getItem() ? animation : null;
     }
 
@@ -110,8 +112,8 @@ public final class HbmAnimations {
     /**
      * The 15-slot transform for {@code bus} right now, or the identity when nothing is playing.
      *
-     * <p>Never returns null, so a renderer can read every bus unconditionally — a model with a bus the
-     * current animation does not mention simply stays at rest.
+     * <p>Never returns null, so a renderer can read every bus unconditionally: a model with a bus the
+     * current animation does not mention stays at rest.
      */
     public static double[] getRelevantTransformation(String bus, int rail) {
         return getRelevantTransformation(bus, InteractionHand.MAIN_HAND, rail);
@@ -136,16 +138,16 @@ public final class HbmAnimations {
         return getRelevantTransformation(bus, buildingHand, rail);
     }
 
-    /** Clears every rail — on world change, so a stale animation cannot leak into a new session. */
+    /** Clears every rail on world change, so a stale animation cannot leak into a new session. */
     public static void clear() {
         for (Animation[][] slots : HANDS) {
-            for (Animation[] rails : slots) java.util.Arrays.fill(rails, null);
+            for (Animation[] rails : slots) Arrays.fill(rails, null);
         }
     }
 
     /** The player's selected hotbar slot, folded into range for non-vanilla hotbar sizes. */
     private static int slotOf(Player player) {
-        int slot = dev.golem.core.world.Compat.selectedSlot(player);
+        int slot = Compat.selectedSlot(player);
         return slot >= 0 && slot < 9 ? slot : Math.abs(slot) % 9;
     }
 }

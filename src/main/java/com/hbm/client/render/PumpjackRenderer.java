@@ -23,13 +23,13 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Animated pumpjack renderer — port of the 1.12.2 {@code RenderPumpjack}. Draws the OBJ parts:
+ * Animated pumpjack renderer, a port of the 1.12.2 {@code RenderPumpjack}. Draws the OBJ parts:
  * static {@code Base}; {@code Rotor} spinning about X at the pivot (0, 1.5, −5.5); {@code Head}
  * see-sawing {@code toDegrees(sin(rot))·0.25} about (0, 3.5, −3.5); {@code Carriage} bobbing
  * {@code −sin(rot)} vertically. The untextured POSITION_COLOR geometry (two gray side beams, the
  * dark crank ropes/bridle over the head "horse head" arc, and the twin polished-rod lines) is
  * emitted as fullbright vertex-colored quads on a white texture, double-wound to reproduce the old
- * {@code disableCull} (see IMPLEMENTATION.md §13q pass 4). Old yaw map = base 90° + the standard
+ * {@code disableCull}. Old yaw map = base 90° + the standard
  * facing map. Beam rotation is integrated client-side from the server-synced speed.
  */
 public class PumpjackRenderer extends GemBER<TileEntityMachinePumpjack, PumpjackRenderState> {
@@ -44,10 +44,10 @@ public class PumpjackRenderer extends GemBER<TileEntityMachinePumpjack, Pumpjack
     public PumpjackRenderer() {
         this.model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/machines/pumpjack.obj"));
         this.surface = Surface.cutout(Constants.MOD_ID + ":textures/models/machines/pumpjack.png");
-        // The untextured crank/rope geometry is drawn on entitySolid (opaque, depth-writing, culls) —
-        // its faces are double-wound below so the cull keeps exactly the outward copy, giving the flat
+        // The untextured crank/rope geometry is drawn on entitySolid (opaque, depth-writing, culls).
+        // Its faces are double-wound below so the cull keeps exactly the outward copy, giving the flat
         // uniform shading the old disableCull+disableLighting POSITION_COLOR pass had. entityCutout would
-        // draw both windings (no cull) and PER_FACE_LIGHTING would darken the back copy → the odd look.
+        // draw both windings (no cull) and PER_FACE_LIGHTING would darken the back copy.
         this.colorType = CompatRenderTypes.entitySolid(Ids.of(Constants.MOD_ID, "textures/models/misc/white.png"));
     }
 
@@ -85,7 +85,7 @@ public class PumpjackRenderer extends GemBER<TileEntityMachinePumpjack, Pumpjack
     }
 
     /**
-     * The crank, pitman beams and bridle ropes are built from the rotor angle every frame — the old
+     * The crank, pitman beams and bridle ropes are built from the rotor angle every frame. The old
      * immediate-mode POSITION_COLOR pass, with lighting off, so they are fullbright and untextured.
      */
     @Override
@@ -98,7 +98,7 @@ public class PumpjackRenderer extends GemBER<TileEntityMachinePumpjack, Pumpjack
         ps.popPose();
     }
 
-    /** The old immediate-mode POSITION_COLOR pass, verbatim math (RenderPumpjack L68-162). */
+    /** The old immediate-mode POSITION_COLOR pass, using the same math (RenderPumpjack L68-162). */
     private static void drawColorGeometry(PoseStack.Pose pose, VertexConsumer buf, float rotation) {
         // rotateAroundX helper (old Vec3.rotateAroundX, angle in radians)
         // back position of the pitman arms on the rotor crank
@@ -188,7 +188,7 @@ public class PumpjackRenderer extends GemBER<TileEntityMachinePumpjack, Pumpjack
                 -p, 0.75, p);
     }
 
-    /** Emits a quad twice (both windings) — the modern stand-in for the old {@code disableCull}. */
+    /** Emits a quad twice (both windings), the modern stand-in for the old {@code disableCull}. */
     private static void quad(PoseStack.Pose pose, VertexConsumer buf, float r, float g, float b, float a,
                              double x1, double y1, double z1, double x2, double y2, double z2,
                              double x3, double y3, double z3, double x4, double y4, double z4) {
@@ -210,12 +210,12 @@ public class PumpjackRenderer extends GemBER<TileEntityMachinePumpjack, Pumpjack
     }
 
     /**
-     * Old {@code Vec3.rotateAroundX} (radians), VERBATIM: {@code y' = y·cos + z·sin}, {@code z' = z·cos
-     * − y·sin}. This is the <b>clockwise</b> convention — the opposite of a standard CCW X‑rotation (and
+     * Old {@code Vec3.rotateAroundX} (radians): {@code y' = y·cos + z·sin}, {@code z' = z·cos
+     * − y·sin}. This is the <b>clockwise</b> convention, the opposite of a standard CCW X‑rotation (and
      * of {@code Axis.XP.rotationDegrees} used for the Rotor/Head OBJ parts). The old call sites feed it
-     * NEGATIVE angles, which nets back to the OBJ parts' CCW motion; using a standard CCW formula here
-     * (with those same negative angles) would spin the crank/pitman geometry backwards relative to the
-     * rotor — the "desynced / playing backwards" look. Must match {@code Vec3.rotateAroundX} exactly.
+     * negative angles, which nets back to the OBJ parts' CCW motion; a standard CCW formula with those
+     * same angles would spin the crank/pitman geometry backwards relative to the rotor.
+     * Must match {@code Vec3.rotateAroundX} exactly.
      */
     private static double[] rotateX(double x, double y, double z, float angle) {
         double cos = Math.cos(angle);

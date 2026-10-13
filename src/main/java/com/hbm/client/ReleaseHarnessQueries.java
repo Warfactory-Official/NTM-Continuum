@@ -8,9 +8,11 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.TileEntityMachinePolluting;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
 import com.hbm.tileentity.machine.TileEntityChimneyBase;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.ItemStack;
@@ -19,7 +21,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import java.util.Optional;
 
 /**
- * The {@code hbm_release} harness query of the pre-release client wave (History §19es-client). Inert unless the
+ * The {@code hbm_release} harness query. Inert unless the
  * harness listener runs.
  * <ul>
  *   <li>{@code mode=tooltip, slot=N}: the client's own tooltip lines ({@code Screen.getTooltipFromItem}) of player
@@ -36,7 +38,7 @@ public final class ReleaseHarnessQueries {
     private ReleaseHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_release", ReleaseHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_release", ReleaseHarnessQueries::query);
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {
@@ -57,7 +59,7 @@ public final class ReleaseHarnessQueries {
                             o.addProperty("y", pos.getY());
                             o.addProperty("z", pos.getZ());
                             o.addProperty("on_ticks", chimney.onTicks);
-                            o.addProperty("type", String.valueOf(net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE
+                            o.addProperty("type", String.valueOf(BuiltInRegistries.BLOCK_ENTITY_TYPE
                                     .getKey(chimney.getType())));
                             chimneys.add(o);
                         }
@@ -87,7 +89,7 @@ public final class ReleaseHarnessQueries {
                         JsonArray slots = new JsonArray();
                         for (int i = 0; i < pad.inventory.getSlots(); i++) {
                             ItemStack s = pad.inventory.getStackInSlot(i);
-                            slots.add(s.isEmpty() ? "" : net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(s.getItem())
+                            slots.add(s.isEmpty() ? "" : BuiltInRegistries.ITEM.getKey(s.getItem())
                                     + " x" + s.getCount());
                         }
                         json.add("slots", slots);
@@ -119,7 +121,7 @@ public final class ReleaseHarnessQueries {
         if (mc.player == null) return json;
         int slot = params.has("slot") ? params.get("slot").getAsInt() : 0;
         ItemStack stack = mc.player.getInventory().getItem(slot);
-        json.addProperty("item", String.valueOf(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem())));
+        json.addProperty("item", String.valueOf(BuiltInRegistries.ITEM.getKey(stack.getItem())));
         JsonArray lines = new JsonArray();
         JsonArray colours = new JsonArray();
         for (Component line : Screen.getTooltipFromItem(mc, stack)) {

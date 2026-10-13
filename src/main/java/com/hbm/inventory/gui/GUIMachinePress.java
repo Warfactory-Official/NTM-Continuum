@@ -1,5 +1,7 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachinePress;
 import com.hbm.tileentity.machine.TileEntityMachinePress;
@@ -16,9 +18,9 @@ import java.util.Optional;
  * ({@code processing/gui_press.png}, 176x214). Reads {@code speed}/{@code burnTime}/{@code progress} off the
  * synced client {@link TileEntityMachinePress} (broadcast via the BufPacket, not a 16-bit ContainerData slot).
  */
-public class GUIMachinePress extends dev.golem.core.gui.CompatContainerScreen<ContainerMachinePress> {
+public class GUIMachinePress extends CompatContainerScreen<ContainerMachinePress> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_press.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_press.png");
 
     public GUIMachinePress(ContainerMachinePress menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 214);

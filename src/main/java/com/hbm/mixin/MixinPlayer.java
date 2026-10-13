@@ -8,16 +8,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Power armour's hard landing — the stand-in for 1.12's {@code LivingFallEvent}.
+ * Power armour's hard landing: the stand-in for 1.12's {@code LivingFallEvent}.
  *
- * <p><b>Why this targets {@code Player} and not {@code LivingEntity}.</b> The obvious target is
- * {@code LivingEntity.causeFallDamage}, and that was the first attempt. It is wrong, and wrong in a way
- * that only shows up in game: {@code Player.causeFallDamage} <b>returns early whenever the player may
- * fly</b> — i.e. in creative — and never calls {@code super}, so the hook simply never runs for the way
- * most people test things. That early return is also exactly where Forge fires
- * {@code PlayerFlyableFallEvent}, which upstream subscribes to <i>alongside</i> {@code LivingFallEvent}
- * for precisely this reason. Injecting at the head of the {@code Player} override covers both branches
- * with one hook, which is what those two upstream events add up to.
+ * <p><b>Why this targets {@code Player} and not {@code LivingEntity}.</b> {@code Player.causeFallDamage}
+ * <b>returns early whenever the player may fly</b>, i.e. in creative, and never calls {@code super}, so a
+ * hook on {@code LivingEntity.causeFallDamage} never runs there. That early return is where Forge fires
+ * {@code PlayerFlyableFallEvent}, which upstream subscribes to <i>alongside</i> {@code LivingFallEvent}.
+ * Injecting at the head of the {@code Player} override covers both branches with one hook.
  *
  * <p>HEAD, because vanilla resets {@code fallDistance} immediately afterwards.
  *

@@ -2,6 +2,7 @@ package com.hbm.explosion.vanillant.standard;
 
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.interfaces.IBlockMutator;
+import dev.golem.core.world.Compat;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,7 +36,7 @@ public class BlockMutatorDebris implements IBlockMutator {
         for (Direction dir : Direction.values()) {
             BlockPos neighbour = pos.relative(dir);
             BlockState state = world.getBlockState(neighbour);
-            if (dev.golem.core.world.Compat.isSolidRender(state, world, neighbour) && state != targetState) {
+            if (Compat.isSolidRender(state, world, neighbour) && state != targetState) {
                 world.setBlock(pos, targetState, 3);
                 return;
             }

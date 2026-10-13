@@ -2,6 +2,7 @@ package com.hbm.items.tool;
 
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.ToolTier;
+import java.util.regex.Pattern;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -29,7 +30,7 @@ public class ItemSwordMeteorite extends ItemSwordAbility {
         super.appendCompatHoverText(stack, context, list, flag);
 
         String lines = Component.translatable(descKey).getString();
-        for (String line : lines.split(java.util.regex.Pattern.quote("$"))) {
+        for (String line : lines.split(Pattern.quote("$"))) {
             list.add(Component.literal(line).withStyle(ChatFormatting.ITALIC));
         }
     }

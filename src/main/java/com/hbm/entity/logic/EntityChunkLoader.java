@@ -10,8 +10,8 @@ import net.minecraft.world.level.ChunkPos;
 /**
  * The chunk-loading half of a chunkloading entity, held by composition.
  *
- * <p>1.12.2 spelled this logic out three times — once in {@code EntityExplosionChunkloading}, once in
- * {@code EntityMissileBaseNT} and once in {@code EntityMissileAntiBallistic} — because all three
+ * <p>1.12.2 spelled this logic out three times: once in {@code EntityExplosionChunkloading}, once in
+ * {@code EntityMissileBaseNT} and once in {@code EntityMissileAntiBallistic}, because all three
  * needed a different superclass. Java still only has one superclass, so the shared part lives here and
  * each entity holds one, forwarding its {@link IChunkLoader} methods.
  *
@@ -26,7 +26,7 @@ public final class EntityChunkLoader implements IChunkLoader {
     private ChunkLoaderTicket ticket;
     /**
      * Set when the entity was read from NBT. The first request after a load is skipped so the restore
-     * ticket (which already holds this chunk) gets a tick to be counted first — the direct analogue of
+     * ticket (which already holds this chunk) gets a tick to be counted first, the direct analogue of
      * upstream's {@code awaitingTicketRestore}, which waited for Forge's {@code LoadingCallback}.
      */
     private boolean awaitingRestore;

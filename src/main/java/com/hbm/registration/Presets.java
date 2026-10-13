@@ -4,6 +4,7 @@ import dev.golem.core.dejson.Dejson;
 import dev.golem.core.dejson.Dispatch;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Shape;
+import dev.golem.core.dejson.Slots;
 import dev.golem.core.dejson.Tint;
 import dev.golem.core.dejson.Variants;
 
@@ -18,7 +19,7 @@ import java.util.function.Function;
  * definition names the block model; {@code Declaration#blockItemDirect}). Say otherwise with an argument:
  * {@code .states(Variants.facing())}, {@code .viaItemModel()} (the definition names an item model whose
  * parent is the block model; {@code Declaration#blockItem}), or {@code .noItem()}. Both item spellings bake
- * identically but emit different files, so pick the one the old declaration used — the snapshot compare
+ * identically but emit different files, so pick the one the old declaration used; the snapshot compare
  * will tell you if you picked wrong.
  *
  * <p>Hand-tuned geometry, display transforms and one-off OBJ item definitions are NOT presets: they stay
@@ -74,7 +75,7 @@ public final class Presets {
 
     /**
      * A block drawn by a renderer (OBJ machines): the blockstate points every state at {@code sharedModel}
-     * and the block owns no model. No item by default — OBJ items are authored or typed declarations.
+     * and the block owns no model. No item by default; OBJ items are authored or typed declarations.
      */
     public static BlockModel rendered(String sharedModel, Dispatch states) {
         return new BlockModel(null, sharedModel, null, states, ItemForm.NONE);
@@ -123,7 +124,7 @@ public final class Presets {
     }
 
     private static Shape handheldFull3D(String layer0) {
-        return Models.parented("hbm:item/handheld_full3d", dev.golem.core.dejson.Slots.of("layer0", layer0));
+        return Models.parented("hbm:item/handheld_full3d", Slots.of("layer0", layer0));
     }
 
     /** The item definition names an existing model (a block model, or an authored item model). */

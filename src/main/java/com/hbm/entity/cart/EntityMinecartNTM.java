@@ -1,11 +1,13 @@
 package com.hbm.entity.cart;
 
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
 
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatMinecart;
 import com.hbm.items.tool.ItemModMinecart.EnumCartBase;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -35,7 +37,7 @@ public abstract class EntityMinecartNTM extends CompatMinecart implements ICartC
     protected EntityMinecartNTM(EntityType<? extends EntityMinecartNTM> type, Level level,
                                 double x, double y, double z, EnumCartBase base) {
         this(type, level);
-        dev.golem.core.world.Compat.setInitialPos(this, x, y, z);
+        Compat.setInitialPos(this, x, y, z);
         setBase(base);
     }
 
@@ -75,11 +77,11 @@ public abstract class EntityMinecartNTM extends CompatMinecart implements ICartC
      */
     @Override
     public void destroy(ServerLevel level, DamageSource source) {
-        dev.golem.core.world.Compat.kill(this, level);
+        Compat.kill(this, level);
 
         if (Compat.entityDrops(level)) {
             ItemStack stack = getCartItem();
-            if (hasCustomName()) dev.golem.core.world.ItemStacks.setCustomName(stack, getCustomName());
+            if (hasCustomName()) ItemStacks.setCustomName(stack, getCustomName());
             spawnAtLocation(level, stack);
         }
     }
@@ -87,12 +89,12 @@ public abstract class EntityMinecartNTM extends CompatMinecart implements ICartC
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        com.hbm.util.SavedIds.putEnum(output, "base", getBase()); // by name; the synched int is session-only
+        SavedIds.putEnum(output, "base", getBase()); // by name; the synched int is session-only
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        setBase(com.hbm.util.SavedIds.getEnum(input, "base", EnumCartBase.values()[0]));
+        setBase(SavedIds.getEnum(input, "base", EnumCartBase.values()[0]));
     }
 }

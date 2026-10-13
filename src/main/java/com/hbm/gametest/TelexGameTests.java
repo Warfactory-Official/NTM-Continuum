@@ -1,8 +1,8 @@
 package com.hbm.gametest;
 
+import com.hbm.Constants;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.packet.HbmPackets;
-import com.hbm.radio.ModRadioBlocks;
 import com.hbm.tileentity.network.RTTYSystem;
 import com.hbm.tileentity.network.TileEntityRadioTelex;
 import dev.golem.core.gametest.GameTestHelpers;
@@ -16,9 +16,12 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import net.minecraft.world.phys.AABB;
 
 /** Focused server contracts for the five-line TELEX protocol, paper output and controls. */
 public final class TelexGameTests {
@@ -26,7 +29,7 @@ public final class TelexGameTests {
 
     private static final String CHANNEL = "hbm-telex-test";
 
-    public static final GameTests.Suite TESTS = GameTests.suite(com.hbm.Constants.MOD_ID);
+    public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
     public static final GameTests.Function PROTOCOL = TESTS.function(
             "telex_protocol_timing", 80, 8, () -> TelexGameTests::protocolTiming);
     public static final GameTests.Function CONTROL = TESTS.function(
@@ -154,13 +157,13 @@ public final class TelexGameTests {
         telex.rxBuffer[1] = "";
         telex.rxBuffer[2] = "last line";
         int before = helper.getLevel().getEntitiesOfClass(ItemEntity.class,
-                new net.minecraft.world.phys.AABB(telex.getBlockPos()).inflate(2D)).size();
+                new AABB(telex.getBlockPos()).inflate(2D)).size();
         telex.print();
         List<ItemEntity> drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class,
-                new net.minecraft.world.phys.AABB(telex.getBlockPos()).inflate(2D));
+                new AABB(telex.getBlockPos()).inflate(2D));
         helper.assertTrue(drops.size() == before + 1, "TELEX PRINT did not spawn one paper message");
         ItemStack stack = drops.get(drops.size() - 1).getItem();
-        helper.assertTrue(stack.is(net.minecraft.world.item.Items.PAPER)
+        helper.assertTrue(stack.is(Items.PAPER)
                         && ItemStacks.loreLines(stack).equals(List.of("first line", "last line"))
                         && "Message".equals(stack.getHoverName().getString()),
                 "TELEX paper output did not retain its gray message lines and Message name");
@@ -180,11 +183,11 @@ public final class TelexGameTests {
             helper.assertTrue(telex.printAfterRx, "PRINT control did not arm deferred paper output");
 
             int before = level.getEntitiesOfClass(ItemEntity.class,
-                    new net.minecraft.world.phys.AABB(telex.getBlockPos()).inflate(2D)).size();
+                    new AABB(telex.getBlockPos()).inflate(2D)).size();
             publishSignal(helper, TileEntityRadioTelex.EOT);
             telex.serverTick();
             int after = level.getEntitiesOfClass(ItemEntity.class,
-                    new net.minecraft.world.phys.AABB(telex.getBlockPos()).inflate(2D)).size();
+                    new AABB(telex.getBlockPos()).inflate(2D)).size();
             helper.assertTrue(after == before + 1 && !telex.printAfterRx && telex.deleteOnReceive,
                     "EOT did not print the armed message and reset the receive state");
 
@@ -224,7 +227,7 @@ public final class TelexGameTests {
     }
 
     private static TileEntityRadioTelex place(GameTestHelper helper, BlockPos relative) {
-        helper.setBlock(relative, ModRadioBlocks.RADIO_TELEX.get().defaultBlockState()
+        helper.setBlock(relative, ModMachineBlocks.radio_telex.get().defaultBlockState()
                 .setValue(BlockMultiblockCore.FACING, Direction.NORTH));
         return GameTestHelpers.blockEntity(helper, relative, TileEntityRadioTelex.class);
     }

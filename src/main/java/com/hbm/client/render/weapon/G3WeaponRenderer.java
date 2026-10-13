@@ -10,7 +10,7 @@ import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.item.ItemStack;
 
-/** The unmodified G3 renderer; optional weapon-mod geometry is intentionally not claimed. */
+/** The unmodified G3 renderer; optional weapon-mod geometry is not claimed. */
 public final class G3WeaponRenderer extends WeaponRenderer {
 
     private WavefrontObj model;

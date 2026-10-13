@@ -10,6 +10,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.ModBatteryItems;
 import com.hbm.items.ModFuelItems;
 import com.hbm.items.ModItems;
+import com.hbm.items.ModUpgradeItems;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -18,7 +19,9 @@ import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 
 /** Focused contracts for the legacy eight-cycle Exposure Chamber. */
@@ -129,7 +132,7 @@ public final class ExposureChamberGameTests {
         TileEntityMachineExposureChamber chamber = place(helper, new BlockPos(2, 1, 2));
         chamber.inventory.setStackInSlot(1, new ItemStack(ModItems.particle_higgs.get()));
         chamber.inventory.setStackInSlot(3, new ItemStack(ModItems.ingot_uranium.get(), 8));
-        chamber.inventory.setStackInSlot(4, new ItemStack(net.minecraft.world.item.Items.STONE, 64));
+        chamber.inventory.setStackInSlot(4, new ItemStack(Items.STONE, 64));
         chamber.savedParticles = TileEntityMachineExposureChamber.MAX_PARTICLES;
         chamber.power = TileEntityMachineExposureChamber.MAX_POWER;
 
@@ -144,13 +147,13 @@ public final class ExposureChamberGameTests {
     }
 
     public static void upgrades(GameTestHelper helper) {
-        assertUpgrade(helper, com.hbm.items.ModUpgradeItems.upgrade_speed_3.get(), 50, 20_000);
-        assertUpgrade(helper, com.hbm.items.ModUpgradeItems.upgrade_power_3.get(), 400, 2_500);
-        assertUpgrade(helper, com.hbm.items.ModUpgradeItems.upgrade_overdrive_3.get(), 50, 70_000);
+        assertUpgrade(helper, ModUpgradeItems.upgrade_speed_3.get(), 50, 20_000);
+        assertUpgrade(helper, ModUpgradeItems.upgrade_power_3.get(), 400, 2_500);
+        assertUpgrade(helper, ModUpgradeItems.upgrade_overdrive_3.get(), 50, 70_000);
         helper.succeed();
     }
 
-    private static void assertUpgrade(GameTestHelper helper, net.minecraft.world.item.Item upgrade,
+    private static void assertUpgrade(GameTestHelper helper, Item upgrade,
                                       int expectedProcessTime, int expectedConsumption) {
         TileEntityMachineExposureChamber chamber = place(helper, new BlockPos(2, 1, 2));
         chamber.inventory.setStackInSlot(6, new ItemStack(upgrade));

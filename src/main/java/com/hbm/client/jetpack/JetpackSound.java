@@ -1,5 +1,6 @@
 package com.hbm.client.jetpack;
 
+import com.hbm.sound.ModSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
@@ -49,7 +50,7 @@ public final class JetpackSound {
         private final Player player;
 
         private Loop(Player player) {
-            super(com.hbm.sound.ModSounds.JETPACK.get(), SoundSource.PLAYERS,
+            super(ModSounds.JETPACK.get(), SoundSource.PLAYERS,
                     SoundInstance.createUnseededRandom());
             this.player = player;
             this.looping = true;

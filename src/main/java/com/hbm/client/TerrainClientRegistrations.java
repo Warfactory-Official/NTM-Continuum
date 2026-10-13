@@ -4,6 +4,7 @@ import com.hbm.blocks.generic.BlockNTMFlower;
 import com.hbm.blocks.generic.BlockTallPlant;
 import com.hbm.blocks.ModTerrainBlocks;
 import com.hbm.blocks.TerrainDeclarations;
+import com.hbm.client.render.RenderReeds;
 import dev.golem.core.client.BlockTint;
 import dev.golem.core.client.Tints;
 import net.minecraft.world.level.block.Block;
@@ -31,7 +32,7 @@ public final class TerrainClientRegistrations {
 
     /** 1.7 RenderReeds: {@code colorMultiplier} (white) times 0.75, on every segment (tint index 0 of the top model). */
     private static final BlockTint REEDS = new BlockTint() {
-        @Override public int color(BlockState state) { return com.hbm.client.render.RenderReeds.COLOR; }
+        @Override public int color(BlockState state) { return RenderReeds.COLOR; }
         @Override public Set<Property<?>> relevantProperties() { return Set.of(); }
     };
 

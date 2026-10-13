@@ -1,5 +1,6 @@
 package com.hbm.saveddata;
 
+import com.hbm.Constants;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceKey;
@@ -14,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class TomSaveData extends CompatSavedData<TomSaveData> {
 
-    private static final String ID = com.hbm.Constants.MOD_ID + ":impact_data";
+    private static final String ID = Constants.MOD_ID + ":impact_data";
     private static final Codec<TomSaveData> CODEC = makeCodec();
 
     public float dust;

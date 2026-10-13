@@ -25,7 +25,7 @@ import net.minecraft.world.phys.Vec3;
  * Draws the terminal's scrollback onto its own screen. Ported from 1.12.2's {@code RenderRBMKTerminal}.
  *
  * <p>Eighteen lines: the seventeen of history, plus the line currently being typed, which is read off
- * the open screen rather than synced — the server never sees a command until it is submitted. Lines are
+ * the open screen rather than synced; the server never sees a command until it is submitted. Lines are
  * clipped to the panel width character by character, and the whole readout turns amber while a repeat
  * broadcast is running, which is the only cue that the terminal is transmitting.
  *

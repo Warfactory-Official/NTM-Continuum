@@ -1,5 +1,8 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.environment.Environment;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.lib.HbmBlockTags;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
@@ -17,6 +20,7 @@ import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -80,7 +84,7 @@ public class TileEntityMachinePumpSteam extends TileEntityMachineBase
             pump.rotor -= 360F;
             pump.lastRotor -= 360F;
             play(level, pos, ModSounds.STEAM_ENGINE_OPERATE.get(), 0.5F, 0.75F);
-            play(level, pos, net.minecraft.sounds.SoundEvents.GENERIC_SPLASH, 1F, 0.5F);
+            play(level, pos, SoundEvents.GENERIC_SPLASH, 1F, 0.5F);
         }
     }
 
@@ -106,8 +110,8 @@ public class TileEntityMachinePumpSteam extends TileEntityMachineBase
         if (!level.dimensionType().hasSkyLight()) return false;
         // hbm-space TileEntityMachinePumpBase.checkGround: no groundwater in orbit, and the pump lifts the body's
         // water table, whatever fluid that is (com.hbm.api.environment.Environment; plain HBM: water)
-        com.hbm.inventory.fluid.FluidType table = com.hbm.api.environment.Environment.groundwater(level, pos);
-        if (table == com.hbm.inventory.fluid.Fluids.NONE) return false;
+        FluidType table = Environment.groundwater(level, pos);
+        if (table == Fluids.NONE) return false;
         water.setTankType(table);
 
         int validBlocks = 0;
@@ -118,7 +122,7 @@ public class TileEntityMachinePumpSteam extends TileEntityMachineBase
                     BlockPos groundPos = pos.offset(x, y, z);
                     BlockState groundState = level.getBlockState(groundPos);
                     if (y == -1 && !Compat.isSolidRender(groundState, level, groundPos)) return false;
-                    if (groundState.is(com.hbm.tags.HbmBlockTags.PUMP_GROUND)) validBlocks++;
+                    if (groundState.is(HbmBlockTags.PUMP_GROUND)) validBlocks++;
                     else invalidBlocks++;
                 }
             }

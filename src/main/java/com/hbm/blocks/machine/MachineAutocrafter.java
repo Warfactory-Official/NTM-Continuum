@@ -1,6 +1,8 @@
 package com.hbm.blocks.machine;
 
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -18,7 +20,7 @@ import com.hbm.tileentity.machine.TileEntityMachineAutocrafter;
  * it drops the recipe grid, output and battery (slots 10 and up); the nine pattern ghosts and the
  * template output are filters, not items, and vanish with the block as in 1.7.
  */
-public class MachineAutocrafter extends dev.golem.core.world.CompatBlock implements TickingBlock {
+public class MachineAutocrafter extends CompatBlock implements TickingBlock {
 
     public MachineAutocrafter(Properties properties) {
         super(properties);
@@ -35,7 +37,7 @@ public class MachineAutocrafter extends dev.golem.core.world.CompatBlock impleme
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }

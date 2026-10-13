@@ -1,5 +1,6 @@
 package com.hbm.inventory.recipes.anvil;
 
+import com.hbm.inventory.RecipesCommon;
 import com.hbm.items.special.ItemHot;
 import net.minecraft.world.item.ItemStack;
 
@@ -9,13 +10,13 @@ import java.util.List;
 /** Tiered anvil smithing that accepts only sufficiently hot ItemHot inputs and averages their heat. */
 public final class AnvilSmithingHotRecipe extends AnvilSmithingRecipe {
 
-    public AnvilSmithingHotRecipe(int tier, ItemStack output, com.hbm.inventory.RecipesCommon.AStack left,
-                                  com.hbm.inventory.RecipesCommon.AStack right) {
+    public AnvilSmithingHotRecipe(int tier, ItemStack output, RecipesCommon.AStack left,
+                                  RecipesCommon.AStack right) {
         super(tier, output, left, right);
     }
 
     @Override
-    protected boolean doesStackMatch(ItemStack input, com.hbm.inventory.RecipesCommon.AStack recipe) {
+    protected boolean doesStackMatch(ItemStack input, RecipesCommon.AStack recipe) {
         if (input != null && input.getItem() instanceof ItemHot && ItemHot.getHeat(input) < 0.5D) return false;
         if (input != null && input.getItem() instanceof ItemHot) {
             // Heat is the transient state this recipe transforms; stage/components other than heat

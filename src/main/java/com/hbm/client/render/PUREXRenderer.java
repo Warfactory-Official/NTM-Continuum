@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachinePUREX;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -16,7 +17,7 @@ public class PUREXRenderer extends GemBER<TileEntityMachinePUREX, PurexRenderSta
     private static final float BASE_YAW = 90F;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/purex.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/purex.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/purex.png");
 

@@ -9,11 +9,14 @@ import com.hbm.entity.mob.glyphid.EntityGlyphidBrawler;
 import com.hbm.entity.mob.glyphid.EntityGlyphidDigger;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
+import dev.golem.core.Ids;
 import dev.golem.core.dejson.Tints;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.registry.Tabs;
 import dev.golem.core.world.SpawnEggs;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.Item;
@@ -25,7 +28,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Spawn eggs for the 29 mobs 1.7 {@code EntityMappings.addMob} registered, with 1.7's egg colours (History §19ej-7).
+ * Spawn eggs for the 29 mobs 1.7 {@code EntityMappings.addMob} registered, with 1.7's egg colours.
  *
  * <p>1.7 gave each mob a vanilla {@code spawn_egg} damage value ({@code ModEntityList.registerEntityEgg}), shown in
  * the vanilla tab beside the vanilla eggs and named "Spawn " + the mob's name. Modern eggs are one item per mob:
@@ -95,8 +98,8 @@ public final class ModSpawnEggs {
     public static void init() {
         // The vanilla spawn-egg tab by id: its CreativeModeTabs constant is private on Fabric 26.1, and a Stonecutter
         // substring rule rewrites the constant's name.
-        Tabs.modifyEntries(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.CREATIVE_MODE_TAB,
-                dev.golem.core.Ids.of("minecraft", "spawn_eggs")), entries -> {
+        Tabs.modifyEntries(ResourceKey.create(Registries.CREATIVE_MODE_TAB,
+                Ids.of("minecraft", "spawn_eggs")), entries -> {
             for (RegistryObject<Item> egg : EGGS) entries.accept(new ItemStack(egg.get()));
         });
     }

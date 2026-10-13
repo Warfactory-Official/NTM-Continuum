@@ -1,10 +1,13 @@
 package com.hbm.blocks.machine;
 
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
@@ -57,7 +60,7 @@ public abstract class BlockRtgFurnaceBase extends CompatBlock implements Ticking
 
     @Override
     protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
-        return level.getBlockEntity(pos) instanceof net.minecraft.world.Container container
+        return level.getBlockEntity(pos) instanceof Container container
                 ? AbstractContainerMenu.getRedstoneSignalFromContainer(container) : 0;
     }
 
@@ -83,9 +86,9 @@ public abstract class BlockRtgFurnaceBase extends CompatBlock implements Ticking
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                   BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
-        if (!level.isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }

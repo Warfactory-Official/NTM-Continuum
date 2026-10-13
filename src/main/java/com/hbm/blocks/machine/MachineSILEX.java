@@ -22,7 +22,7 @@ import org.jspecify.annotations.Nullable;
  * Laser Isotope Separation Chamber, "SILEX" (1.12.2 {@code machine_silex}): a 3×3×3 dummyable chamber
  * that dissolves isotope-bearing material and lets a {@code machine_fel}'s beam sort it.
  *
- * <p>It takes <b>no power of its own</b> — all the energy is in the laser. What it does need is
+ * <p>It takes <b>no power of its own</b>; all the energy is in the laser. What it does need is
  * peroxide, which arrives through the two ports {@link #fillSpace} adds at {@code y+1} on either side,
  * perpendicular to the machine's facing. Those two extras are the only fluid connection points.
  */

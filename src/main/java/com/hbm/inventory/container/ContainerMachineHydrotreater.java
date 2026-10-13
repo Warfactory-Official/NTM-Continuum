@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the hydrotreater — 1.7.10 {@code ContainerMachineHydrotreater} layout (176×238), 11 machine
+ * Menu for the hydrotreater: 1.7.10 {@code ContainerMachineHydrotreater} layout (176×238), 11 machine
  * slots. Slots 3/4 (hydrogen containers) are 1.7's {@code SlotDeprecated}: they keep old items but accept
  * nothing and are neither drawn nor hoverable ({@link Slot#isActive()} false).
  */

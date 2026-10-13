@@ -13,8 +13,13 @@ import com.hbm.items.tool.ItemTurretMobFilter;
 import com.hbm.items.machine.DrillBitType;
 import com.hbm.items.machine.ItemDrillbit;
 import com.hbm.api.block.IToolable.ToolType;
+import dev.golem.core.Ids;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import com.hbm.items.tool.ItemMirrorTool;
+import dev.golem.core.world.CompatSwordItem;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
 
 /**
  * HBM's in-world construction tools and excavator drill bits. The ordinary screwdriver and hand drill
@@ -42,10 +47,10 @@ public final class ModToolItems {
             REG.item("hand_drill", p -> new ItemTooling(p, ToolType.HAND_DRILL),
                     p -> p.stacksTo(1).durability(100)).transform(Presets.handheld());
     /** Mk.V crate opening device: 1.7 ModSword(tMatSteel), 750 uses and a 4 + 2 = 6 attack modifier. */
-    public static final RegistryObject<dev.golem.core.world.CompatSwordItem> crowbar =
-            REG.item("crowbar", p -> new dev.golem.core.world.CompatSwordItem(p, 750, 4.0F, -2.4F,
-                    net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM,
-                            dev.golem.core.Ids.of(Constants.MOD_ID, "repairs/steel"))), p -> p)
+    public static final RegistryObject<CompatSwordItem> crowbar =
+            REG.item("crowbar", p -> new CompatSwordItem(p, 750, 4.0F, -2.4F,
+                    TagKey.create(Registries.ITEM,
+                            Ids.of(Constants.MOD_ID, "repairs/steel"))), p -> p)
                     .transform(Presets.handheld());
     public static final RegistryObject<ItemDefuser> defuser =
             REG.item("defuser", ItemDefuser::new,
@@ -53,6 +58,10 @@ public final class ModToolItems {
     public static final RegistryObject<ItemTurretMobFilter> turret_mob_filter =
             REG.item("turret_mob_filter", ItemTurretMobFilter::new,
                     p -> p.stacksTo(1)).transform(Presets.sprite());
+    /** Solar mirror adjustment tool (1.7 ItemMirrorTool, not full-3D). */
+    public static final RegistryObject<ItemMirrorTool> mirror_tool = REG.<ItemMirrorTool>item(
+            "mirror_tool", ItemMirrorTool::new, p -> p.stacksTo(1))
+            .transform(Presets.sprite());
 
     public static final RegistryObject<ItemDrillbit> drillbit_steel = drillbit("drillbit_steel", DrillBitType.STEEL);
     public static final RegistryObject<ItemDrillbit> drillbit_steel_diamond = drillbit("drillbit_steel_diamond", DrillBitType.STEEL_DIAMOND);
@@ -73,6 +82,7 @@ public final class ModToolItems {
         ModTabs.addTo(HbmTab.CONSUMABLES, crowbar);
         ModTabs.addTo(HbmTab.BOMBS, defuser);
         ModTabs.addTo(HbmTab.WEAPONS, turret_mob_filter);
+        ModTabs.addTo(HbmTab.CONSUMABLES, mirror_tool);
 
         ModTabs.addTo(HbmTab.CONTROL, drillbit_steel);
         ModTabs.addTo(HbmTab.CONTROL, drillbit_steel_diamond);

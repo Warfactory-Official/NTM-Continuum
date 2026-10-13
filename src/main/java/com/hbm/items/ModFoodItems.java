@@ -11,6 +11,8 @@ import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.CompatConsumables;
 import dev.golem.core.world.Effects;
+import java.util.function.Supplier;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -29,7 +31,7 @@ public final class ModFoodItems {
     }
 
     private static Reg.Handle<ItemLemon> food(String id, int nutrition, float saturation, boolean wolfFood,
-                                                  HbmTab tab, java.util.function.Supplier<List<net.minecraft.world.effect.MobEffectInstance>> effects,
+                                                  HbmTab tab, Supplier<List<MobEffectInstance>> effects,
                                                   boolean stacksToOne, boolean bowlRemainder) {
         Reg.Handle<ItemLemon> item = REG.item(id,
                 p -> new ItemLemon(p, id), p -> {

@@ -1,5 +1,10 @@
 package com.hbm.inventory.recipes;
 
+import com.hbm.handler.NTMToolHandler;
+import com.hbm.inventory.material.MaterialDistribution;
+import com.hbm.inventory.recipes.anvil.AnvilRecipes;
+
+
 /**
  * Every HBM machine recipe table that is a datapack table, declared at mod construction (HbmEntry.declare) so their
  * recipe types and serializers register with HBM's content. A table converted to data adds its line here.
@@ -25,10 +30,10 @@ public final class HbmRecipeTables {
         ReformingRecipes.declare();
         SolidificationRecipes.declare();
         StorageDrumRecipes.declare();
-        com.hbm.handler.NTMToolHandler.declare();
+        NTMToolHandler.declare();
         CrucibleRecipes.declare(); // R-C1: item-processing tables
-        com.hbm.inventory.material.MaterialDistribution.declare();
-        com.hbm.foundry.ArcFurnaceRecipes.declare();
+        MaterialDistribution.declare();
+        ArcFurnaceRecipes.declare();
         CentrifugeRecipes.declare();
         CrystallizerRecipes.declare();
         CyclotronRecipes.declare();
@@ -49,7 +54,7 @@ public final class HbmRecipeTables {
         PressRecipes.declare();
         SawmillRecipes.declare();
         SolderingRecipes.declare();
-        com.hbm.inventory.recipes.anvil.AnvilRecipes.declare();
+        AnvilRecipes.declare();
         // R-A: GenericRecipe tables
         AssemblyMachineRecipes.declare();
         BlastFurnaceRecipesNT.declare();

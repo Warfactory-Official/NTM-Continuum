@@ -16,6 +16,6 @@ public class AssemblyRenderState extends CompatRenderState {
     /** The recipe output item shown floating above the machine; {@link #showItem} gates rendering. */
     public final CompatItemRenderState outputItem = new CompatItemRenderState();
     public boolean showItem;
-    /** Whether the output item is a 3D block model (vs a flat item) — picks the float orientation. */
+    /** Whether the output item is a 3D block model (vs a flat item), picks the float orientation. */
     public boolean itemIs3d;
 }

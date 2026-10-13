@@ -1,6 +1,7 @@
 package com.hbm.api.data;
 
 import com.hbm.Constants;
+import com.hbm.items.machine.ItemMachineUpgrade;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.data.DataMaps;
@@ -58,10 +59,10 @@ public final class MachinePartDataMaps {
      * A machine upgrade (1.7 {@code ItemMachineUpgrade}'s type and tier): which {@code UpgradeType} it raises and by how
      * many levels. Any item with an entry counts as that upgrade in a machine's upgrade slots.
      */
-    public record Upgrade(com.hbm.items.machine.ItemMachineUpgrade.UpgradeType type, int tier) {
+    public record Upgrade(ItemMachineUpgrade.UpgradeType type, int tier) {
         public static final Codec<Upgrade> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Codec.STRING.xmap(com.hbm.items.machine.ItemMachineUpgrade.UpgradeType::valueOf,
-                        com.hbm.items.machine.ItemMachineUpgrade.UpgradeType::name).fieldOf("type").forGetter(Upgrade::type),
+                Codec.STRING.xmap(ItemMachineUpgrade.UpgradeType::valueOf,
+                        ItemMachineUpgrade.UpgradeType::name).fieldOf("type").forGetter(Upgrade::type),
                 Codec.INT.fieldOf("tier").forGetter(Upgrade::tier)
         ).apply(i, Upgrade::new));
     }

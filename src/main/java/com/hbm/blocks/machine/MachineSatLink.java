@@ -13,6 +13,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -51,7 +52,7 @@ public class MachineSatLink extends BlockMultiblockMachine implements ILookOverl
 
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
-                                         net.minecraft.world.InteractionHand hand, ItemStack stack,
+                                         InteractionHand hand, ItemStack stack,
                                          BlockHitResult hit) {
         if (!(stack.getItem() instanceof ISatChip)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;

@@ -15,7 +15,7 @@ import mezz.jei.api.registration.ISubtypeRegistration;
 import net.minecraft.resources.Identifier;
 
 /^*
- * Fabric {@code @JeiPlugin} entrypoint. Thin by design — all category/recipe/catalyst logic lives in
+ * Fabric {@code @JeiPlugin} entrypoint. Thin by design, all category/recipe/catalyst logic lives in
  * {@link HbmJeiPluginCommon} (compiled against {@code jei-*-common-api}), so both loaders share it and only
  * the annotated entrypoint is per-module (JEI discovers {@code @JeiPlugin} by classpath annotation scan,
  * and the loader APIs differ). Mirrors the {@code HbmClient}/{@code HbmClientNeoForge} split.

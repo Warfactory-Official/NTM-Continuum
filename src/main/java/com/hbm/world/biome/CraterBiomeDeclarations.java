@@ -9,7 +9,7 @@ import dev.golem.core.dejson.Biomes;
  * <p>The rings differ only in their grey ({@code BiomeGenCraterBase}'s sky and grass colours): the sky is
  * the inner ring's darkest and the outer ring's greenest. 1.7 cleared the creature, water and cave lists and
  * kept {@code BiomeGenBase}'s monster table, which is the one spawn list here. Nothing generates features in
- * them — the crater's terrain is written by the explosion, not by worldgen.
+ * them: the crater's terrain is written by the explosion, not by worldgen.
  */
 public final class CraterBiomeDeclarations {
 
@@ -19,7 +19,7 @@ public final class CraterBiomeDeclarations {
      * override and kept the swamp value). That value MULTIPLIED the blue pre-1.13 water texture, while modern
      * {@code water_color} is the whole colour over a grey texture whose default {@code 0x3F76E4} stands for the
      * old unmultiplied blue. So the colour 1.7 drew is {@code 0x505020 * 0x3F76E4 / 255} per channel = 0x14251D,
-     * murky near-black water. Using 0xE0FFAE directly as a colour gave pale green water (2026-09-29 playtest).
+     * murky near-black water. Using 0xE0FFAE directly as a colour gave pale green water.
      */
     static final int WATER = legacyWaterMultiplier(0x505020);
 

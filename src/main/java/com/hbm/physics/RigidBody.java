@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * old-hbm {@code physics.RigidBody}: a convex-compound rigid body stepped eight times per tick against the world's
+ * 1.12.2 {@code physics.RigidBody}: a convex-compound rigid body stepped eight times per tick against the world's
  * block boxes (sequential-impulse contacts, gravity 9.81). Ported statement for statement; the vecmath types are
  * {@link Mat3}/{@link Quat}, the world is a {@link CollisionSource}. {@link #renderMatrix} is {@code doGlTransform}.
  */

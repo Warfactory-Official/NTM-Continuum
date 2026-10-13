@@ -2,8 +2,9 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMachineCustom;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.module.ModulePatternMatcher;
 import com.hbm.tileentity.machine.TileEntityCustomMachine;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.ChatFormatting;
@@ -26,7 +27,7 @@ import java.util.Optional;
  */
 public final class GUIMachineCustom extends CompatContainerScreen<ContainerMachineCustom> {
 
-    private static final Identifier texture = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_custom.png");
+    private static final Identifier texture = Ids.of("hbm", "textures/gui/processing/gui_custom.png");
 
     public GUIMachineCustom(ContainerMachineCustom menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 256);

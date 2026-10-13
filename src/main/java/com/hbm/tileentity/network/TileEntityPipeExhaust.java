@@ -1,10 +1,12 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.api.fluidmk2.DuctData;
+import com.hbm.blocks.network.FluidDuctBox;
 import com.hbm.tileentity.ModFluidNetBlockEntities;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.ForgeDirection;
+import dev.golem.core.data.DataIn;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -23,7 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class TileEntityPipeExhaust extends TileEntityFluidDuctVariant {
 
     public TileEntityPipeExhaust(BlockPos pos, BlockState state) {
-        super(state.getBlock() instanceof com.hbm.blocks.network.FluidDuctBox
+        super(state.getBlock() instanceof FluidDuctBox
                 ? ModFluidNetBlockEntities.EXHAUST.get() : ModFluidNetBlockEntities.PAINTABLE_EXHAUST.get(), pos, state);
         this.type = Fluids.SMOKE;
     }
@@ -50,7 +52,7 @@ public class TileEntityPipeExhaust extends TileEntityFluidDuctVariant {
     }
 
     @Override
-    protected void loadData(dev.golem.core.data.DataIn input) {
+    protected void loadData(DataIn input) {
         super.loadData(input);
         if (!isSmoke(this.type)) this.type = Fluids.SMOKE;
     }

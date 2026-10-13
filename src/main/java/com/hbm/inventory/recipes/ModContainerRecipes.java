@@ -3,6 +3,7 @@ package com.hbm.inventory.recipes;
 import com.hbm.lib.ComponentIds;
 import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
+import dev.golem.core.dejson.Crafting;
 
 import static dev.golem.core.dejson.Crafting.anyOf;
 import static dev.golem.core.dejson.Crafting.componentShaped;
@@ -27,7 +28,7 @@ import static dev.golem.core.dejson.Crafting.tag;
  *
  * <p>Sources: {@code CraftingManager}, {@code ConsumableRecipes}, {@code PowderRecipes}, {@code WeaponRecipes}.
  * Not declared, with the reason: the patrol-drone express upgrades (no drone item in the port) and
- * {@code enable528}/config-gated recipes. The minecarts are in {@link RestoredCraftingRecipes} (History §19ej-1b).
+ * {@code enable528}/config-gated recipes. The minecarts are in {@link RestoredCraftingRecipes}.
  * Touches no Minecraft class.
  */
 public final class ModContainerRecipes {
@@ -36,7 +37,7 @@ public final class ModContainerRecipes {
     private static final String B92_ENERGY = "hbm:b92_energy";
     private static boolean declared;
 
-    // not yet in the generated id tables (registered this wave)
+    // not in the generated id tables
     private static final String HOLOTAPE_DIGAMMA = "hbm:holotape_image_holo_digamma";
     private static final String HOLOTAPE_RESTORED = "hbm:holotape_image_holo_restored";
     private static final String WRENCH = "hbm:wrench";
@@ -65,17 +66,17 @@ public final class ModContainerRecipes {
     }
 
     /** KEY_TOOL_SCREWDRIVER: both screwdrivers, which stay in the grid one use more worn. */
-    private static dev.golem.core.dejson.Crafting.Ingredient screwdriver() {
+    private static Crafting.Ingredient screwdriver() {
         return anyOf(ItemIds.screwdriver, SCREWDRIVER_DESH).degrade();
     }
 
     /** KEY_TOOL_CHEMISTRYSET: both laboratory sets, which stay in the grid one use more worn. */
-    private static dev.golem.core.dejson.Crafting.Ingredient chemistrySet() {
+    private static Crafting.Ingredient chemistrySet() {
         return anyOf("hbm:chemistry_set", CHEMISTRY_SET_BORON).degrade();
     }
 
     /** Items.potionitem meta 0 - the water bottle - consumed whole. */
-    private static dev.golem.core.dejson.Crafting.Ingredient waterBottle() {
+    private static Crafting.Ingredient waterBottle() {
         return item("minecraft:potion").potion("minecraft:water").remainder("minecraft:air");
     }
 
@@ -110,7 +111,7 @@ public final class ModContainerRecipes {
     }
 
     private static void tools() {
-        // 1.7 holotape_image metadata HOLO_DIGAMMA / HOLO_RESTORED, items of their own (History §19es-itemvariant)
+        // 1.7 holotape_image metadata HOLO_DIGAMMA / HOLO_RESTORED, items of their own
         componentShapeless(NS, "holotape_image_restored", stack(HOLOTAPE_RESTORED),
                 item(HOLOTAPE_DIGAMMA), screwdriver(), item(ItemIds.ducttape),
                 item(ItemIds.armor_polish));
@@ -160,7 +161,7 @@ public final class ModContainerRecipes {
         componentShapedCopy(NS, "crate_desh", stack(ItemIds.crate_desh), "S", rows(" D ", "DSD", " D "),
                 key("D", item(ItemIds.plate_desh)), key("S", item(ItemIds.crate_steel)));
         // 1.7 copies all 54 steel-crate slots into the 27-slot tungsten crate / 15-slot safe; slots past the
-        // new size are simply never read back when the block entity loads.
+        // new size are never read back when the block entity loads.
         componentShapedCopy(NS, "crate_tungsten", stack("hbm:crate_tungsten"), "C", rows("BPB", "PCP", "BPB"),
                 key("B", tag(TagIds.storage_blocks_tungsten)), key("P", tag(TagIds.plates_cast_copper)),
                 key("C", item(ItemIds.crate_steel)));

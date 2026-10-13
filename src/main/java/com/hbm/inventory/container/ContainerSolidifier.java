@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the solidifier — 1.12.2 {@code ContainerSolidifier}: output (71,45, take-only), battery
+ * Menu for the solidifier, the 1.12.2 {@code ContainerSolidifier}: output (71,45, take-only), battery
  * (134,72), upgrades (98,36)/(98,54), fluid identifier (71,72); 176x204, player inventory at 122/180.
  */
 public class ContainerSolidifier extends AbstractContainerMenu {

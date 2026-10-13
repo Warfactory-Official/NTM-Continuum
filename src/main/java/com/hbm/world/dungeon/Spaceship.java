@@ -1,4 +1,4 @@
-// Ported 1:1 from original-hbm (1.7) com.hbm.world.dungeon.Spaceship ("Schematic to java Structure by jajo_11").
+// Ported 1:1 from 1.7 com.hbm.world.dungeon.Spaceship ("Schematic to java Structure by jajo_11").
 // The builder runs on LegacyDungeonWorld, 1.7's World made deterministic (see that class); the block writes are 1.7's,
 // unchanged. Machine-converted from the 1.7 source: only the 1.7 API calls without a virtual-world twin were rewritten
 // (tile-entity access, ItemDoor, Library.getRandomConcrete, Material tests, debug prints).

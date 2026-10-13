@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
 /** Four-block gas centrifuge tower with energy and fluid ports around its core. */
@@ -23,8 +24,8 @@ public class MachineGasCent extends BlockMultiblockMachine implements IEnergyCon
 
     public MachineGasCent(Properties properties) {
         super(properties);
-        this.bounding.add(new net.minecraft.world.phys.AABB(-0.5D, 0D, -0.5D, 0.5D, 1D, 0.5D));
-        this.bounding.add(new net.minecraft.world.phys.AABB(-0.4375D, 1D, -0.4375D, 0.4375D, 4D, 0.4375D));
+        this.bounding.add(new AABB(-0.5D, 0D, -0.5D, 0.5D, 1D, 0.5D));
+        this.bounding.add(new AABB(-0.4375D, 1D, -0.4375D, 0.4375D, 4D, 0.4375D));
     }
 
     @Override

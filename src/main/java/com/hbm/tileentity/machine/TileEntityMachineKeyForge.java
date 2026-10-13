@@ -43,7 +43,7 @@ public class TileEntityMachineKeyForge extends TileEntityMachineBase implements 
         return "container.keyForge";
     }
 
-    /** The old {@code isItemValidForSlot} refused everything — the player slots are unrestricted in the menu itself. */
+    /** The old {@code isItemValidForSlot} refused everything: the player slots are unrestricted in the menu itself. */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return false;
@@ -64,7 +64,7 @@ public class TileEntityMachineKeyForge extends TileEntityMachineBase implements 
         }
     }
 
-    // --- WorldlyContainer (old ISidedInventory) ---
+    // WorldlyContainer (old ISidedInventory)
 
     @Override
     public int[] getSlotsForFace(Direction side) {
@@ -81,7 +81,7 @@ public class TileEntityMachineKeyForge extends TileEntityMachineBase implements 
         return true;
     }
 
-    // --- MenuProvider ---
+    // MenuProvider
 
     @Override
     public Component getDisplayName() {

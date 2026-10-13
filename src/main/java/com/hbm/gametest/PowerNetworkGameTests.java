@@ -10,6 +10,7 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
 import com.hbm.api.energymk2.PowerGraph;
 import com.hbm.api.energymk2.PowerNetwork;
+import com.hbm.blocks.ModEnergyBedrockBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.capability.MachineCaps;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
@@ -18,10 +19,13 @@ import com.hbm.tileentity.network.TileEntityConverterRfHe;
 import com.hbm.uninos.graph.Distribution;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.graph.NodeNetwork;
+import com.hbm.uninos.graph.PortClaims;
+import dev.golem.core.GolemCore;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.EnergyCompat;
 import dev.golem.core.world.EnergyExposure;
 import dev.golem.core.world.EnergyView;
+import dev.golem.core.world.RebornEnergy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -34,27 +38,26 @@ import java.util.List;
  * The energy contracts that must survive the move off UNINOS onto the node graph: what the network
  * does, never how it is built.
  *
- * <p>Two behaviours the old network had are deliberately <b>not</b> asserted, because the graph
- * replaces them and a test of either would have to fail for the port to be correct. The first is the
- * three-second subscription timeout, which existed only because machines pushed themselves into a net
- * every tick; the graph pulls endpoints from the faces of its own cells and has no timeout. The second
- * is the rotation of receivers within a priority tier, which the graph drops to match 1.7 — every
- * figure asserted below holds whichever end of a tier is served first.
+ * <p>Two behaviours of UNINOS are <b>not</b> asserted, because the graph does not have them. One is the
+ * three-second subscription timeout, which existed because machines pushed themselves into a net every
+ * tick; the graph pulls endpoints from the faces of its own cells. The other is the rotation of receivers
+ * within a priority tier, which the graph drops to match 1.7. Every figure asserted below holds whichever
+ * end of a tier is served first.
  *
- * <p>The split between world tests and bench tests is forced rather than chosen. A gametest plot is
- * a live server: the block entities placed in it keep ticking and the server keeps walking the graph,
- * so any number of distribution rounds can land between placing a machine and reading its buffer.
- * That is fine for asking whether power crossed a cable run and useless for asking how much. So
- * topology is asserted in the world, and arbitration is asserted against tiers built by hand with
- * endpoints that are not block entities, where one round means one round.
+ * <p>The split between world tests and bench tests is forced. A gametest plot is a live server: the block
+ * entities placed in it keep ticking and the server keeps walking the graph, so any number of distribution
+ * rounds can land between placing a machine and reading its buffer. That is fine for asking whether power
+ * crossed a cable run and useless for asking how much. So topology is asserted in the world, and
+ * arbitration against tiers built by hand with endpoints that are not block entities, where one round
+ * means one round.
  *
- * <p>The figures the bench tests hold were pinned against the network this replaced, and are
- * unchanged: that they still hold against {@link EnergyBus} is the whole reason they were pinned.
+ * <p>The figures the bench tests hold are the ones UNINOS produced, and must hold against
+ * {@link EnergyBus}.
  */
 public final class PowerNetworkGameTests {
 
     /** Long enough for every machine to claim its ports and an unclaiming class to pass its PortClaims grace. */
-    private static final int PORT_CLAIM_WAIT = (int) com.hbm.uninos.graph.PortClaims.GRACE_TICKS + 10;
+    private static final int PORT_CLAIM_WAIT = (int) PortClaims.GRACE_TICKS + 10;
 
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
@@ -91,8 +94,7 @@ public final class PowerNetworkGameTests {
     /**
      * A row per test, because a gametest plot is not alone in the level and the graph is. Plots sit
      * close enough that a run reaching one edge is collinear with its neighbour's, and two collinear
-     * runs are correctly one network — at which point this test is measuring the plot next door, and
-     * measuring it through cells that park the moment that plot is released.
+     * runs are correctly one network, so the test would be measuring the plot next door.
      */
     private static final int JOIN_Z = 6;
     private static final int SPLIT_Z = 12;
@@ -220,8 +222,8 @@ public final class PowerNetworkGameTests {
     }
 
     /**
-     * The share is taken on {@code long} buffers that reach {@link Long#MAX_VALUE} in normal play, so
-     * the plain multiply this replaced handed out a negative share.
+     * The share is taken on {@code long} buffers that reach {@link Long#MAX_VALUE} in normal play, so a
+     * plain multiply would hand out a negative share.
      */
     private static void shareOverflow(GameTestHelper helper) {
         long huge = Long.MAX_VALUE / 2L;
@@ -241,11 +243,11 @@ public final class PowerNetworkGameTests {
      * compiled in, so linking it at all is most of what there is to check until we expose our own.
      */
     private static void foreignLookup(GameTestHelper helper) {
-        boolean forgeLike = dev.golem.core.GolemCore.loader() != dev.golem.core.GolemCore.Loader.FABRIC;
+        boolean forgeLike = GolemCore.loader() != GolemCore.Loader.FABRIC;
         // Fabric: only with the optional Team Reborn Energy (loaded in the dev game)
-        boolean expected = forgeLike || dev.golem.core.world.RebornEnergy.present();
+        boolean expected = forgeLike || RebornEnergy.present();
         helper.assertTrue(EnergyCompat.supported() == expected,
-                "Foreign energy is forge-like or Team Reborn Energy; loader " + dev.golem.core.GolemCore.loader()
+                "Foreign energy is forge-like or Team Reborn Energy; loader " + GolemCore.loader()
                         + " reports supported=" + EnergyCompat.supported());
         BlockPos empty = helper.absolutePos(new BlockPos(2, 1, 2));
         helper.getLevel().removeBlock(empty, false);
@@ -259,12 +261,11 @@ public final class PowerNetworkGameTests {
 
     /**
      * A round over cells the graph was handed directly, rather than ones a cable block minted. It is
-     * the same path {@link #join} runs, minus the blocks: it says the graph still works when something
-     * other than a cable is the conductor, which is what a buffered battery and a battery bank are.
+     * the same path {@link #join} runs, minus the blocks: the graph works when something other than a
+     * cable is the conductor, as a buffered battery and a battery bank are.
      *
      * <p>Sited at y = 3 so the cells never coincide with the y = 1 blocks the world tests place, and
-     * torn down in a finally, because the graph is level-wide save data that outlives any one plot: a
-     * cell this test leaked would join the next test's network, in this run or in a later one.
+     * torn down in a finally, because the graph is level-wide save data that outlives any one plot.
      */
     private static void graphRound(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -324,11 +325,11 @@ public final class PowerNetworkGameTests {
     }
 
     /**
-     * Our own cable read as somebody else's energy block: the one half of the foreign bridge that can
-     * be exercised without a foreign mod on the classpath, since the reading side and the exposing side
-     * are the two facades this port added and they meet at the capability.
+     * Our own cable read as somebody else's energy block: the half of the foreign bridge that can be
+     * exercised without a foreign mod on the classpath, since the reading and exposing facades meet at the
+     * capability.
      *
-     * <p>What a peer sees is a BUDGET, not a charge — a cable stores nothing. So a run with a full
+     * <p>What a peer sees is a BUDGET, not a charge: a cable stores nothing. So a run with a full
      * provider on it advertises what that provider had left over, and taking it leaves the net owing
      * the amount, which its next round charges to the provider. That is the invariant asserted here.
      */
@@ -397,7 +398,7 @@ public final class PowerNetworkGameTests {
     }
 
     /**
-     * Playtest 2026-10-12: "power can be stolen from machines". 1.7's {@code PowerNetMK2} only ever debits an
+     * Power cannot be stolen from machines. 1.7's {@code PowerNetMK2} only ever debits an
      * {@code IEnergyProviderMK2} that called {@code tryProvide}; a consumer's buffer is never supply. An electric
      * furnace holding power beside an empty input battery on one cable keeps every HE, and the run is proven live by
      * the same battery feeding the furnace once it is switched to output.
@@ -602,7 +603,7 @@ public final class PowerNetworkGameTests {
 
         TileEntityConverterRfHe converter(int x, int z) {
             BlockPos pos = helper.absolutePos(new BlockPos(x, 1, z));
-            level.setBlock(pos, com.hbm.blocks.ModEnergyBedrockBlocks.machine_converter_rf_he.get().defaultBlockState(), 3);
+            level.setBlock(pos, ModEnergyBedrockBlocks.machine_converter_rf_he.get().defaultBlockState(), 3);
             TileEntityConverterRfHe converter = (TileEntityConverterRfHe) level.getBlockEntity(pos);
             helper.assertTrue(converter != null, "A converter block entity failed to appear at " + pos);
             converter.power = 0L;
@@ -610,12 +611,11 @@ public final class PowerNetworkGameTests {
         }
 
         /**
-         * The cables minted their cells when their blocks were placed, so all that is left is rounds.
-         * More than one, because discovery is not instant: a machine on a run END hangs off a
-         * first-class node and is gathered at once, while one on a run INTERIOR lives in a segment's
-         * bitset, and probing that face PRESENT promotes the cell and re-queues it after the pass that
-         * found it. How many passes that takes depends on the shape of the run, so this settles until
-         * something moves rather than pinning a number the topology decides.
+         * The cables minted their cells when placed, so only rounds remain. More than one, because
+         * discovery is not instant: a machine on a run END hangs off a first-class node and is gathered
+         * at once, while one on a run INTERIOR lives in a segment's bitset, and probing that face PRESENT
+         * promotes the cell and re-queues it after the pass that found it. The pass count depends on the
+         * run's shape, so this settles until something stops moving instead of pinning a number.
          */
         void settle() {
             for (int pass = 0; pass < 8; pass++) {
@@ -637,8 +637,8 @@ public final class PowerNetworkGameTests {
 
         /**
          * What the graph makes of the run, for a failure that has to say which half went wrong. The
-         * plot is not alone in the graph — it is level-wide save data and 500-odd other tests are
-         * running in it — so a net wider than the run is reported, not assumed away.
+         * plot is not alone in the graph; it is level-wide save data and 500-odd other tests are
+         * running in it, so a net wider than the run is reported, not assumed away.
          */
         String state() {
             LevelNodeGraph<CableData> graph = PowerGraph.get(level);

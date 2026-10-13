@@ -1,6 +1,7 @@
 package com.hbm.world.feature;
 
 import com.hbm.blocks.ModOreBlocks;
+import com.hbm.config.WorldConfig;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModFuelItems;
@@ -25,7 +26,7 @@ public final class BedrockOreFeature {
     private BedrockOreFeature() {}
 
     // 1.7 BedrockOre.weightedOresNether weights: hbm.cfg 2.BN00_bedrockGlowstoneWeight, 2.BN01_bedrockPhosphorusWeight and
-    // 2.BN01_bedrockQuartzWeight (WorldConfig; History §19ej-8)
+    // 2.BN01_bedrockQuartzWeight (WorldConfig)
 
     public static int tierForDensity(double density) {
         if (density > 1.5D) return 4;
@@ -77,9 +78,9 @@ public final class BedrockOreFeature {
     }
 
     public static Deposit weightedNetherDeposit(long worldSeed, int chunkX, int chunkZ) {
-        int glowstone = Math.max(0, com.hbm.config.WorldConfig.bedrockGlowstoneSpawn);
-        int phosphorus = Math.max(0, com.hbm.config.WorldConfig.bedrockPhosphorusSpawn);
-        int total = Math.max(1, glowstone + phosphorus + Math.max(0, com.hbm.config.WorldConfig.bedrockQuartzSpawn));
+        int glowstone = Math.max(0, WorldConfig.bedrockGlowstoneSpawn);
+        int phosphorus = Math.max(0, WorldConfig.bedrockPhosphorusSpawn);
+        int total = Math.max(1, glowstone + phosphorus + Math.max(0, WorldConfig.bedrockQuartzSpawn));
         int roll = nextIntDeterministic(worldSeed, chunkX, chunkZ, total);
         if (roll < glowstone) {
             return new Deposit(() -> new ItemStack(Items.GLOWSTONE_DUST, 4), null,
@@ -121,7 +122,7 @@ public final class BedrockOreFeature {
                 for (int dy = 1; dy < 7; dy++) {
                     pos.set(x, origin.getY() + dy, z);
                     BlockState state = level.getBlockState(pos);
-                    // 1.7 replaced stone here; at the modern world floor that stone is deepslate (History §19ej-6)
+                    // 1.7 replaced stone here; at the modern world floor that stone is deepslate
                     if ((dy < 3 || state.is(Blocks.BEDROCK))
                             && (state.is(Blocks.STONE) || state.is(Blocks.DEEPSLATE) || state.is(Blocks.BEDROCK))) {
                         level.setBlock(pos, deposit.depthRock().defaultBlockState(), 2);

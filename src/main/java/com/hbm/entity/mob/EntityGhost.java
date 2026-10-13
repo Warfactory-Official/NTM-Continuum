@@ -8,6 +8,7 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.player.Player;
@@ -33,8 +34,8 @@ public class EntityGhost extends CompatPathfinderMob {
         goalSelector.addGoal(1, new RandomStrollGoal(this, 1.0D));
         goalSelector.addGoal(2, new RandomLookAroundGoal(this));
         // hbm-space: EntityAIWatchClosest(this, EntityPlayer.class, 15.0F) at priority 3 (V-182)
-        if (watchPlayers) goalSelector.addGoal(3, new net.minecraft.world.entity.ai.goal.LookAtPlayerGoal(this,
-                net.minecraft.world.entity.player.Player.class, 15.0F));
+        if (watchPlayers) goalSelector.addGoal(3, new LookAtPlayerGoal(this,
+                Player.class, 15.0F));
     }
 
     /** hbm-space: ghosts also turn to watch the nearest player (ADDON-API-INVENTORY V-182). Off in plain HBM. */

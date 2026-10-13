@@ -10,7 +10,7 @@ import net.minecraft.resources.Identifier;
  * C2S: one of HBM's keybinds changed state.
  *
  * <p>Ported from 1.12.2 {@code KeybindPacket}. This is the <em>only</em> thing the client tells the
- * server about firing — it reports that a key is now down or up, and the server decides what that
+ * server about firing: it reports that a key is now down or up, and the server decides what that
  * means. A client cannot ask to fire a shot, so it cannot fire faster than the gun allows, fire while
  * jammed, or fire a round it does not have.
  */

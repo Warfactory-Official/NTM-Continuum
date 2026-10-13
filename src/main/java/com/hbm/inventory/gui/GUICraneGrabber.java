@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.packet.ControlEventPayload;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
@@ -22,12 +23,12 @@ import java.util.List;
 import java.util.Optional;
 import com.hbm.inventory.container.ContainerCraneGrabber;
 import com.hbm.tileentity.network.TileEntityCraneGrabber;
-import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.module.ModulePatternMatcher;
 
 /** 1.7 {@code GUICraneGrabber}. */
 public class GUICraneGrabber extends CompatContainerScreen<ContainerCraneGrabber> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_crane_grabber.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_crane_grabber.png");
 
     public GUICraneGrabber(ContainerCraneGrabber menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 185);

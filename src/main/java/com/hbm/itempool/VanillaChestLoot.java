@@ -9,19 +9,17 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * original-hbm (1.7.10) {@code MainRegistry.java:327-339}: the thirteen {@code ChestGenHooks.addItem} calls that
+ * 1.7 {@code MainRegistry.java:327-339}: the thirteen {@code ChestGenHooks.addItem} calls that
  * put HBM items into vanilla chests (village blacksmith, mineshaft corridor, dungeon, desert and jungle temple,
  * bonus chest), all {@code 1-1} of one item at the given weight.
  *
  * <p>1.7 added each item to the category's single weighted list and drew {@code ChestGenHooks.getCount} times
- * from it. The modern tables are different, so each category becomes one extra pool on its modern counterpart,
- * rolled the 1.7 number of times, holding the HBM items at their 1.7 weights plus an empty entry carrying the
- * 1.7 vanilla list's total weight. Each draw then yields an HBM item with exactly the 1.7 probability
- * {@code w / (W + sum of HBM weights)}, and so does a chest. 1.7 vanilla totals and draw counts (Forge
- * {@code ChestGenHooks.init}, which also adds an enchanted book of weight 1 to the mineshaft, both temples and the
- * dungeon; {@code getCount} draws {@code min + rand(max - min)}). Read from the bytecode of the 1.7.10 client jar and
- * Forge 10.13.4.1614's {@code ChestGenHooks} (2026-10-04, History §19ek-small); the first version of this table was
- * written from memory and had the dungeon total and the mineshaft count wrong:
+ * from it. Each category here is one extra pool on its modern counterpart, rolled the 1.7 number of times, holding
+ * the HBM items at their 1.7 weights plus an empty entry carrying the 1.7 vanilla list's total weight. Each draw
+ * then yields an HBM item with exactly the 1.7 probability {@code w / (W + sum of HBM weights)}. The vanilla
+ * totals and draw counts come from the bytecode of the 1.7.10 client jar and Forge 10.13.4.1614's
+ * {@code ChestGenHooks.init}, which also adds an enchanted book of weight 1 to the mineshaft, both temples and
+ * the dungeon; {@code getCount} draws {@code min + rand(max - min)}:
  * <ul>
  *   <li>dungeon ({@code WorldGenDungeons}, 15 entries): 119 + 1 book = 120, {@code addInfo(8, 8)}: 8 draws</li>
  *   <li>mineshaft corridor: 79 + 1 = 80, {@code addInfo(3, 7)}: 3..6 draws</li>

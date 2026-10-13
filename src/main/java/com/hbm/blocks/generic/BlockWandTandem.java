@@ -2,7 +2,9 @@ package com.hbm.blocks.generic;
 
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModWandItems;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.world.gen.nbt.ILegacyStructureTile;
@@ -117,13 +119,13 @@ public class BlockWandTandem extends CompatBlock implements TickingBlock, ILookO
             if (block != null && !ModStructureWandBlocks.isStructureBlock(block, false)) {
                 if (!level.isClientSide()) {
                     jigsaw.replaceState = block.defaultBlockState();
-                    jigsaw.replaceMeta = com.hbm.items.LegacyMeta.of(held);
+                    jigsaw.replaceMeta = LegacyMeta.of(held);
                     jigsaw.setChanged();
                 }
                 return InteractionResult.SUCCESS;
             }
 
-            if (held.is(com.hbm.items.ModWandItems.wand_s.get())) return InteractionResult.TRY_WITH_EMPTY_HAND;
+            if (held.is(ModWandItems.wand_s.get())) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
             if (level.isClientSide()) OPEN_SCREEN.accept(jigsaw);
 

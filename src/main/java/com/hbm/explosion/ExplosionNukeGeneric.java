@@ -3,12 +3,15 @@ package com.hbm.explosion;
 import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.config.GeneralConfig;
 import com.hbm.entity.grenade.EntityGrenadeUniversal;
 import com.hbm.entity.projectile.EntityB92Beam;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.items.weapon.sedna.factory.ConfettiUtil;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.util.EntityDamageUtil;
+import dev.golem.core.world.EnergyCompat;
+import dev.golem.core.world.EnergyView;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
@@ -196,8 +199,8 @@ public final class ExplosionNukeGeneric {
 
     private static void clear(Level world, BlockPos pos) {
         // 1.7 setBlock(..., air, 0, 2); its breakBlock ran regardless of the flag, so keep the removal hook on 26.1
-        if (world instanceof net.minecraft.server.level.ServerLevel server) {
-            dev.golem.core.world.Compat.setBlockWithRemoval(server, pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+        if (world instanceof ServerLevel server) {
+            Compat.setBlockWithRemoval(server, pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
         } else {
             world.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
         }
@@ -292,7 +295,7 @@ public final class ExplosionNukeGeneric {
 
     /** 1.7 VersatileConfig.getSchrabOreChance: hbm.cfg LBSM_schrabOreRate (20) in LBSM mode, else 250. */
     public static int getSchrabOreChance() {
-        if (com.hbm.config.GeneralConfig.enableLBSM) return com.hbm.config.GeneralConfig.schrabRate;
+        if (GeneralConfig.enableLBSM) return GeneralConfig.schrabRate;
         return 250;
     }
 
@@ -313,7 +316,7 @@ public final class ExplosionNukeGeneric {
 /**
      * 1.7 ExplosionNukeGeneric.emp. The two 1.7 branches roll scrap on different odds - the MK2 one on
      * {@code nextInt(5) < 1}, the foreign one on {@code <= 1} - and both are kept.
-     * 26.2: 1.7's foreign branch was CoFH {@code IEnergyProvider}; FE is its multiloader successor.
+     * 26.1: 1.7's foreign branch was CoFH {@code IEnergyProvider}; FE is its multiloader successor.
      */
     public static void emp(Level world, BlockPos pos) {
         if (world.isClientSide()) return;
@@ -341,7 +344,7 @@ public final class ExplosionNukeGeneric {
     public static boolean drainForeignEnergy(Level world, BlockPos pos) {
         boolean drained = false;
         for (Direction side : Direction.values()) {
-            dev.golem.core.world.EnergyView view = dev.golem.core.world.EnergyCompat.find(world, pos, side);
+            EnergyView view = EnergyCompat.find(world, pos, side);
             if (view == null) continue;
             long stored = view.amount();
             if (stored > 0 && view.extract(stored) > 0) drained = true;
@@ -355,7 +358,7 @@ public final class ExplosionNukeGeneric {
     public static boolean hasDrainableEnergy(Level world, BlockPos pos) {
         if (world.getBlockEntity(pos) instanceof IEnergyHandlerMK2) return true;
         for (Direction side : Direction.values()) {
-            if (dev.golem.core.world.EnergyCompat.find(world, pos, side) != null) return true;
+            if (EnergyCompat.find(world, pos, side) != null) return true;
         }
         return false;
     }
@@ -372,7 +375,7 @@ public final class ExplosionNukeGeneric {
             world.setBlock(pos, Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);
             return;
         }
-        // 26.2: 1.7 Material.{cactus,coral,leaves,plants,sponge,vine,gourd,wood}; no 1.7 vanilla block is
+        // 26.1: 1.7 Material.{cactus,coral,leaves,plants,sponge,vine,gourd,wood}; no 1.7 vanilla block is
         // Material.coral. plants -> VegetationBlock plus the two 1.7 non-BlockBush plants; wood -> the note-block
         // instrument, as in wasteDest.
         // TODO: hbm blocks declare no instrument, so 1.7's Material.wood arm misses waste_planks/waste_log and the

@@ -17,7 +17,7 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Biometric scanner — the turret whitelist card. Right-clicking writes the holder's name onto the
+ * Biometric scanner, the turret whitelist card. Right-clicking writes the holder's name onto the
  * stack; a turret carrying the card will not fire on any name it lists. Ported from 1.12.2's
  * {@code ItemTurretBiometry}, whose NBT string list becomes
  * {@link ModDataComponents#TURRET_WHITELIST}.
@@ -28,7 +28,7 @@ public class ItemTurretBiometry extends CompatItem {
         super(properties);
     }
 
-    /** The roster, or null when empty — 1.12.2 reads an empty roster as no roster. */
+    /** The roster, or null when empty. 1.12.2 reads an empty roster as no roster. */
     public static String @Nullable [] getNames(ItemStack stack) {
         List<String> names = ModDataComponents.TURRET_WHITELIST.getOr(stack, List.of());
         return names.isEmpty() ? null : names.toArray(new String[0]);

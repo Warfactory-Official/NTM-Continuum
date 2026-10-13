@@ -20,8 +20,7 @@ public class NukeMike extends NukeBombBlock {
 
     @Override
     protected int radiusFor(TileEntityNukeBomb bomb) {
-        // This is intentionally asymmetric: the five-part test device is ready at Fat Man yield,
-        // while adding all three Mike components raises it to Mike yield.
+        // The five-part test device is ready at Fat Man yield; all three Mike components raise it to Mike yield.
         return ((TileEntityNukeMike) bomb).isFilled() ? BombConfig.mikeRadius : BombConfig.manRadius;
     }
 }

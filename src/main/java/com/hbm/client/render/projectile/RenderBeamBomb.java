@@ -2,8 +2,11 @@ package com.hbm.client.render.projectile;
 
 import com.hbm.entity.projectile.EntityB92Beam;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.render.CameraInfo;
+import dev.golem.core.render.CompatEntityRenderState;
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.gem.Gem;
@@ -42,7 +45,7 @@ public final class RenderBeamBomb extends GemEntityRenderer<EntityB92Beam, Rende
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
         poseStack.mulPose(Axis.XN.rotationDegrees(state.pitch));
-        collector.submitCustomGeometry(poseStack, dev.golem.core.render.CompatRenderTypes.additiveDepthWrite(),
+        collector.submitCustomGeometry(poseStack, CompatRenderTypes.additiveDepthWrite(),
                 (pose, buffer) -> {
                     for (int layer = 0; layer <= LAYERS; layer++) {
                         float offset = RADIUS / LAYERS * layer;
@@ -58,7 +61,7 @@ public final class RenderBeamBomb extends GemEntityRenderer<EntityB92Beam, Rende
         poseStack.popPose();
     }
 
-    private static void wall(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose, int color,
+    private static void wall(VertexConsumer buffer, PoseStack.Pose pose, int color,
                              float x0, float y0, float x1, float y1) {
         Vertexes.color(buffer, pose, x0, y0, 0F, color);
         Vertexes.color(buffer, pose, x1, y1, 0F, color);
@@ -66,7 +69,7 @@ public final class RenderBeamBomb extends GemEntityRenderer<EntityB92Beam, Rende
         Vertexes.color(buffer, pose, x0, y0, LENGTH, color);
     }
 
-    public static final class State extends dev.golem.core.render.CompatEntityRenderState {
+    public static final class State extends CompatEntityRenderState {
         private float yaw;
         private float pitch;
     }

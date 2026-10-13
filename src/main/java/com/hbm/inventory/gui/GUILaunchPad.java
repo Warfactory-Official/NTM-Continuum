@@ -1,46 +1,51 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerLaunchPad;
+import com.hbm.items.ModMissileItems;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
 import com.hbm.client.render.MissileRenderer;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.GuiEntities;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 /**
- * Screen for the launch pad — 1.7's {@code GUILaunchPadLarge} ({@code gui_launch_pad_large.png},
+ * Screen for the launch pad: 1.7's {@code GUILaunchPadLarge} ({@code gui_launch_pad_large.png},
  * 176×236).
  *
  * <p>The three vertical bars are power (107,36) and the two fuel tanks (125,36) and (143,36), each
- * 16×52 and filling upward to y=88. Above each sits a small green/red lamp at y=23 — lit green when
+ * 16×52 and filling upward to y=88. Above each sits a small green/red lamp at y=23: lit green when
  * that resource is sufficient for the loaded missile, red when it is not, and dark when the missile
  * does not need it (a solid-fuel missile needs neither tank). The status line under the missile slot
- * reads "Not ready" / "Loading..." / "Ready" at three different scales, which is upstream's way of
- * making readiness legible at a glance.
+ * reads "Not ready" / "Loading..." / "Ready" at three different scales, as upstream does.
  *
  * <p>Hovering the empty designator slot with nothing on the cursor shows 1.7's {@code drawStackText} panel:
  * the three designators that fit it, the one picked by the clock (one per second) marked, and its name.
  *
- * <p>The missile itself stands in the bay — the black window in the panel texture — in 3D. Upstream draws it from its item
- * renderer table with a hand-tuned scale per airframe; here it is the missile's own flying entity,
- * drawn by the same renderer that draws it in the sky, and the scale is derived from the model's
- * bounds instead — upstream's constants were calibrated against 1.12's item-render transform, which
- * has no equivalent here, and the bounds give the same result without the calibration.
+ * <p>The missile stands in the bay (the black window in the panel texture) in 3D. Upstream draws it from its
+ * item renderer table with a hand-tuned scale per airframe; here it is the missile's own flying entity,
+ * drawn by the renderer that draws it in the sky, with the scale derived from the model's bounds. Upstream's
+ * constants were calibrated against 1.12's item-render transform, which has no equivalent here.
  */
-public class GUILaunchPad extends dev.golem.core.gui.CompatContainerScreen<ContainerLaunchPad> {
+public class GUILaunchPad extends CompatContainerScreen<ContainerLaunchPad> {
 
     private static final Identifier TEXTURE =
-            dev.golem.core.Ids.of("hbm", "textures/gui/weapon/gui_launch_pad_large.png");
+            Ids.of("hbm", "textures/gui/weapon/gui_launch_pad_large.png");
 
     /**
-     * The missile bay: the black window in the panel texture, measured from it — x 52–86, y 17–123.
+     * The missile bay: the black window in the panel texture, measured from it: x 52 to 86, y 17 to 123.
      *
      * <p>Not derived from upstream's {@code translate(guiLeft + 70, guiTop + 120)}, which is the
      * missile's <b>tail</b>, not the centre of anything: upstream then scales by −8, so the body grows
@@ -55,12 +60,10 @@ public class GUILaunchPad extends dev.golem.core.gui.CompatContainerScreen<Conta
     /**
      * Drawn height of the body, in GUI pixels, whatever the airframe.
      *
-     * <p>This is upstream's number, recovered rather than copied. Its per-airframe constants
-     * ({@code V2 1.75}, {@code STRONG 1.375}, {@code HUGE 0.925}, {@code ATLAS 0.875}, ABM
-     * {@code 1.45}, stealth {@code 1.125}, each times a base 8) look arbitrary until they are
-     * multiplied out against the bodies they scale: they come to 98, 99, 99.9, 101.1, 98.6 and 99.2
-     * pixels. They are a normalisation to this bay, so the bay is what this normalises to — which
-     * needs no table and cannot go stale when a model changes.
+     * <p>Upstream's per-airframe constants ({@code V2 1.75}, {@code STRONG 1.375}, {@code HUGE 0.925},
+     * {@code ATLAS 0.875}, ABM {@code 1.45}, stealth {@code 1.125}, each times a base 8) multiply out
+     * against the bodies they scale to 98, 99, 99.9, 101.1, 98.6 and 99.2 pixels: a normalisation to this
+     * bay. Using the bay height needs no table and cannot go stale when a model changes.
      */
     private static final float PREVIEW_HEIGHT = 100F;
 
@@ -138,7 +141,7 @@ public class GUILaunchPad extends dev.golem.core.gui.CompatContainerScreen<Conta
 
     /**
      * The missile standing in the panel. The entity is a throwaway from the launch table, never added
-     * to a level and cached until the slot changes — 26.1 draws 3D in a screen only through an entity
+     * to a level and cached until the slot changes; 26.1 draws 3D in a screen only through an entity
      * render state, see {@code GuiEntities}.
      */
     private void drawMissile(GuiGraphicsExtractor graphics, ItemStack stack) {
@@ -189,14 +192,14 @@ public class GUILaunchPad extends dev.golem.core.gui.CompatContainerScreen<Conta
                 this.leftPos + PREVIEW_X0, this.topPos + PREVIEW_Y0,
                 this.leftPos + PREVIEW_X1, this.topPos + PREVIEW_Y1,
                 size,
-                new org.joml.Vector3f(0F, (low + high) / 2F, 0F),
-                new org.joml.Quaternionf().rotateZ((float) Math.PI));
+                new Vector3f(0F, (low + high) / 2F, 0F),
+                new Quaternionf().rotateZ((float) Math.PI));
     }
 
     /** 1.7's list: the designators that fit slot 1, one marked per second while hovering the empty slot. */
-    private static final java.util.List<java.util.function.Supplier<? extends net.minecraft.world.item.Item>> DESIGNATORS =
-            java.util.List.of(com.hbm.items.ModMissileItems.designator, com.hbm.items.ModMissileItems.designator_range,
-                    com.hbm.items.ModMissileItems.designator_manual);
+    private static final List<Supplier<? extends Item>> DESIGNATORS =
+            List.of(ModMissileItems.designator, ModMissileItems.designator_range,
+                    ModMissileItems.designator_manual);
 
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {

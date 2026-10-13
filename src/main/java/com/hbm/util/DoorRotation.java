@@ -5,8 +5,8 @@ import net.minecraft.core.BlockPos;
 
 /**
  * The 1.7.10 {@code fauxpointtwelve.Rotation} + {@code BlockPos.rotate} pair the door math is written
- * against, kept verbatim so the open ranges and per-cell bounds land on exactly the cells the original
- * put them on. The folded multiblock's own local frame is deliberately not used here: the door code
+ * against, kept so the open ranges and per-cell bounds land on exactly the cells the original
+ * put them on. The folded multiblock's own local frame is not used here: the door code
  * rotates twice (once for ranges, once with an extra quarter turn for bounds) and the two disagree
  * with each other by design.
  */

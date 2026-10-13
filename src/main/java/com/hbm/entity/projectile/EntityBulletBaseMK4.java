@@ -35,21 +35,18 @@ import net.minecraft.world.phys.Vec3;
 /**
  * A bullet in flight.
  *
- * <p>Ported from 1.12.2 {@code EntityBulletBaseMK4} plus the movement half of its {@code EntityThrowableNT}
- * base. The two are merged here: upstream's throwable base exists to be shared with grenades and other
- * thrown items that this slice does not port, and its {@code onUpdate} carries an explicit
- * {@code //FIXME: This wont work for 1.12 due to 1.9 physics changes} — so the movement and collision
- * code is rewritten against the modern clip API rather than transcribed. Split the base back out when a
- * second projectile needs it.
+ * <p>From 1.12.2 {@code EntityBulletBaseMK4} merged with the movement half of its {@code EntityThrowableNT} base.
+ * Upstream's {@code onUpdate} carries {@code //FIXME: This wont work for 1.12 due to 1.9 physics changes}, so the
+ * movement and collision code is written against the modern clip API. Split the base back out when a second
+ * projectile needs it.
  *
- * <p>The flight model itself <em>is</em> faithful and is not vanilla projectile physics: the motion
- * vector is a <b>unit heading</b> and {@link BulletConfig#velocity} is the per-tick step length, so a
- * round with velocity 10 travels 10 blocks per tick and is traced across that whole span. There is no
- * air drag (upstream returns 1.0), and gravity — usually zero — is subtracted from the heading after the
- * step.
+ * <p>The flight model is upstream's, not vanilla projectile physics: the motion vector is a <b>unit heading</b>
+ * and {@link BulletConfig#velocity} is the per-tick step length, so a round with velocity 10 travels 10 blocks per
+ * tick, traced across the whole span. There is no air drag (upstream returns 1.0), and gravity (usually zero) is
+ * subtracted from the heading after the step.
  *
- * <p>The config is synched by its <em>runtime</em> registry index rather than its id: it is read on the
- * client every frame for rendering, and the index never leaves this session (see {@link BulletConfigs}).
+ * <p>The config is synched by its <em>runtime</em> registry index, not its id: the client reads it every frame
+ * and the index never leaves this session (see {@link BulletConfigs}).
  */
 public class EntityBulletBaseMK4 extends CompatEntity {
 
@@ -306,7 +303,7 @@ public class EntityBulletBaseMK4 extends CompatEntity {
         setPos(position().add(displacement));
         updateRotationFromDisplacement(displacement);
         // Gravity acts on the heading, so a heavy round's arc builds up over its flight. Air drag is
-        // deliberately absent — upstream's getAirDrag() returns 1.0 for bullets.
+        // No air drag: upstream's getAirDrag() returns 1.0 for bullets.
         if (config.gravity != 0F) {
             setDeltaMovement(getDeltaMovement().subtract(0D, config.gravity, 0D));
         }
@@ -349,7 +346,7 @@ public class EntityBulletBaseMK4 extends CompatEntity {
 
     private List<Entity> candidates(Vec3 from, Vec3 to) {
         // The shooter is only exempt for the first few ticks, so a bullet can still hit its own firer
-        // once it has had time to travel — that is how upstream's ricochets can come back at you.
+        // once it has had time to travel, which is how upstream's ricochets can come back at you.
         Predicate<Entity> filter = entity -> entity.isPickable()
                 && !(entity == thrower && tickCount < config.selfDamageDelay);
         return level().getEntities(this, new AABB(from, to).inflate(1.0D), filter);

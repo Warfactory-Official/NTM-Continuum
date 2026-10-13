@@ -1,10 +1,12 @@
 package com.hbm.gametest;
 
 import com.hbm.entity.ModEntities;
+import com.hbm.entity.NtmToolEntityCatalog;
 import com.hbm.entity.projectile.EntityBulletBeamBase;
 import com.hbm.entity.projectile.EntityBulletBaseMK4CL;
 import com.hbm.entity.projectile.EntityChemical;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
+import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.packet.ProjectileStatePayload;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.weapon.sedna.factory.XFactory357;
@@ -24,7 +26,7 @@ public final class GunProjectileEntityGameTests {
         helper.assertTrue(ModEntities.BULLET_MK4_CL.get() != null, "MK4 chunkloading entity is missing");
         helper.assertTrue(ModEntities.BEAM_MK4.get() != null, "MK4 beam entity is missing");
         helper.assertTrue(ModEntities.CHEMICAL.get() != null, "chemical projectile entity is missing");
-        helper.assertTrue(com.hbm.entity.NtmToolEntityCatalog.COIN.get() != null,
+        helper.assertTrue(NtmToolEntityCatalog.COIN.get() != null,
                 "NI4NI coin entity is missing");
         helper.assertTrue(XFactoryAccelerator.ni4ni_arc != null
                         && "hbm:ni4ni_arc".equals(XFactoryAccelerator.ni4ni_arc.id.toString())
@@ -103,7 +105,7 @@ public final class GunProjectileEntityGameTests {
 
     public static void bulletRotationInterpolatesDisplacement(GameTestHelper helper) {
         EntityBulletBaseMK4 bullet = new EntityBulletBaseMK4(ModEntities.BULLET_MK4.get(), helper.getLevel());
-        bullet.setBulletConfig(new com.hbm.items.weapon.sedna.BulletConfig()
+        bullet.setBulletConfig(new BulletConfig()
                 .setVel(1F).setLife(10).setSpectral(true).setImpactsEntities(false));
         BlockPos origin = helper.absolutePos(new BlockPos(2, 2, 2));
         bullet.setPos(origin.getX() + 0.5D, origin.getY() + 0.5D, origin.getZ() + 0.5D);

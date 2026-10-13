@@ -6,6 +6,7 @@ import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 /** Two-rail GEM port of ItemRenderEOTT; both Aberrator halves remain independently animated. */
@@ -56,12 +57,12 @@ public final class EottWeaponRenderer extends WeaponRenderer {
 
     /** The renderInv pair. The weapon table draws 1.7's renderModTable = renderOther, one gun, instead. */
     private static boolean doubleStaticContext(WeaponPose state) {
-        return state.context == net.minecraft.world.item.ItemDisplayContext.GUI && !state.modTable;
+        return state.context == ItemDisplayContext.GUI && !state.modTable;
     }
 
     private static boolean worldStaticContext(WeaponPose state) {
-        return state.context == net.minecraft.world.item.ItemDisplayContext.GROUND
-                || state.context == net.minecraft.world.item.ItemDisplayContext.FIXED;
+        return state.context == ItemDisplayContext.GROUND
+                || state.context == ItemDisplayContext.FIXED;
     }
 
     private static void staticBody(Gem.Part<WeaponPose> root, WavefrontObj obj) {

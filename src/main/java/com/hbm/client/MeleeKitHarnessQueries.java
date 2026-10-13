@@ -2,6 +2,13 @@ package com.hbm.client;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.hbm.capability.HbmLivingProps;
+import dev.golem.core.harness.HarnessQueryRegistry;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,14 +26,14 @@ public final class MeleeKitHarnessQueries {
     private MeleeKitHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_living", (mc, params) -> query(mc));
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_props", MeleeKitHarnessQueries::props);
-        ImpactHarnessQueries.register(); // fix wave phase 6
-        MobHarnessQueries.register(); // fix wave phase 7
-        HooksHarnessQueries.register(); // wave 2 HOOKS
+        HarnessQueryRegistry.register("hbm_living", (mc, params) -> query(mc));
+        HarnessQueryRegistry.register("hbm_props", MeleeKitHarnessQueries::props);
+        ImpactHarnessQueries.register();
+        MobHarnessQueries.register();
+        HooksHarnessQueries.register();
         DosimeterGasHarnessQueries.register(); // 1.7 dosimeter clicks, ash-glasses gas clouds
-        VisualHarnessQueries.register(); // wave 2 VISUAL
-        ReleaseHarnessQueries.register(); // pre-release client wave (§19es-client)
+        VisualHarnessQueries.register();
+        ReleaseHarnessQueries.register();
     }
 
     /**
@@ -38,8 +45,8 @@ public final class MeleeKitHarnessQueries {
         JsonObject json = new JsonObject();
         var server = mc.getSingleplayerServer();
         if (mc.player == null || server == null) return json;
-        java.util.UUID id = mc.player.getUUID();
-        java.util.concurrent.CompletableFuture<JsonObject> result = new java.util.concurrent.CompletableFuture<>();
+        UUID id = mc.player.getUUID();
+        CompletableFuture<JsonObject> result = new CompletableFuture<>();
         server.execute(() -> {
             try {
                 ServerPlayer player = server.getPlayerList().getPlayer(id);
@@ -51,7 +58,7 @@ public final class MeleeKitHarnessQueries {
             }
         });
         try {
-            return result.get(5, java.util.concurrent.TimeUnit.SECONDS);
+            return result.get(5, TimeUnit.SECONDS);
         } catch (Exception e) {
             json.addProperty("error", e.toString());
             return json;
@@ -60,13 +67,13 @@ public final class MeleeKitHarnessQueries {
 
     private static JsonObject propsOnServer(ServerPlayer player, JsonObject params) {
         boolean mobs = params.has("mobs") && params.get("mobs").getAsBoolean();
-        java.util.List<LivingEntity> nearby = player.level().getEntitiesOfClass(LivingEntity.class,
+        List<LivingEntity> nearby = player.level().getEntitiesOfClass(LivingEntity.class,
                 new AABB(player.blockPosition()).inflate(24), e -> e != player);
-        java.util.List<LivingEntity> targets = new java.util.ArrayList<>();
+        List<LivingEntity> targets = new ArrayList<>();
         targets.add(player);
         if (mobs) targets.addAll(nearby);
         for (LivingEntity target : targets) {
-            var data = com.hbm.capability.HbmLivingProps.getData(target);
+            var data = HbmLivingProps.getData(target);
             if (params.has("set_rads")) data.setRads(params.get("set_rads").getAsDouble());
             if (params.has("set_reputation")) data.reputation = params.get("set_reputation").getAsInt();
         }
@@ -82,8 +89,8 @@ public final class MeleeKitHarnessQueries {
         JsonObject e = new JsonObject();
         e.addProperty("type", BuiltInRegistries.ENTITY_TYPE.getKey(living.getType()).toString());
         e.addProperty("name", living.getName().getString());
-        e.addProperty("stored", com.hbm.capability.HbmLivingProps.DATA.has(living));
-        var data = com.hbm.capability.HbmLivingProps.getData(living);
+        e.addProperty("stored", HbmLivingProps.DATA.has(living));
+        var data = HbmLivingProps.getData(living);
         e.addProperty("rads", data.getRads());
         e.addProperty("digamma", data.getDigamma());
         e.addProperty("reputation", data.reputation);

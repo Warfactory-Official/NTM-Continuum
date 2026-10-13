@@ -22,14 +22,14 @@ import java.util.Locale;
 import java.util.function.Supplier;
 
 /**
- * The 1.7 {@code FT_Toxin}: what breathing or touching a fluid does to a living thing — direct damage on
- * a clock, potion effects, or both — unless the victim wears the right gas-mask filter (and, for
+ * The 1.7 {@code FT_Toxin}: what breathing or touching a fluid does to a living thing: direct damage on
+ * a clock, potion effects, or both, unless the victim wears the right gas-mask filter (and, for
  * full-body entries, a hazmat suit). Applied by {@code EntityMist} and {@code EntityChemical} with the
  * cloud's remaining intensity, exactly where 1.7 calls {@code affect}.
  *
  * <p>Like the port's other traits it is a plain object in the {@code FluidType} trait map (no
- * {@code FluidTrait} base class). The JSON (de)serialisation for 1.7's custom-fluid dump is not carried:
- * this port has no custom-fluid file.
+ * {@code FluidTrait} base class). 1.7's JSON (de)serialisation for the custom-fluid dump is not carried
+ * because the port has no custom-fluid file.
  */
 public final class FT_Toxin {
 
@@ -64,7 +64,7 @@ public final class FT_Toxin {
 
         /**
          * 1.7 {@code isProtected}. The mask check wears the filter by one point on every call that finds
-         * it — including calls where the missing hazmat suit then lets the toxin through anyway. That is
+         * it, including calls where the missing hazmat suit then lets the toxin through anyway. That is
          * 1.7's order of operations and is kept.
          */
         public boolean isProtected(LivingEntity entity) {

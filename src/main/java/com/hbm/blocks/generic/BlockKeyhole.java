@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.advancement.HbmCriteria;
 import com.hbm.blocks.ModDecoContent;
 import com.hbm.blocks.ModDoorBlocks;
 import com.hbm.blocks.ModDungeonBlocks;
@@ -7,11 +8,13 @@ import com.hbm.blocks.material.MaterialCompletionRegistrations;
 import com.hbm.itempool.ItemPool;
 import com.hbm.itempool.ItemPools;
 import com.hbm.items.ModArmorItems;
+import com.hbm.items.ModArmorSetItems;
 import com.hbm.items.ModItems;
 import com.hbm.sound.ModDoorSounds;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -75,8 +78,8 @@ public class BlockKeyhole extends CompatBlock {
         level.playSound(null, player.getX(), player.getY(), player.getZ(), ModDoorSounds.LOCK_OPEN.get(),
                 SoundSource.PLAYERS, 1.0F, 1.0F);
         // 1.7 achRedRoom, for the player who turned the key (both keyholes)
-        if (player instanceof net.minecraft.server.level.ServerPlayer server) {
-            com.hbm.advancement.HbmCriteria.ROOM_OPENED.fire(server);
+        if (player instanceof ServerPlayer server) {
+            HbmCriteria.ROOM_OPENED.fire(server);
         }
         return InteractionResult.SUCCESS;
     }
@@ -233,10 +236,10 @@ public class BlockKeyhole extends CompatBlock {
                     loot.addItem(new ItemStack(ModArmorItems.ncrpa_legs.get()), 0, 0, 0);
                     loot.addItem(new ItemStack(ModArmorItems.ncrpa_boots.get()), 0, 0, 0);
                 } else {
-                    loot.addItem(new ItemStack(com.hbm.items.ModArmorSetItems.trenchmaster_helmet.get()), 0, 0, 0);
-                    loot.addItem(new ItemStack(com.hbm.items.ModArmorSetItems.trenchmaster_plate.get()), 0, 0, 0);
-                    loot.addItem(new ItemStack(com.hbm.items.ModArmorSetItems.trenchmaster_legs.get()), 0, 0, 0);
-                    loot.addItem(new ItemStack(com.hbm.items.ModArmorSetItems.trenchmaster_boots.get()), 0, 0, 0);
+                    loot.addItem(new ItemStack(ModArmorSetItems.trenchmaster_helmet.get()), 0, 0, 0);
+                    loot.addItem(new ItemStack(ModArmorSetItems.trenchmaster_plate.get()), 0, 0, 0);
+                    loot.addItem(new ItemStack(ModArmorSetItems.trenchmaster_legs.get()), 0, 0, 0);
+                    loot.addItem(new ItemStack(ModArmorSetItems.trenchmaster_boots.get()), 0, 0, 0);
                 }
                 loot.sync();
             }

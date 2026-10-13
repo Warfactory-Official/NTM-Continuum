@@ -1,9 +1,13 @@
 package com.hbm.items.machine;
 
+import com.hbm.api.data.ReactorDataMaps;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModWatzItems;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.Optional;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -12,7 +16,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Watz Isotropic Fuel, Oxidized — one pellet type of the Watz power plant, either fresh or depleted.
+ * Watz Isotropic Fuel, Oxidized: one pellet type of the Watz power plant, either fresh or depleted.
  *
  * <p>1.12.2 packed all twelve types into one item via metadata and recoloured the sprite at runtime;
  * 1.21+ has no metadata, so the port registers <b>one item per type × freshness</b> with a pre-baked
@@ -34,33 +38,33 @@ public class ItemWatzPellet extends CompatItem {
      * The values of the pellet type {@code item} belongs to (fresh or depleted): the {@code hbm:watz_pellet} entry of the
      * fresh pellet, else HBM's enum constant. An addon's pellet is its own {@code ItemWatzPellet} pair with an entry.
      */
-    public static com.hbm.api.data.ReactorDataMaps.@org.jspecify.annotations.Nullable WatzPellet stats(net.minecraft.world.item.Item item) {
+    public static ReactorDataMaps.@org.jspecify.annotations.Nullable WatzPellet stats(net.minecraft.world.item.Item item) {
         net.minecraft.world.item.Item fresh = freshOf(item);
         if (fresh == null) return null;
-        com.hbm.api.data.ReactorDataMaps.WatzPellet data = com.hbm.api.data.ReactorDataMaps.WATZ_PELLET.get(fresh);
+        ReactorDataMaps.WatzPellet data = ReactorDataMaps.WATZ_PELLET.get(fresh);
         if (data != null) return data;
         return codeStats(item);
     }
 
     /** The code defaults (constructor or enum values) that the data map entry overrides. */
-    public static com.hbm.api.data.ReactorDataMaps.@org.jspecify.annotations.Nullable WatzPellet codeStats(net.minecraft.world.item.Item item) {
+    public static ReactorDataMaps.@org.jspecify.annotations.Nullable WatzPellet codeStats(net.minecraft.world.item.Item item) {
         net.minecraft.world.item.Item fresh = freshOf(item);
         if (fresh == null) return null;
         EnumWatzType t = ((ItemWatzPellet) fresh).type;
-        return new com.hbm.api.data.ReactorDataMaps.WatzPellet(t.colorLight, t.colorDark, t.passive, t.heatEmission, t.mudContent,
-                java.util.Optional.ofNullable(t.burnFunc), java.util.Optional.ofNullable(t.heatDiv), java.util.Optional.ofNullable(t.absorbFunc),
-                t.yield, net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(com.hbm.items.ModWatzItems.depleted(t)).toString());
+        return new ReactorDataMaps.WatzPellet(t.colorLight, t.colorDark, t.passive, t.heatEmission, t.mudContent,
+                Optional.ofNullable(t.burnFunc), Optional.ofNullable(t.heatDiv), Optional.ofNullable(t.absorbFunc),
+                t.yield, BuiltInRegistries.ITEM.getKey(ModWatzItems.depleted(t)).toString());
     }
 
     /** The fresh pellet of {@code item}'s type: itself when fresh, the pellet whose entry names it as depleted, else HBM's pair. */
     public static net.minecraft.world.item.@org.jspecify.annotations.Nullable Item freshOf(net.minecraft.world.item.Item item) {
         if (!(item instanceof ItemWatzPellet pellet)) return null;
         if (!pellet.depleted) return item;
-        String id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).toString();
-        for (var entry : com.hbm.api.data.ReactorDataMaps.WATZ_PELLET.byId().entrySet()) {
-            if (entry.getValue().depleted().equals(id)) return com.hbm.api.data.ReactorDataMaps.itemOf(entry.getKey());
+        String id = BuiltInRegistries.ITEM.getKey(item).toString();
+        for (var entry : ReactorDataMaps.WATZ_PELLET.byId().entrySet()) {
+            if (entry.getValue().depleted().equals(id)) return ReactorDataMaps.itemOf(entry.getKey());
         }
-        return com.hbm.items.ModWatzItems.fresh(pellet.type);
+        return ModWatzItems.fresh(pellet.type);
     }
 
     private double yieldOf() {

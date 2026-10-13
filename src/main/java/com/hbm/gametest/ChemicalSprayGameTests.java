@@ -9,9 +9,11 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModEntityItems;
 import com.hbm.items.weapon.ItemDisperser;
 import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -186,13 +188,13 @@ public final class ChemicalSprayGameTests {
      * {@code z + (nextDouble - 0.5) * 64}; a teleport keeps that x/z exactly and lands at or below that y. Seeds are
      * tried until each caller has moved its pig at least once (a target underground or in a wall is refused, as 1.7).
      * The plot is padded so a 32-block jump stays inside it, and each target chunk is loaded before the hit. The pig
-     * sits at the padded plot's centre ({@code GameTests.paddedCentre}): a fixed 76 was the legacy template's middle
-     * but lies 36 blocks outside 26.1's symmetric padding, so the full suite let a neighbour share the jump area.
+     * sits at the padded plot's centre ({@code GameTests.paddedCentre}); a fixed coordinate can lie outside 26.1's
+     * symmetric padding and let a neighbour share the jump area.
      */
     static final int ENDER_JUICE_PADDING = 40;
 
     public static void enderJuice(GameTestHelper helper) {
-        BlockPos centre = dev.golem.core.gametest.GameTests.paddedCentre(ENDER_JUICE_PADDING, 2);
+        BlockPos centre = GameTests.paddedCentre(ENDER_JUICE_PADDING, 2);
         LivingEntity pig = pig(helper, centre);
         helper.runAfterDelay(1, () -> {
             ServerLevel level = helper.getLevel();
@@ -209,7 +211,7 @@ public final class ChemicalSprayGameTests {
                     double tz = from.z + (expected.nextDouble() - 0.5D) * 64.0D;
                     // A GameTest world only loads the chunks around a plot; 1.7 refuses a target in an unloaded chunk
                     // (blockExists), so load the target chunk first to exercise the teleport itself.
-                    level.getChunk(net.minecraft.util.Mth.floor(tx) >> 4, net.minecraft.util.Mth.floor(tz) >> 4);
+                    level.getChunk(Mth.floor(tx) >> 4, Mth.floor(tz) >> 4);
                     if (caller == 0) {
                         EntityChemical chemical = spray(helper, Fluids.ENDERJUICE, pig);
                         chemical.seedRandom(seed);
@@ -247,8 +249,8 @@ public final class ChemicalSprayGameTests {
     /**
      * 1.7 {@code FluidType.isDispersable}: not antimatter, not container-less, not viscous. Of the 155 fluids after
      * NONE (1.7 has 156 in all), 53 are viscous, 18 have no container and 3 are antimatter, with WASTEFLUID both
-     * viscous and container-less: {@code 155 - (53 + 18 + 3 - 1) = 82} are dispersable. (83 while the port still
-     * carried 1.12.2's dispersable HYDRAZINE, removed 2026-10-03.) 1.7 offers exactly those as creative disperser canisters,
+     * viscous and container-less: {@code 155 - (53 + 18 + 3 - 1) = 82} are dispersable (1.12.2's dispersable
+     * HYDRAZINE is not ported). 1.7 offers exactly those as creative disperser canisters,
      * only pheromone and sulfuric acid as creative glands, and registers both items as containers for dispersable
      * fluids alone (2,000 mB canister, 4,000 mB gland), ahead of its lead-container cut-off.
      */

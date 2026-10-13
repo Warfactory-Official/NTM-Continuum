@@ -4,7 +4,6 @@ import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.chemicalfactory.ChemicalFactoryRegistrations;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.lib.DirPos;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalFactory;
@@ -12,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -55,7 +55,7 @@ public class MachineChemicalFactory extends BlockMultiblockMachine
     }
 
     @Override
-    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineChemicalFactory factory)) return null;
         for (DirPos port : factory.getCoolPos()) {
             if (port.getPos().equals(pos.relative(port.getDir().toDirection()))) {

@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.util.ArmorRegistry;
@@ -50,7 +51,7 @@ public class BlockGasRadonTomb extends BlockGasBase {
             if (below.is(Blocks.GRASS_BLOCK)) {
                 level.setBlock(belowPos, random.nextInt(5) == 0
                         ? Blocks.COARSE_DIRT.defaultBlockState()
-                        : com.hbm.blocks.ModFalloutBlocks.waste_earth.get().defaultBlockState(), 3);
+                        : ModFalloutBlocks.waste_earth.get().defaultBlockState(), 3);
             } else if ((below.is(BlockTags.LEAVES) || below.is(BlockTags.FLOWERS)
                     || below.is(BlockTags.SAPLINGS) || below.is(Blocks.VINE))
                     && below.getCollisionShape(level, belowPos).isEmpty()) {

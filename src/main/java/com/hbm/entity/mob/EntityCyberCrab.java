@@ -6,6 +6,8 @@ import com.hbm.entity.projectile.EntityBullet;
 import com.hbm.interfaces.IRadiationImmune;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.sound.ModSounds;
+import dev.golem.core.world.Compat;
+import dev.golem.core.world.Targeting;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
@@ -32,7 +34,7 @@ public class EntityCyberCrab extends CompatMonster implements RangedAttackMob, I
 
     public EntityCyberCrab(EntityType<? extends EntityCyberCrab> type, Level level) {
         super(type, level);
-        dev.golem.core.world.Compat.avoidWater(this);
+        Compat.avoidWater(this);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -52,9 +54,9 @@ public class EntityCyberCrab extends CompatMonster implements RangedAttackMob, I
         goalSelector.addGoal(1, new RandomStrollGoal(this, 0.5D));
         goalSelector.addGoal(4, rangedGoal());
         targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, 0, true, false, null));
-        // 1.7: EntityLiving, which excludes the player - Mob is its 26.2 counterpart
+        // 1.7: EntityLiving, which excludes the player - Mob is its 26.1 counterpart
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Mob.class, 0, true, true,
-                dev.golem.core.world.Targeting.selector(target -> !(target instanceof EntityCyberCrab || target instanceof Creeper))));
+                Targeting.selector(target -> !(target instanceof EntityCyberCrab || target instanceof Creeper))));
     }
 
     protected Goal rangedGoal() {

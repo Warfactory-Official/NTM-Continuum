@@ -8,7 +8,7 @@ import com.hbm.items.ModDataComponents;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Adds radiation to any stack carrying the {@code hbm:hazard_radiation} data component — the 26.1
+ * Adds radiation to any stack carrying the {@code hbm:hazard_radiation} data component: the 26.1
  * re-implementation of the old {@code hfrHazRadiation} NBT hook (used by pack-makers/compat to make
  * arbitrary items radioactive).
  */

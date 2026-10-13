@@ -1,11 +1,19 @@
 package com.hbm.entity.effect;
 
+import com.hbm.advancement.DetonationTrigger;
+import com.hbm.advancement.HbmCriteria;
+import dev.golem.core.data.DataIn;
+import dev.golem.core.data.DataOut;
+import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.Tags;
 
 import com.hbm.util.ContaminationUtil;
 import dev.golem.core.data.CompatEntity;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -14,7 +22,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 
-/** DRX's descending digamma spear. Its server effects deliberately do not depend on a renderer. */
+/** DRX's descending digamma spear. Its server effects do not depend on a renderer. */
 public class EntitySpear extends CompatEntity {
     public int ticksInGround;
 
@@ -23,7 +31,7 @@ public class EntitySpear extends CompatEntity {
     }
 
     @Override
-    protected void defineData(dev.golem.core.data.SynchedData data) {
+    protected void defineData(SynchedData data) {
     }
 
     @Override
@@ -44,18 +52,18 @@ public class EntitySpear extends CompatEntity {
                 double blastZ = getZ() + random.nextGaussian() * 25D;
                 double blastY = server.getHeight(Heightmap.Types.MOTION_BLOCKING, Mth.floor(blastX), Mth.floor(blastZ)) + 2D;
                 server.explode(this, blastX, blastY, blastZ, 7.5F, Level.ExplosionInteraction.NONE);
-                for (net.minecraft.server.level.ServerPlayer player : server.players()) {
+                for (ServerPlayer player : server.players()) {
                     ContaminationUtil.contaminate(player, ContaminationUtil.HazardType.DIGAMMA,
                             ContaminationUtil.ContaminationType.DIGAMMA, 0.05D);
                     // 1.7 digammaKauaiMoho, every player in the world on every blast
-                    com.hbm.advancement.HbmCriteria.detonation(player, com.hbm.advancement.DetonationTrigger.Kind.DIGAMMA_SPEAR);
+                    HbmCriteria.detonation(player, DetonationTrigger.Kind.DIGAMMA_SPEAR);
                 }
             }
             if (level().getBlockState(new BlockPos(x, y - 3, z)).isAir()) ticksInGround = 0;
         } else {
             ticksInGround++;
             if (level() instanceof ServerLevel server && ticksInGround > 100) {
-                java.util.List<Entity> entities = new java.util.ArrayList<>();
+                List<Entity> entities = new ArrayList<>();
                 server.getAllEntities().forEach(entities::add);
                 for (Entity entity : entities) if (entity instanceof LivingEntity living) {
                     // 1.7: only the DIGAMMA2 contamination (10 DRX, the lethal cap); the robes set
@@ -74,12 +82,12 @@ public class EntitySpear extends CompatEntity {
     }
 
     @Override
-    protected void loadData(dev.golem.core.data.DataIn input) {
+    protected void loadData(DataIn input) {
         ticksInGround = input.getIntOr("ticksInGround", 0);
     }
 
     @Override
-    protected void saveData(dev.golem.core.data.DataOut output) {
+    protected void saveData(DataOut output) {
         output.putInt("ticksInGround", ticksInGround);
     }
 }

@@ -7,11 +7,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
-/** Exact Gem port of original-hbm ItemRenderLiberator. */
+/** Exact Gem port of 1.7 ItemRenderLiberator. */
 public final class LiberatorWeaponRenderer extends WeaponRenderer {
-    private static final net.minecraft.resources.Identifier MODEL_ID = Ids.of("hbm", "models/weapons/liberator.obj");
+    private static final Identifier MODEL_ID = Ids.of("hbm", "models/weapons/liberator.obj");
     private static final Surface BODY = Surface.cutout("hbm:textures/models/weapons/liberator.png");
     private WavefrontObj model;
 

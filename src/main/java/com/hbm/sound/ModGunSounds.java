@@ -31,7 +31,7 @@ public final class ModGunSounds {
     public static final RegistryObject<SoundEvent>[] SPARK_SHOOT = new RegistryObject[] {
             register("weapon.sparkshoot1"), register("weapon.sparkshoot2"), register("weapon.sparkshoot3")};
 
-    // Original-hbm's reload/foley names are lower-cased for the modern Identifier charset.  The
+    // 1.7's reload/foley names are lower-cased for the modern Identifier charset.  The
     // resource generator copies the source files with the same lower-case path.
     public static final RegistryObject<SoundEvent> REVOLVER_COCK = register("weapon.reload.revolvercock");
     public static final RegistryObject<SoundEvent> REVOLVER_CLOSE = register("weapon.reload.revolverclose");

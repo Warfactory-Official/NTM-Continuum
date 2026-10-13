@@ -1,6 +1,6 @@
 package com.hbm.physics;
 
-/** old-hbm {@code physics.AABBCollider}, the static form (a world block box) the bodies collide against. */
+/** 1.12.2 {@code physics.AABBCollider}, the static form (a world block box) the bodies collide against. */
 public final class AABBCollider extends Collider {
 
     public final Box box;

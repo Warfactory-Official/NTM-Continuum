@@ -7,6 +7,7 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -20,7 +21,7 @@ import com.hbm.tileentity.machine.TileEntityMachineOreSlopper;
  * on the two ends and the six side cells, and {@code getConPos} looks outward from those.
  */
 public final class MachineOreSlopper extends BlockMultiblockMachine
-        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, net.minecraft.world.WorldlyContainerHolder {
+        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     public MachineOreSlopper(Properties properties) {
         super(properties);

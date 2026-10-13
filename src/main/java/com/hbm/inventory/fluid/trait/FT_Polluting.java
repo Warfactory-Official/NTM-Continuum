@@ -18,7 +18,7 @@ import java.util.Map;
  * region when it is spilled ({@link #releaseMap}) or burned ({@link #burnMap}).
  *
  * <p>1.7 stores both tables in {@code HashMap}s keyed by the enum. An {@link EnumMap} holds the same
- * pairs and walks them in declaration order, so tooltip lines no longer depend on identity hashes.
+ * pairs and walks them in declaration order, so tooltip lines do not depend on identity hashes.
  *
  * <p>1.7's {@code onFluidRelease} override is not carried: nothing in 1.7 calls a trait's
  * {@code onFluidRelease} (the {@code FluidType} delegate it would come through is an empty method), so

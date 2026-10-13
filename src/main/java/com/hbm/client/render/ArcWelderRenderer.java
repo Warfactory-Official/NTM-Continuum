@@ -6,6 +6,7 @@ import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineArcWelder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
@@ -21,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 public class ArcWelderRenderer extends GemBER<TileEntityMachineArcWelder, ArcWelderRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/arc_welder.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/arc_welder.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/arc_welder.png");
 

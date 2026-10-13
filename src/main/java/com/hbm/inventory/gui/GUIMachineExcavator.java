@@ -3,7 +3,9 @@ package com.hbm.inventory.gui;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.inventory.container.ContainerMachineExcavator;
 import com.hbm.sound.ModProduction2Sounds;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.machine.TileEntityMachineExcavator;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
@@ -21,7 +23,7 @@ import java.util.Optional;
 /** 1.7 {@code GUIMachineExcavator}: {@code gui_mining_drill.png}, 242x204, five lever toggles. */
 public final class GUIMachineExcavator extends CompatContainerScreen<ContainerMachineExcavator> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_mining_drill.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/machine/gui_mining_drill.png");
     private static final String[] TOGGLES = {"drill", "crusher", "walling", "veinminer", "silktouch"};
 
     public GUIMachineExcavator(ContainerMachineExcavator menu, Inventory playerInventory, Component title) {
@@ -128,7 +130,7 @@ public final class GUIMachineExcavator extends CompatContainerScreen<ContainerMa
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return menu.getExcavator();
     }
 }

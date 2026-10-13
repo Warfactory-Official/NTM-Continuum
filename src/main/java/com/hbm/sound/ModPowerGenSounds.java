@@ -2,8 +2,12 @@ package com.hbm.sound;
 
 import com.hbm.Constants;
 import com.hbm.registration.Reg;
+import dev.golem.core.Ids;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import java.util.HashMap;
+import java.util.Map;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
 import com.hbm.items.machine.ItemCassette;
@@ -21,7 +25,7 @@ public final class ModPowerGenSounds {
             DeferredRegister.create(Registries.SOUND_EVENT, Constants.MOD_ID);
     private static final Reg REG = Reg.of(SOUNDS);
     /** Declared before the first {@code register} call: static initialisers run in textual order. */
-    private static final java.util.Map<String, RegistryObject<SoundEvent>> BY_KEY = new java.util.HashMap<>();
+    private static final Map<String, RegistryObject<SoundEvent>> BY_KEY = new HashMap<>();
 
     /** 1.7 {@code hbm:block.hephaestusRunning}. */
     public static final RegistryObject<SoundEvent> HEPHAESTUS_LOOP = register("block.hephaestus_running");
@@ -59,7 +63,7 @@ public final class ModPowerGenSounds {
     public static @org.jspecify.annotations.Nullable SoundEvent byKey(@org.jspecify.annotations.Nullable String key) {
         if (key != null && key.contains(":")) {
             // another mod's track names its sound event by id
-            return net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.getOptional(dev.golem.core.Ids.parse(key)).orElse(null);
+            return BuiltInRegistries.SOUND_EVENT.getOptional(Ids.parse(key)).orElse(null);
         }
         RegistryObject<SoundEvent> event = key == null ? null : BY_KEY.get(key);
         return event == null ? null : event.get();

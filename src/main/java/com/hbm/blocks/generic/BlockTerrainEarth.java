@@ -3,6 +3,7 @@ package com.hbm.blocks.generic;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModBombs2Blocks;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.CompatBlock;
 import dev.golem.core.world.Effects;
 import dev.golem.core.world.Fires;
 import net.minecraft.core.BlockPos;
@@ -33,7 +34,7 @@ import java.util.List;
  * <p>Deviation: upstream's burnt-out ground was {@code impact_dirt}, which is not in this tree; plain
  * dirt stands in for it.
  */
-public class BlockTerrainEarth extends dev.golem.core.world.CompatBlock {
+public class BlockTerrainEarth extends CompatBlock {
 
     public BlockTerrainEarth(Properties properties) {
         super(properties);

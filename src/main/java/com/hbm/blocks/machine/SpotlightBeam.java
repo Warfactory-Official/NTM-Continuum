@@ -6,7 +6,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -97,7 +99,7 @@ public class SpotlightBeam extends CompatBlock {
     }
 
     @Override
-    public BlockState rotate(BlockState state, net.minecraft.world.level.block.Rotation rotation) {
+    public BlockState rotate(BlockState state, Rotation rotation) {
         BlockState rotated = state;
         for (Direction dir : Direction.values()) {
             rotated = rotated.setValue(DIRECTIONS.get(rotation.rotate(dir)), state.getValue(DIRECTIONS.get(dir)));
@@ -106,7 +108,7 @@ public class SpotlightBeam extends CompatBlock {
     }
 
     @Override
-    public BlockState mirror(BlockState state, net.minecraft.world.level.block.Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         BlockState mirrored = state;
         for (Direction dir : Direction.values()) {
             mirrored = mirrored.setValue(DIRECTIONS.get(mirror.mirror(dir)), state.getValue(DIRECTIONS.get(dir)));

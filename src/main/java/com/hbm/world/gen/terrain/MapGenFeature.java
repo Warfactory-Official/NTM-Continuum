@@ -10,6 +10,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
@@ -28,12 +29,12 @@ import java.util.Random;
  * write the chunk it is placed in and its direct neighbours, and a sand bubble reaches 47 blocks, a crater 65. A carver
  * could reach that far, but only carves; these also fill.
  *
- * <p>Placed with no placement modifiers, once per chunk, at {@code raw_generation} — 1.7 chain-loaded them into the
+ * <p>Placed with no placement modifiers, once per chunk, at {@code raw_generation}, as 1.7 chain-loaded them into the
  * cave generator, before any decoration.
  *
  * <p><b>{@code /place feature}</b> runs these in the live level instead of a generation region. There is then no chunk
- * being generated, so the feature treats the target chunk as a forced origin — the rarity roll and the biome test are
- * skipped — and writes its share into every loaded chunk in range. That is how a single crater or bubble can be put
+ * being generated, so the feature treats the target chunk as a forced origin. The rarity roll and the biome test are
+ * skipped, and it writes its share into every loaded chunk in range. That is how a single crater or bubble can be put
  * down for inspection; world generation never takes that path.
  */
 public abstract class MapGenFeature extends Feature<NoneFeatureConfiguration> {
@@ -89,7 +90,7 @@ public abstract class MapGenFeature extends Feature<NoneFeatureConfiguration> {
     protected abstract boolean generate(WorldGenLevel level, ChunkGenerator generator, Random rand, long originSeed, int seaLevel,
                                         int originX, int originZ, int chunkX, int chunkZ, boolean forced);
 
-    // ------------------------------------------------------------------------------------------------ helpers
+    // Helpers
 
     /**
      * 1.7 {@code world.getBiomeGenForCoords(originX * 16, originZ * 16)}: the biome at the origin chunk's corner.
@@ -100,14 +101,14 @@ public abstract class MapGenFeature extends Feature<NoneFeatureConfiguration> {
      * touching its chunk. (Noise biomes are 4 x 4 x 4 cells; 1.7's biomes were per column.)
      */
     protected static Holder<Biome> originBiome(WorldGenLevel level, ChunkGenerator generator, int originX, int originZ, int seaLevel) {
-        net.minecraft.world.level.levelgen.RandomState random = level.getLevel().getChunkSource().randomState();
+        RandomState random = level.getLevel().getChunkSource().randomState();
         return generator.getBiomeSource().getNoiseBiome(QuartPos.fromBlock(originX << 4), QuartPos.fromBlock(seaLevel),
                 QuartPos.fromBlock(originZ << 4), random.sampler());
     }
 
     /**
      * The first y to scan down from in a column: 1.7 started at 127; here the column's generated top. A finished chunk
-     * (the {@code /place} path) no longer carries the worldgen heightmap, so it is asked for its live one.
+     * (the {@code /place} path) does not carry the worldgen heightmap, so it is asked for its live one.
      */
     protected static int top(WorldGenLevel level, int x, int z) {
         Heightmap.Types type = level instanceof WorldGenRegion ? Heightmap.Types.WORLD_SURFACE_WG : Heightmap.Types.WORLD_SURFACE;

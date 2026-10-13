@@ -8,6 +8,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.Ids;
+import dev.golem.core.world.ItemStacks;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +35,7 @@ public final class MagicRecipes {
 
     public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             GenericRecipeCodec.INGREDIENT.listOf().fieldOf("ingredients").forGetter(Row::ingredients),
-            dev.golem.core.world.ItemStacks.itemCodec().fieldOf("result").forGetter(Row::result),
+            ItemStacks.itemCodec().fieldOf("result").forGetter(Row::result),
             Codec.INT.optionalFieldOf("order", TableCodecs.LAST).forGetter(Row::order)
     ).apply(i, Row::new));
 

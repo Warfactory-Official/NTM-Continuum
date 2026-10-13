@@ -20,6 +20,8 @@ import com.hbm.client.render.FoundryTankRenderer;
 import com.hbm.client.render.NeoDuctRenderer;
 import com.hbm.inventory.gui.GUIBarrel;
 import com.hbm.inventory.gui.GUIPump;
+import dev.golem.core.Ids;
+import net.minecraft.client.Minecraft;
 
 /** Client hooks for the fluid-network family: the barrel screen, the pump screen and the block renderers. */
 public final class FluidNetClientRegistrations {
@@ -28,7 +30,7 @@ public final class FluidNetClientRegistrations {
 
     public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
         sink.register(ModFluidNetMenus.BARREL.get(), GUIBarrel::new);
-        FluidPump.OPEN_SCREEN = pump -> net.minecraft.client.Minecraft.getInstance().setScreen(new GUIPump(pump));
+        FluidPump.OPEN_SCREEN = pump -> Minecraft.getInstance().setScreen(new GUIPump(pump));
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink sink) {
@@ -43,7 +45,7 @@ public final class FluidNetClientRegistrations {
         // Flow control pump: fluid_diode.obj; 1.7 yaw map N=180, E=90, S=0, W=270 = the standard map + 180.
         HbmBlockEntityRenderers.regGem(sink, ModFluidNetBlockEntities.PUMP.get(),
                 () -> new MachineObjRenderer<TileEntityFluidPump>(180F, 1F,
-                        new ModelDef(dev.golem.core.Ids.of(Constants.MOD_ID, "models/network/fluid_diode.obj"),
-                                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/network/fluid_diode.png"))));
+                        new ModelDef(Ids.of(Constants.MOD_ID, "models/network/fluid_diode.obj"),
+                                Ids.of(Constants.MOD_ID, "textures/models/network/fluid_diode.png"))));
     }
 }

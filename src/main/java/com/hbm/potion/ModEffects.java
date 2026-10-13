@@ -3,10 +3,12 @@ package com.hbm.potion;
 import com.hbm.Constants;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.world.CompatMobEffect;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import com.hbm.registration.Reg;
+import net.minecraft.world.entity.LivingEntity;
 
 /** HBM status effects, matching the 1.7.10 {@code HbmPotion} registry. */
 public final class ModEffects {
@@ -54,13 +56,13 @@ public final class ModEffects {
     }
 
     /** Effects with no per-tick action still need a concrete HBM type for their registry identity. */
-    private static final class PassiveHbmEffect extends dev.golem.core.world.CompatMobEffect {
+    private static final class PassiveHbmEffect extends CompatMobEffect {
         private PassiveHbmEffect(MobEffectCategory category, int color) {
             super(category, color);
         }
 
         @Override
-        protected boolean applyCompatEffectTick(net.minecraft.world.entity.LivingEntity entity, int amplifier) {
+        protected boolean applyCompatEffectTick(LivingEntity entity, int amplifier) {
             return true;
         }
     }

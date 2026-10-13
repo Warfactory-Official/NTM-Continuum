@@ -1,9 +1,12 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerReactorZirnox;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
+import dev.golem.core.gui.MouseInput;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,10 +24,10 @@ import com.hbm.sound.ModSounds;
  * gauges for CO2, steam and water, two needle gauges for heat and pressure, the lit rod grid while running,
  * and the info/warning panels hanging off the left edge.
  */
-public class GUIReactorZirnox extends dev.golem.core.gui.CompatContainerScreen<ContainerReactorZirnox> {
+public class GUIReactorZirnox extends CompatContainerScreen<ContainerReactorZirnox> {
 
     private static final Identifier TEXTURE =
-            dev.golem.core.Ids.of("hbm", "textures/gui/reactors/gui_zirnox.png");
+            Ids.of("hbm", "textures/gui/reactors/gui_zirnox.png");
     /** Supersample factor the polygon gauges are rasterised at before the pose scales them back down. */
     private static final int SUPERSAMPLE = 8;
 
@@ -105,7 +108,7 @@ public class GUIReactorZirnox extends dev.golem.core.gui.CompatContainerScreen<C
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         int x = (int) event.x() - this.leftPos;
         int y = (int) event.y() - this.topPos;
         // 1.7 hit boxes: control x in [144, 158), y in (35, 49]; vent x in [151, 187), y in (51, 87].

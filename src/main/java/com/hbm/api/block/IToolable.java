@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * A block that reacts to being worked on with one of HBM's construction tools — the 1.12.2
- * {@code IToolable}. The canonical use is in-world component upgrading: hit a plain casing with the
+ * A block that reacts to being worked on with one of HBM's construction tools (the 1.12.2
+ * {@code IToolable}). The canonical use is in-world component upgrading: hit a plain casing with the
  * boltgun (spending bolts) and it becomes the bolted casing that a reactor structure actually accepts.
  *
  * <p>Ported 1:1 apart from the hit-position parameters, which are folded into a single {@link Vec3}

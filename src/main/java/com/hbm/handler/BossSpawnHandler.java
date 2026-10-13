@@ -1,10 +1,12 @@
 package com.hbm.handler;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.blocks.generic.BlockPedestal;
 import com.hbm.blocks.generic.BlockPedestal.PedestalEntry;
 import com.hbm.blocks.generic.BlockPedestal.PedestalEntryType;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.config.GeneralConfig;
 import com.hbm.config.MobConfig;
 import com.hbm.config.WorldConfig;
 import com.hbm.entity.EntityHbmProps;
@@ -16,6 +18,7 @@ import dev.golem.core.world.Spawns;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EntityType;
@@ -48,7 +51,7 @@ import java.util.Random;
  * and destroys no blocks). The meteor spawns at y 384, up to 100 blocks off, and falls at 2.5 blocks a tick. A shower
  * starts with {@code 1 / (meteorStrikeChance * 100)} a tick and lasts 75..100 % of {@code meteorShowerDuration}.
  *
- * <p>Kept from 1.7 on purpose: the roll and the shower counter run once per <i>level</i> per tick, and the shower
+ * <p>1.7 oddities kept: the roll and the shower counter run once per <i>level</i> per tick, and the shower
  * counter is one static shared by all levels, so with three levels loaded a shower runs out three times as fast and
  * starts three times as often; a roll in a level whose players are not in the overworld does nothing. The Random is its
  * own ("because some dimwit keeps resetting the world rand").
@@ -74,8 +77,8 @@ import java.util.Random;
  * </ul>
  * 1.7's {@code world.rand} is the level's random here; {@code getHeightValue} is the {@code MOTION_BLOCKING} height and,
  * as in 1.7, 0 for a column whose chunk is not loaded. 1.7 asked Forge's {@code canEntitySpawn} event, whose default
- * allows the spawn without the mob's own spawn rules; the port spawns directly and runs the triggered
- * {@code finalizeSpawn} (1.7 {@code onSpawnWithEgg}).
+ * allows the spawn without the mob's own spawn rules; the port spawns directly and runs {@code finalizeSpawn}
+ * (1.7 {@code onSpawnWithEgg}).
  */
 public final class BossSpawnHandler {
 
@@ -105,7 +108,7 @@ public final class BossSpawnHandler {
         long time = level.getGameTime();
         // 1.7 provider.isSurfaceWorld(): the overworld, unless an addon names more surface worlds (hbm-space's planets
         // are WorldProviderSurface subclasses) through com.hbm.api.environment.Environment.SURFACE
-        boolean surface = com.hbm.api.environment.Environment.isSurface(level);
+        boolean surface = Environment.isSurface(level);
         RandomSource rand = level.getRandom();
 
         /*
@@ -175,7 +178,7 @@ public final class BossSpawnHandler {
     public static boolean maskManConditions(ServerLevel level, ServerPlayer player) {
         Item acidizer = ModMachineBlocks.machine_crystallizer.get().asItem();
         // 1.7: 1.33_enableStatReRegistering off skips the stat condition (the stats were unreliable without the fix)
-        boolean acidizerStat = !com.hbm.config.GeneralConfig.enableStatReRegistering
+        boolean acidizerStat = !GeneralConfig.enableStatReRegistering
                 || player.getStats().getValue(Stats.ITEM_CRAFTED.get(acidizer)) > 0
                 || player.getStats().getValue(Stats.ITEM_USED.get(acidizer)) > 0;
         boolean hasRads = HbmLivingProps.getRadiation(player) >= MobConfig.maskmanMinRad;
@@ -252,7 +255,7 @@ public final class BossSpawnHandler {
      */
     private static boolean trySpawn(ServerLevel level, float x, float y, float z, Mob e) {
         e.snapTo(x, y, z, level.getRandom().nextFloat() * 360.0F, 0.0F);
-        if (!level.hasChunk(net.minecraft.util.Mth.floor(x) >> 4, net.minecraft.util.Mth.floor(z) >> 4)) return false;
+        if (!level.hasChunk(Mth.floor(x) >> 4, Mth.floor(z) >> 4)) return false;
         if (!level.addFreshEntity(e)) return false;
         Spawns.finalizeTriggered(e, level);
         return true;
@@ -272,7 +275,7 @@ public final class BossSpawnHandler {
             if (!players.isEmpty()) {
                 ServerPlayer p = players.get(meteorRand.nextInt(players.size()));
                 // 1.7 p.dimension == 0; hbm-space: p.worldObj.provider instanceof WorldProviderSurface
-                if (p != null && com.hbm.api.environment.Environment.isSurface(p.level())) {
+                if (p != null && Environment.isSurface(p.level())) {
                     strike(level, p);
                 }
             }

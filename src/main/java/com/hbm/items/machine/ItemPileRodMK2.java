@@ -1,9 +1,12 @@
 package com.hbm.items.machine;
 
+import com.hbm.api.data.ReactorDataMaps;
 import com.hbm.items.ItemEnumMulti;
 import com.hbm.items.ModDataComponents;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.Optional;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -60,20 +63,20 @@ public class ItemPileRodMK2 extends ItemEnumMulti {
      * The rod values of the stack: the {@code hbm:pile_rod} item data map, else HBM's enum constant; null when the stack is
      * not a pile rod. An addon's rod is any {@code ItemPileRodMK2} with an entry.
      */
-    public static com.hbm.api.data.ReactorDataMaps.@org.jspecify.annotations.Nullable PileRod stats(ItemStack stack) {
+    public static ReactorDataMaps.@org.jspecify.annotations.Nullable PileRod stats(ItemStack stack) {
         if (stack.isEmpty() || !(stack.getItem() instanceof ItemPileRodMK2 item)) return null;
-        com.hbm.api.data.ReactorDataMaps.PileRod data = com.hbm.api.data.ReactorDataMaps.PILE_ROD.get(stack.getItem());
+        ReactorDataMaps.PileRod data = ReactorDataMaps.PILE_ROD.get(stack.getItem());
         if (data != null) return data;
         return codeStats(stack);
     }
 
     /** The code defaults (constructor or enum values) that the data map entry overrides. */
-    public static com.hbm.api.data.ReactorDataMaps.@org.jspecify.annotations.Nullable PileRod codeStats(ItemStack stack) {
+    public static ReactorDataMaps.@org.jspecify.annotations.Nullable PileRod codeStats(ItemStack stack) {
         if (stack.isEmpty() || !(stack.getItem() instanceof ItemPileRodMK2 item)) return null;
         EnumPileRod rod = typeOf(stack);
-        java.util.Optional<String> into = rod.life <= 0 ? java.util.Optional.empty() : java.util.Optional.of(
-                net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item.of(EnumPileRod.VALUES[rod.turnsInto]).getItem()).toString());
-        return new com.hbm.api.data.ReactorDataMaps.PileRod(rod.reactionMult, rod.life, rod.heatMult, rod.neutronSource, into);
+        Optional<String> into = rod.life <= 0 ? Optional.empty() : Optional.of(
+                BuiltInRegistries.ITEM.getKey(item.of(EnumPileRod.VALUES[rod.turnsInto]).getItem()).toString());
+        return new ReactorDataMaps.PileRod(rod.reactionMult, rod.life, rod.heatMult, rod.neutronSource, into);
     }
 
     public static EnumPileRod typeOf(ItemStack stack) {
@@ -155,7 +158,7 @@ public class ItemPileRodMK2 extends ItemEnumMulti {
             setDepletion(stack, depletion);
             return stack;
         }
-        return rod.turnsInto().map(id -> new ItemStack(com.hbm.api.data.ReactorDataMaps.itemOf(id))).orElse(stack);
+        return rod.turnsInto().map(id -> new ItemStack(ReactorDataMaps.itemOf(id))).orElse(stack);
     }
 
     /** Upstream's {@code BobMathUtil.squirt}: a square root that stays finite and smooth through zero. */

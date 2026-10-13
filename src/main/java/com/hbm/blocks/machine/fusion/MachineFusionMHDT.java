@@ -6,10 +6,15 @@ import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionMHDT;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -42,7 +47,7 @@ public class MachineFusionMHDT extends BlockMultiblockMachine implements ILookOv
      * Both blink, as upstream.
      */
     @Override
-    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityFusionMHDT turbine)) return null;
 
         boolean hasPlasma = turbine.hasMinimumPlasma();
@@ -50,17 +55,17 @@ public class MachineFusionMHDT extends BlockMultiblockMachine implements ILookOv
         long power = (long) Math.floor(turbine.plasmaEnergy * TileEntityFusionMHDT.PLASMA_EFFICIENCY);
         if (!hasPlasma) power /= 2;
 
-        java.util.List<String> text = new java.util.ArrayList<>();
+        List<String> text = new ArrayList<>();
         text.add("§a-> " + (hasPlasma ? "§r" : "§6")
-                + String.format(java.util.Locale.US, "%,d", turbine.plasmaEnergy) + " TU/t / "
-                + String.format(java.util.Locale.US, "%,d", TileEntityFusionMHDT.MINIMUM_PLASMA) + " TU/t");
-        text.add("§c<- §r" + String.format(java.util.Locale.US, "%,d", isCool ? power : 0L) + " HE/t");
+                + String.format(Locale.US, "%,d", turbine.plasmaEnergy) + " TU/t / "
+                + String.format(Locale.US, "%,d", TileEntityFusionMHDT.MINIMUM_PLASMA) + " TU/t");
+        text.add("§c<- §r" + String.format(Locale.US, "%,d", isCool ? power : 0L) + " HE/t");
 
-        com.hbm.inventory.fluid.tank.FluidTankNTM[] tanks = turbine.getAllTanks();
+        FluidTankNTM[] tanks = turbine.getAllTanks();
         for (int i = 0; i < tanks.length; i++) {
             text.add((i == 0 ? "§a-> §r" : "§c<- §r") + tanks[i].getTankType().getDisplayNameString()
-                    + ": " + String.format(java.util.Locale.US, "%,d", tanks[i].getFill())
-                    + "/" + String.format(java.util.Locale.US, "%,d", tanks[i].getMaxFill()) + " mB");
+                    + ": " + String.format(Locale.US, "%,d", tanks[i].getFill())
+                    + "/" + String.format(Locale.US, "%,d", tanks[i].getMaxFill()) + " mB");
         }
 
         boolean blink = (System.currentTimeMillis() / 500L) % 2L == 0L;

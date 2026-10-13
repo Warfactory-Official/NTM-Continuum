@@ -1,5 +1,6 @@
 package com.hbm.items.special;
 
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -30,7 +31,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 // 1.7: ItemChopper is a spawn egg for one fixed NTM mob; constructor arguments replace item-identity dispatch.
-// 26.2: SpawnEggItem requires an entity type before the fixed entity handles bind, so this class follows its
+// 26.1: SpawnEggItem requires an entity type before the fixed entity handles bind, so this class follows its
 // use flow with a deferred type and omits only 1.7's spawner-block arm.
 public class ItemChopper extends CompatItem {
 
@@ -102,7 +103,7 @@ public class ItemChopper extends CompatItem {
         if (mob == null) return InteractionResult.FAIL;
 
         this.spawned.accept(mob);
-        dev.golem.core.world.ItemStacks.consume(stack, 1, player);
+        ItemStacks.consume(stack, 1, player);
         level.gameEvent(player, GameEvent.ENTITY_PLACE, spawnPos);
         return InteractionResult.SUCCESS;
     }

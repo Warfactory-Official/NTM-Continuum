@@ -8,11 +8,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
-/** Exact Gem port of original-hbm ItemRenderDoubleBarrel, including Sacred Dragon skin support. */
+/** Exact Gem port of 1.7 ItemRenderDoubleBarrel, including Sacred Dragon skin support. */
 public final class DoubleBarrelWeaponRenderer extends WeaponRenderer {
-    private static final net.minecraft.resources.Identifier MODEL_ID=Ids.of("hbm","models/weapons/sacred_dragon.obj");
+    private static final Identifier MODEL_ID=Ids.of("hbm","models/weapons/sacred_dragon.obj");
     private final Surface body;
     private WavefrontObj model;
     public DoubleBarrelWeaponRenderer(String texture){body=Surface.cutout("hbm:textures/models/weapons/"+texture+".png");}

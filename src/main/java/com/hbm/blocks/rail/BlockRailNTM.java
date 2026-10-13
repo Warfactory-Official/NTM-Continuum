@@ -3,6 +3,7 @@ package com.hbm.blocks.rail;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.BlockEntityRail;
+import dev.golem.core.world.BlockTickScheduler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -52,7 +53,7 @@ public abstract class BlockRailNTM extends BlockMultiblockMachine
     }
 
     @Override
-    protected BlockState onUpdateShape(BlockState state, LevelReader level, dev.golem.core.world.BlockTickScheduler ticks,
+    protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks,
                                        BlockPos pos, Direction direction, BlockPos neighbourPos, BlockState neighbourState) {
         if (state.getValue(WATERLOGGED)) ticks.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
         return super.onUpdateShape(state, level, ticks, pos, direction, neighbourPos, neighbourState);

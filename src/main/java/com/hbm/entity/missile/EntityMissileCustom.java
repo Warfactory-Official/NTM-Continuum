@@ -2,8 +2,11 @@ package com.hbm.entity.missile;
 
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.blocks.bomb.ModBombBlocks;
+import com.hbm.items.ModCustomMissileItems;
 import dev.golem.core.data.SynchedData;
 import com.hbm.blocks.bomb.BlockTaint;
+import dev.golem.core.world.Compat;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayList;
@@ -231,7 +234,7 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
                         random.nextInt(r) + (int) getY() - (r / 2 - 1),
                         random.nextInt(r) + (int) getZ() - (r / 2 - 1));
                 BlockState hit = level().getBlockState(pos);
-                if (!dev.golem.core.world.Compat.isSolidRender(hit) || hit.isAir()) continue;
+                if (!Compat.isSolidRender(hit) || hit.isAir()) continue;
                 level().setBlock(pos, ModBombBlocks.taint.get().defaultBlockState()
                         .setValue(BlockTaint.TAINTAGE, random.nextInt(3) + 4), Block.UPDATE_CLIENTS);
             }
@@ -265,7 +268,7 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
     // 1.7: new ItemStack(ModItems.missile_custom), a bare one without its parts
     @Override
     public ItemStack getMissileItemForInfo() {
-        return new ItemStack(com.hbm.items.ModCustomMissileItems.missile_custom.get());
+        return new ItemStack(ModCustomMissileItems.missile_custom.get());
     }
 
     // the blip is the fuselage's silhouette: which of the five 1.7 size pairs the craft assembles into
@@ -296,10 +299,10 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
         super.loadData(input);
         fuel = input.getFloatOr("fuel", fuel);
         consumption = input.getFloatOr("consumption", consumption);
-        input.read("warhead", dev.golem.core.world.ItemStacks.optionalCodec()).ifPresent(s -> entityData.set(WARHEAD, s));
-        input.read("fuselage", dev.golem.core.world.ItemStacks.optionalCodec()).ifPresent(s -> entityData.set(FUSELAGE, s));
-        input.read("fins", dev.golem.core.world.ItemStacks.optionalCodec()).ifPresent(s -> entityData.set(FINS, s));
-        input.read("thruster", dev.golem.core.world.ItemStacks.optionalCodec()).ifPresent(s -> entityData.set(THRUSTER, s));
+        input.read("warhead", ItemStacks.optionalCodec()).ifPresent(s -> entityData.set(WARHEAD, s));
+        input.read("fuselage", ItemStacks.optionalCodec()).ifPresent(s -> entityData.set(FUSELAGE, s));
+        input.read("fins", ItemStacks.optionalCodec()).ifPresent(s -> entityData.set(FINS, s));
+        input.read("thruster", ItemStacks.optionalCodec()).ifPresent(s -> entityData.set(THRUSTER, s));
     }
 
     @Override
@@ -307,9 +310,9 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
         super.saveData(output);
         output.putFloat("fuel", fuel);
         output.putFloat("consumption", consumption);
-        output.store("warhead", dev.golem.core.world.ItemStacks.optionalCodec(), entityData.get(WARHEAD));
-        output.store("fuselage", dev.golem.core.world.ItemStacks.optionalCodec(), entityData.get(FUSELAGE));
-        output.store("fins", dev.golem.core.world.ItemStacks.optionalCodec(), entityData.get(FINS));
-        output.store("thruster", dev.golem.core.world.ItemStacks.optionalCodec(), entityData.get(THRUSTER));
+        output.store("warhead", ItemStacks.optionalCodec(), entityData.get(WARHEAD));
+        output.store("fuselage", ItemStacks.optionalCodec(), entityData.get(FUSELAGE));
+        output.store("fins", ItemStacks.optionalCodec(), entityData.get(FINS));
+        output.store("thruster", ItemStacks.optionalCodec(), entityData.get(THRUSTER));
     }
 }

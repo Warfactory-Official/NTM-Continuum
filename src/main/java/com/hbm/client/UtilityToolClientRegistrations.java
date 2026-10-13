@@ -1,5 +1,6 @@
 package com.hbm.client;
 
+import com.hbm.Constants;
 import com.hbm.client.render.RenderInfoSystem;
 import com.hbm.handler.ToolKeybinds.EnumToolKey;
 import com.hbm.inventory.ModUtilityToolMenus;
@@ -20,6 +21,7 @@ import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.ItemModelProperties;
 import dev.golem.core.client.KeyMappings;
 import dev.golem.core.net.GolemNetwork;
+import java.util.Arrays;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
@@ -68,9 +70,9 @@ public final class UtilityToolClientRegistrations {
     }
 
     public static void installItemModelProperties() {
-        ItemModelProperties.register(com.hbm.Constants.MOD_ID, "coltass", stack -> frameCounter);
+        ItemModelProperties.register(Constants.MOD_ID, "coltass", stack -> frameCounter);
         // polaroid_<id>: case n is polaroid n + 1
-        ItemModelProperties.register(com.hbm.Constants.MOD_ID, "polaroid", stack -> MainRegistry.polaroidID - 1);
+        ItemModelProperties.register(Constants.MOD_ID, "polaroid", stack -> MainRegistry.polaroidID - 1);
     }
 
     public static void installKeybinds() {
@@ -84,7 +86,7 @@ public final class UtilityToolClientRegistrations {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null || mc.level == null) {
-            java.util.Arrays.fill(LAST_STATE, false);
+            Arrays.fill(LAST_STATE, false);
             updateCompass(null, 0, 0, 0, true);
             return;
         }

@@ -1,5 +1,7 @@
 package com.hbm.blocks;
 
+import com.hbm.blocks.fluid.ModWorldFluids;
+import com.hbm.blocks.generic.BlockMud;
 import dev.golem.core.world.Compat;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,10 +28,10 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 /**
  * The radioactive / hazardous blocks (1.12.2 {@code BlockHazard}) + the radiation‑sealing blocks
  * ({@code BlockRadResistant}). Hand‑registered (the generator skips {@code new BlockHazard(}/{@code
- * BlockRadResistant(} so there's no id clash) — the generator only emits their <b>assets</b> via its
+ * BlockRadResistant(} so there's no id clash). The generator only emits their <b>assets</b> via its
  * {@code HAZARD_BLOCK_IDS} pass. Radiation values are assigned in {@link #initHazards()} <b>after</b>
  * {@code HazardRegistry.registerItems()} (which registers the block‑items' RADIATION hazards), mirroring
- * the old {@code initializeHazardsAndPlacables → getRawRadsFromBlock} two‑step.
+ * the old {@code initializeHazardsAndPlacables -> getRawRadsFromBlock} two‑step.
  */
 public final class ModHazardBlocks {
 
@@ -46,14 +48,15 @@ public final class ModHazardBlocks {
     /** Every hazard block (for the initHazards radiation‑value pass). */
     public static final List<RegistryObject<? extends Block>> HAZARD_BLOCKS = new ArrayList<>();
 
-    /** Watz meltdown sludge — placed by the reactor, never crafted, so it has no block item. */
-    public static final RegistryObject<com.hbm.blocks.generic.BlockMud> mud_block = REG.block(
-                    "mud_block", com.hbm.blocks.generic.BlockMud::new,
-                    p -> p.strength(1.0F, 500.0F).sound(SoundType.SLIME_BLOCK).noOcclusion())
-            .transform(Presets.cubeAll().viaItemModel())
-            .loot(Loot.nothing());
+    /** Watz meltdown sludge, placed by the reactor, never crafted, so it has no block item. */
+    // The 1.7 MudBlock: a Golem Core world fluid (com.hbm.blocks.fluid.ModWorldFluids.MUD), material fluidmud
+    // (replaceable), setResistance(500).
+    public static final RegistryObject<BlockMud> mud_block = REG.block(
+                    "mud_block", BlockMud::new,
+                    p -> ModWorldFluids.properties(p, ModWorldFluids.MUD, true))
+            .transform(ModWorldFluids.blockstate("mud"));
 
-    // ---- radioactive metal storage blocks ----
+    // Radioactive metal storage blocks
     public static final RegistryObject<BlockHazard> block_uranium = hazard("block_uranium").transform(STORAGE);
     public static final RegistryObject<BlockHazard> block_u233 = hazard("block_u233").transform(STORAGE);
     public static final RegistryObject<BlockHazard> block_u235 = hazard("block_u235").transform(STORAGE);
@@ -76,14 +79,14 @@ public final class ModHazardBlocks {
     public static final RegistryObject<BlockHazard> block_schrabidate = hazard("block_schrabidate", 300F).transform(STORAGE);
     public static final RegistryObject<BlockHazard> block_schraranium = hazard("block_schraranium", 300F).transform(STORAGE);
 
-    // ---- reactor fuel blocks ----
+    // Reactor fuel blocks
     public static final RegistryObject<BlockHazard> block_uranium_fuel = hazard("block_uranium_fuel").transform(STORAGE);
     public static final RegistryObject<BlockHazard> block_plutonium_fuel = hazard("block_plutonium_fuel").transform(STORAGE);
     public static final RegistryObject<BlockHazard> block_thorium_fuel = hazard("block_thorium_fuel").transform(STORAGE);
     public static final RegistryObject<BlockHazard> block_mox_fuel = hazard("block_mox_fuel").transform(STORAGE);
     public static final RegistryObject<BlockHazard> block_schrabidium_fuel = hazard("block_schrabidium_fuel", 300F).transform(STORAGE);
 
-    // ---- specials ----
+    // Specials
     public static final RegistryObject<BlockHazard> block_trinitite = hazard("block_trinitite").transform(STORAGE);
     public static final RegistryObject<BlockHazard> block_white_phosphorus = hazard("block_white_phosphorus", DisplayEffect.FLAMES).transform(STORAGE);
     public static final RegistryObject<BlockHazard> block_magnetized_tungsten = hazard("block_magnetized_tungsten", 35F).transform(STORAGE);
@@ -92,7 +95,7 @@ public final class ModHazardBlocks {
                     p -> p.strength(100.0F, 9000.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().randomTicks())
             .transform(STORAGE);
 
-    // ---- radiation‑sealing blocks (IRadResistantBlock) ----
+    // Radiation-sealing blocks (IRadResistantBlock)
     public static final RegistryObject<BlockRadResistant> block_lead = radResistant("block_lead").transform(STORAGE);
     public static final RegistryObject<BlockRadResistant> block_boron = radResistant("block_boron").transform(STORAGE);
     public static final RegistryObject<BlockRadResistant> brick_concrete = radResistant("brick_concrete", 15F, 160F).transform(STORAGE);
@@ -108,7 +111,7 @@ public final class ModHazardBlocks {
         HAZARD_BLOCKS.add(block_corium);
     }
 
-    // ---- helpers ----
+    // Helpers
     private static Reg.Handle<BlockHazard> hazard(String id) { return hazard(id, DisplayEffect.NONE, 10F); }
     private static Reg.Handle<BlockHazard> hazard(String id, float resistance) { return hazard(id, DisplayEffect.NONE, resistance); }
     private static Reg.Handle<BlockHazard> hazard(String id, DisplayEffect fx) { return hazard(id, fx, 10F); }

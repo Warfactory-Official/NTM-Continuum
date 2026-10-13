@@ -24,7 +24,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.List;
 
-/** Registry, tag, and vanilla-behaviour contracts for the beacon/falling/glass/ladder block wave. */
+/** Registry, tag, and vanilla-behaviour contracts for the beacon/falling/glass/ladder blocks. */
 public final class BlockFamilyGameTests {
 
     private static final TagKey<Block> BEACON_BASE_BLOCKS =

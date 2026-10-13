@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -64,7 +65,7 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCentrifuge te) {
-        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             te.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
         }
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, MAX_POWER);

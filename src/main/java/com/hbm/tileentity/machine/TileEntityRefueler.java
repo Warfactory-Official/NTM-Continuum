@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.handler.ArmorModHandler;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
@@ -15,6 +16,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -27,7 +29,7 @@ import net.minecraft.world.phys.AABB;
 import java.util.List;
 
 /**
- * Refueler — 1:1 port of the 1.12.2 {@code TileEntityRefueler}: a single-block fuel pad with a
+ * Refueler: 1:1 port of the 1.12.2 {@code TileEntityRefueler}: a single-block fuel pad with a
  * {@code KEROSENE 100} tank. Each tick it fills any {@link IFillableItem} in the inventory of players
  * standing on it (AABB expanded ±0.5), playing the extinguish sound every 20 op-ticks. Fluid enters via
  * a pipe on the side opposite the facing.
@@ -77,9 +79,9 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
             }
 
             // Armor inventory is separate from Inventory's 36 carried slots on modern Minecraft.
-            for (net.minecraft.world.entity.EquipmentSlot slot : new net.minecraft.world.entity.EquipmentSlot[] {
-                    net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
-                    net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET}) {
+            for (EquipmentSlot slot : new EquipmentSlot[] {
+                    EquipmentSlot.HEAD, EquipmentSlot.CHEST,
+                    EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
                 ItemStack stack = player.getItemBySlot(slot);
                 if (stack.isEmpty()) continue;
                 te.isOperating |= te.fillFillable(stack);
@@ -141,7 +143,7 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
         return false;
     }
 
-    public void setTankType(com.hbm.inventory.fluid.FluidType type) {
+    public void setTankType(FluidType type) {
         tank.setTankType(type);
         setChanged();
     }

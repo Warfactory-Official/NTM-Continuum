@@ -14,17 +14,20 @@ import dev.golem.core.render.*;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.phys.Vec3;
 
 public final class RBMKConsoleRenderer extends GemBER<BlockEntityRBMKConsole, RBMKConsoleRenderer.State> {
     private static final WavefrontObj MODEL = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/rbmk/rbmk_console.obj"));
     private static final Identifier TEXTURE = Ids.of(Constants.MOD_ID, "textures/models/machines/rbmk_console.png");
     private final Font font;
-    public RBMKConsoleRenderer() { font = net.minecraft.client.Minecraft.getInstance().font; }
+    public RBMKConsoleRenderer() { font = Minecraft.getInstance().font; }
     @Override protected void setup(Gem.Model<State> declaration) {
         declaration.offScreen().viewDistance(256)
                 .part(MODEL.all(), Surface.cutout(TEXTURE.toString()))
@@ -94,6 +97,6 @@ public final class RBMKConsoleRenderer extends GemBER<BlockEntityRBMKConsole, RB
     private static int color(float r, float g, float b) { return 0xFF000000 | ((int) (Math.max(0, Math.min(1, r)) * 255) << 16) | ((int) (Math.max(0, Math.min(1, g)) * 255) << 8) | (int) (Math.max(0, Math.min(1, b)) * 255); }
     private static void quad(PoseStack.Pose p, VertexConsumer b, float x, float y, float z, float w, int c, int light) { Vertexes.vertex(b,p,x,y+w,z-w,c,0,0,OverlayTexture.NO_OVERLAY,light,0,1,0); Vertexes.vertex(b,p,x,y+w,z+w,c,0,0,OverlayTexture.NO_OVERLAY,light,0,1,0); Vertexes.vertex(b,p,x,y-w,z+w,c,0,0,OverlayTexture.NO_OVERLAY,light,0,1,0); Vertexes.vertex(b,p,x,y-w,z-w,c,0,0,OverlayTexture.NO_OVERLAY,light,0,1,0); }
     private static void diamond(PoseStack.Pose p, VertexConsumer b, float x, float y, float z, float r, float g, float bl, int light) { float w=.03125F,e=.022097F; int c=color(r,g,bl); float[][] v={{x,y+w,z},{x,y+e,z+e},{x,y,z+w},{x,y-e,z+e},{x,y+e,z-e},{x,y+w,z},{x,y-e,z-e},{x,y,z-w},{x,y+w,z},{x,y-e,z+e},{x,y-w,z},{x,y-e,z-e}}; for(float[] q:v) Vertexes.vertex(b,p,q[0],q[1],q[2],c,0,0,OverlayTexture.NO_OVERLAY,light,0,1,0); }
-    private static float yaw(net.minecraft.core.Direction direction) { return switch (direction) { case NORTH -> 90F; case WEST -> 180F; case SOUTH -> 270F; default -> 0F; }; }
-    public static final class State extends CompatRenderState { float yaw; RBMKColumn[] columns; final net.minecraft.util.FormattedCharSequence[] text = new net.minecraft.util.FormattedCharSequence[6]; }
+    private static float yaw(Direction direction) { return switch (direction) { case NORTH -> 90F; case WEST -> 180F; case SOUTH -> 270F; default -> 0F; }; }
+    public static final class State extends CompatRenderState { float yaw; RBMKColumn[] columns; final FormattedCharSequence[] text = new FormattedCharSequence[6]; }
 }

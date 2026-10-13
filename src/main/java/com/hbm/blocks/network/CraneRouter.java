@@ -6,7 +6,8 @@ import com.hbm.api.conveyor.IConveyorPackage;
 import com.hbm.api.conveyor.IEnterableBlock;
 import com.hbm.entity.item.EntityMovingItem;
 import com.hbm.entity.item.EntityMovingPackage;
-import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.module.ModulePatternMatcher;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -62,7 +63,7 @@ public class CraneRouter extends CompatBlock implements TickingBlock, IEnterable
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!(level.getBlockEntity(pos) instanceof MenuProvider provider)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }

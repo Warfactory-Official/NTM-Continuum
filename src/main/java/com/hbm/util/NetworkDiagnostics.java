@@ -5,6 +5,7 @@ import com.hbm.uninos.graph.GraphNode;
 import com.hbm.uninos.graph.GraphSegment;
 import com.hbm.uninos.graph.NodeNetwork;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.LongConsumer;
 import java.util.function.Predicate;
@@ -37,7 +38,7 @@ public final class NetworkDiagnostics {
     public static int countEndpoints(ServerLevel level, NodeNetwork<?> net, Predicate<BlockEntity> filter) {
         LongOpenHashSet cells = new LongOpenHashSet();
         forEachCell(net, cells::add);
-        Set<BlockEntity> seen = new java.util.HashSet<>();
+        Set<BlockEntity> seen = new HashSet<>();
         cells.forEach((long key) -> {
             BlockPos cell = BlockPos.of(key);
             for (Direction dir : Direction.values()) {

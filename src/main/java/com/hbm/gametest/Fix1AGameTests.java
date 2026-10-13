@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Fix wave phase 1A (2026-10-03, History section 19ej-1a): values computed from original-hbm (1.7.10).
+ * Values computed from 1.7.
  * <ul>
  *   <li>Billets: 1.7 {@code MineralRecipes.addBillet(billet, ingot, nugget)} gives one billet back as six nuggets,
  *       three billets as two ingots and two ingots as three billets; nothing turns one billet into six ingots.</li>
@@ -33,7 +33,7 @@ import java.util.List;
  *       1 / 2 / 8 of {@code hbm:nugget_mercury}, not 9 / 18 / 72.</li>
  *   <li>Fluid ids are the 1.7 positions (CHLORINE 89, DHC 153, FLUE 155, 156 fluids), AIRBLAST is 1,200 degrees,
  *       FLUE burns for 25,000, and steam has no FT_Heatable.</li>
- *   <li>The machines and rails that dropped nothing drop themselves again.</li>
+ *   <li>The machines and rails that dropped nothing drop themselves.</li>
  * </ul>
  */
 public final class Fix1AGameTests {

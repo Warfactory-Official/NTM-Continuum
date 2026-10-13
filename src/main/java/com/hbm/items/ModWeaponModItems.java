@@ -12,8 +12,7 @@ import java.util.Locale;
 
 /**
  * The four 1.7 {@code ItemEnumMulti} weapon-mod carriers, one item per constant as ntm-next registers them
- * ({@code ModItems.dotted}: {@code <base>_<constant>}, drawn with the 1.7 sprite {@code <base>.<constant>};
- * History §19es-itemvariant).
+ * ({@code ModItems.dotted}: {@code <base>_<constant>}, drawn with the 1.7 sprite {@code <base>.<constant>}).
  */
 public final class ModWeaponModItems {
 

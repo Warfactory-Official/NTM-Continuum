@@ -22,7 +22,7 @@ import org.jspecify.annotations.Nullable;
  * blocks out, driving any correctly-placed {@link com.hbm.blocks.machine.MachineSILEX} in its path and
  * burning through anything else.
  *
- * <p>The footprint is deliberately lopsided — {@code {2, 0, 4, 2, 1, 1}} means it extends <b>4 blocks
+ * <p>The footprint is lopsided: {@code {2, 0, 4, 2, 1, 1}} means it extends <b>4 blocks
  * forward and 2 back</b> from the core, with the core itself sitting {@code getOffset() == 2} blocks in
  * front of where the player clicked. Power enters at the single rear port {@link #fillSpace} places
  * behind the machine, {@code o - 4} along the facing axis at {@code y+1}.

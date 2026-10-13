@@ -159,7 +159,7 @@ public final class ModExplosivesBlocks {
 
     /**
      * Solid plastic explosive: the {@code _front} icon on the face opposite the piston-style orientation
-     * (old-hbm block_semtex.json: front on south, facing=north unrotated).
+     * (1.12.2 block_semtex.json: front on south, facing=north unrotated).
      */
     private static Presets.BlockModel plastic(String side) {
         return Presets.shape(Models.parented("minecraft:block/cube", Slots.of("particle", side)

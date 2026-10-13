@@ -5,6 +5,8 @@ import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.RotaryFurnaceRecipes;
 import com.hbm.items.ModEntityItems;
 import com.hbm.blocks.ModProductionBlocks;
+import com.hbm.items.machine.ModStampItems;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityConveyorPress;
 import com.hbm.tileentity.machine.TileEntityMachineAutocrafter;
 import com.hbm.tileentity.machine.TileEntityMachineRotaryFurnace;
@@ -139,12 +141,12 @@ public final class ProductionMachineGameTests {
                 "conveyor press must be three blocks tall");
 
         press.power = TileEntityConveyorPress.maxPower;
-        press.inventory.setStackInSlot(0, new ItemStack(com.hbm.items.machine.ModStampItems.stamp_stone_flat.get()));
+        press.inventory.setStackInSlot(0, new ItemStack(ModStampItems.stamp_stone_flat.get()));
         BlockState state = helper.getLevel().getBlockState(core);
         for (int i = 0; i < 10; i++) TileEntityConveyorPress.serverTick(helper.getLevel(), core, state, press);
         helper.assertTrue(press.press == 0 && press.power == TileEntityConveyorPress.maxPower,
                 "conveyor press must not stroke or draw power without an item on the belt");
-        helper.assertTrue(press.canConnect(com.hbm.lib.ForgeDirection.NORTH) && !press.canConnect(com.hbm.lib.ForgeDirection.DOWN),
+        helper.assertTrue(press.canConnect(ForgeDirection.NORTH) && !press.canConnect(ForgeDirection.DOWN),
                 "conveyor press must connect on every side but the bottom");
         helper.succeed();
     }

@@ -1,29 +1,48 @@
 package com.hbm.gametest;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.hbm.Constants;
 import com.hbm.inventory.OreDictManager;
 import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
+import com.hbm.inventory.recipes.FusionRecipes;
 import com.hbm.inventory.recipes.SolderingRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
+import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ModAutogenItems;
+import com.hbm.items.ModFluidNetItems;
+import com.hbm.items.ModGearItems;
 import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModUpgradeItems;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.world.Recipes;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 
 /**
- * §19ed-recipe-content: the 1.7 assembly/chemical-plant recipes that the generator could not resolve before
+ * The 1.7 assembly and chemical-plant recipes that the generator could not resolve
  * (fusion parts, hpcondenser, watz casing, factories, caps, pistons, HIMARS, Nitra, ...), the aggregate
  * ({@code ANY_RESISTANTALLOY}/{@code ANY_BISMOIDBRONZE}) autogen plates they need, the soldering controllers and
  * the anvil recycling block.
@@ -42,7 +61,6 @@ public final class RecipeContentGameTests {
     public static final GameTests.Function ANVIL =
             TESTS.function("reccontent_anvil_recycling", 20, () -> RecipeContentGameTests::anvilRecycling);
 
-    // §19ed-recipe-names
     public static final GameTests.Function NAMES =
             TESTS.function("recnames_named_recipes", 20, () -> RecipeContentGameTests::namedRecipes);
     public static final GameTests.Function GENERATED_CRAFTING =
@@ -76,18 +94,18 @@ public final class RecipeContentGameTests {
     private static void namedRecipes(GameTestHelper helper) {
         AssemblyMachineRecipes.INSTANCE.registerRecipes();
         ChemicalPlantRecipes.INSTANCE.registerRecipes();
-        com.hbm.inventory.recipes.FusionRecipes.INSTANCE.registerRecipes();
-        java.util.Set<String> expected = new java.util.HashSet<>();
+        FusionRecipes.INSTANCE.registerRecipes();
+        Set<String> expected = new HashSet<>();
         for (String[] row : NAMED) expected.add(row[0]);
-        java.util.Set<String> named = new java.util.HashSet<>();
-        for (com.hbm.inventory.recipes.loader.GenericRecipes set : new com.hbm.inventory.recipes.loader.GenericRecipes[]{
+        Set<String> named = new HashSet<>();
+        for (GenericRecipes set : new GenericRecipes[]{
                 AssemblyMachineRecipes.INSTANCE, ChemicalPlantRecipes.INSTANCE,
-                com.hbm.inventory.recipes.FusionRecipes.INSTANCE}) {
+                FusionRecipes.INSTANCE}) {
             for (GenericRecipe recipe : set.recipeOrderedList) {
                 if (!recipe.customLocalization) continue;
                 named.add(recipe.name);
                 String shown = recipe.getLocalizedName();
-                helper.assertTrue(shown.equals(net.minecraft.network.chat.Component.translatable(recipe.name).getString()),
+                helper.assertTrue(shown.equals(Component.translatable(recipe.name).getString()),
                         recipe.name + " is shown under the translation of its id, not its icon: " + shown);
                 helper.assertTrue(recipe.matchesSearch(shown), recipe.name + " is found by its own name");
             }
@@ -95,12 +113,12 @@ public final class RecipeContentGameTests {
         helper.assertTrue(named.equals(expected), "exactly 1.7's named recipes are named; missing "
                 + diff(expected, named) + ", extra " + diff(named, expected));
 
-        com.google.gson.JsonObject lang;
-        try (java.io.InputStream in = GenericRecipe.class.getResourceAsStream("/assets/hbm/lang/en_us.json")) {
+        JsonObject lang;
+        try (InputStream in = GenericRecipe.class.getResourceAsStream("/assets/hbm/lang/en_us.json")) {
             helper.assertTrue(in != null, "en_us.json is on the classpath");
-            lang = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in,
-                    java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
-        } catch (java.io.IOException e) {
+            lang = JsonParser.parseReader(new InputStreamReader(in,
+                    StandardCharsets.UTF_8)).getAsJsonObject();
+        } catch (IOException e) {
             throw new IllegalStateException(e);
         }
         for (String[] row : NAMED) {
@@ -110,53 +128,53 @@ public final class RecipeContentGameTests {
         helper.assertTrue(lang.has("autoswitch") && lang.get("autoswitch").getAsString().contains("$")
                 && lang.has("autoswitch.cyclotron"), "the 1.7 auto-switch tooltip lines are translated");
 
-        java.util.List<String> alt = com.hbm.inventory.recipes.loader.GenericRecipes.blueprintPools.getOrDefault(
-                com.hbm.inventory.recipes.loader.GenericRecipes.POOL_PREFIX_ALT + ".circuit", java.util.List.of());
-        helper.assertTrue(alt.containsAll(java.util.List.of("ass.analogAlt", "ass.factorioChip", "ass.atomicClockAlt")),
+        List<String> alt = GenericRecipes.blueprintPools.getOrDefault(
+                GenericRecipes.POOL_PREFIX_ALT + ".circuit", List.of());
+        helper.assertTrue(alt.containsAll(List.of("ass.analogAlt", "ass.factorioChip", "ass.atomicClockAlt")),
                 "the 1.7 alt..circuit blueprint holds the three named circuit alternates: " + alt);
         GenericRecipe clock = AssemblyMachineRecipes.INSTANCE.getRecipe("ass.atomicClockAlt");
         helper.assertTrue(clock.outputItem[0].getItem() == ModIntermediateItems.circuit(EnumCircuitType.ATOMIC_CLOCK)
                 && clock.outputItem[0].getCount() == 4 && clock.power == 20_000, "ass.atomicClockAlt: 4 clocks, 20 kHE/t");
-        java.util.List<GenericRecipe> cyclotron = AssemblyMachineRecipes.INSTANCE.autoSwitchGroups.get("autoswitch.cyclotron");
+        List<GenericRecipe> cyclotron = AssemblyMachineRecipes.INSTANCE.autoSwitchGroups.get("autoswitch.cyclotron");
         helper.assertTrue(cyclotron != null && cyclotron.size() == 5
                         && !AssemblyMachineRecipes.INSTANCE.autoSwitchGroups.containsKey("cyclotron"),
                 "the five cyclotron boxes share 1.7's single autoswitch.cyclotron group");
         helper.succeed();
     }
 
-    private static java.util.Set<String> diff(java.util.Set<String> a, java.util.Set<String> b) {
-        java.util.Set<String> out = new java.util.TreeSet<>(a);
+    private static Set<String> diff(Set<String> a, Set<String> b) {
+        Set<String> out = new TreeSet<>(a);
         out.removeAll(b);
         return out;
     }
 
     /** Recipes that exist only because gen_recipes.py generates them now (CraftingRecipesGenerated). */
     private static void generatedCrafting(GameTestHelper helper) {
-        net.minecraft.world.level.Level level = helper.getLevel();
+        Level level = helper.getLevel();
         for (String id : new String[]{"string", "lead", "saddle", "gun_maresleg", "grenade_shell_frag", "iron_ingot_g1",
                 "stick_dynamite", "fluid_valve"}) {
-            helper.assertTrue(dev.golem.core.world.Recipes.hasRecipe(level, "hbm", id), "hbm:" + id + " is loaded");
+            helper.assertTrue(Recipes.hasRecipe(level, "hbm", id), "hbm:" + id + " is loaded");
         }
-        ItemStack string = dev.golem.core.world.Recipes.craftingResult(level, 1, 1,
-                java.util.List.of(new ItemStack(item("plant_flower_weed")))).orElse(ItemStack.EMPTY);
-        helper.assertTrue(string.getItem() == net.minecraft.world.item.Items.STRING && string.getCount() == 3,
+        ItemStack string = Recipes.craftingResult(level, 1, 1,
+                List.of(new ItemStack(item("plant_flower_weed")))).orElse(ItemStack.EMPTY);
+        helper.assertTrue(string.getItem() == Items.STRING && string.getCount() == 3,
                 "1.7: one hemp makes three string, got " + string);
         ItemStack rope = new ItemStack(item("plant_item_rope"));
-        ItemStack lead = dev.golem.core.world.Recipes.craftingResult(level, 3, 1, java.util.List.of(rope,
-                new ItemStack(net.minecraft.world.item.Items.SLIME_BALL), rope.copy())).orElse(ItemStack.EMPTY);
-        helper.assertTrue(lead.getItem() == net.minecraft.world.item.Items.LEAD && lead.getCount() == 4,
+        ItemStack lead = Recipes.craftingResult(level, 3, 1, List.of(rope,
+                new ItemStack(Items.SLIME_BALL), rope.copy())).orElse(ItemStack.EMPTY);
+        helper.assertTrue(lead.getItem() == Items.LEAD && lead.getCount() == 4,
                 "1.7: rope, slime ball, rope make four leads, got " + lead);
-        ItemStack iron = dev.golem.core.world.Recipes.smeltingResult(level, new ItemStack(item("ore_meteor_iron")))
+        ItemStack iron = Recipes.smeltingResult(level, new ItemStack(item("ore_meteor_iron")))
                 .orElse(ItemStack.EMPTY);
         // 1.7 yields 16. On 1.20.1 a cooking result is a bare id, and 1.21.1 vanilla/Fabric drop its count, so
         // legacy-recipes.gradle.kts routes count/tag results through hbm:component_smelting there;
         // LegacyCompatGameTests also smelts them in a real furnace.
-        helper.assertTrue(iron.getItem() == net.minecraft.world.item.Items.IRON_INGOT && iron.getCount() == 16,
+        helper.assertTrue(iron.getItem() == Items.IRON_INGOT && iron.getCount() == 16,
                 "1.7: meteoric iron ore smelts into 16 iron ingots, got " + iron);
         helper.succeed();
     }
 
-    /** Every recipe the generator newly resolved on 2026-09-28 (plus the three chemical-plant ones). */
+    /** Every recipe the generator resolves here, plus the three chemical-plant ones. */
     static final String[] ASSEMBLY = {
             "ass.bronzetubes", "ass.thermoelement", "ass.capnuka", "ass.capquantum", "ass.capsparkle", "ass.caprad",
             "ass.capfritz", "ass.capkorl", "ass.assemfac", "ass.chemfac", "ass.pistonsetsteel", "ass.pistonsetdura",
@@ -188,10 +206,10 @@ public final class RecipeContentGameTests {
         helper.assertTrue(nitra.outputChoices != null && nitra.outputChoices.length == 10,
                 "ass.nitra keeps 1.7's ten weighted ChanceOutputMulti outputs");
         GenericRecipe shuttle = AssemblyMachineRecipes.INSTANCE.getRecipe("ass.shuttlemissile");
-        ItemStack canister = com.hbm.items.ModFluidNetItems.canister_full.get()
-                .make(com.hbm.inventory.fluid.Fluids.GASOLINE_LEADED, 1_000);
-        ItemStack wrong = com.hbm.items.ModFluidNetItems.canister_full.get()
-                .make(com.hbm.inventory.fluid.Fluids.DIESEL, 1_000);
+        ItemStack canister = ModFluidNetItems.canister_full.get()
+                .make(Fluids.GASOLINE_LEADED, 1_000);
+        ItemStack wrong = ModFluidNetItems.canister_full.get()
+                .make(Fluids.DIESEL, 1_000);
         boolean leaded = false, diesel = false;
         for (AStack in : shuttle.inputItem) {
             leaded |= in.matchesRecipe(canister, true);
@@ -270,7 +288,7 @@ public final class RecipeContentGameTests {
         }
         AnvilConstructionRecipe cabinet = recycling(new ItemStack(item("filing_cabinet_green")));
         helper.assertTrue(cabinet != null && cabinet.isTierValid(1), "the filing cabinet dismantles at tier 1 (1.7)");
-        AnvilConstructionRecipe gear = recycling(com.hbm.items.ModGearItems.gear_large.get().of(1));
+        AnvilConstructionRecipe gear = recycling(ModGearItems.gear_large.get().of(1));
         helper.assertTrue(gear != null && gear.output.get(1).stack.getItem() == item("ingot_titanium"),
                 "the steel gear (meta 1) dismantles into steel plates and titanium");
         helper.succeed();

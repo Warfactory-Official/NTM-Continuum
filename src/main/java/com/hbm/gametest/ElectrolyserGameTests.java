@@ -4,9 +4,11 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.MachineElectrolyser;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.container.ContainerMachineElectrolyser;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;
+import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.ElectrolyserFluidRecipes;
 import com.hbm.inventory.recipes.ElectrolyserMetalRecipes;
@@ -14,11 +16,15 @@ import com.hbm.items.ModItems;
 import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ItemEnums.EnumChunkType;
 import com.hbm.items.ModBatteryItems;
+import com.hbm.items.ModUpgradeItems;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
+import com.hbm.items.machine.ItemFluidId;
+import com.hbm.items.special.BedrockOreType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineElectrolyser;
 import dev.golem.core.gametest.GameTestHelpers;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.protocol.Packet;
@@ -43,14 +49,14 @@ public final class ElectrolyserGameTests {
                 "electrolyser must expose all eight legacy fluid recipes");
         // Eighteen crystal recipes plus 1.7's bedrock-ore products: primary-first, primary-second and
         // crumbs for each of the six ore types.
-        int metalExpected = 18 + 3 * com.hbm.items.special.BedrockOreType.VALUES.length;
+        int metalExpected = 18 + 3 * BedrockOreType.VALUES.length;
         helper.assertTrue(ElectrolyserMetalRecipes.RECIPES.size() == metalExpected,
                 "electrolyser must expose all " + metalExpected + " ported metal recipes, found "
                         + ElectrolyserMetalRecipes.RECIPES.size());
         helper.assertTrue(ElectrolyserFluidRecipes.getRecipe(Fluids.HEAVYWATER).output1.type == Fluids.DEUTERIUM,
                 "heavy water must produce deuterium");
         helper.assertTrue(ElectrolyserMetalRecipes.getRecipe(new ItemStack(ModItems.crystal_uranium.get())).output2.material
-                        == com.hbm.inventory.material.Mats.MAT_RADIUM,
+                        == Mats.MAT_RADIUM,
                 "uranium crystal must produce radium as its second molten output");
         helper.succeed();
     }
@@ -58,11 +64,10 @@ public final class ElectrolyserGameTests {
     /**
      * The complete legacy footprint, metadata write order, and all six distance-six ports.
      *
-     * <p>All four facings are built at the same core, one after another, rather than side by side.
-     * An electrolyser reaches six blocks out in every horizontal direction, so four of them spread
-     * across a grid covered 2..30 — outside the 24-wide plot, in a neighbour's space, which made
-     * this test's result depend on what the runner happened to pack next to it. Reusing one core and
-     * clearing between facings keeps every block this test writes inside its own plot.
+     * <p>All four facings are built at the same core, one after another, not side by side: an electrolyser
+     * reaches six blocks out in every horizontal direction, so four spread across a grid would leave the
+     * 24-wide plot and make the result depend on the neighbouring plot. Reusing one core and clearing
+     * between facings keeps every written block inside its own plot.
      */
     public static void layoutAndPorts(GameTestHelper helper) {
         MachineElectrolyser block = ModMachineBlocks.machine_electrolyser.get();
@@ -146,10 +151,10 @@ public final class ElectrolyserGameTests {
         for (int i = 0; i < TileEntityMachineElectrolyser.BASE_METAL_DURATION - 1; i++) tick(helper, electrolyser);
 
         helper.assertTrue(electrolyser.inventory.getStackInSlot(14).isEmpty(), "electrolyser did not consume the crystal");
-        helper.assertTrue(electrolyser.leftStack != null && electrolyser.leftStack.material == com.hbm.inventory.material.Mats.MAT_IRON
+        helper.assertTrue(electrolyser.leftStack != null && electrolyser.leftStack.material == Mats.MAT_IRON
                         && electrolyser.leftStack.amount == MaterialShapes.INGOT.quantity * 6,
                 "electrolyser produced the wrong primary molten output");
-        helper.assertTrue(electrolyser.rightStack != null && electrolyser.rightStack.material == com.hbm.inventory.material.Mats.MAT_TITANIUM
+        helper.assertTrue(electrolyser.rightStack != null && electrolyser.rightStack.material == Mats.MAT_TITANIUM
                         && electrolyser.rightStack.amount == MaterialShapes.INGOT.quantity * 2,
                 "electrolyser produced the wrong secondary molten output");
         helper.assertTrue(electrolyser.inventory.getStackInSlot(15).is(ModItems.powder_lithium_tiny.get())
@@ -185,7 +190,7 @@ public final class ElectrolyserGameTests {
         helper.assertTrue(electrolyser.getPourQuanta() == MaterialShapes.NUGGET.quantity * 3,
                 "electrolyser must pour three nuggets per cycle without speed upgrades");
 
-        electrolyser.inventory.setStackInSlot(1, new ItemStack(com.hbm.items.ModUpgradeItems.upgrade_speed_2.get()));
+        electrolyser.inventory.setStackInSlot(1, new ItemStack(ModUpgradeItems.upgrade_speed_2.get()));
         tick(helper, electrolyser);
         helper.assertTrue(electrolyser.getPourQuanta() == MaterialShapes.NUGGET.quantity * 3 * 2,
                 "electrolyser molten pouring must include the speed multiplier");
@@ -203,7 +208,7 @@ public final class ElectrolyserGameTests {
             player.containerMenu = fluid;
             helper.assertTrue(fluid.slots.size() == 14 + 36 && metal.slots.size() == 10 + 36,
                     "electrolyser mode menus have the wrong slot counts");
-            helper.assertTrue(fluid.getSlot(3).mayPlace(com.hbm.items.machine.ItemFluidId.make(Fluids.WATER)),
+            helper.assertTrue(fluid.getSlot(3).mayPlace(ItemFluidId.make(Fluids.WATER)),
                     "fluid electrolyser menu must accept a fluid identifier");
             helper.assertTrue(metal.getSlot(3).getContainerSlot() == 14
                             && electrolyser.canPlaceItem(14, new ItemStack(ModItems.crystal_iron.get())),
@@ -236,7 +241,7 @@ public final class ElectrolyserGameTests {
                     "fluid-to-metal switch was not server-authoritative or did not replace the open menu");
             ContainerMachineElectrolyser switchedMetal = (ContainerMachineElectrolyser) player.containerMenu;
             assertOpeningPacket(helper, fixture.outboundPackets(), switchedMetal, core,
-                    com.hbm.inventory.ModMenus.MACHINE_ELECTROLYSER_METAL.get());
+                    ModMenus.MACHINE_ELECTROLYSER_METAL.get());
 
             helper.assertTrue(switchedMetal.clickMenuButton(player, ContainerMachineElectrolyser.MODE_FLUID),
                     "metal electrolyser menu did not switch to fluid");
@@ -246,12 +251,12 @@ public final class ElectrolyserGameTests {
                     "metal-to-fluid switch was not server-authoritative or did not replace the open menu");
             ContainerMachineElectrolyser switchedFluid = (ContainerMachineElectrolyser) player.containerMenu;
             assertOpeningPacket(helper, fixture.outboundPackets(), switchedFluid, core,
-                    com.hbm.inventory.ModMenus.MACHINE_ELECTROLYSER_FLUID.get());
+                    ModMenus.MACHINE_ELECTROLYSER_FLUID.get());
             helper.succeed();
         }
     }
 
-    private static void assertOpeningPacket(GameTestHelper helper, java.util.List<Packet<?>> packets,
+    private static void assertOpeningPacket(GameTestHelper helper, List<Packet<?>> packets,
                                             ContainerMachineElectrolyser menu, BlockPos core,
                                             MenuType<?> expectedType) {
         GameTestHelpers.MenuOpening opening = GameTestHelpers.menuOpening(helper, packets);

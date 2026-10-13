@@ -1,15 +1,23 @@
 package com.hbm.items.machine;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IInfiniteFluidItem;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.ModDataComponents;
+import dev.golem.core.data.GolemComponent;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -32,8 +40,8 @@ public class ItemInfiniteFluid extends CompatItem implements IInfiniteFluidItem,
      * {@linkplain #requiresTable table-bound} item was last carried, present only while it does not match the item's
      * fluid ({@link Fluids#NONE}: none at all, e.g. in orbit). Never set on plain HBM.
      */
-    public static final dev.golem.core.data.GolemComponent<FluidType> WRONG_WATER_TABLE =
-            com.hbm.items.ModDataComponents.WRONG_WATER_TABLE;
+    public static final GolemComponent<FluidType> WRONG_WATER_TABLE =
+            ModDataComponents.WRONG_WATER_TABLE;
 
     private final @Nullable Supplier<FluidType> type;
     private final int amount;
@@ -66,16 +74,16 @@ public class ItemInfiniteFluid extends CompatItem implements IInfiniteFluidItem,
     }
 
     @Override
-    protected void compatInventoryTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
-                                       net.minecraft.world.entity.Entity owner,
-                                       net.minecraft.world.entity.EquipmentSlot slot, boolean held) {
+    protected void compatInventoryTick(ItemStack stack, ServerLevel level,
+                                       Entity owner,
+                                       EquipmentSlot slot, boolean held) {
         checkWaterTable(stack, level, owner.blockPosition());
     }
 
     /** hbm-space {@code onUpdate}: remembers whether the water table at {@code pos} feeds this item. */
-    public void checkWaterTable(ItemStack stack, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
+    public void checkWaterTable(ItemStack stack, Level level, BlockPos pos) {
         if (!requiresTable) return;
-        FluidType table = com.hbm.api.environment.Environment.declaredGroundwater(level, pos);
+        FluidType table = Environment.declaredGroundwater(level, pos);
         if (table == null || table == infiniteType()) {
             if (WRONG_WATER_TABLE.has(stack)) WRONG_WATER_TABLE.remove(stack);
         } else if (WRONG_WATER_TABLE.getOr(stack, null) != table) {

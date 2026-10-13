@@ -6,7 +6,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Converts blocks the explosion touched. {@code mutatePre} sees the block before it is broken,
- * {@code mutatePost} sees the position after — that ordering is what lets the fire mutator only light
+ * {@code mutatePost} sees the position after: that ordering is what lets the fire mutator only light
  * positions the blast actually cleared.
  */
 public interface IBlockMutator {

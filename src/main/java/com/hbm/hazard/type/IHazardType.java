@@ -1,5 +1,6 @@
 package com.hbm.hazard.type;
 
+import com.hbm.config.RadiationConfig;
 import java.util.List;
 
 import com.hbm.hazard.modifier.IHazardModifier;
@@ -18,7 +19,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Each of the three behaviours has a second overload taking the entry's <b>payload</b>, and those
  * are what the engine calls; the default forwards to the payload-free one, so every hazard written
  * against the old three-method shape keeps working untouched. A hazard that wants per-registration
- * data — a fuse length, a damage source, a table of effects — is built with {@link HazardType},
+ * data, a fuse length, a damage source, a table of effects, is built with {@link HazardType},
  * which types the payload and hands it to its lambdas.
  *
  * <p>The payload belongs to the <em>entry</em>, not to the stack: it is fixed when the hazard is
@@ -28,8 +29,8 @@ import org.jspecify.annotations.Nullable;
  */
 public interface IHazardType {
 
-    /** Ticks between hazard applications — multiply per-tick rates by this (the caller runs every hazardRate ticks). */
-    int hazardRate = com.hbm.config.RadiationConfig.hazardRate;
+    /** Ticks between hazard applications: multiply per-tick rates by this (the caller runs every hazardRate ticks). */
+    int hazardRate = RadiationConfig.hazardRate;
 
     /**
      * Does the thing. Called by HazardEntry.applyHazard.

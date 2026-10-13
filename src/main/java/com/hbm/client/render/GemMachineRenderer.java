@@ -13,7 +13,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The declared form of {@link MachineObjRenderer}: one OBJ body, one texture, one facing. Covers the
- * plain case only — no conditional frame, no footprint offset; the machines that need those keep using
+ * plain case only: no conditional frame, no footprint offset; the machines that need those keep using
  * {@link MachineObjRenderer}.
  */
 public class GemMachineRenderer<T extends BlockEntity> extends GemBER<T, MachineRenderState> {

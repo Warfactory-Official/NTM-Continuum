@@ -1,17 +1,27 @@
 package com.hbm.client.render.weapon;
 
+import com.hbm.client.GunEffectState;
+import com.hbm.client.gun.GunSmokeClient;
 import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
+import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
+import dev.golem.core.client.Frames;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
 import java.util.List;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 /** The source Sedna muzzle, attached-node geometry and weapon labels, kept outside the GEM body declaration. */
@@ -81,8 +91,8 @@ public final class WeaponEffects {
             case "gun_flaregun" -> flaregun(state, base, sink, light, overlay);
             case "gun_double_barrel", "gun_double_barrel_sacred_dragon" ->
                     doubleBarrel(state, base, sink, light, overlay);
-            // These source renderFirstPerson methods submit model/UI geometry only. They deliberately
-            // have no transient smoke or flash call; keep them explicit rather than hiding them in default.
+            // These source renderFirstPerson methods submit model/UI geometry only and have no
+            // transient smoke or flash call.
             case "gun_charge_thrower", "gun_chemthrower", "gun_coilgun", "gun_drill",
                     "gun_fatman", "gun_folly", "gun_tau", "gun_tesla_cannon",
                     "gun_flamer", "gun_flamer_topaz", "gun_flamer_daybreaker",
@@ -97,13 +107,13 @@ public final class WeaponEffects {
     }
 
     private static void renderStatic(WeaponPose state, PoseStack pose, SubmitSink sink, int light, int overlay) {
-        if (state.context != net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_RIGHT_HAND
-                && state.context != net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_LEFT_HAND) return;
+        if (state.context != ItemDisplayContext.THIRD_PERSON_RIGHT_HAND
+                && state.context != ItemDisplayContext.THIRD_PERSON_LEFT_HAND) return;
         String id = itemPath(state.stack);
         switch (id) {
             case "gun_light_revolver", "gun_light_revolver_atlas" -> staticNormal(state, pose, sink, 0, 1.5, 9.25, 1, 75, 7.5);
             case "gun_am180" -> {
-                boolean silenced = SpecialWeaponRenderers.hasUpgrade(state.stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SILENCER);
+                boolean silenced = SpecialWeaponRenderers.hasUpgrade(state.stack, 0, XWeaponModManager.ID_SILENCER);
                 staticNormal(state, pose, sink, 0, 1.875, silenced ? 16.75 : 12, silenced ? .5F : .75F,
                         silenced ? 75 : 50, silenced ? 5 : 7.5);
             }
@@ -111,7 +121,7 @@ public final class WeaponEffects {
             case "gun_greasegun" -> staticNormal(state, pose, sink, 0, 0, 8, .5F, 75, 7.5);
             case "gun_lag" -> { pose.mulPose(Axis.YP.rotationDegrees(90)); pose.translate(-10.25, 1, 0); staticNormal(state, pose, sink, 0, 0, 0, .5F, 75, 7.5); }
             case "gun_uzi", "gun_uzi_akimbo" -> {
-                if (!SpecialWeaponRenderers.hasUpgrade(state.stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SILENCER))
+                if (!SpecialWeaponRenderers.hasUpgrade(state.stack, 0, XWeaponModManager.ID_SILENCER))
                     staticNormal(state, pose, sink, 0, .75, 8.5, 1, 75, 7.5);
             }
             case "gun_henry", "gun_henry_lincoln" -> staticNormal(state, pose, sink, 0, 1, 8, 1, 75, 5);
@@ -123,7 +133,7 @@ public final class WeaponEffects {
             case "gun_hangman" -> staticNormal(state, pose, sink, 0, 0, 29, 2, 75, 7.5);
             case "gun_pepperbox" -> { staticNormal(state, pose, sink, 0, .5, 7, .5F, 75, 15); pose.mulPose(Axis.XP.rotationDegrees(45)); staticNormal(state, pose, sink, 0, 0, 0, 1, 75, 15); }
             case "gun_g3", "gun_g3_zebra" -> {
-                if (!id.equals("gun_g3_zebra") && !SpecialWeaponRenderers.hasUpgrade(state.stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SILENCER)) {
+                if (!id.equals("gun_g3_zebra") && !SpecialWeaponRenderers.hasUpgrade(state.stack, 0, XWeaponModManager.ID_SILENCER)) {
                     pose.translate(0, 0, 12); pose.mulPose(Axis.YP.rotationDegrees(90)); pose.mulPose(Axis.XP.rotationDegrees(-25)); pose.scale(.75F, .75F, .75F); muzzle(sink, pose, shot(state, 0), 75, 10, 1);
                 }
             }
@@ -139,7 +149,7 @@ public final class WeaponEffects {
             case "gun_autoshotgun", "gun_autoshotgun_shredder" -> staticNormal(state, pose, sink, 0, 1, 7.5, .75F, 75, 7.5);
             case "gun_autoshotgun_sexy", "gun_autoshotgun_heretic" -> staticNormal(state, pose, sink, 0, 0, 8, 1, 150, 7.5);
             case "gun_amat", "gun_amat_subtlety", "gun_amat_penance" -> {
-                if (!id.equals("gun_amat_penance") && !SpecialWeaponRenderers.hasUpgrade(state.stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SILENCER)) {
+                if (!id.equals("gun_amat_penance") && !SpecialWeaponRenderers.hasUpgrade(state.stack, 0, XWeaponModManager.ID_SILENCER)) {
                     pose.translate(0, .5, 11); pose.mulPose(Axis.YP.rotationDegrees(90)); pose.scale(.75F, .75F, .75F); gap(sink, pose, shot(state, 0));
                 }
             }
@@ -188,13 +198,13 @@ public final class WeaponEffects {
      *
      * <p>These are the only text upstream draws outside a GUI, and the engine calls are the same every
      * time: full-bright, unlit, and both faces. Everything that places one is the caller's, the y flip
-     * included — the font's y runs down and a weapon's runs up, so each of these ends its chain in a
+     * included: the font's y runs down and a weapon's runs up, so each of these ends its chain in a
      * scale with a negative y, at the size that weapon wants.
      */
     private static void label(SubmitSink sink, PoseStack pose, String text, int color) {
         sink.submitText(pose, Minecraft.getInstance().font, 0, 0,
-                net.minecraft.network.chat.Component.literal(text).getVisualOrderText(), false,
-                net.minecraft.client.gui.Font.DisplayMode.NORMAL, FULL_BRIGHT, color, 0);
+                Component.literal(text).getVisualOrderText(), false,
+                Font.DisplayMode.NORMAL, FULL_BRIGHT, color, 0);
     }
 
     private static float labelWidth(String text) {
@@ -210,12 +220,12 @@ public final class WeaponEffects {
     }
 
     private static String itemPath(ItemStack stack) {
-        return net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
+        return BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
     }
 
     private static long shot(WeaponPose state, int index) {
         LivingEntity living = state.owner;
-        if (living != null && living != Minecraft.getInstance().player) return com.hbm.client.GunEffectState.flashAt(living);
+        if (living != null && living != Minecraft.getInstance().player) return GunEffectState.flashAt(living);
         return index >= 0 && index < state.lastShot.length ? state.lastShot[index] : -1L;
     }
 
@@ -277,15 +287,15 @@ public final class WeaponEffects {
     }
 
     private static boolean active(long stamp, int duration) {
-        long age = com.hbm.util.GameTime.now() - stamp;
+        long age = GameTime.now() - stamp;
         return age >= 0L && age < duration;
     }
 
     private static void muzzle(SubmitSink sink, PoseStack pose, long stamp, int duration, double length, float scale) {
         if (!active(stamp, duration)) return;
-        long age = com.hbm.util.GameTime.now() - stamp;
+        long age = GameTime.now() - stamp;
         if (renderedItem != null) {
-            com.hbm.client.gun.GunSmokeClient.noteMuzzleSubmission(renderedItem, stamp, age, duration);
+            GunSmokeClient.noteMuzzleSubmission(renderedItem, stamp, age, duration);
         }
         float fire = age / (float) duration;
         float width = 6F * fire * (scale == 0F ? 1F : scale);
@@ -305,7 +315,7 @@ public final class WeaponEffects {
 
     private static void gap(SubmitSink sink, PoseStack pose, long stamp) {
         if (!active(stamp, 75)) return;
-        float fire = (com.hbm.util.GameTime.now() - stamp) / 75F;
+        float fire = (GameTime.now() - stamp) / 75F;
         float height = 4F * fire, length = 15F * fire, lift = 3F * fire, offset = fire;
         sink.order(1).submitCustomGeometry(pose, CompatRenderTypes.plasmaGlow(Ids.parse(FLASH)), (p, b) -> {
             flashQuad(b, p, 0, -height, -offset, 1, 1, 0, height, -offset, 0, 1,
@@ -321,7 +331,7 @@ public final class WeaponEffects {
 
     private static void laser(SubmitSink sink, PoseStack pose, long stamp, int duration, double scale, int color) {
         if (!active(stamp, duration)) return;
-        float size = (float) (4D * (com.hbm.util.GameTime.now() - stamp) / duration * scale);
+        float size = (float) (4D * (GameTime.now() - stamp) / duration * scale);
         int argb = 0xFF000000 | (color & 0xFFFFFF);
         sink.order(1).submitCustomGeometry(pose, CompatRenderTypes.plasmaGlow(Ids.parse(LASER)), (p, b) -> {
             Vertexes.vertex(b, p, 0, -size, -size, argb, 1, 1, OverlayTexture.NO_OVERLAY, FULL_BRIGHT, 0, 1, 0);
@@ -333,7 +343,7 @@ public final class WeaponEffects {
 
     private static void fireball(SubmitSink sink, PoseStack pose, long stamp) {
         if (!active(stamp, 150)) return;
-        float fire = (com.hbm.util.GameTime.now() - stamp) / 150F;
+        float fire = (GameTime.now() - stamp) / 150F;
         float height = 5F * fire;
         float length = 10F * fire;
         float offset = fire;
@@ -350,7 +360,7 @@ public final class WeaponEffects {
         });
     }
 
-    private static void flashQuad(com.mojang.blaze3d.vertex.VertexConsumer b, PoseStack.Pose p,
+    private static void flashQuad(VertexConsumer b, PoseStack.Pose p,
             float x1, float y1, float z1, float u1, float v1,
             float x2, float y2, float z2, float u2, float v2,
             float x3, float y3, float z3, float u3, float v3,
@@ -371,13 +381,13 @@ public final class WeaponEffects {
 
     private static void am180(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {
         p.scale(.1875F, .1875F, .1875F); equip(p, s, 0, -2, -6, 6); p.mulPose(Axis.ZP.rotationDegrees((float) s.bus("TURN")[2])); p.translate(0, 0, s.bus("RECOIL")[2]);
-        boolean silenced = SpecialWeaponRenderers.hasUpgrade(s.stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SILENCER);
+        boolean silenced = SpecialWeaponRenderers.hasUpgrade(s.stack, 0, XWeaponModManager.ID_SILENCER);
         p.pushPose(); p.translate(0, 1.875, silenced ? 17 : 13); p.mulPose(Axis.ZN.rotationDegrees((float) s.bus("TURN")[2])); p.mulPose(Axis.YP.rotationDegrees(90)); smoke(s, p, c, 0, .25); p.popPose();
         p.pushPose(); p.translate(0, 1.875, silenced ? 16.75 : 12); p.mulPose(Axis.YP.rotationDegrees(90)); p.mulPose(Axis.XP.rotationDegrees(s.shotRand * 90)); p.scale(silenced ? .5F : .75F, silenced ? .5F : .75F, silenced ? .5F : .75F); muzzle(c, p, shot(s, 0), silenced ? 75 : 50, silenced ? 5 : 7.5, 1); p.popPose();
     }
 
     private static void star(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {
-        if (SpecialWeaponRenderers.hasUpgrade(s.stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SILENCER)) return;
+        if (SpecialWeaponRenderers.hasUpgrade(s.stack, 0, XWeaponModManager.ID_SILENCER)) return;
         p.scale(.25F, .25F, .25F); equip(p, s, 0, -2, -8, 8); p.translate(0, 1, -3); p.mulPose(Axis.ZP.rotationDegrees((float) s.bus("TURN")[2])); p.mulPose(Axis.XP.rotationDegrees((float) s.bus("TILT")[0])); p.translate(0, -1, 3); p.translate(0, 0, s.bus("RECOIL")[2]);
         p.pushPose(); p.translate(0, 3, 6.125); p.mulPose(Axis.YP.rotationDegrees(90)); p.scale(.5F, .5F, .5F); smoke(s, p, c, 0, .75); p.popPose();
         p.pushPose(); p.translate(0, 3, 6.125); p.scale(.75F, .75F, .75F); p.mulPose(Axis.YP.rotationDegrees(90)); p.mulPose(Axis.XP.rotationDegrees(s.shotRand * 90)); muzzle(c, p, shot(s, 0), 75, 7.5, 1); p.popPose();
@@ -386,7 +396,7 @@ public final class WeaponEffects {
     private static void starAkimbo(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {
         for (int side = -1; side <= 1; side += 2) {
             int rail = side < 0 ? 0 : 1;
-            if (SpecialWeaponRenderers.hasUpgrade(s.stack, rail, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SILENCER)) continue;
+            if (SpecialWeaponRenderers.hasUpgrade(s.stack, rail, XWeaponModManager.ID_SILENCER)) continue;
             p.pushPose(); p.translate(-2F * .8F * side, -1.75F * .8F, 2.5F * .8F); p.scale(.25F, .25F, .25F); equipRail(p, s, rail, 0, -2, -8); p.translate(0, 1, -3); p.mulPose(Axis.ZP.rotationDegrees((float) s.bus("TURN", rail)[2] * side)); p.mulPose(Axis.XP.rotationDegrees((float) s.bus("TILT", rail)[0])); p.translate(0, -1, 3); p.translate(0, 0, s.bus("RECOIL", rail)[2]);
             p.pushPose(); p.translate(0, 3, 6.125); p.mulPose(Axis.YP.rotationDegrees(90)); p.scale(.5F, .5F, .5F); smoke(s, p, c, rail, .75); p.popPose();
             p.pushPose(); p.translate(0, 3, 6.125); p.mulPose(Axis.YP.rotationDegrees(90)); p.mulPose(Axis.XP.rotationDegrees(s.shotRand * 90)); p.scale(.75F, .75F, .75F); muzzle(c, p, shot(s, rail), 75, 7.5, 1); p.popPose(); p.popPose();
@@ -435,7 +445,7 @@ public final class WeaponEffects {
     }
 
     private static void uzi(WeaponPose s, PoseStack p, SubmitSink c, int l, int o, int index, int rail, int side) {
-        if (SpecialWeaponRenderers.hasUpgrade(s.stack, index, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SILENCER)) return;
+        if (SpecialWeaponRenderers.hasUpgrade(s.stack, index, XWeaponModManager.ID_SILENCER)) return;
         p.scale(.25F, .25F, .25F); bus(p, s, "YEET", rail); p.mulPose(Axis.ZP.rotationDegrees((float) s.bus("SPEEN", rail)[0] * side)); equipRail(p, s, rail, 0, -2, -4); liftRail(p, s, rail, 0, 0, -6, 6); p.translate(0, 0, s.bus("RECOIL", rail)[2]);
         p.pushPose(); p.translate(0, .75, 8.5); p.mulPose(Axis.YP.rotationDegrees(90)); p.scale(.5F, .5F, .5F); smoke(s, p, c, index, .75); p.popPose(); p.pushPose(); p.translate(0, .75, 8.5); p.mulPose(Axis.YP.rotationDegrees(90)); p.mulPose(Axis.XP.rotationDegrees(s.shotRand * 90)); muzzle(c, p, shot(s, index), 75, 7.5, 1); p.popPose();
     }
@@ -473,7 +483,7 @@ public final class WeaponEffects {
 
     private static void g3(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {
         boolean zebra = itemPath(s.stack).equals("gun_g3_zebra");
-        if (zebra || SpecialWeaponRenderers.hasUpgrade(s.stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SILENCER)) return;
+        if (zebra || SpecialWeaponRenderers.hasUpgrade(s.stack, 0, XWeaponModManager.ID_SILENCER)) return;
         p.scale(.375F, .375F, .375F); equip(p, s, 0, -2, -6, 6); lift(p, s, 0, 0, -4, 4); p.translate(0, 0, s.bus("RECOIL")[2]); p.pushPose(); p.translate(0, 0, 13); p.mulPose(Axis.YP.rotationDegrees(90)); p.scale(.75F, .75F, .75F); smoke(s, p, c, 0, .5); p.popPose(); p.pushPose(); p.translate(0, 0, 12); p.mulPose(Axis.YP.rotationDegrees(90)); p.mulPose(Axis.XP.rotationDegrees(-25 + s.shotRand * 10)); p.scale(.75F, .75F, .75F); muzzle(c, p, shot(s, 0), 75, 10, 1); p.popPose();
     }
 
@@ -526,7 +536,7 @@ public final class WeaponEffects {
     }
 
     private static void amat(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {
-        if (itemPath(s.stack).equals("gun_amat_penance") || SpecialWeaponRenderers.hasUpgrade(s.stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SILENCER)) return;
+        if (itemPath(s.stack).equals("gun_amat_penance") || SpecialWeaponRenderers.hasUpgrade(s.stack, 0, XWeaponModManager.ID_SILENCER)) return;
         p.scale(.375F, .375F, .375F); p.translate(0, 0, s.bus("RECOIL")[2]); lift(p, s, 0, -3, -8, 8); equip(p, s, 0, -3, -8, 8); p.pushPose(); p.translate(0, .625, 12); p.mulPose(Axis.YP.rotationDegrees(90)); p.scale(.5F, .5F, .5F); smoke(s, p, c, 0, 1); p.popPose(); p.pushPose(); p.translate(0, .5, 11); p.mulPose(Axis.YP.rotationDegrees(90)); p.scale(.75F, .75F, .75F); gap(c, p, shot(s, 0)); p.popPose();
     }
 
@@ -615,7 +625,7 @@ public final class WeaponEffects {
     private static void equipRail(PoseStack p, WeaponPose s, int rail, double x, double y, double z) { p.translate(x, y, z); p.mulPose(Axis.XP.rotationDegrees((float) s.bus("EQUIP", rail)[0])); p.translate(-x, -y, -z); }
     private static void liftRail(PoseStack p, WeaponPose s, int rail, double x, double y, double z, double ignored) { p.translate(x, y, z); p.mulPose(Axis.XP.rotationDegrees((float) s.bus("LIFT", rail)[0])); p.translate(-x, -y, -z); }
     private static double aimLerp(WeaponPose s, double hip, double sighted) {
-        float progress = ItemGunBaseNT.aimingProgress(dev.golem.core.client.Frames.partialTick());
+        float progress = ItemGunBaseNT.aimingProgress(Frames.partialTick());
         return hip + progress * (sighted - hip);
     }
     private static void rotateReload(PoseStack p, WeaponPose s) { p.mulPose(Axis.XP.rotationDegrees((float) s.bus("RELOAD_ROT")[0])); p.mulPose(Axis.ZP.rotationDegrees((float) s.bus("RELOAD_ROT")[2])); p.mulPose(Axis.YP.rotationDegrees((float) s.bus("RELOAD_ROT")[1])); }

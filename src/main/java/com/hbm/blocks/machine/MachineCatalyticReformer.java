@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/** Catalytic Reformer block — 1:1 port of the 1.12.2 {@code MachineCatalyticReformer} (dims
+/** Catalytic Reformer block, a 1:1 port of the 1.12.2 {@code MachineCatalyticReformer} (dims
  * {@code {2,0,1,1,2,2}}, offset 1; two large body fills + 6 makeExtra corner/side ports). */
 public class MachineCatalyticReformer extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 

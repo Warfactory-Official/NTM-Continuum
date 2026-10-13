@@ -3,7 +3,6 @@ package com.hbm.gametest;
 import com.hbm.Constants;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.MachineChemicalFactory;
-import com.hbm.chemicalfactory.ChemicalFactoryRegistrations;
 import com.hbm.inventory.container.ContainerMachineChemicalFactory;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
@@ -16,11 +15,14 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalFactory;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.net.GolemBuffers;
+import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import com.hbm.blocks.machine.ModMachineBlocks;
 
 /** Focused contracts for the legacy four-lane Chemical Factory. */
 public final class ChemicalFactoryGameTests {
@@ -41,7 +43,7 @@ public final class ChemicalFactoryGameTests {
 
     public static void layoutAndPorts(GameTestHelper helper) {
         TileEntityMachineChemicalFactory factory = place(helper, new BlockPos(10, 1, 10));
-        MachineChemicalFactory block = ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY.get();
+        MachineChemicalFactory block = ModMachineBlocks.machine_chemical_factory.get();
         BlockPos core = factory.getBlockPos();
 
         helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), core)),
@@ -210,10 +212,10 @@ public final class ChemicalFactoryGameTests {
         factory.didProcess[0] = true;
         factory.chemplantModule[0].progress = 0.625D;
 
-        var buffer = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
+        var buffer = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         factory.serialize(buffer);
         TileEntityMachineChemicalFactory copy = new TileEntityMachineChemicalFactory(BlockPos.ZERO,
-                ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY.get().defaultBlockState());
+                ModMachineBlocks.machine_chemical_factory.get().defaultBlockState());
         copy.deserialize(buffer);
         helper.assertTrue(copy.inputTanks[0].getTankType() == Fluids.WATER && copy.inputTanks[0].getFill() == 123
                         && copy.outputTanks[0].getTankType() == Fluids.OXYGEN && copy.outputTanks[0].getFill() == 456
@@ -271,7 +273,7 @@ public final class ChemicalFactoryGameTests {
 
     private static TileEntityMachineChemicalFactory place(GameTestHelper helper, BlockPos relative) {
         BlockPos absolute = helper.absolutePos(relative);
-        MachineChemicalFactory block = ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY.get();
+        MachineChemicalFactory block = ModMachineBlocks.machine_chemical_factory.get();
         FoldedTestSupport.assemble(helper, block, relative);
         TileEntityMachineChemicalFactory factory = GameTestHelpers.blockEntity(helper, relative,
                 TileEntityMachineChemicalFactory.class);

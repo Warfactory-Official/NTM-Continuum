@@ -199,7 +199,7 @@ final class SableGameTests {
     /**
      * A centrifuge (a folded multiblock) holding an item, with two cables at its side, assembled into a sub-level and
      * then set back down turned a quarter clockwise: the structure is whole and indexed both times, the item is still
-     * in it, the cables are power-graph cells at their new positions (and no longer at the old ones), the menu's reach
+     * in it, the cables are power-graph cells at their new positions (and not at the old ones), the menu's reach
      * is measured where the machine is seen, and nothing dropped.
      */
     private static void carryMachineAndCables(GameTestHelper helper) {

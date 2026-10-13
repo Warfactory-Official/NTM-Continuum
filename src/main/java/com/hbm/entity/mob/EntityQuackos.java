@@ -5,6 +5,7 @@ import com.hbm.entity.ModNtmEntities;
 import com.hbm.particle.helper.FlameCreator;
 import com.hbm.sound.ModSounds;
 import com.hbm.util.DropHeight;
+import dev.golem.core.registry.Entities;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -57,7 +58,7 @@ public class EntityQuackos extends EntityDuck {
 
     @Override
     public @Nullable Chicken getBreedOffspring(ServerLevel level, AgeableMob partner) {
-        return dev.golem.core.registry.Entities.create(ModNtmEntities.QUACKOS.get(), level, EntitySpawnReason.BREEDING);
+        return Entities.create(ModNtmEntities.QUACKOS.get(), level, EntitySpawnReason.BREEDING);
     }
 
     @Override

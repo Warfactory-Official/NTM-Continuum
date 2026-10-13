@@ -26,6 +26,7 @@ import com.hbm.items.ModMedicineItems;
 import com.hbm.items.material.FuelAdditiveItems;
 import com.hbm.inventory.recipes.loader.GenericTableSource;
 import java.util.Locale;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
 /**
@@ -127,7 +128,7 @@ public final class MixerTable extends GenericTableSource<GenericRecipe> {
         }
     }
 
-    private static net.minecraft.world.item.Item antiknock() {
+    private static Item antiknock() {
         return FuelAdditiveItems.get(FuelAdditiveItems.Variant.ANTIKNOCK);
     }
 

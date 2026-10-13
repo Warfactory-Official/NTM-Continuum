@@ -5,11 +5,14 @@ import com.hbm.entity.explosive.EntityPrimedExplosive;
 import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.handler.radiation.ChunkRadiationManager;
+import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
@@ -52,8 +55,8 @@ public class YellowBarrel extends BlockBarrelDeco {
     /** Only the yellow barrel is set off by an explosion; the vitrified drum is inert. */
     @Override
     protected boolean onExplosion(BlockState state, ServerLevel level, BlockPos pos,
-                                  net.minecraft.world.level.Explosion explosion,
-                                  java.util.function.BiConsumer<net.minecraft.world.item.ItemStack, BlockPos> onHit) {
+                                  Explosion explosion,
+                                  BiConsumer<ItemStack, BlockPos> onHit) {
         if (vitrified) return false;
         return super.onExplosion(state, level, pos, explosion, onHit);
     }

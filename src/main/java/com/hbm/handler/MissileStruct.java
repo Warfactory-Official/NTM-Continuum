@@ -17,7 +17,7 @@ import java.util.Optional;
  * The four load-bearing parts of an assembled custom missile - what the launch pad hands the entity and what a
  * missile item carries around.
  *
- * 1.7 shipped this as a mutable holder with hand-rolled ByteBuf read/write over numeric item ids. 26.2 carries it as
+ * 1.7 shipped this as a mutable holder with hand-rolled ByteBuf read/write over numeric item ids. 26.1 carries it as
  * an item component instead, so it is a record with a codec pair; the chip rides on the item next to it rather than
  * inside the struct, exactly as in 1.7.
  */

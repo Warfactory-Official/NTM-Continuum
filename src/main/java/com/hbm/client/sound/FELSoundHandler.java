@@ -9,7 +9,7 @@ import java.util.Map;
 
 /**
  * Client-side audio for the FEL. Driven from the machine's client ticker, which owns the ramp counter;
- * this only starts and forgets the loop. Client-only — never referenced from a server tick path.
+ * this only starts and forgets the loop. Client-only, never referenced from a server tick path.
  */
 public final class FELSoundHandler {
 

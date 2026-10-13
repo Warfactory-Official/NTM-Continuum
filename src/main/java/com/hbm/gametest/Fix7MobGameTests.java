@@ -5,20 +5,22 @@ import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.mob.EntityParasiteMaggot;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.Entities;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.level.block.Blocks;
 
 /**
- * Fix wave phase 7 (2026-10-03): the creepers, ducks, pigeon, plastic bag, maggot, ghost, block spider, undead
- * soldier, FBI, FBI drone, radiation beast and mask man against original-hbm (1.7.10). Each mob is created
- * detached from the world and its base attributes and hitbox are compared with the 1.7
- * {@code applyEntityAttributes} / {@code setSize} values (1.7 defaults: 20 HP, speed 0.7, follow range 16,
- * attack damage 2 on EntityMob).
+ * The creepers, ducks, pigeon, plastic bag, maggot, ghost, block spider, undead soldier, FBI, FBI drone,
+ * radiation beast and mask man against 1.7. Each mob is created detached from the world and its
+ * base attributes and hitbox are compared with the 1.7 {@code applyEntityAttributes} / {@code setSize} values
+ * (1.7 defaults: 20 HP, speed 0.7, follow range 16, attack damage 2 on EntityMob).
  *
- * <p>The two old-AI mobs (maggot, radiation beast) walked {@code movementSpeed * 0.1} per tick of friction in 1.7
+ * <p>The two old-AI mobs (maggot, radiation beast) walk {@code movementSpeed * 0.1} per tick of friction in 1.7
  * and goal AI walks {@code speed * speed}, so their expected base speed is the square root of that product.
  */
 public final class Fix7MobGameTests {
@@ -29,23 +31,23 @@ public final class Fix7MobGameTests {
     public static final GameTests.Function ATTRIBUTES =
             TESTS.function("fix7_mob_attributes", 20, () -> Fix7MobGameTests::attributes);
 
-    /** 2026-10-12 playtest: a nuclear creeper that blows up beside a villager and a golem must not crash the server. */
+    /** A nuclear creeper that blows up beside a villager and a golem must not crash the server. */
     public static final GameTests.Function NUCLEAR_CREEPER_BLAST =
             TESTS.function("pt1012_nuclear_creeper_blast", 400, 48, () -> Fix7MobGameTests::nuclearCreeperBlast);
 
     public static void init() {}
 
     public static void nuclearCreeperBlast(GameTestHelper helper) {
-        net.minecraft.core.BlockPos floorCorner = helper.absolutePos(new net.minecraft.core.BlockPos(0, 0, 0));
+        BlockPos floorCorner = helper.absolutePos(new BlockPos(0, 0, 0));
         for (int dx = 0; dx < 40; dx++) {
             for (int dz = 0; dz < 40; dz++) {
-                helper.getLevel().setBlock(floorCorner.offset(dx, 0, dz), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 3);
+                helper.getLevel().setBlock(floorCorner.offset(dx, 0, dz), Blocks.STONE.defaultBlockState(), 3);
             }
         }
-        net.minecraft.world.entity.monster.Creeper creeper =
-                helper.spawnWithNoFreeWill(ModNtmEntities.CREEPER_NUCLEAR.get(), new net.minecraft.core.BlockPos(20, 1, 20));
-        LivingEntity golem = helper.spawnWithNoFreeWill(EntityType.IRON_GOLEM, new net.minecraft.core.BlockPos(22, 1, 20));
-        LivingEntity villager = helper.spawnWithNoFreeWill(EntityType.VILLAGER, new net.minecraft.core.BlockPos(18, 1, 20));
+        Creeper creeper =
+                helper.spawnWithNoFreeWill(ModNtmEntities.CREEPER_NUCLEAR.get(), new BlockPos(20, 1, 20));
+        LivingEntity golem = helper.spawnWithNoFreeWill(EntityType.IRON_GOLEM, new BlockPos(22, 1, 20));
+        LivingEntity villager = helper.spawnWithNoFreeWill(EntityType.VILLAGER, new BlockPos(18, 1, 20));
         creeper.ignite();
         helper.succeedWhen(() -> {
             helper.assertTrue(creeper.isRemoved(), "the nuclear creeper has not exploded yet");

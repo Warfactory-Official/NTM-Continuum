@@ -3,14 +3,19 @@ package com.hbm.blocks.network;
 import com.hbm.api.block.IToolable;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.trait.FT_Corrosive;
+import com.hbm.inventory.fluid.trait.FluidTraitSimple;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.BlockTickScheduler;
 import dev.golem.core.world.CompatBlock;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -209,7 +214,7 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
         // 1.7: the screwdriver is handled by onScrew, not by the GUI arm
         if (ToolType.getType(stack) == ToolType.SCREWDRIVER) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (TileEntityPneumoTube.anyGas && !player.isShiftKeyDown()
-                && stack.getItem() instanceof com.hbm.items.machine.IItemFluidId ident
+                && stack.getItem() instanceof IItemFluidId ident
                 && level.getBlockEntity(pos) instanceof TileEntityPneumoTube tube && tube.isCompressor()) {
             if (!level.isClientSide()) setGas(level, pos, player, tube, ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack));
             return InteractionResult.SUCCESS;
@@ -222,19 +227,19 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
      * neither antimatter nor corrosive ({@link TileEntityPneumoTube#anyGas}, V-177).
      */
     private static void setGas(Level level, BlockPos pos, Player player, TileEntityPneumoTube tube, FluidType type) {
-        boolean canUse = !type.hasTrait(com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Amat.class)
-                && !type.hasTrait(com.hbm.inventory.fluid.trait.FT_Corrosive.class)
-                && com.hbm.inventory.fluid.trait.FluidTraitSimple.isGaseousAny(type);
+        boolean canUse = !type.hasTrait(FluidTraitSimple.FT_Amat.class)
+                && !type.hasTrait(FT_Corrosive.class)
+                && FluidTraitSimple.isGaseousAny(type);
         if (canUse) {
             tube.compair.setTankType(type);
             tube.setChanged();
             tube.refreshAirMask();
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Changed type to ")
-                    .withStyle(net.minecraft.ChatFormatting.YELLOW).append(type.getDisplayName())
-                    .append(net.minecraft.network.chat.Component.literal("!")));
+            player.sendSystemMessage(Component.literal("Changed type to ")
+                    .withStyle(ChatFormatting.YELLOW).append(type.getDisplayName())
+                    .append(Component.literal("!")));
         } else {
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Invalid gas!")
-                    .withStyle(net.minecraft.ChatFormatting.RED));
+            player.sendSystemMessage(Component.literal("Invalid gas!")
+                    .withStyle(ChatFormatting.RED));
         }
     }
 

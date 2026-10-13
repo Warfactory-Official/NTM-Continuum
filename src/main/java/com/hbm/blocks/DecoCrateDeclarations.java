@@ -2,10 +2,15 @@ package com.hbm.blocks;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.hbm.blocks.generic.BlockBobble;
+import com.hbm.blocks.generic.BlockPlushie;
+import com.hbm.blocks.generic.BlockSnowglobe;
+import com.hbm.items.ItemRendererDeclarations;
 import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
 import com.hbm.lib.VanillaIds;
 import dev.golem.core.dejson.Dejson;
+import java.util.Locale;
 
 import static dev.golem.core.dejson.Crafting.rows;
 import static dev.golem.core.dejson.Crafting.shaped;
@@ -16,21 +21,20 @@ import static dev.golem.core.dejson.Crafting.stack;
  * The typed OBJ item data and the recipes of {@link ModDecoCrateBlocks}; every block's model, blockstate, plain
  * item model, loot and tags are stated on its registration there (Reg). Touches no Minecraft class: it runs in a
  * plain JVM from {@code dejson.gradle.kts}. The family's own ids are spelled out, since {@code ItemIds} is
- * generated from the registry after this wave.
+ * generated from the registry.
  *
  * <p>The renderer-drawn blocks carry the empty placeholder model. Their items are 1.7's item renderers
  * ({@code ItemRenderLibrary} bobblehead, {@code RenderPlushie}/{@code RenderSnowglobe}/
- * {@code RenderVendingMachine}/{@code RenderFileCabinet} providers) as OBJ item models, one per subtype, with
- * the 1.7 {@code renderInventory} translate/scale as the GUI frame. The bobblehead and plushie items are
- * {@code hbm:custom_item} models that call the block renderers' own draw, as 1.7's did, so the engraved name, held
- * props, glow layers and Number Nine's helmet and cigarette are on the item too. The broadcaster, pest control box and FM radio had no item
- * renderer in 1.7 and showed their block icon flat, as they do here. The wooden structures keep hand-built
- * element models and a multipart blockstate (their joins), which this vocabulary does not express.
+ * {@code RenderVendingMachine}/{@code RenderFileCabinet}) as OBJ item models, one per subtype, with the 1.7
+ * {@code renderInventory} translate/scale as the GUI frame. The bobblehead and plushie items are
+ * {@code hbm:custom_item} models that call the block renderers' own draw, as 1.7's did, so the engraved name,
+ * props, glow layers and Number Nine's helmet and cigarette show on the item. The broadcaster, pest control box
+ * and FM radio had no item renderer in 1.7 and show their block icon flat. The wooden structures keep hand-built
+ * element models and a multipart blockstate, which this vocabulary does not express.
  *
- * <p>Not declared: the tungsten crate and safe are crafted from a steel crate through 1.7's
- * {@code ContainerUpgradeCraftingHandler}, which carried the steel crate's contents over; the port has no
- * shaped recipe that copies a container, so they are plain shaped recipes here and a filled steel crate used in
- * one loses its contents.
+ * <p>Not declared: the tungsten crate and safe. 1.7 crafted them from a steel crate through
+ * {@code ContainerUpgradeCraftingHandler}, which carried the contents over; the port has no shaped recipe
+ * that copies a container, so a filled steel crate used in one loses its contents.
  */
 public final class DecoCrateDeclarations {
 
@@ -51,7 +55,7 @@ public final class DecoCrateDeclarations {
         {
             JsonObject model = machine("hbm:models/blocks/conservecrate.obj", "hbm:textures/block/crate_can.png");
             // RenderConserve.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(conservecrate), in 1.7's
-            // 3D block-item frame (ModItemModels "block" frame) (icon-P2 2026-10-01)
+            // 3D block-item frame (ModItemModels "block" frame)
             model.addProperty("frame", "block");
             model.addProperty("scale", 1.0);
             model.addProperty("yaw", 0.0);
@@ -62,12 +66,12 @@ public final class DecoCrateDeclarations {
         }
         // ItemRenderLibrary bobblehead / RenderPlushie item: ItemRenderBase around the block renderers' own
         // renderBobble / renderPlushie, so the item has every prop, glow skin and the engraved name
-        // one item per type (History §19es-itemvariant); the renderer reads the member's type
-        for (String id : trinketIds("bobblehead", com.hbm.blocks.generic.BlockBobble.BobbleType.VALUES)) {
-            com.hbm.items.ItemRendererDeclarations.model(id, "bobblehead", "machine");
+        // one item per type; the renderer reads the member's type
+        for (String id : trinketIds("bobblehead", BlockBobble.BobbleType.VALUES)) {
+            ItemRendererDeclarations.model(id, "bobblehead", "machine");
         }
-        for (String id : trinketIds("plushie", com.hbm.blocks.generic.BlockPlushie.PlushieType.VALUES)) {
-            com.hbm.items.ItemRendererDeclarations.model(id, "plushie", "machine");
+        for (String id : trinketIds("plushie", BlockPlushie.PlushieType.VALUES)) {
+            ItemRendererDeclarations.model(id, "plushie", "machine");
         }
         snowglobes();
         // RenderVendingMachine item: inventory T(0,-4,0) S(6.25); the "Soda" or "Obamna" part
@@ -114,7 +118,7 @@ public final class DecoCrateDeclarations {
             model.add("passes", passes);
             cases.add(when(type, model));
         }
-        variantItems(trinketIds("snowglobe", com.hbm.blocks.generic.BlockSnowglobe.SnowglobeType.VALUES),
+        variantItems(trinketIds("snowglobe", BlockSnowglobe.SnowglobeType.VALUES),
                 cases);
     }
 
@@ -164,7 +168,7 @@ public final class DecoCrateDeclarations {
         shapeless(NS, "hadron_coil_mese_wire", ItemIds.wire_dense_dineutronium, 1, "hbm:hadron_coil_mese");
     }
 
-    // --- item-model helpers ---
+    // Item-model helpers
 
     /** {@code renderCommon}'s T(x,y,z) then S(scale) at yaw, and {@code renderInventory}'s T(0,gy,0) S(gs). */
     private static void common(JsonObject model, double scale, double yaw, double x, double y, double z,
@@ -210,7 +214,7 @@ public final class DecoCrateDeclarations {
     public static String[] trinketIds(String base, Enum<?>[] types) {
         String[] ids = new String[types.length];
         for (int i = 0; i < types.length; i++) {
-            ids[i] = i == 0 ? base : base + "_" + types[i].name().toLowerCase(java.util.Locale.ROOT);
+            ids[i] = i == 0 ? base : base + "_" + types[i].name().toLowerCase(Locale.ROOT);
         }
         return ids;
     }

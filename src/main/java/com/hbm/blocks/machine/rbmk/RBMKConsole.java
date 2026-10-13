@@ -3,9 +3,12 @@ package com.hbm.blocks.machine.rbmk;
 import com.hbm.api.block.IToolable;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockMaskTable;
+import com.hbm.handler.BossSpawnHandler;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKConsole;
+import dev.golem.core.gui.Menus;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -90,14 +93,14 @@ public class RBMKConsole extends BlockMultiblockMachine implements IToolable {
     protected InteractionResult useAtCore(BlockState state, Level level, BlockPos core, Player player,
                                           BlockHitResult hit) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
-        if (!player.isShiftKeyDown()) com.hbm.handler.BossSpawnHandler.markFBI(player); // 1.7 onBlockActivated
+        if (!player.isShiftKeyDown()) BossSpawnHandler.markFBI(player); // 1.7 onBlockActivated
         if (player.isShiftKeyDown()) {
             if (level.getBlockEntity(core) instanceof BlockEntityRBMKConsole console) console.rotate();
             return InteractionResult.SUCCESS;
         }
         if (level.getBlockEntity(core) instanceof MenuProvider menu
-                && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, menu, core);
+                && player instanceof ServerPlayer serverPlayer) {
+            Menus.openWithPos(serverPlayer, menu, core);
         }
         return InteractionResult.SUCCESS;
     }

@@ -3,9 +3,8 @@ package com.hbm.tileentity.network;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.network.RadioTorchBase;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.radio.ModRadioBlockEntities;
-import com.hbm.radio.RadioReaderMenu;
-import com.hbm.radio.RadioTargets;
+import com.hbm.inventory.container.RadioReaderMenu;
+import com.hbm.tileentity.network.RadioTargets;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -15,6 +14,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -23,9 +23,10 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Locale;
+import com.hbm.tileentity.ModBlockEntities;
 
 public class TileEntityRadioTorchReader extends TileEntityLoadedBase
-        implements IControlReceiver, net.minecraft.world.MenuProvider, RadioTorchTicking {
+        implements IControlReceiver, MenuProvider, RadioTorchTicking {
     public static final int MAPPING_SIZE = 8;
     public final String[] channels = new String[MAPPING_SIZE];
     public final String[] names = new String[MAPPING_SIZE];
@@ -33,7 +34,7 @@ public class TileEntityRadioTorchReader extends TileEntityLoadedBase
     public boolean polling;
 
     public TileEntityRadioTorchReader(BlockPos pos, BlockState state) {
-        super(ModRadioBlockEntities.RADIO_TORCH_READER.get(), pos, state);
+        super(ModBlockEntities.RADIO_TORCH_READER.get(), pos, state);
         Arrays.fill(channels, "");
         Arrays.fill(names, "");
         Arrays.fill(prev, "");

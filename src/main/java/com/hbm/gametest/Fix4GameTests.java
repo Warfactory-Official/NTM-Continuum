@@ -9,16 +9,20 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.itempool.ItemPool;
 import com.hbm.itempool.ItemPools;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.tool.ItemBlowtorch;
+import com.mojang.serialization.JsonOps;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.ChestLoot;
 import dev.golem.core.world.CompatEnchantments;
 import dev.golem.core.world.ItemStacks;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -36,7 +40,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Fix wave phase 4 (2026-10-03, History section 19ej-4): block drops and chest loot against original-hbm
+ * Block drops and chest loot against 1.7
  * (1.7.10). Block drops are sampled through {@code Block.getDrops} with a plain, a Fortune III and a Silk Touch
  * diamond pickaxe, and checked against the 1.7 range and the analytic mean of the 1.7 formula. The 1.7 ore
  * fortune multiplier is {@code max(rand(f + 2) - 1, 0) + 1}; at Fortune III it is 1, 1, 2, 3, 4 with equal
@@ -261,7 +265,7 @@ public final class Fix4GameTests {
                 if (row.has("components")) {
                     ItemStack bare = new ItemStack(item(row.get("item").getAsString()));
                     helper.assertTrue(ItemStacks.withComponents(bare, row.getAsJsonObject("components"),
-                                    net.minecraft.resources.RegistryOps.create(com.mojang.serialization.JsonOps.INSTANCE, registries)).isPresent(),
+                                    RegistryOps.create(JsonOps.INSTANCE, registries)).isPresent(),
                             pool.getKey() + "[" + i + "] components do not decode: " + row);
                 }
                 rows++;
@@ -271,7 +275,7 @@ public final class Fix4GameTests {
                 "POOL_PILE_SUPPLIES must be baked with its seven 1.7 rows");
 
         Map<String, List<ItemPool.Entry>> pools = new HashMap<>();
-        java.util.function.Function<String, List<ItemPool.Entry>> get = name -> pools.computeIfAbsent(name, n -> ItemPool.read(registries, n));
+        Function<String, List<ItemPool.Entry>> get = name -> pools.computeIfAbsent(name, n -> ItemPool.read(registries, n));
         helper.assertTrue(get.apply(ItemPools.POOL_AMMO).get(0).template().is(item("hbm:ammo_standard_m357_sp")),
                 "POOL_AMMO[0] is 1.7 ammo_standard M357_SP");
         ItemStack deuterium = get.apply("POOL_SPACESHIP").get(3).template();
@@ -279,7 +283,7 @@ public final class Fix4GameTests {
                 "POOL_SPACESHIP[3] is a full deuterium cell, got " + deuterium);
         ItemStack canister = get.apply(ItemPools.POOL_SUPPLIES).get(3).template();
         helper.assertTrue(canister.is(item("hbm:canister_full"))
-                        && com.hbm.items.machine.ItemFluidTank.getType(canister) == Fluids.DIESEL,
+                        && ItemFluidTank.getType(canister) == Fluids.DIESEL,
                 "POOL_SUPPLIES[3] is a diesel canister, got " + canister);
         ItemStack torch = get.apply("POOL_VAULT_LAB").get(0).template();
         helper.assertTrue(torch.getItem() instanceof ItemBlowtorch blowtorch && blowtorch.getFill(torch) == 0,

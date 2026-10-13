@@ -7,11 +7,14 @@ import com.hbm.sound.AudioSystem;
 import com.hbm.sound.AudioWrapper;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.hook.Hook;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.render.anim.BusAnimation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
@@ -55,7 +58,7 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase {
     /** A listener told that a door finished opening or closing; {@code core} is the door's core position. */
     @FunctionalInterface
     public interface Moved {
-        void moved(net.minecraft.server.level.ServerLevel level, BlockPos core, TileEntityDoorGeneric door);
+        void moved(ServerLevel level, BlockPos core, TileEntityDoorGeneric door);
     }
 
     /**
@@ -63,10 +66,10 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase {
      * after its cells' {@code open} state is final. hbm-space told its sealed-room atmosphere here
      * ({@code IBlockSealable.updateSealedState}); plain HBM has no listener.
      */
-    public static final dev.golem.core.hook.Hook<Moved> MOVED = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<Moved> MOVED = Hook.notifying();
 
     private void moved() {
-        if (MOVED.isEmpty() || !(level instanceof net.minecraft.server.level.ServerLevel server)) return;
+        if (MOVED.isEmpty() || !(level instanceof ServerLevel server)) return;
         for (Moved listener : MOVED) listener.moved(server, worldPosition, this);
     }
 
@@ -352,7 +355,7 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase {
     public void playServerSound(SoundEvent sound, float volume, float pitch) {
         if (level == null) return;
         level.playSound(null, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), sound,
-                getDoorType() == null ? net.minecraft.sounds.SoundSource.BLOCKS : getDoorType().getSoundSource(), volume, pitch);
+                getDoorType() == null ? SoundSource.BLOCKS : getDoorType().getSoundSource(), volume, pitch);
     }
 
     public float getVolume() {

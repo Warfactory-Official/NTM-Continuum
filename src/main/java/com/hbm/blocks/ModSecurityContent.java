@@ -1,6 +1,7 @@
 package com.hbm.blocks;
 
 import com.hbm.Constants;
+import com.hbm.tileentity.machine.TileEntityLockableBase;
 import dev.golem.core.data.GolemComponent;
 import com.hbm.inventory.ModSecurityMenus;
 import com.hbm.items.ModSecurityItems;
@@ -21,7 +22,7 @@ public final class ModSecurityContent {
 
     public static void init() {
         // The lockable doors let these items' own use handlers run instead of toggling the door.
-        com.hbm.tileentity.machine.TileEntityLockableBase.LOCK_TOOLS =
+        TileEntityLockableBase.LOCK_TOOLS =
                 stack -> stack.getItem() instanceof ItemLock || stack.getItem() instanceof ItemCounterfeitKeys;
         ModSecuritySounds.init();
         ModSecurityBlocks.init();

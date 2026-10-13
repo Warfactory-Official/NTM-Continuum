@@ -16,12 +16,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the launch pad — 1.12.2's {@code ContainerLaunchPadLarge}, which every pad type shares.
+ * Menu for the launch pad, 1.12.2's {@code ContainerLaunchPadLarge}, which every pad type shares.
  *
  * <p>Slot layout is upstream's, unchanged: missile (26,36), designator (26,72), battery (107,90),
  * fuel in (125,90) / out (125,108), oxidiser in (143,90) / out (143,108). The screen is 176×236 with
- * the player inventory at y=154 and the hotbar at y=212, which is why the taller-than-usual GUI exists
- * — the missile preview needs the room.
+ * the player inventory at y=154 and the hotbar at y=212; the missile preview needs the extra height.
  */
 public class ContainerLaunchPad extends AbstractContainerMenu {
 

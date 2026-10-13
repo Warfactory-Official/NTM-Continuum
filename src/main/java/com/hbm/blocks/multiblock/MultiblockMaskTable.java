@@ -25,7 +25,7 @@ public final class MultiblockMaskTable {
     /** Passive planes, indexed by {@code domain - 1}; see {@link BlockMultiblockCore#PASSIVE_POWER_IN}. */
     private final byte[][] passive;
     /**
-     * Active planes per {@link CapRole}, or null where every role carries the same faces — which is every
+     * Active planes per {@link CapRole}, or null where every role carries the same faces, which is every
      * machine that never emits a role-qualified cell, so they allocate nothing and read {@link #masks}.
      */
     private final byte[] @Nullable [] byRole;
@@ -66,7 +66,7 @@ public final class MultiblockMaskTable {
                 block.passiveCoreMask(), block.passiveCoreDomains(declaredCaps)), declaredCaps);
     }
 
-    /** Run the geometry statement twice — once to size the box, once to fill it. */
+    /** Run the geometry statement twice, once to size the box, once to fill it. */
     public static MultiblockMaskTable bake(Geometry geometry, int declaredCaps) {
         Bounds bounds = new Bounds();
         geometry.cells().visit(BlockPos.ZERO, Direction.SOUTH, bounds);
@@ -122,7 +122,7 @@ public final class MultiblockMaskTable {
     /**
      * Role planes are read straight off the table, so a machine that also answers {@code maskAt}
      * analytically would keep its override for the role-blind ask and lose it for every role-qualified
-     * one — two geometries, green build. Whichever a machine needs, it may not need both.
+     * one: two geometries, green build. Whichever a machine needs, it may not need both.
      */
     private static void assertAnswersFromTheTable(Class<?> maskAtOwner) {
         for (Class<?>[] signature : new Class<?>[][]{
@@ -144,9 +144,8 @@ public final class MultiblockMaskTable {
 
     /**
      * The distance from the core to the furthest corner of the footprint. Read off the baked bounds rather
-     * than {@code getDimensions}, which several machines understate badly -- the fracking tower declares a
-     * radius of 3 and erects a derrick 24 tall -- because the table holds every cell the machine actually
-     * places.
+     * than {@code getDimensions}, which several machines understate (the fracking tower declares a radius of
+     * 3 and erects a derrick 24 tall); the table holds every cell the machine places.
      */
     public double cornerRadius() {
         double x = Math.max(Math.abs(minX), Math.abs(minX + sizeX - 1));
@@ -195,7 +194,7 @@ public final class MultiblockMaskTable {
      * Add {@code mask} to the named roles' planes; roles not named keep what they had, so two emissions
      * on one cell compose, for the same role too: 1.7 subscribed every {@code getConPos} point on its own, so a
      * cell next to two points connects on both faces, and a later {@code MASK_NONE} box fill over a port cell
-     * closes nothing. {@link #masks} follows as the union — no other writer touches it.
+     * closes nothing. {@link #masks} follows as the union; no other writer touches it.
      */
     private void put(int lx, int ly, int lz, int mask, int roles) {
         if (mask < 0 || mask > 0b111111) {

@@ -3,6 +3,7 @@ package com.hbm.items.tool;
 import com.hbm.api.block.IToolable;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -35,7 +36,7 @@ public class ItemTooling extends CompatItem {
                 context.getClickLocation(), context.getHand(), type)) {
             ItemStack stack = context.getItemInHand();
             if (stack.getMaxDamage() > 0) {
-                dev.golem.core.world.ItemStacks.hurtAndBreak(stack, 1, player, context.getHand());
+                ItemStacks.hurtAndBreak(stack, 1, player, context.getHand());
             }
             return InteractionResult.SUCCESS;
         }

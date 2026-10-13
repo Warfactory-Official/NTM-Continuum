@@ -1,8 +1,12 @@
 package com.hbm.gametest;
 
+import com.google.gson.JsonArray;
 import com.hbm.Constants;
 import com.hbm.blocks.ModCustomMachineBlocks;
+import com.hbm.blocks.ModDecoCrateBlocks;
+import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.blocks.ModNuclearMiscBlocks;
+import com.hbm.blocks.ModRadarUtilityBlocks;
 import com.hbm.blocks.machine.BlockCustomMachine;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.config.CustomMachineConfigJSON;
@@ -11,8 +15,10 @@ import com.hbm.config.GeneralConfig;
 import com.hbm.config.MachineDynConfig;
 import com.hbm.entity.effect.EntityCloudFleija;
 import com.hbm.entity.logic.EntityNukeExplosionMK3;
+import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
+import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
@@ -29,12 +35,17 @@ import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModIngredientItems.PlateFuelType;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModSingularityItems;
+import com.hbm.items.ModelState;
 import com.hbm.items.machine.ItemBatterySC;
 import com.hbm.items.machine.ItemBatterySC.EnumBatterySC;
 import com.hbm.items.special.CellVariants;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.weapon.ItemCrucible;
+import com.hbm.items.weapon.ItemSwordCutter;
+import com.hbm.items.weapon.MobSlicer;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.ModDamageSources;
+import com.hbm.module.machine.ModuleMachineBase;
 import com.hbm.tileentity.machine.TileEntityCustomMachine;
 import com.hbm.tileentity.machine.TileEntityHeaterFirebox;
 import com.hbm.tileentity.machine.TileEntityICFController;
@@ -43,28 +54,43 @@ import com.hbm.tileentity.machine.TileEntityMachineChemicalPlant;
 import com.hbm.tileentity.machine.TileEntityReactorResearch;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder;
+import com.hbm.tileentity.machine.storage.TileEntityCrateTungsten;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.Recipes;
+import java.io.IOException;
+import java.util.Arrays;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * Contracts of the 2026-09-26 gap batch A (§19ed-gaps-a), each against the 1.7 behaviour it restores: dropped
+ * Contracts for these 1.7 behaviours, each checked against the 1.7 original: dropped
  * AMAT/ASCHRAB cells, the anti-schrabidium recipes, the radiovoltaic batteries and the orbus recipe, the spent
  * crucible's modifiers, the meteorite sword's machine steps, the
  * custom machine's flux and heat inputs from a real research reactor and a real firebox, expensive-mode and 528
@@ -101,7 +127,7 @@ public final class FinalGapsAGameTests {
 
     public static void init() {}
 
-    // ------------------------------------------------------------------ 1. dropped cells
+    // 1. dropped cells
 
     /**
      * Free space around the cell test. Its drop sweep reaches 6 blocks out, and with no padding that sweep (and the
@@ -112,7 +138,7 @@ public final class FinalGapsAGameTests {
     private static final double CELL_DROPS_SWEEP = 6D;
 
     public static void cellDrops(GameTestHelper helper) {
-        BlockPos floor = dev.golem.core.gametest.GameTests.paddedCentre(CELL_DROPS_PADDING, 1);
+        BlockPos floor = GameTests.paddedCentre(CELL_DROPS_PADDING, 1);
         for (int x = -2; x <= 2; x++) for (int z = -2; z <= 2; z++) helper.setBlock(floor.offset(x, 0, z), Blocks.STONE.defaultBlockState());
         BlockPos abs = helper.absolutePos(floor);
 
@@ -156,7 +182,7 @@ public final class FinalGapsAGameTests {
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ 2. ASCHRAB recipes
+    // 2. ASCHRAB recipes
 
     public static void aschrabRecipes(GameTestHelper helper) {
         ItemStack aschrab = ItemCell.getFullCell(Fluids.ASCHRAB);
@@ -168,7 +194,7 @@ public final class FinalGapsAGameTests {
         ItemStack euph = new ItemStack(ModItems.plate_euphemium.get());
         List<ItemStack> ams = grid(euph, aschrab, euph, aschrab, sing, aschrab, euph, aschrab, euph);
         ItemStack core = craft(helper, ams);
-        helper.assertTrue(!core.isEmpty() && net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(core.getItem()).getPath().equals("ams_core_sing"),
+        helper.assertTrue(!core.isEmpty() && BuiltInRegistries.ITEM.getKey(core.getItem()).getPath().equals("ams_core_sing"),
                 "1.7 CraftingManager:600: ams_core_sing takes anti-schrabidium cells, got " + core);
         List<ItemStack> amsAmat = grid(euph, amat, euph, amat, sing, amat, euph, amat, euph);
         helper.assertTrue(craft(helper, amsAmat).isEmpty(), "ams_core_sing no longer takes antimatter cells");
@@ -180,7 +206,7 @@ public final class FinalGapsAGameTests {
 
     private static List<ItemStack> singularity(ItemStack cell) {
         ItemStack e = new ItemStack(ModItems.nugget_euphemium.get());
-        ItemStack b = new ItemStack(com.hbm.blocks.ModHazardBlocks.block_schrabidium.get().asItem());
+        ItemStack b = new ItemStack(ModHazardBlocks.block_schrabidium.get().asItem());
         return grid(e, cell, e, cell, b, cell, e, cell, e);
     }
 
@@ -194,7 +220,7 @@ public final class FinalGapsAGameTests {
         return Recipes.craftingResult(helper.getLevel(), 3, 3, grid).orElse(ItemStack.EMPTY);
     }
 
-    // ------------------------------------------------------------------ 3. radiovoltaic batteries, ass.orbus
+    // 3. radiovoltaic batteries, ass.orbus
 
     public static void batterySC(GameTestHelper helper) {
         long[] power = {0, 150, 200, 500, 750, 1_000, 1_250, 1_500, 2_000, 2_500};
@@ -225,17 +251,17 @@ public final class FinalGapsAGameTests {
         }
         helper.assertTrue(po210 && orbus.inputItem.length == 4 && orbus.duration == 300,
                 "ass.orbus takes the Po-210 radiovoltaic battery (1.7 inputs, 300 ticks)");
-        helper.assertTrue(orbus.outputItem[0].is(com.hbm.blocks.ModRadarUtilityBlocks.machine_orbus.get().asItem()),
+        helper.assertTrue(orbus.outputItem[0].is(ModRadarUtilityBlocks.machine_orbus.get().asItem()),
                 "ass.orbus makes the orbus");
         GenericRecipe taint = AssemblyMachineRecipes.INSTANCE.getRecipe("ass.mpw10taint");
         helper.assertTrue(taint != null && taint.inputItem.length == 5, "ass.mpw10taint is registered with its five inputs");
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ 4. crucible
+    // 4. crucible
 
     /**
-     * old-hbm ItemCrucible charge and modifiers: a fresh (crafted) crucible holds no charge and carries the empty
+     * 1.12.2 ItemCrucible charge and modifiers: a fresh (crafted) crucible holds no charge and carries the empty
      * modifiers (5 damage); a charged one (the creative stack) its own 5000 (the 1.7 value); the tungsten crate's laser recharges one
      * holding fewer than three charges, and only over 10 MHE.
      */
@@ -246,17 +272,17 @@ public final class FinalGapsAGameTests {
         ItemStack charged = ModAbilityToolItems.crucible.get().creativeStack();
         helper.assertTrue(ItemCrucible.getCharges(charged) == ItemCrucible.maxCharges() && ItemCrucible.maxCharges() == 16,
                 "the creative crucible holds 16 charges: " + ItemCrucible.getCharges(charged));
-        net.minecraft.world.entity.player.Player player = GameTestHelpers.mockPlayer(helper,
-                net.minecraft.world.level.GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper,
+                GameType.SURVIVAL);
         player.setItemSlot(EquipmentSlot.MAINHAND, fresh);
         player.tick();
-        double empty = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
-        double emptySpeed = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+        double empty = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        double emptySpeed = player.getAttributeValue(Attributes.MOVEMENT_SPEED);
         player.setItemSlot(EquipmentSlot.MAINHAND, charged);
         player.tick();
-        double full = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
-        double fullSpeed = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
-        double base = player.getAttributeBaseValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+        double full = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        double fullSpeed = player.getAttributeValue(Attributes.MOVEMENT_SPEED);
+        double base = player.getAttributeBaseValue(Attributes.MOVEMENT_SPEED);
         helper.assertTrue(Math.abs(empty - 6.0D) < 1.0E-4, "an empty crucible hits for 1 + 5: " + empty);
         // 1.7 damage 5000, effective: CommonClass raises vanilla's ATTACK_DAMAGE bound (2048) through Golem Core
         // Attributes.raiseMax, as 1.7's SharedMonsterAttributes had none.
@@ -265,8 +291,8 @@ public final class FinalGapsAGameTests {
                 "movement +100% charged, +80% empty: " + fullSpeed + " / " + emptySpeed + " of " + base);
 
         BlockPos rel = new BlockPos(1, 1, 1);
-        helper.setBlock(rel, com.hbm.blocks.ModDecoCrateBlocks.crate_tungsten.get().defaultBlockState());
-        var crate = (com.hbm.tileentity.machine.storage.TileEntityCrateTungsten) helper.getLevel().getBlockEntity(helper.absolutePos(rel));
+        helper.setBlock(rel, ModDecoCrateBlocks.crate_tungsten.get().defaultBlockState());
+        var crate = (TileEntityCrateTungsten) helper.getLevel().getBlockEntity(helper.absolutePos(rel));
         helper.assertTrue(crate != null, "tungsten crate");
         ItemStack two = new ItemStack(ModAbilityToolItems.crucible.get());
         ItemCrucible.CHARGES.set(two, 2);
@@ -278,12 +304,12 @@ public final class FinalGapsAGameTests {
         helper.assertTrue(ItemCrucible.getCharges(crate.getItem(0)) == 2, "10 MHE exactly does not recharge");
         crate.addEnergy(helper.getLevel(), helper.absolutePos(rel), 10_000_001, Direction.UP);
         helper.assertTrue(ItemCrucible.getCharges(crate.getItem(0)) == 16, "under three charges: recharged to 16");
-        helper.assertTrue(ItemCrucible.getCharges(crate.getItem(1)) == 3, "three charges: left alone (old-hbm < 3)");
+        helper.assertTrue(ItemCrucible.getCharges(crate.getItem(1)) == 3, "three charges: left alone (1.12.2 < 3)");
         helper.succeed();
     }
 
     /**
-     * old-hbm {@code PacketMobSlicer.Handler}, computed by hand. The player stands at (1.5, 2, 1.5) looking +X and 20
+     * 1.12.2 {@code PacketMobSlicer.Handler}, computed by hand. The player stands at (1.5, 2, 1.5) looking +X and 20
      * degrees down (the look ray meets a sheep two blocks ahead 0.73 below the eye, inside its body); the cut starts
      * level ({@code startPos = (1, 0, 0)}, sent as {@code eye + startPos}) and ends on the look direction, so the plane
      * normal is {@code startPos x look = (0, 0, -sin 20)} normalised: {@code (0, 0, -1)}. A sheep
@@ -293,7 +319,7 @@ public final class FinalGapsAGameTests {
      */
     public static void crucibleSlice(GameTestHelper helper) {
         ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
-        net.minecraft.world.phys.Vec3 at = helper.absoluteVec(new net.minecraft.world.phys.Vec3(1.5, 2, 1.5));
+        Vec3 at = helper.absoluteVec(new Vec3(1.5, 2, 1.5));
         player.teleportTo(at.x, at.y, at.z);
         player.setYRot(-90F);
         player.setXRot(20F);
@@ -303,49 +329,49 @@ public final class FinalGapsAGameTests {
         LivingEntity near = spawnSheep(helper, at.add(2, 0, 0));
         LivingEntity far = spawnSheep(helper, at.add(5, 0, 0));
 
-        net.minecraft.world.phys.Vec3 eye = player.getEyePosition(1F);
-        net.minecraft.world.phys.Vec3 look = player.getViewVector(1F);
+        Vec3 eye = player.getEyePosition(1F);
+        Vec3 look = player.getViewVector(1F);
         // Mth's sine table: 1e-3
         helper.assertTrue(Math.abs(look.x - Math.cos(Math.toRadians(20))) < 1.0E-3
                 && Math.abs(look.y + Math.sin(Math.toRadians(20))) < 1.0E-3 && Math.abs(look.z) < 1.0E-6,
                 "looking +X, 20 degrees down: " + look);
-        net.minecraft.world.phys.Vec3 startPos = new net.minecraft.world.phys.Vec3(1, 0, 0);
-        net.minecraft.world.phys.Vec3 norm = startPos.cross(look).normalize();
+        Vec3 startPos = new Vec3(1, 0, 0);
+        Vec3 norm = startPos.cross(look).normalize();
         helper.assertTrue(Math.abs(norm.z + 1) < 1.0E-6 && Math.abs(norm.x) < 1.0E-6,
                 "hand-computed normal (0, 0, -1): " + norm);
-        net.minecraft.world.phys.Vec3 pos = startPos.add(eye);
+        Vec3 pos = startPos.add(eye);
 
         // no charge: nothing happens
         ItemCrucible.CHARGES.set(crucible, 0);
-        helper.assertTrue(com.hbm.items.weapon.MobSlicer.slice(player, pos, norm, (byte) 1).isEmpty() && near.isAlive(),
+        helper.assertTrue(MobSlicer.slice(player, pos, norm, (byte) 1).isEmpty() && near.isAlive(),
                 "an empty crucible cuts nothing");
         ItemCrucible.CHARGES.set(crucible, 16);
 
-        List<com.hbm.items.weapon.MobSlicer.Cut> cuts = com.hbm.items.weapon.MobSlicer.slice(player, pos, norm, (byte) 1);
+        List<MobSlicer.Cut> cuts = MobSlicer.slice(player, pos, norm, (byte) 1);
         helper.assertTrue(cuts.size() == 1 && cuts.get(0).victim() == near, "exactly the near sheep is cut: " + cuts.size());
         float[] data = cuts.get(0).data();
         float expectedD = (float) (pos.z - near.getZ());
         helper.assertTrue(data.length == 5 && Math.abs(data[0]) < 1.0E-6F && Math.abs(data[1]) < 1.0E-6F
-                        && Math.abs(data[2] + 1F) < 1.0E-6F, "plane normal (0, 0, -1): " + java.util.Arrays.toString(data));
+                        && Math.abs(data[2] + 1F) < 1.0E-6F, "plane normal (0, 0, -1): " + Arrays.toString(data));
         helper.assertTrue(Math.abs(data[3] - expectedD) < 1.0E-5F,
                 "plane distance pos.z - victim.z = " + expectedD + ": " + data[3]);
         helper.assertTrue(Float.floatToIntBits(data[4]) == 1, "cap texture id 1 (crucible)");
         helper.assertTrue(!near.isAlive() && near.isRemoved() && near.getHealth() == 0F, "the near sheep is dead and gone");
-        helper.assertTrue(com.hbm.items.weapon.MobSlicer.killedByMobSlicer(near), "marked killedByMobSlicer");
+        helper.assertTrue(MobSlicer.killedByMobSlicer(near), "marked killedByMobSlicer");
         helper.assertTrue(far.isAlive(), "the far sheep (5 blocks) is out of the 3-block rays");
         helper.assertTrue(ItemCrucible.getCharges(crucible) == 15, "one charge spent: " + ItemCrucible.getCharges(crucible));
         AABB around = new AABB(near.blockPosition()).inflate(2);
         List<ItemEntity> drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, around);
         helper.assertTrue(drops.stream().anyMatch(e -> e.getItem().is(Items.WHITE_WOOL)),
                 "the sheep's loot dropped (white wool): " + drops.size() + " item(s)");
-        helper.assertTrue(helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.ExperienceOrb.class, around).isEmpty(),
+        helper.assertTrue(helper.getLevel().getEntitiesOfClass(ExperienceOrb.class, around).isEmpty(),
                 "no experience: nothing hit it as a player");
         far.discard();
         helper.succeed();
     }
 
     /**
-     * old-hbm {@code PacketMobSlicer}'s kill for the two victims whose removal mattered. A size-4 slime: 1.12 removed it
+     * 1.12.2 {@code PacketMobSlicer}'s kill for the two victims whose removal mattered. A size-4 slime: 1.12 removed it
      * ({@code setDead}) while its health was above zero, so it did not split; modern {@code Slime.remove} would split
      * at zero health. The ender dragon: 1.12 {@code onKillCommand} told its fight it died; here the dragon must leave
      * through its own {@code kill} (removal reason KILLED, the path that calls {@code setDragonKilled}), not a
@@ -353,35 +379,35 @@ public final class FinalGapsAGameTests {
      * ({@code CrucibleDragonSlice}), since a GameTest level has no dragon fight.
      */
     public static void crucibleSliceKill(GameTestHelper helper) {
-        net.minecraft.server.level.ServerLevel level = helper.getLevel();
-        net.minecraft.world.damagesource.DamageSource source =
-                com.hbm.lib.ModDamageSources.source(level, com.hbm.lib.ModDamageSources.CRUCIBLE);
-        net.minecraft.world.phys.Vec3 rel = new net.minecraft.world.phys.Vec3(2.5, 2, 2.5);
-        net.minecraft.world.phys.Vec3 at = helper.absoluteVec(rel);
-        net.minecraft.world.entity.monster.Slime slime =
-                helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.SLIME, rel);
+        ServerLevel level = helper.getLevel();
+        DamageSource source =
+                ModDamageSources.source(level, ModDamageSources.CRUCIBLE);
+        Vec3 rel = new Vec3(2.5, 2, 2.5);
+        Vec3 at = helper.absoluteVec(rel);
+        Slime slime =
+                helper.spawnWithNoFreeWill(EntityType.SLIME, rel);
         slime.setSize(4, true);
         helper.assertTrue(slime.getSize() == 4, "a size-4 slime: " + slime.getSize());
         AABB around = new AABB(at, at).inflate(8);
-        int before = level.getEntitiesOfClass(net.minecraft.world.entity.monster.Slime.class, around,
+        int before = level.getEntitiesOfClass(Slime.class, around,
                 e -> !e.isRemoved()).size();
-        com.hbm.items.weapon.MobSlicer.kill(slime, source);
+        MobSlicer.kill(slime, source);
         helper.assertTrue(slime.isRemoved() && slime.getHealth() == 0F, "the slime is dead and gone");
-        int after = level.getEntitiesOfClass(net.minecraft.world.entity.monster.Slime.class, around,
+        int after = level.getEntitiesOfClass(Slime.class, around,
                 e -> !e.isRemoved()).size();
         helper.assertTrue(after == before - 1,
                 "no child slimes (1.12 removed it before zeroing its health): " + before + " -> " + after);
 
-        net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon = helper.spawnWithNoFreeWill(
-                net.minecraft.world.entity.EntityType.ENDER_DRAGON, rel.add(0, 1, 0));
-        com.hbm.items.weapon.MobSlicer.kill(dragon, source);
+        EnderDragon dragon = helper.spawnWithNoFreeWill(
+                EntityType.ENDER_DRAGON, rel.add(0, 1, 0));
+        MobSlicer.kill(dragon, source);
         helper.assertTrue(dragon.isRemoved()
-                        && dragon.getRemovalReason() == net.minecraft.world.entity.Entity.RemovalReason.KILLED,
+                        && dragon.getRemovalReason() == Entity.RemovalReason.KILLED,
                 "the dragon leaves through EnderDragon.kill (KILLED): " + dragon.getRemovalReason());
 
         LivingEntity sheep = spawnSheep(helper, at);
-        com.hbm.items.weapon.MobSlicer.kill(sheep, source);
-        helper.assertTrue(sheep.getRemovalReason() == net.minecraft.world.entity.Entity.RemovalReason.DISCARDED
+        MobSlicer.kill(sheep, source);
+        helper.assertTrue(sheep.getRemovalReason() == Entity.RemovalReason.DISCARDED
                 && sheep.getHealth() == 0F, "anything else is discarded at zero health: " + sheep.getRemovalReason());
         helper.succeed();
     }
@@ -393,7 +419,7 @@ public final class FinalGapsAGameTests {
      */
     public static void crucibleSlicePacket(GameTestHelper helper) {
         ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
-        net.minecraft.world.phys.Vec3 at = helper.absoluteVec(new net.minecraft.world.phys.Vec3(1.5, 2, 1.5));
+        Vec3 at = helper.absoluteVec(new Vec3(1.5, 2, 1.5));
         player.teleportTo(at.x, at.y, at.z);
         player.setYRot(-90F);
         player.setXRot(20F);
@@ -401,47 +427,47 @@ public final class FinalGapsAGameTests {
         ItemStack crucible = ModAbilityToolItems.crucible.get().creativeStack();
         player.setItemSlot(EquipmentSlot.MAINHAND, crucible);
         LivingEntity near = spawnSheep(helper, at.add(2, 0, 0));
-        net.minecraft.world.phys.Vec3 eye = player.getEyePosition(1F);
-        net.minecraft.world.phys.Vec3 pos = eye.add(1, 0, 0);
-        helper.assertTrue(com.hbm.items.weapon.MobSlicer.sliceFromClient(player, pos,
-                new net.minecraft.world.phys.Vec3(Double.NaN, 0, -1)) == null, "a NaN normal is dropped");
-        helper.assertTrue(com.hbm.items.weapon.MobSlicer.sliceFromClient(player, pos,
-                net.minecraft.world.phys.Vec3.ZERO) == null, "a zero normal is dropped");
-        helper.assertTrue(com.hbm.items.weapon.MobSlicer.sliceFromClient(player, eye.add(40, 0, 0),
-                new net.minecraft.world.phys.Vec3(0, 0, -1)) == null, "a point 40 blocks from the eye is dropped");
+        Vec3 eye = player.getEyePosition(1F);
+        Vec3 pos = eye.add(1, 0, 0);
+        helper.assertTrue(MobSlicer.sliceFromClient(player, pos,
+                new Vec3(Double.NaN, 0, -1)) == null, "a NaN normal is dropped");
+        helper.assertTrue(MobSlicer.sliceFromClient(player, pos,
+                Vec3.ZERO) == null, "a zero normal is dropped");
+        helper.assertTrue(MobSlicer.sliceFromClient(player, eye.add(40, 0, 0),
+                new Vec3(0, 0, -1)) == null, "a point 40 blocks from the eye is dropped");
         helper.assertTrue(near.isAlive() && ItemCrucible.getCharges(crucible) == 16, "nothing cut, nothing spent");
-        List<com.hbm.items.weapon.MobSlicer.Cut> cuts = com.hbm.items.weapon.MobSlicer.sliceFromClient(player, pos,
-                new net.minecraft.world.phys.Vec3(0, 0, -5));
+        List<MobSlicer.Cut> cuts = MobSlicer.sliceFromClient(player, pos,
+                new Vec3(0, 0, -5));
         helper.assertTrue(cuts != null && cuts.size() == 1 && cuts.get(0).victim() == near, "the near sheep is cut");
         float[] data = cuts.get(0).data();
         helper.assertTrue(Math.abs(data[2] + 1F) < 1.0E-6F, "normal normalised to (0, 0, -1): " + data[2]);
         helper.assertTrue(Float.floatToIntBits(data[4]) == 1, "cap texture from the held crucible: 1");
         helper.assertTrue(ItemCrucible.getCharges(crucible) == 15, "one charge spent");
         LivingEntity second = spawnSheep(helper, at.add(2, 0, 0));
-        helper.assertTrue(com.hbm.items.weapon.MobSlicer.sliceFromClient(player, pos,
-                new net.minecraft.world.phys.Vec3(0, 0, -1)) == null && second.isAlive(),
+        helper.assertTrue(MobSlicer.sliceFromClient(player, pos,
+                new Vec3(0, 0, -1)) == null && second.isAlive(),
                 "a second cut within 250 ms is dropped");
         second.discard();
         helper.succeed();
     }
 
     /** A sheep with no AI at {@code at} (absolute), spawned through the helper's relative coordinates. */
-    private static LivingEntity spawnSheep(GameTestHelper helper, net.minecraft.world.phys.Vec3 at) {
-        net.minecraft.world.phys.Vec3 origin = helper.absoluteVec(net.minecraft.world.phys.Vec3.ZERO);
-        return helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.SHEEP, at.subtract(origin));
+    private static LivingEntity spawnSheep(GameTestHelper helper, Vec3 at) {
+        Vec3 origin = helper.absoluteVec(Vec3.ZERO);
+        return helper.spawnWithNoFreeWill(EntityType.SHEEP, at.subtract(origin));
     }
 
     /**
-     * old-hbm {@code ItemCrucible.hitEntity}: a real attack spends one charge and wears the sword by two (1.12's
+     * 1.12.2 {@code ItemCrucible.hitEntity}: a real attack spends one charge and wears the sword by two (1.12's
      * {@code ItemSwordAbility} and {@code ItemSword} each damaged it once); while a cut is being drawn
      * ({@code doSpecialClick}) the attack is refused, and a hit that reached the hook anyway spends nothing (once per
      * cut); a hit at zero charge stays at zero and still hurts.
      */
     public static void crucibleHit(GameTestHelper helper) {
         // survival: creative players never wear their tools
-        net.minecraft.world.entity.player.Player player = GameTestHelpers.mockPlayer(helper,
-                net.minecraft.world.level.GameType.SURVIVAL);
-        net.minecraft.world.phys.Vec3 at = helper.absoluteVec(new net.minecraft.world.phys.Vec3(1.5, 2, 1.5));
+        Player player = GameTestHelpers.mockPlayer(helper,
+                GameType.SURVIVAL);
+        Vec3 at = helper.absoluteVec(new Vec3(1.5, 2, 1.5));
         player.setPos(at.x, at.y, at.z);
         player.setItemSlot(EquipmentSlot.MAINHAND, ModAbilityToolItems.crucible.get().creativeStack());
         LivingEntity a = spawnSheep(helper, at.add(1.5, 0, 0));
@@ -455,7 +481,7 @@ public final class FinalGapsAGameTests {
         ItemCrucible.setSpecialClick(player, true);
         LivingEntity b = spawnSheep(helper, at.add(1.5, 0, 1));
         // the left click that confirms a cut never attacks (the server's attack guard; the client sends no attack)
-        helper.assertTrue(com.hbm.items.weapon.ItemSwordCutter.onLeftClickEntity(player, b),
+        helper.assertTrue(ItemSwordCutter.onLeftClickEntity(player, b),
                 "confirming a cut: the server refuses the attack");
         helper.assertTrue(b.isAlive() && b.getHealth() == b.getMaxHealth(), "confirming a cut: the sheep is untouched");
         // F1's charge rule on the hit hook itself (only a hit that bypassed the guard can reach it now): one free hit
@@ -468,7 +494,7 @@ public final class FinalGapsAGameTests {
                 "a second free hit without a cut is charged: " + ItemCrucible.getCharges(held));
         b2.discard();
         ItemCrucible.setSpecialClick(player, false);
-        helper.assertTrue(!com.hbm.items.weapon.ItemSwordCutter.onLeftClickEntity(player, b),
+        helper.assertTrue(!ItemSwordCutter.onLeftClickEntity(player, b),
                 "no cut being drawn: attacks are allowed again");
 
         ItemCrucible.CHARGES.set(held, 0);
@@ -484,7 +510,7 @@ public final class FinalGapsAGameTests {
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ 5. meteorite sword steps
+    // 5. meteorite sword steps
 
     public static void swordSteps(GameTestHelper helper) {
         // research reactor: bred -> irradiated in any rod slot while the rods are in
@@ -559,13 +585,13 @@ public final class FinalGapsAGameTests {
     }
 
     /** Picks the first unpooled recipe whose item inputs all resolve and whose power fits, and fills its inputs. */
-    private static GenericRecipe loadRunnable(GenericRecipes set, com.hbm.modules.machine.ModuleMachineBase module,
-                                              com.hbm.inventory.NTMItemHandler inventory) {
+    private static GenericRecipe loadRunnable(GenericRecipes set, ModuleMachineBase module,
+                                              NTMItemHandler inventory) {
         for (GenericRecipe recipe : set.recipeOrderedList) {
             if (recipe.isPooled() || recipe.power > 100_000 || recipe.inputItem == null) continue;
             if (recipe.inputItem.length > module.inputSlots.length) continue;
             if (recipe.inputFluid != null && recipe.inputFluid.length > 0
-                    && java.util.Arrays.stream(recipe.inputFluid).anyMatch(f -> f.pressure != 0)) continue;
+                    && Arrays.stream(recipe.inputFluid).anyMatch(f -> f.pressure != 0)) continue;
             List<ItemStack> fills = new ArrayList<>();
             boolean ok = true;
             for (AStack in : recipe.inputItem) {
@@ -584,7 +610,7 @@ public final class FinalGapsAGameTests {
     // 9. trenchmaster: covered by harness FinalGapsA with a real survival player. GameTest mock players are creative
     //    (1.20.1 Forge's mock overrides isCreative()), so no hit ever lands on them.
 
-    // ------------------------------------------------------------------ 10. custom machine flux / heat
+    // 10. custom machine flux / heat
 
     public static void customMachineFluxHeat(GameTestHelper helper) {
         String fluxKey = "gapsa_test_flux", heatKey = "gapsa_test_heat";
@@ -647,7 +673,7 @@ public final class FinalGapsAGameTests {
         conf.components = new ArrayList<>();
         MachineConfiguration.ComponentDefinition comp = new MachineConfiguration.ComponentDefinition();
         comp.blockName = block;
-        comp.metas = new com.google.gson.JsonArray();
+        comp.metas = new JsonArray();
         comp.metas.add(0);
         comp.x = 0;
         comp.y = 0;
@@ -656,9 +682,9 @@ public final class FinalGapsAGameTests {
         CustomMachineConfigJSON.customMachines.put(key, conf);
 
         CustomMachineRecipe recipe = new CustomMachineRecipe();
-        recipe.inputFluids = new com.hbm.inventory.fluid.FluidStack[0];
+        recipe.inputFluids = new FluidStack[0];
         recipe.inputItems = new AStack[]{new ComparableStack(Items.STONE, 1)};
-        recipe.outputFluids = new com.hbm.inventory.fluid.FluidStack[0];
+        recipe.outputFluids = new FluidStack[0];
         recipe.outputItems = new ChanceStack[]{new ChanceStack(new ItemStack(Items.COBBLESTONE), 1F)};
         recipe.duration = 20;
         recipe.consumptionPerTick = 1;
@@ -683,7 +709,7 @@ public final class FinalGapsAGameTests {
         return abs.subtract(helper.absolutePos(BlockPos.ZERO));
     }
 
-    // ------------------------------------------------------------------ 13. expensive / 528 / icfLaser
+    // 13. expensive / 528 / icfLaser
 
     public static void configInputs(GameTestHelper helper) {
         boolean expensive = GeneralConfig.enableExpensiveMode, five28 = GeneralConfig.enable528;
@@ -716,27 +742,27 @@ public final class FinalGapsAGameTests {
             helper.assertTrue(json.contains("\"icfLaser\"") && json.contains("\"I:capacitorPower\": " + TileEntityICFController.capacitorPower)
                             && json.contains("\"I:turboPower\": " + TileEntityICFController.turboPower),
                     "icfLaser entry with the values in use: " + json);
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             helper.fail("unreadable machine config: " + e);
         }
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ 14. cell model state
+    // 14. cell model state
 
     /**
-     * A cell's sprite comes from its fluid alone ({@code hbm:model_state}, History §19es-itemvariant): nothing else is
+     * A cell's sprite comes from its fluid alone ({@code hbm:model_state}): nothing else is
      * stored, so a crafted, a machine-filled and a hand-built cell of one fluid are the same stack.
      */
     public static void cellMigration(GameTestHelper helper) {
         ItemStack built = new ItemStack(ModSingularityItems.cell.get());
         ModDataComponents.fluid(built, Fluids.AMAT);
         ModDataComponents.fluidAmount(built, ItemCell.CAPACITY);
-        helper.assertTrue(com.hbm.items.ModelState.of(built) == CellVariants.ANTIMATTER,
+        helper.assertTrue(ModelState.of(built) == CellVariants.ANTIMATTER,
                 "an antimatter cell draws the antimatter sprite");
         helper.assertTrue(ItemStacks.sameItemAndData(built, ItemCell.getFullCell(Fluids.AMAT)),
                 "a hand-built cell stacks with a new one");
-        helper.assertTrue(com.hbm.items.ModelState.of(new ItemStack(ModSingularityItems.cell.get())) == CellVariants.EMPTY,
+        helper.assertTrue(ModelState.of(new ItemStack(ModSingularityItems.cell.get())) == CellVariants.EMPTY,
                 "an empty cell draws the empty sprite");
         helper.succeed();
     }

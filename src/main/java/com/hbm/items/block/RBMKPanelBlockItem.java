@@ -2,6 +2,7 @@ package com.hbm.items.block;
 
 import dev.golem.core.world.CompatBlockItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.regex.Pattern;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -29,6 +30,6 @@ public class RBMKPanelBlockItem extends CompatBlockItem {
                                          TooltipFlag flag) {
         String text = Component.translatable(key).getString();
         if (text.equals(key)) return;
-        for (String line : text.split(java.util.regex.Pattern.quote("$"))) tooltip.add(Component.literal(line).withStyle(ChatFormatting.YELLOW));
+        for (String line : text.split(Pattern.quote("$"))) tooltip.add(Component.literal(line).withStyle(ChatFormatting.YELLOW));
     }
 }

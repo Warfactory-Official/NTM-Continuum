@@ -6,19 +6,28 @@ import com.hbm.inventory.container.ContainerMixer;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.MixerRecipes;
 import com.hbm.items.ModBatteryItems;
+import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 import com.hbm.items.machine.ItemFluidId;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineMixer;
+import dev.golem.core.Ids;
+import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.net.GolemBuffers;
+import dev.golem.core.registry.BlockEntities;
+import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 
 /** Focused contracts for the legacy output-fluid-selected Mixer. */
 public final class MixerGameTests {
@@ -32,16 +41,16 @@ public final class MixerGameTests {
         helper.assertTrue(MixerRecipes.getOutput(Fluids.SOLVENT).length == 4,
                 "Mixer must retain all four Solvent recipes");
         helper.assertTrue(MixerRecipes.getOutput(Fluids.COOLANT)[0].solidInput.matchesRecipe(
-                        new ItemStack(com.hbm.items.ModItems.niter.get()), false),
+                        new ItemStack(ModItems.niter.get()), false),
                 "Coolant must retain its saltpeter ingredient");
         helper.assertTrue(MixerRecipes.getOutput(Fluids.NITRIC_ACID)[0].solidInput.matchesRecipe(
-                        new ItemStack(com.hbm.items.ModItems.niter.get()), false),
+                        new ItemStack(ModItems.niter.get()), false),
                 "Nitric acid must retain its saltpeter ingredient");
         helper.assertTrue(MixerRecipes.getOutput(Fluids.FISHOIL)[0].solidInput != null,
                 "Fish oil must retain its fish ingredient");
         helper.assertTrue(MixerRecipes.getOutput(Fluids.BITUMEN)[0].solidInput != null,
                 "Bitumen must retain the any-tar ingredient");
-        TagKey<Item> glassPanes = TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", "glass_panes"));
+        TagKey<Item> glassPanes = TagKey.create(Registries.ITEM, Ids.of("c", "glass_panes"));
         helper.assertTrue(new ItemStack(Items.RED_STAINED_GLASS_PANE).is(glassPanes),
                 "Mixer construction must retain the old any-glass-pane ingredient");
         helper.succeed();
@@ -56,10 +65,10 @@ public final class MixerGameTests {
 
         helper.assertTrue(helper.getLevel().getBlockEntity(absolute) instanceof TileEntityMachineMixer,
                 "Mixer core block entity was not created");
-        helper.assertTrue(block.canConnect(helper.getLevel(), absolute, com.hbm.lib.ForgeDirection.EAST),
+        helper.assertTrue(block.canConnect(helper.getLevel(), absolute, ForgeDirection.EAST),
                 "Mixer east power port did not connect");
         helper.assertTrue(block.canConnect(Fluids.WATER, helper.getLevel(), absolute.getX(), absolute.getY(), absolute.getZ(),
-                        com.hbm.lib.ForgeDirection.NORTH),
+                        ForgeDirection.NORTH),
                 "Mixer north fluid port did not connect");
         helper.succeed();
     }
@@ -88,8 +97,8 @@ public final class MixerGameTests {
 
     public static void menu(GameTestHelper helper) {
         TileEntityMachineMixer mixer = place(helper, new BlockPos(2, 1, 2));
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
-                net.minecraft.world.level.GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper,
+                GameType.SURVIVAL);
         ContainerMixer menu = new ContainerMixer(0, player.getInventory(), mixer);
 
         helper.assertTrue(menu.slots.size() == ContainerMixer.MACHINE_SLOTS + 36,
@@ -139,16 +148,16 @@ public final class MixerGameTests {
         String second = MixerRecipes.getOutput(Fluids.FRACKSOL)[1].name;
         helper.assertTrue(mixer.recipeName.equals(second), "Mixer's button did not select the second Fracksol row");
 
-        CompoundTag saved = dev.golem.core.registry.BlockEntities.save(mixer, helper.getLevel().registryAccess());
-        helper.assertTrue(net.minecraft.nbt.StringTag.valueOf(second).equals(saved.get("recipe")),
+        CompoundTag saved = BlockEntities.save(mixer, helper.getLevel().registryAccess());
+        helper.assertTrue(StringTag.valueOf(second).equals(saved.get("recipe")),
                 "Mixer must save the selected row by name, saved " + saved.get("recipe"));
-        var loaded = dev.golem.core.registry.BlockEntities.load(mixer.getBlockPos().east(), mixer.getBlockState(), saved,
+        var loaded = BlockEntities.load(mixer.getBlockPos().east(), mixer.getBlockState(), saved,
                 helper.getLevel().registryAccess());
         helper.assertTrue(loaded instanceof TileEntityMachineMixer restored && restored.recipeName.equals(second)
                         && restored.recipeIndex() == 1,
                 "Mixer selection did not survive a save/load round trip");
 
-        var buffer = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
+        var buffer = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         mixer.serialize(buffer);
         TileEntityMachineMixer synced = new TileEntityMachineMixer(mixer.getBlockPos().north(), mixer.getBlockState());
         synced.deserialize(buffer);
@@ -160,7 +169,7 @@ public final class MixerGameTests {
         MixerRecipes.MixerRecipe row = MixerRecipes.getOutput(Fluids.FRACKSOL)[1];
         legacy.putString("recipe", (row.input1 == null ? "-" : row.input1.type.getRegistryName()) + "+"
                 + (row.input2 == null ? "-" : row.input2.type.getRegistryName()) + "+" + (row.solidInput != null) + "#0");
-        var old = dev.golem.core.registry.BlockEntities.load(mixer.getBlockPos().west(), mixer.getBlockState(), legacy,
+        var old = BlockEntities.load(mixer.getBlockPos().west(), mixer.getBlockState(), legacy,
                 helper.getLevel().registryAccess());
         helper.assertTrue(old instanceof TileEntityMachineMixer restored
                         && restored.recipeName.equals(second),

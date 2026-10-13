@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMachineSatLinker;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -19,7 +20,7 @@ import java.util.Optional;
  */
 public class GUIMachineSatLinker extends CompatContainerScreen<ContainerMachineSatLinker> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_sat_linker.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/machine/gui_sat_linker.png");
 
     public GUIMachineSatLinker(ContainerMachineSatLinker menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 186);

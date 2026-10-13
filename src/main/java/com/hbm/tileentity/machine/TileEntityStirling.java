@@ -1,5 +1,8 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.entity.projectile.EntityCog;
+import com.hbm.sound.ModSounds;
+import com.hbm.tileentity.MachineCore;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
@@ -14,6 +17,7 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -54,7 +58,7 @@ public class TileEntityStirling extends TileEntityMachineBase implements IEnergy
                 if (stirling.overspeed > 60 && stirling.warnCooldown == 0) {
                     stirling.warnCooldown = 100;
                     level.playSound(null, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D,
-                            com.hbm.sound.ModSounds.WARN_OVERSPEED.get(), net.minecraft.sounds.SoundSource.BLOCKS, 2.0F, 1.0F);
+                            ModSounds.WARN_OVERSPEED.get(), SoundSource.BLOCKS, 2.0F, 1.0F);
                 }
 
                 if (stirling.overspeed > overspeedLimit) {
@@ -63,12 +67,12 @@ public class TileEntityStirling extends TileEntityMachineBase implements IEnergy
                             5F, false, Level.ExplosionInteraction.NONE);
 
                     // 1.7: the gear flies off sideways (facing rotated DOWN) and upward with the excess heat.
-                    int orientation = com.hbm.tileentity.MachineCore.facingOrdinal(state, 2);
-                    com.hbm.lib.ForgeDirection dir = com.hbm.lib.ForgeDirection.getOrientation(orientation);
-                    com.hbm.entity.projectile.EntityCog cog = new com.hbm.entity.projectile.EntityCog(level,
+                    int orientation = MachineCore.facingOrdinal(state, 2);
+                    ForgeDirection dir = ForgeDirection.getOrientation(orientation);
+                    EntityCog cog = new EntityCog(level,
                             pos.getX() + 0.5D + dir.offsetX, pos.getY() + 1D, pos.getZ() + 0.5D + dir.offsetZ)
                             .setOrientation(orientation).setMeta(stirling.getGearVariant());
-                    com.hbm.lib.ForgeDirection rot = dir.getRotation(com.hbm.lib.ForgeDirection.DOWN);
+                    ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
                     cog.setDeltaMovement(rot.offsetX, 1D + (stirling.heat - stirling.maxHeat()) * 0.0001D, rot.offsetZ);
                     level.addFreshEntity(cog);
 

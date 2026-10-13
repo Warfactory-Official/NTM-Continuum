@@ -9,6 +9,7 @@ import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import com.hbm.items.tool.ItemConveyorWand;
 
@@ -39,7 +40,7 @@ public final class ModConveyorItems {
     private static RegistryObject<ItemConveyorWand> wand(ConveyorType type) {
         // the wand shows its belt (1.7 ItemRenderBlock)
         String belt = type == ConveyorType.REGULAR ? "conveyor" : "conveyor_" + type.id;
-        return REG.item("conveyor_wand_" + type.id, (net.minecraft.world.item.Item.Properties p) -> new ItemConveyorWand(p, type))
+        return REG.item("conveyor_wand_" + type.id, (Item.Properties p) -> new ItemConveyorWand(p, type))
                 .transform(Presets.shares("hbm:block/" + belt))
                 .tab(HbmTab.MACHINES);
     }

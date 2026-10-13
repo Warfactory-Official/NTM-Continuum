@@ -8,6 +8,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import dev.golem.core.world.RecipeFields;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -21,8 +22,8 @@ public final class OutgasserRecipes extends DataGenericRecipes<OutgasserRecipes.
     public static final int DURATION = 10_000;
 
     private OutgasserRecipes() {
-        super(Constants.MOD_ID, "outgasser", OutgasserRecipe::codec, dev.golem.core.world.RecipeFields.of()
-                .add(dev.golem.core.world.RecipeFields.field("fusion_only", dev.golem.core.world.RecipeFields.Kind.BOOLEAN).optional().alias("fusionOnly")));
+        super(Constants.MOD_ID, "outgasser", OutgasserRecipe::codec, RecipeFields.of()
+                .add(RecipeFields.field("fusion_only", RecipeFields.Kind.BOOLEAN).optional().alias("fusionOnly")));
     }
 
     /** Declares the table at mod construction (its recipe type and serializer register with HBM's content). */

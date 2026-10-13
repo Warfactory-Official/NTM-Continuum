@@ -9,21 +9,24 @@ import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.inventory.recipes.loader.DataGenericRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
+import com.hbm.items.ModFluidNetItems;
 import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemFluidContainerNT;
 import com.hbm.items.machine.ItemFluidIcon;
+import dev.golem.core.Ids;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /**
  * Assembly machine recipes (1.7 {@code AssemblyMachineRecipes}): the datapack table {@code hbm:assembly_machine}, one
- * file per row in {@code data/hbm/recipe/assembly_machine/}. The files were converted once from the former Java table
- * (the curated rows, the generated 1.12.2 bulk of {@code gen/AssemblyMachineRecipesGenerated}, whose generator
- * {@code port-tools/gen_machine_recipes.py} is missing from the project, and the contributor classes: custom missiles,
- * bombs, RTG, doors, PWR, radars, caps...) and are the source now. 1.7's expensive-mode inputs and 528 pools are the
- * rows' {@code input_items_expensive} and {@code blueprint_pools_528}; the overdrive upgrades exist only outside 528
+ * file per row in {@code data/hbm/recipe/assembly_machine/}. The rows cover the curated recipes, the
+ * generated 1.12.2 bulk of {@code gen/AssemblyMachineRecipesGenerated} and the contributor classes (custom missiles,
+ * bombs, RTG, doors, PWR, radars, caps...). 1.7's expensive-mode inputs and 528 pools are the rows'
+ * {@code input_items_expensive} and {@code blueprint_pools_528}; the overdrive upgrades exist only outside 528
  * mode ({@code "requires": ["!enable_528"]}), where the precision assembler makes them instead.
  *
  * <p>The fluid packs stay a rule ({@link #arrange}): 1.7 AssemblyMachineRecipes 1058-1066 packs and unpacks every fluid
@@ -57,14 +60,14 @@ public class AssemblyMachineRecipes extends DataGenericRecipes<GenericRecipe> {
     /** 1.7's package/unpackage pair per fluid the pack allows; ids "ass.package" + 1.7's {@code hbmfluid.<name>}. */
     private static List<GenericRecipe> fluidPacks() {
         List<GenericRecipe> rows = new ArrayList<>();
-        com.hbm.items.machine.ItemFluidContainerNT pack = com.hbm.items.ModFluidNetItems.fluid_pack_full.get();
+        ItemFluidContainerNT pack = ModFluidNetItems.fluid_pack_full.get();
         Item empty = ModItems.fluid_pack_empty.get();
-        int amount = com.hbm.items.ModFluidNetItems.FLUID_PACK_CAPACITY;
+        int amount = ModFluidNetItems.FLUID_PACK_CAPACITY;
         FluidType[] order = Fluids.getInNiceOrder();
         for (int i = 1; i < order.length; ++i) { // 1.7: from 1, skipping NONE
             FluidType type = order[i];
             if (type == Fluids.NONE || !pack.allows(type)) continue;
-            String suffix = "hbmfluid." + type.getName().toLowerCase(java.util.Locale.ROOT);
+            String suffix = "hbmfluid." + type.getName().toLowerCase(Locale.ROOT);
             rows.add(new GenericRecipe("ass.package" + suffix).setup(40, 100)
                     .inputItems(new ComparableStack(empty))
                     .inputFluids(new FluidStack(type, amount))
@@ -79,7 +82,7 @@ public class AssemblyMachineRecipes extends DataGenericRecipes<GenericRecipe> {
     }
 
     /**
-     * True if the shape's per-material item is registered ({@code hbm:<prefix>_<name>}) — the tag-system
+     * True if the shape's per-material item is registered ({@code hbm:<prefix>_<name>}): the tag-system
      * equivalent of the 1.12.2 {@code OreDictionary.doesOreNameExist} guard. Vanilla iron/gold/copper also count for
      * INGOT (they back {@code c:ingots/<name>}).
      */
@@ -87,6 +90,6 @@ public class AssemblyMachineRecipes extends DataGenericRecipes<GenericRecipe> {
         if (shape == MaterialShapes.INGOT
                 && (mat.name.equals("iron") || mat.name.equals("gold") || mat.name.equals("copper"))) return true;
         return BuiltInRegistries.ITEM.containsKey(
-                dev.golem.core.Ids.of("hbm", shape.itemPrefix + "_" + mat.name));
+                Ids.of("hbm", shape.itemPrefix + "_" + mat.name));
     }
 }

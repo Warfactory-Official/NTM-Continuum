@@ -3,9 +3,14 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerFusionTorus;
 import com.hbm.inventory.recipes.FusionRecipe;
 import com.hbm.inventory.recipes.FusionRecipes;
+import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionTorus;
 import com.hbm.util.BobMathUtil;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -15,6 +20,7 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Fusion torus control panel, ported from 1.7 {@code GUIFusionTorus} (230x244). The left column is stored
@@ -22,10 +28,10 @@ import java.util.Optional;
  * carries the recipe button, the progress and bonus bars, the two small process LEDs, the three gauges
  * (klystron input, plasma output, fuel consumption) and the three status LEDs (power, coolant, plasma).
  */
-public class GUIFusionTorus extends dev.golem.core.gui.CompatContainerScreen<ContainerFusionTorus> {
+public class GUIFusionTorus extends CompatContainerScreen<ContainerFusionTorus> {
 
     private static final Identifier TEXTURE =
-            dev.golem.core.Ids.of("hbm", "textures/gui/reactors/gui_fusion_torus.png");
+            Ids.of("hbm", "textures/gui/reactors/gui_fusion_torus.png");
 
     private static final int RECIPE_X = 43;
     private static final int RECIPE_Y = 80;
@@ -87,7 +93,7 @@ public class GUIFusionTorus extends dev.golem.core.gui.CompatContainerScreen<Con
 
         // recipe selector icon, 1.7 renderItem(..., 44, 81)
         GuiDraw.item(graphics, recipe != null ? recipe.getIcon()
-                        : new net.minecraft.world.item.ItemStack(com.hbm.items.ModItems.template_folder.get()),
+                        : new ItemStack(ModItems.template_folder.get()),
                 x + 44, y + 81);
 
         NuclearMiscGuiUtil.drawTank(graphics, torus.tanks[0], x + 44, y + 18, 16, 52);
@@ -173,7 +179,7 @@ public class GUIFusionTorus extends dev.golem.core.gui.CompatContainerScreen<Con
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         TileEntityFusionTorus torus = this.menu.getTorus();
         if (torus == null) return false;
         int x = (int) event.x() - leftPos;
@@ -181,7 +187,7 @@ public class GUIFusionTorus extends dev.golem.core.gui.CompatContainerScreen<Con
         // 1.7 checkClick(43, 80, 18, 18): x in [43, 61), y in (80, 98].
         if (x < RECIPE_X || x >= RECIPE_X + RECIPE_SIZE || y <= RECIPE_Y || y > RECIPE_Y + RECIPE_SIZE) return false;
         GUIScreenRecipeSelector.openSelector(FusionRecipes.INSTANCE, torus.getBlockPos(), torus.fusionModule.recipe, 0,
-                com.hbm.items.machine.ItemBlueprints.grabPool(
+                ItemBlueprints.grabPool(
                         torus.inventory.getStackInSlot(TileEntityFusionTorus.SLOT_BLUEPRINT)), this);
         return true;
     }

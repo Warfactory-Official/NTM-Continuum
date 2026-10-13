@@ -1,5 +1,6 @@
 package com.hbm.gametest;
 
+import com.hbm.Constants;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.packet.BlockEntitySyncPayload;
 import com.hbm.packet.NetworkProbePayload;
@@ -10,8 +11,10 @@ import dev.golem.core.net.GolemSync;
 import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.net.GolemTransport;
 import dev.golem.core.net.GolemWire;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -22,16 +25,15 @@ import net.minecraft.world.level.block.Blocks;
  *
  * <p>The engine has two halves that are only correct together: a sender asks whether anyone is
  * watching before it serialises anything, and the table replays the last wire to whoever arrives
- * afterwards. Each half alone is a defect — the gate alone desynchronises a player who arrives after
- * the last change, the table alone keeps paying to serialise state nobody reads — so what is asserted
- * here is both directions, not merely that a packet goes out.
+ * afterwards. Each half alone is a defect: the gate alone desynchronises a player who arrives after
+ * the last change, the table alone keeps paying to serialise state nobody reads. So both directions are
+ * asserted, not merely that a packet goes out.
  *
  * <p>Live chunk tracking cannot be produced on a headless test server: a mock player is in the level
  * but never passes through the chunk map, so {@code getPlayers} never names it. The watcher set is
  * therefore stated for the replication cases and checked against the real chunk map on its own in
- * {@link #machineWiring}. That split is deliberate — it puts the logic that has the subtle failure
- * modes under a deterministic test on all six nodes, and leaves the one line that cannot be
- * determinised asserting an invariant instead.
+ * {@link #machineWiring}. That puts the logic with the subtle failure modes under a deterministic test
+ * on all six nodes and leaves the one non-deterministic line asserting an invariant.
  *
  * <p>The two functions do not share a chunk. {@link #replicationContract} works on a position far
  * outside any plot and places no block, so its statements cannot collide with a concurrently running
@@ -43,7 +45,7 @@ public final class NetworkSyncGameTests {
 
     private static final String SYNC_CHANNEL = "hbm:be_sync";
 
-    public static final GameTests.Suite TESTS = GameTests.suite(com.hbm.Constants.MOD_ID);
+    public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
 
     public static final GameTests.Function REPLICATION = TESTS.function(
             "sync_replication_contract", 20, () -> NetworkSyncGameTests::replicationContract);
@@ -73,7 +75,7 @@ public final class NetworkSyncGameTests {
      * change of transport, not of contract, so a test that passes on one backend and not the other is
      * the failure this whole arrangement exists to catch.
      */
-    private static void onEachBackend(java.util.function.Consumer<GolemTransport.Backend> body) {
+    private static void onEachBackend(Consumer<GolemTransport.Backend> body) {
         GolemTransport.Backend before = GolemTransport.requested();
         try {
             for (GolemTransport.Backend backend : GolemTransport.Backend.values()) {
@@ -204,8 +206,8 @@ public final class NetworkSyncGameTests {
     /**
      * The two backends must be indistinguishable from the client's side. The safe one hands the
      * channel an encoded packet and the accelerated one hands it finished bytes, so the assertion is
-     * that both carry a payload equal to the one sent — decoded, for the accelerated case, by the
-     * same codec the client decodes with.
+     * that both carry a payload equal to the one sent (decoded, for the accelerated case, by the
+     * same codec the client decodes with).
      */
     public static void backendsDeliverTheSamePayload(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -238,7 +240,7 @@ public final class NetworkSyncGameTests {
                     GameTestHelpers.decodeWire(fast.wires().get(0), BlockEntitySyncPayload.CODEC);
             helper.assertTrue(decoded.pos().equals(sent.pos()),
                     "The accelerated frame must decode to the position that was sent");
-            helper.assertTrue(java.util.Arrays.equals(decoded.data(), sent.data()),
+            helper.assertTrue(Arrays.equals(decoded.data(), sent.data()),
                     "The accelerated frame must decode to the bytes that were sent");
             helper.succeed();
         } finally {
@@ -251,7 +253,7 @@ public final class NetworkSyncGameTests {
     /**
      * Acceleration is optional, but on these nodes it is meant to be on. If the packet id cannot be
      * read or a mixin did not land, everything still works by the safe path and every other test here
-     * still passes — which is exactly why this has to be asserted separately rather than inferred.
+     * still passes, which is exactly why this has to be asserted separately rather than inferred.
      */
     public static void accelerationIsAvailable(GameTestHelper helper) {
         helper.assertTrue(GolemWire.available(),
@@ -333,8 +335,8 @@ public final class NetworkSyncGameTests {
 
     /**
      * An off-thread handler must run wherever it is called, at once, and must need nothing from the
-     * game thread. Driving it from a foreign thread is what proves the second half — a handler that
-     * quietly depended on the server thread would work when tested from the server thread and fail in
+     * game thread. Driving it from a foreign thread proves the second half: a handler that
+     * depended on the server thread would pass when tested from the server thread and fail in
      * production, where it runs on Netty's.
      */
     public static void offThreadHandlerContract(GameTestHelper helper) {
@@ -367,9 +369,9 @@ public final class NetworkSyncGameTests {
     }
 
     /**
-     * Pairing a channel with the wrong kind of handler used to fail silently: an off-thread dispatch
-     * has no context to give, so a handler expecting one was called with null and dropped by the null
-     * guard, never running and never complaining.
+     * Pairing a channel with the wrong kind of handler is refused at registration. An off-thread dispatch
+     * has no context to give, so a handler expecting one would be called with null and dropped silently
+     * by the null guard.
      */
     public static void offThreadPairingIsEnforced(GameTestHelper helper) {
         boolean refused = false;

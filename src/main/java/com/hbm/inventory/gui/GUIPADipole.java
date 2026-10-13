@@ -5,7 +5,9 @@ import com.hbm.items.machine.ItemPACoil;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
 import com.hbm.tileentity.machine.albion.TileEntityPADipole;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.KeyInput;
 import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
 import net.minecraft.ChatFormatting;
@@ -29,7 +31,7 @@ import java.util.List;
 public class GUIPADipole extends GUIPABase<ContainerPADipole> {
 
     private static final Identifier TEXTURE =
-            dev.golem.core.Ids.of("hbm", "textures/gui/particleaccelerator/gui_dipole.png");
+            Ids.of("hbm", "textures/gui/particleaccelerator/gui_dipole.png");
 
     private EditBox threshold;
     private boolean suppressResponder;
@@ -160,7 +162,7 @@ public class GUIPADipole extends GUIPABase<ContainerPADipole> {
     }
 
     @Override
-    protected boolean keyPressed(dev.golem.core.gui.KeyInput event) {
+    protected boolean keyPressed(KeyInput event) {
         if (this.threshold != null && this.threshold.isFocused() && event.key() != 256 && event.key() != 258) {
             event.keyPressed(this.threshold);
             return true;

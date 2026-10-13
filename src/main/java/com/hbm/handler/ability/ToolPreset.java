@@ -1,6 +1,9 @@
 package com.hbm.handler.ability;
 
+import com.hbm.packet.PlayerInformPayload;
 import dev.golem.core.data.Tags;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -62,25 +65,25 @@ public class ToolPreset {
     }
 
     /** {@link #getMessage()} as the parts {@link com.hbm.packet.PlayerInformPayload} carries to the info HUD. */
-    public com.hbm.packet.PlayerInformPayload informPayload() {
-        int id = com.hbm.packet.PlayerInformPayload.ID_TOOLABILITY;
+    public PlayerInformPayload informPayload() {
+        int id = PlayerInformPayload.ID_TOOLABILITY;
         if (isNone()) {
-            return com.hbm.packet.PlayerInformPayload.of(id, 0, ChatFormatting.GOLD, "[Tool ability deactivated]");
+            return PlayerInformPayload.of(id, 0, ChatFormatting.GOLD, "[Tool ability deactivated]");
         }
-        java.util.List<Object> parts = new java.util.ArrayList<>();
+        List<Object> parts = new ArrayList<>();
         parts.add("[Enabled ");
         boolean hasArea = areaAbility != IToolAreaAbility.NONE;
         boolean hasHarvest = harvestAbility != IToolHarvestAbility.NONE;
         if (hasArea) {
-            parts.add(new com.hbm.packet.PlayerInformPayload.Translated(areaAbility.getName()));
+            parts.add(new PlayerInformPayload.Translated(areaAbility.getName()));
             parts.add(areaAbility.getExtension(areaAbilityLevel));
         }
         if (hasArea && hasHarvest) parts.add(" + ");
         if (hasHarvest) {
-            parts.add(new com.hbm.packet.PlayerInformPayload.Translated(harvestAbility.getName()));
+            parts.add(new PlayerInformPayload.Translated(harvestAbility.getName()));
             parts.add(harvestAbility.getExtension(harvestAbilityLevel));
         }
-        return com.hbm.packet.PlayerInformPayload.of(id, 0, ChatFormatting.YELLOW, parts.toArray());
+        return PlayerInformPayload.of(id, 0, ChatFormatting.YELLOW, parts.toArray());
     }
 
     public boolean isNone() {

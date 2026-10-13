@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.tool.ItemDesignatorManual;
 import com.hbm.packet.ManualDesignatorPayload;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatScreen;
@@ -10,8 +11,10 @@ import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
 
 /** The source-shaped 176x178 manual designator coordinate editor. */
@@ -66,7 +69,7 @@ public final class GUIScreenDesignator extends CompatScreen {
         super.tick();
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || !(mc.player.getMainHandItem().getItem()
-                instanceof com.hbm.items.tool.ItemDesignatorManual)) {
+                instanceof ItemDesignatorManual)) {
             mc.setScreen(null);
         }
     }
@@ -96,8 +99,8 @@ public final class GUIScreenDesignator extends CompatScreen {
 
     private void apply(int operator, int value, int reference) {
         Minecraft.getInstance().getSoundManager().play(
-                net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
-                        net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                SimpleSoundInstance.forUI(
+                        SoundEvents.UI_BUTTON_CLICK, 1.0F));
         GolemNetwork.sendToServer(ManualDesignatorPayload.CODEC,
                 new ManualDesignatorPayload(operator, value, reference));
         if (operator == 2) {

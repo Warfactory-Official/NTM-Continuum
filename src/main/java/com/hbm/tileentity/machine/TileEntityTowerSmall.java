@@ -1,9 +1,11 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.config.ClientConfig;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Auxiliary 5x5x19 cooling tower; exact old 1,000 mB condenser tanks and four side ports. */
@@ -15,12 +17,12 @@ public class TileEntityTowerSmall extends TileEntityCondenser {
         super(ModBlockEntities.MACHINE_TOWER_SMALL.get(), pos, state, INPUT_TANK_SIZE, OUTPUT_TANK_SIZE);
     }
 
-    public static void serverTick(net.minecraft.world.level.Level level, BlockPos pos, BlockState state,
+    public static void serverTick(Level level, BlockPos pos, BlockState state,
                                   TileEntityTowerSmall tower) { tower.serverTickCommon(level); }
 
-    public static void clientTick(net.minecraft.world.level.Level level, BlockPos pos, BlockState state,
+    public static void clientTick(Level level, BlockPos pos, BlockState state,
                                   TileEntityTowerSmall tower) {
-        if (com.hbm.config.ClientConfig.COOLING_TOWER_PARTICLES && tower.waterTimer > 0 && level.getGameTime() % 2L == 0L)
+        if (ClientConfig.COOLING_TOWER_PARTICLES && tower.waterTimer > 0 && level.getGameTime() % 2L == 0L)
             tower.spawnSmoke(level, pos, 18D, 1F, 0.5F, 4F, 250 + level.getRandom().nextInt(250));
     }
 

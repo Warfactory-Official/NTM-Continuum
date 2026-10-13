@@ -9,8 +9,8 @@ import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 
 /**
- * Hand-registered bomb crafting components (igniters, cores, explosive lenses) used to arm HBM bombs.
- * Kept separate from the generated {@link ModItems} so codegen never clobbers them. The "used in: ..."
+ * Hand-registered bomb crafting components (igniters, cores, explosive lenses) that arm HBM bombs.
+ * Kept separate from the generated {@link ModItems} so codegen never clobbers them. The "used in:..."
  * tooltips come from {@code item.hbm.<id>.desc.N} lang lines, read by {@link ItemCustomLore}.
  */
 public final class ModBombItems {

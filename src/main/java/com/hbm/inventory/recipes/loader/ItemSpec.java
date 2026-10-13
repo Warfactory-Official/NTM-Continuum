@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.world.ItemStacks;
 import java.util.Optional;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
@@ -18,14 +19,14 @@ import net.minecraft.world.item.ItemStack;
 public record ItemSpec(Item item, int count, ItemData data) {
 
     public static final MapCodec<ItemSpec> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            dev.golem.core.world.ItemStacks.itemCodec().fieldOf("id").forGetter(ItemSpec::item),
+            ItemStacks.itemCodec().fieldOf("id").forGetter(ItemSpec::item),
             Codec.INT.optionalFieldOf("count", 1).forGetter(ItemSpec::count),
             ItemData.CODEC.optionalFieldOf("item_data").forGetter(spec -> spec.data().isEmpty()
                     ? Optional.empty() : Optional.of(spec.data()))
     ).apply(i, (item, count, data) -> new ItemSpec(item, count, data.orElse(ItemData.NONE))));
 
     /** {@code "id"} for one plain item, else the object. */
-    public static final Codec<ItemSpec> CODEC = Codec.either(dev.golem.core.world.ItemStacks.itemCodec(), MAP_CODEC.codec()).xmap(
+    public static final Codec<ItemSpec> CODEC = Codec.either(ItemStacks.itemCodec(), MAP_CODEC.codec()).xmap(
             either -> either.map(item -> new ItemSpec(item, 1, ItemData.NONE), spec -> spec),
             spec -> spec.count() == 1 && spec.data().isEmpty() ? Either.left(spec.item()) : Either.right(spec));
 

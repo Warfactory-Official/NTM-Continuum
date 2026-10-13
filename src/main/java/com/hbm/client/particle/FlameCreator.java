@@ -9,7 +9,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 
 /**
- * The flamethrower's burning cone. One particle per call — the emitter spams it.
+ * The flamethrower's burning cone. One particle per call; the emitter spams it.
  *
  * <p>Ported from 1.12.2 {@code FlameCreator}. The {@code meta} selects the fuel, which only changes
  * the flame's colour band (see {@link ParticleFlamethrower}).

@@ -14,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
-/** Menu for the coker — 1.12.2 {@code ContainerMachineCoker} layout (176×204): fluid identifier (35,72),
+/** Menu for the coker: 1.12.2 {@code ContainerMachineCoker} layout (176×204): fluid identifier (35,72),
  * output (97,27) take-only; player inventory at 122/180. */
 public class ContainerMachineCoker extends AbstractContainerMenu {
 

@@ -2,11 +2,14 @@ package com.hbm.gametest;
 
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModItems;
+import com.hbm.items.ModZirnoxItems;
+import com.hbm.items.machine.ItemZirnoxRod;
 import com.hbm.items.machine.ZirnoxFuel;
 import com.hbm.inventory.recipes.ComponentCopyShapelessRecipe;
 import java.util.List;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 
 /** Runtime contracts for the state-copying ZIRNOX loading recipe. */
@@ -18,7 +21,7 @@ public final class ComponentCopyRecipeGameTests {
         Ingredient empty = Ingredient.of(ModItems.rod_zirnox_empty.get());
         Ingredient billet = Ingredient.of(ModItems.billet_mox_fuel.get());
         return ComponentCopyShapelessRecipe.of(List.of(empty, billet, billet), empty,
-                new ItemStack(com.hbm.items.ModZirnoxItems.active(ZirnoxFuel.MOX)));
+                new ItemStack(ModZirnoxItems.active(ZirnoxFuel.MOX)));
     }
 
     public static void exactMultiset(GameTestHelper helper) {
@@ -29,7 +32,7 @@ public final class ComponentCopyRecipeGameTests {
         helper.assertTrue(recipe.matchesItemStacks(input, helper.getLevel()),
                 "ZIRNOX loading must match the unordered empty-rod plus two-billet multiset");
         ItemStack result = recipe.assembleItemStacks(input);
-        helper.assertTrue(result.is(com.hbm.items.ModZirnoxItems.active(ZirnoxFuel.MOX)) && result.getCount() == 1,
+        helper.assertTrue(result.is(ModZirnoxItems.active(ZirnoxFuel.MOX)) && result.getCount() == 1,
                 "ZIRNOX loading must create one active MOX rod");
         helper.succeed();
     }
@@ -47,7 +50,7 @@ public final class ComponentCopyRecipeGameTests {
                 "ZIRNOX loading must preserve unrelated source custom state");
         helper.assertTrue(!ModDataComponents.ZIRNOX_LIFE.has(result)
                         && !ModDataComponents.FUEL_WASTE_HOT.has(result)
-                        && ((com.hbm.items.machine.ItemZirnoxRod) result.getItem()).getLife(result) == 0,
+                        && ((ItemZirnoxRod) result.getItem()).getLife(result) == 0,
                 "ZIRNOX loading must clear stale life and hot-fuel state from the fresh rod");
         helper.succeed();
     }
@@ -60,7 +63,7 @@ public final class ComponentCopyRecipeGameTests {
                         new ItemStack(ModItems.billet_uranium.get())), helper.getLevel()),
                 "A different billet must not satisfy the duplicate MOX ingredients");
         helper.assertFalse(recipe.matchesItemStacks(List.of(empty, mox, mox,
-                        new ItemStack(net.minecraft.world.item.Items.STICK)), helper.getLevel()),
+                        new ItemStack(Items.STICK)), helper.getLevel()),
                 "An extra non-empty stack must reject the shapeless recipe");
         helper.assertFalse(recipe.matchesItemStacks(List.of(empty, new ItemStack(ModItems.rod_zirnox_empty.get()), mox),
                 helper.getLevel()),

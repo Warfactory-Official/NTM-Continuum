@@ -1,6 +1,6 @@
 package com.hbm.physics;
 
-/** old-hbm {@code physics.ContactManifold}: up to four persistent contacts, refreshed and pruned every step. */
+/** 1.12.2 {@code physics.ContactManifold}: up to four persistent contacts, refreshed and pruned every step. */
 public final class ContactManifold {
 
     public static final float CONTACT_BREAK = 0.02F;

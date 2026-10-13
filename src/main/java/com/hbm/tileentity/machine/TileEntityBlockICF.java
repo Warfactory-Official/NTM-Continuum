@@ -3,11 +3,14 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.blocks.machine.BlockICF;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.IRelocatable;
 import com.hbm.tileentity.ModIcfBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.uninos.graph.PortClaims;
 import dev.golem.core.Ids;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
@@ -20,14 +23,14 @@ import org.jspecify.annotations.Nullable;
 /**
  * The block entity behind every assembled ICF laser cell (1.7 {@code BlockICF.TileEntityBlockICF}). It remembers
  * the laser part the cell was assembled from and the controller it belongs to, puts that part back when the cell
- * is broken, and — on a port cell only — is the controller's power inlet.
+ * is broken, and, on a port cell only, is the controller's power inlet.
  *
  * <p>1.7 stored the part as a block id plus metadata; the flattened part's registry id is the whole record here.
  * The entity was a plain {@code TileEntity}; it sits on {@link TileEntityLoadedBase} for the loaded check the
  * energy graph asks every receiver.
  */
-public class TileEntityBlockICF extends TileEntityLoadedBase implements IEnergyReceiverMK2, com.hbm.tileentity.IRelocatable,
-        com.hbm.uninos.graph.PortClaims.Delegate {
+public class TileEntityBlockICF extends TileEntityLoadedBase implements IEnergyReceiverMK2, IRelocatable,
+        PortClaims.Delegate {
 
     /** 1.7: the controller subscribes at each port's neighbours; the port cell only fronts it. */
     @Override
@@ -37,8 +40,8 @@ public class TileEntityBlockICF extends TileEntityLoadedBase implements IEnergyR
 
     /** A sub-level move carried this block; the controller follows when it was carried too. */
     @Override
-    public void relocate(dev.golem.core.world.SubLevels.Move move) {
-        net.minecraft.core.BlockPos core = com.hbm.tileentity.IRelocatable.follow(move, new net.minecraft.core.BlockPos(coreX, coreY, coreZ));
+    public void relocate(SubLevels.Move move) {
+        BlockPos core = IRelocatable.follow(move, new BlockPos(coreX, coreY, coreZ));
         coreX = core.getX(); coreY = core.getY(); coreZ = core.getZ();
         cachedCore = null;
         setChanged();
@@ -89,7 +92,7 @@ public class TileEntityBlockICF extends TileEntityLoadedBase implements IEnergyR
 
     /**
      * 1.7 {@code BlockICF.breakBlock}: breaking a cell puts the laser part it was assembled from back and flags
-     * the controller as disassembled — the other cells then revert themselves within a second.
+     * the controller as disassembled. The other cells then revert themselves within a second.
      */
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
@@ -102,7 +105,7 @@ public class TileEntityBlockICF extends TileEntityLoadedBase implements IEnergyR
         if (controller instanceof TileEntityICFController icf) icf.assembled = false;
     }
 
-    // --- persistence ---
+    // Persistence
 
     @Override
     protected void saveData(DataOut output) {
@@ -136,7 +139,7 @@ public class TileEntityBlockICF extends TileEntityLoadedBase implements IEnergyR
         }
     }
 
-    // --- energy: only an assembled port cell answers, and it answers with the controller's buffer ---
+    // Energy: only an assembled port cell answers, and it answers with the controller's buffer
 
     private @Nullable TileEntityICFController portCore() {
         if (!isPort() || block == null) return null;

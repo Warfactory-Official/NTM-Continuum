@@ -1,7 +1,9 @@
 package com.hbm.world.gen;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.hbm.config.StructureConfig;
 import dev.golem.core.dejson.Data;
 
@@ -9,6 +11,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -22,7 +25,7 @@ import java.util.function.Predicate;
  *       by {@code hbm:config_spread} (random_spread with spacing {@code structureMaxChunks}, separation
  *       {@code structureMinChunks}, both read from {@code hbm.cfg} at generation), salt 996996996, which is exactly 1.7's
  *       region pick. The weights that decide are {@link #runtimeWeight}, read from {@code hbm.cfg} by
- *       {@code NBTStructure.GenStructure} (History §19ek-hooks); the set's weights only order vanilla's tries;</li>
+ *       {@code NBTStructure.GenStructure}; the set's weights only order vanilla's tries;</li>
  *   <li>{@code data/hbm/tags/worldgen/structure/ntm_structures.json}: every real (non-null) one, for
  *       {@code /locate structure #hbm:ntm_structures} and maps.</li>
  * </ul>
@@ -60,7 +63,7 @@ public final class NTMStructureDeclarations {
 
     private NTMStructureDeclarations() {}
 
-    // ------------------------------------------------------------------------------------------------ 1.7 biome model
+    // 1.7 biome model
 
     /** The 1.7 {@code BiomeDictionary.Type}s the generator reads. */
     public enum Type { OCEAN, RIVER, PLAINS, SANDY, BEACH, SWAMP, SPARSE, MUSHROOM, SNOWY, FOREST, MOUNTAIN, HILLS, MESA, COLD, HOT, JUNGLE }
@@ -104,7 +107,7 @@ public final class NTMStructureDeclarations {
         // meadow: no 1.7 biome. A grassy flat, but one of the modern mountain biomes (#minecraft:is_mountain): on the
         // harness seed its start chunks average y 110-112 (relief 14-15, i.e. 1.7 rootHeight ~2.7, heightVariation
         // ~0.4). Filed as plains at MidPlains height it took the dish, which 1.7 clamps to y 53..65: about 45 blocks
-        // under the meadow. 1.7 had no plains that high, so it is filed as extreme-hills terrain (History §19ek-small).
+        // under the meadow. 1.7 had no plains that high, so it is filed as extreme-hills terrain.
         LEGACY.put("minecraft:meadow", b(MID_HILLS, true, MO, H));
         LEGACY.put("minecraft:snowy_plains", b(LOW_PLAINS, false, C, SN));                     // icePlains
         LEGACY.put("minecraft:ice_spikes", b(0.425F, 0.45F, false, C, SN));                    // ice plains spikes (+0.3, +0.4)
@@ -122,7 +125,7 @@ public final class NTMStructureDeclarations {
         LEGACY.put("minecraft:old_growth_pine_taiga", b(MID_PLAINS, true, C, F));              // megaTaiga
         LEGACY.put("minecraft:old_growth_spruce_taiga", b(MID_PLAINS, true, C, F));            // mega spruce taiga, same height
         // grove, snowy slopes, cherry grove: modern mountain biomes (#minecraft:is_mountain) that sit high like the meadow
-        // (a 1.20.1 snowy-slopes sample averaged y 140); filed as extreme-hills terrain for the same reason (History §19ek-small).
+        // (a 1.20.1 snowy-slopes sample averaged y 140); filed as extreme-hills terrain for the same reason.
         LEGACY.put("minecraft:grove", b(MID_HILLS, false, C, SN, F, MO, H));                   // no 1.7 biome: coldTaigaHills
         LEGACY.put("minecraft:savanna", b(LOW_PLAINS, false, HO, P, SP));
         LEGACY.put("minecraft:savanna_plateau", b(HIGH_PLATEAUS, false, HO, P, SP));
@@ -158,7 +161,7 @@ public final class NTMStructureDeclarations {
         LEGACY.put("minecraft:mushroom_fields", b(LOW_ISLANDS, true, MU));
     }
 
-    // ------------------------------------------------------------------------------------------------ the structures
+    // The structures
 
     /**
      * One entry of the structure set: resource id, 1.7 spawn name, weight, 1.7 biome predicate, and the types of which
@@ -288,7 +291,7 @@ public final class NTMStructureDeclarations {
         return out;
     }
 
-    // ------------------------------------------------------------------------------------------------ biome dictionary
+    // Biome dictionary
 
     /** Tag folder of the modern {@code BiomeDictionary}: {@code hbm:biome_dictionary/<type>}. */
     public static final String DICTIONARY = "biome_dictionary/";
@@ -316,7 +319,7 @@ public final class NTMStructureDeclarations {
 
     /** The dictionary tag path of a type ({@code biome_dictionary/sandy}). */
     public static String dictionary(Type type) {
-        return DICTIONARY + type.name().toLowerCase(java.util.Locale.ROOT);
+        return DICTIONARY + type.name().toLowerCase(Locale.ROOT);
     }
 
     /** The dictionary types the predicates read (the ones {@link #DICTIONARY_TAGS} defines). */
@@ -351,8 +354,8 @@ public final class NTMStructureDeclarations {
     }
 
     /** One tag entry; {@code optional} ones may name something absent. */
-    static com.google.gson.JsonElement tagEntry(String id, boolean optional) {
-        if (!optional) return new com.google.gson.JsonPrimitive(id);
+    static JsonElement tagEntry(String id, boolean optional) {
+        if (!optional) return new JsonPrimitive(id);
         JsonObject entry = new JsonObject();
         entry.addProperty("id", id);
         entry.addProperty("required", false);
@@ -371,7 +374,7 @@ public final class NTMStructureDeclarations {
         });
     }
 
-    // ------------------------------------------------------------------------------------------------ declaration
+    // Declaration
 
     public static void declare() {
         if (declared) return;

@@ -15,7 +15,7 @@ import java.lang.management.ThreadInfo;
  * 1.7 {@code SuicideThreadDump}, the client command {@code /dumpthreadsandcrashgame <dump|crash>}: writes every JVM
  * thread's state, held locks and stack to the log at FATAL, and with {@code crash} then halts the game exactly as
  * 1.7's {@code FMLCommonHandler.exitJava(0, true)} did (no shutdown hooks, no world save: it is for a client that is
- * already deadlocked). {@code dump} alone is safe to run at any time; {@code crash} is deliberately not exercised by
+ * already deadlocked). {@code dump} alone is safe to run at any time; {@code crash} is not exercised by
  * the automated harness. Any other argument is 1.7's error.
  */
 public final class SuicideThreadDump {

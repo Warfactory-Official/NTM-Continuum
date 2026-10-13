@@ -1,5 +1,6 @@
 package com.hbm.entity.logic;
 
+import com.hbm.particle.helper.EntityEffects;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
@@ -29,7 +30,7 @@ public class EntityDeathBlast extends CompatEntity {
 
     public EntityDeathBlast(EntityType<? extends EntityDeathBlast> type, Level level) {
         super(type, level);
-        // 1.7: ignoreFrustumCheck is renderer-side in 26.2 (see RenderMeteor)
+        // 1.7: ignoreFrustumCheck is renderer-side in 26.1 (see RenderMeteor)
     }
 
     @Override
@@ -44,7 +45,7 @@ public class EntityDeathBlast extends CompatEntity {
     protected void saveData(DataOut output) {
     }
 
-    // 26.2: hurt() final; 1.7 leaves Entity's default (immune)
+    // 26.1: hurt() final; 1.7 leaves Entity's default (immune)
     @Override
     protected boolean onHurt(DamageSource source, float amount) {
         return false;
@@ -69,7 +70,7 @@ public class EntityDeathBlast extends CompatEntity {
             }
 
             if (level() instanceof ServerLevel server) {
-                com.hbm.particle.helper.EntityEffects.muke(server, getX(), getY() + 0.5D, getZ(), false, false, 250);
+                EntityEffects.muke(server, getX(), getY() + 0.5D, getZ(), false, false, 250);
             }
             // 1.7: playSoundEffect "hbm:weapon.mukeExplosion" vol 25 pitch 0.9
             level().playSound(null, getX(), getY(), getZ(), ModSounds.MUKE_EXPLOSION.get(),
@@ -105,7 +106,7 @@ public class EntityDeathBlast extends CompatEntity {
         super.remove(reason);
     }
 
-    // 1.7: getBrightnessForRender/getBrightness fullbright - no per-entity hook in 26.2
+    // 1.7: getBrightnessForRender/getBrightness fullbright - no per-entity hook in 26.1
 
     @Override
     public boolean shouldRenderAtSqrDistance(double distance) {

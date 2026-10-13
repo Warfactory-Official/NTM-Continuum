@@ -51,7 +51,7 @@ public final class HbmJeiPluginCommon {
 
     /**
      * Runs once JEI's runtime exists: HBM's runtime categories (the arc furnace's furnace pass, {@link HbmRecipeViewer#runtime}),
-     * then the JEI-only read-back of HBM fluids as JEI fluid ingredients (History section 19ek-fluids): JEI lists every
+     * then the JEI-only read-back of HBM fluids as JEI fluid ingredients. JEI lists every
      * registered source fluid itself; this only reads the list back, for the log and the harness.
      */
     public static void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {

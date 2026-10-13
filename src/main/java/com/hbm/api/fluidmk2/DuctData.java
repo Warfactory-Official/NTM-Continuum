@@ -9,19 +9,19 @@ import com.mojang.serialization.Codec;
  * The conductor datum for the fluid graph: the one fluid a duct carries.
  *
  * <p>Unlike the power graph's, this one partitions. {@link FluidGraphProvider#dataCompatible} refuses
- * to join two ducts carrying different fluids, which is what lets a level's whole plumbing live in one
- * save without the steam line and the oil line becoming one network — the job UNINOS did by giving
- * every {@link FluidType} a nodespace of its own.
+ * to join two ducts carrying different fluids, so one saved graph holds a level's whole plumbing without
+ * the steam line and the oil line becoming one network (UNINOS gave every {@link FluidType} a nodespace
+ * of its own).
  *
  * <p>One datum is not one fluid: {@link #SMOKE_ANY}, the exhaust duct's. 1.7's
  * {@code TileEntityPipeExhaust} minted a node in each of the three smoke nodespaces, so one exhaust
  * run carried {@code SMOKE}, {@code SMOKE_LEADED} and {@code SMOKE_POISON} at once. The graph keys a
- * cell by position, so the exhaust is instead one cell whose datum is compatible with all three smokes
+ * cell by position, so the exhaust is one cell whose datum is compatible with all three smokes
  * and whose net {@link FluidNetwork} rounds once per smoke (see {@link #types()}).
  *
- * <p>The datum is part of the level's saved graph, so it is saved by the fluid's registry name
- * ({@code "hbm:oil"}, {@code "minecraft:water"}), or {@link #SMOKE_ANY_NAME} for the exhaust - never by a numeric fluid id (History
- * section 19ej-ids). An int left by a pre-2026-10-03 save reads as NONE with one WARN.
+ * <p>The datum is saved by the fluid's registry name ({@code "hbm:oil"}, {@code "minecraft:water"}), or
+ * {@link #SMOKE_ANY_NAME} for the exhaust, never by a numeric fluid id. An int in an older save reads as
+ * NONE with one WARN.
  */
 public record DuctData(FluidType fluid, boolean smokeAny) {
 

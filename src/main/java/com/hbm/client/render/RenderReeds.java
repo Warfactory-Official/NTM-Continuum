@@ -6,6 +6,7 @@ import com.hbm.config.ClientConfig;
 import com.hbm.tileentity.deco.TileEntityReeds;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.CompatRenderTypes;
@@ -34,8 +35,8 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class RenderReeds extends GemBER<TileEntityReeds, RenderReeds.State> {
 
-    private static final Identifier MID = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/blocks/reeds_mid.png");
-    private static final Identifier BOTTOM = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/blocks/reeds_bottom.png");
+    private static final Identifier MID = Ids.of(Constants.MOD_ID, "textures/blocks/reeds_mid.png");
+    private static final Identifier BOTTOM = Ids.of(Constants.MOD_ID, "textures/blocks/reeds_bottom.png");
     /** 1.7 {@code setColorOpaque_F(r * 0.75, g * 0.75, b * 0.75)} with the default white multiplier. */
     public static final int COLOR = 0xFFBFBFBF;
 

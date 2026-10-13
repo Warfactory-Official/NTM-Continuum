@@ -4,12 +4,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 
 import java.util.function.Supplier;
+import net.minecraft.world.level.block.Block;
 
 /** 1.7 {@code SpotlightModular}: the fluorescent tube, which joins up with its neighbours into a strip. */
 public class SpotlightModular extends Spotlight {
 
     public SpotlightModular(Properties properties, int beamLength, LightType type, boolean isOn,
-                            Supplier<net.minecraft.world.level.block.Block> off, Supplier<net.minecraft.world.level.block.Block> on) {
+                            Supplier<Block> off, Supplier<Block> on) {
         super(properties, beamLength, type, isOn, off, on);
     }
 

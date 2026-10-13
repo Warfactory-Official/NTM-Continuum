@@ -1,10 +1,14 @@
 package com.hbm.inventory.container;
 
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.inventory.RecipesCommon;
+import com.hbm.inventory.recipes.PlasmaForgeRecipe;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -94,7 +98,7 @@ public class ContainerMachinePlasmaForge extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, com.hbm.blocks.machine.ModMachineBlocks.fusion_plasma_forge.get());
+        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.fusion_plasma_forge.get());
     }
 
     @Override
@@ -146,11 +150,11 @@ public class ContainerMachinePlasmaForge extends AbstractContainerMenu {
 
     private boolean matchesRecipeInput(ItemStack stack) {
         if (forge == null) return false;
-        com.hbm.inventory.recipes.PlasmaForgeRecipe recipe =
-                forge.plasmaModule.getRecipe() instanceof com.hbm.inventory.recipes.PlasmaForgeRecipe plasma
+        PlasmaForgeRecipe recipe =
+                forge.plasmaModule.getRecipe() instanceof PlasmaForgeRecipe plasma
                         ? plasma : null;
         if (recipe == null || recipe.inputItem == null) return false;
-        for (com.hbm.inventory.RecipesCommon.AStack input : recipe.inputItem) {
+        for (RecipesCommon.AStack input : recipe.inputItem) {
             if (input != null && input.matchesRecipe(stack, true)) return true;
         }
         return false;
@@ -184,7 +188,7 @@ public class ContainerMachinePlasmaForge extends AbstractContainerMenu {
 
         private void onCrafting(ItemStack stack) {
             if (craftBuffer <= 0) return;
-            dev.golem.core.world.ItemStacks.onCraftedBy(stack, player, craftBuffer);
+            ItemStacks.onCraftedBy(stack, player, craftBuffer);
             craftBuffer = 0;
         }
     }

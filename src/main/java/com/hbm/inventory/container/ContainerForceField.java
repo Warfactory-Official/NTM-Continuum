@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.inventory.ModRadarUtilityMenus;
 import com.hbm.tileentity.machine.TileEntityForceField;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -37,7 +38,7 @@ public final class ContainerForceField extends AbstractContainerMenu {
         this.addSlot(new Slot(machine, 1, 89, 35));
         this.addSlot(new Slot(machine, 2, 107, 35));
 
-        dev.golem.core.world.Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
     }
 
     public @Nullable TileEntityForceField getField() { return field; }

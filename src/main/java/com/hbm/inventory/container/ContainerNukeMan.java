@@ -24,13 +24,13 @@ public class ContainerNukeMan extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final @Nullable TileEntityNukeMan nuke;
 
-    /** Client-side constructor — receives the {@link BlockPos} sent by the server. */
+    /** Client-side constructor, receives the {@link BlockPos} sent by the server. */
     public ContainerNukeMan(int containerId, Inventory playerInventory, BlockPos pos) {
         this(containerId, playerInventory, resolve(playerInventory, pos),
                 ContainerLevelAccess.create(playerInventory.player.level(), pos));
     }
 
-    /** Server-side constructor — bound to the live BlockEntity. */
+    /** Server-side constructor, bound to the live BlockEntity. */
     public ContainerNukeMan(int containerId, Inventory playerInventory, TileEntityNukeMan nuke) {
         this(containerId, playerInventory, nuke,
                 ContainerLevelAccess.create(nuke.getLevel(), nuke.getBlockPos()));
@@ -43,10 +43,9 @@ public class ContainerNukeMan extends AbstractContainerMenu {
         this.access = access;
 
         // Original layout: igniter (centre-left), four lenses (corners), core (centre-right). Each slot
-        // is validated (only its part type may be placed), so shift-clicking routes parts to the right
-        // slot and the bomb actually reaches the armed/ready state — the original used SlotItemHandler
-        // with isItemValid; plain Slots have no such check (mayPlace defaults to true), which scattered
-        // shift-clicked parts into the wrong slots so isReady() never became true.
+        // is validated (only its part type may be placed), as the original's SlotItemHandler isItemValid
+        // did. Plain Slots accept anything, which would scatter shift-clicked parts into the wrong
+        // slots so isReady() never became true.
         this.addSlot(new ValidatedSlot(this.machine, 0, 26, 35));
         this.addSlot(new ValidatedSlot(this.machine, 1, 8, 17));
         this.addSlot(new ValidatedSlot(this.machine, 2, 44, 17));
@@ -62,7 +61,7 @@ public class ContainerNukeMan extends AbstractContainerMenu {
         return be instanceof TileEntityNukeMan nuke ? nuke : null;
     }
 
-    // --- arming state, read by the screen straight off the (client-synced) BlockEntity ---
+    // Arming state, read by the screen straight off the (client-synced) BlockEntity
 
     public boolean exp1() { return nuke != null && nuke.exp1(); }
     public boolean exp2() { return nuke != null && nuke.exp2(); }

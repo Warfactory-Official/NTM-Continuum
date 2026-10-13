@@ -3,6 +3,8 @@ package com.hbm.blocks.machine.pile;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
+import com.hbm.items.ItemFamily;
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModDataComponents;
 import dev.golem.core.registry.Loot;
 import com.hbm.registration.Presets;
@@ -15,9 +17,13 @@ import com.hbm.items.machine.ItemPileRodMK2.EnumPileRod;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.CompatBlockItem;
+import java.util.List;
+import java.util.Locale;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 
 import java.util.stream.IntStream;
@@ -72,26 +78,26 @@ public final class ModPileBlocks {
                     .tab(HbmTab.MACHINES);
     /**
      * 1.7 pile_device metadata 0..2 (loader, vent, control rod), one block item each with ntm-next's ids
-     * ({@code pile_loader}, {@code pile_vent}, {@code pile_control}; History §19es-itemvariant). The block keeps its one
-     * id and {@code meta} state; the metadata-0 item is registered last so it stays the block's own item.
+     * ({@code pile_loader}, {@code pile_vent}, {@code pile_control}). The block keeps its one id and
+     * {@code meta} state; the metadata-0 item is registered last so it stays the block's own item.
      */
-    public static final java.util.List<RegistryObject<PileDeviceItem>> pile_device_items = pileDeviceItems();
+    public static final List<RegistryObject<PileDeviceItem>> pile_device_items = pileDeviceItems();
 
-    private static java.util.List<RegistryObject<PileDeviceItem>> pileDeviceItems() {
+    private static List<RegistryObject<PileDeviceItem>> pileDeviceItems() {
         String[] ids = {"pile_loader", "pile_vent", "pile_control"};
         @SuppressWarnings("unchecked")
         RegistryObject<PileDeviceItem>[] items = new RegistryObject[ids.length];
         for (int k = 1; k <= ids.length; k++) {
             int variant = k % ids.length;
             items[variant] = REG.item(ids[variant],
-                    (net.minecraft.world.item.Item.Properties p) -> new PileDeviceItem(pile_device.get(), p, variant));
+                    (Item.Properties p) -> new PileDeviceItem(pile_device.get(), p, variant));
         }
-        return java.util.List.of(items);
+        return List.of(items);
     }
 
     /** 1.7 {@code pile_rod} metadata, one item per rod as ntm-next registers them ({@code pile_rod_mk2_<type>}). */
-    public static final com.hbm.items.ItemFamily<EnumPileRod, ItemPileRodMK2> pile_rod = com.hbm.items.ItemFamily.of(
-            EnumPileRod.class, type -> REG.item("pile_rod_mk2_" + type.name().toLowerCase(java.util.Locale.ROOT),
+    public static final ItemFamily<EnumPileRod, ItemPileRodMK2> pile_rod = ItemFamily.of(
+            EnumPileRod.class, type -> REG.item("pile_rod_mk2_" + type.name().toLowerCase(Locale.ROOT),
                             p -> new ItemPileRodMK2(p, type), p -> p.stacksTo(1))
                     .transform(Presets.sprite("hbm:items/" + switch (type) {
                         case RA226BE -> "pile_rod_ra226be";
@@ -116,11 +122,11 @@ public final class ModPileBlocks {
     }
 
     /** Block item of one of the three pile devices (1.7 item damage = {@link #variant()}). */
-    public static final class PileDeviceItem extends CompatBlockItem implements com.hbm.items.LegacyMeta {
+    public static final class PileDeviceItem extends CompatBlockItem implements LegacyMeta {
 
         private final int variant;
 
-        public PileDeviceItem(net.minecraft.world.level.block.Block block, Properties properties, int variant) {
+        public PileDeviceItem(Block block, Properties properties, int variant) {
             super(block, properties);
             this.variant = variant;
         }

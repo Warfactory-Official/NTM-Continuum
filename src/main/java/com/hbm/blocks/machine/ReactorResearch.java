@@ -2,16 +2,21 @@ package com.hbm.blocks.machine;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.handler.BossSpawnHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 import com.hbm.tileentity.machine.TileEntityReactorResearch;
 
@@ -49,7 +54,7 @@ public final class ReactorResearch extends BlockMultiblockMachine implements Wor
 
         for (Direction dir : Direction.Plane.HORIZONTAL) {
             BlockPos side = pos.relative(dir);
-            if (!level.getFluidState(side).is(net.minecraft.tags.FluidTags.WATER)) continue;
+            if (!level.getFluidState(side).is(FluidTags.WATER)) continue;
 
             double ix = pos.getX() + 0.5F + dir.getStepX() + rand.nextDouble() - 0.5D;
             double iy = pos.getY() + 0.5F + dir.getStepY() + rand.nextDouble() - 0.5D;
@@ -64,10 +69,10 @@ public final class ReactorResearch extends BlockMultiblockMachine implements Wor
 
     /** 1.7 {@code onBlockActivated}: {@code BossSpawnHandler.markFBI} on every non-sneaking use. */
     @Override
-    protected net.minecraft.world.InteractionResult useAtCore(net.minecraft.world.level.block.state.BlockState state,
-            net.minecraft.world.level.Level level, net.minecraft.core.BlockPos core, net.minecraft.world.entity.player.Player player,
-            net.minecraft.world.phys.BlockHitResult hit) {
-        if (!level.isClientSide() && !player.isShiftKeyDown()) com.hbm.handler.BossSpawnHandler.markFBI(player);
+    protected InteractionResult useAtCore(BlockState state,
+            Level level, BlockPos core, Player player,
+            BlockHitResult hit) {
+        if (!level.isClientSide() && !player.isShiftKeyDown()) BossSpawnHandler.markFBI(player);
         return super.useAtCore(state, level, core, player, hit);
     }
 }

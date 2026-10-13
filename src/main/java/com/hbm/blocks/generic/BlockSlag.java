@@ -1,5 +1,7 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.CompatBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -8,7 +10,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
  * Blast slag. 1.12.2 keeps the intact and cracked variants as two metadata values on one block; here
  * they fold onto {@link #CRACKED}.
  */
-public class BlockSlag extends dev.golem.core.world.CompatBlock {
+public class BlockSlag extends CompatBlock {
 
     public static final BooleanProperty CRACKED = BooleanProperty.create("cracked");
 
@@ -19,7 +21,7 @@ public class BlockSlag extends dev.golem.core.world.CompatBlock {
 
     @Override
     protected void createBlockStateDefinition(
-            StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
+            StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(CRACKED);
     }
 }

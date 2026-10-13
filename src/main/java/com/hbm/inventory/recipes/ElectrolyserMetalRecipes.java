@@ -12,6 +12,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -44,7 +45,7 @@ public final class ElectrolyserMetalRecipes {
     public record Row(Item input, List<Mats.MaterialStack> molten, List<ItemOut> byproducts, int duration, int order) {}
 
     public static final MapCodec<Row> CODEC = RecordCodecBuilder.<Row>mapCodec(i -> i.group(
-            dev.golem.core.world.ItemStacks.itemCodec().fieldOf("input").forGetter(Row::input),
+            ItemStacks.itemCodec().fieldOf("input").forGetter(Row::input),
             MaterialCodecs.STACK.listOf().fieldOf("molten").forGetter(Row::molten),
             GenericRecipeCodec.ITEM_OUT.listOf().optionalFieldOf("byproducts", List.of()).forGetter(Row::byproducts),
             Codec.INT.optionalFieldOf("duration", 600).forGetter(Row::duration),

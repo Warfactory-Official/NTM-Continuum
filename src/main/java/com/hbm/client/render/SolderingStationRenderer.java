@@ -6,12 +6,14 @@ import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineSolderingStation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatItemRenderState;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
@@ -26,7 +28,7 @@ import java.util.Set;
 
 /**
  * Renderer for the soldering station: the static OBJ (with the asymmetric-footprint offset it needs) plus
- * the current recipe's output item floating above — the 1.12.2 product display, drawn exactly the way the
+ * the current recipe's output item floating above: the 1.12.2 product display, drawn exactly the way the
  * assembly machine renders its floating output (an {@link net.minecraft.client.renderer.item.CompatItemRenderState}
  * built in {@code extractRenderState}, submitted above the model). The output is the synced
  * {@link TileEntityMachineSolderingStation#display}.
@@ -36,7 +38,7 @@ public class SolderingStationRenderer extends GemBER<TileEntityMachineSolderingS
     private static final float BASE_YAW = 90F;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/soldering_station.obj"));
+            Ids.of(Constants.MOD_ID, "models/soldering_station.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/soldering_station.png");
 
@@ -73,7 +75,7 @@ public class SolderingStationRenderer extends GemBER<TileEntityMachineSolderingS
         ItemStack display = be.display;
         if (display != null && !display.isEmpty() && be.getLevel() != null) {
             // Measured where the machine is seen: on a moving sub-level (Create Aeronautics) its block sits far from it.
-            double distanceSq = dev.golem.core.world.SubLevels.distanceSq(be.getLevel(),
+            double distanceSq = SubLevels.distanceSq(be.getLevel(),
                     be.getBlockPos().getX() + 0.5, be.getBlockPos().getY() + 1.0, be.getBlockPos().getZ() + 0.5,
                     cameraPosition.x, cameraPosition.y, cameraPosition.z);
             if (distanceSq < 35 * 35) {

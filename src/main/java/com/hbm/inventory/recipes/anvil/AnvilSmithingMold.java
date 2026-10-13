@@ -1,7 +1,9 @@
 package com.hbm.inventory.recipes.anvil;
 
 import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.material.MaterialShapes;
+import com.hbm.items.machine.ModMoldItems;
 import com.hbm.items.special.ItemAutogen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -25,8 +27,8 @@ public class AnvilSmithingMold extends AnvilSmithingRecipe {
 
     /** Shape-matched mold (e.g. any {@code count}x ingot + blank → the ingot mold). */
     public AnvilSmithingMold(ItemStack mold, AStack demo, MaterialShapes shape, int count) {
-        super(1, mold, demo, new com.hbm.inventory.RecipesCommon.ComparableStack(
-                com.hbm.items.machine.ModMoldItems.mold_base.get()));
+        super(1, mold, demo, new RecipesCommon.ComparableStack(
+                ModMoldItems.mold_base.get()));
         this.shape = shape;
         this.count = count;
         this.matchesItems = null;
@@ -34,8 +36,8 @@ public class AnvilSmithingMold extends AnvilSmithingRecipe {
 
     /** Explicit-item mold (e.g. steel shredder blades + blank → the blades mold). */
     public AnvilSmithingMold(ItemStack mold, AStack demo, Item... matches) {
-        super(1, mold, demo, new com.hbm.inventory.RecipesCommon.ComparableStack(
-                com.hbm.items.machine.ModMoldItems.mold_base.get()));
+        super(1, mold, demo, new RecipesCommon.ComparableStack(
+                ModMoldItems.mold_base.get()));
         this.shape = null;
         this.count = 1;
         this.matchesItems = matches;

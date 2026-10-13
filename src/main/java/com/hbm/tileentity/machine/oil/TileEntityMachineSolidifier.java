@@ -16,6 +16,8 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import dev.golem.core.world.ItemStacks;
+import java.util.HashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,8 +37,8 @@ import dev.golem.core.data.DataOut;
 import java.util.List;
 
 /**
- * Solidifier — 1:1 port of the 1.12.2 {@code TileEntityMachineSolidifier}: turns fluid into items.
- * 5 slots (0 output take-only, 1 battery, 2/3 upgrades, 4 fluid identifier → tank type), a NONE 24k
+ * Solidifier: 1:1 port of the 1.12.2 {@code TileEntityMachineSolidifier}: turns fluid into items.
+ * 5 slots (0 output take-only, 1 battery, 2/3 upgrades, 4 fluid identifier that sets the tank type), a NONE 24k
  * receive tank. Same power/timing math as the liquefactor. Output stack-merge is gated in
  * {@link #canProcess()} before consuming fluid.
  */
@@ -117,7 +119,7 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
 
         ItemStack cur = inventory.getStackInSlot(0);
         if (!cur.isEmpty()) {
-            if (!dev.golem.core.world.ItemStacks.sameItemAndData(cur, out.output())) return false;
+            if (!ItemStacks.sameItemAndData(cur, out.output())) return false;
             return cur.getCount() + out.output().getCount() <= cur.getMaxStackSize();
         }
         return true;
@@ -156,7 +158,7 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
         return new int[]{2, 3};
     }
 
-    // --- WorldlyContainer: extract the solidified output ---
+    // WorldlyContainer: extract the solidified output
 
     @Override public int[] getSlotsForFace(Direction side) { return new int[]{0}; }
     @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
@@ -187,8 +189,8 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
     }
 
     @Override
-    public java.util.HashMap<UpgradeType, Integer> getValidUpgrades() {
-        java.util.HashMap<UpgradeType, Integer> upgrades = new java.util.HashMap<>();
+    public HashMap<UpgradeType, Integer> getValidUpgrades() {
+        HashMap<UpgradeType, Integer> upgrades = new HashMap<>();
         upgrades.put(UpgradeType.SPEED, 3);
         upgrades.put(UpgradeType.POWER, 3);
         return upgrades;

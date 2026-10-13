@@ -2,6 +2,7 @@ package com.hbm.explosion.vanillant.standard;
 
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.interfaces.IBlockAllocator;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
@@ -31,9 +32,9 @@ public class BlockAllocatorGlyphidDig implements IBlockAllocator {
     }
 
     @Override
-    public it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<BlockPos> allocate(ExplosionVNT explosion, Level world, double x, double y, double z, float size) {
+    public ObjectOpenHashSet<BlockPos> allocate(ExplosionVNT explosion, Level world, double x, double y, double z, float size) {
 
-        it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<BlockPos> affectedBlocks = new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>();
+        ObjectOpenHashSet<BlockPos> affectedBlocks = new ObjectOpenHashSet<>();
 
         for (int i = 0; i < this.resolution; ++i) {
             for (int j = 0; j < this.resolution; ++j) {

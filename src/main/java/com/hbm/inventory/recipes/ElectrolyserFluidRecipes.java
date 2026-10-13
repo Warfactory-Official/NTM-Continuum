@@ -5,6 +5,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.loader.FluidRecipeCodecs;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.hbm.items.machine.ItemFluidIcon;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -88,8 +89,8 @@ public final class ElectrolyserFluidRecipes {
 
         public List<ItemStack> displayOutputs() {
             List<ItemStack> outputs = new ArrayList<>();
-            if (output1.type != Fluids.NONE) outputs.add(com.hbm.items.machine.ItemFluidIcon.make(output1));
-            if (output2.type != Fluids.NONE) outputs.add(com.hbm.items.machine.ItemFluidIcon.make(output2));
+            if (output1.type != Fluids.NONE) outputs.add(ItemFluidIcon.make(output1));
+            if (output2.type != Fluids.NONE) outputs.add(ItemFluidIcon.make(output2));
             for (ItemStack stack : byproduct) outputs.add(stack.copy());
             return outputs;
         }

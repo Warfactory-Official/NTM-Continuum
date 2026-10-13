@@ -30,8 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Fractioning Tower block — 1:1 port of the 1.12.2 {@code MachineFractionTower}: a 3-tall 3×3
- * the folded core (dims {@code {2,0,1,1,1,1}}, offset 1) with the 4 side cells marked as extras
+ * Fractioning Tower block: 1:1 port of the 1.12.2 {@code MachineFractionTower}: a 3-tall 3×3
+ * footprint around the folded core (dims {@code {2,0,1,1,1,1}}, offset 1) with the 4 side cells marked as extras
  * (fluid ports). Right-click with a fluid identifier on the <b>bottom</b> segment types the input tank
  * (towers stacked 3 apart share the type); empty-hand right-click prints the tank contents.
  */

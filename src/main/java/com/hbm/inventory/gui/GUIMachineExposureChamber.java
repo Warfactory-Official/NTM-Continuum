@@ -1,7 +1,10 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMachineExposureChamber;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.machine.TileEntityMachineExposureChamber;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -10,11 +13,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 
-/** Exposure Chamber screen — 1.7.10 {@code GUIMachineExposureChamber} ({@code processing/gui_exposure_chamber.png}, 176x186). */
-public class GUIMachineExposureChamber extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineExposureChamber>
+/** Exposure Chamber screen, from 1.7.10 {@code GUIMachineExposureChamber} ({@code processing/gui_exposure_chamber.png}, 176x186). */
+public class GUIMachineExposureChamber extends CompatContainerScreen<ContainerMachineExposureChamber>
         implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm",
+    private static final Identifier TEXTURE = Ids.of("hbm",
             "textures/gui/processing/gui_exposure_chamber.png");
 
     public GUIMachineExposureChamber(ContainerMachineExposureChamber menu, Inventory playerInventory, Component title) {
@@ -72,7 +75,7 @@ public class GUIMachineExposureChamber extends dev.golem.core.gui.CompatContaine
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return menu.getChamber();
     }
 }

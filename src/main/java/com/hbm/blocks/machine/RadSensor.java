@@ -4,10 +4,13 @@ import com.hbm.sound.ModSounds;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityRadSensor;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EntityBlock;
@@ -20,7 +23,7 @@ import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
 
 /** Radiation sensor with the legacy dose reset, redstone ladder, and comparator ladder. */
-public class RadSensor extends dev.golem.core.world.CompatBlock implements TickingBlock {
+public class RadSensor extends CompatBlock implements TickingBlock {
 
     public RadSensor(Properties properties) {
         super(properties);
@@ -33,11 +36,11 @@ public class RadSensor extends dev.golem.core.world.CompatBlock implements Ticki
     }
 
     @Override
-    protected net.minecraft.world.InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos,
+    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos,
                                                                        Player player, BlockHitResult hit) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityRadSensor sensor) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BOOP.get(),
-                    net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 1.0F);
+                    SoundSource.BLOCKS, 1.0F, 1.0F);
             player.sendSystemMessage(Component.literal("===== \u2622 Radiaton Sensor \u2622 =====")
                     .withStyle(ChatFormatting.GOLD));
             player.sendSystemMessage(Component.literal("Current chunk radiation: ").withStyle(ChatFormatting.YELLOW)
@@ -49,7 +52,7 @@ public class RadSensor extends dev.golem.core.world.CompatBlock implements Ticki
             player.sendSystemMessage(Component.literal("Comparator signal output: ").withStyle(ChatFormatting.YELLOW)
                     .append(Component.literal(Integer.toString(sensor.comparatorOutput)).withStyle(ChatFormatting.RED)));
         }
-        return net.minecraft.world.InteractionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
     @Override

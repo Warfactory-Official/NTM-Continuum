@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -70,7 +71,7 @@ public final class XFactoryFolly {
                 for (int iy = y - 1; iy <= y + 1; iy++) {
                     for (int iz = z - 1; iz <= z + 1; iz++) {
                         if (iy > server.getMinY() && iy < server.getMaxY()) {
-                            server.setBlockAndUpdate(new net.minecraft.core.BlockPos(ix, iy, iz),
+                            server.setBlockAndUpdate(new BlockPos(ix, iy, iz),
                                     Blocks.AIR.defaultBlockState());
                         }
                         AABB aabb = new AABB(ix - 1, iy - 1, iz - 1, ix + 2, iy + 2, iz + 2);
@@ -165,7 +166,7 @@ public final class XFactoryFolly {
                 .setItem(SpecialGunCatalog.secretAmmo("folly_nuke")).setChunkloading().setLife(600).setVel(4F)
                 .setGrav(0.015F).setOnImpact(LAMBDA_NUKE_IMPACT));
 
-        // The common deferred register is intentionally initialized only after all configs exist.
+        // The common deferred register is initialized only after all configs exist.
         NtmEnergyGunCatalog.init();
     }
 

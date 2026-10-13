@@ -12,6 +12,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
@@ -157,7 +158,7 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase impleme
     // --- 1.7 spawnSpiders: three cave spiders around the opener, once ---
 
     public static void spawnSpiders(Player player, Level level, TileEntityCrateBase crate) {
-        if (!crate.hasSpiders || !(level instanceof net.minecraft.server.level.ServerLevel server)) return;
+        if (!crate.hasSpiders || !(level instanceof ServerLevel server)) return;
         Random random = new Random();
         for (int i = 0; i < 3; i++) {
             var spider = Entities.createTriggered(EntityType.CAVE_SPIDER, server);

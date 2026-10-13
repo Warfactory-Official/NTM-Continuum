@@ -1,6 +1,8 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerNukeTsar;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -11,10 +13,10 @@ import java.util.List;
 import java.util.Optional;
 
 /** Tsar Bomba schematic, including the optional sixth-stage core overlay. */
-public class GUINukeTsar extends dev.golem.core.gui.CompatContainerScreen<ContainerNukeTsar> {
+public class GUINukeTsar extends CompatContainerScreen<ContainerNukeTsar> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/weapon/tsarbombaschematic.png");
-    private static final Identifier MIKE_TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/weapon/ivymikeschematic.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/weapon/tsarbombaschematic.png");
+    private static final Identifier MIKE_TEXTURE = Ids.of("hbm", "textures/gui/weapon/ivymikeschematic.png");
 
     public GUINukeTsar(ContainerNukeTsar menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 256, 233);

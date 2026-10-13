@@ -1,12 +1,13 @@
 package com.hbm.client.particle;
 
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatParticle;
 import dev.golem.core.render.ParticleLayer;
 import dev.golem.core.render.Particles;
 import net.minecraft.client.multiplayer.ClientLevel;
 
 /**
- * original-hbm (1.7.10) {@code ParticleDeadLeaf}: a small grey-tinted leaf that drifts down from
+ * 1.7 {@code ParticleDeadLeaf}: a small grey-tinted leaf that drifts down from
  * {@code waste_leaves}. Scale 0.1 (a 0.2-block quad), 200-249 ticks, gravity 0.2, no initial motion; while
  * airborne it wanders by a gaussian 0.002 per tick on both horizontal axes and never falls faster than
  * 0.025 blocks per tick, then rests on the ground until it expires. Lit like terrain (1.7 FX layer 1).
@@ -16,7 +17,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 public final class ParticleDeadLeaf extends CompatParticle {
 
     public ParticleDeadLeaf(ClientLevel level, double x, double y, double z) {
-        super(level, x, y, z, Particles.sprite(dev.golem.core.Ids.of("hbm", "dead_leaf")));
+        super(level, x, y, z, Particles.sprite(Ids.of("hbm", "dead_leaf")));
         setLayer(ParticleLayer.TRANSLUCENT);
         this.xd = 0D;
         this.yd = 0D;

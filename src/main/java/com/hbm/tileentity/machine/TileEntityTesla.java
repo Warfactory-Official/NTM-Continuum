@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.TeslaZap;
 import dev.golem.core.data.DataIn;
@@ -44,7 +45,7 @@ public class TileEntityTesla extends TileEntityMachineBase implements IEnergyRec
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityTesla tesla) {
         if (!(level instanceof ServerLevel server)) return;
 
-        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             tesla.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
         }
 

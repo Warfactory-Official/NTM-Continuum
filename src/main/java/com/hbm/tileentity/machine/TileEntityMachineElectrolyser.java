@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.blocks.machine.MachineElectrolyser;
+import com.hbm.inventory.material.NTMMaterial;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -31,6 +33,8 @@ import com.hbm.util.CrucibleUtil;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.ItemStacks;
+import java.util.ArrayList;
+import java.util.Arrays;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -167,7 +171,7 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
         FluidType type;
         int amount;
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tanks[0], input)) {
+        if (MachineFluidContainerIO.loadInfinite(tanks[0], input)) {
             setChanged();
             return;
         }
@@ -262,7 +266,7 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
     }
 
     private Mats.@Nullable MaterialStack pour(Level level, Mats.MaterialStack stack, ForgeDirection direction) {
-        List<Mats.MaterialStack> stacks = new java.util.ArrayList<>(List.of(stack));
+        List<Mats.MaterialStack> stacks = new ArrayList<>(List.of(stack));
         CrucibleUtil.pourFullStack(level, worldPosition.getX() + 0.5D + direction.offsetX * 5.875D,
                 worldPosition.getY() + 2D, worldPosition.getZ() + 0.5D + direction.offsetZ * 5.875D,
                 6D, true, stacks, getPourQuanta(), new Vec3[1]);
@@ -350,10 +354,10 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
                     new DirPos(worldPosition.getX() + dir.offsetX * 6 + rot.offsetX, worldPosition.getY(), worldPosition.getZ() + dir.offsetZ * 6 + rot.offsetZ, dir),
                     new DirPos(worldPosition.getX() + dir.offsetX * 6 - rot.offsetX, worldPosition.getY(), worldPosition.getZ() + dir.offsetZ * 6 - rot.offsetZ, dir)
             };
-            if (com.hbm.blocks.machine.MachineElectrolyser.sidePorts) {
+            if (MachineElectrolyser.sidePorts) {
                 // hbm-space's four extra points (V-178)
                 int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-                conPos = java.util.Arrays.copyOf(conPos, 10);
+                conPos = Arrays.copyOf(conPos, 10);
                 conPos[6] = new DirPos(x - rot.offsetX * 4, y, z - rot.offsetZ * 4, rot.getOpposite());
                 conPos[7] = new DirPos(x + rot.offsetX * 2, y, z + rot.offsetZ * 2, rot);
                 conPos[8] = new DirPos(x - dir.offsetX * 5 + rot.offsetX * 2, y, z - dir.offsetZ * 5 + rot.offsetZ * 2, rot);
@@ -457,7 +461,7 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
         if (stack != null) { Mats.write(out, key + "Type", stack.material); out.putInt(key + "Amount", stack.amount); } // by name
     }
     private static Mats.@Nullable MaterialStack loadMaterial(DataIn in, String key) {
-        com.hbm.inventory.material.NTMMaterial mat = Mats.read(in, key + "Type");
+        NTMMaterial mat = Mats.read(in, key + "Type");
         return mat == null ? null : new Mats.MaterialStack(mat, in.getIntOr(key + "Amount", 0));
     }
 }

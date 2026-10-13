@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
@@ -27,8 +28,8 @@ public class TileEntityMachineBAT9000 extends TileEntityMachineGiantTank {
 
     @Override
     protected boolean checkFluidInteraction(Level level) {
-        if (tankNew.getTankType() != com.hbm.inventory.fluid.Fluids.AMAT
-                && tankNew.getTankType() != com.hbm.inventory.fluid.Fluids.ASCHRAB) return false;
+        if (tankNew.getTankType() != Fluids.AMAT
+                && tankNew.getTankType() != Fluids.ASCHRAB) return false;
         level.removeBlock(worldPosition, false);
         level.explode(null, worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
                 worldPosition.getZ() + 0.5D, 10F, true, Level.ExplosionInteraction.TNT);

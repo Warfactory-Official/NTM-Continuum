@@ -1,5 +1,6 @@
 package com.hbm.items.armor;
 
+import com.hbm.client.HEVOverlay;
 import com.hbm.items.ModArmorSetItems;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.gear.ArmorFSBPowered;
@@ -29,6 +30,6 @@ public class ArmorHEV extends ArmorFSBPowered {
 
     @Override
     public void handleOverlay(Object graphics, Player player) {
-        if (replacesHud(player)) com.hbm.client.HEVOverlay.render(graphics, player);
+        if (replacesHud(player)) HEVOverlay.render(graphics, player);
     }
 }

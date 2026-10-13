@@ -1,9 +1,13 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
+import com.hbm.api.environment.Environment;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.trait.FluidReleaseType;
+import com.hbm.items.ModItems;
+import com.hbm.sound.ModProductionSounds;
 import com.hbm.util.TickPhase;
 import com.hbm.inventory.container.ContainerMachineDiesel;
 import com.hbm.inventory.fluid.FluidCombustion;
@@ -17,6 +21,7 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachinePolluting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -36,11 +41,11 @@ import com.hbm.sound.ModSounds;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * Diesel Generator — a straight port of 1.7.10's {@code TileEntityMachineDiesel} (original-hbm). Burns any
+ * Diesel Generator, a straight port of 1.7.10's {@code TileEntityMachineDiesel} (1.7). Burns any
  * {@code FT_Combustible} fluid at 1 mB/tick into HE and pushes it to the 6 neighbours. Power per tick =
  * {@code combustionEnergy/1000 · gradeEfficiency}, grade efficiency MEDIUM 0.5 / HIGH 0.75 / AERO 0.1 (LOW
  * refuses); buffer 50,000 HE, fuel tank 16,000 mB. It only runs while switched on with the GUI button
- * ({@code isOn}) and no redstone signal. 4 slots: 0→1 fuel container drain, 2 battery-to-charge, 3 fluid
+ * ({@code isOn}) and no redstone signal. 4 slots: 0 to 1 fuel container drain, 2 battery-to-charge, 3 fluid
  * identifier (changing the type empties the tank, as 1.7's {@code FluidTank.setType}).
  * (1.12.2's 4,000 mB tank, ×10 NITAN power cap and identifier output slot are not in the 1.7 spec.)
  *
@@ -64,7 +69,7 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
     private static final int[] SLOTS_BOTTOM = {1, 2};
     private static final int[] SLOTS_SIDE = {2};
 
-    /** Grade efficiency table (old {@code fuelEfficiency}); LOW/GAS absent → not burnable here. */
+    /** Grade efficiency table (old {@code fuelEfficiency}); LOW/GAS absent means not burnable here. */
     private static double efficiency(FluidCombustion.FuelGrade grade) {
         return switch (grade) {
             case MEDIUM -> 0.5D;
@@ -85,7 +90,7 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineDiesel te) {
-        te.audio = MachineAudio.tick(te.audio, te.wasOn, com.hbm.sound.ModProductionSounds.ENGINE.get(), SoundSource.BLOCKS,
+        te.audio = MachineAudio.tick(te.audio, te.wasOn, ModProductionSounds.ENGINE.get(), SoundSource.BLOCKS,
                 pos, te.getVolume(1F), 10F, 1.0F, 10);
     }
 
@@ -131,7 +136,7 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
         if (level.hasNeighborSignal(worldPosition)) return;
         // hbm-space: if(!breatheAir(1)) return, after the fuel checks (com.hbm.api.environment.Environment)
         if (hasAcceptableFuel() && tank.getFill() > 0
-                && com.hbm.api.environment.Environment.breatheAir(level, worldPosition, 1)) {
+                && Environment.breatheAir(level, worldPosition, 1)) {
             this.wasOn = true;
             tank.setFill(Math.max(tank.getFill() - 1, 0));
 
@@ -144,13 +149,13 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
         }
     }
 
-    /** Drains a fluid container in slot 0 into the tank, emptied container → slot 1. */
+    /** Drains a fluid container in slot 0 into the tank, emptied container to slot 1. */
     private void loadTank() {
         ItemStack in = inventory.getStackInSlot(0);
         if (in.isEmpty()) return;
 
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
             setChanged();
             return;
         }
@@ -214,21 +219,21 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
     }
 
     @Override
-    public int[] getSlotsForFace(net.minecraft.core.Direction side) {
-        return side == net.minecraft.core.Direction.DOWN ? SLOTS_BOTTOM : side == net.minecraft.core.Direction.UP ? SLOTS_TOP : SLOTS_SIDE;
+    public int[] getSlotsForFace(Direction side) {
+        return side == Direction.DOWN ? SLOTS_BOTTOM : side == Direction.UP ? SLOTS_TOP : SLOTS_SIDE;
     }
 
     @Override
-    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
         return slot != 1 && isItemValidForSlot(slot, stack);
     }
 
     /** 1.7 {@code canExtractItem}: empty canisters/tanks from 1, fully charged batteries from 2. */
     @Override
-    public boolean canTakeItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
-        if (slot == 1) return stack.getItem() == com.hbm.items.ModItems.canister_empty.get()
-                || stack.getItem() == com.hbm.items.ModItems.tank_steel.get();
-        if (slot == 2) return stack.getItem() instanceof com.hbm.api.energymk2.IBatteryItem battery
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
+        if (slot == 1) return stack.getItem() == ModItems.canister_empty.get()
+                || stack.getItem() == ModItems.tank_steel.get();
+        if (slot == 2) return stack.getItem() instanceof IBatteryItem battery
                 && battery.getCharge(stack) == battery.getMaxCharge(stack);
         return false;
     }

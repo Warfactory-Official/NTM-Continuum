@@ -18,8 +18,8 @@ import java.util.function.Supplier;
  * One block item per subtype of a 1.7 metadata block whose subtype lives in the block entity or the block state: the
  * bobbleheads, plushies, snowglobes, vending machines, filing cabinets and glyphid hive blocks. 1.7's item damage is
  * the member's fixed {@link #variant()}, and each member has its own id as ntm-next names them
- * ({@code bobblehead_<type>}, {@code vending_machine_snacks}, {@code filing_cabinet_steel}, {@code glyphid_base_rad};
- * History §19es-itemvariant). Nothing about the subtype is stored on the stack.
+ * ({@code bobblehead_<type>}, {@code vending_machine_snacks}, {@code filing_cabinet_steel}, {@code glyphid_base_rad}).
+ * Nothing about the subtype is stored on the stack.
  *
  * <p>{@code name} answers the display name per variant (1.7 {@code ItemBlockMeta} kept one name for all,
  * {@code BlockPlushie.getOverrideDisplayName} formatted the type's label into it); {@code tooltip} is the

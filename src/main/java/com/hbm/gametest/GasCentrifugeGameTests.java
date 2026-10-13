@@ -1,5 +1,6 @@
 package com.hbm.gametest;
 
+import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.machine.MachineGasCent;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.MachineUF6Tank;
@@ -17,20 +18,26 @@ import com.hbm.items.ModUpgradeItems;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.machine.ItemFluidId;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineGasCent;
 import com.hbm.tileentity.machine.TileEntityMachineUF6Tank;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.lib.DirPos;
 import com.hbm.inventory.gui.GasCentTooltips;
+import dev.golem.core.gametest.GameTestHelpers;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 
 /** Focused contracts for the gas centrifuge's pseudo-fluid cascade. */
 public final class GasCentrifugeGameTests {
@@ -68,10 +75,10 @@ public final class GasCentrifugeGameTests {
                 "gas centrifuge core block entity was not created");
         helper.assertTrue(core.equals(MultiblockSurface.coreOfCell(helper.getLevel(), core.above())),
                 "gas centrifuge tower dummy did not resolve to the core");
-        helper.assertTrue(block.canConnect(helper.getLevel(), core, com.hbm.lib.ForgeDirection.EAST),
+        helper.assertTrue(block.canConnect(helper.getLevel(), core, ForgeDirection.EAST),
                 "gas centrifuge east power port did not connect");
         helper.assertTrue(block.canConnect(Fluids.UF6, helper.getLevel(), core.getX(), core.getY(), core.getZ(),
-                        com.hbm.lib.ForgeDirection.EAST),
+                        ForgeDirection.EAST),
                 "gas centrifuge east fluid port did not connect");
         helper.succeed();
     }
@@ -131,7 +138,7 @@ public final class GasCentrifugeGameTests {
         TileEntityMachineGasCent gasCent = (TileEntityMachineGasCent) level.getBlockEntity(gasPos);
 
         BlockPos ductPos = gasPos.west();
-        BlockFluidDuct ductBlock = com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get();
+        BlockFluidDuct ductBlock = ModFluidNetBlocks.fluid_duct_neo.get();
         level.setBlock(ductPos, ductBlock.defaultBlockState(), 3);
         TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) level.getBlockEntity(ductPos);
         duct.setFluidType(Fluids.UF6);
@@ -143,7 +150,7 @@ public final class GasCentrifugeGameTests {
         source.tank.setFill(1_000);
 
         DirPos gasPort = gasCent.getConPos()[2];
-        helper.assertTrue(gasPort.getPos().equals(ductPos) && gasPort.getDir() == com.hbm.lib.ForgeDirection.WEST,
+        helper.assertTrue(gasPort.getPos().equals(ductPos) && gasPort.getDir() == ForgeDirection.WEST,
                 "UF6 network test must use the gas centrifuge's west fluid port");
         helper.assertTrue(source.getConPos()[0].getPos().equals(ductPos),
                 "UF6 tank must face the same duct as the gas centrifuge");
@@ -176,8 +183,8 @@ public final class GasCentrifugeGameTests {
 
     public static void menu(GameTestHelper helper) {
         TileEntityMachineGasCent gasCent = place(helper, new BlockPos(2, 1, 2));
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
-                net.minecraft.world.level.GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper,
+                GameType.SURVIVAL);
         ContainerMachineGasCent menu = new ContainerMachineGasCent(0, player.getInventory(), gasCent);
 
         helper.assertTrue(menu.slots.size() == ContainerMachineGasCent.MACHINE_SLOTS + 36,
@@ -185,7 +192,7 @@ public final class GasCentrifugeGameTests {
         helper.assertTrue(menu.getSlot(4).mayPlace(new ItemStack(
                         ModBatteryItems.PACKS.get(EnumBatteryPack.BATTERY_LEAD).get())),
                 "gas centrifuge battery slot must accept a battery");
-        helper.assertTrue(menu.getSlot(5).mayPlace(com.hbm.items.machine.ItemFluidId.make(Fluids.UF6)),
+        helper.assertTrue(menu.getSlot(5).mayPlace(ItemFluidId.make(Fluids.UF6)),
                 "gas centrifuge identifier slot must accept a fluid identifier");
         for (int slot = 0; slot < 4; slot++) {
             helper.assertFalse(menu.getSlot(slot).mayPlace(new ItemStack(Items.IRON_INGOT)),
@@ -218,7 +225,7 @@ public final class GasCentrifugeGameTests {
         return (TileEntityMachineGasCent) helper.getLevel().getBlockEntity(pos);
     }
 
-    private static void assertTooltip(GameTestHelper helper, java.util.List<Component> lines,
+    private static void assertTooltip(GameTestHelper helper, List<Component> lines,
                                       ChatFormatting headingStyle, int bodyLines) {
         helper.assertTrue(lines.size() == bodyLines + 1, "gas centrifuge tooltip has the wrong line count");
         helper.assertTrue(lines.get(0).getStyle().getColor() != null
@@ -239,7 +246,7 @@ public final class GasCentrifugeGameTests {
                 helper.getLevel().getBlockState(gasCent.getBlockPos()), gasCent);
     }
 
-    private static void awaitUf6Network(GameTestHelper helper, net.minecraft.server.level.ServerLevel level,
+    private static void awaitUf6Network(GameTestHelper helper, ServerLevel level,
                                         BlockPos ductPos, TileEntityMachineGasCent gasCent,
                                         TileEntityMachineUF6Tank source) {
         boolean transferred = source.tank.getFill() < 1_000

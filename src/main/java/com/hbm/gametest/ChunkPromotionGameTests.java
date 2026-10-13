@@ -17,18 +17,15 @@ import net.minecraft.world.level.ChunkPos;
 /**
  * The contract for the hook the power and fluid graphs hang their per-chunk registration on.
  *
- * <p>What is asserted here is the part no unit test can reach: that the hook exists at all, and that
- * the announcement actually arrives. It is a mixin on {@code ChunkMap}, and a mixin applies when its
- * target class loads, so a clean server start is evidence of nothing. Claiming a chunk and waiting
- * for the announcement is.
+ * <p>Asserts what no unit test can reach: that the hook exists and the announcement arrives. It is a mixin on
+ * {@code ChunkMap}, which applies when its target class loads, so a clean server start proves nothing; claiming a
+ * chunk and waiting for the announcement does.
  *
- * <p>The edge arithmetic itself — a repeat is not an edge, a fall re-arms one, one level's chunks are
- * not another's — is stated in Core's {@code RisingEdgesTest}, which needs no server and can
- * therefore enumerate the cases rather than provoke them.
+ * <p>The edge arithmetic (a repeat is not an edge, a fall re-arms one, one level's chunks are not another's) is
+ * covered by Core's {@code RisingEdgesTest}, which needs no server.
  *
- * <p>The chunk worked on here is derived from this test's own plot and sits 200 chunks away from it,
- * so it is nobody else's and no concurrently running test can claim it. The counter is armed per
- * chunk for the same reason.
+ * <p>The chunk used is derived from this test's own plot and sits 200 chunks away, so no concurrently running test
+ * can claim it. The counter is armed per chunk for the same reason.
  */
 public final class ChunkPromotionGameTests {
 
@@ -119,8 +116,8 @@ public final class ChunkPromotionGameTests {
     }
 
     /**
-     * A held chunk is reported to the hook again and again — every promotion past full, and every
-     * demotion back down to it, which is what a player crossing the simulation boundary produces —
+     * A held chunk is reported to the hook again and again: every promotion past full, and every
+     * demotion back down to it, which is what a player crossing the simulation boundary produces,
      * and none of those is a new edge. Then the release, which must be.
      */
     private static void heldWithoutRepeating(GameTestHelper helper, ServerLevel level, ChunkPos far,

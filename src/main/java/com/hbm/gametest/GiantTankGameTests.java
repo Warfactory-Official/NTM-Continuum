@@ -3,6 +3,7 @@ package com.hbm.gametest;
 import com.hbm.api.fluidmk2.DuctData;
 import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.fluidmk2.FluidNetwork;
+import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.machine.MachineBigAssTank9000;
 import com.hbm.blocks.machine.MachineBigAssTank;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -18,6 +19,7 @@ import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.graph.NodeNetwork;
 import dev.golem.core.Ids;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -74,8 +76,8 @@ public final class GiantTankGameTests {
     public static void containerBehavior(GameTestHelper helper) {
         Fluids.init();
         TileEntityMachineGiantTank tank = placeBat(helper, new BlockPos(4, 1, 4));
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
-                net.minecraft.world.level.GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper,
+                GameType.SURVIVAL);
         ContainerMachineGiantTank menu = new ContainerMachineGiantTank(0, player.getInventory(), tank);
         helper.assertTrue(menu.slots.size() == 42, "Giant tank menu must have six machine + 36 player slots");
         helper.assertTrue(menu.slots.get(0).x == 8 && menu.slots.get(0).y == 17
@@ -105,8 +107,8 @@ public final class GiantTankGameTests {
     public static void modeAndAntimatter(GameTestHelper helper) {
         Fluids.init();
         TileEntityMachineBAT9000 tank = placeBat(helper, new BlockPos(8, 1, 8));
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
-                net.minecraft.world.level.GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper,
+                GameType.SURVIVAL);
         ContainerMachineGiantTank menu = new ContainerMachineGiantTank(0, player.getInventory(), tank);
         helper.assertTrue(tank.mode == 0 && menu.clickMenuButton(player, 0) && tank.mode == 1,
                 "Giant tank mode button did not enter buffer mode");
@@ -133,7 +135,7 @@ public final class GiantTankGameTests {
         tank.tilted = true;
 
         BlockPos ductPos = tank.getConPos()[0].getPos();
-        level.setBlock(ductPos, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
+        level.setBlock(ductPos, ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
         TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) level.getBlockEntity(ductPos);
         duct.setFluidType(Fluids.WATER);
 
@@ -160,7 +162,7 @@ public final class GiantTankGameTests {
                 "Both giant tanks must be in the mineable/pickaxe tag");
 
         // One core, reused four times. A Big Ass Tank reaches four blocks out and five up, and the
-        // four placements used to sit at x = 8, 24, 40 and 56 — three of them past the 24-wide plot,
+        // four placements at x = 8, 24, 40 and 56 put three of them past the 24-wide plot,
         // in whatever the runner packed alongside. Clearing between placements keeps it all at home.
         BlockPos core = new BlockPos(12, 1, 12);
 
@@ -219,7 +221,7 @@ public final class GiantTankGameTests {
 
     private static void placeAndAssertBig(GameTestHelper helper, ServerLevel level, MachineBigAssTank block,
                                           ItemStack stack, BlockPos clicked) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
         level.setBlock(clicked, block.defaultBlockState(), 3);
         block.setPlacedBy(level, clicked, block.defaultBlockState(), player, stack);
@@ -233,7 +235,7 @@ public final class GiantTankGameTests {
 
     private static void placeAndAssertBat(GameTestHelper helper, ServerLevel level, MachineBigAssTank9000 block,
                                           ItemStack stack, BlockPos clicked) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
         level.setBlock(clicked, block.defaultBlockState(), 3);
         block.setPlacedBy(level, clicked, block.defaultBlockState(), player, stack);
@@ -248,7 +250,7 @@ public final class GiantTankGameTests {
     private static TileEntityMachineBigAssTank placeBigAss(GameTestHelper helper, BlockPos relative) {
         MachineBigAssTank block = ModMachineBlocks.machine_bigasstank.get();
         FoldedTestSupport.assemble(helper, block, relative);
-        TileEntityMachineBigAssTank tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityMachineBigAssTank tank = GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineBigAssTank.class);
         return tank;
     }
@@ -256,7 +258,7 @@ public final class GiantTankGameTests {
     private static TileEntityMachineBAT9000 placeBat(GameTestHelper helper, BlockPos relative) {
         MachineBigAssTank9000 block = ModMachineBlocks.machine_bat9000.get();
         FoldedTestSupport.assemble(helper, block, relative);
-        TileEntityMachineBAT9000 tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityMachineBAT9000 tank = GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineBAT9000.class);
         return tank;
     }

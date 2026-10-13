@@ -3,6 +3,7 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.tileentity.machine.TileEntityZirnoxDestroyed;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
@@ -13,6 +14,7 @@ import dev.golem.core.render.Vertexes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 /** Draws the old RBMK flame quads directly, preserving their additive and vertical billboard appearance. */
 public class ZirnoxDestroyedRenderer extends MachineObjRenderer<TileEntityZirnoxDestroyed> {
@@ -32,7 +34,7 @@ public class ZirnoxDestroyedRenderer extends MachineObjRenderer<TileEntityZirnox
 
     @Override
     public void extract(TileEntityZirnoxDestroyed wreck, MachineRenderState state, float partialTicks,
-                                   net.minecraft.world.phys.Vec3 cameraPosition) {
+                                   Vec3 cameraPosition) {
         state.burningWreck = wreck.isOnFire();
         state.wreckGameTime = wreck.getLevel() == null ? 0L : wreck.getLevel().getGameTime();
     }
@@ -76,7 +78,7 @@ public class ZirnoxDestroyedRenderer extends MachineObjRenderer<TileEntityZirnox
         return (float) (value & 0xFFFFFFL) / 0x1000000L;
     }
 
-    private static void vertex(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
+    private static void vertex(VertexConsumer buffer, PoseStack.Pose pose,
                                float x, float y, float z, float u, float v, float alpha) {
         // energySwirl is additive; its blend ignores alpha, so fade is carried by RGB.
         Vertexes.vertex(buffer, pose, x, y, z, alpha, alpha, alpha, 1F, u, v,

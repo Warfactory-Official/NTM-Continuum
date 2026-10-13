@@ -3,6 +3,8 @@ package com.hbm.tileentity.network;
 import com.hbm.api.block.IDroneContainer;
 import com.hbm.tileentity.network.RequestNetwork.OfferNode;
 import com.hbm.tileentity.network.RequestNetwork.PathNode;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.Container;
@@ -33,7 +35,7 @@ public class TileEntityDroneProvider extends TileEntityRequestNetwork implements
 
     @Override
     protected PathNode createNode(BlockPos pos) {
-        java.util.List<ItemStack> offer = new java.util.ArrayList<>();
+        List<ItemStack> offer = new ArrayList<>();
         for (int i = 0; i < SLOT_COUNT; i++) {
             ItemStack stack = getItem(i);
             if (!stack.isEmpty()) offer.add(stack.copy());

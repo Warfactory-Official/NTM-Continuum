@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.inventory.fluid.Fluids;
@@ -11,6 +12,7 @@ import com.hbm.items.tool.ItemPipette;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import dev.golem.core.Ids;
 import dev.golem.core.data.ItemContents;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +22,10 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 
 /**
- * Contracts of the utility-tool wave: every id registered; the pipette's capacity, fill/empty, fizzle and
+ * Contracts of the utility tools: every id registered; the pipette's capacity, fill/empty, fizzle and
  * antimatter rules; the Lemegeton ladder; the containment box's squirt damping; and a duct's fluid copied and
  * pasted through {@code IFluidCopiable}.
  */
@@ -48,7 +51,7 @@ public final class UtilityToolGameTests {
         for (String id : ModUtilityToolItems.IDS) {
             helper.assertTrue(BuiltInRegistries.ITEM.containsKey(Ids.of(Constants.MOD_ID, id)), "hbm:" + id + " is registered");
         }
-        // 19 ids before the guide books, holotapes and clay tablets became one item per variant (History §19es-itemvariant):
+        // 19 other ids, plus one item per variant of the guide books, holotapes and clay tablets:
         // book_guide 4 + holotape_image 18 + clay_tablet 2
         helper.assertTrue(ModUtilityToolItems.IDS.size() == 43, "43 item ids, got " + ModUtilityToolItems.IDS.size());
         helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(Ids.of(Constants.MOD_ID, "book_guide_block")),
@@ -115,14 +118,14 @@ public final class UtilityToolGameTests {
 
     public static void settingsDuct(GameTestHelper helper) {
         BlockPos a = new BlockPos(1, 2, 1), b = new BlockPos(3, 2, 1);
-        helper.setBlock(a, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get());
-        helper.setBlock(b, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get());
-        TileEntityFluidDuctNT ductA = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, a, TileEntityFluidDuctNT.class);
-        TileEntityFluidDuctNT ductB = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, b, TileEntityFluidDuctNT.class);
+        helper.setBlock(a, ModFluidNetBlocks.fluid_duct_neo.get());
+        helper.setBlock(b, ModFluidNetBlocks.fluid_duct_neo.get());
+        TileEntityFluidDuctNT ductA = GameTestHelpers.blockEntity(helper, a, TileEntityFluidDuctNT.class);
+        TileEntityFluidDuctNT ductB = GameTestHelpers.blockEntity(helper, b, TileEntityFluidDuctNT.class);
         ductA.setFluidType(Fluids.WATER);
         CompoundTag settings = ductA.getSettings(helper.getLevel(), helper.absolutePos(a));
         helper.assertTrue(settings != null, "the duct has settings");
-        ductB.pasteSettings(settings, 0, helper.getLevel(), dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL),
+        ductB.pasteSettings(settings, 0, helper.getLevel(), GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL),
                 helper.absolutePos(b));
         helper.assertTrue(ductB.getFluidType() == Fluids.WATER, "duct B took water, got " + ductB.getFluidType());
         helper.succeed();

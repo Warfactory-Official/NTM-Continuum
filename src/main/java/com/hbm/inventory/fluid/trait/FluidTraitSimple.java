@@ -9,9 +9,9 @@ import java.util.List;
 /**
  * The 1.7 {@code FluidTraitSimple} tags: value-less marker traits a {@link FluidType} either has or does not.
  * {@link com.hbm.inventory.fluid.Fluids} holds one shared instance of each (1.7's {@code LIQUID},
- * {@code GASEOUS}, {@code EVAP}, …) and assigns them to exactly 1.7's fluids. Every port predicate that used to
- * keep its own copy of one of these lists ({@code FluidCombustion.isGaseous}, {@code FluidContainers}'s lead and
- * no-container sets, {@code IFluidCopiable}'s no-ID set, the barrel and tank antimatter checks) now asks the
+ * {@code GASEOUS}, {@code EVAP}, …) and assigns them to exactly 1.7's fluids. Every port predicate, rather than
+ * keeping its own copy of one of these lists ({@code FluidCombustion.isGaseous}, {@code FluidContainers}'s lead and
+ * no-container sets, {@code IFluidCopiable}'s no-ID set, the barrel and tank antimatter checks) asks the
  * fluid for the trait instead.
  *
  * <p>Tooltip lines are 1.7's: most tags only show with Shift held ({@code addInfoHidden}); antimatter and the

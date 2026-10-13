@@ -9,28 +9,31 @@ import com.hbm.items.gear.ArmorFSBFueled;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.special.ItemStarterKit;
 import com.hbm.util.EnchantmentUtil;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 
 import java.util.List;
 
 /**
- * GameTests for the final armour wave B: fuelled-suit fill/burn/enable rules and the steam suit's per-piece speed
- * modifier, the four IV bags, and the kit give-lists that used to skip unresolved ids.
+ * GameTests for the armour set B: fuelled-suit fill/burn/enable rules and the steam suit's per-piece speed
+ * modifier, the four IV bags, and the kit give-lists, which must not skip unresolved ids.
  */
 public final class ArmorSetBGameTests {
 
     private ArmorSetBGameTests() {}
 
     private static Player player(GameTestHelper helper) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         BlockPos origin = helper.absolutePos(new BlockPos(1, 1, 1));
         player.setPos(origin.getX() + 0.5D, origin.getY(), origin.getZ() + 0.5D);
         return player;
@@ -65,12 +68,12 @@ public final class ArmorSetBGameTests {
 
         // four -0.025 multiply-base modifiers: 0.1 * (1 - 0.1)
         ModArmorSetBItems.tickPlayer(player);
-        double speed = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+        double speed = player.getAttributeValue(Attributes.MOVEMENT_SPEED);
         helper.assertTrue(Math.abs(speed - 0.09D) < 1e-6, "steam suit speed " + speed + ", expected 0.09");
-        wear(player, net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR,
-                net.minecraft.world.item.Items.AIR, net.minecraft.world.item.Items.AIR);
+        wear(player, Items.AIR, Items.AIR,
+                Items.AIR, Items.AIR);
         ModArmorSetBItems.tickPlayer(player);
-        speed = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+        speed = player.getAttributeValue(Attributes.MOVEMENT_SPEED);
         helper.assertTrue(Math.abs(speed - 0.1D) < 1e-6, "speed not restored without the suit: " + speed);
 
         ItemStack diesel = new ItemStack(ModArmorSetBItems.dieselsuit_plate.get());
@@ -126,7 +129,7 @@ public final class ArmorSetBGameTests {
         return n;
     }
 
-    /** The kit entries that used to be skipped now resolve to the port's ids and the component cells. */
+    /** The kit entries resolve to the port's ids and the component cells, none skipped. */
     public static void kits(GameTestHelper helper) {
         List<ItemStack> starter = ItemStarterKit.contents(ItemStarterKit.Kind.NUKE_STARTER);
         helper.assertTrue(starter.size() == 20, "starter kit has " + starter.size() + " stacks, expected 20");

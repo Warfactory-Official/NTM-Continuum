@@ -1,5 +1,6 @@
 package com.hbm.client.particle;
 
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatParticle;
 import dev.golem.core.render.ParticleLayer;
 import dev.golem.core.render.Particles;
@@ -13,7 +14,7 @@ import net.minecraft.resources.Identifier;
  */
 public final class ParticleHadron extends CompatParticle {
 
-    private static final Identifier HADRON = dev.golem.core.Ids.of("hbm", "hadron");
+    private static final Identifier HADRON = Ids.of("hbm", "hadron");
     private float particleScale;
 
     public ParticleHadron(ClientLevel level, double x, double y, double z) {

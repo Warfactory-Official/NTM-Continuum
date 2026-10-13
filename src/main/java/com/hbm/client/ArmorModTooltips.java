@@ -6,6 +6,7 @@ import com.hbm.items.armor.ItemArmorMod;
 import com.hbm.items.armor.JetpackBase;
 import dev.golem.core.client.Tooltips;
 import dev.golem.core.client.KeyMappings;
+import dev.golem.core.world.Armors;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -22,7 +23,7 @@ public final class ArmorModTooltips {
     }
 
     private static void addLines(ItemStack armor, List<Component> lines) {
-        if (!dev.golem.core.world.Armors.isArmor(armor) || !ArmorModHandler.hasMods(armor)) return;
+        if (!Armors.isArmor(armor) || !ArmorModHandler.hasMods(armor)) return;
 
         Minecraft minecraft = Minecraft.getInstance();
         boolean show = KeyMappings.isHeld(minecraft.options.keyShift) || minecraft.screen instanceof GUIArmorTable;
@@ -35,7 +36,7 @@ public final class ArmorModTooltips {
         }
         lines.add(Component.translatable("desc.mods").withStyle(ChatFormatting.YELLOW));
         ItemStack[] mods = ArmorModHandler.pryMods(armor);
-        // The 1.12 client intentionally listed slots 0..7 only; its battery slot was omitted.
+        // The 1.12 client listed slots 0..7 only; its battery slot was omitted.
         for (int slot = 0; slot < ArmorModHandler.battery; slot++) {
             ItemStack mod = mods[slot];
             if (mod.getItem() instanceof ItemArmorMod armorMod) armorMod.addArmorModDescription(lines, mod, armor);

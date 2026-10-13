@@ -1,6 +1,7 @@
 package com.hbm.client.jetpack;
 
 import com.hbm.client.render.armor.ArmorRenderer;
+import com.hbm.handler.ArmorModHandler;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatHumanoidLayer;
@@ -25,7 +26,7 @@ public final class JetpackRenderLayer extends CompatHumanoidLayer {
         ItemStack chest = worn.chest();
         String kind = JetpackClientVisuals.kindFromStack(chest);
         if (kind == null) kind = JetpackClientVisuals.kindFromStack(
-                com.hbm.handler.ArmorModHandler.pryMod(chest, com.hbm.handler.ArmorModHandler.plate_only));
+                ArmorModHandler.pryMod(chest, ArmorModHandler.plate_only));
         if (kind == null) return;
 
         boolean modeledArmor = JetpackClientVisuals.BJ.equals(kind) || "wings".equals(kind);
@@ -49,8 +50,8 @@ public final class JetpackRenderLayer extends CompatHumanoidLayer {
                     JetpackClientVisuals.sourceStack(chest));
             case "standard" -> {
                 ItemStack source = JetpackClientVisuals.kindFromStack(chest) == null
-                        ? com.hbm.handler.ArmorModHandler.pryMod(chest,
-                        com.hbm.handler.ArmorModHandler.plate_only) : chest;
+                        ? ArmorModHandler.pryMod(chest,
+                        ArmorModHandler.plate_only) : chest;
                 String path = JetpackClientVisuals.path(source);
                 String textureKind = path != null && path.endsWith("break") ? "standard_blue"
                         : path != null && path.endsWith("vector") ? "standard_green"

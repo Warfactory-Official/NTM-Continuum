@@ -3,6 +3,7 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerPADetector;
 import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
 import com.hbm.tileentity.machine.albion.TileEntityPADetector;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -14,7 +15,7 @@ import org.jspecify.annotations.Nullable;
 public class GUIPADetector extends GUIPABase<ContainerPADetector> {
 
     private static final Identifier TEXTURE =
-            dev.golem.core.Ids.of("hbm", "textures/gui/particleaccelerator/gui_detector.png");
+            Ids.of("hbm", "textures/gui/particleaccelerator/gui_detector.png");
 
     public GUIPADetector(ContainerPADetector menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);

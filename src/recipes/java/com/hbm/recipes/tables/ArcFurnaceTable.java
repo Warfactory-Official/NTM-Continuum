@@ -3,8 +3,8 @@ package com.hbm.recipes.tables;
 import net.minecraft.world.item.Item;
 import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.blocks.ModGlassBlocks;
-import com.hbm.foundry.ArcFurnaceRecipes;
-import com.hbm.foundry.ArcFurnaceRecipes.Row;
+import com.hbm.inventory.recipes.ArcFurnaceRecipes;
+import com.hbm.inventory.recipes.ArcFurnaceRecipes.Row;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
@@ -41,7 +41,7 @@ import static com.hbm.inventory.OreDictManager.*;
 public final class ArcFurnaceTable extends RecipeSource<Row> {
 
     /** 1.7 {@code KEY_SAND}, the "sand" ore name: {@code c:sands} (sand and red sand, not suspicious sand). */
-    private static final TagKey<Item> KEY_SAND = TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", "sands"));
+    private static final TagKey<Item> KEY_SAND = TagKey.create(Registries.ITEM, Ids.of("c", "sands"));
 
     public ArcFurnaceTable() {
         super(ArcFurnaceRecipes.TABLE.table);

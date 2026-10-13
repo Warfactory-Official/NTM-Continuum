@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
@@ -18,7 +19,7 @@ import org.jspecify.annotations.Nullable;
  * An item that is a Sedna gun but had no {@code ItemRenderWeaponBase} in 1.7 ({@code gun_fireext}, drawn by
  * {@code ItemRenderFireExt}) has no row, and 1.7 drew no preview for it. Data only, with no client types, so a
  * GameTest can check it. The rows were extracted from the 1.7 sources ({@code GunFactoryClient} for the item to
- * renderer map, each class's {@code setupModTable}) and compared row by row (History §19es-weapontable).
+ * renderer map, each class's {@code setupModTable}) and compared row by row.
  */
 public final class WeaponTableFrames {
 
@@ -35,7 +36,7 @@ public final class WeaponTableFrames {
     }
 
     public static Map<String, Frame> all() {
-        return java.util.Collections.unmodifiableMap(BY_ITEM);
+        return Collections.unmodifiableMap(BY_ITEM);
     }
 
     private static Map<String, Frame> build() {

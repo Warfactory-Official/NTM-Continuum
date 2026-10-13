@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.blocks.machine.BlockVendingMachine;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.deco.TileEntityVendingMachine;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -23,7 +24,7 @@ public final class RenderVendingMachine extends GemBER<TileEntityVendingMachine,
         public boolean snacks;
     }
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/vending_machine.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/machines/vending_machine.obj"));
     private final Surface skin = Surface.cutoutNoCull(Constants.MOD_ID + ":textures/models/machines/vending_machine.png");
 
     @Override

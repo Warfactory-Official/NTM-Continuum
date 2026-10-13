@@ -16,6 +16,9 @@ import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.Plants;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -237,7 +240,7 @@ public class TileEntityMachineThresher extends TileEntityLoadedBase implements I
     private void tickAudio(Level level, BlockPos pos) {
         // Typed as LocalPlayer on purpose (as TileEntityMachinePyroOven does): widening it to Player would make the
         // bytecode verifier load the client-only class when this class links on a dedicated server.
-        net.minecraft.client.player.LocalPlayer me = net.minecraft.client.Minecraft.getInstance().player;
+        LocalPlayer me = Minecraft.getInstance().player;
         boolean wanted = isOn && !isSuspended && me != null
                 && me.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) < 15 * 15;
         if (wanted) {
@@ -275,7 +278,7 @@ public class TileEntityMachineThresher extends TileEntityLoadedBase implements I
     /** 1.7 {@code IGrowable.func_149851_a}: a plant that still accepts bone meal is left to grow. */
     public static boolean shouldIgnore(Level level, BlockPos pos, BlockState state) {
         if (state.getBlock() instanceof BonemealableBlock growable) {
-            return dev.golem.core.world.Plants.isValidBonemealTarget(growable, level, pos, state);
+            return Plants.isValidBonemealTarget(growable, level, pos, state);
         }
         return false;
     }

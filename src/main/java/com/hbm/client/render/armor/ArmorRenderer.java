@@ -16,7 +16,7 @@ import org.jspecify.annotations.Nullable;
  * The worn body of one modelled armour set: an OBJ declared over the wearer's skeleton.
  *
  * <p>An armour OBJ is authored in absolute biped space, so a bone's pivot is a centre of rotation and
- * nothing more — <b>the geometry is never moved to the bone</b>, or every limb lands at twice its
+ * nothing more. <b>The geometry is never moved to the bone</b>, or every limb lands at twice its
  * offset. Crouching moves the live pivot but not the authored geometry, so the translate back uses the
  * rest pivot; using the live one in both directions cancels the crouch and detaches the suit.
  */
@@ -52,7 +52,7 @@ public abstract class ArmorRenderer {
         }
 
         /**
-         * The scale out of model units is deliberately not folded in here: a pose stack handed a
+         * The scale out of model units is not folded in here: a pose stack handed a
          * matrix that scales recomputes its normal matrix as the inverse transpose, leaving normals
          * sixteen times too long. 1.20.1 does not normalise afterwards. Stated as an op it is
          * recognised as uniform and the normals are left alone.

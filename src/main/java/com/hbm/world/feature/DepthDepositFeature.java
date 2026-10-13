@@ -9,7 +9,7 @@ import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 
 /**
- * {@code hbm:depth_deposit}: one 1.7 {@code DepthDeposit.generate} sphere at the placed position — the ore core
+ * {@code hbm:depth_deposit}: one 1.7 {@code DepthDeposit.generate} sphere at the placed position: the ore core
  * ({@code len + rand(2) < size * fill}) wrapped in depth rock, eating {@code host} and bedrock alike.
  *
  * <p>1.7's {@code generateCondition*} wrapper ({@code rand.nextInt(chance) == 0}, a random in-chunk x/z and

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
 
 import com.hbm.tileentity.IControlReceiverFilter;
@@ -11,6 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Containers;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -26,7 +28,7 @@ import com.hbm.util.ConveyorInventories;
  * neither the output override nor the client-side resync 1.7 needed to hold it steady.
  */
 public abstract class TileEntityCraneBase extends TileEntityMachineBase implements ICopiable, WorldlyContainer,
-        net.minecraft.world.MenuProvider {
+        MenuProvider {
 
     /** 1.7 {@code infoForDisplay} order: the settings tool's index 0 is the filter, 1 the orientation. */
     private static final int PASTE_ORIENTATION = 1;
@@ -101,8 +103,8 @@ public abstract class TileEntityCraneBase extends TileEntityMachineBase implemen
     @Override
     public @Nullable CompoundTag getSettings(Level level, BlockPos pos) {
         CompoundTag nbt = new CompoundTag();
-        com.hbm.util.SavedIds.putEnum(nbt, "inputSide", getInputSide()); // copied settings: by name
-        com.hbm.util.SavedIds.putEnum(nbt, "outputSide", getOutputSide());
+        SavedIds.putEnum(nbt, "inputSide", getInputSide()); // copied settings: by name
+        SavedIds.putEnum(nbt, "outputSide", getOutputSide());
 
         if (this instanceof IControlReceiverFilter filter) {
             ListTag tags = new ListTag();
@@ -127,10 +129,10 @@ public abstract class TileEntityCraneBase extends TileEntityMachineBase implemen
         if (index == PASTE_ORIENTATION) {
             BlockState state = getBlockState();
             if (nbt.contains("outputSide")) {
-                state = state.setValue(BlockCraneBase.OUTPUT, com.hbm.util.SavedIds.getEnum(nbt, "outputSide", Direction.UP));
+                state = state.setValue(BlockCraneBase.OUTPUT, SavedIds.getEnum(nbt, "outputSide", Direction.UP));
             }
             if (nbt.contains("inputSide")) {
-                state = state.setValue(BlockCraneBase.INPUT, com.hbm.util.SavedIds.getEnum(nbt, "inputSide", Direction.DOWN));
+                state = state.setValue(BlockCraneBase.INPUT, SavedIds.getEnum(nbt, "inputSide", Direction.DOWN));
             }
             level.setBlockAndUpdate(pos, state);
             return;

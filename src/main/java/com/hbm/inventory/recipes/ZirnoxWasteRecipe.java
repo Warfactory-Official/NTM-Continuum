@@ -1,10 +1,15 @@
 package com.hbm.inventory.recipes;
 
+import com.hbm.api.data.ReactorDataMaps;
 import com.hbm.items.ModZirnoxItems;
+import com.hbm.items.machine.ItemZirnoxRod;
+import com.hbm.items.machine.ItemZirnoxWaste;
 import com.hbm.items.machine.ZirnoxFuel;
 import dev.golem.core.world.CompatCustomRecipe;
 import dev.golem.core.world.CustomRecipes;
 import java.util.List;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -24,7 +29,7 @@ public final class ZirnoxWasteRecipe extends CompatCustomRecipe {
     }
 
     /** The waste a used-up rod reprocesses into: the {@code waste} of the {@code hbm:zirnox_fuel} entry that depletes into it. */
-    private static net.minecraft.world.item.Item waste(List<ItemStack> input) {
+    private static Item waste(List<ItemStack> input) {
         ItemStack rod = ItemStack.EMPTY;
         for (ItemStack stack : input) {
             if (stack.isEmpty()) continue;
@@ -32,11 +37,11 @@ public final class ZirnoxWasteRecipe extends CompatCustomRecipe {
             rod = stack;
         }
         if (rod.isEmpty()) return null;
-        for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
-            if (!(item instanceof com.hbm.items.machine.ItemZirnoxRod active)) continue;
-            com.hbm.api.data.ReactorDataMaps.ZirnoxFuel fuel = active.stats();
-            if (fuel.waste().isPresent() && rod.is(com.hbm.api.data.ReactorDataMaps.itemOf(fuel.depletesInto()))) {
-                return com.hbm.api.data.ReactorDataMaps.itemOf(fuel.waste().get());
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (!(item instanceof ItemZirnoxRod active)) continue;
+            ReactorDataMaps.ZirnoxFuel fuel = active.stats();
+            if (fuel.waste().isPresent() && rod.is(ReactorDataMaps.itemOf(fuel.depletesInto()))) {
+                return ReactorDataMaps.itemOf(fuel.waste().get());
             }
         }
         return null;
@@ -63,8 +68,8 @@ public final class ZirnoxWasteRecipe extends CompatCustomRecipe {
 
     @Override
     protected ItemStack assembleItems(List<ItemStack> input) {
-        net.minecraft.world.item.Item waste = waste(input);
-        return waste == null ? ItemStack.EMPTY : com.hbm.items.machine.ItemZirnoxWaste.makeHot(waste, 2);
+        Item waste = waste(input);
+        return waste == null ? ItemStack.EMPTY : ItemZirnoxWaste.makeHot(waste, 2);
     }
 
     @Override

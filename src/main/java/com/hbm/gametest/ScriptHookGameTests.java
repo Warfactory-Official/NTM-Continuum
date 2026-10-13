@@ -4,12 +4,16 @@ import com.hbm.Constants;
 import com.hbm.api.event.HbmEvents;
 import com.hbm.api.script.HbmScriptApi;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.config.RadiationConfig;
 import com.hbm.explosion.ExplosionLarge;
 import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.interfaces.IBomb;
 import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
+import com.hbm.items.ModItems;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyMachine;
 import com.hbm.util.ContaminationUtil;
 import dev.golem.core.gametest.GameTestHelpers;
@@ -17,6 +21,8 @@ import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.ItemStacks;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.core.BlockPos;
@@ -54,9 +60,9 @@ public final class ScriptHookGameTests {
     private static final Map<BlockPos, HbmEvents.Explosion> EXPLOSION_AT = new ConcurrentHashMap<>();
     private static final Map<BlockPos, HbmEvents.BombDetonated> BOMB_AT = new ConcurrentHashMap<>();
     private static final Map<BlockPos, HbmEvents.MachineRecipeCompleted> MACHINE_AT = new ConcurrentHashMap<>();
-    private static final Map<java.util.UUID, HbmEvents.EntityIrradiated> IRRADIATED_ENTITY = new ConcurrentHashMap<>();
-    private static final java.util.Set<BlockPos> WATCHED = ConcurrentHashMap.newKeySet();
-    private static final java.util.Set<java.util.UUID> WATCHED_ENTITIES = ConcurrentHashMap.newKeySet();
+    private static final Map<UUID, HbmEvents.EntityIrradiated> IRRADIATED_ENTITY = new ConcurrentHashMap<>();
+    private static final Set<BlockPos> WATCHED = ConcurrentHashMap.newKeySet();
+    private static final Set<UUID> WATCHED_ENTITIES = ConcurrentHashMap.newKeySet();
 
     private static void register() {
         if (!REGISTERED.compareAndSet(false, true)) return;
@@ -155,7 +161,7 @@ public final class ScriptHookGameTests {
         pig.discard();
         zombie.discard();
         helper.assertTrue(applied, "a RAD_BYPASS dose reaches a pig");
-        if (com.hbm.config.RadiationConfig.enableContamination) {
+        if (RadiationConfig.enableContamination) {
             helper.assertTrue(seen != null && seen.hazard().equals("RADIATION") && seen.contamination().equals("RAD_BYPASS")
                             && seen.amount() == 10D && seen.dose() == 10D,
                     "the dose did not reach HbmEvents.ENTITY_IRRADIATED: " + seen);
@@ -170,7 +176,7 @@ public final class ScriptHookGameTests {
         helper.assertTrue(api.fluids().contains("hbm:oil") && !api.fluids().contains("hbm:none"), "fluids() lists hbm:oil");
         Map<String, Object> oil = api.fluid("oil");
         helper.assertTrue(oil != null && "hbm:oil".equals(oil.get("id"))
-                        && oil.get("temperature").equals(com.hbm.inventory.fluid.Fluids.OIL.temperature),
+                        && oil.get("temperature").equals(Fluids.OIL.temperature),
                 "fluid('oil') must read hbm:oil: " + oil);
         helper.assertTrue(api.fluid("hbm:no_such_fluid") == null && !api.hasFluid("bad id!"), "unknown fluids read as null");
         helper.assertTrue(api.fluidTraits("hbm:oil").contains("liquid"), "oil is a liquid: " + api.fluidTraits("hbm:oil"));
@@ -178,7 +184,7 @@ public final class ScriptHookGameTests {
         Map<String, Object> iron = api.material("iron");
         helper.assertTrue(iron != null && "SMELTABLE".equals(iron.get("smelting")), "material('iron') is smeltable: " + iron);
         helper.assertTrue(api.material("no_such_material") == null, "unknown materials read as null");
-        ItemStack uranium = new ItemStack(com.hbm.items.ModItems.ingot_uranium.get());
+        ItemStack uranium = new ItemStack(ModItems.ingot_uranium.get());
         List<Map<String, Object>> hazards = api.itemHazards(uranium);
         helper.assertTrue(!hazards.isEmpty() && hazards.stream().anyMatch(h -> "hbm:radiation".equals(h.get("type"))),
                 "a uranium ingot is radioactive: " + hazards);
@@ -186,7 +192,7 @@ public final class ScriptHookGameTests {
                         && api.itemRadiation(uranium) > 0D, "itemHazardLevel(radiation) equals itemRadiation");
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
         helper.assertTrue(api.getChunkRadiation(helper.getLevel(), pos)
-                        == com.hbm.handler.radiation.ChunkRadiationManager.proxy.getRadiation(helper.getLevel(), pos),
+                        == ChunkRadiationManager.proxy.getRadiation(helper.getLevel(), pos),
                 "getChunkRadiation reads RadiationSystemNT");
         helper.succeed();
     }

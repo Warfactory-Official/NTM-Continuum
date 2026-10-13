@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerCrate;
 import com.hbm.tileentity.machine.storage.CrateType;
@@ -13,7 +14,7 @@ import net.minecraft.world.entity.player.Inventory;
  * {@code GUICrateBase}, which read the same constants off the crate tile). 26.1 render API
  * (extractBackground + blit; labels via extractLabels).
  */
-public class GUICrate extends dev.golem.core.gui.CompatContainerScreen<ContainerCrate> {
+public class GUICrate extends CompatContainerScreen<ContainerCrate> {
 
     private final CrateType type;
 

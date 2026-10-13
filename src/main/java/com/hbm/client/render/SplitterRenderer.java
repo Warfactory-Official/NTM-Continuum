@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.network.TileEntityCraneSplitter;
 import com.hbm.tileentity.MachineCore;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -23,7 +24,7 @@ public class SplitterRenderer extends GemBER<TileEntityCraneSplitter, SplitterRe
 
     private static final String T = Constants.MOD_ID + ":textures/blocks/";
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/blocks/splitter.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/blocks/splitter.obj"));
 
     private final Surface topLeft = Surface.cutout(T + "crane_splitter_top_left.png");
     private final Surface topRight = Surface.cutout(T + "crane_splitter_top_right.png");

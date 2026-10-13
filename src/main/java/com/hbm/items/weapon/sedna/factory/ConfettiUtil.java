@@ -4,13 +4,15 @@ import com.hbm.lib.ModDamageSources.DamageClass;
 import com.hbm.particle.helper.ParticleEffects;
 import com.hbm.sound.ModGunSounds;
 import java.util.Locale;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 
-/** The original-hbm death-only target effects used by Sedna ammunition. */
+/** The 1.7 death-only target effects used by Sedna ammunition. */
 public final class ConfettiUtil {
     private ConfettiUtil() {}
 
@@ -63,8 +65,8 @@ public final class ConfettiUtil {
         ParticleEffects.giblets(entity.level(), entity, type);
         Level level = entity.level();
         level.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
-                net.minecraft.sounds.SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR,
-                net.minecraft.sounds.SoundSource.HOSTILE, 2F,
+                SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR,
+                SoundSource.HOSTILE, 2F,
                 0.95F + entity.getRandom().nextFloat() * 0.2F);
     }
 
@@ -75,7 +77,7 @@ public final class ConfettiUtil {
 
     private static void playDisintegrationSound(LivingEntity entity) {
         entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(),
-                ModGunSounds.DISINTEGRATION.get(), net.minecraft.sounds.SoundSource.PLAYERS, 2F,
+                ModGunSounds.DISINTEGRATION.get(), SoundSource.PLAYERS, 2F,
                 0.9F + entity.getRandom().nextFloat() * 0.2F);
     }
 

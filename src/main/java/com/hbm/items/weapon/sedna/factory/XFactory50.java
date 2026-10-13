@@ -1,9 +1,12 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.entity.ModNtmEntities;
+import com.hbm.entity.projectile.EntityBuilding;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
+import net.minecraft.world.phys.EntityHitResult;
 
-/** The .50 BMG family from original-hbm's XFactory50. */
+/** The .50 BMG family from 1.7's XFactory50. */
 public final class XFactory50 {
 
     public static BulletConfig bmg50_sp;
@@ -37,7 +40,7 @@ public final class XFactory50 {
         bmg50_he = BulletConfigs.register("bmg50_he", new BulletConfig()
                 .setItem(BallisticGunCatalog.ammo("ammo_standard_bmg50_he")).setWear(3F).setDamage(1.75F)
                 .setOnImpact((bullet, mop) -> {
-                    if (mop instanceof net.minecraft.world.phys.EntityHitResult hit && bullet.tickCount < 3
+                    if (mop instanceof EntityHitResult hit && bullet.tickCount < 3
                             && hit.getEntity() == bullet.getThrower()) {
                         return;
                     }
@@ -57,8 +60,8 @@ public final class XFactory50 {
         bmg50_equestrian = BulletConfigs.register("bmg50_equestrian", new BulletConfig()
                 .setItem(BallisticGunCatalog.ammo("ammo_secret_bmg50_equestrian"))
                 .setDamage(0F).setOnImpact((bullet, mop) -> {
-                    XFactory44.dropFromSky(bullet, mop, new com.hbm.entity.projectile.EntityBuilding(
-                            com.hbm.entity.ModNtmEntities.FALLING_BUILDING.get(), bullet.level()));
+                    XFactory44.dropFromSky(bullet, mop, new EntityBuilding(
+                            ModNtmEntities.FALLING_BUILDING.get(), bullet.level()));
                     bullet.discard();
                 }));
     }

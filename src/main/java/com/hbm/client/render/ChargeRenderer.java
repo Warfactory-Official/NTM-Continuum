@@ -17,6 +17,7 @@ import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -41,7 +42,7 @@ public final class ChargeRenderer extends GemBER<TileEntityCharge, ChargeRendere
     private static final Surface TEX_DYN = Surface.cutout("hbm:textures/blocks/charge_dynamite.png");
     private static final Surface TEX_MINER = Surface.cutout("hbm:textures/blocks/charge_miner.png");
 
-    private final Font font = net.minecraft.client.Minecraft.getInstance().font;
+    private final Font font = Minecraft.getInstance().font;
 
     @Override
     protected void setup(Gem.Model<State> declaration) {

@@ -3,6 +3,7 @@ package com.hbm.blocks.machine;
 import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityCreativeFluidSource;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -14,7 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Infinite fluid source for testing; backed by {@link TileEntityCreativeFluidSource}. */
-public class BlockCreativeFluidSource extends dev.golem.core.world.CompatBlock implements TickingBlock {
+public class BlockCreativeFluidSource extends CompatBlock implements TickingBlock {
 
     public BlockCreativeFluidSource(Properties properties) {
         super(properties);

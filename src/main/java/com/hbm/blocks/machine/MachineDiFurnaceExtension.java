@@ -2,8 +2,11 @@ package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
 import com.hbm.tileentity.machine.TileEntityDiFurnaceExtension;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
@@ -19,10 +22,10 @@ import org.jspecify.annotations.Nullable;
 /**
  * Separate chimney/extension block; its inventory and menu are delegated to the furnace below.
  *
- * <p>The block entity carries no data — the flue is a truncated pyramid, which is not a shape a vanilla
+ * <p>The block entity carries no data: the flue is a truncated pyramid, which is not a shape a vanilla
  * block model can state, so it is drawn by a block-entity renderer and this is what anchors it.
  */
-public class MachineDiFurnaceExtension extends dev.golem.core.world.CompatBlock
+public class MachineDiFurnaceExtension extends CompatBlock
         implements TickingBlock, WorldlyContainerHolder {
 
     public MachineDiFurnaceExtension(Properties properties) {
@@ -43,9 +46,9 @@ public class MachineDiFurnaceExtension extends dev.golem.core.world.CompatBlock
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                   BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
-        if (!level.isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos.below()) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos.below());
+            Menus.openWithPos(serverPlayer, provider, pos.below());
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.TRY_WITH_EMPTY_HAND;

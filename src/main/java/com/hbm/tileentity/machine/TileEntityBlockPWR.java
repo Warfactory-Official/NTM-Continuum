@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.tileentity.IRelocatable;
+import com.hbm.uninos.graph.PortClaims;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidProviderMK2;
@@ -12,11 +14,13 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import dev.golem.core.Ids;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
@@ -26,15 +30,15 @@ import com.hbm.tileentity.ModPwrBlockEntities;
 /**
  * The block entity behind every assembled-reactor cell (1.7 {@code BlockPWR.TileEntityBlockPWR}). It remembers
  * the block the cell was assembled from and the controller it belongs to, restores that block when the cell
- * is broken, and — on a port cell — forwards fluid, item and Redstone-over-Radio access to the controller.
+ * is broken, and on a port cell forwards fluid, item and Redstone-over-Radio access to the controller.
  *
  * <p>The link survives save/load: the original block's registry id and the controller position are written
  * with the entity. The 1.7 entity was a plain {@code TileEntity}; here it sits on
  * {@link TileEntityLoadedBase} so the fluid net's loaded check and the chunk-load tag sync apply.
  */
 public class TileEntityBlockPWR extends TileEntityLoadedBase
-        implements IFluidReceiverMK2, IFluidProviderMK2, IRORValueProvider, IRORInteractive, com.hbm.tileentity.IRelocatable,
-        com.hbm.uninos.graph.PortClaims.Delegate {
+        implements IFluidReceiverMK2, IFluidProviderMK2, IRORValueProvider, IRORInteractive, IRelocatable,
+        PortClaims.Delegate {
 
     /** 1.7: the controller subscribes and provides at the port positions; the port block only fronts it. */
     @Override
@@ -44,8 +48,8 @@ public class TileEntityBlockPWR extends TileEntityLoadedBase
 
     /** A sub-level move carried this block; the controller follows when it was carried too. */
     @Override
-    public void relocate(dev.golem.core.world.SubLevels.Move move) {
-        net.minecraft.core.BlockPos core = com.hbm.tileentity.IRelocatable.follow(move, new net.minecraft.core.BlockPos(coreX, coreY, coreZ));
+    public void relocate(SubLevels.Move move) {
+        BlockPos core = IRelocatable.follow(move, new BlockPos(coreX, coreY, coreZ));
         coreX = core.getX(); coreY = core.getY(); coreZ = core.getZ();
         cachedCore = null;
         setChanged();
@@ -105,7 +109,7 @@ public class TileEntityBlockPWR extends TileEntityLoadedBase
      * 1.7 {@code BlockPWR.breakBlock}: breaking a cell puts the block it was assembled from back and flags the
      * controller as disassembled. This is the block entity's removal hook because it is the one place across
      * targets where the entity is still in hand; the section already holds the new state here, so setting the
-     * original block makes the outer removal return "unchanged" — which is exactly the 1.7 re-set trick.
+     * original block makes the outer removal return "unchanged", which is exactly the 1.7 re-set trick.
      */
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
@@ -118,7 +122,7 @@ public class TileEntityBlockPWR extends TileEntityLoadedBase
         if (controller instanceof TileEntityPWRController pwr) pwr.assembled = false;
     }
 
-    // --- persistence ---
+    // Persistence
 
     @Override
     protected void saveData(DataOut output) {
@@ -143,7 +147,7 @@ public class TileEntityBlockPWR extends TileEntityLoadedBase
             } catch (RuntimeException malformed) {
                 found = null;
             }
-            if (found != null && found != net.minecraft.world.level.block.Blocks.AIR) {
+            if (found != null && found != Blocks.AIR) {
                 block = found;
                 coreX = input.getIntOr("cX", 0);
                 coreY = input.getIntOr("cY", 0);
@@ -152,7 +156,7 @@ public class TileEntityBlockPWR extends TileEntityLoadedBase
         }
     }
 
-    // --- fluid: only a port cell talks to the net, and it answers with the controller's tanks ---
+    // Fluid: only a port cell talks to the net, and it answers with the controller's tanks
 
     @Override
     public boolean canConnect(FluidType type, ForgeDirection dir) {
@@ -201,7 +205,7 @@ public class TileEntityBlockPWR extends TileEntityLoadedBase
         return controller != null ? controller.getProvidingPressureRange(type) : DEFAULT_PRESSURE_RANGE;
     }
 
-    // --- Redstone over Radio: a port cell relays the controller's values and functions ---
+    // Redstone over Radio: a port cell relays the controller's values and functions
 
     @Override
     public String[] getFunctionInfo() {

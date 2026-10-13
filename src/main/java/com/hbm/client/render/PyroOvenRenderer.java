@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePyroOven;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -19,7 +20,7 @@ public final class PyroOvenRenderer extends GemBER<TileEntityMachinePyroOven, Py
     private static final float BASE_YAW = 180F;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/pyrooven.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/pyrooven.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/pyrooven.png");
 

@@ -6,6 +6,7 @@ import com.hbm.tileentity.MachineCore;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * The geometry every machine on the fusion beams shares.
@@ -53,7 +54,7 @@ public final class FusionNodes {
      * The direction a dummyable machine faces, from its core meta. Every fusion machine positions its
      * beam relative to this, and upstream spelled out {@code getBlockMetadata() - 10} inline each time.
      */
-    public static ForgeDirection facing(net.minecraft.world.level.block.state.BlockState state) {
+    public static ForgeDirection facing(BlockState state) {
         return MachineCore.facing(state);
     }
 }

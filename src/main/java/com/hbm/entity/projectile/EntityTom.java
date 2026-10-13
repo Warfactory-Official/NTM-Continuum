@@ -93,6 +93,6 @@ public class EntityTom extends EntityThrowableNT {
         return distance < 500000D;
     }
 
-    // 26.2: 1.7's fullbright getBrightnessForRender/getBrightness have no common-code override left - RenderCloudTom
+    // 26.1: 1.7's fullbright getBrightnessForRender/getBrightness have no common-code override left - RenderCloudTom
     // emits the packed light.
 }

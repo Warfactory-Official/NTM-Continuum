@@ -4,6 +4,7 @@ import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.items.ModDataComponents;
 import com.hbm.util.BobMathUtil;
 import dev.golem.core.world.CompatTooltipContext;
+import dev.golem.core.world.HeldItemState;
 import dev.golem.core.world.ToolTier;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -14,7 +15,7 @@ import net.minecraft.world.item.TooltipFlag;
 import java.util.List;
 
 /** 1.7 {@code ItemSwordAbilityPower}: the HE-powered sword (Stunstick); each hit costs {@code consumption}. */
-public class ItemSwordAbilityPower extends ItemSwordAbility implements IBatteryItem, dev.golem.core.world.HeldItemState {
+public class ItemSwordAbilityPower extends ItemSwordAbility implements IBatteryItem, HeldItemState {
 
     /** 1.7 kept the raised item while item and damage matched; the charge lived in NBT and never re-equipped it. */
     @Override

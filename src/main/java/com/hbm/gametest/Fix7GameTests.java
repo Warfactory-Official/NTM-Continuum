@@ -13,6 +13,7 @@ import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.Biomes;
 import dev.golem.core.world.SpawnEggs;
 import dev.golem.core.world.Spawns;
+import java.util.HashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -31,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Fix wave phase 7 (2026-10-03, History §19ej-7): spawn eggs, natural spawns, radiation transforms and the 1.7
- * {@code ModEventHandler} mob drops and gear, against original-hbm (1.7.10).
+ * Spawn eggs, natural spawns, radiation transforms and the 1.7
+ * {@code ModEventHandler} mob drops and gear, against 1.7.
  */
 public final class Fix7GameTests {
 
@@ -167,8 +168,8 @@ public final class Fix7GameTests {
         LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, pos);
         RandomSource rng = RandomSource.create(7177L);
         int n = 250_000;
-        Map<Item, int[]> zombieCounts = new java.util.HashMap<>();
-        Map<Item, int[]> skeletonCounts = new java.util.HashMap<>();
+        Map<Item, int[]> zombieCounts = new HashMap<>();
+        Map<Item, int[]> skeletonCounts = new HashMap<>();
         int cowDrops = 0;
         for (int i = 0; i < n; i++) {
             for (Item item : ModEventHandlerMobs.playerKillDrops(zombie, rng)) zombieCounts.computeIfAbsent(item, k -> new int[1])[0]++;

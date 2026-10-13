@@ -1,8 +1,11 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerBatterySocket;
 import com.hbm.util.BobMathUtil;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -14,13 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Client screen for the battery socket — 1.7.10 {@code GUIBatterySocket} ({@code storage/gui_battery_socket.png},
+ * Client screen for the battery socket, 1.7.10 {@code GUIBatterySocket} ({@code storage/gui_battery_socket.png},
  * 176×181). The 34×52 bar at (62,17) shows the inserted battery item's charge; redstone-low (106,16) and
  * redstone-high (106,52) mode buttons and the priority button (125,35). Clicks go through {@code clickMenuButton}.
  */
-public class GUIBatterySocket extends dev.golem.core.gui.CompatContainerScreen<ContainerBatterySocket> {
+public class GUIBatterySocket extends CompatContainerScreen<ContainerBatterySocket> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_battery_socket.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_battery_socket.png");
 
     public GUIBatterySocket(ContainerBatterySocket menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 181);
@@ -78,7 +81,7 @@ public class GUIBatterySocket extends dev.golem.core.gui.CompatContainerScreen<C
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         int button = -1;
         // 1.7 checkClick boxes: x [x, x+w), y (y, y+h].
         if (GuiUtil.hover(event.x(), event.y(), this.leftPos + 106, this.topPos + 16, 18, 18)) button = 0;

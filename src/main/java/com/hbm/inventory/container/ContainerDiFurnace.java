@@ -1,6 +1,5 @@
 package com.hbm.inventory.container;
 
-import com.hbm.blocks.machine.DiFurnaceContent;
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
@@ -14,6 +13,8 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.ModMenus;
 
 /** Four-slot DiFurnace menu, including the legacy right-click side-mode controls. */
 public class ContainerDiFurnace extends CompatContainerMenu {
@@ -35,7 +36,7 @@ public class ContainerDiFurnace extends CompatContainerMenu {
 
     private ContainerDiFurnace(int id, Inventory playerInventory, @Nullable TileEntityDiFurnace furnace,
                                ContainerLevelAccess access) {
-        super(DiFurnaceContent.DI_FURNACE_MENU.get(), id);
+        super(ModMenus.MACHINE_DIFURNACE.get(), id);
         this.furnace = furnace;
         this.machine = furnace != null ? furnace : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
@@ -84,7 +85,7 @@ public class ContainerDiFurnace extends CompatContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, DiFurnaceContent.MACHINE_DIFURNACE.get());
+        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_difurnace_off.get());
     }
 
     @Override

@@ -1,9 +1,13 @@
 package com.hbm.world.feature;
 
+import com.hbm.blocks.ModFluidNetBlocks;
+import com.hbm.blocks.generic.BlockStalagmite;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.config.WorldConfig;
 import com.mojang.serialization.Codec;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -17,7 +21,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
 import net.minecraft.world.level.material.Fluids;
 
 /**
- * Cave-wall resource strata — 1.12.2's {@code OreCave}, registered twice in {@code MainRegistry}:
+ * Cave-wall resource strata: 1.12.2's {@code OreCave}, registered twice in {@code MainRegistry}:
  * <pre>
  *   sulfur   : threshold 1.5,  rangeMult 20, yLevel 30, maxRange 20, fluid = sulfuric_acid_block
  *   asbestos : threshold 1.75, rangeMult 20, yLevel 25, maxRange 20, no fluid
@@ -27,17 +31,17 @@ import net.minecraft.world.level.material.Fluids;
  * ({@code range = (n − threshold) · rangeMult}, folded back down past {@code maxRange}), then every
  * solid rock block in {@code [yLevel − range, yLevel + range]} that <b>touches air</b> becomes the
  * resource stone. Cells in that band that are <i>not</i> solid get a 1-in-5 chance of a stalactite or
- * stalagmite, whichever can anchor — this is where the cave spikes come from.
+ * stalagmite, whichever can anchor. This is where the cave spikes come from.
  *
  * <p>The sulfur variant carries 1.7's acid pools ({@code withFluid(sulfuric_acid_block)}): a rock cell with air
  * (or a spike) above, a full cube below and full cubes or acid on all four sides becomes
  * {@code sulfuric_acid_block}, with the resource stone beneath it and in its solid horizontal neighbours,
  * on half of the eligible cells (1.7's {@code canGenFluid = rand.nextBoolean()}, rolled for every rock cell
- * of either variant). History §19ej-6.
+ * of either variant).
  *
  * <p><b>Deviation:</b> the noise seed. Upstream salted the world seed with
- * {@code Block.getIdFromBlock(...) * 31 + yLevel} — a numeric block id that no longer exists in 26.1.
- * Each variant now carries an explicit stable salt instead, so the field is still per-variant distinct
+ * {@code Block.getIdFromBlock(...) * 31 + yLevel}: a numeric block id that does not exist in 26.1.
+ * Each variant carries an explicit stable salt instead, so the field is per-variant distinct
  * and seed-reproducible.
  */
 public class OreCaveFeature extends Feature<NoneFeatureConfiguration> {
@@ -61,9 +65,9 @@ public class OreCaveFeature extends Feature<NoneFeatureConfiguration> {
      * Columns of this world (seed) where the sulfur stratum is generated: every {@code step}-th column within
      * {@code radius} of {@code x, z} whose noise exceeds the threshold, as {@code {x, z, range}}. For the harness search.
      */
-    public static java.util.List<int[]> sulfurColumns(long seed, int x, int z, int radius, int step, int limit) {
+    public static List<int[]> sulfurColumns(long seed, int x, int z, int radius, int step, int limit) {
         LegacyPerlinNoise noise = new LegacyPerlinNoise(new WorldgenRandom(new LegacyRandomSource(seed + SULFUR.salt())), 2);
-        java.util.List<int[]> out = new java.util.ArrayList<>();
+        List<int[]> out = new ArrayList<>();
         for (int dx = -radius; dx <= radius && out.size() < limit; dx += step) {
             for (int dz = -radius; dz <= radius && out.size() < limit; dz += step) {
                 double n = noise.getValue((x + dx) * SCALE, (z + dz) * SCALE);
@@ -98,7 +102,7 @@ public class OreCaveFeature extends Feature<NoneFeatureConfiguration> {
                     ModOreBlocks.stone_resource_sulfur.get().defaultBlockState(),
                     ModOreBlocks.stalactite_sulfur.get().defaultBlockState(),
                     ModOreBlocks.stalagmite_sulfur.get().defaultBlockState(),
-                    com.hbm.blocks.ModFluidNetBlocks.sulfuric_acid_block.get().defaultBlockState());
+                    ModFluidNetBlocks.sulfuric_acid_block.get().defaultBlockState());
         }
         if (WorldConfig.enableAsbestosCave) {
             generate(level, rand, cx, cz, asbestosNoise, ASBESTOS,
@@ -116,7 +120,7 @@ public class OreCaveFeature extends Feature<NoneFeatureConfiguration> {
         int floor = level.getMinY();
         int ceiling = level.getMaxY();
 
-        // The old +8 decoration offset on both axes, kept verbatim.
+        // The old +8 decoration offset on both axes, kept as is.
         for (int x = cx + 8; x < cx + 24; x++) {
             for (int z = cz + 8; z < cz + 24; z++) {
                 double n = noise.getValue(x * SCALE, z * SCALE);
@@ -141,7 +145,7 @@ public class OreCaveFeature extends Feature<NoneFeatureConfiguration> {
 
                         for (Direction dir : DIRECTIONS_17) {
                             BlockState neighbour = level.getBlockState(pos.relative(dir));
-                            boolean open = neighbour.isAir() || neighbour.getBlock() instanceof com.hbm.blocks.generic.BlockStalagmite;
+                            boolean open = neighbour.isAir() || neighbour.getBlock() instanceof BlockStalagmite;
                             if (open) shouldGen = true;
 
                             if (shouldGen && (fluid == null || !canGenFluid)) break;

@@ -1,11 +1,12 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.fluidmk2.IFluidMultiUserMK2;
+import com.hbm.uninos.graph.PortClaims;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.assemblyfactory.AssemblyFactoryRegistrations;
 import com.hbm.client.sound.AssemblyFactorySoundHandler;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.UpgradeManagerNT;
@@ -19,7 +20,7 @@ import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.modules.machine.AssemblyFactoryModule;
+import com.hbm.module.machine.AssemblyFactoryModule;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -44,11 +45,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.tileentity.ModBlockEntities;
 
 /** The four-lane Assembly Factory controller, ported from the 1.12.2 tile entity. */
 public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase implements MenuProvider,
         IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IControlReceiver, WorldlyContainer,
-        IUpgradeInfoProvider, IRORValueProvider, com.hbm.api.fluidmk2.IFluidMultiUserMK2 {
+        IUpgradeInfoProvider, IRORValueProvider, IFluidMultiUserMK2 {
 
     /**
      * 1.7: a duct at a coolant position reached the coolant {@code delegate} (water in, low-pressure steam out), not
@@ -94,7 +97,7 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
     private final CoolantDelegate coolantDelegate = new CoolantDelegate();
 
     public TileEntityMachineAssemblyFactory(BlockPos pos, BlockState state) {
-        super(AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY_BE.get(), pos, state, MACHINE_SLOTS);
+        super(ModBlockEntities.MACHINE_ASSEMBLY_FACTORY.get(), pos, state, MACHINE_SLOTS);
 
         for (int i = 0; i < LANES; i++) {
             inputTanks[i] = new FluidTankNTM(Fluids.NONE, 4_000);
@@ -261,7 +264,7 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
                 new DirPos(x - 2, y, z - 3, Library.NEG_Z),
                 new DirPos(x, y, z - 3, Library.NEG_Z),
                 new DirPos(x + 2, y, z - 3, Library.NEG_Z),
-                // 1.7.10 has no top (y+3) ports here — those 10 belong to the chemical factory only.
+                // 1.7.10 has no top (y+3) ports here; those 10 belong to the chemical factory only.
                 new DirPos(x + dir.offsetX + rot.offsetX * 3, y, z + dir.offsetZ + rot.offsetZ * 3, rot),
                 new DirPos(x - dir.offsetX + rot.offsetX * 3, y, z - dir.offsetZ + rot.offsetZ * 3, rot),
                 new DirPos(x + dir.offsetX - rot.offsetX * 3, y, z + dir.offsetZ - rot.offsetZ * 3, rot.getOpposite()),
@@ -306,7 +309,7 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
 
     @Override
     public void provideInfo(UpgradeType type, int level, List<Component> info, boolean extendedInfo) {
-        info.add(IUpgradeInfoProvider.getStandardLabel(AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get()));
+        info.add(IUpgradeInfoProvider.getStandardLabel(ModMachineBlocks.machine_assembly_factory.get()));
         if (type == UpgradeType.SPEED) {
             info.add(Component.translatable(KEY_SPEED, "+" + (level * 100 / 3) + "%").withStyle(ChatFormatting.GREEN));
             info.add(Component.translatable(KEY_CONSUMPTION, "+" + (level * 50) + "%").withStyle(ChatFormatting.RED));
@@ -338,9 +341,9 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
     @Override
     public void receiveControl(CompoundTag data) {
         if (!data.contains("index") || !data.contains("selection")) return;
-        int index = dev.golem.core.data.Tags.getIntOr(data, "index", -1);
+        int index = Tags.getIntOr(data, "index", -1);
         if (index < 0 || index >= LANES) return;
-        assemblerModule[index].setRecipe(dev.golem.core.data.Tags.getStringOr(data, "selection", "null"), false);
+        assemblerModule[index].setRecipe(Tags.getStringOr(data, "selection", "null"), false);
         markChanged();
     }
 
@@ -430,7 +433,7 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
 
     /** The coolant proxy capability from the old extra-dummy cells. */
     private final class CoolantDelegate implements IEnergyReceiverMK2, IFluidStandardTransceiverMK2,
-            com.hbm.uninos.graph.PortClaims.Delegate {
+            PortClaims.Delegate {
         /** 1.7's {@code delegate} subscribes at the coolant positions on the factory's behalf. */
         @Override public Object portClaimOwner() { return TileEntityMachineAssemblyFactory.this; }
         @Override public long getPower() { return TileEntityMachineAssemblyFactory.this.power; }

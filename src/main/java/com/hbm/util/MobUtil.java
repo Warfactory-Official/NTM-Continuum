@@ -5,6 +5,7 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModGearItems;
 import dev.golem.core.Ids;
 import dev.golem.core.world.Mobs;
+import java.util.TreeMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
@@ -47,8 +48,8 @@ public final class MobUtil {
     public static final Map<Integer, List<Choice>> slotPoolGunsTier2 = new HashMap<>();
     public static final Map<Integer, List<Choice>> slotPoolGunsTier3 = new HashMap<>();
     /** Soot mobs (1.7 {@code slotPoolCommonS}/{@code slotPoolRangedS}); key order is 1.7's HashMap order, 0..4. */
-    public static final Map<Integer, List<Choice>> slotPoolCommonS = new java.util.TreeMap<>();
-    public static final Map<Integer, List<Choice>> slotPoolRangedS = new java.util.TreeMap<>();
+    public static final Map<Integer, List<Choice>> slotPoolCommonS = new TreeMap<>();
+    public static final Map<Integer, List<Choice>> slotPoolRangedS = new TreeMap<>();
     /** 1.7 {@code slotPoolGuns}: keyed by the minimum soot level, not by slot. */
     public static final Map<Double, List<Choice>> slotPoolGuns = new HashMap<>();
     /** Declared in 1.7 and never filled; drawing from it does nothing, as there. */

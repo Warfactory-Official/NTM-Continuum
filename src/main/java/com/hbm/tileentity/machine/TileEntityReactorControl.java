@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -186,7 +187,7 @@ public class TileEntityReactorControl extends TileEntityMachineBase implements M
         output.putDouble("levelUpper", levelUpper);
         output.putDouble("heatLower", heatLower);
         output.putDouble("heatUpper", heatUpper);
-        com.hbm.util.SavedIds.putEnum(output, "function", function); // by name, never an ordinal
+        SavedIds.putEnum(output, "function", function); // by name, never an ordinal
     }
 
     @Override
@@ -197,6 +198,6 @@ public class TileEntityReactorControl extends TileEntityMachineBase implements M
         levelUpper = input.getDoubleOr("levelUpper", 0D);
         heatLower = input.getDoubleOr("heatLower", 0D);
         heatUpper = input.getDoubleOr("heatUpper", 0D);
-        function = com.hbm.util.SavedIds.getEnum(input, "function", RodFunction.values()[0]);
+        function = SavedIds.getEnum(input, "function", RodFunction.values()[0]);
     }
 }

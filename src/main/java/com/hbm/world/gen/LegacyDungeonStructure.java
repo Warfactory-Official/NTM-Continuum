@@ -11,8 +11,10 @@ import com.hbm.world.dungeon.DesertAtom001;
 import com.hbm.world.dungeon.LibraryDungeon;
 import com.hbm.world.dungeon.Spaceship;
 import com.hbm.world.feature.Dud;
+import com.hbm.world.feature.DungeonBlockFeature;
 import com.hbm.world.gen.LegacyDungeonBlocks.Blocks;
 import com.hbm.world.gen.LegacyDungeonBlocks.ModBlocks;
+import com.hbm.world.gen.nbt.NBTStructure;
 import com.hbm.world.generator.CellularDungeonFactory;
 import com.hbm.world.generator.JungleDungeon;
 import com.mojang.serialization.Codec;
@@ -106,7 +108,7 @@ public class LegacyDungeonStructure extends Structure {
         return new LegacyDungeonStructure(settings, kind);
     }));
 
-    // ------------------------------------------------------------------------------------------------ registration
+    // Registration
 
     public static final DeferredRegister<StructureType<?>> STRUCTURE_TYPES =
             DeferredRegister.create(Registries.STRUCTURE_TYPE, Constants.MOD_ID);
@@ -121,10 +123,10 @@ public class LegacyDungeonStructure extends Structure {
 
     /** Structure and piece types, and the scattered-block feature types. */
     public static void init() {
-        com.hbm.world.feature.DungeonBlockFeature.init();
+        DungeonBlockFeature.init();
     }
 
-    // ------------------------------------------------------------------------------------------------ structure
+    // Structure
 
     private final Kind kind;
 
@@ -186,7 +188,7 @@ public class LegacyDungeonStructure extends Structure {
 
         // 1.7's climate rule on the site's biome: the tag holds the table's biomes plus every other overworld biome, a
         // table biome answers through its row, a modded one through its own climate (not where /place turns biomes off)
-        if (com.hbm.world.gen.nbt.NBTStructure.GenStructure.checksBiome(context)
+        if (NBTStructure.GenStructure.checksBiome(context)
                 && !LegacyBiomes.acceptsDungeon(kind, LegacyBiomes.biomeAt(context.biomeSource(), context.randomState(), x, site.getY(), z))) {
             return Optional.empty();
         }
@@ -198,7 +200,7 @@ public class LegacyDungeonStructure extends Structure {
         return Optional.of(new GenerationStub(site, builder -> builder.addPiece(new Piece(kind, x, y, z, seed, box))));
     }
 
-    // ------------------------------------------------------------------------------------------------ the builders
+    // The builders
 
     /** Recent runs by site; the start and every chunk of the piece ask for the same one. */
     private static final Map<String, LegacyDungeonWorld.Result> CACHE = new LinkedHashMap<>(64, 0.75F, true) {
@@ -254,7 +256,7 @@ public class LegacyDungeonStructure extends Structure {
         return world.result();
     }
 
-    // ------------------------------------------------------------------------------------------------ piece
+    // Piece
 
     /** One legacy dungeon: its kind, 1.7 site and seed; every chunk of its box rebuilds the run and copies its share. */
     public static class Piece extends StructurePiece {

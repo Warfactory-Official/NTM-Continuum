@@ -6,18 +6,16 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The common ancestor of providers and receivers, carrying everything both roles need — which is
+ * The common ancestor of providers and receivers, carrying everything both roles need, which is
  * everything except the subscription helpers.
  *
- * <p>The buffer, the speed limits, the priority and the transfer arithmetic used to be split between
- * {@link IEnergyReceiverMK2} and {@link IEnergyProviderMK2}, so a machine that did both inherited half
- * its contract from each. The node graph arbitrates over one handler type rather than two roles — a
- * buffer is a provider and a receiver in the same round — so the members sit here and the two role
- * interfaces are markers that add only their own helpers.
+ * <p>The buffer, the speed limits, the priority and the transfer arithmetic live here, not in
+ * {@link IEnergyReceiverMK2} and {@link IEnergyProviderMK2}, so a machine that does both inherits the
+ * whole contract once. The node graph arbitrates over one handler type, since a buffer is a provider and a
+ * receiver in the same round. The two role interfaces are markers that add only their own helpers.
  *
- * <p>{@code ConnectionPriority} moved up with them. Nested types are inherited, so a qualified use
- * through either role interface still resolves; an <i>import</i> does not, because Java demands the
- * canonical name there.
+ * <p>{@code ConnectionPriority} is nested here. A qualified use through either role interface resolves because
+ * nested types are inherited; an <i>import</i> must use the canonical name.
  */
 public interface IEnergyHandlerMK2 extends IEnergyConnectorMK2, ILoadedTile, IBufferedEndpoint {
 
@@ -34,7 +32,7 @@ public interface IEnergyHandlerMK2 extends IEnergyConnectorMK2, ILoadedTile, IBu
         return new Vec3(te.getBlockPos().getX() + 0.5, te.getBlockPos().getY() + 1, te.getBlockPos().getZ() + 0.5);
     }
 
-    /** Uses up available power. No sanity checking — ensure the requested power is &lt;= the current power. */
+    /** Uses up available power. No sanity checking: ensure the requested power is &lt;= the current power. */
     default void usePower(long power) {
         this.setPower(this.getPower() - power);
     }
@@ -42,7 +40,7 @@ public interface IEnergyHandlerMK2 extends IEnergyConnectorMK2, ILoadedTile, IBu
     /**
      * Max speed at which this handler can send energy. Zero unless it is an {@link IEnergyProviderMK2}, which
      * defaults it to its capacity: 1.7 declared this on the provider interface only, so a consumer's buffer
-     * was never offered to a net (playtest 2026-10-12: a battery on the same cable drained a machine).
+     * was never offered to a net, so a battery on the same cable could drain a machine.
      */
     default long getProviderSpeed() {
         return 0L;

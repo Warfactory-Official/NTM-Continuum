@@ -7,6 +7,7 @@ import com.hbm.tileentity.machine.TileEntityFoundryCastingBase;
 import com.hbm.tileentity.machine.TileEntityFoundryMold;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatItemRenderState;
 import dev.golem.core.render.CompatRenderState;
@@ -16,6 +17,8 @@ import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Geometry;
 import dev.golem.core.render.gem.Quads;
 import dev.golem.core.render.gem.Surface;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
@@ -54,15 +57,15 @@ public class FoundryCastingRenderer<T extends TileEntityFoundryCastingBase> exte
 
     private final @Nullable WavefrontObj body;
     /** material name -> the surface it wears (multi-texture OBJ, resolved from the .mtl). */
-    private final java.util.Map<String, Surface> materials = new java.util.LinkedHashMap<>();
+    private final Map<String, Surface> materials = new LinkedHashMap<>();
     private final Surface melt = Surface.emissive(
             Constants.MOD_ID + ":textures/models/machines/lava_gray.png");
 
     /** @param bodyObjPath OBJ body to draw (basin), or null for JSON-modelled blocks (mold caster). */
     public FoundryCastingRenderer(@Nullable String bodyObjPath) {
         if (bodyObjPath != null) {
-            this.body = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, bodyObjPath));
-            var mtl = WavefrontObj.loadMtl(dev.golem.core.Ids.of(Constants.MOD_ID, bodyObjPath.replace(".obj", ".mtl")));
+            this.body = WavefrontObj.load(Ids.of(Constants.MOD_ID, bodyObjPath));
+            var mtl = WavefrontObj.loadMtl(Ids.of(Constants.MOD_ID, bodyObjPath.replace(".obj", ".mtl")));
             for (String mat : body.materialNames()) {
                 Identifier tex = mtl.get(mat);
                 if (tex != null) materials.put(mat, Surface.cutout(tex.toString()));

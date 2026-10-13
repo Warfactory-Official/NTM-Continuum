@@ -1,5 +1,6 @@
 package com.hbm.inventory.recipes.anvil;
 
+import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.material.MaterialShapes;
@@ -8,6 +9,7 @@ import com.hbm.inventory.recipes.loader.ItemSpec;
 import com.hbm.inventory.recipes.loader.TableCodecs;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModJetpackDependencyItems;
+import com.hbm.items.ModMachineItems;
 import com.hbm.items.machine.ModMoldItems;
 import com.hbm.items.machine.ModStampItems;
 import com.hbm.items.special.ItemSteelDusted;
@@ -26,14 +28,14 @@ import static com.hbm.inventory.OreDictManager.*;
 /**
  * The anvil recipe sets, two datapack tables:
  * <ul>
- *   <li><b>Smithing</b> ({@code hbm:anvil_smithing}, {@code data/hbm/recipe/anvil_smithing/}) — two input slots in the
+ *   <li><b>Smithing</b> ({@code hbm:anvil_smithing}, {@code data/hbm/recipe/anvil_smithing/}): two input slots in the
  *       anvil GUI, matched live by the container:
  *       {@code {"tier": 1, "output": item, "left": ingredient, "right": ingredient, "hot": false, "shapeless": false,
  *       "order": n}}. {@code hot} is 1.7's {@code AnvilSmithingHotRecipe} (both inputs must be hot ItemHot items, the
  *       output takes their averaged heat). The smithing behaviours that are code, not rows, stay here
  *       ({@link #codeSmithing}): the dusted-steel folding chain (its stages are item data), the casting molds (shape
  *       matching), cyanide and rename.</li>
- *   <li><b>Construction</b> ({@code hbm:anvil_construction}, {@code data/hbm/recipe/anvil_construction/}) — the
+ *   <li><b>Construction</b> ({@code hbm:anvil_construction}, {@code data/hbm/recipe/anvil_construction/}): the
  *       browsable recipe grid, crafted straight from the player's inventory via {@link com.hbm.packet.AnvilCraftPayload}:
  *       {@code {"inputs": [...], "outputs": [{"id", "count", "chance"}], "tier": 2, "tier_upper": 3, "overlay":
  *       "recycling", "requires": ["!enable_528"], "order": n}}. {@code overlay} defaults by shape (one input and one output:
@@ -42,19 +44,19 @@ import static com.hbm.inventory.OreDictManager.*;
  * </ul>
  * In 1.7's LBSM mode with {@code LBSM_recipeUnlockAnvil} every recipe is tier 1, applied when the tables rebuild.
  *
- * <p>Converted once from the Java port of 1.7's {@code AnvilRecipes} (smithing, construction, sirens,
- * {@code registerConstructionRecycling}) and its contributors (ability tools, final consumables, crate/deco, energy
- * extras). 1.7 built several construction families from {@code Mats.orderedList} (fine wire, shells, pipes) and the
- * siren tracks from the track registry; they are literal rows now. 1.7's {@code exp ? 2 analog circuits : 4 vacuum
- * tubes} assembly machine is two rows with {@code "requires": ["expensive_mode"]} / {@code ["!expensive_mode"]},
- * and the {@code !enable528} RBMK/research-reactor dismantling carries {@code "requires": ["!enable_528"]}. The
- * construction order is the craft packet's index, identical on client and server (the client receives the rows).
+ * <p>The rows come from 1.7's {@code AnvilRecipes} (smithing, construction, sirens, {@code registerConstructionRecycling})
+ * and its contributors (ability tools, final consumables, crate/deco, energy extras). 1.7 built several construction
+ * families from {@code Mats.orderedList} (fine wire, shells, pipes) and the siren tracks from the track registry;
+ * here they are literal rows. 1.7's {@code exp ? 2 analog circuits : 4 vacuum tubes} assembly machine is two rows with
+ * {@code "requires": ["expensive_mode"]} / {@code ["!expensive_mode"]}, and the {@code !enable528}
+ * RBMK/research-reactor dismantling carries {@code "requires": ["!enable_528"]}. The construction order is the
+ * craft packet's index, identical on client and server (the client receives the rows).
  */
 public final class AnvilRecipes {
 
     private AnvilRecipes() {}
 
-    // ---- smithing ----
+    // Smithing
 
     public record SmithingRow(int tier, ItemSpec output, AStack left, AStack right, boolean hot, boolean shapeless,
                               int order) {}
@@ -71,7 +73,7 @@ public final class AnvilRecipes {
 
     public static final DataRecipeTable<SmithingRow> SMITHING = new DataRecipeTable<>("anvil_smithing", () -> SMITHING_CODEC);
 
-    // ---- construction ----
+    // Construction
 
     public record OutputRow(ItemSpec stack, float chance) {}
 
@@ -152,7 +154,7 @@ public final class AnvilRecipes {
      * The smithing recipes that are behaviour, not rows, at their places in 1.7's order (the anvil container and the
      * JEI page list smithing in this order): the dusted-steel folding chain (1.7 AnvilRecipes:75-80, its nine stages
      * are item data), the casting molds (a shape example and a blank mold; the example is not consumed), cyanide
-     * (eaten through Core ItemUses, History §19ek-hooks) and rename (1.7 :128-129).
+     * (eaten through Core ItemUses) and rename (1.7 :128-129).
      */
     private static List<Ordered> codeSmithing() {
         List<Ordered> rows = new ArrayList<>();
@@ -178,8 +180,8 @@ public final class AnvilRecipes {
         rows.add(new Ordered(order++, new AnvilSmithingMold(new ItemStack(ModMoldItems.mold_blade.get()),
                 new ComparableStack(ModItems.blade_titanium.get()), ModItems.blade_titanium.get(), ModItems.blade_tungsten.get())));
         rows.add(new Ordered(order++, new AnvilSmithingMold(new ItemStack(ModMoldItems.mold_blades.get()),
-                new ComparableStack(com.hbm.items.ModMachineItems.blades_steel.get()),
-                com.hbm.items.ModMachineItems.blades_steel.get(), com.hbm.items.ModMachineItems.blades_titanium.get())));
+                new ComparableStack(ModMachineItems.blades_steel.get()),
+                ModMachineItems.blades_steel.get(), ModMachineItems.blades_titanium.get())));
         rows.add(new Ordered(order++, new AnvilSmithingMold(new ItemStack(ModMoldItems.mold_stamp.get()),
                 new ComparableStack(ModStampItems.stamp_iron_flat.get()),
                 ModStampItems.stamp_stone_flat.get(), ModStampItems.stamp_iron_flat.get(), ModStampItems.stamp_steel_flat.get(),
@@ -261,9 +263,9 @@ public final class AnvilRecipes {
             this.setOverlay(OverlayType.NONE);
         }
 
-        /** 1.7 {@code enableLBSM && enableLBSMUnlockAnvil}: every anvil recipe at tier 1 (History §19ej-8). */
+        /** 1.7 {@code enableLBSM && enableLBSMUnlockAnvil}: every anvil recipe at tier 1. */
         static boolean lbsmUnlock() {
-            return com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMUnlockAnvil;
+            return GeneralConfig.enableLBSM && GeneralConfig.enableLBSMUnlockAnvil;
         }
 
         public AnvilConstructionRecipe setTier(int tier) {

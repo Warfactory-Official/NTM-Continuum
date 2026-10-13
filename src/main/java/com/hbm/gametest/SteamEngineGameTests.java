@@ -2,12 +2,14 @@ package com.hbm.gametest;
 
 import com.hbm.blocks.machine.MachineSteamEngine;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModGearItems;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineSteamEngine;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -23,7 +25,7 @@ public final class SteamEngineGameTests {
         BlockPos core = new BlockPos(3, 1, 3);
         MachineSteamEngine block = ModMachineBlocks.machine_steam_engine.get();
         helper.setBlock(core, block.defaultBlockState());
-        TileEntityMachineSteamEngine engine = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityMachineSteamEngine engine = GameTestHelpers.blockEntity(
                 helper, core, TileEntityMachineSteamEngine.class);
         block.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
 
@@ -48,16 +50,16 @@ public final class SteamEngineGameTests {
         BlockPos portCell = helper.absolutePos(core.offset(1, 1, 0));
         helper.assertTrue(block.canConnect(helper.getLevel(), portCell, ForgeDirection.EAST),
                 "Steam engine must expose a cable port");
-        helper.assertTrue(block.canConnect(com.hbm.inventory.fluid.Fluids.STEAM, helper.getLevel(),
+        helper.assertTrue(block.canConnect(Fluids.STEAM, helper.getLevel(),
                         portCell.getX(), portCell.getY(), portCell.getZ(), ForgeDirection.EAST),
                 "Steam engine must accept steam at its port");
-        helper.assertTrue(block.canConnect(com.hbm.inventory.fluid.Fluids.SPENTSTEAM, helper.getLevel(),
+        helper.assertTrue(block.canConnect(Fluids.SPENTSTEAM, helper.getLevel(),
                         portCell.getX(), portCell.getY(), portCell.getZ(), ForgeDirection.EAST),
                 "Steam engine must expose spent steam at its port");
-        helper.assertFalse(block.canConnect(com.hbm.inventory.fluid.Fluids.HOTSTEAM, helper.getLevel(),
+        helper.assertFalse(block.canConnect(Fluids.HOTSTEAM, helper.getLevel(),
                         portCell.getX(), portCell.getY(), portCell.getZ(), ForgeDirection.EAST),
                 "Steam engine must reject fluids not present in its tanks");
-        helper.assertFalse(block.canConnect(com.hbm.inventory.fluid.Fluids.WATER, helper.getLevel(),
+        helper.assertFalse(block.canConnect(Fluids.WATER, helper.getLevel(),
                         portCell.getX(), portCell.getY(), portCell.getZ(), ForgeDirection.EAST),
                 "Steam engine must reject non-cooling fluids");
         helper.succeed();
@@ -103,7 +105,7 @@ public final class SteamEngineGameTests {
     private static TileEntityMachineSteamEngine place(GameTestHelper helper, BlockPos pos) {
         MachineSteamEngine block = ModMachineBlocks.machine_steam_engine.get();
         helper.setBlock(pos, block.defaultBlockState());
-        TileEntityMachineSteamEngine engine = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityMachineSteamEngine engine = GameTestHelpers.blockEntity(
                 helper, pos, TileEntityMachineSteamEngine.class);
         block.fillSpace(helper.getLevel(), helper.absolutePos(pos), Direction.NORTH);
         return engine;

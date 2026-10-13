@@ -14,6 +14,7 @@ import com.hbm.items.weapon.ItemCustomMissilePart.WarheadType;
 import com.hbm.items.weapon.MissilePartTable;
 import dev.golem.core.Ids;
 import dev.golem.core.data.GolemComponent;
+import dev.golem.core.hook.Hook;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.ItemStacks;
@@ -27,14 +28,14 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 
 /**
- * The custom missile system's items — all 122 {@code mp_*} parts of 1.7 {@code ModItems} and the assembled
+ * The custom missile system's items: all 122 {@code mp_*} parts of 1.7 {@code ModItems} and the assembled
  * {@code missile_custom}, declared in upstream's order with upstream's builder calls.
  *
  * <p>Registry ids are the 1.7 unlocalized names, so the stability fin field {@code mp_stability_20_flat} is id
  * {@code mp_s_20} and the chips {@code mp_chip_N} are {@code mp_c_N}, exactly as upstream registered them.
  *
- * <p>1.7's {@code copy()} variants carried over the base part's type, sizes, attributes and health — and nothing
- * else, not even its author — so each copy here restates only the base's builder call and health before its own
+ * <p>1.7's {@code copy()} variants carried over the base part's type, sizes, attributes and health, and nothing
+ * else, not even its author, so each copy here restates only the base's builder call and health before its own
  * modifiers. Every part stacks to one and sits on the missile tab, except the two upstream hid
  * ({@code mp_fuselage_10_long_kerosene_dash}, {@code mp_fuselage_15_kerosene_pip}).
  */
@@ -306,10 +307,10 @@ public final class ModCustomMissileItems {
      */
     @FunctionalInterface
     public interface PartProperties {
-        net.minecraft.world.item.Item.Properties apply(String id, net.minecraft.world.item.Item.Properties properties);
+        Item.Properties apply(String id, Item.Properties properties);
     }
 
-    public static final dev.golem.core.hook.Hook<PartProperties> PART_PROPERTIES = dev.golem.core.hook.Hook.of(listeners -> (id, properties) -> {
+    public static final Hook<PartProperties> PART_PROPERTIES = Hook.of(listeners -> (id, properties) -> {
         for (PartProperties listener : listeners) properties = listener.apply(id, properties);
         return properties;
     });

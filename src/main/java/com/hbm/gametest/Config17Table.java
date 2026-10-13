@@ -1,10 +1,9 @@
 package com.hbm.gametest;
 
 /**
- * Every {@code hbm.cfg} key of original-hbm (1.7.10) {@code loadFromConfig}, generated from the 1.7 source by the
- * phase-8 compare script (History §19ej-8): category, key, Forge type ({@code B}/{@code I}/{@code D}/{@code S}, a
- * trailing {@code L} for a list, values joined by {@code |}), the 1.7 effective default, and for a key the port does
- * not write, the reason. {@code ConfigGameTests} checks a freshly written {@code hbm.cfg} against it.
+ * Every {@code hbm.cfg} key of 1.7 {@code loadFromConfig}, generated from the 1.7 source:
+ * category, key, Forge type ({@code B}/{@code I}/{@code D}/{@code S}, a trailing {@code L} for a list, values
+ * joined by {@code |}), the 1.7 effective default, and for a key the port does not write, the reason. {@code ConfigGameTests} checks a freshly written {@code hbm.cfg} against it.
  */
 final class Config17Table {
 

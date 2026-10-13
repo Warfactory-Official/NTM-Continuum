@@ -1,6 +1,7 @@
 package com.hbm.client.particle;
 
 import com.hbm.sound.ModSounds;
+import dev.golem.core.client.Sounds;
 import dev.golem.core.data.Tags;
 import dev.golem.core.render.Particles;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -9,6 +10,7 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
@@ -19,11 +21,11 @@ import net.minecraft.world.level.block.state.BlockState;
  * adjacent to the blast point.
  *
  * <p>Ported from 1.12.2 {@code ExplosionSmallCreator}. The debris texture is picked by probing the
- * six neighbours for the first non-air block, exactly as upstream does — so a blast in open air
- * throws no debris at all, which is deliberate rather than a bug.
+ * six neighbours for the first non-air block, as upstream does, so a blast in open air
+ * throws no debris.
  *
- * <p>The near/far report is scheduled by {@code distance / speedOfSound}, retaining the old delayed
- * sound arrival instead of replacing it with a local vanilla boom.
+ * <p>The near/far report is scheduled by {@code distance / speedOfSound}, keeping the delayed
+ * sound arrival of the original.
  */
 public class ExplosionSmallCreator implements IParticleCreator {
 
@@ -44,7 +46,7 @@ public class ExplosionSmallCreator implements IParticleCreator {
             if (distance < 200F) {
                 var sound = distance < 80F ? ModSounds.EXPLOSION_SMALL_NEAR.get()
                         : ModSounds.EXPLOSION_SMALL_FAR.get();
-                dev.golem.core.client.Sounds.playDelayed(
+                Sounds.playDelayed(
                         new PositionalSound(sound, x, y, z), (int) (distance / speedOfSound));
             }
         }
@@ -80,7 +82,7 @@ public class ExplosionSmallCreator implements IParticleCreator {
 
     /** Shared with {@link ExplosionLargeCreator}: a fixed point in the world, played on arrival. */
     static final class PositionalSound extends AbstractSoundInstance {
-        PositionalSound(net.minecraft.sounds.SoundEvent sound, double x, double y, double z) {
+        PositionalSound(SoundEvent sound, double x, double y, double z) {
             super(sound, SoundSource.PLAYERS, SoundInstance.createUnseededRandom());
             this.x = x;
             this.y = y;

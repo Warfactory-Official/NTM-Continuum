@@ -1,5 +1,6 @@
 package com.hbm.util;
 
+import com.hbm.handler.ArmorModHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -95,8 +96,8 @@ public class ArmorRegistry {
         }
 
         // 1.7 ran the same procedure on every installed module, so a gas-mask attachment protects.
-        if (com.hbm.handler.ArmorModHandler.hasMods(stack)) {
-            for (ItemStack mod : com.hbm.handler.ArmorModHandler.pryMods(stack)) {
+        if (ArmorModHandler.hasMods(stack)) {
+            for (ItemStack mod : ArmorModHandler.pryMods(stack)) {
                 if (!mod.isEmpty()) prot.addAll(getProtectionFromItem(mod));
             }
         }

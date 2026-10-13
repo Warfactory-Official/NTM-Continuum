@@ -1,10 +1,14 @@
 package com.hbm.inventory.gui;
 
-import com.hbm.foundry.MachineStrandCaster;
+import com.hbm.blocks.machine.MachineStrandCaster;
 import com.hbm.inventory.container.ContainerMachineStrandCaster;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.material.Mats;
 import com.hbm.tileentity.machine.TileEntityMachineStrandCaster;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
+import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -13,9 +17,9 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.List;
 
 /** The old 176x214 Strand Caster screen, including the melt, water, and spent-steam columns. */
-public class GUIMachineStrandCaster extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineStrandCaster> {
+public class GUIMachineStrandCaster extends CompatContainerScreen<ContainerMachineStrandCaster> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm",
+    private static final Identifier TEXTURE = Ids.of("hbm",
             "textures/gui/processing/gui_strand_caster.png");
 
     public GUIMachineStrandCaster(ContainerMachineStrandCaster menu, Inventory inventory, Component title) {
@@ -38,7 +42,7 @@ public class GUIMachineStrandCaster extends dev.golem.core.gui.CompatContainerSc
         drawTank(graphics, caster.steam, 82, 89);
     }
 
-    private void drawTank(GuiGraphicsExtractor graphics, com.hbm.inventory.fluid.tank.FluidTankNTM tank,
+    private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank,
                           int x, int bottom) {
         int height = tank.getMaxFill() <= 0 ? 0 : tank.getFill() * 24 / tank.getMaxFill();
         if (height <= 0) return;
@@ -58,11 +62,11 @@ public class GUIMachineStrandCaster extends dev.golem.core.gui.CompatContainerSc
         if (isHovering(16, 17, 36, 81, mouseX, mouseY)) {
             String content = caster.type == null ? "Empty" : caster.type.getDisplayName() + ": "
                     + Mats.formatAmount(caster.amount, false);
-            GuiDraw.tooltip(graphics, font, List.of(Component.literal(content)), java.util.Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, font, List.of(Component.literal(content)), Optional.empty(), mouseX, mouseY);
         } else if (isHovering(82, 14, 16, 24, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(caster.water), java.util.Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(caster.water), Optional.empty(), mouseX, mouseY);
         } else if (isHovering(82, 65, 16, 24, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(caster.steam), java.util.Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(caster.steam), Optional.empty(), mouseX, mouseY);
         }
     }
 }

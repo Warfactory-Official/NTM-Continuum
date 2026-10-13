@@ -1,5 +1,9 @@
 package com.hbm.capability;
 
+import com.hbm.advancement.HbmCriteria;
+import com.hbm.config.ServerConfig;
+import com.hbm.particle.helper.LivingEffects;
+import dev.golem.core.Ids;
 import dev.golem.core.data.EntityData;
 import dev.golem.core.world.Compat;
 import java.util.List;
@@ -11,10 +15,13 @@ import com.hbm.entity.EntityHbmProps.ContaminationEffect;
 import com.hbm.lib.ModDamageSources;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 
 /**
  * Static facade over each living entity's {@link EntityHbmProps}, ported ~1:1 from 1.12.2's
@@ -26,16 +33,15 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 public class HbmLivingProps {
 
     /** Identifier-keyed replacement for the old digamma AttributeModifier UUID. */
-    public static final Identifier DIGAMMA_ID = dev.golem.core.Ids.of(Constants.MOD_ID, "digamma");
+    public static final Identifier DIGAMMA_ID = Ids.of(Constants.MOD_ID, "digamma");
     public static final int maxAsbestos = 60 * 60 * 20;
     public static final int maxBlacklung = EntityHbmProps.MAX_BLACKLUNG;
 
     /**
      * Every living entity's HBM state, in the loader's own per-entity storage (NeoForge/Fabric data attachment,
-     * Forge capability) through Golem Core — saved as {@code hbm:living_props}. It replaced the
-     * {@code MixinLivingEntity} duck field and its hand-written {@code HbmLivingProps} child tag; an entity saved
-     * in that v1 format is read once on load. Not copied on respawn: {@code HbmPlayerProps.init} copies the
-     * player half, as 1.7's {@code onPlayerClone} did.
+     * Forge capability) through Golem Core, saved as {@code hbm:living_props}. An entity saved in the earlier
+     * {@code HbmLivingProps} child-tag format is read once on load. Not copied on respawn:
+     * {@code HbmPlayerProps.init} copies the player half, as 1.7's {@code onPlayerClone} did.
      */
     public static final EntityData<EntityHbmProps> DATA = EntityData.of(Constants.MOD_ID, "living_props",
             LivingEntity.class, EntityHbmProps::new, EntityHbmProps::save, EntityHbmProps::load)
@@ -129,14 +135,14 @@ public class HbmLivingProps {
                 entity.die(source);
             }
             // 1.7 setDigamma: a 50-particle soul-sand sweat burst on the digamma death, sent 50 blocks
-            com.hbm.particle.helper.LivingEffects.sweat(entity, 50, net.minecraft.world.level.block.Blocks.SOUL_SAND, 50D);
+            LivingEffects.sweat(entity, 50, Blocks.SOUL_SAND, 50D);
         }
         // 1.7 setDigamma: digammaSee above 0, digammaFeel from 2, digammaKnow from 10
-        if (entity instanceof net.minecraft.server.level.ServerPlayer player) {
+        if (entity instanceof ServerPlayer player) {
             double di = getDigamma(entity);
-            if (di > 0D) com.hbm.advancement.HbmCriteria.DIGAMMA.fire(player, "see", net.minecraft.world.item.ItemStack.EMPTY, di);
-            if (di >= 2D) com.hbm.advancement.HbmCriteria.DIGAMMA.fire(player, "feel", net.minecraft.world.item.ItemStack.EMPTY, di);
-            if (di >= 10D) com.hbm.advancement.HbmCriteria.DIGAMMA.fire(player, "know", net.minecraft.world.item.ItemStack.EMPTY, di);
+            if (di > 0D) HbmCriteria.DIGAMMA.fire(player, "see", ItemStack.EMPTY, di);
+            if (di >= 2D) HbmCriteria.DIGAMMA.fire(player, "feel", ItemStack.EMPTY, di);
+            if (di >= 10D) HbmCriteria.DIGAMMA.fire(player, "know", ItemStack.EMPTY, di);
         }
     }
 
@@ -258,7 +264,7 @@ public class HbmLivingProps {
 
     /// CONTAGION ///
     public static int getContagion(LivingEntity entity) {
-        if (!com.hbm.config.ServerConfig.ENABLE_MKU.get()) return 0; // 1.7: no MKU, no infection
+        if (!ServerConfig.ENABLE_MKU.get()) return 0; // 1.7: no MKU, no infection
         return getData(entity).getContagion();
     }
 

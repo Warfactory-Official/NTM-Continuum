@@ -1,6 +1,9 @@
 package com.hbm.blocks.bomb;
 
 import com.hbm.config.BombConfig;
+import dev.golem.core.gui.Menus;
+import dev.golem.core.world.CompatBlock;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Mirror;
 import dev.golem.core.registry.TickingBlock;
@@ -32,7 +35,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.UUID;
 
 /** Common block-side behavior shared by the four old MK5/Torex bomb blocks. */
-public abstract class NukeBombBlock extends dev.golem.core.world.CompatBlock implements TickingBlock, IBomb {
+public abstract class NukeBombBlock extends CompatBlock implements TickingBlock, IBomb {
 
     /** Legacy horizontal facing ordinals: north=2, south=3, west=4, east=5. */
     public static final IntegerProperty FACING = IntegerProperty.create("facing", 2, 5);
@@ -85,8 +88,8 @@ public abstract class NukeBombBlock extends dev.golem.core.world.CompatBlock imp
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (player instanceof ServerPlayer serverPlayer
-                && level.getBlockEntity(pos) instanceof net.minecraft.world.MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+                && level.getBlockEntity(pos) instanceof MenuProvider provider) {
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }
@@ -120,7 +123,7 @@ public abstract class NukeBombBlock extends dev.golem.core.world.CompatBlock imp
     /** Selects the old block's radius before its component inventory is consumed. */
     protected abstract int radiusFor(TileEntityNukeBomb bomb);
 
-    /** N2 intentionally uses the no-radiation MK5 factory; the other three are nuclear blasts. */
+    /** N2 uses the no-radiation MK5 factory; the other three are nuclear blasts. */
     protected boolean noRadiation() {
         return false;
     }

@@ -6,9 +6,11 @@ import com.hbm.world.gen.nbt.LegacyStructurePalette;
 import com.hbm.world.gen.nbt.NBTStructure;
 import dev.golem.core.data.NbtFiles;
 import dev.golem.core.gametest.GameTestHelpers;
+import java.io.IOException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.StairBlock;
@@ -32,7 +34,7 @@ public final class StructureWandGameTests {
     }
 
     /** Hand-read from 1.7's metadata tables (BlockStateData for vanilla, the 1.7 classes for HBM). */
-    public static void legacyPalette(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void legacyPalette(GameTestHelper helper) {
         BlockState granite = LegacyStructurePalette.resolve("minecraft:stone", 1).state();
         helper.assertTrue(granite.is(Blocks.GRANITE), "stone:1 is granite, got " + granite);
 
@@ -75,7 +77,7 @@ public final class StructureWandGameTests {
     }
 
     /** meteor-3-dirt: a 3x4x3 plate of polished meteorite with dirt on top and a jigsaw in the middle of the plate. */
-    public static void bundledStructure(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void bundledStructure(GameTestHelper helper) {
         NBTStructure structure = new NBTStructure("hbm", "structures/meteor/loot3x3/meteor-3-dirt.nbt");
         helper.assertTrue(structure.isLoaded() && structure.isLegacy(), "the bundled 1.7 file loads as a legacy structure");
         helper.assertTrue(structure.getSizeX() == 3 && structure.getSizeY() == 4 && structure.getSizeZ() == 3, "size 3x4x3");
@@ -93,7 +95,7 @@ public final class StructureWandGameTests {
     }
 
     /** A port-saved box (stairs, a jigsaw with a replacement, wand_air) written, read back and built beside it. */
-    public static void saveAndLoad(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void saveAndLoad(GameTestHelper helper) {
         BlockState stairs = Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST);
         helper.setBlock(new BlockPos(1, 1, 1), stairs);
         helper.setBlock(new BlockPos(2, 1, 1), ModStructureWandBlocks.wand_jigsaw.get().defaultBlockState()
@@ -111,7 +113,7 @@ public final class StructureWandGameTests {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             NbtFiles.writeCompressed(saved, out);
-        } catch (java.io.IOException ex) {
+        } catch (IOException ex) {
             throw new IllegalStateException(ex);
         }
 

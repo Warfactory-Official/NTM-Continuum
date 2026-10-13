@@ -1,11 +1,12 @@
 package com.hbm.items.machine;
 
+import dev.golem.core.world.CompatItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /** One fresh arc-furnace electrode variant; the old metadata variants are separate 1.21 items. */
-public class ItemArcElectrode extends dev.golem.core.world.CompatItem {
+public class ItemArcElectrode extends CompatItem {
 
     public enum ElectrodeType {
         GRAPHITE("Graphite Electrode", 10),

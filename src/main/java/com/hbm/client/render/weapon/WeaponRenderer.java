@@ -3,10 +3,16 @@ package com.hbm.client.render.weapon;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import dev.golem.core.client.Frames;
+import dev.golem.core.client.HandSpace;
+import dev.golem.core.client.ViewBob;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -21,10 +27,10 @@ import org.jspecify.annotations.Nullable;
  * The first-person body of a Sedna weapon.
  *
  * <p>A held weapon is not posed by vanilla's item display transforms at all: it is drawn in camera
- * space, as 1.12's cancelled {@code RenderHandEvent} did — {@link PoseStack#setIdentity()} then the
- * camera's rotation. Expressed as a {@code display{}} slot instead it is the wrong size, in the wrong
- * place, rotating about the wrong pivot. On that frame come upstream's three layers in order: turn
- * lag, walk sway, then the weapon's own offset with its aim-down-sights lerp.
+ * space, as 1.12's cancelled {@code RenderHandEvent} did, with {@link PoseStack#setIdentity()} then the
+ * camera's rotation. A {@code display{}} slot would give the wrong size, place and pivot. On that
+ * frame come upstream's three layers in order: turn lag, walk sway, then the weapon's own offset with
+ * its aim-down-sights lerp.
  */
 public abstract class WeaponRenderer {
 
@@ -58,16 +64,16 @@ public abstract class WeaponRenderer {
         LocalPlayer player = minecraft.player;
         if (player == null) return;
 
-        interp = dev.golem.core.client.Frames.partialTick();
+        interp = Frames.partialTick();
 
         pose.pushPose();
-        dev.golem.core.client.HandSpace.enterCameraSpace(pose);
+        HandSpace.enterCameraSpace(pose);
         if (otherArm) pose.scale(-1F, 1F, 1F);
         setupTransformsAndSubmit(stack, player, pose, collector, light, overlay, otherArm);
         pose.popPose();
     }
 
-    /** Turn lag, walk sway, then the weapon's own offset — upstream's {@code setupTransformsAndRender}. */
+    /** Turn lag, walk sway, then the weapon's own offset. This is upstream's {@code setupTransformsAndRender}. */
     protected void setupTransformsAndSubmit(ItemStack stack, LocalPlayer player, PoseStack pose,
             SubmitSink collector, int light, int overlay, boolean otherArm) {
 
@@ -82,8 +88,8 @@ public abstract class WeaponRenderer {
 
         pose.mulPose(Axis.YP.rotationDegrees(180));
 
-        float distanceInterp = dev.golem.core.client.ViewBob.walkDistance(player, interp);
-        float bob = dev.golem.core.client.ViewBob.bob(player, interp);
+        float distanceInterp = ViewBob.walkDistance(player, interp);
+        float bob = ViewBob.bob(player, interp);
         pose.translate(
                 Mth.sin(distanceInterp * (float) Math.PI * swayPeriod) * bob * 0.5F * swayMagnitude,
                 -Math.abs(Mth.cos(distanceInterp * (float) Math.PI * swayPeriod) * bob) * swayMagnitude,
@@ -126,7 +132,7 @@ public abstract class WeaponRenderer {
         return ItemGunBaseNT.prevAimingProgress == 1F && ItemGunBaseNT.aimingProgress == 1F;
     }
 
-    /** The upstream FOV adjustment for this renderer; most renderers deliberately leave it unchanged. */
+    /** The upstream FOV adjustment for this renderer. Most renderers leave it unchanged. */
     public float viewFov(ItemStack stack, float fov, float partialTick) {
         return fov;
     }
@@ -219,13 +225,11 @@ public abstract class WeaponRenderer {
     /**
      * The pose upstream puts a weapon in for every context that is not the first-person hand.
      *
-     * <p>These used to be dropped, on the reading that the chains are GUI-space calls that would throw
-     * the weapon off screen. They do — on their own. What they are missing is the matrix 1.7 had already
-     * applied before it called the renderer, which is exactly what {@link Pose17.Klass#ITEM_RENDER_WEAPON}
-     * supplies through the base model's {@code display{}}: with the engine slot in front of them the
-     * chains land where they did in 1.7, and the fifty-two per-weapon poses they carry come back with
-     * them. Dropping them instead cost every gun its own inventory and third-person framing and left one
-     * hand-fitted {@code display{}} standing in for all of them.
+     * <p>The chains are GUI-space calls that would throw the weapon off screen on their own. They
+     * need the matrix 1.7 had already applied before it called the renderer, which
+     * {@link Pose17.Klass#ITEM_RENDER_WEAPON} supplies through the base model's {@code display{}}. With
+     * the engine slot in front of them the chains land where they did in 1.7 and carry the fifty-two
+     * per-weapon poses, so every gun keeps its own inventory and third-person framing.
      */
     public final void setupStatic(PoseStack pose, ItemStack stack, ItemDisplayContext context) {
         staticContext = context;
@@ -243,7 +247,7 @@ public abstract class WeaponRenderer {
     }
 
     /**
-     * {@code ItemRenderWeaponBase.setupInv}. Written in 1.7's pixel slot — sixteen units wide, y down —
+     * {@code ItemRenderWeaponBase.setupInv}. Written in 1.7's pixel slot, sixteen units wide, y down,
      * because that is the space {@link Pose17.Klass#ITEM_RENDER_WEAPON}'s GUI frame ends in.
      */
     protected void setupInv(PoseStack pose, ItemStack stack, float spinDegrees) {
@@ -287,7 +291,7 @@ public abstract class WeaponRenderer {
         pose.translate(3.5F, 0F, 0F);
     }
 
-    /** {@code ItemRenderWeaponBase.setupEntity} — the dropped item, and with it the frame and shelf. */
+    /** {@code ItemRenderWeaponBase.setupEntity}: the dropped item, and with it the frame and shelf. */
     protected void setupEntity(PoseStack pose, ItemStack stack) {
         pose.scale(0.125F, 0.125F, 0.125F);
         pose.mulPose(Axis.YP.rotationDegrees(-90F));
@@ -305,17 +309,17 @@ public abstract class WeaponRenderer {
      *
      * <p>Both halves have to be the declaration's and not the mesh's. The static pose scales the body
      * by anything from 0.375 to 7.5, so an unposed box sizes the picture-in-picture rectangle for a
-     * weapon nobody draws; and the rest pose turns the body — every gun here opens with a half turn
-     * about Y — so a box taken from the OBJ's own bounds sits mirrored about the pivot. On the SPAS,
-     * whose mesh runs ten units back from its origin, that put the rectangle most of a slot away from
-     * the drawing. Nothing on this path reads a clock, and the result is the union box, so the
+     * weapon nobody draws; and the rest pose turns the body. Every gun here opens with a half turn
+     * about Y, so a box taken from the OBJ's own bounds sits mirrored about the pivot (the SPAS mesh
+     * runs ten units back from its origin, which put the rectangle most of a slot away from the
+     * drawing). Nothing on this path reads a clock, and the result is the union box, so the
      * rectangle 26.1 floors to whole pixels is fixed for a given stack and context.
      */
     public final Vector3fc[] staticExtents(ItemStack stack, ItemDisplayContext context) {
-        framePose.begin(stack, false, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
+        framePose.begin(stack, false, OverlayTexture.NO_OVERLAY,
                 context, null, InteractionHand.MAIN_HAND);
-        java.util.List<Vector3fc> mesh = new java.util.ArrayList<>();
-        dev.golem.core.render.gem.Gem.extents(gem(), framePose, new Matrix4f(), mesh::add);
+        List<Vector3fc> mesh = new ArrayList<>();
+        Gem.extents(gem(), framePose, new Matrix4f(), mesh::add);
         int phases = animated(context) ? SPIN_SAMPLES : 1;
         float[] min = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE};
         float[] max = {-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};

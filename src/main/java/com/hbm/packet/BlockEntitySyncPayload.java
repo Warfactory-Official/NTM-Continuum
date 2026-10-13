@@ -8,7 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 
 /**
- * Cross-loader S2C payload that carries a {@link BlockPos} plus a pre-serialized blob of bytes — the
+ * Cross-loader S2C payload that carries a {@link BlockPos} plus a pre-serialized blob of bytes, the
  * 26.1 equivalent of HBM's old {@code BufPacket}. The blob is whatever the target tile's
  * {@link com.hbm.tileentity.IBufPacketReceiver#serialize} wrote; the client receiver wraps it back in
  * a {@link RegistryFriendlyByteBuf} and feeds it to {@code deserialize}.

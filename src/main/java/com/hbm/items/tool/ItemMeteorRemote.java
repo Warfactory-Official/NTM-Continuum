@@ -1,9 +1,11 @@
 package com.hbm.items.tool;
 
 import com.hbm.entity.projectile.EntityMeteor;
+import com.hbm.handler.BossSpawnHandler;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import dev.golem.core.world.ItemStacks;
 import java.util.List;
 import java.util.Random;
 import net.minecraft.network.chat.Component;
@@ -35,7 +37,7 @@ public class ItemMeteorRemote extends CompatItem {
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (!level.isClientSide()) dev.golem.core.world.ItemStacks.hurtAndBreak(stack, 1, player, hand);
+        if (!level.isClientSide()) ItemStacks.hurtAndBreak(stack, 1, player, hand);
 
         if (!level.isClientSide()) {
             spawnMeteorAtPlayer(player, false);
@@ -50,6 +52,6 @@ public class ItemMeteorRemote extends CompatItem {
 
     /** 1.7 {@code BossSpawnHandler.spawnMeteorAtPlayer}, which the remote called; it shares that handler's Random. */
     public static void spawnMeteorAtPlayer(Player player, boolean repell) {
-        com.hbm.handler.BossSpawnHandler.spawnMeteorAtPlayer(player, repell);
+        BossSpawnHandler.spawnMeteorAtPlayer(player, repell);
     }
 }

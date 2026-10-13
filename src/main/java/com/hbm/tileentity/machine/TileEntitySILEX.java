@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFillableItem;
@@ -19,6 +20,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -40,16 +42,16 @@ import dev.golem.core.data.DataOut;
 import org.jspecify.annotations.Nullable;
 
 /**
- * SILEX — Separation of Isotopes by Laser EXcitation (1.12.2 {@code TileEntitySILEX}).
+ * SILEX: Separation of Isotopes by Laser EXcitation (1.12.2 {@code TileEntitySILEX}).
  *
  * <p>The chamber dissolves an isotope-bearing item into a pool of "solution" using peroxide, then a
  * {@code machine_fel} firing through it sorts the isotopes out. It consumes <b>no power</b>; all the
  * energy comes from the laser.
  *
- * <p><b>The FEL link is not a connection — it is a push, every tick.</b> {@link #mode} is reset to
+ * <p><b>The FEL link is not a connection. It is a push, every tick.</b> {@link #mode} is reset to
  * {@link EnumWavelengths#NULL} at the end of every server tick, and any FEL whose beam passes through
  * re-asserts it on its own tick. That is why an unpowered or misaimed laser stops the chamber
- * instantly, and why the two block entities' tick order is load-bearing. Preserved verbatim.
+ * instantly, and why the two block entities' tick order is load-bearing. Preserved unchanged.
  *
  * <p>Slots: <b>0</b> input · <b>1</b> fluid identifier · <b>2–3</b> fluid container bays ·
  * <b>4</b> output · <b>5–10</b> output queue.
@@ -65,7 +67,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
     public static final int PRIME = 137;
     public int recipeIndex = 0;
 
-    /** Sided access: the input plus the whole queue. Note slot 4 (the staging output) is NOT exposed. */
+    /** Sided access: the input plus the whole queue. Slot 4 (the staging output) is not exposed. */
     private static final int[] IO_SLOTS = {0, 5, 6, 7, 8, 9, 10};
 
     /** Pushed in by the FEL each tick, cleared at the end of each tick. Never persists on its own. */
@@ -76,7 +78,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
     public int currentFill;
     public int progress;
 
-    /** Wraps at 20; the item→solution dissolve step only fires on the tick it hits 0. */
+    /** Wraps at 20; the item-to-solution dissolve step only fires on the tick it hits 0. */
     private int loadDelay;
 
     public TileEntitySILEX(BlockPos pos, BlockState state) {
@@ -109,7 +111,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         te.mode = EnumWavelengths.NULL;
     }
 
-    // ---------------------------------------------------------------- solution loading
+    // Solution loading
 
     /**
      * Two ways solution enters the pool:
@@ -117,7 +119,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
      *   <li><b>Directly from the tank</b>, at up to 50 mB/tick, when the tank holds a fluid that is
      *       itself a SILEX input (UF6, PUF6, DEATH, VITRIOL, REDMUD). The pool is then "made of" that
      *       fluid, represented as a {@code fluid_icon} stack.</li>
-     *   <li><b>By dissolving an item</b> from slot 0 — but only when the tank holds <b>peroxide</b>,
+     *   <li><b>By dissolving an item</b> from slot 0, but only when the tank holds <b>peroxide</b>,
      *       and only on the tick {@code loadDelay} wraps to 0 (so once every 20 ticks). One item
      *       becomes {@code recipe.fluidProduced} mB of solution and costs the same amount of peroxide.</li>
      * </ol>
@@ -126,7 +128,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
     private void loadFluid() {
         FluidType tankType = tank.getTankType();
 
-        // path 1 — the tank's own fluid is a recipe input
+        // path 1: the tank's own fluid is a recipe input
         if (tankType != Fluids.NONE && tankType != Fluids.PEROXIDE) {
             ItemStack direct = ItemFluidIcon.make(tankType);
             if (SILEXRecipes.getOutput(direct) != null) {
@@ -143,10 +145,10 @@ public class TileEntitySILEX extends TileEntityMachineBase
         if (loadDelay > 20) loadDelay = 0;
         if (loadDelay != 0) return;
 
-        // path 2 — dissolve one item, peroxide only
+        // path 2: dissolve one item, peroxide only
         ItemStack in = inventory.getStackInSlot(0);
         if (in.isEmpty() || tankType != Fluids.PEROXIDE) return;
-        ItemStack single = dev.golem.core.world.ItemStacks.copyWithCount(in, 1);
+        ItemStack single = ItemStacks.copyWithCount(in, 1);
         if (current != null && !sameSubstance(current, single)) return;
 
         SILEXRecipe recipe = SILEXRecipes.getOutput(in);
@@ -163,17 +165,17 @@ public class TileEntitySILEX extends TileEntityMachineBase
         setChanged();
     }
 
-    // ---------------------------------------------------------------- processing
+    // Processing
 
     /**
-     * One tick of laser separation. Returns whether progress was made — a {@code false} resets
+     * One tick of laser separation. Returns whether progress was made. A {@code false} resets
      * {@code progress} to 0 in {@link #serverTick}, so interrupting the beam loses the partial roll.
      *
      * <p>The speed formula is upstream's, including its integer truncation:
      * <pre>progress += Math.pow(2, mode.strength() - recipe.laserStrength.strength() + 1) / 2</pre>
      * At an exact wavelength match that is {@code 2^1 / 2 = 1} per tick; one step stronger gives 2,
      * two steps 4, and so on. Because it is a {@code double} added into an {@code int}, the value is
-     * truncated — which is invisible here only because every result is already a whole number.
+     * truncated, which is invisible here only because every result is already a whole number.
      */
     private boolean process() {
         if (current == null || currentFill <= 0) return false;
@@ -210,7 +212,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
     /**
      * Moves the finished item out of the staging slot 4 into the 5–10 queue: into a matching partial
      * stack first, else the first empty slot. If the queue is full the item stays in slot 4, which
-     * stalls {@link #process} — the machine's "output full" state.
+     * stalls {@link #process}, the machine's "output full" state.
      */
     private void dequeue() {
         ItemStack out = inventory.getStackInSlot(4);
@@ -219,7 +221,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         for (int i = 5; i <= 10; i++) {
             ItemStack slot = inventory.getStackInSlot(i);
             if (slot.isEmpty()) continue;
-            if (!dev.golem.core.world.ItemStacks.sameItemAndData(slot, out)) continue;
+            if (!ItemStacks.sameItemAndData(slot, out)) continue;
             int space = slot.getMaxStackSize() - slot.getCount();
             if (space <= 0) continue;
             int moved = Math.min(space, out.getCount());
@@ -249,7 +251,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         return true;
     }
 
-    // ---------------------------------------------------------------- fluid plumbing
+    // Fluid plumbing
 
     /** Slot 1 holds a fluid identifier; the tank adopts its type (the 1.12.2 {@code setType(1, 1)}). */
     private void updateTankType() {
@@ -269,7 +271,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         if (in.isEmpty()) return;
 
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
             setChanged();
             return;
         }
@@ -279,7 +281,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
             if (held <= 0 || heldType == Fluids.NONE) return;
             int addable = tank.fill(heldType, held, false);
             if (addable <= 0) return;
-            ItemStack work = dev.golem.core.world.ItemStacks.copyWithCount(in, 1);
+            ItemStack work = ItemStacks.copyWithCount(in, 1);
             int taken = fillable.tryEmpty(heldType, addable, work);
             if (taken <= 0 || !fits(3, work)) return;
             tank.fill(heldType, taken, true);
@@ -298,7 +300,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
     private boolean fits(int slot, ItemStack stack) {
         ItemStack there = inventory.getStackInSlot(slot);
         if (there.isEmpty()) return true;
-        return dev.golem.core.world.ItemStacks.sameItemAndData(there, stack)
+        return ItemStacks.sameItemAndData(there, stack)
                 && there.getCount() + stack.getCount() <= there.getMaxStackSize();
     }
 
@@ -312,7 +314,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
 
     /**
      * The two fluid ports: {@code ±2} blocks out along the axis PERPENDICULAR to the machine's facing,
-     * at {@code y+1} — the two cells {@code MachineSILEX.visitCells} opens.
+     * at {@code y+1}: the two cells {@code MachineSILEX.visitCells} opens.
      */
     public DirPos[] getConPos() {
         ForgeDirection dir = ForgeDirection.getOrientation(
@@ -333,11 +335,11 @@ public class TileEntitySILEX extends TileEntityMachineBase
         return new FluidTankNTM[]{tank};
     }
 
-    // ---------------------------------------------------------------- inventory rules
+    // Inventory rules
 
     /**
      * Slot 0 accepts anything a recipe can dissolve, 1 a fluid identifier, 2 a fluid container, 3 the
-     * emptied container (so the machine's own transfer can place it — the player is blocked by the
+     * emptied container (so the machine's own transfer can place it; the player is blocked by the
      * take-only slot in {@link ContainerSILEX}). Slot 4 is the staging output and 5–10 are the queue:
      * both are written by the machine only, never inserted into.
      */
@@ -358,16 +360,16 @@ public class TileEntitySILEX extends TileEntityMachineBase
         return slot == 0 && isItemValidForSlot(slot, stack);
     }
 
-    /** Automation may only pull finished goods out of the queue — never the raw input. */
+    /** Automation may only pull finished goods out of the queue, never the raw input. */
     @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot >= 5; }
 
-    // ---------------------------------------------------------------- GUI scaling
+    // GUI scaling
 
     public int getProgressScaled(int i) { return (progress * i) / processTime; }
     public int getFluidScaled(int i) { return tank.getMaxFill() == 0 ? 0 : (tank.getFill() * i) / tank.getMaxFill(); }
     public int getFillScaled(int i) { return (currentFill * i) / maxFill; }
 
-    /** The GUI's "void contents" button — dumps the solution pool. Upstream ignores value and meta. */
+    /** The GUI's "void contents" button dumps the solution pool. Upstream ignores value and meta. */
     @Override
     public void handleButtonPacket(int value, int meta) {
         this.currentFill = 0;
@@ -375,7 +377,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         setChanged();
     }
 
-    // ---------------------------------------------------------------- menu
+    // Menu
 
     @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_silex"); }
 
@@ -384,7 +386,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         return new ContainerSILEX(containerId, playerInventory, worldPosition);
     }
 
-    // ---------------------------------------------------------------- sync + persistence
+    // Sync + persistence
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
@@ -394,7 +396,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         buf.writeUtf(mode.name());
         tank.serialize(buf);
         // Upstream wrote the pool's item only when `current != null` but read it back when
-        // `currentFill > 0` — an asymmetry that desyncs the buffer whenever one holds without the
+        // `currentFill > 0`, an asymmetry that desyncs the buffer whenever one holds without the
         // other. Both sides key on the SAME condition here; the observable state is identical because
         // serverTick nulls `current` whenever the fill hits 0.
         boolean hasCurrent = current != null && !current.isEmpty();
@@ -416,7 +418,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
     }
 
     private static @Nullable ItemStack readSubstance(String itemId, int fluidId) {
-        Item item = BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.parse(itemId)).orElse(null);
+        Item item = BuiltInRegistries.ITEM.getOptional(Ids.parse(itemId)).orElse(null);
         if (item == null) return null;
         return fluidId >= 0 ? ItemFluidIcon.make(Fluids.byNetworkId(fluidId)) : new ItemStack(item);
     }

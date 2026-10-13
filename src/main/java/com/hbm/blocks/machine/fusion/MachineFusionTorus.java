@@ -24,8 +24,8 @@ import org.jspecify.annotations.Nullable;
  * non-zero entry means "this cell is part of the reactor". That is what gives the tokamak its round
  * plan and its hollow centre.
  *
- * <p>Twenty-five cells are promoted to ports — six on each of the four sides at both the bottom and top
- * ring, plus the centre-top cell — which is upstream's own comment-worthy quantity ("is that enough
+ * <p>Twenty-five cells are promoted to ports, six on each of the four sides at both the bottom and top
+ * ring, plus the centre-top cell, which is upstream's own comment-worthy quantity ("is that enough
  * ports?"). Power, coolant and the three fuel fluids all arrive through them.
  *
  * <p>It can be assembled from a {@code struct_torus_core} or placed from its block item (1.7 gives it the machine
@@ -123,7 +123,7 @@ public class MachineFusionTorus extends BlockMultiblockMachine
 
     /**
      * The centre-bottom port hangs directly beneath the core cell itself, so the core carries a face of
-     * its own -- the one place in the corpus where {@code getConPos} names the core and not a cell.
+     * its own, the one place in the corpus where {@code getConPos} names the core and not a cell.
      */
     @Override public int coreMask() { return MASK_DOWN; }
 
@@ -151,7 +151,7 @@ public class MachineFusionTorus extends BlockMultiblockMachine
      * A shaped ring rather than a box, so no super: the mask is the footprint. The layout is identical
      * under a quarter turn at every layer, which is what lets it be stated in the facing frame at all.
      *
-     * <p>"is that enough ports?" -- upstream. Six per side at both ring heights, plus the centre-top.
+     * <p>"is that enough ports?", upstream. Six per side at both ring heights, plus the centre-top.
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {

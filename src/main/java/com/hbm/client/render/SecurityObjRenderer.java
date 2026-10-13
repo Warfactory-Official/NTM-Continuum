@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.blocks.generic.BarbedWire;
 import com.hbm.blocks.ModSecurityBlocks;
 import com.hbm.tileentity.TileEntitySecurityObj;
+import dev.golem.core.Ids;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -47,8 +48,8 @@ public class SecurityObjRenderer extends GemBER<TileEntitySecurityObj, SecurityO
     }
 
     private void build() {
-        Geometry wire = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/blocks/barbed_wire.obj")).all();
-        Geometry spikes = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/blocks/spikes.obj")).all();
+        Geometry wire = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/blocks/barbed_wire.obj")).all();
+        Geometry spikes = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/blocks/spikes.obj")).all();
 
         for (RegistryObject<BarbedWire> block : ModSecurityBlocks.BARBED_WIRES) {
             pieces.put(block.get(), new Piece(wire, Surface.cutout(

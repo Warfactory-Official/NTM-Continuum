@@ -1,7 +1,7 @@
 package com.hbm.items;
 
 /**
- * The metadata-subtype enums from the 1.12.2 {@code ItemEnums} — in 1.21 each variant becomes its own
+ * The metadata-subtype enums from the 1.12.2 {@code ItemEnums}. In 1.21 each variant becomes its own
  * registered item (see the hand-registered family classes alongside {@link ModIntermediateItems}).
  */
 public final class ItemEnums {
@@ -23,7 +23,7 @@ public final class ItemEnums {
         public static final EnumChunkType[] VALUES = values();
     }
 
-    /** Circuits / electronics — the ubiquitous machine-recipe intermediate. */
+    /** Circuits / electronics: the ubiquitous machine-recipe intermediate. */
     public enum EnumCircuitType {
         VACUUM_TUBE, CAPACITOR, CAPACITOR_TANTALIUM, PCB, SILICON, CHIP, CHIP_BISMOID, ANALOG, BASIC,
         ADVANCED, CAPACITOR_BOARD, BISMOID, CONTROLLER_CHASSIS, CONTROLLER, CONTROLLER_ADVANCED, QUANTUM,

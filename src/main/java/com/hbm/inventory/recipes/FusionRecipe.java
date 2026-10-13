@@ -11,9 +11,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
  * recipe carries the three numbers that make the reactor a reactor:
  *
  * <ul>
- *   <li>{@link #ignitionTemp} — the klystron energy the torus must be fed before the plasma lights at all,</li>
- *   <li>{@link #outputTemp} — the plasma energy it then puts out at full blast, and</li>
- *   <li>{@link #neutronFlux} — the neutron output, which breeders take and which is never shared.</li>
+ *   <li>{@link #ignitionTemp}: the klystron energy the torus must be fed before the plasma lights at all,</li>
+ *   <li>{@link #outputTemp}: the plasma energy it then puts out at full blast, and</li>
+ *   <li>{@link #neutronFlux}: the neutron output, which breeders take and which is never shared.</li>
  * </ul>
  *
  * plus the plasma's colour, which the torus hands to every receiver so their renderers match the fuel.

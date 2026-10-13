@@ -1,5 +1,6 @@
 package com.hbm.items.special;
 
+import com.hbm.advancement.HbmCriteria;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.items.ModFinalConsumableItems;
 import com.hbm.sound.ModSounds;
@@ -9,6 +10,7 @@ import dev.golem.core.world.Effects;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -61,8 +63,8 @@ public class ItemCigarette extends CompatItem {
                 HbmLivingProps.incrementAsbestos(entity, 2000);
                 HbmLivingProps.incrementRadiation(entity, 100F);
                 // 1.7 achNo9: the advancement's player predicate asks for the No. 9 helmet
-                if (entity instanceof net.minecraft.server.level.ServerPlayer player) {
-                    com.hbm.advancement.HbmCriteria.SMOKED.fire(player, smoked);
+                if (entity instanceof ServerPlayer player) {
+                    HbmCriteria.SMOKED.fire(player, smoked);
                 }
             } else {
                 HbmLivingProps.incrementBlackLung(entity, 500);

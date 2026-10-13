@@ -42,7 +42,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * The emitter: it turns stored HE into a beam of joules and fires it along its facing. The beam walks
  * cell by cell, handing its energy to the first {@link ILaserable} it meets, passing through every
- * {@link TileEntityCore} on the way — each one multiplying what continues — and otherwise burning
+ * {@link TileEntityCore} on the way, each one multiplying what continues, and otherwise burning
  * through whatever is in front of it. Running it at all costs cryogel; running dry turns the emitter
  * into lava.
  *

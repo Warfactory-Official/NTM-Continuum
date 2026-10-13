@@ -22,7 +22,7 @@ import java.util.List;
  *
  * <p>1.7 never had a role vocabulary: it stated geometry per call site, so the same cell could be a power
  * port in {@code trySubscribe} and no fluid port at all in {@code sendFluid}. Folding both into one face
- * mask would union them and open each on the other's cells, which is silent — the machine works, it just
+ * mask would union them and open each on the other's cells, which is silent: the machine works, it just
  * accepts a commodity at a face the original refused. The role planes are what stop that, so their
  * separation is worth asserting directly rather than through a machine that happens to use them.
  */
@@ -136,11 +136,11 @@ public final class FoldedGeometryGameTests {
     }
 
     /**
-     * A piston may not take one cell out of a machine. 1.7 got the refusal free -- {@code BlockDummyable}
+     * A piston may not take one cell out of a machine. 1.7 got the refusal free: {@code BlockDummyable}
      * extends {@code BlockContainer}, so every cell answered {@code hasTileEntity} and vanilla declined --
      * and a folded cell carries no block entity, so each of the two cell kinds has to earn it separately:
      * a machine whose cells are its own block from {@code TickingBlock}, the shared cell from its
-     * {@code PushReaction}. Shearing one cell out leaves a footprint the index no longer describes, and
+     * {@code PushReaction}. Shearing one cell out leaves a footprint the index does not describe, and
      * the displaced cell is an orphan no later teardown collects.
      */
     public static void pistonsRefused(GameTestHelper helper) {

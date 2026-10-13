@@ -11,6 +11,7 @@ import com.hbm.tileentity.machine.TileEntityPWRController;
 import dev.golem.core.registry.BlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
@@ -105,7 +106,7 @@ public final class PwrGameTests {
         controller.setupTanks();
         controller.runReactor(helper.getLevel(), pos);
 
-        helper.assertTrue(controller.typeLoaded == net.minecraft.core.registries.BuiltInRegistries.ITEM.getId(ModPwrItems.fuel(EnumPWRFuel.MEU)) && controller.amountLoaded == 1,
+        helper.assertTrue(controller.typeLoaded == BuiltInRegistries.ITEM.getId(ModPwrItems.fuel(EnumPWRFuel.MEU)) && controller.amountLoaded == 1,
                 "first step must load the MEU rod: type=" + controller.typeLoaded + " amount=" + controller.amountLoaded);
         helper.assertTrue(controller.inventory.getStackInSlot(0).isEmpty(), "loading must consume the rod");
         helper.assertTrue(controller.rodLevel == 99, "control rods must walk one percent per tick, got " + controller.rodLevel);

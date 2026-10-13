@@ -138,7 +138,7 @@ public final class ScriptFieldsGameTests {
         }
     }
 
-    // ------------------------------------------------------------------ rows
+    // Rows
 
     /** A row written field by field through the stated shapes, as a script would. */
     private static final class Row {

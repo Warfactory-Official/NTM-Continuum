@@ -2,29 +2,46 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.api.block.IToolable.ToolType;
+import com.hbm.blocks.ModCustomMissileBlocks;
 import com.hbm.blocks.ModIcfBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.multiblock.BlockMultiblockCell;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.entity.logic.BomberPayload;
 import com.hbm.entity.logic.EntityBomber;
 import com.hbm.handler.NTMToolHandler;
 import com.hbm.handler.ability.IToolAreaAbility;
 import com.hbm.handler.ability.IToolHarvestAbility;
 import com.hbm.handler.ability.IWeaponAbility;
+import com.hbm.interfaces.IEntityLookOverlay;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
+import com.hbm.items.ModCustomMissileItems;
 import com.hbm.items.ModGunItems;
 import com.hbm.items.ModWeaponModItems;
 import com.hbm.items.special.BedrockOreType;
+import com.hbm.items.weapon.ItemCustomMissilePart;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.factory.GunFactory;
 import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
+import com.hbm.packet.ParticlePayload;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
+import com.hbm.tileentity.machine.TileEntityMachineMissileAssembly;
 import dev.golem.core.data.Tags;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.net.GolemBuffers;
+import dev.golem.core.world.LightLevels;
+import io.netty.buffer.Unpooled;
+import java.util.Arrays;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 
 import java.util.List;
@@ -69,26 +86,26 @@ public final class AddonContentGameTests {
      * found by name, listed after HBM's, survives the particle payload, and a bare or taken name is refused.
      */
     public static void effects(GameTestHelper helper) {
-        var all = com.hbm.particle.helper.HbmEffectNT.values();
-        helper.assertTrue(all.length >= 44 && all[0] == com.hbm.particle.helper.HbmEffectNT.Flamethrower
-                && all[43] == com.hbm.particle.helper.HbmEffectNT.Ufo
-                && "ExplosionSmall".equals(com.hbm.particle.helper.HbmEffectNT.ExplosionSmall.name()),
+        var all = HbmEffectNT.values();
+        helper.assertTrue(all.length >= 44 && all[0] == HbmEffectNT.Flamethrower
+                && all[43] == HbmEffectNT.Ufo
+                && "ExplosionSmall".equals(HbmEffectNT.ExplosionSmall.name()),
                 "HBM's effects must come first, in 1.7 order, under their 1.7 names");
-        var probe = com.hbm.particle.helper.HbmEffectNT.byName("hbm_test:probe");
-        if (probe == null) probe = com.hbm.particle.helper.HbmEffectNT.register("hbm_test:probe");
-        helper.assertTrue(com.hbm.particle.helper.HbmEffectNT.byName("hbm_test:probe") == probe
-                && java.util.Arrays.asList(com.hbm.particle.helper.HbmEffectNT.values()).indexOf(probe) >= 44,
+        var probe = HbmEffectNT.byName("hbm_test:probe");
+        if (probe == null) probe = HbmEffectNT.register("hbm_test:probe");
+        helper.assertTrue(HbmEffectNT.byName("hbm_test:probe") == probe
+                && Arrays.asList(HbmEffectNT.values()).indexOf(probe) >= 44,
                 "an addon effect must resolve by name and follow HBM's");
         boolean bareRefused = false, takenRefused = false;
-        try { com.hbm.particle.helper.HbmEffectNT.register("Probe"); } catch (IllegalArgumentException e) { bareRefused = true; }
-        try { com.hbm.particle.helper.HbmEffectNT.register("hbm_test:probe"); } catch (IllegalArgumentException e) { takenRefused = true; }
+        try { HbmEffectNT.register("Probe"); } catch (IllegalArgumentException e) { bareRefused = true; }
+        try { HbmEffectNT.register("hbm_test:probe"); } catch (IllegalArgumentException e) { takenRefused = true; }
         helper.assertTrue(bareRefused && takenRefused, "a bare or taken effect name must be refused");
-        var buffer = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
-        com.hbm.packet.ParticlePayload.CODEC.encode(new com.hbm.packet.ParticlePayload(probe.name(), 1, 2, 3, new CompoundTag()), buffer);
-        helper.assertTrue(com.hbm.particle.helper.HbmEffectNT.byName(com.hbm.packet.ParticlePayload.CODEC.decode(buffer).effect()) == probe,
+        var buffer = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
+        ParticlePayload.CODEC.encode(new ParticlePayload(probe.name(), 1, 2, 3, new CompoundTag()), buffer);
+        helper.assertTrue(HbmEffectNT.byName(ParticlePayload.CODEC.decode(buffer).effect()) == probe,
                 "an addon effect must survive the particle payload");
         probe.summonParticle(helper.getLevel(), 0, 0, 0, null); // no handler on a server: silent
-        probe.send(helper.getLevel(), helper.absolutePos(net.minecraft.core.BlockPos.ZERO), null);
+        probe.send(helper.getLevel(), helper.absolutePos(BlockPos.ZERO), null);
         helper.succeed();
     }
 
@@ -99,28 +116,28 @@ public final class AddonContentGameTests {
      */
     public static void multiblockLight(GameTestHelper helper) {
         int blocks = 0;
-        for (Block block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {
-            if (!(block instanceof com.hbm.blocks.multiblock.BlockMultiblockCore)
-                    && !(block instanceof com.hbm.blocks.multiblock.BlockMultiblockCell)) continue;
+        for (Block block : BuiltInRegistries.BLOCK) {
+            if (!(block instanceof BlockMultiblockCore)
+                    && !(block instanceof BlockMultiblockCell)) continue;
             blocks++;
             for (var state : block.getStateDefinition().getPossibleStates()) {
                 if (!state.getFluidState().isEmpty()) continue;
-                helper.assertTrue(dev.golem.core.world.LightLevels.opacity(state) == 0
-                                && dev.golem.core.world.LightLevels.propagatesSkylightDown(state),
+                helper.assertTrue(LightLevels.opacity(state) == 0
+                                && LightLevels.propagatesSkylightDown(state),
                         "multiblock state is not light-transparent: " + state);
             }
         }
         helper.assertTrue(blocks > 100, "expected the folded multiblocks, found " + blocks);
         var core = ModMachineBlocks.machine_assembly_machine.get().defaultBlockState();
-        helper.assertTrue(dev.golem.core.world.LightLevels.opacity(core) == 0, "assembly machine must have opacity 0");
+        helper.assertTrue(LightLevels.opacity(core) == 0, "assembly machine must have opacity 0");
         helper.succeed();
     }
 
     /** C-20: an entity that is no {@code IEntityLookOverlay} has no readout (and plain HBM has no entity that is). */
     public static void entityLookOverlay(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
-        helper.assertTrue(com.hbm.interfaces.IEntityLookOverlay.of(player, player) == null
-                && com.hbm.interfaces.IEntityLookOverlay.of(null, player) == null, "no readout for a plain entity");
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        helper.assertTrue(IEntityLookOverlay.of(player, player) == null
+                && IEntityLookOverlay.of(null, player) == null, "no readout for a plain entity");
         helper.succeed();
     }
 
@@ -130,17 +147,17 @@ public final class AddonContentGameTests {
      */
     public static void missilePartProperties(GameTestHelper helper) {
         int parts = 0;
-        for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
-            if (!(item instanceof com.hbm.items.weapon.ItemCustomMissilePart)) continue;
-            var key = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item);
+        for (var item : BuiltInRegistries.ITEM) {
+            if (!(item instanceof ItemCustomMissilePart)) continue;
+            var key = BuiltInRegistries.ITEM.getKey(item);
             if (!Constants.MOD_ID.equals(key.getNamespace())) continue;
             parts++;
-            if (com.hbm.items.ModCustomMissileItems.PART_PROPERTIES.iterator().hasNext()) continue; // an addon is loaded
+            if (ModCustomMissileItems.PART_PROPERTIES.iterator().hasNext()) continue; // an addon is loaded
             helper.assertTrue(new ItemStack(item).getMaxStackSize() == 1, key + " must stack to 1 without an addon listener");
         }
         helper.assertTrue(parts == 122, "1.7 has 122 custom missile parts, found " + parts);
-        var assembly = new com.hbm.tileentity.machine.TileEntityMachineMissileAssembly(net.minecraft.core.BlockPos.ZERO,
-                com.hbm.blocks.ModCustomMissileBlocks.machine_missile_assembly.get().defaultBlockState());
+        var assembly = new TileEntityMachineMissileAssembly(BlockPos.ZERO,
+                ModCustomMissileBlocks.machine_missile_assembly.get().defaultBlockState());
         helper.assertTrue(assembly.getMaxStackSize() == 1, "the missile assembly holds one item per slot");
         helper.succeed();
     }
@@ -158,10 +175,10 @@ public final class AddonContentGameTests {
             helper.assertTrue(names[i].equals(payload.name()) && BomberPayload.byName(names[i]) == payload,
                     "payload " + i + " must be " + names[i] + ", got " + payload.name());
             EntityBomber bomber = payload.create(level, 0, 64, 0);
-            helper.assertTrue(java.util.Arrays.equals(timing[i], bomber.timing()) && names[i].equals(bomber.payload())
+            helper.assertTrue(Arrays.equals(timing[i], bomber.timing()) && names[i].equals(bomber.payload())
                             && bomber.timer == 200,
-                    names[i] + " must time " + java.util.Arrays.toString(timing[i]) + " over 200 ticks, got "
-                            + java.util.Arrays.toString(bomber.timing()) + " / " + bomber.timer);
+                    names[i] + " must time " + Arrays.toString(timing[i]) + " over 200 ticks, got "
+                            + Arrays.toString(bomber.timing()) + " / " + bomber.timer);
             int style = bomber.getStyle();
             if (i == 5) helper.assertTrue(style == 4, "the stinger flies airframe 4");
             if (i == 6 || i == 7) helper.assertTrue(style == 6, names[i] + " flies airframe 6");

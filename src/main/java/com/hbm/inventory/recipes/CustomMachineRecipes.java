@@ -13,6 +13,7 @@ import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import dev.golem.core.Ids;
+import dev.golem.core.platform.ConfigFiles;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
@@ -55,13 +56,13 @@ public final class CustomMachineRecipes {
     public static synchronized void ensureLoaded() {
         if (loaded) return;
         loaded = true;
-        initialize(dev.golem.core.platform.ConfigFiles.configDir().resolve("hbmRecipes"));
+        initialize(ConfigFiles.configDir().resolve("hbmRecipes"));
     }
 
     /** 1.7 {@code SerializableRecipe.initialize} as {@code /ntmreload} runs it: re-reads the file now. */
     public static synchronized void reload() {
         loaded = true;
-        initialize(dev.golem.core.platform.ConfigFiles.configDir().resolve("hbmRecipes"));
+        initialize(ConfigFiles.configDir().resolve("hbmRecipes"));
     }
 
     /** {@link #reload} from another recipe directory: the harness's staged test recipes ({@code hbm_gapsa}). */

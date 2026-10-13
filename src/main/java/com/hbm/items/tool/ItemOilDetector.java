@@ -1,10 +1,12 @@
 package com.hbm.items.tool;
 
+import com.hbm.api.data.DepositDataMaps;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
@@ -20,11 +22,11 @@ import net.minecraft.world.level.Level;
 
 
 /**
- * Oil Reservoir Detector — 1:1 port of the 1.12.2 {@code ItemOilDetector}. Right-click: scans the
- * player's own column (y+15 down to the world floor) for {@code ore_oil} → green "bullseye" chat line
- * plus the world-floor cell for {@code ore_bedrock_oil} → dark-green "bullseye bedrock"; then takes 50
- * gaussian samples (range 25, σ = range/2, clamped) around the player → yellow "detected" / gold
- * "detected bedrock" / red "no oil".
+ * Oil Reservoir Detector, a 1:1 port of the 1.12.2 {@code ItemOilDetector}. Right-click: scans the
+ * player's own column (y+15 down to the world floor) for {@code ore_oil} (green "bullseye" chat line) plus
+ * the world-floor cell for {@code ore_bedrock_oil} (dark-green "bullseye bedrock"); then takes 50 gaussian
+ * samples (range 25, σ = range/2, clamped) around the player (yellow "detected", gold "detected bedrock",
+ * or red "no oil").
  */
 public class ItemOilDetector extends CompatItem {
 
@@ -34,20 +36,20 @@ public class ItemOilDetector extends CompatItem {
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-                                         java.util.List<Component> tooltip, TooltipFlag flag) {
+                                         List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("item.hbm.oil_detector.desc1"));
         tooltip.add(Component.translatable("item.hbm.oil_detector.desc2"));
     }
 
     /** 1.7: {@code ore_oil}; any deposit a plain drill reaches ({@code hbm:fluid_deposit}, not fracking-only). */
     public static boolean isOil(Level level, BlockPos pos) {
-        var deposit = com.hbm.api.data.DepositDataMaps.deposit(level.getBlockState(pos));
+        var deposit = DepositDataMaps.deposit(level.getBlockState(pos));
         return deposit != null && !deposit.frackingOnly();
     }
 
     /** 1.7: {@code ore_bedrock_oil}; any fracking-only deposit. */
     public static boolean isBedrockOil(Level level, BlockPos pos) {
-        var deposit = com.hbm.api.data.DepositDataMaps.deposit(level.getBlockState(pos));
+        var deposit = DepositDataMaps.deposit(level.getBlockState(pos));
         return deposit != null && deposit.frackingOnly();
     }
 

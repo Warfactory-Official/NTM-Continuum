@@ -56,7 +56,7 @@ public class EntityMovingItem extends EntityMovingConveyorObject implements ICon
     }
 
     /**
-     * 1.7 substituted a stone stack for a null one so its renderer always had something to draw; 26.2 draws an
+     * 1.7 substituted a stone stack for a null one so its renderer always had something to draw; 26.1 draws an
      * empty stack as nothing, so the placeholder is dropped.
      */
     @Override

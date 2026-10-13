@@ -7,8 +7,11 @@ import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.generic.BlockWandStructure;
 import com.hbm.blocks.generic.ModStructureWandBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.creativetabs.ModTabs;
 import com.hbm.entity.ModEntities;
+import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.effect.EntityMist;
+import com.hbm.entity.mob.EntityUndeadSoldier;
 import com.hbm.entity.projectile.EntityRubble;
 import com.hbm.handler.pollution.PollutionSavedData;
 import com.hbm.handler.pollution.PollutionType;
@@ -27,18 +30,26 @@ import dev.golem.core.data.Tags;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.Entities;
+import dev.golem.core.world.ItemStacks;
+import java.util.Locale;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntArrayTag;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -49,7 +60,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Numeric ids are never persisted (user rule 2026-10-03, History section 19ej-ids).
+ * Numeric ids are never persisted.
  *
  * <ul>
  *   <li>The guard: every HBM block entity is created and saved, and its save must hold no numeric value under a
@@ -60,8 +71,7 @@ import java.util.regex.Pattern;
  *   <li>Old int-keyed data reads as the default instead of failing (pre-release, no migration).</li>
  *   <li>The 1.7 fluid numbers survive only as a frozen side table, checked here against 1.7's registration order.</li>
  *   <li>Items: every HBM item and creative-tab stack is encoded: no {@code hbm:item_variant} /
- *       {@code hbm:storage_waste_class} (removed 2026-10-06, History §19es-itemvariant) and no number under an
- *       identity key in its components.</li>
+ *       {@code hbm:storage_waste_class} and no number under an identity key in its components.</li>
  * </ul>
  */
 public final class IdsGameTests {
@@ -123,7 +133,6 @@ public final class IdsGameTests {
             "SODIUM_ALUMINATE", "BAUXITE_SOLUTION", "ALUMINA", "AIR", "CONCRETE", "DHC", "AIRBLAST", "FLUE"
     };
 
-    // ------------------------------------------------------------------------------------------------------------
 
     /** Every HBM block entity, created detached and saved: no identity key may hold a number. */
     public static void guard(GameTestHelper helper) {
@@ -162,19 +171,19 @@ public final class IdsGameTests {
      * number under an identity key (matched without the component's namespace).
      */
     public static void items(GameTestHelper helper) {
-        var ops = net.minecraft.resources.RegistryOps.create(NbtOps.INSTANCE, helper.getLevel().registryAccess());
+        var ops = RegistryOps.create(NbtOps.INSTANCE, helper.getLevel().registryAccess());
         List<ItemStack> stacks = new ArrayList<>();
-        for (net.minecraft.world.item.Item item : BuiltInRegistries.ITEM) {
+        for (Item item : BuiltInRegistries.ITEM) {
             if (BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(Constants.MOD_ID)) stacks.add(new ItemStack(item));
         }
-        for (var suppliers : com.hbm.creativetabs.ModTabs.STACK_CONTENTS.values()) {
+        for (var suppliers : ModTabs.STACK_CONTENTS.values()) {
             for (var supplier : suppliers) stacks.addAll(supplier.get());
         }
         int scanned = 0, skipped = 0;
         List<String> numeric = new ArrayList<>();
         for (ItemStack stack : stacks) {
             if (stack.isEmpty()) continue;
-            Tag tag = dev.golem.core.world.ItemStacks.optionalCodec().encodeStart(ops, stack).result().orElse(null);
+            Tag tag = ItemStacks.optionalCodec().encodeStart(ops, stack).result().orElse(null);
             if (tag == null) {
                 skipped++;
                 continue;
@@ -197,7 +206,7 @@ public final class IdsGameTests {
             for (String key : Tags.keys(compound)) {
                 Tag child = compound.get(key);
                 String bare = key.substring(key.indexOf(':') + 1);
-                if ((child instanceof NumericTag || child instanceof net.minecraft.nbt.IntArrayTag)
+                if ((child instanceof NumericTag || child instanceof IntArrayTag)
                         && IDENTITY_KEY.matcher(bare).matches()) {
                     numeric.add(owner + ":" + path + "/" + key + "=" + child);
                 }
@@ -212,7 +221,7 @@ public final class IdsGameTests {
         if (tag instanceof CompoundTag compound) {
             for (String key : Tags.keys(compound)) {
                 Tag child = compound.get(key);
-                if ((child instanceof NumericTag || child instanceof net.minecraft.nbt.IntArrayTag)
+                if ((child instanceof NumericTag || child instanceof IntArrayTag)
                         && IDENTITY_KEY.matcher(key).matches()) {
                     numeric.add(owner + ":" + path + "/" + key + "=" + child);
                 }
@@ -223,19 +232,18 @@ public final class IdsGameTests {
         }
     }
 
-    // ------------------------------------------------------------------------------------------------------------
 
     public static void fluids(GameTestHelper helper) {
         var registries = helper.getLevel().registryAccess();
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
 
         // every fluid has a unique name, its vanilla fluid id: hbm:<lowercase name>, and vanilla's ids for the three
-        // fluids that are vanilla's (§19fa-m1); it reads back from it
+        // fluids that are vanilla's, and each reads back from its id
         Set<String> names = new HashSet<>();
         for (FluidType fluid : Fluids.getAll()) {
             String name = fluid.getRegistryName();
             String expected = fluid == Fluids.NONE ? "minecraft:empty" : fluid == Fluids.WATER ? "minecraft:water"
-                    : fluid == Fluids.LAVA ? "minecraft:lava" : "hbm:" + fluid.getName().toLowerCase(java.util.Locale.ROOT);
+                    : fluid == Fluids.LAVA ? "minecraft:lava" : "hbm:" + fluid.getName().toLowerCase(Locale.ROOT);
             helper.assertTrue(name.equals(expected), "registry name of " + fluid);
             helper.assertTrue(names.add(name), "duplicate fluid registry name " + name);
             helper.assertTrue(Fluids.byRegistryName(name) == fluid, name + " does not read back");
@@ -244,7 +252,7 @@ public final class IdsGameTests {
                     "the fluid codec must save " + name + " as its name, saved " + encoded);
         }
 
-        // saves from before 2026-10-08 named the three vanilla fluids hbm:none, hbm:water, hbm:lava
+        // Older saves named the three vanilla fluids hbm:none, hbm:water, hbm:lava
         helper.assertTrue(Fluids.byRegistryName("hbm:water") == Fluids.WATER && Fluids.byRegistryName("hbm:lava") == Fluids.LAVA
                 && Fluids.byRegistryName("hbm:none") == Fluids.NONE, "the former hbm: names of water, lava and none still read");
 
@@ -305,7 +313,7 @@ public final class IdsGameTests {
         var registries = helper.getLevel().registryAccess();
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
         BlockState stairs = Blocks.OAK_STAIRS.defaultBlockState()
-                .setValue(net.minecraft.world.level.block.StairBlock.FACING, net.minecraft.core.Direction.EAST);
+                .setValue(StairBlock.FACING, Direction.EAST);
 
         CompoundTag wand = new CompoundTag();
         SavedIds.putState(wand, "block", stairs);
@@ -334,12 +342,12 @@ public final class IdsGameTests {
         helper.assertTrue(rubbleLoaded.getBlockState() == stairs, "the rubble reloads the stairs, got " + rubbleLoaded.getBlockState());
 
         // the undead soldier's type is saved by name (phase 7 hand-over)
-        var soldier = Entities.createDetached(com.hbm.entity.ModNtmEntities.UNDEAD_SOLDIER.get(), helper.getLevel());
+        var soldier = Entities.createDetached(ModNtmEntities.UNDEAD_SOLDIER.get(), helper.getLevel());
         CompoundTag soldierSave = Entities.saveToTag(soldier);
         soldierSave.putString("type", "skeleton");
         Entities.loadFromTag(soldier, soldierSave);
         CompoundTag soldierResave = Entities.saveToTag(soldier);
-        helper.assertTrue(soldier.soldierType() == com.hbm.entity.mob.EntityUndeadSoldier.TYPE_SKELETON
+        helper.assertTrue(soldier.soldierType() == EntityUndeadSoldier.TYPE_SKELETON
                 && "skeleton".equals(Tags.getStringOr(soldierResave, "type", "")), "the soldier type round-trips by name: " + soldierResave);
         helper.succeed();
     }
@@ -399,7 +407,7 @@ public final class IdsGameTests {
                     "1.7 fluid " + i + " is " + LEGACY_ORDER[i] + ", the side table says " + fluid.getName());
         }
 
-        // an int-keyed tank from a pre-2026-10-03 save loads as an empty tank instead of failing
+        // an int-keyed tank from an older save loads as an empty tank instead of failing
         BlockState barrelState = ModFluidNetBlocks.barrel_steel.get().defaultBlockState();
         TileEntityBarrel barrel = (TileEntityBarrel) ((EntityBlock) barrelState.getBlock()).newBlockEntity(pos, barrelState);
         CompoundTag old = BlockEntities.save(barrel, registries);
@@ -407,7 +415,7 @@ public final class IdsGameTests {
         old.putInt("tank", 500);
         TileEntityBarrel oldLoaded = (TileEntityBarrel) BlockEntities.load(pos, barrelState, old, registries);
         helper.assertTrue(oldLoaded != null && oldLoaded.tank.getTankType() == Fluids.NONE, "an old numeric tank type reads as NONE");
-        helper.assertTrue(Fluids.CODEC.parse(NbtOps.INSTANCE, net.minecraft.nbt.IntTag.valueOf(20)).result().orElseThrow() == Fluids.NONE,
+        helper.assertTrue(Fluids.CODEC.parse(NbtOps.INSTANCE, IntTag.valueOf(20)).result().orElseThrow() == Fluids.NONE,
                 "the fluid codec reads an old int as NONE");
         CompoundTag oldEnum = new CompoundTag();
         oldEnum.putByte("priority", (byte) 2);

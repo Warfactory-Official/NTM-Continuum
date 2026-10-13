@@ -21,12 +21,13 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * The switchable conductor owned by {@link FluidValve}: a duct that only conducts while it is open.
  *
- * <p>On the graph that is the whole of it — a closed valve owns no cell, so the two runs it sits
+ * <p>On the graph that is the whole of it. A closed valve owns no cell, so the two runs it sits
  * between are two networks, and opening it mints the cell that makes them one. Nothing needs to tear a
  * network down or rebuild it; {@link #syncCell} is the only thing that ever touches the graph.
  */
@@ -38,7 +39,7 @@ public class TileEntityFluidValve extends CompatBlockEntity implements IFluidPip
         this(ModBlockEntities.FLUID_VALVE.get(), pos, state);
     }
 
-    protected TileEntityFluidValve(net.minecraft.world.level.block.entity.BlockEntityType<?> type,
+    protected TileEntityFluidValve(BlockEntityType<?> type,
             BlockPos pos, BlockState state) {
         super(type, pos, state);
     }

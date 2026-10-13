@@ -1,6 +1,6 @@
 package com.hbm.physics;
 
-/** The subset of {@code javax.vecmath.Quat4f} old-hbm's physics used, with vecmath's semantics. */
+/** The subset of {@code javax.vecmath.Quat4f} 1.12.2's physics used, with vecmath's semantics. */
 public final class Quat {
 
     private static final double EPS = 0.000001;

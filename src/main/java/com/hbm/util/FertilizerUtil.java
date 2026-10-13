@@ -1,5 +1,6 @@
 package com.hbm.util;
 
+import dev.golem.core.world.Plants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
@@ -32,7 +33,7 @@ public final class FertilizerUtil {
         // ntm-next asks the loader's bonemeal event first; this port has no such bus, so the vanilla path decides.
 
         if (!(state.getBlock() instanceof BonemealableBlock growable)) return false;
-        if (!dev.golem.core.world.Plants.isValidBonemealTarget(growable, level, pos, state)) return false;
+        if (!Plants.isValidBonemealTarget(growable, level, pos, state)) return false;
 
         if (level instanceof ServerLevel server) {
             if (force || growable.isBonemealSuccess(level, level.getRandom(), pos, state)) {
@@ -44,7 +45,7 @@ public final class FertilizerUtil {
     }
 
     /**
-     * 1.7 {@code playAuxSFX(2005, ...)} - the bonemeal puff, renumbered in 26.2.
+     * 1.7 {@code playAuxSFX(2005, ...)} - the bonemeal puff, renumbered in 26.1.
      */
     public static void growthParticles(Level level, BlockPos pos) {
         level.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, pos, 0);

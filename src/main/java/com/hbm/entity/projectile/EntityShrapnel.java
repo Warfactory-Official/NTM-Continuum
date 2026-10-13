@@ -11,10 +11,14 @@ import com.hbm.sound.ModSounds;
 import dev.golem.core.data.CompatEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.data.SynchedData;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.Raycasts;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -51,9 +55,9 @@ public final class EntityShrapnel extends CompatEntity {
     /** 1.7 onImpact: {@code ticksExisted > 5} before any arm runs. */
     public static final int GRACE_TICKS = 5;
 
-    private static final net.minecraft.network.syncher.EntityDataAccessor<Byte> TRAIL =
-            net.minecraft.network.syncher.SynchedEntityData.defineId(EntityShrapnel.class,
-                    net.minecraft.network.syncher.EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Byte> TRAIL =
+            SynchedEntityData.defineId(EntityShrapnel.class,
+                    EntityDataSerializers.BYTE);
 
     public EntityShrapnel(EntityType<?> type, Level level) {
         super(type, level);
@@ -65,7 +69,7 @@ public final class EntityShrapnel extends CompatEntity {
     }
 
     @Override
-    protected void defineData(dev.golem.core.data.SynchedData data) {
+    protected void defineData(SynchedData data) {
         data.define(TRAIL, (byte) 0);
     }
 
@@ -118,7 +122,7 @@ public final class EntityShrapnel extends CompatEntity {
      */
     private void onImpact(ServerLevel server, @Nullable BlockPos hit) {
         discard();
-        // old-hbm: a shard in a peace dimension dies on impact with no arm at all
+        // 1.12.2: a shard in a peace dimension dies on impact with no arm at all
         if (!CompatibilityConfig.isWarDim(server)) return;
 
         int trail = getTrail();
@@ -136,9 +140,9 @@ public final class EntityShrapnel extends CompatEntity {
     }
 
     /**
-     * The volcano blob (1.7 dataWatcher 2 / 4): a blob falling faster than 0.2/t pools lava on top of the
+     * The volcano blob (1.7 dataWatcher 2 / 4). A blob falling faster than 0.2/t pools lava on top of the
      * block it hit (if that cell is replaceable) and fills the 3x3x3 from the hit block up two with carbon
-     * monoxide; a blob still rising blasts a strength-7 lava pocket into the roof it struck — the same
+     * monoxide. A rising blob blasts a strength-7 lava pocket into the roof, with the same
      * {@code ExplosionNT} attribute set as the core's own channel blasts.
      */
     private void erupt(ServerLevel server, BlockPos hit, boolean radioactive) {

@@ -1,10 +1,14 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.environment.Environment;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.sound.ModSounds;
 import com.hbm.util.TickPhase;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -27,12 +31,12 @@ public class TileEntityMachineBigAssTank extends TileEntityMachineGiantTank {
     }
 
     @Override
-    public long getReceiverSpeed(com.hbm.inventory.fluid.FluidType type, int pressure) {
+    public long getReceiverSpeed(FluidType type, int pressure) {
         return Math.max(50_000L, (tankNew.getMaxFill() - tankNew.getFill()) / 100L);
     }
 
     @Override
-    public long getProviderSpeed(com.hbm.inventory.fluid.FluidType type, int pressure) {
+    public long getProviderSpeed(FluidType type, int pressure) {
         return Math.max(50_000L, tankNew.getFill() / 100L);
     }
 
@@ -48,7 +52,7 @@ public class TileEntityMachineBigAssTank extends TileEntityMachineGiantTank {
     private void checkTilt(Level level) {
         if (!TickPhase.every(level, worldPosition, 20L)) return;
         // hbm-space TileEntityLoadedBase.checkTilt: nothing tilts in orbit (com.hbm.api.environment.Environment)
-        if (com.hbm.api.environment.Environment.inOrbit(level)) {
+        if (Environment.inOrbit(level)) {
             tilted = false;
             return;
         }
@@ -65,7 +69,7 @@ public class TileEntityMachineBigAssTank extends TileEntityMachineGiantTank {
         BlockPos floor = getFloorPosFromIndex(tiltBlocksChecked++);
         BlockState ground = level.getBlockState(floor);
         if (!ground.isFaceSturdy(level, floor, Direction.UP)
-                || !dev.golem.core.world.Compat.isSolidRender(ground, level, floor)
+                || !Compat.isSolidRender(ground, level, floor)
                 || ground.getBlock().getExplosionResistance() < Blocks.STONE.getExplosionResistance()) return;
         tiltBlocksValid++;
     }
@@ -81,8 +85,8 @@ public class TileEntityMachineBigAssTank extends TileEntityMachineGiantTank {
 
     @Override
     protected boolean checkFluidInteraction(Level level) {
-        if (tankNew.getTankType() != com.hbm.inventory.fluid.Fluids.AMAT
-                && tankNew.getTankType() != com.hbm.inventory.fluid.Fluids.ASCHRAB) return false;
+        if (tankNew.getTankType() != Fluids.AMAT
+                && tankNew.getTankType() != Fluids.ASCHRAB) return false;
         level.removeBlock(worldPosition, false);
         level.explode(null, worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
                 worldPosition.getZ() + 0.5D, 10F, true, Level.ExplosionInteraction.TNT);

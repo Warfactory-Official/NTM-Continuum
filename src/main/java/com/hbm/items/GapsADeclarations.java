@@ -10,7 +10,7 @@ import static dev.golem.core.dejson.Crafting.shaped;
 import static dev.golem.core.dejson.Crafting.shapeless;
 
 /**
- * Dejson declarations of the 2026-09-26 gap batch A: the ten 1.7 {@code ItemBatterySC} variants (sprites
+ * Dejson declarations for gap batch A: the ten 1.7 {@code ItemBatterySC} variants (sprites
  * {@code battery_sc.<variant>.png}, copied as {@code battery_sc_<variant>.png}) and their 1.7 {@code CraftingManager}
  * recipes (lines 262-271). Touches no Minecraft class: it runs in a plain JVM from {@code dejson.gradle.kts}.
  */

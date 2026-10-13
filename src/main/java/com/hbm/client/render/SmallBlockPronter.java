@@ -6,15 +6,13 @@ import dev.golem.core.render.Vertexes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 
 /**
- * Emits the <b>small</b> textured cubes that stand in for not-yet-placed blocks — the 26.1 replacement
+ * Emits the <b>small</b> textured cubes that stand in for not-yet-placed blocks, the 26.1 replacement
  * for 1.12.2's {@code render/util/SmallBlockPronter} ({@code renderSimpleBlockAt} /
  * {@code renderPilarBlockAt}). Used by {@link StructPreviewRenderer} to draw the ghost of a multiblock
  * that has not been built yet.
  *
- * <p>The size is the whole point of the name: every face is inset by {@link #INSET} of a block on each
- * side, so the ghost is a 5-pixel cube floating in the middle of its cell rather than a full block. A
- * full-size ghost reads as "there is already a block here" and buries the structure in opaque mass;
- * the small one reads as a marker.
+ * <p>Every face is inset by {@link #INSET} of a block on each side, so the ghost is a 5-pixel cube
+ * floating in the middle of its cell. A full-size ghost would read as "there is already a block here".
  *
  * <p>Upstream sampled the block atlas; here each face samples a standalone texture over the full
  * {@code 0..1} UV range, which is what {@code CompatRenderTypes} works with and avoids depending on
@@ -23,7 +21,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
  */
 public final class SmallBlockPronter {
 
-    /** Upstream's {@code 11 * pixel / 2} — each face sits this far in from the cell edge. */
+    /** Upstream's {@code 11 * pixel / 2}: each face sits this far in from the cell edge. */
     public static final float INSET = 11F / 32F;
 
     private SmallBlockPronter() {}

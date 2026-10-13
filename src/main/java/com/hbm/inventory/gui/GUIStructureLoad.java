@@ -26,7 +26,7 @@ import java.util.stream.Stream;
  * 90 above the bottom, names at +20, the matching file boxed), and a LOAD button 70 above the bottom. Clicking a
  * row fills the name; closing sends it, the button with {@code load} set.
  *
- * <p>1.7 drew the list with {@code GuiSlot}'s dirt-texture panels, which no longer exist in every supported
+ * <p>1.7 drew the list with {@code GuiSlot}'s dirt-texture panels, which are not available in every supported
  * version; the list area is a dark panel instead.
  */
 public final class GUIStructureLoad extends CompatScreen {

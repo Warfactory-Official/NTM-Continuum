@@ -2,7 +2,10 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMachineWoodBurner;
 import com.hbm.tileentity.machine.TileEntityMachineWoodBurner;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -13,9 +16,9 @@ import net.minecraft.world.inventory.Slot;
 
 import java.util.List;
 
-/** Wood Burner screen — 1.7.10 {@code GUIMachineWoodBurner} ({@code generators/gui_wood_burner_alt.png}, 176×186). */
-public class GUIMachineWoodBurner extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineWoodBurner> {
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/generators/gui_wood_burner_alt.png");
+/** Wood Burner screen, from 1.7.10 {@code GUIMachineWoodBurner} ({@code generators/gui_wood_burner_alt.png}, 176×186). */
+public class GUIMachineWoodBurner extends CompatContainerScreen<ContainerMachineWoodBurner> {
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/generators/gui_wood_burner_alt.png");
 
     public GUIMachineWoodBurner(ContainerMachineWoodBurner menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 186);
@@ -76,7 +79,7 @@ public class GUIMachineWoodBurner extends dev.golem.core.gui.CompatContainerScre
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.gameMode == null) return false;
         // 1.7 hit boxes: toggle x [53,69), y (17,32]; liquid/solid switch x [46,76), y (37,51].

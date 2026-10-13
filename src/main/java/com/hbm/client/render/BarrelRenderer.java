@@ -1,17 +1,26 @@
 package com.hbm.client.render;
 
+import com.hbm.api.block.BarrelSkin;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.blocks.generic.BlockBarrelDeco;
 import com.hbm.blocks.machine.BlockFluidBarrel;
+import com.hbm.inventory.fluid.FluidHazard;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import dev.golem.core.Ids;
+import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderState;
+import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -35,16 +44,16 @@ public class BarrelRenderer<T extends BlockEntity> extends GemBER<T, BarrelRende
         public Surface skin = SURF[0];
         public boolean[] connector = new boolean[4]; // +X, -X, -Z, +Z
         /** The stored fluid's diamond; null for an empty or decorative barrel (1.7: {@code type != Fluids.NONE}). */
-        public com.hbm.inventory.fluid.FluidHazard hazard;
+        public FluidHazard hazard;
     }
 
-    private static final WavefrontObj MODEL = WavefrontObj.load(dev.golem.core.Ids.of("hbm", "models/blocks/barrel.obj"));
+    private static final WavefrontObj MODEL = WavefrontObj.load(Ids.of("hbm", "models/blocks/barrel.obj"));
     private static final String[] TEXTURES = {"barrel_plastic", "barrel_corroded", "barrel_steel", "barrel_tcalloy", "barrel_antimatter",
             "barrel_red", "barrel_pink", "barrel_yellow", "barrel_vitrified", "barrel_lox", "barrel_taint", "barrel_iron"};
     private static final Surface[] SURF = new Surface[TEXTURES.length];
     private static final Map<String, Integer> INDEX = new HashMap<>();
     /** Other mods' skins by full texture path ({@link com.hbm.api.block.BarrelSkin}), made at first sight. */
-    private static final Map<String, Surface> FOREIGN = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, Surface> FOREIGN = new ConcurrentHashMap<>();
     /** Yaw per connector slot, the 1.7 rotations for +X, -X, -Z, +Z. */
     private static final float[] YAW = {0F, 180F, 90F, -90F};
 
@@ -81,9 +90,9 @@ public class BarrelRenderer<T extends BlockEntity> extends GemBER<T, BarrelRende
         String texture = block instanceof BlockFluidBarrel barrel ? barrel.texture
                 : block instanceof BlockBarrelDeco deco ? deco.barrelTexture() : "barrel_iron";
         state.texture = INDEX.getOrDefault(texture, TEXTURES.length - 1);
-        state.skin = block instanceof com.hbm.api.block.BarrelSkin foreign
+        state.skin = block instanceof BarrelSkin foreign
                 ? FOREIGN.computeIfAbsent(foreign.barrelSkin(), Surface::cutout) : SURF[state.texture];
-        java.util.Arrays.fill(state.connector, false);
+        Arrays.fill(state.connector, false);
         state.hazard = null;
         if (be instanceof TileEntityBarrel barrel && be.getLevel() != null) {
             FluidType type = barrel.tank.getTankType();
@@ -104,8 +113,8 @@ public class BarrelRenderer<T extends BlockEntity> extends GemBER<T, BarrelRende
      * {@code scale(1, 0.25, 0.25)}, the diamond, then a quarter turn about Y.
      */
     @Override
-    protected void submitUndeclared(State state, com.mojang.blaze3d.vertex.PoseStack poseStack,
-                                    dev.golem.core.render.SubmitSink sink, dev.golem.core.render.CameraInfo camera) {
+    protected void submitUndeclared(State state, PoseStack poseStack,
+                                    SubmitSink sink, CameraInfo camera) {
         if (state.hazard == null) return;
         poseStack.pushPose();
         poseStack.translate(0.5F, 0.5F, 0.5F);
@@ -115,7 +124,7 @@ public class BarrelRenderer<T extends BlockEntity> extends GemBER<T, BarrelRende
             poseStack.scale(1.0F, 0.25F, 0.25F);
             DiamondPronter.pront(poseStack, sink, state.hazard);
             poseStack.popPose();
-            poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(90F));
+            poseStack.mulPose(Axis.YP.rotationDegrees(90F));
         }
         poseStack.popPose();
     }

@@ -16,9 +16,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Pumpjack block — 1:1 port of the 1.12.2 {@code MachinePumpjack}: dims {@code {3,0,0,0,0,6}} (4 tall,
+ * Pumpjack block, 1:1 port of the 1.12.2 {@code MachinePumpjack}: dims {@code {3,0,0,0,0,6}} (4 tall,
  * 7 long single-row footprint behind the core) plus the two 2-wide ground strips and the 4 "extra"
- * corner ports around the well head (old checkRequirement/fillSpace verbatim). The old meta&ge;6 proxy
+ * corner ports around the well head (1.12.2 checkRequirement/fillSpace, ported unchanged). The old meta&ge;6 proxy
  * cells map to the extras.
  */
 public class MachinePumpjack extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {

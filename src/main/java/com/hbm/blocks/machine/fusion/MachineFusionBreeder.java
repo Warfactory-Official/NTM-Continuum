@@ -6,10 +6,13 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder;
+import java.util.ArrayList;
+import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -42,14 +45,14 @@ public class MachineFusionBreeder extends BlockMultiblockMachine implements IFlu
     }
 
     @Override
-    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityFusionBreeder breeder)) return null;
-        List<String> text = new java.util.ArrayList<>();
-        text.add("§a-> §r" + String.format(java.util.Locale.US, "%,.0f", breeder.neutronEnergy) + " flux/t");
+        List<String> text = new ArrayList<>();
+        text.add("§a-> §r" + String.format(Locale.US, "%,.0f", breeder.neutronEnergy) + " flux/t");
         for (int i = 0; i < breeder.tanks.length; i++) {
             text.add((i == 0 ? "§a-> §r" : "§c<- §r") + breeder.tanks[i].getTankType().getDisplayNameString()
-                    + ": " + String.format(java.util.Locale.US, "%,d", breeder.tanks[i].getFill())
-                    + "/" + String.format(java.util.Locale.US, "%,d", breeder.tanks[i].getMaxFill()) + " mB");
+                    + ": " + String.format(Locale.US, "%,d", breeder.tanks[i].getFill())
+                    + "/" + String.format(Locale.US, "%,d", breeder.tanks[i].getMaxFill()) + " mB");
         }
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }

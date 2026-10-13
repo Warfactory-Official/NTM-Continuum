@@ -1,5 +1,6 @@
 package com.hbm.client.particle;
 
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatParticle;
 import dev.golem.core.render.ParticleLayer;
 import dev.golem.core.render.Particles;
@@ -15,7 +16,7 @@ import java.util.Random;
  */
 public class ParticleContrail extends CompatParticle {
 
-    public static final Identifier CONTRAIL = dev.golem.core.Ids.of("hbm", "contrail");
+    public static final Identifier CONTRAIL = Ids.of("hbm", "contrail");
 
     public static final int SUBQUADS = 6;
 

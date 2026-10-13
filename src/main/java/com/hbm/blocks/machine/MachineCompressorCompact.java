@@ -33,8 +33,8 @@ public class MachineCompressorCompact extends BlockMultiblockMachine
     @Override public int getOffset() { return 1; }
 
     /**
-     * {@code makeExtra} marked six cells on the y+1 ring. Their outward faces are intentionally
-     * open on every side: the old proxy recovered the direction later through {@code getConPos()}.
+     * {@code makeExtra} marked six cells on the y+1 ring. Their outward faces are open on every side:
+     * the old proxy recovered the direction later through {@code getConPos()}.
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {

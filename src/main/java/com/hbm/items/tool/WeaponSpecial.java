@@ -12,6 +12,7 @@ import com.hbm.sound.ModGunSounds;
 import dev.golem.core.world.CompatSwordItem;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.Effects;
 import dev.golem.core.world.ToolTier;
 import dev.golem.core.world.Tools;
 import net.minecraft.ChatFormatting;
@@ -19,8 +20,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -100,7 +103,7 @@ public class WeaponSpecial extends CompatSwordItem {
             case WOOD_GAVEL -> playAt(world, entity, ModGunSounds.WHACK.get(), 3.0F, 1.0F);
             case LEAD_GAVEL -> {
                 playAt(world, entity, ModGunSounds.WHACK.get(), 3.0F, 1.0F);
-                dev.golem.core.world.Effects.addRegistered(entity, ModEffects.LEAD.get(), 15 * 20, 4);
+                Effects.addRegistered(entity, ModEffects.LEAD.get(), 15 * 20, 4);
             }
             case DIAMOND_GAVEL -> {
                 float ded = entity.getMaxHealth() / 3;
@@ -112,12 +115,12 @@ public class WeaponSpecial extends CompatSwordItem {
             case BOTTLE_OPENER -> {
                 // 1.7: one in seven hits blinds (5 min), slows III (5 min), fatigues III (5 min) or nauseates (1 min)
                 int i = world.getRandom().nextInt(7);
-                if (i == 0) dev.golem.core.world.Effects.add(entity, net.minecraft.world.effect.MobEffects.BLINDNESS, 5 * 60 * 20, 0);
-                if (i == 1) dev.golem.core.world.Effects.add(entity, net.minecraft.world.effect.MobEffects.SLOWNESS, 5 * 60 * 20, 2);
-                if (i == 2) dev.golem.core.world.Effects.add(entity, net.minecraft.world.effect.MobEffects.MINING_FATIGUE, 5 * 60 * 20, 2);
-                if (i == 3) dev.golem.core.world.Effects.add(entity, net.minecraft.world.effect.MobEffects.NAUSEA, 1 * 60 * 20, 0);
+                if (i == 0) Effects.add(entity, MobEffects.BLINDNESS, 5 * 60 * 20, 0);
+                if (i == 1) Effects.add(entity, MobEffects.SLOWNESS, 5 * 60 * 20, 2);
+                if (i == 2) Effects.add(entity, MobEffects.MINING_FATIGUE, 5 * 60 * 20, 2);
+                if (i == 3) Effects.add(entity, MobEffects.NAUSEA, 1 * 60 * 20, 0);
                 // 1.7 NTMSounds.VANILLA_ANVIL ("random.anvil_land")
-                playAt(world, entity, net.minecraft.sounds.SoundEvents.ANVIL_LAND, 3.0F, 1.0F);
+                playAt(world, entity, SoundEvents.ANVIL_LAND, 3.0F, 1.0F);
             }
             default -> { }
         }

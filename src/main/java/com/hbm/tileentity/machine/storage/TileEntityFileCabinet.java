@@ -3,11 +3,16 @@ package com.hbm.tileentity.machine.storage;
 import com.hbm.inventory.container.ContainerFileCabinet;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModDecoCrateBlockEntities;
+import dev.golem.core.hook.Hook;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -72,7 +77,7 @@ public class TileEntityFileCabinet extends TileEntityCrateBase {
     }
 
     /** Every server tick of every filing cabinet (ADDON-API-INVENTORY H-74). HBM registers none; NTM: Space's soyuz blast. */
-    public static final dev.golem.core.hook.Hook<java.util.function.Consumer<TileEntityFileCabinet>> TICK = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<Consumer<TileEntityFileCabinet>> TICK = Hook.notifying();
 
     public static void tick(Level level, BlockPos pos, BlockState state, TileEntityFileCabinet cabinet) {
         cabinet.update(level);
@@ -85,7 +90,7 @@ public class TileEntityFileCabinet extends TileEntityCrateBase {
             } else {
                 timer = 0;
             }
-            for (java.util.function.Consumer<TileEntityFileCabinet> listener : TICK) listener.accept(this);
+            for (Consumer<TileEntityFileCabinet> listener : TICK) listener.accept(this);
             if (isRemoved()) return;
             networkPackNT();
         } else {
@@ -124,7 +129,7 @@ public class TileEntityFileCabinet extends TileEntityCrateBase {
     }
 
     /** 1.7 {@code worldObj.playSoundEffect}: heard only when the server plays it. */
-    private void sound(Level level, net.minecraft.sounds.SoundEvent sound, float volume, float pitch) {
+    private void sound(Level level, SoundEvent sound, float volume, float pitch) {
         if (level.isClientSide()) return;
         level.playSound(null, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5,
                 sound, SoundSource.BLOCKS, volume, pitch);
@@ -148,7 +153,7 @@ public class TileEntityFileCabinet extends TileEntityCrateBase {
 
     /** The drawers spill, as 1.7's {@code BlockDecoContainer.breakBlock} did; nothing rides on the item. */
     @Override
-    protected net.minecraft.core.NonNullList<ItemStack> carriedItems() {
+    protected NonNullList<ItemStack> carriedItems() {
         return null;
     }
 
@@ -159,7 +164,7 @@ public class TileEntityFileCabinet extends TileEntityCrateBase {
 
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
-        if (level != null) net.minecraft.world.Containers.dropContents(level, pos, this);
+        if (level != null) Containers.dropContents(level, pos, this);
     }
 
     @Override

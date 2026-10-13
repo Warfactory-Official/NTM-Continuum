@@ -1,12 +1,14 @@
 package com.hbm.client.render;
 
 import com.google.gson.JsonObject;
+import dev.golem.core.harness.HarnessQueryRegistry;
+import dev.golem.core.render.WorldEffects;
 import java.util.Arrays;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
 
 /**
- * Harness query {@code hbm_lens_bench}: the frame cost of the port-only black hole lens (History §19ey-lensbench).
+ * Harness query {@code hbm_lens_bench}: the frame cost of the port-only black hole lens.
  * Inert unless the harness listener is running.
  *
  * <ul>
@@ -31,7 +33,7 @@ public final class LensBenchmark {
     private LensBenchmark() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_lens_bench", LensBenchmark::query);
+        HarnessQueryRegistry.register("hbm_lens_bench", LensBenchmark::query);
     }
 
     /** False only while the harness compares against the 1.7 look. */
@@ -57,7 +59,7 @@ public final class LensBenchmark {
     private static JsonObject query(Minecraft mc, JsonObject params) {
         if (!hooked) {
             hooked = true;
-            dev.golem.core.render.WorldEffects.onBegin(camera -> frame());
+            WorldEffects.onBegin(camera -> frame());
         }
         JsonObject json = new JsonObject();
         String action = params.has("action") ? params.get("action").getAsString() : "";

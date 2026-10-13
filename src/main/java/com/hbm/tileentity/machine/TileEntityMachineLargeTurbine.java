@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.client.sound.LargeTurbineSoundHandler;
+import com.hbm.inventory.container.ContainerMachineLargeTurbine;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -18,12 +19,16 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import java.util.Random;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -32,7 +37,7 @@ import net.minecraft.network.chat.Component;
 
 /** Logic for the legacy four-long steam turbine. */
 public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
-        implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, net.minecraft.world.WorldlyContainer, MenuProvider {
+        implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, WorldlyContainer, MenuProvider {
 
     public static final long MAX_POWER = 100_000_000L;
     public static final double EFFICIENCY = 1D;
@@ -52,7 +57,7 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
 
     public TileEntityMachineLargeTurbine(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_LARGE_TURBINE.get(), pos, state, 7);
-        audioDesync = new java.util.Random().nextFloat() * 0.05F;
+        audioDesync = new Random().nextFloat() * 0.05F;
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineLargeTurbine turbine) {
@@ -131,7 +136,7 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
 
         FluidType tankType = tank.getTankType();
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
             setChanged();
             return;
         }
@@ -242,11 +247,11 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
                 p.getZ() - dir.offsetZ * 4, dir.getOpposite())};
     }
 
-    @Override public int[] getSlotsForFace(net.minecraft.core.Direction side) { return new int[]{0, 2, 4, 5}; }
-    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+    @Override public int[] getSlotsForFace(Direction side) { return new int[]{0, 2, 4, 5}; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
         return isItemValidForSlot(slot, stack);
     }
-    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         return slot == 1 || slot == 3 || slot == 6;
     }
 
@@ -263,8 +268,8 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
     }
 
     @Override
-    public net.minecraft.world.inventory.AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new com.hbm.inventory.container.ContainerMachineLargeTurbine(id, inventory, this);
+    public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
+        return new ContainerMachineLargeTurbine(id, inventory, this);
     }
 
     @Override

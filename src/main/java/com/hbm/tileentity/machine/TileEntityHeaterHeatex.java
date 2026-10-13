@@ -9,6 +9,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Coolable;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
@@ -22,6 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -34,7 +36,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * released heat is retained as TU for an adjacent consumer.
  *
  * <p>The legacy machine has one identifier slot and no sided item access. Fluid input and output are
- * network-only and are deliberately restricted to the four remote horizontal connection points.
+ * network-only and are restricted to the four remote horizontal connection points.
  */
 public class TileEntityHeaterHeatex extends TileEntityMachineBase
         implements IHeatSource, IControlReceiver, IFluidStandardTransceiverMK2, MenuProvider, IRORValueProvider {
@@ -79,7 +81,7 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
     /** Slot 0 changes the input type in place; the identifier is not consumed or moved. */
     private void updateTypeFromFluidId() {
         var stack = inventory.getStackInSlot(0);
-        if (stack.isEmpty() || !(stack.getItem() instanceof com.hbm.items.machine.IItemFluidId identifier)) return;
+        if (stack.isEmpty() || !(stack.getItem() instanceof IItemFluidId identifier)) return;
 
         FluidType type = identifier.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), stack);
         if (type != tanks[0].getTankType()) {
@@ -194,7 +196,7 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
     @Override
     public void receiveControl(CompoundTag data) {
         if (data.contains("toCool")) {
-            amountToCool = net.minecraft.util.Mth.clamp(Tags.getIntOr(data, "toCool", 0), 1, tanks[0].getMaxFill());
+            amountToCool = Mth.clamp(Tags.getIntOr(data, "toCool", 0), 1, tanks[0].getMaxFill());
         }
         if (data.contains("delay")) {
             tickDelay = Math.max(Tags.getIntOr(data, "delay", 0), 1);

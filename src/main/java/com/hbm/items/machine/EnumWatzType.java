@@ -5,13 +5,14 @@ import com.hbm.util.Function.FunctionLinear;
 import com.hbm.util.Function.FunctionQuadratic;
 import com.hbm.util.Function.FunctionSqrt;
 import com.hbm.util.Function.FunctionSqrtFalling;
+import java.util.Locale;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The twelve Watz fuel and absorber types — 1.12.2's {@code ItemWatzPellet.EnumWatzType}, extracted to
+ * The twelve Watz fuel and absorber types, from 1.12.2's {@code ItemWatzPellet.EnumWatzType}, extracted to
  * its own file because the port registers one item per type instead of one item with twelve metas.
  *
- * <p>Values are verbatim. Note that upstream's constructor argument order
+ * <p>Values match upstream. The constructor argument order upstream uses
  * ({@code colorLight, colorDark, passive, heatEmission, mudContent, burn, heatDiv, absorb}) does not
  * match its field declaration order; the assignment below is what actually ran, including
  * {@code mudContent} being halved on the way in.
@@ -40,7 +41,7 @@ public enum EnumWatzType {
     public final int colorDark;
     /** How much mud per reaction flux this produces. */
     public final double mudContent;
-    /** Base flux emission — anything above zero is self-igniting. */
+    /** Base flux emission: anything above zero is self-igniting. */
     public final double passive;
     /** Heat produced per outgoing flux. */
     public final double heatEmission;
@@ -66,7 +67,7 @@ public enum EnumWatzType {
 
     /** The registry-name suffix for this type's pellet items. */
     public String itemSuffix() {
-        return name().toLowerCase(java.util.Locale.ROOT);
+        return name().toLowerCase(Locale.ROOT);
     }
 
     /** Upstream's desaturation of a pellet colour, used for the depleted sprites. */

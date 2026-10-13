@@ -6,6 +6,8 @@ import com.hbm.entity.mob.glyphid.GlyphidStats.StatBundle;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.ResourceManager;
+import com.hbm.world.feature.GlyphidHive;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -192,7 +194,7 @@ public class EntityGlyphidScout extends EntityGlyphid {
                             serverLevel.explode(this, getX(), getY(), getZ(), 5F, Level.ExplosionInteraction.NONE);
                             // 1.7: the scout builds the same small hive the world generator does, infested unless it is
                             // a normal glyphid, and without the hive loot
-                            com.hbm.world.feature.GlyphidHive.generateSmall(serverLevel, (int) Math.floor(getX()),
+                            GlyphidHive.generateSmall(serverLevel, (int) Math.floor(getX()),
                                     (int) Math.floor(getY()), (int) Math.floor(getZ()), getRandom(),
                                     subtype() != TYPE_NORMAL, false);
                         }
@@ -216,7 +218,7 @@ public class EntityGlyphidScout extends EntityGlyphid {
             Vec3 from = new Vec3(getX(), getY() + 1, getZ());
             Vec3 to = new Vec3(getX() + rot.x, getY() + 1, getZ() + rot.z);
 
-            BlockHitResult hit = dev.golem.core.world.Compat.clip(level(), from, to, ClipContext.Block.COLLIDER,
+            BlockHitResult hit = Compat.clip(level(), from, to, ClipContext.Block.COLLIDER,
                     ClipContext.Fluid.NONE);
 
             if (hit.getType() == HitResult.Type.BLOCK) {
@@ -261,7 +263,7 @@ public class EntityGlyphidScout extends EntityGlyphid {
         boolean distanceCheck =
                 new Vec3(nestX - homeX, nestY - homeY, nestZ - homeZ).length() > minDistanceToHive;
 
-        if (distanceCheck && !state.isAir() && dev.golem.core.world.Compat.isSolidRender(state) && !EntityGlyphid.isHiveBlock(b)) { // 1.7 glyphid_base
+        if (distanceCheck && !state.isAir() && Compat.isSolidRender(state) && !EntityGlyphid.isHiveBlock(b)) { // 1.7 glyphid_base
 
             if (isBasalt(b)) {
                 useLargeHive = true;
@@ -362,7 +364,7 @@ public class EntityGlyphidScout extends EntityGlyphid {
         Player player = level().getNearestPlayer(getX(), getY(), getZ(), 300D, false);
         if (player != null) return player.position();
         // 1.7 Vec3.createVectorHelper(event.x, event.y, event.z): the bed block corner, not its centre
-        return PollutionHandler.targetCoords == null ? null : net.minecraft.world.phys.Vec3.atLowerCornerOf(PollutionHandler.targetCoords);
+        return PollutionHandler.targetCoords == null ? null : Vec3.atLowerCornerOf(PollutionHandler.targetCoords);
     }
 
     public boolean isValidLightLevel() {

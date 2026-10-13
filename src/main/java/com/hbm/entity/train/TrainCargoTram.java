@@ -24,9 +24,9 @@ import net.minecraft.world.phys.Vec3;
  *        '( + )'                      '( + )'
  * </pre>
  *
- * <p>Clicking the tram always resolves to a seat, so the hold opens on the train-inventory key while riding -
- * 1.7 {@code HbmPlayerProps}, {@code EnumKeybind.TRAIN}. The charge that slot accumulates drives nothing:
- * {@link EntityRailCarElectric} has the draw commented out upstream, and that stands.
+ * <p>Clicking the tram always resolves to a seat, so the hold opens on the train-inventory key while riding
+ * (1.7 {@code HbmPlayerProps}, {@code EnumKeybind.TRAIN}). The charge that slot accumulates drives nothing:
+ * {@link EntityRailCarElectric} has the draw commented out upstream.
  */
 public class TrainCargoTram extends EntityRailCarElectric {
 

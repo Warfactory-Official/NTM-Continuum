@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-/** JEI category for the heat boiler — input droplet in, heated output droplet out. */
+/** JEI category for the heat boiler: input droplet in, heated output droplet out. */
 public class BoilingRecipeHandler extends JEIUniversalHandler<BoilingRecipeHandler.Entry> {
 
     public record Entry(FluidType input, HeatRecipes.HeatStep step) {}

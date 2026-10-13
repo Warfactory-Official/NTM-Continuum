@@ -1,5 +1,10 @@
 package com.hbm.entity.missile;
 
+import com.hbm.blocks.ModRadarUtilityBlocks;
+import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
+import com.hbm.items.ItemEnums;
+import com.hbm.tileentity.machine.storage.TileEntitySoyuzCapsule;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
 
 import dev.golem.core.data.SynchedData;
@@ -7,6 +12,7 @@ import dev.golem.core.data.CompatThrowableProjectile;
 import com.hbm.interfaces.StoredItems;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
@@ -22,8 +28,8 @@ import java.util.List;
  * 1.7 entity/missile/EntitySoyuzCapsule - the soyuz lander's return stage: spawned at y=600 over the target column,
  * free-falls on hand-rolled integration (1.7 replaced the throwable tick wholesale, so no super.tick()), and once its
  * own block position is occupied it discards and places a soyuz_capsule block above, loading payload + missile into it.
- * 1.7's empty {@code onImpact} override has no 26.2 equivalent - this hand-rolled tick never routes impacts.
- * 1.7's ignoreFrustumCheck is a renderer concern in 26.2 (RenderSoyuzCapsule's job).
+ * 1.7's empty {@code onImpact} override has no 26.1 equivalent - this hand-rolled tick never routes impacts.
+ * 1.7's ignoreFrustumCheck is a renderer concern in 26.1 (RenderSoyuzCapsule's job).
  */
 public class EntitySoyuzCapsule extends CompatThrowableProjectile implements StoredItems {
 
@@ -76,13 +82,13 @@ public class EntitySoyuzCapsule extends CompatThrowableProjectile implements Sto
                 BlockPos above = pos.above();
                 // 1.7: the soyuz_capsule block above the landing spot, the payload in slots 0-17 and the spent
                 // rocket (skin = this.soyuz) in slot 18
-                level().setBlockAndUpdate(above, com.hbm.blocks.ModRadarUtilityBlocks.soyuz_capsule.get().defaultBlockState());
-                if (level().getBlockEntity(above) instanceof com.hbm.tileentity.machine.storage.TileEntitySoyuzCapsule capsule) {
+                level().setBlockAndUpdate(above, ModRadarUtilityBlocks.soyuz_capsule.get().defaultBlockState());
+                if (level().getBlockEntity(above) instanceof TileEntitySoyuzCapsule capsule) {
                     for (int i = 0; i < payload.length; i++) {
                         capsule.setItem(i, payload[i] == null ? ItemStack.EMPTY : payload[i]);
                     }
-                    com.hbm.items.ItemEnums.SoyuzSkinType[] skins = com.hbm.items.ItemEnums.SoyuzSkinType.VALUES;
-                    capsule.setItem(18, com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.missile_soyuz
+                    ItemEnums.SoyuzSkinType[] skins = ItemEnums.SoyuzSkinType.VALUES;
+                    capsule.setItem(18, ModSoyuzBlocks.missile_soyuz
                             .stack(skins[Math.floorMod(soyuz, skins.length)]));
                 }
             }
@@ -99,7 +105,7 @@ public class EntitySoyuzCapsule extends CompatThrowableProjectile implements Sto
     protected void loadData(DataIn input) {
         super.loadData(input);
 
-        soyuz = com.hbm.util.SavedIds.getEnum(input, "soyuz", com.hbm.items.ItemEnums.SoyuzSkinType.VALUES[Math.floorMod(soyuz, com.hbm.items.ItemEnums.SoyuzSkinType.VALUES.length)]).ordinal();
+        soyuz = SavedIds.getEnum(input, "soyuz", ItemEnums.SoyuzSkinType.VALUES[Math.floorMod(soyuz, ItemEnums.SoyuzSkinType.VALUES.length)]).ordinal();
 
         input.read("items", SlotEntry.CODEC.listOf()).ifPresent(list -> {
             for (SlotEntry entry : list) {
@@ -115,8 +121,8 @@ public class EntitySoyuzCapsule extends CompatThrowableProjectile implements Sto
     protected void saveData(DataOut output) {
         super.saveData(output);
 
-        // by enum name, never the ordinal (History section 19ek-small)
-        com.hbm.util.SavedIds.putEnum(output, "soyuz", com.hbm.items.ItemEnums.SoyuzSkinType.VALUES[Math.floorMod(soyuz, com.hbm.items.ItemEnums.SoyuzSkinType.VALUES.length)]);
+        // by enum name, never the ordinal
+        SavedIds.putEnum(output, "soyuz", ItemEnums.SoyuzSkinType.VALUES[Math.floorMod(soyuz, ItemEnums.SoyuzSkinType.VALUES.length)]);
 
         List<SlotEntry> list = new ArrayList<>();
         for (int i = 0; i < payload.length; i++) {
@@ -133,7 +139,7 @@ public class EntitySoyuzCapsule extends CompatThrowableProjectile implements Sto
     private record SlotEntry(byte slot, ItemStack stack) {
         private static final Codec<SlotEntry> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.BYTE.fieldOf("slot").forGetter(SlotEntry::slot),
-                dev.golem.core.world.ItemStacks.optionalCodec().fieldOf("item").forGetter(SlotEntry::stack)
+                ItemStacks.optionalCodec().fieldOf("item").forGetter(SlotEntry::stack)
         ).apply(instance, SlotEntry::new));
     }
 }

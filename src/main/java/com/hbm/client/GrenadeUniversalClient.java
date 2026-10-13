@@ -1,6 +1,7 @@
 package com.hbm.client;
 
 import com.hbm.items.weapon.grenade.ItemGrenadeUniversal;
+import dev.golem.core.client.ClientTicks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -20,7 +21,7 @@ public final class GrenadeUniversalClient {
     public static void register() {
         if (registered) return;
         registered = true;
-        dev.golem.core.client.ClientTicks.onEndTick(GrenadeUniversalClient::tick);
+        ClientTicks.onEndTick(GrenadeUniversalClient::tick);
     }
 
     private static void tick() {

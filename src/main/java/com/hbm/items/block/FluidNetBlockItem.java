@@ -1,5 +1,6 @@
 package com.hbm.items.block;
 
+import com.hbm.blocks.generic.RedBarrel;
 import com.hbm.blocks.machine.BlockFluidBarrel;
 import com.hbm.inventory.fluid.Fluids;
 import dev.golem.core.world.CompatBlockItem;
@@ -18,7 +19,7 @@ import com.hbm.blocks.ModFluidNetBlocks;
 /**
  * Block item for the fluid-network blocks: the 1.7 {@code ITooltipProvider.addStandardInfo} lines
  * ({@code block.hbm.<id>.desc.N} from the lang file), the fluid barrels' hard-coded capacity/material
- * lines, and — for a barrel picked up with fluid in it — the 1.7 {@code IPersistentInfoProvider} line
+ * lines, and, for a barrel picked up with fluid in it, the 1.7 {@code IPersistentInfoProvider} line
  * showing what it holds.
  */
 public final class FluidNetBlockItem extends CompatBlockItem {
@@ -70,7 +71,7 @@ public final class FluidNetBlockItem extends CompatBlockItem {
             }
         }
         // 1.7 ItemBlockLore: the red/pink/lox/taint barrels carry this one line.
-        if (getBlock() instanceof com.hbm.blocks.generic.RedBarrel) {
+        if (getBlock() instanceof RedBarrel) {
             tooltip.add(Component.literal("Static fluid barrel"));
         }
         if (getBlock() == ModFluidNetBlocks.pipe_anchor.get()) {

@@ -2,20 +2,22 @@ package com.hbm.gametest;
 
 import com.hbm.packet.ParticlePayload;
 import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.particle.helper.ParticleEffects;
 import dev.golem.core.data.Tags;
+import dev.golem.core.net.GolemBuffers;
 import io.netty.buffer.Unpooled;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 
 /**
  * GameTests for the particle system's server half.
  *
- * <p>Only the server half is reachable here — building the actual particles needs a client, a camera
- * and an atlas, none of which exist under the test server. What these pin down is everything up to
- * that boundary: that the payload survives a wire round trip with its tag intact, that effect names
- * resolve back to constants, and that an effect with no handler (which is every effect on a server)
- * is a silent no-op rather than a crash. That last one matters because {@code HbmEffectNT} is
- * deliberately loadable on a dedicated server, and a null handler there is the normal case.
+ * <p>Only the server half is reachable here: building the actual particles needs a client, a camera
+ * and an atlas. These pin down everything up to that boundary: the payload survives a wire round
+ * trip with its tag intact, effect names resolve back to constants, and an effect with no handler
+ * (every effect on a server) is a silent no-op rather than a crash, since {@code HbmEffectNT} loads
+ * on a dedicated server and a null handler there is the normal case.
  */
 public final class ParticleGameTests {
 
@@ -30,7 +32,7 @@ public final class ParticleGameTests {
 
         ParticlePayload sent = new ParticlePayload(HbmEffectNT.BlackPowder.name(), 1.5D, 64.25D, -3.75D, data);
 
-        var buffer = dev.golem.core.net.GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
+        var buffer = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         ParticlePayload.CODEC.encode(sent, buffer);
         ParticlePayload received = ParticlePayload.CODEC.decode(buffer);
 
@@ -105,7 +107,7 @@ public final class ParticleGameTests {
     }
 
     private static ParticlePayload roundTrip(GameTestHelper helper, ParticlePayload sent) {
-        var buffer = dev.golem.core.net.GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
+        var buffer = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         ParticlePayload.CODEC.encode(sent, buffer);
         return ParticlePayload.CODEC.decode(buffer);
     }
@@ -142,10 +144,10 @@ public final class ParticleGameTests {
      * when handed a level that is not a {@code ServerLevel}.
      */
     public static void sendDoesNotThrow(GameTestHelper helper) {
-        var pos = helper.absolutePos(new net.minecraft.core.BlockPos(1, 1, 1));
-        com.hbm.particle.helper.ParticleEffects.blackPowder(helper.getLevel(),
+        var pos = helper.absolutePos(new BlockPos(1, 1, 1));
+        ParticleEffects.blackPowder(helper.getLevel(),
                 pos.getX(), pos.getY(), pos.getZ(), 0, 1, 0, 10, 0.25F, 0.5F, 10, 0.25F);
-        com.hbm.particle.helper.ParticleEffects.explosionSmall(helper.getLevel(),
+        ParticleEffects.explosionSmall(helper.getLevel(),
                 pos.getX(), pos.getY(), pos.getZ(), 10, 2F, 0.5F);
 
         CompoundTag towerData = new CompoundTag();

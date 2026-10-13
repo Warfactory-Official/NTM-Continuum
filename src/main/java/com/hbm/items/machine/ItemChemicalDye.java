@@ -1,6 +1,7 @@
 package com.hbm.items.machine;
 
 import dev.golem.core.world.CompatItem;
+import java.util.Locale;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -60,7 +61,7 @@ public class ItemChemicalDye extends CompatItem {
         }
 
         public String translationName() {
-            return name().toLowerCase(java.util.Locale.ROOT);
+            return name().toLowerCase(Locale.ROOT);
         }
     }
 }

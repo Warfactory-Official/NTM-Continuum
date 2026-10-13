@@ -7,6 +7,7 @@ import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityFoundryChannel;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.ItemTags;
@@ -35,12 +36,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Foundry channel (1.12.2 {@code FoundryChannel}) — the molten-metal gutter. The blockstate carries the
+ * Foundry channel (1.12.2 {@code FoundryChannel}): the molten-metal gutter. The blockstate carries the
  * old 4-bit connection mask (E=1, W=2, S=4, N=8: neighbouring channels, the mold caster, and outlets
  * facing this block), which drives both the JSON model variant and the shape. Right-click with a shovel
  * empties the content to scraps. Molten level is drawn by the channel BER.
  */
-public class FoundryChannel extends dev.golem.core.world.CompatBlock implements TickingBlock, ICrucibleAcceptor {
+public class FoundryChannel extends CompatBlock implements TickingBlock, ICrucibleAcceptor {
 
     public static final IntegerProperty META = IntegerProperty.create("meta", 0, 15);
 

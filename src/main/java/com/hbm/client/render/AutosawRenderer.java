@@ -3,6 +3,7 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityMachineAutosaw;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -13,14 +14,14 @@ import net.minecraft.world.phys.Vec3;
  * Autosaw: a turret base carrying a three-segment arm with the blade on its tip.
  *
  * <p>Upstream walks one pose stack down the arm without pushing, so each segment inherits everything
- * before it — a bone chain written as a straight line. Declared it is the same chain nested, and the
- * two short {@code ±0.01} shifts around the lower arm are kept where they were: the second is upstream
+ * before it: a bone chain written as a straight line. Declared it is the same chain nested, and the
+ * two short {@code ±0.01} shifts around the lower arm are kept as they are: the second is upstream
  * undoing the first before the tip's own transform, not a shift of its own.
  */
 public final class AutosawRenderer extends GemBER<TileEntityMachineAutosaw, AutosawRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/autosaw.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/autosaw.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/autosaw.png");
 

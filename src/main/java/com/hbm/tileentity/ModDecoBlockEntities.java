@@ -2,6 +2,7 @@ package com.hbm.tileentity;
 
 import com.hbm.registration.Reg;
 import com.hbm.Constants;
+import com.hbm.tileentity.deco.TileEntityLantern;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -45,9 +46,9 @@ public final class ModDecoBlockEntities {
                     (level, pos, state, be) -> be.serverTick(), ModDecoContent.lamp_demon.get()));
 
     /** 1.7 {@code TileEntityLantern}: server-ticking so the glyphid sweep runs; the core cell only. */
-    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.deco.TileEntityLantern>> LANTERN =
+    public static final RegistryObject<BlockEntityType<TileEntityLantern>> LANTERN =
             REG.blockEntity("lantern", () -> BlockEntities.serverTicking(
-                    com.hbm.tileentity.deco.TileEntityLantern::new,
+                    TileEntityLantern::new,
                     (level, pos, state, be) -> be.serverTick(), ModDecoContent.lantern.get()));
 
     public static void init() {}

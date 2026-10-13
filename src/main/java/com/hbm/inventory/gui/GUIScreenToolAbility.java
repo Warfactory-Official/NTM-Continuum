@@ -31,7 +31,7 @@ import java.util.List;
 
 /**
  * 1.7 {@code GUIScreenToolAbility}: the preset editor opened with the ability-alt key. One row of area
- * switches, one row of harvest switches (with level LEDs), the preset counter, and seven small buttons —
+ * switches, one row of harvest switches (with level LEDs), the preset counter, and seven small buttons:
  * reset, delete, add, first, next, previous, close. The texture, coordinates and behaviour are the
  * original's; scrolling steps through presets, clicking outside closes, and closing sends the edited
  * configuration to the server.

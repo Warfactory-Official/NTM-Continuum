@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import dev.golem.core.dejson.Dejson;
 import dev.golem.core.dejson.When;
 import dev.golem.core.dejson.Variant;
 import dev.golem.core.dejson.States;
@@ -40,6 +41,7 @@ import dev.golem.core.dejson.Variants;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.Compat;
+import java.util.Locale;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -60,7 +62,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 
 /**
- * The storage crates, decorative props and simple blocks of the final content wave, as 1.7 {@code ModBlocks}
+ * The storage crates, decorative props and simple blocks as 1.7 {@code ModBlocks}
  * declared them: the supply and conserve crates, the tungsten crate and safe, the filing cabinet, the
  * bobbleheads, plushies and snowglobes, the vending machine, the corrupted broadcaster, the pest control box and
  * the FM radio, the light and particle emitters, the dense coils, the bottle-cap blocks, the pink log, the wooden
@@ -69,10 +71,10 @@ import java.util.stream.IntStream;
  * <p>1.7 metadata subtypes that are really different blocks are flattened ({@code block_cap_<type>},
  * {@code rad_absorber[_red|_green|_pink]}, {@code wood_structure_<type>}); subtypes of one object keep one block and
  * get one block item each, with ntm-next's ids (bobblehead, plushie, snowglobe, vending machine, filing cabinet,
- * glyphid hive blocks; History §19es-itemvariant).
+ * glyphid hive blocks).
  *
  * <p>Each block's model, blockstate, item model, loot and tags are stated on its registration (Reg; emitted by
- * Dejson at build time). The OBJ item definitions of the renderer-drawn props and the family's recipes stay in
+ * Dejson at build time). The OBJ item definitions of the renderer-drawn props and the family's recipes are in
  * {@link DecoCrateDeclarations}; the wooden structures' element models and multipart blockstates are authored.
  */
 public final class ModDecoCrateBlocks {
@@ -119,7 +121,7 @@ public final class ModDecoCrateBlocks {
         return p -> base.apply(p).noOcclusion().isSuffocating((s, w, pos) -> false).isViewBlocking((s, w, pos) -> false);
     }
 
-    // ---- crates ----
+    // Crates
     /** 1.7 {@code crate}: the supply crate, wood 5/10, consumable tab; a crowbar spills random supplies. */
     public static final RegistryObject<BlockCrate> crate = REG.block("crate",
                     p -> new BlockCrate(p, BlockCrate.Kind.SUPPLY), p -> p.strength(5.0F, 10.0F).sound(SoundType.WOOD))
@@ -155,7 +157,7 @@ public final class ModDecoCrateBlocks {
             .loot(Loot.nothing())
             .tag(BlockTag.PICKAXE);
 
-    // ---- deco props ----
+    // Deco props
     /** 1.7: iron, hardness and resistance 0; drops itself to any tool (onBlockHarvested). */
     public static final RegistryObject<BlockBobble> bobblehead = REG.block("bobblehead", BlockBobble::new,
                     rendered(p -> p.strength(0.0F, 0.0F).sound(SoundType.METAL)))
@@ -197,7 +199,7 @@ public final class ModDecoCrateBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    // ---- simple blocks ----
+    // Simple blocks
     public static final RegistryObject<BlockHadronCoil> hadron_coil_alloy = coil("hadron_coil_alloy", 10);
     public static final RegistryObject<BlockHadronCoil> hadron_coil_gold = coil("hadron_coil_gold", 25);
     public static final RegistryObject<BlockHadronCoil> hadron_coil_neodymium = coil("hadron_coil_neodymium", 50);
@@ -216,7 +218,7 @@ public final class ModDecoCrateBlocks {
             // 1.7 BlockCap: 128 of its caps, no fortune; silk touch keeps the block
             CAP_BLOCKS.put(type, REG.block(capId(type), p -> new BlockCap(p, type), iron(5.0F, 10.0F))
                     .transform(Presets.cubeBottomTop(cap + "_top", cap, cap + "_top").viaItemModel())
-                    .loot(Loot.oreNoFortune("hbm:cap_" + type.name().toLowerCase(java.util.Locale.US), 128, 128))
+                    .loot(Loot.oreNoFortune("hbm:cap_" + type.name().toLowerCase(Locale.US), 128, 128))
                     .tag(BlockTag.PICKAXE));
         }
     }
@@ -290,8 +292,8 @@ public final class ModDecoCrateBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    // ---- items ----
-    // 1.7's metadata items, one block item per subtype with ntm-next's ids (History §19es-itemvariant); index = metadata.
+    // Items
+    // 1.7's metadata items, one block item per subtype with ntm-next's ids; index = metadata.
     public static final List<RegistryObject<ItemBlockDecoVariant>> bobblehead_items = variants(
             DecoCrateDeclarations.trinketIds("bobblehead", BlockBobble.BobbleType.VALUES), bobblehead,
             i -> Component.translatable("block.hbm.bobblehead"), null);
@@ -335,9 +337,9 @@ public final class ModDecoCrateBlocks {
     static {
         // the hive blocks' other members draw their block models (the base ids' icons are on their blocks)
         for (String type : new String[] {"infested", "rad"}) {
-            dev.golem.core.dejson.Dejson.item(Constants.MOD_ID, "glyphid_base_" + type)
+            Dejson.item(Constants.MOD_ID, "glyphid_base_" + type)
                     .models(Models.blockItem("hbm:block/glyphid_base_" + type + "_0")).register();
-            dev.golem.core.dejson.Dejson.item(Constants.MOD_ID, "glyphid_spawner_" + type)
+            Dejson.item(Constants.MOD_ID, "glyphid_spawner_" + type)
                     .models(Models.blockItem("hbm:block/glyphid_spawner_" + type)).register();
         }
     }
@@ -385,16 +387,16 @@ public final class ModDecoCrateBlocks {
     }
 
     public static String capId(BlockCap.EnumCapBlock type) {
-        return "block_cap_" + type.name().toLowerCase(java.util.Locale.US);
+        return "block_cap_" + type.name().toLowerCase(Locale.US);
     }
 
     public static String woodId(BlockWoodStructure.EnumWoodStructure type) {
-        return "wood_structure_" + type.name().toLowerCase(java.util.Locale.US);
+        return "wood_structure_" + type.name().toLowerCase(Locale.US);
     }
 
     public static String absorberId(BlockAbsorber.EnumAbsorberTier tier) {
         return tier == BlockAbsorber.EnumAbsorberTier.BASE ? "rad_absorber"
-                : "rad_absorber_" + tier.name().toLowerCase(java.util.Locale.US);
+                : "rad_absorber_" + tier.name().toLowerCase(Locale.US);
     }
 
     /** A dense coil: one texture all round, its item showing the block model; drops itself, pickaxe. */

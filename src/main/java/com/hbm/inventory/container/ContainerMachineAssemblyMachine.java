@@ -1,5 +1,7 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.SlotCraftingOutput;
+import com.hbm.items.machine.ItemMachineUpgrade;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
@@ -48,7 +50,7 @@ public class ContainerMachineAssemblyMachine extends AbstractContainerMenu {
         for (int row = 0; row < 4; row++) for (int col = 0; col < 3; col++) {
             this.addSlot(validated(4 + row * 3 + col, 8 + col * 18, 18 + row * 18)); // 12 inputs (3 wide × 4 tall)
         }
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 16, 98, 45)); // output, 1.7 SlotCraftingOutput
+        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 16, 98, 45)); // output, 1.7 SlotCraftingOutput
 
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 174);
     }
@@ -85,7 +87,7 @@ public class ContainerMachineAssemblyMachine extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof com.hbm.items.machine.ItemMachineUpgrade) {
+            } else if (stack.getItem() instanceof ItemMachineUpgrade) {
                 // upgrades go straight to the upgrade slots (the 1.12.2 transferStackInSlot routing)
                 if (!this.moveItemStackTo(stack, 2, 4, false)) return ItemStack.EMPTY;
             } else {

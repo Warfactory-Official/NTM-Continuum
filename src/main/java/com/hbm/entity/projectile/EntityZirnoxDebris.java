@@ -1,10 +1,16 @@
 package com.hbm.entity.projectile;
 
+import com.hbm.potion.ModEffects;
+import com.hbm.tileentity.machine.rbmk.RBMKDials;
+import com.hbm.util.SavedIds;
+import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.Tags;
 
 import dev.golem.core.data.CompatEntity;
 import com.hbm.entity.ModEntities;
 import com.hbm.items.ModItems;
+import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -16,14 +22,19 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 /** Physical debris ejected by a ZIRNOX reactor meltdown. */
@@ -46,18 +57,18 @@ public class EntityZirnoxDebris extends CompatEntity {
     }
 
     @Override
-    protected void defineData(dev.golem.core.data.SynchedData data) {
+    protected void defineData(SynchedData data) {
         data.define(TYPE, DebrisType.BLANK.ordinal());
     }
 
     @Override
     protected void loadData(DataIn input) {
-        setDebrisType(com.hbm.util.SavedIds.getEnum(input, "type", DebrisType.BLANK));
+        setDebrisType(SavedIds.getEnum(input, "type", DebrisType.BLANK));
     }
 
     @Override
     protected void saveData(DataOut output) {
-        com.hbm.util.SavedIds.putEnum(output, "type", getDebrisType()); // by name; the synched int is session-only
+        SavedIds.putEnum(output, "type", getDebrisType()); // by name; the synched int is session-only
     }
 
     @Override
@@ -96,8 +107,8 @@ public class EntityZirnoxDebris extends CompatEntity {
     }
 
     /**
-     * 1.7 {@code onUpdate}: move first, then the server logic. 1.7 adds no chunk radiation here (an earlier port took
-     * 1.12.2's +20 RAD per tick for ELEMENT debris; removed in History §19ek-small). Instead ELEMENT and GRAPHITE
+     * 1.7 {@code onUpdate}: move first, then the server logic. 1.7 adds no chunk radiation here (1.12.2's
+     * +20 RAD per tick for ELEMENT debris is not ported). Instead ELEMENT and GRAPHITE
      * debris give every living entity within 2.5 blocks the radiation effect, and rising CONCRETE/EXCHANGER debris
      * smashes a rough 3x3x3 hole where it hits a block.
      */
@@ -125,16 +136,16 @@ public class EntityZirnoxDebris extends CompatEntity {
         if ((type == DebrisType.CONCRETE || type == DebrisType.EXCHANGER) && velocity.y > 0) {
             Vec3 pos = position();
             Vec3 next = pos.add(velocity.scale(2D));
-            net.minecraft.world.phys.BlockHitResult hit = level().clip(new net.minecraft.world.level.ClipContext(pos, next,
-                    net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, this));
-            if (hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK) {
+            BlockHitResult hit = level().clip(new ClipContext(pos, next,
+                    ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+            if (hit.getType() == HitResult.Type.BLOCK) {
                 BlockPos centre = hit.getBlockPos();
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++) {
                         for (int k = -1; k <= 1; k++) {
                             int rn = Math.abs(i) + Math.abs(j) + Math.abs(k);
                             if (rn <= 1 || random.nextInt(rn) == 0) {
-                                level().setBlock(centre.offset(i, j, k), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                                level().setBlock(centre.offset(i, j, k), Blocks.AIR.defaultBlockState(), 3);
                             }
                         }
                     }
@@ -146,13 +157,13 @@ public class EntityZirnoxDebris extends CompatEntity {
 
         if (type == DebrisType.ELEMENT || type == DebrisType.GRAPHITE) {
             int amplifier = type == DebrisType.ELEMENT ? 7 : 4;
-            for (net.minecraft.world.entity.LivingEntity e : level().getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
+            for (LivingEntity e : level().getEntitiesOfClass(LivingEntity.class,
                     getBoundingBox().inflate(2.5D))) {
-                dev.golem.core.world.Effects.addRegistered(e, com.hbm.potion.ModEffects.RADIATION.get(), 60 * 20, amplifier);
+                Effects.addRegistered(e, ModEffects.RADIATION.get(), 60 * 20, amplifier);
             }
         }
 
-        if (!com.hbm.tileentity.machine.rbmk.RBMKDials.getPermaScrap(level())
+        if (!RBMKDials.getPermaScrap(level())
                 && tickCount > type.lifetime + getId() % 50) {
             discard();
         }
@@ -177,11 +188,11 @@ public class EntityZirnoxDebris extends CompatEntity {
 
         private static final DebrisType[] VALUES = values();
 
-        private final dev.golem.core.registry.RegistryObject<Item> item;
+        private final RegistryObject<Item> item;
         private final int lifetime;
         private final EntityDimensions dimensions;
 
-        DebrisType(dev.golem.core.registry.RegistryObject<Item> item, int lifetime, float width, float height) {
+        DebrisType(RegistryObject<Item> item, int lifetime, float width, float height) {
             this.item = item;
             this.lifetime = lifetime;
             this.dimensions = EntityDimensions.scalable(width, height);

@@ -27,6 +27,7 @@ import com.hbm.inventory.recipes.PlasmaForgeRecipes;
 import com.hbm.inventory.recipes.PrecAssRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
+import java.util.function.Function;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
@@ -45,8 +46,8 @@ import java.util.Map;
 /**
  * Writes every {@link GenericRecipes} machine table to {@code hbm-recipe-dump.json} in the run directory, in a
  * canonical text form (item ids, tag ids, autogen material shapes, fluid names and amounts), plus the
- * {@link OreDictManager} constant-by-shape table. It is the port half of the fix-wave phase 3 scripted comparison
- * against original-hbm (History §19ej-3). A tool, not a test: declared only when the GameTest filter names
+ * {@link OreDictManager} constant-by-shape table. It is the port half of a scripted comparison
+ * against 1.7. A tool, not a test: declared only when the GameTest filter names
  * {@code recipe_table_dump}, like {@link RegistryDumpGameTests}.
  */
 public final class RecipeTableDump {
@@ -86,7 +87,7 @@ public final class RecipeTableDump {
         return "fluid:" + stack.type.getName() + "x" + stack.fill + (stack.pressure != 0 ? "@" + stack.pressure : "");
     }
 
-    private static JsonArray arr(Object[] values, java.util.function.Function<Object, String> f) {
+    private static JsonArray arr(Object[] values, Function<Object, String> f) {
         JsonArray a = new JsonArray();
         if (values != null) for (Object v : values) a.add(f.apply(v));
         return a;

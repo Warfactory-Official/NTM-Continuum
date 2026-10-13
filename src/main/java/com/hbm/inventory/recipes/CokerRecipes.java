@@ -6,6 +6,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.recipes.loader.FluidRecipeCodecs;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
@@ -42,8 +43,8 @@ public final class CokerRecipes {
             GenericRecipeCodec.FLUID_STACK.optionalFieldOf("byproduct").forGetter(Row::byproduct),
             GenericRecipeCodec.FLUID.optionalFieldOf("byproduct_type").forGetter(Row::byproductType)
     ).apply(i, Row::new)), row -> row.amount().isPresent() == row.solidFuelEnergy().isPresent()
-            ? com.mojang.serialization.DataResult.error(() -> "a coker row has either \"amount\" or \"solid_fuel_energy\"")
-            : com.mojang.serialization.DataResult.success(row));
+            ? DataResult.error(() -> "a coker row has either \"amount\" or \"solid_fuel_energy\"")
+            : DataResult.success(row));
 
     public static final FluidRecipeCodecs.ByFluid<Row, CokerRecipe> TABLE = new FluidRecipeCodecs.ByFluid<>("coker",
             () -> CODEC, Row::input, CokerRecipes::recipe);

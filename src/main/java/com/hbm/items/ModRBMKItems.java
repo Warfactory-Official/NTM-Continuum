@@ -1,6 +1,7 @@
 package com.hbm.items;
 
 import com.hbm.Constants;
+import com.hbm.blocks.machine.rbmk.RBMKBase;
 import net.minecraft.world.item.Item;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.items.machine.ItemRBMKPellet;
@@ -20,7 +21,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * Hand-written current RBMK fuel roster. Generated ModItems deliberately does not own these items. The rods, lids,
+ * Hand-written current RBMK fuel roster. Generated ModItems does not own these items. The rods, lids,
  * tool and digamma particle are plain sprites; the pellets' item definitions are typed OBJ data in
  * {@code ObjItemDeclarations}.
  */
@@ -30,9 +31,9 @@ public final class ModRBMKItems {
     private static final Reg REG = Reg.of(ITEMS);
     public static final Map<RegistryObject<ItemRBMKRod>, RegistryObject<ItemRBMKPellet>> PELLETS = new LinkedHashMap<>();
 
-    public static final RegistryObject<ItemRBMKLid> rbmk_lid = REG.item("rbmk_lid", (Item.Properties p) -> new ItemRBMKLid(p, com.hbm.blocks.machine.rbmk.RBMKBase.Lid.CONCRETE))
+    public static final RegistryObject<ItemRBMKLid> rbmk_lid = REG.item("rbmk_lid", (Item.Properties p) -> new ItemRBMKLid(p, RBMKBase.Lid.CONCRETE))
             .transform(Presets.sprite());
-    public static final RegistryObject<ItemRBMKLid> rbmk_lid_glass = REG.item("rbmk_lid_glass", (Item.Properties p) -> new ItemRBMKLid(p, com.hbm.blocks.machine.rbmk.RBMKBase.Lid.GLASS))
+    public static final RegistryObject<ItemRBMKLid> rbmk_lid_glass = REG.item("rbmk_lid_glass", (Item.Properties p) -> new ItemRBMKLid(p, RBMKBase.Lid.GLASS))
             .transform(Presets.sprite());
     public static final RegistryObject<ItemRBMKTool> rbmk_tool = REG.item("rbmk_tool", ItemRBMKTool::new, p -> p.stacksTo(1))
             .transform(Presets.sprite());

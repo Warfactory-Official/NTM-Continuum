@@ -1,5 +1,8 @@
 package com.hbm.handler;
 
+import com.hbm.blocks.DecoCrateDeclarations;
+import com.hbm.blocks.generic.BlockPlushie;
+import com.hbm.blocks.generic.BlockSnowglobe;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
@@ -8,6 +11,7 @@ import com.hbm.items.ModMeleeKitItems;
 import com.hbm.items.special.ItemKitCustom;
 import com.hbm.items.special.ItemKitNBT;
 import dev.golem.core.Ids;
+import dev.golem.core.hook.Hook;
 import dev.golem.core.world.Advancements;
 import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -31,7 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>Offers are item ids in 1.7's order; one whose item the port does not register yet is left out. The two lists
  * are built the same way on client and server from the same registry, so the offer index the purchase packet
  * carries means the same offer on both sides. 1.7 achievements are the port's {@code hbm:} advancements of the
- * old-hbm 1.12 names; a requirement whose advancement is not loaded cannot be met outside creative.
+ * 1.12.2 names; a requirement whose advancement is not loaded cannot be met outside creative.
  */
 public final class BobmazonOfferFactory {
 
@@ -68,7 +72,7 @@ public final class BobmazonOfferFactory {
 
     /**
      * The offer and icon ids that resolved to nothing. Expected: only the HIDDEN icon
-     * {@code hbm:achievement_icon} (now {@code achievement_icon_questionmark}, which resolves); anything else is a
+     * {@code hbm:achievement_icon} ({@code achievement_icon_questionmark} resolves); anything else is a
      * misspelt id silently dropping an offer. Checked by {@code BobmazonKitIdGameTests}.
      */
     public static Set<String> unresolvedIds() {
@@ -115,7 +119,7 @@ public final class BobmazonOfferFactory {
         add(std, hbm("geiger_counter", 1), Requirement.NONE, 16);
         add(std, hbm("matchstick", 16), Requirement.STEEL, 2);
         //blueprints
-        // 1.7 metadata stacks, items of their own here (History §19es-itemvariant)
+        // 1.7 metadata stacks, items of their own here
         add(std, hbm("blueprint_folder", 1), Requirement.ASSEMBLY, 64);
         add(std, hbm("blueprint_folder_discover", 1), Requirement.OIL, 256);
         //vending machines
@@ -133,12 +137,12 @@ public final class BobmazonOfferFactory {
             add(std, hbm("concrete_ext_" + conc, 16), Requirement.CHEMICS, 4);
         }
         // 1.7: every SnowglobeType (NONE included) and every PlushieType but NONE, types 1 and 2 rated 10
-        for (String globe : com.hbm.blocks.DecoCrateDeclarations.trinketIds("snowglobe",
-                com.hbm.blocks.generic.BlockSnowglobe.SnowglobeType.VALUES)) {
+        for (String globe : DecoCrateDeclarations.trinketIds("snowglobe",
+                BlockSnowglobe.SnowglobeType.VALUES)) {
             add(std, hbm(globe, 1), Requirement.CHEMICS, 128);
         }
-        String[] plushies = com.hbm.blocks.DecoCrateDeclarations.trinketIds("plushie",
-                com.hbm.blocks.generic.BlockPlushie.PlushieType.VALUES);
+        String[] plushies = DecoCrateDeclarations.trinketIds("plushie",
+                BlockPlushie.PlushieType.VALUES);
         for (int i = 1; i < 5; i++) add(std, hbm(plushies[i], 1), Requirement.OIL, 16, i < 3 ? 10 : 0);
 
         add(spc, of("minecraft", "iron_ingot", 64), Requirement.STEEL, 1);
@@ -178,7 +182,7 @@ public final class BobmazonOfferFactory {
         add(spc, hbm("loot_misc", 1), Requirement.STEEL, 2);
         add(spc, hbm("crate_can", 1), Requirement.STEEL, 1);
         add(spc, hbm("crate_ammo", 1), Requirement.STEEL, 2);
-        // old-hbm BobmazonOfferFactory: new ItemStack(crucible, 1, 3), item damage 3 and no charges (an empty crucible)
+        // 1.12.2 BobmazonOfferFactory: new ItemStack(crucible, 1, 3), item damage 3 and no charges (an empty crucible)
         ItemStack crucible = hbm("crucible", 1);
         if (!crucible.isEmpty()) crucible.setDamageValue(3);
         add(spc, crucible, Requirement.STEEL, 10);
@@ -267,7 +271,7 @@ public final class BobmazonOfferFactory {
      * before anyone opens a catalogue. Each offer is a stack, a {@link Need} ({@link Requirement} or an
      * {@link AdvancementNeed} for an addon's own advancement), a price in caps and a rating.
      */
-    public static final dev.golem.core.hook.Hook<OfferSink> OFFERS = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<OfferSink> OFFERS = Hook.notifying();
 
     /** What a player must have done to buy an offer, and the icon the catalogue shows for it. */
     public interface Need {

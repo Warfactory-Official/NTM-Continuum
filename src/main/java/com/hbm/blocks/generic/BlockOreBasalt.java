@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 
 /**
  * 1.7 {@code BlockOreBasalt} ({@code ore_basalt}): the volcanic basalt ores. {@code EnumBasaltOreType} is
- * flattened to {@code ore_basalt_<type>}. Each drops exactly one of its item (no fortune — the old
+ * flattened to {@code ore_basalt_<type>}. Each drops exactly one of its item (no fortune: the old
  * {@code getDrops} went through {@code getDropsWithoutDamage} with {@code quantityDropped = 1}); silk
  * touch returns the block. The asbestos ore vents asbestos dust when walked on with air above (1 in 10,
  * plus five spore particles) and always when broken.

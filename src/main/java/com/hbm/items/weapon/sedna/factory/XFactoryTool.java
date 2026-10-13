@@ -21,12 +21,15 @@ import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower;
 import com.hbm.entity.projectile.GunProjectilePayloads;
+import com.hbm.particle.helper.ExplosionCreator;
 import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.IRepairable;
+import com.hbm.sound.ModGunSounds;
+import java.util.function.Supplier;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.registries.BuiltInRegistries;
 import java.util.function.BiConsumer;
@@ -36,7 +39,14 @@ import dev.golem.core.render.anim.BusAnimation;
 import dev.golem.core.render.anim.BusAnimationKeyframe.IType;
 import dev.golem.core.render.anim.BusAnimationSequence;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -63,10 +73,10 @@ public final class XFactoryTool {
     public static final BiConsumer<EntityBulletBaseMK4, HitResult> LAMBDA_FOAM_HIT = XFactoryTool::foamHit;
     public static final BiConsumer<EntityBulletBaseMK4, HitResult> LAMBDA_SAND_HIT = XFactoryTool::sandHit;
 
-    public static final Consumer<net.minecraft.world.entity.Entity> LAMBDA_SET_HOOK = entity -> {
+    public static final Consumer<Entity> LAMBDA_SET_HOOK = entity -> {
         EntityBulletBaseMK4 bullet = (EntityBulletBaseMK4) entity;
         if (!bullet.level().isClientSide() && bullet.tickCount < 2
-                && bullet.getThrower() instanceof net.minecraft.world.entity.player.Player player
+                && bullet.getThrower() instanceof Player player
                 && player.getMainHandItem().getItem() instanceof ItemGunChargeThrower) {
             ItemGunChargeThrower.setLastHook(player.getMainHandItem(), bullet);
         }
@@ -156,7 +166,7 @@ public final class XFactoryTool {
     }
 
     private static boolean extinguishCore(Level level, BlockPos pos, IRepairable.EnumExtinguishType type) {
-        if (!(level instanceof net.minecraft.server.level.ServerLevel server)) return false;
+        if (!(level instanceof ServerLevel server)) return false;
         BlockEntity core = MultiblockSurface.coreEntity(server, pos);
         if (!(core instanceof IRepairable repairable)) return false;
         repairable.tryExtinguish(server, pos, type);
@@ -174,8 +184,8 @@ public final class XFactoryTool {
         return removed;
     }
 
-    private static boolean placeLayer(Level level, BlockPos pos, net.minecraft.world.level.block.Block layer,
-            net.minecraft.world.level.block.Block full) {
+    private static boolean placeLayer(Level level, BlockPos pos, Block layer,
+            Block full) {
         BlockState state = level.getBlockState(pos);
         if (!state.is(layer) && !state.canBeReplaced()) return false;
         if (!layer.defaultBlockState().canSurvive(level, pos)) return false;
@@ -191,18 +201,18 @@ public final class XFactoryTool {
 
     private static void hiss(Level level, EntityBulletBaseMK4 bullet) {
         level.playSound(null, bullet.getX(), bullet.getY(), bullet.getZ(),
-                net.minecraft.sounds.SoundEvents.FIRE_EXTINGUISH, net.minecraft.sounds.SoundSource.BLOCKS,
+                SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS,
                 1F, 1.5F + level.getRandom().nextFloat() * 0.5F);
     }
 
-    private static Consumer<net.minecraft.world.entity.Entity> blockDust(
-            java.util.function.Supplier<? extends net.minecraft.world.level.block.Block> block,
+    private static Consumer<Entity> blockDust(
+            Supplier<? extends Block> block,
             double spread) {
         return entity -> {
             if (!entity.level().isClientSide()) return;
             CompoundTag data = new CompoundTag();
             data.putInt("block", BuiltInRegistries.BLOCK.getId(block.get()));
-            net.minecraft.util.RandomSource random = entity.level().getRandom();
+            RandomSource random = entity.level().getRandom();
             data.putDouble("mX", entity.getDeltaMovement().x + random.nextGaussian() * spread);
             data.putDouble("mY", entity.getDeltaMovement().y - 0.2D + random.nextGaussian() * spread);
             data.putDouble("mZ", entity.getDeltaMovement().z + random.nextGaussian() * spread);
@@ -212,9 +222,9 @@ public final class XFactoryTool {
     }
 
     private static final BiConsumer<EntityBulletBaseMK4, HitResult> LAMBDA_MORTAR = (bullet, hit) -> {
-        if (hit instanceof net.minecraft.world.phys.EntityHitResult && bullet.tickCount < 3
-                && ((net.minecraft.world.phys.EntityHitResult) hit).getEntity() == bullet.getThrower()) return;
-        net.minecraft.world.phys.Vec3 location = hit.getLocation();
+        if (hit instanceof EntityHitResult && bullet.tickCount < 3
+                && ((EntityHitResult) hit).getEntity() == bullet.getThrower()) return;
+        Vec3 location = hit.getLocation();
         ExplosionVNT explosion = new ExplosionVNT(bullet.level(), location.x, location.y, location.z,
                 5F, bullet.getThrower());
         explosion.setBlockAllocator(new BlockAllocatorBulkie(60, 8));
@@ -228,9 +238,9 @@ public final class XFactoryTool {
     };
 
     private static final BiConsumer<EntityBulletBaseMK4, HitResult> LAMBDA_MORTAR_CHARGE = (bullet, hit) -> {
-        if (hit instanceof net.minecraft.world.phys.EntityHitResult && bullet.tickCount < 3
-                && ((net.minecraft.world.phys.EntityHitResult) hit).getEntity() == bullet.getThrower()) return;
-        net.minecraft.world.phys.Vec3 location = hit.getLocation();
+        if (hit instanceof EntityHitResult && bullet.tickCount < 3
+                && ((EntityHitResult) hit).getEntity() == bullet.getThrower()) return;
+        Vec3 location = hit.getLocation();
         ExplosionVNT explosion = new ExplosionVNT(bullet.level(), location.x, location.y, location.z,
                 15F, bullet.getThrower());
         explosion.setBlockAllocator(new BlockAllocatorStandard());
@@ -240,7 +250,7 @@ public final class XFactoryTool {
                 .setupPiercing(bullet.config.armorThresholdNegation, bullet.config.armorPiercingPercent));
         explosion.setPlayerProcessor(new PlayerProcessorStandard());
         explosion.explode();
-        com.hbm.particle.helper.ExplosionCreator.composeEffectSmall(bullet.level(), location.x,
+        ExplosionCreator.composeEffectSmall(bullet.level(), location.x,
                 location.y + 0.5D, location.z);
         bullet.discard();
     };
@@ -273,14 +283,14 @@ public final class XFactoryTool {
                 .setVel(3F).setGrav(0.035F).setOnImpact(LAMBDA_MORTAR_CHARGE));
 
         NtmToolGunCatalog.gun_fireext = NtmToolGunCatalog.weapon("gun_fireext",
-                props -> new com.hbm.items.weapon.sedna.ItemGunBaseNT(props, WeaponQuality.UTILITY,
+                props -> new ItemGunBaseNT(props, WeaponQuality.UTILITY,
                         new GunConfig().dura(5_000).draw(10).inspect(55).reloadChangeType(true)
                                 .hideCrosshair(false).crosshair(Crosshair.L_CIRCLE)
                                 .rec(new Receiver(0).dmg(0F).delay(1).dry(0).auto(true).spread(0F)
                                         .spreadHipfire(0F).reload(20).jam(0)
                                         .mag(new MagazineFullReload(0, 300).addConfigs(fext_water, fext_foam, fext_sand))
                                         .offset(1, -0.0625 * 2.5, -0.25D)
-                                        .sound(com.hbm.sound.ModGunSounds.FIRE_EXTINGUISHER::get, 1F, 1F)
+                                        .sound(ModGunSounds.FIRE_EXTINGUISHER::get, 1F, 1F)
                                         .setupStandardFire())
                                 .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_FIREEXT)));
 
@@ -289,7 +299,7 @@ public final class XFactoryTool {
                         new GunConfig().dura(3_000).draw(10).inspect(55).reloadChangeType(true)
                                 .hideCrosshair(false).crosshair(Crosshair.L_CIRCUMFLEX)
                                 .rec(new Receiver(0).dmg(10F).delay(4).dry(10).auto(true).spread(0F).spreadHipfire(0F).reload(60).jam(0)
-                                        .sound(com.hbm.sound.ModGunSounds.FIRE_CHARGE::get, 1F, 1F)
+                                        .sound(ModGunSounds.FIRE_CHARGE::get, 1F, 1F)
                                         .mag(new MagazineFullReload(0, 1).addConfigs(ct_hook, ct_mortar, ct_mortar_charge))
                                         .offset(1, -0.0625 * 2.5, -0.25D).setupStandardFire()
                                         .recoil(LAMBDA_RECOIL_CT))
@@ -301,7 +311,7 @@ public final class XFactoryTool {
     public static GunConfig chargeThrowerConfig() {
         return new GunConfig().dura(3000).draw(10).inspect(55).crosshair(Crosshair.L_CIRCUMFLEX)
                 .rec(new Receiver(0).dmg(10F).delay(4).dry(10).auto(true).reload(60).jam(0)
-                        .sound(com.hbm.sound.ModGunSounds.FIRE_CHARGE::get, 1F, 1F)
+                        .sound(ModGunSounds.FIRE_CHARGE::get, 1F, 1F)
                         .mag(new MagazineFullReload(0, 1).addConfigs(ct_hook, ct_mortar, ct_mortar_charge))
                         .offset(1, -0.0625 * 2.5, -0.25D).setupStandardFire())
                 .setupStandardConfiguration();

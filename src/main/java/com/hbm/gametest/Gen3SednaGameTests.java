@@ -11,9 +11,11 @@ import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
+import com.hbm.items.weapon.sedna.factory.XFactory357;
 import com.hbm.items.weapon.sedna.factory.XFactory556mm;
 import com.hbm.items.weapon.sedna.factory.XFactoryBlackPowder;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleTypeBase;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -85,8 +87,8 @@ public final class Gen3SednaGameTests {
 
     public static void gunConfigs(GameTestHelper helper) {
         assertReceiver(helper, ModGunItems.gun_light_revolver_atlas.get(), 0,
-                12.5F, 11, 11, 55, 45, 6, // 1.7.10 delay 11 (fix wave 5; 16 was 1.12.2)
-                com.hbm.items.weapon.sedna.factory.XFactory357.m357_bp, false);
+                12.5F, 11, 11, 55, 45, 6, // 1.7.10 delay 11 (16 was 1.12.2)
+                XFactory357.m357_bp, false);
         assertReceiver(helper, ModGunItems.gun_pepperbox.get(), 0,
                 5F, 27, 27, 67, 58, 6, XFactoryBlackPowder.stone, false);
         assertReceiver(helper, ModGunItems.gun_g3.get(), 0,
@@ -141,8 +143,8 @@ public final class Gen3SednaGameTests {
         ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
         MagazineSingleTypeBase left = (MagazineSingleTypeBase) gun.getPrimaryMagazine(stack, 0);
         MagazineSingleTypeBase right = (MagazineSingleTypeBase) gun.getPrimaryMagazine(stack, 1);
-        left.setType(stack, com.hbm.items.weapon.sedna.factory.XFactory357.m357_jhp);
-        right.setType(stack, com.hbm.items.weapon.sedna.factory.XFactory357.m357_ap);
+        left.setType(stack, XFactory357.m357_jhp);
+        right.setType(stack, XFactory357.m357_ap);
         left.setAmount(stack, 2);
         right.setAmount(stack, 5);
         ItemGunBaseNT.setWear(stack, 0, 12F);
@@ -152,9 +154,9 @@ public final class Gen3SednaGameTests {
         helper.assertTrue(MagazineSingleTypeBase.getMagCount(copy, 0) == 2
                         && MagazineSingleTypeBase.getMagCount(copy, 1) == 5
                         && gun.getPrimaryMagazine(copy, 0).getType(copy, null)
-                                == com.hbm.items.weapon.sedna.factory.XFactory357.m357_jhp
+                                == XFactory357.m357_jhp
                         && gun.getPrimaryMagazine(copy, 1).getType(copy, null)
-                                == com.hbm.items.weapon.sedna.factory.XFactory357.m357_ap
+                                == XFactory357.m357_ap
                         && ItemGunBaseNT.getWear(copy, 0) == 12F
                         && ItemGunBaseNT.getWear(copy, 1) == 34F,
                 "both Day And Night receivers must survive copy without sharing state");
@@ -193,7 +195,7 @@ public final class Gen3SednaGameTests {
     }
 
     public static void emptyGunsDoNotFire(GameTestHelper helper) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         BlockPos origin = helper.absolutePos(new BlockPos(1, 1, 1));
         player.setPos(origin.getX() + 0.5D, origin.getY(), origin.getZ() + 0.5D);
         for (ItemGunBaseNT gun : List.of(ModGunItems.gun_light_revolver_atlas.get(),
@@ -214,7 +216,7 @@ public final class Gen3SednaGameTests {
     }
 
     public static void g3TriggerMode(GameTestHelper helper) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ItemStack stack = new ItemStack(ModGunItems.gun_g3.get());
         ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
         player.setItemSlot(EquipmentSlot.MAINHAND, stack);
@@ -232,7 +234,7 @@ public final class Gen3SednaGameTests {
     }
 
     public static void g3LoadedFireAndRefire(GameTestHelper helper) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         BlockPos origin = helper.absolutePos(new BlockPos(1, 1, 1));
         player.setPos(origin.getX() + 0.5D, origin.getY(), origin.getZ() + 0.5D);
         ItemStack stack = new ItemStack(ModGunItems.gun_g3.get());

@@ -1,5 +1,9 @@
 package com.hbm.gametest;
 
+import com.hbm.api.data.ArmorDataMaps;
+import dev.golem.core.Ids;
+import java.util.Optional;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -9,13 +13,13 @@ final class SetSource {
     private SetSource() {}
 
     static ItemStack[] find(Item chest) {
-        com.hbm.api.data.ArmorDataMaps.ArmorSet set = com.hbm.api.data.ArmorDataMaps.ARMOR_SETS.get(chest);
+        ArmorDataMaps.ArmorSet set = ArmorDataMaps.ARMOR_SETS.get(chest);
         if (set == null) return null;
         return new ItemStack[] {stack(set.helmet()), new ItemStack(chest), stack(set.legs()), stack(set.boots())};
     }
 
-    private static ItemStack stack(java.util.Optional<String> id) {
-        return id.map(s -> new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.parse(s))))
+    private static ItemStack stack(Optional<String> id) {
+        return id.map(s -> new ItemStack(BuiltInRegistries.ITEM.getValue(Ids.parse(s))))
                 .orElse(ItemStack.EMPTY);
     }
 }

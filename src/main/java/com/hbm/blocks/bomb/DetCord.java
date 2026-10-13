@@ -3,6 +3,7 @@ package com.hbm.blocks.bomb;
 import com.hbm.api.block.IFuckingExplode;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.item.EntityTntNtm;
+import dev.golem.core.world.BlockTickScheduler;
 import dev.golem.core.world.CompatBlock;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -106,7 +107,7 @@ public class DetCord extends CompatBlock implements EntityBlock, IDetConnectible
     }
 
     @Override
-    protected BlockState onUpdateShape(BlockState state, LevelReader level, dev.golem.core.world.BlockTickScheduler ticks,
+    protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks,
                                        BlockPos pos, Direction direction, BlockPos neighbourPos, BlockState neighbourState) {
         return state.setValue(PROPERTY_BY_DIRECTION.get(direction),
                 IDetConnectible.isConnectible(level, neighbourPos, direction.getOpposite()));

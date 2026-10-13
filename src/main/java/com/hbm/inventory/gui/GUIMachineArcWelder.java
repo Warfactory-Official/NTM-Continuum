@@ -1,7 +1,10 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMachineArcWelder;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.machine.TileEntityMachineArcWelder;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -9,11 +12,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 
-/** Arc Welder screen — 1.7.10 {@code GUIMachineArcWelder} ({@code processing/gui_arc_welder.png}, 176x204). */
-public class GUIMachineArcWelder extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineArcWelder>
+/** Arc Welder screen, the 1.7.10 {@code GUIMachineArcWelder} ({@code processing/gui_arc_welder.png}, 176x204). */
+public class GUIMachineArcWelder extends CompatContainerScreen<ContainerMachineArcWelder>
         implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm",
+    private static final Identifier TEXTURE = Ids.of("hbm",
             "textures/gui/processing/gui_arc_welder.png");
     private static final int FLUID_X = 35, FLUID_TOP = 63, FLUID_W = 34, FLUID_H = 16;
     private static final int INFO_X = 78, INFO_Y = 67;
@@ -47,7 +50,7 @@ public class GUIMachineArcWelder extends dev.golem.core.gui.CompatContainerScree
 
         GuiUtil.drawUpgradeInfoPanel(graphics, leftPos + INFO_X, topPos + INFO_Y);
 
-        // 1.7: welder.tank.renderTank(guiLeft + 35, guiTop + 79, z, 34, 16, 1) — horizontal, y is the bottom edge.
+        // 1.7: welder.tank.renderTank(guiLeft + 35, guiTop + 79, z, 34, 16, 1). Horizontal, y is the bottom edge.
         GuiUtil.tankHorizontal(graphics, welder.tank, leftPos + FLUID_X, topPos + FLUID_TOP + FLUID_H, FLUID_W, FLUID_H);
     }
 
@@ -76,7 +79,7 @@ public class GUIMachineArcWelder extends dev.golem.core.gui.CompatContainerScree
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return menu.getWelder();
     }
 }

@@ -13,6 +13,7 @@ import com.hbm.inventory.fluid.trait.FT_Heatable;
 import com.hbm.inventory.fluid.trait.FT_PWRModerator;
 import com.hbm.inventory.fluid.trait.FT_Polluting;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple;
+import dev.golem.core.data.DataFiles;
 import dev.golem.core.gametest.GameTests;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -21,9 +22,8 @@ import java.util.Map;
 import net.minecraft.gametest.framework.GameTestHelper;
 
 /**
- * Fluid properties as data (§19fa-m1): HBM's fluids take colour, temperature, hazard diamond and traits from their
- * {@code fluid_property} files (converted once from the former Java tables and checked equal, tooltips included), and
- * every registered fluid's properties (an addon's too) survive the file format. Another mod's
+ * Fluid properties as data: HBM's fluids take colour, temperature, hazard diamond and traits from their
+ * {@code fluid_property} files, and every registered fluid's properties (an addon's too) survive the file format. Another mod's
  * {@code fluid_property_patch} files change a fluid on top of its file and go away with a reload.
  */
 public final class FluidPropertyGameTests {
@@ -60,7 +60,7 @@ public final class FluidPropertyGameTests {
 
     /**
      * 1.7's {@code new FluidType(name, color, p, f, r, EnumSymbol)} arguments for all 156 fluids, extracted mechanically
-     * from {@code original-hbm/.../inventory/fluid/Fluids.java} ({@code NAME:poison:flammability:reactivity:symbol},
+     * from {@code 1.7 .../inventory/fluid/Fluids.java} ({@code NAME:poison:flammability:reactivity:symbol},
      * 1.7's own symbol spelling, {@code CROYGENIC} included).
      */
     static final String[] HAZARDS_17 = {
@@ -166,7 +166,7 @@ public final class FluidPropertyGameTests {
             FluidProperties.applyPatches(withTest);
             check(helper, acid, hazard, "");
             // a reload of the property files (which replaces nitric acid's properties) keeps the patches on top
-            FluidProperties.apply(dev.golem.core.data.DataFiles.read(FluidProperties.FOLDER,
+            FluidProperties.apply(DataFiles.read(FluidProperties.FOLDER,
                     helper.getLevel().getServer().getResourceManager()));
             check(helper, acid, hazard, " after the property files were reloaded");
         } finally {

@@ -29,10 +29,9 @@ import java.util.Set;
  * definitions 26.1 uses, and builds a {@link MachineItemModel} for every one that names the
  * `hbm:machine_obj` special renderer.
  *
- * <p>Below 1.21.4 vanilla has no item-definition layer at all — it never opens these files — so parsing
- * them here is not duplicating vanilla's work, it is supplying the step vanilla is missing. Doing it
- * from the {@link ResourceManager} rather than from the jar keeps the data resource-pack-overridable,
- * exactly as it is on 26.1, and keeps ONE copy of every machine's framing values in the tree.
+ * <p>Below 1.21.4 vanilla has no item-definition layer and never opens these files, so parsing them
+ * here supplies the missing step. Reading through the {@link ResourceManager} rather than the jar keeps
+ * the data resource-pack-overridable, as on 26.1, and keeps one copy of every machine's framing values.
  *
  * <p>Fields and defaults are kept in lockstep with {@code MachineItemModelRenderer.Unbaked}'s codec.
  * A definition that is malformed is skipped with a warning rather than failing the reload: a bad icon
@@ -243,7 +242,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
 
      /^ 
      * The `hbm:rbmk_block_column` object inside an item definition, or null if this definition is not
-     * one. Same shape as {@link #rbmkColumnOf} — only the type id differs.
+     * one. Same shape as {@link #rbmkColumnOf}, only the type id differs.
      ^/
     private static JsonObject blockColumnOf(JsonElement root) {
         if (!root.isJsonObject()) return null;
@@ -448,7 +447,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         return List.copyOf(out);
     }
 
-    // ---- hbm:custom_item: the ported 1.7 item renderers (MachineItemModelRenderer.CustomItem on 26.1) ----
+    // hbm:custom_item: the ported 1.7 item renderers (MachineItemModelRenderer.CustomItem on 26.1)
     // The same definitions, read here because nothing below 1.21.4 reads them. The item's own model is generated as
     // a builtin/entity marker wearing the frame's display{} (<frame>_obj_context_legacy, <frame>_obj_flat_legacy
     // when the inventory is the sprite, <generated|handheld>_sprite_legacy for a sprite the renderer draws on), so

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.data.MachinePartDataMaps;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.conveyor.IConveyorBelt;
@@ -777,7 +778,7 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase
         this.markChanged();
     }
 
-    public com.hbm.api.data.MachinePartDataMaps.@Nullable DrillBit getInstalledDrill() {
+    public MachinePartDataMaps.@Nullable DrillBit getInstalledDrill() {
         ItemStack stack = inventory.getStackInSlot(4);
         if (stack.getItem() instanceof ItemDrillbit drill) {
             return drill.stats();

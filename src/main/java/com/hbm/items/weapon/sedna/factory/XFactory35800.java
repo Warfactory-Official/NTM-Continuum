@@ -13,7 +13,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 /**
- * The secret .358-00 beam ammunition definitions from original-hbm's {@code XFactory35800}. Both aberrators fire
+ * The secret .358-00 beam ammunition definitions from 1.7's {@code XFactory35800}. Both aberrators fire
  * through the standard {@code Lego.LAMBDA_NOWEAR_FIRE}, whose BEAM branch spawns the hitscan beam; the round alone
  * decides whether the impact is plain or black lightning.
  */

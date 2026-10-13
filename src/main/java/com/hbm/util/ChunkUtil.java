@@ -16,8 +16,8 @@ import java.util.Map;
  * ({@code EntityExplosionChunkloading}, planes, Soyuz, drones, TOM, the laser death blast).
  *
  * <p>ntm-next backed these with its own registered {@code TicketType}s and a refcount beside the vanilla
- * ticket storage. This port already owns forced chunks through {@link ChunkLoadingManager} — persisted,
- * reconciled on restart, reference-counted — so the same six calls are answered from one manager ticket
+ * ticket storage. This port already owns forced chunks through {@link ChunkLoadingManager}: persisted,
+ * reconciled on restart, reference-counted, so the same six calls are answered from one manager ticket
  * per level instead of a second ticket registry. The refcount semantics are ntm-next's: a chunk is held
  * while any anchor or claim on it is outstanding, and the last release drops it.
  */

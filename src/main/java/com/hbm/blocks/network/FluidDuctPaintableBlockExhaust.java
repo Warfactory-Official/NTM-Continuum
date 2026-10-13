@@ -3,6 +3,8 @@ package com.hbm.blocks.network;
 import com.hbm.tileentity.network.TileEntityPipeExhaust;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.Fluids;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -28,7 +30,7 @@ public class FluidDuctPaintableBlockExhaust extends FluidDuctPaintable {
 
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        java.util.List<String> text = new java.util.ArrayList<>();
+        List<String> text = new ArrayList<>();
         text.add(Fluids.SMOKE.getDisplayNameString());
         text.add(Fluids.SMOKE_LEADED.getDisplayNameString());
         text.add(Fluids.SMOKE_POISON.getDisplayNameString());

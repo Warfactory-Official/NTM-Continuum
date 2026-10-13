@@ -1,6 +1,7 @@
 package com.hbm.entity.mob;
 
 import com.hbm.items.ModGunItems;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatMonster;
 import com.hbm.items.ModArmorItems;
@@ -113,9 +114,9 @@ public final class EntityUndeadSoldier extends CompatMonster {
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        // saved by name (1.7 kept the byte; History section 19ej-ids); an old byte reads as the default zombie
+        // saved by name (1.7 kept the byte); an old byte reads as the default zombie
         String type = input.getStringOr("type", "zombie");
-        if (input.getIntOr("type", Integer.MIN_VALUE) != Integer.MIN_VALUE) com.hbm.util.SavedIds.warnNumeric("undead soldier type", "type");
+        if (input.getIntOr("type", Integer.MIN_VALUE) != Integer.MIN_VALUE) SavedIds.warnNumeric("undead soldier type", "type");
         entityData.set(TYPE, "skeleton".equals(type) ? TYPE_SKELETON : TYPE_ZOMBIE);
     }
 

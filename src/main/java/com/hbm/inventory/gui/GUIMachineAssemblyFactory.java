@@ -6,7 +6,10 @@ import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBlueprints;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyFactory;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
 import net.minecraft.ChatFormatting;
@@ -20,12 +23,12 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 import java.util.Optional;
 
-/** The 256x240 Assembly Factory screen — 1.7.10 {@code GUIMachineAssemblyFactory} ({@code processing/gui_assembly_factory.png}). */
+/** The 256x240 Assembly Factory screen: 1.7.10 {@code GUIMachineAssemblyFactory} ({@code processing/gui_assembly_factory.png}). */
 public final class GUIMachineAssemblyFactory
-        extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineAssemblyFactory>
+        extends CompatContainerScreen<ContainerMachineAssemblyFactory>
         implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm",
+    private static final Identifier TEXTURE = Ids.of("hbm",
             "textures/gui/processing/gui_assembly_factory.png");
     private static final int TANK_W = 5;
 
@@ -170,7 +173,7 @@ public final class GUIMachineAssemblyFactory
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return menu.getFactory();
     }
 }

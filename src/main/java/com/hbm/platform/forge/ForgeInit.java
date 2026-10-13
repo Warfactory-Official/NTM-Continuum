@@ -388,8 +388,7 @@ public final class ForgeInit {
                         feature.unwrapKey().map(ResourceKey::location)
                                 .filter(id -> id.getNamespace().equals(com.hbm.Constants.MOD_ID))
                                 .ifPresent(features::add))));
-        // every hbm placed feature named by a loaded forge:add_features modifier must reach a biome (the old fixed
-        // expectation of 9 predates the per-ore features of §19ec-worldfeatures)
+        // every hbm placed feature named by a loaded forge:add_features modifier must reach a biome
         Set<Identifier> expected = new TreeSet<>();
         server.registryAccess().registryOrThrow(net.minecraftforge.registries.ForgeRegistries.Keys.BIOME_MODIFIERS)
                 .forEach(modifier -> {

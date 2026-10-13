@@ -34,7 +34,7 @@ public class BlockGraphiteBreedingFuel extends BlockGraphiteDrilledTE {
             BlockState state = level.getBlockState(pos);
 
             if (tool == ToolType.SCREWDRIVER && isChannelFace(state, side)) {
-                // 1.7 keeps the full meta here (bit 8 included) — the drilled block ignores it anyway
+                // 1.7 keeps the full meta here (bit 8 included); the drilled block ignores it anyway
                 level.setBlock(pos, withChannel(ModNuclearMiscBlocks.BLOCK_GRAPHITE_DRILLED.get(), state).setValue(OUT, state.getValue(OUT)), 3);
                 ejectItem(level, pos, side, new ItemStack(ModNuclearMiscItems.PILE_ROD_LITHIUM.get()));
             }

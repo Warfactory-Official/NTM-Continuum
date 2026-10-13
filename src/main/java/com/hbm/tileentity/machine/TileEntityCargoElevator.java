@@ -21,14 +21,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * A stacking freight lift, ported from 1.12.2's {@code TileEntityCargoElevator}.
  *
  * <p>It grows a block at a time: right-clicking the structure with another elevator adds a 3×3 course
  * on top and raises {@link #height}. Placing a whole elevator directly beneath an existing one splices
- * the two together — the lower core absorbs the upper's height and the upper's cells are rewritten as
- * dummies — which is why the tick begins by looking down before it does anything else.
+ * the two together: the lower core absorbs the upper's height and the upper's cells are rewritten as
+ * dummies, which is why the tick begins by looking down before it does anything else.
  *
  * <p>Riders are carried rather than pushed: anything whose feet lie in the slab the platform swept this
  * tick is snapped onto the platform's new height, so a rider never falls through a fast lift the way a
@@ -121,10 +122,10 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
             double feet = entity.getBoundingBox().minY;
             if (feet < lower || feet > upper) continue;
 
-            entity.move(MoverType.SELF, new net.minecraft.world.phys.Vec3(
+            entity.move(MoverType.SELF, new Vec3(
                     0D, -(feet - (pos.getY() + 1D + extension)), 0D));
             entity.setOnGround(true);
-            entity.move(MoverType.SELF, new net.minecraft.world.phys.Vec3(0D, -0.125D, 0D));
+            entity.move(MoverType.SELF, new Vec3(0D, -0.125D, 0D));
         }
     }
 

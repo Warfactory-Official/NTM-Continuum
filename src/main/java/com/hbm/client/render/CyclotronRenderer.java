@@ -6,6 +6,7 @@ import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
 import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
@@ -22,7 +23,7 @@ import java.util.function.Predicate;
  * The cyclotron body, its four plug sockets, and the Standard Galactic inscription that turns above a
  * fully plugged machine.
  *
- * <p>A socket is one mesh with two textures — empty and filled — so it names the mesh once and picks
+ * <p>A socket is one mesh with two textures (empty and filled) so it names the mesh once and picks
  * its skin from the plug it reads. The inscription is not declared at all: it is glyph quads the font
  * atlas builds per frame, with no mesh for either backend to hold.
  */
@@ -31,7 +32,7 @@ public final class CyclotronRenderer extends GemBER<TileEntityMachineCyclotron, 
     private static final String INSCRIPTION = "plures necat crapula quam gladius";
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/cyclotron.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/cyclotron.obj"));
 
     @Override
     protected void setup(Gem.Model<CyclotronRenderState> declaration) {

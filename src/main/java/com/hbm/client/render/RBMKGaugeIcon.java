@@ -74,9 +74,9 @@ final class RBMKGaugeIcon {
      * narrower than a block shows that much of the sheet rather than the whole of it squeezed.
      *
      * <p>Every face is wound counter-clockwise seen from outside, which {@link #face} enforces from its
-     * normal. Four of the six used to be wound the other way: below 26.1 the culled cutout then drew only
-     * the far, inside walls, and 26.1's unculled pipeline drew the near walls but lit them as back faces
-     * (with the negated normal), which is why the icon came out dark there and inside out here.
+     * normal. Faces wound the other way draw only the far, inside walls below 26.1 (culled cutout), and on
+     * 26.1's unculled pipeline the near walls are lit as back faces with the negated normal, so the icon
+     * comes out dark.
      */
     static Quads.Builder box(Quads.Builder faces, float x0, float y0, float z0,
                                      float x1, float y1, float z1) {

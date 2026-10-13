@@ -1,6 +1,8 @@
 package com.hbm.inventory.container;
 
+import com.hbm.items.block.CrateHeldOpening;
 import com.hbm.tileentity.machine.storage.TileEntityCrateBase;
+import dev.golem.core.gui.CompatContainerMenu;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -22,7 +24,7 @@ import org.jspecify.annotations.Nullable;
  * <p>The client builds the same slots against an empty stand-in when the position does not resolve, as the
  * other position-bound menus do; the server copy is always bound to the live block entity.
  */
-public abstract class ContainerCrateBase extends dev.golem.core.gui.CompatContainerMenu {
+public abstract class ContainerCrateBase extends CompatContainerMenu {
 
     protected final Container crate;
     protected final @Nullable TileEntityCrateBase tile;
@@ -51,7 +53,7 @@ public abstract class ContainerCrateBase extends dev.golem.core.gui.CompatContai
 
     @Override
     protected boolean handleClick(int slotId, int button, ClickAction action, Player player) {
-        return com.hbm.items.block.CrateHeldOpening.blocksClick(this, heldSlot, slotId, button, action);
+        return CrateHeldOpening.blocksClick(this, heldSlot, slotId, button, action);
     }
 
     protected static @Nullable TileEntityCrateBase resolve(Inventory inventory, BlockPos pos) {
@@ -72,7 +74,7 @@ public abstract class ContainerCrateBase extends dev.golem.core.gui.CompatContai
     public void removed(Player player) {
         super.removed(player);
         if (tile != null) tile.closeInventory();
-        else if (crate instanceof com.hbm.items.block.CrateHeldOpening.HeldCrate held) held.closed();
+        else if (crate instanceof CrateHeldOpening.HeldCrate held) held.closed();
     }
 
     @Override

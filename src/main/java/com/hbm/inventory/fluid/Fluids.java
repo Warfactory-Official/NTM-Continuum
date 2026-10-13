@@ -5,10 +5,23 @@ import com.hbm.inventory.fluid.trait.FluidTraitSimple.*;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import dev.golem.core.Ids;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.data.NbtFiles;
 import dev.golem.core.data.Tags;
+import dev.golem.core.fluid.TokenFluids;
+import dev.golem.core.registry.RegistryObject;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.Fluid;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -20,18 +33,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The fluid registry: HBM's own list of {@link FluidType}s, keyed by registry name ({@code hbm:water}), which is
- * the only form a fluid is saved in. It is a plain static map populated by {@link #init()} (History section
- * 19ej-ids); since History section 19ek-fluids each type is additionally registered as a vanilla {@code Fluid}
- * ({@link #declareVanilla}, {@link #toVanilla}/{@link #fromVanilla}) so other mods can see HBM fluids, with saves
- * unchanged. The 1.7 numbers remain as the read-only {@link #legacyId}/{@link #networkId} views.
+ * the only form a fluid is saved in. It is a plain static map populated by {@link #init()}. Each type is also
+ * registered as a vanilla {@code Fluid} ({@link #declareVanilla}, {@link #toVanilla}/{@link #fromVanilla}) so other
+ * mods can see HBM fluids. The 1.7 numbers remain as the read-only {@link #legacyId}/{@link #networkId} views.
  *
- * <p>26.1 slim port: the 1.12.2 original carried a full trait/pollution/potion subsystem plus Forge-fluid
- * compat on each type. This port keeps the registry mechanics ({@code registerSelf}/{@code byRegistryName}/
- * {@code fromName}) and the identity (name/color/temperature) of <b>the full base set</b> — every fluid
- * the 1.7.10 {@code Fluids.init()} hardcodes, in the same order so the IDs match 1:1 (0..155, FLUE last; the
- * JSON-dump custom-fluid demo is dropped). 1.12.2 inserted a HYDRAZINE at 89 that 1.7 never had, which shifted
- * CHLORINE..FLUE by one; it was removed 2026-10-03 (nothing made or consumed it, History section 19ej-1a), so
- * structure NBT, QMAW pages and 1.7 data that store a fluid id resolve to the 1.7 fluid again. The declarations are generated; thermal traits are maintained below.
+ * <p>The registry mechanics ({@code registerSelf}/{@code byRegistryName}/{@code fromName}) and the identity
+ * (name/color/temperature) cover the full base set: every fluid the 1.7.10 {@code Fluids.init()} hardcodes, in the
+ * same order so the IDs match 1:1 (0..155, FLUE last; the JSON-dump custom-fluid demo is dropped). 1.12.2 inserted
+ * a HYDRAZINE at 89 that 1.7 never had, which shifts CHLORINE..FLUE by one; it is not ported, so structure NBT,
+ * QMAW pages and 1.7 data that store a fluid id resolve to the 1.7 fluid. The declarations are generated; thermal
+ * traits are maintained below.
  *
  * @author hbm, mlbv
  */
@@ -210,7 +221,7 @@ public class Fluids {
         if (initialized) return;
         initialized = true;
 
-        // ALWAYS append new fluids at the bottom — IDs are positional and used to save tank state.
+        // Append new fluids at the bottom: the IDs are positional.
         NONE = new FluidType("NONE", 0x888888);
         WATER = new FluidType("WATER", 0x3333FF);
         STEAM = new FluidType("STEAM", 0xe5e5e5);
@@ -220,7 +231,7 @@ public class Fluids {
         COOLANT = new FluidType("COOLANT", 0xd8fcff);
         LAVA = new FluidType("LAVA", 0xFF3300);
         // ntm-next's identity: the vanilla fluid registry. These three ARE vanilla's empty, water and lava, so they are
-        // saved under vanilla's ids; their former hbm: names (saves before 2026-10-08) still read as them.
+        // saved under vanilla's ids; the hbm: names for them still read.
         vanillaName(NONE, "minecraft:empty");
         vanillaName(WATER, "minecraft:water");
         vanillaName(LAVA, "minecraft:lava");
@@ -373,8 +384,8 @@ public class Fluids {
         AIRBLAST = new FluidType("AIRBLAST", 0xFFDADA); // 1.7 Fluids.java:414
         FLUE = new FluidType(155, "FLUE", 0x131313); // 1.7 asserts id 155 here
 
-        // 1.7 Fluids.java:427-606, "AND DON'T FORGET THE META DOWN HERE": the display order (getInNiceOrder) used to
-        // list fluids in identifiers, creative tabs, NEI and the assembly machine's fluid packages. Every fluid exactly
+        // 1.7 Fluids.java:427-606, "AND DON'T FORGET THE META DOWN HERE": the display order (getInNiceOrder)
+        // lists fluids in identifiers, creative tabs, NEI and the assembly machine's fluid packages. Every fluid exactly
         // once; fluids 1.7 added late (DHC, AIRBLAST, FLUE, CONCRETE, ...) sit in their group, not at the end.
         //null
         metaOrder.add(NONE);
@@ -598,12 +609,10 @@ public class Fluids {
         fluid.setID(id);
     }
 
-    // ------------------------------------------------------------------------------------------------------------
-    // Identity. A fluid is SAVED by its registry name ("hbm:oil", "minecraft:water") and nothing else (user rule 2026-10-03, History
-    // section 19ej-ids). The 1.7 number survives only as two read-only views: networkId (same-session packets and
+    // Identity. A fluid is saved by its registry name ("hbm:oil", "minecraft:water") and nothing else.
+    // The 1.7 number survives only as two read-only views: networkId (same-session packets and
     // synched entity data, never written to disk) and legacyId (places where 1.7 showed the number to a player or to
     // a computer, and 1.7 data files that carry it). Both are the frozen 1.7 registration order.
-    // ------------------------------------------------------------------------------------------------------------
 
     /** The fluid saved under {@code name} ({@code hbm:water}; a bare {@code water} is read as {@code hbm:}). NONE if unknown. */
     public static FluidType byRegistryName(@Nullable String name) {
@@ -612,7 +621,7 @@ public class Fluids {
         FluidType fluid = registryMapping.get(id);
         if (fluid == null) {
             // the open model: any registered vanilla fluid is an HBM fluid too
-            var vanilla = net.minecraft.core.registries.BuiltInRegistries.FLUID.getOptional(dev.golem.core.Ids.parse(id));
+            var vanilla = BuiltInRegistries.FLUID.getOptional(Ids.parse(id));
             if (vanilla.isPresent() && vanilla.get() != net.minecraft.world.level.material.Fluids.EMPTY) return fromVanilla(vanilla.get());
         }
         if (fluid == null) {
@@ -629,7 +638,7 @@ public class Fluids {
      */
     public static int networkId(FluidType fluid) {
         if (!fluid.isForeign()) return fluid.numericId();
-        return FOREIGN_NETWORK_BASE + net.minecraft.core.registries.BuiltInRegistries.FLUID.getId(toVanilla(fluid));
+        return FOREIGN_NETWORK_BASE + BuiltInRegistries.FLUID.getId(toVanilla(fluid));
     }
 
     /** Where foreign fluids' network ids start; far above any count of registered HBM fluids. */
@@ -638,8 +647,8 @@ public class Fluids {
     /** Inverse of {@link #networkId}. */
     public static FluidType byNetworkId(int id) {
         if (id >= FOREIGN_NETWORK_BASE) {
-            net.minecraft.world.level.material.Fluid vanilla =
-                    net.minecraft.core.registries.BuiltInRegistries.FLUID.byId(id - FOREIGN_NETWORK_BASE);
+            Fluid vanilla =
+                    BuiltInRegistries.FLUID.byId(id - FOREIGN_NETWORK_BASE);
             return vanilla == null ? NONE : fromVanilla(vanilla);
         }
         FluidType fluid = idMapping.get(id);
@@ -657,7 +666,7 @@ public class Fluids {
 
     /**
      * The fluid as a saved value: its registry name. Decoding is tolerant - an unknown name, or an int from a
-     * pre-2026-10-03 save, reads as NONE with one WARN instead of failing the whole item stack or block entity.
+     * save with a numeric id, reads as NONE with one WARN instead of failing the whole item stack or block entity.
      */
     public static final Codec<FluidType> CODEC = Codec.either(Codec.STRING, Codec.INT).xmap(
             either -> either.map(Fluids::byRegistryName, Fluids::fromOldNumericSave),
@@ -697,16 +706,16 @@ public class Fluids {
 
     /** Writes {@code fluids} as a list of registry names under {@code key}. */
     public static void writeList(CompoundTag tag, String key, FluidType[] fluids) {
-        net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
-        for (FluidType fluid : fluids) list.add(net.minecraft.nbt.StringTag.valueOf((fluid == null ? NONE : fluid).getRegistryName()));
+        ListTag list = new ListTag();
+        for (FluidType fluid : fluids) list.add(StringTag.valueOf((fluid == null ? NONE : fluid).getRegistryName()));
         tag.put(key, list);
     }
 
     /** Reads a list written by {@link #writeList}; absent (or an old numeric array) reads as empty. */
     public static FluidType[] readList(CompoundTag tag, String key) {
-        net.minecraft.nbt.ListTag list = dev.golem.core.data.NbtFiles.list(tag, key);
+        ListTag list = NbtFiles.list(tag, key);
         FluidType[] fluids = new FluidType[list.size()];
-        for (int i = 0; i < fluids.length; i++) fluids[i] = byRegistryName(dev.golem.core.data.NbtFiles.stringAt(list, i));
+        for (int i = 0; i < fluids.length; i++) fluids[i] = byRegistryName(NbtFiles.stringAt(list, i));
         return fluids;
     }
 
@@ -733,22 +742,20 @@ public class Fluids {
     public static synchronized FluidType[] getInNiceOrder() {
         List<FluidType> all = new ArrayList<>(registerOrder.size());
         all.addAll(metaOrder);
-        java.util.Set<FluidType> listed = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        Set<FluidType> listed = Collections.newSetFromMap(new IdentityHashMap<>());
         listed.addAll(metaOrder);
         for (FluidType fluid : registerOrder) if (!listed.contains(fluid)) all.add(fluid);
         return all.toArray(new FluidType[0]);
     }
 
-    // ------------------------------------------------------------------------------------------------------------
-    // Vanilla Fluid registry entries (History section 19ek-fluids). Every FluidType is also a vanilla Fluid so other
+    // Vanilla Fluid registry entries. Every FluidType is also a vanilla Fluid so other
     // mods' tanks, pipes and recipe viewers can name it: hbm:<key> as a Core TokenFluid (never placeable, no bucket),
     // and WATER/LAVA/NONE as vanilla's own water, lava and empty, as ntm-next does. The registry entry is only a
     // name: every HBM system keeps working in FluidType, and saves keep the FluidType registry name (unchanged).
-    // ------------------------------------------------------------------------------------------------------------
 
-    private static final java.util.Map<FluidType, java.util.function.Supplier<net.minecraft.world.level.material.Fluid>> VANILLA =
-            new java.util.IdentityHashMap<>();
-    private static volatile java.util.Map<net.minecraft.world.level.material.Fluid, FluidType> byVanilla;
+    private static final Map<FluidType, Supplier<Fluid>> VANILLA =
+            new IdentityHashMap<>();
+    private static volatile Map<Fluid, FluidType> byVanilla;
     private static boolean vanillaDeclared = false;
 
     /**
@@ -781,10 +788,10 @@ public class Fluids {
 
     /** Declares {@code fluids} (all of {@code namespace}) as vanilla token fluids, as HBM does for its own. */
     public static synchronized void declareVanilla(String namespace, List<FluidType> fluids) {
-        List<dev.golem.core.fluid.TokenFluids.Spec> specs = new ArrayList<>();
+        List<TokenFluids.Spec> specs = new ArrayList<>();
         for (FluidType fluid : fluids) specs.add(tokenSpec(fluid));
-        java.util.Map<String, dev.golem.core.registry.RegistryObject<net.minecraft.world.level.material.Fluid>> handles =
-                dev.golem.core.fluid.TokenFluids.register(namespace, specs);
+        Map<String, RegistryObject<Fluid>> handles =
+                TokenFluids.register(namespace, specs);
         for (FluidType fluid : fluids) VANILLA.put(fluid, handles.get(fluid.getKey()));
         byVanilla = null;
     }
@@ -800,20 +807,20 @@ public class Fluids {
      * not tinted again. Temperature is 1.7's degrees Celsius in kelvin; gases (1.7 {@code FT_Gaseous}/{@code _ART})
      * are lighter than air, viscous fluids ({@code FT_Viscous}) are slow.
      */
-    private static dev.golem.core.fluid.TokenFluids.Spec tokenSpec(FluidType fluid) {
+    private static TokenFluids.Spec tokenSpec(FluidType fluid) {
         boolean gaseous = fluid.hasTrait(FT_Gaseous.class) || fluid.hasTrait(FT_Gaseous_ART.class);
         boolean viscous = fluid.hasTrait(FT_Viscous.class);
-        return new dev.golem.core.fluid.TokenFluids.Spec(fluid.getKey(), fluid.getTranslationKey(), fluid.getFallbackName(),
+        return new TokenFluids.Spec(fluid.getKey(), fluid.getTranslationKey(), fluid.getFallbackName(),
                 fluid.getNamespace() + ":gui/fluids/" + fluid.getKey(), 0xFFFFFFFF, fluid.temperature + 273,
                 gaseous ? -1000 : 1000, viscous ? 6000 : 1000, gaseous);
     }
 
     /** The vanilla {@code Fluid} {@code fluid} is registered as; {@code Fluids.EMPTY} for NONE (and before registration). */
-    public static net.minecraft.world.level.material.Fluid toVanilla(FluidType fluid) {
+    public static Fluid toVanilla(FluidType fluid) {
         if (fluid == null || fluid == NONE) return net.minecraft.world.level.material.Fluids.EMPTY;
         if (fluid == WATER) return net.minecraft.world.level.material.Fluids.WATER;
         if (fluid == LAVA) return net.minecraft.world.level.material.Fluids.LAVA;
-        java.util.function.Supplier<net.minecraft.world.level.material.Fluid> handle = VANILLA.get(fluid);
+        Supplier<Fluid> handle = VANILLA.get(fluid);
         return handle == null ? net.minecraft.world.level.material.Fluids.EMPTY : handle.get();
     }
 
@@ -821,15 +828,15 @@ public class Fluids {
      * The FluidType a vanilla {@code Fluid} stands for: an HBM token fluid's own type, WATER/LAVA for vanilla water and
      * lava (still or flowing), NONE for empty and for every other mod's fluid.
      */
-    public static FluidType fromVanilla(net.minecraft.world.level.material.Fluid fluid) {
+    public static FluidType fromVanilla(Fluid fluid) {
         if (fluid == null || fluid == net.minecraft.world.level.material.Fluids.EMPTY) return NONE;
-        if (fluid instanceof net.minecraft.world.level.material.FlowingFluid flowing) fluid = flowing.getSource();
+        if (fluid instanceof FlowingFluid flowing) fluid = flowing.getSource();
         if (fluid == net.minecraft.world.level.material.Fluids.WATER || fluid == net.minecraft.world.level.material.Fluids.FLOWING_WATER) return WATER;
         if (fluid == net.minecraft.world.level.material.Fluids.LAVA || fluid == net.minecraft.world.level.material.Fluids.FLOWING_LAVA) return LAVA;
-        java.util.Map<net.minecraft.world.level.material.Fluid, FluidType> map = byVanilla;
+        Map<Fluid, FluidType> map = byVanilla;
         if (map == null) {
-            map = new java.util.IdentityHashMap<>();
-            for (java.util.Map.Entry<FluidType, java.util.function.Supplier<net.minecraft.world.level.material.Fluid>> entry : VANILLA.entrySet()) {
+            map = new IdentityHashMap<>();
+            for (Map.Entry<FluidType, Supplier<Fluid>> entry : VANILLA.entrySet()) {
                 map.put(entry.getValue().get(), entry.getKey());
             }
             byVanilla = map;
@@ -843,10 +850,10 @@ public class Fluids {
      * its vanilla id and carrying no traits unless a {@code fluid_property} file gives it some. HBM's tanks, ducts and
      * machines move it like any HBM fluid.
      */
-    private static synchronized FluidType foreign(net.minecraft.world.level.material.Fluid fluid) {
+    private static synchronized FluidType foreign(Fluid fluid) {
         FluidType known = FOREIGN.get(fluid);
         if (known != null) return known;
-        var id = net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(fluid);
+        var id = BuiltInRegistries.FLUID.getKey(fluid);
         if (id == null) return NONE;
         FluidType type = registryMapping.get(id.toString());
         if (type == null) {
@@ -854,11 +861,11 @@ public class Fluids {
             type = new FluidType(id.getNamespace(), id.getPath(), 0xFFFFFF);
             type.markForeign();
         }
-        final net.minecraft.world.level.material.Fluid vanilla = fluid;
+        final Fluid vanilla = fluid;
         VANILLA.put(type, () -> vanilla);
         FOREIGN.put(fluid, type);
         return type;
     }
 
-    private static final java.util.Map<net.minecraft.world.level.material.Fluid, FluidType> FOREIGN = new java.util.IdentityHashMap<>();
+    private static final Map<Fluid, FluidType> FOREIGN = new IdentityHashMap<>();
 }

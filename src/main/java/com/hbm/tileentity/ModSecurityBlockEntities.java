@@ -5,6 +5,7 @@ import com.hbm.Constants;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import java.util.stream.Stream;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -28,8 +29,8 @@ public final class ModSecurityBlockEntities {
     /** Barbed wire (all six) and spikes: no state, exists so {@code SecurityObjRenderer} runs. */
     public static final RegistryObject<BlockEntityType<TileEntitySecurityObj>> SECURITY_OBJ =
             REG.blockEntity("security_obj", () -> BlockEntities.type(TileEntitySecurityObj::new,
-                    java.util.stream.Stream.concat(ModSecurityBlocks.BARBED_WIRES.stream().map(RegistryObject::get),
-                            java.util.stream.Stream.of(ModSecurityBlocks.spikes.get())).toArray(Block[]::new)));
+                    Stream.concat(ModSecurityBlocks.BARBED_WIRES.stream().map(RegistryObject::get),
+                            Stream.of(ModSecurityBlocks.spikes.get())).toArray(Block[]::new)));
 
     public static void init() {}
 }

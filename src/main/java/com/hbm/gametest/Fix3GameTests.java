@@ -1,7 +1,9 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.foundry.ArcFurnaceRecipes;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.recipes.ArcFurnaceRecipes;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.Fluids;
@@ -26,13 +28,17 @@ import com.hbm.inventory.recipes.SolderingRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilSmithingRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
+import com.hbm.items.ModFluidNetItems;
 import com.hbm.items.ModPwrItems;
+import com.hbm.items.machine.ItemDepletedFuel;
 import com.hbm.items.machine.ItemPWRFuel.EnumPWRFuel;
 import com.hbm.items.machine.ItemStamp.StampType;
+import com.hbm.tileentity.machine.TileEntityWasteDrum;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.Ingredients;
 import dev.golem.core.world.ItemStacks;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
@@ -43,7 +49,7 @@ import net.minecraft.world.item.Items;
 import java.util.List;
 
 /**
- * Fix wave phase 3 (2026-10-03, History §19ej-3): machine recipe tables restored to original-hbm (1.7.10). Expected
+ * Machine recipe tables restored to 1.7. Expected
  * values are the 1.7 table entries, quoted with their 1.7 line.
  */
 public final class Fix3GameTests {
@@ -89,7 +95,7 @@ public final class Fix3GameTests {
         return stack != null && stack.is(item(id)) && stack.getCount() == count;
     }
 
-    private static boolean fluid(FluidStack stack, com.hbm.inventory.fluid.FluidType type, int amount) {
+    private static boolean fluid(FluidStack stack, FluidType type, int amount) {
         return stack != null && stack.type == type && stack.fill == amount;
     }
 
@@ -141,7 +147,7 @@ public final class Fix3GameTests {
         helper.assertTrue(countFor(BlastFurnaceRecipesNT.INSTANCE.getRecipe("blast.mingradeIngot"), of("hbm:ingot_raw_redstone")) == 1,
                 "redstone ingot input");
         // BlastFurnaceRecipes:55 napalm; the neutron reflector recipes were 1.12.2
-        ItemStack gasoline = com.hbm.items.ModFluidNetItems.canister_full.get().make(Fluids.GASOLINE, 1_000);
+        ItemStack gasoline = ModFluidNetItems.canister_full.get().make(Fluids.GASOLINE, 1_000);
         DiFurnaceRecipes.Match napalm = DiFurnaceRecipes.INSTANCE.getMatch(gasoline, new ItemStack(Items.SLIME_BALL));
         helper.assertTrue(napalm != null && is(napalm.recipe().outputItem[0], "hbm:canister_napalm", 1), "napalm canister");
         helper.assertTrue(DiFurnaceRecipes.INSTANCE.getRecipe("difurnace.neutronReflectorCoal") == null, "port-only reflector gone");
@@ -279,12 +285,12 @@ public final class Fix3GameTests {
         // FuelPoolRecipes:44 every hot PWR rod cools into its depleted rod; :36 plate waste; drum slots hold one item
         ItemStack hot = new ItemStack(ModPwrItems.hot(EnumPWRFuel.MEU));
         helper.assertTrue(FuelPoolRecipes.isHot(hot) && FuelPoolRecipes.cool(hot).is(ModPwrItems.depleted(EnumPWRFuel.MEU)), "hot PWR rod");
-        ItemStack plate = com.hbm.items.machine.ItemDepletedFuel.makeHot(item("hbm:waste_plate_u235"), 1);
+        ItemStack plate = ItemDepletedFuel.makeHot(item("hbm:waste_plate_u235"), 1);
         ItemStack cooled = FuelPoolRecipes.cool(plate);
         helper.assertTrue(FuelPoolRecipes.isHot(plate) && cooled.is(item("hbm:waste_plate_u235")) && !FuelPoolRecipes.isHot(cooled),
                 "hot plate waste");
-        com.hbm.tileentity.machine.TileEntityWasteDrum drum = new com.hbm.tileentity.machine.TileEntityWasteDrum(
-                net.minecraft.core.BlockPos.ZERO, com.hbm.blocks.machine.ModMachineBlocks.machine_waste_drum.get().defaultBlockState());
+        TileEntityWasteDrum drum = new TileEntityWasteDrum(
+                BlockPos.ZERO, ModMachineBlocks.machine_waste_drum.get().defaultBlockState());
         helper.assertTrue(drum.getMaxStackSize() == 1 && drum.isItemValidForSlot(0, of("hbm:rbmk_fuel_ueu")), "drum limit and RBMK rods");
         helper.succeed();
     }

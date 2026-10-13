@@ -19,8 +19,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The JEI category for machines on the {@link GenericRecipes} engine (assembly machine, chemical plant) —
- * a faithful port of the 1.12.2 {@code JEIGenericRecipeHandler}: the shared {@code gui_nei.png} background,
+ * The JEI category for machines on the {@link GenericRecipes} engine (assembly machine, chemical plant):
+ * a port of the 1.12.2 {@code JEIGenericRecipeHandler}: the shared {@code gui_nei.png} background,
  * the same count-based input/output coordinate tables, per-slot 18×18 frames from the texture, and the
  * vertical <b>arrow-over-machine pill</b> {@code (59,87,18,36)} drawn at {@code (74,14)} with the machine
  * icon in its lower half. The old assembly-machine offset (recipes with &gt;9 inputs shift everything
@@ -46,7 +46,7 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
         this.blueprintPill = Drawable.texture(tex("gui_nei.png"), 77, 87, 18, 50);
     }
 
-    /** The recipes to register for this category — the machine's whole ordered list, minus empties. */
+    /** The recipes to register for this category: the machine's whole ordered list, minus empties. */
     public List<GenericRecipe> buildRecipes() {
         recipeSet.registerRecipes(); // idempotent; JEI runs client-side before the machine's first server tick
         List<GenericRecipe> out = new ArrayList<>();
@@ -129,7 +129,7 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
                     .addItemStacks(out.get(i)).setBackground(slotFrame, -1, -1);
         }
 
-        // The machine itself, sitting in the lower half of the pill (old: init(74+off, 29) → item at +1).
+        // The machine itself, sitting in the lower half of the pill (old: init(74+off, 29), item at +1).
         if (machines != null && machines.length > 0) {
             builder.addSlot(Role.CRAFTING_STATION, 75 + off, templates.isEmpty() ? 30 : 37)
                     .addItemStacks(List.of(machines));

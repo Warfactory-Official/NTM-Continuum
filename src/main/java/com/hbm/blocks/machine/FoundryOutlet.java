@@ -1,6 +1,8 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.block.ICrucibleAcceptor;
+import dev.golem.core.world.CompatBlock;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Mirror;
 import dev.golem.core.registry.TickingBlock;
@@ -37,16 +39,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Foundry outlet (1.12.2 {@code FoundryOutlet}) — a filtered, redstone-closable tap that takes flow
+ * Foundry outlet (1.12.2 {@code FoundryOutlet}), a filtered, redstone-closable tap that takes flow
  * from a channel behind it and re-pours 4 blocks down. Right-click with scraps sets the material
  * filter; empty-hand right-click clears it (the invert toggles are deferred with IToolable). Drawn by
  * the BER (the old {@code foundry_outlet.obj}).
  */
-public class FoundryOutlet extends dev.golem.core.world.CompatBlock implements TickingBlock, ICrucibleAcceptor, ILookOverlay {
+public class FoundryOutlet extends CompatBlock implements TickingBlock, ICrucibleAcceptor, ILookOverlay {
 
     public FoundryOutlet(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(BlockStateProperties.HORIZONTAL_FACING, net.minecraft.core.Direction.NORTH));
+        this.registerDefaultState(this.stateDefinition.any().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH));
     }
 
     @Override
@@ -63,7 +65,7 @@ public class FoundryOutlet extends dev.golem.core.world.CompatBlock implements T
     @Override
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        // 1.12.2: placer.getHorizontalFacing().getOpposite() — the outlet faces the player.
+        // 1.12.2: placer.getHorizontalFacing().getOpposite(). The outlet faces the player.
         return this.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getOpposite());
     }
 
@@ -128,7 +130,7 @@ public class FoundryOutlet extends dev.golem.core.world.CompatBlock implements T
         return InteractionResult.SUCCESS;
     }
 
-    // --- ICrucibleAcceptor: delegate to the TE (flow only) ---
+    // ICrucibleAcceptor: delegate to the TE (flow only)
 
     @Override
     public boolean canAcceptPartialPour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, MaterialStack stack) { return false; }

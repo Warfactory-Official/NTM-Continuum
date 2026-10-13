@@ -3,6 +3,7 @@ package com.hbm.entity.train;
 import dev.golem.core.data.CompatEntity;
 import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.SynchedData;
+import dev.golem.core.world.Compat;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -58,7 +59,7 @@ public abstract class EntityRailCarRidable extends EntityRailCarCargo {
 
             int forward = 0;
             if(player instanceof ServerPlayer server) {
-                forward = dev.golem.core.world.Compat.clientForwardInput(server);
+                forward = Compat.clientForwardInput(server);
             }
 
             if(this.canAccelerate()) {
@@ -182,7 +183,7 @@ public abstract class EntityRailCarRidable extends EntityRailCarCargo {
 
     /**
      * 1.7's seat vectors were mutated in place by {@code rotateAroundY}, so every accessor had to hand out a
-     * fresh array. 26.2's Vec3 is immutable, which lets the seat table be a constant - the rotation lands here.
+     * fresh array. 26.1's Vec3 is immutable, which lets the seat table be a constant - the rotation lands here.
      */
     protected double rotatedX, rotatedY, rotatedZ;
 

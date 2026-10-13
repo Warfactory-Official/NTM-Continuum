@@ -10,6 +10,8 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -38,7 +40,7 @@ import java.util.List;
 /**
  * Head of the Albion particle accelerator: it fires the beam and owns the particle while it travels.
  * Two input particles are consumed to make a {@link Particle}, which is then walked one component at a
- * time by {@link #steppy()} — each {@link IParticleUser} it lands on decides whether the beam may enter,
+ * time by {@link #steppy()}: each {@link IParticleUser} it lands on decides whether the beam may enter,
  * modifies its momentum/defocus, and hands back the next cell. The run ends when the detector matches a
  * recipe ({@link PAState#SUCCESS}) or when the beam crashes, which is what every {@code CRASH_*} state
  * records for the GUI.
@@ -46,7 +48,7 @@ import java.util.List;
  * <p>Ported from 1.12.2's {@code albion/TileEntityPASource}.
  *
  * <p>Deviations from CE: sided automation exposes the two input and two output slots to every face
- * rather than routing the red and yellow inputs to their own cells of the footprint — Continuum's
+ * rather than routing the red and yellow inputs to their own cells of the footprint. Continuum's
  * {@code WorldlyContainer} port asks per <i>face</i>, not per <i>cell</i>, so CE's positional
  * {@code getAccessibleSlotsFromSide(side, pos)} has nowhere to hook. Insert/extract are still gated to
  * the correct slots, so only which cell of the machine a hopper may sit on changes. The OpenComputers
@@ -92,7 +94,7 @@ public class TileEntityPASource extends TileEntityCooledBase
     }
 
     public TileEntityPASource(BlockPos pos, BlockState state) {
-        super(com.hbm.tileentity.ModBlockEntities.PA_SOURCE.get(), pos, state, 5);
+        super(ModBlockEntities.PA_SOURCE.get(), pos, state, 5);
     }
 
     /** One item per slot, like the 1.12.2 tile: the beam takes a single particle from each input. */
@@ -207,7 +209,7 @@ public class TileEntityPASource extends TileEntityCooledBase
         this.markChanged();
     }
 
-    /** The direction the beam leaves in — the machine's facing rotated a quarter turn, as in 1.12.2. */
+    /** The direction the beam leaves in: the machine's facing rotated a quarter turn, as in 1.12.2. */
     private ForgeDirection getBeamDir() {
         return MachineCore.facing(getBlockState())
                 .getRotation(ForgeDirection.DOWN);
@@ -217,7 +219,7 @@ public class TileEntityPASource extends TileEntityCooledBase
      * Deviation from CE: the three ports under the machine face {@link Library#NEG_Y} rather than the
      * machine's own horizontal facing. They sit one block below the footprint, so down is the face a
      * cable there actually touches, and upstream's horizontal value makes the block-level connection
-     * check disagree with the block entity's — the cable powers the machine but never snaps to it. Every
+     * check disagree with the block entity's; the cable powers the machine but never snaps to it. Every
      * other cooled part of the accelerator already spells its vertical ports this way.
      */
     @Override
@@ -284,7 +286,7 @@ public class TileEntityPASource extends TileEntityCooledBase
         child.putInt("x", particle.pos.getX());
         child.putInt("y", particle.pos.getY());
         child.putInt("z", particle.pos.getZ());
-        com.hbm.util.SavedIds.putEnum(child, "dir", particle.dir);
+        SavedIds.putEnum(child, "dir", particle.dir);
         child.putInt("momentum", particle.momentum);
         child.putInt("defocus", particle.defocus);
         child.putInt("dist", particle.distanceTraveled);
@@ -299,7 +301,7 @@ public class TileEntityPASource extends TileEntityCooledBase
 
         DataIn child = input.childOrEmpty("particle");
         BlockPos pos = new BlockPos(child.getIntOr("x", 0), child.getIntOr("y", 0), child.getIntOr("z", 0));
-        ForgeDirection dir = com.hbm.util.SavedIds.getEnum(child, "dir", ForgeDirection.DOWN);
+        ForgeDirection dir = SavedIds.getEnum(child, "dir", ForgeDirection.DOWN);
         this.particle = new Particle(this, pos, dir,
                 child.read("input1", ItemStack.CODEC).orElse(ItemStack.EMPTY),
                 child.read("input2", ItemStack.CODEC).orElse(ItemStack.EMPTY));

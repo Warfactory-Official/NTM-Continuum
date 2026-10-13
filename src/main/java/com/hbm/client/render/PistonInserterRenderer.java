@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.network.TileEntityPistonInserter;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatItemRenderState;
 import dev.golem.core.render.CompatRenderState;
@@ -30,7 +31,7 @@ public class PistonInserterRenderer extends GemBER<TileEntityPistonInserter, Pis
         public boolean blockItem;
     }
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/piston_inserter.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/machines/piston_inserter.obj"));
     private final Surface surface = Surface.cutout(Constants.MOD_ID + ":textures/models/machines/piston_inserter.png");
 
     @Override

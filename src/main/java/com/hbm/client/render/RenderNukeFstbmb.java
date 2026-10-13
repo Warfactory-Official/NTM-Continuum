@@ -13,6 +13,8 @@ import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import java.util.Set;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -40,7 +42,7 @@ public class RenderNukeFstbmb extends GemBER<TileEntityNukeBalefire, RenderNukeF
     private final Font font;
 
     public RenderNukeFstbmb() {
-        font = net.minecraft.client.Minecraft.getInstance().font;
+        font = Minecraft.getInstance().font;
     }
 
     @Override
@@ -49,8 +51,8 @@ public class RenderNukeFstbmb extends GemBER<TileEntityNukeBalefire, RenderNukeF
         Gem.Part<State> bomb = declaration.offScreen().viewDistance(256).joint()
                 .translate(0.5F, 0F, 0.5F)
                 .angle(Gem.Axes.Y, state -> state.yaw);
-        bomb.child(MODEL.parts(java.util.Set.of("Body"), true), surface);
-        bomb.child(MODEL.parts(java.util.Set.of("Balefire"), true), surface);
+        bomb.child(MODEL.parts(Set.of("Body"), true), surface);
+        bomb.child(MODEL.parts(Set.of("Balefire"), true), surface);
     }
 
     @Override

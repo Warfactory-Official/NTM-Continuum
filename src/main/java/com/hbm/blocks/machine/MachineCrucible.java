@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
@@ -39,11 +40,11 @@ public class MachineCrucible extends BlockMultiblockMachine implements ICrucible
         super(properties);
 
         // The 1.12.2 basin hitbox: a 3×3 half-height base slab + the four rim walls (core-relative).
-        this.bounding.add(new net.minecraft.world.phys.AABB(-1.5D, 0D, -1.5D, 1.5D, 0.5D, 1.5D));
-        this.bounding.add(new net.minecraft.world.phys.AABB(-1.25D, 0.5D, -1.25D, 1.25D, 1.5D, -1D));
-        this.bounding.add(new net.minecraft.world.phys.AABB(-1.25D, 0.5D, -1.25D, -1D, 1.5D, 1.25D));
-        this.bounding.add(new net.minecraft.world.phys.AABB(-1.25D, 0.5D, 1D, 1.25D, 1.5D, 1.25D));
-        this.bounding.add(new net.minecraft.world.phys.AABB(1D, 0.5D, -1.25D, 1.25D, 1.5D, 1.25D));
+        this.bounding.add(new AABB(-1.5D, 0D, -1.5D, 1.5D, 0.5D, 1.5D));
+        this.bounding.add(new AABB(-1.25D, 0.5D, -1.25D, 1.25D, 1.5D, -1D));
+        this.bounding.add(new AABB(-1.25D, 0.5D, -1.25D, -1D, 1.5D, 1.25D));
+        this.bounding.add(new AABB(-1.25D, 0.5D, 1D, 1.25D, 1.5D, 1.25D));
+        this.bounding.add(new AABB(1D, 0.5D, -1.25D, 1.25D, 1.5D, 1.25D));
     }
 
     @Override

@@ -6,10 +6,14 @@ import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.recipes.loader.DataGenericRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
+import dev.golem.core.Ids;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 
 /**
  * The mixer (1.7 {@code MixerRecipes}, with the fuel additives of {@code FuelAdditiveRecipes}): the datapack table
@@ -25,8 +29,8 @@ public final class MixerRecipes extends DataGenericRecipes<GenericRecipe> {
 
     public static final MixerRecipes INSTANCE = new MixerRecipes();
     /** 1.7 {@code Items.fish} at any meta: the four raw fish (see ModTagDeclarations). */
-    public static final net.minecraft.tags.TagKey<net.minecraft.world.item.Item> RAW_FISHES = net.minecraft.tags.TagKey.create(
-            net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("hbm", "raw_fishes"));
+    public static final TagKey<Item> RAW_FISHES = TagKey.create(
+            Registries.ITEM, Ids.of("hbm", "raw_fishes"));
     /** The rows by output fluid, in display order; replaced whenever the table rebuilds. */
     public static volatile Map<FluidType, MixerRecipe[]> recipes = Map.of();
 

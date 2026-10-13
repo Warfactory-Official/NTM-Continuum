@@ -10,19 +10,20 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 import java.util.Random;
 
 /**
- * {@code hbm:sellafield_crater}: 1.7 {@code world/gen/terrain/MapGenCrater} as {@code HbmWorld} registered it — the
+ * {@code hbm:sellafield_crater}: 1.7 {@code world/gen/terrain/MapGenCrater} as {@code HbmWorld} registered it: the
  * "radiation hotspot": one origin chunk in {@code radfreq} (5000) whose corner lies in a desert becomes the centre of a
  * crater of radius 8..63 lined with {@code sellafield_slaked}. Range 8 (1.7's {@code MapGenBase} default; the crater
  * never called {@code setSize}).
  *
  * <p>Per column of the chunk, the top opaque or liquid block is found; if the column lies within the (ragged,
  * {@code - rand(3)}) radius, {@code depth(r) = depth - r^2 / radius^2 * depth} blocks are removed ({@code depth} =
- * 0.35 radius) and up to three blocks below are relined — all of them {@code sellafield_slaked}, because 1.7 set both
+ * 0.35 radius) and up to three blocks below are relined, all of them {@code sellafield_slaked}, because 1.7 set both
  * the regolith and the rock to it. The column's jitter draws come from the origin's Random in column order, as in 1.7.
  */
 public class MapGenCrater extends MapGenFeature {
@@ -43,7 +44,7 @@ public class MapGenCrater extends MapGenFeature {
     }
 
     @Override
-    protected boolean generate(WorldGenLevel level, net.minecraft.world.level.chunk.ChunkGenerator generator, Random rand, long originSeed, int seaLevel,
+    protected boolean generate(WorldGenLevel level, ChunkGenerator generator, Random rand, long originSeed, int seaLevel,
                                int originX, int originZ, int chunkX, int chunkZ, boolean forced) {
         if (frequency <= 0) return false;
         boolean roll = rand.nextInt(frequency) == 0;

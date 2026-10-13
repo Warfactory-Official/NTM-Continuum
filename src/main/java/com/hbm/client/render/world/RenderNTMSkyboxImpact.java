@@ -6,6 +6,7 @@ import com.hbm.handler.ImpactWorldHandler;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.render.Sky;
+import java.util.Arrays;
 import java.util.Random;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -24,9 +25,9 @@ import net.minecraft.util.Mth;
  * "blanking" quad meant to hide the stars behind the sun is drawn with the additive blend already set, so it adds
  * black and conceals nothing; and the digamma star and the satellite are drawn inside the sun's push, so the digamma
  * star's celestial rotation is applied twice (it crosses the sky at double speed) and the satellite's orbit is
- * carried round with the sun - unlike {@link RenderNTMSkyboxChainloader}'s copies, which start from the sky pose.
- * The digamma star's alpha is {@code dust} = {@code max(1 - 2 * atmosphericDust, 0)}, the factor without the rain
- * term, while the satellite's is {@code rain}; 1.7 wrote it that way.
+ * carried round with the sun, unlike {@link RenderNTMSkyboxChainloader}'s copies, which start from the sky pose.
+ * The digamma star's alpha is {@code dust} = {@code max(1 - 2 * atmosphericDust, 0)} (no rain term) and the
+ * satellite's is {@code rain}, as in 1.7.
  */
 public final class RenderNTMSkyboxImpact {
 
@@ -191,7 +192,7 @@ public final class RenderNTMSkyboxImpact {
                 }
             }
         }
-        stars = java.util.Arrays.copyOf(out, n);
+        stars = Arrays.copyOf(out, n);
         return stars;
     }
 }

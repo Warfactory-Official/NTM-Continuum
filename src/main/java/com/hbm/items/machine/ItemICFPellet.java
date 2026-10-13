@@ -2,9 +2,15 @@ package com.hbm.items.machine;
 
 import com.hbm.items.ModIcfItems;
 import com.hbm.util.BobMathUtil;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import dev.golem.core.data.ModelData;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -34,7 +40,7 @@ public class ItemICFPellet extends CompatItem {
      */
     public static final class EnumICFFuel {
 
-        private static final java.util.Map<String, EnumICFFuel> BY_NAME = java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>());
+        private static final Map<String, EnumICFFuel> BY_NAME = Collections.synchronizedMap(new LinkedHashMap<>());
 
         public static final EnumICFFuel HYDROGEN = register("HYDROGEN", 0x4040FF, 1.00D, 0.85D, 1.00D);
         public static final EnumICFFuel DEUTERIUM = register("DEUTERIUM", 0x2828CB, 1.25D, 1.00D, 1.00D);
@@ -51,10 +57,10 @@ public class ItemICFPellet extends CompatItem {
         public static final EnumICFFuel CALCIUM = register("CALCIUM", 0xD2C7A9, 3.00D, 1.00D, 9.75D);
 
         /** By lower-case name ({@code "deuterium"}; any case is read). */
-        public static final com.mojang.serialization.Codec<EnumICFFuel> CODEC = com.mojang.serialization.Codec.STRING.comapFlatMap(name -> {
+        public static final Codec<EnumICFFuel> CODEC = Codec.STRING.comapFlatMap(name -> {
             EnumICFFuel fuel = byName(name);
-            return fuel != null ? com.mojang.serialization.DataResult.success(fuel)
-                    : com.mojang.serialization.DataResult.error(() -> "unknown ICF fuel " + name);
+            return fuel != null ? DataResult.success(fuel)
+                    : DataResult.error(() -> "unknown ICF fuel " + name);
         }, fuel -> fuel.name().toLowerCase(Locale.ROOT));
 
         private final String name;
@@ -82,8 +88,8 @@ public class ItemICFPellet extends CompatItem {
             return name == null ? null : BY_NAME.get(name.toUpperCase(Locale.ROOT));
         }
 
-        public static java.util.Collection<EnumICFFuel> values() {
-            synchronized (BY_NAME) { return java.util.List.copyOf(BY_NAME.values()); }
+        public static Collection<EnumICFFuel> values() {
+            synchronized (BY_NAME) { return List.copyOf(BY_NAME.values()); }
         }
 
         public String name() { return name; }
@@ -126,8 +132,8 @@ public class ItemICFPellet extends CompatItem {
     }
 
     public static ItemStack setup(ItemStack stack, EnumICFFuel type1, EnumICFFuel type2, boolean muon) {
-        ModIcfItems.PELLET_TYPE1.set(stack, type1.name().toLowerCase(java.util.Locale.ROOT));
-        ModIcfItems.PELLET_TYPE2.set(stack, type2.name().toLowerCase(java.util.Locale.ROOT));
+        ModIcfItems.PELLET_TYPE1.set(stack, type1.name().toLowerCase(Locale.ROOT));
+        ModIcfItems.PELLET_TYPE2.set(stack, type2.name().toLowerCase(Locale.ROOT));
         ModIcfItems.PELLET_MUON.set(stack, muon);
         ModelData.setColor(stack, mixedColor(type1, type2));
         return stack;

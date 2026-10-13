@@ -4,6 +4,7 @@ import com.hbm.inventory.container.ContainerLaunchTable;
 import com.hbm.items.weapon.ItemCustomMissilePart.PartSize;
 import com.hbm.tileentity.bomb.TileEntityCustomMissileLauncher;
 import com.hbm.tileentity.bomb.TileEntityLaunchTable;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
 import net.minecraft.client.Minecraft;
@@ -22,7 +23,7 @@ import java.util.Optional;
 public class GUIMachineLaunchTable extends GUICustomMissileLauncher<ContainerLaunchTable> {
 
     public GUIMachineLaunchTable(ContainerLaunchTable menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, dev.golem.core.Ids.of("hbm", "textures/gui/weapon/gui_launch_table.png"));
+        super(menu, playerInventory, title, Ids.of("hbm", "textures/gui/weapon/gui_launch_table.png"));
     }
 
     @Override

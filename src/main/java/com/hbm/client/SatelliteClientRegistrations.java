@@ -11,6 +11,7 @@ import com.hbm.inventory.gui.GUISatDock;
 import com.hbm.inventory.gui.GUIScreenSatCoord;
 import com.hbm.items.tool.ItemSatInterface;
 import com.hbm.tileentity.ModSatelliteBlockEntities;
+import net.minecraft.client.Minecraft;
 
 /** Screens, block-entity renderers and entity renderers of the satellite family. */
 public final class SatelliteClientRegistrations {
@@ -21,7 +22,7 @@ public final class SatelliteClientRegistrations {
         sink.register(ModSatelliteMenus.SATLINKER.get(), GUIMachineSatLinker::new);
         sink.register(ModSatelliteMenus.SAT_DOCK.get(), GUISatDock::new);
         // 1.7 ItemSatInterface.provideGUI: a client-only screen with no container
-        ItemSatInterface.OPEN_SCREEN = player -> net.minecraft.client.Minecraft.getInstance()
+        ItemSatInterface.OPEN_SCREEN = player -> Minecraft.getInstance()
                 .setScreen(new GUIScreenSatCoord(player));
     }
 

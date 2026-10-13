@@ -1,5 +1,9 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.creativetabs.HbmTab;
+import com.hbm.creativetabs.ModTabs;
+import com.hbm.items.weapon.sedna.BulletConfig;
+import com.hbm.items.weapon.sedna.Crosshair;
 import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.items.ModAmmoItems;
@@ -18,9 +22,11 @@ import dev.golem.core.Ids;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.world.item.Item;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Registry declarations for the conventional Gen-3 guns.
@@ -28,19 +34,19 @@ import net.minecraft.sounds.SoundEvent;
  * <p>The original factories constructed {@code ModItems} fields during bootstrap. New Minecraft
  * requires those fields to be deferred registry entries, so the factory-owned declarations live here
  * instead of coupling the calibre code to the shared item catalogue. Every config below is copied from
- * original-hbm; absent engine surfaces are intentionally not represented as a different weapon.
+ * 1.7; absent engine surfaces are not represented as a different weapon.
  */
 public final class BallisticGunCatalog {
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    private static final BiConsumer<net.minecraft.world.item.ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_BMG_SMOKE =
+    private static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_BMG_SMOKE =
             (stack, ctx) -> Lego.handleStandardSmoke(ctx.entity, stack, 2000, 0.05D, 1.1D, ctx.hand, 0);
 
     public static final RegistryObject<ItemGunBaseNT> gun_g3_zebra = gun("gun_g3_zebra", WeaponQuality.B_SIDE,
             ModAmmoItems.r556_jhp, 30,
-            () -> new GunConfig().dura(6_000).draw(10).inspect(33).crosshair(com.hbm.items.weapon.sedna.Crosshair.CIRCLE)
+            () -> new GunConfig().dura(6_000).draw(10).inspect(33).crosshair(Crosshair.CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .scopeTexture(Ids.of(Constants.MOD_ID, "textures/misc/scope_bolt.png"))
                     .rec(new Receiver(0).dmg(7.5F).delay(2).dry(15).auto(true).spreadHipfire(0.01F).reload(50).jam(47)
@@ -54,7 +60,7 @@ public final class BallisticGunCatalog {
 
     public static final RegistryObject<ItemGunBaseNT> gun_stg77 = gun("gun_stg77", WeaponQuality.A_SIDE,
             ModAmmoItems.r556_fmj, 30,
-            () -> new GunConfig().dura(3_000).draw(10).inspect(125).crosshair(com.hbm.items.weapon.sedna.Crosshair.CIRCLE)
+            () -> new GunConfig().dura(3_000).draw(10).inspect(125).crosshair(Crosshair.CIRCLE)
                     .scopeTexture(Ids.of(Constants.MOD_ID, "textures/misc/scope_bolt.png"))
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(new Receiver(0).dmg(10F).delay(2).dry(15).auto(true).reload(46).jam(0)
@@ -78,7 +84,7 @@ public final class BallisticGunCatalog {
             ModAmmoItems.r762_sp, 14,
             () -> new GunConfig().dura(3_000).draw(10).inspect(31).reloadSequential(true)
                     .smoke(XFactory762mm.LAMBDA_SMOKE)
-                    .crosshair(com.hbm.items.weapon.sedna.Crosshair.CIRCLE)
+                    .crosshair(Crosshair.CIRCLE)
                     .rec(new Receiver(0).dmg(15F).delay(5).dry(15).spread(0F).reload(30, 0, 15, 0).jam(60)
                             .sound(ModGunSounds.FIRE_BLACK_POWDER::get, 1F, 1F)
                             .mag(new MagazineFullReload(0, 14).addConfigs(XFactory762mm.all()))
@@ -91,7 +97,7 @@ public final class BallisticGunCatalog {
             ModAmmoItems.r762_ap, 14,
             () -> new GunConfig().dura(5_000).draw(20).inspect(31).reloadSequential(true)
                     .smoke(XFactory762mm.LAMBDA_SMOKE)
-                    .crosshair(com.hbm.items.weapon.sedna.Crosshair.CIRCLE)
+                    .crosshair(Crosshair.CIRCLE)
                     .rec(new Receiver(0).dmg(30F).delay(25).dry(25).spread(0F).reload(43).jam(43)
                             .sound(ModSounds.FIRE_RIFLE_HEAVY::get, 1F, 1F)
                             .mag(new MagazineFullReload(0, 7).addConfigs(XFactory762mm.all()))
@@ -104,7 +110,7 @@ public final class BallisticGunCatalog {
             ModAmmoItems.r762_fmj, 30,
             () -> new GunConfig().dura(50_000).draw(20).inspect(20)
                     .smoke(XFactory762mm.LAMBDA_SMOKE)
-                    .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE)
+                    .crosshair(Crosshair.L_CIRCLE)
                     .rec(new Receiver(0).dmg(6F).delay(1).auto(true).dry(15).spread(0.01F)
                              .sound(ModGunSounds.FIRE_MINIGUN::get, 1F, 1F)
                             .mag(new MagazineBelt().addConfigs(XFactory762mm.all()))
@@ -117,7 +123,7 @@ public final class BallisticGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_minigun_lacunae = gun("gun_minigun_lacunae",
             WeaponQuality.LEGENDARY, ModAmmoItems.capacitor, 15,
             () -> new GunConfig().dura(50_000).draw(20).inspect(20)
-                    .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE)
+                    .crosshair(Crosshair.L_CIRCLE)
                     .rec(new Receiver(0).dmg(12F).delay(1).auto(true).dry(15).reload(15).spread(0.01F)
                              .sound(ModGunSounds.FIRE_LASER_GATLING::get, 1F, 1F)
                             .mag(new MagazineFullReload(0, 200).addConfigs(XFactory762mm.energy_lacunae,
@@ -135,11 +141,11 @@ public final class BallisticGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_m2 = gun("gun_m2", WeaponQuality.A_SIDE,
             ModAmmoItems.bmg50_fmj, 25,
             () -> new GunConfig().dura(3_000).draw(10).inspect(31)
-                    .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE)
+                    .crosshair(Crosshair.L_CIRCLE)
                     .smoke(LAMBDA_BMG_SMOKE)
                     .rec(new Receiver(0).dmg(7.5F).delay(2).dry(10).auto(true).spread(0.005F)
                             // 1.7 NTMSounds.TURRET_50BMG ("hbm:turret.chekhov_fire"); belt feeds six .50 types, no starmetal.
-                            .sound(com.hbm.sound.ModSounds.TURRET_CHEKHOV_FIRE::get, 1F, 1F)
+                            .sound(ModSounds.TURRET_CHEKHOV_FIRE::get, 1F, 1F)
                             .mag(new MagazineBelt().addConfigs(XFactory50.bmg50_sp, XFactory50.bmg50_fmj,
                                     XFactory50.bmg50_jhp, XFactory50.bmg50_ap, XFactory50.bmg50_du, XFactory50.bmg50_he))
                             .offset(1, -0.0625 * 2.5, -0.25D).setupStandardFire()
@@ -151,25 +157,25 @@ public final class BallisticGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_maresleg = gun("gun_maresleg", WeaponQuality.A_SIDE,
             ModAmmoItems.g12, 12,
             () -> shotgun(600F, 16F, 20, 22, 10, 13, 0, 6, XFactory12ga.all(), 24)
-                    .reloadSequential(true).crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE));
+                    .reloadSequential(true).crosshair(Crosshair.L_CIRCLE));
 
     public static final RegistryObject<ItemGunBaseNT> gun_maresleg_akimbo = gun("gun_maresleg_akimbo", WeaponQuality.B_SIDE,
             ModAmmoItems.g12, 24,
             () -> shotgun(600F, 16F, 20, 22, 10, 13, 0, 0, 6, XFactory12ga.all(), 0F, 1.35F, 0.1875D, 24,
                     0, 5, 39, ModGunSounds.FIRE_SHOTGUN::get, XFactory12ga.LAMBDA_RECOIL_MARESLEG)
-                    .reloadSequential(true).crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE).pt(null)
+                    .reloadSequential(true).crosshair(Crosshair.L_CIRCLE).pt(null)
                     .pp(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
                     .decider(GunStateDecider.LAMBDA_STANDARD_DECIDER),
             () -> shotgun(600F, 16F, 20, 22, 10, 13, 0, 0, 6, XFactory12ga.all(), 0F, 1.35F, -0.1875D, 24,
                     1, 5, 39, ModGunSounds.FIRE_SHOTGUN::get, XFactory12ga.LAMBDA_RECOIL_MARESLEG)
-                    .reloadSequential(true).crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE).pt(null).pp(null)
+                    .reloadSequential(true).crosshair(Crosshair.L_CIRCLE).pt(null).pp(null)
                     .ps(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
                     .decider(GunStateDecider.LAMBDA_STANDARD_DECIDER));
 
     public static final RegistryObject<ItemGunBaseNT> gun_maresleg_broken = gun("gun_maresleg_broken", WeaponQuality.LEGENDARY,
             ModAmmoItems.g12_magnum, 24,
             () -> new GunConfig().dura(0).draw(5).inspect(39).reloadSequential(true)
-                    .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
+                    .crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(new Receiver(0).dmg(48F).spreadAmmo(1.15F).delay(20).reload(22, 10, 13, 0).jam(24)
                             .sound(ModGunSounds.FIRE_SHOTGUN::get, 1F, 1F)
                             .mag(new MagazineSingleReload(0, 6).addConfigs(XFactory12ga.g12_equestrian_tkr,
@@ -188,9 +194,9 @@ public final class BallisticGunCatalog {
                 GunConfig config = shotgun(200F, 16F, 20, 25, 15, 7, 0, 0, 4, XFactory12ga.all(), 0.025F, 1F, -0.1875D, 45,
                         0, 20, 21, ModGunSounds.FIRE_LIBERATOR::get, XFactory12ga.LAMBDA_RECOIL_LIBERATOR)
                         .reloadSequential(true)
-                        .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE);
+                        .crosshair(Crosshair.L_CIRCLE);
                 // 1.7 XFactory12ga: .rounds(4) - one trigger pull fires all four barrels.
-                config.getReceivers(net.minecraft.world.item.ItemStack.EMPTY)[0].rounds(4);
+                config.getReceivers(ItemStack.EMPTY)[0].rounds(4);
                 return config;
             });
 
@@ -199,13 +205,13 @@ public final class BallisticGunCatalog {
             () -> shotgun(600F, 32F, 20, 10, 10, 10, 0, 5, 8, XFactory12ga.all(), 0F, 1F, -0.1875D, 36,
                     0, 20, 39, ModGunSounds.FIRE_SPAS::get, XFactory12ga.LAMBDA_RECOIL_MARESLEG)
                     .reloadSequential(true)
-                    .reloadChangeType(true).crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE)
+                    .reloadChangeType(true).crosshair(Crosshair.L_CIRCLE)
                     .ps(XFactory12ga.LAMBDA_SPAS_SECONDARY).pt(null));
 
     public static final RegistryObject<ItemGunBaseNT> gun_autoshotgun = gun("gun_autoshotgun", WeaponQuality.A_SIDE,
             ModAmmoItems.g12, 20,
             () -> new GunConfig().dura(2_000).draw(10).inspect(33).reloadSequential(true)
-                    .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
+                    .crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(new Receiver(0).dmg(48F).delay(10).auto(true).autoAfterDry(true).dryfireAfterAuto(true)
                     .reload(44).jam(19).sound(ModGunSounds.FIRE_SHREDDER::get, 1F, 1F)
                             .mag(new MagazineFullReload(0, 20).addConfigs(XFactory12ga.all()))
@@ -218,7 +224,7 @@ public final class BallisticGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_autoshotgun_shredder = gun(
             "gun_autoshotgun_shredder", WeaponQuality.B_SIDE, ModAmmoItems.g12, 20,
              () -> new GunConfig().dura(2_000).draw(10).inspect(33).reloadSequential(true)
-                    .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
+                    .crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(new Receiver(0).dmg(50F).delay(10).auto(true).autoAfterDry(true).dryfireAfterAuto(true)
                             .reload(44).jam(19).sound(ModGunSounds.FIRE_SHREDDER::get, 1F, 1F)
                             .mag(new MagazineBelt().addConfigs(XFactory12ga.g12_shredder,
@@ -232,7 +238,7 @@ public final class BallisticGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_autoshotgun_sexy = gun("gun_autoshotgun_sexy", WeaponQuality.LEGENDARY,
             ModAmmoItems.g12_magnum, 50,
             () -> new GunConfig().dura(5_000).draw(20).inspect(65).inspectCancel(false).reloadSequential(true)
-                    .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE).hideCrosshair(false)
+                    .crosshair(Crosshair.L_CIRCLE).hideCrosshair(false)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(new Receiver(0).dmg(64F).delay(4).auto(true).dryfireAfterAuto(true).reload(110).jam(19)
                             .sound(ModGunSounds.FIRE_SHREDDER::get, 1F, 1F)
@@ -250,7 +256,7 @@ public final class BallisticGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_flaregun = gun("gun_flaregun", WeaponQuality.A_SIDE,
             ModAmmoItems.g26_flare, 3,
             () -> new GunConfig().dura(100).draw(7).inspect(39)
-                    .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCUMFLEX)
+                    .crosshair(Crosshair.L_CIRCUMFLEX)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(new Receiver(0).dmg(15F).delay(20).reload(28).jam(33)
                             .sound(ModGunSounds.FIRE_UNDERBARREL::get, 1F, 1F)
@@ -264,7 +270,7 @@ public final class BallisticGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_congolake = gun("gun_congolake", WeaponQuality.A_SIDE,
             ModAmmoItems.g40_he, 8,
             () -> new GunConfig().dura(400).draw(7).inspect(39).reloadSequential(true).reloadChangeType(true)
-                    .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCUMFLEX)
+                    .crosshair(Crosshair.L_CIRCUMFLEX)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(new Receiver(0).dmg(20F).delay(24).reload(16, 16, 16, 0).jam(0)
                             .sound(ModGunSounds.FIRE_CONGO::get, 1F, 1F)
@@ -277,7 +283,7 @@ public final class BallisticGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_mk108 = gun("gun_mk108", WeaponQuality.A_SIDE,
             ModAmmoItems.g40_he, 50,
             () -> new GunConfig().dura(5_000).draw(20).inspect(65)
-                    .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCUMFLEX).hideCrosshair(false)
+                    .crosshair(Crosshair.L_CIRCUMFLEX).hideCrosshair(false)
                     .rec(new Receiver(0).dmg(25F).delay(10).auto(true).dryfireAfterAuto(true).reload(135).jam(25)
                             .sound(ModGunSounds.FIRE_MK108::get, 1F, 1F)
                             .mag(new MagazineFullReload(0, 30).addConfigs(XFactory40mm.all40()))
@@ -289,13 +295,13 @@ public final class BallisticGunCatalog {
 
     public static final RegistryObject<ItemGunBaseNT> gun_amat = gun("gun_amat", WeaponQuality.A_SIDE,
             ModAmmoItems.bmg50_sp, 7,
-            () -> bmgGun(350F, 30F, new com.hbm.items.weapon.sedna.BulletConfig[] {
+            () -> bmgGun(350F, 30F, new BulletConfig[] {
                     XFactory50.bmg50_sp, XFactory50.bmg50_fmj, XFactory50.bmg50_jhp, XFactory50.bmg50_ap,
                     XFactory50.bmg50_du, XFactory50.bmg50_sm, XFactory50.bmg50_he}, 7, ModGunSounds.FIRE_AMAT::get)
                     .scopeTexture(Ids.of(Constants.MOD_ID, "textures/misc/scope_amat.png")));
     public static final RegistryObject<ItemGunBaseNT> gun_amat_subtlety = gun("gun_amat_subtlety", WeaponQuality.LEGENDARY,
             ModAmmoItems.bmg50_jhp, 7,
-            () -> bmgGun(1_000F, 50F, new com.hbm.items.weapon.sedna.BulletConfig[] {
+            () -> bmgGun(1_000F, 50F, new BulletConfig[] {
                     XFactory50.bmg50_equestrian, XFactory50.bmg50_sp, XFactory50.bmg50_fmj,
                     XFactory50.bmg50_jhp, XFactory50.bmg50_ap, XFactory50.bmg50_du,
                     XFactory50.bmg50_sm, XFactory50.bmg50_he}, 7, ModGunSounds.FIRE_AMAT::get)
@@ -303,21 +309,21 @@ public final class BallisticGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_amat_penance = gun("gun_amat_penance", WeaponQuality.LEGENDARY,
             ModAmmoItems.bmg50_jhp, 7,
             () -> {
-                GunConfig config = bmgGun(5_000F, 45F, new com.hbm.items.weapon.sedna.BulletConfig[] {
+                GunConfig config = bmgGun(5_000F, 45F, new BulletConfig[] {
                         XFactory50.bmg50_sp, XFactory50.bmg50_fmj, XFactory50.bmg50_jhp,
                         XFactory50.bmg50_ap, XFactory50.bmg50_du, XFactory50.bmg50_sm,
                         XFactory50.bmg50_he, XFactory50.bmg50_black}, 7, ModGunSounds.FIRE_SILENCER::get)
                         .scopeTexture(Ids.of(Constants.MOD_ID, "textures/misc/scope_penance.png"))
                         .thermalSights(true);
                 // 1.7 XFactory50: the Penance has no hipfire spread penalty (the other two have 0.05).
-                config.getReceivers(net.minecraft.world.item.ItemStack.EMPTY)[0].spreadHipfire(0F);
+                config.getReceivers(ItemStack.EMPTY)[0].spreadHipfire(0F);
                 return config;
             });
 
     public static final RegistryObject<ItemGunBaseNT> gun_bolter = gun("gun_bolter", WeaponQuality.SPECIAL,
             ModAmmoItems.b75, 15,
             () -> new GunConfig().dura(3_000).draw(20).inspect(31)
-                    .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE)
+                    .crosshair(Crosshair.L_CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(new Receiver(0).dmg(15F).delay(2).auto(true).spread(0.005F).reload(40).jam(55)
                             .sound(ModGunSounds.FIRE_BLACK_POWDER::get, 1F, 1F)
@@ -337,7 +343,7 @@ public final class BallisticGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_autoshotgun_heretic = gun(
             "gun_autoshotgun_heretic", WeaponQuality.DEBUG, ModAmmoItems.g10, 50,
             () -> new GunConfig().draw(20).inspect(65).inspectCancel(false).reloadSequential(true)
-                    .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE).hideCrosshair(false)
+                    .crosshair(Crosshair.L_CIRCLE).hideCrosshair(false)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(new Receiver(0).dmg(100F).delay(3).auto(true).dryfireAfterAuto(true).reload(110).jam(19)
                             .sound(ModGunSounds.FIRE_SHREDDER::get, 1F, 1F)
@@ -375,7 +381,7 @@ public final class BallisticGunCatalog {
                 gun_maresleg_broken, gun_liberator, gun_spas12, gun_autoshotgun, gun_autoshotgun_shredder, gun_autoshotgun_sexy,
                 gun_flaregun, gun_congolake, gun_mk108, gun_amat, gun_amat_subtlety, gun_amat_penance,
                 gun_bolter, gun_double_barrel, gun_double_barrel_sacred_dragon, gun_autoshotgun_heretic}) {
-            com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun);
+            ModTabs.addTo(HbmTab.WEAPONS, gun);
         }
     }
 
@@ -410,26 +416,26 @@ public final class BallisticGunCatalog {
 
     /** Binds the shared casing identities after the casing registry has flushed, before gun construction. */
     private static void installCasings() {
-        setCasing(EnumCasingType.SMALL, 16, com.hbm.items.weapon.sedna.factory.XFactory357.m357_bp);
-        setCasing(EnumCasingType.SMALL, 8, com.hbm.items.weapon.sedna.factory.XFactory357.m357_sp,
-                com.hbm.items.weapon.sedna.factory.XFactory357.m357_fmj,
-                com.hbm.items.weapon.sedna.factory.XFactory357.m357_jhp,
-                com.hbm.items.weapon.sedna.factory.XFactory357.m357_express);
-        setCasing(EnumCasingType.SMALL_STEEL, 8, com.hbm.items.weapon.sedna.factory.XFactory357.m357_ap);
-        setCasing(EnumCasingType.SMALL, 12, com.hbm.items.weapon.sedna.factory.XFactory44.m44_bp);
-        setCasing(EnumCasingType.SMALL, 6, com.hbm.items.weapon.sedna.factory.XFactory44.m44_sp,
-                com.hbm.items.weapon.sedna.factory.XFactory44.m44_fmj,
-                com.hbm.items.weapon.sedna.factory.XFactory44.m44_jhp,
-                com.hbm.items.weapon.sedna.factory.XFactory44.m44_express);
-        setCasing(EnumCasingType.SMALL_STEEL, 6, com.hbm.items.weapon.sedna.factory.XFactory44.m44_ap);
-        setCasing(EnumCasingType.SMALL, 12, com.hbm.items.weapon.sedna.factory.XFactory9mm.p9_sp,
-                com.hbm.items.weapon.sedna.factory.XFactory9mm.p9_fmj,
-                com.hbm.items.weapon.sedna.factory.XFactory9mm.p9_jhp);
-        setCasing(EnumCasingType.SMALL_STEEL, 12, com.hbm.items.weapon.sedna.factory.XFactory9mm.p9_ap);
-        setCasing(EnumCasingType.SMALL, 24, com.hbm.items.weapon.sedna.factory.XFactory22lr.p22_sp,
-                com.hbm.items.weapon.sedna.factory.XFactory22lr.p22_fmj,
-                com.hbm.items.weapon.sedna.factory.XFactory22lr.p22_jhp);
-        setCasing(EnumCasingType.SMALL_STEEL, 24, com.hbm.items.weapon.sedna.factory.XFactory22lr.p22_ap);
+        setCasing(EnumCasingType.SMALL, 16, XFactory357.m357_bp);
+        setCasing(EnumCasingType.SMALL, 8, XFactory357.m357_sp,
+                XFactory357.m357_fmj,
+                XFactory357.m357_jhp,
+                XFactory357.m357_express);
+        setCasing(EnumCasingType.SMALL_STEEL, 8, XFactory357.m357_ap);
+        setCasing(EnumCasingType.SMALL, 12, XFactory44.m44_bp);
+        setCasing(EnumCasingType.SMALL, 6, XFactory44.m44_sp,
+                XFactory44.m44_fmj,
+                XFactory44.m44_jhp,
+                XFactory44.m44_express);
+        setCasing(EnumCasingType.SMALL_STEEL, 6, XFactory44.m44_ap);
+        setCasing(EnumCasingType.SMALL, 12, XFactory9mm.p9_sp,
+                XFactory9mm.p9_fmj,
+                XFactory9mm.p9_jhp);
+        setCasing(EnumCasingType.SMALL_STEEL, 12, XFactory9mm.p9_ap);
+        setCasing(EnumCasingType.SMALL, 24, XFactory22lr.p22_sp,
+                XFactory22lr.p22_fmj,
+                XFactory22lr.p22_jhp);
+        setCasing(EnumCasingType.SMALL_STEEL, 24, XFactory22lr.p22_ap);
         setCasing(EnumCasingType.SMALL, 8, XFactory556mm.r556_sp, XFactory556mm.r556_fmj,
                 XFactory556mm.r556_jhp, XFactory556mm.r556_inc_sp, XFactory556mm.r556_inc_fmj,
                 XFactory556mm.r556_inc_jhp);
@@ -459,11 +465,11 @@ public final class BallisticGunCatalog {
     }
 
     private static void setCasing(EnumCasingType type, int amount,
-            com.hbm.items.weapon.sedna.BulletConfig... configs) {
-        for (com.hbm.items.weapon.sedna.BulletConfig config : configs) config.setCasing(type, amount);
+            BulletConfig... configs) {
+        for (BulletConfig config : configs) config.setCasing(type, amount);
     }
 
-    private static java.util.function.BiConsumer<net.minecraft.world.item.ItemStack, ItemGunBaseNT.LambdaContext>
+    private static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext>
             orchestraFor(String id) {
         return switch (id) {
             case "gun_g3_zebra" -> Orchestras.ORCHESTRA_G3;
@@ -493,7 +499,7 @@ public final class BallisticGunCatalog {
     }
 
     /** The 1.7 {@code setNameMutator} bindings of the catalogue's guns. */
-    private static java.util.function.Function<net.minecraft.world.item.ItemStack, String> nameMutatorFor(String id) {
+    private static Function<ItemStack, String> nameMutatorFor(String id) {
         return switch (id) {
             case "gun_g3_zebra" -> XFactory556mm.LAMBDA_NAME_G3;
             case "gun_maresleg" -> XFactory12ga.LAMBDA_NAME_MARESLEG;
@@ -503,7 +509,7 @@ public final class BallisticGunCatalog {
 
     private static GunConfig shotgun(float durability, float damage, int delay, int reloadBegin,
             int reloadCycle, int reloadEnd, int reloadPost, int capacity,
-            com.hbm.items.weapon.sedna.BulletConfig[] rounds) {
+            BulletConfig[] rounds) {
         return shotgun(durability, damage, delay, reloadBegin, reloadCycle, reloadEnd, reloadPost,
                 0, capacity, rounds, 0.025F, 1F, -0.1875D, 0, 0, 10, 39,
                 ModGunSounds.FIRE_SHOTGUN::get, XFactory12ga.LAMBDA_RECOIL_MARESLEG);
@@ -511,7 +517,7 @@ public final class BallisticGunCatalog {
 
     private static GunConfig shotgun(float durability, float damage, int delay, int reloadBegin,
             int reloadCycle, int reloadEnd, int reloadPost, int capacity,
-            com.hbm.items.weapon.sedna.BulletConfig[] rounds, int jam) {
+            BulletConfig[] rounds, int jam) {
         return shotgun(durability, damage, delay, reloadBegin, reloadCycle, reloadEnd, reloadPost,
                 0, capacity, rounds, 0.025F, 1F, -0.1875D, jam, 0, 10, 39,
                 ModGunSounds.FIRE_SHOTGUN::get, XFactory12ga.LAMBDA_RECOIL_MARESLEG);
@@ -519,9 +525,9 @@ public final class BallisticGunCatalog {
 
     private static GunConfig shotgun(float durability, float damage, int delay, int reloadBegin,
             int reloadCycle, int reloadEnd, int reloadPost, int reloadPre, int capacity,
-            com.hbm.items.weapon.sedna.BulletConfig[] rounds, float hipfireSpread,
+            BulletConfig[] rounds, float hipfireSpread,
             float ammoSpread, double side, int jam, int magazineIndex, int draw, int inspect,
-            Supplier<SoundEvent> sound, java.util.function.BiConsumer<net.minecraft.world.item.ItemStack,
+            Supplier<SoundEvent> sound, BiConsumer<ItemStack,
                     ItemGunBaseNT.LambdaContext> recoil) {
         return new GunConfig().dura(durability).draw(draw).inspect(inspect)
                 .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -536,14 +542,14 @@ public final class BallisticGunCatalog {
     }
 
     private static GunConfig doubleBarrel(float durability, float damage, float pitch,
-            com.hbm.items.weapon.sedna.BulletConfig[] rounds) {
+            BulletConfig[] rounds) {
         return doubleBarrel(durability, damage, pitch, rounds, 1F);
     }
 
     private static GunConfig doubleBarrel(float durability, float damage, float pitch,
-            com.hbm.items.weapon.sedna.BulletConfig[] rounds, float ammoSpread) {
+            BulletConfig[] rounds, float ammoSpread) {
         return new GunConfig().dura(durability).draw(10).inspect(39)
-                .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE).smoke(XFactory762mm.LAMBDA_SMOKE)
+                .crosshair(Crosshair.L_CIRCLE).smoke(XFactory762mm.LAMBDA_SMOKE)
                 .rec(new Receiver(0).dmg(damage).rounds(2).delay(10).reload(41).reloadOnEmpty(true)
                         .spreadAmmo(ammoSpread)
                         .sound(ModGunSounds.FIRE_SHOTGUN::get, 1F, pitch)
@@ -556,7 +562,7 @@ public final class BallisticGunCatalog {
 
     private static GunConfig minigunConfig(double side) {
         return new GunConfig().dura(50_000).draw(20).inspect(20)
-                .crosshair(com.hbm.items.weapon.sedna.Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
+                .crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(new Receiver(0).dmg(6F).delay(1).auto(true).dry(15).spread(0.01F)
                          .sound(ModGunSounds.FIRE_MINIGUN::get, 1F, 1F)
                         .mag(new MagazineBelt().addConfigs(XFactory762mm.all()))
@@ -569,10 +575,10 @@ public final class BallisticGunCatalog {
     }
 
     private static GunConfig bmgGun(float durability, float damage,
-            com.hbm.items.weapon.sedna.BulletConfig[] rounds, int capacity,
-            Supplier<net.minecraft.sounds.SoundEvent> sound) {
+            BulletConfig[] rounds, int capacity,
+            Supplier<SoundEvent> sound) {
         return new GunConfig().dura(durability).draw(20).inspect(50)
-                .crosshair(com.hbm.items.weapon.sedna.Crosshair.CIRCLE).smoke(LAMBDA_BMG_SMOKE)
+                .crosshair(Crosshair.CIRCLE).smoke(LAMBDA_BMG_SMOKE)
                 .rec(new Receiver(0).dmg(damage).delay(25).dry(25).spreadHipfire(0.05F).reload(51).jam(43)
                         .sound(sound, 1F, 1F).mag(new MagazineFullReload(0, capacity).addConfigs(rounds))
                         .offset(1, -0.0625 * 1.5, -0.25D).setupStandardFire()
@@ -593,7 +599,7 @@ public final class BallisticGunCatalog {
                         (float) (ctx.getPlayer().getRandom().nextGaussian() * 1.5)));
         if (akimbo) receiver.spreadHipfire(0F);
         return new GunConfig().dura(2_000).draw(10).inspect(26)
-                .crosshair(com.hbm.items.weapon.sedna.Crosshair.CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
+                .crosshair(Crosshair.CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                 .rec(receiver);
     }
 

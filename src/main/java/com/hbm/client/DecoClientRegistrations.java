@@ -1,6 +1,7 @@
 package com.hbm.client;
 
 import com.hbm.client.render.HbmBlockEntityRenderers;
+import com.hbm.client.render.LanternRenderer;
 import com.hbm.tileentity.ModDecoBlockEntities;
 import com.hbm.client.render.DecoModelRenderer;
 import com.hbm.client.render.DemonLampRenderer;
@@ -15,6 +16,6 @@ public final class DecoClientRegistrations {
         HbmBlockEntityRenderers.regGem(sink, ModDecoBlockEntities.FLOODLIGHT.get(), FloodlightRenderer::new);
         HbmBlockEntityRenderers.regGem(sink, ModDecoBlockEntities.DEMON_LAMP.get(), DemonLampRenderer::new);
         HbmBlockEntityRenderers.regGem(sink, ModDecoBlockEntities.LANTERN.get(),
-                com.hbm.client.render.LanternRenderer::new);
+                LanternRenderer::new);
     }
 }

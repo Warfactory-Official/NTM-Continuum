@@ -1,5 +1,6 @@
 package com.hbm.entity.grenade;
 
+import com.hbm.Constants;
 import com.hbm.config.GeneralConfig;
 import dev.golem.core.world.Compat;
 import com.hbm.entity.projectile.EntityThrowableNT;
@@ -26,7 +27,7 @@ public abstract class EntityGrenadeBase extends EntityThrowableNT {
         super.tick();
 
         xRotO = getXRot();
-        // 26.2: setXRot clamps; tumble saturates, nothing observes
+        // 26.1: setXRot clamps; tumble saturates, nothing observes
         setXRot(getXRot() - (float) (getDeltaMovement().length() * 25));
         // 1.7: the yaw normalise+lerp after super is idempotent - same motion, same tick-start yRotO, so it
         // recomputes what EntityThrowableNT just wrote. Only the pitch tumble above it is a real edit.
@@ -42,7 +43,7 @@ public abstract class EntityGrenadeBase extends EntityThrowableNT {
 
         if (!level().isClientSide() && GeneralConfig.enableExtendedLogging) {
             Entity thrower = getOwner();
-            com.hbm.Constants.LOG.info("[GREN] Set off grenade at {} / {} / {} by {}!", (int) getX(), (int) getY(),
+            Constants.LOG.info("[GREN] Set off grenade at {} / {} / {} by {}!", (int) getX(), (int) getY(),
                     (int) getZ(), thrower instanceof Player player ? player.getDisplayName().getString() : "null");
         }
 

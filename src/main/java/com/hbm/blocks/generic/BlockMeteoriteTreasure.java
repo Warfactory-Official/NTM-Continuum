@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Meteorite treasure block — original-hbm (1.7.10) {@code BlockMeteoriteTreasure}: breaking it draws
+ * Meteorite treasure block, 1.7 {@code BlockMeteoriteTreasure}: breaking it draws
  * {@code 1 + rand(3)} stacks from {@code POOL_METEORITE_TREASURE} (Fortune ignored). A plain opaque cube
  * without a tile entity, so silk touch keeps the block (1.7 checks silk touch before {@code getDrops}).
  */

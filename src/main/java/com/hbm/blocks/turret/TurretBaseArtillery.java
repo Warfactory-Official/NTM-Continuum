@@ -4,6 +4,7 @@ import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockMaskTable;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.items.tool.ItemDesignatorArtyRange;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
@@ -62,7 +63,7 @@ public abstract class TurretBaseArtillery extends BlockMultiblockCore implements
      *
      * <p>1.12.2's {@code updateConnections} rotates the ring's <em>positions</em> with the placement but
      * passes world-constant faces, which only line up at one facing; the mask here is geometric at all
-     * four. The consequence is that a face-gated conductor connects on sides 1.12.2 refused — the mask
+     * four. The consequence is that a face-gated conductor connects on sides 1.12.2 refused. The mask
      * cannot express "subscribe here, but ask that neighbour about a different face".
      */
     @Override
@@ -105,7 +106,7 @@ public abstract class TurretBaseArtillery extends BlockMultiblockCore implements
     @Override
     protected InteractionResult useAtCore(BlockState coreState, Level level, BlockPos core, Player player,
                                           BlockHitResult hit) {
-        if (player.getMainHandItem().getItem() instanceof com.hbm.items.tool.ItemDesignatorArtyRange) {
+        if (player.getMainHandItem().getItem() instanceof ItemDesignatorArtyRange) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (player.isShiftKeyDown()) return InteractionResult.SUCCESS;

@@ -22,7 +22,7 @@ import com.hbm.tileentity.ModPowerGenBlockEntities;
 
 /**
  * 1.7 {@code TileEntityMachineSiren}: one cassette slot. Every server tick it tells the clients around it what
- * to do — a looping track follows the redstone signal; a one-shot ({@code PASS}/{@code SOUND}) track is stopped
+ * to do: a looping track follows the redstone signal; a one-shot ({@code PASS}/{@code SOUND}) track is stopped
  * and restarted once on each rising edge, latched by {@link #lock}.
  */
 public class TileEntityMachineSiren extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {

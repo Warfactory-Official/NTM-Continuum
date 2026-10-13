@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the liquefactor — 1.12.2 {@code ContainerLiquefactor}: input (35,54), battery (134,72),
+ * Menu for the liquefactor, the 1.12.2 {@code ContainerLiquefactor}: input (35,54), battery (134,72),
  * upgrades (98,36)/(98,54); 176x204 with the player inventory at 122/180.
  */
 public class ContainerLiquefactor extends AbstractContainerMenu {

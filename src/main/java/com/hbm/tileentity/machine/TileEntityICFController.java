@@ -1,14 +1,18 @@
 package com.hbm.tileentity.machine;
 
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.blocks.ModIcfBlocks;
 import com.hbm.blocks.machine.MachineICFController;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.ModIcfBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
+import java.io.IOException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -50,15 +54,15 @@ public class TileEntityICFController extends TileEntityLoadedBase implements IEn
     public static int turboPower = 5_000_000;
 
     /** 1.7 {@code IConfigurableMachine} of this class: {@code icfLaser}, {@code I:capacitorPower}, {@code I:turboPower}. */
-    public static final com.hbm.tileentity.IConfigurableMachine CONFIG = new com.hbm.tileentity.IConfigurableMachine() {
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
         @Override public String getConfigName() { return "icfLaser"; }
 
-        @Override public void readIfPresent(com.google.gson.JsonObject obj) {
-            capacitorPower = com.hbm.tileentity.IConfigurableMachine.grab(obj, "I:capacitorPower", capacitorPower);
-            turboPower = com.hbm.tileentity.IConfigurableMachine.grab(obj, "I:turboPower", turboPower);
+        @Override public void readIfPresent(JsonObject obj) {
+            capacitorPower = IConfigurableMachine.grab(obj, "I:capacitorPower", capacitorPower);
+            turboPower = IConfigurableMachine.grab(obj, "I:turboPower", turboPower);
         }
 
-        @Override public void writeConfig(com.google.gson.stream.JsonWriter writer) throws java.io.IOException {
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
             writer.name("I:capacitorPower").value(capacitorPower);
             writer.name("I:turboPower").value(turboPower);
         }

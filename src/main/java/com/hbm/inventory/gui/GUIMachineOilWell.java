@@ -1,5 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineOilWell;
 import com.hbm.tileentity.machine.oil.TileEntityOilDrillBase;
@@ -16,9 +19,9 @@ import java.util.Optional;
  * plate over the third-tank window when there is no third tank, tanks 16x52 at (76,22)/(112,22), the fracking
  * solution tank 6x32 at (54,45), and the upgrade info glyph at (160,21).
  */
-public class GUIMachineOilWell extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineOilWell> implements IUpgradeInfoProviderSource {
+public class GUIMachineOilWell extends CompatContainerScreen<ContainerMachineOilWell> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_well.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/machine/gui_well.png");
 
     public GUIMachineOilWell(ContainerMachineOilWell menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 184, 190);
@@ -80,7 +83,7 @@ public class GUIMachineOilWell extends dev.golem.core.gui.CompatContainerScreen<
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getDrill();
     }
 }

@@ -5,6 +5,7 @@ import dev.golem.core.data.Tags;
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.SynchedData;
 import com.hbm.lib.ModDamageSources;
+import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -47,10 +48,9 @@ public class EntitySiegeLaser extends EntityThrowableNT {
 
     /**
      * 1.7 EntityThrowable(World, EntityLivingBase); its only caller is EntitySiegeCraft:263.
-     * TODO(port): 1.7 entity/mob/siege - EntitySiegeCraft.java (316 LOC), EntitySiegeTunneler.java (109) and
-     * SiegeTier.java (121) - is unported. Reachability first: 1.7 constructs neither mob anywhere live, its one
-     * spawn site being commented out at items/tool/ItemWandD.java:142, so the family is dead upstream too and
-     * porting it restores nothing a player can meet. This ctor stays caller-less either way.
+     * TODO(port): 1.7 entity/mob/siege (EntitySiegeCraft, EntitySiegeTunneler, SiegeTier) is unported. 1.7
+     * constructs neither mob anywhere live, its one spawn site being commented out at
+     * items/tool/ItemWandD.java:142, so the family is dead upstream too. This ctor stays caller-less either way.
      */
     public EntitySiegeLaser(EntityType<? extends EntitySiegeLaser> type, Level level, LivingEntity thrower) {
         super(type, level);
@@ -120,7 +120,7 @@ public class EntitySiegeLaser extends EntityThrowableNT {
                 this.discard();
 
                 if (this.incendiary)
-                    dev.golem.core.world.Effects.ignite(hitEntity, 3); // 1.7 setFire(3)
+                    Effects.ignite(hitEntity, 3); // 1.7 setFire(3)
 
                 // 1.7 newExplosion(..., isFlaming=incendiary, isSmoking=false): no block destruction
                 if (this.explosive > 0)

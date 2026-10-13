@@ -9,6 +9,7 @@ import com.hbm.tileentity.machine.TileEntityMachineRadarScreen;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.CompatRenderTypes;
@@ -39,7 +40,7 @@ public final class RenderRadarScreen extends GemBER<TileEntityMachineRadarScreen
         public final List<float[]> blips = new ArrayList<>();
     }
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/radar_screen.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/machines/radar_screen.obj"));
     private final Surface skin = Surface.cutoutNoCull(Constants.MOD_ID + ":textures/models/machines/radar_screen.png");
     private final RandomSource rand = RandomSource.create();
 

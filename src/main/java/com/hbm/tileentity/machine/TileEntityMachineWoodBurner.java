@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.environment.Environment;
+import com.hbm.inventory.fluid.FluidCombustion;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
@@ -19,7 +21,7 @@ import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.modules.ModuleBurnTime;
+import com.hbm.module.ModuleBurnTime;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -27,8 +29,11 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -101,14 +106,14 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
                     te.setChanged();
                 }
             // hbm-space: isOn && breatheAir(1), here and for liquid fuel (com.hbm.api.environment.Environment)
-            } else if (te.power < maxPower && te.isOn && com.hbm.api.environment.Environment.breatheAir(level, pos, 1)) {
+            } else if (te.power < maxPower && te.isOn && Environment.breatheAir(level, pos, 1)) {
                 te.burnTime--;
                 te.powerGen += 100;
                 if (TickPhase.every(level, pos, 20L)) PollutionHandler.incrementPollution(level, pos, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND);
             }
         } else if (te.power < maxPower && te.tank.getFill() > 0 && te.isOn
-                && com.hbm.api.environment.Environment.breatheAir(level, pos, 1)) {
-            long heatEnergy = com.hbm.inventory.fluid.FluidCombustion.getFlammableEnergy(te.tank.getTankType());
+                && Environment.breatheAir(level, pos, 1)) {
+            long heatEnergy = FluidCombustion.getFlammableEnergy(te.tank.getTankType());
             if (heatEnergy > 0) {
                 int toBurn = Math.min(te.tank.getFill(), 2);
                 te.powerGen += (int) (heatEnergy * toBurn / 2_000L);
@@ -125,7 +130,7 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
         if (te.powerGen <= 0) return;
         ForgeDirection dir = te.facing(state);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        level.addParticle(net.minecraft.core.particles.ParticleTypes.SMOKE,
+        level.addParticle(ParticleTypes.SMOKE,
                 pos.getX() + 0.5 - dir.offsetX + rot.offsetX, pos.getY() + 4,
                 pos.getZ() + 0.5 - dir.offsetZ + rot.offsetZ, 0, 0.05, 0);
     }
@@ -159,7 +164,7 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
         if (in.isEmpty()) return;
 
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
             setChanged();
             return;
         }
@@ -191,8 +196,8 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
 
     public static EnumAshType getAshFromFuel(ItemStack stack) {
         if (stack.isEmpty()) return EnumAshType.MISC;
-        String path = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
-        if (stack.is(net.minecraft.tags.ItemTags.LOGS) || path.contains("wood") || stack.is(net.minecraft.tags.ItemTags.PLANKS)) {
+        String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
+        if (stack.is(ItemTags.LOGS) || path.contains("wood") || stack.is(ItemTags.PLANKS)) {
             return EnumAshType.WOOD;
         }
         if (path.contains("coal") || path.contains("coke") || path.contains("lignite")) return EnumAshType.COAL;

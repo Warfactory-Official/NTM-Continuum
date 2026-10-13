@@ -5,6 +5,7 @@ import com.hbm.explosion.vanillant.interfaces.IBlockAllocator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -53,7 +54,7 @@ public class BlockAllocatorWater implements IBlockAllocator {
 
                         cursor.set((int) Math.floor(currentX), (int) Math.floor(currentY), (int) Math.floor(currentZ));
                         BlockState state = world.getBlockState(cursor);
-                        boolean liquid = !world.getFluidState(cursor).isEmpty() && state.getBlock() instanceof net.minecraft.world.level.block.LiquidBlock;
+                        boolean liquid = !world.getFluidState(cursor).isEmpty() && state.getBlock() instanceof LiquidBlock;
 
                         // "im braindead and copy code" - upstream; the one difference from the standard
                         // allocator is that a liquid is free to pass through and never collected.

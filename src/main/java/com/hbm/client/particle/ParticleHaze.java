@@ -1,5 +1,6 @@
 package com.hbm.client.particle;
 
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatParticle;
 import dev.golem.core.render.ParticleLayer;
 import dev.golem.core.render.Particles;
@@ -10,7 +11,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
- * original-hbm (1.7.10) {@code ParticleHaze}, the white-phosphorus haze (1.7 {@code effectNT} type {@code haze}, sent
+ * 1.7 {@code ParticleHaze}, the white-phosphorus haze (1.7 {@code effectNT} type {@code haze}, sent
  * by the phosphorus grenade, the phosphorus artillery shell and the white-phosphorus HIMARS rocket).
  *
  * <p>Lives 600..699 ticks and never moves (1.7 damped its motion but never called {@code moveEntity}). Every tick it
@@ -28,7 +29,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 public class ParticleHaze extends CompatParticle {
 
     /** {@code assets/hbm/textures/particle/haze.png} on the particles atlas (no {@code particle/} prefix). */
-    public static final Identifier HAZE = dev.golem.core.Ids.of("hbm", "haze");
+    public static final Identifier HAZE = Ids.of("hbm", "haze");
 
     private static final int QUADS = 25;
     private static final float SCALE = 10F;

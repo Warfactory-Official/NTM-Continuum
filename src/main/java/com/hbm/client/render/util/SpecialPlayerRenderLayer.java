@@ -19,7 +19,7 @@ import net.minecraft.world.entity.player.Player;
 /**
  * 1.7 {@code ModEventHandlerClient.onRenderArmorEvent}'s accessory branch: with no chestplate and not invisible,
  * Bob wears {@code ModelArmorWings} type 2, the_NCR type 3, Pheo the axe pack with its flames, and Peep the tail.
- * old-hbm dropped all four; 1.7 is the spec.
+ * 1.12.2 dropped all four; 1.7 is the spec.
  *
  * <p>All four were {@code ModelArmorBase} models drawn in the armor pass, so they take the same crouch translation as
  * the murk wings in {@code JetpackRenderLayer}.

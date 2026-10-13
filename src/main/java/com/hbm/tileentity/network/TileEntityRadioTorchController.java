@@ -4,12 +4,13 @@ import com.hbm.api.redstoneoverradio.IRORInfo;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.RORFunctionException;
 import com.hbm.blocks.network.RadioTorchBase;
+import com.hbm.explosion.vanillant.interfaces.IExplosionSFX;
+import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.particle.helper.ParticleEffects;
-import com.hbm.radio.ModRadioBlockEntities;
-import com.hbm.radio.RadioControllerMenu;
-import com.hbm.radio.RadioTargets;
+import com.hbm.inventory.container.RadioControllerMenu;
+import com.hbm.tileentity.network.RadioTargets;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -19,21 +20,24 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
+import com.hbm.tileentity.ModBlockEntities;
 
 /** Server-side ROR command controller. */
 public class TileEntityRadioTorchController extends TileEntityLoadedBase implements IControlReceiver, RadioTorchTicking,
-        net.minecraft.world.MenuProvider {
+        MenuProvider {
     public String channel = "";
     public String prev;
     public boolean polling = true;
 
     public TileEntityRadioTorchController(BlockPos pos, BlockState state) {
-        super(ModRadioBlockEntities.RADIO_TORCH_CONTROLLER.get(), pos, state);
+        super(ModBlockEntities.RADIO_TORCH_CONTROLLER.get(), pos, state);
     }
 
     @Override
@@ -62,7 +66,7 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
                                     + IRORInteractive.getCommand(command), IRORInteractive.getParams(command));
                         }
                     } catch (RORFunctionException ignored) {
-                        // The old controller intentionally discarded malformed remote commands.
+                        // The old controller discarded malformed remote commands.
                     }
                     prev = command;
                 }
@@ -76,7 +80,7 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
         level.destroyBlock(worldPosition, false);
         new ExplosionVNT(level, worldPosition, 5F)
                 .setEntityProcessor(new RadioControllerEntityProcessor())
-                .setPlayerProcessor(new com.hbm.explosion.vanillant.standard.PlayerProcessorStandard())
+                .setPlayerProcessor(new PlayerProcessorStandard())
                 .setSFX(new RadioControllerExplosionSfx())
                 .explode();
     }
@@ -148,9 +152,9 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
     }
 
     /** Faithful replacement for old ExplosionEffectWeapon's server-side payload sender. */
-    private final class RadioControllerExplosionSfx implements com.hbm.explosion.vanillant.interfaces.IExplosionSFX {
+    private final class RadioControllerExplosionSfx implements IExplosionSFX {
         @Override
-        public void doEffect(ExplosionVNT explosion, net.minecraft.world.level.Level world,
+        public void doEffect(ExplosionVNT explosion, Level world,
                              double x, double y, double z, float size) {
             ParticleEffects.explosionSmall(world, x, y, z, 10, 2.5F, 1F);
         }

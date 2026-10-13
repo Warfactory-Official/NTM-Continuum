@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-/** JEI category for the coker — 1 input fluid droplet → {output item, optional byproduct fluid}. */
+/** JEI category for the coker: 1 input fluid droplet to {output item, optional byproduct fluid}. */
 public class CokerRecipeHandler extends JEIUniversalHandler<CokerRecipeHandler.Entry> {
 
     public record Entry(FluidType input, CokerRecipes.CokerRecipe recipe) {}

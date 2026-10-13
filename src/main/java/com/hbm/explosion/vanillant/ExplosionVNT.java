@@ -8,7 +8,10 @@ import com.hbm.explosion.vanillant.interfaces.IExplosionSFX;
 import com.hbm.explosion.vanillant.interfaces.IPlayerProcessor;
 import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
 import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
+import com.hbm.explosion.vanillant.standard.CustomDamageHandlerAmat;
 import com.hbm.explosion.vanillant.standard.EntityProcessorCross;
+import com.hbm.explosion.vanillant.standard.EntityProcessorStandard;
+import com.hbm.explosion.vanillant.standard.ExplosionEffectAmat;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.HashMap;
@@ -16,27 +19,27 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A vanilla-shaped explosion assembled from swappable parts — 1.12.2's {@code ExplosionVNT}, whose own
+ * A vanilla-shaped explosion assembled from swappable parts, 1.12.2's {@code ExplosionVNT}, whose own
  * comment ("time to over-engineer this into oblivion so that I never have to write a vanilla-esque
  * explosion class ever again") is the design brief. An explosion picks blocks
  * ({@link IBlockAllocator}), does something to them ({@link IBlockProcessor}), hurts entities
  * ({@link IEntityProcessor} + {@link IPlayerProcessor}) and looks like something
  * ({@link IExplosionSFX}); any of the four can be left out.
  *
- * <p><b>One deviation, and why.</b> Upstream carried a dummy vanilla {@code Explosion} object
- * (<i>"compat"</i>) whose only job was to be handed to vanilla's block and entity hooks —
- * {@code getExplosionResistance}, {@code canDropFromExplosion}, {@code onBlockExploded},
- * {@code ForgeEventFactory.onExplosionDetonate} — and to carry its own player-knockback map. That
- * object cannot be reproduced portably: {@code Explosion} is an <i>interface</i> at 26.1 (implemented
- * by {@code ServerExplosion}) and a concrete class below it, so any instance HBM built would be a
- * version-specific type in a shared source tree. The parts therefore call the underlying vanilla
- * operations directly (resistance from the block, drops through {@code Block.dropResources}), which is
- * what those hooks do anyway. Everything observable — which blocks go, what they drop, how hard
- * entities are hit — follows the original formulas unchanged.
+ * <p><b>One deviation.</b> Upstream carries a dummy vanilla {@code Explosion} object (<i>"compat"</i>) whose
+ * only job is to be handed to vanilla's block and entity hooks ({@code getExplosionResistance},
+ * {@code canDropFromExplosion}, {@code onBlockExploded}, {@code ForgeEventFactory.onExplosionDetonate}) and to
+ * carry its own player-knockback map. It cannot be reproduced portably: {@code Explosion} is an
+ * <i>interface</i> at 26.1 (implemented by {@code ServerExplosion}) and a concrete class below it, so any
+ * instance would be a version-specific type in a shared source tree. The parts call the underlying vanilla
+ * operations directly (resistance from the block, drops through {@code Block.dropResources}), which is what
+ * those hooks do anyway. Everything observable (which blocks go, what they drop, how hard entities are hit)
+ * follows the original formulas.
  */
 public class ExplosionVNT {
 
@@ -71,12 +74,12 @@ public class ExplosionVNT {
         this.exploder = exploder;
     }
 
-    public float blockResistance(Level level, BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+    public float blockResistance(Level level, BlockPos pos, BlockState state) {
         return Math.max(state.getBlock().getExplosionResistance(), level.getFluidState(pos).getExplosionResistance());
     }
 
     public boolean blockExplodes(Level level, BlockPos pos,
-            net.minecraft.world.level.block.state.BlockState state, float power) {
+            BlockState state, float power) {
         return true;
     }
 
@@ -87,7 +90,7 @@ public class ExplosionVNT {
 
         ObjectOpenHashSet<BlockPos> affectedBlocks = null;
         if (processBlocks) {
-            // Exposure must be calculated against the pre-blast world, as in old-hbm.
+            // Exposure must be calculated against the pre-blast world, as in 1.12.2.
             affectedBlocks = blockAllocator.allocate(this, world, posX, posY, posZ, size);
         }
 
@@ -159,11 +162,11 @@ public class ExplosionVNT {
     public ExplosionVNT makeAmat() {
         this.setBlockAllocator(new BlockAllocatorStandard(this.size < 15 ? 16 : 32));
         this.setBlockProcessor(new BlockProcessorStandard().setNoDrop());
-        this.setEntityProcessor(new com.hbm.explosion.vanillant.standard.EntityProcessorStandard()
+        this.setEntityProcessor(new EntityProcessorStandard()
                 .withRangeMod(2F)
-                .withDamageMod(new com.hbm.explosion.vanillant.standard.CustomDamageHandlerAmat(50F)));
+                .withDamageMod(new CustomDamageHandlerAmat(50F)));
         this.setPlayerProcessor(new PlayerProcessorStandard());
-        this.setSFX(new com.hbm.explosion.vanillant.standard.ExplosionEffectAmat());
+        this.setSFX(new ExplosionEffectAmat());
         return this;
     }
 }

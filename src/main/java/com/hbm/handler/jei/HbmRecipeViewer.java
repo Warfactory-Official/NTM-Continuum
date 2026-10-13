@@ -1,9 +1,9 @@
 package com.hbm.handler.jei;
 
+import com.hbm.Constants;
 import com.hbm.blocks.ModAnvilBlocks;
+import com.hbm.blocks.ModProductionBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.machine.DiFurnaceContent;
-import com.hbm.foundry.FoundryExpansion;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.container.ContainerDiFurnace;
 import com.hbm.inventory.container.ContainerMachineArcFurnaceLarge;
@@ -12,6 +12,7 @@ import com.hbm.inventory.container.ContainerMachineAssemblyFactory;
 import com.hbm.inventory.container.ContainerMachineChemicalFactory;
 import com.hbm.inventory.container.ContainerCentrifuge;
 import com.hbm.inventory.container.ContainerMachineCyclotron;
+import com.hbm.inventory.container.ContainerMachineElectrolyser;
 import com.hbm.inventory.gui.GUIFusionBreeder;
 import com.hbm.inventory.gui.GUIDiFurnace;
 import com.hbm.inventory.gui.GUIMachineArcFurnaceLarge;
@@ -22,14 +23,21 @@ import com.hbm.inventory.container.ContainerMachineAmmoPress;
 import com.hbm.inventory.container.ContainerMachinePrecAss;
 import com.hbm.inventory.gui.GUICentrifuge;
 import com.hbm.inventory.gui.GUIMachineCyclotron;
+import com.hbm.inventory.gui.GUIMachineElectrolyser;
 import com.hbm.inventory.gui.GUIMachineExposureChamber;
+import com.hbm.inventory.gui.GUIMachineGasCent;
+import com.hbm.inventory.gui.GUIMachineRotaryFurnace;
 import com.hbm.inventory.gui.GUIMixer;
+import com.hbm.inventory.gui.GUIPADetector;
+import com.hbm.inventory.gui.GUIPASource;
+import com.hbm.inventory.recipes.ArcFurnaceRecipes;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
 import com.hbm.inventory.recipes.CyclotronRecipes;
+import com.hbm.inventory.recipes.FusionRecipes;
 import com.hbm.inventory.recipes.GasCentrifugeRecipes;
 import com.hbm.inventory.recipes.ElectrolyserFluidRecipes;
 import com.hbm.inventory.recipes.ElectrolyserMetalRecipes;
@@ -47,6 +55,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModFluidItems;
+import com.hbm.items.ModMachineItems;
 import com.hbm.items.ModStorageDrumItems;
 import com.hbm.items.machine.ItemFluidIcon;
 import net.minecraft.network.chat.Component;
@@ -60,7 +69,7 @@ import com.hbm.blocks.ModSatelliteBlocks;
 import dev.golem.core.viewer.ViewerPlugin;
 
 /**
- * HBM's recipe-viewer integration, declared once for JEI and REI — the modern equivalent of the old {@code JEIConfig}.
+ * HBM's recipe-viewer integration, declared once for JEI and REI: the modern equivalent of the old {@code JEIConfig}.
  * The JEI plugins ({@link HbmJeiPluginForgelike}, {@link HbmJeiPluginFabric}) hand it to Golem Core's
  * {@code JeiViewer}, the REI plugins ({@code com.hbm.handler.rei}) to Golem Core's {@code ReiClientPlugin}; the item
  * subtypes are {@link HbmViewerSubtypes}. Adding a machine is a one-liner in each of the methods below, exactly as it
@@ -119,7 +128,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
     private static ArcFurnaceRecipeHandler arcFurnaceFluid;
     private static DiFurnaceRecipeHandler diFurnace;
 
-    /** Add a droplet icon for every registered fluid to the viewers' ingredient lists / search — the fluid‑icon item
+    /** Add a droplet icon for every registered fluid to the viewers' ingredient lists / search: the fluid‑icon item
      * lives in no creative tab, so without this only the fluids that happen to appear in a ported recipe
      * would be searchable. (Modern equivalent of the old {@code FluidIconRecipeRegistryPlugin} seam.) */
     @Override
@@ -149,7 +158,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         purex = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.PUREX,
                 title("purex"), PUREXRecipes.INSTANCE, stack(ModMachineBlocks.machine_purex.get()));
         fusion = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.FUSION,
-                title("fusion"), com.hbm.inventory.recipes.FusionRecipes.INSTANCE,
+                title("fusion"), FusionRecipes.INSTANCE,
                 stack(ModMachineBlocks.fusion_torus.get()));
         fusionBreeder = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.FUSION_BREEDER,
                 title("fusionbreeder"), FluidBreederRecipes.INSTANCE,
@@ -226,14 +235,14 @@ public final class HbmRecipeViewer implements ViewerPlugin {
                 stack(ModMachineBlocks.machine_arc_welder.get()));
         arcFurnaceSolid = new ArcFurnaceRecipeHandler(HbmJeiRecipeTypes.ARC_FURNACE_SOLID,
                 Component.translatable("block.hbm.machine_arc_furnace"), false,
-                stack(FoundryExpansion.ARC_FURNACE.get()));
+                stack(ModMachineBlocks.machine_arc_furnace.get()));
         arcFurnaceFluid = new ArcFurnaceRecipeHandler(HbmJeiRecipeTypes.ARC_FURNACE_FLUID,
                 Component.translatable("block.hbm.machine_arc_furnace"), true,
-                stack(FoundryExpansion.ARC_FURNACE.get()));
+                stack(ModMachineBlocks.machine_arc_furnace.get()));
         diFurnace = new DiFurnaceRecipeHandler(HbmJeiRecipeTypes.ALLOY,
                 Component.translatable("block.hbm.machine_difurnace_off"));
         rotaryFurnace = new RotaryFurnaceRecipeHandler(HbmJeiRecipeTypes.ROTARY_FURNACE,
-                title("rotary_furnace"), stack(com.hbm.blocks.ModProductionBlocks.MACHINE_ROTARY_FURNACE.get()));
+                title("rotary_furnace"), stack(ModProductionBlocks.MACHINE_ROTARY_FURNACE.get()));
 
           reg.add(assembly, precisionAssembler, chemplant, mixer, exposure, purex, fusion, fusionBreeder, plasmaForge, press, ammoPress, soldering, crystallizer, centrifuge, cyclotron, particleAccelerator, gasCentrifuge, silex, shredder, sawmill, crucible, anvilCon, anvilSmith,
                  electrolyserFluid, electrolyserMetal, refinery, fractioning, liquefaction, solidification, boiling, cooling,
@@ -241,8 +250,8 @@ public final class HbmRecipeViewer implements ViewerPlugin {
                  arcWelder, arcFurnaceSolid, arcFurnaceFluid, diFurnace, rotaryFurnace);
         RTGJeiIntegration.registerCategory(reg);
         reg.add(new SatelliteRecipeHandler());
-        com.hbm.handler.jei.NuclearMiscJeiIntegration.registerCategories(reg);
-        com.hbm.handler.jei.CustomMachineJeiIntegration.registerCategories(reg);
+        NuclearMiscJeiIntegration.registerCategories(reg);
+        CustomMachineJeiIntegration.registerCategories(reg);
     }
 
     @Override
@@ -253,7 +262,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         MixerRecipes.INSTANCE.registerRecipes();
         ExposureChamberRecipes.INSTANCE.registerRecipes();
         PUREXRecipes.INSTANCE.registerRecipes();
-        com.hbm.inventory.recipes.FusionRecipes.INSTANCE.registerRecipes();
+        FusionRecipes.INSTANCE.registerRecipes();
         FluidBreederRecipes.INSTANCE.registerRecipes();
         PlasmaForgeRecipes.INSTANCE.registerRecipes();
          PressRecipes.register();
@@ -318,8 +327,8 @@ public final class HbmRecipeViewer implements ViewerPlugin {
           reg.add(HbmJeiRecipeTypes.ALLOY, DiFurnaceRecipeHandler.buildRecipes());
         RTGJeiIntegration.registerRecipes(reg);
         reg.add(SatelliteRecipeHandler.TYPE, SatelliteRecipeHandler.buildRecipes());
-        com.hbm.handler.jei.NuclearMiscJeiIntegration.registerRecipes(reg);
-        com.hbm.handler.jei.CustomMachineJeiIntegration.registerRecipes(reg);
+        NuclearMiscJeiIntegration.registerRecipes(reg);
+        CustomMachineJeiIntegration.registerRecipes(reg);
       }
 
     @Override
@@ -335,21 +344,21 @@ public final class HbmRecipeViewer implements ViewerPlugin {
                 HbmJeiRecipeTypes.CYCLOTRON);
         // The arrow between the two slot rows, as in 1.12.2 (75, 35, 7 x 8): a 36 x 45 area here covered all
         // four slots, and JEI took every click on them, so nothing could be put into the source by hand.
-        reg.add(com.hbm.inventory.gui.GUIPADetector.class, 75, 35, 7, 8,
+        reg.add(GUIPADetector.class, 75, 35, 7, 8,
                 HbmJeiRecipeTypes.PARTICLE_ACCELERATOR);
-        reg.add(com.hbm.inventory.gui.GUIPASource.class, 75, 35, 7, 8,
+        reg.add(GUIPASource.class, 75, 35, 7, 8,
                 HbmJeiRecipeTypes.PARTICLE_ACCELERATOR);
-        reg.add(com.hbm.inventory.gui.GUIMachineGasCent.class, 70, 36, 36, 12,
+        reg.add(GUIMachineGasCent.class, 70, 36, 36, 12,
                 HbmJeiRecipeTypes.GAS_CENTRIFUGE);
-        reg.add(com.hbm.inventory.gui.GUIMachineElectrolyser.class, 62, 26, 12, 40,
+        reg.add(GUIMachineElectrolyser.class, 62, 26, 12, 40,
                 HbmJeiRecipeTypes.ELECTROLYSIS_FLUID);
-        reg.add(com.hbm.inventory.gui.GUIMachineElectrolyser.class, 7, 46, 22, 25,
+        reg.add(GUIMachineElectrolyser.class, 7, 46, 22, 25,
                 HbmJeiRecipeTypes.ELECTROLYSIS_METAL);
         reg.add(GUIFusionBreeder.class, 67, 49, 42, 9,
                 HbmJeiRecipeTypes.FUSION_BREEDER);
         reg.add(GUIMachineArcWelder.class, 72, 38, 32, 13,
                 HbmJeiRecipeTypes.ARC_WELDER);
-        reg.add(com.hbm.inventory.gui.GUIMachineRotaryFurnace.class, 58, 19, 32, 10,
+        reg.add(GUIMachineRotaryFurnace.class, 58, 19, 32, 10,
                 HbmJeiRecipeTypes.ROTARY_FURNACE);
         reg.add(GUIMachineArcFurnaceLarge.class, 17, 36, 7, 70,
                 HbmJeiRecipeTypes.ARC_FURNACE_SOLID);
@@ -380,29 +389,29 @@ public final class HbmRecipeViewer implements ViewerPlugin {
                  ModMenus.MACHINE_PREC_ASS.get(), HbmJeiRecipeTypes.PRECISION_ASSEMBLER,
                  new int[]{4, 5, 6, 7, 8, 9, 10, 11, 12}, 22, 36,
                  recipe -> recipe.inputFluid == null || recipe.inputFluid.length == 0);
-         reg.add(com.hbm.inventory.container.ContainerMachineElectrolyser.class,
+         reg.add(ContainerMachineElectrolyser.class,
                  ModMenus.MACHINE_ELECTROLYSER_METAL.get(), HbmJeiRecipeTypes.ELECTROLYSIS_METAL,
                  3, 1, 10, 36);
          reg.addSelective(ContainerMachineArcWelder.class,
                  ModMenus.MACHINE_ARC_WELDER.get(), HbmJeiRecipeTypes.ARC_WELDER,
                  new int[]{0, 1, 2}, 8, 36, recipe -> recipe.fluid == null);
         reg.addSelective(ContainerMachineAssemblyFactory.class,
-                 com.hbm.assemblyfactory.AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY_MENU.get(),
+                 ModMenus.MACHINE_ASSEMBLY_FACTORY.get(),
                  HbmJeiRecipeTypes.ASSEMBLY_MACHINE,
                  new int[]{5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, 60, 36,
                  recipe -> recipe.inputFluid == null || recipe.inputFluid.length == 0);
         reg.addSelective(ContainerMachineChemicalFactory.class,
-                 com.hbm.chemicalfactory.ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY_MENU.get(),
+                 ModMenus.MACHINE_CHEMICAL_FACTORY.get(),
                  HbmJeiRecipeTypes.CHEMICAL_PLANT, new int[]{5, 6, 7}, 32, 36,
                  recipe -> recipe.inputFluid == null || recipe.inputFluid.length == 0);
          reg.add(ContainerMachineArcFurnaceLarge.class,
-                 FoundryExpansion.ARC_FURNACE_MENU.get(), HbmJeiRecipeTypes.ARC_FURNACE_SOLID,
+                 ModMenus.MACHINE_ARC_FURNACE.get(), HbmJeiRecipeTypes.ARC_FURNACE_SOLID,
                  5, 1, 30, 36);
          reg.add(ContainerMachineArcFurnaceLarge.class,
-                 FoundryExpansion.ARC_FURNACE_MENU.get(), HbmJeiRecipeTypes.ARC_FURNACE_FLUID,
+                 ModMenus.MACHINE_ARC_FURNACE.get(), HbmJeiRecipeTypes.ARC_FURNACE_FLUID,
                  5, 1, 30, 36);
           reg.addSelective(ContainerDiFurnace.class,
-                  DiFurnaceContent.DI_FURNACE_MENU.get(), HbmJeiRecipeTypes.ALLOY,
+                  ModMenus.MACHINE_DIFURNACE.get(), HbmJeiRecipeTypes.ALLOY,
                   new int[]{0, 1}, 4, 36, recipe -> true);
         RTGJeiIntegration.registerTransfer(reg);
      }
@@ -411,15 +420,15 @@ public final class HbmRecipeViewer implements ViewerPlugin {
     public void stations(Stations reg) {
         RTGJeiIntegration.registerCatalyst(reg);
         reg.add(SatelliteRecipeHandler.TYPE, new ItemStack(ModSatelliteBlocks.sat_dock.get()));
-        com.hbm.handler.jei.NuclearMiscJeiIntegration.registerCatalysts(reg);
-        com.hbm.handler.jei.CustomMachineJeiIntegration.registerCatalysts(reg);
+        NuclearMiscJeiIntegration.registerCatalysts(reg);
+        CustomMachineJeiIntegration.registerCatalysts(reg);
           reg.add(HbmJeiRecipeTypes.ASSEMBLY_MACHINE, stack(ModMachineBlocks.machine_assembly_machine.get()));
           reg.add(HbmJeiRecipeTypes.ASSEMBLY_MACHINE,
-                  stack(com.hbm.assemblyfactory.AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get()));
+                  stack(ModMachineBlocks.machine_assembly_factory.get()));
           reg.add(HbmJeiRecipeTypes.PRECISION_ASSEMBLER, stack(ModMachineBlocks.machine_precass.get()));
          reg.add(HbmJeiRecipeTypes.CHEMICAL_PLANT, stack(ModMachineBlocks.machine_chemical_plant.get()));
          reg.add(HbmJeiRecipeTypes.CHEMICAL_PLANT,
-                 stack(com.hbm.chemicalfactory.ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY.get()));
+                 stack(ModMachineBlocks.machine_chemical_factory.get()));
         reg.add(HbmJeiRecipeTypes.MIXER, stack(ModMachineBlocks.machine_mixer.get()));
         reg.add(HbmJeiRecipeTypes.PUREX, stack(ModMachineBlocks.machine_purex.get()));
         reg.add(HbmJeiRecipeTypes.FUSION, stack(ModMachineBlocks.fusion_torus.get()));
@@ -443,24 +452,24 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         // Each laser crystal is also a catalyst: clicking one shows what the SILEX can do with it
         // loaded (the old plugin's per-wavelength categories, folded into one).
         reg.add(HbmJeiRecipeTypes.SILEX,
-                new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_co2.get()),
-                new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_bismuth.get()),
-                new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_cmb.get()),
-                new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_bale.get()),
-                new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_digamma.get()));
+                new ItemStack(ModMachineItems.laser_crystal_co2.get()),
+                new ItemStack(ModMachineItems.laser_crystal_bismuth.get()),
+                new ItemStack(ModMachineItems.laser_crystal_cmb.get()),
+                new ItemStack(ModMachineItems.laser_crystal_bale.get()),
+                new ItemStack(ModMachineItems.laser_crystal_digamma.get()));
         reg.add(HbmJeiRecipeTypes.SHREDDER, stack(ModMachineBlocks.machine_shredder.get()));
         reg.add(HbmJeiRecipeTypes.SAWMILL, stack(ModMachineBlocks.machine_sawmill.get()));
          reg.add(HbmJeiRecipeTypes.CRUCIBLE_ALLOY, stack(ModMachineBlocks.machine_crucible.get()));
          reg.add(HbmJeiRecipeTypes.ARC_WELDER,
                  stack(ModMachineBlocks.machine_arc_welder.get()));
          reg.add(HbmJeiRecipeTypes.ROTARY_FURNACE,
-                 stack(com.hbm.blocks.ModProductionBlocks.MACHINE_ROTARY_FURNACE.get()));
+                 stack(ModProductionBlocks.MACHINE_ROTARY_FURNACE.get()));
          reg.add(HbmJeiRecipeTypes.ARC_FURNACE_SOLID,
-                 stack(FoundryExpansion.ARC_FURNACE.get()));
+                 stack(ModMachineBlocks.machine_arc_furnace.get()));
          reg.add(HbmJeiRecipeTypes.ARC_FURNACE_FLUID,
-                 stack(FoundryExpansion.ARC_FURNACE.get()));
+                 stack(ModMachineBlocks.machine_arc_furnace.get()));
          reg.add(HbmJeiRecipeTypes.ALLOY,
-                 stack(DiFurnaceContent.MACHINE_DIFURNACE.get()));
+                 stack(ModMachineBlocks.machine_difurnace_off.get()));
         reg.add(HbmJeiRecipeTypes.ANVIL_CON, anvilIcon());
         reg.add(HbmJeiRecipeTypes.ANVIL_SMITH, anvilIcon());
 
@@ -486,7 +495,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
          reg.add(HbmJeiRecipeTypes.FUEL_POOL,
                  stack(ModMachineBlocks.machine_waste_drum.get()));
 
-        // The electric furnace runs vanilla smelting — surface it under the viewer's built-in furnace category
+        // The electric furnace runs vanilla smelting, so list it under the viewer's built-in furnace category
         // (mirrors the old JEIConfig line; no bespoke category needed).
         reg.addSmelting(stack(ModMachineBlocks.machine_electric_furnace_off.get()));
     }
@@ -494,15 +503,15 @@ public final class HbmRecipeViewer implements ViewerPlugin {
     /**
      * Runs once the viewer has its recipes: 1.7 {@code ArcFurnaceRecipes.registerFurnaceSmeltables}, the arc furnace's
      * furnace-smelting pass, listed in the solid arc furnace page. The furnace recipes are only readable from the viewer's
-     * own lookup on a 26.1 client, so the pass is added here rather than at registration (History §19ek-hooks): JEI runs it
+     * own lookup on a 26.1 client, so the pass is added here rather than at registration: JEI runs it
      * at {@code onRuntimeAvailable}, REI the first time it is asked for the page.
      */
     @Override
     public void runtime(Runtime runtime) {
-        java.util.List<com.hbm.foundry.ArcFurnaceRecipes.ArcFurnaceRecipe> pass = com.hbm.foundry.ArcFurnaceRecipes
+        List<ArcFurnaceRecipes.ArcFurnaceRecipe> pass = ArcFurnaceRecipes
                 .furnacePass(runtime.smeltingRecipes());
         runtime.addRecipes(HbmJeiRecipeTypes.ARC_FURNACE_SOLID, pass);
-        com.hbm.Constants.LOG.info("[{}] arc furnace furnace pass: {} recipe(s)", runtime.viewer(), pass.size());
+        Constants.LOG.info("[{}] arc furnace furnace pass: {} recipe(s)", runtime.viewer(), pass.size());
     }
 
     /** The category title, from the {@code hbm.<path>.name} lang key (the old title-key convention). */
@@ -514,7 +523,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         return new ItemStack(block);
     }
 
-    /** Icon/catalyst for the anvil categories — the tier-1 iron anvil (the anvil has no processing TE). */
+    /** Icon/catalyst for the anvil categories: the tier-1 iron anvil (the anvil has no processing TE). */
     static ItemStack anvilIcon() {
         return new ItemStack(ModAnvilBlocks.anvil_iron.get());
     }

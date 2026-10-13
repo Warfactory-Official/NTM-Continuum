@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.blocks.machine.pile.ModPileBlocks;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.entity.EntityHbmProps;
 import com.hbm.handler.ArmorUtil;
@@ -21,6 +22,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -36,8 +38,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 1.7.10 values for the hazard registry, the hazard types and the radiation/lung handlers (fix wave 2026-10-03,
- * History §19ej-1C). Every expected number is computed from the 1.7 formula, not read back from the port.
+ * 1.7.10 values for the hazard registry, the hazard types and the radiation/lung handlers. Every expected
+ * number is computed from the 1.7 formula, not read back from the port.
  */
 public final class Hazard17GameTests {
 
@@ -86,7 +88,7 @@ public final class Hazard17GameTests {
         expect(helper, "block_schrabidium", HazardRegistry.BLINDING, 500.0);
         expect(helper, "block_white_phosphorus", HazardRegistry.HOT, 50.0);
         helper.assertTrue(Math.abs(HazardSystem.getRawRadsFromBlock(
-                        ((net.minecraft.world.item.BlockItem) item("block_uranium")).getBlock()) - 3.5) < 1e-4,
+                        ((BlockItem) item("block_uranium")).getBlock()) - 3.5) < 1e-4,
                 "the block's in-world emission source must read the frame value 3.5");
         // families 1.7 had and the port lacked
         expect(helper, "ingot_pu_mix", HazardRegistry.RADIATION, 6.25);
@@ -120,7 +122,7 @@ public final class Hazard17GameTests {
         expect(helper, "powder_coal", HazardRegistry.COAL, 3.0);
         helper.assertTrue(level(new ItemStack(Items.PUMPKIN_PIE), HazardRegistry.EXPLOSIVE) == 1.0,
                 "1.7 registers the pumpkin pie as EXPLOSIVE 1");
-        ItemStack pile = com.hbm.blocks.machine.pile.ModPileBlocks.pile_rod.stack(ItemPileRodMK2.EnumPileRod.RA226BE);
+        ItemStack pile = ModPileBlocks.pile_rod.stack(ItemPileRodMK2.EnumPileRod.RA226BE);
         helper.assertTrue(Math.abs(level(pile, HazardRegistry.RADIATION) - 33.75) < 1e-4,
                 "Ra226Be pile rod must be rabe*billet*3 = 33.75, got " + level(pile, HazardRegistry.RADIATION));
 
@@ -211,7 +213,7 @@ public final class Hazard17GameTests {
         int above = (int) (max * 0.8); // over half: stays; over 75%: weakness III
         HbmLivingProps.setBlackLung(healing, below);
         HbmLivingProps.setBlackLung(sick, above);
-        // the 1.12.2 fork's kill threshold (60*60*20) must no longer kill
+        // the 1.12.2 fork's kill threshold (60*60*20) must not kill
         HbmLivingProps.setBlackLung(doomed, 60 * 60 * 20);
         helper.assertTrue(doomed.isAlive() && HbmLivingProps.getBlackLung(doomed) == 60 * 60 * 20,
                 "72000 black lung (half of 1.7's maximum) must not kill");
@@ -254,7 +256,7 @@ public final class Hazard17GameTests {
             }
             String id = BuiltInRegistries.ITEM.getKey(item).toString();
             for (Map.Entry<String, Double> e : sums.entrySet()) lines.add(id + "\t" + e.getKey() + "\t" + e.getValue());
-            if (item instanceof net.minecraft.world.item.BlockItem block) {
+            if (item instanceof BlockItem block) {
                 Block b = block.getBlock();
                 double raw = HazardSystem.getRawRadsFromBlock(b);
                 if (raw > 0) lines.add(id + "\tblock_emission\t" + raw);

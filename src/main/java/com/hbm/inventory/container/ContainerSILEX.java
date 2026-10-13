@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.SlotCraftingOutput;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
@@ -17,14 +18,14 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the SILEX — the 1.12.2 {@code ContainerSILEX} layout, coordinates verbatim.
+ * Menu for the SILEX: the 1.12.2 {@code ContainerSILEX} layout with upstream's coordinates.
  *
  * <p>Slots: <b>0</b> input (80,12) · <b>1</b> fluid identifier (8,24) · <b>2</b> fluid-container in
  * (26,24) · <b>3</b> emptied-container out, take-only (44,24) · <b>4</b> staging output (116,90) ·
  * <b>5–10</b> the 3×2 output queue at (134/152, 72/90/108).
  *
  * <p>The player inventory sits unusually low because the SILEX GUI is 222px tall (rows at y 140/158/176,
- * hotbar at 198) — upstream expressed that as {@code 84 + i*18 + 18*3 + 2} and {@code 142 + 18*3 + 2}.
+ * hotbar at 198); upstream expressed that as {@code 84 + i*18 + 18*3 + 2} and {@code 142 + 18*3 + 2}.
  */
 public class ContainerSILEX extends AbstractContainerMenu {
 
@@ -55,13 +56,13 @@ public class ContainerSILEX extends AbstractContainerMenu {
         this.addSlot(validated(1, 8, 24));     // fluid identifier
         this.addSlot(validated(2, 26, 24));    // fluid-container in
         this.addSlot(takeOnly(3, 44, 24));     // emptied-container out
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 4, 116, 90));    // staging output
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 5, 134, 72));    // queue
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 6, 152, 72));
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 7, 134, 90));
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 8, 152, 90));
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 9, 134, 108));
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 10, 152, 108));
+        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 4, 116, 90));    // staging output
+        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 5, 134, 72));    // queue
+        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 6, 152, 72));
+        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 7, 134, 90));
+        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 8, 152, 90));
+        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 9, 134, 108));
+        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 10, 152, 108));
 
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 140);
     }

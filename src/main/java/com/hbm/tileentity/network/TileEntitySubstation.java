@@ -1,6 +1,7 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -50,7 +51,7 @@ public class TileEntitySubstation extends TileEntityPylonBase {
     }
 
     @Override
-    public boolean canConnect(com.hbm.lib.ForgeDirection dir) {
+    public boolean canConnect(ForgeDirection dir) {
         return false;
     }
 

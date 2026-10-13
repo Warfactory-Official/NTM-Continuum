@@ -4,7 +4,10 @@ import com.hbm.blocks.generic.BlockLoot;
 import com.hbm.blocks.generic.BlockLoot.TileEntityLoot;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.ModArmorItems;
+import com.hbm.items.ModArmorSetItems;
 import com.hbm.items.ModGunItems;
+import com.hbm.items.armor.ArmorTrenchmaster;
+import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
@@ -15,6 +18,7 @@ import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Geometry;
+import dev.golem.core.render.gem.Quads;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -77,8 +81,8 @@ public class RenderLoot implements CompatBER<TileEntityLoot, RenderLoot.State> {
         String id = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
         if (id.startsWith("ammo_standard_nuke_")) return Kind.NUKE;
         if (stack.is(ModGunItems.gun_maresleg.get())) return Kind.SHOTGUN;
-        if (stack.getItem() instanceof com.hbm.items.armor.ArmorTrenchmaster) return Kind.TRENCHMASTER;
-        if (stack.getItem() instanceof com.hbm.items.weapon.sedna.ItemGunBaseNT) return Kind.GUN;
+        if (stack.getItem() instanceof ArmorTrenchmaster) return Kind.TRENCHMASTER;
+        if (stack.getItem() instanceof ItemGunBaseNT) return Kind.GUN;
         if (stack.is(ModArmorItems.ncrpa_helmet.get()) || stack.is(ModArmorItems.ncrpa_plate.get())
                 || stack.is(ModArmorItems.ncrpa_legs.get()) || stack.is(ModArmorItems.ncrpa_boots.get())) return Kind.NCR;
         return Kind.STANDARD;
@@ -158,7 +162,7 @@ public class RenderLoot implements CompatBER<TileEntityLoot, RenderLoot.State> {
      */
     static Geometry itemIn2D(String name, int width, int height, float thickness) {
         float minU = 0F, maxU = 1F, minV = 0F, maxV = 1F;
-        dev.golem.core.render.gem.Quads.Builder q = dev.golem.core.render.gem.Quads.named(name);
+        Quads.Builder q = Quads.named(name);
         q.normal(0, 0, 1)
                 .vertex(0, 0, 0, maxU, maxV).vertex(1, 0, 0, minU, maxV)
                 .vertex(1, 1, 0, minU, minV).vertex(0, 1, 0, maxU, minV);
@@ -206,14 +210,14 @@ public class RenderLoot implements CompatBER<TileEntityLoot, RenderLoot.State> {
         pose.translate(0.5, 1.5, 0.5);
         pose.scale(0.0625F, 0.0625F, 0.0625F);
         pose.mulPose(Axis.XP.rotationDegrees(180));
-        if (item == com.hbm.items.ModArmorSetItems.trenchmaster_helmet.get()) {
+        if (item == ModArmorSetItems.trenchmaster_helmet.get()) {
             sink.submitCustomGeometry(pose, CompatRenderTypes.entityTranslucent(TRENCH_HELMET),
                     (p, buffer) -> trenchmaster.part("Helmet").draw(p, buffer, light, OverlayTexture.NO_OVERLAY, -1));
             // the lamp: lightmap 240/240, lighting off
             sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutoutNoCull(TRENCH_HELMET),
                     (p, buffer) -> trenchmaster.part("Light").draw(p, buffer, 0xF000F0, OverlayTexture.NO_OVERLAY, -1));
         }
-        if (item == com.hbm.items.ModArmorSetItems.trenchmaster_plate.get()) {
+        if (item == ModArmorSetItems.trenchmaster_plate.get()) {
             draw(sink, pose, TRENCH_CHEST, trenchmaster.part("Chest"), light);
             pose.pushPose();
             pose.mulPose(Axis.XP.rotationDegrees(-3));
@@ -221,14 +225,14 @@ public class RenderLoot implements CompatBER<TileEntityLoot, RenderLoot.State> {
             draw(sink, pose, TRENCH_ARM, trenchmaster.part("RightArm"), light);
             pose.popPose();
         }
-        if (item == com.hbm.items.ModArmorSetItems.trenchmaster_legs.get()) {
+        if (item == ModArmorSetItems.trenchmaster_legs.get()) {
             draw(sink, pose, TRENCH_LEG, trenchmaster.part("LeftLeg"), light);
             pose.pushPose();
             pose.mulPose(Axis.XP.rotationDegrees(-0.1F));
             draw(sink, pose, TRENCH_LEG, trenchmaster.part("RightLeg"), light);
             pose.popPose();
         }
-        if (item == com.hbm.items.ModArmorSetItems.trenchmaster_boots.get()) {
+        if (item == ModArmorSetItems.trenchmaster_boots.get()) {
             draw(sink, pose, TRENCH_LEG, trenchmaster.part("LeftBoot"), light);
             pose.pushPose();
             pose.mulPose(Axis.XP.rotationDegrees(-0.1F));

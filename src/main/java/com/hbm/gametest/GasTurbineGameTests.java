@@ -6,9 +6,13 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.container.ContainerMachineTurbineGas;
 import com.hbm.inventory.gui.TankDisplay;
+import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineTurbineGas;
+import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.net.GolemBuffers;
+import io.netty.buffer.Unpooled;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,6 +21,7 @@ import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.level.GameType;
 
 /** GameTests for the gas turbine's layout, ports, startup, menu, and assembly recipe. */
 public final class GasTurbineGameTests {
@@ -85,7 +90,7 @@ public final class GasTurbineGameTests {
         turbine.tanks[2].setFill(1_000);
         TileEntityMachineTurbineGas client = new TileEntityMachineTurbineGas(
                 helper.absolutePos(core.offset(0, 4, 0)), turbine.getBlockState());
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         var menu = new ContainerMachineTurbineGas(0, player.getInventory(), turbine);
 
         sync(helper, turbine, client);
@@ -140,7 +145,7 @@ public final class GasTurbineGameTests {
     }
 
     private static void sync(GameTestHelper helper, TileEntityMachineTurbineGas server, TileEntityMachineTurbineGas client) {
-        var buf = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
+        var buf = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         server.serialize(buf);
         client.deserialize(buf);
         buf.release();
@@ -171,13 +176,13 @@ public final class GasTurbineGameTests {
 
     public static void menuAndRecipe(GameTestHelper helper) {
         TileEntityMachineTurbineGas turbine = place(helper, new BlockPos(3, 1, 3));
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
-        var menu = new com.hbm.inventory.container.ContainerMachineTurbineGas(0, player.getInventory(), turbine);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var menu = new ContainerMachineTurbineGas(0, player.getInventory(), turbine);
         helper.assertTrue(menu.slots.size() == 38, "Gas turbine menu must have 2 machine slots + player inventory");
         helper.assertTrue(menu.slots.get(0).x == 8 && menu.slots.get(0).y == 109,
                 "Gas turbine battery slot is misplaced");
-        com.hbm.inventory.recipes.AssemblyMachineRecipes.INSTANCE.registerRecipes();
-        helper.assertTrue(com.hbm.inventory.recipes.AssemblyMachineRecipes.INSTANCE.getRecipe("ass.gasturbine") != null,
+        AssemblyMachineRecipes.INSTANCE.registerRecipes();
+        helper.assertTrue(AssemblyMachineRecipes.INSTANCE.getRecipe("ass.gasturbine") != null,
                 "Gas turbine assembly recipe is missing");
         helper.succeed();
     }
@@ -253,7 +258,7 @@ public final class GasTurbineGameTests {
     private static TileEntityMachineTurbineGas place(GameTestHelper helper, BlockPos pos) {
         MachineTurbineGas block = ModMachineBlocks.machine_turbine_gas.get();
         helper.setBlock(pos, block.defaultBlockState());
-        TileEntityMachineTurbineGas turbine = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityMachineTurbineGas turbine = GameTestHelpers.blockEntity(
                 helper, pos, TileEntityMachineTurbineGas.class);
         block.fillSpace(helper.getLevel(), helper.absolutePos(pos), Direction.NORTH);
         return turbine;

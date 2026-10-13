@@ -1,6 +1,7 @@
 package com.hbm.lib;
 
 import com.hbm.Constants;
+import dev.golem.core.Ids;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.platform.Lifecycle;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -23,24 +24,22 @@ import java.util.TreeSet;
  * Writes {@link ItemIds}, {@link VanillaIds}, {@link TagIds} and {@link ComponentIds} out of the
  * live registry.
  *
- * <p>Those four classes are how a recipe declaration names an ingredient, and the reason they are
- * generated rather than kept by hand is that a hand-kept list is exactly the thing that quietly
- * misses an item. The registry is the only complete answer — the declarations run in a plain JVM at
- * build time where {@code ModItems} and half its siblings cannot even be loaded — so the roster is
- * taken from a running game and written back into {@code src/generated/java}, where it is committed
- * and compiled like any other source.
+ * <p>Those four classes are how a recipe declaration names an ingredient. They are generated because a
+ * hand-kept list quietly misses an item, and the registry is the only complete answer. The declarations
+ * run in a plain JVM at build time where {@code ModItems} and half its siblings cannot be loaded, so the
+ * roster is taken from a running game and written into {@code src/generated/java}, where it is
+ * committed and compiled like any other source.
  *
  * <pre>{@code ./gradlew :26.1-neoforge:runGenerateIds}</pre>
  *
- * <p>That leaves one thing to check, and {@code IdGameTests} checks it: the committed files have to
- * still say what {@link #roster()} says. A stale file is then a failing test naming the item that
- * moved, not a recipe that silently stopped existing.
+ * <p>{@code IdGameTests} checks that the committed files still say what {@link #roster()} says, so a
+ * stale file is a failing test naming the item that moved, not a recipe that silently stopped existing.
  *
- * <p>The roster is deliberately narrower than the registry. Items and tags are taken from the three
- * namespaces a recipe in this mod can mean — {@code hbm}, {@code minecraft} and the {@code c}
- * convention — so that another mod on the dev runtime cannot widen what gets committed. A tag also
- * has to have a member: an ingredient tag with nothing in it takes a recipe out of the game exactly
- * as a misspelled one does, so there is no sense in offering a constant for one.
+ * <p>The roster is narrower than the registry. Items and tags are taken from the three namespaces a
+ * recipe in this mod can mean ({@code hbm}, {@code minecraft} and the {@code c} convention), so that
+ * another mod on the dev runtime cannot widen what gets committed. A tag also has to have a member: an
+ * empty ingredient tag takes a recipe out of the game exactly as a misspelled one does, so it gets no
+ * constant.
  */
 public final class IdConstants {
 
@@ -99,7 +98,7 @@ public final class IdConstants {
             if (id.startsWith(Constants.MOD_ID + ":")) {
                 put(items, name(path(id)), id);
             } else if (id.startsWith("minecraft:")) {
-                String canonical = dev.golem.core.Ids.canonicalItemId(id);
+                String canonical = Ids.canonicalItemId(id);
                 put(vanilla, name(path(canonical)), canonical);
             }
             BuiltInRegistries.ITEM.wrapAsHolder(item).tags().forEach(tag -> {
@@ -178,10 +177,10 @@ public final class IdConstants {
     /**
      * The tags this mod puts its own items into.
      *
-     * <p>Which convention tags exist at all is the loader's business — NeoForge and Fabric API each
-     * ship their own {@code c:} set, and they are not the same set — so "every tag the game has"
+     * <p>Which convention tags exist at all is the loader's business: NeoForge and Fabric API each
+     * ship their own {@code c:} set, and they are not the same set, so "every tag the game has"
      * is not something the same constants can be true about on every node. A tag holding one of this
-     * mod's items is this mod's own, which is, and that is the set worth requiring a constant for.
+     * mod's items is this mod's own, and that is the set worth requiring a constant for.
      */
     public static Set<String> backedTags() {
         Set<String> backed = new TreeSet<>();
@@ -253,10 +252,10 @@ public final class IdConstants {
      * An id's path as the name of a constant.
      *
      * <p>Ids are lower-case and underscored already, so this mostly has to flatten a tag's slashes.
-     * The character test is spelled out rather than asked of {@code Character}, because the method
-     * that would answer it is named after the thing the Stonecutter rename table renames, and the
-     * table is a substring swap over the whole file — it rewrote the call into one the JDK has not
-     * got, on four nodes at once, while the active node compiled it fine.
+     * The character test is spelled out rather than asked of {@code Character}: the method that would
+     * answer it is named after something the Stonecutter rename table renames, and the table is a
+     * substring swap over the whole file, so on the other nodes it rewrites the call into one the JDK
+     * does not have.
      */
     private static String name(String path) {
         StringBuilder name = new StringBuilder(path.length());

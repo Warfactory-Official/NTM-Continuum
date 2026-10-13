@@ -6,9 +6,11 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModItems;
+import com.hbm.items.ModelState;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntitySawmill;
+import java.util.ArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -37,7 +39,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** The 3x3 sawmill multiblock and its core interaction rules. */
-public class MachineSawmill extends BlockMultiblockMachine implements WorldlyContainerHolder, ILookOverlay, com.hbm.items.ModelState {
+public class MachineSawmill extends BlockMultiblockMachine implements WorldlyContainerHolder, ILookOverlay, ModelState {
 
     public MachineSawmill(Properties properties) {
         super(properties);
@@ -192,7 +194,7 @@ public class MachineSawmill extends BlockMultiblockMachine implements WorldlyCon
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntitySawmill sawmill)) return null;
 
-        List<String> text = new java.util.ArrayList<>();
+        List<String> text = new ArrayList<>();
         text.add(sawmill.heat + "TU/t");
 
         double percent = (double) sawmill.heat / 300D;

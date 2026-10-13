@@ -1,7 +1,9 @@
 package com.hbm.blocks.machine.storage;
 
+import com.hbm.inventory.container.ContainerCrateTemplate;
 import com.hbm.tileentity.machine.storage.TileEntityCrateTemplate;
 import com.hbm.tileentity.machine.storage.TemplateCrateLayout;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.world.CarriedBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -9,6 +11,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -31,7 +35,7 @@ public class BlockTemplateCrate extends CarriedBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     private final Supplier<? extends BlockEntityType<TileEntityCrateTemplate>> blockEntityType;
-    private final Supplier<net.minecraft.world.inventory.MenuType<com.hbm.inventory.container.ContainerCrateTemplate>> menuType;
+    private final Supplier<MenuType<ContainerCrateTemplate>> menuType;
 
     public BlockTemplateCrate(Properties properties) {
         this(properties, TemplateCrateLayout::blockEntityType, TemplateCrateLayout::menuType);
@@ -39,7 +43,7 @@ public class BlockTemplateCrate extends CarriedBlock {
 
     public BlockTemplateCrate(Properties properties,
                               Supplier<? extends BlockEntityType<TileEntityCrateTemplate>> blockEntityType,
-                              Supplier<net.minecraft.world.inventory.MenuType<com.hbm.inventory.container.ContainerCrateTemplate>> menuType) {
+                              Supplier<MenuType<ContainerCrateTemplate>> menuType) {
         super(properties);
         this.blockEntityType = blockEntityType;
         this.menuType = menuType;
@@ -57,14 +61,14 @@ public class BlockTemplateCrate extends CarriedBlock {
                                                   BlockHitResult hit) {
         if (!level.isClientSide() && !player.isShiftKeyDown() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return level.isClientSide() || !player.isShiftKeyDown()
                 ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override
-    public @Nullable BlockState getStateForPlacement(net.minecraft.world.item.context.BlockPlaceContext context) {
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 

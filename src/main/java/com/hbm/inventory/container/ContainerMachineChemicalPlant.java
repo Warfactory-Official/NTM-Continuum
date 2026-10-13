@@ -1,5 +1,7 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.SlotCraftingOutput;
+import com.hbm.items.machine.ItemMachineUpgrade;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
@@ -51,7 +53,7 @@ public class ContainerMachineChemicalPlant extends AbstractContainerMenu {
         this.addSlot(validated(3, 152, 126));   // upgrade
 
         for (int i = 0; i < 3; i++) this.addSlot(validated(4 + i, 8 + i * 18, 99));   // item input
-        for (int i = 0; i < 3; i++) this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 7 + i, 80 + i * 18, 99)); // item output, 1.7 addOutputSlots
+        for (int i = 0; i < 3; i++) this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 7 + i, 80 + i * 18, 99)); // item output, 1.7 addOutputSlots
         for (int i = 0; i < 3; i++) this.addSlot(validated(10 + i, 8 + i * 18, 54));  // fluid-in load
         for (int i = 0; i < 3; i++) this.addSlot(takeOnly(13 + i, 8 + i * 18, 72));   // emptied bucket out
         for (int i = 0; i < 3; i++) this.addSlot(validated(16 + i, 80 + i * 18, 54)); // fluid-out load
@@ -98,7 +100,7 @@ public class ContainerMachineChemicalPlant extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof com.hbm.items.machine.ItemMachineUpgrade) {
+            } else if (stack.getItem() instanceof ItemMachineUpgrade) {
                 // upgrades go straight to the upgrade slots (the 1.12.2 transferStackInSlot routing)
                 if (!this.moveItemStackTo(stack, 2, 4, false)) return ItemStack.EMPTY;
             } else {

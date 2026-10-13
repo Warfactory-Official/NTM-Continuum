@@ -1,6 +1,7 @@
 package com.hbm.util;
 
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.CompatBlock;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -26,39 +27,37 @@ import java.util.Set;
 /**
  * Clears a bitset's worth of blocks out of one chunk by writing straight into its
  * {@link LevelChunkSection}s, then repairing the per-chunk state that vanilla would have maintained
- * along the way — heightmaps, sky-light sources, section light status and the clients' copy of the
- * chunk — <b>once for the whole chunk</b> instead of once per block.
+ * along the way (heightmaps, sky-light sources, section light status and the clients' copy of the
+ * chunk) <b>once for the whole chunk</b> instead of once per block.
  *
- * <p><b>Why this exists.</b> A Fat Man clears millions of blocks. Through {@code Level.setBlock} each
- * one pays a palette write, a block-entity lookup, a POI update, four heightmap updates, a light-engine
+ * <p><b>Why.</b> A Fat Man clears millions of blocks. Through {@code Level.setBlock} each one pays a
+ * palette write, a block-entity lookup, a POI update, four heightmap updates, a light-engine
  * {@code checkBlock} and a change notification to every tracking player's chunk holder. Only the palette
- * write is actually per-block work; everything else is per-chunk work being done a million times. The
- * {@code nuke_write_throughput} GameTest measures the raw gap between the two write paths at
- * <b>2–6×</b>, and that understates it — the lighting backlog the per-block path queues up is what a
- * player feels as lag after the blast has "finished".
+ * write is per-block work. The {@code nuke_write_throughput} GameTest measures the raw gap between the
+ * two write paths at <b>2–6×</b>, and the lighting backlog the per-block path queues up is what a player
+ * feels as lag after the blast has "finished".
  *
- * <p>Both references do the same thing in their default (parallelised) crater algorithm: carve a
- * section wholesale, then run one {@code updateSectionStatus} / {@code propagateLightSources} / chunk
- * resend per chunk. Their carve happens off-thread against a copy that is CAS-swapped into the chunk;
- * this one runs on the server thread and writes in place, which is the same work without the
- * concurrency machinery — nothing else can observe a half-carved section from the server thread.
+ * <p>Both references carve a section wholesale and then run one {@code updateSectionStatus} /
+ * {@code propagateLightSources} / chunk resend per chunk. Theirs carves off-thread against a copy that is
+ * CAS-swapped into the chunk; this one runs on the server thread and writes in place, which is the same
+ * work without the concurrency machinery. Nothing else can observe a half-carved section from the
+ * server thread.
  *
- * <p><b>What is deliberately not done,</b> matching both the reference and the per-block path this
- * replaces: no neighbour updates, no shape updates and no drops. A nuke suppresses all three (the old
- * path passed {@code UPDATE_KNOWN_SHAPE | UPDATE_SUPPRESS_DROPS}), so a carve that skipped them changes
- * nothing.
+ * <p><b>Not done,</b> matching both the reference and the per-block path this replaces: neighbour
+ * updates, shape updates and drops. A nuke suppresses all three ({@code UPDATE_KNOWN_SHAPE |
+ * UPDATE_SUPPRESS_DROPS}), so a carve that skips them changes nothing.
  *
  * <p><b>Block entities are not carved.</b> A raw section write would leave the block entity attached to
  * the chunk with no block under it, and its POI record behind. They are collected during the walk and
- * cleared through {@code Level.setBlock} in {@link #finish()}, which is what the reference does too;
- * there are a handful per crater, so the per-block cost of that path does not matter.
+ * cleared through {@code Level.setBlock} in {@link #finish()}, as the reference does; there are a handful
+ * per crater.
  *
  * <p><b>Removal hooks still run.</b> 1.7's {@code setBlock} called {@code breakBlock} whatever the flags, and a
  * multiblock relies on it: removing any one cell tears the whole machine down. A section write runs no hook, so
  * every carved {@code CompatBlock} cell is replayed through {@code Compat.blockRemoved} in {@link #finish()}, and
  * block-entity cells go through {@code Compat.setBlockWithRemoval}, because 26.1's {@code setBlock} skips the hook
- * without {@code UPDATE_NEIGHBORS}. Without this a tank whose core the rays did not reach kept standing, whole
- * model and all, inside a crater that had eaten its other cells.
+ * without {@code UPDATE_NEIGHBORS}. Otherwise a tank whose core the rays did not reach would keep standing,
+ * model and all, inside a crater that ate its other cells.
  *
  * <p>Bit layout is the caller's: {@code ((maxY - y) << 8) | ((x & 15) << 4) | (z & 15)}, which walks
  * top-down and so visits each section's cells contiguously.
@@ -159,7 +158,7 @@ public final class ChunkCarver {
                         carved++;
                         // 1.7's setBlock always ran breakBlock, so a multiblock cell tore its whole structure
                         // down. A section write runs nothing; the hook is replayed in finish().
-                        if (old.getBlock() instanceof dev.golem.core.world.CompatBlock) {
+                        if (old.getBlock() instanceof CompatBlock) {
                             hookedCells.add(BlockPos.asLong(baseX | localX, y, baseZ | localZ));
                             hookedStates.add(old);
                         }
@@ -210,31 +209,26 @@ public final class ChunkCarver {
      * engine has actually run</b>. Shared with the fallout sweep, which writes through the sections for
      * the same reason the crater does.
      *
-     * <p><b>The relight itself is small, and that is a measured result rather than an assumption.</b>
-     * A carve only ever removes blocks, so light can only ever increase, and both increase paths are
-     * already seeded per chunk: {@code propagateLightSources} re-seeds sky light from the
+     * <p><b>The relight itself is small.</b> A carve only removes blocks, so light only increases, and both
+     * increase paths are already seeded per chunk: {@code propagateLightSources} re-seeds sky light from the
      * {@code ChunkSkyLightSources} that {@link #finish()} has just refilled, and its block-light half
-     * re-enqueues every emitter in the chunk. There is no decrease to drive, which is the only thing
-     * vanilla's per-block {@code checkBlock} would add — and {@code checkBlock} on the server allocates
-     * a task and submits it to the light thread's dispatcher <b>per call</b>, which is unaffordable at
-     * crater scale and the reason the carve exists at all.
+     * re-enqueues every emitter in the chunk. There is no decrease to drive, which is all vanilla's per-block
+     * {@code checkBlock} would add, and {@code checkBlock} on the server allocates a task and submits it to
+     * the light thread's dispatcher <b>per call</b>, which is unaffordable at crater scale. A full
+     * wipe-and-relight ({@code ThreadedLevelLightEngine.updateChunkStatus}) changes nothing
+     * {@code nuke_crater_lighting} can see and costs a whole-chunk relight per crater chunk.
      *
-     * <p>A full wipe-and-relight (the {@code ThreadedLevelLightEngine.updateChunkStatus} sequence) was
-     * written, run against {@code nuke_crater_lighting} and then <b>removed</b>: it changed nothing the
-     * test could see, on a real blast, while costing a whole-chunk relight per crater chunk.
-     *
-     * <p><b>What was actually broken was the resend.</b> Building the packet straight after queueing the
-     * relight ships the light as it stands, which for a crater interior is the solid rock's zero — a
-     * pitch-black crater on the client while the server thinks it is lit. Vanilla's own follow-up
-     * ({@code ChunkHolder.sectionLightChanged} → {@code ClientboundLightUpdatePacket}) does not save it:
-     * that path gives up when {@code getTickingChunk()} is null, which is exactly the state a crater
-     * chunk held open by the blast's own chunk ticket can be in. So the packet has to carry the finished
-     * light itself.
+     * <p><b>The resend is what matters.</b> Building the packet straight after queueing the relight ships
+     * the light as it stands, which for a crater interior is the solid rock's zero: a pitch-black crater on
+     * the client while the server thinks it is lit. Vanilla's own follow-up
+     * ({@code ChunkHolder.sectionLightChanged} to {@code ClientboundLightUpdatePacket}) does not save it:
+     * that path gives up when {@code getTickingChunk()} is null, which a crater chunk held open by the
+     * blast's own chunk ticket can be. So the packet has to carry the finished light itself.
      *
      * <p>{@code lightChunk(chunk, false)} is vanilla's own "light this chunk" call and returns a future
-     * that completes as a post-update task — i.e. after {@code runLightUpdates} — which is the exact
-     * "this chunk's light is settled" signal, and the one piece of this that exists identically on every
-     * supported version ({@code waitForPendingTasks}, which the fork uses, does not exist on 1.20.1).
+     * that completes as a post-update task, i.e. after {@code runLightUpdates}, which is the exact
+     * "this chunk's light is settled" signal and exists identically on every supported version
+     * ({@code waitForPendingTasks}, which the fork uses, does not exist on 1.20.1).
      */
     public static void repairAndResend(ServerLevel level, LevelChunk chunk, int chunkX, int chunkZ,
                                        boolean[] touched) {
@@ -244,7 +238,7 @@ public final class ChunkCarver {
         Heightmap.primeHeightmaps(chunk, CARVED_HEIGHTMAPS);
         // The lowest sky-light source per column moves wherever a roof opened or closed. This is what the
         // sky-light seeding below reads, so it has to be current before the relight is queued.
-        // Replacement light engines can intentionally discard vanilla's source map and intercept this hook.
+        // Replacement light engines can discard vanilla's source map and intercept this hook.
         chunk.initializeLightSources();
 
         ThreadedLevelLightEngine lightEngine = level.getChunkSource().getLightEngine();
@@ -268,7 +262,7 @@ public final class ChunkCarver {
     }
 
     /**
-     * Sends the finished chunk to whoever is tracking it — the same way vanilla tells a client about a
+     * Sends the finished chunk to whoever is tracking it, the same way vanilla tells a client about a
      * heavily-changed chunk. ({@code ChunkHolder} resends the whole chunk as soon as more than 64 blocks
      * change in one section, which every crater chunk does by a wide margin.)
      */

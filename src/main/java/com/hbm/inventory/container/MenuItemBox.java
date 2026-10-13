@@ -6,7 +6,10 @@ import com.hbm.items.tool.ItemCasingBag;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.data.ItemContents;
 import dev.golem.core.gui.CompatContainerMenu;
+import dev.golem.core.world.ItemStacks;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -18,7 +21,7 @@ public final class MenuItemBox extends CompatContainerMenu {
 
     public record Layout(int rows, int columns, int slotX, int slotY, int inventoryX, int inventoryY,
                          int hotbarY, int width, int height, int titleY, int titleColor,
-                         int inventoryLabelY, net.minecraft.resources.Identifier texture) {
+                         int inventoryLabelY, Identifier texture) {
         public int slots() { return rows * columns; }
     }
 
@@ -62,7 +65,7 @@ public final class MenuItemBox extends CompatContainerMenu {
     /** Client-side constructor; Core's extended menu payload identifies the owning hand. */
     public MenuItemBox(MenuType<?> type, int containerId, Inventory playerInventory, Layout layout,
                        GolemComponent<ItemContents> component,
-                       net.minecraft.world.InteractionHand hand) {
+                       InteractionHand hand) {
         this(type, containerId, playerInventory, layout,
                 new ItemStackContainer(playerInventory.player, playerInventory.player.getItemInHand(hand),
                         layout.slots(), component));
@@ -75,9 +78,9 @@ public final class MenuItemBox extends CompatContainerMenu {
     private boolean accepts(ItemStack stack) {
         // The casing bag is filled by spent-casing recovery, never by player insertion.
         if (layout.equals(ItemCasingBag.LAYOUT)) return false;
-        // 1.7 refused stacks with NBT; metadata and damage were fine. The metadata families are items of their own now,
-        // and the few 1.7 metadata values kept on one item are these typed components (History §19es-itemvariant).
-        return dev.golem.core.world.ItemStacks.hasOnlyVariantAndDamage(stack, ModDataComponents.RBMK_PELLET,
+        // 1.7 refused stacks with NBT; metadata and damage were fine. The metadata families are items of their own,
+        // and the few 1.7 metadata values kept on one item are these typed components.
+        return ItemStacks.hasOnlyVariantAndDamage(stack, ModDataComponents.RBMK_PELLET,
                 ModDataComponents.FORGE_COUNT, ModDataComponents.HAS_COG, ModDataComponents.HAS_BLADE);
     }
 

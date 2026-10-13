@@ -5,6 +5,7 @@ import com.hbm.blocks.generic.BlockBobble.BobbleType;
 import com.hbm.blocks.generic.BlockTrinket;
 import com.hbm.blocks.generic.BobbleFigure;
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.client.render.skinlayer.BobbleSkinModel;
 import com.hbm.items.ModConsumableTailItems;
 import com.hbm.items.ModWeaponModItems;
 import com.hbm.items.weapon.sedna.factory.GunFactory;
@@ -12,6 +13,8 @@ import com.hbm.tileentity.deco.TileEntityBobble;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
+import dev.golem.core.client.DynamicTextures;
+import dev.golem.core.client.ProfileSkins;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatItemRenderState;
 import dev.golem.core.render.CompatRenderState;
@@ -19,6 +22,9 @@ import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -76,16 +82,16 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
     private final WavefrontObj doubleBarrel = WavefrontObj.load(tex("models/weapons/sacred_dragon.obj"));
     private final WavefrontObj leafia = WavefrontObj.load(tex("models/trinkets/leafia.obj"));
 
-    /** old-hbm {@code skinModelCache}: one voxelized figure per skin, built the first frame the skin is in. */
-    private static final java.util.Map<java.util.UUID, com.hbm.client.render.skinlayer.BobbleSkinModel> SKIN_MODELS =
-            new java.util.HashMap<>();
+    /** 1.12.2 {@code skinModelCache}: one voxelized figure per skin, built the first frame the skin is in. */
+    private static final Map<UUID, BobbleSkinModel> SKIN_MODELS =
+            new HashMap<>();
     private static final Identifier GRAY_SKIN = tex("bobble_gray_skin");
     private static boolean grayRegistered;
 
-    /** old-hbm {@code ClientHttpHandler.preinit}: start fetching every skinned figure's skin at client start. */
+    /** 1.12.2 {@code ClientHttpHandler.preinit}: start fetching every skinned figure's skin at client start. */
     public static void preloadSkins() {
         for (BobbleType type : BobbleType.VALUES) {
-            if (type.skinUuid != null) dev.golem.core.client.ProfileSkins.preload(java.util.UUID.fromString(type.skinUuid));
+            if (type.skinUuid != null) ProfileSkins.preload(UUID.fromString(type.skinUuid));
         }
     }
     private final Font font = Minecraft.getInstance().font;
@@ -233,25 +239,25 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
     }
 
     /**
-     * old-hbm {@code renderSkinGuy}: the figure voxelized from the person's Mojang skin, grey while it loads or if it
+     * 1.12.2 {@code renderSkinGuy}: the figure voxelized from the person's Mojang skin, grey while it loads or if it
      * cannot be fetched.
      */
     private void renderSkinGuy(PoseStack pose, SubmitSink sink, State state, int light) {
-        java.util.UUID id = java.util.UUID.fromString(BobbleType.of(state.type).skinUuid);
-        var loaded = dev.golem.core.client.ProfileSkins.get(id);
-        com.hbm.client.render.skinlayer.BobbleSkinModel model;
+        UUID id = UUID.fromString(BobbleType.of(state.type).skinUuid);
+        var loaded = ProfileSkins.get(id);
+        BobbleSkinModel model;
         Identifier texture;
         if (loaded != null) {
-            model = SKIN_MODELS.computeIfAbsent(id, k -> new com.hbm.client.render.skinlayer.BobbleSkinModel(loaded.argb()));
+            model = SKIN_MODELS.computeIfAbsent(id, k -> new BobbleSkinModel(loaded.argb()));
             texture = loaded.texture();
         } else {
-            dev.golem.core.client.ProfileSkins.preload(id);
+            ProfileSkins.preload(id);
             if (!grayRegistered) {
-                dev.golem.core.client.DynamicTextures.register(GRAY_SKIN, 64, 64,
-                        com.hbm.client.render.skinlayer.BobbleSkinModel.GRAY_SKIN);
+                DynamicTextures.register(GRAY_SKIN, 64, 64,
+                        BobbleSkinModel.GRAY_SKIN);
                 grayRegistered = true;
             }
-            model = com.hbm.client.render.skinlayer.BobbleSkinModel.gray();
+            model = BobbleSkinModel.gray();
             texture = GRAY_SKIN;
         }
         model.render(pose, sink, texture, state.time, BobbleFigure.pose(state.type), light);

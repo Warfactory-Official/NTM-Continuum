@@ -38,7 +38,7 @@ public class EntityMeteor extends CompatEntity {
     public boolean safe = false;
     private AudioWrapper audioFly;
 
-    // 1.7: ignoreFrustumCheck is renderer-side in 26.2
+    // 1.7: ignoreFrustumCheck is renderer-side in 26.1
     public EntityMeteor(EntityType<? extends EntityMeteor> type, Level level) {
         super(type, level);
     }
@@ -171,7 +171,7 @@ public class EntityMeteor extends CompatEntity {
 
         float hardness = state.getDestroySpeed(level, pos);
 
-        // 26.2: vanilla taxonomy replaces 1.7's leaves/log meta spans - leaves2 (acacia, dark oak) and every
+        // 26.1: vanilla taxonomy replaces 1.7's leaves/log meta spans - leaves2 (acacia, dark oak) and every
         // post-1.7 species now clear too, and #logs adds the stripped variants and the nether stems.
         if (state.is(BlockTags.LEAVES) || state.is(BlockTags.LOGS) || (hardness >= 0F && hardness <= 0.3F)) {
             level.removeBlock(pos, false);
@@ -179,20 +179,20 @@ public class EntityMeteor extends CompatEntity {
             if (hardness < 0F || hardness > 5F) return;
 
             if (random.nextInt(6) == 1) {
-                // 26.2: vanilla taxonomy throughout. #dirt omits podzol (vanilla files it under #grass_blocks),
+                // 26.1: vanilla taxonomy throughout. #dirt omits podzol (vanilla files it under #grass_blocks),
                 // so podzol reaches the last arm and weathers to waste earth rather than 1.7's dead dirt.
                 if (state.is(BlockTags.DIRT)) {
                     level.setBlockAndUpdate(pos, ModFallingBlocks.dirt_dead.get().defaultBlockState());
-                // 26.2: #sand carries suspicious_sand, so a strike can bury an archaeology site.
+                // 26.1: #sand carries suspicious_sand, so a strike can bury an archaeology site.
                 } else if (state.is(BlockTags.SAND)) {
                     level.setBlockAndUpdate(pos, random.nextInt(2) == 1
                             ? Blocks.SANDSTONE.defaultBlockState() : Blocks.GLASS.defaultBlockState());
-                // 26.2: 1.7 has no stone variants at all; the tag adds granite/diorite/andesite and the
+                // 26.1: 1.7 has no stone variants at all; the tag adds granite/diorite/andesite and the
                 // deepslate pair, so deepslate weathers to plain cobblestone rather than its own.
                 } else if (state.is(BlockTags.BASE_STONE_OVERWORLD)) {
                     level.setBlockAndUpdate(pos, Blocks.COBBLESTONE.defaultBlockState());
-                // 26.2: #grass_blocks is grass/podzol/mycelium, so the latter two weather here too.
-                } else if (state.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) /* 1.7: Blocks.grass */) {
+                // 26.1: #grass_blocks is grass/podzol/mycelium, so the latter two weather here too.
+                } else if (state.is(Blocks.GRASS_BLOCK) /* 1.7: Blocks.grass */) {
                     level.setBlockAndUpdate(pos, ModFalloutBlocks.waste_earth.get().defaultBlockState());
                 }
             }

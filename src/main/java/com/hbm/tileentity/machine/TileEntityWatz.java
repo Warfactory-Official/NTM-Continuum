@@ -1,5 +1,10 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.advancement.AwardRegions;
+import com.hbm.advancement.DetonationTrigger;
+import com.hbm.advancement.HbmCriteria;
+import com.hbm.api.data.ReactorDataMaps;
+import com.hbm.blocks.ModHazardBlocks;
 import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
@@ -24,17 +29,23 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -44,7 +55,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The Watz power plant — a stack of 24-channel fuel segments sharing one coolant and mud volume.
+ * The Watz power plant: a stack of 24-channel fuel segments sharing one coolant and mud volume.
  *
  * <p>Only the <b>bottom</b> segment of a column simulates: it collects every segment below-to-above,
  * merges their tanks into one shared set, runs cooling bottom-up and the reaction top-down, then
@@ -53,14 +64,14 @@ import java.util.List;
  * the ordering, which is load-bearing: reaction flux propagates downward between segments.
  *
  * <p>1.7's OpenComputers component is served to CC: Tweaked by
- * {@code com.hbm.compat.computercraft.machine.WatzPeripheral}. Ported deviation, recorded in IMPLEMENTATION.md
+ * {@code com.hbm.compat.computercraft.machine.WatzPeripheral}. Known deviation, recorded in IMPLEMENTATION.md
  * §20: the meltdown's shrapnel spray is currently the mud columns alone.
  */
 public class TileEntityWatz extends TileEntityMachineBase
         implements IFluidStandardTransceiverMK2, WorldlyContainer, MenuProvider, IControlReceiver, IRORValueProvider {
 
     public static final int SLOTS = 24;
-    private static final int[] ALL_SLOTS = java.util.stream.IntStream.range(0, SLOTS).toArray();
+    private static final int[] ALL_SLOTS = IntStream.range(0, SLOTS).toArray();
     /** Vertical spacing between the cores of stacked segments. */
     private static final int SEGMENT_HEIGHT = 3;
 
@@ -82,11 +93,11 @@ public class TileEntityWatz extends TileEntityMachineBase
     /**
      * Slot filters: when locked, each slot only accepts the pellet type it held at lock time. Upstream
      * stored a whole {@code ItemStack} per slot, but the only thing it ever compared was item + meta,
-     * which here is exactly the pellet type — so the lock is the type, and null means "no filter".
+     * which here is exactly the pellet type, so the lock is the type, and null means "no filter".
      */
     public boolean isLocked = false;
     /** Per slot, the fresh pellet item locked there (saved by item name). */
-    private final net.minecraft.world.item.Item[] locks = new net.minecraft.world.item.Item[SLOTS];
+    private final Item[] locks = new Item[SLOTS];
 
     /** 1.7 {@code fluxLastBase + fluxLastReaction}, what its OpenComputers {@code getFlux} answered. */
     public double getFluxLast() {
@@ -245,7 +256,7 @@ public class TileEntityWatz extends TileEntityMachineBase
             double addedHeat = 0D;
 
             for (ItemStack stack : pellets) {
-                com.hbm.api.data.ReactorDataMaps.WatzPellet type = typeOf(stack);
+                ReactorDataMaps.WatzPellet type = typeOf(stack);
                 if (type.burn().isEmpty()) continue;
                 double div = type.heatDiv().isPresent() ? type.heatDiv().get().effonix(heat) : 1D;
                 double burn = type.burn().get().effonix(inputFlux) / div;
@@ -256,7 +267,7 @@ public class TileEntityWatz extends TileEntityMachineBase
             }
 
             for (ItemStack stack : pellets) {
-                com.hbm.api.data.ReactorDataMaps.WatzPellet type = typeOf(stack);
+                ReactorDataMaps.WatzPellet type = typeOf(stack);
                 if (type.absorb().isEmpty()) continue;
                 double absorb = type.absorb().get().effonix(baseFlux + fluxLastReaction);
                 addedHeat += absorb;
@@ -276,7 +287,7 @@ public class TileEntityWatz extends TileEntityMachineBase
             ItemStack stack = inventory.getStackInSlot(i);
             if (isFreshPellet(stack) && ItemWatzPellet.getEnrichment(stack) <= 0) {
                 // Depleted pellets may persist for one tick, as upstream.
-                inventory.setStackInSlot(i, new ItemStack(com.hbm.api.data.ReactorDataMaps.itemOf(typeOf(stack).depleted())));
+                inventory.setStackInSlot(i, new ItemStack(ReactorDataMaps.itemOf(typeOf(stack).depleted())));
             }
         }
 
@@ -309,7 +320,7 @@ public class TileEntityWatz extends TileEntityMachineBase
         return stack.getItem() instanceof ItemWatzPellet pellet && pellet.depleted;
     }
 
-    private static com.hbm.api.data.ReactorDataMaps.WatzPellet typeOf(ItemStack stack) {
+    private static ReactorDataMaps.WatzPellet typeOf(ItemStack stack) {
         return ItemWatzPellet.stats(stack.getItem());
     }
 
@@ -385,7 +396,7 @@ public class TileEntityWatz extends TileEntityMachineBase
         // The reactor is being destroyed, not mined: no component drop.
         Watz.drop = false;
         BlockMultiblockCore.withoutTeardown(() -> {
-            Block mud = com.hbm.blocks.ModHazardBlocks.mud_block.get();
+            Block mud = ModHazardBlocks.mud_block.get();
             for (int i = 0; i < 3; i++) level.setBlock(pos.above(i), mud.defaultBlockState(), 3);
 
             Block element = ModBlocks.watz_element.get();
@@ -413,9 +424,9 @@ public class TileEntityWatz extends TileEntityMachineBase
         Watz.drop = true;
 
         // 1.7 achWatzBoom (TileEntityWatz:529): every player in the core's box grown by 50
-        if (level instanceof net.minecraft.server.level.ServerLevel server) {
-            com.hbm.advancement.AwardRegions.within(server, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 50D,
-                    player -> com.hbm.advancement.HbmCriteria.detonation(player, com.hbm.advancement.DetonationTrigger.Kind.WATZ));
+        if (level instanceof ServerLevel server) {
+            AwardRegions.within(server, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 50D,
+                    player -> HbmCriteria.detonation(player, DetonationTrigger.Kind.WATZ));
         }
     }
 
@@ -424,7 +435,7 @@ public class TileEntityWatz extends TileEntityMachineBase
         int height = minHeight + level.getRandom().nextInt(3 - minHeight);
         for (int i = 0; i < 3; i++) {
             level.setBlock(pos.offset(x, i, z),
-                    (i <= height ? block : com.hbm.blocks.ModHazardBlocks.mud_block.get()).defaultBlockState(), 3);
+                    (i <= height ? block : ModHazardBlocks.mud_block.get()).defaultBlockState(), 3);
         }
     }
 
@@ -452,7 +463,7 @@ public class TileEntityWatz extends TileEntityMachineBase
     // --- GUI control ---
 
     @Override public boolean hasPermission(Player player) {
-        return player.containerMenu instanceof com.hbm.inventory.container.ContainerWatz menu
+        return player.containerMenu instanceof ContainerWatz menu
                 && menu.getWatz() == this && menu.stillValid(player);
     }
 
@@ -460,7 +471,7 @@ public class TileEntityWatz extends TileEntityMachineBase
     public void receiveControl(CompoundTag data) {
         if (!data.contains("lock")) return;
         if (isLocked) {
-            java.util.Arrays.fill(locks, null);
+            Arrays.fill(locks, null);
         } else {
             for (int i = 0; i < SLOTS; i++) {
                 ItemStack stack = inventory.getStackInSlot(i);
@@ -521,7 +532,7 @@ public class TileEntityWatz extends TileEntityMachineBase
         output.putDouble("lastFluxR", fluxLastReaction);
         output.putBoolean("isLocked", isLocked);
         for (int i = 0; i < SLOTS; i++) {
-            if (locks[i] != null) output.putString("lock" + i, net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(locks[i]).toString());
+            if (locks[i] != null) output.putString("lock" + i, BuiltInRegistries.ITEM.getKey(locks[i]).toString());
         }
     }
 
@@ -536,8 +547,8 @@ public class TileEntityWatz extends TileEntityMachineBase
         for (int i = 0; i < SLOTS; i++) {
             // by item name; a save from before the pellet data map holds the 1.7 type name ("SCHRABIDIUM")
             String lock = input.getStringOr("lock" + i, "");
-            if (!lock.isEmpty() && !lock.contains(":")) lock = "hbm:watz_pellet_" + lock.toLowerCase(java.util.Locale.ROOT);
-            net.minecraft.world.item.Item item = lock.isEmpty() ? null : com.hbm.api.data.ReactorDataMaps.itemOf(lock);
+            if (!lock.isEmpty() && !lock.contains(":")) lock = "hbm:watz_pellet_" + lock.toLowerCase(Locale.ROOT);
+            Item item = lock.isEmpty() ? null : ReactorDataMaps.itemOf(lock);
             locks[i] = item instanceof ItemWatzPellet ? item : null;
         }
         resetSharedTanks();

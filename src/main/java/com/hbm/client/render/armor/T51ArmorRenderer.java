@@ -8,7 +8,7 @@ import dev.golem.core.world.ArmorSlot;
 import net.minecraft.resources.Identifier;
 
 /**
- * T-51b's worn body — the port's first modelled armour set.
+ * T-51b's worn body: the port's first modelled armour set.
  *
  * <p>The part tree is 1.12.2's {@code ModelArmorT51}: eight named objects in one OBJ, four textures
  * across them, and the boots drawn on the <b>leg</b> bones rather than bones of their own (the vanilla

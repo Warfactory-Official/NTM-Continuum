@@ -1,5 +1,7 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerCrucible;
 import com.hbm.inventory.material.Mats;
@@ -8,6 +10,7 @@ import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.machine.TileEntityCrucible;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -23,14 +26,13 @@ import java.util.Optional;
 /**
  * Client screen for the crucible. Reads heat/progress and the two molten-stack columns off the synced
  * client {@link TileEntityCrucible} (BufPacket): the waste column (left), the recipe column (middle),
- * the progress/heat bars and the recipe-selector button — texture layout matches the 1.12.2
- * {@code gui_crucible.png} (176×214). The molten columns blit the molten-liquid texture region from
- * {@code gui_crucible.png} (u=176 normal / u=210 additive) tinted by the material's {@code moltenColor},
- * exactly like the 1.12.2 {@code drawStack}.
+ * the progress/heat bars and the recipe-selector button. The texture layout matches the 1.12.2
+ * {@code gui_crucible.png} (176×214). The molten columns blit the molten-liquid texture region (u=176 normal /
+ * u=210 additive) tinted by the material's {@code moltenColor}, like the 1.12.2 {@code drawStack}.
  */
-public class GUICrucible extends dev.golem.core.gui.CompatContainerScreen<ContainerCrucible> {
+public class GUICrucible extends CompatContainerScreen<ContainerCrucible> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_crucible.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_crucible.png");
 
     // Selector button (GUI-relative), matching the old click region.
     private static final int BTN_X = 106, BTN_Y = 80, BTN_W = 18, BTN_H = 18;
@@ -39,7 +41,7 @@ public class GUICrucible extends dev.golem.core.gui.CompatContainerScreen<Contai
         super(menu, playerInventory, title, 176, 214);
     }
 
-    /** The 1.12.2 GUI drew no title (the texture carries it) — only the player-inventory label. */
+    /** The 1.12.2 GUI drew no title (the texture carries it), only the player-inventory label. */
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
@@ -64,16 +66,15 @@ public class GUICrucible extends dev.golem.core.gui.CompatContainerScreen<Contai
         GenericRecipe recipe = CrucibleRecipes.INSTANCE.recipeNameMap.get(te.recipe);
         GuiDraw.item(graphics, recipe != null ? recipe.getIcon() : new ItemStack(ModItems.template_folder.get()), this.leftPos + 107, this.topPos + 81);
 
-        // Molten columns: waste at x=17, recipe at x=62 — 34 wide, up to 79 tall, bottom at y=97.
+        // Molten columns: waste at x=17, recipe at x=62, 34 wide, up to 79 tall, bottom at y=97.
         drawStack(graphics, te.wasteStack, TileEntityCrucible.wasteZCapacity, 17, 97);
         drawStack(graphics, te.recipeStack, TileEntityCrucible.recipeZCapacity, 62, 97);
     }
 
     /**
-     * The molten column: each stacked material blits a vertical slice of the molten-liquid texture from
-     * {@code gui_crucible.png}, tinted by its {@code moltenColor} — bottom-anchored at v=89 so the texture
-     * fills upward as material accumulates (the 1.12.2 {@code drawStack}). Additives sample the second
-     * molten texture (u=176+34) to read visually distinct.
+     * The molten column (the 1.12.2 {@code drawStack}): each stacked material blits a vertical slice of the
+     * molten-liquid texture, bottom-anchored at v=89 so it fills upward as material accumulates. Additives sample
+     * the second molten texture (u=176+34).
      */
     private void drawStack(GuiGraphicsExtractor graphics, List<Mats.MaterialStack> stack, int capacity, int x, int y) {
         if (stack.isEmpty()) return;
@@ -131,7 +132,7 @@ public class GUICrucible extends dev.golem.core.gui.CompatContainerScreen<Contai
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         TileEntityCrucible te = this.menu.getCrucible();
         if (te != null && this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
             GUIScreenRecipeSelector.openSelector(CrucibleRecipes.INSTANCE, te.getBlockPos(), te.recipe, 0, null, this);

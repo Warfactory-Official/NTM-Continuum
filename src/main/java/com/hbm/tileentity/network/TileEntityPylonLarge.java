@@ -1,5 +1,6 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -44,7 +45,7 @@ public class TileEntityPylonLarge extends TileEntityPylonBase {
     }
 
     @Override
-    public boolean canConnect(com.hbm.lib.ForgeDirection dir) {
+    public boolean canConnect(ForgeDirection dir) {
         return false;
     }
 

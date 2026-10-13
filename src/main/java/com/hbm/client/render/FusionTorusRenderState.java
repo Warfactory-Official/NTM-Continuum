@@ -28,7 +28,7 @@ public class FusionTorusRenderState extends CompatRenderState {
 
     /**
      * Whether the camera is close enough for the glow and sparkle layers. Upstream draws them only
-     * within 100 blocks — they are fine detail that costs two extra passes over 768 faces.
+     * within 100 blocks. They are fine detail that costs two extra passes over 768 faces.
      */
     public boolean detailed;
 }

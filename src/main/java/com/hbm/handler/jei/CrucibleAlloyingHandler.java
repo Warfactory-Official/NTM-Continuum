@@ -12,10 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * JEI category for crucible alloying — a faithful port of the 1.12.2 {@code CrucibleAlloyingHandler}:
- * its own {@code gui_nei_crucible.png} background, molten quanta shown as tinted MOLTEN {@link ItemScraps}
- * stacks in the liquid form (exactly like the old {@code ItemScraps.create(s, true)} — the scraps_liquid sprite + bare material name), inputs in a 3-wide grid at
- * {@code (12,6)}, the crucible block at {@code (75,42)}, outputs in a 3-wide grid at {@code (102,6)}.
+ * JEI category for crucible alloying, a port of the 1.12.2 {@code CrucibleAlloyingHandler}: its own
+ * {@code gui_nei_crucible.png} background, molten quanta shown as tinted MOLTEN {@link ItemScraps} stacks in
+ * the liquid form (as the old {@code ItemScraps.create(s, true)}: the scraps_liquid sprite + bare material
+ * name), inputs in a 3-wide grid at {@code (12,6)}, the crucible block at {@code (75,42)}, outputs in a
+ * 3-wide grid at {@code (102,6)}.
  */
 public class CrucibleAlloyingHandler extends HbmRecipeCategory<CrucibleRecipes.CrucibleRecipe> {
 

@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/** Combustion Engine block — 1:1 port of the 1.12.2 {@code MachineCombustionEngine}: a low 4×3
+/** Combustion Engine block, 1:1 port of the 1.12.2 {@code MachineCombustionEngine}: a low 4×3
  * the folded core (dims {@code {1,0,1,0,3,2}}, offset 0; 4 makeExtra power/fluid ports). */
 public class MachineCombustionEngine extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 

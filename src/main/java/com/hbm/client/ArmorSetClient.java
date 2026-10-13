@@ -1,19 +1,34 @@
 package com.hbm.client;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.hbm.handler.ArmorDashHandler;
+import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
+import com.hbm.items.armor.ArmorEuphemium;
 import com.hbm.items.armor.ArmorHEV;
+import com.hbm.items.armor.ArmorTrenchmaster;
+import com.hbm.items.gear.ArmorFSB;
+import com.hbm.items.gear.ArmorFSBPowered;
 import com.hbm.packet.KeybindPayload;
 import com.mojang.blaze3d.platform.InputConstants;
+import dev.golem.core.Ids;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.KeyMappings;
 import dev.golem.core.client.VanillaHud;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import dev.golem.core.net.GolemNetwork;
+import dev.golem.core.world.StepHeight;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Client half of the final armour sets (part A): the dash key and dash bar (bismuth), and the HEV suit's
@@ -23,7 +38,7 @@ public final class ArmorSetClient {
 
     private ArmorSetClient() {}
 
-    private static final Identifier MISC = dev.golem.core.Ids.of("hbm", "textures/misc/overlay_misc.png");
+    private static final Identifier MISC = Ids.of("hbm", "textures/misc/overlay_misc.png");
 
     public static KeyMappings.Mapping dashKey;
     private static boolean lastDash;
@@ -34,7 +49,7 @@ public final class ArmorSetClient {
     public static void registerKeys() {
         dashKey = KeyMappings.register("hbm", "key.hbm.dash", InputConstants.KEY_LSHIFT, "hbm");
         ClientTicks.onEndTick(ArmorSetClient::onEndTick);
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_armor_set", (mc, params) -> query(mc));
+        HarnessQueryRegistry.register("hbm_armor_set", (mc, params) -> query(mc));
     }
 
     /**
@@ -42,23 +57,23 @@ public final class ArmorSetClient {
      * integrated server's and the client's player, so a scenario checks a set bonus by value. Inert unless
      * the harness listener runs.
      */
-    private static com.google.gson.JsonObject query(Minecraft mc) {
-        com.google.gson.JsonObject json = new com.google.gson.JsonObject();
+    private static JsonObject query(Minecraft mc) {
+        JsonObject json = new JsonObject();
         if (mc.player == null || mc.getSingleplayerServer() == null) return json;
-        net.minecraft.world.entity.player.Player server =
+        Player server =
                 mc.getSingleplayerServer().getPlayerList().getPlayer(mc.player.getUUID());
         if (server == null) return json;
         json.addProperty("health", server.getHealth());
         json.addProperty("max_health", server.getMaxHealth());
         json.addProperty("armor_value", server.getArmorValue());
-        json.addProperty("fsb", com.hbm.items.gear.ArmorFSB.hasFSBArmor(server));
-        json.addProperty("fsb_ignore_charge", com.hbm.items.gear.ArmorFSB.hasFSBArmorIgnoreCharge(server));
-        json.addProperty("trenchmaster", com.hbm.items.armor.ArmorTrenchmaster.isTrenchMaster(server));
-        json.addProperty("euphemium", com.hbm.items.armor.ArmorEuphemium.hasFullSet(server));
-        json.addProperty("digamma_protected", com.hbm.handler.ArmorUtil.checkForDigamma(server));
-        json.addProperty("heavy_hazmat", com.hbm.handler.ArmorUtil.checkForHaz2(server));
-        json.addProperty("step_height_server", dev.golem.core.world.StepHeight.get(server));
-        json.addProperty("step_height_client", dev.golem.core.world.StepHeight.get(mc.player));
+        json.addProperty("fsb", ArmorFSB.hasFSBArmor(server));
+        json.addProperty("fsb_ignore_charge", ArmorFSB.hasFSBArmorIgnoreCharge(server));
+        json.addProperty("trenchmaster", ArmorTrenchmaster.isTrenchMaster(server));
+        json.addProperty("euphemium", ArmorEuphemium.hasFullSet(server));
+        json.addProperty("digamma_protected", ArmorUtil.checkForDigamma(server));
+        json.addProperty("heavy_hazmat", ArmorUtil.checkForHaz2(server));
+        json.addProperty("step_height_server", StepHeight.get(server));
+        json.addProperty("step_height_client", StepHeight.get(mc.player));
         json.addProperty("hev_hud", ArmorHEV.replacesHud(mc.player));
         json.addProperty("vanilla_hud_suppressible", VanillaHud.supported());
         ArmorDashHandler.State dash = ArmorDashHandler.state(mc.player);
@@ -66,20 +81,20 @@ public final class ArmorSetClient {
         json.addProperty("dash_stamina", dash.stamina);
         json.addProperty("dash_cooldown", dash.dashCooldown);
         json.addProperty("fall_distance_client", mc.player.fallDistance);
-        com.google.gson.JsonArray effects = new com.google.gson.JsonArray();
-        for (net.minecraft.world.effect.MobEffectInstance effect : server.getActiveEffects()) {
+        JsonArray effects = new JsonArray();
+        for (MobEffectInstance effect : server.getActiveEffects()) {
             effects.add(effect.getDescriptionId() + "@" + effect.getAmplifier());
         }
         json.add("effects", effects);
-        for (net.minecraft.world.entity.EquipmentSlot slot : new net.minecraft.world.entity.EquipmentSlot[] {
-                net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
-                net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET}) {
-            net.minecraft.world.item.ItemStack stack = server.getItemBySlot(slot);
-            com.google.gson.JsonObject piece = new com.google.gson.JsonObject();
+        for (EquipmentSlot slot : new EquipmentSlot[] {
+                EquipmentSlot.HEAD, EquipmentSlot.CHEST,
+                EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+            ItemStack stack = server.getItemBySlot(slot);
+            JsonObject piece = new JsonObject();
             piece.addProperty("id", stack.isEmpty() ? ""
-                    : net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
+                    : BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
             piece.addProperty("damageable", stack.isDamageableItem());
-            if (stack.getItem() instanceof com.hbm.items.gear.ArmorFSBPowered powered) {
+            if (stack.getItem() instanceof ArmorFSBPowered powered) {
                 piece.addProperty("charge", powered.getCharge(stack));
                 piece.addProperty("max_charge", powered.getMaxCharge(stack));
             }

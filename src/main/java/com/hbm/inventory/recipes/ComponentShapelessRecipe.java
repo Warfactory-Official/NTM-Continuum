@@ -4,6 +4,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemFluidTank;
 import dev.golem.core.world.ComponentIngredient;
+import dev.golem.core.world.CustomRecipes;
 import dev.golem.core.world.ItemStackSpec;
 import java.util.List;
 import net.minecraft.world.item.ItemStack;
@@ -17,7 +18,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 public final class ComponentShapelessRecipe extends dev.golem.core.world.ComponentShapelessRecipe {
 
     public static final RecipeSerializer<ComponentShapelessRecipe> SERIALIZER =
-            dev.golem.core.world.CustomRecipes.componentShapeless(ComponentShapelessRecipe::new);
+            CustomRecipes.componentShapeless(ComponentShapelessRecipe::new);
 
     private ComponentShapelessRecipe(String namespace, String path, List<ComponentIngredient> ingredients,
                                      ItemStackSpec result) {

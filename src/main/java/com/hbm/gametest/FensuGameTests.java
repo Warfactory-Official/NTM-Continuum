@@ -11,6 +11,13 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.storage.TileEntityBatteryBase;
 import com.hbm.tileentity.machine.storage.TileEntityMachineFENSU;
+import dev.golem.core.Ids;
+import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.net.GolemBuffers;
+import io.netty.buffer.Unpooled;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -89,19 +96,19 @@ public final class FensuGameTests {
 
         var shape = block.getShape(helper.getLevel().getBlockState(core), helper.getLevel(), core,
                 CollisionContext.empty());
-        helper.assertTrue(Math.abs((shape.max(net.minecraft.core.Direction.Axis.X)
-                        - shape.min(net.minecraft.core.Direction.Axis.X)) - 5D) < 0.0001D
-                        && Math.abs((shape.max(net.minecraft.core.Direction.Axis.Y)
-                        - shape.min(net.minecraft.core.Direction.Axis.Y)) - 5D) < 0.0001D
-                        && Math.abs((shape.max(net.minecraft.core.Direction.Axis.Z)
-                        - shape.min(net.minecraft.core.Direction.Axis.Z)) - 3D) < 0.0001D,
+        helper.assertTrue(Math.abs((shape.max(Direction.Axis.X)
+                        - shape.min(Direction.Axis.X)) - 5D) < 0.0001D
+                        && Math.abs((shape.max(Direction.Axis.Y)
+                        - shape.min(Direction.Axis.Y)) - 5D) < 0.0001D
+                        && Math.abs((shape.max(Direction.Axis.Z)
+                        - shape.min(Direction.Axis.Z)) - 3D) < 0.0001D,
                 "FEnSU MBB bounds were not retained");
-        helper.assertTrue(Math.abs(shape.min(net.minecraft.core.Direction.Axis.X) + 2.5D) < 0.0001D
-                        && Math.abs(shape.max(net.minecraft.core.Direction.Axis.X) - 2.5D) < 0.0001D
-                        && Math.abs(shape.min(net.minecraft.core.Direction.Axis.Y)) < 0.0001D
-                        && Math.abs(shape.max(net.minecraft.core.Direction.Axis.Y) - 5D) < 0.0001D
-                        && Math.abs(shape.min(net.minecraft.core.Direction.Axis.Z) + 0.5D) < 0.0001D
-                        && Math.abs(shape.max(net.minecraft.core.Direction.Axis.Z) - 2.5D) < 0.0001D,
+        helper.assertTrue(Math.abs(shape.min(Direction.Axis.X) + 2.5D) < 0.0001D
+                        && Math.abs(shape.max(Direction.Axis.X) - 2.5D) < 0.0001D
+                        && Math.abs(shape.min(Direction.Axis.Y)) < 0.0001D
+                        && Math.abs(shape.max(Direction.Axis.Y) - 5D) < 0.0001D
+                        && Math.abs(shape.min(Direction.Axis.Z) + 0.5D) < 0.0001D
+                        && Math.abs(shape.max(Direction.Axis.Z) - 2.5D) < 0.0001D,
                 "FEnSU MBB bounds have the wrong rotated offsets");
         helper.succeed();
     }
@@ -126,7 +133,7 @@ public final class FensuGameTests {
                 "FEnSU power/color/modes were not carried by its dropped item");
 
         BlockPos clicked = helper.absolutePos(new BlockPos(10, 1, 3));
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
         player.setPos(clicked.getX() - 4D, clicked.getY(), clicked.getZ() - 4D);
         helper.getLevel().setBlock(clicked, block.defaultBlockState(), 3);
@@ -140,7 +147,7 @@ public final class FensuGameTests {
 
         TileEntityMachineFENSU copy = new TileEntityMachineFENSU(BlockPos.ZERO,
                 block.defaultBlockState());
-        var buf = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
+        var buf = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         original.serialize(buf);
         copy.deserialize(buf);
         helper.assertTrue(copy.power == original.power && copy.delta == original.delta
@@ -179,9 +186,9 @@ public final class FensuGameTests {
                 .getResourceAsStream("assets/hbm/blockstates/machine_fensu.json")) {
             JsonObject root = stream == null ? null
                     : JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
-            java.util.Set<String> variants = root == null || !root.has("variants") ? java.util.Set.of()
+            Set<String> variants = root == null || !root.has("variants") ? Set.of()
                     : root.getAsJsonObject("variants").keySet();
-            java.util.List<String> expected = new java.util.ArrayList<>();
+            List<String> expected = new ArrayList<>();
             for (String facing : new String[]{"north", "east", "south", "west"}) {
                 for (String cell : new String[]{"false", "true"}) {
                     expected.add("facing=" + facing + ",cell=" + cell);
@@ -208,7 +215,7 @@ public final class FensuGameTests {
         for (int i = 0; i < vanillaDyes.length; i++) {
             DyeColor color = DyeColor.values()[i];
             TagKey<Item> tag = TagKey.create(Registries.ITEM,
-                    dev.golem.core.Ids.of("c", "dyes/" + color.getName()));
+                    Ids.of("c", "dyes/" + color.getName()));
             helper.assertTrue(new ItemStack(vanillaDyes[i]).is(tag),
                     "FEnSU dye tag is missing its vanilla member: " + color.getName());
         }

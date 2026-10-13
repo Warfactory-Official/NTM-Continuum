@@ -1,6 +1,7 @@
 package com.hbm.uninos.networkproviders;
 
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.machine.TileEntityMachineAutocrafter;
 import com.hbm.uninos.graph.EdgeFaces;
 import com.hbm.uninos.graph.GraphNode;
 import com.hbm.uninos.graph.LevelNodeGraph;
@@ -230,7 +231,7 @@ public final class PneumaticNetwork {
             int[] destSlotAccess = getSlotAccess(dest, destSide);
             int itemsLeftToSend = ITEMS_PER_TRANSFER; // not individual items but the total "mass", based on max stack size
             // 1.7 PneumaticNetwork line 169: the autocrafter takes one item per transfer, everything else 64
-            int itemHardCap = dest instanceof com.hbm.tileentity.machine.TileEntityMachineAutocrafter ? 1 : ITEMS_PER_TRANSFER;
+            int itemHardCap = dest instanceof TileEntityMachineAutocrafter ? 1 : ITEMS_PER_TRANSFER;
             boolean didSomething = false;
 
             for (int sourceIndex : sourceSlotAccess) {

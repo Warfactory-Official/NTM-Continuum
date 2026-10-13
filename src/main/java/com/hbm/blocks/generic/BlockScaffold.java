@@ -1,5 +1,9 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.blocks.ModSteelBlocks;
+import com.hbm.items.LegacyMeta;
+import java.util.List;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.material.FluidState;
 import dev.golem.core.world.BlockTickScheduler;
@@ -20,6 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
@@ -65,13 +70,13 @@ public class BlockScaffold extends CompatBlock implements TickingBlock, SimpleWa
     @Override
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        int variant = com.hbm.items.LegacyMeta.of(context.getItemInHand()) & 3;
+        int variant = LegacyMeta.of(context.getItemInHand()) & 3;
         Orientation orientation;
         if (context.getClickedFace().getAxis().isVertical()) {
             float yaw = context.getPlayer() == null ? 0.0F : context.getPlayer().getYRot();
             int rotation = Mth.floor(yaw * 4.0F / 360.0F + 0.5D) & 3;
             orientation = rotation % 2 == 0 ? Orientation.HORIZONTAL_NS : Orientation.HORIZONTAL_EW;
-        } else if (context.getClickedFace().getAxis() == net.minecraft.core.Direction.Axis.Z) {
+        } else if (context.getClickedFace().getAxis() == Direction.Axis.Z) {
             orientation = Orientation.VERTICAL_NS;
         } else {
             orientation = Orientation.VERTICAL_EW;
@@ -95,13 +100,13 @@ public class BlockScaffold extends CompatBlock implements TickingBlock, SimpleWa
 
     /** 1.7 {@code damageDropped(meta)}: the scaffold item of the block's colour. */
     @Override
-    public java.util.List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder params) {
-        return java.util.List.of(com.hbm.blocks.ModSteelBlocks.scaffoldItem(state.getValue(VARIANT).ordinal()));
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+        return List.of(ModSteelBlocks.scaffoldItem(state.getValue(VARIANT).ordinal()));
     }
 
     @Override
     protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
-        return com.hbm.blocks.ModSteelBlocks.scaffoldItem(state.getValue(VARIANT).ordinal());
+        return ModSteelBlocks.scaffoldItem(state.getValue(VARIANT).ordinal());
     }
 
     @Override
@@ -115,7 +120,7 @@ public class BlockScaffold extends CompatBlock implements TickingBlock, SimpleWa
         builder.add(ORIENT, VARIANT, Waterlogging.WATERLOGGED);
     }
 
-    public enum Orientation implements net.minecraft.util.StringRepresentable {
+    public enum Orientation implements StringRepresentable {
         HORIZONTAL_NS("horizontal_north_south"),
         HORIZONTAL_EW("horizontal_east_west"),
         VERTICAL_NS("vertical_north_south"),
@@ -133,7 +138,7 @@ public class BlockScaffold extends CompatBlock implements TickingBlock, SimpleWa
         }
     }
 
-    public enum Variant implements net.minecraft.util.StringRepresentable {
+    public enum Variant implements StringRepresentable {
         STEEL("steel", "scaffold_steel"),
         RED("red", "scaffold_red"),
         WHITE("white", "scaffold_white"),

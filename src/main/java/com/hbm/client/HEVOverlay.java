@@ -16,7 +16,7 @@ import net.minecraft.world.item.ItemStack;
  * <p>Layout, scale and colours are upstream's: health as {@code +HP*5} and suit charge as
  * {@code ||charge*25} at double scale on the hotbar line, the ten-cell radiation gauge above them, and the
  * per-second radiation delta at normal scale. Upstream surveys the dose once per wall-clock second and
- * shows the difference between the last two surveys, so the delta lags by up to a second — kept.
+ * shows the difference between the last two surveys, so the delta lags by up to a second; this is kept.
  *
  * <p>Text is drawn without a shadow, as 1.7's four-argument {@code drawString} was. Colours carry full
  * alpha because 26.1 treats a zero alpha byte as transparent.

@@ -92,10 +92,10 @@ public class TileEntityCrateTungsten extends TileEntityCrateBase implements ILas
             if (slot.getItem() == ModItems.billet_polonium.get() && energy > 10000000)
                 result = new ItemStack(ModItems.billet_yharonite.get());
 
-            // old-hbm TileEntityCrateTungsten: a crucible with fewer than three charges is recharged in place over 10 MHE
+            // 1.12.2 TileEntityCrateTungsten: a crucible with fewer than three charges is recharged in place over 10 MHE
             if (slot.getItem() == ModAbilityToolItems.crucible.get() && ItemCrucible.getCharges(slot) < 3 && energy > 10000000) {
                 ItemCrucible.charge(slot);
-                inventory.setStackInSlot(i, slot); // old-hbm: changed = true
+                inventory.setStackInSlot(i, slot); // 1.12.2: changed = true
             }
 
             int size = slot.getCount();

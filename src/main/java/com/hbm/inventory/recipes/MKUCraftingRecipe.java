@@ -27,7 +27,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>1.7 compared the nine slots of the 3x3 table absolutely; the port's crafting input is trimmed to the occupied
  * rows and columns (as every shaped recipe is), so the arrangement may sit anywhere in the grid. 1.7's
- * {@code ingot_mercury} is the port's {@code nugget_mercury} (the 125 mB droplet, see History §19ej-1a).
+ * {@code ingot_mercury} is the port's {@code nugget_mercury} (the 125 mB droplet).
  */
 public final class MKUCraftingRecipe extends CompatCustomRecipe {
     public static final MKUCraftingRecipe INSTANCE = new MKUCraftingRecipe();

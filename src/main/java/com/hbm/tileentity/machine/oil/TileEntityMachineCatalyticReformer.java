@@ -17,6 +17,7 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -34,13 +35,13 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Catalytic Reformer — 1:1 port of the 1.12.2 {@code TileEntityMachineCatalyticReformer}. 11 slots
- * (0 battery, 1→2 input container load, 3→4/5→6/7→8 three output-unload pairs, 9 fluid identifier,
+ * Catalytic Reformer: 1:1 port of the 1.12.2 {@code TileEntityMachineCatalyticReformer}. 11 slots
+ * (0 battery, 1 to 2 input container load, 3 to 4/5 to 6/7 to 8 three output-unload pairs, 9 fluid identifier,
  * 10 catalyst). Tanks: {@code [0] NAPHTHA 64k} input + REFORMATE/PETROLEUM/HYDROGEN 24k outputs. Each op
  * needs {@code power ≥ 20k}, {@code tank0 ≥ 100} and a {@code catalytic_converter} in slot 10; drains
  * 100 mB + 20k HE. maxPower 1M.
  *
- * <p>Deferred (§20): IPersistentNBT/IFluidCopiable.
+ * <p>Not ported (IMPLEMENTATION.md §20): IPersistentNBT/IFluidCopiable.
  */
 public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, WorldlyContainer {
@@ -142,14 +143,14 @@ public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase
         }
     }
 
-    /** Drains a fluid container in slot 1 INTO tank 0, emptied container → slot 2. */
+    /** Drains a fluid container in slot 1 INTO tank 0, emptied container goes to slot 2. */
     private void loadInput() {
         ItemStack in = inventory.getStackInSlot(1);
         if (in.isEmpty()) return;
         FluidTankNTM tank = tanks[0];
 
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
             setChanged();
             return;
         }

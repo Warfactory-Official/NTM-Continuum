@@ -1,8 +1,9 @@
 package com.hbm.inventory.gui;
 
-import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.module.ModulePatternMatcher;
 import com.hbm.inventory.container.ContainerAutocrafter;
 import com.hbm.tileentity.machine.TileEntityMachineAutocrafter;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.ChatFormatting;
@@ -18,7 +19,7 @@ import java.util.Optional;
 /** 1.7 {@code GUIAutocrafter}: {@code gui_autocrafter.png}, 176x240, power bar 16x52 at (17,45). */
 public final class GUIAutocrafter extends CompatContainerScreen<ContainerAutocrafter> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_autocrafter.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_autocrafter.png");
 
     public GUIAutocrafter(ContainerAutocrafter menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 240);

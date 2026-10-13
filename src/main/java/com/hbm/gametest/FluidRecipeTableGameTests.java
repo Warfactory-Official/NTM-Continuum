@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.api.data.FluidDataMaps;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.MaterialStack;
@@ -10,17 +11,22 @@ import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.*;
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTests;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * The fluid-processing tables as data (§19fa-m2, R-B): every table loaded from {@code data/hbm/recipe/<table>} equals the
+ * The fluid-processing tables as data: every table loaded from {@code data/hbm/recipe/<table>} equals the
  * values of the former Java tables (1.7's), and the per-fluid values moved into {@code fluid_property} files and value
  * maps equal theirs.
  */
@@ -41,7 +47,7 @@ public final class FluidRecipeTableGameTests {
 
     public static void init() {}
 
-    // ------------------------------------------------------------------------------------------------ descriptions
+    // Descriptions
 
     /**
      * HBM's own fluids (and vanilla's): the tables compare against plain HBM, so a row naming an addon's or another
@@ -52,7 +58,7 @@ public final class FluidRecipeTableGameTests {
         return id.startsWith(Constants.MOD_ID + ":") || id.startsWith("minecraft:");
     }
 
-    static boolean ours(net.minecraft.world.item.Item item) {
+    static boolean ours(Item item) {
         String ns = BuiltInRegistries.ITEM.getKey(item).getNamespace();
         return ns.equals(Constants.MOD_ID) || ns.equals("minecraft");
     }
@@ -73,7 +79,7 @@ public final class FluidRecipeTableGameTests {
     static String fluid(FluidStack stack) {
         if (stack == null) return "-";
         if (!ours(stack.type)) foreignRow = true;
-        return stack.type.getKey().toLowerCase(java.util.Locale.ROOT) + stack.fill + (stack.pressure != 0 ? "@" + stack.pressure : "");
+        return stack.type.getKey().toLowerCase(Locale.ROOT) + stack.fill + (stack.pressure != 0 ? "@" + stack.pressure : "");
     }
 
     static String item(ItemStack stack) {
@@ -95,7 +101,7 @@ public final class FluidRecipeTableGameTests {
 
     static String key(FluidType type) {
         if (!ours(type)) foreignRow = true;
-        return type.getKey().toLowerCase(java.util.Locale.ROOT);
+        return type.getKey().toLowerCase(Locale.ROOT);
     }
 
     static TreeSet<String> describe(String table) {
@@ -119,7 +125,7 @@ public final class FluidRecipeTableGameTests {
                     add(rows, key(in) + ":" + fluid(r.hydrogen()) + ">" + fluid(r.out1()) + "," + fluid(r.out2())));
             case "liquefaction" -> {
                 LiquefactionRecipes.getItemRecipes().forEach((in, out) ->
-                        add(rows, (ours(in) ? "" : foreignMark()) + dev.golem.core.Ids.canonicalItemId(BuiltInRegistries.ITEM.getKey(in).toString()) + ">" + fluid(out)));
+                        add(rows, (ours(in) ? "" : foreignMark()) + Ids.canonicalItemId(BuiltInRegistries.ITEM.getKey(in).toString()) + ">" + fluid(out)));
                 LiquefactionRecipes.getTagRecipes().forEach((in, out) -> add(rows, "#" + in.location() + ">" + fluid(out)));
             }
             case "pyrolysis" -> {
@@ -185,14 +191,14 @@ public final class FluidRecipeTableGameTests {
             "liquefaction", "pyrolysis", "radiolysis", "refinery", "vacuum_distill", "reforming", "solidification",
             "storage_drum", "gas_centrifuge", "cooling", "heat", "combustion");
 
-    // ------------------------------------------------------------------------------------------------ expected values
+    // Expected values
 
     /**
      * Every table as the former Java tables (1.7's values) described it, written once by the conversion: one line per row,
      * in sorted order. "combustion" is every fluid's flammable / combustible trait, "cooling" and "heat" the projections of
      * the coolable / heatable traits.
      */
-    static final Map<String, String> EXPECTED = new java.util.LinkedHashMap<>();
+    static final Map<String, String> EXPECTED = new LinkedHashMap<>();
 
     static {
         EXPECTED.put("coker", """
@@ -633,7 +639,7 @@ public final class FluidRecipeTableGameTests {
         helper.succeed();
     }
 
-    private static <R> void roundTrip(GameTestHelper helper, com.hbm.inventory.recipes.loader.DataRecipeTable<R> table,
+    private static <R> void roundTrip(GameTestHelper helper, DataRecipeTable<R> table,
                                       List<String> broken) {
         var registries = helper.getLevel().registryAccess();
         List<R> rows = table.rows();
@@ -649,9 +655,9 @@ public final class FluidRecipeTableGameTests {
         }
     }
 
-    /** 1.7 TileEntityMachineTurbineGas.fuelMaxCons, now a fluid value map; 5 mB/t for any other fuel. */
+    /** 1.7 TileEntityMachineTurbineGas.fuelMaxCons, a fluid value map; 5 mB/t for any other fuel. */
     public static void gasTurbine(GameTestHelper helper) {
-        var map = com.hbm.api.data.FluidDataMaps.GAS_TURBINE_FUEL;
+        var map = FluidDataMaps.GAS_TURBINE_FUEL;
         helper.assertTrue(Double.valueOf(50D).equals(map.get(Fluids.GAS.getFluid()))
                         && Double.valueOf(10D).equals(map.get(Fluids.SYNGAS.getFluid()))
                         && Double.valueOf(100D).equals(map.get(Fluids.OXYHYDROGEN.getFluid()))

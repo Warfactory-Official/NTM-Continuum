@@ -62,7 +62,7 @@ public abstract class TileEntityRequestNetwork extends TileEntityMachineBase imp
         RequestNetwork.push(server, fresh);
         published = fresh;
 
-        // remove known nodes that no longer exist; a sane number of nodes exist, so the full check runs every second
+        // remove known nodes that do not exist; a sane number of nodes exist, so the full check runs every second
         Map<BlockPos, PathNode> local =
                 new HashMap<>(RequestNetwork.localNodes(server, worldPosition, LOCAL_CHUNK_RANGE));
         local.remove(node);

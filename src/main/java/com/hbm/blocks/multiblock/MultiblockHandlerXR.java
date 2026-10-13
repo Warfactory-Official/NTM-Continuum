@@ -57,7 +57,7 @@ public final class MultiblockHandlerXR {
     }
 
     /**
-     * Assembles a complete multiblock where {@code setPlacedBy} never runs — structure and feature
+     * Assembles a complete multiblock where {@code setPlacedBy} never runs: structure and feature
      * generation have no player, and like 1.7's {@code Component.placeCore} apply no {@code checkRequirement}.
      */
     public static void placeAssembled(Level level, BlockPos core, BlockMultiblockCore block, Direction dir) {
@@ -66,7 +66,7 @@ public final class MultiblockHandlerXR {
     }
 
     /**
-     * Re-notify every footprint cell's neighbours once the whole structure exists — a cable placed before
+     * Re-notify every footprint cell's neighbours once the whole structure exists: a cable placed before
      * the multiblock latches "no connection" against the incomplete footprint.
      */
     public static void refreshSpace(Level level, BlockPos origin, int[] dim, Direction dir) {
@@ -97,7 +97,7 @@ public final class MultiblockHandlerXR {
      * bases, since a second rotation table would drift silently.
      */
     /**
-     * The silhouette translated into a cell's frame and NOT rotated — 1.7 {@code BlockDummyable#getShape}
+     * The silhouette translated into a cell's frame and NOT rotated, as 1.7 {@code BlockDummyable#getShape}
      * moves the authored boxes by the core offset and leaves their orientation alone, so a machine whose
      * box is not rotationally symmetric keeps the same hitbox at all four facings. A machine that wants
      * its box to turn with it says so, as the FEnSU does.

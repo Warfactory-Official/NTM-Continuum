@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.entity.effect.EntitySpear;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
@@ -14,6 +15,7 @@ import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemEntityRenderer;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 
@@ -25,7 +27,7 @@ public final class RenderSpear extends GemEntityRenderer<EntitySpear, RenderSpea
     private static final Identifier LANCE_TEXTURE = Ids.of(Constants.MOD_ID, "textures/models/weapons/lance.png");
     private static final Identifier WHITE_TEXTURE = Ids.of(Constants.MOD_ID, "textures/models/misc/white.png");
 
-    public RenderSpear(net.minecraft.client.renderer.entity.EntityRendererProvider.Context context) { super(context); }
+    public RenderSpear(EntityRendererProvider.Context context) { super(context); }
 
     /** The lance, and the ghost of it that fades in while it stands in the ground. */
     @Override protected void setup(Gem.Model<State> declaration) {
@@ -73,12 +75,12 @@ public final class RenderSpear extends GemEntityRenderer<EntitySpear, RenderSpea
         }
         pose.popPose();
     }
-    private static void spike(PoseStack.Pose pose, com.mojang.blaze3d.vertex.VertexConsumer buffer, int tip, int edge, float v1, float v2) {
+    private static void spike(PoseStack.Pose pose, VertexConsumer buffer, int tip, int edge, float v1, float v2) {
         triangle(pose, buffer, tip, edge, 0, 0, 0, -.866F * v2, v1, -.5F * v2, .866F * v2, v1, -.5F * v2);
         triangle(pose, buffer, tip, edge, 0, 0, 0, .866F * v2, v1, -.5F * v2, 0, v1, v2);
         triangle(pose, buffer, tip, edge, 0, 0, 0, 0, v1, v2, -.866F * v2, v1, -.5F * v2);
     }
-    private static void triangle(PoseStack.Pose pose, com.mojang.blaze3d.vertex.VertexConsumer buffer, int tip, int edge,
+    private static void triangle(PoseStack.Pose pose, VertexConsumer buffer, int tip, int edge,
                                  float x0, float y0, float z0, float x1, float y1, float z1, float x2, float y2, float z2) {
         Vertexes.color(buffer, pose, x0, y0, z0, tip); Vertexes.color(buffer, pose, x1, y1, z1, edge);
         Vertexes.color(buffer, pose, x2, y2, z2, edge); Vertexes.color(buffer, pose, x2, y2, z2, edge);

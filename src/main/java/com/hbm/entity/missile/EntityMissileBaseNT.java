@@ -1,5 +1,8 @@
 package com.hbm.entity.missile;
 
+import com.hbm.api.entity.IRadarDetectableNT;
+import com.hbm.api.event.HbmEvents;
+import com.hbm.items.weapon.ItemMissileStandard;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.logic.EntityChunkLoader;
@@ -34,46 +37,40 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A ballistic missile in flight — 1.12.2's {@code EntityMissileBaseNT}.
+ * A ballistic missile in flight, 1.12.2's {@code EntityMissileBaseNT}.
  *
- * <p><b>The flight model, which is not vanilla projectile physics.</b> A missile is launched straight
- * up at {@code motionY = 2} and never steers: it is aimed once, at launch, by a pair of constants
- * derived from the distance to the target. With {@code d} the horizontal distance,
- * {@code accelXZ = 1/d} and {@code decelY = 2/d}; every tick gravity-substitute {@code decelY·velocity}
- * is taken off the vertical motion, and {@code accelXZ·velocity} is added to the horizontal motion
- * <em>towards</em> the target while climbing and <em>away</em> from it while falling. The result is a
- * symmetric arc that lands on the target regardless of range — a far target simply gets a flatter,
- * longer arc — and it is why the missile carries no guidance at all.
+ * <p><b>The flight model is not vanilla projectile physics.</b> A missile is launched straight up at
+ * {@code motionY = 2} and never steers: it is aimed once, at launch, by two constants derived from the horizontal
+ * distance {@code d} to the target, {@code accelXZ = 1/d} and {@code decelY = 2/d}. Every tick
+ * {@code decelY·velocity} is taken off the vertical motion (a gravity substitute), and {@code accelXZ·velocity} is
+ * added to the horizontal motion <em>towards</em> the target while climbing and <em>away</em> from it while falling.
+ * The result is a symmetric arc that lands on the target regardless of range (a far target gets a flatter, longer
+ * arc), which is why the missile carries no guidance.
  *
- * <p>{@code velocity} is a per-tick step multiplier that ramps from 0 to 4 over the first minute of
- * flight ({@code ticksExisted/60 · 0.05}, capped at 0.05 per tick), so the whole trajectory is traced
- * at increasing speed. That makes it the missile's {@code motionMult}: the entity is swept from its
- * position to {@code position + motion · velocity} each tick and impacts on the first block in that
- * span, which is what keeps a 4-blocks-per-tick missile from tunnelling through the ground.
+ * <p>{@code velocity} is a per-tick step multiplier that ramps from 0 to 4 over the first minute of flight
+ * ({@code ticksExisted/60 · 0.05}, capped at 0.05 per tick). It is the missile's {@code motionMult}: the entity is
+ * swept from its position to {@code position + motion · velocity} each tick and impacts on the first block in that
+ * span, so a 4-blocks-per-tick missile cannot tunnel through the ground.
  *
- * <p>Missiles are chunkloaders for the obvious reason: an ICBM outruns the player who fired it long
- * before it lands. The modern loading ticket is asynchronous, so the missile holds the 3×3 around its
- * current chunk; that gives the next border chunk time to become resident before the entity crosses.
+ * <p>Missiles are chunkloaders because an ICBM outruns the player who fired it. The loading ticket is
+ * asynchronous, so the missile holds the 3×3 around its current chunk, which gives the next border chunk time to
+ * become resident before the entity crosses.
  *
  * <p><b>One deviation.</b> Upstream ran the flight simulation on both sides and reconciled with its own
- * {@code EntityThrowableInterp} interpolation, because 1.12's tracker only sent a position every few
- * ticks and dropped rotation updates (hence its {@code EntityTrackerEntry.encodedRotationYaw += 100}
- * hack). Here the simulation is server-only and the entity types are registered with
- * {@code updateInterval(1)}, so the client is told where the missile is every tick and vanilla's own
- * interpolation draws the path — no second copy of the physics, and no rotation hack.
+ * {@code EntityThrowableInterp}, because 1.12's tracker sent a position only every few ticks and dropped rotation
+ * updates (hence its {@code EntityTrackerEntry.encodedRotationYaw += 100} hack). Here the simulation is server-only
+ * and the entity types register {@code updateInterval(1)}, so vanilla's own interpolation draws the path.
  *
  * <p><b>Pitch does not live in {@code xRot}.</b> Upstream's convention is 0° pointing straight up, −90°
- * horizontal and −180° straight down, and from 26.1 {@code Entity.setXRot} clamps to [−90, 90] — so a
- * missile stored in the vanilla field flattens out at horizontal and never noses over there. Below
- * 26.1 the field is unclamped and would hold it, but the value is carried the same way on every
- * target rather than by two different mechanisms: {@link #PITCH} holds it, and the renderer and the
- * contrail read it through {@link #getMissilePitch}.
+ * horizontal and −180° straight down, and from 26.1 {@code Entity.setXRot} clamps to [−90, 90], so a missile stored
+ * there would flatten out at horizontal. Below 26.1 the field is unclamped, but every target carries the value the
+ * same way: {@link #PITCH} holds it, and the renderer and the contrail read it through {@link #getMissilePitch}.
  *
  * <p>Radar: every missile is seen, blips by its item's tier and names itself after it, answers only a radar
  * that scans for missiles, and in smart mode drives the redstone only once it is coming down.
  */
 public abstract class EntityMissileBaseNT extends CompatEntity implements IChunkLoader, IMissilePitch,
-        com.hbm.api.entity.IRadarDetectableNT {
+        IRadarDetectableNT {
 
     public int startX;
     public int startZ;
@@ -148,7 +145,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
     /** The item this missile came from. Everything a radar wants to say about it is read off that. */
     public abstract ItemStack getMissileItemForInfo();
 
-    // --- 1.7 IRadarDetectableNT ---
+    // 1.7 IRadarDetectableNT
 
     @Override
     public boolean canBeSeenBy(Object radar) {
@@ -168,7 +165,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
     @Override
     public String getRadarName() {
         ItemStack item = this.getMissileItemForInfo();
-        if (item != null && item.getItem() instanceof com.hbm.items.weapon.ItemMissileStandard missile) {
+        if (item != null && item.getItem() instanceof ItemMissileStandard missile) {
             return switch (missile.tier) {
                 case TIER0 -> "radar.target.tier0";
                 case TIER1 -> "radar.target.tier1";
@@ -183,7 +180,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
     @Override
     public int getBlipLevel() {
         ItemStack item = this.getMissileItemForInfo();
-        if (item != null && item.getItem() instanceof com.hbm.items.weapon.ItemMissileStandard missile) {
+        if (item != null && item.getItem() instanceof ItemMissileStandard missile) {
             return switch (missile.tier) {
                 case TIER0 -> TIER0;
                 case TIER1 -> TIER1;
@@ -226,7 +223,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
             this.pitchNow = this.entityData.get(PITCH);
 
             // The trail is drawn along the step the missile just took, so it needs the position it
-            // held when this ran last — not xo, which vanilla resets to the current position at the
+            // held when this ran last, not xo, which vanilla resets to the current position at the
             // top of every client tick. The first tick has no such step and only records one.
             if (this.contrailStarted) this.spawnContrail();
             this.contrailX = getX();
@@ -298,7 +295,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
 
     /**
      * The movement half of upstream's {@code EntityThrowableNT}, reduced to what a missile uses: no
-     * gravity, no drag, no entity collision ({@code doesImpactEntities} is false for every missile —
+     * gravity, no drag, no entity collision ({@code doesImpactEntities} is false for every missile:
      * they are hit by ABMs through {@code health}, not by flying into things).
      */
     private void move() {
@@ -309,7 +306,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
 
         if (hit.getType() != HitResult.Type.MISS) {
-            com.hbm.api.event.HbmEvents.missileImpact(this, hit.getBlockPos(), targetX, targetZ, thrower);
+            HbmEvents.missileImpact(this, hit.getBlockPos(), targetX, targetZ, thrower);
             this.onMissileImpact(hit);
             discard();
             return;
@@ -327,7 +324,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
      * One trail, offset from the missile's axis; missiles with several engines call this per nozzle.
      *
      * <p>Puffs are dropped along the step just taken, one per block, but thrown backwards along the
-     * missile's <em>own axis</em> rather than its path — which is what makes the trail flare sideways
+     * missile's <em>own axis</em> rather than its path, which is what makes the trail flare sideways
      * when it turns over at apogee.
      */
     protected void spawnContrailWithOffset(double offsetX, double offsetY, double offsetZ) {
@@ -359,7 +356,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
         return getMissilePitch(1F) * (float) Math.PI / 180F;
     }
 
-    /** The yaw the contrail is built from, in radians — the body axis is 90° off the heading. */
+    /** The yaw the contrail is built from, in radians: the body axis is 90° off the heading. */
     protected float contrailYawRadians() {
         return (getYRot() + 90F) * (float) Math.PI / 180F;
     }
@@ -435,7 +432,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
         return true;
     }
 
-    // --- IChunkLoader ---
+    // IChunkLoader
 
     @Override public void initChunkLoading() { chunkLoader.initChunkLoading(); }
     @Override public void loadNeighboringChunks(int chunkX, int chunkZ) { chunkLoader.loadNeighboringChunks(chunkX, chunkZ); }
@@ -447,7 +444,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
         super.remove(reason);
     }
 
-    // --- persistence ---
+    // Persistence
 
     @Override
     protected void loadData(DataIn input) {

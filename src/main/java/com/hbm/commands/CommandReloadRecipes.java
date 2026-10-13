@@ -1,6 +1,8 @@
 package com.hbm.commands;
 
 import com.hbm.Constants;
+import com.hbm.inventory.recipes.CustomMachineRecipes;
+import com.hbm.itempool.ItemPool;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.golem.core.command.Permissions;
 import net.minecraft.ChatFormatting;
@@ -25,8 +27,8 @@ public final class CommandReloadRecipes {
         return Commands.literal("ntmreload").requires(Permissions.level(4)).executes(ctx -> {
             CommandSourceStack source = ctx.getSource();
             try {
-                com.hbm.inventory.recipes.CustomMachineRecipes.reload();
-                com.hbm.itempool.ItemPool.load(source.getServer().registryAccess());
+                CustomMachineRecipes.reload();
+                ItemPool.load(source.getServer().registryAccess());
                 source.sendSuccess(() -> Component.translatable("commands.hbm.ntmreload.success")
                         .withStyle(ChatFormatting.YELLOW), false);
                 return 1;

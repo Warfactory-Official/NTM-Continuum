@@ -11,14 +11,13 @@ import java.util.function.Supplier;
 
 /**
  * Helpers for blocks whose drops are computed in Java ({@code getDrops} overrides) rather than declared
- * as a loot table, following original-hbm (1.7.10) {@code Block.getDrops}: the count comes from
+ * as a loot table, following 1.7 {@code Block.getDrops}: the count comes from
  * {@code quantityDroppedWithBonus(fortune, rand)} and each of those items is a separate
  * {@code getItemDropped} roll.
  *
  * <p>1.7's ore curve ({@code BlockOre}, {@code BlockDepthOre}, {@code BlockSellafieldOre}) rolls the base
- * quantity and then <i>multiplies</i> it by {@code max(0, rand(fortune + 2) - 1) + 1} — the same formula
- * as vanilla's {@code ore_drops}. The flat {@code base + rand + fortune} functions this class used to hold
- * were 1.12.2's {@code OreEnumUtil}, not 1.7 (fix wave 2026-10-03, History section 19ej-4).
+ * quantity and then <i>multiplies</i> it by {@code max(0, rand(fortune + 2) - 1) + 1}: the same formula
+ * as vanilla's {@code ore_drops}. A flat {@code base + rand + fortune} is 1.12.2's {@code OreEnumUtil}, not 1.7.
  */
 public final class OreDrops {
 

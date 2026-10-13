@@ -5,7 +5,12 @@ import com.hbm.config.BombConfig;
 import com.hbm.interfaces.IExplosionRay;
 import com.hbm.util.ChunkCarver;
 import dev.golem.core.world.Chunks;
+import dev.golem.core.world.Compat;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import java.util.Arrays;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -38,29 +43,29 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
  *       chunks reached by rays through bounded loading-only claims. Workers never call {@code Level}
  *       methods and the server thread never waits for generation.</li>
  *   <li><b>Rays</b> (ForkJoin common pool): a coordinator walks the generalized-spiral recurrence
- *       (inherently sequential — each longitude is a prefix sum) and hands direction batches to pool
+ *       (inherently sequential: each longitude is a prefix sum) and hands direction batches to pool
  *       tasks; each batch marches its rays against the chunk cache into a <em>worker-local</em>
  *       per-chunk {@link BitSet} map, merged by the coordinator. Identical rays/hits to the old
  *       sequential loop, ÷cores wall-clock.</li>
  *   <li><b>Destruction</b> (server thread, time-sliced to the caller's ms budget): walk the bitsets
- *       nearest-chunk-first and clear the blocks — unchanged from the old code.</li>
+ *       nearest-chunk-first and clear the blocks, unchanged from the old code.</li>
  * </ol>
  *
  * <p><b>1.7, not 1.12.2:</b> 1.12.2 started rays at 0.3 &times; strength, attenuated by
  * {@code pow(res + 1, 3r / radius) - 1}, rated liquids 0.1 and sandstone 4, rewrote the r = 0 sample to
- * r = 1 (leaving a blind spot under the bomb that the port used to patch with a seeded 3&times;3&times;3
- * cube) and put the spiral's pole on Z. All of that is gone; 1.7 samples i = 0 .. radius - 1 along a
- * vertical-pole spiral. 1.7 destroyed by re-marching from the origin to each ray's last solid cell; the
- * bitsets here mark the same cells (every solid sample while the ray still had strength).
+ * r = 1 (leaving a blind spot under the bomb) and put the spiral's pole on Z. None of that is 1.7, which
+ * samples i = 0 .. radius - 1 along a vertical-pole spiral. 1.7 destroyed by re-marching from the origin
+ * to each ray's last solid cell; the bitsets here mark the same cells (every solid sample while the ray
+ * still had strength).
  *
- * <p>The bit-packing was generalised from the old hard-coded 0..255 column to the level's real height.
+ * <p>The bit-packing covers the level's real height rather than a fixed 0..255 column.
  * Not carried: the 1.12.2 {@code isWarDim} gate and DDA algorithms (neither is 1.7) and the mid-explosion
  * NBT save of in-flight state (a blast interrupted by a save restarts).
  */
 public class ExplosionNukeRayBatched implements IExplosionRay {
 
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
-    /** Notify clients, skip neighbour shape updates, suppress drops — fast bulk clearing. */
+    /** Notify clients, skip neighbour shape updates, suppress drops, fast bulk clearing. */
     private static final int CLEAR_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
 
     /** Directions per pool task in the ray phase. */
@@ -72,8 +77,8 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     /**
      * Destroyed blocks, as one bitset per chunk keyed by packed chunk position.
      *
-     * <p>Long-keyed, not {@code ChunkPos}-keyed: {@link #setBit} runs once per destroyed block — millions
-     * of times for a Fat Man — and a {@code ChunkPos} key allocates on every one of them.
+     * <p>Long-keyed, not {@code ChunkPos}-keyed: {@link #setBit} runs once per destroyed block, millions
+     * of times for a Fat Man, and a {@code ChunkPos} key allocates on every one of them.
      */
     private final Long2ObjectOpenHashMap<BitSet> perChunk = new Long2ObjectOpenHashMap<>();
     private long[] orderedChunks = new long[0];
@@ -97,7 +102,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     private volatile boolean cancelled = false;
     private UUID detonator;
 
-    // --- prefetch state (server thread only) ---
+    // Prefetch state (server thread only)
     private final AtomicReferenceArray<LevelChunk> chunkCache;
     private final int chunkMinX, chunkMinZ, chunkSpan;
 
@@ -109,7 +114,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
      * stopped instead of re-walking its prefix. Every successful resume either terminates the finite ray
      * or advances it through at least one newly cached chunk.
      */
-    private final Long2ObjectOpenHashMap<it.unimi.dsi.fastutil.doubles.DoubleArrayList> waitingRays =
+    private final Long2ObjectOpenHashMap<DoubleArrayList> waitingRays =
             new Long2ObjectOpenHashMap<>();
     /** Resumed-ray batches whose required chunk is resident, awaiting a bounded worker slot. */
     private final ArrayDeque<double[]> readyResumeBatches = new ArrayDeque<>();
@@ -119,14 +124,14 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     /** Doubles per parked ray: direction (3), accumulated strength, stopped step, and pass number. */
     private static final int PARK_STRIDE = 6;
     /** Chunk keys with waiters that have not been claimed yet. */
-    private final it.unimi.dsi.fastutil.longs.LongOpenHashSet missedChunks =
-            new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+    private final LongOpenHashSet missedChunks =
+            new LongOpenHashSet();
     /** Requested chunks that have not reached FULL/resident state yet. */
-    private final it.unimi.dsi.fastutil.longs.LongOpenHashSet awaitingChunks =
-            new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+    private final LongOpenHashSet awaitingChunks =
+            new LongOpenHashSet();
     /** Loading-only claims retained until their chunks are no longer needed by this blast. */
-    private final it.unimi.dsi.fastutil.longs.LongOpenHashSet heldChunks =
-            new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+    private final LongOpenHashSet heldChunks =
+            new LongOpenHashSet();
     private int maxRayPasses = 1;
     private int residentChunksSeeded = 0;
     private int chunksLoadedOnDemand = 0;
@@ -146,7 +151,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     /** Test seam: force resident chunks through the waiter path without unloading the world. */
     private boolean deferAlternateResidentChunksForTest;
 
-    // --- instrumentation: where the wall-clock actually goes (see IMPLEMENTATION-HISTORY §19z-f) ---
+    // Instrumentation: where the wall-clock actually goes
     private final long createdAt = System.currentTimeMillis();
     private long prefetchMs;
     private long rayWallMs;
@@ -178,7 +183,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         this.chunkCache = new AtomicReferenceArray<>(chunkSpan * chunkSpan);
     }
 
-    // ------------------------------------------------------------------ phases
+    // Phases
 
     @Override
     public void update(int processTimeMs) {
@@ -194,7 +199,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         }
 
         if (rayJob == null) {
-            // Initial pass. Only chunks already resident are seeded — see seedResidentChunks.
+            // Initial pass. Only chunks already resident are seeded, see seedResidentChunks.
             long t0 = System.currentTimeMillis();
             seedResidentChunks();
             prefetchMs += System.currentTimeMillis() - t0;
@@ -238,18 +243,17 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     /**
      * Seeds {@link #chunkCache} with the chunks that are <b>already in memory</b>, and nothing else.
      *
-     * <p>This used to walk the whole blast square calling {@code world.getChunk}, which loads and, past
-     * the edge of what is loaded, <b>generates</b> — up to 625 chunks for a Fat Man, on the server
-     * thread, before a single block was destroyed. It was 76% of the crater's wall time even in a
-     * benchmark where every chunk was already resident, and it is unbounded when terrain has to be
-     * generated. Neither 1.12.2 nor the fork does this: they touch chunks as rays reach them.
+     * <p>Walking the whole blast square with {@code world.getChunk} would load and, past the edge of what
+     * is loaded, <b>generate</b> up to 625 chunks for a Fat Man on the server thread before a single block
+     * is destroyed, and the cost is unbounded when terrain has to be generated. Neither 1.12.2 nor the fork
+     * does this: they touch chunks as rays reach them.
      *
      * <p>{@code getChunkNow} never loads or generates, so this is a few hundred map lookups. Chunks the
-     * rays actually need but nobody has loaded are discovered during the march and fetched by
+     * rays need but nobody has loaded are discovered during the march and fetched by
      * {@link #resolveMissesTick}.
      */
     private void seedResidentChunks() {
-        if (!(world instanceof net.minecraft.server.level.ServerLevel server)) return;
+        if (!(world instanceof ServerLevel server)) return;
         int total = chunkSpan * chunkSpan;
         for (int i = 0; i < total; i++) {
             int cx = chunkMinX + i % chunkSpan;
@@ -271,8 +275,8 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
      * when every requested chunk is resident and in the cache.
      *
      * <p>No call here waits for generation. Loading-only tickets start bounded background work and
-     * {@code getChunkNow} harvests completed chunks on later server ticks. The old synchronous
-     * {@code world.getChunk} path cost 44 seconds for a radius-500 blast and produced one enormous tick.
+     * {@code getChunkNow} harvests completed chunks on later server ticks; a synchronous
+     * {@code world.getChunk} would stall one tick for tens of seconds on a large blast.
      */
     /** Ticks with claimed chunks pending and none arriving before the server thread loads them itself. */
     private static final int STALL_TICKS = 40;
@@ -365,14 +369,14 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     }
 
     private void queueWaitingRays(long chunkKey) {
-        it.unimi.dsi.fastutil.doubles.DoubleArrayList waiting = waitingRays.remove(chunkKey);
+        DoubleArrayList waiting = waitingRays.remove(chunkKey);
         if (waiting == null || waiting.isEmpty()) return;
         double[] rays = waiting.toDoubleArray();
         int batchLength = RAY_BATCH * PARK_STRIDE;
         for (int off = 0; off < rays.length; off += batchLength) {
             int len = Math.min(batchLength, rays.length - off);
             readyResumeBatches.addLast(off == 0 && len == rays.length
-                    ? rays : java.util.Arrays.copyOfRange(rays, off, off + len));
+                    ? rays : Arrays.copyOfRange(rays, off, off + len));
         }
     }
 
@@ -410,7 +414,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     /**
      * The ray-phase coordinator (runs on a pool thread): walks the gsp recurrence sequentially (the
      * longitude is a running prefix sum, so it cannot be split), batching directions for pool tasks and
-     * merging their worker-local hit maps into {@link #perChunk}. Sets {@link #isAusf3Complete} last —
+     * merging their worker-local hit maps into {@link #perChunk}. Sets {@link #isAusf3Complete} last:
      * the volatile write publishes the maps to the server thread.
      */
     private void computeInitialRays() {
@@ -436,7 +440,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
                     dirs[i * 3 + 1] = Math.cos(gspX);
                     dirs[i * 3 + 2] = sinX == 0.0D ? 0.0D : sinX * Math.sin(gspY);
 
-                    // Advance the recurrence (verbatim old generateGspUp).
+                    // Advance the recurrence (old generateGspUp).
                     if (gspNum < gspNumMax) {
                         int k = gspNum + 1;
                         double hk = -1.0 + 2.0 * (k - 1.0) / (gspNumMax - 1.0);
@@ -476,20 +480,20 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
 
     /** One batch's findings: blocks to destroy and rays grouped by the chunk they need next. */
     private record BatchResult(Long2ObjectOpenHashMap<BitSet> hits,
-                               Long2ObjectOpenHashMap<it.unimi.dsi.fastutil.doubles.DoubleArrayList> waiters,
+                               Long2ObjectOpenHashMap<DoubleArrayList> waiters,
                                int maxPass) {}
 
     private record AttenuationTable(int resistanceBits, double[] values) {}
 
     private synchronized void mergeResult(BatchResult result) {
         if (cancelled) return;
-        for (it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry<BitSet> e : result.hits().long2ObjectEntrySet()) {
+        for (Long2ObjectMap.Entry<BitSet> e : result.hits().long2ObjectEntrySet()) {
             perChunk.merge(e.getLongKey(), e.getValue(), (a, b) -> { a.or(b); return a; });
         }
-        for (it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry<it.unimi.dsi.fastutil.doubles.DoubleArrayList> e
+        for (Long2ObjectMap.Entry<DoubleArrayList> e
                 : result.waiters().long2ObjectEntrySet()) {
             long key = e.getLongKey();
-            it.unimi.dsi.fastutil.doubles.DoubleArrayList existing = waitingRays.get(key);
+            DoubleArrayList existing = waitingRays.get(key);
             if (existing == null) waitingRays.put(key, e.getValue());
             else existing.addAll(e.getValue());
             missedChunks.add(key);
@@ -555,7 +559,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         if (!isAusf3Complete || !other.isAusf3Complete || perChunk.size() != other.perChunk.size()) return false;
         int thisX = posX >> 4, thisZ = posZ >> 4;
         int otherX = other.posX >> 4, otherZ = other.posZ >> 4;
-        for (it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry<BitSet> entry : perChunk.long2ObjectEntrySet()) {
+        for (Long2ObjectMap.Entry<BitSet> entry : perChunk.long2ObjectEntrySet()) {
             int relativeX = ChunkPos.getX(entry.getLongKey()) - thisX;
             int relativeZ = ChunkPos.getZ(entry.getLongKey()) - thisZ;
             BitSet otherBits = other.perChunk.get(ChunkPos.pack(otherX + relativeX, otherZ + relativeZ));
@@ -617,7 +621,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
             int dist = Math.abs(chunkX - ChunkPos.getX(keys[i])) + Math.abs(chunkZ - ChunkPos.getZ(keys[i]));
             sortKeys[i] = ((long) dist << 32) | i;
         }
-        java.util.Arrays.sort(sortKeys);
+        Arrays.sort(sortKeys);
         orderedChunks = new long[keys.length];
         for (int i = 0; i < keys.length; i++) orderedChunks[i] = keys[(int) sortKeys[i]];
         orderedIndex = 0;
@@ -626,7 +630,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     /** Marches one batch of ray directions against the read-only chunk cache. Pool-thread only. */
     private BatchResult marchBatch(double[] dirs, int count) {
         Long2ObjectOpenHashMap<BitSet> hits = new Long2ObjectOpenHashMap<>();
-        Long2ObjectOpenHashMap<it.unimi.dsi.fastutil.doubles.DoubleArrayList> waiters = new Long2ObjectOpenHashMap<>();
+        Long2ObjectOpenHashMap<DoubleArrayList> waiters = new Long2ObjectOpenHashMap<>();
         MutableBlockPos pos = new MutableBlockPos();
         int[] maxPass = {1};
 
@@ -641,7 +645,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     /** Re-marches rays that parked, each resuming from its own stored strength and step. */
     private BatchResult marchResumed(double[] rays, int count) {
         Long2ObjectOpenHashMap<BitSet> hits = new Long2ObjectOpenHashMap<>();
-        Long2ObjectOpenHashMap<it.unimi.dsi.fastutil.doubles.DoubleArrayList> waiters = new Long2ObjectOpenHashMap<>();
+        Long2ObjectOpenHashMap<DoubleArrayList> waiters = new Long2ObjectOpenHashMap<>();
         MutableBlockPos pos = new MutableBlockPos();
         int[] maxPass = {1};
 
@@ -657,7 +661,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     /** One ray, from step {@code startR} with {@code startStrength} left. Pool-thread only. */
     private void marchOne(double vx, double vy, double vz, float startStrength, int startR, int rayPass,
                            Long2ObjectOpenHashMap<BitSet> hits,
-                           Long2ObjectOpenHashMap<it.unimi.dsi.fastutil.doubles.DoubleArrayList> waiters,
+                           Long2ObjectOpenHashMap<DoubleArrayList> waiters,
                            int[] maxPass,
                            MutableBlockPos pos) {
         {
@@ -706,8 +710,8 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
                     // vacuum (which is what the old code did, letting a blast punch through un-generated
                     // ground); the server thread loads it and resumes only this chunk's waiters.
                     int nextPass = rayPass + 1;
-                    it.unimi.dsi.fastutil.doubles.DoubleArrayList parked = waiters.computeIfAbsent(
-                            chunkKey, ignored -> new it.unimi.dsi.fastutil.doubles.DoubleArrayList());
+                    DoubleArrayList parked = waiters.computeIfAbsent(
+                            chunkKey, ignored -> new DoubleArrayList());
                     parked.add(vx);
                     parked.add(vy);
                     parked.add(vz);
@@ -805,7 +809,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         float resistance = Float.intBitsToFloat(resistanceBits);
         AttenuationTable table = new AttenuationTable(resistanceBits,
                 buildAttenuationTable(resistance, strength, radius));
-        AttenuationTable[] expanded = java.util.Arrays.copyOf(attenuationTables, attenuationTables.length + 1);
+        AttenuationTable[] expanded = Arrays.copyOf(attenuationTables, attenuationTables.length + 1);
         expanded[expanded.length - 1] = table;
         attenuationTables = expanded;
         return table;
@@ -853,7 +857,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     }
 
 
-    // ------------------------------------------------------------------ lifecycle
+    // Lifecycle
 
     @Override
     public synchronized void cancel() {
@@ -898,7 +902,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         this.detonator = detonator;
     }
 
-    // ------------------------------------------------------------------ destruction (server thread)
+    // Destruction (server thread)
 
     public void destructionTick(int time) {
         long start = System.currentTimeMillis();
@@ -975,12 +979,12 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         while (index > -1) {
             pos.set(((index >> 4) & 15) + chunkX, maxY - (index >> 8), (index & 15) + chunkZ);
             // setBlock(AIR), NOT removeBlock: removeBlock replaces a block with its fluid state's
-            // legacy block (getFluidState(pos).createLegacyBlock()), so it leaves water/lava behind —
-            // the old setBlockToAir cleared everything. Suppress drops + neighbour cascades for perf
-            // (a nuke clears millions of blocks; we don't want item drops or block-update storms).
-            // with the removal hook 1.7's setBlock always ran (26.1 skips it without UPDATE_NEIGHBORS), so a
-            // multiblock still tears down when the rays reach only some of its cells
-            if (world instanceof ServerLevel server) dev.golem.core.world.Compat.setBlockWithRemoval(server, pos, AIR, CLEAR_FLAGS);
+            // legacy block (getFluidState(pos).createLegacyBlock()), so it leaves water/lava behind,
+            // while 1.7's setBlockToAir cleared everything. Drops and neighbour cascades are suppressed
+            // (a nuke clears millions of blocks). The removal hook 1.7's setBlock always ran is kept
+            // (26.1 skips it without UPDATE_NEIGHBORS), so a multiblock still tears down when the rays
+            // reach only some of its cells.
+            if (world instanceof ServerLevel server) Compat.setBlockWithRemoval(server, pos, AIR, CLEAR_FLAGS);
             else world.setBlock(pos, AIR, CLEAR_FLAGS);
             index = hitArray.nextSetBit(index + 1);
             blocksRemoved++;
@@ -1006,7 +1010,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
      *
      * <p>The chunk, not the tick, is the unit that has to complete: the heightmap, light and resend
      * pass in {@link ChunkCarver#finish()} only makes sense against a finished shape. The carve itself
-     * is still time-sliced, so a single chunk spanning several ticks is fine — {@code finish()} simply
+     * is still time-sliced, so a single chunk may span several ticks; {@code finish()}
      * runs on the tick that exhausts its bitset.
      */
     private boolean carveChunk(ServerLevel server, long start, int time) {

@@ -21,15 +21,20 @@ import com.hbm.tileentity.bomb.TileEntityNukeTsar;
 import com.hbm.world.chunk.ChunkLoadingManager;
 import com.hbm.world.chunk.PendingDetonations;
 import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.net.GolemBuffers;
 import io.netty.buffer.Unpooled;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 
 /** Focused contracts for the component-built MK5/Torex bomb blocks. */
 public final class NukeBombGameTests {
@@ -80,7 +85,7 @@ public final class NukeBombGameTests {
             helper.assertTrue(blast.isChunkLoading(),
                     "N2 did not hand source-chunk ownership to MK5 at spawn time");
             var clouds = helper.getLevel().getEntitiesOfClass(EntityNukeTorex.class,
-                    new net.minecraft.world.phys.AABB(origin).inflate(2D));
+                    new AABB(origin).inflate(2D));
             helper.assertTrue(!clouds.isEmpty(),
                     "N2 did not create its configured Torex cloud");
             helper.assertTrue(clouds.get(0).isChunkLoading(),
@@ -119,7 +124,7 @@ public final class NukeBombGameTests {
         TileEntityNukeN2 n2 = placeN2(helper, new BlockPos(2, 2, 14));
         n2.setItem(0, new ItemStack(ModBombItems.n2_charge.get()));
         n2.setItem(7, new ItemStack(ModBombItems.n2_charge.get()));
-        var buffer = dev.golem.core.net.GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
+        var buffer = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         n2.serialize(buffer);
         buffer.readerIndex(0);
         TileEntityNukeN2 copy = new TileEntityNukeN2(n2.getBlockPos().east(), n2.getBlockState());
@@ -199,7 +204,7 @@ public final class NukeBombGameTests {
     public static void detonatorLoadsTarget(GameTestHelper helper) {
         Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ItemStack detonator = new ItemStack(ModMissileItems.detonator.get());
-        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, detonator);
+        player.setItemInHand(InteractionHand.MAIN_HAND, detonator);
 
         BlockPos unloaded = new BlockPos(1_600_008, 64, 1_600_008);
         int unloadedX = unloaded.getX() >> 4;
@@ -207,7 +212,7 @@ public final class NukeBombGameTests {
         helper.assertTrue(helper.getLevel().getChunkSource().getChunkNow(unloadedX, unloadedZ) == null,
                 "deferred-detonator test target unexpectedly started loaded");
         ModDataComponents.DETONATOR_TARGET.set(detonator, unloaded);
-        detonator.getItem().use(helper.getLevel(), player, net.minecraft.world.InteractionHand.MAIN_HAND);
+        detonator.getItem().use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
         helper.assertTrue(PendingDetonations.isPending(helper.getLevel(), unloaded),
                 "unloaded target was not retained while its chunk loads");
         helper.assertTrue(PendingDetonations.isLoading(helper.getLevel(), unloaded),
@@ -232,7 +237,7 @@ public final class NukeBombGameTests {
             return;
         }
         // The GameTest server runs its ticks back to back, so 400 ticks can pass in well under a second while a worker
-        // generates the virgin chunk 1.6M blocks out (26.1 NeoForge and Fabric both ran out, 2026-10-11). Give the
+        // generates the virgin chunk 1.6M blocks out (26.1 NeoForge and Fabric both ran out). Give the
         // worker wall-clock time per try: at most ~10 s; chunk completions still run on this thread between ticks.
         try {
             Thread.sleep(25);
@@ -301,7 +306,7 @@ public final class NukeBombGameTests {
     }
 
     private static <T extends TileEntityNukeBomb> T place(GameTestHelper helper, BlockPos relative,
-                                                           net.minecraft.world.level.block.Block block,
+                                                           Block block,
                                                            Class<T> type) {
         helper.setBlock(relative, block.defaultBlockState());
         return GameTestHelpers.blockEntity(helper, relative, type);
@@ -309,24 +314,24 @@ public final class NukeBombGameTests {
 
     private static EntityNukeExplosionMK5 onlyBlast(GameTestHelper helper, BlockPos around) {
         var blasts = helper.getLevel().getEntitiesOfClass(EntityNukeExplosionMK5.class,
-                new net.minecraft.world.phys.AABB(around).inflate(2D));
+                new AABB(around).inflate(2D));
         helper.assertTrue(blasts.size() == 1, "expected one MK5 blast near " + around + ", got " + blasts.size());
         return blasts.get(0);
     }
 
     private static void discardTorexNear(GameTestHelper helper, BlockPos origin) {
         helper.getLevel().getEntitiesOfClass(EntityNukeTorex.class,
-                new net.minecraft.world.phys.AABB(origin).inflate(2D))
-                .forEach(net.minecraft.world.entity.Entity::discard);
+                new AABB(origin).inflate(2D))
+                .forEach(Entity::discard);
     }
 
     private static void discardNuclearNear(GameTestHelper helper, BlockPos origin) {
         helper.getLevel().getEntitiesOfClass(EntityNukeExplosionMK5.class,
-                new net.minecraft.world.phys.AABB(origin).inflate(3D))
-                .forEach(net.minecraft.world.entity.Entity::discard);
+                new AABB(origin).inflate(3D))
+                .forEach(Entity::discard);
         discardTorexNear(helper, origin);
         helper.getLevel().getEntitiesOfClass(EntityFalloutRain.class,
-                new net.minecraft.world.phys.AABB(origin).inflate(3D))
-                .forEach(net.minecraft.world.entity.Entity::discard);
+                new AABB(origin).inflate(3D))
+                .forEach(Entity::discard);
     }
 }

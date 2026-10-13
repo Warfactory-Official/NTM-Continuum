@@ -1,5 +1,8 @@
 package com.hbm.client.particle;
 
+import com.hbm.packet.CasingEjectPayload;
+import com.hbm.packet.GunCasingEjectPayload;
+import com.hbm.particle.SpentCasing;
 import com.hbm.particle.helper.CasingCreator;
 import dev.golem.core.client.ClientResourceReloads;
 import dev.golem.core.client.ClientTicks;
@@ -34,13 +37,13 @@ public final class CasingParticles {
         SpentCasingLookup.add(level, event, GROUP);
     }
 
-    public static void spawn(com.hbm.packet.CasingEjectPayload payload) {
+    public static void spawn(CasingEjectPayload payload) {
         spawn(new CasingCreator.Event(payload.x(), payload.y(), payload.z(), payload.mX(), payload.mY(), payload.mZ(),
                 payload.yaw(), payload.pitch(), payload.mPitch(), payload.mYaw(), payload.casing(), payload.smoking(),
                 payload.smokeLife(), payload.smokeLift(), payload.nodeLife(), false, false));
     }
 
-    public static void spawn(com.hbm.packet.GunCasingEjectPayload payload) {
+    public static void spawn(GunCasingEjectPayload payload) {
         spawn(new CasingCreator.Event(payload.x(), payload.y(), payload.z(), payload.mX(), payload.mY(), payload.mZ(),
                 payload.yaw(), payload.pitch(), payload.mPitch(), payload.mYaw(), payload.casing(), payload.smoking(),
                 payload.smokeLife(), payload.smokeLift(), payload.nodeLife(), true, payload.legacy()));
@@ -62,7 +65,7 @@ public final class CasingParticles {
 
     private static final class SpentCasingLookup {
         private static void add(ClientLevel level, CasingCreator.Event event, CasingParticleGroup group) {
-            var config = com.hbm.particle.SpentCasing.fromName(event.casing());
+            var config = SpentCasing.fromName(event.casing());
             if (config == null || config.getColors() == null) return;
             int smokeLife = event.smokeLife();
             double smokeLift = event.smokeLift();

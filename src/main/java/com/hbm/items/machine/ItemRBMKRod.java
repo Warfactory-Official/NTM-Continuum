@@ -1,13 +1,26 @@
 package com.hbm.items.machine;
 
+import com.hbm.api.data.ReactorDataMaps;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModRBMKItems;
 import com.hbm.tileentity.machine.rbmk.RBMKDials;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import dev.golem.core.Ids;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.DoubleUnaryOperator;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
@@ -31,24 +44,24 @@ public class ItemRBMKRod extends CompatItem {
      * This rod's reactor values: the {@code hbm:rbmk_fuel} item data map ({@link com.hbm.api.data.ReactorDataMaps#RBMK_FUEL}),
      * else what the public builder setters gave it in code (an addon may use either). Read at use time.
      */
-    public com.hbm.api.data.ReactorDataMaps.RBMKFuel stats() {
-        com.hbm.api.data.ReactorDataMaps.RBMKFuel data = com.hbm.api.data.ReactorDataMaps.RBMK_FUEL.get(this);
+    public ReactorDataMaps.RBMKFuel stats() {
+        ReactorDataMaps.RBMKFuel data = ReactorDataMaps.RBMK_FUEL.get(this);
         if (data != null) return data;
         return codeStats();
     }
 
     /** The code defaults (constructor or enum values) that the data map entry overrides. */
-    public com.hbm.api.data.ReactorDataMaps.RBMKFuel codeStats() {
-        return new com.hbm.api.data.ReactorDataMaps.RBMKFuel(yield, reactivity, selfRate, function, depFunc, xGen, xBurn, heat,
+    public ReactorDataMaps.RBMKFuel codeStats() {
+        return new ReactorDataMaps.RBMKFuel(yield, reactivity, selfRate, function, depFunc, xGen, xBurn, heat,
                 diffusion, meltingPoint, heatCoeffStart, heatCoeffLength, nType, rType, colorTint,
-                pellet == null ? java.util.Optional.empty() : java.util.Optional.of(
-                        net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(pellet.asItem()).toString()));
+                pellet == null ? Optional.empty() : Optional.of(
+                        BuiltInRegistries.ITEM.getKey(pellet.asItem()).toString()));
     }
 
     /** The recycling pellet of this rod, or null. */
     public net.minecraft.world.item.@org.jspecify.annotations.Nullable Item pelletItem() {
-        return stats().pellet().map(id -> net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.parse(id)))
-                .filter(item -> item != net.minecraft.world.item.Items.AIR).orElse(null);
+        return stats().pellet().map(id -> BuiltInRegistries.ITEM.getValue(Ids.parse(id)))
+                .filter(item -> item != Items.AIR).orElse(null);
     }
     public static RBMKFuelData getData(ItemStack stack) {
         RBMKFuelData data = ModDataComponents.RBMK_FUEL.get(stack).orElse(null);
@@ -78,7 +91,7 @@ public class ItemRBMKRod extends CompatItem {
     public ItemRBMKRod setNeutronTypes(NType in, NType out) { nType = in; rType = out; return this; }
 
     public double burn(Level world, ItemStack stack, double inFlux) {
-        com.hbm.api.data.ReactorDataMaps.RBMKFuel f = stats();
+        ReactorDataMaps.RBMKFuel f = stats();
         inFlux += f.selfRate();
         if (RBMKDials.getXenon(world)) {
             double xenon = getPoison(stack) - xenonBurnFunc(inFlux);
@@ -115,7 +128,7 @@ public class ItemRBMKRod extends CompatItem {
         setHullHeat(stack, hull - out); return out;
     }
     public double reactivityFunc(double in, double enrichment) {
-        com.hbm.api.data.ReactorDataMaps.RBMKFuel f = stats();
+        ReactorDataMaps.RBMKFuel f = stats();
         double flux = in * reactivityModByEnrichment(enrichment);
         return f.function().apply(flux, enrichment, f.reactivity(), f.selfRate());
     }
@@ -129,7 +142,7 @@ public class ItemRBMKRod extends CompatItem {
 
     // The legacy tooltip displays the actual reaction curve, including its current enrichment modifier.
     public String getFuncDescription(ItemStack stack) {
-        com.hbm.api.data.ReactorDataMaps.RBMKFuel f = stats();
+        ReactorDataMaps.RBMKFuel f = stats();
         double selfRate = f.selfRate();
         String function = f.function().description(selfRate);
         double enrichment = getEnrichment(stack);
@@ -149,12 +162,12 @@ public class ItemRBMKRod extends CompatItem {
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context, List<Component> tooltip,
                                          TooltipFlag flag) {
         tooltip.add(Component.literal(fullName).withStyle(ChatFormatting.ITALIC));
-        com.hbm.api.data.ReactorDataMaps.RBMKFuel f = stats();
+        ReactorDataMaps.RBMKFuel f = stats();
         double selfRate = f.selfRate(), yield = f.yield(), xGen = f.xenonGen(), xBurn = f.xenonBurn(), heat = f.heat(),
                 diffusion = f.diffusion(), meltingPoint = f.meltingPoint();
         EnumBurnFunc function = f.function();
         NType nType = f.neutronIn(), rType = f.neutronOut();
-        boolean rbmx = this == com.hbm.items.ModRBMKItems.rbmk_fuel_drx.get();
+        boolean rbmx = this == ModRBMKItems.rbmk_fuel_drx.get();
         String prefix = rbmx ? "trait.rbmx." : "trait.rbmk.";
         if (getHullHeat(stack) >= 50D || getCoreHeat(stack) >= 50D) {
             tooltip.add(Component.translatable("desc.item.wasteCooling").withStyle(ChatFormatting.GOLD));
@@ -202,7 +215,7 @@ public class ItemRBMKRod extends CompatItem {
         /** {@code (flux after the depletion modifier, enrichment, reactivity, selfRate) -> outgoing flux}. */
         @FunctionalInterface public interface Curve { double apply(double flux, double enrichment, double reactivity, double selfRate); }
 
-        private static final java.util.Map<String, EnumBurnFunc> BY_NAME = java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>());
+        private static final Map<String, EnumBurnFunc> BY_NAME = Collections.synchronizedMap(new LinkedHashMap<>());
 
         public static final EnumBurnFunc PASSIVE = register("PASSIVE", "trait.rbmx.flux.passive", null, (x, e, r, s) -> s * e);
         public static final EnumBurnFunc LOG_TEN = register("LOG_TEN", "trait.rbmx.flux.logten", "log10(%1$s + 1) * 0.5 * %2$s", (x, e, r, s) -> Math.log10(x + 1D) * .5D * r);
@@ -214,9 +227,9 @@ public class ItemRBMKRod extends CompatItem {
         public static final EnumBurnFunc QUADRATIC = register("QUADRATIC", "trait.rbmx.flux.quadratic", "%1$s² / 10000 * %2$s", (x, e, r, s) -> x * x / 10000D * r);
         public static final EnumBurnFunc EXPERIMENTAL = register("EXPERIMENTAL", "trait.rbmx.flux.experimental", "%1$s * (sin(%1$s) + 1) * %2$s", (x, e, r, s) -> x * (Math.sin(x) + 1D) * r);
 
-        public static final com.mojang.serialization.Codec<EnumBurnFunc> CODEC = com.mojang.serialization.Codec.STRING.comapFlatMap(name -> {
+        public static final Codec<EnumBurnFunc> CODEC = Codec.STRING.comapFlatMap(name -> {
             EnumBurnFunc f = BY_NAME.get(name);
-            return f != null ? com.mojang.serialization.DataResult.success(f) : com.mojang.serialization.DataResult.error(() -> "Unknown RBMK burn function " + name);
+            return f != null ? DataResult.success(f) : DataResult.error(() -> "Unknown RBMK burn function " + name);
         }, EnumBurnFunc::name);
 
         private final String name;
@@ -243,12 +256,12 @@ public class ItemRBMKRod extends CompatItem {
         public String description(double selfRate) { return format != null ? format : ChatFormatting.RED + "" + selfRate; }
         public String name() { return name; }
         @Override public String toString() { return name; }
-        public static java.util.Collection<EnumBurnFunc> values() { synchronized (BY_NAME) { return java.util.List.copyOf(BY_NAME.values()); } }
+        public static Collection<EnumBurnFunc> values() { synchronized (BY_NAME) { return List.copyOf(BY_NAME.values()); } }
     }
 
     /** How enrichment scales a rod's incoming flux (1.7 {@code EnumDepleteFunc}); a registry like {@link EnumBurnFunc}. */
     public static final class EnumDepleteFunc {
-        private static final java.util.Map<String, EnumDepleteFunc> BY_NAME = java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>());
+        private static final Map<String, EnumDepleteFunc> BY_NAME = Collections.synchronizedMap(new LinkedHashMap<>());
 
         public static final EnumDepleteFunc LINEAR = register("LINEAR", e -> e);
         public static final EnumDepleteFunc RAISING_SLOPE = register("RAISING_SLOPE", e -> e + Math.sin(e * Math.PI) / 2D);
@@ -256,18 +269,18 @@ public class ItemRBMKRod extends CompatItem {
         public static final EnumDepleteFunc GENTLE_SLOPE = register("GENTLE_SLOPE", e -> e + Math.sin(e * Math.PI) / 3D);
         public static final EnumDepleteFunc STATIC = register("STATIC", e -> 1D);
 
-        public static final com.mojang.serialization.Codec<EnumDepleteFunc> CODEC = com.mojang.serialization.Codec.STRING.comapFlatMap(name -> {
+        public static final Codec<EnumDepleteFunc> CODEC = Codec.STRING.comapFlatMap(name -> {
             EnumDepleteFunc f = BY_NAME.get(name);
-            return f != null ? com.mojang.serialization.DataResult.success(f) : com.mojang.serialization.DataResult.error(() -> "Unknown RBMK depletion function " + name);
+            return f != null ? DataResult.success(f) : DataResult.error(() -> "Unknown RBMK depletion function " + name);
         }, EnumDepleteFunc::name);
 
         private final String name;
-        private final java.util.function.DoubleUnaryOperator mod;
+        private final DoubleUnaryOperator mod;
 
-        private EnumDepleteFunc(String name, java.util.function.DoubleUnaryOperator mod) { this.name = name; this.mod = mod; }
+        private EnumDepleteFunc(String name, DoubleUnaryOperator mod) { this.name = name; this.mod = mod; }
 
         /** Registers a depletion modifier ({@code enrichment -> flux multiplier}). */
-        public static EnumDepleteFunc register(String name, java.util.function.DoubleUnaryOperator mod) {
+        public static EnumDepleteFunc register(String name, DoubleUnaryOperator mod) {
             EnumDepleteFunc f = new EnumDepleteFunc(name, mod);
             if (BY_NAME.putIfAbsent(name, f) != null) throw new IllegalStateException("RBMK depletion function " + name + " registered twice");
             return f;

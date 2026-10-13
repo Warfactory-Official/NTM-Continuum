@@ -1,5 +1,6 @@
 package com.hbm.handler.jei;
 
+import com.hbm.lib.Library;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.viewer.Drawable;
 import dev.golem.core.viewer.ViewerCategory;
@@ -17,7 +18,7 @@ import net.minecraft.world.item.ItemStack;
  * their machine-specific extras (slot frames, the arrow/machine pill, progress bars, stat text) on top,
  * mirroring the old {@code drawInfo}/{@code drawExtras} bodies.
  *
- * <p>Written once for JEI and REI (Golem Core's {@link ViewerCategory}; History: REI support, 2026-10-12): the JEI
+ * <p>Written once for JEI and REI (Golem Core's {@link ViewerCategory}): the JEI
  * plugin and the REI plugin both wrap the same category objects.
  */
 public abstract class HbmRecipeCategory<T> extends ViewerCategory<T> {
@@ -39,7 +40,7 @@ public abstract class HbmRecipeCategory<T> extends ViewerCategory<T> {
 
     /** {@code <ns>:textures/gui/jei/<name>}; a bare name is HBM's, an addon category names its own as {@code "ns:name"}. */
     protected static Identifier tex(String name) {
-        return com.hbm.lib.Library.parseId(name, "textures/gui/jei/", "");
+        return Library.parseId(name, "textures/gui/jei/", "");
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.hbm.entity.mob;
 
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatMonster;
+import dev.golem.core.world.Compat;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -29,7 +30,7 @@ public class EntityBlockSpider extends CompatMonster {
 
     public EntityBlockSpider(EntityType<? extends EntityBlockSpider> type, Level level) {
         super(type, level);
-        dev.golem.core.world.Compat.avoidWater(this);
+        Compat.avoidWater(this);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -59,7 +60,7 @@ public class EntityBlockSpider extends CompatMonster {
         return Block.stateById(entityData.get(DISGUISE));
     }
 
-    /** 1.7 split this across dataWatcher 12 (block id) and 13 (meta); 26.2 packs both into a state id. */
+    /** 1.7 split this across dataWatcher 12 (block id) and 13 (meta); 26.1 packs both into a state id. */
     public void makeBlock(BlockState state) {
         entityData.set(DISGUISE, Block.getId(state));
 

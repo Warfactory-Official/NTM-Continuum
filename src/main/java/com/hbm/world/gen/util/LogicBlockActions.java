@@ -7,6 +7,7 @@ import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.blocks.bomb.BlockChargeBase;
 import com.hbm.blocks.generic.BlockSkeletonHolder;
 import com.hbm.blocks.generic.LogicBlock.TileEntityLogicBlock;
+import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.item.EntityFallingBlockNT;
@@ -16,6 +17,7 @@ import com.hbm.entity.mob.ai.EntityAIFireGun;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModGunItems;
 import com.hbm.items.ModUtilityToolItems;
+import com.hbm.items.special.ItemClayTablet;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityDoorGeneric;
 import com.hbm.tileentity.bomb.TileEntityCharge;
@@ -40,6 +42,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -59,7 +62,7 @@ import java.util.function.Consumer;
  * entity drive them; most act once when the phase first reaches 1 and then remove or replace the block.
  *
  * <p>Deviations, each forced by what the port has: 1.7's {@code DEAD_GUY_TOWER_BASE} was never registered and is
- * not ported; the fodder wave used {@code getHeightValue}, read here as the motion-blocking height map; 1.7 gave
+ * not ported; the fodder step used {@code getHeightValue}, read here as the motion-blocking height map; 1.7 gave
  * {@code MobUtil} a fresh {@code Random} per call, the port uses the level's.
  */
 public class LogicBlockActions {
@@ -81,7 +84,7 @@ public class LogicBlockActions {
     }
 
     static ItemStack clayTablet(int variant) {
-        return com.hbm.items.special.ItemClayTablet.of(variant);
+        return ItemClayTablet.of(variant);
     }
 
     private static int heightValue(Level world, int x, int z) {
@@ -243,7 +246,7 @@ public class LogicBlockActions {
         BlockPos pos = tile.getBlockPos();
 
         if (tile.phase == 2) {
-            world.setBlockAndUpdate(pos, com.hbm.blocks.machine.storage.ModStorageBlocks.crate_steel.get().defaultBlockState());
+            world.setBlockAndUpdate(pos, ModStorageBlocks.crate_steel.get().defaultBlockState());
 
             LightningBolt blitz = Entities.createTriggered(EntityType.LIGHTNING_BOLT, world);
             if (blitz != null) {
@@ -402,7 +405,7 @@ public class LogicBlockActions {
     };
 
     /** 1.7 {@code InventoryPlayer.hasItem}: any slot holding the item, whatever its data. */
-    private static boolean hasItem(Player player, net.minecraft.world.item.Item item) {
+    private static boolean hasItem(Player player, Item item) {
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             if (player.getInventory().getItem(i).is(item)) return true;
         }

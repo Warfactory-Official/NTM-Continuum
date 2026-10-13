@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityHeatBoiler;
 import com.hbm.util.GameTime;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Geometry;
@@ -23,9 +24,9 @@ public class HeatBoilerRenderer extends GemBER<TileEntityHeatBoiler, HeatBoilerR
     private static final float BASE_YAW = 180F;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/boiler.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/boiler.obj"));
     private final WavefrontObj burstModel = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/boiler_burst.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/boiler_burst.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/boiler.png");
 

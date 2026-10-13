@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.packet.ControlEventPayload;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
@@ -25,7 +26,7 @@ import com.hbm.inventory.container.ContainerCraneUnboxer;
 /** 1.7 {@code GUICraneUnboxer}. */
 public class GUICraneUnboxer extends CompatContainerScreen<ContainerCraneUnboxer> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_crane_unboxer.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_crane_unboxer.png");
 
     public GUICraneUnboxer(ContainerCraneUnboxer menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 185);

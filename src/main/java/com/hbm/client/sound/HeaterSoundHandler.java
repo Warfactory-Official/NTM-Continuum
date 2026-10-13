@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Client-side audio for the electric heater — a hum loop while it's powered (gated by the synced
- * {@code isOn}). Driven from the heater's client ticker. Client-only — never referenced from a server
+ * Client-side audio for the electric heater: a hum loop while it's powered (gated by the synced
+ * {@code isOn}). Driven from the heater's client ticker. Client-only, never referenced from a server
  * tick path, so a dedicated server never loads it.
  */
 public final class HeaterSoundHandler {

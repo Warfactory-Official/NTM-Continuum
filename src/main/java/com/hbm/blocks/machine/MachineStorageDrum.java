@@ -4,12 +4,15 @@ import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityStorageDrum;
 import dev.golem.core.gui.Menus;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -22,9 +25,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /** The 24-slot nuclear waste disposal drum from the 1.12.2 source. */
-public class MachineStorageDrum extends dev.golem.core.world.CompatBlock implements TickingBlock {
+public class MachineStorageDrum extends CompatBlock implements TickingBlock {
 
-    private static final VoxelShape SHAPE = net.minecraft.world.level.block.Block.box(2, 0, 2, 14, 16, 14);
+    private static final VoxelShape SHAPE = Block.box(2, 0, 2, 14, 16, 14);
 
     public MachineStorageDrum(Properties properties) {
         super(properties);
@@ -41,7 +44,7 @@ public class MachineStorageDrum extends dev.golem.core.world.CompatBlock impleme
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos,
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos,
                                CollisionContext context) {
         return SHAPE;
     }

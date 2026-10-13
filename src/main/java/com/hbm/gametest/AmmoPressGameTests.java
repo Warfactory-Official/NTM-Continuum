@@ -8,6 +8,8 @@ import com.hbm.items.ItemEnums.EnumCasingType;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.ModCasingItems;
 import com.hbm.items.ModItems;
+import com.hbm.tileentity.machine.TileEntityMachineAmmoPress;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -15,6 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 
 /** Focused contracts for the positional Ammo Press vertical slice. */
 public final class AmmoPressGameTests {
@@ -23,7 +26,7 @@ public final class AmmoPressGameTests {
 
     public static void recipes(GameTestHelper helper) {
         helper.assertTrue(AmmoPressRecipes.getRecipes().size() == AmmoPressRecipes.SOURCE_RECIPE_COUNT,
-                "Ammo Press should expose all dependency-complete original-hbm rows (89), got "
+                "Ammo Press should expose all dependency-complete 1.7 rows (89), got "
                         + AmmoPressRecipes.getRecipes().size());
         helper.assertTrue(AmmoPressRecipes.recipes.get(0).output.is(ModAmmoItems.m357_bp.get())
                         && AmmoPressRecipes.recipes.get(6).output.is(ModAmmoItems.m44_bp.get())
@@ -43,15 +46,15 @@ public final class AmmoPressGameTests {
         helper.setBlock(core, block.defaultBlockState());
         block.fillSpace(helper.getLevel(), absolute, Direction.NORTH);
 
-        helper.assertTrue(helper.getLevel().getBlockEntity(absolute) instanceof com.hbm.tileentity.machine.TileEntityMachineAmmoPress,
+        helper.assertTrue(helper.getLevel().getBlockEntity(absolute) instanceof TileEntityMachineAmmoPress,
                 "Ammo Press core block entity was not created");
         FoldedTestSupport.assertCell(helper, core, core.above());
         FoldedTestSupport.assertCell(helper, core, core.west());
         FoldedTestSupport.assertCell(helper, core, core.east());
 
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
-                net.minecraft.world.level.GameType.SURVIVAL);
-        var press = (com.hbm.tileentity.machine.TileEntityMachineAmmoPress) helper.getLevel().getBlockEntity(absolute);
+        Player player = GameTestHelpers.mockPlayer(helper,
+                GameType.SURVIVAL);
+        var press = (TileEntityMachineAmmoPress) helper.getLevel().getBlockEntity(absolute);
         ContainerMachineAmmoPress menu = new ContainerMachineAmmoPress(0, player.getInventory(), press);
         helper.assertTrue(menu.slots.size() == 46, "Ammo Press menu must contain ten machine slots plus player inventory");
         helper.assertTrue(menu.getSlot(0).x == 116 && menu.getSlot(0).y == 18
@@ -74,7 +77,7 @@ public final class AmmoPressGameTests {
         select.putString("selection", AmmoPressRecipes.getRecipes().get(0).id);
         press.receiveControl(select);
 
-        try (var playerFixture = dev.golem.core.gametest.GameTestHelpers.mockServerPlayer(helper)) {
+        try (var playerFixture = GameTestHelpers.mockServerPlayer(helper)) {
             var player = playerFixture.player();
             ContainerMachineAmmoPress menu = new ContainerMachineAmmoPress(0, player.getInventory(), press);
             ItemStack source = new ItemStack(ModItems.ingot_lead.get(), 2);
@@ -105,7 +108,7 @@ public final class AmmoPressGameTests {
         press.inventory.setStackInSlot(1, new ItemStack(ModItems.ingot_lead.get(), 2));
         press.inventory.setStackInSlot(4, new ItemStack(ModItems.ballistite.get(), 2));
         press.inventory.setStackInSlot(7, new ItemStack(ModCasingItems.casing(EnumCasingType.SMALL), 2));
-        com.hbm.tileentity.machine.TileEntityMachineAmmoPress.serverTick(helper.getLevel(), press.getBlockPos(),
+        TileEntityMachineAmmoPress.serverTick(helper.getLevel(), press.getBlockPos(),
                 press.getBlockState(), press);
 
         helper.assertTrue(press.inventory.getStackInSlot(1).isEmpty()
@@ -120,9 +123,9 @@ public final class AmmoPressGameTests {
         helper.succeed();
     }
 
-    private static com.hbm.tileentity.machine.TileEntityMachineAmmoPress place(GameTestHelper helper, BlockPos relative) {
+    private static TileEntityMachineAmmoPress place(GameTestHelper helper, BlockPos relative) {
         BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, ModMachineBlocks.machine_ammo_press.get().defaultBlockState());
-        return (com.hbm.tileentity.machine.TileEntityMachineAmmoPress) helper.getLevel().getBlockEntity(absolute);
+        return (TileEntityMachineAmmoPress) helper.getLevel().getBlockEntity(absolute);
     }
 }

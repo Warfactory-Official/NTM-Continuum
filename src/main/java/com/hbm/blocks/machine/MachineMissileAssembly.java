@@ -1,7 +1,10 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.handler.BossSpawnHandler;
 import com.hbm.tileentity.machine.TileEntityMachineMissileAssembly;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  * look direction) drawn by its renderer. Right-click opens the assembly GUI (and, as in 1.7, marks the player for
  * {@code BossSpawnHandler}'s FBI raid); sneaking does not.
  */
-public class MachineMissileAssembly extends dev.golem.core.world.CompatBlock implements TickingBlock {
+public class MachineMissileAssembly extends CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -49,10 +52,10 @@ public class MachineMissileAssembly extends dev.golem.core.world.CompatBlock imp
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
-        if (!level.isClientSide()) com.hbm.handler.BossSpawnHandler.markFBI(player);
+        if (!level.isClientSide()) BossSpawnHandler.markFBI(player);
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }

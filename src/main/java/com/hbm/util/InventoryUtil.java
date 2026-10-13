@@ -1,7 +1,9 @@
 package com.hbm.util;
 
+import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilOutput;
+import dev.golem.core.data.Inventories;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -10,7 +12,7 @@ import java.util.List;
 
 /**
  * Player-inventory ingredient helpers, ported from the 1.12.2 {@code InventoryUtil} (only the members the
- * anvil needs so far — grow as content is ported). Works on the player's 36 main slots
+ * anvil needs so far; add more as content needs it). Works on the player's 36 main slots
  * through {@link dev.golem.core.data.Inventories#main}.
  */
 public final class InventoryUtil {
@@ -20,9 +22,9 @@ public final class InventoryUtil {
     /**
      * Inserts {@code stack} into machine-inventory slots {@code start..end} (inclusive), merging into
      * existing stacks first, then empty slots. Returns the remainder ({@link ItemStack#EMPTY} when fully
-     * absorbed) — the 1.12.2 {@code tryAddItemToInventory} (which returned null for "absorbed").
+     * absorbed), the 1.12.2 {@code tryAddItemToInventory} (which returned null for "absorbed").
      */
-    public static ItemStack tryAddItemToInventory(com.hbm.inventory.NTMItemHandler inventory, int start, int end, ItemStack stack) {
+    public static ItemStack tryAddItemToInventory(NTMItemHandler inventory, int start, int end, ItemStack stack) {
         ItemStack rest = stack;
         for (int i = start; i <= end && !rest.isEmpty(); i++) {
             rest = inventory.insertItem(i, rest, false);
@@ -32,7 +34,7 @@ public final class InventoryUtil {
 
     public static boolean doesPlayerHaveAStacks(Player player, List<AStack> stacks, boolean shouldRemove) {
 
-        NonNullList<ItemStack> original = dev.golem.core.data.Inventories.main(player.getInventory());
+        NonNullList<ItemStack> original = Inventories.main(player.getInventory());
 
         // Work on copies so the availability check never mutates the real inventory.
         ItemStack[] inventory = new ItemStack[original.size()];

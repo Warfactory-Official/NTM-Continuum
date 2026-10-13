@@ -16,7 +16,7 @@ import net.minecraft.network.chat.Component;
  * The terminal prompt. Not a container menu: the block opens it client-side and every command travels
  * back as a {@link ControlEventPayload}, which is what the fork's {@code NBTControlPacket} did.
  *
- * <p>The screen itself is only the input line and a key legend — the scrollback is drawn on the block's
+ * <p>The screen itself is only the input line and a key legend; the scrollback is drawn on the block's
  * own face by {@link com.hbm.client.render.RBMKTerminalRenderer}, which reads the line being typed
  * straight off this screen through {@link #workingLine()}.
  */

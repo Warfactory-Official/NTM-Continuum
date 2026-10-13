@@ -1,14 +1,22 @@
 package com.hbm.items.special;
 
 import com.hbm.Constants;
+import com.hbm.world.feature.LegacyPerlinNoise;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.data.GolemComponent;
+import dev.golem.core.hook.Hook;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 
 import java.util.ArrayList;
@@ -32,19 +40,19 @@ public class ItemBedrockOreBase extends CompatItem {
      * {@link #DENSITY}.
      */
     public record Composition(String origin, List<Amount> amounts) {
-        public static final com.mojang.serialization.Codec<Composition> CODEC =
-                com.mojang.serialization.codecs.RecordCodecBuilder.create(i -> i.group(
-                        com.mojang.serialization.Codec.STRING.optionalFieldOf("origin", "").forGetter(Composition::origin),
+        public static final Codec<Composition> CODEC =
+                RecordCodecBuilder.create(i -> i.group(
+                        Codec.STRING.optionalFieldOf("origin", "").forGetter(Composition::origin),
                         Amount.CODEC.listOf().fieldOf("amounts").forGetter(Composition::amounts)
                 ).apply(i, Composition::new));
     }
 
     /** One type's amount, the type saved by its registry name. */
     public record Amount(String type, double amount) {
-        public static final com.mojang.serialization.Codec<Amount> CODEC =
-                com.mojang.serialization.codecs.RecordCodecBuilder.create(i -> i.group(
-                        com.mojang.serialization.Codec.STRING.fieldOf("type").forGetter(Amount::type),
-                        com.mojang.serialization.Codec.DOUBLE.fieldOf("amount").forGetter(Amount::amount)
+        public static final Codec<Amount> CODEC =
+                RecordCodecBuilder.create(i -> i.group(
+                        Codec.STRING.fieldOf("type").forGetter(Amount::type),
+                        Codec.DOUBLE.fieldOf("amount").forGetter(Amount::amount)
                 ).apply(i, Amount::new));
     }
 
@@ -72,7 +80,7 @@ public class ItemBedrockOreBase extends CompatItem {
     /** A listener's raw bedrock ore field of a column, or null to pass. */
     @FunctionalInterface
     public interface Source {
-        @org.jspecify.annotations.Nullable OreField field(net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension,
+        @org.jspecify.annotations.Nullable OreField field(ResourceKey<Level> dimension,
                                                          long seed, int x, int z);
     }
 
@@ -82,7 +90,7 @@ public class ItemBedrockOreBase extends CompatItem {
      * ({@link #getOreLevel(int, int, BedrockOreType)}). Read by the excavator's raw ore, the ore density scanner and
      * the deposit tier. An answered stack saves {@link #COMPOSITION} instead of {@link #DENSITY}.
      */
-    public static final dev.golem.core.hook.Hook<Source> SOURCE = dev.golem.core.hook.Hook.of(listeners -> (dimension, seed, x, z) -> {
+    public static final Hook<Source> SOURCE = Hook.of(listeners -> (dimension, seed, x, z) -> {
         for (Source listener : listeners) {
             OreField field = listener.field(dimension, seed, x, z);
             if (field != null) return field;
@@ -91,7 +99,7 @@ public class ItemBedrockOreBase extends CompatItem {
     });
 
     /** The raw ore field of a column: {@link #SOURCE}'s answer, or HBM's six types from the fixed-seed noise. */
-    public static OreField field(net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension, long seed,
+    public static OreField field(ResourceKey<Level> dimension, long seed,
                                  int x, int z) {
         OreField answered = SOURCE.invoker().field(dimension, seed, x, z);
         if (answered != null) return answered;
@@ -101,12 +109,12 @@ public class ItemBedrockOreBase extends CompatItem {
     }
 
     /** {@link #field(net.minecraft.resources.ResourceKey, long, int, int)} of a level (seed 0 where it has none). */
-    public static OreField field(net.minecraft.world.level.LevelReader level, int x, int z) {
-        long seed = level instanceof net.minecraft.world.level.WorldGenLevel world ? world.getSeed() : 0L;
-        net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension =
-                level instanceof net.minecraft.world.level.WorldGenLevel world ? world.getLevel().dimension()
-                        : level instanceof net.minecraft.world.level.Level plain ? plain.dimension()
-                        : net.minecraft.world.level.Level.OVERWORLD;
+    public static OreField field(LevelReader level, int x, int z) {
+        long seed = level instanceof WorldGenLevel world ? world.getSeed() : 0L;
+        ResourceKey<Level> dimension =
+                level instanceof WorldGenLevel world ? world.getLevel().dimension()
+                        : level instanceof Level plain ? plain.dimension()
+                        : Level.OVERWORLD;
         return field(dimension, seed, x, z);
     }
 
@@ -142,8 +150,8 @@ public class ItemBedrockOreBase extends CompatItem {
      * hbm-space {@code setOreAmount(world, stack, x, z, mult)}: the column's field ({@link #SOURCE}) times
      * {@code multiplier}; where nothing answers, exactly {@link #setOreAmount(ItemStack, int, int, double)}.
      */
-    public static void setOreAmount(net.minecraft.world.level.Level level, ItemStack stack, int x, int z, double multiplier) {
-        long seed = level instanceof net.minecraft.world.level.WorldGenLevel world ? world.getSeed() : 0L;
+    public static void setOreAmount(Level level, ItemStack stack, int x, int z, double multiplier) {
+        long seed = level instanceof WorldGenLevel world ? world.getSeed() : 0L;
         OreField field = SOURCE.invoker().field(level.dimension(), seed, x, z);
         if (field == null) {
             setOreAmount(stack, x, z, multiplier);
@@ -247,10 +255,10 @@ public class ItemBedrockOreBase extends CompatItem {
 
     /** The old NoiseGeneratorPerlin's four-octave loop over legacy simplex noise. */
     private static final class LegacyPerlin {
-        private final com.hbm.world.feature.LegacyPerlinNoise noise;
+        private final LegacyPerlinNoise noise;
 
         private LegacyPerlin(long seed) {
-            noise = new com.hbm.world.feature.LegacyPerlinNoise(new LegacyRandomSource(seed), 4);
+            noise = new LegacyPerlinNoise(new LegacyRandomSource(seed), 4);
         }
 
         private double value(double x, double z) {

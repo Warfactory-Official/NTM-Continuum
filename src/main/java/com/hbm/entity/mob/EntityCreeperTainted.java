@@ -1,6 +1,10 @@
 package com.hbm.entity.mob;
 
+import com.hbm.advancement.AwardRegions;
+import com.hbm.advancement.HbmCriteria;
 import com.hbm.blocks.bomb.ModBombBlocks;
+import com.hbm.config.ServerConfig;
+import com.hbm.lib.ModDamageSources;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.bomb.BlockTaint;
 import net.minecraft.core.BlockPos;
@@ -43,10 +47,10 @@ public class EntityCreeperTainted extends EntityCreeperBase implements IRadiatio
         super.die(source);
         // 1.7 ModEventHandler.onEntityDeath: bobHidden for every player within 50 of a tainted creeper a boxcar
         // crushed
-        if (level() instanceof ServerLevel server && source.is(com.hbm.lib.ModDamageSources.BOXCAR)) {
-            String kind = net.minecraft.world.entity.EntityType.getKey(getType()).toString();
-            com.hbm.advancement.AwardRegions.nearby(server, getBoundingBox().inflate(50D),
-                    player -> com.hbm.advancement.HbmCriteria.CRUSHED.fire(player, kind));
+        if (level() instanceof ServerLevel server && source.is(ModDamageSources.BOXCAR)) {
+            String kind = EntityType.getKey(getType()).toString();
+            AwardRegions.nearby(server, getBoundingBox().inflate(50D),
+                    player -> HbmCriteria.CRUSHED.fire(player, kind));
         }
     }
 
@@ -56,7 +60,7 @@ public class EntityCreeperTainted extends EntityCreeperBase implements IRadiatio
 
         int looting = 0;
         if (source.getEntity() instanceof LivingEntity attacker) {
-            looting = dev.golem.core.world.Compat.lootingLevel(level, attacker);
+            looting = Compat.lootingLevel(level, attacker);
         }
 
         int amount = random.nextInt(3) + (looting > 0 ? random.nextInt(looting + 1) : 0);
@@ -70,7 +74,7 @@ public class EntityCreeperTainted extends EntityCreeperBase implements IRadiatio
         if (!Compat.canEntityGrief(level, this)) return;
 
         // TAINT_TRAILS keeps the scatter young so it keeps creeping; without it the taint starts old
-        boolean trails = com.hbm.config.ServerConfig.TAINT_TRAILS.get(); // 1.7 read the /ntmserver key
+        boolean trails = ServerConfig.TAINT_TRAILS.get(); // 1.7 read the /ntmserver key
 
         if (isPowered()) {
             scatter(level, 255, 15, 7, trails ? 0 : 5, 3);
@@ -87,7 +91,7 @@ public class EntityCreeperTainted extends EntityCreeperBase implements IRadiatio
                     random.nextInt(spread) + (int) getZ() - offset);
 
             BlockState state = level.getBlockState(pos);
-            if (!dev.golem.core.world.Compat.isSolidRender(state) || state.isAir()) continue;
+            if (!Compat.isSolidRender(state) || state.isAir()) continue;
 
             level.setBlock(pos, ModBombBlocks.taint.get().defaultBlockState()
                     .setValue(BlockTaint.TAINTAGE, random.nextInt(ageSpread) + ageBase), Block.UPDATE_CLIENTS);

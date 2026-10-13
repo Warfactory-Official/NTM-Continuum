@@ -1,13 +1,13 @@
 package com.hbm.gametest;
 
+import com.hbm.Constants;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.turret.ModTurretBlocks;
-import com.hbm.modules.ModulePatternMatcher;
-import com.hbm.radio.ModRadioBlocks;
-import com.hbm.radio.RadioTargets;
-import com.hbm.radio.RadioCounterMenu;
+import com.hbm.module.ModulePatternMatcher;
+import com.hbm.tileentity.network.RadioTargets;
+import com.hbm.inventory.container.RadioCounterMenu;
 import com.hbm.tileentity.network.RTTYSystem;
 import com.hbm.tileentity.network.TileEntityRadioTorchController;
 import com.hbm.tileentity.network.TileEntityRadioTorchCounter;
@@ -15,10 +15,13 @@ import com.hbm.tileentity.machine.TileEntityMachineAssemblyMachine;
 import com.hbm.tileentity.turret.TileEntityTurretChekhov;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.world.ItemStacks;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -32,7 +35,7 @@ import net.minecraft.world.level.block.Blocks;
 public final class CounterControllerGameTests {
     private CounterControllerGameTests() {}
 
-    public static final GameTests.Suite TESTS = GameTests.suite(com.hbm.Constants.MOD_ID);
+    public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
     public static final GameTests.Function MATCHER = TESTS.function(
             "radio_counter_matcher", 20, () -> CounterControllerGameTests::matcherModes);
     public static final GameTests.Function COUNTER_MENU = TESTS.function(
@@ -78,7 +81,7 @@ public final class CounterControllerGameTests {
         helper.assertFalse(matcher.isValidForFilter(damagedFilter, 0, damagedInput),
                 "Exact matching must continue to include durability damage");
         matcher.modes[0] = ModulePatternMatcher.MODE_WILDCARD;
-        dev.golem.core.world.ItemStacks.setNameAndLore(damagedInput, "different", java.util.List.of());
+        ItemStacks.setNameAndLore(damagedInput, "different", List.of());
         helper.assertFalse(matcher.isValidForFilter(damagedFilter, 0, damagedInput),
                 "Wildcard matching must continue to compare custom item data");
         helper.succeed();
@@ -87,7 +90,7 @@ public final class CounterControllerGameTests {
     public static void counterMenuAndPersistence(GameTestHelper helper) {
         BlockPos pos = new BlockPos(3, 2, 3);
         helper.setBlock(pos.below(), Blocks.CHEST.defaultBlockState());
-        helper.setBlock(pos, ModRadioBlocks.RADIO_TORCH_COUNTER.get().defaultBlockState());
+        helper.setBlock(pos, ModMachineBlocks.radio_torch_counter.get().defaultBlockState());
         TileEntityRadioTorchCounter counter = GameTestHelpers.blockEntity(
                 helper, pos, TileEntityRadioTorchCounter.class);
         counter.channel[0] = "counter";
@@ -96,7 +99,7 @@ public final class CounterControllerGameTests {
         counter.inventory.setStackInSlot(0, new ItemStack(Items.IRON_INGOT));
         counter.matcher.modes[0] = ModulePatternMatcher.MODE_EXACT;
 
-        Player player = GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         RadioCounterMenu menu = new RadioCounterMenu(0, player.getInventory(), counter);
         helper.assertTrue(menu.slots.size() == 39, "Counter menu must contain three filters plus 36 player slots");
         helper.assertTrue(menu.getSlot(0).x == 138 && menu.getSlot(0).y == 18
@@ -155,7 +158,7 @@ public final class CounterControllerGameTests {
             // A cell carries no pointer home, so CELL alone makes no cell -- the machine has to be
             // assembled for the index to record whose the position under the counter is.
             FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_assembly_machine.get(), corePos);
-            helper.setBlock(counterPos, ModRadioBlocks.RADIO_TORCH_COUNTER.get().defaultBlockState());
+            helper.setBlock(counterPos, ModMachineBlocks.radio_torch_counter.get().defaultBlockState());
             FoldedTestSupport.assertCell(helper, corePos, counterPos.below());
 
             TileEntityRadioTorchCounter counter = GameTestHelpers.blockEntity(
@@ -181,14 +184,14 @@ public final class CounterControllerGameTests {
         BlockPos counterPos = new BlockPos(2, 2, 2);
         BlockPos absoluteCounterPos = helper.absolutePos(counterPos);
         BlockPos absoluteSupportPos = helper.absolutePos(counterPos.below());
-        var counterBlock = ModRadioBlocks.RADIO_TORCH_COUNTER.get();
+        var counterBlock = ModMachineBlocks.radio_torch_counter.get();
         helper.setBlock(counterPos.below(), Blocks.REDSTONE_TORCH.defaultBlockState());
         helper.assertFalse(counterBlock.canSurvive(counterBlock.defaultBlockState(), helper.getLevel(), absoluteCounterPos),
                 "Counter accepted a signal-source block that is neither solid nor a container");
 
         helper.setBlock(counterPos.below(), ModMachineBlocks.machine_battery.get().defaultBlockState());
         var directEntity = helper.getLevel().getBlockEntity(absoluteSupportPos);
-        helper.assertTrue(directEntity != null && directEntity instanceof net.minecraft.world.Container,
+        helper.assertTrue(directEntity != null && directEntity instanceof Container,
                 "Direct machine inventory was not created as a container: "
                         + (directEntity == null ? "nothing" : directEntity.getClass().getName()));
         helper.assertTrue(RadioTargets.container(helper.getLevel(), absoluteSupportPos) != null,
@@ -204,7 +207,7 @@ public final class CounterControllerGameTests {
         String channel = "chestcnt";
         try {
             helper.setBlock(chestPos, Blocks.CHEST.defaultBlockState());
-            helper.setBlock(counterPos, ModRadioBlocks.RADIO_TORCH_COUNTER.get().defaultBlockState());
+            helper.setBlock(counterPos, ModMachineBlocks.radio_torch_counter.get().defaultBlockState());
             ChestBlockEntity chest = GameTestHelpers.blockEntity(helper, chestPos, ChestBlockEntity.class);
             TileEntityRadioTorchCounter counter = GameTestHelpers.blockEntity(
                     helper, counterPos, TileEntityRadioTorchCounter.class);
@@ -239,7 +242,7 @@ public final class CounterControllerGameTests {
         BlockPos corePos = new BlockPos(3, 1, 3);
         BlockPos pos = corePos.above(3);
         helper.setBlock(pos.below(), Blocks.STONE);
-        helper.setBlock(pos, ModRadioBlocks.RADIO_TORCH_CONTROLLER.get().defaultBlockState());
+        helper.setBlock(pos, ModMachineBlocks.radio_torch_controller.get().defaultBlockState());
         TileEntityRadioTorchController controller = GameTestHelpers.blockEntity(
                 helper, pos, TileEntityRadioTorchController.class);
         controller.channel = "commands";

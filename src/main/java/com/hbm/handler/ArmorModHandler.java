@@ -4,11 +4,14 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.items.armor.ItemArmorMod;
 import com.hbm.items.armor.JetpackBase;
 import com.hbm.items.gear.JetpackGlider;
+import dev.golem.core.data.ItemContents;
+import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Armors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /** Ordered armor-module storage and slot validation, preserving the nine legacy module slots. */
 public final class ArmorModHandler {
@@ -47,14 +50,14 @@ public final class ArmorModHandler {
      */
     public static boolean isApplicable(ItemStack armor, ItemStack mod) {
         if (armor == null || armor.isEmpty() || armor.getItem() instanceof JetpackBase) return false;
-        dev.golem.core.world.ArmorSlot slot = Armors.slotOf(armor);
+        ArmorSlot slot = Armors.slotOf(armor);
         if (slot == null) return false;
         if (mod == null || mod.isEmpty()) return false;
 
         int type = getModuleSlot(mod);
         if (type == plate_only && (mod.getItem() instanceof JetpackBase || mod.getItem() instanceof JetpackGlider
                 || isElytra(mod))) {
-            return slot == dev.golem.core.world.ArmorSlot.CHESTPLATE;
+            return slot == ArmorSlot.CHESTPLATE;
         }
         if (!(mod.getItem() instanceof ItemArmorMod armorMod)) return false;
         return switch (slot) {
@@ -66,13 +69,13 @@ public final class ArmorModHandler {
     }
 
     /**
-     * port: the vanilla elytra as a chestplate module (user request, 2026-10-12; 1.7 has no such module). It takes the
+     * port: the vanilla elytra as a chestplate module (1.7 has no such module). It takes the
      * chestplate slot the jetpacks use, so a chestplate carries a jetpack or an elytra, not both. Worn, the chestplate
      * glides exactly like a worn elytra (Golem Core {@code Gliders}): the stored elytra wears and shows its wings, and
      * comes back out of the armor table with its damage.
      */
     public static boolean isElytra(ItemStack mod) {
-        return mod != null && mod.is(net.minecraft.world.item.Items.ELYTRA);
+        return mod != null && mod.is(Items.ELYTRA);
     }
 
     /** The elytra installed in {@code chest}, or empty. */
@@ -90,7 +93,7 @@ public final class ArmorModHandler {
 
         List<ItemStack> values = read(armor);
         values.set(type, mod.copyWithCount(1));
-        ModDataComponents.ARMOR_MODS.set(armor, new dev.golem.core.data.ItemContents(values));
+        ModDataComponents.ARMOR_MODS.set(armor, new ItemContents(values));
     }
 
     /** Returns the ordered armor-table slot for a supported module, or -1 for a normal item. */
@@ -132,7 +135,7 @@ public final class ArmorModHandler {
 
     private static List<ItemStack> read(ItemStack armor) {
         List<ItemStack> stored = armor == null ? List.of() : ModDataComponents.ARMOR_MODS
-                .getOr(armor, dev.golem.core.data.ItemContents.EMPTY).copies();
+                .getOr(armor, ItemContents.EMPTY).copies();
         List<ItemStack> values = new ArrayList<>(MOD_SLOTS);
         for (int i = 0; i < MOD_SLOTS; i++) {
             values.add(i < stored.size() && !stored.get(i).isEmpty() ? stored.get(i).copy() : ItemStack.EMPTY);
@@ -149,6 +152,6 @@ public final class ArmorModHandler {
             }
         }
         if (empty) clearMods(armor);
-        else ModDataComponents.ARMOR_MODS.set(armor, new dev.golem.core.data.ItemContents(values));
+        else ModDataComponents.ARMOR_MODS.set(armor, new ItemContents(values));
     }
 }

@@ -1,9 +1,11 @@
 package com.hbm.entity.effect;
 
+import com.hbm.api.environment.Environment;
 import dev.golem.core.data.CompatEntity;
 import com.hbm.client.TorexClientEffects;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.logic.EntityChunkLoader;
+import dev.golem.core.data.SynchedData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -38,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  * <p><b>1.7, not 1.12.2.</b> 1.7 simulates every cloud at the fixed scale 1.5 and maps the cloudlets out
  * by the synced scale when drawing; the scale is {@code clamp(squirt(r * 0.01) * 1.5, 0.5, 5)} ({@link #scaleFor}). 1.12.2 scaled
  * the simulation itself by {@code clamp(r * 0.01, 0.25, 5)} and reworked spawning, colours, the shockwave and
- * the humidity-gated condensation; that version is gone (History section 19ej-1d).
+ * the humidity-gated condensation; this port does not use that version.
  *
  * <p>Client-only interactions (the sky flash, the detonation sound) are routed through
  * {@link TorexClientEffects} so a dedicated server never resolves {@code net.minecraft.client} symbols.
@@ -117,7 +119,7 @@ public class EntityNukeTorex extends CompatEntity {
     }
 
     @Override
-    protected void defineData(dev.golem.core.data.SynchedData data) {
+    protected void defineData(SynchedData data) {
         data.define(SCALE, 1.0F);
         data.define(TYPE, (byte) 0);
         data.define(ANIMATION_AGE, 0);
@@ -144,7 +146,7 @@ public class EntityNukeTorex extends CompatEntity {
         output.putByte("type", this.entityData.get(TYPE));
     }
 
-    /** The effect is transient — never persist it (old {@code writeToNBTOptional == false}). */
+    /** The effect is transient, so never persist it (old {@code writeToNBTOptional == false}). */
     @Override
     public boolean shouldBeSaved() {
         return false;
@@ -1116,7 +1118,7 @@ public class EntityNukeTorex extends CompatEntity {
         boolean precipitation = level.getBiome(BlockPos.containing(x, y, z)).value().hasPrecipitation();
         this.entityData.set(HUMIDITY, precipitation ? 0.5F : 0F);
         // hbm-space checks the body's pressure when the cloud is made: no air, no mushroom
-        this.entityData.set(VACUUM, com.hbm.api.environment.Environment.isVacuum(level, BlockPos.containing(x, y, z)));
+        this.entityData.set(VACUUM, Environment.isVacuum(level, BlockPos.containing(x, y, z)));
         long start = level.getGameTime();
         this.entityData.set(START_TIME_LOW, (int) start);
         this.entityData.set(START_TIME_HIGH, (int) (start >>> 32));

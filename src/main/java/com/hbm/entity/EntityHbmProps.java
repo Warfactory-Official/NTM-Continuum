@@ -15,13 +15,13 @@ import dev.golem.core.data.DataOut;
  * Per-living-entity HBM state (radiation, digamma, lung disease, timers), ported from 1.12.2's
  * {@code HbmLivingCapability.EntityHbmProps}. Every {@link net.minecraft.world.entity.LivingEntity} carries
  * one of these as Golem Core entity data ({@link com.hbm.capability.HbmLivingProps#DATA}: a NeoForge/Fabric data
- * attachment or a Forge capability), so the old DUMMY fallback no longer exists. Use the
+ * attachment or a Forge capability), so there is no DUMMY fallback. Use the
  * {@link com.hbm.capability.HbmLivingProps} static facade for all gameplay access (it carries the
  * clamps/side-effects); this class is dumb storage + serialization.
  *
- * <p>Saved as the {@code hbm:living_props} attachment (v1 field layout, doubles). Before 2026-09-30 the same
- * layout was a {@code HbmLivingProps} child of the entity tag; that is read once on load. The network payload
- * is the old versioned ByteBuf format (v1).
+ * <p>Saved as the {@code hbm:living_props} attachment (v1 field layout, doubles). Older saves hold the same
+ * layout as a {@code HbmLivingProps} child of the entity tag, read once on load. The network payload
+ * is a versioned ByteBuf format (v1).
  */
 public class EntityHbmProps {
 
@@ -47,7 +47,7 @@ public class EntityHbmProps {
     /** 1.7 HbmPlayerProps.grenadeDeployment: the universal grenade's pin state, kept out of every persistence path. */
     public int grenadeDeployment = 0;
     private final List<ContaminationEffect> contamination = new ArrayList<>();
-    /** Live crane input only; deliberately excluded from persistence and entity sync. */
+    /** Live crane input only; excluded from persistence and entity sync. */
     private final boolean[] craneKeysPressed = new boolean[EnumCraneKey.VALUES.length];
     /** Persistent general backpack/HUD toggles formerly carried by HbmCapability. */
     private boolean enableBackpack = true;
@@ -138,7 +138,7 @@ public class EntityHbmProps {
     public boolean getEnableHUD() { return enableHUD; }
     public void setEnableHUD(boolean enabled) { enableHUD = enabled; }
 
-    // ---- persistence (the hbm:living_props attachment; formerly the entity NBT child "HbmLivingProps") ----
+    // Persistence (the hbm:living_props attachment)
 
     public void save(DataOut out) {
         out.putString("fmt", "v1");
@@ -199,7 +199,7 @@ public class EntityHbmProps {
         }
     }
 
-    // ---- network payload (old HbmPlayerSyncPacket v1 format) ----
+    // Network payload (old HbmPlayerSyncPacket v1 format)
 
     public void serialize(ByteBuf buf) {
         buf.writeByte(1);

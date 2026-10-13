@@ -13,15 +13,14 @@ import com.hbm.inventory.FluidContainers;
  * The 1.7 metadata fluid containers ({@code canister_full}, {@code gas_full}, {@code fluid_pack_full},
  * {@code fluid_tank_lead_full}) in the port's component-backed form: one item, the fluid on the
  * {@code FLUID} component, {@link #capacity} mB (1,000 for all but the 32,000 mB pack). Each
- * container names which fluids it may hold — 1.7 registered a canister/gas-tank container per fluid and
- * marked the lead-only and container-less ones with traits ({@link FluidContainers}) — and how its
- * overlay is tinted (the canister's own colour rather than the fluid's, for the canister and gas tank).
+ * container names which fluids it may hold (1.7 registered a canister/gas-tank container per fluid and
+ * marked the lead-only and container-less ones with traits, {@link FluidContainers}) and how its overlay is
+ * tinted (the canister's own colour rather than the fluid's, for the canister and gas tank).
  *
- * <p>A container is only machine-fillable when 1.7's {@code FluidContainerRegistry} knew it: the
- * canister, gas tank and lead tank were registered there, the {@code fluid_pack_full} was not — it is
- * packed and unpacked by the assembler alone ({@code ass.package<fluid>} / {@code ass.unpackage<fluid>}),
- * so the {@link com.hbm.api.fluidmk2.IFillableItem} side of a non-fillable container answers no to
- * everything.
+ * <p>A container is only machine-fillable when 1.7's {@code FluidContainerRegistry} knew it. The canister,
+ * gas tank and lead tank were registered there; the {@code fluid_pack_full} was not, and is packed and
+ * unpacked by the assembler alone ({@code ass.package<fluid>} / {@code ass.unpackage<fluid>}), so the
+ * {@link com.hbm.api.fluidmk2.IFillableItem} side of a non-fillable container answers no to everything.
  */
 public class ItemFluidContainerNT extends ItemFluidTank {
 

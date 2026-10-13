@@ -34,13 +34,12 @@ import org.jspecify.annotations.Nullable;
  * ray cast across it, an entity sweep over the same span, and an {@link #onImpact} driven from the tick
  * rather than from vanilla's hit callback.
  *
- * <p>This is the base {@link EntityBulletBaseMK4}'s javadoc anticipated. The bullet is deliberately
- * <em>not</em> moved onto it: its flight model diverged when the config's velocity became a per-tick
- * step length, and rewriting eleven working turrets' ammunition to prove a shared superclass is a
- * bigger change than the artillery needs. New projectiles state this base.
+ * <p>This is the base {@link EntityBulletBaseMK4}'s javadoc anticipated. The bullet is
+ * <em>not</em> built on it: its flight model differs (the config's velocity is a per-tick step length).
+ * New projectiles use this base.
  *
- * <p>Two upstream pieces are absent. There is no interpolation handler — {@code EntityThrowableInterp}
- * exists only on 26.2 and nothing in this port interpolates a non-living entity, so a rocket rides the
+ * <p>Two upstream pieces are absent. There is no interpolation handler, {@code EntityThrowableInterp}
+ * exists only on 26.1 and nothing in this port interpolates a non-living entity, so a rocket rides the
  * entity tracker like every other projectile here. And {@link #getStuck} does not resend the position:
  * upstream's teleport packet has no pre-26.1 spelling, and a stuck projectile is already where the
  * client last saw it.
@@ -143,7 +142,7 @@ public abstract class EntityThrowableNT extends CompatEntity {
 
     /**
      * Aims this projectile, with a <em>gaussian</em> per-axis spread scaled by {@link #headingForceMult}
-     * rather than vanilla {@code shoot}'s triangular one — every upstream velocity and inaccuracy figure
+     * rather than vanilla {@code shoot}'s triangular one: every upstream velocity and inaccuracy figure
      * is calibrated against this.
      */
     public void setThrowableHeading(double motionX, double motionY, double motionZ, float velocity,

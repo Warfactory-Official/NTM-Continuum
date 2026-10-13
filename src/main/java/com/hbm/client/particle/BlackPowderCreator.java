@@ -11,9 +11,9 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Muzzle discharge: a cone of smoke plus a scatter of sparks, both aimed along a heading.
  *
- * <p>Ported from 1.12.2 {@code BlackPowderCreator}, minus its {@code composeEffect} — the server-side
- * sender lives in {@link com.hbm.particle.helper.ParticleEffects#blackPowder}, which is where common
- * code can reach it without loading this client class. This is the client half only.
+ * <p>Ported from 1.12.2 {@code BlackPowderCreator}, minus its {@code composeEffect}. The server-side
+ * sender is {@link com.hbm.particle.helper.ParticleEffects#blackPowder}, which common code can reach
+ * without loading this client class. This is the client half only.
  */
 public class BlackPowderCreator implements IParticleCreator {
 

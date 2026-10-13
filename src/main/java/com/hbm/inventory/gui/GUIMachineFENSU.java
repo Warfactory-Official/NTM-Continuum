@@ -1,21 +1,26 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineFENSU;
 import com.hbm.lib.Library;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 
 import java.util.List;
 import java.util.Optional;
 
 /** FEnSU screen, retaining the legacy battery GUI's bar and redstone controls. */
-public class GUIMachineFENSU extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineFENSU> {
+public class GUIMachineFENSU extends CompatContainerScreen<ContainerMachineFENSU> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_battery.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_battery.png");
     private static final String[] MODES = {"Input only", "Buffer (both)", "Output only", "Disabled"};
     private static final String[] PRIORITIES = {"Lowest", "Low", "Normal", "High", "Highest"};
 
@@ -48,10 +53,10 @@ public class GUIMachineFENSU extends dev.golem.core.gui.CompatContainerScreen<Co
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         int button = GUIMachineBattery.button(event.x(), event.y(), leftPos, topPos);
         if (button >= 0 && Minecraft.getInstance().gameMode != null) {
-            Minecraft.getInstance().getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             Minecraft.getInstance().gameMode.handleInventoryButtonClick(menu.containerId, button);
             return true;
         }

@@ -1,8 +1,10 @@
 package com.hbm.inventory.container;
 
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 
 /**
@@ -10,13 +12,12 @@ import net.minecraft.world.level.block.Block;
  *
  * <p>Vanilla's {@link net.minecraft.world.inventory.AbstractContainerMenu#stillValid} measures the
  * player's block-interaction range against the position the menu is <i>bound</i> to. For a normal block
- * that is the block you clicked, so it is exactly right. For a multiblock it is the <b>core</b> — and
- * the player is standing next to a dummy cell that may be many blocks away from it. On the fusion torus
- * the core sits seven blocks inside the footprint, so the menu reports out-of-range while the player is
- * pressed against the machine.
+ * that is the block you clicked. For a multiblock it is the <b>core</b>, and the player stands next to a
+ * dummy cell that may be many blocks away from it (on the fusion torus the core sits seven blocks inside
+ * the footprint), so the menu would report out-of-range.
  *
- * <p>{@link #stillValidMultiblock} fixes that by widening the radius to cover the structure, using the
- * range the block itself declares. Non-multiblock blocks fall through to vanilla's behaviour unchanged.
+ * <p>{@link #stillValidMultiblock} widens the radius to cover the structure, using the range the block
+ * itself declares. Non-multiblock blocks use vanilla's behaviour.
  */
 public final class Containers {
 
@@ -28,8 +29,8 @@ public final class Containers {
      * range covers the whole footprint rather than just the core cell.
      */
     /** Whether {@code player} is in range of the multiblock cored at {@code pos}. */
-    public static boolean inRangeOfMultiblock(net.minecraft.world.level.BlockGetter level,
-                                              net.minecraft.core.BlockPos pos, Player player) {
+    public static boolean inRangeOfMultiblock(BlockGetter level,
+                                              BlockPos pos, Player player) {
         return level.getBlockState(pos).getBlock() instanceof BlockMultiblockCore
                 && BlockMultiblockCore.isWithinInteractionRange(level, pos, player);
     }

@@ -1,7 +1,9 @@
 package com.hbm.creativetabs;
 
+import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -84,7 +86,7 @@ public final class ModTabs {
                 for (Map.Entry<HbmTab, V> entry : byTab.entrySet()) {
                     map.put(TAB_OBJECTS.get(entry.getKey()).getKey(), entry.getValue());
                 }
-                byKey = map = java.util.Collections.unmodifiableMap(map);
+                byKey = map = Collections.unmodifiableMap(map);
             }
             return map;
         }
@@ -119,7 +121,7 @@ public final class ModTabs {
     /** Applies upstream's weapon-quality rule at the shared tab boundary, for every loader. */
     public static boolean shouldDisplay(ResourceKey<CreativeModeTab> tab, Item item) {
         if (!get(HbmTab.WEAPONS).getKey().equals(tab)) return true;
-        return !(item instanceof com.hbm.items.weapon.sedna.ItemGunBaseNT gun)
+        return !(item instanceof ItemGunBaseNT gun)
                 || gun.isCreativeTabVisible();
     }
 

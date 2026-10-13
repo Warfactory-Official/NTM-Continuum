@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.storage;
 
+import com.hbm.client.sound.FensuSoundHandler;
 import dev.golem.core.data.Tags;
 
 import com.hbm.tileentity.MachineCore;
@@ -10,6 +11,7 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import java.util.Arrays;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -39,7 +41,7 @@ public class TileEntityBatteryREDD extends TileEntityBatteryBase implements Menu
 
     public TileEntityBatteryREDD(BlockPos pos, BlockState state) {
         super(ModBlockEntities.BATTERY_REDD.get(), pos, state, 2);
-        java.util.Arrays.fill(log, BigInteger.ZERO);
+        Arrays.fill(log, BigInteger.ZERO);
     }
 
     @Override
@@ -75,7 +77,7 @@ public class TileEntityBatteryREDD extends TileEntityBatteryBase implements Menu
             battery.rotation -= 360F;
             battery.prevRotation -= 360F;
         }
-        com.hbm.client.sound.FensuSoundHandler.tickLoop(battery);
+        FensuSoundHandler.tickLoop(battery);
     }
 
     /** Exact old REDD speed curve, including its 15 rad/tick upper bound. */

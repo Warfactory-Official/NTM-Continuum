@@ -62,7 +62,6 @@ com.hbm.items.ModIcfItems
 com.hbm.items.ModRtgContent
 com.hbm.blocks.ModEnergyNetBlocks
 com.hbm.blocks.ModEnergyBedrockBlocks
-com.hbm.radio.ModRadioBlocks
 com.hbm.blocks.ModOilBlocks
 com.hbm.items.ModOilItems
 com.hbm.blocks.ModDroneBlocks
@@ -71,6 +70,8 @@ com.hbm.blocks.ModPneumaticBlocks
 com.hbm.blocks.ModConveyorBlocks
 com.hbm.items.ModConveyorItems
 com.hbm.blocks.machine.ModMachineBlocks
+# The 1.7 world fluids: their minecraft:water / minecraft:lava fluid tag membership (Golem Core WorldFluids).
+com.hbm.blocks.fluid.ModWorldFluids
 com.hbm.blocks.ModFluidNetBlocks
 com.hbm.items.ModFluidNetItems
 com.hbm.items.ModFluidItems
@@ -129,7 +130,6 @@ com.hbm.items.ModArmorSetItems
 com.hbm.items.ModArmorSetBItems
 com.hbm.blocks.ModArmorSetBBlocks
 com.hbm.items.ModArmorModItems
-com.hbm.smoke.SmokeChainRegistration
 com.hbm.blocks.CustomMissileDeclarations
 com.hbm.blocks.RadarUtilityDeclarations
 com.hbm.blocks.ModDecoCrateBlocks
@@ -154,15 +154,8 @@ com.hbm.items.ModStorageDrumItems
 com.hbm.items.ModSelfchargerItems
 com.hbm.items.ModBatterySCItems
 com.hbm.items.ModUpgradeItems
-com.hbm.blocks.machine.DiFurnaceContent
-com.hbm.blocks.machine.AutosawFeature
 com.hbm.blocks.machine.ModArmorTableBlocks
 com.hbm.blocks.machine.ModWeaponTableBlocks
-com.hbm.blocks.machine.solar.ModSolarBlocks
-com.hbm.items.solar.ModSolarItems
-com.hbm.foundry.FoundryExpansion
-com.hbm.chemicalfactory.ChemicalFactoryRegistrations
-com.hbm.assemblyfactory.AssemblyFactoryRegistrations
 com.hbm.blocks.RBMKPeripheralDeclarations
 com.hbm.items.WandDeclarations
 com.hbm.blocks.SatelliteDeclarations

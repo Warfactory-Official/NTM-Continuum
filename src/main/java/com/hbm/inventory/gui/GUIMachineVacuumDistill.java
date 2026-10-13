@@ -1,5 +1,7 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineVacuumDistill;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -13,11 +15,11 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.List;
 import java.util.Optional;
 
-/** Screen for the vacuum distiller — 1.7.10 {@code GUIMachineVacuumDistill} (texture copied from 1.7) ({@code gui_vacuum_distill.png},
+/** Screen for the vacuum distiller, 1.7.10 {@code GUIMachineVacuumDistill} (texture copied from 1.7) ({@code gui_vacuum_distill.png},
  * 176×238 panel on a 256×256 texture). Power bar at x=26, 5 tank bars at x=44/80/98/116/134 (bottom y=70). */
-public class GUIMachineVacuumDistill extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineVacuumDistill> {
+public class GUIMachineVacuumDistill extends CompatContainerScreen<ContainerMachineVacuumDistill> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_vacuum_distill.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/gui_vacuum_distill.png");
     private static final int[] TANK_X = {44, 80, 98, 116, 134};
 
     public GUIMachineVacuumDistill(ContainerMachineVacuumDistill menu, Inventory playerInventory, Component title) {

@@ -11,8 +11,11 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.storage.TileEntityMachineFENSU;
+import dev.golem.core.Ids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.player.Player;
@@ -69,10 +72,10 @@ public class MachineFENSU extends BlockMultiblockMachine implements IEnergyConne
     }
 
     @Override
-    protected net.minecraft.world.InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos,
+    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos,
                                                                        Player player, BlockHitResult hit) {
-        return level.isClientSide() ? net.minecraft.world.InteractionResult.SUCCESS
-                : player.isShiftKeyDown() ? net.minecraft.world.InteractionResult.TRY_WITH_EMPTY_HAND
+        return level.isClientSide() ? InteractionResult.SUCCESS
+                : player.isShiftKeyDown() ? InteractionResult.TRY_WITH_EMPTY_HAND
                 : super.onUseWithoutItem(state, level, pos, player, hit);
     }
 
@@ -115,7 +118,7 @@ public class MachineFENSU extends BlockMultiblockMachine implements IEnergyConne
     }
 
     /**
-     * The old detailed MBB hitbox turns with the machine, which the generic silhouette does not do — 1.7
+     * 1.7's detailed MBB hitbox turns with the machine, which the generic silhouette does not do. 1.7
      * rotates this one box about the core's half-block centre and leaves every other machine's alone.
      */
     @Override
@@ -137,11 +140,11 @@ public class MachineFENSU extends BlockMultiblockMachine implements IEnergyConne
 
     /** Vanilla dye items are the direct current API equivalent of the old dye ore-dictionary lookup. */
     @Override
-    protected net.minecraft.world.InteractionResult onUseItem(BlockState state, Level level, BlockPos pos,
-                                                               Player player, net.minecraft.world.InteractionHand hand,
+    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos,
+                                                               Player player, InteractionHand hand,
                                                                ItemStack stack, BlockHitResult hit) {
-        if (level.isClientSide()) return net.minecraft.world.InteractionResult.SUCCESS;
-        if (player.isShiftKeyDown()) return net.minecraft.world.InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
+        if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         DyeColor dyeColor = dyeColor(stack);
         if (dyeColor != null) {
             BlockPos core = MultiblockSurface.coreOfAny(level, pos);
@@ -152,7 +155,7 @@ public class MachineFENSU extends BlockMultiblockMachine implements IEnergyConne
                     fensu.networkPackNT();
                     if (!player.isCreative()) stack.shrink(1);
                 }
-                return net.minecraft.world.InteractionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             }
         }
         return super.onUseItem(state, level, pos, player, hand, stack, hit);
@@ -161,7 +164,7 @@ public class MachineFENSU extends BlockMultiblockMachine implements IEnergyConne
     private static DyeColor dyeColor(ItemStack stack) {
         for (DyeColor color : DyeColor.values()) {
             TagKey<Item> tag = TagKey.create(Registries.ITEM,
-                    dev.golem.core.Ids.of("c", "dyes/" + color.getName()));
+                    Ids.of("c", "dyes/" + color.getName()));
             if (stack.is(tag)) return color;
         }
         return null;

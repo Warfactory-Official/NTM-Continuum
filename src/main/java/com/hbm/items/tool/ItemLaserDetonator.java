@@ -1,6 +1,7 @@
 package com.hbm.items.tool;
 
 import com.hbm.Constants;
+import com.hbm.api.event.HbmEvents;
 import com.hbm.config.GeneralConfig;
 import com.hbm.interfaces.IBomb;
 import com.hbm.interfaces.IBomb.BombReturnCode;
@@ -50,7 +51,7 @@ public class ItemLaserDetonator extends CompatItem {
 
         if (!level.isClientSide()) {
             if (level.getBlockState(pos).getBlock() instanceof IBomb bomb) {
-                BombReturnCode ret = com.hbm.api.event.HbmEvents.detonate(bomb, level, pos, player);
+                BombReturnCode ret = HbmEvents.detonate(bomb, level, pos, player);
                 if (GeneralConfig.enableExtendedLogging) {
                     Constants.LOG.info("[DET] Tried to detonate block at {} / {} / {} by {}!", pos.getX(), pos.getY(),
                             pos.getZ(), player.getName().getString());

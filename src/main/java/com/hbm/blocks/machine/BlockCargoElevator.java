@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -34,7 +35,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Its shape is not fixed: four corner guide rails run the full height of the structure and one slab
  * moves with the platform, so both are derived from the core's block entity every time they are asked
  * for. Because 26.1 drives the block outline from the same shape the collider uses, the fork's separate
- * custom-highlight hook is not ported — the outline follows the platform for free.
+ * custom-highlight hook is not ported. The outline follows the platform for free.
  *
  * <p>Right-clicking with another elevator in hand adds a course; with anything else, it toggles.
  * Breaking any part drops the whole stack, since the structure is only ever placed as whole courses.
@@ -61,10 +62,9 @@ public class BlockCargoElevator extends BlockMultiblockMachine {
     }
 
     /**
-     * The lift grows a course at a time, so its real extent is live configuration rather than a function
-     * of the core's state. Teardown is allowed a superset for exactly this case, and the demolition guards
-     * every cell on the index, so overshooting the column costs a lookup and claims nothing that is not
-     * ours.
+     * The lift grows a course at a time, so its real extent is live configuration, not a function of the core's
+     * state. Teardown may use a superset, and the demolition guards every cell on the index, so overshooting the
+     * column costs a lookup and claims nothing foreign.
      */
     private static final int MAX_COURSES = 384;
 
@@ -172,7 +172,7 @@ public class BlockCargoElevator extends BlockMultiblockMachine {
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         BlockEntity entity = params.getOptionalParameter(
-                net.minecraft.world.level.storage.loot.parameters.LootContextParams.BLOCK_ENTITY);
+                LootContextParams.BLOCK_ENTITY);
         if (!(entity instanceof TileEntityCargoElevator lift)) return super.getDrops(state, params);
 
         List<ItemStack> drops = new ArrayList<>();

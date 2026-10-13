@@ -1,10 +1,13 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerCombustionEngine;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.items.machine.ItemPistons;
 import com.hbm.tileentity.machine.TileEntityMachineCombustionEngine;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -16,18 +19,18 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.Locale;
 
-/** Screen for the combustion engine — 1.7.10 {@code GUICombustionEngine} ({@code generators/gui_combustion.png},
+/** Screen for the combustion engine, 1.7.10 {@code GUICombustionEngine} ({@code generators/gui_combustion.png},
  * 176×203 on 256×256). Ignition button (89,13) 16×14, throttle drag x79-114 y38-46, piston icon (80,51),
  * power bar x=143, tank bar x=35 (bottom y=69). */
-public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScreen<ContainerCombustionEngine> {
+public class GUICombustionEngine extends CompatContainerScreen<ContainerCombustionEngine> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/generators/gui_combustion.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/generators/gui_combustion.png");
 
     public GUICombustionEngine(ContainerCombustionEngine menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 203);
     }
 
-    /** 1.7 {@code drawGuiContainerForegroundLayer}: only the inventory line at (8, ySize-96+2), 4210752 — no title. */
+    /** 1.7 {@code drawGuiContainerForegroundLayer}: only the inventory line at (8, ySize-96+2), 4210752: no title. */
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int xm, int ym) {
         GuiDraw.text(graphics, this.font, this.playerInventoryTitle, 8, this.imageHeight - 96 + 2, 4210752, false);
@@ -58,7 +61,7 @@ public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScree
         int i = (int) (te.power * 53 / TileEntityMachineCombustionEngine.maxPower);
         if (i > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 143, this.topPos + 69 - i, 176.0F, (float) (52 - i), 16, i, 256, 256);
 
-        // 1.7: engine.tank.renderTank(guiLeft + 35, guiTop + 69, z, 16, 52) — y is the bottom edge, tinted.
+        // 1.7: engine.tank.renderTank(guiLeft + 35, guiTop + 69, z, 16, 52), y is the bottom edge, tinted.
         GuiUtil.tank(graphics, te.tank, this.leftPos + 35, this.topPos + 69, 16, 52);
     }
 
@@ -109,17 +112,17 @@ public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScree
     }
 
     /**
-     * Old {@code isMouseLocked}: the throttle is a GRABBED slider — the hit test runs only when the drag
+     * Old {@code isMouseLocked}: the throttle is a GRABBED slider: the hit test runs only when the drag
      * starts (region x [79,115), y (38,46]); once locked the value follows mouseX alone until release.
      */
     private boolean isMouseLocked = false;
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         Minecraft mc = Minecraft.getInstance();
         double mx = event.x(), my = event.y();
 
-        // Ignition button — 1.7 hit box (89,13) 16×14 (NOT the 35×15 "Ignition" tooltip area at x=79).
+        // Ignition button, 1.7 hit box (89,13) 16×14 (NOT the 35×15 "Ignition" tooltip area at x=79).
         if (mc.gameMode != null
                 && this.leftPos + 89 <= mx && mx < this.leftPos + 89 + 16
                 && this.topPos + 13 < my && my <= this.topPos + 13 + 14) {
@@ -128,7 +131,7 @@ public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScree
             return true;
         }
 
-        // Throttle grab — 1.7 region x [79, 79+36), y (38, 38+8].
+        // Throttle grab, 1.7 region x [79, 79+36), y (38, 38+8].
         if (this.leftPos + 79 <= mx && mx < this.leftPos + 79 + 36
                 && this.topPos + 38 < my && my <= this.topPos + 38 + 8) {
             GuiUtil.playClickSound();
@@ -141,7 +144,7 @@ public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScree
     }
 
     @Override
-    protected boolean mouseReleased(dev.golem.core.gui.MouseInput event) {
+    protected boolean mouseReleased(MouseInput event) {
         // 1.7 mouseMovedOrUp: any left/right release drops the lock.
         if (this.isMouseLocked && (event.button() == 0 || event.button() == 1)) {
             this.isMouseLocked = false;
@@ -149,7 +152,7 @@ public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScree
         return false;
     }
 
-    /** While locked the setting tracks mouseX only — no Y test (1.7: the drag runs in the render loop). */
+    /** While locked the setting tracks mouseX only: no Y test (1.7: the drag runs in the render loop). */
     private void applyThrottle(double mouseX) {
         TileEntityMachineCombustionEngine te = this.menu.getTile();
         Minecraft mc = Minecraft.getInstance();

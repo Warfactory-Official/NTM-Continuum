@@ -27,13 +27,12 @@ import java.util.function.Consumer;
 /**
  * A Sedna gun's item model.
  *
- * <p>This is an {@link ItemModel}, not a {@code minecraft:special} entry, and that distinction is the
- * whole point: {@link #update} is handed the {@link ItemDisplayContext}, while a special-model renderer
- * is not. A gun needs to know, because the first-person body is drawn in <em>camera space</em> (see
- * {@link WeaponRenderer#submitFirstPerson}) and has nothing to do with the pose vanilla would hand an
- * inventory icon.
+ * <p>This is an {@link ItemModel}, not a {@code minecraft:special} entry, because {@link #update} is
+ * handed the {@link ItemDisplayContext} and a special-model renderer is not. A gun needs it: the
+ * first-person body is drawn in <em>camera space</em> (see {@link WeaponRenderer#submitFirstPerson}),
+ * unrelated to the pose vanilla hands an inventory icon.
  *
- * <p>So the context is resolved here and travels to the renderer inside the argument: first-person hands
+ * <p>The context is resolved here and travels to the renderer inside the argument: first-person hands
  * carry a live, animated body; every other context gets the same geometry at rest, framed by the
  * weapon's own {@code setupStatic}.
  */
@@ -63,14 +62,14 @@ public class GunItemModel implements ItemModel {
         if (firstPerson) {
             net.minecraft.client.Minecraft minecraft = net.minecraft.client.Minecraft.getInstance();
             // "Other arm" is whichever hand is not the player's main one, and its body is the main
-            // hand's mirrored — which is why it needs to be known here and not guessed at draw time.
+            // hand's mirrored, which is why it needs to be known here and not guessed at draw time.
             boolean mainHand = minecraft.player != null
                     && (minecraft.player.getMainArm() == HumanoidArm.RIGHT)
                     == (displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND);
             otherArm = !mainHand;
         }
 
-        // Without extents the layer reports an empty bounding box and the GUI icon never appears — and
+        // Without extents the layer reports an empty bounding box and the GUI icon never appears, and
         // the box has to be the one the static pose actually puts the declared body in, not the mesh's.
         layer.setExtents(() -> renderer.staticExtents(item, displayContext));
         layer.setupSpecialModel(body, new Argument(item, renderer, firstPerson, otherArm, displayContext, owner));
@@ -84,7 +83,7 @@ public class GunItemModel implements ItemModel {
     public record Argument(ItemStack stack, WeaponRenderer renderer, boolean firstPerson, boolean otherArm,
             ItemDisplayContext context, @Nullable ItemOwner owner) {}
 
-    /** The draw itself. Stateless — everything it needs arrives in the argument. */
+    /** The draw itself. Stateless: everything it needs arrives in the argument. */
     private static class Body implements SpecialModelRenderer<Argument> {
 
         @Override

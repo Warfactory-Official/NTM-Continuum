@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.ModMenus;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import dev.golem.core.gui.CompatContainerMenu;
@@ -18,7 +19,7 @@ import net.minecraft.world.item.ItemStack;
  *
  * <p>The original keeps the gun in the table <b>live</b>: every change to a modifier slot re-installs the
  * whole modifier row on the gun ({@code refreshInstalledMods}), so whatever copy of the gun leaves the
- * table — by pickup, shift-click, hotbar swap or throw — already carries its modifiers. Taking the gun
+ * table (by pickup, shift-click, hotbar swap or throw) already carries its modifiers. Taking the gun
  * out then only consumes the modifier slots it applies to and resets the configuration index. Nothing
  * here tracks stack identity across clicks; vanilla's own click handling is left alone.
  *
@@ -60,7 +61,7 @@ public final class ContainerWeaponTable extends CompatContainerMenu {
     }
 
     public ContainerWeaponTable(int containerId, Inventory inventory) {
-        super(com.hbm.inventory.ModMenus.WEAPON_TABLE.get(), containerId);
+        super(ModMenus.WEAPON_TABLE.get(), containerId);
         owner = inventory.player;
 
         for (int i = 0; i < MOD_SLOTS; i++) {

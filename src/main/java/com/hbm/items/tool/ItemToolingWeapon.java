@@ -2,6 +2,7 @@ package com.hbm.items.tool;
 
 import com.hbm.api.block.IToolable;
 import dev.golem.core.world.CompatWeaponItem;
+import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.Tools;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -40,7 +41,7 @@ public class ItemToolingWeapon extends CompatWeaponItem {
                 context.getClickLocation(), context.getHand(), type)) {
             ItemStack stack = context.getItemInHand();
             if (stack.getMaxDamage() > 0) {
-                dev.golem.core.world.ItemStacks.hurtAndBreak(stack, 1, player, context.getHand());
+                ItemStacks.hurtAndBreak(stack, 1, player, context.getHand());
             }
             return InteractionResult.SUCCESS;
         }

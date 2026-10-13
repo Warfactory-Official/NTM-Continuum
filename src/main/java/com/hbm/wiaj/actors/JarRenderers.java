@@ -1,5 +1,6 @@
 package com.hbm.wiaj.actors;
 
+import com.hbm.Constants;
 import com.hbm.client.render.FensuRenderState;
 import com.hbm.client.render.FoundryRenderHelper;
 import com.hbm.client.render.HbmBlockEntityRenderers;
@@ -16,6 +17,8 @@ import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.GemBER;
+import java.util.HashSet;
+import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -30,7 +33,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Upstream the machine TESRs themselves implemented {@link ITileActorRenderer}: {@code RenderStirling},
  * {@code RenderFENSU}, {@code RenderCrucible} and {@code RenderFoundry} each had a {@code renderActor} next
  * to their world path. The port's renderers are declared models ({@link GemBER}) driven by a render state,
- * so an actor here fills that state from its data and replays the very renderer the placed machine uses —
+ * so an actor here fills that state from its data and replays the very renderer the placed machine uses:
  * same mesh, same parts, same animation channels. Nothing about a machine's look is restated for the jar.
  *
  * <p>Everything is drawn fully lit, as upstream set the lightmap to 240/240 before the actor pass.
@@ -80,12 +83,12 @@ public final class JarRenderers {
             // One renderer that cannot read a block entity outside a level must not take the whole
             // presentation down; say so once per type, loudly, and draw the rest.
             if (FAILED.add(tile.getType())) {
-                com.hbm.Constants.LOG.error("World in a jar: cannot draw {} outside a level", tile.getType(), ex);
+                Constants.LOG.error("World in a jar: cannot draw {} outside a level", tile.getType(), ex);
             }
         }
     }
 
-    private static final java.util.Set<BlockEntityType<?>> FAILED = new java.util.HashSet<>();
+    private static final Set<BlockEntityType<?>> FAILED = new HashSet<>();
 
     private static void drawTile(GemBER<BlockEntity, CompatRenderState> renderer, WorldInAJar world, BlockEntity tile,
                                  int x, int y, int z, PoseStack pose, SubmitSink sink, CameraInfo camera, float interp) {
@@ -107,8 +110,8 @@ public final class JarRenderers {
 
     /**
      * Whether a tile is drawn with the jar's blocks rather than by an actor. These are the blocks 1.7 drew
-     * with an ISBRH in the block pass — ducts, and the foundry's channels, tanks and outlets, whose molten
-     * metal the ISBRH read from the tile — and which the port draws with a block-entity renderer instead.
+     * with an ISBRH in the block pass: ducts, and the foundry's channels, tanks and outlets, whose molten
+     * metal the ISBRH read from the tile, and which the port draws with a block-entity renderer instead.
      * Crucibles, basins and molds were TESRs upstream too and only ever appear through an actor.
      */
     public static boolean drawnWithBlocks(Object tile) {
@@ -179,7 +182,7 @@ public final class JarRenderers {
     }
 
     /**
-     * The spin both engines shared upstream, verbatim — including {@code lastSpin} starting from zero
+     * The spin both engines shared upstream, unchanged, including {@code lastSpin} starting from zero
      * rather than from the stored value, so the first tick after a wrap interpolates from {@code -360}.
      */
     private static void spin(CompoundTag data) {

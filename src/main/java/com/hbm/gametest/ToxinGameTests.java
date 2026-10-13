@@ -24,6 +24,7 @@ import net.minecraft.world.level.GameType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The 1.7 {@code FT_Toxin}: phosgene clouds hurt at 1.7's rate, the right gas-mask filter stops it (and
@@ -56,7 +57,7 @@ public final class ToxinGameTests {
         // earlier hit would otherwise shave the cloud's hit down to hit - lastHurt).
         LivingEntity pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(1, 3, 1));
         pig.setNoGravity(true);
-        pig.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+        pig.setDeltaMovement(Vec3.ZERO);
         EntityMist mist = new EntityMist(helper.getLevel());
         mist.setType(Fluids.PHOSGENE);
         mist.setArea(4F, 3F);
@@ -67,10 +68,10 @@ public final class ToxinGameTests {
         for (int delay = 1; delay <= 25; delay++) {
             helper.runAfterDelay(delay, () -> {
                 // A hit with no attacker still knocks back 0.4 in a random direction (26.1), and over 20 ticks that
-                // drifted the pig out of the 4-wide cloud before the next boundary in 4 of 11 full runs (2026-10-01).
+                // drifted the pig out of the 4-wide cloud before the next boundary in 4 of 11 full runs.
                 // Put it back in the middle each tick: what is measured is the cloud's hit, not the pig's drift.
                 pig.setPos(mist.getX(), mist.getY(), mist.getZ());
-                pig.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                pig.setDeltaMovement(Vec3.ZERO);
                 pig.setHealth(pig.getMaxHealth());
                 pig.invulnerableTime = 0;
                 long time = helper.getLevel().getGameTime();

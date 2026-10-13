@@ -44,7 +44,7 @@ public class ParticleBlackPowderSpark extends CompatParticle {
         this.yd -= this.gravity;
         this.move(this.xd, this.yd, this.zd);
 
-        // Damping is applied after the move, as upstream does — moving first means the first tick
+        // Damping is applied after the move, as upstream does. Moving first means the first tick
         // travels the full launch speed.
         this.xd *= 0.95D;
         this.yd *= 0.95D;

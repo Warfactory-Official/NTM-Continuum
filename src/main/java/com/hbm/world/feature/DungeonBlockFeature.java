@@ -148,7 +148,7 @@ public class DungeonBlockFeature extends Feature<NoneFeatureConfiguration> {
         };
     }
 
-    // ------------------------------------------------------------------------------------------------ 1.7 branches
+    // 1.7 branches
 
     private static boolean safe(WorldGenLevel level, RandomSource rand, int x, int y, int z) {
         if (!torchTop(level, new BlockPos(x, y - 1, z))) return false;

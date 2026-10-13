@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -30,11 +31,11 @@ import java.util.function.Predicate;
  *
  * <p><b>Never wait for the server on the client thread.</b> A query runs on the client (render) thread, which also answers
  * every other harness request. Right after a scenario's {@code /forceload add}, the server thread is inside that command,
- * which generates each forced chunk synchronously ({@code ServerLevel.setChunkForced} calls {@code getChunk}): on 1.21.1
- * Fabric that took well over the 20-60 s the queries used to block for. Each timed-out poll also left its task queued, so
- * the polls piled up behind the forceload, the client stopped answering, and the world never finished saving when the
- * scenario was cut off. So a query is submitted once per distinct request and the client waits for it at most
- * {@link #CLIENT_WAIT_MS}; until it has finished, polls of the same request answer {@code pending} without submitting again.
+ * which generates each forced chunk synchronously ({@code ServerLevel.setChunkForced} calls {@code getChunk}); on 1.21.1
+ * Fabric that takes well over 20-60 s. A timed-out poll leaves its task queued, so polls pile up behind the forceload,
+ * the client stops answering, and the world never finishes saving when the scenario is cut off. So a query is
+ * submitted once per distinct request and the client waits for it at most {@link #CLIENT_WAIT_MS}; until it has
+ * finished, polls of the same request answer {@code pending} without submitting again.
  *
  * <p><b>Never generate a chunk from a query.</b> {@code ServerLevel.hasChunk} asks whether a chunk is <em>ticketed</em> to FULL,
  * not whether it is loaded, so a freshly force-loaded chunk still generating passes it and the next block read generates it
@@ -125,8 +126,8 @@ public final class ServerQueries {
                     Structure structure = references.getKey();
                     if (!wanted.test(structure)) continue;
                     for (long reference : references.getValue()) {
-                        LevelChunk startChunk = loaded(level, net.minecraft.world.level.ChunkPos.getX(reference),
-                                net.minecraft.world.level.ChunkPos.getZ(reference));
+                        LevelChunk startChunk = loaded(level, ChunkPos.getX(reference),
+                                ChunkPos.getZ(reference));
                         if (startChunk == null) return null;
                         StructureStart start = startChunk.getStartForStructure(structure);
                         if (start != null && start.isValid() && seen.add(start)) starts.add(start);

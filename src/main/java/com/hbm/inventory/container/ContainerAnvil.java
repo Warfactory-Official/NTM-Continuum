@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.util.AchievementHandler;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.NTMAnvil;
 import com.hbm.inventory.ModMenus;
@@ -19,11 +20,11 @@ import net.minecraft.world.item.ItemStack;
  * Menu for the {@link NTMAnvil}: two smithing input slots + a smithing output (matched live against
  * {@link AnvilRecipes#getSmithing()}), plus the player inventory. The construction-recipe browser lives
  * entirely in the client screen ({@code GUIAnvil}) and crafts via {@link com.hbm.packet.AnvilCraftPayload}
- * straight from the player's inventory — no container slots involved.
+ * straight from the player's inventory, with no container slots involved.
  *
  * <p>The anvil has no BlockEntity; the {@link #tier} is re-derived from the block state at {@code pos} on
  * BOTH sides (the old container carried it from the client "because we can't trust these rascals with
- * their packets" — here the server reads its own world, which is stronger).
+ * their packets"; here the server reads its own world, which is stronger).
  */
 public class ContainerAnvil extends AbstractContainerMenu {
 
@@ -65,7 +66,7 @@ public class ContainerAnvil extends AbstractContainerMenu {
                     }
                 }
                 ContainerAnvil.this.updateSmithing();
-                com.hbm.util.AchievementHandler.fire(player, stack); // 1.7 SlotCraftingOutput
+                AchievementHandler.fire(player, stack); // 1.7 SlotCraftingOutput
                 super.onTake(player, stack);
             }
         });

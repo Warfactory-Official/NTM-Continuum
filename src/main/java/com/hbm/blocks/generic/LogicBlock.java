@@ -3,6 +3,7 @@ package com.hbm.blocks.generic;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModDungeonBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.SavedIds;
 import com.hbm.world.gen.util.LogicBlockActions;
 import com.hbm.world.gen.util.LogicBlockConditions;
 import com.hbm.world.gen.util.LogicBlockInteractions;
@@ -143,7 +144,7 @@ public class LogicBlock extends CompatBlock implements TickingBlock {
             nbt.putString("actionID", actionID);
             nbt.putString("conditionID", conditionID);
             if (interactionID != null) nbt.putString("interactionID", interactionID);
-            com.hbm.util.SavedIds.putEnum(nbt, "direction", direction); // by name, never an ordinal (History 19ej-ids)
+            SavedIds.putEnum(nbt, "direction", direction); // by name, never an ordinal (History 19ej-ids)
             if (disguise != null) {
                 nbt.putInt("disguiseMeta", disguiseMeta);
                 nbt.putString("disguise", BuiltInRegistries.BLOCK.getKey(disguise).toString());
@@ -158,7 +159,7 @@ public class LogicBlock extends CompatBlock implements TickingBlock {
             this.conditionID = nbt.getStringOr("conditionID", "PLAYER_CUBE_5");
             String interactionId = nbt.getStringOr("interactionID", "");
             this.interactionID = interactionId.isEmpty() ? null : interactionId;
-            this.direction = com.hbm.util.SavedIds.getEnum(nbt, "direction", ForgeDirection.UNKNOWN);
+            this.direction = SavedIds.getEnum(nbt, "direction", ForgeDirection.UNKNOWN);
             String disguiseId = nbt.getStringOr("disguise", "");
             if (!disguiseId.isEmpty()) {
                 this.disguiseMeta = nbt.getIntOr("disguiseMeta", 0);

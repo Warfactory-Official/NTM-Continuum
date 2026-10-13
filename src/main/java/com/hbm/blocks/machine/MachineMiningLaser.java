@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Mining Laser (1.12.2 {@code machine_mining_laser}): a ceiling-mounted 3×3×3 dummyable — the core hangs
+ * Mining Laser (1.12.2 {@code machine_mining_laser}): a ceiling-mounted 3×3×3 dummyable: the core hangs
  * one block below the clicked ceiling face ({@link #getHeightOffset()} = −1) with a 3D plus of dummy
  * cells; {@link #fillSpace} marks the old proxy-arm cells as extras (the port's connector geometry works
  * off {@code getConPos} ports instead of proxy tiles). Power connects at the TOP arm, fluid (crude oil
@@ -46,7 +46,7 @@ public class MachineMiningLaser extends BlockMultiblockMachine implements IEnerg
         return 0;
     }
 
-    /** Ceiling mount: the core sits one below the placement position (1.12.2 verbatim). */
+    /** Ceiling mount: the core sits one below the placement position (as in 1.12.2). */
     @Override
     public int getHeightOffset() {
         return -1;

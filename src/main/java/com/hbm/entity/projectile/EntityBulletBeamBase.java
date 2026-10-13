@@ -1,5 +1,7 @@
 package com.hbm.entity.projectile;
 
+import com.hbm.Constants;
+import com.hbm.packet.ProjectileStatePayload;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.ModEntities;
@@ -17,6 +19,7 @@ import java.util.function.BiConsumer;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -32,7 +35,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-/** The MK4 hitscan projectile. Its impact callback is deliberately separate from ordinary bullets. */
+/** The MK4 hitscan projectile. Its impact callback is separate from ordinary bullets. */
 public class EntityBulletBeamBase extends CompatEntity {
 
     private static final double MIN_BEAM_LENGTH = 1.0E-6D;
@@ -112,7 +115,7 @@ public class EntityBulletBeamBase extends CompatEntity {
     }
 
     /** Applies the server's source render state without re-running hitscan on the client. */
-    public void applyRenderState(com.hbm.packet.ProjectileStatePayload payload,
+    public void applyRenderState(ProjectileStatePayload payload,
             @Nullable BulletConfig syncedConfig) {
         Vec3 endpoint = new Vec3(payload.endpointX(), payload.endpointY(), payload.endpointZ());
         Vec3 endpointDirection = endpoint.subtract(position());
@@ -134,7 +137,7 @@ public class EntityBulletBeamBase extends CompatEntity {
         setXRot(payload.pitch());
         if (syncedConfig != null) config = syncedConfig;
         else if (!payload.configId().isEmpty())
-            com.hbm.Constants.LOG.warn("Missing bullet config {} for beam entity {}", payload.configId(), getId());
+            Constants.LOG.warn("Missing bullet config {} for beam entity {}", payload.configId(), getId());
         renderStateReady = true;
     }
 
@@ -167,7 +170,7 @@ public class EntityBulletBeamBase extends CompatEntity {
 
     @Override
     public void tick() {
-        if (level().isClientSide()) com.hbm.packet.ProjectileStatePayload.applyPending(this);
+        if (level().isClientSide()) ProjectileStatePayload.applyPending(this);
         if (config == null) config = getBulletConfig();
         if (config == null) {
             discard();
@@ -175,7 +178,7 @@ public class EntityBulletBeamBase extends CompatEntity {
         }
         if (config.onUpdate != null) config.onUpdate.accept(this);
         super.tick();
-        if (!level().isClientSide() && hasRenderState()) com.hbm.packet.ProjectileStatePayload.send(this);
+        if (!level().isClientSide() && hasRenderState()) ProjectileStatePayload.send(this);
         if (!level().isClientSide() && tickCount > config.expires) discard();
     }
 
@@ -226,7 +229,7 @@ public class EntityBulletBeamBase extends CompatEntity {
         // Publish as soon as a tracked beam has a measured endpoint; waiting for the next tick leaves
         // the client with a zero-length render state during the beam's first visible frame.
         if (!level().isClientSide() && hasRenderState() && level().getEntity(getId()) == this)
-            com.hbm.packet.ProjectileStatePayload.send(this);
+            ProjectileStatePayload.send(this);
     }
 
     public boolean hasRenderState() { return renderStateReady; }
@@ -304,7 +307,7 @@ public class EntityBulletBeamBase extends CompatEntity {
         }
         reflected.performHitscanExternal(250D);
         level().addFreshEntity(reflected);
-        if (level() instanceof net.minecraft.server.level.ServerLevel server) {
+        if (level() instanceof ServerLevel server) {
             server.sendParticles(ParticleTypes.EXPLOSION, hit.location().x, hit.location().y,
                     hit.location().z, 1, 0D, 0D, 0D, 0D);
         }

@@ -1,5 +1,6 @@
 package com.hbm.api.energymk2;
 
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.capability.MachineCaps;
 import com.hbm.config.GeneralConfig;
@@ -12,7 +13,9 @@ import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.graph.NodeNetwork;
 import com.hbm.uninos.graph.PortClaims;
 import dev.golem.core.platform.Lifecycle;
+import dev.golem.core.world.ChunkPromotions;
 import dev.golem.core.world.EnergyCompat;
+import dev.golem.core.world.EnergyExposure;
 import dev.golem.core.world.EnergyView;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -20,6 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
@@ -32,12 +36,11 @@ import java.util.List;
  * One round of energy over the node graph: find the machines at the net's edge faces, serve them by
  * {@linkplain EnergyBus the 1.7 law}, and charge the round back to whoever funded it.
  *
- * <p>This is deliberately smaller than the upstream it answers to, because Continuum does not need
- * most of what makes that one big. Upstream reaches every endpoint through a registered capability,
- * so it carries a capability service, a role enum and a folded-multiblock resolver to ask a machine
- * what it is. Continuum owns its machines: the endpoint registry hands back the owning block entity
- * and {@code instanceof IEnergyHandlerMK2} answers the same question with nothing in between. A
- * capability lookup is only needed for machines that are somebody else's.
+ * <p>This is smaller than the upstream it answers to. Upstream reaches every endpoint through a registered
+ * capability, so it carries a capability service, a role enum and a folded-multiblock resolver. Continuum
+ * owns its machines: the endpoint registry hands back the owning block entity and
+ * {@code instanceof IEnergyHandlerMK2} answers the question. A capability lookup is only needed for
+ * machines that are somebody else's.
  *
  * <p>Discovery is pull: a conductor probes the faces of its own cells and asks what is on the other side.
  * The role a machine found there plays is 1.7's per-port answer, claimed by its own {@code tryProvide} /
@@ -76,14 +79,14 @@ public final class PowerNetwork {
 
     public static void init() {
         EndpointRegistry.init();
-        dev.golem.core.world.EnergyExposure.expose(PowerEnergySource.INSTANCE,
-                () -> new net.minecraft.world.level.block.Block[]{
-                        com.hbm.blocks.machine.ModMachineBlocks.red_cable.get()});
-        dev.golem.core.world.ChunkPromotions.onRise(LevelNodeGraph::onChunkFull);
+        EnergyExposure.expose(PowerEnergySource.INSTANCE,
+                () -> new Block[]{
+                        ModMachineBlocks.red_cable.get()});
+        ChunkPromotions.onRise(LevelNodeGraph::onChunkFull);
         Lifecycle.onLevelUnload((server, level) -> {
             LevelNodeGraph.clearLevel(level);
             EndpointRegistry.clearLevel(level);
-            com.hbm.uninos.graph.PortClaims.clearLevel(level);
+            PortClaims.clearLevel(level);
         });
         Lifecycle.onServerTick(PowerNetwork::onServerTick);
     }
@@ -223,7 +226,7 @@ public final class PowerNetwork {
 
     /**
      * Charge the round back. Real providers pay first and buffers only cover the shortfall, lowest
-     * tier first — a buffer's priority reads "how full I want this one", so the overflow tank empties
+     * tier first. A buffer's priority reads "how full I want this one", so the overflow tank empties
      * before the main bank.
      *
      * @return what no provider could cover, which a foreign debt must keep rather than write off.
@@ -276,16 +279,16 @@ public final class PowerNetwork {
      * The machine a face looks at, through three routes in order of cost. The endpoint registry
      * answers without touching the chunk; a block entity sitting on the cell answers for itself; and a
      * footprint cell answers through the block, which is the only one of the three that knows where the
-     * core is — for both multiblock systems, which {@link MachineCore} is what keeps honest. A machine's own {@code canConnect} gates the side, so a face it refuses is a
-     * face the net cannot reach it on — the pseudo-face is exempt, being the cell's own machine rather
-     * than a side of it.
+     * core is. {@link MachineCore} keeps that honest for both multiblock systems. A machine's own
+     * {@code canConnect} gates the side, so a face it refuses is a face the net cannot reach it on. The
+     * pseudo-face is exempt, being the cell's own machine rather than a side of it.
      */
     /**
      * Is the chunk holding this face already resident? Probing runs from the server tick over every face of
-     * every net, and both {@code getBlockEntity} and {@code getBlockState} load a chunk synchronously when
-     * it is absent -- so a net whose run reaches into unloaded ground makes the tick load chunks, which
-     * widens the loaded set, which gives the next tick more faces to probe. A face that is not resident is
-     * skipped rather than marked stale, so it is probed again for free once something else loads it.
+     * every net, and both {@code getBlockEntity} and {@code getBlockState} load an absent chunk synchronously,
+     * so a net whose run reaches into unloaded ground would make the tick load chunks, widening the loaded
+     * set and giving the next tick more faces to probe. A face that is not resident is skipped rather than
+     * marked stale, so it is probed again for free once something else loads it.
      */
     private static boolean resident(ServerLevel level, BlockPos pos) {
         return level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null;
@@ -355,7 +358,7 @@ public final class PowerNetwork {
 
             // 1.7 PowerNetMK2 kept providers and receivers in two lists, filled only by IEnergyProviderMK2.tryProvide
             // and IEnergyReceiverMK2.trySubscribe: a consumer's stored power is never supply, and a generator's
-            // headroom is never demand, whatever its speeds say (playtest 2026-10-12: a battery drained a machine).
+            // headroom is never demand, whatever its speeds say: a battery must not drain a machine.
             long supply = provide && handler instanceof IEnergyProviderMK2
                     ? Math.min(handler.getPower(), handler.getProviderSpeed()) : 0L;
             if (supply > 0L) {

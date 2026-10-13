@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * Watches for a fusion torus to be built around it. The shape is {@link MachineFusionTorus#layout}
  * itself, so the pattern the ghost preview draws and the pattern the reactor occupies can never drift
- * apart — upstream re-walked the same mask in its own scan loop.
+ * apart. Upstream re-walked the same mask in its own scan loop.
  */
 public class TileEntityFusionTorusStruct extends TileEntityStructBase {
 

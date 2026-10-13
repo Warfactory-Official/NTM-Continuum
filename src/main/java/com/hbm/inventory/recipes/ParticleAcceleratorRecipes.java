@@ -69,7 +69,7 @@ public final class ParticleAcceleratorRecipes {
         index();
     }
 
-    /** The recipe two particles produce, or null when nothing matches — used by JEI and the GUIs. */
+    /** The recipe two particles produce, or null when nothing matches. Used by JEI and the GUIs. */
     public static @Nullable ParticleAcceleratorRecipe getOutput(ItemStack input1, ItemStack input2) {
         for (ParticleAcceleratorRecipe recipe : index()) {
             if (recipe.matchesRecipe(input1, input2)) return recipe;

@@ -1,5 +1,7 @@
 package com.hbm.wiaj;
 
+import com.hbm.Constants;
+import com.hbm.wiaj.actors.ActorBasicPanel;
 import com.hbm.wiaj.actors.ActorFancyPanel;
 import com.hbm.wiaj.actors.ActorFancyPanel.Orientation;
 import com.hbm.wiaj.actors.ISpecialActor;
@@ -7,6 +9,7 @@ import com.hbm.wiaj.actors.JarRenderers;
 import com.hbm.wiaj.cannery.CanneryBase;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.client.KeyMappings;
 import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;
@@ -37,13 +40,13 @@ import java.util.Map.Entry;
  * bottom, the subject's icon top left and further presentations below it.
  *
  * <p>Every coordinate, sprite and colour is 1.7's. The jar is drawn through {@link GuiScenes} with 1.7's
- * transform — {@code scale(-10)}, Z flattened by half, zoom, pitch, yaw, centre, offset — minus the
+ * transform: {@code scale(-10)}, Z flattened by half, zoom, pitch, yaw, centre, offset, minus the
  * {@code translate(width / 2, height / 2, 400)} that only placed it on screen.
  */
 //krass
 public class GuiWorldInAJar extends CompatScreen {
 
-    private static final Identifier guiUtil = dev.golem.core.Ids.of("hbm", "textures/gui/gui_utility.png");
+    private static final Identifier guiUtil = Ids.of("hbm", "textures/gui/gui_utility.png");
 
     JarScript jarScript;
     ItemStack icon;
@@ -106,7 +109,7 @@ public class GuiWorldInAJar extends CompatScreen {
                 mc.player.sendSystemMessage(Component.literal(line.toString()).withStyle(ChatFormatting.RED));
             }
         }
-        com.hbm.Constants.LOG.error("World in a jar failed", ex);
+        Constants.LOG.error("World in a jar failed", ex);
         mc.setScreen(null);
     }
 
@@ -166,7 +169,7 @@ public class GuiWorldInAJar extends CompatScreen {
         if(KeyMappings.isKeyDown(GLFW.GLFW_KEY_LEFT_ALT)) {
             List<Object[]> list = new ArrayList<>();
             list.add(new Object[] { (mouseX - width / 2) + " / " + (mouseY - height / 2) });
-            new com.hbm.wiaj.actors.ActorBasicPanel(mouseX - width / 2, mouseY - height / 2, list.toArray(new Object[0][]))
+            new ActorBasicPanel(mouseX - width / 2, mouseY - height / 2, list.toArray(new Object[0][]))
                     .drawForegroundComponent(graphics, this.width, this.height, 0, 0F);
         }
 

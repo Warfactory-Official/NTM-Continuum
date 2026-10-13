@@ -1,6 +1,8 @@
 package com.hbm.lib;
 
 import com.hbm.Constants;
+import dev.golem.core.Ids;
+import java.util.Locale;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -55,20 +57,20 @@ public final class ModDamageSources {
      */
     public static final ResourceKey<DamageType> HARD_LANDING = key("hard_landing");
     public static final ResourceKey<DamageType> TAINT = key("taint");
-    /** absolute + bypasses armor — 1.7 {@code ModDamageSource.mku}, the MKU contagion */
+    /** Absolute, bypasses armor. 1.7 {@code ModDamageSource.mku}, the MKU contagion */
     public static final ResourceKey<DamageType> MKU = key("mku");
     public static final ResourceKey<DamageType> BANG = key("bang");
     /** absolute + bypasses armor (old: {@code setDamageIsAbsolute().setDamageBypassesArmor()}) */
     public static final ResourceKey<DamageType> ELECTRICITY = key("electricity");
-    /** absolute + bypasses armor — the MASER turret's emitter */
+    /** Absolute, bypasses armor: the MASER turret's emitter */
     public static final ResourceKey<DamageType> MICROWAVE = key("microwave");
     public static final ResourceKey<DamageType> LEAD = key("lead");
     public static final ResourceKey<DamageType> EUTHANIZED_SELF = key("euthanized_self");
     public static final ResourceKey<DamageType> EUTHANIZED_SELF2 = key("euthanized_self2");
     public static final ResourceKey<DamageType> OVERDOSE = key("overdose");
-    /** Scalded by a hot fluid — a mist cloud above 100 °C. Carries {@code is_fire}. */
+    /** Scalded by a hot fluid: a mist cloud above 100 °C. Carries {@code is_fire}. */
     public static final ResourceKey<DamageType> BOIL = key("boil");
-    /** Frozen by a cryogenic fluid — a mist cloud below −20 °C. */
+    /** Frozen by a cryogenic fluid: a mist cloud below −20 °C. */
     public static final ResourceKey<DamageType> ICE = key("ice");
     /** Eaten by a corrosive fluid. Absolute, and it damages the whole suit on the way through. */
     public static final ResourceKey<DamageType> ACID = key("acid");
@@ -78,18 +80,18 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> BROADCAST = key("broadcast");
     /** The pest control box (old {@code ModDamageSource.enervation}): absolute + bypasses armor. */
     public static final ResourceKey<DamageType> ENERVATION = key("enervation");
-    /** old-hbm {@code ModDamageSource.crucible}: the crucible's cut. Absolute, ignores armour. */
+    /** 1.12.2 {@code ModDamageSource.crucible}: the crucible's cut. Absolute, ignores armour. */
     public static final ResourceKey<DamageType> CRUCIBLE = key("crucible");
-    /** old-hbm {@code ModDamageSource.slicer}: a plain cutter's cut. Absolute, ignores armour. */
+    /** 1.12.2 {@code ModDamageSource.slicer}: a plain cutter's cut. Absolute, ignores armour. */
     public static final ResourceKey<DamageType> SLICER = key("slicer");
 
-    // --- ntm-next entity port (gen_entity_damage_types.py) ---
+    // ntm-next entity port (gen_entity_damage_types.py)
     /** ntm-next cloud: bypasses_armor, bypasses_effects. */
     public static final ResourceKey<DamageType> CLOUD = key("cloud");
     /** ntm-next pink_cloud: bypasses_armor, bypasses_effects. */
     public static final ResourceKey<DamageType> PINK_CLOUD = key("pink_cloud");
 
-    // --- ntm-next entity port (gen_entity_damage_types.py) ---
+    // ntm-next entity port (gen_entity_damage_types.py)
     /** ntm-next acid_player: no tags. */
     public static final ResourceKey<DamageType> ACID_PLAYER = key("acid_player");
     /** ntm-next boat: bypasses_armor, bypasses_effects. */
@@ -126,8 +128,8 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> TAU = key("tau");
 
     /**
-     * The damage categories a bullet can belong to, ported from 1.12.2's
-     * 1.7 {@code DamageResistanceHandler.DamageClass} (the port kept one copy, this one). Upstream turns the enum's name into a damage-source
+     * The damage categories a bullet can belong to, ported from 1.7's
+     * {@code DamageResistanceHandler.DamageClass}. Upstream turns the enum's name into a damage-source
      * string at hit time and then sets projectile/fire/explosion flags on it; here each class is a real
      * {@code hbm:bullet_<name>} damage type, and those three flags are the vanilla {@code is_projectile}
      * / {@code is_fire} / {@code is_explosion} type tags.
@@ -138,7 +140,7 @@ public final class ModDamageSources {
     public enum DamageClass {
         PHYSICAL, FIRE, EXPLOSIVE, ELECTRIC, PLASMA, LASER, MICROWAVE, SUBATOMIC, OTHER;
 
-        private final ResourceKey<DamageType> type = key("bullet_" + name().toLowerCase(java.util.Locale.ROOT));
+        private final ResourceKey<DamageType> type = key("bullet_" + name().toLowerCase(Locale.ROOT));
 
         public ResourceKey<DamageType> type() { return type; }
     }
@@ -162,7 +164,7 @@ public final class ModDamageSources {
     }
 
     private static ResourceKey<DamageType> key(String name) {
-        return ResourceKey.create(Registries.DAMAGE_TYPE, dev.golem.core.Ids.of(Constants.MOD_ID, name));
+        return ResourceKey.create(Registries.DAMAGE_TYPE, Ids.of(Constants.MOD_ID, name));
     }
 
     public static DamageSource source(Level level, ResourceKey<DamageType> key) {

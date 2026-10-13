@@ -1,5 +1,6 @@
 package com.hbm.gametest;
 
+import com.hbm.Constants;
 import com.hbm.inventory.ItemStackContainer;
 import com.hbm.inventory.ModGunSupportMenus;
 import com.hbm.inventory.container.MenuItemBox;
@@ -10,9 +11,11 @@ import com.hbm.items.ModGunSupportItems;
 import com.hbm.items.ItemEnums.EnumCasingType;
 import com.hbm.items.tool.ItemAmmoBag;
 import com.hbm.items.tool.ItemCasingBag;
+import dev.golem.core.data.ItemContents;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -23,7 +26,7 @@ public final class GunSupportGameTests {
 
     private GunSupportGameTests() {}
 
-    public static final GameTests.Suite TESTS = GameTests.suite(com.hbm.Constants.MOD_ID);
+    public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
     public static final GameTests.Function STORAGE = TESTS.function(
             "gun_support_storage", 40, () -> GunSupportGameTests::storageAndFraction);
     public static final GameTests.Function MENU = TESTS.function(
@@ -37,7 +40,7 @@ public final class GunSupportGameTests {
         ItemStack ammoBag = new ItemStack(ModGunSupportItems.ammo_bag.get());
         ItemAmmoBag.InventoryAmmoBag ammo = ItemAmmoBag.contents(ammoBag);
         ammo.setStackInSlot(0, new ItemStack(ModAmmoItems.m357_sp.get(), 12));
-        helper.assertTrue(ModDataComponents.AMMO_BAG.getOr(ammoBag, dev.golem.core.data.ItemContents.EMPTY)
+        helper.assertTrue(ModDataComponents.AMMO_BAG.getOr(ammoBag, ItemContents.EMPTY)
                         .copies().get(0).getCount() == 12,
                 "Ammo bag changes must persist to its component");
 
@@ -56,21 +59,21 @@ public final class GunSupportGameTests {
     public static void menuAuthority(GameTestHelper helper) {
         Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ItemStack bag = new ItemStack(ModGunSupportItems.ammo_bag.get());
-        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, bag);
+        player.setItemInHand(InteractionHand.MAIN_HAND, bag);
         MenuItemBox menu = new MenuItemBox(ModGunSupportMenus.AMMO_BAG.get(), 0, player.getInventory(),
-                com.hbm.items.tool.ItemAmmoBag.LAYOUT,
+                ItemAmmoBag.LAYOUT,
                 new ItemStackContainer(player, bag, ItemAmmoBag.SLOTS, ModDataComponents.AMMO_BAG));
         helper.assertTrue(menu.getSlot(0).mayPlace(new ItemStack(ModAmmoItems.m357_sp.get())),
                 "Ammo slots must accept uncomponentized ammo");
         ItemStack casingBag = new ItemStack(ModGunSupportItems.casing_bag.get());
         MenuItemBox casingMenu = new MenuItemBox(ModGunSupportMenus.CASING_BAG.get(), 1,
-                player.getInventory(), com.hbm.items.tool.ItemCasingBag.LAYOUT,
+                player.getInventory(), ItemCasingBag.LAYOUT,
                 new ItemStackContainer(player, casingBag, ItemCasingBag.SLOTS, ModDataComponents.CASING_BAG));
         helper.assertFalse(casingMenu.getSlot(0).mayPlace(new ItemStack(Items.STICK)),
                 "Casing slots must remain recovery-only");
         helper.assertTrue(menu.quickMoveStack(player, ItemAmmoBag.SLOTS + 27) == ItemStack.EMPTY,
                 "The held bag must not be quick-moved out of its open menu");
-        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(Items.STICK));
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STICK));
         helper.assertFalse(menu.stillValid(player), "Menu must close when its owning stack leaves the hand");
         helper.succeed();
     }

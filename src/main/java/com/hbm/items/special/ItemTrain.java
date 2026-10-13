@@ -5,6 +5,7 @@ import com.hbm.blocks.rail.IRailNTM.RailCheckType;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.train.EntityRailCarBase;
+import dev.golem.core.registry.Entities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
@@ -69,7 +70,7 @@ public class ItemTrain extends CompatItem {
         if (!BlockRailNTM.railAt(level, pos, owner)) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         ItemStack stack = context.getItemInHand();
-        EntityRailCarBase train = dev.golem.core.registry.Entities.create(type.train.get(), level, EntitySpawnReason.SPAWN_ITEM_USE);
+        EntityRailCarBase train = Entities.create(type.train.get(), level, EntitySpawnReason.SPAWN_ITEM_USE);
         if (train == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         if (train.getGauge() != owner.rail.getGauge(level, pos.getX(), pos.getY(), pos.getZ())) {

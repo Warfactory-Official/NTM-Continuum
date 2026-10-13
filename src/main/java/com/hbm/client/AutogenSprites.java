@@ -6,24 +6,22 @@ import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.ModAutogenItems;
 import dev.golem.core.render.Sprites;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
  * The material-shape sprites, computed while the atlas is stitched instead of shipped as files.
  *
- * <p>Each autogen shape draws one greyscale plate — {@code hbm:items/plate_cast}, authored in the band
- * white..{@code #505050} — and every material that declares that shape gets it recoloured onto its own
+ * <p>Each autogen shape draws one greyscale plate, {@code hbm:items/plate_cast}, authored in the band
+ * white..{@code #505050}, and every material that declares that shape gets it recoloured onto its own
  * {@link NTMMaterial#solidColorLight} and {@link NTMMaterial#solidColorDark}. That is what 1.7 did
- * through {@code RGBMutatorInterpolatedComponentRemap} on a mutable atlas icon, and what this mod did
- * by pre-baking 187 PNGs with a script until the remap moved into Golem Core.
+ * through {@code RGBMutatorInterpolatedComponentRemap} on a mutable atlas icon. The remap runs in Golem Core.
  *
- * <p>The sprite ids come from {@link ModAutogenItems}' own shape table, so an item and its sprite can
- * only ever be named the same way: adding a shape to a material in {@link Mats} mints the item and its
- * texture together, with no file to draw and no generator to re-run.
+ * <p>The sprite ids come from {@link ModAutogenItems}' own shape table, so an item and its sprite are always named
+ * the same way: adding a shape to a material in {@link Mats} mints the item and its texture together.
  *
  * <p>A tint cannot stand in for this. The remap has an offset term and a multiply does not, so tinting
- * reaches a material's highlight or its shadow but never both — measured across the roster, mean error
- * 26.5/255 per channel and a worst case of 175.
+ * reaches a material's highlight or its shadow but never both.
  */
 public final class AutogenSprites {
 
@@ -39,7 +37,7 @@ public final class AutogenSprites {
     private static final Set<String> AUTHORED = Set.of("bedrock_ore_fragment_bismuth");
 
     /** The sprites already declared ({@code <art>_<material>}), so a later call adds only new materials. */
-    private static final Set<String> DECLARED = new java.util.HashSet<>();
+    private static final Set<String> DECLARED = new HashSet<>();
 
     /**
      * Declares every material-shape remap not declared yet. Client only, before the first resource load.

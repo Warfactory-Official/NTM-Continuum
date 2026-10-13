@@ -2,15 +2,27 @@ package com.hbm.client;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.hbm.client.particle.ParticleHaze;
+import com.hbm.client.render.LensBenchmark;
+import com.hbm.entity.effect.EntityNukeTorex;
+import dev.golem.core.Ids;
+import dev.golem.core.harness.HarnessQueryRegistry;
+import dev.golem.core.render.Particles;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
 import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 
 /**
- * Harness queries of the wave-2 VISUAL phase (History §19ek-visual). Inert unless the harness listener is running.
+ * Harness queries for the visual checks. Inert unless the harness listener is running.
  *
  * <ul>
  *   <li>{@code hbm_lang_missing}: every registered {@code hbm} item, block and entity type whose display name has no
@@ -24,12 +36,12 @@ public final class VisualHarnessQueries {
     private VisualHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_lang_missing", VisualHarnessQueries::langMissing);
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_sound", VisualHarnessQueries::sound);
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_torex", VisualHarnessQueries::torex);
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_haze", VisualHarnessQueries::haze);
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_swing", VisualHarnessQueries::swing);
-        com.hbm.client.render.LensBenchmark.register();
+        HarnessQueryRegistry.register("hbm_lang_missing", VisualHarnessQueries::langMissing);
+        HarnessQueryRegistry.register("hbm_sound", VisualHarnessQueries::sound);
+        HarnessQueryRegistry.register("hbm_torex", VisualHarnessQueries::torex);
+        HarnessQueryRegistry.register("hbm_haze", VisualHarnessQueries::haze);
+        HarnessQueryRegistry.register("hbm_swing", VisualHarnessQueries::swing);
+        LensBenchmark.register();
     }
 
     /** Client-side state of every Torex cloud: local tick, synced age, replay readiness and cloudlet count. */
@@ -37,8 +49,8 @@ public final class VisualHarnessQueries {
         JsonObject json = new JsonObject();
         JsonArray clouds = new JsonArray();
         if (mc.level != null) {
-            for (net.minecraft.world.entity.Entity e : mc.level.entitiesForRendering()) {
-                if (!(e instanceof com.hbm.entity.effect.EntityNukeTorex torex)) continue;
+            for (Entity e : mc.level.entitiesForRendering()) {
+                if (!(e instanceof EntityNukeTorex torex)) continue;
                 JsonObject o = new JsonObject();
                 o.addProperty("tick", torex.tickCount);
                 o.addProperty("synced_age", torex.syncedAnimationAge());
@@ -58,7 +70,7 @@ public final class VisualHarnessQueries {
         JsonObject json = new JsonObject();
         if (mc.level == null) return json;
         int age = params.has("age") ? params.get("age").getAsInt() : 200;
-        dev.golem.core.render.Particles.add(new com.hbm.client.particle.ParticleHaze(mc.level,
+        Particles.add(new ParticleHaze(mc.level,
                 params.get("x").getAsDouble(), params.get("y").getAsDouble(), params.get("z").getAsDouble()).aged(age));
         json.addProperty("spawned", true);
         return json;
@@ -93,13 +105,13 @@ public final class VisualHarnessQueries {
                 items.add(key.getPath() + " = " + shown);
             }
         }
-        for (net.minecraft.world.level.block.Block block : BuiltInRegistries.BLOCK) {
+        for (Block block : BuiltInRegistries.BLOCK) {
             Identifier key = BuiltInRegistries.BLOCK.getKey(block);
             if (!"hbm".equals(key.getNamespace())) continue;
             blockCount++;
             if (!lang.has(block.getDescriptionId())) blocks.add(key.getPath() + " = " + block.getDescriptionId());
         }
-        for (net.minecraft.world.entity.EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
+        for (EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
             Identifier key = BuiltInRegistries.ENTITY_TYPE.getKey(type);
             if (!"hbm".equals(key.getNamespace())) continue;
             entityCount++;
@@ -118,19 +130,19 @@ public final class VisualHarnessQueries {
     private static JsonObject sound(Minecraft mc, JsonObject params) {
         JsonObject json = new JsonObject();
         String id = params.has("id") ? params.get("id").getAsString() : "hbm:rbmk_shutdown";
-        Identifier location = dev.golem.core.Ids.parse(id);
+        Identifier location = Ids.parse(id);
         var events = mc.getSoundManager().getSoundEvent(location);
         json.addProperty("id", id);
         json.addProperty("resolved", events != null);
         if (events != null) {
             json.addProperty("weight", events.getWeight());
-            var sound = events.getSound(net.minecraft.util.RandomSource.create(0L));
+            var sound = events.getSound(RandomSource.create(0L));
             json.addProperty("sound", sound == null ? "null" : String.valueOf(sound.getLocation()));
             json.addProperty("stream", sound != null && sound.shouldStream());
         }
         if (params.has("play") && params.get("play").getAsBoolean() && mc.player != null) {
-            mc.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
-                    net.minecraft.sounds.SoundEvent.createVariableRangeEvent(location), 1.0F, 1.0F));
+            mc.getSoundManager().play(SimpleSoundInstance.forUI(
+                    SoundEvent.createVariableRangeEvent(location), 1.0F, 1.0F));
             json.addProperty("played", true);
         }
         return json;

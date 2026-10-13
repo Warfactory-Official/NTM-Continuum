@@ -6,13 +6,17 @@ import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.energymk2.PowerGraph;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.uninos.graph.NodeNetwork;
 import com.hbm.util.NetworkDiagnostics;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
@@ -63,16 +67,16 @@ public class ItemPowerNetTool extends CompatItem {
             say(player, "Receivers: " + NetworkDiagnostics.countEndpoints(server, net,
                     be -> be instanceof IEnergyReceiverMK2), ChatFormatting.YELLOW);
             say(player, "End of diagnostic for network " + id, ChatFormatting.GOLD);
-            java.util.Set<Long> links = new java.util.LinkedHashSet<>();
+            Set<Long> links = new LinkedHashSet<>();
             for (var node : net.nodes) links.add(node.posKey);
             for (var segment : net.segments) for (int i = 0; i < segment.cellCount(); i++) links.add(segment.cellAt(i));
             for (long key : links) {
                 BlockPos link = BlockPos.of(key);
-                net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+                CompoundTag data = new CompoundTag();
                 data.putInt("color", 0xffff00);
                 data.putFloat("scale", 0.5F);
                 data.putString("text", id);
-                com.hbm.particle.helper.HbmEffectNT.DebugText.send(server, link.getX() + 0.5, link.getY() + 1.5,
+                HbmEffectNT.DebugText.send(server, link.getX() + 0.5, link.getY() + 1.5,
                         link.getZ() + 0.5, data, radius);
             }
         } else {

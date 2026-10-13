@@ -1,5 +1,6 @@
 package com.hbm.entity.mob.glyphid;
 
+import com.hbm.blocks.ModDecoCrateBlocks;
 import dev.golem.core.data.Tags;
 
 import com.hbm.items.ModFoodItems;
@@ -24,6 +25,7 @@ import com.hbm.handler.threading.TargetPoint;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.main.ResourceManager;
+import dev.golem.core.world.Navigations;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -177,9 +179,9 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
      * constant 0.1, while {@code EntityCreature} feeds the movementSpeed attribute in as {@code moveForward}, and
      * {@code moveFlying} normalises any input of length 1 or more. So the attribute (1.0 grunt, 1.5 scout, 0.8
      * behemoth...) only matters below 1: a scout or Brenda is no faster than a grunt, speed potions do nothing to
-     * most glyphids, slowness does. Modern {@code Mob.setSpeed} uses one number for both, which made the 1.7
-     * attribute value a walk ten times too fast; split it back into the two 1.7 quantities. Water and air movement
-     * come out identical to 1.7 too (0.02 times the normalised input).
+     * most glyphids, slowness does. Modern {@code Mob.setSpeed} uses one number for both (ten times too fast
+     * for the 1.7 attribute value), so the two 1.7 quantities are kept apart here. Water and air movement
+     * match 1.7 too (0.02 times the normalised input).
      */
     @Override
     public void setSpeed(float speed) {
@@ -296,7 +298,7 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
     private void pathToTask() {
         int maxDist = (int) (Math.sqrt(distanceToSqr(taskX, taskY, taskZ)) * 1.2D);
         Path path = getNavigation().createPath(new BlockPos(taskX, taskY, taskZ), 1, maxDist);
-        if (path != null) dev.golem.core.world.Navigations.navigateTo(getNavigation(), path, 1.0D);
+        if (path != null) Navigations.navigateTo(getNavigation(), path, 1.0D);
     }
 
     @Override
@@ -305,7 +307,7 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
 
         int looting = 0;
         if (source.getEntity() instanceof LivingEntity attacker) {
-            looting = dev.golem.core.world.Compat.lootingLevel(level, attacker);
+            looting = Compat.lootingLevel(level, attacker);
         }
 
         Item drop = isOnFire() ? ModFoodItems.glyphid_meat_grilled.get() : ModFoodItems.glyphid_meat.get();
@@ -352,7 +354,7 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
         if (getTarget() != null && random.nextInt(20) == 0) return;
 
         Vec3 spot = DefaultRandomPos.getPos(this, 6, 3);
-        if (spot != null) dev.golem.core.world.Navigations.navigateTo(getNavigation(), spot.x, spot.y, spot.z, 1.0D);
+        if (spot != null) Navigations.navigateTo(getNavigation(), spot.x, spot.y, spot.z, 1.0D);
     }
 
     public void onBlinded() {
@@ -368,7 +370,7 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
                     Vec3 from = new Vec3(getX(), getY() + 1, getZ());
                     Vec3 to = new Vec3(getX() + rot.x, getY() + 1, getZ() + rot.z);
 
-                    BlockHitResult hit = dev.golem.core.world.Compat.clip(level(), from, to, ClipContext.Block.COLLIDER,
+                    BlockHitResult hit = Compat.clip(level(), from, to, ClipContext.Block.COLLIDER,
                             ClipContext.Fluid.NONE);
 
                     if (hit.getType() == HitResult.Type.BLOCK) {
@@ -398,12 +400,12 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
 
     /** 1.7 {@code BlockAllocatorGlyphidDig}: {@code glyphid_spawner} (all three subtypes) is never dug. */
     public static boolean isSpawnerBlock(BlockState state) {
-        return state.getBlock() == com.hbm.blocks.ModDecoCrateBlocks.glyphid_spawner.get();
+        return state.getBlock() == ModDecoCrateBlocks.glyphid_spawner.get();
     }
 
     /** 1.7 {@code EntityGlyphidScout}: a {@code glyphid_base} wall means a hive is already here. */
     public static boolean isHiveBlock(Block block) {
-        return block == com.hbm.blocks.ModDecoCrateBlocks.glyphid_base.get();
+        return block == ModDecoCrateBlocks.glyphid_base.get();
     }
 
     @Override
@@ -649,7 +651,7 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
         Vec3 from = new Vec3(getX(), getY() + getEyeHeight(), getZ());
         Vec3 to = new Vec3(taskX, taskY, taskZ);
 
-        BlockHitResult obstruction = dev.golem.core.world.Compat.clip(level(), from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE);
+        BlockHitResult obstruction = Compat.clip(level(), from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE);
 
         if (obstruction.getType() == HitResult.Type.MISS) return null;
 

@@ -2,17 +2,19 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.api.block.IToolable.ToolType;
-import com.hbm.blocks.machine.AutosawFeature;
 import com.hbm.blocks.machine.MachineAutosaw;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.machine.AutosawMath;
 import com.hbm.tileentity.machine.TileEntityMachineAutosaw;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.net.GolemBuffers;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -20,6 +22,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
+import com.hbm.blocks.machine.ModMachineBlocks;
 
 /** Focused contracts for the autosaw's geometry, harvesting, damage, tooling, and sync state. */
 public final class AutosawGameTests {
@@ -61,14 +64,14 @@ public final class AutosawGameTests {
                 "autosaw fuel set must contain exactly 1.7's five fuels");
 
         BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
-        MachineAutosaw block = AutosawFeature.machine_autosaw.get();
+        MachineAutosaw block = ModMachineBlocks.machine_autosaw.get();
         helper.getLevel().setBlock(pos, block.defaultBlockState(), 3);
         TileEntityMachineAutosaw saw = (TileEntityMachineAutosaw) helper.getLevel().getBlockEntity(pos);
         saw.tank.setFill(2);
         saw.isOn = true;
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         helper.assertTrue(block.onScrew(helper.getLevel(), player, pos, Direction.UP,
-                        Vec3.atCenterOf(pos), net.minecraft.world.InteractionHand.MAIN_HAND,
+                        Vec3.atCenterOf(pos), InteractionHand.MAIN_HAND,
                         ToolType.SCREWDRIVER), "screwdriver must suspend the autosaw");
         helper.assertTrue(saw.isSuspended, "screwdriver did not suspend the autosaw");
         helper.succeed();
@@ -165,7 +168,7 @@ public final class AutosawGameTests {
         first.tank.setTankType(Fluids.ETHANOL);
         first.tank.setFill(77);
 
-        var buf = dev.golem.core.net.GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
+        var buf = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         first.serialize(buf);
         second.deserialize(buf);
         buf.release();
@@ -178,7 +181,7 @@ public final class AutosawGameTests {
     }
 
     private static TileEntityMachineAutosaw place(GameTestHelper helper, BlockPos pos) {
-        helper.getLevel().setBlock(pos, AutosawFeature.machine_autosaw.get().defaultBlockState(), 3);
+        helper.getLevel().setBlock(pos, ModMachineBlocks.machine_autosaw.get().defaultBlockState(), 3);
         helper.assertTrue(helper.getLevel().getBlockEntity(pos) instanceof TileEntityMachineAutosaw,
                 "autosaw block entity was not created");
         return (TileEntityMachineAutosaw) helper.getLevel().getBlockEntity(pos);

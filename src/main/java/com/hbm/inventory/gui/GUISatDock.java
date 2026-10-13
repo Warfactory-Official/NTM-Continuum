@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerSatDock;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -19,7 +20,7 @@ import java.util.Optional;
  */
 public class GUISatDock extends CompatContainerScreen<ContainerSatDock> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_sat_dock.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_sat_dock.png");
 
     public GUISatDock(ContainerSatDock menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 186);

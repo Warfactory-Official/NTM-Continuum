@@ -12,8 +12,8 @@ import java.util.List;
 
 /**
  * Watches the whole dimension for detonations. Where the ray scanner reports a running machine at its exact
- * position, this reports a burst anywhere with a deliberate error on it — up to ten kilometres for a small
- * one, five hundred blocks for the largest — so a survey tells you roughly where, and how big.
+ * position, this reports a burst anywhere with a deliberate error on it, up to ten kilometres for a small
+ * one, five hundred blocks for the largest, so a survey tells you roughly where, and how big.
  */
 public class SatelliteDetector extends Satellite {
 

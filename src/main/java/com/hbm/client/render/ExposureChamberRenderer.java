@@ -7,6 +7,7 @@ import com.hbm.tileentity.machine.TileEntityMachineExposureChamber;
 import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
@@ -26,7 +27,7 @@ public final class ExposureChamberRenderer
     private static final int FULLBRIGHT = 0xF000F0;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/exposure_chamber.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/exposure_chamber.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/exposure_chamber.png");
 

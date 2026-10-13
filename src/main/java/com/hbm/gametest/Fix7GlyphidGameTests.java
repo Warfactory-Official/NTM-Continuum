@@ -14,7 +14,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 /**
- * Fix wave phase 7 (2026-10-03, mobs): the glyphids against original-hbm (1.7.10). Expected values are the 1.7
+ * The glyphids against 1.7. Expected values are the 1.7
  * {@code GlyphidStatsNT} rows (the profile {@code GlyphidStats.getStats()} returns) and each class's
  * {@code setSize}, written out as literals so a change to the port's table cannot also change the expectation.
  */
@@ -76,8 +76,8 @@ public final class Fix7GlyphidGameTests {
     /**
      * 1.7 old-AI movement: {@code getAIMoveSpeed()} is the constant 0.1 and the movementSpeed attribute times the
      * path speed becomes {@code moveForward}. So a move request of 1.0 (grunt) gives speed 0.1 and forward input 1.0,
-     * and 0.8 (behemoth) gives 0.1 and 0.8 - an acceleration of 0.98 x 0.1 and 0.98 x 0.08 per tick on the ground,
-     * where modern single-number movement had made it 0.98 x 1.0.
+     * and 0.8 (behemoth) gives 0.1 and 0.8, an acceleration of 0.98 x 0.1 and 0.98 x 0.08 per tick on the ground
+     * (modern single-number movement would give 0.98 x 1.0).
      */
     public static void movement(GameTestHelper helper) {
         EntityGlyphid bug = helper.spawnWithNoFreeWill(ModNtmEntities.GLYPHID.get(), new BlockPos(1, 2, 1));

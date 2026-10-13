@@ -1,5 +1,8 @@
 package com.hbm.handler.ability;
 
+import com.hbm.api.registry.NamedRegistry;
+import com.hbm.blocks.ModDecoCrateBlocks;
+import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.items.ModAbilityToolItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.sedna.factory.ConfettiUtil;
@@ -19,6 +22,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -141,7 +146,7 @@ public interface IWeaponAbility extends IBaseAbility {
         public void onHit(int level, ServerLevel world, Player player, Entity victim, Item tool) {
             if (victim instanceof LivingEntity) {
                 // 1.7 setFire(seconds): Fire Protection shortens it (vanilla dampener) and it never shortens a longer burn.
-                dev.golem.core.world.Effects.ignite(victim, durationAtLevel[level]);
+                Effects.ignite(victim, durationAtLevel[level]);
             }
         }
     };
@@ -196,7 +201,7 @@ public interface IWeaponAbility extends IBaseAbility {
                         drop(living, new ItemStack(Items.WITHER_SKELETON_SKULL));
                     else
                         drop(living, new ItemStack(Items.COAL, 3));
-                } else if (living instanceof net.minecraft.world.entity.monster.zombie.Zombie) {
+                } else if (living instanceof Zombie) {
                     drop(living, new ItemStack(Items.ZOMBIE_HEAD));
                 } else if (type == EntityType.CREEPER) {
                     drop(living, new ItemStack(Items.CREEPER_HEAD));
@@ -220,14 +225,14 @@ public interface IWeaponAbility extends IBaseAbility {
 
         @Override
         public void onHit(int level, ServerLevel world, Player player, Entity victim, Item tool) {
-            if (victim instanceof net.minecraft.world.entity.monster.Monster mob && mob.getHealth() <= 0.0F) {
+            if (victim instanceof Monster mob && mob.getHealth() <= 0.0F) {
                 int chance = 1000;
                 if (mob.getMaxHealth() > 20) chance = 750;
 
                 // 1.7: a random bobblehead, never the NONE type (mob.entityDropItem at the mob's feet)
                 if (world.getRandom().nextInt(chance) == 0) {
-                    int type = world.getRandom().nextInt(com.hbm.blocks.generic.BlockBobble.BobbleType.VALUES.length - 1) + 1;
-                    drop(mob, new net.minecraft.world.item.ItemStack(com.hbm.blocks.ModDecoCrateBlocks.bobblehead_items.get(type).get()));
+                    int type = world.getRandom().nextInt(BlockBobble.BobbleType.VALUES.length - 1) + 1;
+                    drop(mob, new ItemStack(ModDecoCrateBlocks.bobblehead_items.get(type).get()));
                 }
             }
         }
@@ -238,7 +243,7 @@ public interface IWeaponAbility extends IBaseAbility {
      * addon ability registers here ({@code REGISTRY.register(MY_ABILITY)}) at mod construction so a saved preset finds
      * it again; giving it to a tool is the tool's own {@code addAbility}.
      */
-    com.hbm.api.registry.NamedRegistry<IWeaponAbility> REGISTRY = com.hbm.api.registry.NamedRegistry.of(
+    NamedRegistry<IWeaponAbility> REGISTRY = NamedRegistry.of(
             "weapon ability", IWeaponAbility::getName, NONE, RADIATION, VAMPIRE, STUN, PHOSPHORUS, FIRE, CHAINSAW, BEHEADER, BOBBLE);
 
     static IWeaponAbility getByName(String name) {

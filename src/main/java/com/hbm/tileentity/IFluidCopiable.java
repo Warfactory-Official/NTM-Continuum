@@ -16,8 +16,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * 1.7 {@code IFluidCopiable}: the settings tool copies every typed tank's fluid (1.7 {@code fluidID}, one int per
- * tank; here {@code fluids}, one registry name per tank - a copied setting lives on in the tool item, so it is never
- * a numeric id, History section 19ej-ids) and pastes the selected one into the first receiving tank. The display list is each copied fluid's
+ * tank; here {@code fluids}, one registry name per tank; a copied setting lives on in the tool item, so it is never
+ * a numeric id) and pastes the selected one into the first receiving tank. The display list is each copied fluid's
  * translation key, which the tool shows in the info HUD with the selected entry in aqua.
  */
 public interface IFluidCopiable extends ICopiable {
@@ -69,7 +69,7 @@ public interface IFluidCopiable extends ICopiable {
     final class ItemFluidIds {
         private ItemFluidIds() {}
 
-        public static boolean hasNoID(com.hbm.inventory.fluid.FluidType type) {
+        public static boolean hasNoID(FluidType type) {
             return type.hasNoID();
         }
     }

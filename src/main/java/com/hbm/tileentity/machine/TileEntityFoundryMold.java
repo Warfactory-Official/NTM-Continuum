@@ -4,7 +4,7 @@ import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** The small caster (1.12.2 {@code TileEntityFoundryMold}) — takes size-0 molds. */
+/** The small caster (1.12.2 {@code TileEntityFoundryMold}), takes size-0 molds. */
 public class TileEntityFoundryMold extends TileEntityFoundryCastingBase {
 
     public TileEntityFoundryMold(BlockPos pos, BlockState state) {

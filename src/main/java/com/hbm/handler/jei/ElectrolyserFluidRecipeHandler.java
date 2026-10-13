@@ -1,5 +1,6 @@
 package com.hbm.handler.jei;
 
+import com.hbm.inventory.fluid.Fluids;
 import dev.golem.core.viewer.Role;
 import dev.golem.core.viewer.SlotLayout;
 import com.hbm.inventory.fluid.FluidStack;
@@ -31,8 +32,8 @@ public final class ElectrolyserFluidRecipeHandler extends HbmRecipeCategory<Elec
     public void setRecipe(SlotLayout builder, ElectrolyserFluidRecipes.ElectrolysisRecipe recipe) {
         add(builder, Role.INPUT, 48, 24, ItemFluidIcon.make(new FluidStack(recipe.input, recipe.amount)));
         List<ItemStack> outputs = new ArrayList<>();
-        if (recipe.output1.type != com.hbm.inventory.fluid.Fluids.NONE) outputs.add(ItemFluidIcon.make(recipe.output1));
-        if (recipe.output2.type != com.hbm.inventory.fluid.Fluids.NONE) outputs.add(ItemFluidIcon.make(recipe.output2));
+        if (recipe.output1.type != Fluids.NONE) outputs.add(ItemFluidIcon.make(recipe.output1));
+        if (recipe.output2.type != Fluids.NONE) outputs.add(ItemFluidIcon.make(recipe.output2));
         for (ItemStack stack : recipe.byproduct) outputs.add(stack.copy());
         int[][] positions = JEIUniversalHandler.getOutputCoords(outputs.size());
         for (int i = 0; i < outputs.size(); i++) add(builder, Role.OUTPUT,

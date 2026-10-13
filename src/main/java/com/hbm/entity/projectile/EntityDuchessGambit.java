@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import com.hbm.blocks.ModDecoBlocks;
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;
@@ -102,7 +103,7 @@ public class EntityDuchessGambit extends CompatEntity {
             ExplosionLarge.explode(level(), getX(), getY(), getZ() + 6, 2, true, false, false);
 
             level().setBlockAndUpdate(new BlockPos((int) (getX() - 0.5), (int) (getY() + 0.5), (int) (getZ() - 0.5)),
-                    com.hbm.blocks.ModDecoBlocks.boat.get().defaultBlockState());
+                    ModDecoBlocks.boat.get().defaultBlockState());
 
             ExplosionLarge.spawnShock(level(), getX(), getY() + 1, getZ(), 24, 3);
             ExplosionLarge.spawnShock(level(), getX(), getY() + 1, getZ(), 24, 2.5);

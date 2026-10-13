@@ -24,13 +24,13 @@ public class ContainerMachineBattery extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final @Nullable TileEntityMachineBattery battery;
 
-    /** Client-side constructor — receives the {@link BlockPos} sent by the server. */
+    /** Client-side constructor, which receives the {@link BlockPos} sent by the server. */
     public ContainerMachineBattery(int containerId, Inventory playerInventory, BlockPos pos) {
         this(containerId, playerInventory, resolve(playerInventory, pos),
                 ContainerLevelAccess.create(playerInventory.player.level(), pos));
     }
 
-    /** Server-side constructor — bound to the live BlockEntity. */
+    /** Server-side constructor, bound to the live BlockEntity. */
     public ContainerMachineBattery(int containerId, Inventory playerInventory, TileEntityMachineBattery battery) {
         this(containerId, playerInventory, battery,
                 ContainerLevelAccess.create(battery.getLevel(), battery.getBlockPos()));
@@ -55,7 +55,7 @@ public class ContainerMachineBattery extends AbstractContainerMenu {
 
     /**
      * Synced energy for the screen. Read straight off the (client-side) BlockEntity, whose power is
-     * broadcast as a full {@code long} via the BufPacket — NOT through a {@code ContainerData} slot,
+     * broadcast as a full {@code long} via the BufPacket, not through a {@code ContainerData} slot,
      * which is transmitted as a 16-bit short and would wrap for power values past 32 767.
      */
     public long getPower() {

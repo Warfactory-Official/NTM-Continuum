@@ -1,5 +1,8 @@
 package com.hbm.hazard;
 
+import com.hbm.handler.HazmatRegistry;
+import com.hbm.util.ContaminationUtil;
+import dev.golem.core.Ids;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,6 +20,9 @@ import com.hbm.hazard.modifier.IHazardModifier;
 import com.hbm.hazard.transformer.IHazardTransformer;
 import com.hbm.hazard.type.IHazardType;
 import dev.golem.core.player.InventoryScan;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -33,9 +39,9 @@ import org.jspecify.annotations.Nullable;
  * and the machinery modernized:
  *
  * <ul>
- * <li>Ore-dict keys → item <b>tags</b>: {@link #tagMap} replaces {@code oreMap}; evaluated first, in
+ * <li>Ore-dict keys to item <b>tags</b>: {@link #tagMap} replaces {@code oreMap}; evaluated first, in
  * registration order (the old "ore dict keys for this stack" order), then {@link #itemMap}. The exact
- * (item,meta)-stack map is gone — metadata no longer exists; component-sensitive hazards go through
+ * (item,meta)-stack map is removed, since metadata does not exist; component-sensitive hazards go through
  * {@link IHazardTransformer}s.</li>
  * <li>Override/mutex semantics are unchanged (override clears prior entries; colliding mutex bits
  * yield).</li>
@@ -44,7 +50,7 @@ import org.jspecify.annotations.Nullable;
  * attaches one to items the registry never mentions, and every mutator here drops the caches, so
  * all of it works after boot as well as during it.</li>
  * <li>The async scan pipeline (delta tracking, Guava caches, ASM hooks) is replaced by a synchronous
- * {@link #tickEntity} — players scan their full inventory, other living entities their 6 equipment
+ * {@link #tickEntity}: players scan their full inventory, other living entities their 6 equipment
  * slots, every {@code hazardRate} ticks. The public API is unchanged so the async version can return
  * later. A per-item chronology memo keeps the tag walk O(1) after first lookup.</li>
  * </ul>
@@ -86,14 +92,12 @@ public class HazardSystem {
     /**
      * Carried hazards, resolved when a slot changes instead of on every hazard tick.
      *
-     * <p>The fork scanned the whole inventory on a timer and re-derived each stack's entries from
-     * the tag walk every pass, which is the arrangement this class's javadoc called a stand-in for
-     * the async pipeline. Golem Core's {@link InventoryScan} is that pipeline: the fold below runs
-     * once per slot edit and off the server thread, and the hazard tick walks the memo.
+     * <p>Golem Core's {@link InventoryScan} stands in for the fork's async scan pipeline: the fold below
+     * runs once per slot edit and off the server thread, and the hazard tick walks the memo.
      *
-     * <p>Only the entry list is memoised. Modifiers are still evaluated against the live stack at
-     * apply time, so a stack's count and its components are read as they are now — a change to
-     * either is itself a slot change, so the entries behind them are never stale either.
+     * <p>Only the entry list is memoised. Modifiers are evaluated against the live stack at apply time,
+     * so a stack's count and its components are read as they are now; a change to either is itself a
+     * slot change, so the entries behind them are never stale.
      */
     private static final InventoryScan<HazardEntry[]> CARRIED = InventoryScan
             .of(HazardSystem::carriedHazards, HazardSystem::applyCarried)
@@ -146,7 +150,7 @@ public class HazardSystem {
     }
 
     /**
-     * Full list of applicable HazardEntries for this stack. ORDER: tags (registration order) → item.
+     * Full list of applicable HazardEntries for this stack. ORDER: tags (registration order), then item.
      * Entries marked "overriding" delete all fetched entries before them; colliding mutex bits yield.
      * The returned list has been passed through the transformers but not the modifiers.
      */
@@ -209,7 +213,7 @@ public class HazardSystem {
     }
 
     /**
-     * Configured RADIATION on a block's item — read directly from {@link #itemMap} (NOT via an
+     * Configured RADIATION on a block's item, read directly from {@link #itemMap} (NOT via an
      * {@link ItemStack}), so it's safe to call during mod setup, before item data components are bound
      * ({@code new ItemStack(...)} throws "Components not bound yet" there). The hazard blocks register
      * their radiation directly on the item ({@code HazardRegistry.registerHazardBlocks}), so a plain
@@ -278,7 +282,7 @@ public class HazardSystem {
     /**
      * Per-entity hazard tick, called from {@code EntityEffectHandler.onUpdate} (server side).
      *
-     * <p>A player's carried items are not here — they ride {@link #CARRIED}. What is left is the
+     * <p>A player's carried items are not here; they ride {@link #CARRIED}. What is left is the
      * equipment of everything else alive, six slots that no menu reports and that no scan would have
      * fewer of, and the neutron buffer the old pipeline reset every hazard tick (activation is
      * config-off).
@@ -296,7 +300,7 @@ public class HazardSystem {
     }
 
     /**
-     * Resolves and applies this player's carried hazards immediately, outside the tick cadence — for
+     * Resolves and applies this player's carried hazards immediately, outside the tick cadence, for
      * a caller that has just rewritten an inventory and for the tests that assert the pass end to
      * end without a connected client to raise slot events.
      */
@@ -307,17 +311,17 @@ public class HazardSystem {
     /** Adds hazard tooltip info; wired from each loader's item-tooltip event. */
     public static void addHazardInfo(ItemStack stack, Player player, List<Component> list) {
         // Radiation-resistance line for hazmat/armor (mirrors the 1.12.2 client tooltip handler).
-        double rad = com.hbm.handler.HazmatRegistry.getResistance(stack);
+        double rad = HazmatRegistry.getResistance(stack);
         rad = ((int) (rad * 100)) / 100D;
         if (rad > 0) {
-            list.add(net.minecraft.network.chat.Component.translatable("trait.radResistance", rad)
-                    .withStyle(net.minecraft.ChatFormatting.YELLOW));
+            list.add(Component.translatable("trait.radResistance", rad)
+                    .withStyle(ChatFormatting.YELLOW));
         }
 
         for (HazardEntry hazard : getHazardsFromStack(stack)) {
             hazard.addInformation(player, list, stack);
         }
-        com.hbm.util.ContaminationUtil.addNeutronRadInfo(stack, list);
+        ContaminationUtil.addNeutronRadInfo(stack, list);
     }
 
     /**
@@ -326,13 +330,13 @@ public class HazardSystem {
      * old ones.
      */
     private static String key(Item item) {
-        return net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).toString();
+        return BuiltInRegistries.ITEM.getKey(item).toString();
     }
 
     private static final Map<String, TagKey<Item>> TAGS = new ConcurrentHashMap<>();
 
     private static TagKey<Item> tag(String id) {
-        return TAGS.computeIfAbsent(id, key -> TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.parse(key)));
+        return TAGS.computeIfAbsent(id, key -> TagKey.create(Registries.ITEM, Ids.parse(key)));
     }
 
     public static void clearCaches() {

@@ -24,12 +24,11 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * The decorative steel pipe (1.7 {@code BlockPipe}): an axis pillar with an octagonal OBJ body drawn by
- * {@code RenderPipe}. The old block kept full-cube bounds and only changed its render type, so the port
- * is an axis pillar whose geometry lives in the authored {@code template_pipe*} element models;
- * {@link Style} picks which of the four old {@code rType} bodies the blockstate uses.
- * Placement on a face's axis is vanilla pillar behaviour, which is exactly what the old
- * {@code onBlockPlaced} computed (0/4/8 by clicked side). It spells out {@link RotatedPillarBlock}'s axis
- * handling on a {@link CompatBlock} so it can also be waterlogged (port addition, see {@link Waterlogging}).
+ * {@code RenderPipe}. 1.7 kept full-cube bounds and only changed the render type, so the port is an axis pillar
+ * whose geometry lives in the authored {@code template_pipe*} element models; {@link Style} picks which of the
+ * four {@code rType} bodies the blockstate uses. Placement on a face's axis is vanilla pillar behaviour, which
+ * is what 1.7's {@code onBlockPlaced} computed (0/4/8 by clicked side). It spells out {@link RotatedPillarBlock}'s
+ * axis handling on a {@link CompatBlock} so it can also be waterlogged (port addition, see {@link Waterlogging}).
  */
 public class DecoPipe extends CompatBlock implements SimpleWaterloggedBlock {
 
@@ -86,7 +85,7 @@ public class DecoPipe extends CompatBlock implements SimpleWaterloggedBlock {
     }
 
     /*
-     * Collision follows the pipe body (port deviation, user decision 2026-10-07): 1.7 kept full-cube bounds, but
+     * Collision follows the pipe body (a port deviation): 1.7 kept full-cube bounds, but
      * vanilla fluid only leaves a waterlogged block through faces its collision does not cover, so a full cube kept
      * the water in. The outline and the support shape stay the 1.7 full cube (selection, torches, chains).
      */

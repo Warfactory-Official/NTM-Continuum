@@ -1,6 +1,7 @@
 package com.hbm.client.particle;
 
 import com.hbm.sound.ModSounds;
+import dev.golem.core.client.Sounds;
 import dev.golem.core.data.Tags;
 import dev.golem.core.render.Particles;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -13,13 +14,12 @@ import net.minecraft.world.phys.Vec3;
  * A large blast: a boiling smoke plume and a spread of the ground itself thrown into the air.
  *
  * <p>Ported from 1.7 {@code ExplosionCreator}. The plume is {@link ParticleRocketFlame} at the
- * preset's scale — the same ten-quad cloud a missile trails, blown up — and the debris is
+ * preset's scale (the same ten-quad cloud a missile trails, blown up), and the debris is
  * {@link DebrisParticles}, which throws real scoops of the terrain rather than block-dust sprites.
  *
- * <p><b>The shockwave is not drawn yet.</b> Upstream's {@code ParticleMukeWave} serves both this
+ * <p><b>The shockwave is not drawn here.</b> Upstream's {@code ParticleMukeWave} serves both this
  * effect and the nuke, and the port has it only as part of the detonation in
- * {@link MukeParticles}; {@code waveScale} rides on the tag so the senders stay upstream's and the
- * wave drops in where it belongs once it stands on its own.
+ * {@link MukeParticles}. {@code waveScale} rides on the tag so the senders stay upstream's.
  */
 public class ExplosionLargeCreator implements IParticleCreator {
 
@@ -47,7 +47,7 @@ public class ExplosionLargeCreator implements IParticleCreator {
             if (distance <= soundRange) {
                 var sound = distance <= soundRange * 0.4F ? ModSounds.EXPLOSION_LARGE_NEAR.get()
                         : ModSounds.EXPLOSION_LARGE_FAR.get();
-                dev.golem.core.client.Sounds.playDelayed(
+                Sounds.playDelayed(
                         new ExplosionSmallCreator.PositionalSound(sound, x, y, z),
                         (int) (distance / ExplosionSmallCreator.speedOfSound));
             }

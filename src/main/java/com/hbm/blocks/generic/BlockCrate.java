@@ -14,6 +14,7 @@ import dev.golem.core.world.CompatBlock;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -44,7 +45,7 @@ import java.util.function.Supplier;
  * <p>The old drop tables were hardcoded lists where an entry appeared {@code weight} times and one
  * was picked uniformly. They are kept as lists of item ids so that an id this port does not (yet) have
  * keeps its weight as an empty draw rather than shifting the odds of everything else ("this is
- * implemented in the most braindead way imaginable" — the original's own words).
+ * implemented in the most braindead way imaginable", the original's own words).
  */
 public class BlockCrate extends CompatBlock {
 
@@ -57,7 +58,7 @@ public class BlockCrate extends CompatBlock {
         this.kind = kind;
     }
 
-    // ---- BlockFalling, spelt out: vanilla's FallingBlock has no interaction hook this port can reach ----
+    // BlockFalling, spelt out: vanilla's FallingBlock has no interaction hook this port can reach
 
     @Override
     public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
@@ -188,7 +189,7 @@ public class BlockCrate extends CompatBlock {
     /** The item with this hbm id, or an empty stack (an unported entry keeps its weight). */
     private static ItemStack stackOf(String id) {
         Item item = BuiltInRegistries.ITEM.getValue(Ids.of("hbm", id));
-        return item == null || item == net.minecraft.world.item.Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
+        return item == null || item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
     }
 
     private List<Supplier<ItemStack>> table() {

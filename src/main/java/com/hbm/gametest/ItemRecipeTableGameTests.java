@@ -1,21 +1,48 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.api.data.MachineDataMaps;
+import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.FluidContainerStack;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.MaterialStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.fluid.FluidStack;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.recipes.AmmoPressRecipes;
+import com.hbm.inventory.recipes.AnnihilatorRecipes;
+import com.hbm.inventory.recipes.ArcWelderRecipes;
+import com.hbm.inventory.recipes.BreederRecipes;
+import com.hbm.inventory.recipes.CombinationRecipes;
+import com.hbm.inventory.recipes.LemegetonRecipes;
+import com.hbm.inventory.recipes.MagicRecipes;
+import com.hbm.inventory.recipes.ParticleAcceleratorRecipes;
+import com.hbm.inventory.recipes.PedestalRecipes;
+import com.hbm.inventory.recipes.PressRecipes;
+import com.hbm.inventory.recipes.SawmillRecipes;
+import com.hbm.inventory.recipes.SolderingRecipes;
+import com.hbm.inventory.recipes.anvil.AnvilRecipes;
+import com.hbm.inventory.recipes.loader.DataRecipeTable;
+import com.hbm.inventory.recipes.loader.RecipeIngredients;
+import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemDepletedFuel;
+import com.hbm.tileentity.machine.TileEntityReactorResearch;
 import com.mojang.serialization.JsonOps;
+import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.ItemStacks;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Supplier;
 import net.minecraft.core.HolderLookup;
@@ -24,6 +51,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /**
  * The item machine tables as datapack tables and data maps (M2, batch R-C2): each table, read through the API its
@@ -54,11 +82,9 @@ public final class ItemRecipeTableGameTests {
     public static void init() {}
 
     /**
-     * Each table's line count and SHA-256 of its joined lines, taken from the Java tables on 2026-10-08 before they
-     * became files (HBM_DUMP_TABLES; the annihilator in 528 mode, every other table in the default config). Re-pinned
-     * 2026-10-12 for anvil_construction, combination, press and soldering when the tables became Java sources in 1.7's
-     * line order (History §19fc): the same lines, only their order changed; ammo_press, anvil_construction, arc_welder and
-     * lemegeton again for the 1.7 behaviour pass (§19fc: 1.7 ore names as tags, KEY_SAND as c:sands).
+     * Each table's line count and SHA-256 of its joined lines, taken from the Java tables before they
+     * became files (HBM_DUMP_TABLES; the annihilator in 528 mode, every other table in the default config).
+     * ammo_press, anvil_construction, arc_welder and lemegeton use 1.7 ore names as tags and KEY_SAND as c:sands.
      */
     static final Map<String, String> EXPECTED = Map.ofEntries(
             Map.entry("ammo_press", "89 f7efa3235ed3fb4c5724ceb2a519ba8129292ffa52bdff1305d7df874c405eda"),
@@ -93,14 +119,14 @@ public final class ItemRecipeTableGameTests {
         List<String> wrong = new ArrayList<>();
         Map<String, Supplier<List<String>>> tables = new TreeMap<>(tables());
         tables.put("annihilator", () -> {
-            boolean was528 = com.hbm.config.GeneralConfig.enable528;
-            com.hbm.config.GeneralConfig.enable528 = true;
+            boolean was528 = GeneralConfig.enable528;
+            GeneralConfig.enable528 = true;
             try {
-                rebuild(com.hbm.inventory.recipes.AnnihilatorRecipes.TABLE);
+                rebuild(AnnihilatorRecipes.TABLE);
                 return annihilator528();
             } finally {
-                com.hbm.config.GeneralConfig.enable528 = was528;
-                rebuild(com.hbm.inventory.recipes.AnnihilatorRecipes.TABLE);
+                GeneralConfig.enable528 = was528;
+                rebuild(AnnihilatorRecipes.TABLE);
             }
         });
         for (var table : tables.entrySet()) {
@@ -112,7 +138,7 @@ public final class ItemRecipeTableGameTests {
                 try {
                     Files.writeString(Path.of("item-table-" + table.getKey() + ".txt"), String.join("\n", lines) + "\n",
                             StandardCharsets.UTF_8);
-                } catch (java.io.IOException ignored) {
+                } catch (IOException ignored) {
                     // the failure message names the table either way
                 }
             }
@@ -126,21 +152,21 @@ public final class ItemRecipeTableGameTests {
     public static void roundTrip(GameTestHelper helper) {
         List<String> broken = new ArrayList<>();
         HolderLookup.Provider access = helper.getLevel().registryAccess();
-        for (var table : List.<com.hbm.inventory.recipes.loader.DataRecipeTable<?>>of(
-                com.hbm.inventory.recipes.AmmoPressRecipes.TABLE, com.hbm.inventory.recipes.AnnihilatorRecipes.TABLE,
-                com.hbm.inventory.recipes.ArcWelderRecipes.TABLE, com.hbm.inventory.recipes.BreederRecipes.TABLE,
-                com.hbm.inventory.recipes.CombinationRecipes.TABLE, com.hbm.inventory.recipes.LemegetonRecipes.TABLE,
-                com.hbm.inventory.recipes.MagicRecipes.TABLE, com.hbm.inventory.recipes.ParticleAcceleratorRecipes.TABLE,
-                com.hbm.inventory.recipes.PedestalRecipes.TABLE, com.hbm.inventory.recipes.PressRecipes.TABLE,
-                com.hbm.inventory.recipes.SawmillRecipes.TABLE, com.hbm.inventory.recipes.SolderingRecipes.TABLE,
-                com.hbm.inventory.recipes.anvil.AnvilRecipes.SMITHING, com.hbm.inventory.recipes.anvil.AnvilRecipes.CONSTRUCTION)) {
+        for (var table : List.<DataRecipeTable<?>>of(
+                AmmoPressRecipes.TABLE, AnnihilatorRecipes.TABLE,
+                ArcWelderRecipes.TABLE, BreederRecipes.TABLE,
+                CombinationRecipes.TABLE, LemegetonRecipes.TABLE,
+                MagicRecipes.TABLE, ParticleAcceleratorRecipes.TABLE,
+                PedestalRecipes.TABLE, PressRecipes.TABLE,
+                SawmillRecipes.TABLE, SolderingRecipes.TABLE,
+                AnvilRecipes.SMITHING, AnvilRecipes.CONSTRUCTION)) {
             roundTrip(table, access, broken);
         }
         helper.assertTrue(broken.isEmpty(), "rows that do not survive their JSON: " + broken);
         helper.succeed();
     }
 
-    private static <R> void roundTrip(com.hbm.inventory.recipes.loader.DataRecipeTable<R> table, HolderLookup.Provider access,
+    private static <R> void roundTrip(DataRecipeTable<R> table, HolderLookup.Provider access,
                                       List<String> broken) {
         for (var entry : table.entries()) {
             var json = table.table.toJson(entry.value(), access);
@@ -154,33 +180,33 @@ public final class ItemRecipeTableGameTests {
      * annihilator its 15 milestones; expensive mode swaps the assembly machine's vacuum tubes for analog circuits.
      */
     public static void configRows(GameTestHelper helper) {
-        var soldering = com.hbm.inventory.recipes.SolderingRecipes.TABLE;
-        var construction = com.hbm.inventory.recipes.anvil.AnvilRecipes.CONSTRUCTION;
-        var annihilator = com.hbm.inventory.recipes.AnnihilatorRecipes.TABLE;
-        int solderDefault = com.hbm.inventory.recipes.SolderingRecipes.recipes.size();
-        int anvilDefault = com.hbm.inventory.recipes.anvil.AnvilRecipes.getConstruction().size();
-        int annihilatorDefault = com.hbm.inventory.recipes.AnnihilatorRecipes.recipes().size();
-        boolean was528 = com.hbm.config.GeneralConfig.enable528;
-        boolean wasExpensive = com.hbm.config.GeneralConfig.enableExpensiveMode;
+        var soldering = SolderingRecipes.TABLE;
+        var construction = AnvilRecipes.CONSTRUCTION;
+        var annihilator = AnnihilatorRecipes.TABLE;
+        int solderDefault = SolderingRecipes.recipes.size();
+        int anvilDefault = AnvilRecipes.getConstruction().size();
+        int annihilatorDefault = AnnihilatorRecipes.recipes().size();
+        boolean was528 = GeneralConfig.enable528;
+        boolean wasExpensive = GeneralConfig.enableExpensiveMode;
         int solder528;
         int anvil528;
         int annihilator528;
         boolean analog;
         try {
-            com.hbm.config.GeneralConfig.enable528 = true;
-            com.hbm.config.GeneralConfig.enableExpensiveMode = true;
+            GeneralConfig.enable528 = true;
+            GeneralConfig.enableExpensiveMode = true;
             rebuild(soldering);
             rebuild(construction);
             rebuild(annihilator);
-            solder528 = com.hbm.inventory.recipes.SolderingRecipes.recipes.size();
-            anvil528 = com.hbm.inventory.recipes.anvil.AnvilRecipes.getConstruction().size();
-            annihilator528 = com.hbm.inventory.recipes.AnnihilatorRecipes.recipes().size();
-            analog = com.hbm.inventory.recipes.anvil.AnvilRecipes.getConstruction().stream()
+            solder528 = SolderingRecipes.recipes.size();
+            anvil528 = AnvilRecipes.getConstruction().size();
+            annihilator528 = AnnihilatorRecipes.recipes().size();
+            analog = AnvilRecipes.getConstruction().stream()
                     .anyMatch(recipe -> id(recipe.output.get(0).stack.getItem()).equals("hbm:machine_assembly_machine")
                             && recipe.input.stream().anyMatch(in -> stack(in).equals("hbm:circuit_analogx2")));
         } finally {
-            com.hbm.config.GeneralConfig.enable528 = was528;
-            com.hbm.config.GeneralConfig.enableExpensiveMode = wasExpensive;
+            GeneralConfig.enable528 = was528;
+            GeneralConfig.enableExpensiveMode = wasExpensive;
             rebuild(soldering);
             rebuild(construction);
             rebuild(annihilator);
@@ -190,67 +216,67 @@ public final class ItemRecipeTableGameTests {
                 + anvilDefault + "/" + anvil528 + ", analog assembly machine " + analog);
         helper.assertTrue(annihilatorDefault == 0 && annihilator528 == 15, "annihilator keys default/528: "
                 + annihilatorDefault + "/" + annihilator528);
-        helper.assertTrue(com.hbm.inventory.recipes.SolderingRecipes.recipes.size() == 27
-                && com.hbm.inventory.recipes.anvil.AnvilRecipes.getConstruction().size() == 257, "default rows not restored");
+        helper.assertTrue(SolderingRecipes.recipes.size() == 27
+                && AnvilRecipes.getConstruction().size() == 257, "default rows not restored");
         helper.succeed();
     }
 
     /** The radiation generator and research reactor values (1.7 TileEntityMachineRadGen fuels, TileEntityReactorResearch.fuelMap). */
     public static void machineValues(GameTestHelper helper) {
-        var radgen = com.hbm.api.data.MachineDataMaps.RADGEN_FUEL;
-        var scrap = radgen.get(com.hbm.items.ModItems.scrap_nuclear.get());
-        var gem = radgen.get(com.hbm.items.ModItems.gem_rad.get());
+        var radgen = MachineDataMaps.RADGEN_FUEL;
+        var scrap = radgen.get(ModItems.scrap_nuclear.get());
+        var gem = radgen.get(ModItems.gem_rad.get());
         helper.assertTrue(scrap != null && scrap.production() == 50 && scrap.duration() == 5 * 60 * 20 && scrap.output().isEmpty()
                         && gem != null && gem.production() == 25_000 && gem.duration() == 30 * 60 * 20
-                        && gem.output().equals(java.util.Optional.of("minecraft:diamond")) && gem.count() == 1
+                        && gem.output().equals(Optional.of("minecraft:diamond")) && gem.count() == 1
                         && radgen.byId().size() == 2,
                 "radiation generator fuels differ from 1.7: " + radgen.byId());
         List<String> plates = List.of("u233", "u235", "mox", "pu239", "sa326", "ra226be", "pu238be");
         for (String plate : plates) {
-            Item fresh = BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.of("hbm", "plate_fuel_" + plate));
-            ItemStack waste = com.hbm.tileentity.machine.TileEntityReactorResearch.wasteOf(fresh);
-            ItemStack hot = com.hbm.items.machine.ItemDepletedFuel.makeHot(
-                    BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.of("hbm", "waste_plate_" + plate)), 1);
+            Item fresh = BuiltInRegistries.ITEM.getValue(Ids.of("hbm", "plate_fuel_" + plate));
+            ItemStack waste = TileEntityReactorResearch.wasteOf(fresh);
+            ItemStack hot = ItemDepletedFuel.makeHot(
+                    BuiltInRegistries.ITEM.getValue(Ids.of("hbm", "waste_plate_" + plate)), 1);
             helper.assertTrue(waste != null && ItemStacks.sameItemAndData(waste, hot) && waste.getCount() == 1,
                     "research reactor plate_fuel_" + plate + " must leave a hot waste_plate_" + plate + ": " + waste);
         }
-        helper.assertTrue(com.hbm.api.data.MachineDataMaps.RESEARCH_REACTOR_FUEL.byId().size() == 7,
-                "research reactor fuels: " + com.hbm.api.data.MachineDataMaps.RESEARCH_REACTOR_FUEL.byId().keySet());
+        helper.assertTrue(MachineDataMaps.RESEARCH_REACTOR_FUEL.byId().size() == 7,
+                "research reactor fuels: " + MachineDataMaps.RESEARCH_REACTOR_FUEL.byId().keySet());
         helper.succeed();
     }
 
     /** The sawmill rows give 1.7's outputs and sawdust chances (1.7 TileEntitySawmill.getOutput / sawdustChance). */
     public static void sawmill(GameTestHelper helper) {
         var level = helper.getLevel();
-        ItemStack planks = com.hbm.inventory.recipes.SawmillRecipes.getOutput(level, new ItemStack(net.minecraft.world.item.Items.BIRCH_LOG));
-        helper.assertTrue(planks.is(net.minecraft.world.item.Items.BIRCH_PLANKS) && planks.getCount() == 6, "birch log: " + planks);
-        helper.assertTrue(com.hbm.inventory.recipes.SawmillRecipes.sawdustChance(new ItemStack(net.minecraft.world.item.Items.BIRCH_LOG)) == 0.5F
-                        && com.hbm.inventory.recipes.SawmillRecipes.sawdustChance(new ItemStack(net.minecraft.world.item.Items.OAK_PLANKS)) == 0.1F
-                        && com.hbm.inventory.recipes.SawmillRecipes.sawdustChance(new ItemStack(net.minecraft.world.item.Items.OAK_SAPLING)) == 0.1F
-                        && com.hbm.inventory.recipes.SawmillRecipes.sawdustChance(new ItemStack(net.minecraft.world.item.Items.STICK)) == 0F,
+        ItemStack planks = SawmillRecipes.getOutput(level, new ItemStack(Items.BIRCH_LOG));
+        helper.assertTrue(planks.is(Items.BIRCH_PLANKS) && planks.getCount() == 6, "birch log: " + planks);
+        helper.assertTrue(SawmillRecipes.sawdustChance(new ItemStack(Items.BIRCH_LOG)) == 0.5F
+                        && SawmillRecipes.sawdustChance(new ItemStack(Items.OAK_PLANKS)) == 0.1F
+                        && SawmillRecipes.sawdustChance(new ItemStack(Items.OAK_SAPLING)) == 0.1F
+                        && SawmillRecipes.sawdustChance(new ItemStack(Items.STICK)) == 0F,
                 "sawdust chances differ from 1.7");
-        helper.assertTrue(com.hbm.inventory.recipes.SawmillRecipes.getOutput(level, new ItemStack(net.minecraft.world.item.Items.OAK_SAPLING))
-                        .is(net.minecraft.world.item.Items.STICK)
-                        && com.hbm.inventory.recipes.SawmillRecipes.getOutput(level, new ItemStack(net.minecraft.world.item.Items.STICK))
-                        .is(com.hbm.items.ModItems.powder_sawdust.get())
-                        && com.hbm.inventory.recipes.SawmillRecipes.getOutput(level, new ItemStack(net.minecraft.world.item.Items.DIRT)).isEmpty()
-                        && com.hbm.inventory.recipes.SawmillRecipes.getRecipes().size() == 4,
+        helper.assertTrue(SawmillRecipes.getOutput(level, new ItemStack(Items.OAK_SAPLING))
+                        .is(Items.STICK)
+                        && SawmillRecipes.getOutput(level, new ItemStack(Items.STICK))
+                        .is(ModItems.powder_sawdust.get())
+                        && SawmillRecipes.getOutput(level, new ItemStack(Items.DIRT)).isEmpty()
+                        && SawmillRecipes.getRecipes().size() == 4,
                 "sawmill outputs differ from 1.7");
         helper.succeed();
     }
 
     /** Rebuilds a table from the current recipes, as a reload would (its config-dependent rows read the config again). */
-    static void rebuild(com.hbm.inventory.recipes.loader.DataRecipeTable<?> table) {
+    static void rebuild(DataRecipeTable<?> table) {
         replace(table);
     }
 
-    private static <R> void replace(com.hbm.inventory.recipes.loader.DataRecipeTable<R> table) {
+    private static <R> void replace(DataRecipeTable<R> table) {
         table.table.replace(new ArrayList<>(table.entries()));
     }
 
     private static HolderLookup.Provider registries;
 
-    // ---- the tables, as lines ----
+    // The tables, as lines
 
     static Map<String, Supplier<List<String>>> tables() {
         Map<String, Supplier<List<String>>> tables = new TreeMap<>();
@@ -273,7 +299,7 @@ public final class ItemRecipeTableGameTests {
 
     static List<String> ammoPress() {
         List<String> lines = new ArrayList<>();
-        for (var recipe : com.hbm.inventory.recipes.AmmoPressRecipes.getRecipes()) {
+        for (var recipe : AmmoPressRecipes.getRecipes()) {
             StringBuilder line = new StringBuilder(stack(recipe.output)).append(" <=");
             for (AStack in : recipe.input) line.append(' ').append(stack(in));
             lines.add(line.toString());
@@ -282,9 +308,9 @@ public final class ItemRecipeTableGameTests {
     }
 
     static List<String> arcWelder() {
-        com.hbm.inventory.recipes.ArcWelderRecipes.register();
+        ArcWelderRecipes.register();
         List<String> lines = new ArrayList<>();
-        for (var recipe : com.hbm.inventory.recipes.ArcWelderRecipes.recipes) {
+        for (var recipe : ArcWelderRecipes.recipes) {
             StringBuilder line = new StringBuilder(stack(recipe.output)).append(" d=").append(recipe.duration)
                     .append(" p=").append(recipe.consumption).append(" f=").append(fluid(recipe.fluid)).append(" <=");
             for (AStack in : recipe.ingredients) line.append(' ').append(stack(in));
@@ -295,7 +321,7 @@ public final class ItemRecipeTableGameTests {
 
     static List<String> breeder() {
         List<String> lines = new ArrayList<>();
-        for (var entry : com.hbm.inventory.recipes.BreederRecipes.getAllRecipes().entrySet()) {
+        for (var entry : BreederRecipes.getAllRecipes().entrySet()) {
             lines.add(id(entry.getKey()) + " => " + stack(entry.getValue().output()) + " flux=" + entry.getValue().flux());
         }
         return lines;
@@ -303,7 +329,7 @@ public final class ItemRecipeTableGameTests {
 
     static List<String> combination() {
         List<String> lines = new ArrayList<>();
-        for (var recipe : com.hbm.inventory.recipes.CombinationRecipes.getRecipes()) {
+        for (var recipe : CombinationRecipes.getRecipes()) {
             lines.add(stack(recipe.input()) + " => " + stack(recipe.itemOutput()) + " + " + fluid(recipe.fluidOutput()));
         }
         return lines;
@@ -311,7 +337,7 @@ public final class ItemRecipeTableGameTests {
 
     static List<String> lemegeton() {
         List<String> lines = new ArrayList<>();
-        for (var entry : com.hbm.inventory.recipes.LemegetonRecipes.recipes().entrySet()) {
+        for (var entry : LemegetonRecipes.recipes().entrySet()) {
             lines.add(entry.getKey() + " => " + entry.getValue());
         }
         return lines;
@@ -319,7 +345,7 @@ public final class ItemRecipeTableGameTests {
 
     static List<String> magic() {
         List<String> lines = new ArrayList<>();
-        for (var recipe : com.hbm.inventory.recipes.MagicRecipes.getRecipes()) {
+        for (var recipe : MagicRecipes.getRecipes()) {
             StringBuilder line = new StringBuilder(recipe.out).append(" <=");
             for (var in : recipe.in) line.append(' ').append(in.isTag() ? "#" : "").append(in.id());
             lines.add(line.toString());
@@ -328,9 +354,9 @@ public final class ItemRecipeTableGameTests {
     }
 
     static List<String> particleAccelerator() {
-        com.hbm.inventory.recipes.ParticleAcceleratorRecipes.register();
+        ParticleAcceleratorRecipes.register();
         List<String> lines = new ArrayList<>();
-        for (var recipe : com.hbm.inventory.recipes.ParticleAcceleratorRecipes.recipes) {
+        for (var recipe : ParticleAcceleratorRecipes.recipes) {
             lines.add(stack(recipe.input1) + " + " + stack(recipe.input2) + " m=" + recipe.momentum + " => "
                     + stack(recipe.output1) + " + " + stack(recipe.output2));
         }
@@ -339,15 +365,15 @@ public final class ItemRecipeTableGameTests {
 
     static List<String> pedestal() {
         List<String> lines = new ArrayList<>();
-        for (var recipe : com.hbm.inventory.recipes.PedestalRecipes.recipes()) {
+        for (var recipe : PedestalRecipes.recipes()) {
             StringBuilder line = new StringBuilder(recipe.output).append('x').append(recipe.outputCount)
                     .append(" extra=").append(recipe.extra).append(" set=").append(recipe.recipeSet).append(" <=");
             for (var in : recipe.input) line.append(' ').append(in == null ? "-" : in.id() + "x" + in.count());
             lines.add(line.toString());
         }
-        for (int set = 0; set < com.hbm.inventory.recipes.PedestalRecipes.SETS; set++) {
+        for (int set = 0; set < PedestalRecipes.SETS; set++) {
             StringBuilder line = new StringBuilder("set ").append(set).append(':');
-            for (var recipe : com.hbm.inventory.recipes.PedestalRecipes.recipeSet(set)) line.append(' ').append(recipe.output);
+            for (var recipe : PedestalRecipes.recipeSet(set)) line.append(' ').append(recipe.output);
             lines.add(line.toString());
         }
         return lines;
@@ -355,28 +381,28 @@ public final class ItemRecipeTableGameTests {
 
     static List<String> press() {
         List<String> lines = new ArrayList<>();
-        for (var recipe : com.hbm.inventory.recipes.PressRecipes.getRecipes()) {
+        for (var recipe : PressRecipes.getRecipes()) {
             lines.add(recipe.type() + " " + stack(recipe.input()) + " => " + stack(recipe.output()));
         }
         return lines;
     }
 
     static List<String> soldering() {
-        com.hbm.inventory.recipes.SolderingRecipes.register();
+        SolderingRecipes.register();
         List<String> lines = new ArrayList<>();
-        for (var recipe : com.hbm.inventory.recipes.SolderingRecipes.recipes) {
+        for (var recipe : SolderingRecipes.recipes) {
             lines.add(stack(recipe.output) + " d=" + recipe.duration + " p=" + recipe.consumption + " f=" + fluid(recipe.fluid)
                     + " top=" + stacks(recipe.toppings) + " pcb=" + stacks(recipe.pcb) + " solder=" + stacks(recipe.solder));
         }
-        lines.add("toppings " + sortedStacks(com.hbm.inventory.recipes.SolderingRecipes.toppings));
-        lines.add("pcb " + sortedStacks(com.hbm.inventory.recipes.SolderingRecipes.pcb));
-        lines.add("solder " + sortedStacks(com.hbm.inventory.recipes.SolderingRecipes.solder));
+        lines.add("toppings " + sortedStacks(SolderingRecipes.toppings));
+        lines.add("pcb " + sortedStacks(SolderingRecipes.pcb));
+        lines.add("solder " + sortedStacks(SolderingRecipes.solder));
         return lines;
     }
 
     static List<String> anvilSmithing() {
         List<String> lines = new ArrayList<>();
-        for (var recipe : com.hbm.inventory.recipes.anvil.AnvilRecipes.getSmithing()) {
+        for (var recipe : AnvilRecipes.getSmithing()) {
             String kind = recipe.getClass().getSimpleName();
             String sides;
             try {
@@ -392,7 +418,7 @@ public final class ItemRecipeTableGameTests {
 
     static List<String> anvilConstruction() {
         List<String> lines = new ArrayList<>();
-        for (var recipe : com.hbm.inventory.recipes.anvil.AnvilRecipes.getConstruction()) {
+        for (var recipe : AnvilRecipes.getConstruction()) {
             StringBuilder line = new StringBuilder("t=").append(recipe.tierLower).append("..").append(recipe.tierUpper)
                     .append(' ').append(recipe.getOverlay()).append(" in=");
             for (AStack in : recipe.input) line.append(stack(in)).append(',');
@@ -405,10 +431,10 @@ public final class ItemRecipeTableGameTests {
 
     static List<String> icfFuel() {
         List<String> lines = new ArrayList<>();
-        for (var entry : com.hbm.api.data.MachineDataMaps.ICF_FUEL_FLUID.byId().entrySet()) {
+        for (var entry : MachineDataMaps.ICF_FUEL_FLUID.byId().entrySet()) {
             lines.add("fluid " + fluidKey(entry.getKey()) + " => " + entry.getValue());
         }
-        for (var entry : com.hbm.api.data.MachineDataMaps.icfMaterialFuels().entrySet()) {
+        for (var entry : MachineDataMaps.icfMaterialFuels().entrySet()) {
             lines.add("material " + entry.getKey() + " => " + entry.getValue());
         }
         lines.sort(null);
@@ -417,11 +443,11 @@ public final class ItemRecipeTableGameTests {
 
     static List<String> customNuke() {
         List<String> lines = new ArrayList<>();
-        for (var entry : com.hbm.api.data.MachineDataMaps.CUSTOM_NUKE.byId().entrySet()) {
+        for (var entry : MachineDataMaps.CUSTOM_NUKE.byId().entrySet()) {
             var value = entry.getValue();
             lines.add("item " + entry.getKey() + " => " + value.type().name() + " " + value.op() + " " + value.value());
         }
-        for (var entry : com.hbm.api.data.MachineDataMaps.CUSTOM_NUKE_CELL.byId().entrySet()) {
+        for (var entry : MachineDataMaps.CUSTOM_NUKE_CELL.byId().entrySet()) {
             var value = entry.getValue();
             lines.add("cell " + fluidKey(entry.getKey()) + " => " + value.type().name() + " " + value.op() + " " + value.value());
         }
@@ -431,16 +457,16 @@ public final class ItemRecipeTableGameTests {
 
     /** An HBM fluid's key ({@code deuterium}) from its vanilla fluid id ({@code hbm:deuterium}). */
     static String fluidKey(String vanillaId) {
-        return com.hbm.inventory.fluid.Fluids.fromVanilla(BuiltInRegistries.FLUID.getOptional(dev.golem.core.Ids.parse(vanillaId)).orElse(net.minecraft.world.level.material.Fluids.EMPTY)).getKey();
+        return com.hbm.inventory.fluid.Fluids.fromVanilla(BuiltInRegistries.FLUID.getOptional(Ids.parse(vanillaId)).orElse(net.minecraft.world.level.material.Fluids.EMPTY)).getKey();
     }
 
     /** The annihilator's milestones exist in 528 mode only; read with the mode on. */
     static List<String> annihilator528() {
         List<String> lines = new ArrayList<>();
-        for (var entry : com.hbm.inventory.recipes.AnnihilatorRecipes.recipes().entrySet()) {
+        for (var entry : AnnihilatorRecipes.recipes().entrySet()) {
             Object key = entry.getKey();
             String name = key instanceof Item item ? id(item)
-                    : key instanceof com.hbm.inventory.fluid.FluidType fluid ? "fluid:" + fluid.getKey() : "#" + key;
+                    : key instanceof FluidType fluid ? "fluid:" + fluid.getKey() : "#" + key;
             StringBuilder line = new StringBuilder(name).append(" =>");
             for (var milestone : entry.getValue().milestones) line.append(' ').append(milestone.amount()).append(':').append(stack(milestone.payout()));
             lines.add(line.toString());
@@ -449,11 +475,11 @@ public final class ItemRecipeTableGameTests {
         return lines;
     }
 
-    // ---- describing stacks ----
+    // Describing stacks
 
     /** The item's id as 26.1 spells it (1.20.1's {@code grass} is {@code short_grass}), so the lines read the same on every node. */
     static String id(Item item) {
-        return dev.golem.core.Ids.canonicalItemId(String.valueOf(BuiltInRegistries.ITEM.getKey(item)));
+        return Ids.canonicalItemId(String.valueOf(BuiltInRegistries.ITEM.getKey(item)));
     }
 
     static String stack(ItemStack stack) {
@@ -477,7 +503,7 @@ public final class ItemRecipeTableGameTests {
             base = "#" + tag.tag.location();
         } else if (stack instanceof ComparableStack comparable) {
             base = id(comparable.item);
-            if (comparable.exactData() || comparable instanceof com.hbm.inventory.recipes.loader.RecipeIngredients.Exact) {
+            if (comparable.exactData() || comparable instanceof RecipeIngredients.Exact) {
                 ItemStack display = comparable.getDisplayStack();
                 base += "!exact";
                 if (!ItemStacks.sameItemAndData(display, new ItemStack(display.getItem(), display.getCount()))) base += data(display);
@@ -505,7 +531,7 @@ public final class ItemRecipeTableGameTests {
         return out.toString();
     }
 
-    static String sortedStacks(java.util.Collection<AStack> stacks) {
+    static String sortedStacks(Collection<AStack> stacks) {
         List<String> out = new ArrayList<>();
         for (AStack stack : stacks) out.add(stack(stack));
         out.sort(null);
@@ -518,17 +544,17 @@ public final class ItemRecipeTableGameTests {
 
     static String sha256(List<String> lines) {
         try {
-            byte[] digest = java.security.MessageDigest.getInstance("SHA-256")
+            byte[] digest = MessageDigest.getInstance("SHA-256")
                     .digest(String.join("\n", lines).getBytes(StandardCharsets.UTF_8));
             StringBuilder hex = new StringBuilder();
             for (byte b : digest) hex.append(String.format("%02x", b));
             return hex.toString();
-        } catch (java.security.NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    // ---- the dump ----
+    // The dump
 
     public static void dump(GameTestHelper helper) {
         registries = helper.getLevel().registryAccess();
@@ -540,18 +566,18 @@ public final class ItemRecipeTableGameTests {
                 Files.writeString(dir.resolve(table.getKey() + ".txt"), lines.size() + " " + sha256(lines) + "\n"
                         + String.join("\n", lines) + "\n", StandardCharsets.UTF_8);
             }
-            boolean was528 = com.hbm.config.GeneralConfig.enable528;
-            com.hbm.config.GeneralConfig.enable528 = true;
+            boolean was528 = GeneralConfig.enable528;
+            GeneralConfig.enable528 = true;
             try {
-                rebuild(com.hbm.inventory.recipes.AnnihilatorRecipes.TABLE);
+                rebuild(AnnihilatorRecipes.TABLE);
                 List<String> lines = annihilator528();
                 Files.writeString(dir.resolve("annihilator.txt"), lines.size() + " " + sha256(lines) + "\n"
                         + String.join("\n", lines) + "\n", StandardCharsets.UTF_8);
             } finally {
-                com.hbm.config.GeneralConfig.enable528 = was528;
-                rebuild(com.hbm.inventory.recipes.AnnihilatorRecipes.TABLE);
+                GeneralConfig.enable528 = was528;
+                rebuild(AnnihilatorRecipes.TABLE);
             }
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             throw new IllegalStateException(e);
         }
         helper.succeed();

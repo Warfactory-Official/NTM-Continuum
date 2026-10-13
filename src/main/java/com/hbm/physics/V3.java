@@ -1,7 +1,7 @@
 package com.hbm.physics;
 
 /**
- * old-hbm {@code Vec3NT} as the physics code used it: an immutable double vector whose operations return new vectors.
+ * 1.12.2 {@code Vec3NT} as the physics code used it: an immutable double vector whose operations return new vectors.
  * Kept free of Minecraft types so the solver is plain Java. {@link #mult(float)} takes a float on purpose: the old
  * GJK/EPA code cast its scalars to float there, and that rounding is part of its numbers.
  */

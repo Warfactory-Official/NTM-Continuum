@@ -10,6 +10,7 @@ import com.hbm.items.machine.ItemSatellite;
 import com.hbm.items.machine.ItemSatellite.EnumSatType;
 import com.hbm.saveddata.satellites.SatelliteMiner;
 import dev.golem.core.viewer.ViewerType;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -68,7 +69,7 @@ public class SatelliteRecipeHandler extends HbmRecipeCategory<SatelliteRecipeHan
             List<Float> chances = new ArrayList<>();
             for (ItemPool.Entry entry : pool) {
                 if (entry.isEmpty()) continue;
-                outs.add(dev.golem.core.world.ItemStacks.copyWithCount(entry.template(), entry.max()));
+                outs.add(ItemStacks.copyWithCount(entry.template(), entry.max()));
                 chances.add(100F * entry.weight() / weight);
             }
             recipes.add(new Entry(satellite, outs, chances));

@@ -4,6 +4,8 @@ import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.items.ModAutogenItems;
 import com.hbm.items.special.ItemAutogen;
+import java.util.Objects;
+import java.util.stream.Stream;
 import net.minecraft.world.item.ItemStack;
 
 import com.hbm.api.registry.NamedRegistry;
@@ -170,10 +172,10 @@ public final class BedrockOreType {
 
     /** Every output slot that is set, in table order (a four-output type has four). */
     public List<BedrockOreOutput> outputs() {
-        return java.util.stream.Stream.of(primary1, primary2,
+        return Stream.of(primary1, primary2,
                 byproductAcid1, byproductAcid2, byproductAcid3,
                 byproductSolvent1, byproductSolvent2, byproductSolvent3,
-                byproductRad1, byproductRad2, byproductRad3).filter(java.util.Objects::nonNull).toList();
+                byproductRad1, byproductRad2, byproductRad3).filter(Objects::nonNull).toList();
     }
 
     public record BedrockOreOutput(NTMMaterial material, int amount) {}

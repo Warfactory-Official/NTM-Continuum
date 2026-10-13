@@ -1,5 +1,8 @@
 package com.hbm.main;
 
+import com.hbm.api.environment.Environment;
+import dev.golem.core.world.Effects;
+import dev.golem.core.world.Spawns;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -26,7 +29,7 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 /**
- * 1.7.10's {@code ModEventHandlerImpact}: the server half of Tom's aftermath (History §19ej-6).
+ * 1.7.10's {@code ModEventHandlerImpact}: the server half of Tom's aftermath.
  *
  * <ul>
  *   <li>every tick and level: {@link ImpactWorldHandler#impactEffects}, then the fire burns down over one day
@@ -71,7 +74,7 @@ public final class ModEventHandlerImpact {
             SENT.clear();
         });
         Lifecycle.onServerTick(ModEventHandlerImpact::tick);
-        dev.golem.core.world.Spawns.onSpawnCheck(ModEventHandlerImpact::denySpawn);
+        Spawns.onSpawnCheck(ModEventHandlerImpact::denySpawn);
     }
 
     private static void tick(MinecraftServer server) {
@@ -87,7 +90,7 @@ public final class ModEventHandlerImpact {
         decay(data);
 
         // 1.7 dimensionId == 0; hbm-space dropped the check for its impacted planets (com.hbm.api.environment.Environment.SURFACE)
-        if (com.hbm.api.environment.Environment.isSurface(world) && data.fire > 0 && data.dust < 0.75F) {
+        if (Environment.isSurface(world) && data.fire > 0 && data.dust < 0.75F) {
             List<LivingEntity> burning = new ArrayList<>();
             for (Entity e : world.getAllEntities()) {
                 // 1.7 casts the position to int (towards zero), not floor
@@ -98,7 +101,7 @@ public final class ModEventHandlerImpact {
             }
             for (LivingEntity entity : burning) {
                 // 1.7 setFire(5): Fire Protection applies, never shortens a longer burn
-                dev.golem.core.world.Effects.ignite(entity, 5);
+                Effects.ignite(entity, 5);
                 Compat.hurt(entity, world, world.damageSources().onFire(), 2);
             }
         }
@@ -128,16 +131,16 @@ public final class ModEventHandlerImpact {
     /** Spawns this hook refused since start (harness evidence only). */
     public static int denied;
 
-    public static boolean denySpawn(Mob mob, ServerLevel level, dev.golem.core.world.Spawns.Reason reason) {
+    public static boolean denySpawn(Mob mob, ServerLevel level, Spawns.Reason reason) {
         boolean deny = denySpawn17(mob, level, reason);
         if (deny) denied++;
         return deny;
     }
 
-    private static boolean denySpawn17(Mob mob, ServerLevel level, dev.golem.core.world.Spawns.Reason reason) {
+    private static boolean denySpawn17(Mob mob, ServerLevel level, Spawns.Reason reason) {
         if (!TomSaveData.impact(level)) return false;
 
-        if (reason == dev.golem.core.world.Spawns.Reason.CHUNK_GENERATION) return true;
+        if (reason == Spawns.Reason.CHUNK_GENERATION) return true;
 
         boolean water = mob.getType().getCategory() == MobCategory.WATER_CREATURE
                 || mob.getType().getCategory() == MobCategory.WATER_AMBIENT
@@ -145,7 +148,7 @@ public final class ModEventHandlerImpact {
                 || mob.getType().getCategory() == MobCategory.AXOLOTLS;
 
         // (1.7 also excluded players, which never reach a mob spawn check here)
-        if (com.hbm.api.environment.Environment.isSurface(level)) { // 1.7 dimensionId == 0; hbm-space: any impacted body
+        if (Environment.isSurface(level)) { // 1.7 dimensionId == 0; hbm-space: any impacted body
             if (mob.getBbHeight() >= 0.85F || mob.getBbWidth() >= 0.85F && !water && !mob.isBaby()) {
                 return true;
             }

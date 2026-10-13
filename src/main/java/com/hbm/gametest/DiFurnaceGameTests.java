@@ -1,13 +1,19 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.blocks.machine.DiFurnaceContent;
+import com.hbm.api.environment.Environment;
 import com.hbm.blocks.machine.MachineDiFurnace;
 import com.hbm.inventory.container.ContainerDiFurnace;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.DiFurnaceRecipes;
+import com.hbm.items.ModItems;
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.hook.Verdict;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -16,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.level.GameType;
+import com.hbm.blocks.machine.ModMachineBlocks;
 
 /** Feature-local regression tests for the fuel-fired DiFurnace and its extension. */
 public final class DiFurnaceGameTests {
@@ -48,7 +55,7 @@ public final class DiFurnaceGameTests {
         DiFurnaceRecipes.Match match = DiFurnaceRecipes.INSTANCE.getMatch(
                 new ItemStack(Items.IRON_INGOT), new ItemStack(Items.COAL));
         helper.assertTrue(match != null && match.firstCount() == 1 && match.secondCount() == 1
-                        && match.recipe().outputItem[0].is(com.hbm.items.ModItems.ingot_steel.get()),
+                        && match.recipe().outputItem[0].is(ModItems.ingot_steel.get()),
                 "DiFurnace steel recipe no longer matches the two legacy input slots");
         helper.succeed();
     }
@@ -76,14 +83,14 @@ public final class DiFurnaceGameTests {
         helper.assertFalse(menu.getSlot(3).mayPlace(new ItemStack(Items.IRON_INGOT)),
                 "DiFurnace output must be take-only");
 
-        MachineDiFurnace block = DiFurnaceContent.MACHINE_DIFURNACE.get();
+        MachineDiFurnace block = ModMachineBlocks.machine_difurnace_off.get();
         helper.assertTrue(block.hasAnalogOutputSignal(block.defaultBlockState()),
                 "DiFurnace comparator output is not exposed");
         furnace.inventory.setStackInSlot(3, new ItemStack(Items.IRON_INGOT));
         helper.assertTrue(block.comparatorOutput(furnace.getBlockState(), helper.getLevel(), furnace.getBlockPos()) > 0,
                 "DiFurnace comparator did not read the four-slot inventory");
         helper.assertTrue(furnace.getSendingTanks().length == 3
-                        && furnace.getSendingTanks()[0].getTankType() == com.hbm.inventory.fluid.Fluids.SMOKE
+                        && furnace.getSendingTanks()[0].getTankType() == Fluids.SMOKE
                         && furnace.getSendingTanks()[0].getMaxFill() == 50,
                 "DiFurnace smoke-fluid sender contract changed");
         BlockPos extensionPos = new BlockPos(1, 2, 1);
@@ -108,7 +115,7 @@ public final class DiFurnaceGameTests {
 
         helper.assertTrue(furnace.inventory.getStackInSlot(0).isEmpty()
                         && furnace.inventory.getStackInSlot(1).isEmpty()
-                        && furnace.inventory.getStackInSlot(3).is(com.hbm.items.ModItems.ingot_steel.get())
+                        && furnace.inventory.getStackInSlot(3).is(ModItems.ingot_steel.get())
                         && furnace.fuel == 0,
                 "DiFurnace did not complete one 400-tick fuel-fired operation");
         helper.succeed();
@@ -117,7 +124,7 @@ public final class DiFurnaceGameTests {
     public static void extensionSpeed(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         TileEntityDiFurnace furnace = place(helper, pos);
-        helper.setBlock(pos.above(), DiFurnaceContent.MACHINE_DIFURNACE_EXTENSION.get().defaultBlockState());
+        helper.setBlock(pos.above(), ModMachineBlocks.machine_difurnace_ext.get().defaultBlockState());
         furnace.inventory.setStackInSlot(0, new ItemStack(Items.IRON_INGOT));
         furnace.inventory.setStackInSlot(1, new ItemStack(Items.COAL));
         furnace.fuel = 134;
@@ -127,7 +134,7 @@ public final class DiFurnaceGameTests {
                     furnace.getBlockState(), furnace);
         }
 
-        helper.assertTrue(furnace.inventory.getStackInSlot(3).is(com.hbm.items.ModItems.ingot_steel.get())
+        helper.assertTrue(furnace.inventory.getStackInSlot(3).is(ModItems.ingot_steel.get())
                         && furnace.fuel == 0
                         && furnace.getBlockState().getValue(MachineDiFurnace.EXT),
                 "DiFurnace extension did not run at 3x progress without an extra fuel drain");
@@ -147,8 +154,8 @@ public final class DiFurnaceGameTests {
     }
 
     // Positions where the test's Environment.BREATHING listener denies air; the listener passes everywhere else.
-    private static final java.util.Set<BlockPos> AIRLESS = java.util.concurrent.ConcurrentHashMap.newKeySet();
-    private static final java.util.concurrent.atomic.AtomicBoolean AIRLESS_LISTENER = new java.util.concurrent.atomic.AtomicBoolean();
+    private static final Set<BlockPos> AIRLESS = ConcurrentHashMap.newKeySet();
+    private static final AtomicBoolean AIRLESS_LISTENER = new AtomicBoolean();
 
     /**
      * hbm-space's {@code breatheAir(0)} in the DiFurnace's fuel loading, through {@link com.hbm.api.environment.Environment}:
@@ -156,17 +163,17 @@ public final class DiFurnaceGameTests {
      */
     public static void environmentBreathing(GameTestHelper helper) {
         if (AIRLESS_LISTENER.compareAndSet(false, true)) {
-            com.hbm.api.environment.Environment.BREATHING.register((level, at, amount) ->
-                    AIRLESS.contains(at) ? dev.golem.core.hook.Verdict.DENY : dev.golem.core.hook.Verdict.PASS);
+            Environment.BREATHING.register((level, at, amount) ->
+                    AIRLESS.contains(at) ? Verdict.DENY : Verdict.PASS);
         }
         BlockPos pos = new BlockPos(1, 1, 1);
         BlockPos abs = helper.absolutePos(pos);
         TileEntityDiFurnace furnace = place(helper, pos);
         AIRLESS.add(abs);
         try {
-            helper.assertFalse(com.hbm.api.environment.Environment.breatheAir(helper.getLevel(), abs, 0),
+            helper.assertFalse(Environment.breatheAir(helper.getLevel(), abs, 0),
                     "Environment.breatheAir ignored a denying listener");
-            helper.assertTrue(com.hbm.api.environment.Environment.breatheAir(helper.getLevel(), abs.east(), 0),
+            helper.assertTrue(Environment.breatheAir(helper.getLevel(), abs.east(), 0),
                     "Environment.breatheAir must default to Earth where no listener answers");
 
             furnace.inventory.setStackInSlot(2, new ItemStack(Items.COAL, 4));
@@ -190,7 +197,7 @@ public final class DiFurnaceGameTests {
     }
 
     private static TileEntityDiFurnace place(GameTestHelper helper, BlockPos pos) {
-        helper.setBlock(pos, DiFurnaceContent.MACHINE_DIFURNACE.get().defaultBlockState());
+        helper.setBlock(pos, ModMachineBlocks.machine_difurnace_off.get().defaultBlockState());
         return GameTestHelpers.blockEntity(helper, pos, TileEntityDiFurnace.class);
     }
 
@@ -203,9 +210,9 @@ public final class DiFurnaceGameTests {
 
     private static final class MachineDiFurnaceExtensionCheck {
         private static void assertDelegates(GameTestHelper helper, TileEntityDiFurnace furnace, BlockPos pos) {
-            helper.setBlock(pos, DiFurnaceContent.MACHINE_DIFURNACE_EXTENSION.get().defaultBlockState());
+            helper.setBlock(pos, ModMachineBlocks.machine_difurnace_ext.get().defaultBlockState());
             BlockPos absolute = helper.absolutePos(pos);
-            WorldlyContainer delegated = DiFurnaceContent.MACHINE_DIFURNACE_EXTENSION.get().getContainer(
+            WorldlyContainer delegated = ModMachineBlocks.machine_difurnace_ext.get().getContainer(
                     helper.getLevel().getBlockState(absolute), helper.getLevel(), absolute);
             helper.assertTrue(delegated == furnace, "DiFurnace extension did not delegate hoppers to the core");
         }

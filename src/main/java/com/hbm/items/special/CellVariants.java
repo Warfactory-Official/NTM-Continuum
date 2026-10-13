@@ -7,9 +7,9 @@ package com.hbm.items.special;
  * <p>1.7 had one item per cell ({@code ModItems.cell_empty, cell_uf6, cell_puf6, cell_antimatter,
  * cell_deuterium, cell_tritium, cell_sas3, cell_anti_schrabidium}, in that declaration order). This port folds
  * them into one {@link ItemCell} whose fluid lives in components, so the model variant is the cell's own index
- * in that order — NOT the fluid id. Keying model and name on fluid ids broke silently once the port's fluid
- * list diverged from 1.12's numbering (SAS3 is id 31 here, the table said 30): a full SAS3 cell showed as
- * "Empty Cell" with the empty icon, and UF6/PUF6 cells showed the neighbouring cell's name and icon.
+ * in that order: NOT the fluid id. Fluid ids do not follow 1.12's numbering (SAS3 is id 31 here, not 30), so
+ * keying model and name on them shows a full SAS3 cell as "Empty Cell" and UF6/PUF6 cells with the
+ * neighbouring cell's name and icon.
  */
 public final class CellVariants {
     public static final int EMPTY = 0;

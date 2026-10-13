@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-/** JEI category for the pyro oven — optional {fluid, item} in → optional {item, fluid} out. */
+/** JEI category for the pyro oven: optional fluid and item in, optional item and fluid out. */
 public class PyrolysisRecipeHandler extends JEIUniversalHandler<PyrolysisRecipeHandler.Entry> {
 
     public record Entry(PyroOvenRecipe recipe) {}

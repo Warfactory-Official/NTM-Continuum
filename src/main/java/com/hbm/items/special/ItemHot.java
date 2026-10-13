@@ -5,6 +5,9 @@ import dev.golem.core.data.GolemComponent;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -61,9 +64,9 @@ public class ItemHot extends CompatItem {
     }
 
     @Override
-    protected void compatInventoryTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
-                                       net.minecraft.world.entity.Entity owner,
-                                       net.minecraft.world.entity.EquipmentSlot slot, boolean held) {
+    protected void compatInventoryTick(ItemStack stack, ServerLevel level,
+                                       Entity owner,
+                                       EquipmentSlot slot, boolean held) {
         int heat = getHeatValue(stack);
         if (heat > 0) setHeat(stack, heat - 1);
     }

@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -14,14 +15,14 @@ import net.minecraft.world.phys.Vec3;
 import java.util.function.BiFunction;
 
 /**
- * A fusion machine declared as one static body plus one part that spins about the machine's own axis —
+ * A fusion machine declared as one static body plus one part that spins about the machine's own axis:
  * the klystron's fan and the MHD turbine's coils, which upstream gives near-identical renderers.
  *
  * <p>Two details matter and are easy to get wrong. The spin is about <b>X after the facing rotation</b>,
  * around a pivot part-way up the model, so the part turns on the machine's axis rather than about the
  * world origin. And {@code offsetX} is applied <b>after</b> the facing rotation: the klystron's model is
  * authored one block off its core cell, and without that shift the whole machine draws a block away
- * from where it actually is — which also makes its ports look like they are in the wrong place.
+ * from where it actually is, which also makes its ports look like they are in the wrong place.
  */
 public class FusionSpinRenderer<T extends BlockEntity> extends GemBER<T, FusionSpinRenderState> {
 
@@ -36,7 +37,7 @@ public class FusionSpinRenderer<T extends BlockEntity> extends GemBER<T, FusionS
     private final BiFunction<T, Float, Float> angle;
     /**
      * Wraps the angle before drawing, or 0 for a freely spinning part. The MHD turbine's coils are a
-     * partial arc that upstream deliberately confines to a 15-degree wobble; let them spin the whole
+     * partial arc that upstream confines to a 15-degree wobble; let them spin the whole
      * way round and they swing out of their housing and present their unpainted inner faces.
      */
     private final float angleModulus;
@@ -49,7 +50,7 @@ public class FusionSpinRenderer<T extends BlockEntity> extends GemBER<T, FusionS
     public FusionSpinRenderer(String obj, String texture, String bodyPart, String spinPart,
                               float pivotY, float offsetX, float baseYaw, float angleModulus,
                               BiFunction<T, Float, Float> angle) {
-        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/" + obj));
+        this.model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/" + obj));
         this.surface = Surface.cutout(Constants.MOD_ID + ":textures/models/" + texture);
         this.bodyPart = bodyPart;
         this.spinPart = spinPart;

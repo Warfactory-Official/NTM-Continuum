@@ -8,9 +8,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * The looping operating sound an ore acidizer plays while it's processing — the chemical-plant loop
+ * The looping operating sound an ore acidizer plays while it's processing, the chemical-plant loop
  * at the 1.12.2 tile's lower 0.75 pitch. A tickable client sound bound to one machine that stops
- * itself once the machine stops. Client-only — only constructed from {@link CrystallizerSoundHandler}.
+ * itself once the machine stops. Client-only, only constructed from {@link CrystallizerSoundHandler}.
  */
 public class CrystallizerLoopSound extends AbstractTickableSoundInstance {
 

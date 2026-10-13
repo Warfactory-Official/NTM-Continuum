@@ -98,7 +98,7 @@ public final class ModCustomMissileBlocks {
     static {
         // 1.7 ModBlocks registration order on the missile tab. The two launchers and the assembly station had render
         // type -1, but ItemRenderLibrary registered an OBJ item renderer for each, so their items are the typed OBJ
-        // definitions in CustomMissileDeclarations (icon audit 2026-10-01), not the block's flat icon.
+        // definitions in CustomMissileDeclarations, not the block's flat icon.
         REG.blockItem(struct_launcher_core, Compat::blockDescription).tab(HbmTab.MISSILES);
         REG.blockItem(struct_launcher_core_large, Compat::blockDescription).tab(HbmTab.MISSILES);
         REG.blockItem(machine_missile_assembly, Compat::blockDescription).tab(HbmTab.MISSILES);

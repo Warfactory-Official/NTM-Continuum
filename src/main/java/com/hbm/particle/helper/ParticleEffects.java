@@ -11,7 +11,7 @@ import net.minecraft.world.level.Level;
  * <p><b>Why these are not on the creators.</b> Upstream puts each {@code composeEffect} as a static on
  * the creator class it belongs to ({@code BlackPowderCreator.composeEffect}), which works in 1.12
  * because {@code @SideOnly} strips the client half out of the server jar. There is no such stripping
- * here — a single source set means calling a static on a client class from common code loads that
+ * here: a single source set means calling a static on a client class from common code loads that
  * class on a dedicated server, dragging {@code ClientLevel} and the particle engine with it. So the
  * senders live here, on the server-safe side of the same line {@link HbmEffectNT} draws, and the
  * creators keep only {@code makeParticle}.
@@ -60,7 +60,7 @@ public final class ParticleEffects {
      * A large blast: a smoke plume, a shockwave and scoops of the ground thrown into the air.
      *
      * <p>The parameter list is upstream's, in upstream's order, so 1.7 call sites port across by
-     * name. {@code waveScale} is carried but not yet drawn — see {@code ExplosionLargeCreator}.
+     * name. {@code waveScale} is carried but not yet drawn, see {@code ExplosionLargeCreator}.
      *
      * @param debrisSize  edge of each scoop in blocks
      * @param debrisRetry how solid a scoop comes out, not how big

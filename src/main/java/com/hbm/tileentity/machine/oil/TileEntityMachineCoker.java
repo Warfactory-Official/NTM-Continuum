@@ -37,7 +37,7 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Coker — 1:1 port of the 1.12.2 {@code TileEntityMachineCoker}. A 3×3×23 heat-driven tower (pulls heat
+ * Coker, a 1:1 port of the 1.12.2 {@code TileEntityMachineCoker}. A 3×3×23 heat-driven tower (pulls heat
  * from the {@link IHeatSource} directly below the core): {@code processTime 20_000}, {@code maxHeat
  * 100_000}, diffusion 0.25, {@code burn = heat/100}. 2 slots (0 fluid identifier input, 1 output
  * take-only). Tanks: {@code [0] HEAVYOIL 16k} input + {@code [1] OIL_COKER 8k} byproduct. Recipe outputs
@@ -45,8 +45,8 @@ import dev.golem.core.data.DataOut;
  *
  * <p>Soot: 1.7's {@code SOOT_PER_SECOND * 5} every fifth tick while burning.
  *
- * <p>Deferred (§20): the tall {@code HbmEffectNT.Tower} smoke → vanilla {@code CAMPFIRE_COSY_SMOKE}
- * stand-in at y+22; IFluidCopiable.
+ * <p>The tall {@code HbmEffectNT.Tower} smoke is a vanilla {@code CAMPFIRE_COSY_SMOKE} stand-in at y+22;
+ * IFluidCopiable is not ported.
  */
 public class TileEntityMachineCoker extends TileEntityMachineBase
         implements MenuProvider, IFluidStandardTransceiverMK2, WorldlyContainer {

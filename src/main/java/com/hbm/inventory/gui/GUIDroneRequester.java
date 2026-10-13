@@ -2,7 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerDroneRequester;
 import com.hbm.tileentity.network.TileEntityDroneRequester;
-import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.module.ModulePatternMatcher;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.ChatFormatting;

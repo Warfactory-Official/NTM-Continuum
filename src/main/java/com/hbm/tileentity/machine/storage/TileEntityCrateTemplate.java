@@ -12,6 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.function.Supplier;
@@ -22,7 +23,7 @@ public class TileEntityCrateTemplate extends TileEntityMachineBase implements Me
     private final Supplier<MenuType<ContainerCrateTemplate>> menuType;
 
     public TileEntityCrateTemplate(
-            Supplier<? extends net.minecraft.world.level.block.entity.BlockEntityType<?>> blockEntityType,
+            Supplier<? extends BlockEntityType<?>> blockEntityType,
             Supplier<MenuType<ContainerCrateTemplate>> menuType, BlockPos pos, BlockState state) {
         super(blockEntityType.get(), pos, state, TemplateCrateLayout.SLOTS);
         this.menuType = menuType;

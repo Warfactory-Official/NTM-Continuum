@@ -6,15 +6,18 @@ import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.effect.EntityMist;
 import com.hbm.entity.projectile.EntityChemical;
+import com.hbm.handler.ArmorUtil;
 import com.hbm.interfaces.IRepairable;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
 import com.hbm.tileentity.turret.TileEntityTurretFritz;
 import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.world.Durability;
 import dev.golem.core.world.Effects;
 import dev.golem.core.world.LightLevels;
 import net.minecraft.core.BlockPos;
@@ -297,7 +300,7 @@ public final class ChemicalImpactGameTests {
                     + LightLevels.opacity(level, dark));
 
             // placed again: covered by stone, waste earth turns to dirt on a random tick (1.7 BlockWasteEarth), which
-            // can come in the five ticks above now that the whole plot ticks from the start (Golem TestChunks)
+            // can come in the five ticks above, since the whole plot ticks from the start (Golem TestChunks)
             helper.setBlock(new BlockPos(5, 2, 3), ModFalloutBlocks.waste_earth.get());
             impact(helper, Fluids.SEEDSLURRY, new BlockPos(4, 3, 4));
 
@@ -341,7 +344,7 @@ public final class ChemicalImpactGameTests {
         check(helper, Fluids.GAS, false, false);
         check(helper, Fluids.HOTOIL, false, false);
         double range = new TileEntityTurretFritz(BlockPos.ZERO,
-                com.hbm.blocks.turret.ModTurretBlocks.turret_fritz.get().defaultBlockState()).getDetectorRange();
+                ModTurretBlocks.turret_fritz.get().defaultBlockState()).getDetectorRange();
         helper.assertTrue(range == 48D, "the Fritz detects at 1.7's 48 blocks, has " + range);
         helper.succeed();
     }
@@ -382,7 +385,7 @@ public final class ChemicalImpactGameTests {
             gas2.setPos(at2.x, at2.y, at2.z);
             gas2.tickCount = 148;
             level.addFreshEntity(gas2);
-            dev.golem.core.world.Effects.ignite(gas2, 10);
+            Effects.ignite(gas2, 10);
             EntityMist water = new EntityMist(level);
             water.setType(Fluids.WATER).setArea(4F, 3F).setDuration(150);
             water.setPos(at2.x, at2.y, at2.z);
@@ -408,7 +411,7 @@ public final class ChemicalImpactGameTests {
         LivingEntity pig = pig(helper, new BlockPos(1, 3, 1));
         helper.runAfterDelay(1, () -> {
             ItemStack helmet = new ItemStack(Items.DIAMOND_HELMET);
-            dev.golem.core.world.Durability.enchantUnbreaking(helper.getLevel(), helmet, 3);
+            Durability.enchantUnbreaking(helper.getLevel(), helmet, 3);
             ItemStack boots = new ItemStack(Items.DIAMOND_BOOTS);
             pig.setItemSlot(EquipmentSlot.HEAD, helmet);
             pig.setItemSlot(EquipmentSlot.FEET, boots);
@@ -418,7 +421,7 @@ public final class ChemicalImpactGameTests {
             for (int i = 0; i < trials; i++) {
                 pig.getItemBySlot(EquipmentSlot.HEAD).setDamageValue(0);
                 pig.getItemBySlot(EquipmentSlot.FEET).setDamageValue(0);
-                com.hbm.handler.ArmorUtil.damageWholeSuit(pig, 1);
+                ArmorUtil.damageWholeSuit(pig, 1);
                 helmetPoints += pig.getItemBySlot(EquipmentSlot.HEAD).getDamageValue();
                 bootPoints += pig.getItemBySlot(EquipmentSlot.FEET).getDamageValue();
             }
@@ -431,7 +434,7 @@ public final class ChemicalImpactGameTests {
             worn.setDamageValue(worn.getMaxDamage() - 1);
             pig.setItemSlot(EquipmentSlot.FEET, worn);
             pig.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
-            com.hbm.handler.ArmorUtil.damageWholeSuit(pig, 1);
+            ArmorUtil.damageWholeSuit(pig, 1);
             helper.assertTrue(pig.getItemBySlot(EquipmentSlot.FEET).isEmpty(), "a worn-through piece breaks");
             pig.discard();
             helper.succeed();

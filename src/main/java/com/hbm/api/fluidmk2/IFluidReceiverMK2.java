@@ -7,6 +7,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.uninos.graph.PortClaims;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Contract;
 
 /**
@@ -42,7 +43,7 @@ public interface IFluidReceiverMK2 extends IFluidUserMK2 {
     }
 
     /** 1.7 {@code IFluidStandardReceiver.subscribeToAllAround}: {@link #trySubscribe} on all six sides of {@code tile}. */
-    default void subscribeToAllAround(FluidType type, net.minecraft.world.level.block.entity.BlockEntity tile) {
+    default void subscribeToAllAround(FluidType type, BlockEntity tile) {
         BlockPos pos = tile.getBlockPos();
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             trySubscribe(type, tile.getLevel(), pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
@@ -50,7 +51,7 @@ public interface IFluidReceiverMK2 extends IFluidUserMK2 {
     }
 
     /** 1.7 {@code IFluidStandardReceiver.unsubscribeToAllAround}. */
-    default void unsubscribeToAllAround(FluidType type, net.minecraft.world.level.block.entity.BlockEntity tile) {
+    default void unsubscribeToAllAround(FluidType type, BlockEntity tile) {
         BlockPos pos = tile.getBlockPos();
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             tryUnsubscribe(type, tile.getLevel(), pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ);

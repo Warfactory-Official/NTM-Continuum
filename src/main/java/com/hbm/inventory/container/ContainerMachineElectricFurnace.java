@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.tileentity.machine.TileEntityMachineElectricFurnace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -82,7 +83,7 @@ public class ContainerMachineElectricFurnace extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof com.hbm.items.machine.ItemMachineUpgrade) {
+            } else if (stack.getItem() instanceof ItemMachineUpgrade) {
                 // upgrades go straight to the upgrade slot (the 1.12.2 transferStackInSlot routing)
                 if (!this.moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
             } else {

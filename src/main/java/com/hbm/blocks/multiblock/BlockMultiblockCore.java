@@ -4,22 +4,33 @@ import com.hbm.capability.CapRole;
 import com.hbm.capability.ICapabilityBlock;
 import com.hbm.capability.MachineCaps;
 import com.hbm.interfaces.ICopiable;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
+import dev.golem.core.world.ItemStacks;
+import dev.golem.core.world.SubLevels;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -31,6 +42,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
@@ -56,12 +68,12 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     public static final int MASK_NONE = 0;
     public static final int MASK_DOWN = 1, MASK_UP = 1 << 1, MASK_NORTH = 1 << 2;
     public static final int MASK_SOUTH = 1 << 3, MASK_WEST = 1 << 4, MASK_EAST = 1 << 5;
-    /** NORTH|SOUTH|WEST|EAST — {@code Direction.ordinal()} 2..5. */
+    /** NORTH|SOUTH|WEST|EAST, the {@code Direction.ordinal()} values 2..5. */
     public static final int MASK_HORIZONTAL = 0b111100;
     public static final int MASK_ALL = 0b111111;
 
     /**
-     * The roles a {@link CellVisitor#cell(BlockPos, int, int)} emission speaks for — the whole vocabulary of
+     * The roles a {@link CellVisitor#cell(BlockPos, int, int)} emission speaks for. The whole vocabulary of
      * that argument, so no call site reaches into {@link MachineCaps} for it.
      */
     public static final int ROLE_POWER_IN = MachineCaps.POWER_IN;
@@ -79,7 +91,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     public static final int PASSIVE_NONE = 0;
     public static final int PASSIVE_POWER_IN = 1;
     public static final int PASSIVE_FLUID_IN = 1 << 1;
-    /** The proxy's inventory surface — an independent flag, not a third receive domain. */
+    /** The proxy's inventory surface, an independent flag rather than a third receive domain. */
     public static final int PASSIVE_ITEMS = 1 << 2;
     public static final int PASSIVE_ANY = PASSIVE_POWER_IN | PASSIVE_FLUID_IN | PASSIVE_ITEMS;
     public static final int PASSIVE_DOMAINS = 3;
@@ -101,8 +113,8 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      * the base answers the whole silhouette at every cell of the footprint.
      */
     protected final List<AABB> bounding = new ArrayList<>();
-    private final java.util.concurrent.ConcurrentHashMap<Long, VoxelShape> shapeCache =
-            new java.util.concurrent.ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, VoxelShape> shapeCache =
+            new ConcurrentHashMap<>();
     private @Nullable MultiblockMaskTable table;
 
     protected BlockMultiblockCore(Properties properties) {
@@ -179,7 +191,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     }
 
     /**
-     * The cell set a teardown enumerates — a superset of {@link #visitCells} is allowed where the footprint
+     * The cell set a teardown enumerates. A superset of {@link #visitCells} is allowed where the footprint
      * is a function of live configuration.
      */
     protected void visitTeardownCells(BlockPos core, Direction facing, CellVisitor visitor) {
@@ -204,7 +216,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
 
     /**
      * Every cell where 1.7 stamps a fluid- or power-carrying proxy, and the faces that proxy accepts on;
-     * read the stamp's arguments — only {@code .power()} and {@code .fluid()} name a domain.
+     * read the stamp's arguments. Only {@code .power()} and {@code .fluid()} name a domain.
      */
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {}
 
@@ -213,13 +225,13 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     }
 
     /**
-     * The core cell's own passive mask, in the local frame — {@link #MASK_ALL} for every folded machine:
-     * the core holds the real machine tile, reachable by a bare fetch on any face.
+     * The core cell's own passive mask, in the local frame: {@link #MASK_ALL} for every folded machine,
+     * because the core holds the real machine tile, reachable by a bare fetch on any face.
      */
     public int passiveCoreMask() { return MASK_ALL; }
 
     /**
-     * Which domains {@link #passiveCoreMask} applies to — receive only: no 1.7 asker ever pulls, so a
+     * Which domains {@link #passiveCoreMask} applies to: receive only, since no 1.7 asker ever pulls, so a
      * provider answer at a passive face would be a port invention.
      */
     public int passiveCoreDomains(int declaredCaps) {
@@ -231,12 +243,12 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
 
     /**
      * The face mask at a local offset, or {@link MultiblockMaskTable#NOT_A_CELL}. Override for a footprint
-     * the packed table cannot size — an RBMK column answers analytically.
+     * the packed table cannot size. An RBMK column answers analytically.
      */
     public int maskAt(int lx, int ly, int lz) { return maskTable().maskAtLocal(lx, ly, lz); }
 
     /**
-     * The active mask at a local offset for a core facing this way — a narrow licence for a machine whose
+     * The active mask at a local offset for a core facing this way. A narrow licence for a machine whose
      * 1.7 code names world directions that do not rotate with the machine.
      */
     public int maskAt(int lx, int ly, int lz, Direction facing) { return maskAt(lx, ly, lz); }
@@ -343,7 +355,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     }
 
     /**
-     * {@link #isOpenAt} over the passive plane alone — no active union; the item route's question, and the
+     * {@link #isOpenAt} over the passive plane alone, with no active union; the item route's question, and the
      * union would be wrong for it: 1.7 has no item mechanism on the {@code getConPos} plane at all.
      */
     public boolean isPassiveOnlyOpenAt(Direction facing, int dx, int dy, int dz, Direction side, int passiveDomains) {
@@ -373,16 +385,16 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
 
     /**
      * Which fluids this machine's ducts may carry. 1.7 gates the type at the same call site as the face --
-     * the large turbine takes only a coolant or spent steam, the intake only air -- so a folded machine
+     * the large turbine takes only a coolant or spent steam, the intake only air, so a folded machine
      * that inherits its geometry still has to say this, or it accepts every fluid at a port that refused
      * all but one.
      */
-    public boolean acceptsFluid(com.hbm.inventory.fluid.FluidType type) {
+    public boolean acceptsFluid(FluidType type) {
         return true;
     }
 
     /** The duct answer; see {@link #canConnect(BlockGetter, BlockPos, ForgeDirection)}. */
-    public boolean canConnect(com.hbm.inventory.fluid.FluidType type, BlockGetter world, int x, int y, int z,
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z,
                               ForgeDirection dir) {
         return acceptsFluid(type) && openForConnector(world, new BlockPos(x, y, z), dir, ROLE_FLUID);
     }
@@ -442,7 +454,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     public static boolean wallPlacement = false;
     /**
      * hbm-space {@code BlockDummyable.internalPlayers}: a player standing inside a multiblock they just placed does not
-     * collide with it until no such player is inside any multiblock of that type any more. Off in plain HBM.
+     * collide with it until no such player is inside any multiblock of that type. Off in plain HBM.
      */
     public static boolean walkOutAfterPlacing = false;
 
@@ -451,14 +463,14 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     private static final ThreadLocal<@Nullable PlacedFace> PLACED_FACE = new ThreadLocal<>();
 
     /** hbm-space's per-block-type {@code internalPlayers} (1.7 kept it on the Block, shared by every machine of the type). */
-    private final java.util.Set<Player> internalPlayers = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private final Set<Player> internalPlayers = ConcurrentHashMap.newKeySet();
 
     /** Where a placement puts the core, which way it faces, and the cell 1.7 left out of the space check. */
     public record Placement(BlockPos core, Direction facing, BlockPos clicked) {}
 
     /** 1.7 {@code onBlockPlaced} returned the clicked side as metadata; this remembers it for {@link #setPlacedBy}. */
     @Override
-    public @Nullable BlockState getStateForPlacement(net.minecraft.world.item.context.BlockPlaceContext context) {
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
         PLACED_FACE.set(new PlacedFace(context.getClickedPos().immutable(), context.getClickedFace()));
         BlockState state = super.getStateForPlacement(context);
         // Vanilla's BlockItem checks the returned state's collision shape against entities before setPlacedBy builds
@@ -519,7 +531,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      */
     protected final boolean ignoresCollision(CollisionContext context) {
         if (internalPlayers.isEmpty()
-                || !(context instanceof net.minecraft.world.phys.shapes.EntityCollisionContext entityContext)
+                || !(context instanceof EntityCollisionContext entityContext)
                 || !(entityContext.getEntity() instanceof Player player) || !internalPlayers.contains(player)) {
             return false;
         }
@@ -569,7 +581,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         Direction facing = placement.facing();
         BlockPos core = placement.core();
         if (!checkRequirement(level, core, facing, placement.clicked())) {
-            ItemStack refund = dev.golem.core.world.ItemStacks.copyWithCount(stack, 1);
+            ItemStack refund = ItemStacks.copyWithCount(stack, 1);
             if (!player.getAbilities().instabuild && !player.getInventory().add(refund)) player.drop(refund, false);
             return;
         }
@@ -588,7 +600,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         MultiblockHandlerXR.refreshSpace(level, core, getDimensions(), facing);
         BlockEntity placedCore = level.getBlockEntity(core);
         if (placedCore != null) {
-            dev.golem.core.world.ItemStacks.applyComponents(placedCore, stack);
+            ItemStacks.applyComponents(placedCore, stack);
             placedCore.setChanged();
         }
         // hbm-space: "check if the placing player is inside the placed multiblock"
@@ -602,7 +614,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     /** The state written for one cell. */
     protected abstract BlockState cellStateFor(int localX, int localY, int localZ, Direction facing, int shapeId);
 
-    public final void fillSpace(net.minecraft.world.level.LevelAccessor level, BlockPos core, Direction facing) {
+    public final void fillSpace(LevelAccessor level, BlockPos core, Direction facing) {
         fillSpace(level, core, facing, null);
     }
 
@@ -610,7 +622,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      * {@link #fillSpace} restricted to the cells inside {@code clip}: a hardcoded world-generation structure builds
      * chunk by chunk, and 1.7's structure {@code fillSpace} wrote only the cells inside the populating box.
      */
-    public final void fillSpace(net.minecraft.world.level.LevelAccessor level, BlockPos core, Direction facing,
+    public final void fillSpace(LevelAccessor level, BlockPos core, Direction facing,
                                 net.minecraft.world.level.levelgen.structure.@Nullable BoundingBox clip) {
         CoreIndexScratch scratch = CoreIndexScratch.borrow();
         try {
@@ -623,7 +635,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
             });
             if (level instanceof ServerLevel server) {
                 for (int i = 0; i < scratch.size(); i++) MultiblockCoreIndex.put(server, BlockPos.of(scratch.get(i)), core);
-            } else if (level instanceof net.minecraft.world.level.WorldGenLevel worldgen && scratch.size() > 0) {
+            } else if (level instanceof WorldGenLevel worldgen && scratch.size() > 0) {
                 // A structure placed during world generation (a worker thread): the index is level SavedData, so
                 // its entries are handed to the server thread instead of being written from here.
                 ServerLevel server = worldgen.getLevel();
@@ -671,7 +683,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
 
     /**
      * A cell answers with a core at another position, where capability invalidation is position-keyed, so
-     * the core's own removal retires nothing at its cells. Geometry only — no world read, so it is safe on
+     * the core's own removal retires nothing at its cells. Geometry only, with no world read, so it is safe on
      * the unload path.
      */
     public void invalidateCellCaps(ServerLevel level, BlockPos core, Direction facing) {
@@ -705,8 +717,8 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      * at, and on a big machine those are nowhere near each other.
      *
      * <p>1.7 widened the flat range by the half-diagonal of {@code getDimensions}, then scanned the world
-     * for a cell when that fell short -- because five machines build far more than they declare. The folded
-     * table holds every cell, so the widened radius is exact and there is nothing left to scan for.
+     * for a cell when that fell short, because five machines build far more than they declare. The folded
+     * table holds every cell, so the widened radius is exact and no scan is needed.
      */
     public double getInteractionRangeSq() {
         double range = Math.sqrt(BASE_INTERACTION_RANGE_SQ) + maskTable().cornerRadius();
@@ -717,7 +729,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     public static boolean isWithinInteractionRange(BlockGetter level, BlockPos core, Player player) {
         BlockMultiblockCore block = MultiblockSurface.foldedCore(level.getBlockState(core));
         // Measured in the world: a machine on a moving sub-level keeps its blocks far from where the player sees it.
-        double distance = dev.golem.core.world.SubLevels.distanceSq(player.level(),
+        double distance = SubLevels.distanceSq(player.level(),
                 core.getX() + 0.5D, core.getY() + 0.5D, core.getZ() + 0.5D, player.getX(), player.getY(), player.getZ());
         return distance <= (block == null ? BASE_INTERACTION_RANGE_SQ : block.getInteractionRangeSq());
     }
@@ -738,26 +750,23 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     /**
      * What a right-click on any part of the machine does: open the machine's menu.
      *
-     * <p>The menu belongs to the core's block entity, and the player has clicked whichever cell they
-     * could reach, so the position is not incidental — the core is what the screen is bound to, and a
-     * cell carries no block entity to bind to at all. Every caller reaches this with the core already
-     * resolved.
+     * <p>The menu belongs to the core's block entity; a cell carries none. Every caller reaches this with
+     * the core already resolved.
      *
-     * <p>A machine with no menu is answered {@code TRY_WITH_EMPTY_HAND} rather than swallowed, so that
-     * a right-click on it still falls through to whatever else the click could have meant.
+     * <p>A machine with no menu answers {@code TRY_WITH_EMPTY_HAND} rather than swallowing the click.
      *
-     * <p>Override for a machine that does something other than open its menu, or that treats a
-     * sneak-click differently; a machine with a menu and no special behaviour states nothing.
+     * <p>Override for a machine that does something other than open its menu, or treats a sneak-click
+     * differently.
      */
     protected InteractionResult useAtCore(BlockState state, Level level, BlockPos core, Player player, BlockHitResult hit) {
-        if (!(level.getBlockEntity(core) instanceof net.minecraft.world.MenuProvider menu)) {
+        if (!(level.getBlockEntity(core) instanceof MenuProvider menu)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (level.isClientSide()) return InteractionResult.SUCCESS;
-        if (!(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) {
+        if (!(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-        dev.golem.core.gui.Menus.openWithPos(serverPlayer, menu, core);
+        Menus.openWithPos(serverPlayer, menu, core);
         return InteractionResult.SUCCESS;
     }
 

@@ -6,7 +6,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * An item that can tell a launch pad where to aim — 1.12.2's {@code IDesignatorItem}.
+ * An item that can tell a launch pad where to aim: the 1.12.2 {@code IDesignatorItem}.
  *
  * <p>The launch pad's own coordinates are passed in because a designator is free to answer relative to
  * them (the artillery designators do) or to refuse based on where the pad is.

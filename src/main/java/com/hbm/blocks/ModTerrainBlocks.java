@@ -20,6 +20,7 @@ import com.hbm.items.ModItems;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.Compat;
+import java.util.Arrays;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -63,20 +64,17 @@ import com.hbm.blocks.generic.BlockTerrainEarth;
 import com.hbm.blocks.generic.BlockVent;
 
 /**
- * The natural / terrain / hazard blocks of 1.7's {@code ModBlocks} that no earlier wave registered:
- * the plant family, the burning ground, biome and porous stone, basalt and meteor ores, the
- * geothermal fissure and volcano cores, geysers, coal dust and chlorine gas, hot sellafite, the remaining
- * cave spikes, the dark crystals, the material storage blocks (technetium/cadmium steel, australium, coke,
- * lithium, nuclear waste, yellowcake, fallout) and the gas vents.
+ * The natural, terrain and hazard blocks of 1.7's {@code ModBlocks} not registered elsewhere:
+ * the plant family, burning ground, stone and ores, geothermal and volcano cores, geysers, gases, hot
+ * sellafite, cave spikes, dark crystals, material storage blocks and the gas vents.
  *
  * <p>Hardness, blast resistance, sound, light and creative tab follow each old registration line; the
  * old {@code blockTab} is {@link HbmTab#BLOCKS}, {@code machineTab} {@link HbmTab#MACHINES}, {@code nukeTab}
  * {@link HbmTab#BOMBS}. Metadata sub-blocks are flattened to {@code <base>_<variant>}.
  *
- * <p>Each block's models, blockstate, item model, loot and tags are stated on its registration (Reg; emitted by
- * Dejson at build time). Authored files (hand-built {@code elements}): {@code plant_reeds}, {@code vine_phosphor_*},
- * {@code ore_volcano} under {@code assets/hbm/models/block/}. The packing recipes and the grass tint stay in
- * {@link TerrainDeclarations}.
+ * <p>Models, blockstate, loot and tags are stated on each registration. The hand-built {@code elements}
+ * models {@code plant_reeds}, {@code vine_phosphor_*} and {@code ore_volcano} are authored files under
+ * {@code assets/hbm/models/block/}. The packing recipes and the grass tint are in {@link TerrainDeclarations}.
  */
 public final class ModTerrainBlocks {
 
@@ -120,7 +118,7 @@ public final class ModTerrainBlocks {
     private static final Map<String, RegistryObject<BlockStalagmite>> SPIKES = new LinkedHashMap<>();
     private static final Map<String, RegistryObject<BlockVolcano>> VOLCANO_CORES = new LinkedHashMap<>();
 
-    // ---------------------------------------------------------------- plants (blockTab, grass sound)
+    // Plants (blockTab, grass sound)
 
     static {
         for (BlockDeadPlant.Type t : BlockDeadPlant.Type.values()) {
@@ -161,7 +159,7 @@ public final class ModTerrainBlocks {
             .transform(Presets.statesOnly(Variants.simple()))
             .transform(Presets.sprite("hbm:blocks/reeds_top"))
             .loot(Loot.only("minecraft:stick"));
-    /** Authored vine_phosphor_ground/_middle/_hang (old-hbm's three models). */
+    /** Authored vine_phosphor_ground/_middle/_hang (1.12.2's three models). */
     public static final RegistryObject<BlockHangingVine> vine_phosphor = block("vine_phosphor", BlockHangingVine::new,
             p -> p.strength(0.5F).sound(SoundType.GRASS).noOcclusion().noCollision(), HbmTab.BLOCKS)
             .transform(Presets.statesOnly(Variants.select("part", "ground", "_ground", "middle", "_middle", "hang", "_hang")))
@@ -201,7 +199,7 @@ public final class ModTerrainBlocks {
         return layers;
     }
 
-    // ---------------------------------------------------------------- burning ground (frozen_* live in com.hbm.bombs2)
+    // Burning ground (frozen_* live in com.hbm.bombs2)
 
     public static final RegistryObject<BlockTerrainEarth> burning_earth = block("burning_earth",
             BlockTerrainEarth::new,
@@ -210,7 +208,7 @@ public final class ModTerrainBlocks {
             .loot(Loot.nothing()) // drops dirt, computed in Java
             .tag(BlockTag.SHOVEL);
 
-    // ---------------------------------------------------------------- stone / ores
+    // Stone and ores
 
     static {
         for (BlockBiomeStone.Type t : BlockBiomeStone.Type.values()) {
@@ -227,7 +225,7 @@ public final class ModTerrainBlocks {
         for (BlockOreBasalt.Type t : BlockOreBasalt.Type.values()) {
             BASALT_ORES.put(t, block(t.id(), p -> new BlockOreBasalt(p, t), ModTerrainBlocks::stoneOre, HbmTab.BLOCKS)
                     .transform(Presets.cubeBottomTop(t.texture() + "_top", t.texture(), t.texture() + "_top"))
-                    .loot(Loot.nothing()) // one drop item, silk touch the block — in Java
+                    .loot(Loot.nothing()) // one drop item, silk touch the block, in Java
                     .tag(BlockTag.PICKAXE));
         }
         for (String v : new String[]{"iron", "copper", "aluminium", "rareearth", "cobalt"}) {
@@ -289,7 +287,7 @@ public final class ModTerrainBlocks {
             .loot(Loot.nothing())
             .tag(BlockTag.PICKAXE);
 
-    // ---------------------------------------------------------------- gases (worldgen / vent cells: no item, like ModOreBlocks)
+    // Gases (worldgen and vent cells: no item, like ModOreBlocks)
 
     /** Invisible coal dust (smoke particles only). */
     public static final RegistryObject<BlockGasCoal> gas_coal = REG.block("gas_coal", BlockGasCoal::new, ModTerrainBlocks::gasProps)
@@ -298,7 +296,7 @@ public final class ModTerrainBlocks {
     public static final RegistryObject<BlockGasChlorine> chlorine_gas = REG.block("chlorine_gas", BlockGasChlorine::new, ModTerrainBlocks::gasProps)
             .transform(Presets.shape(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/chlorine_gas"))).noItem());
 
-    // ---------------------------------------------------------------- hot sellafite (sellafield metas 0..5)
+    // Hot sellafite (sellafield metas 0..5)
 
     static {
         for (int i = 0; i < BlockSellafield.LEVELS; i++) {
@@ -309,7 +307,7 @@ public final class ModTerrainBlocks {
         }
     }
 
-    // ---------------------------------------------------------------- remaining cave spikes (EnumStalagmiteType ICE.. GLYPHID3)
+    // Cave spikes (EnumStalagmiteType ICE.. GLYPHID3)
 
     static {
         spike("ice", () -> new ItemStack(ModItems.powder_ice.get()));
@@ -319,7 +317,7 @@ public final class ModTerrainBlocks {
         spike("glyphid3", () -> ItemStack.EMPTY);
     }
 
-    // ---------------------------------------------------------------- dark crystals (no tab)
+    // Dark crystals (no tab)
 
     public static final RegistryObject<CrystalVirus> crystal_virus = block("crystal_virus", CrystalVirus::new,
             p -> p.strength(15.0F, Float.POSITIVE_INFINITY).requiresCorrectToolForDrops().randomTicks(), null) // 1.7: default stone sound
@@ -328,7 +326,7 @@ public final class ModTerrainBlocks {
             p -> p.strength(15.0F, Float.POSITIVE_INFINITY).requiresCorrectToolForDrops(), null) // 1.7: default stone sound
             .transform(cube("hbm:blocks/crystal_pulsar"));
 
-    // ---------------------------------------------------------------- material / storage blocks
+    // Material and storage blocks
 
     public static final RegistryObject<BlockBeaconable> block_tcalloy = block("block_tcalloy", BlockBeaconable::new,
             p -> p.strength(5.0F, 70.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
@@ -342,7 +340,7 @@ public final class ModTerrainBlocks {
 
     static {
         for (String v : new String[]{"coal", "lignite", "petroleum"}) {
-            // 1.7 BlockCoke: flammability 5 / spread 10 — no cross-loader flammability seam exists yet (see report)
+            // 1.7 BlockCoke: flammability 5, spread 10. No cross-loader flammability seam exists yet.
             COKE_BLOCKS.put(v, block("block_coke_" + v, BlockBeaconable::new,
                     p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
                     .transform(cube("hbm:blocks/block_coke." + v)));
@@ -368,7 +366,7 @@ public final class ModTerrainBlocks {
             .loot(Loot.self())
             .tag(BlockTag.SHOVEL);
 
-    // ---------------------------------------------------------------- vents (machineTab, Material.iron)
+    // Vents (machineTab, Material.iron)
 
     public static final RegistryObject<BlockVent> vent_chlorine = vent("vent_chlorine", BlockVent.Kind.CHLORINE);
     public static final RegistryObject<BlockVent> vent_cloud = vent("vent_cloud", BlockVent.Kind.CLOUD);
@@ -379,7 +377,7 @@ public final class ModTerrainBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    // ---------------------------------------------------------------- lookups
+    // Lookups
 
     public static BlockDeadPlant plant_dead(BlockDeadPlant.Type type) { return DEAD_PLANTS.get(type).get(); }
     public static BlockNTMFlower plant_flower(BlockNTMFlower.Type type) { return FLOWERS.get(type).get(); }
@@ -392,9 +390,9 @@ public final class ModTerrainBlocks {
     public static BlockStalagmite spike(String id) { return SPIKES.get(id).get(); }
     public static BlockVolcano volcanoCore(String id) { return VOLCANO_CORES.get(id).get(); }
     public static Iterable<RegistryObject<BlockVolcano>> volcanoCores() { return VOLCANO_CORES.values(); }
-    public static Iterable<RegistryObject<BlockSellafield>> sellafieldLevels() { return java.util.Arrays.asList(SELLAFIELD); }
+    public static Iterable<RegistryObject<BlockSellafield>> sellafieldLevels() { return Arrays.asList(SELLAFIELD); }
 
-    // ---------------------------------------------------------------- helpers
+    // Helpers
 
     private static <B extends Block> Reg.Handle<B> block(String id, Function<BlockBehaviour.Properties, ? extends B> factory,
                                                          UnaryOperator<BlockBehaviour.Properties> props, HbmTab tab) {

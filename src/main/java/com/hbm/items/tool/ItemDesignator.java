@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
@@ -19,14 +20,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Designator — 1.12.2's {@code ItemDesignator}. Right-click a block to record its X/Z as the target,
+ * Designator, 1.12.2's {@code ItemDesignator}. Right-click a block to record its X/Z as the target,
  * then drop the designator into a launch pad's second slot.
  *
  * <p>Clicking a {@link LaunchPad} is explicitly <em>not</em> a target: upstream passes the interaction
  * through so the click opens the pad instead of aiming the missile at it.
  *
- * <p>The coordinates were NBT integers ({@code xCoord}/{@code zCoord}) and are now two data components.
- * Their presence is what {@link #isReady} tests, exactly as {@code hasTagCompound} did — a designator
+ * <p>The coordinates are two data components, not NBT integers ({@code xCoord}/{@code zCoord}).
+ * Their presence is what {@link #isReady} tests, exactly as {@code hasTagCompound} did: a designator
  * that has never been pointed at anything is not ready, and one pointed at (0, 0) is.
  */
 public class ItemDesignator extends CompatItem implements IDesignatorItem {
@@ -53,7 +54,7 @@ public class ItemDesignator extends CompatItem implements IDesignatorItem {
     }
 
     /** Records a target and plays the confirmation bleep. */
-    static void setTarget(Level level, net.minecraft.world.entity.player.Player player, ItemStack stack, int x, int z,
+    static void setTarget(Level level, Player player, ItemStack stack, int x, int z,
                           Component message) {
         ModDataComponents.DESIGNATOR_X.set(stack, x);
         ModDataComponents.DESIGNATOR_Z.set(stack, z);

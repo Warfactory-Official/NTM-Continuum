@@ -1,5 +1,9 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.data.MachineDataMaps;
+import com.hbm.items.ModStorageDrumItems;
+import com.hbm.items.special.ItemWasteStorage;
+import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
@@ -67,28 +71,28 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase
     private static Fuel getFuel(ItemStack stack) {
         if (stack.isEmpty()) return null;
         Item item = stack.getItem();
-        if (item instanceof com.hbm.items.special.ItemWasteStorage waste) {
+        if (item instanceof ItemWasteStorage waste) {
             int variant = waste.variant(stack);
-            if (com.hbm.items.ModStorageDrumItems.nuclear_waste_short.is(item))
-                return wasteFuel(1500, 30 * 60 * 20, com.hbm.items.ModStorageDrumItems.nuclear_waste_short_depleted.get(), variant);
-            if (com.hbm.items.ModStorageDrumItems.nuclear_waste_short_tiny.is(item))
-                return wasteFuel(150, 3 * 60 * 20, com.hbm.items.ModStorageDrumItems.nuclear_waste_short_depleted_tiny.get(), variant);
-            if (com.hbm.items.ModStorageDrumItems.nuclear_waste_long.is(item))
-                return wasteFuel(500, 2 * 60 * 60 * 20, com.hbm.items.ModStorageDrumItems.nuclear_waste_long_depleted.get(), variant);
-            if (com.hbm.items.ModStorageDrumItems.nuclear_waste_long_tiny.is(item))
-                return wasteFuel(50, 12 * 60 * 20, com.hbm.items.ModStorageDrumItems.nuclear_waste_long_depleted_tiny.get(), variant);
+            if (ModStorageDrumItems.nuclear_waste_short.is(item))
+                return wasteFuel(1500, 30 * 60 * 20, ModStorageDrumItems.nuclear_waste_short_depleted.get(), variant);
+            if (ModStorageDrumItems.nuclear_waste_short_tiny.is(item))
+                return wasteFuel(150, 3 * 60 * 20, ModStorageDrumItems.nuclear_waste_short_depleted_tiny.get(), variant);
+            if (ModStorageDrumItems.nuclear_waste_long.is(item))
+                return wasteFuel(500, 2 * 60 * 60 * 20, ModStorageDrumItems.nuclear_waste_long_depleted.get(), variant);
+            if (ModStorageDrumItems.nuclear_waste_long_tiny.is(item))
+                return wasteFuel(50, 12 * 60 * 20, ModStorageDrumItems.nuclear_waste_long_depleted_tiny.get(), variant);
             return null;
         }
         // scrap and gem_rad (1.7 fuels.put) are the data map hbm:item/radgen_fuel (MachineDataMaps)
-        var fuel = com.hbm.api.data.MachineDataMaps.RADGEN_FUEL.get(item);
+        var fuel = MachineDataMaps.RADGEN_FUEL.get(item);
         if (fuel == null) return null;
-        ItemStack output = fuel.output().map(id -> net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.parse(id))
+        ItemStack output = fuel.output().map(id -> BuiltInRegistries.ITEM.getOptional(Ids.parse(id))
                 .map(found -> new ItemStack(found, fuel.count())).orElse(ItemStack.EMPTY)).orElse(ItemStack.EMPTY);
         return new Fuel(fuel.production(), fuel.duration(), output);
     }
 
     private static Fuel wasteFuel(int production, int duration, Item depleted, int variant) {
-        return new Fuel(production, duration, com.hbm.items.special.ItemWasteStorage.make(depleted, variant));
+        return new Fuel(production, duration, ItemWasteStorage.make(depleted, variant));
     }
 
     public int getProgressScaled(int channel, int scale) {

@@ -1,9 +1,11 @@
 package com.hbm.items.armor;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.handler.JetpackHandler;
 import com.hbm.items.ModArmorItems;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.gear.ArmorFSBPowered;
+import com.hbm.sound.ModSounds;
 import com.hbm.util.TickPhase;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Attributes;
@@ -12,11 +14,14 @@ import dev.golem.core.world.DamageEvents;
 import dev.golem.core.world.GolemArmorMaterial;
 import java.util.List;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 /** DNS armor, including sprint amplification, powered jetpack and glider assist. */
 public class ArmorDNT extends ArmorFSBPowered {
@@ -39,7 +44,7 @@ public class ArmorDNT extends ArmorFSBPowered {
 
     /** Called once per player tick so removing DNS cannot leave its transient speed modifier behind. */
     public static void updateSprintSpeed(Player player) {
-        ItemStack chest = player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST);
+        ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
         if (chest.getItem() == ModArmorItems.dns_plate.get() && player.isSprinting()) {
             Attributes.replaceTransient(player.getAttribute(
                     net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED), SPEED_MODIFIER, 0.25D);
@@ -72,7 +77,7 @@ public class ArmorDNT extends ArmorFSBPowered {
             if (y < -1D) y += 0.4D;
             else if (y < -0.1D) y += 0.2D;
             else if (y < 0D) y = 0D;
-            motion = new net.minecraft.world.phys.Vec3(motion.x * 1.05D, y, motion.z * 1.05D);
+            motion = new Vec3(motion.x * 1.05D, y, motion.z * 1.05D);
             float forward = JetpackHandler.getForwardInput(player);
             if (forward != 0F) {
                 var look = player.getViewVector(1.0F);
@@ -84,14 +89,14 @@ public class ArmorDNT extends ArmorFSBPowered {
         }
         // hbm-space: in free fall sneaking only descends with the backpack on (com.hbm.api.environment.Environment)
         if (player.isShiftKeyDown() && !player.onGround()
-                && (com.hbm.api.environment.Environment.gravity(player) > 0D || JetpackHandler.isBackpackEnabled(player))) {
+                && (Environment.gravity(player) > 0D || JetpackHandler.isBackpackEnabled(player))) {
             player.setDeltaMovement(player.getDeltaMovement().add(0, -0.1D, 0));
         }
     }
 
     private static void playThrustSound(Level level, Player player) {
         level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                com.hbm.sound.ModSounds.IMMOLATOR_SHOOT.get(), net.minecraft.sounds.SoundSource.PLAYERS,
+                ModSounds.IMMOLATOR_SHOOT.get(), SoundSource.PLAYERS,
                 0.125F, 1.5F);
     }
 

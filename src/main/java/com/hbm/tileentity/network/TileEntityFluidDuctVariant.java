@@ -1,7 +1,10 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.blocks.network.FluidDuctBox;
+import com.hbm.blocks.network.FluidDuctPaintable;
 import com.hbm.tileentity.ModFluidNetBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -17,13 +20,13 @@ public class TileEntityFluidDuctVariant extends TileEntityFluidDuctNT {
     }
 
     /** One tile class serves three block-entity types, split by renderer: neo pipe, box duct, paintable cube. */
-    private static net.minecraft.world.level.block.entity.BlockEntityType<?> typeFor(BlockState state) {
-        if (state.getBlock() instanceof com.hbm.blocks.network.FluidDuctBox) return ModFluidNetBlockEntities.BOX.get();
-        if (state.getBlock() instanceof com.hbm.blocks.network.FluidDuctPaintable) return ModFluidNetBlockEntities.PAINTABLE.get();
+    private static BlockEntityType<?> typeFor(BlockState state) {
+        if (state.getBlock() instanceof FluidDuctBox) return ModFluidNetBlockEntities.BOX.get();
+        if (state.getBlock() instanceof FluidDuctPaintable) return ModFluidNetBlockEntities.PAINTABLE.get();
         return ModFluidNetBlockEntities.DUCT.get();
     }
 
-    protected TileEntityFluidDuctVariant(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    protected TileEntityFluidDuctVariant(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 }

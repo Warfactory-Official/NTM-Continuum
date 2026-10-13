@@ -1,5 +1,8 @@
 package com.hbm.wiaj.cannery;
 
+import dev.golem.core.Ids;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -18,7 +21,7 @@ public class Jars {
     public static HashMap<Item, CanneryBase> canneries = new HashMap<>();
 
     /** Presentations addons registered, by item id, applied after HBM's on every (re)build. */
-    private static final java.util.Map<String, CanneryBase> ADDED = new java.util.LinkedHashMap<>();
+    private static final Map<String, CanneryBase> ADDED = new LinkedHashMap<>();
     private static boolean built;
 
     /**
@@ -50,7 +53,7 @@ public class Jars {
     }
 
     private static void put(String id, CanneryBase cannery) {
-        Item item = BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.parse(id));
+        Item item = BuiltInRegistries.ITEM.getValue(Ids.parse(id));
         if (item != null && item != Items.AIR) canneries.put(item, cannery);
     }
 

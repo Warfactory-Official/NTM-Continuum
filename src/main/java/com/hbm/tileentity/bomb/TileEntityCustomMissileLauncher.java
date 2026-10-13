@@ -1,6 +1,7 @@
 package com.hbm.tileentity.bomb;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.api.event.HbmEvents;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.api.item.IDesignatorItem;
 import com.hbm.entity.missile.EntityMissileCustom;
@@ -11,15 +12,19 @@ import com.hbm.items.ModFuelItems;
 import com.hbm.items.weapon.ItemCustomMissile;
 import com.hbm.items.weapon.ItemCustomMissilePart;
 import com.hbm.items.weapon.ItemCustomMissilePart.PartSize;
+import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -28,6 +33,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -87,18 +93,18 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
 
     /** 1.7 {@code updateEntity}'s client branch: smoke under a custom missile standing on the pad. */
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityCustomMissileLauncher te) {
-        net.minecraft.world.phys.AABB box = new net.minecraft.world.phys.AABB(pos.getX() - 0.5, pos.getY(), pos.getZ() - 0.5,
+        AABB box = new AABB(pos.getX() - 0.5, pos.getY(), pos.getZ() - 0.5,
                 pos.getX() + 1.5, pos.getY() + 10, pos.getZ() + 1.5);
-        if (level.getEntitiesOfClass(com.hbm.entity.missile.EntityMissileCustom.class, box).isEmpty()) return;
+        if (level.getEntitiesOfClass(EntityMissileCustom.class, box).isEmpty()) return;
         for (int i = 0; i < 15; i++) {
             boolean dir = level.getRandom().nextBoolean();
             double moX = dir ? 0 : (float) (level.getRandom().nextGaussian() * te.smokeSpread());
             double moZ = !dir ? 0 : (float) (level.getRandom().nextGaussian() * te.smokeSpread());
-            net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+            CompoundTag data = new CompoundTag();
             data.putDouble("moX", moX);
             data.putDouble("moY", 0);
             data.putDouble("moZ", moZ);
-            com.hbm.particle.helper.HbmEffectNT.LaunchSmoke.summonParticle(level, pos.getX() + 0.5, pos.getY() + 0.25,
+            HbmEffectNT.LaunchSmoke.summonParticle(level, pos.getX() + 0.5, pos.getY() + 0.25,
                     pos.getZ() + 0.5, data);
         }
     }
@@ -108,7 +114,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
 
         // 1.7 updateConnections, every second: power and both fuel tanks at each connection position
         if (level.getGameTime() % 20 == 0) {
-            for (com.hbm.lib.DirPos port : te.connectionPositions()) {
+            for (DirPos port : te.connectionPositions()) {
                 te.trySubscribe(level, port);
                 te.trySubscribe(te.tanks[0].getTankType(), level, port);
                 te.trySubscribe(te.tanks[1].getTankType(), level, port);
@@ -142,7 +148,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
     }
 
     /** 1.7 {@code updateConnections}' positions (a cable at one the table does not open never connects). */
-    public abstract com.hbm.lib.DirPos[] connectionPositions();
+    public abstract DirPos[] connectionPositions();
 
     public boolean canLaunch() {
         return power >= maxPower * 0.75 && isMissileValid() && (!requiresDesignatorToLaunch() || hasDesignator())
@@ -164,7 +170,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
         ItemStack designatorStack = inventory.getStackInSlot(1);
         if (!designatorStack.isEmpty() && designatorStack.getItem() instanceof IDesignatorItem designator) {
             // The designator measures range from the launcher as the world sees it (it may ride a sub-level).
-            BlockPos inWorld = dev.golem.core.world.SubLevels.toWorldBlock(level, worldPosition);
+            BlockPos inWorld = SubLevels.toWorldBlock(level, worldPosition);
             if (designator.isReady(level, designatorStack, inWorld)) {
                 Vec3 coords = designator.getCoords(level, designatorStack, inWorld);
                 this.launchTo((int) Math.floor(coords.x), (int) Math.floor(coords.z));
@@ -177,7 +183,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
                 ModSounds.MISSILE_TAKEOFF.get(), SoundSource.BLOCKS, 10.0F, 1.0F);
         // The launcher as the world sees it: on a moving sub-level (Create Aeronautics) its block sits far away, and
         // both the missile's arc and its inaccuracy are laid out from here.
-        Vec3 spawn = dev.golem.core.world.SubLevels.toWorld(level, worldPosition.getX() + 0.5D,
+        Vec3 spawn = SubLevels.toWorld(level, worldPosition.getX() + 0.5D,
                 worldPosition.getY() + 2.5D, worldPosition.getZ() + 0.5D);
         int x = (int) Math.floor(spawn.x), z = (int) Math.floor(spawn.z);
 
@@ -202,7 +208,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
                 stack(parts == null ? null : parts.warhead()), stack(parts == null ? null : parts.fuselage()),
                 stack(parts == null ? null : parts.stability()), stack(parts == null ? null : parts.thruster()));
         level.addFreshEntity(missile);
-        com.hbm.api.event.HbmEvents.missileLaunched(level, worldPosition, missile, missile.targetX, missile.targetZ, null);
+        HbmEvents.missileLaunched(level, worldPosition, missile, missile.targetX, missile.targetZ, null);
 
         subtractFuel();
 
@@ -250,7 +256,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
     public boolean hasDesignator() {
         ItemStack stack = inventory.getStackInSlot(1);
         return !stack.isEmpty() && stack.getItem() instanceof IDesignatorItem designator
-                && designator.isReady(level, stack, dev.golem.core.world.SubLevels.toWorldBlock(level, worldPosition));
+                && designator.isReady(level, stack, SubLevels.toWorldBlock(level, worldPosition));
     }
 
     /** 1 = enough, 0 = not enough, -1 = this missile burns no solid fuel (or there is none). */

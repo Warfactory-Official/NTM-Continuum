@@ -2,6 +2,7 @@ package com.hbm.inventory.fluid;
 
 import com.hbm.inventory.fluid.trait.FT_Combustible;
 import com.hbm.inventory.fluid.trait.FT_Flammable;
+import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 
 /**
  * A fluid's fuel values, read from its traits {@link FT_Flammable} (heat energy per bucket: oil burner, gas flare, the
@@ -44,12 +45,12 @@ public final class FluidCombustion {
      * {@link com.hbm.inventory.fluid.trait.FluidTraitSimple#isGaseousAny}.
      */
     public static boolean isGaseous(FluidType type) {
-        return type != null && type.hasTrait(com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Gaseous.class);
+        return type != null && type.hasTrait(FluidTraitSimple.FT_Gaseous.class);
     }
 
     /** The 1.7 drain's {@code FT_Liquid && FT_Viscous} gate. */
     public static boolean isLiquidAndViscous(FluidType type) {
-        return type != null && type.hasTrait(com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Liquid.class)
-                && type.hasTrait(com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Viscous.class);
+        return type != null && type.hasTrait(FluidTraitSimple.FT_Liquid.class)
+                && type.hasTrait(FluidTraitSimple.FT_Viscous.class);
     }
 }

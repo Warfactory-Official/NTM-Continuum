@@ -55,7 +55,7 @@ public final class SoyuzMesh {
 
     /**
      * The same body stated as declared parts under {@code parent}, for a renderer that holds the rocket
-     * rather than being it — the launch pad with one on it. One slot per OBJ group, each taking its skin
+     * rather than being it: the launch pad with one on it. One slot per OBJ group, each taking its skin
      * from the render state, so all three paint jobs are one set of instances.
      */
     public static <S> void declare(Gem.Part<S> parent, Gem.IntOf<S> skinOf) {

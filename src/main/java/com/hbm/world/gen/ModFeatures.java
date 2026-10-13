@@ -11,6 +11,7 @@ import com.hbm.world.feature.DepthDepositFeature;
 import com.hbm.world.feature.FallenMeteoriteFeature;
 import com.hbm.world.feature.Geyser;
 import com.hbm.world.feature.GlyphidHiveFeature;
+import com.hbm.world.feature.ImpactAftermathFeature;
 import com.hbm.world.feature.LegacyFlowerFeature;
 import com.hbm.world.feature.LegacyOreFeature;
 import com.hbm.world.feature.OreCaveFeature;
@@ -22,16 +23,18 @@ import com.hbm.world.gen.terrain.MapGenBubble;
 import com.hbm.world.gen.terrain.MapGenCrater;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.world.Placements;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
+import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
 
 /**
- * HBM's world-generation feature <i>types</i>. What is placed where, how often and at which step is data — the
- * configured/placed features and biome modifiers {@link ModBiomeModifiers} declares — so {@code /place feature hbm:<id>}
+ * HBM's world-generation feature <i>types</i>. What is placed where, how often and at which step is data: the
+ * configured/placed features and biome modifiers {@link ModBiomeModifiers} declares, so {@code /place feature hbm:<id>}
  * works for every one of them. A type exists here only where no vanilla feature type expresses the 1.7 generator
  * (each class says why); the keyhole stone uses vanilla's {@code replace_single_block}.
  */
@@ -43,7 +46,7 @@ public final class ModFeatures {
             DeferredRegister.create(Registries.FEATURE, Constants.MOD_ID);
     private static final Reg REG = Reg.of(FEATURES);
 
-    // ---------------------------------------------------------------- 1.7 HbmWorldGen: ores
+    // 1.7 HbmWorldGen: ores
 
     /** One 1.7 {@code WorldGenMinable} vein; the count, gate and height band are placement. */
     public static final RegistryObject<Feature<OreConfiguration>> LEGACY_ORE =
@@ -69,7 +72,7 @@ public final class ModFeatures {
     public static final RegistryObject<Feature<BlockStateConfiguration>> CRUST_COLUMN =
             REG.register(Registries.FEATURE, "crust_column", () -> new CrustColumnFeature(BlockStateConfiguration.CODEC));
 
-    // ---------------------------------------------------------------- 1.7 HbmWorldGen: surface
+    // 1.7 HbmWorldGen: surface
 
     public static final RegistryObject<Feature<BlockStateConfiguration>> LEGACY_FLOWERS =
             REG.register(Registries.FEATURE, "legacy_flowers", () -> new LegacyFlowerFeature(BlockStateConfiguration.CODEC));
@@ -83,7 +86,7 @@ public final class ModFeatures {
     /** 1.7 ModEventHandlerImpact's worldgen half: impact dirt and denied decorations after Tom's impact. */
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> IMPACT_AFTERMATH =
             REG.register(Registries.FEATURE, "impact_aftermath",
-                    () -> new com.hbm.world.feature.ImpactAftermathFeature(NoneFeatureConfiguration.CODEC));
+                    () -> new ImpactAftermathFeature(NoneFeatureConfiguration.CODEC));
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> PINK_TREE =
             REG.register(Registries.FEATURE, "pink_tree", () -> new PinkTreeFeature(NoneFeatureConfiguration.CODEC));
@@ -91,7 +94,7 @@ public final class ModFeatures {
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> GLYPHID_HIVE =
             REG.register(Registries.FEATURE, "glyphid_hive", () -> new GlyphidHiveFeature(NoneFeatureConfiguration.CODEC));
 
-    // ---------------------------------------------------------------- 1.7 HbmWorld: chain-loaded terrain (MapGen)
+    // 1.7 HbmWorld: chain-loaded terrain (MapGen)
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> OIL_BUBBLE =
             REG.register(Registries.FEATURE, "oil_bubble", () -> MapGenBubble.oil(NoneFeatureConfiguration.CODEC, WorldConfig.oilSpawn));
@@ -105,11 +108,11 @@ public final class ModFeatures {
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> SELLAFIELD_CRATER =
             REG.register(Registries.FEATURE, "sellafield_crater", () -> new MapGenCrater(NoneFeatureConfiguration.CODEC, WorldConfig.radfreq, Biomes.DESERT));
 
-    // ---------------------------------------------------------------- 1.7 noise features (DecorateBiomeEvent)
+    // 1.7 noise features (DecorateBiomeEvent)
 
     /**
      * The gneiss band. Injected at {@code LOCAL_MODIFICATIONS}, i.e. <b>before</b> the ore veins at
-     * {@code UNDERGROUND_ORES} — the gneiss veins target {@code stone_gneiss} exactly and find nothing if the band is
+     * {@code UNDERGROUND_ORES}, the gneiss veins target {@code stone_gneiss} exactly and find nothing if the band is
      * not down yet. 1.7 ran the noise features during biome decoration and {@code HbmWorldGen} after it.
      */
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> SCHIST_STRATUM =
@@ -123,15 +126,15 @@ public final class ModFeatures {
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> ORE_LAYERS =
             REG.register(Registries.FEATURE, "ore_layers", () -> new OreLayer3DFeature(NoneFeatureConfiguration.CODEC));
 
-    // ---------------------------------------------------------------- hbm.cfg in the placed features (§19ej-8)
+    // hbm.cfg values in the placed features
 
-    public static final DeferredRegister<net.minecraft.world.level.levelgen.placement.PlacementModifierType<?>> PLACEMENT_TYPES =
+    public static final DeferredRegister<PlacementModifierType<?>> PLACEMENT_TYPES =
             DeferredRegister.create(Registries.PLACEMENT_MODIFIER_TYPE, Constants.MOD_ID);
 
     /** {@code hbm:config}: reads an {@code hbm.cfg} count, chance or switch when the chunk generates. */
-    public static final RegistryObject<net.minecraft.world.level.levelgen.placement.PlacementModifierType<ConfigPlacement>> CONFIG_PLACEMENT =
+    public static final RegistryObject<PlacementModifierType<ConfigPlacement>> CONFIG_PLACEMENT =
             Reg.of(PLACEMENT_TYPES).register(Registries.PLACEMENT_MODIFIER_TYPE, "config",
-                    () -> dev.golem.core.world.Placements.type(ConfigPlacement.CODEC));
+                    () -> Placements.type(ConfigPlacement.CODEC));
 
     static {
         ConfigPlacement.TYPE = CONFIG_PLACEMENT::get;

@@ -1,13 +1,18 @@
 package com.hbm.world.feature;
 
+import com.hbm.blocks.ModFluidNetBlocks;
+import com.hbm.blocks.ModTerrainBlocks;
+import com.hbm.config.WorldConfig;
 import com.hbm.items.ModGunItems;
 import com.hbm.blocks.bomb.ModBombBlocks;
+import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.BlockTaint;
 import com.hbm.explosion.ExplosionLarge;
 import com.hbm.lib.ModDamageSources;
-import com.hbm.tags.HbmBlockTags;
+import com.hbm.lib.HbmBlockTags;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -30,7 +35,7 @@ public class Meteorite {
 
     private boolean safeMode;
 
-    private static BlockState bs(dev.golem.core.registry.RegistryObject<? extends Block> handle) {
+    private static BlockState bs(RegistryObject<? extends Block> handle) {
         return handle.get().defaultBlockState();
     }
 
@@ -51,7 +56,7 @@ public class Meteorite {
             }
         }
 
-        if (com.hbm.config.WorldConfig.enableSpecialMeteors && allowSpecials) {
+        if (WorldConfig.enableSpecialMeteors && allowSpecials) {
             switch (rand.nextInt(300)) {
                 case 0 -> {
                     List<BlockState> list0 = new ArrayList<>();
@@ -107,7 +112,7 @@ public class Meteorite {
                     List<BlockState> list7 = new ArrayList<>();
                     list7.add(bs(ModBlocks.block_meteor_treasure));
                     List<BlockState> list8 = new ArrayList<>();
-                    list8.add(bs(com.hbm.blocks.ModFluidNetBlocks.toxic_block));
+                    list8.add(bs(ModFluidNetBlocks.toxic_block));
                     generateSphere7x7(level, rand, pos, list7);
                     generateSphere5x5(level, rand, pos, list8);
                     return;
@@ -130,7 +135,7 @@ public class Meteorite {
                 case 12 -> {
                     explode(level, pos, 10F);
                     ItemStack blaster = new ItemStack(ModGunItems.gun_b92.get());
-                    dev.golem.core.world.ItemStacks.setCustomName(blaster, Component.translatable("desc.item.gunB92.starBlaster"));
+                    ItemStacks.setCustomName(blaster, Component.translatable("desc.item.gunB92.starBlaster"));
                     level.addFreshEntity(new ItemEntity(level.getLevel(), pos.getX() + 0.5D, pos.getY() + 0.5D,
                             pos.getZ() + 0.5D, blaster));
                     return;
@@ -268,14 +273,14 @@ public class Meteorite {
     private List<BlockState> hullList(int hull) {
         List<BlockState> l = new ArrayList<>();
         switch (hull) {
-            case 0 -> l.add(bs(com.hbm.blocks.ModTerrainBlocks.block_meteor_molten));
+            case 0 -> l.add(bs(ModTerrainBlocks.block_meteor_molten));
             case 1 -> l.add(bs(ModBlocks.block_meteor_cobble));
             case 2 -> {
                 for (int i = 0; i < 99; i++) l.add(bs(ModBlocks.block_meteor_broken));
                 l.add(bs(ModBlocks.block_meteor_treasure));
             }
             case 3 -> {
-                l.add(bs(com.hbm.blocks.ModTerrainBlocks.block_meteor_molten));
+                l.add(bs(ModTerrainBlocks.block_meteor_molten));
                 l.add(bs(ModBlocks.block_meteor_broken));
             }
             default -> throw new IllegalStateException();
@@ -342,7 +347,7 @@ public class Meteorite {
         // 1.7: one ore_meteor of each EnumMeteorType, in enum order
         List<BlockState> ores = new ArrayList<>();
         for (String type : new String[] {"iron", "copper", "aluminium", "rareearth", "cobalt"}) {
-            ores.add(com.hbm.blocks.ModTerrainBlocks.ore_meteor(type).defaultBlockState());
+            ores.add(ModTerrainBlocks.ore_meteor(type).defaultBlockState());
         }
         return ores;
     }

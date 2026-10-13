@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -15,6 +16,9 @@ import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import dev.golem.core.world.ItemStacks;
+import java.util.HashMap;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,7 +38,7 @@ import dev.golem.core.data.DataOut;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Electric Press — a functional powered press. It draws HE from adjacent power networks (and from a
+ * Electric Press: a functional powered press. It draws HE from adjacent power networks (and from a
  * battery item in slot 0), and while powered presses a stamp (slot 1) + ingredient (slot 2) into the
  * {@link PressRecipes} output (slot 3) over a stroke. Faithful port of the 1.12.2
  * {@code TileEntityMachineEPress}.
@@ -77,7 +81,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineEPress te) {
-        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             te.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
         }
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
@@ -132,7 +136,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
 
         ItemStack outSlot = inventory.getStackInSlot(3);
         if (outSlot.isEmpty()) return true;
-        if (!dev.golem.core.world.ItemStacks.sameItemAndData(outSlot, output)) return false;
+        if (!ItemStacks.sameItemAndData(outSlot, output)) return false;
         return outSlot.getCount() + output.getCount() <= outSlot.getMaxStackSize();
     }
 
@@ -164,7 +168,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
         };
     }
 
-    // --- WorldlyContainer: hoppers extract only the output (slot 3); insert stamp/input. ---
+    // WorldlyContainer: hoppers extract only the output (slot 3); insert stamp/input.
 
     @Override
     public int[] getSlotsForFace(Direction side) {
@@ -193,7 +197,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
         };
     }
 
-    // --- IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo) ---
+    // IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo)
 
     @Override
     protected int[] getUpgradeSlotRange() {
@@ -206,7 +210,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     }
 
     @Override
-    public void provideInfo(UpgradeType type, int level, java.util.List<Component> info, boolean extendedInfo) {
+    public void provideInfo(UpgradeType type, int level, List<Component> info, boolean extendedInfo) {
         info.add(IUpgradeInfoProvider.getStandardLabel(ModMachineBlocks.machine_epress.get()));
         if (type == UpgradeType.SPEED) {
             info.add(Component.translatable(KEY_DELAY, "-" + (50 * level / 3) + "%").withStyle(ChatFormatting.GREEN));
@@ -214,13 +218,13 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     }
 
     @Override
-    public java.util.HashMap<UpgradeType, Integer> getValidUpgrades() {
-        java.util.HashMap<UpgradeType, Integer> upgrades = new java.util.HashMap<>();
+    public HashMap<UpgradeType, Integer> getValidUpgrades() {
+        HashMap<UpgradeType, Integer> upgrades = new HashMap<>();
         upgrades.put(UpgradeType.SPEED, 3);
         return upgrades;
     }
 
-    // --- IEnergyReceiverMK2 ---
+    // IEnergyReceiverMK2
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
@@ -230,7 +234,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     public long getPowerScaled(int i) { return (power * i) / maxPower; }
     public int getProgressScaled(int i) { return (progress * i) / maxProgress; }
 
-    // --- MenuProvider ---
+    // MenuProvider
 
     @Override
     public Component getDisplayName() {
@@ -242,14 +246,14 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
         return new ContainerMachineEPress(containerId, playerInventory, this);
     }
 
-    // --- sync (BufPacket) + persistence ---
+    // Sync (BufPacket) + persistence
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
         buf.writeLong(power);
         buf.writeInt(progress);
-        dev.golem.core.world.ItemStacks.writeOptional(buf, inventory.getStackInSlot(2));
+        ItemStacks.writeOptional(buf, inventory.getStackInSlot(2));
     }
 
     @Override
@@ -257,7 +261,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
         super.deserialize(buf);
         power = buf.readLong();
         progress = buf.readInt();
-        syncStack = dev.golem.core.world.ItemStacks.readOptional(buf);
+        syncStack = ItemStacks.readOptional(buf);
     }
 
     @Override

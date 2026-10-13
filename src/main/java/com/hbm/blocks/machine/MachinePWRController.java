@@ -1,6 +1,8 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.lib.ForgeDirection;
+import com.hbm.util.OverheadMarkers;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.ChatFormatting;
@@ -37,7 +39,7 @@ import com.hbm.tileentity.machine.TileEntityPWRController;
  * an unassembled controller runs the structure scan; right-clicking an assembled one opens the reactor
  * menu, unless the held item is the printer (which then gets the click).
  *
- * <p>The scan is a six-way flood fill from the cell behind the controller, verbatim from 1.7: casing blocks
+ * <p>The scan is a six-way flood fill from the cell behind the controller, as in 1.7: casing blocks
  * (vessel, reflector, port) bound the fill, core blocks (fuel, control, channel, heat exchanger, heatsink,
  * neutron source) continue it, anything else is an error, reported as a red labelled in-world marker
  * ({@code RenderOverhead}) as in 1.7.
@@ -102,7 +104,7 @@ public class MachinePWRController extends CompatBlock implements TickingBlock {
             // the item's useOn; every other path consumes the click (IMPLEMENTATION.md §22).
             if (player.getMainHandItem().getItem() instanceof ItemPWRPrinter) return InteractionResult.TRY_WITH_EMPTY_HAND;
             if (player instanceof ServerPlayer serverPlayer) {
-                dev.golem.core.gui.Menus.openWithPos(serverPlayer, controller, pos);
+                Menus.openWithPos(serverPlayer, controller, pos);
             }
         }
         return InteractionResult.CONSUME;
@@ -201,7 +203,7 @@ public class MachinePWRController extends CompatBlock implements TickingBlock {
     public static void sendError(BlockPos pos, String message, @Nullable Player player) {
         // 1.7: a red RenderOverhead marker on the offending block, labelled, for five seconds within 128 blocks (G-C)
         if (player instanceof ServerPlayer serverPlayer) {
-            com.hbm.util.OverheadMarkers.send(serverPlayer, pos, 0xff0000, message, 5_000, 128D);
+            OverheadMarkers.send(serverPlayer, pos, 0xff0000, message, 5_000, 128D);
         }
     }
 

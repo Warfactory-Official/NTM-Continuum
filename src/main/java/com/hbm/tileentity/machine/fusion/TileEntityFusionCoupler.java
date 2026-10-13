@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Plasma-to-klystron coupler — the relay that lets one torus drive another. It claims the <b>receiving</b>
+ * Plasma-to-klystron coupler: the relay that lets one torus drive another. It claims the <b>receiving</b>
  * end of a plasma beam (so the upstream torus counts it as one of the consumers sharing the output) and
  * the <b>emitting</b> end of a klystron beam, handing everything it receives straight through as
  * ignition energy.

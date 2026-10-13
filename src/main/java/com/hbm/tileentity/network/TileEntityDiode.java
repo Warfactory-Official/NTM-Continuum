@@ -4,6 +4,7 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -129,7 +130,7 @@ public class TileEntityDiode extends TileEntityLoadedBase implements IEnergyRece
     protected void saveData(DataOut output) {
         super.saveData(output);
         output.putLong("limit", limit);
-        com.hbm.util.SavedIds.putEnum(output, "p", priority); // by name, never an ordinal
+        SavedIds.putEnum(output, "p", priority); // by name, never an ordinal
     }
 
     @Override
@@ -137,6 +138,6 @@ public class TileEntityDiode extends TileEntityLoadedBase implements IEnergyRece
         super.loadData(input);
         int levelKey = input.getIntOr("level", -1);
         limit = levelKey >= 0 ? (long) Math.pow(10, levelKey) : input.getLongOr("limit", 1_000L);
-        priority = com.hbm.util.SavedIds.getEnum(input, "p", ConnectionPriority.NORMAL);
+        priority = SavedIds.getEnum(input, "p", ConnectionPriority.NORMAL);
     }
 }

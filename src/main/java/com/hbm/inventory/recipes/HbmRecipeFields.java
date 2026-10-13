@@ -2,6 +2,9 @@ package com.hbm.inventory.recipes;
 
 import static dev.golem.core.world.RecipeFields.field;
 
+import com.hbm.handler.NTMToolHandler;
+import com.hbm.inventory.material.MaterialDistribution;
+import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.loader.DataRecipeTable;
 import com.hbm.inventory.recipes.loader.RecipeShapes;
 import dev.golem.core.world.RecipeFields;
@@ -28,7 +31,7 @@ public final class HbmRecipeFields {
 
     /** States the fields; called by {@link HbmRecipeTables#declare()} once every table exists. */
     public static void declare() {
-        // ---- fluid tables
+        // Fluid tables
         CokerRecipes.TABLE.table.fields(of(
                 out("output", RecipeShapes.STACK_OUT), fin("input", RecipeShapes.FLUID_ID),
                 field("amount", Kind.INT).optional(), field("solid_fuel_energy", Kind.LONG).optional(),
@@ -80,13 +83,13 @@ public final class HbmRecipeFields {
                 fout("left", RecipeShapes.FLUID_STACK), fout("right", RecipeShapes.FLUID_STACK),
                 fin("input", RecipeShapes.FLUID_ID)));
 
-        // ---- item-processing tables
-        com.hbm.handler.NTMToolHandler.TABLE.fields(of(
+        // Item-processing tables
+        NTMToolHandler.TABLE.fields(of(
                 field("tool", Kind.STRING), field("from", Kind.ID), field("to", Kind.ID),
                 in("materials", RecipeShapes.INGREDIENT).list().optional()));
-        com.hbm.inventory.material.MaterialDistribution.TABLE.fields(of(
+        MaterialDistribution.TABLE.fields(of(
                 field("materials", Kind.JSON).list(), in("input", RecipeShapes.INGREDIENT_ID)));
-        com.hbm.foundry.ArcFurnaceRecipes.TABLE.fields(of(
+        ArcFurnaceRecipes.TABLE.fields(of(
                 in("input", RecipeShapes.INGREDIENT),
                 out("solid_output", RecipeShapes.STACK_OUT).optional(), field("molten_outputs", Kind.JSON).list().optional(),
                 order()));
@@ -117,7 +120,7 @@ public final class HbmRecipeFields {
         ShredderRecipes.TABLE.fields(of(
                 out("output", RecipeShapes.STACK_OUT), in("input", RecipeShapes.INGREDIENT_ID)));
 
-        // ---- item tables
+        // Item tables
         AmmoPressRecipes.TABLE.fields(of(
                 out("output", RecipeShapes.STACK_OUT), in("grid", RecipeShapes.SLOT).list(), order()));
         AnnihilatorRecipes.TABLE.fields(of(
@@ -158,17 +161,17 @@ public final class HbmRecipeFields {
                 in("toppings", RecipeShapes.INGREDIENT).list().optional(), in("pcb", RecipeShapes.INGREDIENT).list().optional(),
                 in("solder", RecipeShapes.INGREDIENT).list().optional(), fin("fluid", RecipeShapes.FLUID_STACK).optional(),
                 requires(), order()));
-        com.hbm.inventory.recipes.anvil.AnvilRecipes.SMITHING.fields(of(
+        AnvilRecipes.SMITHING.fields(of(
                 out("output", RecipeShapes.STACK_OUT), in("left", RecipeShapes.INGREDIENT), in("right", RecipeShapes.INGREDIENT),
                 field("tier", Kind.INT), field("hot", Kind.BOOLEAN).optional(), field("shapeless", Kind.BOOLEAN).optional(),
                 order()));
-        com.hbm.inventory.recipes.anvil.AnvilRecipes.CONSTRUCTION.fields(of(
+        AnvilRecipes.CONSTRUCTION.fields(of(
                 out("outputs", RecipeShapes.CHANCE_OUTPUT_OBJECT).list(), in("inputs", RecipeShapes.INGREDIENT).list(),
                 field("tier", Kind.INT), field("tier_upper", Kind.INT).optional(), field("overlay", Kind.STRING).optional(),
                 requires(), order()));
     }
 
-    // ------------------------------------------------------------------ helpers
+    // Helpers
 
     /** The fields in order, each key with an underscore also answering to its camelCase name. */
     private static RecipeFields of(Field... fields) {

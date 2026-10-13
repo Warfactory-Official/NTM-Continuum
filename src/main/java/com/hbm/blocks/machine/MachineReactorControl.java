@@ -1,6 +1,8 @@
 package com.hbm.blocks.machine;
 
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,7 +24,7 @@ import org.jspecify.annotations.Nullable;
 import com.hbm.tileentity.machine.TileEntityReactorControl;
 
 /** The reactor remote control block: one horizontal-facing block with a comparator output from the linked heat. */
-public final class MachineReactorControl extends dev.golem.core.world.CompatBlock implements TickingBlock {
+public final class MachineReactorControl extends CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -41,7 +43,7 @@ public final class MachineReactorControl extends dev.golem.core.world.CompatBloc
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }

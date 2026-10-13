@@ -13,7 +13,6 @@ import com.hbm.compat.computercraft.network.PipeGaugePeripheral;
 import com.hbm.compat.computercraft.network.RadioTelexPeripheral;
 import com.hbm.compat.computercraft.network.RadioTorchPeripheral;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.radio.ModRadioBlocks;
 import com.hbm.tileentity.network.TileEntityFluidCounterValve;
 import com.hbm.tileentity.network.TileEntityFluidPump;
 import com.hbm.tileentity.network.TileEntityPipeGauge;
@@ -32,6 +31,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.hbm.blocks.machine.ModMachineBlocks;
 
 /** Peripheral GameTests for {@link com.hbm.compat.computercraft.network.NetworkRows}; registered only with CC: Tweaked loaded. */
 public final class NetworkPeripheralGameTests {
@@ -155,7 +155,7 @@ public final class NetworkPeripheralGameTests {
 
     private static void telex(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
-        helper.setBlock(pos, ModRadioBlocks.RADIO_TELEX.get().defaultBlockState()
+        helper.setBlock(pos, ModMachineBlocks.radio_telex.get().defaultBlockState()
                 .setValue(BlockMultiblockCore.FACING, Direction.NORTH));
         TileEntityRadioTelex be = GameTestHelpers.blockEntity(helper, pos, TileEntityRadioTelex.class);
         RadioTelexPeripheral telex = PeripheralTestSupport.expect(helper, pos, Direction.EAST,
@@ -205,8 +205,8 @@ public final class NetworkPeripheralGameTests {
         BlockPos receiverPos = new BlockPos(3, 2, 1);
         helper.setBlock(senderPos.below(), Blocks.STONE);
         helper.setBlock(receiverPos.below(), Blocks.STONE);
-        helper.setBlock(senderPos, ModRadioBlocks.RADIO_TORCH_SENDER.get().defaultBlockState());
-        helper.setBlock(receiverPos, ModRadioBlocks.RADIO_TORCH_RECEIVER.get().defaultBlockState());
+        helper.setBlock(senderPos, ModMachineBlocks.radio_torch_sender.get().defaultBlockState());
+        helper.setBlock(receiverPos, ModMachineBlocks.radio_torch_receiver.get().defaultBlockState());
         TileEntityRadioTorchSender sender = GameTestHelpers.blockEntity(helper, senderPos, TileEntityRadioTorchSender.class);
         RadioTorchPeripheral torch = PeripheralTestSupport.expect(helper, senderPos, Direction.NORTH,
                 RadioTorchPeripheral.class, "radio_torch");

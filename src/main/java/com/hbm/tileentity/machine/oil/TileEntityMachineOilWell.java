@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.oil;
 
+import com.hbm.api.data.DepositDataMaps;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -24,7 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 
 /**
- * Oil Derrick — 1:1 port of the 1.12.2 {@code TileEntityMachineOilWell} (config name "derrick"):
+ * Oil Derrick, 1:1 port of the 1.12.2 {@code TileEntityMachineOilWell} (config name "derrick"):
  * maxPower 100k, 100 HE per eligible tick, drill delay 50t, 500 mB oil + 100-500 mB gas per deposit,
  * 5% drain chance. Plays the generic-swim "glug" on each successful suck. Power/fluid ports are the
  * 4 horizontal neighbors of the core at base height.
@@ -53,7 +54,7 @@ public class TileEntityMachineOilWell extends TileEntityOilDrillBase {
     @Override public int getDelay() { return delay; }
 
     @Override
-    public void onSuck(BlockPos pos, com.hbm.api.data.DepositDataMaps.Deposit deposit) {
+    public void onSuck(BlockPos pos, DepositDataMaps.Deposit deposit) {
         level.playSound(null, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
                 SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 2.0F, 0.5F);
         suckDeposit(pos, deposit, oilPerDeposit, gasPerDepositMin, gasPerDepositMax, drainChance);

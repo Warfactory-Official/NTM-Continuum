@@ -17,6 +17,7 @@ import com.hbm.tileentity.machine.TileEntityMultiblock;
 import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 
@@ -97,7 +98,7 @@ public final class CustomMissileGameTests {
         helper.assertTrue(launcher.solid == 0 && launcher.power == TileEntityCustomMissileLauncher.maxPower / 4
                         && launcher.inventory.getStackInSlot(0).isEmpty(),
                 "the launch did not charge fuel, power and the missile");
-        flying.forEach(net.minecraft.world.entity.Entity::discard);
+        flying.forEach(Entity::discard);
         helper.assertTrue(ModFuelItems.rocket_fuel.get() != null, "rocket fuel");
         helper.succeed();
     }

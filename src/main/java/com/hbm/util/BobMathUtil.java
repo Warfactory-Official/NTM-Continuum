@@ -71,7 +71,7 @@ public final class BobMathUtil {
         return min;
     }
 
-    // 26.2: caller supplies level's RandomSource
+    // 26.1: caller supplies level's RandomSource
     public static void shuffleIntArray(int[] array, RandomSource rand) {
         for (int i = array.length - 1; i > 0; i--) {
             int r = rand.nextInt(i + 1);

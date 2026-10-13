@@ -1,12 +1,18 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.environment.Environment;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.UpgradeManagerNT;
+import com.hbm.items.machine.ItemMachineUpgrade;
+import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import dev.golem.core.data.Tags;
 
 import com.hbm.inventory.container.ContainerFurnaceIron;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.util.TickPhase;
-import com.hbm.modules.ModuleBurnTime;
+import com.hbm.module.ModuleBurnTime;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -14,9 +20,14 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
 import com.hbm.lib.Library;
+import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.Recipes;
+import java.util.HashMap;
+import java.util.List;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -37,10 +48,10 @@ import net.minecraft.world.level.block.state.BlockState;
  * upgrade manager (so 160 / 134 / 107 / 80 ticks). The 1.12.2 {@code 200 - 15 * speed} is not the spec.
  */
 public class TileEntityFurnaceIron extends TileEntityMachineBase implements MenuProvider, WorldlyContainer,
-        com.hbm.tileentity.IUpgradeInfoProvider {
+        IUpgradeInfoProvider {
 
     public static final int baseTime = 160;
-    public final com.hbm.inventory.UpgradeManagerNT upgradeManager = new com.hbm.inventory.UpgradeManagerNT(this);
+    public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     public int maxBurnTime;
     public int burnTime;
     public boolean wasOn;
@@ -63,7 +74,7 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements Menu
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFurnaceIron furnace) {
         furnace.upgradeManager.checkSlots(furnace.inventory, 4, 4);
-        furnace.processingTime = baseTime - ((baseTime / 2) * furnace.upgradeManager.getLevel(com.hbm.items.machine.ItemMachineUpgrade.UpgradeType.SPEED) / 3);
+        furnace.processingTime = baseTime - ((baseTime / 2) * furnace.upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED) / 3);
         furnace.wasOn = false;
 
         if (furnace.burnTime <= 0) {
@@ -81,7 +92,7 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements Menu
         }
 
         // hbm-space: smelting also needs air, 1 mB of oxygen every 5 ticks (com.hbm.api.environment.Environment)
-        if (furnace.canSmelt(level) && com.hbm.api.environment.Environment.breatheAir(level, pos,
+        if (furnace.canSmelt(level) && Environment.breatheAir(level, pos,
                 TickPhase.every(level, pos, 5L) ? 1 : 0)) {
             furnace.wasOn = true;
             furnace.progress++;
@@ -107,16 +118,16 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements Menu
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFurnaceIron furnace) {
         if (furnace.progress <= 0) return;
-        com.hbm.lib.ForgeDirection dir = com.hbm.tileentity.MachineCore.facing(state);
-        com.hbm.lib.ForgeDirection rotation = dir.getRotation(com.hbm.lib.ForgeDirection.UP);
+        ForgeDirection dir = MachineCore.facing(state);
+        ForgeDirection rotation = dir.getRotation(ForgeDirection.UP);
         double offset = furnace.progress % 2 == 0 ? 1D : 0.5D;
-        level.addParticle(net.minecraft.core.particles.ParticleTypes.SMOKE,
+        level.addParticle(ParticleTypes.SMOKE,
                 pos.getX() + 0.5 - dir.offsetX * offset - rotation.offsetX * 0.1875,
                 pos.getY() + 2,
                 pos.getZ() + 0.5 - dir.offsetZ * offset - rotation.offsetZ * 0.1875,
                 0, 0.01, 0);
         if (furnace.progress % 5 == 0) {
-            level.addParticle(net.minecraft.core.particles.ParticleTypes.FLAME,
+            level.addParticle(ParticleTypes.FLAME,
                     pos.getX() + 0.5 + dir.offsetX * 0.25 + rotation.offsetX * level.getRandom().nextDouble(),
                     pos.getY() + 0.25 + level.getRandom().nextDouble() * 0.25,
                     pos.getZ() + 0.5 + dir.offsetZ * 0.25 + rotation.offsetZ * level.getRandom().nextDouble(),
@@ -125,22 +136,22 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements Menu
     }
 
     @Override
-    public boolean canProvideInfo(com.hbm.items.machine.ItemMachineUpgrade.UpgradeType type, int level, boolean extendedInfo) {
-        return type == com.hbm.items.machine.ItemMachineUpgrade.UpgradeType.SPEED;
+    public boolean canProvideInfo(ItemMachineUpgrade.UpgradeType type, int level, boolean extendedInfo) {
+        return type == ItemMachineUpgrade.UpgradeType.SPEED;
     }
 
     @Override
-    public void provideInfo(com.hbm.items.machine.ItemMachineUpgrade.UpgradeType type, int level, java.util.List<Component> info, boolean extendedInfo) {
-        info.add(com.hbm.tileentity.IUpgradeInfoProvider.getStandardLabel(com.hbm.blocks.machine.ModMachineBlocks.furnace_iron.get()));
-        if (type == com.hbm.items.machine.ItemMachineUpgrade.UpgradeType.SPEED) {
-            info.add(Component.translatable(KEY_DELAY, "-" + (level * 50 / 3) + "%").withStyle(net.minecraft.ChatFormatting.GREEN));
+    public void provideInfo(ItemMachineUpgrade.UpgradeType type, int level, List<Component> info, boolean extendedInfo) {
+        info.add(IUpgradeInfoProvider.getStandardLabel(ModMachineBlocks.furnace_iron.get()));
+        if (type == ItemMachineUpgrade.UpgradeType.SPEED) {
+            info.add(Component.translatable(KEY_DELAY, "-" + (level * 50 / 3) + "%").withStyle(ChatFormatting.GREEN));
         }
     }
 
     @Override
-    public java.util.HashMap<com.hbm.items.machine.ItemMachineUpgrade.UpgradeType, Integer> getValidUpgrades() {
-        java.util.HashMap<com.hbm.items.machine.ItemMachineUpgrade.UpgradeType, Integer> upgrades = new java.util.HashMap<>();
-        upgrades.put(com.hbm.items.machine.ItemMachineUpgrade.UpgradeType.SPEED, 3);
+    public HashMap<ItemMachineUpgrade.UpgradeType, Integer> getValidUpgrades() {
+        HashMap<ItemMachineUpgrade.UpgradeType, Integer> upgrades = new HashMap<>();
+        upgrades.put(ItemMachineUpgrade.UpgradeType.SPEED, 3);
         return upgrades;
     }
 
@@ -151,7 +162,7 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements Menu
 
         ItemStack output = inventory.getStackInSlot(3);
         if (output.isEmpty()) return true;
-        if (!dev.golem.core.world.ItemStacks.sameItemAndData(output, result)) return false;
+        if (!ItemStacks.sameItemAndData(output, result)) return false;
         return output.getCount() < inventory.getSlotLimit(3) && output.getCount() < output.getMaxStackSize()
                 || output.getCount() < result.getMaxStackSize();
     }

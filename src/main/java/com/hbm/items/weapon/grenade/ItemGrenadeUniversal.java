@@ -1,12 +1,19 @@
 package com.hbm.items.weapon.grenade;
 
+import com.hbm.items.IAnimatedItem;
 import com.hbm.items.ModEntityItems;
 import com.hbm.entity.grenade.EntityGrenadeUniversal;
 import com.hbm.extprop.HbmPlayerProps;
 import com.hbm.itempool.ItemPool;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.ToolAnimation;
 import com.hbm.sound.ModGunSounds;
 import com.hbm.sound.ModSounds;
+import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
+import dev.golem.core.world.ItemStacks;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -31,11 +38,11 @@ import java.util.function.Consumer;
 /**
  * 1.7 ItemGrenadeUniversal.
  */
-public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem implements com.hbm.items.IAnimatedItem {
+public class ItemGrenadeUniversal extends CompatItem implements IAnimatedItem {
 
     // Equip-edge only; the draw counter lives on HbmPlayerProps.
     // TODO: 1.7 ItemGrenadeUniversal:104-107 keys the edge off the stack's own equipped flag
-    // (ItemGunBaseNT.getIsEquipped); 26.2 inventoryTick is server-only, so this stands in a static heartbeat.
+    // (ItemGunBaseNT.getIsEquipped); 26.1 inventoryTick is server-only, so this stands in a static heartbeat.
     private static final Map<UUID, ItemStack> EQUIPPED = new HashMap<>();
     private static final Map<UUID, Long> LAST_HELD_TICK = new HashMap<>();
 
@@ -52,7 +59,7 @@ public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem implem
         EQUIPPED.put(player.getUUID(), stack.copy());
         // 1.7 HbmAnimationPacket(EQUIP): the draw and pin-pull animation, table in ToolAnimations.grenade
         if (stack.getItem() instanceof ItemGrenadeUniversal grenade)
-            grenade.playAnimation(player, com.hbm.items.ToolAnimation.EQUIP, stack);
+            grenade.playAnimation(player, ToolAnimation.EQUIP, stack);
     }
 
     private static void clearStaleEquipState(long tick) {
@@ -81,7 +88,7 @@ public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem implem
         ItemStack stack = new ItemStack(ModEntityItems.grenade_universal.get(), amount);
         ModDataComponents.GRENADE.set(stack, new GrenadeData(shell, filling, fuze, extra));
         // 1.7 getItemStackLimit(stack) = the shell's limit (FRAG/STICK 4, TECH 2, NUKE 1); the item default is 4
-        dev.golem.core.world.ItemStacks.setMaxStackSize(stack, shell.getStackLimit());
+        ItemStacks.setMaxStackSize(stack, shell.getStackLimit());
         return stack;
     }
 
@@ -91,7 +98,7 @@ public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem implem
      * a new grenade resets the counter, a held one advances it. The sounds are the server's.
      */
     public static void clientHeldTick(Player player, ItemStack held, ItemStack previous) {
-        if (previous.isEmpty() || !dev.golem.core.world.ItemStacks.sameItemAndData(previous, held)) {
+        if (previous.isEmpty() || !ItemStacks.sameItemAndData(previous, held)) {
             HbmPlayerProps.getData(player).grenadeDeployment = 0;
         } else {
             HbmPlayerProps.getData(player).grenadeDeployment++;
@@ -99,11 +106,11 @@ public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem implem
     }
 
     /**
-     * 1.7 {@code getSubItems}: for every shell, every filling that fits it, every fuze — the plain grenade,
+     * 1.7 {@code getSubItems}: for every shell, every filling that fits it, every fuze: the plain grenade,
      * then one per extra. 19 shell/filling pairs x 5 fuzes x (1 + 4 extras) = 475 stacks, in that order.
      */
-    public static java.util.List<ItemStack> subItems() {
-        java.util.List<ItemStack> list = new java.util.ArrayList<>();
+    public static List<ItemStack> subItems() {
+        List<ItemStack> list = new ArrayList<>();
         for (ItemGrenadeShell.EnumGrenadeShell shell : ItemGrenadeShell.EnumGrenadeShell.values()) {
             for (ItemGrenadeFilling.EnumGrenadeFilling filling : ItemGrenadeFilling.EnumGrenadeFilling.values()) {
                 if (!filling.compatibleShells.contains(shell)) continue;
@@ -137,7 +144,7 @@ public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem implem
         if (deployment(player) < getData(stack).shell().getDrawDuration()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide()) {
             level.addFreshEntity(new EntityGrenadeUniversal(level, player, stack));
-            dev.golem.core.world.ItemStacks.consume(stack, 1, player);
+            ItemStacks.consume(stack, 1, player);
             if (!stack.isEmpty()) onEquip((ServerPlayer) player, stack);
         } else if (player.isCreative() || stack.getCount() > 1) {
             // 1.7 onEquip on the client after the throw (stackSize-- is the server's here): the pin goes back in
@@ -157,7 +164,7 @@ public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem implem
         ItemStack previous = EQUIPPED.get(id);
         Long previousTick = LAST_HELD_TICK.get(id);
         boolean equipped = previous == null || previousTick == null || previousTick != tick - 1
-                || !dev.golem.core.world.ItemStacks.sameItemAndData(previous, stack);
+                || !ItemStacks.sameItemAndData(previous, stack);
         if (equipped) onEquip(player, stack);
         EQUIPPED.put(id, stack.copy());
         LAST_HELD_TICK.put(id, tick);
@@ -190,8 +197,8 @@ public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem implem
     }
 
     @Override
-    protected void appendCompatHoverText(ItemStack stack, dev.golem.core.world.CompatTooltipContext context,
-                                         java.util.List<Component> tooltip, TooltipFlag flag) {
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         List<Component> tooltip, TooltipFlag flag) {
         Consumer<Component> adder = tooltip::add;
         GrenadeData data = getData(stack);
         adder.accept(Component.translatable(ModEntityItems.grenade_shell.get(data.shell()).getDescriptionId()).withStyle(ChatFormatting.YELLOW));

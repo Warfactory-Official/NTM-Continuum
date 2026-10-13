@@ -4,7 +4,9 @@ import com.hbm.inventory.container.ContainerCoreEmitter;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreEmitter;
 import com.hbm.util.BobMathUtil;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.KeyInput;
 import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -21,7 +23,7 @@ import net.minecraft.world.entity.player.Inventory;
  */
 public class GUICoreEmitter extends GUIDFCBase<ContainerCoreEmitter> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/dfc/gui_emitter.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/dfc/gui_emitter.png");
 
     private EditBox field;
 
@@ -135,7 +137,7 @@ public class GUICoreEmitter extends GUIDFCBase<ContainerCoreEmitter> {
     }
 
     @Override
-    protected boolean keyPressed(dev.golem.core.gui.KeyInput event) {
+    protected boolean keyPressed(KeyInput event) {
         if (this.field != null && this.field.isFocused() && event.key() != 256 && event.key() != 258) {
             event.keyPressed(this.field);
             return true;

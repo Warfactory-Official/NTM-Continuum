@@ -12,6 +12,8 @@ import com.hbm.util.InventoryUtil;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.data.Codecs;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
@@ -172,7 +174,7 @@ public class EntityRequestDrone extends EntityDroneBase implements StoredItems {
             for (int i = 0; i < inventory.getContainerSize(); i++) {
                 ItemStack slot = inventory.getItem(i);
                 boolean free = slot.isEmpty();
-                boolean stackable = dev.golem.core.world.ItemStacks.sameItemAndData(slot, drone)
+                boolean stackable = ItemStacks.sameItemAndData(slot, drone)
                         && slot.getCount() < slot.getMaxStackSize();
                 if (!free && !stackable) continue;
 
@@ -250,7 +252,7 @@ public class EntityRequestDrone extends EntityDroneBase implements StoredItems {
      */
     public sealed interface Step {
 
-        Codec<Step> CODEC = dev.golem.core.data.Codecs.dispatch(Codec.STRING, "type", Step::type, Step::codecFor);
+        Codec<Step> CODEC = Codecs.dispatch(Codec.STRING, "type", Step::type, Step::codecFor);
 
         static MapCodec<? extends Step> codecFor(String type) {
             return switch (type) {
@@ -303,7 +305,7 @@ public class EntityRequestDrone extends EntityDroneBase implements StoredItems {
         ItemStack rest = stack.copy();
         for (int i = start; i <= end && !rest.isEmpty(); i++) {
             ItemStack slot = inventory.getItem(i);
-            if (slot.isEmpty() || !dev.golem.core.world.ItemStacks.sameItemAndData(slot, rest)) continue;
+            if (slot.isEmpty() || !ItemStacks.sameItemAndData(slot, rest)) continue;
             int room = Math.min(slot.getMaxStackSize(), inventory.getMaxStackSize()) - slot.getCount();
             if (room <= 0) continue;
             int moved = Math.min(room, rest.getCount());

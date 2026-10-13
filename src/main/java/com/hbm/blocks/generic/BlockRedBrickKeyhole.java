@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.itempool.ItemPool;
 import com.hbm.itempool.ItemPools;
 import dev.golem.core.world.CompatBlock;
@@ -121,7 +122,7 @@ public class BlockRedBrickKeyhole extends CompatBlock {
     /** 1.7: a pedestal holding one draw of {@code pool}, count rolled ({@code ItemPool.getStack}). */
     public static void spawnPedestalItem(Level level, int x, int y, int z, String pool) {
         BlockPos at = new BlockPos(x, y, z);
-        level.setBlock(at, com.hbm.blocks.ModDungeonBlocks.pedestal.get().defaultBlockState(), 3);
+        level.setBlock(at, ModDungeonBlocks.pedestal.get().defaultBlockState(), 3);
         if (level.getBlockEntity(at) instanceof BlockPedestal.TileEntityPedestal pedestal) {
             pedestal.setItem(ItemPool.getStack(pool, level.getRandom()));
         }

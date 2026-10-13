@@ -4,6 +4,8 @@ import com.hbm.inventory.container.ContainerReactorResearch;
 import com.hbm.tileentity.machine.TileEntityReactorResearch;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.sound.ModSounds;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
@@ -22,9 +24,9 @@ import java.util.Optional;
 import com.hbm.module.NumberDisplay;
 
 /** The 176x222 research reactor screen: three seven-segment readouts, the level field and its confirm button. */
-public final class GUIReactorResearch extends dev.golem.core.gui.CompatContainerScreen<ContainerReactorResearch> {
+public final class GUIReactorResearch extends CompatContainerScreen<ContainerReactorResearch> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/reactors/gui_research_reactor.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/reactors/gui_research_reactor.png");
 
     private final NumberDisplay[] displays = new NumberDisplay[3];
     private byte timer;

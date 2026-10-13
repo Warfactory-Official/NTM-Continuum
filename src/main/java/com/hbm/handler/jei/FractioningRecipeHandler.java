@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-/** JEI category for the fractioning tower — input droplet in, two fraction droplets out. */
+/** JEI category for the fractioning tower: input droplet in, two fraction droplets out. */
 public class FractioningRecipeHandler extends JEIUniversalHandler<FractioningRecipeHandler.Entry> {
 
     public record Entry(FluidType input, FractionRecipes.FractionPair pair) {}

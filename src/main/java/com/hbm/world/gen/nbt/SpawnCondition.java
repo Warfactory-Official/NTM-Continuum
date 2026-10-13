@@ -4,6 +4,8 @@ import com.hbm.config.ServerConfig;
 import net.minecraft.world.level.Level;
 
 import java.util.Map;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 /**
  * 1.7 {@code SpawnCondition}: a named structure (a single piece, or jigsaw pools and a start pool) as registered
@@ -26,8 +28,8 @@ public class SpawnCondition {
     /** 1.7's {@code Function<Quartet<World, Random, Integer, Integer>, StructureStart>}, as vanilla's pieces builder. */
     @FunctionalInterface
     public interface StartFactory {
-        void build(net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder builder,
-                   net.minecraft.world.level.levelgen.structure.Structure.GenerationContext context);
+        void build(StructurePiecesBuilder builder,
+                   Structure.GenerationContext context);
     }
 
     /** The chance of this structure spawning relative to others, higher weights will spawn more often. */

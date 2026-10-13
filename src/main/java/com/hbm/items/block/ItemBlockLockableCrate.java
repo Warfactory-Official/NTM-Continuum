@@ -5,8 +5,12 @@ import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.ItemStacks;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
 import java.util.ArrayList;
@@ -29,13 +33,13 @@ public class ItemBlockLockableCrate extends CompatBlockItem {
     /** 1.7 {@code ItemBlockStorageCrate}: opened from the hand under {@code /ntmserver CRATE_OPEN_HELD}. */
     @Override
     protected net.minecraft.world.@org.jspecify.annotations.Nullable InteractionResult compatBeforePlace(
-            net.minecraft.world.item.context.UseOnContext context) {
+            UseOnContext context) {
         return CrateHeldOpening.beforePlace(context);
     }
 
     @Override
-    protected net.minecraft.world.InteractionResult compatUse(net.minecraft.world.level.Level level,
-            net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand) {
+    protected net.minecraft.world.InteractionResult compatUse(Level level,
+            Player player, InteractionHand hand) {
         return CrateHeldOpening.use(level, player, hand);
     }
 

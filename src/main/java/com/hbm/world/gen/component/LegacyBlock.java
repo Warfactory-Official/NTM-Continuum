@@ -1,10 +1,13 @@
 package com.hbm.world.gen.component;
 
+import com.hbm.lib.Library;
 import com.hbm.world.gen.nbt.LegacyStructurePalette;
+import java.util.List;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.Nullable;
@@ -69,15 +72,13 @@ public final class LegacyBlock {
 
     /** 1.7 {@code instanceof BlockStairs}. */
     public boolean isStairs() {
-        return block() instanceof net.minecraft.world.level.block.StairBlock;
+        return block() instanceof StairBlock;
     }
 
     @Override
     public String toString() {
         return name;
     }
-
-    // -----------------------------------------------------------------------------------------------------------------
 
     private static final String[] DUD = {"balefire", "conventional", "nuke", "salted"};
     private static final String[] FLOWER = {"foxglove", "tobacco", "nightshade", "weed", "cd0", "cd1"};
@@ -110,7 +111,7 @@ public final class LegacyBlock {
                     ? LegacyStructurePalette.with(hbmState("anvil_iron"), "facing", Direction.from3DDataValue(meta).getOpposite())
                     : hbmState("anvil_iron");
             // 1.7.10 kept a pot's plant in its tile entity (the metadata was the plant item's damage); the builders set none
-            case "minecraft:flower_pot" -> net.minecraft.world.level.block.Blocks.FLOWER_POT.defaultBlockState();
+            case "minecraft:flower_pot" -> Blocks.FLOWER_POT.defaultBlockState();
             default -> null;
         };
     }
@@ -128,7 +129,7 @@ public final class LegacyBlock {
 
     /** A bare path is HBM's block; {@code "ns:path"} names an addon's (or vanilla's) block. */
     private static BlockState hbmState(String id) {
-        return BuiltInRegistries.BLOCK.getOptional(com.hbm.lib.Library.parseId(id)).map(Block::defaultBlockState).orElse(Blocks.AIR.defaultBlockState());
+        return BuiltInRegistries.BLOCK.getOptional(Library.parseId(id)).map(Block::defaultBlockState).orElse(Blocks.AIR.defaultBlockState());
     }
 
     private static BlockState ordinal(BlockState state, String name, int ordinal) {
@@ -138,7 +139,7 @@ public final class LegacyBlock {
     }
 
     private static <T extends Comparable<T>> BlockState nth(BlockState state, Property<T> property, int ordinal) {
-        java.util.List<T> values = java.util.List.copyOf(property.getPossibleValues());
+        List<T> values = List.copyOf(property.getPossibleValues());
         return ordinal < 0 || ordinal >= values.size() ? state : state.setValue(property, values.get(ordinal));
     }
 }

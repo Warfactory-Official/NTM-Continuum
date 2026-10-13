@@ -7,7 +7,6 @@ import com.hbm.blocks.ModDecoContent;
 import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.blocks.ModGlassBlocks;
 import com.hbm.blocks.ModHazardBlocks;
-import com.hbm.foundry.FoundryExpansion;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.fluid.FluidStack;
@@ -39,6 +38,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import com.hbm.items.ModMachineItems;
 
 /**
  * 1.7 {@code ChemicalPlantRecipes.registerDefaults}. Where 1.7 chose a value by a config switch at registration (LBSM
@@ -293,11 +293,11 @@ public final class ChemicalPlantTable extends GenericTableSource<GenericRecipe> 
 
         this.register(new GenericRecipe("chem.oilelectrodes").setupNamed(600, 100)
                 .inputFluids(new FluidStack(Fluids.HEATINGOIL, 4_000))
-                .outputItems(new ItemStack(FoundryExpansion.ARC_ELECTRODE.get(), 1)).setPools(GenericRecipes.POOL_PREFIX_ALT + ".electrodes"));
+                .outputItems(new ItemStack(ModMachineItems.arc_electrode.get(), 1)).setPools(GenericRecipes.POOL_PREFIX_ALT + ".electrodes"));
 
         this.register(new GenericRecipe("chem.lubeelectrodes").setupNamed(600, 100)
                 .inputFluids(new FluidStack(Fluids.LUBRICANT, 8_000))
-                .outputItems(new ItemStack(FoundryExpansion.ARC_ELECTRODE.get(), 1)).setPools(GenericRecipes.POOL_PREFIX_ALT + ".electrodes"));
+                .outputItems(new ItemStack(ModMachineItems.arc_electrode.get(), 1)).setPools(GenericRecipes.POOL_PREFIX_ALT + ".electrodes"));
 
         /// ACIDS ///
         this.register(new GenericRecipe("chem.peroxide").setup(50, 100)

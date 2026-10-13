@@ -1,9 +1,10 @@
 package com.hbm.items;
 
+import java.util.List;
 import java.util.Set;
 
 /**
- * The ammo enum tables from original-hbm.  The modern registry flattens each value into its own item,
+ * The ammo enum tables from 1.7.  The modern registry flattens each value into its own item,
  * but keeps this table so ordinal order and the legacy internal names cannot drift independently.
  */
 public final class ItemAmmoEnums {
@@ -38,7 +39,7 @@ public final class ItemAmmoEnums {
         private final String internalName;
 
         AmmoFireExt(String internalName, AmmoItemTrait... traits) {
-            this.traits = traits == null ? Set.of() : Set.copyOf(java.util.List.of(traits));
+            this.traits = traits == null ? Set.of() : Set.copyOf(List.of(traits));
             this.internalName = internalName;
         }
 
@@ -47,7 +48,7 @@ public final class ItemAmmoEnums {
     }
 
     public enum AmmoMisc implements IAmmoItemEnum {
-        // LUNA_SNIPER was commented out in original-hbm and is intentionally absent here.
+        // LUNA_SNIPER was commented out in 1.7 and is absent here.
         DGK("ammo_dkg");
 
         public static final AmmoMisc[] VALUES = values();
@@ -55,7 +56,7 @@ public final class ItemAmmoEnums {
         private final String internalName;
 
         AmmoMisc(String internalName, AmmoItemTrait... traits) {
-            this.traits = traits == null ? Set.of() : Set.copyOf(java.util.List.of(traits));
+            this.traits = traits == null ? Set.of() : Set.copyOf(List.of(traits));
             this.internalName = internalName;
         }
 
@@ -75,7 +76,7 @@ public final class ItemAmmoEnums {
         private final String internalName;
 
         Ammo240Shell(String internalName, AmmoItemTrait... traits) {
-            this.traits = traits == null ? Set.of() : Set.copyOf(java.util.List.of(traits));
+            this.traits = traits == null ? Set.of() : Set.copyOf(List.of(traits));
             this.internalName = internalName;
         }
 

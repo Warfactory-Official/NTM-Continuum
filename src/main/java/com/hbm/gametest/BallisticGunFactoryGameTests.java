@@ -14,7 +14,7 @@ import com.hbm.items.weapon.sedna.factory.XFactory50;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.gametest.framework.GameTestHelper;
 
-/** Focused contracts for the remaining original-hbm ballistic families. */
+/** Focused contracts for the remaining 1.7 ballistic families. */
 public final class BallisticGunFactoryGameTests {
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);

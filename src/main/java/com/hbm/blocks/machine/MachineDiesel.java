@@ -1,8 +1,10 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.ModBlockEntities;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityMachineDiesel;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -29,11 +31,11 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Diesel Generator block — 1:1 port of the 1.12.2 {@code MachineDiesel}: a single horizontal-facing,
+ * Diesel Generator block, a 1:1 port of the 1.12.2 {@code MachineDiesel}: a single horizontal-facing,
  * INVISIBLE block drawn by {@code DieselGenRenderer} (an OBJ TESR, like the 1.12.2 fork). Right-click
  * opens the menu; while burning fuel it puffs smoke from the exhaust corner (old {@code randomDisplayTick}).
  */
-public class MachineDiesel extends dev.golem.core.world.CompatBlock implements TickingBlock {
+public class MachineDiesel extends CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -57,7 +59,7 @@ public class MachineDiesel extends dev.golem.core.world.CompatBlock implements T
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }

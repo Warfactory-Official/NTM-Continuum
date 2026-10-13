@@ -7,6 +7,7 @@ import com.hbm.inventory.recipes.PyroOvenRecipes.PyroOvenRecipe;
 import com.hbm.items.ModBedrockOreItems;
 import com.hbm.items.special.BedrockOreType;
 import com.hbm.items.special.ItemBedrockOreGraded.Grade;
+import java.util.concurrent.CopyOnWriteArrayList;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -51,8 +52,8 @@ public final class BedrockOreChainRecipes {
 
     // --- 1.7 PyroOvenRecipes ------------------------------------------------------------------------------
 
-    private static final java.util.List<BedrockOreType> CHAIN_TYPES =
-            new java.util.concurrent.CopyOnWriteArrayList<>(BedrockOreType.VALUES);
+    private static final List<BedrockOreType> CHAIN_TYPES =
+            new CopyOnWriteArrayList<>(BedrockOreType.VALUES);
 
     /**
      * Adds a type to the rows still made in code (the pyrolysis oven's roasting, below), after the others. An addon type
@@ -72,8 +73,8 @@ public final class BedrockOreChainRecipes {
     }
 
     /** The types the code rows cover, in order (HBM's six by default). */
-    public static java.util.List<BedrockOreType> chainTypes() {
-        return java.util.List.copyOf(CHAIN_TYPES);
+    public static List<BedrockOreType> chainTypes() {
+        return List.copyOf(CHAIN_TYPES);
     }
 
     public static void pyroOven(List<PyroOvenRecipe> recipes) {

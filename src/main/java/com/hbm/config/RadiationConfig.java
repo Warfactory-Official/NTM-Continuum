@@ -5,19 +5,19 @@ package com.hbm.config;
  * effective defaults. The radiation-engine fields ({@code radTickRate}, {@code radHalfLifeSeconds},
  * {@code radDiffusivity}), {@code hazardRate}, the neutron-activation and on-ground switches, {@code rain}/{@code cont},
  * {@code disableCold}/{@code disableToxic} and {@code itemHazardDropTickRate} (a ServerConfig key) have no
- * {@code hbm.cfg} key: they are port-side constants (History §19ej-8).
+ * {@code hbm.cfg} key: they are port-side constants.
  */
 public final class RadiationConfig {
 
     private RadiationConfig() {}
 
-    // ---- fallout rain (deferred systems keep their knobs so the constants stay documented) ----
+    // Fallout rain (deferred systems keep their knobs so the constants stay documented)
     /** Duration of the thunderstorm after fallout in ticks (only large explosions). */
     public static int rain = 0;
     /** Radiation in 100th RADs created by fallout rain. */
     public static int cont = 0;
 
-    // ---- rad fog ----
+    // Rad fog
     /** Radiation in RADs required for fog to spawn. */
     public static int fogRad = 100;
     /** 1:n chance of fog spawning every second. 1.7 {@code FOG_01_threshold}: 20 (the 50 was 1.12.2's). */
@@ -25,29 +25,29 @@ public final class RadiationConfig {
     /** 1.7 {@code AMBIENT_00_nether}: RAD/s in the nether, a floor under the chunk radiation there. */
     public static double hellRad = 0.1D;
 
-    // ---- world radiation effects (block decay) ----
+    // World radiation effects (block decay)
     /** How many block operations radiation can perform per tick. */
     public static int worldRad = 10;
     /** The least amount of RADs required for block modification to happen. (Kept for documentation:
-     * the fork's NT engine never read this either — its live threshold is the hardcoded 5.0 RAD /
+     * the fork's NT engine never read this either. Its live threshold is the hardcoded 5.0 RAD /
      * 1-in-100 roll in the decay pass, which the port matches.) */
     public static int worldRadThreshold = 20;
     /** Whether high radiation levels should perform changes in the world. */
     public static boolean worldRadEffects = true;
 
-    // ---- entity contamination ----
+    // Entity contamination
     /** Toggles player contamination (and negative effects from radiation poisoning). */
     public static boolean enableContamination = true;
     /** Toggles contamination for items being on-ground. */
     public static boolean enableContaminationOnGround = false;
 
-    // ---- neutron activation (kept off — laggy, faithful to old default) ----
+    // Neutron activation (off by default: laggy, and matches the old default)
     /** Whether high radiation levels should irradiate items in the inventory. */
     public static boolean neutronActivation = false;
     /** Minimum received RAD/s threshold at which items get irradiated. */
     public static int neutronActivationThreshold = 15;
 
-    // ---- hazard system ----
+    // Hazard system
     /** Ticks between application of effects for the hazards. */
     public static int hazardRate = 5;
     /** Ticks between dropped-item hazard updates; the old server-config default was 2. */
@@ -61,7 +61,7 @@ public final class RadiationConfig {
     public static boolean disableCold = false;
     public static boolean disableToxic = false;
 
-    // ---- pollution (PollutionHandler) ----
+    // Pollution (PollutionHandler)
     /** If disabled, none of the pollution related things will work. */
     public static boolean enablePollution = true;
     /** 1.7 POL_02_enableLeadPoisoning: whether being in a heavy metal polluted area will poison the player. */
@@ -71,7 +71,7 @@ public final class RadiationConfig {
     /** The amount of soot required to buff naturally spawning mobs. */
     public static double buffMobThreshold = 15D;
 
-    // ---- chunk radiation engine (RadiationSystemNT) ----
+    // Chunk radiation engine (RadiationSystemNT)
     /** How many ticks between each radiation system update. 1 = once per tick. */
     public static int radTickRate = 1;
     /** The half life of chunk radiation in seconds. */
@@ -79,7 +79,7 @@ public final class RadiationConfig {
     /** The diffusivity of chunk radiation. */
     public static double radDiffusivity = 10.0;
 
-    // ---- 1.7 keys added with hbm.cfg (History §19ej-8) ----
+    // 1.7 keys added with hbm.cfg
     /** 1.7 {@code RADIATION_01_enableChunkRads}: the world (chunk) radiation system; false stops its server tick. */
     public static boolean enableChunkRads = true;
     /** 1.7 {@code HAZ_06_disableFibrosis}: written by 1.7, read by nothing (there is no fibrosis hazard). */
@@ -96,8 +96,7 @@ public final class RadiationConfig {
     /**
      * 1.7 {@code loadFromConfig}, categories {@code 13_radiation}, {@code 14_hazard} and {@code 16_pollution}. Not
      * written: {@code RADIATION_99_enablePRISM} (the PRISM engine is not ported; the radiation engine stays
-     * RadiationSystemNT). {@code RADWORLD_03_regrow}, {@code POL_01} and the smog keys {@code POL_03/06/07} are written
-     * since History §19ek-hooks.
+     * RadiationSystemNT). {@code RADWORLD_03_regrow}, {@code POL_01} and the smog keys {@code POL_03/06/07} are written to hbm.cfg.
      */
     public static void loadFromConfig(Configuration config) {
 

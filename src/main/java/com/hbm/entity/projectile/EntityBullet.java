@@ -7,6 +7,8 @@ import dev.golem.core.world.Compat;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;
 import com.hbm.entity.mob.EntityCreeperNuclear;
+import dev.golem.core.world.Effects;
+import dev.golem.core.world.LivingHurtAccess;
 import java.util.List;
 
 import com.hbm.blocks.bomb.BlockDetonatable;
@@ -61,7 +63,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-// 26.2: getBrightnessForRender fullbright is renderer-side - the bullet renderer must force max light for
+// 26.1: getBrightnessForRender fullbright is renderer-side - the bullet renderer must force max light for
 // critical/chopper shots.
 @Deprecated // ancient ass fucking bullet entity from pre ItemGunBase days
 public class EntityBullet extends CompatEntity {
@@ -104,7 +106,7 @@ public class EntityBullet extends CompatEntity {
 
     public EntityBullet(EntityType<? extends EntityBullet> type, Level level, double x, double y, double z) {
         this(type, level);
-        this.snapTo(x, y, z); // 1.7: setPosition + yOffset = 0 (no yOffset in 26.2)
+        this.snapTo(x, y, z); // 1.7: setPosition + yOffset = 0 (no yOffset in 26.1)
     }
 
     public EntityBullet(EntityType<? extends EntityBullet> type, Level level, LivingEntity shooter, LivingEntity target,
@@ -411,7 +413,7 @@ public class EntityBullet extends CompatEntity {
                         }
 
                         if (this.fire || this.isOnFire() && !(hit instanceof EnderMan)) {
-                            dev.golem.core.world.Effects.ignite(hit, 5F); // 1.7 setFire(5)
+                            Effects.ignite(hit, 5F); // 1.7 setFire(5)
                         }
 
                         // 1.7 attackEntityFrom no-ops on the client - keep the whole damage subtree server-side
@@ -466,7 +468,7 @@ public class EntityBullet extends CompatEntity {
 
                                 if (this.shootingEntity instanceof LivingEntity) {
                                     // 1.7 EnchantmentHelper.func_151384_a + func_151385_b pair
-                                    dev.golem.core.world.Compat.doPostAttackEffects(server, entitylivingbase, damagesource);
+                                    Compat.doPostAttackEffects(server, entitylivingbase, damagesource);
                                 }
 
                                 if (this.shootingEntity instanceof ServerPlayer shooterPlayer
@@ -488,8 +490,8 @@ public class EntityBullet extends CompatEntity {
                         } else {
 
                             if (server != null && hit instanceof LivingEntity living) {
-                                // 1.7: reflected EntityLivingBase.lastDamage - a plain public field in 26.2
-                                float dmg = (float) this.damage + ((dev.golem.core.world.LivingHurtAccess) living).golem$lastHurt();
+                                // 1.7: reflected EntityLivingBase.lastDamage - a plain public field in 26.1
+                                float dmg = (float) this.damage + ((LivingHurtAccess) living).golem$lastHurt();
 
                                 Compat.hurt(living, server, damagesource, dmg);
                             }
@@ -506,7 +508,7 @@ public class EntityBullet extends CompatEntity {
                     this.tileY = hitPos.getY();
                     this.tileZ = hitPos.getZ();
                     this.stuckBlock = level().getBlockState(hitPos);
-                    this.inData = 0; // 1.7: block metadata, gone in 26.2
+                    this.inData = 0; // 1.7: block metadata, gone in 26.1
                     Vec3 hitVec = blockResult.getLocation();
                     double motionX = hitVec.x - this.getX();
                     double motionY = hitVec.y - this.getY();
@@ -519,7 +521,7 @@ public class EntityBullet extends CompatEntity {
                     this.inGround = true;
                     this.arrowShake = 7;
 
-                    // 26.2: 1.7's onEntityCollidedWithBlock on the landed shot is unreachable - entityInside is
+                    // 26.1: 1.7's onEntityCollidedWithBlock on the landed shot is unreachable - entityInside is
                     // protected - and baseTick's inside-block pass already covers the contact effects.
                 }
             }
@@ -597,7 +599,7 @@ public class EntityBullet extends CompatEntity {
     @Override
     public void playerTouch(Player player) { // 1.7 onCollideWithPlayer
         if (!level().isClientSide() && this.inGround && this.arrowShake <= 0) {
-            boolean flag = this.canBePickedUp == 1 || this.canBePickedUp == 2 && dev.golem.core.world.Compat.hasInfiniteMaterials(player); // 1.7 capabilities.isCreativeMode
+            boolean flag = this.canBePickedUp == 1 || this.canBePickedUp == 2 && Compat.hasInfiniteMaterials(player); // 1.7 capabilities.isCreativeMode
 
             if (flag) {
                 player.take(this, 1); // 1.7 onItemPickup
@@ -708,7 +710,7 @@ public class EntityBullet extends CompatEntity {
         output.putShort("zTile", (short) this.tileZ);
         output.putShort("life", (short) this.ticksInGround);
         output.storeNullable("inTile", BlockState.CODEC, this.stuckBlock); // 1.7: byte block id
-        output.putByte("inData", (byte) 0); // 1.7: block metadata - gone in 26.2
+        output.putByte("inData", (byte) 0); // 1.7: block metadata - gone in 26.1
         output.putByte("shake", (byte) this.arrowShake);
         output.putByte("inGround", (byte) (this.inGround ? 1 : 0));
         output.putByte("pickup", (byte) this.canBePickedUp);

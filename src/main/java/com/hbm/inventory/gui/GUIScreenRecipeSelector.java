@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.KeyInput;
@@ -23,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The in-GUI recipe selector popup — a faithful 26.1 port of HBM's 1.12.2 {@code GUIScreenRecipeSelector}.
+ * The in-GUI recipe selector popup, a 26.1 port of HBM's 1.12.2 {@code GUIScreenRecipeSelector}.
  * Opened from a machine screen via {@link #openSelector}, it shows the machine's recipes (filtered to the
  * non-pooled ones plus any matching the inserted blueprint's pool), with a search box, scroll paging, a
  * recipe tooltip on hover, and a "current selection" slot. On close it sends the chosen recipe back to the
@@ -32,7 +33,7 @@ import java.util.Optional;
  */
 public class GUIScreenRecipeSelector extends CompatScreen {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_recipe_selector.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_recipe_selector.png");
     public static final String NULL_SELECTION = "null";
 
     private final int xSize = 176;

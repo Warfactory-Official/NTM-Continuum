@@ -7,8 +7,11 @@ import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.items.ModDataComponents;
 import com.hbm.lib.ModDamageSources;
+import com.hbm.packet.PollutionSyncPayload;
 import com.hbm.potion.ModEffects;
 import com.hbm.util.ArmorRegistry;
+import dev.golem.core.net.GolemNetwork;
+import dev.golem.core.platform.Lifecycle;
 import dev.golem.core.world.BlockBreaks;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.Effects;
@@ -16,8 +19,13 @@ import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.ItemUses;
 import dev.golem.core.world.Sleeps;
 import dev.golem.core.world.Spawns;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -29,7 +37,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * The 1.7 event handlers that needed a hook the port did not have (History §19ek-hooks), each on a neutral Golem Core
+ * The 1.7 event handlers that needed a hook the port did not have, each on a neutral Golem Core
  * facade:
  * <ul>
  *   <li>{@code ModEventHandler.onFoodEaten} ({@code PlayerUseItemEvent.Finish}) - Core {@link ItemUses};</li>
@@ -53,26 +61,26 @@ public final class ModEventHandlerHooks {
         BlockBreaks.onBreak(ModEventHandlerHooks::onBlockBreak);
         Sleeps.onSleepAttempt((player, pos) -> PollutionHandler.rampantTargetSetter(pos));
         Spawns.onPotentialSpawns((level, category, pos) -> PollutionHandler.rampantScoutPopulator(level, pos));
-        dev.golem.core.platform.Lifecycle.onServerTick(ModEventHandlerHooks::syncPollution);
-        dev.golem.core.platform.Lifecycle.onServerStopping(server -> SENT_POLLUTION.clear());
+        Lifecycle.onServerTick(ModEventHandlerHooks::syncPollution);
+        Lifecycle.onServerStopping(server -> SENT_POLLUTION.clear());
     }
 
-    private static final java.util.Map<java.util.UUID, float[]> SENT_POLLUTION = new java.util.HashMap<>();
+    private static final Map<UUID, float[]> SENT_POLLUTION = new HashMap<>();
 
     /**
      * 1.7 {@code PermaSyncHandler}'s pollution block: the pollution of the region each player stands in (an empty
      * region reads as zeros), sent when it changed for that player. The client smog reads the soot.
      */
-    private static void syncPollution(net.minecraft.server.MinecraftServer server) {
+    private static void syncPollution(MinecraftServer server) {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             var data = PollutionHandler.getPollutionData(player.level(), player.blockPosition());
             float[] now = new float[PollutionType.VALUES.length];
             if (data != null) System.arraycopy(data.pollution, 0, now, 0, now.length);
             float[] last = SENT_POLLUTION.get(player.getUUID());
-            if (last != null && java.util.Arrays.equals(last, now)) continue;
+            if (last != null && Arrays.equals(last, now)) continue;
             SENT_POLLUTION.put(player.getUUID(), now);
-            dev.golem.core.net.GolemNetwork.sendToPlayer(player, com.hbm.packet.PollutionSyncPayload.CODEC,
-                    new com.hbm.packet.PollutionSyncPayload(now[0], now[1], now[2], now[3]));
+            GolemNetwork.sendToPlayer(player, PollutionSyncPayload.CODEC,
+                    new PollutionSyncPayload(now[0], now[1], now[2], now[3]));
         }
     }
 

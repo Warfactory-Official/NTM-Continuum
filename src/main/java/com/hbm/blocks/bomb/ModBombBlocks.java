@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import com.hbm.entity.explosive.ModExplosiveEntities;
 import dev.golem.core.registry.BlockTag;
 import dev.golem.core.registry.Loot;
 import dev.golem.core.registry.Preset;
@@ -164,6 +165,6 @@ public final class ModBombBlocks {
     }
 
     public static void init() {
-        com.hbm.entity.explosive.ModExplosiveEntities.init();
+        ModExplosiveEntities.init();
     }
 }

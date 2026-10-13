@@ -1,10 +1,12 @@
 package com.hbm.client.render;
 
+import com.hbm.Constants;
 import com.hbm.blocks.network.BlockConveyorBendable;
 import com.hbm.items.tool.ItemConveyorWand;
 import com.hbm.util.ConveyorPlacer;
 import com.hbm.util.ConveyorRoute;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.golem.core.client.ClientResourceReloads;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.client.Frames;
 import dev.golem.core.render.GhostBlocks;
@@ -32,7 +34,7 @@ import java.util.List;
 
 /**
  * 1.7 {@code RenderOverhead.renderActionPreview}: once the conveyor wand has its first click, the run it would
- * lay to the block under the crosshair is drawn as a ghost — cyan where the route lands, red where it is refused.
+ * lay to the block under the crosshair is drawn as a ghost: cyan where the route lands, red where it is refused.
  *
  * <p>1.7 drew that ghost under {@code Tessellator.disableColor()} and one {@code glColor3f}, which discards
  * ambient occlusion, face shade and tints alike, with the lightmap unit off for the whole of
@@ -67,7 +69,7 @@ public final class ConveyorPreviewRenderer {
         initialized = true;
         WorldEffects.init();
         WorldEffects.onBegin(ConveyorPreviewRenderer::submit);
-        dev.golem.core.client.ClientResourceReloads.register(com.hbm.Constants.MOD_ID, "conveyor_preview",
+        ClientResourceReloads.register(Constants.MOD_ID, "conveyor_preview",
                 ConveyorPreviewRenderer::clear);
     }
 

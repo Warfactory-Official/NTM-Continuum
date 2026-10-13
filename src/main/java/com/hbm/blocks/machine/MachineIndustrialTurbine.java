@@ -149,7 +149,7 @@ public class MachineIndustrialTurbine extends BlockMultiblockMachine
     /** A coolant with a cooling recipe, or the spent steam it returns. */
     @Override
     public boolean acceptsFluid(FluidType type) {
-        return com.hbm.inventory.recipes.CoolingRecipes.get(type) != null
-                || type == com.hbm.inventory.fluid.Fluids.SPENTSTEAM;
+        return CoolingRecipes.get(type) != null
+                || type == Fluids.SPENTSTEAM;
     }
 }

@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 
 /**
- * JEI category for anvil smithing — a faithful port of the 1.12.2 {@code AnvilSmithingRecipeHandler}:
+ * JEI category for anvil smithing, a port of the 1.12.2 {@code AnvilSmithingRecipeHandler}:
  * its own {@code gui_nei_smithing.png} background, left input at {@code (39,24)}, right input at
  * {@code (75,24)}, output at {@code (111,24)} (each with JEI's standard slot frame, as the original used
  * {@code getSlotDrawable()}), the "Tier N" line drawn at {@code (52,43)} and repeated dark-gray in the

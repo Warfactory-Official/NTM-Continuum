@@ -49,7 +49,7 @@ public final class ObjItemDeclarations {
     }
 
     private static void part0() {
-        // 1.7 ammo_himars metadata, one item per rocket (ntm-next ids ammo_himars_<name>; History §19es-itemvariant):
+        // 1.7 ammo_himars metadata, one item per rocket (ntm-next ids ammo_himars_<name>):
         // ItemRenderLibrary's rocket + tube pair from the HIMARS mesh, the pair by modelType, the sheet by the type
         for (String[] rocket : new String[][] {{"standard", "Standard"}, {"standard_he", "Standard"},
                 {"standard_wp", "Standard"}, {"standard_tb", "Standard"}, {"standard_lava", "Standard"},
@@ -66,147 +66,147 @@ public final class ObjItemDeclarations {
                     .oversizedInGui().register();
         }
         Dejson.item(NS, "anvil_arsenic_bronze")
-                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj (icon-P2 2026-10-01)
+                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj
                 .definition(MachineObjModel.of("hbm:models/anvils/anvil_arsenic_bronze.obj", "hbm:textures/models/anvils/anvil_arsenic_bronze.png")
                         .scale(1.0).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(-0.5, 0.0, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "anvil_bismuth_bronze")
-                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj (icon-P2 2026-10-01)
+                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj
                 .definition(MachineObjModel.of("hbm:models/anvils/anvil_bismuth_bronze.obj", "hbm:textures/models/anvils/anvil_bismuth_bronze.png")
                         .scale(1.0).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(-0.5, 0.0, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "anvil_desh")
-                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj (icon-P2 2026-10-01)
+                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj
                 .definition(MachineObjModel.of("hbm:models/anvils/anvil_desh.obj", "hbm:textures/models/anvils/anvil_desh.png")
                         .scale(1.0).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(-0.5, 0.0, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "anvil_dnt")
-                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj (icon-P2 2026-10-01)
+                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj
                 .definition(MachineObjModel.of("hbm:models/anvils/anvil_dnt.obj", "hbm:textures/models/anvils/anvil_dnt.png")
                         .scale(1.0).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(-0.5, 0.0, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "anvil_ferrouranium")
-                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj (icon-P2 2026-10-01)
+                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj
                 .definition(MachineObjModel.of("hbm:models/anvils/anvil_ferrouranium.obj", "hbm:textures/models/anvils/anvil_ferrouranium.png")
                         .scale(1.0).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(-0.5, 0.0, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "anvil_iron")
-                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj (icon-P2 2026-10-01)
+                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj
                 .definition(MachineObjModel.of("hbm:models/anvils/anvil_iron.obj", "hbm:textures/models/anvils/anvil_iron.png")
                         .scale(1.0).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(-0.5, 0.0, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "anvil_lead")
-                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj (icon-P2 2026-10-01)
+                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj
                 .definition(MachineObjModel.of("hbm:models/anvils/anvil_lead.obj", "hbm:textures/models/anvils/anvil_lead.png")
                         .scale(1.0).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(-0.5, 0.0, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "anvil_murky")
-                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj (icon-P2 2026-10-01)
+                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj
                 .definition(MachineObjModel.of("hbm:models/anvils/anvil_murky.obj", "hbm:textures/models/anvils/anvil_murky.png")
                         .scale(1.0).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(-0.5, 0.0, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "anvil_osmiridium")
-                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj (icon-P2 2026-10-01)
+                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj
                 .definition(MachineObjModel.of("hbm:models/anvils/anvil_osmiridium.obj", "hbm:textures/models/anvils/anvil_osmiridium.png")
                         .scale(1.0).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(-0.5, 0.0, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "anvil_saturnite")
-                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj (icon-P2 2026-10-01)
+                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj
                 .definition(MachineObjModel.of("hbm:models/anvils/anvil_saturnite.obj", "hbm:textures/models/anvils/anvil_saturnite.png")
                         .scale(1.0).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(-0.5, 0.0, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "anvil_schrabidate")
-                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj (icon-P2 2026-10-01)
+                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj
                 .definition(MachineObjModel.of("hbm:models/anvils/anvil_schrabidate.obj", "hbm:textures/models/anvils/anvil_schrabidate.png")
                         .scale(1.0).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(-0.5, 0.0, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "anvil_steel")
-                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj (icon-P2 2026-10-01)
+                // 1.7 RenderAnvil.renderInventoryBlock: translate(0, -0.5, 0), rotate(180, Y); our anvil OBJs sit +0.5 x/z from 1.7's anvil.obj
                 .definition(MachineObjModel.of("hbm:models/anvils/anvil_steel.obj", "hbm:textures/models/anvils/anvil_steel.png")
                         .scale(1.0).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(-0.5, 0.0, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "barbed_wire")
-                // 1.7 RenderBarbedWire.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(barbed_wire) (icon-P2 2026-10-01)
+                // 1.7 RenderBarbedWire.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(barbed_wire)
                 .definition(MachineObjModel.of("hbm:models/blocks/barbed_wire.obj", "hbm:textures/blocks/barbed_wire_model.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "barbed_wire_acid")
-                // 1.7 RenderBarbedWire.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(barbed_wire) (icon-P2 2026-10-01)
+                // 1.7 RenderBarbedWire.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(barbed_wire)
                 .definition(MachineObjModel.of("hbm:models/blocks/barbed_wire.obj", "hbm:textures/blocks/barbed_wire_acid_model.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "barbed_wire_fire")
-                // 1.7 RenderBarbedWire.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(barbed_wire) (icon-P2 2026-10-01)
+                // 1.7 RenderBarbedWire.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(barbed_wire)
                 .definition(MachineObjModel.of("hbm:models/blocks/barbed_wire.obj", "hbm:textures/blocks/barbed_wire_fire_model.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "barbed_wire_poison")
-                // 1.7 RenderBarbedWire.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(barbed_wire) (icon-P2 2026-10-01)
+                // 1.7 RenderBarbedWire.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(barbed_wire)
                 .definition(MachineObjModel.of("hbm:models/blocks/barbed_wire.obj", "hbm:textures/blocks/barbed_wire_poison_model.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "barbed_wire_ultradeath")
-                // 1.7 RenderBarbedWire.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(barbed_wire) (icon-P2 2026-10-01)
+                // 1.7 RenderBarbedWire.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(barbed_wire)
                 .definition(MachineObjModel.of("hbm:models/blocks/barbed_wire.obj", "hbm:textures/blocks/barbed_wire_ultradeath_model.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "barbed_wire_wither")
-                // 1.7 RenderBarbedWire.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(barbed_wire) (icon-P2 2026-10-01)
+                // 1.7 RenderBarbedWire.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(barbed_wire)
                 .definition(MachineObjModel.of("hbm:models/blocks/barbed_wire.obj", "hbm:textures/blocks/barbed_wire_wither_model.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "barrel_antimatter")
-                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel) (icon-P2 2026-10-01)
+                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel)
                 .definition(MachineObjModel.of("hbm:models/blocks/barrel.obj", "hbm:textures/blocks/barrel_antimatter.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().exclude("Connector")
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "barrel_corroded")
-                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel) (icon-P2 2026-10-01)
+                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel)
                 .definition(MachineObjModel.of("hbm:models/blocks/barrel.obj", "hbm:textures/blocks/barrel_corroded.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().exclude("Connector")
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "barrel_plastic")
-                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel) (icon-P2 2026-10-01)
+                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel)
                 .definition(MachineObjModel.of("hbm:models/blocks/barrel.obj", "hbm:textures/blocks/barrel_plastic.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().exclude("Connector")
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "barrel_steel")
-                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel) (icon-P2 2026-10-01)
+                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel)
                 .definition(MachineObjModel.of("hbm:models/blocks/barrel.obj", "hbm:textures/blocks/barrel_steel.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().exclude("Connector")
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "barrel_tcalloy")
-                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel) (icon-P2 2026-10-01)
+                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel)
                 .definition(MachineObjModel.of("hbm:models/blocks/barrel.obj", "hbm:textures/blocks/barrel_tcalloy.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().exclude("Connector")
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "battery_lead")
-                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor)
                 .definition(MachineObjModel.of("hbm:models/battery_socket.obj", "hbm:textures/models/machines/battery_lead.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().exclude("Socket", "Capacitor")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "battery_lithium")
-                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor)
                 .definition(MachineObjModel.of("hbm:models/battery_socket.obj", "hbm:textures/models/machines/battery_lithium.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().exclude("Socket", "Capacitor")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "battery_quantum")
-                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor)
                 .definition(MachineObjModel.of("hbm:models/battery_socket.obj", "hbm:textures/models/machines/battery_quantum.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().exclude("Socket", "Capacitor")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "battery_redstone")
-                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor)
                 .definition(MachineObjModel.of("hbm:models/battery_socket.obj", "hbm:textures/models/machines/battery_redstone.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().exclude("Socket", "Capacitor")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "battery_schrabidium")
-                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor)
                 .definition(MachineObjModel.of("hbm:models/battery_socket.obj", "hbm:textures/models/machines/battery_schrabidium.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().exclude("Socket", "Capacitor")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "battery_sodium")
-                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor)
                 .definition(MachineObjModel.of("hbm:models/battery_socket.obj", "hbm:textures/models/machines/battery_sodium.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().exclude("Socket", "Capacitor")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
@@ -214,7 +214,7 @@ public final class ObjItemDeclarations {
 
     private static void part1() {
         Dejson.item(NS, "blast_door")
-                // 1.7 ItemRenderLibraryDoors: renderInventory T(0,-3,0) S(3); renderCommon has no scale (icon-P1 2026-10-01)
+                // 1.7 ItemRenderLibraryDoors: renderInventory T(0,-3,0) S(3); renderCommon has no scale
                 .definition(MachineObjModel.of("hbm:models/doors/blast_door_base.obj", "hbm:textures/models/doors/blast_door_base.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
@@ -223,55 +223,55 @@ public final class ObjItemDeclarations {
                                 MachineObjModel.pass("hbm:textures/models/doors/blast_door_slider.png").obj("hbm:models/doors/blast_door_slider.obj"),
                                 MachineObjModel.pass("hbm:textures/models/doors/blast_door_block.png").obj("hbm:models/doors/blast_door_block.obj"))).oversizedInGui().register();
         Dejson.item(NS, "boat")
-                // 1.7 ItemRenderLibrary: inv rotate(-90, Y) translate(0, 1, 0) scale(1.75); common scale(0.5) translate(0, 0, -3) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv rotate(-90, Y) translate(0, 1, 0) scale(1.75); common scale(0.5) translate(0, 0, -3)
                 .definition(MachineObjModel.of("hbm:models/duchessgambit.obj", "hbm:textures/models/misc/duchessgambit.png")
                         .scale(0.5).ty(0.0).yaw(0.0).guiScale(1.75).guiYaw(-90.0).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, -1.5).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, 1.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "bomb_multi")
                 // 1.7 ItemRenderLibrary bomb_multi: renderInventory T(0,-1,0) S(4); renderCommon T(0.75,0,0) S(3)
-                // T(0,0.5,0) Rx(180) Ry(90) = T(0.75,1.5,0) Ry(-90) Rx(180) S(3) (icon-P1 2026-10-01)
+                // T(0,0.5,0) Rx(180) Ry(90) = T(0.75,1.5,0) Ry(-90) Rx(180) S(3)
                 .definition(MachineObjModel.of("hbm:models/bombs/bomb_generic.obj", "hbm:textures/models/bombs/bomb_generic.png")
                         .scale(3.0).ty(0.0).yaw(-90.0).pitch(180.0).guiScale(4.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.75, 1.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -1.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "boxcar")
-                // 1.7 ItemRenderLibrary: inv rotate(90, Y) translate(0, -1, 0) scale(4); common scale(0.5) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv rotate(90, Y) translate(0, -1, 0) scale(4); common scale(0.5)
                 .definition(MachineObjModel.of("hbm:models/boxcar.obj", "hbm:textures/models/misc/boxcar.png")
                         .scale(0.5).ty(0.0).yaw(0.0).guiScale(4.0).guiYaw(90.0).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -1.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "capacitor_bismuth")
-                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor)
                 .definition(MachineObjModel.of("hbm:models/battery_socket.obj", "hbm:textures/models/machines/capacitor_bismuth.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().exclude("Socket", "Battery")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "capacitor_copper")
-                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor)
                 .definition(MachineObjModel.of("hbm:models/battery_socket.obj", "hbm:textures/models/machines/capacitor_copper.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().exclude("Socket", "Battery")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "capacitor_gold")
-                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor)
                 .definition(MachineObjModel.of("hbm:models/battery_socket.obj", "hbm:textures/models/machines/capacitor_gold.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().exclude("Socket", "Battery")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "capacitor_niobium")
-                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor)
                 .definition(MachineObjModel.of("hbm:models/battery_socket.obj", "hbm:textures/models/machines/capacitor_niobium.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().exclude("Socket", "Battery")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "capacitor_spark")
-                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor)
                 .definition(MachineObjModel.of("hbm:models/battery_socket.obj", "hbm:textures/models/machines/capacitor_spark.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().exclude("Socket", "Battery")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "capacitor_tantalum")
-                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderBatteryPack: inv translate(0, -3, 0) scale(5); common battery_socket.renderPart(Battery or Capacitor)
                 .definition(MachineObjModel.of("hbm:models/battery_socket.obj", "hbm:textures/models/machines/capacitor_tantalum.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().exclude("Socket", "Battery")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "cargo_door")
                 .definition(MachineObjModel.of("hbm:models/pheodoors/cargo_door.obj", "hbm:textures/models/pheodoors/cargo_door.png")
-                        // 1.7 ItemRenderLibraryDoors cargo_door: renderCommon S(0.9) T(0,0.3,0) = T(0,0.27,0) S(0.9) (icon-P1)
+                        // 1.7 ItemRenderLibraryDoors cargo_door: renderCommon S(0.9) T(0,0.3,0) = T(0,0.27,0) S(0.9)
                         .scale(0.9).ty(0.0).yaw(0.0).guiScale(4.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.27, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -4.0, 0.0)).oversizedInGui().register();
@@ -285,7 +285,7 @@ public final class ObjItemDeclarations {
         Dejson.item(NS, "charge_c4")
                 // 1.7 charge_c4: RenderBlockRotated.renderInventoryBlock rotate(-90, Y) rotate(-90, Z) translate(0, 0.375, 0),
                 // in the 3D block-item frame. The raw chain has no Z turn, so the mesh is drawn by a pass carrying
-                // the three steps and the primary pass names no part (icon-P2 2026-10-01)
+                // the three steps; the primary pass names no part
                 .definition(MachineObjModel.of("hbm:models/blocks/charge_c4.obj", "hbm:textures/blocks/charge_c4.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().noCull().parts("none")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
@@ -295,7 +295,7 @@ public final class ObjItemDeclarations {
         Dejson.item(NS, "charge_dynamite")
                 // 1.7 charge_dynamite: RenderBlockRotated.renderInventoryBlock rotate(-90, Y) rotate(-90, Z) translate(0, 0.375, 0),
                 // in the 3D block-item frame. The raw chain has no Z turn, so the mesh is drawn by a pass carrying
-                // the three steps and the primary pass names no part (icon-P2 2026-10-01)
+                // the three steps; the primary pass names no part
                 .definition(MachineObjModel.of("hbm:models/blocks/charge_dynamite.obj", "hbm:textures/blocks/charge_dynamite.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().noCull().parts("none")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
@@ -305,7 +305,7 @@ public final class ObjItemDeclarations {
         Dejson.item(NS, "charge_miner")
                 // 1.7 charge_miner (charge_dynamite's handler): RenderBlockRotated.renderInventoryBlock rotate(-90, Y) rotate(-90, Z) translate(0, 0.375, 0),
                 // in the 3D block-item frame. The raw chain has no Z turn, so the mesh is drawn by a pass carrying
-                // the three steps and the primary pass names no part (icon-P2 2026-10-01)
+                // the three steps; the primary pass names no part
                 .definition(MachineObjModel.of("hbm:models/blocks/charge_dynamite.obj", "hbm:textures/blocks/charge_miner.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().noCull().parts("none")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
@@ -315,7 +315,7 @@ public final class ObjItemDeclarations {
         Dejson.item(NS, "charge_semtex")
                 // 1.7 charge_semtex (charge_c4's handler): RenderBlockRotated.renderInventoryBlock rotate(-90, Y) rotate(-90, Z) translate(0, 0.375, 0),
                 // in the 3D block-item frame. The raw chain has no Z turn, so the mesh is drawn by a pass carrying
-                // the three steps and the primary pass names no part (icon-P2 2026-10-01)
+                // the three steps; the primary pass names no part
                 .definition(MachineObjModel.of("hbm:models/blocks/charge_c4.obj", "hbm:textures/blocks/charge_semtex.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().noCull().parts("none")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
@@ -365,7 +365,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "crate_supply")
-                // 1.7 RenderConserve.renderInventoryBlock: translate(0, -0.5, 0) (icon-P2 2026-10-01)
+                // 1.7 RenderConserve.renderInventoryBlock: translate(0, -0.5, 0)
                 .definition(MachineObjModel.of("hbm:models/blocks/conservecrate.obj", "hbm:textures/block/crate_can.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
@@ -373,27 +373,27 @@ public final class ObjItemDeclarations {
 
     private static void part2() {
         Dejson.item(NS, "deco_computer_ibm_300pl")
-                // 1.7 RenderBlockDecoModel(deco_computer).renderInventoryBlock: translate(0, 0.1, 0), scale(1.2) (icon-P2 2026-10-01)
+                // 1.7 RenderBlockDecoModel(deco_computer).renderInventoryBlock: translate(0, 0.1, 0), scale(1.2)
                 .definition(MachineObjModel.of("hbm:models/blocks/puter.obj", "hbm:textures/blocks/deco_computer.png")
                         .scale(1.2).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.1, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "deco_crt_blinking")
-                // 1.7 RenderCRT.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(crt, rot -PI/2) (icon-P2 2026-10-01)
+                // 1.7 RenderCRT.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(crt, rot -PI/2)
                 .definition(MachineObjModel.of("hbm:models/blocks/crt.obj", "hbm:textures/blocks/crt_blinking.png")
                         .scale(1.0).ty(0.0).yaw(-90.0).frame("block").rawLegacyTransform().noCull()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "deco_crt_broken")
-                // 1.7 RenderCRT.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(crt, rot -PI/2) (icon-P2 2026-10-01)
+                // 1.7 RenderCRT.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(crt, rot -PI/2)
                 .definition(MachineObjModel.of("hbm:models/blocks/crt.obj", "hbm:textures/blocks/crt_broken.png")
                         .scale(1.0).ty(0.0).yaw(-90.0).frame("block").rawLegacyTransform().noCull()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "deco_crt_bsod")
-                // 1.7 RenderCRT.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(crt, rot -PI/2) (icon-P2 2026-10-01)
+                // 1.7 RenderCRT.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(crt, rot -PI/2)
                 .definition(MachineObjModel.of("hbm:models/blocks/crt.obj", "hbm:textures/blocks/crt_bsod.png")
                         .scale(1.0).ty(0.0).yaw(-90.0).frame("block").rawLegacyTransform().noCull()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "deco_crt_clean")
-                // 1.7 RenderCRT.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(crt, rot -PI/2) (icon-P2 2026-10-01)
+                // 1.7 RenderCRT.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(crt, rot -PI/2)
                 .definition(MachineObjModel.of("hbm:models/blocks/crt.obj", "hbm:textures/blocks/crt_clean.png")
                         .scale(1.0).ty(0.0).yaw(-90.0).frame("block").rawLegacyTransform().noCull()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
@@ -422,23 +422,23 @@ public final class ObjItemDeclarations {
                         MachineObjModel.of("hbm:models/sat_scanner.obj", "hbm:textures/models/sat/sat_scanner.png").scale(0.22)
                                 .ty(0.0).yaw(0))).register();
         Dejson.item(NS, "deco_toaster_iron")
-                // 1.7 RenderToaster.renderInventoryBlock: translate(0, -0.25, 0), renderWithIcon(toaster, rot -PI/2) (icon-P2 2026-10-01)
+                // 1.7 RenderToaster.renderInventoryBlock: translate(0, -0.25, 0), renderWithIcon(toaster, rot -PI/2)
                 .definition(MachineObjModel.of("hbm:models/blocks/toaster.obj", "hbm:textures/blocks/toaster_iron.png")
                         .scale(1.0).ty(0.0).yaw(-90.0).frame("block").rawLegacyTransform().noCull()
                         .itemTranslate(0.0, -0.25, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "deco_toaster_steel")
-                // 1.7 RenderToaster.renderInventoryBlock: translate(0, -0.25, 0), renderWithIcon(toaster, rot -PI/2) (icon-P2 2026-10-01)
+                // 1.7 RenderToaster.renderInventoryBlock: translate(0, -0.25, 0), renderWithIcon(toaster, rot -PI/2)
                 .definition(MachineObjModel.of("hbm:models/blocks/toaster.obj", "hbm:textures/blocks/toaster_steel.png")
                         .scale(1.0).ty(0.0).yaw(-90.0).frame("block").rawLegacyTransform().noCull()
                         .itemTranslate(0.0, -0.25, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "deco_toaster_wood")
-                // 1.7 RenderToaster.renderInventoryBlock: translate(0, -0.25, 0), renderWithIcon(toaster, rot -PI/2) (icon-P2 2026-10-01)
+                // 1.7 RenderToaster.renderInventoryBlock: translate(0, -0.25, 0), renderWithIcon(toaster, rot -PI/2)
                 .definition(MachineObjModel.of("hbm:models/blocks/toaster.obj", "hbm:textures/blocks/toaster_wood.png")
                         .scale(1.0).ty(0.0).yaw(-90.0).frame("block").rawLegacyTransform().noCull()
                         .itemTranslate(0.0, -0.25, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "det_cord")
                 // 1.7 RenderDetCord.renderInventoryBlock: rotate(180, Y) scale(1.25), cable_neo "CZ", in the 3D
-                // block-item frame (icon-P2 2026-10-01)
+                // block-item frame
                 .definition(MachineObjModel.of("hbm:models/blocks/cable_neo.obj", "hbm:textures/blocks/det_cord.png").scale(1.25).ty(0.0)
                         .yaw(180.0).frame("block").rawLegacyTransform().noCull().itemTranslate(0.0, 0.0, 0.0)
                         .itemPreTranslate(0.0, 0.0, 0.0)
@@ -474,7 +474,7 @@ public final class ObjItemDeclarations {
         Dejson.item(NS, "floodlight")
                 // 1.7 RenderFloodlight is an IItemRendererProvider (an OBJ item, not a sprite): ItemRenderBase,
                 // renderInventory T(0,-1.5,0) S(6.5); common Base, then T(0,0.5,0) Rz(-30) T(0,-0.5,0) Lights and Lamps
-                // (icon-P4 2026-10-01; was block-framed and auto-fitted)
+                // Framed by its own box, not auto-fitted to the block.
                 .definition(MachineObjModel.of("hbm:models/blocks/floodlight.obj", "hbm:textures/models/machines/floodlight.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(6.5).rawLegacyTransform().guiTranslate(0.0, -1.5, 0.0)
                         .parts("Base")
@@ -506,32 +506,32 @@ public final class ObjItemDeclarations {
 
     private static void part3() {
         Dejson.item(NS, "fluid_pump")
-                // 1.7 ItemRenderLibrary: inv translate(0, -2, 0) scale(5); common scale(2) rotate(90, Y) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -2, 0) scale(5); common scale(2) rotate(90, Y)
                 .definition(MachineObjModel.of("hbm:models/network/fluid_diode.obj", "hbm:textures/models/network/fluid_diode.png")
                         .scale(2.0).ty(0.0).yaw(90.0).guiScale(5.0).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "foundry_basin")
-                // 1.7 RenderFoundryBasin.renderInventoryBlock: translate(-0.5), faces of the 0..1 block; our OBJ is that block (icon-P2 2026-10-01)
+                // 1.7 RenderFoundryBasin.renderInventoryBlock: translate(-0.5), faces of the 0..1 block; our OBJ is that block
                 .definition(MachineObjModel.of("hbm:models/block/foundry_basin.obj")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().mtl()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(-0.5, -0.5, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "foundry_outlet")
-                // 1.7 RenderFoundryOutlet.renderInventoryBlock: translate(-0.5), box x 0.3125..0.6875 z 0..0.375; our OBJ is the placed outlet a quarter turn from it (icon-P2 2026-10-01)
+                // 1.7 RenderFoundryOutlet.renderInventoryBlock: translate(-0.5), box x 0.3125..0.6875 z 0..0.375; our OBJ is the placed outlet a quarter turn from it
                 .definition(MachineObjModel.of("hbm:models/block/foundry_outlet.obj")
                         .scale(1.0).ty(0.0).yaw(90.0).frame("block").rawLegacyTransform().mtl()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(-0.5, -0.5, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "foundry_slagtap")
-                // 1.7 RenderFoundryOutlet.renderInventoryBlock: translate(-0.5), box x 0.3125..0.6875 z 0..0.375; our OBJ is the placed outlet a quarter turn from it (icon-P2 2026-10-01)
+                // 1.7 RenderFoundryOutlet.renderInventoryBlock: translate(-0.5), box x 0.3125..0.6875 z 0..0.375; our OBJ is the placed outlet a quarter turn from it
                 .definition(MachineObjModel.of("hbm:models/block/foundry_slagtap.obj")
                         .scale(1.0).ty(0.0).yaw(90.0).frame("block").rawLegacyTransform().mtl()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(-0.5, -0.5, -0.5)).oversizedInGui().register();
         Dejson.item(NS, "fraction_spacer")
-                // 1.7 ItemRenderLibrary: inv scale(3.25) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv scale(3.25)
                 .definition(MachineObjModel.of("hbm:models/machines/fraction_spacer.obj", "hbm:textures/models/machines/fraction_spacer.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.25).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "furnace_iron")
-                // 1.7 ItemRenderLibrary: inv translate(0, -2, 0) scale(5); common rotate(90, Y), Main + Off (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -2, 0) scale(5); common rotate(90, Y), Main + Off
                 .definition(MachineObjModel.of("hbm:models/machines/furnace_iron.obj", "hbm:textures/models/machines/furnace_iron.png")
                         .scale(1.0).ty(0.0).yaw(90.0).guiScale(5.0).rawLegacyTransform().exclude("On")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)).oversizedInGui().register();
@@ -584,7 +584,7 @@ public final class ObjItemDeclarations {
                 .definition(MachineObjModel.of("hbm:models/fusion/torus.obj", "hbm:textures/models/fusion/torus.png").scale(0.5).ty(0.0)
                         .yaw(90.0).guiScale(2.0).rawLegacyTransform().itemTranslate(0.0, 0.0, 0.0)
                         .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
-        // 1.7 ItemRenderLibrary gear_large / sawblade (icon audit 2026-10-01): renderInventory T(0,-7,0) S(6) Ry(-45)
+        // 1.7 ItemRenderLibrary gear_large / sawblade: renderInventory T(0,-7,0) S(6) Ry(-45)
         // Rx(30), then a Z spin about the hub T(0,1.375,0) Rz(millis % 3600 * k) T(0,-1.375,0) (k = 0.1 gear, 0.2 saw),
         // all GUI-only; renderCommonWithStack T(0,0,-0.875) and one part (stirling Cog by damage, sawmill Blade).
         Dejson.item(NS, "gear_large")
@@ -602,7 +602,7 @@ public final class ObjItemDeclarations {
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(2.75).rawLegacyTransform()
                         .guiTranslate(0.0, -5.0, 0.0).animation("lantern")).oversizedInGui().register();
         Dejson.item(NS, "geiger")
-                // 1.7 ItemRenderLibrary: inv scale(10); common translate(0.2, 0, 0) rotate(90, Y) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv scale(10); common translate(0.2, 0, 0) rotate(90, Y)
                 .definition(MachineObjModel.of("hbm:models/blocks/geiger_counter.obj", "hbm:textures/blocks/geiger.png")
                         .scale(1.0).ty(0.0).yaw(90.0).guiScale(10.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.2, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
@@ -637,7 +637,7 @@ public final class ObjItemDeclarations {
         Dejson.item(NS, "hev_battery_block")
                 // 1.7: an ISBRH block item, so every slot is the vanilla 3D block-item pose (RenderItem's GUI chain, the
                 // block hand/ground poses) around RenderBattery.renderInventoryBlock T(0,-0.625,0) S(3): the "block"
-                // frame plus that body (icon-P4 2026-10-01; icon-P1 had restated only the GUI chain on the ItemRenderBase
+                // frame plus that body (the GUI chain alone restates it on the ItemRenderBase
                 // frame, leaving hand and ground in the machine frame at scale 1)
                 .definition(MachineObjModel.of("hbm:models/blocks/battery.obj", "hbm:textures/blocks/hev_battery.png").scale(3.0).ty(0.0)
                         .yaw(0.0).frame("block").rawLegacyTransform().itemTranslate(0.0, -0.625, 0.0)).oversizedInGui().register();
@@ -646,7 +646,7 @@ public final class ObjItemDeclarations {
                 .definition(ItemModels.special("hbm:item/jetpack_glider_base",
                         ItemModels.custom("hbm:jetpack_glider").with("scale", 1.0).numbers("translate", 0, 0, 0))).register();
         Dejson.item(NS, "lamp_demon")
-                // 1.7 ItemRenderLibrary: inv translate(0, -3, 0) scale(8); common demon_lamp.renderAll (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -3, 0) scale(8); common demon_lamp.renderAll
                 .definition(MachineObjModel.of("hbm:models/blocks/demon_lamp.obj", "hbm:textures/models/machines/demon_lamp.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(8.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
@@ -661,7 +661,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -1.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "lox_barrel")
-                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel) (icon-P2 2026-10-01)
+                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel)
                 .definition(MachineObjModel.of("hbm:models/blocks/barrel.obj", "hbm:textures/blocks/barrel_lox.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().exclude("Connector")
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
@@ -709,7 +709,7 @@ public final class ObjItemDeclarations {
                         .ty(0.0).yaw(-90.0).guiScale(5.0).rawLegacyTransform().itemTranslate(0.0, 0.0, 0.0)
                         .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.5, -3.0).animation("autosaw")).oversizedInGui().register();
         Dejson.item(NS, "machine_bat9000")
-                // 1.7 ItemRenderLibrary: inv translate(0, -3, 0) scale(2) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -3, 0) scale(2)
                 .definition(MachineObjModel.of("hbm:models/machines/bat9000.obj", "hbm:textures/models/machines/bat9000.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(2.0).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
@@ -733,7 +733,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -4.5, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_catalytic_cracker")
-                // 1.7 ItemRenderLibrary: inv translate(0, -3.5, 0) scale(1.8); common scale(0.5) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -3.5, 0) scale(1.8); common scale(0.5)
                 .definition(MachineObjModel.of("hbm:models/machines/cracking_tower.obj", "hbm:textures/models/machines/cracking_tower.png")
                         .scale(0.5).ty(0.0).yaw(0.0).guiScale(1.8).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.5, 0.0)).oversizedInGui().register();
@@ -802,7 +802,7 @@ public final class ObjItemDeclarations {
                                 .scale(0.25).ty(0.0).yaw(0)
                                 .partTextures("B1", "hbm:textures/models/machines/cyclotron_ashes.png", "B2", "hbm:textures/models/machines/cyclotron_book.png", "B3", "hbm:textures/models/machines/cyclotron_gavel.png", "B4", "hbm:textures/models/machines/cyclotron_coin.png"))).register();
         Dejson.item(NS, "machine_deuterium_tower")
-                // 1.7 ItemRenderLibrary: inv translate(0, -5, 0) scale(3); common rotate(180, Y) scale(0.5) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -5, 0) scale(3); common rotate(180, Y) scale(0.5)
                 .definition(MachineObjModel.of("hbm:models/machines/machine_deuterium_tower.obj", "hbm:textures/models/machines/machine_deuterium_tower.png")
                         .scale(0.5).ty(0.0).yaw(180.0).guiScale(3.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -5.0, 0.0)).oversizedInGui().register();
@@ -812,7 +812,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -2.5, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_difurnace_ext")
-                // 1.7 RenderDiFurnaceExtension.renderInventoryBlock: translate(0, -0.5, 0), Top/Bottom/Side (icon-P2 2026-10-01)
+                // 1.7 RenderDiFurnaceExtension.renderInventoryBlock: translate(0, -0.5, 0), Top/Bottom/Side
                 .definition(MachineObjModel.of("hbm:models/block/difurnace_extension.obj", "hbm:textures/blocks/difurnace_extension.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().mtl()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
@@ -829,7 +829,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(-1.0, -1.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_epress")
-                // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(4.5); common epress_body, translate(0, 1.5, 0) epress_head (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(4.5); common epress_body, translate(0, 1.5, 0) epress_head
                 .definition(MachineObjModel.of("hbm:models/epress_body.obj", "hbm:textures/models/machines/epress_body.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(4.5).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -4.0, 0.0)
@@ -845,17 +845,17 @@ public final class ObjItemDeclarations {
                         .itemTranslate(1.5, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -1.5, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_fel")
-                // 1.7 ItemRenderLibrary: inv translate(0, -1, 0) scale(2); common translate(1, 0, 0) rotate(90, 0, -1, 0) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -1, 0) scale(2); common translate(1, 0, 0) rotate(90, 0, -1, 0)
                 .definition(MachineObjModel.of("hbm:models/machines/fel.obj", "hbm:textures/models/machines/fel.png")
                         .scale(1.0).ty(0.0).yaw(-90.0).guiScale(2.0).rawLegacyTransform()
                         .itemTranslate(1.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -1.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_fensu")
-                // 1.7 ItemRenderLibrary: inv rotate(90, Y) translate(0, -2, 0) scale(2.5) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv rotate(90, Y) translate(0, -2, 0) scale(2.5)
                 .definition(MachineObjModel.of("hbm:models/machines/fensu.obj", "hbm:textures/models/machines/fensus/fensu_light_blue.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(2.5).guiYaw(90.0).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_flare")
-                // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(2.25); common scale(0.5) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(2.25); common scale(0.5)
                 .definition(MachineObjModel.of("hbm:models/machines/flare_stack.obj", "hbm:textures/models/machines/flare_stack.png")
                         .scale(0.5).ty(0.0).yaw(0.0).guiScale(2.25).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -4.0, 0.0)).oversizedInGui().register();
@@ -865,12 +865,12 @@ public final class ObjItemDeclarations {
                         .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0).exclude("Tank")
                         .overlayParts("Tank").overlayTexture("hbm:textures/models/tank/tank_none.png")).oversizedInGui().register();
         Dejson.item(NS, "machine_fracking_tower")
-                // 1.7 ItemRenderLibrary: inv translate(0, -4.5, 0) scale(2.5); common scale(0.25) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -4.5, 0) scale(2.5); common scale(0.25)
                 .definition(MachineObjModel.of("hbm:models/machines/fracking_tower.obj", "hbm:textures/models/machines/fracking_tower.png")
                         .scale(0.25).ty(0.0).yaw(0.0).guiScale(2.5).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -4.5, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_fraction_tower")
-                // 1.7 ItemRenderLibrary: inv translate(0, -2.5, 0) scale(3.25) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -2.5, 0) scale(3.25)
                 .definition(MachineObjModel.of("hbm:models/machines/fraction_tower.obj", "hbm:textures/models/machines/fraction_tower.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.25).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.5, 0.0)).oversizedInGui().register();
@@ -880,7 +880,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -1.5, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_gascent")
-                // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(3.5); common gascent.renderPart(Centrifuge) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(3.5); common gascent.renderPart(Centrifuge)
                 .definition(MachineObjModel.of("hbm:models/machines/centrifuge_gas.obj", "hbm:textures/models/machines/centrifuge_gas.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.5).rawLegacyTransform().exclude("Flag")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -4.0, 0.0)).oversizedInGui().register();
@@ -916,12 +916,12 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_large_turbine")
-                // 1.7 ItemRenderLibrary: inv translate(0, -1, 0) scale(2.5); common rotate(90, Y) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -1, 0) scale(2.5); common rotate(90, Y)
                 .definition(MachineObjModel.of("hbm:models/machines/turbine.obj", "hbm:textures/models/machines/turbine.png")
                         .scale(1.0).ty(0.0).yaw(90.0).guiScale(2.5).rawLegacyTransform().overlayTexture("hbm:textures/models/machines/turbofan_blades.png")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -1.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_liquefactor")
-                // 1.7 ItemRenderLibrary: inv translate(0, -2.5, 0) scale(3); common renderPart(Main) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -2.5, 0) scale(3); common renderPart(Main)
                 .definition(MachineObjModel.of("hbm:models/machines/liquefactor.obj", "hbm:textures/models/machines/liquefactor.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.0).rawLegacyTransform().exclude("Fluid", "Glass")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.5, 0.0)).oversizedInGui().register();
@@ -932,7 +932,7 @@ public final class ObjItemDeclarations {
                         .guiTranslate(0.0, -4.0, 4.0).exclude("plate_Cylinder")).oversizedInGui().register();
         Dejson.item(NS, "machine_mining_laser")
                 // 1.7 ItemRenderLibrary: inv translate(0, -0.5, 0) scale(3); common Base (base tex), Pivot (pivot tex),
-                // translate(0, -1, 0.75) rotate(90, X) Laser (laser tex) (icon-P2 2026-10-01)
+                // translate(0, -1, 0.75) rotate(90, X) Laser (laser tex)
                 .definition(MachineObjModel.of("hbm:models/machines/mining_laser.obj", "hbm:textures/models/machines/mining_laser_base.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.0).rawLegacyTransform().parts("Base")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -0.5, 0.0)
@@ -960,13 +960,13 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -2.75, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_press")
-                // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(4.5); common press_body, translate(0, 0.5, 0) press_head (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(4.5); common press_body, translate(0, 0.5, 0) press_head
                 .definition(MachineObjModel.of("hbm:models/press_body.obj", "hbm:textures/models/machines/press_body.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(4.5).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -4.0, 0.0)
                         .passes(MachineObjModel.pass("hbm:textures/models/machines/press_head.png").obj("hbm:models/press_head.obj").translate(0.0, 0.5, 0.0))).oversizedInGui().register();
         Dejson.item(NS, "machine_puf6_tank")
-                // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(6); common rotate(90, 0, -1, 0) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(6); common rotate(90, 0, -1, 0)
                 .definition(MachineObjModel.of("hbm:models/tank.obj", "hbm:textures/models/machines/puf6tank.png")
                         .scale(1.0).ty(0.0).yaw(-90.0).guiScale(6.0).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -4.0, 0.0)).oversizedInGui().register();
@@ -984,7 +984,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -3.0, 0.0).animation("pump")).oversizedInGui().register();
         Dejson.item(NS, "machine_pumpjack")
-                // 1.7 ItemRenderLibrary: inv translate(0, -2, 0) rotate(90, Y) scale(4); common scale(0.5) translate(0, 0, 3) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -2, 0) rotate(90, Y) scale(4); common scale(0.5) translate(0, 0, 3)
                 .definition(MachineObjModel.of("hbm:models/machines/pumpjack.obj", "hbm:textures/models/machines/pumpjack.png")
                         .scale(0.5).ty(0.0).yaw(0.0).guiScale(4.0).guiYaw(90.0).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 1.5).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)).oversizedInGui().register();
@@ -997,28 +997,28 @@ public final class ObjItemDeclarations {
                         .ty(0.0).yaw(90.0).guiScale(3.5).rawLegacyTransform().itemTranslate(0.0, 0.0, 0.0)
                         .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -1.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_radgen")
-                // 1.7 ItemRenderLibrary: inv translate(0, -1, 0) scale(4.5); common scale(0.5) translate(0.5, 0, 0) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -1, 0) scale(4.5); common scale(0.5) translate(0.5, 0, 0)
                 .definition(MachineObjModel.of("hbm:models/machines/radgen.obj", "hbm:textures/models/machines/rad_gen_body.png")
                         .scale(0.5).ty(0.0).yaw(0.0).guiScale(4.5).rawLegacyTransform().noCull().exclude("Glass")
                         .itemTranslate(0.25, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -1.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_radiolysis")
-                // 1.7 ItemRenderLibrary: inv translate(0, -2.5, 0) scale(3) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -2.5, 0) scale(3)
                 .definition(MachineObjModel.of("hbm:models/machines/radiolysis.obj", "hbm:textures/models/machines/radiolysis.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.5, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_reactor")
-                // 1.7 ItemRenderLibrary machine_reactor_breeding: inv translate(0, -4.5, 0) scale(4.5); common breeder.renderAll (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary machine_reactor_breeding: inv translate(0, -4.5, 0) scale(4.5); common breeder.renderAll
                 .definition(MachineObjModel.of("hbm:models/reactors/breeder.obj", "hbm:textures/models/machines/breeder.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(4.5).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -4.5, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_reactor_small")
-                // 1.7 ItemRenderLibrary reactor_research: inv translate(0, -4, 0) scale(4); common reactor_small_base + reactor_small_rods (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary reactor_research: inv translate(0, -4, 0) scale(4); common reactor_small_base + reactor_small_rods
                 .definition(MachineObjModel.of("hbm:models/reactors/reactor_small_base.obj", "hbm:textures/models/reactors/reactor_small_base.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(4.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -4.0, 0.0)
                         .passes(MachineObjModel.pass("hbm:textures/models/reactors/reactor_small_rods.png").obj("hbm:models/reactors/reactor_small_rods.obj"))).oversizedInGui().register();
         Dejson.item(NS, "machine_refinery")
-                // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(3); common rotate(180, Y) scale(0.5) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(3); common rotate(180, Y) scale(0.5)
                 .definition(MachineObjModel.of("hbm:models/machines/refinery.obj", "hbm:textures/models/machines/refinery.png")
                         .scale(0.5).ty(0.0).yaw(180.0).guiScale(3.0).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -4.0, 0.0)).oversizedInGui().register();
@@ -1028,7 +1028,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -2.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_rtg_grey")
-                // 1.7 RenderRTGBlock.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(rtg, Gen) (icon-P2 2026-10-01)
+                // 1.7 RenderRTGBlock.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(rtg, Gen)
                 .definition(MachineObjModel.of("hbm:models/machines/rtg.obj", "hbm:textures/models/machines/rtg.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().noCull()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
@@ -1049,12 +1049,12 @@ public final class ObjItemDeclarations {
                                 .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                                 .guiTranslate(0.0, -1.5, 0.0))).oversizedInGui().register();
         Dejson.item(NS, "machine_silex")
-                // 1.7 ItemRenderLibrary: inv translate(0, -2.5, 0) scale(3.25) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -2.5, 0) scale(3.25)
                 .definition(MachineObjModel.of("hbm:models/machines/silex.obj", "hbm:textures/models/machines/silex.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.25).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.5, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_solar_boiler")
-                // 1.7 ItemRenderLibrary: inv translate(0, -2.5, 0) scale(3.25); common renderPart(Base) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -2.5, 0) scale(3.25); common renderPart(Base)
                 .definition(MachineObjModel.of("hbm:models/machines/solar_boiler.obj", "hbm:textures/models/machines/solar_boiler.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.25).rawLegacyTransform().noCull().exclude("Overglow_1", "Overglow_2", "Overglow_3")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.5, 0.0)).oversizedInGui().register();
@@ -1064,7 +1064,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -1.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_solidifier")
-                // 1.7 ItemRenderLibrary: inv translate(0, -2.5, 0) scale(3); common renderPart(Main) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -2.5, 0) scale(3); common renderPart(Main)
                 .definition(MachineObjModel.of("hbm:models/machines/solidifier.obj", "hbm:textures/models/machines/solidifier.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.0).rawLegacyTransform().exclude("Fluid", "Glass")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.5, 0.0)).oversizedInGui().register();
@@ -1107,7 +1107,7 @@ public final class ObjItemDeclarations {
                                 .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                                 .guiTranslate(0.0, -1.5, 0.0).spinPivot(0.0, 1.375, 0.0).spinParts("Stirling"))).oversizedInGui().register();
         Dejson.item(NS, "machine_storage_drum")
-                // 1.7 ItemRenderLibrary: inv translate(0, -3, 0) scale(5); common scale(2) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -3, 0) scale(5); common scale(2)
                 .definition(MachineObjModel.of("hbm:models/machines/drum.obj", "hbm:textures/models/machines/drum_gray.png")
                         .scale(2.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
@@ -1120,7 +1120,7 @@ public final class ObjItemDeclarations {
                 .definition(MachineObjModel.of("hbm:models/machines/thresher.obj", "hbm:textures/models/machines/thresher.png").scale(0.5)
                         .ty(0.0).yaw(-90.0).guiScale(4.5).rawLegacyTransform().itemTranslate(0.0, 0.0, 0.0)
                         .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, 4.0, -8.0)
-                        // 1.7 RenderThresher item: the arm chain posed at 80 degrees, wheel turning (icon audit 2026-10-01)
+                        // 1.7 RenderThresher item: the arm chain posed at 80 degrees, wheel turning
                         .animation("thresher")).oversizedInGui().register();
         Dejson.item(NS, "machine_turbine_gas")
                 .definition(MachineObjModel.of("hbm:models/machines/turbinegas.obj", "hbm:textures/models/machines/turbinegas.png")
@@ -1134,7 +1134,7 @@ public final class ObjItemDeclarations {
                         .guiTranslate(0.0, 0.0, 0.0).overlayParts("Afterburner")
                         .overlayTexture("hbm:textures/models/machines/turbofan_back.png")).oversizedInGui().register();
         Dejson.item(NS, "machine_uf6_tank")
-                // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(6); common rotate(90, 0, -1, 0) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(6); common rotate(90, 0, -1, 0)
                 .definition(MachineObjModel.of("hbm:models/tank.obj", "hbm:textures/models/machines/uf6tank.png")
                         .scale(1.0).ty(0.0).yaw(-90.0).guiScale(6.0).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -4.0, 0.0)).oversizedInGui().register();
@@ -1144,7 +1144,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -4.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_well")
-                // 1.7 ItemRenderLibrary machine_well: renderInventory T(0,-4,0) S(4); renderCommon S(0.5), no rotation (icon-P1)
+                // 1.7 ItemRenderLibrary machine_well: renderInventory T(0,-4,0) S(4); renderCommon S(0.5), no rotation
                 .definition(MachineObjModel.of("hbm:models/machines/derrick.obj", "hbm:textures/models/machines/derrick.png").scale(0.5)
                         .ty(0.0).yaw(0.0).guiScale(4.0).rawLegacyTransform().itemTranslate(0.0, 0.0, 0.0)
                         .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -4.0, 0.0)).oversizedInGui().register();
@@ -1157,25 +1157,25 @@ public final class ObjItemDeclarations {
 
     private static void part7() {
         Dejson.item(NS, "machine_zirnox")
-                // 1.7 ItemRenderLibrary reactor_zirnox: inv translate(0, -2, 0) scale(2.8); common scale(0.75) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary reactor_zirnox: inv translate(0, -2, 0) scale(2.8); common scale(0.75)
                 .definition(MachineObjModel.of("hbm:models/zirnox.obj", "hbm:textures/models/machines/zirnox.png")
                         .scale(0.75).ty(0.0).yaw(0.0).guiScale(2.8).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "mine_ap")
-                // 1.7 ItemRenderLibrary mine_ap: renderInventory glScaled(8), renderCommon glScaled(1.25) (icon audit 2026-10-01)
+                // 1.7 ItemRenderLibrary mine_ap: renderInventory glScaled(8), renderCommon glScaled(1.25)
                 .definition(MachineObjModel.of("hbm:models/bombs/ap_mine.obj", "hbm:textures/models/bombs/mine_ap_grass.png").scale(1.25)
                         .ty(0.0).yaw(0.0).guiScale(8.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "mine_fat")
-                // 1.7 ItemRenderLibrary mine_fat: renderInventory T(0,-1,0) S(7); renderCommon T(0.25,0,0) Ry(90) (icon-P1)
+                // 1.7 ItemRenderLibrary mine_fat: renderInventory T(0,-1,0) S(7); renderCommon T(0.25,0,0) Ry(90)
                 .definition(MachineObjModel.of("hbm:models/bombs/mine_fat.obj", "hbm:textures/models/bombs/mine_fat.png").scale(1.0)
                         .ty(0.0).yaw(90.0).guiScale(7.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.25, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -1.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "mine_he")
                 // 1.7 ItemRenderLibrary mine_he: renderInventory S(6); renderCommon S(4); renderNonInv T(0.25,0.625,0)
-                // Ry(45) Rz(-15), restated rotate-first: Ry(45) Rz(-15) T(Rz(15) Ry(-45) (0.25,0.625,0)) (icon-P1)
+                // Ry(45) Rz(-15), restated rotate-first: Ry(45) Rz(-15) T(Rz(15) Ry(-45) (0.25,0.625,0))
                 .definition(MachineObjModel.of("hbm:models/bombs/marelet.obj", "hbm:textures/models/bombs/mine_marelet.png").scale(4.0)
                         .ty(0.0).yaw(0.0).guiScale(6.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
@@ -1183,13 +1183,13 @@ public final class ObjItemDeclarations {
                         .nonInvContext(MachineObjModel.xyz(0.0, 45.0, -15.0),
                                 MachineObjModel.xyz(0.0089913, 0.6494568, 0.1767767), 1.0)).oversizedInGui().register();
         Dejson.item(NS, "mine_naval")
-                // 1.7 ItemRenderLibrary mine_naval: renderInventory T(0,2,-1) S(5); renderCommon T(0,0,0) (icon-P1)
+                // 1.7 ItemRenderLibrary mine_naval: renderInventory T(0,2,-1) S(5); renderCommon T(0,0,0)
                 .definition(MachineObjModel.of("hbm:models/bombs/naval_mine.obj", "hbm:textures/models/bombs/mine_naval.png").scale(1.0)
                         .ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, 2.0, -1.0)).oversizedInGui().register();
         Dejson.item(NS, "mine_shrap")
-                // 1.7 ItemRenderLibrary mine_shrap: renderInventory S(8); renderCommon S(1.25) (icon-P1)
+                // 1.7 ItemRenderLibrary mine_shrap: renderInventory S(8); renderCommon S(1.25)
                 .definition(MachineObjModel.of("hbm:models/bombs/ap_mine.obj", "hbm:textures/models/bombs/mine_shrapnel.png").scale(1.25)
                         .ty(0.0).yaw(0.0).guiScale(8.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
@@ -1338,22 +1338,22 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).frame("missile")
                         .guiContext(MachineObjModel.xyz(0.0, 0.0, 135.0), MachineObjModel.xyz(0.0, -19.9375, 0.0), 1.375)).oversizedInGui().register();
         Dejson.item(NS, "nuke_boy")
-                // 1.7 ItemRenderLibrary: inv scale(5); common translate(-1, 0, 0) bomb_boy.renderAll (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv scale(5); common translate(-1, 0, 0) bomb_boy.renderAll
                 .definition(MachineObjModel.of("hbm:models/bombs/lilboy.obj", "hbm:textures/models/bombs/lilboy.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().noCull()
                         .itemTranslate(-1.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "nuke_custom")
-                // 1.7 ItemRenderLibrary: inv scale(5); common translate(-1, 0, 0) bomb_boy.renderAll (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv scale(5); common translate(-1, 0, 0) bomb_boy.renderAll
                 .definition(MachineObjModel.of("hbm:models/bombs/lilboy.obj", "hbm:textures/models/bombs/customnuke.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().noCull()
                         .itemTranslate(-1.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "nuke_fleija")
-                // 1.7 ItemRenderLibrary: inv scale(6.8); common translate(0.125, 0, 0) rotate(90, Y) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv scale(6.8); common translate(0.125, 0, 0) rotate(90, Y)
                 .definition(MachineObjModel.of("hbm:models/bombs/fleija.obj", "hbm:textures/models/bombs/fleija.png")
                         .scale(1.0).ty(0.0).yaw(90.0).guiScale(6.8).rawLegacyTransform().noCull()
                         .itemTranslate(0.125, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "nuke_fstbmb")
-                // 1.7 ItemRenderLibrary: inv scale(2.25); common translate(1, 0, 0) rotate(90, Y) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv scale(2.25); common translate(1, 0, 0) rotate(90, Y)
                 .definition(MachineObjModel.of("hbm:models/bombs/fstbmb.obj", "hbm:textures/models/bombs/fstbmb.png")
                         .scale(1.0).ty(0.0).yaw(90.0).guiScale(2.25).rawLegacyTransform().noCull()
                         .itemTranslate(1.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
@@ -1374,12 +1374,12 @@ public final class ObjItemDeclarations {
                         .guiScale(2.25).rawLegacyTransform().noCull().itemTranslate(0.0, 0.0, 0.0)
                         .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -5.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "nuke_prototype")
-                // 1.7 ItemRenderLibrary: inv translate(0, 0.125, 0) scale(3); common rotate(90, Y) translate(0, 0.125, 0) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, 0.125, 0) scale(3); common rotate(90, Y) translate(0, 0.125, 0)
                 .definition(MachineObjModel.of("hbm:models/bombs/prototype.obj", "hbm:textures/models/bombs/prototype.png")
                         .scale(1.0).ty(0.0).yaw(90.0).guiScale(3.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.125, 0.0).guiTranslate(0.0, 0.125, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "nuke_solinium")
-                // 1.7 ItemRenderLibrary: inv translate(0, -0.125, 0) scale(5); common rotate(90, Y) translate(0, -0.125, 0) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -0.125, 0) scale(5); common rotate(90, Y) translate(0, -0.125, 0)
                 .definition(MachineObjModel.of("hbm:models/bombs/ufp.obj", "hbm:textures/models/bombs/ufp.png")
                         .scale(1.0).ty(0.0).yaw(90.0).guiScale(5.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, -0.125, 0.0).guiTranslate(0.0, -0.125, 0.0)).oversizedInGui().register();
@@ -1420,8 +1420,8 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -1.0, 0.0)).oversizedInGui().register();
         // 1.7 pile_device metadata 0..2 (loader, vent, control rod; RenderPileLoader's item renderer picks the mesh by
-        // item damage), one item each (ntm-next ids; History §19es-itemvariant). The single select this replaced drew
-        // metadata 0 with the control-rod mesh and 1 with the loader's.
+        // item damage), one item each (ntm-next ids). 1.7's select drew metadata 0 with the control-rod
+        // mesh and 1 with the loader's, so these are not in the order the names suggest.
         for (String device : new String[] {"loader", "vent", "control"}) {
             Dejson.item(NS, "pile_" + device)
                     .definition(MachineObjModel.of("hbm:models/pile/pile_" + device + ".obj", "hbm:textures/models/pile/pile_" + device + ".png").scale(2.0)
@@ -1430,20 +1430,20 @@ public final class ObjItemDeclarations {
                             .guiTranslate(0.0, -3.5, 0.0)).oversizedInGui().register();
         }
         Dejson.item(NS, "pink_barrel")
-                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel) (icon-P2 2026-10-01)
+                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel)
                 .definition(MachineObjModel.of("hbm:models/blocks/barrel.obj", "hbm:textures/blocks/barrel_pink.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().exclude("Connector")
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "piston_inserter")
-                // 1.7 RenderPistonInserter item: renderInventory T(0,-2.5,0) S(5); renderCommon S(2) (icon-P1)
+                // 1.7 RenderPistonInserter item: renderInventory T(0,-2.5,0) S(5); renderCommon S(2)
                 .definition(MachineObjModel.of("hbm:models/machines/piston_inserter.obj", "hbm:textures/models/machines/piston_inserter.png")
                         .scale(2.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -2.5, 0.0)).oversizedInGui().register();
         // pole_satellite_receiver: 1.7 had no item renderer (render type -1), so the item is the flat block icon, stated on
-        // its registration in ModDecoContent (icon-P4 2026-10-01)
+        // its registration in ModDecoContent
         Dejson.item(NS, "pole_top")
-                // 1.7 RenderAntennaTop.renderInventoryBlock: translate(0, -0.5, 0), scale(0.75) (icon-P2 2026-10-01)
+                // 1.7 RenderAntennaTop.renderInventoryBlock: translate(0, -0.5, 0), scale(0.75)
                 .definition(MachineObjModel.of("hbm:models/blocks/antenna_top.obj", "hbm:textures/blocks/deco_pole_top.png")
                         .scale(0.75).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().noCull()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
@@ -1483,7 +1483,7 @@ public final class ObjItemDeclarations {
                 .definition(ItemModels.special("hbm:item/machine_obj_base",
                         ItemModels.custom("hbm:rbmk_block_column").with("side", "hbm:blocks/rbmk/rbmk_boiler_side").with("top", "hbm:blocks/rbmk/rbmk_boiler_top").with("scale", 0.35).with("yaw", 0).with("lift", -0.75))).register();
         Dejson.item(NS, "rbmk_console")
-                // 1.7 ItemRenderLibrary: inv translate(0, -3, 0) scale(2.5) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -3, 0) scale(2.5)
                 .models(Models.parented("hbm:block/machine_dummy_empty", Slots.EMPTY))
                 .definition(MachineObjModel.of("hbm:models/rbmk/rbmk_console.obj", "hbm:textures/models/machines/rbmk_console.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(2.5).rawLegacyTransform()
@@ -1513,31 +1513,31 @@ public final class ObjItemDeclarations {
                 .definition(ItemModels.special("hbm:item/machine_obj_base",
                         ItemModels.custom("hbm:rbmk_block_column").with("side", "hbm:blocks/rbmk/rbmk_cooler_side").with("top", "hbm:blocks/rbmk/rbmk_cooler_top").with("scale", 0.35).with("yaw", 0).with("lift", -0.675))).register();
         Dejson.item(NS, "rbmk_crane_console")
-                // 1.7 ItemRenderLibrary: inv translate(0, -3, 0) scale(3.5) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -3, 0) scale(3.5)
                 .models(Models.parented("hbm:block/machine_dummy_empty", Slots.EMPTY))
                 .definition(MachineObjModel.of("hbm:models/rbmk/crane_console.obj", "hbm:textures/models/machines/rbmk_crane_console.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.5).rawLegacyTransform().exclude("Shotgun", "Shotgun1", "MiniNuke")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "rbmk_debris")
-                // 1.7 RenderPribris.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(rbmk_debris = models/rbmk/debris.obj, rot 0) (icon-P2 2026-10-01)
+                // 1.7 RenderPribris.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(rbmk_debris = models/rbmk/debris.obj, rot 0)
                 .models(Models.parented("hbm:block/rbmk_debris", Slots.EMPTY))
                 .definition(MachineObjModel.of("hbm:models/rbmk/debris.obj", "hbm:textures/blocks/rbmk/rbmk_debris.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "rbmk_debris_burning")
-                // 1.7 RenderPribris.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(rbmk_debris = models/rbmk/debris.obj, rot 0) (icon-P2 2026-10-01)
+                // 1.7 RenderPribris.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(rbmk_debris = models/rbmk/debris.obj, rot 0)
                 .models(Models.parented("hbm:block/rbmk_debris_burning", Slots.EMPTY))
                 .definition(MachineObjModel.of("hbm:models/rbmk/debris.obj", "hbm:textures/blocks/rbmk/rbmk_debris_burning.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "rbmk_debris_digamma")
-                // 1.7 RenderPribris.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(rbmk_debris = models/rbmk/debris.obj, rot 0) (icon-P2 2026-10-01)
+                // 1.7 RenderPribris.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(rbmk_debris = models/rbmk/debris.obj, rot 0)
                 .models(Models.parented("hbm:block/rbmk_debris_digamma", Slots.EMPTY))
                 .definition(MachineObjModel.of("hbm:models/rbmk/debris.obj", "hbm:textures/blocks/rbmk/rbmk_debris_digamma.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "rbmk_debris_radiating")
-                // 1.7 RenderPribris.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(rbmk_debris = models/rbmk/debris.obj, rot 0) (icon-P2 2026-10-01)
+                // 1.7 RenderPribris.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(rbmk_debris = models/rbmk/debris.obj, rot 0)
                 .models(Models.parented("hbm:block/rbmk_debris_radiating", Slots.EMPTY))
                 .definition(MachineObjModel.of("hbm:models/rbmk/debris.obj", "hbm:textures/blocks/rbmk/rbmk_debris_radiating.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
@@ -1560,7 +1560,7 @@ public final class ObjItemDeclarations {
                         ItemModels.custom("hbm:rbmk_fuel_column").with("side", "hbm:blocks/rbmk/rbmk_element_reasim_mod_side").with("top", "hbm:blocks/rbmk/rbmk_element_reasim_mod_top").with("inner", "hbm:blocks/rbmk/rbmk_element_reasim_mod_inner").with("fuel", "hbm:blocks/rbmk/rbmk_element_reasim_mod_fuel").with("scale", 0.35).with("yaw", 0).with("lift", -0.675))).register();
         Dejson.item(NS, "rbmk_gauge")
                 // 1.7 RBMKGauge.renderInventoryBlock in the 3D block-item frame; RBMKGaugeIcon builds it about the
-                // block corner and a half turn from 1.7, hence the centre offset and yaw 180 (icon-P2 2026-10-01)
+                // block corner and a half turn from 1.7, hence the centre offset and yaw 180
                 .definition(MachineObjModel.of("hbm:models/rbmk/gauge.obj", "hbm:textures/models/machines/rbmk_gauge.png")
                         .scale(1.0).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform().animation("rbmk_gauge")
                         .partTextures("Panel", "hbm:textures/blocks/rbmk/rbmk_display.png", "Needle", "hbm:textures/models/misc/white.png")
@@ -2005,12 +2005,12 @@ public final class ObjItemDeclarations {
                 .definition(ItemModels.special("hbm:item/machine_obj_base",
                         ItemModels.custom("hbm:rbmk_block_column").with("side", "hbm:blocks/rbmk/rbmk_storage_side").with("top", "hbm:blocks/rbmk/rbmk_storage_top").with("scale", 0.35).with("yaw", 0).with("lift", -0.675))).register();
         Dejson.item(NS, "red_barrel")
-                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel) (icon-P2 2026-10-01)
+                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel)
                 .definition(MachineObjModel.of("hbm:models/blocks/barrel.obj", "hbm:textures/blocks/barrel_red.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().exclude("Connector")
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "red_cable")
-                // 1.7 RenderCable.renderInventoryBlock: rotate(180, Y), scale(1.25), Core + posX/negX/posZ/negZ (icon-P2 2026-10-01)
+                // 1.7 RenderCable.renderInventoryBlock: rotate(180, Y), scale(1.25), Core + posX/negX/posZ/negZ
                 .definition(MachineObjModel.of("hbm:models/blocks/cable_neo.obj", "hbm:textures/models/blocks/cable_neo.png")
                         .scale(1.25).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform().exclude("posY", "negY", "CX", "CY", "CZ")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
@@ -2080,8 +2080,8 @@ public final class ObjItemDeclarations {
                         .guiTranslate(0.0, -3.75, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "silo_hatch")
                 // 1.7 ItemRenderLibraryDoors silo_hatch: Ry(90), Frame, then T(0,0.875,-1.875) Rx(-120) T(0,-0.875,1.875)
-                // and a further T(0,0.25,0) AFTER the turn, then Hatch: the hatch is an ordered pass (icon-P4 2026-10-01;
-                // rotateParts has no post-rotation translate, which left the icon ~0.45 px narrow)
+                // and a further T(0,0.25,0) AFTER the turn, then Hatch: the hatch is an ordered pass because
+                // rotateParts has no post-rotation translate (the icon would be ~0.45 px narrow)
                 .definition(MachineObjModel.of("hbm:models/doors/silo_hatch.obj", "hbm:textures/models/doors/silo_hatch.png").scale(1.0)
                         .ty(0.0).yaw(90.0).guiScale(2.0).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
@@ -2091,7 +2091,7 @@ public final class ObjItemDeclarations {
                                 .translateStep(0.0, -0.875, 1.875).translateStep(0.0, 0.25, 0.0))).oversizedInGui().register();
         Dejson.item(NS, "silo_hatch_large")
                 .definition(MachineObjModel.of("hbm:models/doors/silo_hatch_large.obj", "hbm:textures/models/doors/silo_hatch_large.png")
-                        // the Hatch is an ordered pass: 1.7 adds T(0,0.25,0) after the pivot turn (as silo_hatch, icon-P4)
+                        // the Hatch is an ordered pass: 1.7 adds T(0,0.25,0) after the pivot turn (as silo_hatch)
                         .scale(1.0).ty(0.0).yaw(90.0).guiScale(1.5).rawLegacyTransform()
                         .noCull().itemTranslate(1.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -2.0, 0.0).parts("Frame")
@@ -2110,7 +2110,7 @@ public final class ObjItemDeclarations {
                         .guiTranslate(0.0, -5.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "solar_mirror")
                 // 1.7 ItemRenderLibrary: inv translate(0, -3, 0) scale(8); common Base, then translate(0, 1, 0)
-                // rotate(45, 0, 0, -1) translate(0, -1, 0) Mirror (icon-P2 2026-10-01)
+                // rotate(45, 0, 0, -1) translate(0, -1, 0) Mirror
                 .definition(MachineObjModel.of("hbm:models/machines/solar_mirror.obj", "hbm:textures/models/machines/solar_mirror.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(8.0).rawLegacyTransform().noCull().parts("Base")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)
@@ -2118,60 +2118,60 @@ public final class ObjItemDeclarations {
                                 .translateStep(0.0, 1.0, 0.0).rotateStep(0.0, 0.0, -45.0).translateStep(0.0, -1.0, 0.0)))
                 .oversizedInGui().register();
         Dejson.item(NS, "spikes")
-                // 1.7 RenderSpikeBlock.renderInventoryBlock: translate(0, -0.5, 0) (icon-P2 2026-10-01)
+                // 1.7 RenderSpikeBlock.renderInventoryBlock: translate(0, -0.5, 0)
                 .definition(MachineObjModel.of("hbm:models/blocks/spikes.obj", "hbm:textures/blocks/spikes.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "spotlight_fluoro")
-                // 1.7 RenderLight.renderInventoryBlock: rotate(-90, Y), scale(1.5), renderPartWithIcon(model, getPartName(0)) (icon-P2 2026-10-01)
+                // 1.7 RenderLight.renderInventoryBlock: rotate(-90, Y), scale(1.5), renderPartWithIcon(model, getPartName(0))
                 .definition(MachineObjModel.of("hbm:models/lights/fluorescent_lamp.obj", "hbm:textures/blocks/fluorescent_lamp.png")
                         .scale(1.5).ty(0.0).yaw(-90.0).frame("block").rawLegacyTransform().noCull().exclude("FluoroCap", "FluoroMid")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "spotlight_fluoro_off")
-                // 1.7 RenderLight.renderInventoryBlock: rotate(-90, Y), scale(1.5), renderPartWithIcon(model, getPartName(0)) (icon-P2 2026-10-01)
+                // 1.7 RenderLight.renderInventoryBlock: rotate(-90, Y), scale(1.5), renderPartWithIcon(model, getPartName(0))
                 .definition(MachineObjModel.of("hbm:models/lights/fluorescent_lamp.obj", "hbm:textures/blocks/fluorescent_lamp_off.png")
                         .scale(1.5).ty(0.0).yaw(-90.0).frame("block").rawLegacyTransform().noCull().exclude("FluoroCap", "FluoroMid")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "spotlight_halogen")
-                // 1.7 RenderLight.renderInventoryBlock: rotate(-90, Y), scale(1.5), renderPartWithIcon(model, getPartName(0)) (icon-P2 2026-10-01)
+                // 1.7 RenderLight.renderInventoryBlock: rotate(-90, Y), scale(1.5), renderPartWithIcon(model, getPartName(0))
                 .definition(MachineObjModel.of("hbm:models/lights/flood_lamp.obj", "hbm:textures/blocks/flood_lamp.png")
                         .scale(1.5).ty(0.0).yaw(-90.0).frame("block").rawLegacyTransform().noCull().parts("FloodLamp")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "spotlight_halogen_off")
-                // 1.7 RenderLight.renderInventoryBlock: rotate(-90, Y), scale(1.5), renderPartWithIcon(model, getPartName(0)) (icon-P2 2026-10-01)
+                // 1.7 RenderLight.renderInventoryBlock: rotate(-90, Y), scale(1.5), renderPartWithIcon(model, getPartName(0))
                 .definition(MachineObjModel.of("hbm:models/lights/flood_lamp.obj", "hbm:textures/blocks/flood_lamp_off.png")
                         .scale(1.5).ty(0.0).yaw(-90.0).frame("block").rawLegacyTransform().noCull().parts("FloodLamp")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "spotlight_incandescent")
-                // 1.7 RenderLight.renderInventoryBlock: rotate(-90, Y), scale(1.5), renderPartWithIcon(model, getPartName(0)) (icon-P2 2026-10-01)
+                // 1.7 RenderLight.renderInventoryBlock: rotate(-90, Y), scale(1.5), renderPartWithIcon(model, getPartName(0))
                 .definition(MachineObjModel.of("hbm:models/lights/cage_lamp.obj", "hbm:textures/blocks/cage_lamp.png")
                         .scale(1.5).ty(0.0).yaw(-90.0).frame("block").rawLegacyTransform().noCull().parts("CageLamp")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "spotlight_incandescent_off")
-                // 1.7 RenderLight.renderInventoryBlock: rotate(-90, Y), scale(1.5), renderPartWithIcon(model, getPartName(0)) (icon-P2 2026-10-01)
+                // 1.7 RenderLight.renderInventoryBlock: rotate(-90, Y), scale(1.5), renderPartWithIcon(model, getPartName(0))
                 .definition(MachineObjModel.of("hbm:models/lights/cage_lamp.obj", "hbm:textures/blocks/cage_lamp_off.png")
                         .scale(1.5).ty(0.0).yaw(-90.0).frame("block").rawLegacyTransform().noCull().parts("CageLamp")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "steel_corner")
-                // 1.7 RenderSteelCorner.renderInventoryBlock: translate(-0.5), an L of plates on +x/+z; our OBJ is the 1/16-unit placed corner on -x/-z (icon-P2 2026-10-01)
+                // 1.7 RenderSteelCorner.renderInventoryBlock: translate(-0.5), an L of plates on +x/+z; our OBJ is the 1/16-unit placed corner on -x/-z
                 .definition(MachineObjModel.of("hbm:models/deco/steel_corner.obj", "hbm:textures/models/deco/steelcorner.png")
                         .scale(0.0625).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, -1.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "steel_poles")
-                // 1.7 RenderTapeBlock.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(pole / taperecorder) (icon-P2 2026-10-01)
+                // 1.7 RenderTapeBlock.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(pole / taperecorder)
                 .definition(MachineObjModel.of("hbm:models/blocks/pole.obj", "hbm:textures/blocks/steel_beam.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().noCull()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         // steel_roof: 1.7 ItemRenderDecoBlock declined INVENTORY (flat block icon) and drew ModelSteelRoof in hand and on
-        // the ground; declared through ItemRendererDeclarations.heldBlockIcon on its registration (icon-P4 2026-10-01)
+        // the ground; declared through ItemRendererDeclarations.heldBlockIcon on its registration
         // 1.7 RenderScaffoldBlock.renderInventoryBlock: glTranslated(0, -0.5, 0) centres the 0..1-tall OBJ and it is
         // drawn unrotated. The block-framed item path already centres the OBJ's bounds on the block centre, so
-        // that is ty 0 / yaw 0 here; the earlier ty -0.5 applied the centring twice (icon half a block low).
-        // 1.7 steel_scaffold metadata 0..3, one item per colour (ntm-next ids; History §19es-itemvariant)
+        // that is ty 0 / yaw 0 here; ty -0.5 would apply the centring twice (icon half a block low).
+        // 1.7 steel_scaffold metadata 0..3, one item per colour (ntm-next ids)
         for (String colour : new String[] {"steel", "red", "white", "yellow"}) {
             Dejson.item(NS, colour.equals("steel") ? "steel_scaffold" : "steel_scaffold_" + colour)
                     // 1.7 RenderScaffoldBlock.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(scaffold), in the 3D
-                    // block-item frame (icon-P2 2026-10-01)
+                    // block-item frame
                     .models(Model.parent("hbm:item/block_obj_context_legacy"))
                     .definition(MachineObjModel.of("hbm:models/blocks/scaffold.obj", "hbm:textures/blocks/scaffold_" + colour + ".png")
                             .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform()
@@ -2179,7 +2179,7 @@ public final class ObjItemDeclarations {
                     .oversizedInGui().register();
         }
         Dejson.item(NS, "steel_wall")
-                // 1.7 RenderSteelWall.renderInventoryBlock: translate(-0.5, -0.5, -0.9375), box z 0.875..1 (a plate on the origin); our OBJ is the 1/16-unit placed wall (icon-P2 2026-10-01)
+                // 1.7 RenderSteelWall.renderInventoryBlock: translate(-0.5, -0.5, -0.9375), box z 0.875..1 (a plate on the origin); our OBJ is the 1/16-unit placed wall
                 .definition(MachineObjModel.of("hbm:models/deco/steel_wall.obj", "hbm:textures/models/deco/steelwall.png")
                         .scale(0.0625).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, -1.0, 0.46875)).oversizedInGui().register();
@@ -2192,12 +2192,12 @@ public final class ObjItemDeclarations {
 
     private static void part12() {
         Dejson.item(NS, "taint_barrel")
-                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel) (icon-P2 2026-10-01)
+                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel)
                 .definition(MachineObjModel.of("hbm:models/blocks/barrel.obj", "hbm:textures/blocks/barrel_taint.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().exclude("Connector")
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "tape_recorder")
-                // 1.7 RenderTapeBlock.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(pole / taperecorder) (icon-P2 2026-10-01)
+                // 1.7 RenderTapeBlock.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(pole / taperecorder)
                 .definition(MachineObjModel.of("hbm:models/blocks/taperecorder.obj", "hbm:textures/blocks/deco_tape_recorder.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().noCull()
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
@@ -2290,7 +2290,7 @@ public final class ObjItemDeclarations {
                         .guiTranslate(0.0, -3.0, 0.0).exclude("Frame").overlayParts("Label")
                         .overlayTexture("hbm:textures/models/pheodoors/vault/label_101.png")).oversizedInGui().register();
         Dejson.item(NS, "vitrified_barrel")
-                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel) (icon-P2 2026-10-01)
+                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel)
                 .definition(MachineObjModel.of("hbm:models/blocks/barrel.obj", "hbm:textures/blocks/barrel_vitrified.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().exclude("Connector")
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
@@ -2300,7 +2300,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -4.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "watz")
-                // 1.7 ItemRenderLibrary: inv translate(0, -1, 0) scale(2) (icon-P2 2026-10-01)
+                // 1.7 ItemRenderLibrary: inv translate(0, -1, 0) scale(2)
                 .definition(MachineObjModel.of("hbm:models/reactors/watz.obj", "hbm:textures/models/machines/watz.png")
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(2.0).rawLegacyTransform()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -1.0, 0.0)).oversizedInGui().register();
@@ -2310,7 +2310,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -1.5, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "yellow_barrel")
-                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel) (icon-P2 2026-10-01)
+                // 1.7 RenderBarrel.renderInventoryBlock: translate(0, -0.5, 0), renderPartWithIcon(barrel, Barrel)
                 .definition(MachineObjModel.of("hbm:models/blocks/barrel.obj", "hbm:textures/blocks/barrel_yellow.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().exclude("Connector")
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();

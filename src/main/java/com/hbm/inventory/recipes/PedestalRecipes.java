@@ -1,5 +1,7 @@
 package com.hbm.inventory.recipes;
 
+import com.hbm.api.registry.NamedRegistry;
+import com.hbm.extprop.HbmPlayerProps;
 import com.hbm.inventory.recipes.loader.DataRecipeTable;
 import com.hbm.inventory.recipes.loader.TableCodecs;
 import com.mojang.datafixers.util.Either;
@@ -7,9 +9,20 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.Ids;
+import dev.golem.core.world.ItemStacks;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.function.IntPredicate;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 /**
  * 1.7 {@code PedestalRecipes}, as data: the ritual recipes whose sets the clay tablets reveal and the pedestal
@@ -38,8 +51,8 @@ public final class PedestalRecipes {
     public static final class PedestalExtraCondition {
 
         /** The ritual site: the moment and the players whose reputation the karma conditions read (within 20 blocks). */
-        public record Site(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos, float celestialAngle,
-                           int moonPhase, List<net.minecraft.world.entity.player.Player> nearbyPlayers) {}
+        public record Site(Level level, BlockPos pos, float celestialAngle,
+                           int moonPhase, List<Player> nearbyPlayers) {}
 
         @FunctionalInterface
         public interface Test {
@@ -52,16 +65,16 @@ public final class PedestalRecipes {
          */
         public record Icon(net.minecraft.resources.@org.jspecify.annotations.Nullable Identifier sheet, int u, int v) {}
 
-        public static final com.hbm.api.registry.NamedRegistry<PedestalExtraCondition> REGISTRY =
-                new com.hbm.api.registry.NamedRegistry<>("pedestal condition", PedestalExtraCondition::name);
+        public static final NamedRegistry<PedestalExtraCondition> REGISTRY =
+                new NamedRegistry<>("pedestal condition", PedestalExtraCondition::name);
 
         private static boolean night(Site site) {
             return site.celestialAngle() >= 0.35 && site.celestialAngle() <= 0.65;
         }
 
-        private static boolean karma(Site site, java.util.function.IntPredicate reputation) {
-            for (net.minecraft.world.entity.player.Player player : site.nearbyPlayers()) {
-                if (reputation.test(com.hbm.extprop.HbmPlayerProps.getReputation(player))) return true;
+        private static boolean karma(Site site, IntPredicate reputation) {
+            for (Player player : site.nearbyPlayers()) {
+                if (reputation.test(HbmPlayerProps.getReputation(player))) return true;
             }
             return false;
         }
@@ -79,11 +92,11 @@ public final class PedestalRecipes {
         /** By name: HBM's in lower case ({@code "full_moon"}), an addon's as registered. */
         public static final Codec<PedestalExtraCondition> CODEC = Codec.STRING.comapFlatMap(name -> {
             PedestalExtraCondition condition = REGISTRY.get(name);
-            if (condition == null) condition = REGISTRY.get(name.toUpperCase(java.util.Locale.ROOT));
+            if (condition == null) condition = REGISTRY.get(name.toUpperCase(Locale.ROOT));
             PedestalExtraCondition found = condition;
             return found != null ? DataResult.success(found) : DataResult.error(() -> "unknown pedestal condition " + name);
-        }, condition -> REGISTRY.get(condition.name().toUpperCase(java.util.Locale.ROOT)) == condition
-                ? condition.name().toLowerCase(java.util.Locale.ROOT) : condition.name());
+        }, condition -> REGISTRY.get(condition.name().toUpperCase(Locale.ROOT)) == condition
+                ? condition.name().toLowerCase(Locale.ROOT) : condition.name());
 
         private final String name;
         public final @org.jspecify.annotations.Nullable Icon icon;
@@ -212,21 +225,21 @@ public final class PedestalRecipes {
     /**
      * 1.7 {@code AStack.matchesRecipe(stack, true)} plus the pedestal's exact-count check: the item (or tag) must match and the stack must hold exactly the ingredient's count.
      */
-    public static boolean matches(Input input, net.minecraft.world.item.ItemStack stack) {
+    public static boolean matches(Input input, ItemStack stack) {
         if (stack.isEmpty() || stack.getCount() != input.count()) return false;
         String id = input.id();
         if (id.startsWith("#")) {
-            return stack.is(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM,
-                    dev.golem.core.Ids.parse(id.substring(1))));
+            return stack.is(TagKey.create(Registries.ITEM,
+                    Ids.parse(id.substring(1))));
         }
-        return dev.golem.core.world.ItemStacks.matchesItemId(stack, id);
+        return ItemStacks.matchesItemId(stack, id);
     }
 
     /** The recipe's product, or empty if its item is not registered in this port. */
-    public static net.minecraft.world.item.ItemStack output(PedestalRecipe recipe) {
-        net.minecraft.resources.Identifier id = dev.golem.core.Ids.parse(recipe.output);
-        if (!net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(id)) return net.minecraft.world.item.ItemStack.EMPTY;
-        return new net.minecraft.world.item.ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(id),
+    public static ItemStack output(PedestalRecipe recipe) {
+        net.minecraft.resources.Identifier id = Ids.parse(recipe.output);
+        if (!BuiltInRegistries.ITEM.containsKey(id)) return ItemStack.EMPTY;
+        return new ItemStack(BuiltInRegistries.ITEM.getValue(id),
                 recipe.outputCount);
     }
 }

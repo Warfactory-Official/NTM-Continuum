@@ -5,6 +5,7 @@ import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.recipes.HeatRecipes;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial;
@@ -49,7 +50,7 @@ public class MachineHeatBoilerIndustrial extends BlockMultiblockMachine implemen
                     return InteractionResult.FAIL;
                 }
                 FluidType type = identifier.getType(level, core.getX(), core.getY(), core.getZ(), stack);
-                if (com.hbm.inventory.recipes.HeatRecipes.hasBoilerRecipe(type)) {
+                if (HeatRecipes.hasBoilerRecipe(type)) {
                     boiler.tanks[0].setTankType(type);
                     boiler.setChanged();
                     player.sendSystemMessage(Component.literal("Changed type to ").withStyle(ChatFormatting.YELLOW)

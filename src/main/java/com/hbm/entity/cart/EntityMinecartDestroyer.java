@@ -6,6 +6,7 @@ import com.hbm.inventory.container.MenuCartDestroyer;
 import com.hbm.items.tool.ItemModMinecart;
 import com.hbm.items.tool.ItemModMinecart.EnumCartBase;
 import com.hbm.items.tool.ItemModMinecart.EnumMinecart;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -100,8 +101,8 @@ public class EntityMinecartDestroyer extends EntityMinecartContainerBase {
     private boolean matchesFilter(ItemStack stack) {
         for (int i = 0; i < EXACT_SLOTS; i++) {
             ItemStack filter = getItem(i);
-            // 1.7 compared item + damage; components are 26.2's spelling of that variant axis
-            if (!filter.isEmpty() && dev.golem.core.world.ItemStacks.sameItemAndData(filter, stack)) return true;
+            // 1.7 compared item + damage; components are 26.1's spelling of that variant axis
+            if (!filter.isEmpty() && ItemStacks.sameItemAndData(filter, stack)) return true;
         }
         for (int i = EXACT_SLOTS; i < FILTER_SLOTS; i++) {
             ItemStack filter = getItem(i);

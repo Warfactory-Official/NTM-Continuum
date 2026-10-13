@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerCoreInjector;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreInjector;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -11,7 +12,7 @@ import net.minecraft.world.entity.player.Inventory;
 /** The injector's panel: the two fuel tanks and the identifier bay that picks what each one carries. */
 public class GUICoreInjector extends GUIDFCBase<ContainerCoreInjector> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/dfc/gui_injector.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/dfc/gui_injector.png");
 
     public GUICoreInjector(ContainerCoreInjector menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 166);

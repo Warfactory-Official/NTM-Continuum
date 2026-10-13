@@ -1,5 +1,6 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.Constants;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.entity.IRadarDetectableNT;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
@@ -17,13 +18,16 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.mojang.serialization.Codec;
+import dev.golem.core.Ids;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.Tags;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.registry.Entities;
 import dev.golem.core.world.Raycasts;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -33,11 +37,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ambient.AmbientCreature;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -60,7 +67,7 @@ import com.hbm.sound.ModSounds;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * The shared turret brain — target acquisition, line of sight, aiming and the ammo/chip inventory.
+ * The shared turret brain, target acquisition, line of sight, aiming and the ammo/chip inventory.
  * Ported from 1.12.2's {@code TileEntityTurretBaseNT}.
  *
  * <p>Eleven slots: the biometry chip (0), nine ammo slots (1–9) and a battery (10). A turret only
@@ -70,16 +77,15 @@ import net.minecraft.sounds.SoundSource;
  * <p><b>Deviations from the fork.</b> The 1.12.2 target filter also matches {@code EntityBomber},
  * {@code EntityMissileCustom} and {@code EntityRailCarBase}; the current {@link EntityMissileBaseNT}
  * hierarchy covers the missile branch, while the bomber and rail-car branches are not ported yet.
- * Spent casings are likewise absent: this port's
- * {@code BulletConfig} carries no casing, so a turret that throws brass simply does not.
+ * Spent casings are absent too: this port's {@code BulletConfig} carries no casing.
  *
  * <p>The fork's redstone-over-radio surface is ten functions; this port carries the seven whose state
- * exists here. The other three — {@code toggleBlacklistMobFilter}, {@code addMobFilter} and
- * {@code removeMobFilter} — drive a per-entity-id target filter that is not ported, so they are absent
+ * exists here. The other three, {@code toggleBlacklistMobFilter}, {@code addMobFilter} and
+ * {@code removeMobFilter}, drive a per-entity-id target filter that is not ported, so they are absent
  * rather than accepted and dropped. {@code addWhitelist} also guards its list where 1.12.2 does not:
  * {@link #getWhitelist} answers null both for a missing chip and for a chip with an empty roster, so the
- * fork throws on the first name written to a fresh chip. Adding on null is the reading that makes the
- * command work, and a turret with no chip is still a no-op because {@link #addName} checks for one.
+ * fork throws on the first name written to a fresh chip. A turret with no chip is still a no-op because
+ * {@link #addName} checks for one.
  */
 public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         implements IEnergyReceiverMK2, IControlReceiver, MenuProvider, IRORInteractive {
@@ -94,7 +100,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
     private static final int MAX_CONTROL_NAME_LENGTH = 25;
     private static final int MAX_WHITELIST_ENTRIES = 64;
     private static final int MAX_MOB_FILTER_ENTRIES = 1024;
-    private static final java.util.Set<String> MISC_MOB_FILTER_IDS = java.util.Set.of(
+    private static final Set<String> MISC_MOB_FILTER_IDS = Set.of(
             "minecraft:iron_golem", "minecraft:snow_golem", "minecraft:villager", "minecraft:wandering_trader");
 
     private static final int[] AMMO_SLOTS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -328,7 +334,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
             if (e instanceof Player player) {
                 if (whitelist.contains(player.getScoreboardName())) return false;
             } else if (e instanceof Mob mob) {
-                net.minecraft.network.chat.Component name = mob.getCustomName();
+                Component name = mob.getCustomName();
                 if (name != null && whitelist.contains(name.getString())) return false;
             }
         }
@@ -468,7 +474,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
     }
 
     protected static Identifier turretGui(String name) {
-        return dev.golem.core.Ids.of(com.hbm.Constants.MOD_ID, "textures/gui/weapon/gui_turret_" + name + ".png");
+        return Ids.of(Constants.MOD_ID, "textures/gui/weapon/gui_turret_" + name + ".png");
     }
 
     /** The tank a fuel-burning turret shows in its GUI, or null for the rest. */
@@ -556,7 +562,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
     private static boolean isValidMobFilter(String id) {
         if (id.isEmpty() || id.length() > 128) return false;
         try {
-            net.minecraft.world.entity.EntityType<?> type = dev.golem.core.registry.Entities.byId(id);
+            EntityType<?> type = Entities.byId(id);
             return isFilterableMob(id, type);
         } catch (RuntimeException ignored) {
             return false;
@@ -564,14 +570,14 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
     }
 
     /** 26.1 reports {@code Entity.class} from EntityType, so category plus the vanilla MISC mobs is authoritative. */
-    public static boolean isFilterableMob(String id, net.minecraft.world.entity.EntityType<?> type) {
-        return type != null && (type.getCategory() != net.minecraft.world.entity.MobCategory.MISC
+    public static boolean isFilterableMob(String id, EntityType<?> type) {
+        return type != null && (type.getCategory() != MobCategory.MISC
                 || MISC_MOB_FILTER_IDS.contains(id));
     }
 
     @Override
     public boolean hasPermission(Player player) {
-        // Turret controls intentionally retain the old proximity-based remote policy.
+        // Turret controls retain the old proximity-based remote policy.
         return stillValid(player);
     }
 
@@ -856,7 +862,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         playLidSound(ModSounds.CLOSE_C.get());
     }
 
-    private void playLidSound(net.minecraft.sounds.SoundEvent sound) {
+    private void playLidSound(SoundEvent sound) {
         if (level == null || level.isClientSide()) return;
         level.playSound(null, worldPosition, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
     }

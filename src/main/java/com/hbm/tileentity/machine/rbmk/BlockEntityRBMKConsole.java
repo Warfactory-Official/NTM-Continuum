@@ -1,12 +1,16 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.MenuRBMKConsole;
+import com.hbm.tileentity.IRelocatable;
 import com.hbm.tileentity.ModRBMKBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -21,12 +25,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Scans the linked 15 by 15 reactor grid and controls its columns. */
-public class BlockEntityRBMKConsole extends TileEntityMachineBase implements IControlReceiver, MenuProvider, IRBMKTicking, com.hbm.tileentity.IRelocatable {
+public class BlockEntityRBMKConsole extends TileEntityMachineBase implements IControlReceiver, MenuProvider, IRBMKTicking, IRelocatable {
 
     /** A sub-level move carried this console; it keeps watching its reactor when the reactor was carried too. */
     @Override
-    public void relocate(dev.golem.core.world.SubLevels.Move move) {
-        net.minecraft.core.BlockPos target = com.hbm.tileentity.IRelocatable.follow(move, new net.minecraft.core.BlockPos(targetX, targetY, targetZ));
+    public void relocate(SubLevels.Move move) {
+        BlockPos target = IRelocatable.follow(move, new BlockPos(targetX, targetY, targetZ));
         setTarget(target.getX(), target.getY(), target.getZ());
     }
 
@@ -57,12 +61,12 @@ public class BlockEntityRBMKConsole extends TileEntityMachineBase implements ICo
 
     @Override
     public void tickClient() {
-        com.hbm.blocks.multiblock.BlockMultiblockMachine.removeIfAtCell(this); // stale pre-fix cell desk
+        BlockMultiblockMachine.removeIfAtCell(this); // stale pre-fix cell desk
     }
 
     @Override
     public void tickServer() {
-        if (com.hbm.blocks.multiblock.BlockMultiblockMachine.removeIfAtCell(this)) return; // stale pre-fix cell desk
+        if (BlockMultiblockMachine.removeIfAtCell(this)) return; // stale pre-fix cell desk
         if (++cadence % 10 != 0) {
             return;
         }
@@ -264,7 +268,7 @@ public class BlockEntityRBMKConsole extends TileEntityMachineBase implements ICo
         targetZ = input.getIntOr("tZ", 0);
         rotation = (byte) input.getIntOr("rotation", 0);
         for (int i = 0; i < screens.length; i++) {
-            screens[i].type = com.hbm.util.SavedIds.getEnum(input, "t" + i, ScreenType.VALUES[0]);
+            screens[i].type = SavedIds.getEnum(input, "t" + i, ScreenType.VALUES[0]);
             screens[i].columns = boxed(input.getIntArrayOr("s" + i, EMPTY_INT));
         }
     }
@@ -277,7 +281,7 @@ public class BlockEntityRBMKConsole extends TileEntityMachineBase implements ICo
         output.putInt("tZ", targetZ);
         output.putInt("rotation", rotation);
         for (int i = 0; i < screens.length; i++) {
-            com.hbm.util.SavedIds.putEnum(output, "t" + i, screens[i].type); // by name, never an ordinal
+            SavedIds.putEnum(output, "t" + i, screens[i].type); // by name, never an ordinal
             int[] values = new int[screens[i].columns.length];
             for (int j = 0; j < values.length; j++) {
                 values[j] = screens[i].columns[j];

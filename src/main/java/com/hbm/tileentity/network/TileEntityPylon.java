@@ -1,5 +1,6 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,6 +37,6 @@ public class TileEntityPylon extends TileEntityPylonBase {
     /** 1.7 lists the four horizontal neighbours of the foot as its cable connections. */
     @Override
     protected int getCellMask(int index) {
-        return com.hbm.blocks.multiblock.BlockMultiblockCore.MASK_HORIZONTAL;
+        return BlockMultiblockCore.MASK_HORIZONTAL;
     }
 }

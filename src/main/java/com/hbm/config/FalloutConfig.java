@@ -1,9 +1,23 @@
 package com.hbm.config;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.hbm.Constants;
+import com.hbm.util.SavedIds;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.Ids;
 import dev.golem.core.world.Compat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import com.hbm.blocks.ModBlocks;
@@ -11,6 +25,8 @@ import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModNuclearBlocks;
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.blocks.generic.BlockSellafieldSlaked;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
@@ -24,15 +40,15 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 /**
  * The fallout block-transform table, 1.7's {@code FalloutConfigJSON} ({@code hbmFallout.json} there, a datapack folder
  * here): {@code data/<ns>/fallout_transform/<name>.json}, each {@code {"priority": 0, "entries": [...]}}.
- * {@code EntityFalloutRain} walks the entries in order per block — first entry whose {@code eval} returns non-null wins
- * — so files are read highest {@code priority} first (then by id), each file's entries in order. HBM's defaults are
+ * {@code EntityFalloutRain} walks the entries in order per block: the first entry whose {@code eval} returns non-null wins.
+ * So files are read highest {@code priority} first (then by id), each file's entries in order. HBM's defaults are
  * {@code data/hbm/fallout_transform/default.json} at priority 0; an addon adds rules ahead of them with a higher priority,
  * or replaces the file. GameTest {@code value_map_fallout_transform} pins the defaults to the port's 1.7 table.
  *
  * <p>An entry matches by exact {@code state}, {@code block}, block {@code tag} and/or a named {@code preset} (a
- * predicate registered with {@link #registerPreset}; the 1.12 {@code Material} matchers became presets: wood material
- * → {@code hbm:ignited_by_lava}, plants/vines → {@code hbm:vegetation}, the ROCK/IRON/SAND/GROUND terrain catch-all →
- * {@code hbm:solid_terrain} (excluding grass/mycelium, which the old GRASS-material entry handled with its own ≤45%
+ * predicate registered with {@link #registerPreset}; the 1.12 {@code Material} matchers are presets: wood material
+ * is {@code hbm:ignited_by_lava}, plants and vines are {@code hbm:vegetation}, and the ROCK/IRON/SAND/GROUND
+ * terrain catch-all is {@code hbm:solid_terrain} (excluding grass/mycelium, which the old GRASS-material entry handled with its own ≤45%
  * rings, {@code hbm:grass_like})). The catch-all stands for the four 1.7 materials: an opaque block a pickaxe or shovel
  * mines, except ice, snow and the redstone lamp (1.7's ice, packedIce, craftedSnow and redstoneLight); wool, TNT, gourds
  * and sponges are not tool-mined that way and fall out too. Every specific matcher stays ahead of it.
@@ -48,7 +64,7 @@ public final class FalloutConfig {
 
     private static volatile List<FalloutEntry> entries = List.of();
 
-    private static final java.util.Map<String, Predicate<BlockState>> PRESETS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, Predicate<BlockState>> PRESETS = new ConcurrentHashMap<>();
 
     static {
         registerPreset("hbm:ignited_by_lava", BlockState::ignitedByLava);
@@ -57,8 +73,8 @@ public final class FalloutConfig {
         // 1.7 Material.rock / iron / sand / ground: what a pickaxe or shovel mines, opaque, without 1.7's other materials
         // that modern tools also mine (ice and packed ice, craftedSnow and snow, redstoneLight)
         registerPreset("hbm:solid_terrain", state -> Compat.isSolidRender(state)
-                && (state.is(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE) || state.is(net.minecraft.tags.BlockTags.MINEABLE_WITH_SHOVEL))
-                && !state.is(net.minecraft.tags.BlockTags.ICE) && !state.is(net.minecraft.tags.BlockTags.SNOW)
+                && (state.is(BlockTags.MINEABLE_WITH_PICKAXE) || state.is(BlockTags.MINEABLE_WITH_SHOVEL))
+                && !state.is(BlockTags.ICE) && !state.is(BlockTags.SNOW)
                 && !state.is(Blocks.REDSTONE_LAMP)
                 && !(state.getBlock() instanceof GrassBlock) && !state.is(Blocks.MYCELIUM));
         registerPreset("hbm:grass_like", state -> state.getBlock() instanceof GrassBlock || state.is(Blocks.MYCELIUM));
@@ -75,7 +91,7 @@ public final class FalloutConfig {
     }
 
     /** {@link dev.golem.core.data.DataFiles} consumer for {@link #FOLDER}. */
-    public static void apply(java.util.Map<String, com.google.gson.JsonElement> files) {
+    public static void apply(Map<String, JsonElement> files) {
         record File(String id, int priority, List<FalloutEntry> entries) {}
         List<File> read = new ArrayList<>();
         files.forEach((id, json) -> {
@@ -83,10 +99,10 @@ public final class FalloutConfig {
                 TransformFile file = read(json);
                 read.add(new File(id, file.priority(), file.entries()));
             } catch (RuntimeException e) {
-                com.hbm.Constants.LOG.error("Fallout transform file {} is broken, skipping it: {}", id, e.getMessage());
+                Constants.LOG.error("Fallout transform file {} is broken, skipping it: {}", id, e.getMessage());
             }
         });
-        read.sort(java.util.Comparator.comparingInt(File::priority).reversed().thenComparing(File::id));
+        read.sort(Comparator.comparingInt(File::priority).reversed().thenComparing(File::id));
         List<FalloutEntry> all = new ArrayList<>();
         for (File file : read) all.addAll(file.entries());
         entries = Collections.unmodifiableList(all);
@@ -96,12 +112,12 @@ public final class FalloutConfig {
     public record TransformFile(int priority, List<FalloutEntry> entries) {}
 
     /** Reads one file ({@link #apply}); {@code priority} defaults to 0. */
-    public static TransformFile read(com.google.gson.JsonElement json) {
-        com.google.gson.JsonObject object = json.getAsJsonObject();
+    public static TransformFile read(JsonElement json) {
+        JsonObject object = json.getAsJsonObject();
         int priority = object.has("priority") ? object.get("priority").getAsInt() : 0;
         List<FalloutEntry> list = new ArrayList<>();
-        for (com.google.gson.JsonElement element : object.getAsJsonArray("entries")) {
-            var result = CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, element);
+        for (JsonElement element : object.getAsJsonArray("entries")) {
+            var result = CODEC.parse(JsonOps.INSTANCE, element);
             if (result.result().isEmpty()) throw new IllegalArgumentException(
                     result.error().map(e -> e.message()).orElse("?"));
             list.add(result.result().get());
@@ -110,12 +126,12 @@ public final class FalloutConfig {
     }
 
     /** The inverse of {@link #read}: writes one file (the build-time data source's encoder). */
-    public static com.google.gson.JsonElement write(TransformFile file) {
-        com.google.gson.JsonObject object = new com.google.gson.JsonObject();
+    public static JsonElement write(TransformFile file) {
+        JsonObject object = new JsonObject();
         object.addProperty("priority", file.priority());
-        com.google.gson.JsonArray entries = new com.google.gson.JsonArray();
+        JsonArray entries = new JsonArray();
         for (FalloutEntry entry : file.entries()) {
-            var result = CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, entry);
+            var result = CODEC.encodeStart(JsonOps.INSTANCE, entry);
             if (result.result().isEmpty()) throw new IllegalArgumentException(
                     result.error().map(e -> e.message()).orElse("?"));
             entries.add(result.result().get());
@@ -124,39 +140,39 @@ public final class FalloutConfig {
         return object;
     }
 
-    private static final com.mojang.serialization.Codec<BlockState> STATE =com.mojang.serialization.Codec.STRING.comapFlatMap(
+    private static final Codec<BlockState> STATE =Codec.STRING.comapFlatMap(
             name -> {
-                BlockState state = com.hbm.util.SavedIds.stateFromName(name, null);
-                return state != null ? com.mojang.serialization.DataResult.success(state)
-                        : com.mojang.serialization.DataResult.error(() -> "Unknown block state " + name);
-            }, com.hbm.util.SavedIds::stateName);
+                BlockState state = SavedIds.stateFromName(name, null);
+                return state != null ? DataResult.success(state)
+                        : DataResult.error(() -> "Unknown block state " + name);
+            }, SavedIds::stateName);
 
-    private static final com.mojang.serialization.Codec<WeightedState> WEIGHTED = com.mojang.serialization.codecs.RecordCodecBuilder.create(i -> i.group(
+    private static final Codec<WeightedState> WEIGHTED = RecordCodecBuilder.create(i -> i.group(
             STATE.fieldOf("state").forGetter(WeightedState::state),
-            com.mojang.serialization.Codec.INT.optionalFieldOf("weight", 1).forGetter(WeightedState::weight)
+            Codec.INT.optionalFieldOf("weight", 1).forGetter(WeightedState::weight)
     ).apply(i, WeightedState::new));
 
     /** One rule as JSON. */
-    public static final com.mojang.serialization.Codec<FalloutEntry> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.create(i -> i.group(
-            STATE.optionalFieldOf("state").forGetter(e -> java.util.Optional.ofNullable(e.matchState)),
-            com.mojang.serialization.Codec.STRING.optionalFieldOf("block").forGetter(e -> java.util.Optional.ofNullable(e.matchBlock)
-                    .map(b -> net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).toString())),
-            com.mojang.serialization.Codec.STRING.optionalFieldOf("tag").forGetter(e -> java.util.Optional.ofNullable(e.matchTag).map(t -> t.location().toString())),
-            com.mojang.serialization.Codec.STRING.optionalFieldOf("preset").forGetter(e -> java.util.Optional.ofNullable(e.matchPreset)),
-            com.mojang.serialization.Codec.BOOL.optionalFieldOf("opaque", false).forGetter(e -> e.matchesOpaque),
+    public static final Codec<FalloutEntry> CODEC = RecordCodecBuilder.create(i -> i.group(
+            STATE.optionalFieldOf("state").forGetter(e -> Optional.ofNullable(e.matchState)),
+            Codec.STRING.optionalFieldOf("block").forGetter(e -> Optional.ofNullable(e.matchBlock)
+                    .map(b -> BuiltInRegistries.BLOCK.getKey(b).toString())),
+            Codec.STRING.optionalFieldOf("tag").forGetter(e -> Optional.ofNullable(e.matchTag).map(t -> t.location().toString())),
+            Codec.STRING.optionalFieldOf("preset").forGetter(e -> Optional.ofNullable(e.matchPreset)),
+            Codec.BOOL.optionalFieldOf("opaque", false).forGetter(e -> e.matchesOpaque),
             WEIGHTED.listOf().optionalFieldOf("primary", List.of()).forGetter(e -> e.primaryBlocks),
             WEIGHTED.listOf().optionalFieldOf("secondary", List.of()).forGetter(e -> e.secondaryBlocks),
-            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("primary_chance", 1D).forGetter(e -> e.primaryChance),
-            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("min", 0D).forGetter(e -> e.minDist),
-            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("max", 100D).forGetter(e -> e.maxDist),
-            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("falloff_start", 0.9D).forGetter(e -> e.falloffStart),
-            com.mojang.serialization.Codec.BOOL.optionalFieldOf("solid", false).forGetter(e -> e.solid),
-            com.mojang.serialization.Codec.BOOL.optionalFieldOf("preserve_axis", false).forGetter(e -> e.preserveAxis)
+            Codec.DOUBLE.optionalFieldOf("primary_chance", 1D).forGetter(e -> e.primaryChance),
+            Codec.DOUBLE.optionalFieldOf("min", 0D).forGetter(e -> e.minDist),
+            Codec.DOUBLE.optionalFieldOf("max", 100D).forGetter(e -> e.maxDist),
+            Codec.DOUBLE.optionalFieldOf("falloff_start", 0.9D).forGetter(e -> e.falloffStart),
+            Codec.BOOL.optionalFieldOf("solid", false).forGetter(e -> e.solid),
+            Codec.BOOL.optionalFieldOf("preserve_axis", false).forGetter(e -> e.preserveAxis)
     ).apply(i, (state, block, tag, preset, opaque, primary, secondary, chance, min, max, falloff, solid, axis) -> {
         FalloutEntry e = FalloutEntry.builder();
         state.ifPresent(e::matchesState);
-        block.ifPresent(b -> e.matchesBlock(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getOptional(dev.golem.core.Ids.parse(b)).orElse(net.minecraft.world.level.block.Blocks.AIR)));
-        tag.ifPresent(t -> e.matchesTag(TagKey.create(net.minecraft.core.registries.Registries.BLOCK, dev.golem.core.Ids.parse(t))));
+        block.ifPresent(b -> e.matchesBlock(BuiltInRegistries.BLOCK.getOptional(Ids.parse(b)).orElse(Blocks.AIR)));
+        tag.ifPresent(t -> e.matchesTag(TagKey.create(Registries.BLOCK, Ids.parse(t))));
         preset.ifPresent(e::matchesPreset);
         e.opaque(opaque);
         e.primaryBlocks.addAll(primary);
@@ -172,7 +188,7 @@ public final class FalloutConfig {
     record WeightedState(BlockState state, int weight) {}
 
     /**
-     * One transform rule — the 1.12.2 {@code FalloutEntry}, with the matcher generalised to
+     * One transform rule, the 1.12.2 {@code FalloutEntry}, with the matcher generalised to
      * exact-state / block / tag / predicate.
      */
     public static final class FalloutEntry {
@@ -255,12 +271,12 @@ public final class FalloutConfig {
                 return null;
             }
             // sellafite bedrock never converts into anything else
-            if (originalBlock == com.hbm.blocks.ModFalloutBlocks.sellafield_bedrock.get()
+            if (originalBlock == ModFalloutBlocks.sellafield_bedrock.get()
                     && conversionBlock != originalBlock) {
                 return null;
             }
             // the world floor only converts to sellafite bedrock (the old y == 0 guard)
-            if (y == bottomY && conversionBlock != com.hbm.blocks.ModFalloutBlocks.sellafield_bedrock.get()) {
+            if (y == bottomY && conversionBlock != ModFalloutBlocks.sellafield_bedrock.get()) {
                 return null;
             }
 

@@ -63,7 +63,7 @@ public final class BobbleFigure {
             case "UFFR" -> Body.FUMO;
             case "DRILLGON" -> Body.DRILLGON;
             case "LEAFIA" -> Body.LEAFIA;
-            case "MOVBLOCK", "HACKER6329", "EOS" -> Body.SKIN; // old-hbm skinUuid != null
+            case "MOVBLOCK", "HACKER6329", "EOS" -> Body.SKIN; // 1.12.2 skinUuid != null
             default -> Body.GUY;
         };
     }

@@ -27,6 +27,7 @@ import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.GemBER;
+import java.awt.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
@@ -257,7 +258,7 @@ public class CannerySILEX extends CanneryBase {
                 int color = wave.guiColor;
                 if (color == 0) {
                     long time = Minecraft.getInstance().level != null ? Minecraft.getInstance().level.getGameTime() : 0L;
-                    color = java.awt.Color.HSBtoRGB(time / 50.0F, 0.5F, 0.1F) & 16777215;
+                    color = Color.HSBtoRGB(time / 50.0F, 0.5F, 0.1F) & 16777215;
                 }
                 state.color = color;
             }

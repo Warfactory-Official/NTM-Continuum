@@ -9,6 +9,7 @@ import com.mojang.math.Axis;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatEntityRenderState;
 import dev.golem.core.render.CompatEntityRenderer;
+import dev.golem.core.render.CompatItemRenderState;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -83,6 +84,6 @@ public class RenderTrainCargoTram<T extends EntityRailCarBase> extends CompatEnt
         public double offsetX, offsetY, offsetZ;
         public float yaw, pitch;
         public int occupiedSlots;
-        public final dev.golem.core.render.CompatItemRenderState crate = new dev.golem.core.render.CompatItemRenderState();
+        public final CompatItemRenderState crate = new CompatItemRenderState();
     }
 }

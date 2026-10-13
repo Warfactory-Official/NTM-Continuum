@@ -1,11 +1,13 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.config.PotionConfig;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMedicineItems;
 import com.hbm.potion.ModEffects;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.Effects;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -23,7 +25,7 @@ public final class MedicineGameTests {
 
     private MedicineGameTests() {}
 
-    private static final List<dev.golem.core.registry.RegistryObject<? extends Item>> ITEMS = List.of(
+    private static final List<RegistryObject<? extends Item>> ITEMS = List.of(
             ModMedicineItems.iv_empty,
             ModMedicineItems.syringe_awesome, ModMedicineItems.syringe_antidote,
             ModMedicineItems.syringe_poison, ModMedicineItems.syringe_metal_medx,
@@ -62,7 +64,7 @@ public final class MedicineGameTests {
         ModMedicineItems.radx.get().finishUsingItem(new ItemStack(ModMedicineItems.radx.get()), player.level(), player);
         assertEffect(helper, player, ModEffects.RADX.get(), 3 * 60 * 20, 0, "Rad-X");
         // 1.7 PotionConfig.potionSickness defaults OFF: pills, syringes and the canteen apply none
-        helper.assertTrue(com.hbm.config.PotionConfig.potionSickness == 0, "potion sickness defaults off, as 1.7");
+        helper.assertTrue(PotionConfig.potionSickness == 0, "potion sickness defaults off, as 1.7");
         helper.assertTrue(!Effects.hasRegistered(player, ModEffects.POTION_SICKNESS.get()),
                 "a pill applies no potion sickness at the 1.7 default");
         ItemStack stim = new ItemStack(ModMedicineItems.syringe_metal_stimpak.get());
@@ -71,12 +73,12 @@ public final class MedicineGameTests {
         helper.assertTrue(!Effects.hasRegistered(player, ModEffects.POTION_SICKNESS.get()),
                 "a syringe applies no potion sickness at the 1.7 default");
         // "NORMAL" routes the same call through VersatileConfig: five seconds
-        com.hbm.config.PotionConfig.potionSickness = 1;
+        PotionConfig.potionSickness = 1;
         try {
             ModMedicineItems.radx.get().finishUsingItem(new ItemStack(ModMedicineItems.radx.get()), player.level(), player);
             assertEffect(helper, player, ModEffects.POTION_SICKNESS.get(), 5 * 20, 0, "pill sickness when enabled");
         } finally {
-            com.hbm.config.PotionConfig.potionSickness = 0;
+            PotionConfig.potionSickness = 0;
         }
         Effects.removeRegistered(player, ModEffects.POTION_SICKNESS.get());
 

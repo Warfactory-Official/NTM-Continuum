@@ -34,7 +34,7 @@ import org.jspecify.annotations.Nullable;
  * <p>1.12.2 gives all four cells a block entity through {@code BlockDummyable}; here the three
  * non-core cells are folded {@link BlockTurretPad}s, so a turret costs one block entity rather than
  * four. The shape is one flat half-block for every cell, matching 1.12.2's single constant
- * {@code getBoundingBox} — no facing, cell or open-state term.
+ * {@code getBoundingBox}: no facing, cell or open-state term.
  */
 public abstract class TurretBaseNT extends BlockMultiblockCore implements IEnergyConnectorBlock {
 
@@ -59,7 +59,7 @@ public abstract class TurretBaseNT extends BlockMultiblockCore implements IEnerg
     /**
      * 1.12.2's {@code TileEntityTurretBaseNT.updateConnections} spells its direction reversed, so at
      * placement SOUTH the pad grows in -x/-z, and two of its eight plug positions land on the core
-     * itself — which is what {@link #coreMask()} answers for.
+     * itself, which is what {@link #coreMask()} answers for.
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
@@ -94,7 +94,7 @@ public abstract class TurretBaseNT extends BlockMultiblockCore implements IEnerg
 
     /**
      * Power reaches the core through whichever pad cell the cable touches, so the check runs on the
-     * block rather than a per-cell block entity — {@link BlockTurretPad} answers with the same call.
+     * block rather than a per-cell block entity; {@link BlockTurretPad} answers with the same call.
      */
     static boolean padConnects(BlockGetter world, BlockPos pos, ForgeDirection dir) {
         if (!(world instanceof Level level) || dir == ForgeDirection.UNKNOWN) return false;
@@ -117,9 +117,9 @@ public abstract class TurretBaseNT extends BlockMultiblockCore implements IEnerg
     }
 
     /**
-     * Playtest 2026-10-12 (user): a gun turret may not be placed on top of another gun turret's half-block pad. 1.7 had
-     * no such rule (its space check only reads the footprint), but the second turret then hung half a block above the
-     * first, so the placement and its highlight refuse it. Port-only restriction, decided from the playtest report.
+     * A gun turret may not be placed on top of another gun turret's half-block pad. 1.7 had no such rule (its space
+     * check only reads the footprint), but the second turret then hangs half a block above the first, so the
+     * placement and its highlight refuse it. Port-only restriction.
      */
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {

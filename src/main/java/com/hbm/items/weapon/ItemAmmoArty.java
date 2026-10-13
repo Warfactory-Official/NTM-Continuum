@@ -23,6 +23,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ItemEnumMulti;
 import com.hbm.items.ModDataComponents;
 import com.hbm.particle.helper.ExplosionCreator;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.ModEffects;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.world.CompatTooltipContext;
@@ -33,6 +34,7 @@ import java.util.function.Supplier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -50,8 +52,7 @@ import net.minecraft.world.phys.Vec3;
  * damage; here the behaviour lives on the enum constants and each shell is its own item, named as ntm-next names
  * it ({@link ArtilleryShellType#name}: {@code ammo_arty}, {@code ammo_arty_he}, ...).
  *
- * <p>Spent casings are absent by standing project decision: this port's ammunition carries no casing, so
- * the shells declare none. The chemical shells push 1.7's heavy-metal and poison loads into the pollution
+ * <p>This port's ammunition carries no spent casing, so the shells declare none. The chemical shells push 1.7's heavy-metal and poison loads into the pollution
  * system at the struck block ({@link #polluteAt}).
  */
 public class ItemAmmoArty extends ItemEnumMulti {
@@ -174,7 +175,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 playBoom(shell);
                 standardExplosion(shell, hit, 10F, 3F, false);
                 ExplosionLarge.spawnShrapnels(level, where.x, where.y, where.z, 15);
-                if (level instanceof net.minecraft.server.level.ServerLevel server) // 1.7: (int)-truncated hit vector
+                if (level instanceof ServerLevel server) // 1.7: (int)-truncated hit vector
                     ExplosionChaos.igniteAllBlocks(server, (int) where.x, (int) where.y, (int) where.z, 12);
 
                 int radius = 15;
@@ -189,7 +190,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
 
                 // 1.7: five haze clouds scattered 10 blocks (gaussian) around the hit, sent 150 blocks around the shell
                 for (int i = 0; i < 5; i++) {
-                    com.hbm.particle.helper.HbmEffectNT.Haze.sendAround(level,
+                    HbmEffectNT.Haze.sendAround(level,
                             where.x + level.getRandom().nextGaussian() * 10, where.y,
                             where.z + level.getRandom().nextGaussian() * 10, null, x, y, z, 150D);
                 }
@@ -344,7 +345,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
 
     /**
      * Splits a carrier shell into submunitions once it is past apogee and within {@code splitHeight} of
-     * its target altitude — so a cluster opens on the way down, not on the way up.
+     * its target altitude, so a cluster opens on the way down, not on the way up.
      */
     public static void standardCluster(EntityArtilleryShell shell, ArtilleryShellType clusterType, int amount,
             double splitHeight, double deviation) {

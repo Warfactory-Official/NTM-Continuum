@@ -7,10 +7,12 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineIntake;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -42,13 +44,13 @@ public class MachineIntake extends BlockMultiblockMachine implements IEnergyConn
     @Override public int getOffset() { return 0; }
 
     @Override
-    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineIntake intake)) return null;
 
         List<String> lines = List.of(
                 (intake.isMotorRunning() ? "§a" : "§c") + "Power: "
-                        + com.hbm.lib.Library.getShortNumber(intake.power) + "HE",
+                        + Library.getShortNumber(intake.power) + "HE",
                 "§c<- §r" + intake.compair.getTankType().getDisplayNameString() + ": "
                         + intake.compair.getFill() + "/" + intake.compair.getMaxFill() + "mB");
         return new ILookOverlay.Data(Component.translatable("block.hbm.machine_intake").getString(),

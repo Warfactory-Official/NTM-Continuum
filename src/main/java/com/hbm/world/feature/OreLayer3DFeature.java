@@ -14,7 +14,7 @@ import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 /**
- * The 3D noise ore layers — 1.12.2's {@code OreLayer3D}, registered three times in
+ * The 3D noise ore layers, 1.12.2's {@code OreLayer3D}, registered three times in
  * {@code MainRegistry} in this exact order:
  * <pre>
  *   id 0  hematite   scaleH 0.04  scaleV 0.25  threshold 230
@@ -24,7 +24,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
  *
  * <p>Three independent Perlin fields are sampled per cell and <b>multiplied</b>; the cell becomes the
  * resource stone when {@code nX · nY · nZ > threshold}. Because it is a triple product of unnormalised
- * noise, the thresholds are in the hundreds — see {@link LegacyPerlinNoise} for why that matters.
+ * noise, the thresholds are in the hundreds, see {@link LegacyPerlinNoise} for why that matters.
  *
  * <pre>
  *   nX = noiseX(y · scaleV, z · scaleH)
@@ -32,19 +32,19 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
  *   nZ = noiseX(y · scaleV, (chunkZ + 8 + xOff) · scaleH)     // sic, see below
  * </pre>
  *
- * <p><b>The 1.7 sampling bug, ported on purpose.</b> 1.7.10 fills {@code cacheX[o][y]} from noiseX at the
- * column's z and {@code cacheZ[o][y]} from noiseZ at its x, then reads {@code nz = cacheX[ox][y]}: the
- * "z" factor is noiseX again, taken at the z-coordinate the x offset indexes, and noiseZ is built but never
- * read. The ore bodies of every 1.7 world come from that product, so the port reproduces it
- * (AGENTS.md section 3); the noiseZ generator is still constructed so nothing else shifts. History §19ej-6.
+ * <p><b>The 1.7 sampling bug is ported (AGENTS.md section 3).</b> 1.7.10 fills {@code cacheX[o][y]} from
+ * noiseX at the column's z and {@code cacheZ[o][y]} from noiseZ at its x, then reads {@code nz = cacheX[ox][y]}:
+ * the "z" factor is noiseX again, taken at the z-coordinate the x offset indexes, and noiseZ is built but never
+ * read. The ore bodies of every 1.7 world come from that product. The noiseZ generator is still constructed
+ * so nothing else shifts.
  *
  * <p>The layers span y 6–64 over the chunk's +8 decoration offset, and only replace solid rock that
  * passes the standard stone predicate.
  *
- * <p><b>Deliberate fix vs upstream:</b> the noise seed offset was {@code seed + 101/102/103 + id},
- * where {@code id} came from a static counter incremented at registration. Reordering the three
- * registrations therefore silently changed everyone's world. Each layer now carries its explicit
- * upstream id (0/1/2) so generation is order-independent while producing the same fields.
+ * <p><b>Fix vs upstream:</b> upstream's noise seed offset is {@code seed + 101/102/103 + id}, where {@code id}
+ * comes from a static counter incremented at registration, so reordering the registrations changes the world.
+ * Each layer here carries its explicit upstream id (0/1/2), which makes generation order-independent while
+ * producing the same fields.
  */
 public class OreLayer3DFeature extends Feature<NoneFeatureConfiguration> {
 

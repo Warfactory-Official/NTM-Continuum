@@ -47,10 +47,10 @@ public class ItemToolAbilityFueled extends ItemToolAbility implements IFillableI
 
     /**
      * 1.7 {@code setMaxDamage(1)} plus a {@code setDamage} that burned fuel instead: the material's durability never
-     * applied, every point of wear was fuel. Here vanilla wears a tool by its tier's uses on every hit and block (the
-     * {@code weapon}/{@code tool} components), so the tier keeps everything but its uses, and wear reaches the fuel
-     * through {@link #damageTool} alone. (With the uses kept, each hit also changed the damage component, which
-     * re-equipped the held chainsaw on every hit.)
+     * applied, every point of wear was fuel. Vanilla wears a tool by its tier's uses on every hit and block (the
+     * {@code weapon}/{@code tool} components), so the tier keeps everything but its uses and wear reaches the fuel
+     * through {@link #damageTool} alone. Keeping the uses would change the damage component on each hit and
+     * re-equip the held chainsaw.
      */
     private static ToolTier withoutWear(ToolTier material) {
         return ToolTier.of(material.level(), 0, material.speed(), material.attackDamageBonus(),

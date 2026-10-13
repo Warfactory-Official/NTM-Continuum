@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.entity.IRadarDetectableNT;
@@ -40,7 +41,7 @@ public class EntityArtilleryRocket extends EntityThrowableNT implements IChunkLo
 
     /**
      * Radius 1, not upstream's single chunk: at twenty-five blocks a tick the rocket crosses a border
-     * every other tick, and modern tickets are asynchronous — the claim has to already cover the chunk
+     * every other tick, and modern tickets are asynchronous, so the claim has to already cover the chunk
      * being entered. This is the same reason {@code EntityMissileBaseNT} uses 1.
      */
     private final EntityChunkLoader chunkLoader = new EntityChunkLoader(this, 1);
@@ -128,7 +129,7 @@ public class EntityArtilleryRocket extends EntityThrowableNT implements IChunkLo
 
     /**
      * The exhaust trail, drawn along the step just taken. Upstream puts the puffs <em>behind</em> the
-     * nose — six blocks back and further — and emits nothing at all for a step of one block or less,
+     * nose, six blocks back and further, and emits nothing at all for a step of one block or less,
      * which is what keeps a rocket at rest from smoking.
      */
     private void spawnContrail() {
@@ -227,8 +228,8 @@ public class EntityArtilleryRocket extends EntityThrowableNT implements IChunkLo
         output.putDouble("targetX", aim.x);
         output.putDouble("targetY", aim.y);
         output.putDouble("targetZ", aim.z);
-        // by enum name, never the ordinal (History section 19ek-small)
-        com.hbm.util.SavedIds.putEnum(output, "type", ItemAmmoHIMARS.byIndex(getTypeIndex()));
+        // by enum name, never the ordinal
+        SavedIds.putEnum(output, "type", ItemAmmoHIMARS.byIndex(getTypeIndex()));
     }
 
     @Override
@@ -236,7 +237,7 @@ public class EntityArtilleryRocket extends EntityThrowableNT implements IChunkLo
         super.loadData(input);
         this.lastTargetPos = new Vec3(input.getDoubleOr("targetX", 0D), input.getDoubleOr("targetY", 0D),
                 input.getDoubleOr("targetZ", 0D));
-        this.entityData.set(ROCKET_TYPE, com.hbm.util.SavedIds.getEnum(input, "type", ItemAmmoHIMARS.HIMARSRocketType.values()[0]).ordinal());
+        this.entityData.set(ROCKET_TYPE, SavedIds.getEnum(input, "type", ItemAmmoHIMARS.HIMARSRocketType.values()[0]).ordinal());
         chunkLoader.markRestoredFromNbt();
     }
 }

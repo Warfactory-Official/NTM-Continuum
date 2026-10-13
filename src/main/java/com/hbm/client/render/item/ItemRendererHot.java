@@ -3,6 +3,7 @@ package com.hbm.client.render.item;
 import com.hbm.items.special.ItemHot;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.ItemSprites;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -33,7 +34,7 @@ final class ItemRendererHot implements CustomItemRenderer {
     public void render(ItemStack stack, Type type, PoseStack pose, SubmitSink sink, int light, int overlay,
                        @Nullable LivingEntity owner) {
         // the ordinary icon first: the glow is blended over it (see Core ItemSprites)
-        dev.golem.core.render.ItemSprites.submit(pose, sink, tex("textures/items/" + id(stack) + ".png"), light, overlay);
+        ItemSprites.submit(pose, sink, tex("textures/items/" + id(stack) + ".png"), light, overlay);
         double h = ItemHot.getHeat(stack);
         if (h <= 0) return;
         Identifier hot = tex("textures/items/" + id(stack) + "_hot.png");

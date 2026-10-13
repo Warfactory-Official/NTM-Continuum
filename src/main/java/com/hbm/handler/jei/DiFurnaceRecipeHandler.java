@@ -1,11 +1,13 @@
 package com.hbm.handler.jei;
 
+import com.hbm.Constants;
+import dev.golem.core.Ids;
 import dev.golem.core.viewer.Drawable;
 import dev.golem.core.viewer.Role;
 import dev.golem.core.viewer.SlotLayout;
-import com.hbm.blocks.machine.DiFurnaceContent;
 import com.hbm.inventory.recipes.DiFurnaceRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
+import dev.golem.core.viewer.ViewerCategory;
 import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -13,12 +15,13 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
+import com.hbm.blocks.machine.ModMachineBlocks;
 
 /** Feature-local recipe-viewer (JEI and REI) category for the old alloy-furnace/DiFurnace recipe handler. */
-public final class DiFurnaceRecipeHandler extends dev.golem.core.viewer.ViewerCategory<GenericRecipe> {
+public final class DiFurnaceRecipeHandler extends ViewerCategory<GenericRecipe> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of(
-            com.hbm.Constants.MOD_ID, "textures/gui/guidifurnace.png");
+    private static final Identifier TEXTURE = Ids.of(
+            Constants.MOD_ID, "textures/gui/guidifurnace.png");
 
     private final Drawable background;
     private final Drawable power;
@@ -26,7 +29,7 @@ public final class DiFurnaceRecipeHandler extends dev.golem.core.viewer.ViewerCa
     private final Drawable fuel;
 
     public DiFurnaceRecipeHandler(ViewerType<GenericRecipe> type, Component title) {
-        super(type, title, new ItemStack(DiFurnaceContent.MACHINE_DIFURNACE.get()), 150, 56);
+        super(type, title, new ItemStack(ModMachineBlocks.machine_difurnace_off.get()), 150, 56);
         background = Drawable.texture(TEXTURE, 6, 16, 150, 56);
 
         Drawable.Texture powerStatic = Drawable.texture(TEXTURE, 176, 0, 14, 14);

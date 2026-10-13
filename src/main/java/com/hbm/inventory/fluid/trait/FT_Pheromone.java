@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * The 1.7 {@code FT_Pheromone}: type 1 is glyphid pheromone (buffs glyphids), type 2 the modified pheromone
- * (buffs players). Read by {@code EntityMist} and {@code EntityChemical}, whose buff tables differ — 1.7 keeps
+ * (buffs players). Read by {@code EntityMist} and {@code EntityChemical}, whose buff tables differ. 1.7 keeps
  * them separate and so does the port.
  */
 public final class FT_Pheromone {

@@ -1,16 +1,19 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerWasteDrum;
+import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 /** Spent-fuel pool drum screen, a straight port of 1.7 {@code GUIWasteDrum} ({@code gui_waste_drum.png}, 176x189). */
-public class GUIWasteDrum extends dev.golem.core.gui.CompatContainerScreen<ContainerWasteDrum> {
+public class GUIWasteDrum extends CompatContainerScreen<ContainerWasteDrum> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_waste_drum.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/gui_waste_drum.png");
 
     public GUIWasteDrum(ContainerWasteDrum menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 189);
@@ -37,7 +40,7 @@ public class GUIWasteDrum extends dev.golem.core.gui.CompatContainerScreen<Conta
             GuiDraw.tooltip(graphics, font, GuiUtil.lines(
                     "The drum will cool down hot nuclear",
                     "waste when submerged in water. More",
-                    "water speeds up the process."), java.util.Optional.empty(), leftPos - 8, topPos + 36 + 16);
+                    "water speeds up the process."), Optional.empty(), leftPos - 8, topPos + 36 + 16);
         }
     }
 }

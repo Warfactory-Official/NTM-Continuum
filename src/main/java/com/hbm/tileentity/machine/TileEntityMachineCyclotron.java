@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -20,9 +21,11 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -122,7 +125,7 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase
     private boolean canFitOutput(int slot, ItemStack output) {
         ItemStack existing = inventory.getStackInSlot(slot);
         return existing.isEmpty()
-                || (dev.golem.core.world.ItemStacks.sameItemAndData(existing, output)
+                || (ItemStacks.sameItemAndData(existing, output)
                 && existing.getCount() < output.getMaxStackSize());
     }
 
@@ -137,7 +140,7 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase
                 inventory.extractItem(i + 3, 1, false);
                 inventory.setStackInSlot(i + 6, recipe.output.copy());
                 tanks[2].setFill(tanks[2].getFill() + recipe.antimatter);
-            } else if (dev.golem.core.world.ItemStacks.sameItemAndData(output, recipe.output)
+            } else if (ItemStacks.sameItemAndData(output, recipe.output)
                     && output.getCount() < output.getMaxStackSize()) {
                 inventory.extractItem(i, 1, false);
                 inventory.extractItem(i + 3, 1, false);
@@ -245,8 +248,8 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase
     /** Returns an installed plug's canonical item, or null while that content is not registered. */
     public static Item getItemForPlug(int index) {
         if (index < 0 || index >= PLUG_IDS.length) return null;
-        return net.minecraft.core.registries.BuiltInRegistries.ITEM
-                .getOptional(dev.golem.core.Ids.of("hbm", PLUG_IDS[index])).orElse(null);
+        return BuiltInRegistries.ITEM
+                .getOptional(Ids.of("hbm", PLUG_IDS[index])).orElse(null);
     }
 
     private static final String[] PLUG_IDS = {"powder_balefire", "book_of_", "diamond_gavel", "coin_maskman"};

@@ -1,10 +1,11 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.client.sound.ArcFurnaceSoundHandler;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
-import com.hbm.foundry.ArcFurnaceRecipes;
-import com.hbm.foundry.FoundryExpansion;
+import com.hbm.inventory.container.ContainerMachineArcFurnaceLarge;
+import com.hbm.inventory.recipes.ArcFurnaceRecipes;
 import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.material.MaterialShapes;
@@ -14,11 +15,16 @@ import com.hbm.interfaces.IControlReceiver;
 import com.hbm.items.machine.ItemArcElectrode;
 import com.hbm.items.machine.ItemArcElectrodeBurnt;
 import com.hbm.items.machine.ItemMachineUpgrade;
+import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.sound.ModDoorSounds;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.CrucibleUtil;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -47,10 +53,13 @@ import com.hbm.sound.AudioWrapper;
 import com.hbm.sound.MachineAudio;
 import com.hbm.sound.ModSounds;
 import net.minecraft.sounds.SoundSource;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.items.ModMachineItems;
+import com.hbm.tileentity.ModBlockEntities;
 
 /** Large Arc Furnace core: the old 20-cell grid, five-cell queue, three electrodes and liquid store. */
 public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
-        implements MenuProvider, IEnergyReceiverMK2, IControlReceiver, WorldlyContainer, com.hbm.tileentity.IUpgradeInfoProvider {
+        implements MenuProvider, IEnergyReceiverMK2, IControlReceiver, WorldlyContainer, IUpgradeInfoProvider {
 
     public static final long MAX_POWER = 2_500_000L;
     public static final int PROCESSING_TIME = 400;
@@ -77,7 +86,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
     public final byte[] electrodes = new byte[3];
     public List<Mats.MaterialStack> liquids = new ArrayList<>();
 
-    /** Synced stream state; the server timer is deliberately not persisted. */
+    /** Synced stream state; the server timer is not persisted. */
     public int pourColor = -1;
     public float pourLen;
     private int pourTimer;
@@ -86,7 +95,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
 
     public TileEntityMachineArcFurnaceLarge(BlockPos pos, BlockState state) {
-        super(FoundryExpansion.ARC_FURNACE_BE.get(), pos, state, 30);
+        super(ModBlockEntities.MACHINE_ARC_FURNACE.get(), pos, state, 30);
         ArcFurnaceRecipes.register();
     }
 
@@ -161,7 +170,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
             double sx = pos.getX() + 0.5D + dir.offsetX * 2.875D;
             double sy = pos.getY() + 1.25D;
             double sz = pos.getZ() + 0.5D + dir.offsetZ * 2.875D;
-            Mats.MaterialStack poured = com.hbm.util.CrucibleUtil.pourFullStack(level, sx, sy, sz, 6D, true,
+            Mats.MaterialStack poured = CrucibleUtil.pourFullStack(level, sx, sy, sz, 6D, true,
                     furnace.liquids, MaterialShapes.INGOT.quantity, impact);
             if (poured != null && impact[0] != null) {
                 furnace.pourColor = poured.material.moltenColor;
@@ -200,22 +209,22 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
             data.putInt("color", 0);
             data.putFloat("strafe", 0.05F);
             for (int i = 0; i < 3; i++) {
-                com.hbm.particle.helper.HbmEffectNT.Tower.summonParticle(level,
+                HbmEffectNT.Tower.summonParticle(level,
                         pos.getX() + 0.5D + level.getRandom().nextGaussian() * 0.5D,
                         pos.getY() + 4D,
                         pos.getZ() + 0.5D + level.getRandom().nextGaussian() * 0.5D, data);
             }
         }
         furnace.audioLid = MachineAudio.tick(furnace.audioLid, furnace.lid != furnace.prevLid,
-                com.hbm.sound.ModDoorSounds.WGH_START.get(), SoundSource.BLOCKS, pos, furnace.getVolume(0.75F), 15F, 1.0F, 5);
+                ModDoorSounds.WGH_START.get(), SoundSource.BLOCKS, pos, furnace.getVolume(0.75F), 15F, 1.0F, 5);
 
         if ((furnace.lid == 1F || furnace.lid == 0F) && furnace.lid != furnace.prevLid
                 && !(furnace.prevLid == 0F && furnace.lid == 1F)) {
             level.playLocalSound(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
-                    com.hbm.sound.ModDoorSounds.WGH_STOP.get(), SoundSource.BLOCKS, furnace.getVolume(1F), 1F, false);
+                    ModDoorSounds.WGH_STOP.get(), SoundSource.BLOCKS, furnace.getVolume(1F), 1F, false);
         }
 
-        com.hbm.foundry.ArcFurnaceSoundHandler.tickLoop(furnace);
+        ArcFurnaceSoundHandler.tickLoop(furnace);
     }
 
     /** Moves queue slots 25..29 into the 20-cell grid 5..24, capped by the active recipe. */
@@ -298,7 +307,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
             ItemStack electrode = inventory.getStackInSlot(slot);
             if (electrode.getItem() instanceof ItemArcElectrode && ItemArcElectrode.damage(electrode)) {
                 ItemArcElectrode.ElectrodeType type = ((ItemArcElectrode) electrode.getItem()).type;
-                inventory.setStackInSlot(slot, new ItemStack(FoundryExpansion.burnt(type)));
+                inventory.setStackInSlot(slot, new ItemStack(ModMachineItems.arcElectrodeBurnt(type)));
             }
         }
     }
@@ -409,7 +418,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
     @Override protected int[] getUpgradeSlotRange() { return new int[]{4, 4}; }
 
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new com.hbm.inventory.container.ContainerMachineArcFurnaceLarge(id, inventory, this);
+        return new ContainerMachineArcFurnaceLarge(id, inventory, this);
     }
     @Override public boolean hasPermission(Player player) { return stillValid(player); }
     @Override public void receiveControl(CompoundTag data) {
@@ -423,7 +432,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         return type == ItemMachineUpgrade.UpgradeType.SPEED;
     }
     @Override public void provideInfo(ItemMachineUpgrade.UpgradeType type, int level, List<Component> info, boolean extendedInfo) {
-        info.add(com.hbm.tileentity.IUpgradeInfoProvider.getStandardLabel(FoundryExpansion.ARC_FURNACE.get()));
+        info.add(IUpgradeInfoProvider.getStandardLabel(ModMachineBlocks.machine_arc_furnace.get()));
         if (type == ItemMachineUpgrade.UpgradeType.SPEED) {
             info.add(Component.literal("Delay: -" + (100 - 100 / (level * 2 + 1)) + "%"));
             info.add(Component.literal("Consumption: +" + ((int) Math.pow(5, level) * 100 - 100) + "%"));
@@ -513,7 +522,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         if (level != null) {
             for (Mats.MaterialStack liquid : liquids) {
-                com.hbm.items.machine.ItemScraps.spawnMats(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
+                ItemScraps.spawnMats(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
                         liquid.copy());
             }
             liquids.clear();

@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.chemicalfactory.ChemicalFactoryRegistrations;
+import com.hbm.inventory.SlotCraftingOutput;
 import com.hbm.lib.Library;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.items.machine.ItemMachineUpgrade;
@@ -17,6 +17,8 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.ModMenus;
 
 /** The 32-slot four-lane Chemical Factory menu. */
 public class ContainerMachineChemicalFactory extends AbstractContainerMenu {
@@ -41,7 +43,7 @@ public class ContainerMachineChemicalFactory extends AbstractContainerMenu {
     private ContainerMachineChemicalFactory(int containerId, Inventory playerInventory,
                                              @Nullable TileEntityMachineChemicalFactory factory,
                                              ContainerLevelAccess access) {
-        super(ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY_MENU.get(), containerId);
+        super(ModMenus.MACHINE_CHEMICAL_FACTORY.get(), containerId);
         this.factory = factory;
         this.machine = factory != null ? factory : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
@@ -58,7 +60,7 @@ public class ContainerMachineChemicalFactory extends AbstractContainerMenu {
                 addSlot(validated(TileEntityMachineChemicalFactory.inputStart(lane) + i, 10 + i * 16, rowY)); // 1.7 addSlots(..., 1, 3, 16): 16 px pitch
             }
             for (int i = 0; i < 3; i++) {
-                addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, TileEntityMachineChemicalFactory.outputStart(lane) + i,
+                addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, TileEntityMachineChemicalFactory.outputStart(lane) + i,
                         139 + i * 16, rowY)); // 1.7 addOutputSlots(..., 1, 3, 16): 16 px pitch
             }
         }
@@ -90,7 +92,7 @@ public class ContainerMachineChemicalFactory extends AbstractContainerMenu {
     @Override
     public boolean stillValid(Player player) {
         return Containers.stillValidMultiblock(access, player,
-                ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY.get());
+                ModMachineBlocks.machine_chemical_factory.get());
     }
 
     @Override

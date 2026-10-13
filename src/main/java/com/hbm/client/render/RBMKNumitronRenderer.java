@@ -17,9 +17,11 @@ import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.phys.Vec3;
 
@@ -30,8 +32,8 @@ import net.minecraft.world.phys.Vec3;
 public final class RBMKNumitronRenderer extends GemBER<BlockEntityRBMKNumitron, RBMKNumitronRenderer.State> {
     static final WavefrontObj MODEL = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/rbmk/numitron.obj"));
     static final String TEXTURE = Ids.of(Constants.MOD_ID, "textures/models/network/numitron.png").toString();
-    private static final net.minecraft.resources.Identifier LIGHTS = Ids.of(Constants.MOD_ID, "textures/models/network/numitron_lights.png");
-    private final Font font = net.minecraft.client.Minecraft.getInstance().font;
+    private static final Identifier LIGHTS = Ids.of(Constants.MOD_ID, "textures/models/network/numitron_lights.png");
+    private final Font font = Minecraft.getInstance().font;
 
     @Override protected void setup(Gem.Model<State> declaration) {
         Surface skin = Surface.solid(TEXTURE);

@@ -6,6 +6,7 @@ import com.hbm.inventory.recipes.loader.TableCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.world.ItemStacks;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,7 +31,7 @@ public final class BreederRecipes {
     public record Row(Item input, ItemSpec output, int flux, int order) {}
 
     public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            dev.golem.core.world.ItemStacks.itemCodec().fieldOf("input").forGetter(Row::input),
+            ItemStacks.itemCodec().fieldOf("input").forGetter(Row::input),
             ItemSpec.CODEC.fieldOf("output").forGetter(Row::output),
             Codec.INT.fieldOf("flux").forGetter(Row::flux),
             Codec.INT.optionalFieldOf("order", TableCodecs.LAST).forGetter(Row::order)

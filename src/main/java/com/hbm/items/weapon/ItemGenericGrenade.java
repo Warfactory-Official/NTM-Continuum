@@ -1,6 +1,7 @@
 package com.hbm.items.weapon;
 
 import com.hbm.entity.grenade.EntityGrenadeBouncyGeneric;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
@@ -16,7 +17,7 @@ import net.minecraft.world.level.Level;
 
 // 1.7: ItemGenericGrenade throws an EntityGrenadeBouncyGeneric that asks the item for its fuse, bounce and
 // detonation behavior.
-// 26.2's ProjectileItem (the dispenser hook) is 1.20.5+; 1.7 registered no dispenser behaviour for these,
+// 26.1's ProjectileItem (the dispenser hook) is 1.20.5+; 1.7 registered no dispenser behaviour for these,
 // so the port carries none.
 public class ItemGenericGrenade extends ItemGrenade {
 
@@ -33,7 +34,7 @@ public class ItemGenericGrenade extends ItemGrenade {
             level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT,
                     SoundSource.PLAYERS, 0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
             level.addFreshEntity(new EntityGrenadeBouncyGeneric(level, player).setType(this));
-            dev.golem.core.world.ItemStacks.consume(stack, 1, player);
+            ItemStacks.consume(stack, 1, player);
         }
 
         return InteractionResult.SUCCESS;

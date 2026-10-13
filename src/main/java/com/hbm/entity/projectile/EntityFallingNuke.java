@@ -38,7 +38,7 @@ public class EntityFallingNuke extends CompatThrowableProjectile {
 
     public EntityFallingNuke(EntityType<? extends EntityFallingNuke> type, Level level) {
         super(type, level);
-        // 1.7: setSize(0.98F, 0.98F); ignoreFrustumCheck is renderer-side in 26.2
+        // 1.7: setSize(0.98F, 0.98F); ignoreFrustumCheck is renderer-side in 26.1
         refreshDimensions();
     }
 

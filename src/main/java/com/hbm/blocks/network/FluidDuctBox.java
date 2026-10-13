@@ -21,7 +21,7 @@ public class FluidDuctBox extends BlockFluidDuct {
 
     public static final String[] MATERIALS = {"silver", "copper", "white"};
 
-    /** 0 = silver, 1 = copper, 2 = white — the 1.7 {@code rectify(meta)} index. */
+    /** 0 = silver, 1 = copper, 2 = white: the 1.7 {@code rectify(meta)} index. */
     public final int material;
     /** 0..4, the 1.7 {@code meta / 3} (each step shrinks the duct by a pixel per side). */
     public final int size;

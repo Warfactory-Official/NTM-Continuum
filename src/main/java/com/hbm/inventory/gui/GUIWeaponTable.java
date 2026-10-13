@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerWeaponTable;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.client.render.weapon.WeaponRenderer;
@@ -13,6 +14,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import dev.golem.core.gui.MouseInput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -20,7 +22,7 @@ import net.minecraft.world.item.ItemStack;
 
 /** The source 176x240 weapon-table screen with 1.7's rotatable, per-gun framed preview. */
 public final class GUIWeaponTable extends CompatContainerScreen<ContainerWeaponTable> {
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of(
+    private static final Identifier TEXTURE = Ids.of(
             "hbm", "textures/gui/machine/gui_weapon_modifier.png");
     private static final int PREVIEW_X = 8, PREVIEW_Y = 17, PREVIEW_W = 160, PREVIEW_H = 80;
     private static final int CONFIG_X = 26, CONFIG_Y = 111, CONFIG_W = 7, CONFIG_H = 10;
@@ -72,7 +74,7 @@ public final class GUIWeaponTable extends CompatContainerScreen<ContainerWeaponT
     private void submitPreview(GuiGraphicsExtractor graphics, ItemStack gun, int config) {
         WeaponRenderer renderer = WeaponRenderers.forStack(gun);
         WeaponTableFrames.Frame frame = WeaponTableFrames.forItem(
-                net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(gun.getItem()).getPath());
+                BuiltInRegistries.ITEM.getKey(gun.getItem()).getPath());
         if (renderer == null || frame == null) return;
         ItemStack stack = gun.copy();
         float centreX = leftPos + PREVIEW_CENTRE_X - width / 2F;

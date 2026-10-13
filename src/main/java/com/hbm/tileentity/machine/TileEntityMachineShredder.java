@@ -10,6 +10,8 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import dev.golem.core.hook.Hook;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -28,7 +30,7 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Shredder — grinds items into dusts (and anything unrecognised into scrap; see {@link ShredderRecipes}).
+ * Shredder: grinds items into dusts (and anything unrecognised into scrap; see {@link ShredderRecipes}).
  * Faithful port of the 1.12.2 {@code TileEntityMachineShredder}.
  *
  * <p><b>Slots (30):</b> 0-8 input grid, 9-26 output grid (18), 27+28 the two {@link ItemBlades blades},
@@ -37,7 +39,7 @@ import dev.golem.core.data.DataOut;
  *
  * <p><b>The blades gate the machine.</b> {@link #getGearLeft()}/{@link #getGearRight()} return 0 = missing,
  * 1 = fine (&lt; half worn), 2 = worn, 3 = spent; processing needs both strictly between 0 and 3. Spent
- * blades are not destroyed — they stay in place (and only then may be extracted), exactly as before.
+ * blades are not destroyed; they stay in place (and only then may be extracted), exactly as before.
  */
 public class TileEntityMachineShredder extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, WorldlyContainer {
 
@@ -61,7 +63,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
     private int soundCycle = 0;
 
     /**
-     * Blade wear states, refreshed server-side each tick and synced — the BlockEntity's inventory is not
+     * Blade wear states, refreshed server-side each tick and synced. The BlockEntity's inventory is not
      * replicated to clients, so the GUI reads these instead of inspecting the blade slots.
      */
     public int gearLeft;
@@ -78,7 +80,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 
     @Override
     public boolean isItemValidForSlot(int i, ItemStack stack) {
-        if (i < 9) return !(stack.getItem() instanceof ItemBlades);  // everything else shreds (→ scrap)
+        if (i < 9) return !(stack.getItem() instanceof ItemBlades);  // everything else shreds (to scrap)
         if (i == SLOT_BATTERY) return Library.isBattery(stack);
         return (i == SLOT_BLADE_LEFT || i == SLOT_BLADE_RIGHT) && stack.getItem() instanceof ItemBlades;
     }
@@ -134,7 +136,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 
             for (int out = 9; out < 27 && itemsLeft > 0; out++) {
                 ItemStack slotStack = inventory.getStackInSlot(out);
-                if (!slotStack.isEmpty() && dev.golem.core.world.ItemStacks.sameItemAndData(slotStack, output)) {
+                if (!slotStack.isEmpty() && ItemStacks.sameItemAndData(slotStack, output)) {
                     int space = slotStack.getMaxStackSize() - slotStack.getCount();
                     if (space > 0) {
                         int amount = Math.min(itemsLeft, space);
@@ -170,7 +172,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
     }
 
     /** Every listener in order; HBM registers none. NTM: Space's Gwen bobblehead blows the shredder up. */
-    public static final dev.golem.core.hook.Hook<Intercept> INTERCEPT = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<Intercept> INTERCEPT = Hook.notifying();
 
     public boolean canProcess() {
         int left = gearState(SLOT_BLADE_LEFT), right = gearState(SLOT_BLADE_RIGHT);
@@ -198,7 +200,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
             ItemStack slotStack = inventory.getStackInSlot(i);
             if (slotStack.isEmpty()) {
                 spaceLeft += result.getMaxStackSize();
-            } else if (dev.golem.core.world.ItemStacks.sameItemAndData(slotStack, result)) {
+            } else if (ItemStacks.sameItemAndData(slotStack, result)) {
                 spaceLeft += slotStack.getMaxStackSize() - slotStack.getCount();
             }
         }
@@ -219,12 +221,12 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
     public int getGearLeft() { return gearLeft; }
     public int getGearRight() { return gearRight; }
 
-    /** True when either blade is missing or spent — the GUI's error indicator. */
+    /** True when either blade is missing or spent: the GUI's error indicator. */
     public boolean bladesBroken() {
         return gearLeft == 0 || gearLeft == 3 || gearRight == 0 || gearRight == 3;
     }
 
-    // --- WorldlyContainer: insert into the input grid / blades / battery; extract outputs, spent blades,
+    // WorldlyContainer: insert into the input grid / blades / battery; extract outputs, spent blades,
     // and drained batteries. Mirrors the old canInsertItem/canExtractItem. ---
 
     @Override
@@ -261,7 +263,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
         };
     }
 
-    // --- IEnergyReceiverMK2 ---
+    // IEnergyReceiverMK2
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
@@ -272,7 +274,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
     public boolean hasPower() { return power >= CONSUMPTION; }
     public boolean isProcessing() { return progress > 0; }
 
-    // --- MenuProvider ---
+    // MenuProvider
 
     @Override
     public Component getDisplayName() {
@@ -284,7 +286,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
         return new ContainerMachineShredder(containerId, playerInventory, this);
     }
 
-    // --- sync (BufPacket) + persistence ---
+    // Sync (BufPacket) + persistence
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

@@ -1,33 +1,54 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.blocks.ModFalloutBlocks;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.config.BombConfig;
 import com.hbm.entity.ModEntities;
+import com.hbm.entity.effect.EntityFalloutRain;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.explosion.ExplosionNukeRayBatched;
 import com.hbm.util.ChunkCarver;
+import com.hbm.world.chunk.ChunkLoadingManager;
+import dev.golem.core.world.Compat;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.function.BooleanSupplier;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
  * A real nuclear blast, run to completion and timed.
  *
- * <p>Not an assertion test in the usual sense: it exists so "the explosion feels slow" can be answered
- * with numbers instead of opinions, and so a change to the crater algorithm has a before/after to be
- * judged against. {@link com.hbm.explosion.ExplosionNukeRayBatched} logs the phase split when it
- * finishes; this drives one blast far from the test plots and asserts only that it terminates.
+ * <p>Not an assertion test in the usual sense: it exists to answer "the explosion feels slow" with
+ * numbers and to give a change to the crater algorithm a before/after.
+ * {@link com.hbm.explosion.ExplosionNukeRayBatched} logs the phase split when it finishes; this drives
+ * one blast far from the test plots and asserts only that it terminates.
  *
- * <p><b>It detonates 2000 blocks away from the plot</b>, deliberately. A crater of any useful size would
- * eat neighbouring GameTest structures otherwise, which is exactly the plot-collision failure mode that
- * made the ZIRNOX tests look flaky for weeks (§19l).
+ * <p><b>It detonates 2000 blocks away from the plot</b>: a crater of any useful size would otherwise eat
+ * neighbouring GameTest structures.
  *
- * <p>The radius is small next to a real Fat Man (175). It is chosen so the suite stays quick while still
- * exercising every phase on genuinely un-generated terrain; the per-block and per-ray costs the log
- * reports are what scale up, not the shape of the run.
+ * <p>The radius is small next to a real Fat Man (175), so the suite stays quick while every phase still
+ * runs on un-generated terrain; the per-block and per-ray costs the log reports are what scale up.
  */
 public final class NukePerfGameTests {
 
@@ -36,21 +57,18 @@ public final class NukePerfGameTests {
     /** Radius of the benchmark blast. */
     private static final int RADIUS = 64;
     /**
-     * How far from the test plots each of these tests does its work — <b>a different quadrant each</b>.
+     * How far from the test plots each of these tests does its work, <b>a different quadrant each</b>.
      *
-     * <p>Not decoration. GameTest plots sit metres apart, so "plot + 2000" is very nearly the same spot
-     * for every test in the suite: when all four of these used one offset they wrote into each other's
-     * work areas, and {@link #carveLighting} — the only one whose result depends on its surroundings
-     * rather than on blocks it placed itself — failed or passed depending on whether the crater
-     * benchmark had happened to bury or excavate the ground under it that run. This is the same
-     * plot-collision failure mode as §19l, at 2000 blocks' remove.
+     * <p>GameTest plots sit metres apart, so "plot + offset" is nearly the same spot for every test: tests
+     * sharing one offset write into each other's work areas, and {@link #carveLighting}, the only one whose
+     * result depends on its surroundings, passes or fails depending on whether the crater benchmark buried
+     * or excavated the ground under it.
      *
      * <p>The quadrants are 40,000 blocks apart and the widest work area here is ~300 blocks, so they
-     * cannot overlap however the plots are laid out. The distance is what it is because of the pre-26.1
-     * framework: it lays the whole suite out in rows of eight, and with the padded templates that grid
-     * runs thousands of blocks in +x and +z, so an offset of 2,000 put these work areas on top of later
-     * rows' plots (a sat link found the crater's dirt in its sky column). Chunk generation cost does not
-     * depend on the distance.
+     * cannot overlap however the plots are laid out. The distance is large because the pre-26.1 framework
+     * lays the suite out in rows of eight, and with the padded templates that grid runs thousands of blocks
+     * in +x and +z; a small offset lands on later rows' plots. Chunk generation cost does not depend on the
+     * distance.
      */
     private static final int OFFSET = 20_000;
     /** Work-area offsets, one quadrant per test. See {@link #OFFSET}. */
@@ -79,24 +97,22 @@ public final class NukePerfGameTests {
         // A dense block of stone to actually destroy. The GameTest level is near-empty out here, and a
         // crater through air measures nothing: the destruction phase is the whole question.
         long fillStart = System.currentTimeMillis();
-        // Written straight into the chunk sections: filling a million blocks through Level.setBlock is
-        // seconds of setup for a test that is measuring milliseconds. The ray phase only reads block
-        // states, so an un-relit fill is a perfectly good input.
+        // Written straight into the chunk sections: a million Level.setBlock calls are seconds of setup
+        // for a test measuring milliseconds, and the ray phase only reads block states.
         // Dirt, not stone: stone's resistance kills a ray about ten blocks in, so a stone benchmark
-        // carves ~1800 blocks and says nothing about the destruction phase. Dirt lets the rays run
-        // nearly the full radius, which is what a blast over normal terrain actually does.
-        net.minecraft.world.level.block.state.BlockState stone =
-                net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState();
+        // carves ~1800 blocks and says nothing about the destruction phase.
+        BlockState stone =
+                Blocks.DIRT.defaultBlockState();
         BlockPos.MutableBlockPos fill = new BlockPos.MutableBlockPos();
         int half = RADIUS;
         int filled = 0;
         for (int dx = -half; dx <= half; dx++) {
             for (int dz = -half; dz <= half; dz++) {
-                // Ground below, air above — a blast over terrain, not one buried in solid rock. The
+                // Ground below, air above: a blast over terrain, not one buried in solid rock. The
                 // mix matters: the ray loop's air fast-path is most of the win on a real surface burst.
                 int x = origin.getX() + dx;
                 int z = origin.getZ() + dz;
-                net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunk(x >> 4, z >> 4);
+                LevelChunk chunk = level.getChunk(x >> 4, z >> 4);
                 for (int dy = -half; dy <= 0; dy++) {
                     int fy = y + dy;
                     if (fy < level.getMinY() || fy > level.getMaxY()) continue;
@@ -104,9 +120,8 @@ public final class NukePerfGameTests {
                             .setBlockState(x & 15, fy & 15, z & 15, stone, false);
                     filled++;
                 }
-                // Deliberately not marked unsaved: this fill exists for the length of one test and
-                // `markUnsaved()` is 26.1-only (`setUnsaved(boolean)` below), which is not worth a
-                // facade for benchmark scaffolding.
+                // Not marked unsaved: this fill exists for one test, and `markUnsaved()` is 26.1-only
+                // (`setUnsaved(boolean)` below), which is not worth a facade for benchmark scaffolding.
             }
         }
         Constants.LOG.info("[NUKE-BENCH] filled {} stone blocks in {} ms", filled, System.currentTimeMillis() - fillStart);
@@ -115,13 +130,13 @@ public final class NukePerfGameTests {
         // The blast is an entity: it ticks only in an entity-ticking chunk, and the fill above loaded this
         // work area at load level only. In game the bomb sits in a player's ticking chunks; here the same
         // hold the fallout benchmark takes stands in for the player.
-        com.hbm.world.chunk.ChunkLoadingManager.requestTicket(level, "crater_benchmark")
+        ChunkLoadingManager.requestTicket(level, "crater_benchmark")
                 .force(origin.getX() >> 4, origin.getZ() >> 4);
         EntityNukeExplosionMK5 blast = EntityNukeExplosionMK5.statFacNoRad(
                 level, RADIUS, origin.getX(), y, origin.getZ());
         level.addFreshEntity(blast);
 
-        // Let real server ticks drive it. The crater's loading-only requests are deliberately asynchronous;
+        // Let real server ticks drive it. The crater's loading-only requests are asynchronous;
         // manually spin-ticking the entity would starve the chunk task system that has to satisfy them.
         long start = System.currentTimeMillis();
         BlastDriver driver = new BlastDriver(blast);
@@ -133,7 +148,7 @@ public final class NukePerfGameTests {
                                     + "({} filled blocks, budget {} ms/tick)",
                             RADIUS, wall, blast.tickCount, filledBlocks, BombConfig.mk5);
                     // 549,876: 1.7's collectTip (res = 2r, res -= pow(0.5, 7.5 - fac), samples 0 .. r - 1) on this dirt
-                    // block, matched exactly by an independent re-implementation (fix wave 1D, History 19ej-1d).
+                    // block, matched exactly by an independent re-implementation.
                     // 1.12.2's formula carved 313,350.
                     helper.assertTrue(blast.getBlocksDestroyed() == 549_876,
                             "the deterministic r=64 crater destroyed " + blast.getBlocksDestroyed()
@@ -147,17 +162,16 @@ public final class NukePerfGameTests {
      * direct section write.
      *
      * <p>Both references carve whole {@code LevelChunkSection}s and swap them in rather than calling
-     * {@code setBlock} per block, and this is the number that says whether that is worth porting. Each
-     * pass clears the same shape from an identical freshly-filled region, so the only difference is how
-     * the write reaches the chunk.
+     * {@code setBlock} per block. Each pass clears the same shape from an identical freshly filled region,
+     * so the only difference is how the write reaches the chunk.
      */
     public static void writeThroughput(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos plot = helper.absolutePos(BlockPos.ZERO);
-        net.minecraft.world.level.block.state.BlockState stone =
-                net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
-        net.minecraft.world.level.block.state.BlockState air =
-                net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        BlockState stone =
+                Blocks.STONE.defaultBlockState();
+        BlockState air =
+                Blocks.AIR.defaultBlockState();
 
         int side = 32;           // 32x32x32 = 32768 blocks per pass
         int baseY = plot.getY() + 8;
@@ -165,9 +179,9 @@ public final class NukePerfGameTests {
         // --- pass A: Level.setBlock, the flags the crater currently uses ---
         BlockPos aOrigin = plot.offset(THROUGHPUT_X, 0, THROUGHPUT_Z);
         fillCube(level, aOrigin, baseY, side, stone);
-        int flags = net.minecraft.world.level.block.Block.UPDATE_CLIENTS
-                | net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE
-                | net.minecraft.world.level.block.Block.UPDATE_SUPPRESS_DROPS;
+        int flags = Block.UPDATE_CLIENTS
+                | Block.UPDATE_KNOWN_SHAPE
+                | Block.UPDATE_SUPPRESS_DROPS;
 
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         long t0 = System.nanoTime();
@@ -190,10 +204,10 @@ public final class NukePerfGameTests {
             for (int dz = 0; dz < side; dz++) {
                 int x = bOrigin.getX() + dx;
                 int z = bOrigin.getZ() + dz;
-                net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunk(x >> 4, z >> 4);
+                LevelChunk chunk = level.getChunk(x >> 4, z >> 4);
                 for (int dy = 0; dy < side; dy++) {
                     int y = baseY + dy;
-                    net.minecraft.world.level.chunk.LevelChunkSection section =
+                    LevelChunkSection section =
                             chunk.getSection(chunk.getSectionIndex(y));
                     section.setBlockState(x & 15, y & 15, z & 15, air, false);
                 }
@@ -214,12 +228,11 @@ public final class NukePerfGameTests {
     /**
      * The carve path against the write path it replaces, on the same shape.
      *
-     * <p>{@code nuke_write_throughput} says the section write is faster; this says it is <em>correct</em>,
-     * which is the harder half. Two identical stone regions, each with a chest buried in it, are cleared
-     * through the same bit pattern — one by {@link ChunkCarver}, one by {@code Level.setBlock} — and
-     * every observable the crater relies on is compared: the block states, the block entity's removal,
-     * and the {@code WORLD_SURFACE} heightmap. A wrong heightmap is the failure mode that leaves a black
-     * world, and it is invisible to anything that only checks block states.
+     * <p>{@code nuke_write_throughput} measures speed; this checks the section write is <em>correct</em>.
+     * Two identical stone regions, each with a chest buried in it, are cleared through the same bit
+     * pattern, one by {@link ChunkCarver}, one by {@code Level.setBlock}, and every observable the crater
+     * relies on is compared: the block states, the block entity's removal, and the {@code WORLD_SURFACE}
+     * heightmap. A wrong heightmap leaves a black world and is invisible to a block-state check.
      */
     public static void carveEquivalence(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -250,8 +263,8 @@ public final class NukePerfGameTests {
         // The crater's own bit layout, over the top half of each cube so the heightmap has to move and a
         // solid floor is left behind for it to move to.
         int maxY = level.getMaxY();
-        java.util.BitSet carveBits = new java.util.BitSet();
-        java.util.BitSet writeBits = new java.util.BitSet();
+        BitSet carveBits = new BitSet();
+        BitSet writeBits = new BitSet();
         for (int dx = 0; dx < side; dx++) {
             for (int dz = 0; dz < side; dz++) {
                 for (int dy = side / 2; dy < side; dy++) {
@@ -302,13 +315,13 @@ public final class NukePerfGameTests {
 
         // Heightmaps: the carve repairs them once per chunk instead of once per block, so this is the
         // check that the repair is equivalent, not merely present.
-        net.minecraft.world.level.chunk.LevelChunk carveChunk = level.getChunk(cx, cz);
-        net.minecraft.world.level.chunk.LevelChunk writeChunk = level.getChunk(wcx, wcz);
+        LevelChunk carveChunk = level.getChunk(cx, cz);
+        LevelChunk writeChunk = level.getChunk(wcx, wcz);
         for (int dx = 0; dx < side; dx++) {
             for (int dz = 0; dz < side; dz++) {
-                int carveHeight = carveChunk.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE,
+                int carveHeight = carveChunk.getHeight(Heightmap.Types.WORLD_SURFACE,
                         (carveOrigin.getX() + dx) & 15, (carveOrigin.getZ() + dz) & 15);
-                int writeHeight = writeChunk.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE,
+                int writeHeight = writeChunk.getHeight(Heightmap.Types.WORLD_SURFACE,
                         (writeOrigin.getX() + dx) & 15, (writeOrigin.getZ() + dz) & 15);
                 helper.assertTrue(carveHeight == writeHeight,
                         "WORLD_SURFACE disagrees at column (" + dx + "," + dz + "): "
@@ -324,21 +337,18 @@ public final class NukePerfGameTests {
     /**
      * Does the crater actually get <em>lit</em> after a carve?
      *
-     * <p>The one thing no equivalence check on block states can see, and the one this class got wrong
-     * first time round: a carve writes into the section's palette and never calls {@code checkBlock}, so
-     * the whole relight rests on the per-chunk pass in {@link ChunkCarver#finish()}. The first version
-     * queued only {@code propagateLightSources} — the <em>fresh chunk</em> seeding path — and left
-     * craters pitch black.
+     * <p>No equivalence check on block states can see this: a carve writes into the section's palette and
+     * never calls {@code checkBlock}, so the whole relight rests on the per-chunk pass in
+     * {@link ChunkCarver#finish()}. Queuing only {@code propagateLightSources}, the <em>fresh chunk</em>
+     * seeding path, leaves craters pitch black.
      *
      * <p>Two identical pockets of stone are buried under open sky and their roofs taken off, one by the
-     * carver and one by {@code Level.setBlock}; the sky light inside is then compared. Against the write
-     * path rather than a fixed number, on purpose: what has to hold is that a carve lights the same as
-     * vanilla would.
+     * carver and one by {@code Level.setBlock}; the sky light inside is then compared with the write path,
+     * not a fixed number: a carve has to light the same as vanilla would.
      *
      * <p><b>It waits on the light engine, not on a tick count.</b> The light engine runs on its own
-     * thread and needs wall-clock time, and a GameTest server does not tick in real time — it runs ticks
-     * back to back as fast as it can, so "60 ticks" here can be 30 ms. An earlier version used fixed
-     * delays and failed intermittently on a pocket whose light had not settled. Both phases poll instead.
+     * thread and needs wall-clock time, while a GameTest server runs ticks back to back, so "60 ticks" can
+     * be 30 ms. Both phases poll instead.
      */
     public static void carveLighting(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -361,13 +371,13 @@ public final class NukePerfGameTests {
         BlockPos carveProbe = carveOrigin.offset(side / 2, side - roof, side / 2);
         BlockPos writeProbe = writeOrigin.offset(side / 2, side - roof, side / 2);
 
-        // Phase 1 — wait for the fill to have darkened both pockets.
+        // Phase 1, wait for the fill to have darkened both pockets.
         pollUntilOrSkip(helper, LIGHT_POLL_TRIES,
                 () -> sky(level, carveProbe) == 0 && sky(level, writeProbe) == 0,
                 "the buried pockets never went dark",
                 () -> {
-                    java.util.BitSet carveBits = new java.util.BitSet();
-                    java.util.BitSet writeBits = new java.util.BitSet();
+                    BitSet carveBits = new BitSet();
+                    BitSet writeBits = new BitSet();
                     for (int dx = 0; dx < side; dx++) {
                         for (int dz = 0; dz < side; dz++) {
                             for (int dy = side - roof; dy < side; dy++) {
@@ -395,7 +405,7 @@ public final class NukePerfGameTests {
                         level.setBlock(pos, Blocks.AIR.defaultBlockState(), flags);
                     }
 
-                    // Phase 2 — wait for the *vanilla* path to light up and the engine to fall idle. That
+                    // Phase 2, wait for the *vanilla* path to light up and the engine to fall idle. That
                     // is the moment the carve path has had exactly the same opportunity.
                     pollUntil(helper, LIGHT_POLL_TRIES,
                             () -> sky(level, writeProbe) > 0 && sky(level, carveProbe) > 0,
@@ -419,11 +429,10 @@ public final class NukePerfGameTests {
     /**
      * The lighting check that matters: a <b>real crater</b>, not a hand-carved pocket.
      *
-     * <p>A pocket test turned out to have no teeth — opening four layers to the sky relights fine even
-     * with a half-finished relight pass, because that case is exactly the one
-     * {@code propagateLightSources} was written for. A blast is different in every way that could
-     * matter: it empties whole sections, it moves the sky-light source of a column by tens of blocks,
-     * and it does it across a hundred chunks at once.
+     * <p>A pocket test has no teeth: opening four layers to the sky relights fine even with a
+     * half-finished relight pass, because that is the case {@code propagateLightSources} exists for. A
+     * blast empties whole sections, moves the sky-light source of a column by tens of blocks, and does it
+     * across a hundred chunks at once.
      *
      * <p>So: bury a slab of stone deep enough to be pitch black inside, detonate in the middle of it,
      * and require that the crater floor ends up lit while stone well outside the blast stays dark. The
@@ -436,13 +445,10 @@ public final class NukePerfGameTests {
 
         int radius = 16;
         // A slab wide enough that its middle is genuinely enclosed, and thick enough that the blast has
-        // ground to carve rather than air. Dirt, not stone: stone's resistance kills a ray about ten
-        // blocks in, so a stone slab is not a crater test, it is a scratch test (same reason the
-        // benchmark above uses dirt).
-        // Kept small on purpose. The slab is laid with Level.setBlock so that it genuinely darkens —
-        // only the per-block checkBlock path drives a light *decrease*, and a carve never needs one — and
-        // every one of those blocks is a light-engine task. A slab three times this size queued enough
-        // work that the wait below timed out on some runs.
+        // ground to carve rather than air. Dirt, not stone (stone kills a ray about ten blocks in).
+        // Kept small: the slab is laid with Level.setBlock so that it genuinely darkens (only the
+        // per-block checkBlock path drives a light *decrease*), and every block is a light-engine task.
+        // A slab three times this size queued enough work that the wait below timed out on some runs.
         int half = radius + 8;
         int depth = 8;
         BlockPos centre = plot.offset(CRATER_LIGHT_X, 24, CRATER_LIGHT_Z);
@@ -453,7 +459,7 @@ public final class NukePerfGameTests {
         BlockPos inside = centre.offset(0, 2, 0);
         // The control that keeps this test honest: it must stay dark, so it has to be genuinely buried.
         // An earlier version put it one block in from the slab's top corner, where sky light reaches it
-        // from the side — it read 15 as soon as the light settled and only passed on timing. This one is
+        // from the side, it read 15 as soon as the light settled and only passed on timing. This one is
         // 8 blocks in from the edge and 13 below the top, i.e. 21 steps of attenuation from any sky,
         // while still sitting 22 blocks out from a 16-block blast.
         BlockPos outside = centre.offset(half - 8, -depth + 3, half - 8);
@@ -462,7 +468,7 @@ public final class NukePerfGameTests {
                 () -> sky(level, inside) == 0 && sky(level, outside) == 0,
                 "the slab never went dark inside",
                 () -> {
-                    com.hbm.world.chunk.ChunkLoadingManager.requestTicket(level, "crater_lighting")
+                    ChunkLoadingManager.requestTicket(level, "crater_lighting")
                             .force(centre.getX() >> 4, centre.getZ() >> 4);
                     EntityNukeExplosionMK5 blast = EntityNukeExplosionMK5.statFacNoRad(
                             level, radius, centre.getX(), centre.getY(), centre.getZ());
@@ -502,13 +508,12 @@ public final class NukePerfGameTests {
     }
 
     /**
-     * The fallout sweep, timed — the phase that runs <em>after</em> the crater and lays down the ash and
+     * The fallout sweep, timed, the phase that runs <em>after</em> the crater and lays down the ash and
      * the sellafite rings.
      *
-     * <p>The crater is not the whole blast. The sweep walks every chunk the fallout disc touches,
-     * stomps all 256 columns of each, and applies the resulting writes under the same per-tick budget
-     * the crater uses, so it can hold the server at its full tick budget for a long time after the
-     * explosion has visually "finished". {@link EntityFalloutRain} logs its own phase split; this drives
+     * <p>The sweep walks every chunk the fallout disc touches, stomps all 256 columns of each, and applies
+     * the writes under the crater's per-tick budget, so it can hold the server at that budget long after
+     * the explosion has visually finished. {@link EntityFalloutRain} logs its own phase split; this drives
      * one sweep over real ground and asserts only that it terminates.
      */
     public static void falloutBenchmark(GameTestHelper helper) {
@@ -516,7 +521,7 @@ public final class NukePerfGameTests {
         BlockPos plot = helper.absolutePos(BlockPos.ZERO);
         BlockState dirt = Blocks.DIRT.defaultBlockState();
 
-        // Small: the sweep is now driven by real server ticks rather than a spin loop, so its scale is
+        // The sweep runs on real server ticks, not a spin loop, so its scale is
         // paid for in suite wall-clock. Big enough to cover every phase, no bigger.
         int scale = 32;
         BlockPos centre = plot.offset(FALLOUT_X, 8, FALLOUT_Z);
@@ -530,7 +535,7 @@ public final class NukePerfGameTests {
             for (int dz = -scale; dz <= scale; dz++) {
                 int x = centre.getX() + dx;
                 int z = centre.getZ() + dz;
-                net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunk(x >> 4, z >> 4);
+                LevelChunk chunk = level.getChunk(x >> 4, z >> 4);
                 for (int dy = -8; dy <= 0; dy++) {
                     int y = centre.getY() + dy;
                     if (y < level.getMinY() || y > level.getMaxY()) continue;
@@ -540,22 +545,20 @@ public final class NukePerfGameTests {
                 }
                 // The stomp starts from WORLD_SURFACE, so the section writes above have to be reflected
                 // in the heightmap or every column reports "nothing here" and the sweep measures air.
-                net.minecraft.world.level.levelgen.Heightmap.primeHeightmaps(chunk,
-                        java.util.EnumSet.of(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE,
-                                net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING));
+                Heightmap.primeHeightmaps(chunk,
+                        EnumSet.of(Heightmap.Types.WORLD_SURFACE,
+                                Heightmap.Types.MOTION_BLOCKING));
             }
         }
         Constants.LOG.info("[FALLOUT-BENCH] filled {} blocks in {} ms", filled,
                 System.currentTimeMillis() - fillStart);
 
-        com.hbm.entity.effect.EntityFalloutRain rain = spawnSweep(level, centre, scale);
+        EntityFalloutRain rain = spawnSweep(level, centre, scale);
 
         // Driven by real server ticks, not a tight rain.tick() loop.
         //
-        // The loop worked while the sweep resolved its chunks synchronously, because the chunk arrived
-        // inside the call. It cannot work now that the sweep claims a chunk and waits: the chunk system
-        // only advances when the server ticks, so a driver that never lets the server tick spins
-        // forever — this one ran 223 million iterations and timed out.
+        // The sweep claims a chunk and waits for it, and the chunk system only advances when the server
+        // ticks, so a driver that never lets the server tick spins forever.
         long start = System.currentTimeMillis();
         pollUntil(helper, SWEEP_POLL_TRIES, () -> !rain.isAlive(),
                 "the pre-loaded sweep did not finish",
@@ -563,13 +566,13 @@ public final class NukePerfGameTests {
                     Constants.LOG.info("[FALLOUT-BENCH] scale={} over loaded ground finished in {} ms wall",
                             scale, System.currentTimeMillis() - start);
 
-                    // Second sweep, over ground nobody has loaded. This is the case that actually happens
-                    // in a world — the disc reaches far past whatever a player had loaded — and the only
-                    // one that exercises the claim-and-wait path. The first cannot: filling its ground
-                    // loaded every chunk it would ask for.
+                    // Second sweep, over ground nobody has loaded. This is what happens in a world (the
+                    // disc reaches far past whatever a player had loaded) and the only case that
+                    // exercises the claim-and-wait path: filling the first sweep's ground loaded every
+                    // chunk it would ask for.
                     int virginScale = 96;
                     BlockPos virginCentre = findVirginFalloutCentre(level, centre);
-                    com.hbm.entity.effect.EntityFalloutRain virgin = spawnSweep(level, virginCentre, virginScale);
+                    EntityFalloutRain virgin = spawnSweep(level, virginCentre, virginScale);
                     long virginStart = System.currentTimeMillis();
                     pollUntil(helper, SWEEP_POLL_TRIES, () -> !virgin.isAlive(),
                             "the virgin-terrain sweep did not finish",
@@ -591,12 +594,12 @@ public final class NukePerfGameTests {
     }
 
     /**
-     * The sweep writes its blocks straight into the chunk sections and calls {@code onPlace} by hand. Since History
-     * §19ek-small {@link com.hbm.blocks.generic.BlockFallout} follows 1.7: it has no tick and emits no chunk
+     * The sweep writes its blocks straight into the chunk sections and calls {@code onPlace} by hand.
+     * {@link com.hbm.blocks.generic.BlockFallout} follows 1.7: it has no tick and emits no chunk
      * radiation (the self-rescheduling +1 RAD tick was 1.12.2's). This checks the sweep's ash carries no tick.
      */
     private static void assertAshIsInert(GameTestHelper helper, ServerLevel level, BlockPos centre, int scale) {
-        net.minecraft.world.level.block.Block fallout = com.hbm.blocks.ModFalloutBlocks.fallout.get();
+        Block fallout = ModFalloutBlocks.fallout.get();
         BlockPos.MutableBlockPos probe = new BlockPos.MutableBlockPos();
         int found = 0;
         int ticking = 0;
@@ -624,7 +627,7 @@ public final class NukePerfGameTests {
     /**
      * Drives a blast once per poll while still yielding real server ticks to its asynchronous chunk
      * requests. These benchmarks live outside the GameTest simulation area, so the level does not tick
-     * their entities reliably; the old tight loop drove them but starved the chunk task system.
+     * their entities reliably, and a tight tick loop starves the chunk task system.
      */
     private static final class BlastDriver {
         private final EntityNukeExplosionMK5 blast;
@@ -692,15 +695,15 @@ public final class NukePerfGameTests {
                 }, cleanup);
     }
 
-    private static com.hbm.entity.effect.EntityFalloutRain spawnSweep(ServerLevel level, BlockPos centre,
+    private static EntityFalloutRain spawnSweep(ServerLevel level, BlockPos centre,
                                                                      int scale) {
         // The sweep's own chunk has to be simulating or the entity never gets a tick, and over virgin
         // terrain nothing else is holding it. In game a player is standing at the blast site; here the
         // test has to say so itself. Claimed and left claimed: the test's world is thrown away after it.
-        com.hbm.world.chunk.ChunkLoadingManager.requestTicket(level, "fallout_benchmark")
+        ChunkLoadingManager.requestTicket(level, "fallout_benchmark")
                 .force(centre.getX() >> 4, centre.getZ() >> 4);
-        com.hbm.entity.effect.EntityFalloutRain rain = new com.hbm.entity.effect.EntityFalloutRain(
-                com.hbm.entity.ModEntities.FALLOUT_RAIN.get(), level);
+        EntityFalloutRain rain = new EntityFalloutRain(
+                ModEntities.FALLOUT_RAIN.get(), level);
         rain.setScale(scale);
         rain.snapTo(centre.getX() + 0.5, centre.getY(), centre.getZ() + 0.5);
         level.addFreshEntity(rain);
@@ -734,19 +737,18 @@ public final class NukePerfGameTests {
      * The three ways a fallout <em>conversion</em> can reach the world, timed against each other.
      *
      * <p>The fallout sweep does not clear blocks, it <b>replaces</b> them (sellafite rings, ash layers,
-     * fire), and it currently does so with {@code Level.setBlock(pos, state, UPDATE_ALL)} on the server
-     * thread — which is a different cost from the crater's clear, because {@code UPDATE_ALL} carries
-     * neighbour and shape updates. Both references instead write the palette off-thread and run only the
-     * notify work on the server thread. This measures what each layer of that actually costs, so the
-     * decision to port it is made on numbers.
+     * fire), with {@code Level.setBlock(pos, state, UPDATE_ALL)} on the server thread. That costs
+     * differently from the crater's clear, because {@code UPDATE_ALL} carries neighbour and shape updates.
+     * Both references instead write the palette off-thread and run only the notify work on the server
+     * thread. This measures what each layer costs.
      *
      * <p>Three identical regions, same shape converted in each:
      * <ol>
-     *   <li><b>setBlock(UPDATE_ALL)</b> — the port today.</li>
-     *   <li><b>section write + per-block neighbour/shape notify + one relight per chunk</b> — the
-     *       reference shape, with the palette write done in place rather than off-thread (the off-thread
-     *       part removes it from the server thread entirely, so this is the pessimistic version of it).</li>
-     *   <li><b>section write + one relight per chunk, no neighbour notify</b> — the floor, and a
+     *   <li><b>setBlock(UPDATE_ALL)</b>: what the sweep does.</li>
+     *   <li><b>section write + per-block neighbour/shape notify + one relight per chunk</b>: the
+     *       reference shape, with the palette write done in place rather than off-thread (so the
+     *       pessimistic version of it).</li>
+     *   <li><b>section write + one relight per chunk, no neighbour notify</b>: the floor, and a
      *       behaviour change: nothing attached to a converted block would be told it changed.</li>
      * </ol>
      */
@@ -808,7 +810,7 @@ public final class NukePerfGameTests {
 
     /** State writes are last-wins; falling markers use their own first-wins position set. */
     public static void falloutWriteDeduplication(GameTestHelper helper) {
-        helper.assertTrue(com.hbm.entity.effect.EntityFalloutRain.writeDeduplicationContractForTest(
+        helper.assertTrue(EntityFalloutRain.writeDeduplicationContractForTest(
                         Blocks.STONE.defaultBlockState(), Blocks.COBBLESTONE.defaultBlockState()),
                 "fallout scan writes no longer match the references' position-map deduplication");
         helper.succeed();
@@ -819,7 +821,7 @@ public final class NukePerfGameTests {
     }
 
     /**
-     * Converts a cube by writing its sections directly, then repairing the chunk once — optionally doing
+     * Converts a cube by writing its sections directly, then repairing the chunk once, optionally doing
      * the per-block neighbour and shape notifications the references keep.
      *
      * @return milliseconds spent on the palette writes alone, which is the part the references move
@@ -827,14 +829,14 @@ public final class NukePerfGameTests {
      */
     private static long sectionConvert(ServerLevel level, BlockPos origin, int baseY, int side,
                                        BlockState state, boolean notifyNeighbours) {
-        it.unimi.dsi.fastutil.longs.LongOpenHashSet chunks = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+        LongOpenHashSet chunks = new LongOpenHashSet();
         long writeStart = System.nanoTime();
         for (int dx = 0; dx < side; dx++) {
             for (int dz = 0; dz < side; dz++) {
                 int x = origin.getX() + dx;
                 int z = origin.getZ() + dz;
-                net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunk(x >> 4, z >> 4);
-                chunks.add(net.minecraft.world.level.ChunkPos.pack(x >> 4, z >> 4));
+                LevelChunk chunk = level.getChunk(x >> 4, z >> 4);
+                chunks.add(ChunkPos.pack(x >> 4, z >> 4));
                 for (int dy = 0; dy < side; dy++) {
                     int y = baseY + dy;
                     chunk.getSection(chunk.getSectionIndex(y)).setBlockState(x & 15, y & 15, z & 15, state, false);
@@ -849,7 +851,7 @@ public final class NukePerfGameTests {
                 for (int dy = 0; dy < side; dy++) {
                     for (int dz = 0; dz < side; dz++) {
                         pos.set(origin.getX() + dx, baseY + dy, origin.getZ() + dz);
-                        dev.golem.core.world.Compat.updateNeighborsAt(level, pos, state.getBlock());
+                        Compat.updateNeighborsAt(level, pos, state.getBlock());
                         state.updateNeighbourShapes(level, pos, Block.UPDATE_CLIENTS);
                     }
                 }
@@ -858,41 +860,40 @@ public final class NukePerfGameTests {
 
         var lightEngine = level.getChunkSource().getLightEngine();
         for (long packed : chunks) {
-            net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunk(
-                    net.minecraft.world.level.ChunkPos.getX(packed),
-                    net.minecraft.world.level.ChunkPos.getZ(packed));
-            net.minecraft.world.level.levelgen.Heightmap.primeHeightmaps(chunk,
-                    java.util.EnumSet.allOf(net.minecraft.world.level.levelgen.Heightmap.Types.class));
+            LevelChunk chunk = level.getChunk(
+                    ChunkPos.getX(packed),
+                    ChunkPos.getZ(packed));
+            Heightmap.primeHeightmaps(chunk,
+                    EnumSet.allOf(Heightmap.Types.class));
             chunk.initializeLightSources();
             var sections = chunk.getSections();
             for (int index = 0; index < sections.length; index++) {
                 lightEngine.updateSectionStatus(
-                        net.minecraft.core.SectionPos.of(chunk.getPos(), index + level.getMinSectionY()),
+                        SectionPos.of(chunk.getPos(), index + level.getMinSectionY()),
                         sections[index].hasOnlyAir());
             }
             lightEngine.lightChunk(chunk, false);
-            dev.golem.core.world.Compat.markUnsaved(chunk);
+            Compat.markUnsaved(chunk);
         }
         return writeMs;
     }
 
     /**
-     * What the ash layer costs <em>after</em> the sweep has finished. Until History §19ek-small the port used
-     * 1.12.2's self-rescheduling ash tick (+1 RAD every 10..39 ticks, forever), and this test projected that load.
-     * 1.7's {@code BlockFallout} has no tick, so placed ash is now free after placement: this measures placement and
-     * asserts that no ash block schedules a tick.
+     * What the ash layer costs <em>after</em> the sweep has finished. {@code BlockFallout} has no tick, as in
+     * 1.7, so placed ash is free after placement: this measures placement and asserts that no ash block
+     * schedules a tick.
      */
     public static void falloutAshLoad(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos plot = helper.absolutePos(BlockPos.ZERO);
         BlockState stone = Blocks.STONE.defaultBlockState();
-        BlockState ash = com.hbm.blocks.ModFalloutBlocks.fallout.get().defaultBlockState();
+        BlockState ash = ModFalloutBlocks.fallout.get().defaultBlockState();
 
         int side = 48;                       // 48x48 = 2304 ash blocks, one layer
         int baseY = plot.getY() + 8;
         BlockPos origin = plot.offset(ASH_X, 0, ASH_Z);
 
-        // A floor for the ash to sit on — it pops off anything that is not up-sturdy.
+        // A floor for the ash to sit on: it pops off anything that is not up-sturdy.
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int dx = 0; dx < side; dx++) {
             for (int dz = 0; dz < side; dz++) {
@@ -909,7 +910,7 @@ public final class NukePerfGameTests {
                 pos.set(origin.getX() + dx, baseY + 1, origin.getZ() + dz);
                 level.setBlock(pos, ash, Block.UPDATE_ALL);
                 placed++;
-                if (level.getBlockTicks().hasScheduledTick(pos.immutable(), com.hbm.blocks.ModFalloutBlocks.fallout.get())) ticking++;
+                if (level.getBlockTicks().hasScheduledTick(pos.immutable(), ModFalloutBlocks.fallout.get())) ticking++;
             }
         }
         long placeUs = (System.nanoTime() - t0) / 1000L;
@@ -925,19 +926,18 @@ public final class NukePerfGameTests {
     /**
      * What the notify pass actually costs, and on what.
      *
-     * <p>After the sweep's writes moved into the sections, a real doomsday warhead reported
-     * <b>971,356 notified cells in 45,447 ms — 46 µs each</b>, against ~0.9 µs for the same two calls in
-     * a benchmark over plain stone. A 50× gap that only shows up in a real world means the cost is not
-     * the call, it is what the neighbours do when they are told; so this measures the same two calls over
-     * neighbourhoods that actually react.
+     * <p>A real doomsday warhead reported <b>971,356 notified cells in 45,447 ms, 46 µs each</b>, against
+     * ~0.9 µs for the same two calls over plain stone. A 50× gap that only shows up in a real world means
+     * the cost is what the neighbours do when told; this measures the same two calls over neighbourhoods
+     * that react.
      *
      * <p>Four regions, identical conversions, timed separately for {@code updateNeighborsAt} and
      * {@code updateNeighbourShapes}:
      * <ol>
-     *   <li>plain stone — the inert baseline the earlier benchmark used;</li>
-     *   <li>a quarter sand and gravel — {@code FallingBlock.neighborChanged} schedules a tick each;</li>
-     *   <li>a quarter water — {@code LiquidBlock.neighborChanged} schedules a fluid tick each;</li>
-     *   <li>a surface of grass with flowers and torches on top — the case the shape pass exists for.</li>
+     *   <li>plain stone, the inert baseline the earlier benchmark used;</li>
+     *   <li>a quarter sand and gravel, {@code FallingBlock.neighborChanged} schedules a tick each;</li>
+     *   <li>a quarter water, {@code LiquidBlock.neighborChanged} schedules a fluid tick each;</li>
+     *   <li>a surface of grass with flowers and torches on top, the case the shape pass exists for.</li>
      * </ol>
      */
     public static void falloutNotifyCost(GameTestHelper helper) {
@@ -954,7 +954,7 @@ public final class NukePerfGameTests {
 
         // The mechanism behind the real-world number, measured directly: `updateNeighborsAt` reads the six
         // blocks around a cell with Level.getBlockState, and on a chunk border that reads into the next
-        // chunk — where getBlockState loads and GENERATES synchronously if nobody has it. A single one of
+        // chunk, where getBlockState loads and GENERATES synchronously if nobody has it. A single one of
         // those, amortised over a few hundred cells, is the whole 49 us/cell a real blast reported.
         long virginTotal = 0;
         int samples = 8;
@@ -986,7 +986,7 @@ public final class NukePerfGameTests {
         BlockState stone = Blocks.STONE.defaultBlockState();
         BlockState converted = Blocks.COBBLESTONE.defaultBlockState();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        java.util.Random rng = new java.util.Random(1234L);
+        Random rng = new Random(1234L);
 
         // Build the neighbourhood. Through setBlock so it settles like real terrain would.
         for (int dx = 0; dx < side; dx++) {
@@ -1016,13 +1016,13 @@ public final class NukePerfGameTests {
             }
         }
 
-        // Pass one: section writes, exactly as the sweep now does them.
-        it.unimi.dsi.fastutil.longs.LongArrayList changed = new it.unimi.dsi.fastutil.longs.LongArrayList();
+        // Pass one: section writes, exactly as the sweep does them.
+        LongArrayList changed = new LongArrayList();
         for (int dx = 0; dx < side; dx++) {
             for (int dz = 0; dz < side; dz++) {
                 int x = origin.getX() + dx;
                 int z = origin.getZ() + dz;
-                net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunk(x >> 4, z >> 4);
+                LevelChunk chunk = level.getChunk(x >> 4, z >> 4);
                 for (int dy = 0; dy < side; dy++) {
                     int y = baseY + dy;
                     var section = chunk.getSection(chunk.getSectionIndex(y));
@@ -1040,7 +1040,7 @@ public final class NukePerfGameTests {
             long packed = changed.getLong(i);
             pos.set(BlockPos.getX(packed), BlockPos.getY(packed), BlockPos.getZ(packed));
             long t0 = System.nanoTime();
-            dev.golem.core.world.Compat.updateNeighborsAt(level, pos, converted.getBlock());
+            Compat.updateNeighborsAt(level, pos, converted.getBlock());
             long t1 = System.nanoTime();
             converted.updateNeighbourShapes(level, pos, Block.UPDATE_CLIENTS);
             long t2 = System.nanoTime();
@@ -1066,11 +1066,11 @@ public final class NukePerfGameTests {
     private static final int LIGHT_POLL_TRIES = 2000;
 
     private static int sky(ServerLevel level, BlockPos pos) {
-        return level.getBrightness(net.minecraft.world.level.LightLayer.SKY, pos);
+        return level.getBrightness(LightLayer.SKY, pos);
     }
 
-    // Note: there is deliberately no "wait for the light engine to be idle" helper here. GameTest runs a
-    // batch of tests concurrently in one level, so the shared light engine is essentially never idle and
+    // Note: there is no "wait for the light engine to be idle" helper here. GameTest runs a
+    // batch of tests concurrently in one level, so the shared light engine is never idle and
     // gating on it made these tests hang until they timed out. Each phase waits on the light *value* it
     // actually needs instead, which fails with a useful message when a relight is genuinely broken.
 
@@ -1078,19 +1078,16 @@ public final class NukePerfGameTests {
      * {@link #pollUntil} for a <b>precondition</b>: if it never holds, the test <em>succeeds</em> with a
      * loud log instead of failing.
      *
-     * <p>This is a deliberate weakening and it should be understood before it is copied. Both light
-     * tests need their setup to be dark before they can show anything, and darkening means waiting for a
-     * light <em>decrease</em> of tens of thousands of cells on an engine that a GameTest server shares
-     * between a whole concurrently-running batch of tests. That wait cannot be made reliable from inside
-     * the test — three different setups were tried — and a precondition that fails one run in five is a
-     * false red, not a finding.
+     * <p>This weakens the test on purpose. Both light tests need a dark setup before they can show
+     * anything, and darkening means waiting for a light <em>decrease</em> of tens of thousands of cells on
+     * an engine a GameTest server shares between a whole concurrent batch. That wait cannot be made
+     * reliable from inside the test, and a precondition that fails one run in five is a false red.
      *
-     * <p>Everything the tests actually assert stays fatal. What this costs is that on a run where the
-     * setup did not settle, they check nothing; the log line says so, so a green suite is never silently
-     * a vacuous one.
+     * <p>Everything the tests assert stays fatal. On a run where the setup did not settle they check
+     * nothing, and the log line says so.
      */
     private static void pollUntilOrSkip(GameTestHelper helper, int triesLeft,
-                                        java.util.function.BooleanSupplier condition,
+                                        BooleanSupplier condition,
                                         String skipMessage, Runnable then) {
         if (condition.getAsBoolean()) {
             then.run();
@@ -1113,7 +1110,7 @@ public final class NukePerfGameTests {
      * <p>A tick-counted delay is the wrong tool here: a GameTest server runs ticks as fast as it can, so
      * a delay measures loop iterations rather than the wall-clock time an off-thread engine needs.
      */
-    private static void pollUntil(GameTestHelper helper, int triesLeft, java.util.function.BooleanSupplier condition,
+    private static void pollUntil(GameTestHelper helper, int triesLeft, BooleanSupplier condition,
                                   String stuckMessage, Runnable then) {
         if (condition.getAsBoolean()) {
             then.run();
@@ -1130,7 +1127,7 @@ public final class NukePerfGameTests {
     }
 
     private static void pollUntilWithCleanup(GameTestHelper helper, int triesLeft,
-                                             java.util.function.BooleanSupplier condition,
+                                             BooleanSupplier condition,
                                              String stuckMessage, Runnable then, Runnable cleanup) {
         try {
             if (condition.getAsBoolean()) {
@@ -1156,14 +1153,12 @@ public final class NukePerfGameTests {
      * inside.
      *
      * <p>It has to be {@code setBlock}: only the per-block {@code checkBlock} it queues drives a light
-     * <b>decrease</b>. Two cheaper setups were tried and both fail — section writes plus a roof-seeded
-     * decrease is not reliable under a concurrent GameTest batch, and section writes plus a full
-     * wipe-and-relight does not darken the interior at all, because a wiped sky-light section reads back
-     * as the default 15. (That second result is worth keeping: it is independent evidence that the
-     * wipe-and-relight deleted from {@code ChunkCarver} would not have helped it either.)
+     * <b>decrease</b>. Section writes plus a roof-seeded decrease are not reliable under a concurrent
+     * GameTest batch, and section writes plus a full wipe-and-relight do not darken the interior at all,
+     * because a wiped sky-light section reads back as the default 15.
      *
-     * <p>The cost is that the caller has to wait for a large decrease to drain, which this harness cannot
-     * promise — see {@link #pollUntilOrSkip}.
+     * <p>The caller has to wait for a large decrease to drain, which this harness cannot promise; see
+     * {@link #pollUntilOrSkip}.
      */
     private static void fillSlabAndDarken(ServerLevel level, BlockPos centre, int half, int depth,
                                           BlockState state) {
@@ -1180,13 +1175,13 @@ public final class NukePerfGameTests {
     }
 
     private static void fillCube(ServerLevel level, BlockPos origin, int baseY, int side,
-                                  net.minecraft.world.level.block.state.BlockState state) {
+                                  BlockState state) {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int dx = 0; dx < side; dx++) {
             for (int dy = 0; dy < side; dy++) {
                 for (int dz = 0; dz < side; dz++) {
                     pos.set(origin.getX() + dx, baseY + dy, origin.getZ() + dz);
-                    level.setBlock(pos, state, net.minecraft.world.level.block.Block.UPDATE_NONE);
+                    level.setBlock(pos, state, Block.UPDATE_NONE);
                 }
             }
         }
@@ -1197,7 +1192,7 @@ public final class NukePerfGameTests {
      *
      * <p>1.7's nuke cleared with {@code setBlock}, whose {@code breakBlock} ran on every cell, and a dummy's
      * {@code breakBlock} removed its core. The carve writes into sections and runs no hook at all, so a fluid tank
-     * whose core the rays missed kept standing, model and all, with its other cells gone (playtest 2026-10-07).
+     * whose core the rays missed kept standing, model and all, with its other cells gone.
      */
     public static void carveTearsDownMultiblock(GameTestHelper helper) {
         tearDownCase(helper, true);
@@ -1213,22 +1208,22 @@ public final class NukePerfGameTests {
 
     private static void tearDownCase(GameTestHelper helper, boolean carve) {
         ServerLevel level = helper.getLevel();
-        var block = com.hbm.blocks.machine.ModMachineBlocks.machine_fluidtank.get();
+        var block = ModMachineBlocks.machine_fluidtank.get();
         BlockPos rel = new BlockPos(5, 1, 5);
         helper.setBlock(rel, block.defaultBlockState());
-        block.fillSpace(level, helper.absolutePos(rel), net.minecraft.core.Direction.NORTH);
+        block.fillSpace(level, helper.absolutePos(rel), Direction.NORTH);
         BlockPos core = helper.absolutePos(rel);
         helper.assertTrue(level.getBlockEntity(core) != null, "the tank core has its block entity");
 
         // The tank's top layer only: cells, never the core, as rays that stopped short of the middle would leave it.
-        java.util.List<BlockPos> hit = new java.util.ArrayList<>();
+        List<BlockPos> hit = new ArrayList<>();
         int structure = 0;
         for (BlockPos p : BlockPos.betweenClosed(core.offset(-3, 0, -3), core.offset(3, 4, 3))) {
             BlockState state = level.getBlockState(p);
             if (!state.is(block)) continue;
             structure++;
             if (p.getY() == core.getY() + 2) {
-                helper.assertTrue(state.getValue(com.hbm.blocks.multiblock.BlockMultiblockMachine.CELL), "top layer is cells");
+                helper.assertTrue(state.getValue(BlockMultiblockMachine.CELL), "top layer is cells");
                 hit.add(p.immutable());
             }
         }
@@ -1236,21 +1231,21 @@ public final class NukePerfGameTests {
 
         if (carve) {
             int maxY = level.getMaxY();
-            java.util.Map<Long, java.util.BitSet> perChunk = new java.util.HashMap<>();
+            Map<Long, BitSet> perChunk = new HashMap<>();
             for (BlockPos p : hit) {
-                perChunk.computeIfAbsent(net.minecraft.world.level.ChunkPos.pack(p.getX() >> 4, p.getZ() >> 4),
-                        k -> new java.util.BitSet()).set(((maxY - p.getY()) << 8) | ((p.getX() & 15) << 4) | (p.getZ() & 15));
+                perChunk.computeIfAbsent(ChunkPos.pack(p.getX() >> 4, p.getZ() >> 4),
+                        k -> new BitSet()).set(((maxY - p.getY()) << 8) | ((p.getX() & 15) << 4) | (p.getZ() & 15));
             }
             for (var entry : perChunk.entrySet()) {
-                int cx = net.minecraft.world.level.ChunkPos.getX(entry.getKey());
-                int cz = net.minecraft.world.level.ChunkPos.getZ(entry.getKey());
+                int cx = ChunkPos.getX(entry.getKey());
+                int cz = ChunkPos.getZ(entry.getKey());
                 ChunkCarver carver = new ChunkCarver(level, level.getChunk(cx, cz), entry.getValue(), cx, cz, maxY);
                 helper.assertTrue(carver.carveUntil(System.currentTimeMillis() + 10_000L), "the carve did not finish");
                 carver.finish();
             }
         } else {
             int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
-            for (BlockPos p : hit) dev.golem.core.world.Compat.setBlockWithRemoval(level, p, Blocks.AIR.defaultBlockState(), flags);
+            for (BlockPos p : hit) Compat.setBlockWithRemoval(level, p, Blocks.AIR.defaultBlockState(), flags);
         }
 
         int left = 0;
@@ -1269,7 +1264,7 @@ public final class NukePerfGameTests {
             for (int dz = -radius; dz <= radius; dz++) {
                 int x = centre.getX() + dx;
                 int z = centre.getZ() + dz;
-                net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunk(x >> 4, z >> 4);
+                LevelChunk chunk = level.getChunk(x >> 4, z >> 4);
                 for (int dy = -radius; dy <= radius; dy++) {
                     int y = centre.getY() + dy;
                     chunk.getSection(chunk.getSectionIndex(y))

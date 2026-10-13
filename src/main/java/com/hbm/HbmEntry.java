@@ -1,7 +1,13 @@
 package com.hbm;
 
+import com.hbm.api.data.HbmDataMaps;
+import com.hbm.api.script.HbmScripts;
 import com.hbm.hazard.Hazards;
+import com.hbm.inventory.fluid.FluidProperties;
+import com.hbm.inventory.recipes.HbmRecipeTables;
+import com.hbm.itempool.ItemPool;
 import com.hbm.packet.HbmPackets;
+import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
 import dev.golem.core.platform.ModEntry;
 
 /**
@@ -23,20 +29,20 @@ public class HbmEntry implements ModEntry {
     public void declare() {
         CommonClass.init();
         HbmPackets.declare();
-        com.hbm.inventory.recipes.HbmRecipeTables.declare();
-        com.hbm.api.data.HbmDataMaps.declare();
-        com.hbm.itempool.ItemPool.declare();
-        com.hbm.inventory.fluid.FluidProperties.declare(); // fluid_property + fluid_property_patch
-        com.hbm.api.script.HbmScripts.declare(); // the HBM script global and HBMEvents (inert without KubeJS)
+        HbmRecipeTables.declare();
+        HbmDataMaps.declare();
+        ItemPool.declare();
+        FluidProperties.declare(); // fluid_property + fluid_property_patch
+        HbmScripts.declare(); // the HBM script global and HBMEvents (inert without KubeJS)
     }
 
     @Override
     public void registered() {
         // Item and material hazards name registered items.
         Hazards.init();
-        // the missile item -> entity table, its own start-up step (it used to hide inside Hazards.init)
-        com.hbm.tileentity.bomb.TileEntityLaunchPadBase.registerLaunchables();
+        // the missile item -> entity table, its own start-up step (separate from Hazards.init)
+        TileEntityLaunchPadBase.registerLaunchables();
         // materials requested by startup scripts (HBMEvents.registry), once every register is filled
-        com.hbm.api.script.HbmScripts.registered();
+        HbmScripts.registered();
     }
 }

@@ -7,6 +7,7 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityHeatBoiler;
@@ -23,14 +24,17 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Heat Boiler block (old id {@code heat_boiler}) — 1:1 port of the 1.12.2 {@code MachineHeatBoiler}:
+ * Heat Boiler block (old id {@code heat_boiler}), 1:1 port of the 1.12.2 {@code MachineHeatBoiler}:
  * a 4-tall 3×3 the folded core (dims {@code {3,0,1,1,1,1}}, offset 1) with two side ports and
  * the top port marked as extras. Right-click with a fluid identifier types the input tank; the look
  * overlay prints heat + both tanks (the boiler has no GUI).
@@ -94,20 +98,20 @@ public class MachineHeatBoiler extends BlockMultiblockMachine implements IFluidC
      * 4 steel ingots and 8 copper plates instead of dropping itself.
      */
     @Override
-    public List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         TileEntityHeatBoiler boiler = null;
-        if (params.getOptionalParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.BLOCK_ENTITY)
+        if (params.getOptionalParameter(LootContextParams.BLOCK_ENTITY)
                 instanceof TileEntityHeatBoiler direct) {
             boiler = direct;
         } else {
-            net.minecraft.world.phys.Vec3 origin = params.getOptionalParameter(
-                    net.minecraft.world.level.storage.loot.parameters.LootContextParams.ORIGIN);
+            Vec3 origin = params.getOptionalParameter(
+                    LootContextParams.ORIGIN);
             BlockPos core = origin == null ? null : MultiblockSurface.coreOfAny(params.getLevel(), BlockPos.containing(origin));
             if (core != null && params.getLevel().getBlockEntity(core) instanceof TileEntityHeatBoiler found) boiler = found;
         }
         if (boiler != null && boiler.hasExploded) {
-            return List.of(new ItemStack(com.hbm.items.ModItems.ingot_steel.get(), 4),
-                    new ItemStack(com.hbm.items.ModItems.plate_copper.get(), 8));
+            return List.of(new ItemStack(ModItems.ingot_steel.get(), 4),
+                    new ItemStack(ModItems.plate_copper.get(), 8));
         }
         return super.getDrops(state, params);
     }

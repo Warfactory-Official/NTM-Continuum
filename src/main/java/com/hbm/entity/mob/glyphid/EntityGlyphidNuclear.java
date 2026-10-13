@@ -1,6 +1,7 @@
 package com.hbm.entity.mob.glyphid;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.entity.logic.EntityWaypoint;
 import com.hbm.entity.mob.EntityParasiteMaggot;
 import com.hbm.entity.mob.glyphid.GlyphidStats.StatBundle;
@@ -12,6 +13,7 @@ import com.hbm.explosion.vanillant.standard.EntityProcessorStandard;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import com.hbm.main.Polaroid;
 import com.hbm.main.ResourceManager;
+import com.hbm.particle.helper.EntityEffects;
 import com.hbm.sound.ModSounds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -177,7 +179,7 @@ public class EntityGlyphidNuclear extends EntityGlyphid {
                     vnt.setBlockProcessor(new BlockProcessorStandard()
                             // 1.7 BlockMutatorDebris(ModBlocks.volcanic_lava_block, 0)
                             .withBlockEffect(new BlockMutatorDebris(
-                                    () -> com.hbm.blocks.ModFluidNetBlocks.volcanic_lava_block.get().defaultBlockState()))
+                                    () -> ModFluidNetBlocks.volcanic_lava_block.get().defaultBlockState()))
                             .setNoDrop());
                 }
 
@@ -189,7 +191,7 @@ public class EntityGlyphidNuclear extends EntityGlyphid {
                         SoundSource.BLOCKS, 15.0F, 1.0F);
 
                 boolean balefire = Polaroid.isBalefireDay() || random.nextInt(100) == 0;
-                com.hbm.particle.helper.EntityEffects.muke(server, getX(), getY() + 0.5D, getZ(), false, balefire, 250);
+                EntityEffects.muke(server, getX(), getY() + 0.5D, getZ(), false, balefire, 250);
             }
 
             discard();

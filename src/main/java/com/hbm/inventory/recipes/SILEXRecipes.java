@@ -17,6 +17,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.Ids;
+import dev.golem.core.world.ItemStacks;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
@@ -51,9 +54,9 @@ import java.util.Map;
  * row (by {@code order}, then recipe id) whose input matches wins; 1.7's {@code itemTranslation}/{@code dictTranslation}
  * aliases (UF6 / uranium powder to the uranium ingot, ...) are rows of their own with the same outputs.
  *
- * <p>The rows were converted once from the former Java table (1.7's base recipes, the 28 RBMK pellet families x 5
- * stages and their xenon twins, and the 24 nuclear waste reprocessing recipes) and are the source now. 1.7's
- * {@code tinyWasteTranslation} stays a rule: a tiny waste item runs its full-size counterpart's row.
+ * <p>The rows are 1.7's base recipes, the 28 RBMK pellet families x 5 stages and their xenon twins, and the 24
+ * nuclear waste reprocessing recipes. 1.7's {@code tinyWasteTranslation} is a rule: a tiny waste item runs its
+ * full-size counterpart's row.
  */
 public final class SILEXRecipes {
 
@@ -108,7 +111,7 @@ public final class SILEXRecipes {
         }
     }
 
-    // ---------------------------------------------------------------- the data table
+    // The data table
 
     /** One weighted output as read from a file (the stack is built when the table is indexed). */
     public record WeightedOut(ItemOut data, int weight) {}
@@ -128,7 +131,7 @@ public final class SILEXRecipes {
             ? wavelength.name().toLowerCase(Locale.ROOT) : wavelength.name());
 
     private static final Codec<VariantStack> PELLET_INPUT = RecordCodecBuilder.create(i -> i.group(
-            dev.golem.core.world.ItemStacks.itemCodec().fieldOf("rbmk_pellet").forGetter(stack -> stack.item),
+            ItemStacks.itemCodec().fieldOf("rbmk_pellet").forGetter(stack -> stack.item),
             Codec.INT.fieldOf("stage").forGetter(stack -> stack.variant)
     ).apply(i, VariantStack::new));
 
@@ -188,7 +191,7 @@ public final class SILEXRecipes {
         TABLE.rows();
     }
 
-    // ---------------------------------------------------------------- lookup
+    // Lookup
 
     /** The recipe for an input stack, or {@code null}: the first matching row, else the tiny-waste rule. */
     public static SILEXRecipe getOutput(ItemStack stack) {
@@ -228,7 +231,7 @@ public final class SILEXRecipes {
     private static final Map<SILEXRecipe, SILEXRecipe> TINY_CACHE = new IdentityHashMap<>();
 
     /** Tiny waste item id -> full-size item id, from {@link #addTinyWaste}. */
-    private static final Map<String, String> ADDED_TINY_WASTE = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, String> ADDED_TINY_WASTE = new ConcurrentHashMap<>();
 
     /**
      * Adds a pair to 1.7's {@code tinyWasteTranslation} for waste items outside HBM's four storage-drum families (an
@@ -243,7 +246,7 @@ public final class SILEXRecipes {
         if (ADDED_TINY_WASTE.isEmpty()) return null;
         String full = ADDED_TINY_WASTE.get(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
         if (full == null) return null;
-        return BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.parse(full)).map(ItemStack::new).orElse(null);
+        return BuiltInRegistries.ITEM.getOptional(Ids.parse(full)).map(ItemStack::new).orElse(null);
     }
 
     /** The full-size family of a tiny waste family (1.7 {@code tinyWasteTranslation}'s four pairs). */
@@ -255,7 +258,7 @@ public final class SILEXRecipes {
         return null;
     }
 
-    // ---------------------------------------------------------------- input kinds
+    // Input kinds
 
     /** 1.7 {@code ComparableStack(item, 1, meta)} of an RBMK pellet: its {@code hbm:rbmk_pellet} stage only. */
     public static final class VariantStack extends AStack {
@@ -286,7 +289,7 @@ public final class SILEXRecipes {
      * A fluid input, addressed the way the SILEX does it: a {@code fluid_icon} stack for that fluid.
      *
      * <p>Needs its own {@link AStack} because {@link ComparableStack} matches on the {@link Item}
-     * alone, and every fluid shares the one {@code fluid_icon} item — in 1.12.2 they were separated by
+     * alone, and every fluid shares the one {@code fluid_icon} item. In 1.12.2 they were separated by
      * metadata, here by the {@code FLUID} data component (the fluid's registry name). A plain ComparableStack would make UF6,
      * PUF6, DEATH, VITRIOL and REDMUD all resolve to whichever recipe was registered first.
      */
@@ -310,7 +313,7 @@ public final class SILEXRecipes {
         }
     }
 
-    // ---------------------------------------------------------------- conversion and tests
+    // Conversion and tests
 
     /** The row form of a recipe (for converting a table and for tests). */
     public static Row toRow(SILEXRecipe recipe, int order) {

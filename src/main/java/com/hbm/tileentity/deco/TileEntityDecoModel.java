@@ -8,7 +8,7 @@ import com.hbm.tileentity.ModDecoBlockEntities;
 
 /**
  * A do-nothing block entity carried by the OBJ-drawn decorative blocks of this family (spotlights,
- * poles, tape recorder, ...) so {@code DecoModelRenderer} runs for them — the same invisible-block +
+ * poles, tape recorder, ...) so {@code DecoModelRenderer} runs for them. The same invisible-block +
  * renderer pattern as {@code TileEntityDeco}; the renderer looks the model up from the block.
  */
 public class TileEntityDecoModel extends BlockEntity {

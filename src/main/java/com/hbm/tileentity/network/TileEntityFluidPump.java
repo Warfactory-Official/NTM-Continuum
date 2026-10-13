@@ -10,6 +10,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -130,7 +131,7 @@ public class TileEntityFluidPump extends TileEntityLoadedBase implements IFluidS
     protected void saveData(DataOut output) {
         super.saveData(output);
         tank[0].writeToNBT(output, "t");
-        com.hbm.util.SavedIds.putEnum(output, "p", priority); // by name, never an ordinal
+        SavedIds.putEnum(output, "p", priority); // by name, never an ordinal
         output.putInt("buffer", bufferSize);
     }
 
@@ -138,7 +139,7 @@ public class TileEntityFluidPump extends TileEntityLoadedBase implements IFluidS
     protected void loadData(DataIn input) {
         super.loadData(input);
         tank[0].readFromNBT(input, "t");
-        priority = com.hbm.util.SavedIds.getEnum(input, "p", ConnectionPriority.NORMAL);
+        priority = SavedIds.getEnum(input, "p", ConnectionPriority.NORMAL);
         bufferSize = input.getIntOr("buffer", 100);
     }
 }

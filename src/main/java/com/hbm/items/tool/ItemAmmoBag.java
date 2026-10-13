@@ -7,12 +7,14 @@ import com.hbm.inventory.ItemStackContainer;
 import com.hbm.inventory.container.MenuItemBox;
 import dev.golem.core.data.ItemContents;
 import dev.golem.core.Ids;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.world.CompatItem;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -39,12 +41,12 @@ public class ItemAmmoBag extends CompatItem {
     public static InventoryAmmoBag contents(ItemStack bag) { return new InventoryAmmoBag(bag); }
 
     @Override
-    protected int compatUseDuration(ItemStack stack, net.minecraft.world.entity.LivingEntity entity) { return 1; }
+    protected int compatUseDuration(ItemStack stack, LivingEntity entity) { return 1; }
 
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
         if (player instanceof ServerPlayer serverPlayer) {
-            dev.golem.core.gui.Menus.openWithHand(serverPlayer, new SimpleMenuProvider((id, inventory, opener) -> new MenuItemBox(
+            Menus.openWithHand(serverPlayer, new SimpleMenuProvider((id, inventory, opener) -> new MenuItemBox(
                     ModGunSupportMenus.AMMO_BAG.get(), id, inventory, LAYOUT,
                     new ItemStackContainer(opener, opener.getItemInHand(hand), SLOTS,
                             ModDataComponents.AMMO_BAG)), player.getItemInHand(hand).getHoverName()), hand);

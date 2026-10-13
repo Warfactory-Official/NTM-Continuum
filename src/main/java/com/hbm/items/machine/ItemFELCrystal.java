@@ -1,14 +1,20 @@
 package com.hbm.items.machine;
 
+import com.hbm.api.registry.NamedRegistry;
+import com.hbm.util.ContaminationUtil;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import dev.golem.core.world.Effects;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
 /**
- * A laser crystal — the interchangeable "lens" that sets a {@code machine_fel}'s wavelength, and with
+ * A laser crystal: the interchangeable "lens" that sets a {@code machine_fel}'s wavelength, and with
  * it which SILEX recipes can run and how fast. 1:1 port of 1.12.2's {@code ItemFELCrystal}.
  *
  * <p>Five crystals exist, one per usable wavelength; the sixth, {@link EnumWavelengths#NULL}, is the
@@ -27,7 +33,7 @@ public class ItemFELCrystal extends CompatItem {
      * picks any value above 0, a fractional one to sit between two of HBM's. Machines save and sync a wavelength by
      * {@link #name()} (1.7's constant name); recipes name HBM's in lower case.
      *
-     * <p>{@code VISIBLE} deliberately carries colour 0 for both the world beam and the GUI: every call site special-cases
+     * <p>{@code VISIBLE} carries colour 0 for both the world beam and the GUI: every call site special-cases
      * it into an animated rainbow (see {@code GUISILEX}/{@code FELRenderer}). The lang files also carry
      * {@code wavelengths.name.micro/radio/xray} keys with no 1.7 constant, vestigial there as well.
      */
@@ -36,13 +42,13 @@ public class ItemFELCrystal extends CompatItem {
         /** What the FEL's beam does to a living entity standing in it (1.7 {@code TileEntityFEL.updateEntity}'s switch). */
         @FunctionalInterface
         public interface BeamEffect {
-            void apply(net.minecraft.world.entity.LivingEntity entity);
+            void apply(LivingEntity entity);
         }
 
-        public static final com.hbm.api.registry.NamedRegistry<EnumWavelengths> REGISTRY =
-                new com.hbm.api.registry.NamedRegistry<>("FEL wavelength", EnumWavelengths::name);
+        public static final NamedRegistry<EnumWavelengths> REGISTRY =
+                new NamedRegistry<>("FEL wavelength", EnumWavelengths::name);
 
-        private static final BeamEffect IGNITE = entity -> dev.golem.core.world.Effects.ignite(entity, 10);
+        private static final BeamEffect IGNITE = entity -> Effects.ignite(entity, 10);
 
         // upstream's joke placeholder: the "no crystal / powered down" state
         public static final EnumWavelengths NULL = register("NULL", 0, "la creatura", "6 dollar", 0x010101, 0x010101,
@@ -52,18 +58,18 @@ public class ItemFELCrystal extends CompatItem {
         // 1.7's switch falls through: VISIBLE blinds AND ignites
         public static final EnumWavelengths VISIBLE = register("VISIBLE", 2, "wavelengths.name.visible",
                 "wavelengths.waveRange.visible", 0, 0, ChatFormatting.GREEN, entity -> {
-                    dev.golem.core.world.Effects.add(entity, net.minecraft.world.effect.MobEffects.BLINDNESS, 60 * 60 * 65536, 0);
-                    dev.golem.core.world.Effects.ignite(entity, 10);
+                    Effects.add(entity, MobEffects.BLINDNESS, 60 * 60 * 65536, 0);
+                    Effects.ignite(entity, 10);
                 });
         public static final EnumWavelengths UV = register("UV", 3, "wavelengths.name.uv", "wavelengths.waveRange.uv",
                 0x0A1FC4, 0x00EFFF, ChatFormatting.AQUA, IGNITE);
         public static final EnumWavelengths GAMMA = register("GAMMA", 4, "wavelengths.name.gamma",
                 "wavelengths.waveRange.gamma", 0x150560, 0xEF00FF, ChatFormatting.LIGHT_PURPLE,
-                entity -> com.hbm.util.ContaminationUtil.contaminate(entity, com.hbm.util.ContaminationUtil.HazardType.RADIATION,
-                        com.hbm.util.ContaminationUtil.ContaminationType.CREATIVE, 25));
+                entity -> ContaminationUtil.contaminate(entity, ContaminationUtil.HazardType.RADIATION,
+                        ContaminationUtil.ContaminationType.CREATIVE, 25));
         public static final EnumWavelengths DRX = register("DRX", 5, "wavelengths.name.drx", "wavelengths.waveRange.drx",
                 0xFF0000, 0xFF0000, ChatFormatting.DARK_RED,
-                entity -> com.hbm.util.ContaminationUtil.applyDigammaData(entity, 0.1F));
+                entity -> ContaminationUtil.applyDigammaData(entity, 0.1F));
 
         private final String key;
         /** 1.7's ordinal, the number the SILEX and the FEL compute with; 0 only for {@link #NULL}. */
@@ -122,7 +128,7 @@ public class ItemFELCrystal extends CompatItem {
         }
 
         /** Every wavelength in registration order (HBM's six first, 1.7 order). */
-        public static java.util.List<EnumWavelengths> values() {
+        public static List<EnumWavelengths> values() {
             return REGISTRY.values();
         }
 
@@ -154,7 +160,7 @@ public class ItemFELCrystal extends CompatItem {
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-                                         java.util.List<Component> tooltip, TooltipFlag flag) {
+                                         List<Component> tooltip, TooltipFlag flag) {
         // The digamma crystal replaces its description with scrambled text rather than a lang key.
         tooltip.add(digamma
                 ? Component.literal("THERADIANCEOFATHOUSANDSUNS").withStyle(ChatFormatting.OBFUSCATED)

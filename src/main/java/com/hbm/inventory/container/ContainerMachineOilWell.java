@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu shared by the oil derrick and the pumpjack (both are {@link TileEntityOilDrillBase}) — the
+ * Menu shared by the oil derrick and the pumpjack (both are {@link TileEntityOilDrillBase}), the
  * 1.7 {@code ContainerMachineOilWell} layout: battery (8,58), oil container pair (94,22)/(94,58),
  * gas container pair (130,22)/(130,58), 2 upgrade slots (156,36/54); 184x190 with the player
  * inventory at x=12, y=108/166.
@@ -105,7 +105,7 @@ public class ContainerMachineOilWell extends AbstractContainerMenu {
             } else if (Library.isBattery(stack)) {
                 if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
             } else {
-                // fluid containers → the oil load slot, then the gas load slot (old TransferStrategy rules)
+                // fluid containers go to the oil load slot, then the gas load slot (old TransferStrategy rules)
                 if (!this.moveItemStackTo(stack, 1, 2, false)
                         && !this.moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
             }

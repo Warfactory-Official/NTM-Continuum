@@ -17,8 +17,8 @@ import org.joml.Vector3fc;
  * The inventory preview of a non-fuel RBMK column, ported from the old baked models' inventory quads:
  * four stacked casing sections ({@code RBMKColumnBakedModel}), optionally the four pipe stubs at the
  * top ({@code RBMKControlBakedModel.addPipes}), and optionally the sliding rod's Lid OBJ part parked at
- * y=3. Framing is identity here — {@code hbm:item/rbmk_column_base} carries the old
- * {@code BakedModelTransforms.rbmkColumn()} display verbatim, exactly as a baked model received it.
+ * y=3. Framing is identity here: {@code hbm:item/rbmk_column_base} carries the old
+ * {@code BakedModelTransforms.rbmkColumn()} display, as a baked model received it.
  */
 public final class RBMKBlockColumnItemModel {
 
@@ -49,10 +49,10 @@ public final class RBMKBlockColumnItemModel {
     /**
      * Four casing sections, then the pipe stubs, then the lid.
      *
-     * <p>The casing is one extent rather than four: the sections tile exactly, so the column's box is
-     * recorded against the first of them, and the four stubs likewise share the box that encloses them.
-     * The Lid OBJ is authored centred on the origin, like every old HBM part, while the casing here is in
-     * block space — hence the same +0.5/+0.5 shift the world renderers bake in.
+     * <p>The casing is one extent, not four: the sections tile exactly, so the column's box is recorded
+     * against the first of them, and the four stubs share the box that encloses them.
+     * The Lid OBJ is authored centred on the origin, like every 1.12.2 part, while the casing here is in
+     * block space, hence the same +0.5/+0.5 shift the world renderers bake in.
      */
     private static ItemGem declare(Surface side, Surface top, Surface pipeSide, Surface pipeTop, Surface lid) {
         ItemGem.Builder builder = ItemGem.builder();

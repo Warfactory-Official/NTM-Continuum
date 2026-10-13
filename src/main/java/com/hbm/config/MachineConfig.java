@@ -3,7 +3,7 @@ package com.hbm.config;
 /**
  * 1.7 {@code MachineConfig}, category {@code 09_machines} of {@code hbm.cfg}, plus the two {@code VersatileConfig}
  * questions that combine it with 528 mode. Plain Java: {@code ModRtgContent} (a build-time declaration class) reads
- * {@link #rtgDecay()} for the gold and lead pellet heat. History §19ej-8.
+ * {@link #rtgDecay()} for the gold and lead pellet heat.
  */
 public final class MachineConfig {
 

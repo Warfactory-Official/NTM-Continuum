@@ -25,7 +25,7 @@ import java.lang.ref.WeakReference;
  * depends on probing for content we own. Per level, not per graph.
  *
  * <p>Upstream reaches its per-level instance through a {@code hbm$endpoints()} mixin on
- * {@code ServerLevel}. Continuum holds them in a map keyed by level instead — one mixin fewer to
+ * {@code ServerLevel}. Continuum holds them in a map keyed by level instead: one mixin fewer to
  * carry across three Minecraft versions and three loaders, and the same server-thread confinement
  * {@link com.hbm.uninos.UniNodespace} already relies on. {@link #clearLevel} is the counterpart of
  * that choice: without it the map would pin an unloaded level forever.
@@ -188,7 +188,7 @@ public final class EndpointRegistry {
 
         /**
          * The last owner that resolved, weak on purpose: a strong field would pin a removed block
-         * entity, and its inventories, until something resolved that cell again — which can be never.
+         * entity, and its inventories, until something resolved that cell again, which can be never.
          */
         private @Nullable WeakReference<BlockEntity> resolved;
 

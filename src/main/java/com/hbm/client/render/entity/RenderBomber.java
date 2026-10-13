@@ -9,6 +9,8 @@ import dev.golem.core.render.CompatEntityRenderState;
 import dev.golem.core.render.CompatEntityRenderer;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -93,7 +95,7 @@ public final class RenderBomber extends CompatEntityRenderer<EntityBomber, Rende
         void render(PoseStack pose, SubmitSink sink, int light);
     }
 
-    private static final java.util.Map<String, Skin> SKINS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, Skin> SKINS = new ConcurrentHashMap<>();
 
     /** Registers the skin a bomber named {@code name} ({@code EntityBomber.setSkin}) is drawn with. Client only. */
     public static void registerSkin(String name, Skin skin) {

@@ -2,16 +2,21 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.api.environment.Environment;
+import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.machine.MachineBigAssTank;
 import com.hbm.blocks.machine.MachineIntake;
 import com.hbm.blocks.machine.MachinePump;
 import com.hbm.blocks.machine.MachineTurbofan;
 import com.hbm.blocks.machine.MachineWoodBurner;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.machine.solar.MachineSolarBoiler;
-import com.hbm.blocks.machine.solar.ModSolarBlocks;
+import com.hbm.blocks.machine.MachineSolarBoiler;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.capability.HbmLivingProps;
 import com.hbm.entity.effect.EntityNukeTorex;
+import com.hbm.entity.logic.EntityNukeExplosionMK5;
+import com.hbm.entity.projectile.EntityChemical;
+import com.hbm.handler.EntityEffectHandler;
+import com.hbm.handler.HbmKeybinds;
 import com.hbm.handler.JetpackHandler;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -33,7 +38,8 @@ import com.hbm.tileentity.machine.TileEntityMachinePumpElectric;
 import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
 import com.hbm.tileentity.machine.TileEntityMachineWoodBurner;
 import com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare;
-import com.hbm.tileentity.machine.solar.TileEntitySolarBoiler;
+import com.hbm.tileentity.machine.TileEntitySolarBoiler;
+import com.hbm.util.TickPhase;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.hook.Verdict;
@@ -41,6 +47,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -162,7 +169,7 @@ public final class EnvironmentGameTests {
         BlockPos pos = helper.absolutePos(new BlockPos(1, 6, 1));
         long key = BlockPos.asLong(pos.getX(), 0, pos.getZ());
         BLASTS.remove(key);
-        com.hbm.entity.logic.EntityNukeExplosionMK5 blast = com.hbm.entity.logic.EntityNukeExplosionMK5.statFacNoRad(
+        EntityNukeExplosionMK5 blast = EntityNukeExplosionMK5.statFacNoRad(
                 helper.getLevel(), 1, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
         helper.getLevel().addFreshEntity(blast);
         helper.runAfterDelay(3, () -> {
@@ -465,7 +472,7 @@ public final class EnvironmentGameTests {
     public static void solar(GameTestHelper helper) {
         register();
         BlockPos rel = new BlockPos(3, 1, 3);
-        MachineSolarBoiler block = ModSolarBlocks.machine_solar_boiler.get();
+        MachineSolarBoiler block = ModMachineBlocks.machine_solar_boiler.get();
         BlockPos core = helper.absolutePos(rel);
         helper.setBlock(rel, block.defaultBlockState());
         block.fillSpace(helper.getLevel(), core, Direction.NORTH);
@@ -502,7 +509,7 @@ public final class EnvironmentGameTests {
         boolean[] done = {false};
         for (int delay = 1; delay <= 22; delay++) {
             helper.runAfterDelay(delay, () -> {
-                if (done[0] || !com.hbm.util.TickPhase.every(helper.getLevel(), pos, 20L)) return;
+                if (done[0] || !TickPhase.every(helper.getLevel(), pos, 20L)) return;
                 done[0] = true;
                 tank.tilted = true;
                 orbitOn = true;
@@ -528,7 +535,7 @@ public final class EnvironmentGameTests {
         ItemStack pack = new ItemStack(ModArmorItems.jetpack_fly.get());
         JetpackBase.setFuel(pack, 1_000);
         player.setItemSlot(EquipmentSlot.CHEST, pack);
-        JetpackHandler.handleKeybind(player, com.hbm.handler.HbmKeybinds.EnumKeybind.JETPACK, true);
+        JetpackHandler.handleKeybind(player, HbmKeybinds.EnumKeybind.JETPACK, true);
         JetpackBase item = (JetpackBase) pack.getItem();
         try {
             player.setDeltaMovement(Vec3.ZERO);
@@ -647,18 +654,18 @@ public final class EnvironmentGameTests {
     /** The living tick hook runs in HBM's entity update, and an ambient radiation floor contaminates. */
     public static void living(GameTestHelper helper) {
         register();
-        LivingEntity pig = helper.spawn(net.minecraft.world.entity.EntityType.PIG, new BlockPos(1, 1, 1));
+        LivingEntity pig = helper.spawn(EntityType.PIG, new BlockPos(1, 1, 1));
         UUID id = pig.getUUID();
         WATCHED.add(id);
         try {
-            double before = com.hbm.capability.HbmLivingProps.getRadiation(pig);
-            com.hbm.handler.EntityEffectHandler.onUpdate(pig);
+            double before = HbmLivingProps.getRadiation(pig);
+            EntityEffectHandler.onUpdate(pig);
             helper.assertTrue(TICKED.contains(id), "LIVING_TICK did not run for the pig");
-            helper.assertTrue(com.hbm.capability.HbmLivingProps.getRadiation(pig) == before,
+            helper.assertTrue(HbmLivingProps.getRadiation(pig) == before,
                     "no floor: no ambient radiation on plain HBM");
             RAD_FLOOR.put(id, 100D);
-            com.hbm.handler.EntityEffectHandler.onUpdate(pig);
-            helper.assertTrue(com.hbm.capability.HbmLivingProps.getRadiation(pig) > before,
+            EntityEffectHandler.onUpdate(pig);
+            helper.assertTrue(HbmLivingProps.getRadiation(pig) > before,
                     "an ambient radiation floor must contaminate");
         } finally {
             WATCHED.remove(id);
@@ -675,13 +682,13 @@ public final class EnvironmentGameTests {
         BlockPos dirtRel = new BlockPos(1, 1, 1);
         BlockPos wasteRel = new BlockPos(3, 1, 1);
         helper.setBlock(dirtRel, Blocks.DIRT.defaultBlockState());
-        helper.setBlock(wasteRel, com.hbm.blocks.ModFalloutBlocks.waste_earth.get().defaultBlockState());
+        helper.setBlock(wasteRel, ModFalloutBlocks.waste_earth.get().defaultBlockState());
         BlockPos dirt = helper.absolutePos(dirtRel);
         BlockPos waste = helper.absolutePos(wasteRel);
         BARREN.add(dirt);
         try {
-            com.hbm.entity.projectile.EntityChemical.seedSlurry(helper.getLevel(), dirt);
-            com.hbm.entity.projectile.EntityChemical.seedSlurry(helper.getLevel(), waste);
+            EntityChemical.seedSlurry(helper.getLevel(), dirt);
+            EntityChemical.seedSlurry(helper.getLevel(), waste);
             helper.assertBlockPresent(Blocks.DIRT, dirtRel);
             helper.assertBlockPresent(Blocks.GRASS_BLOCK, wasteRel); // 1.7's unconditional waste-earth conversion
         } finally {

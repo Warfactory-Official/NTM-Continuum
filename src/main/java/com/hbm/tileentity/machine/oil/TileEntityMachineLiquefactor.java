@@ -15,6 +15,7 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import java.util.HashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,7 +35,7 @@ import dev.golem.core.data.DataOut;
 import java.util.List;
 
 /**
- * Liquefactor — 1:1 port of the 1.12.2 {@code TileEntityMachineLiquefactor}: turns items into fluid.
+ * Liquefactor: 1:1 port of the 1.12.2 {@code TileEntityMachineLiquefactor}: turns items into fluid.
  * 4 slots (0 input, 1 battery, 2/3 upgrades), a NONE 24k send tank. maxPower 100k; per progressing tick
  * drains {@code usage = (250 + 250·speed)/(power+1)} HE, completes after {@code 100 − 25·speed} ticks,
  * then the tank adopts the recipe's output type/fill and the input shrinks by 1.
@@ -163,8 +164,8 @@ public class TileEntityMachineLiquefactor extends TileEntityMachineBase
     }
 
     @Override
-    public java.util.HashMap<UpgradeType, Integer> getValidUpgrades() {
-        java.util.HashMap<UpgradeType, Integer> upgrades = new java.util.HashMap<>();
+    public HashMap<UpgradeType, Integer> getValidUpgrades() {
+        HashMap<UpgradeType, Integer> upgrades = new HashMap<>();
         upgrades.put(UpgradeType.SPEED, 3);
         upgrades.put(UpgradeType.POWER, 3);
         return upgrades;

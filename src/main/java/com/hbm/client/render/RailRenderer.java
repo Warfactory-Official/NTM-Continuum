@@ -21,6 +21,7 @@ import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Geometry;
 import dev.golem.core.render.gem.Surface;
+import java.util.EnumMap;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -47,7 +48,7 @@ public final class RailRenderer extends GemBER<BlockEntityRail, RailRenderer.Sta
         SWITCH, SWITCH_FLIPPED, NARROW_STRAIGHT, NARROW_CURVE
     }
 
-    private final java.util.EnumMap<Kind, Mesh> meshes = new java.util.EnumMap<>(Kind.class);
+    private final EnumMap<Kind, Mesh> meshes = new EnumMap<>(Kind.class);
 
     @Override
     protected void setup(Gem.Model<State> declaration) {

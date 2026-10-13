@@ -1,15 +1,16 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.machine.solar.MachineSolarBoiler;
-import com.hbm.blocks.machine.solar.ModSolarBlocks;
-import com.hbm.blocks.machine.solar.SolarMirror;
-import com.hbm.items.solar.ModSolarItems;
-import com.hbm.items.solar.SolarDataComponents;
+import com.hbm.Constants;
+import com.hbm.blocks.machine.MachineSolarBoiler;
+import com.hbm.blocks.machine.SolarMirror;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.machine.solar.TileEntitySolarBoiler;
-import com.hbm.tileentity.machine.solar.TileEntitySolarMirror;
+import com.hbm.tileentity.machine.TileEntitySolarBoiler;
+import com.hbm.tileentity.machine.TileEntitySolarMirror;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.net.GolemBuffers;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,16 +19,20 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.item.context.UseOnContext;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.items.ModToolItems;
+import com.hbm.items.ModDataComponents;
 
 /** Focused contracts for the solar boiler, heliostat mirror, and mirror adjustment tool. */
 public final class SolarGameTests {
 
     private SolarGameTests() {}
 
-    public static final GameTests.Suite TESTS = GameTests.suite(com.hbm.Constants.MOD_ID);
+    public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
     public static final GameTests.Function LINK = TESTS.function(
             "solar_tool_link", 40, 30, () -> SolarGameTests::toolLinkRangeAndRejection);
     public static final GameTests.Function DAYLIGHT = TESTS.function(
@@ -44,19 +49,19 @@ public final class SolarGameTests {
         TileEntitySolarBoiler boiler = placeBoiler(helper, coreRelative);
         BlockPos core = helper.absolutePos(coreRelative);
 
-        ItemStack tool = new ItemStack(ModSolarItems.mirror_tool.get());
+        ItemStack tool = new ItemStack(ModToolItems.mirror_tool.get());
         useOn(helper, tool, coreRelative, false);
-        helper.assertFalse(SolarDataComponents.MIRROR_TARGET.has(tool),
+        helper.assertFalse(ModDataComponents.MIRROR_TARGET.has(tool),
                 "Ordinary right-click on the boiler must not overwrite the alignment target");
         useOn(helper, tool, coreRelative, true);
-        helper.assertTrue(SolarDataComponents.MIRROR_TARGET.get(tool).orElse(BlockPos.ZERO).equals(core.above()),
+        helper.assertTrue(ModDataComponents.MIRROR_TARGET.get(tool).orElse(BlockPos.ZERO).equals(core.above()),
                 "Tool must record one block above the boiler core");
-        helper.assertTrue(SolarDataComponents.MIRROR_TARGET.get(tool.copy()).orElse(BlockPos.ZERO).equals(core.above()),
+        helper.assertTrue(ModDataComponents.MIRROR_TARGET.get(tool.copy()).orElse(BlockPos.ZERO).equals(core.above()),
                 "Mirror target component must persist when the tool stack is copied");
 
         BlockPos insideRelative = new BlockPos(27, 2, 3);
-        helper.setBlock(insideRelative, ModSolarBlocks.solar_mirror.get().defaultBlockState());
-        TileEntitySolarMirror inside = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        helper.setBlock(insideRelative, ModMachineBlocks.solar_mirror.get().defaultBlockState());
+        TileEntitySolarMirror inside = GameTestHelpers.blockEntity(
                 helper, insideRelative, TileEntitySolarMirror.class);
         useOn(helper, tool, insideRelative, true);
         helper.assertTrue(inside.getTarget().equals(BlockPos.ZERO),
@@ -66,8 +71,8 @@ public final class SolarGameTests {
                 "A target at distance 24 must be accepted");
 
         BlockPos boundaryRelative = new BlockPos(28, 2, 3);
-        helper.setBlock(boundaryRelative, ModSolarBlocks.solar_mirror.get().defaultBlockState());
-        TileEntitySolarMirror boundary = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        helper.setBlock(boundaryRelative, ModMachineBlocks.solar_mirror.get().defaultBlockState());
+        TileEntitySolarMirror boundary = GameTestHelpers.blockEntity(
                 helper, boundaryRelative, TileEntitySolarMirror.class);
         useOn(helper, tool, boundaryRelative, false);
         helper.assertTrue(boundary.getTarget().equals(BlockPos.ZERO),
@@ -89,9 +94,9 @@ public final class SolarGameTests {
                 "A blocked sky must fail the sunlight gate");
 
         BlockPos relative = new BlockPos(3, 1, 3);
-        SolarMirror block = ModSolarBlocks.solar_mirror.get();
+        SolarMirror block = ModMachineBlocks.solar_mirror.get();
         helper.setBlock(relative, block.defaultBlockState());
-        TileEntitySolarMirror mirror = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntitySolarMirror mirror = GameTestHelpers.blockEntity(
                 helper, relative, TileEntitySolarMirror.class);
         // GameTest placement is relative, but production ticks and Level writes are absolute. Use the
         // placed block entity as the single source of truth for the mirror and its queried sky cell.
@@ -105,8 +110,8 @@ public final class SolarGameTests {
                 "Mirror active state must use sky light minus sky darkening minus 11");
 
         BlockPos roof = pos.above();
-        helper.getLevel().setBlockAndUpdate(roof, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
-        helper.assertTrue(helper.getLevel().getBlockState(roof).is(net.minecraft.world.level.block.Blocks.STONE),
+        helper.getLevel().setBlockAndUpdate(roof, Blocks.STONE.defaultBlockState());
+        helper.assertTrue(helper.getLevel().getBlockState(roof).is(Blocks.STONE),
                 "The solar fixture roof was not placed at the mirror's absolute position");
         TileEntitySolarMirror.serverTick(helper.getLevel(), pos, mirror.getBlockState(), mirror);
         helper.assertFalse(mirror.isOn, "A block directly above the mirror must disable the mirror");
@@ -127,12 +132,12 @@ public final class SolarGameTests {
 
         BlockPos firstRelative = new BlockPos(7, 1, 3);
         BlockPos secondRelative = new BlockPos(8, 1, 3);
-        SolarMirror mirrorBlock = ModSolarBlocks.solar_mirror.get();
+        SolarMirror mirrorBlock = ModMachineBlocks.solar_mirror.get();
         helper.setBlock(firstRelative, mirrorBlock.defaultBlockState());
         helper.setBlock(secondRelative, mirrorBlock.defaultBlockState());
-        TileEntitySolarMirror first = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntitySolarMirror first = GameTestHelpers.blockEntity(
                 helper, firstRelative, TileEntitySolarMirror.class);
-        TileEntitySolarMirror second = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntitySolarMirror second = GameTestHelpers.blockEntity(
                 helper, secondRelative, TileEntitySolarMirror.class);
         first.setTarget(core.getX(), core.getY() + 1, core.getZ());
         second.setTarget(core.getX(), core.getY() + 1, core.getZ());
@@ -159,7 +164,7 @@ public final class SolarGameTests {
 
     public static void conversionPortsAndPersistence(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 1, 3);
-        MachineSolarBoiler block = ModSolarBlocks.machine_solar_boiler.get();
+        MachineSolarBoiler block = ModMachineBlocks.machine_solar_boiler.get();
         TileEntitySolarBoiler boiler = placeBoiler(helper, relative);
         BlockPos core = helper.absolutePos(relative);
 
@@ -178,11 +183,11 @@ public final class SolarGameTests {
         for (DirPos port : ports) {
             BlockPos cell = port.getPos().offset(-port.getDir().offsetX, -port.getDir().offsetY,
                     -port.getDir().offsetZ);
-            helper.assertTrue(block.canConnect(com.hbm.inventory.fluid.Fluids.WATER, helper.getLevel(),
+            helper.assertTrue(block.canConnect(Fluids.WATER, helper.getLevel(),
                             cell.getX(), cell.getY(), cell.getZ(), port.getDir()),
                     "Declared solar port is not exposed at " + port.getPos());
         }
-        helper.assertFalse(block.canConnect(com.hbm.inventory.fluid.Fluids.WATER, helper.getLevel(),
+        helper.assertFalse(block.canConnect(Fluids.WATER, helper.getLevel(),
                         core.getX(), core.getY(), core.getZ(), ForgeDirection.UP),
                 "Solar boiler must not expose a middle/top-interior port");
 
@@ -190,7 +195,7 @@ public final class SolarGameTests {
         // through TileEntityLoadedBase's DataIn/DataOut bridge.
         boiler.heat = 50 * 12;
         TileEntitySolarBoiler.serverTick(helper.getLevel(), core, boiler.getBlockState(), boiler);
-        var boilerBuffer = dev.golem.core.net.GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
+        var boilerBuffer = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         boiler.serialize(boilerBuffer);
         boilerBuffer.readerIndex(0);
         TileEntitySolarBoiler boilerCopy = new TileEntitySolarBoiler(core.east(), boiler.getBlockState());
@@ -200,13 +205,13 @@ public final class SolarGameTests {
         boilerBuffer.release();
 
         BlockPos mirrorRelative = new BlockPos(8, 1, 3);
-        SolarMirror mirrorBlock = ModSolarBlocks.solar_mirror.get();
+        SolarMirror mirrorBlock = ModMachineBlocks.solar_mirror.get();
         helper.setBlock(mirrorRelative, mirrorBlock.defaultBlockState());
-        TileEntitySolarMirror mirror = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntitySolarMirror mirror = GameTestHelpers.blockEntity(
                 helper, mirrorRelative, TileEntitySolarMirror.class);
         mirror.setTarget(111, 42, -7);
         mirror.isOn = true;
-        var mirrorBuffer = dev.golem.core.net.GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
+        var mirrorBuffer = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         mirror.serialize(mirrorBuffer);
         mirrorBuffer.readerIndex(0);
         TileEntitySolarMirror mirrorCopy = new TileEntitySolarMirror(core.west(), mirror.getBlockState());
@@ -218,18 +223,18 @@ public final class SolarGameTests {
     }
 
     private static TileEntitySolarBoiler placeBoiler(GameTestHelper helper, BlockPos relative) {
-        MachineSolarBoiler block = ModSolarBlocks.machine_solar_boiler.get();
+        MachineSolarBoiler block = ModMachineBlocks.machine_solar_boiler.get();
         BlockPos core = helper.absolutePos(relative);
         helper.setBlock(relative, block.defaultBlockState());
         block.fillSpace(helper.getLevel(), core, Direction.NORTH);
-        TileEntitySolarBoiler boiler = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntitySolarBoiler boiler = GameTestHelpers.blockEntity(
                 helper, relative, TileEntitySolarBoiler.class);
         helper.assertTrue(boiler != null, "Solar boiler core BlockEntity was not created");
         return boiler;
     }
 
     private static void useOn(GameTestHelper helper, ItemStack stack, BlockPos relative, boolean shifting) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setShiftKeyDown(shifting);
         player.setItemInHand(InteractionHand.MAIN_HAND, stack);
         BlockPos pos = helper.absolutePos(relative);

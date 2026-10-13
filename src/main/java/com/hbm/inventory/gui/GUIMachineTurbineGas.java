@@ -5,7 +5,10 @@ import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.machine.TileEntityMachineTurbineGas;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -16,14 +19,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Screen for the combined-cycle gas turbine — 1.7.10 {@code GUIMachineTurbineGas} ({@code generators/gui_turbinegas.png},
+ * Screen for the combined-cycle gas turbine, 1.7.10 {@code GUIMachineTurbineGas} ({@code generators/gui_turbinegas.png},
  * 176×223): start/stop round button (88,40) r8, AUTO button (74,86) 29×13, throttle slider (36, 97−pos) 16×6,
  * horizontal power bar (26,109) 142×16 from (0,223), the RPM dial revealed as a pie sector of (176,64) 48×48 at
  * (64,16), the 2-px thermometer at (136,28), the 7-digit power meter at (65,71), and the three info panels left of
  * the GUI.
  */
-public class GUIMachineTurbineGas extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineTurbineGas> {
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/generators/gui_turbinegas.png");
+public class GUIMachineTurbineGas extends CompatContainerScreen<ContainerMachineTurbineGas> {
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/generators/gui_turbinegas.png");
     private boolean sliderLocked;
     private int numberToDisplay;
     private int digitNumber;
@@ -170,7 +173,7 @@ public class GUIMachineTurbineGas extends dev.golem.core.gui.CompatContainerScre
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         Minecraft minecraft = Minecraft.getInstance();
         TileEntityMachineTurbineGas turbine = menu.getTurbine();
         if (turbine == null || minecraft.gameMode == null) return false;
@@ -203,7 +206,7 @@ public class GUIMachineTurbineGas extends dev.golem.core.gui.CompatContainerScre
     }
 
     @Override
-    protected boolean mouseReleased(dev.golem.core.gui.MouseInput event) {
+    protected boolean mouseReleased(MouseInput event) {
         if (sliderLocked && (event.button() == 0 || event.button() == 1)) sliderLocked = false;
         return false;
     }

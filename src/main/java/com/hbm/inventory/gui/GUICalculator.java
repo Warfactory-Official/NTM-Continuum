@@ -1,6 +1,6 @@
 package com.hbm.inventory.gui;
 
-import com.hbm.modules.Calculator;
+import com.hbm.module.Calculator;
 import dev.golem.core.gui.CharInput;
 import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;

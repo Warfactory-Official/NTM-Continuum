@@ -1,5 +1,6 @@
 package com.hbm.items.special;
 
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModUtilityToolItems;
 import com.hbm.items.tool.UtilityToolScreens;
 import dev.golem.core.world.CompatItem;
@@ -13,9 +14,9 @@ import net.minecraft.world.level.Level;
  * 1.7 {@code ItemClayTablet}: the first read draws a seed ({@code tabletSeed}) from the reader's random, and the
  * tablet then always shows the same pedestal recipe of its set, partly worn away ({@code GUIScreenClayTablet}).
  * The set is the 1.7 metadata: {@code clay_tablet} (0, the red-room tablet) and {@code clay_tablet_1} (1, the
- * dungeon one), two items as in ntm-next (History §19es-itemvariant).
+ * dungeon one), two items, as in ntm-next.
  */
-public class ItemClayTablet extends CompatItem implements com.hbm.items.LegacyMeta {
+public class ItemClayTablet extends CompatItem implements LegacyMeta {
 
     private final int set;
 

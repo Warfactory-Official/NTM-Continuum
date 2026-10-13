@@ -1,5 +1,7 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineTurbine;
 import com.hbm.inventory.fluid.Fluids;
@@ -10,14 +12,14 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
- * Screen for the steam turbine — 1.7.10 {@code GUIMachineTurbine} ({@code gui_turbine.png}, 176×168). Input tank
+ * Screen for the steam turbine, ported from 1.7.10 {@code GUIMachineTurbine} ({@code gui_turbine.png}, 176×168). Input tank
  * 16×52 at x=62 and output tank at x=134 (bottom y=69), the 7×34 power bar at (123,35) filling from (176,34), and
  * the 14×14 steam-stage icon at (99,18) whose source row picks STEAM / HOTSTEAM / SUPERHOTSTEAM / ULTRAHOTSTEAM.
  * When the output tank is NONE the "large red !" panel appears left of the GUI with "Error: Invalid fluid!".
  */
-public class GUIMachineTurbine extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineTurbine> {
+public class GUIMachineTurbine extends CompatContainerScreen<ContainerMachineTurbine> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_turbine.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/gui_turbine.png");
 
     public GUIMachineTurbine(ContainerMachineTurbine menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 168);

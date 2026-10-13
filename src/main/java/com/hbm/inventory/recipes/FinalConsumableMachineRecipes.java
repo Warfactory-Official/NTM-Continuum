@@ -19,7 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 /**
- * The machine recipes of the final consumables wave, each handed to its registry from one line in that
+ * The machine recipes of the final consumables, each handed to its registry from one line in that
  * registry's own registration (the pattern of {@link AbilityToolMachineRecipes}).
  */
 public final class FinalConsumableMachineRecipes {

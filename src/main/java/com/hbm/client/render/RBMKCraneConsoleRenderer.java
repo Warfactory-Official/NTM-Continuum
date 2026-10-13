@@ -9,6 +9,7 @@ import dev.golem.core.render.*;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -135,6 +136,6 @@ public final class RBMKCraneConsoleRenderer extends GemBER<BlockEntityCraneConso
         state.front = Mth.lerp(partial, be.lastPosFront, be.posFront); state.left = Mth.lerp(partial, be.lastPosLeft, be.posLeft);
         state.rotation = be.craneRotationOffset; state.spanF = be.spanF; state.spanB = be.spanB; state.spanL = be.spanL; state.spanR = be.spanR; state.progress = Mth.lerp(partial, be.lastProgress, be.progress);
     }
-    private static float yaw(net.minecraft.core.Direction direction) { return switch (direction) { case NORTH -> 90F; case WEST -> 180F; case SOUTH -> 270F; default -> 0F; }; }
+    private static float yaw(Direction direction) { return switch (direction) { case NORTH -> 90F; case WEST -> 180F; case SOUTH -> 270F; default -> 0F; }; }
     public static final class State extends CompatRenderState { float yaw, tiltFront, tiltLeft; double heat, enrichment, jitter; boolean active; int height, rotation, spanF, spanB, spanL, spanR; double x, y, z, front, left, progress; }
 }

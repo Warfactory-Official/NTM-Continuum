@@ -8,11 +8,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
-/** Exact Gem port of original-hbm ItemRenderCarbine. */
+/** Exact Gem port of 1.7 ItemRenderCarbine. */
 public final class CarbineWeaponRenderer extends WeaponRenderer {
-    private static final net.minecraft.resources.Identifier MODEL_ID=Ids.of("hbm","models/weapons/carbine.obj");
+    private static final Identifier MODEL_ID=Ids.of("hbm","models/weapons/carbine.obj");
     private static final Surface BODY=Surface.cutout("hbm:textures/models/weapons/huntsman.png");
     private static final Surface SCOPE=Surface.cutout("hbm:textures/models/weapons/carbine_scope.png");
     private static final Surface BAYONET=Surface.cutout("hbm:textures/models/weapons/carbine_bayonet.png");

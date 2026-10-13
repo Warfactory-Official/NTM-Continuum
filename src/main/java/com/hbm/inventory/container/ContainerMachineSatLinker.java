@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.inventory.ModSatelliteMenus;
 import com.hbm.tileentity.machine.TileEntityMachineSatLinker;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -37,7 +38,7 @@ public final class ContainerMachineSatLinker extends AbstractContainerMenu {
         this.addSlot(new Slot(machine, 1, 80, 36));
         this.addSlot(new Slot(machine, 2, 116, 36));
 
-        dev.golem.core.world.Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 104);
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 104);
     }
 
     public @Nullable TileEntityMachineSatLinker getLinker() {

@@ -3,7 +3,11 @@ package com.hbm.items.weapon.sedna.factory;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
+import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.particle.helper.CasingRegistry;
+import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
+import java.util.function.BiConsumer;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Declares the bullet configs, then hands off to the per-calibre factories.
@@ -61,31 +65,31 @@ public class GunFactory {
         XFactoryTool.init();
         XFactoryDrill.init();
         XFactoryPA.init();
-        // 1.7 TileEntityBatterySocket.discharge (a static BulletConfig of the battery socket, History §19ek-hooks)
-        com.hbm.tileentity.machine.storage.TileEntityBatterySocket.registerDischarge();
+        // 1.7 TileEntityBatterySocket.discharge (a static BulletConfig of the battery socket)
+        TileEntityBatterySocket.registerDischarge();
         CasingRegistry.install();
         initialized = true;
     }
 
     /** The source debug gun has two independently fired receivers on one stack. */
-    public static final java.util.function.BiConsumer<net.minecraft.world.item.ItemStack,
-            com.hbm.items.weapon.sedna.ItemGunBaseNT.LambdaContext> LAMBDA_DEBUG_DECIDER = (stack, ctx) -> {
+    public static final BiConsumer<ItemStack,
+            ItemGunBaseNT.LambdaContext> LAMBDA_DEBUG_DECIDER = (stack, ctx) -> {
         int index = ctx.configIndex;
-        com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState lastState =
-                com.hbm.items.weapon.sedna.ItemGunBaseNT.getState(stack, index);
+        ItemGunBaseNT.GunState lastState =
+                ItemGunBaseNT.getState(stack, index);
         GunStateDecider.deciderStandardFinishDraw(stack, lastState, index);
         GunStateDecider.deciderStandardClearJam(stack, lastState, index);
         GunStateDecider.deciderStandardReload(stack, ctx, lastState, 0, index);
         GunStateDecider.deciderStandardReload(stack, ctx, lastState, 1, index);
         GunStateDecider.deciderAutoRefire(stack, ctx, lastState, 0, index,
-                () -> com.hbm.items.weapon.sedna.ItemGunBaseNT.getPrimary(stack, index)
-                        && com.hbm.items.weapon.sedna.ItemGunBaseNT.getMode(stack, index) == 0);
+                () -> ItemGunBaseNT.getPrimary(stack, index)
+                        && ItemGunBaseNT.getMode(stack, index) == 0);
         GunStateDecider.deciderAutoRefire(stack, ctx, lastState, 1, index,
-                () -> com.hbm.items.weapon.sedna.ItemGunBaseNT.getSecondary(stack, index)
-                        && com.hbm.items.weapon.sedna.ItemGunBaseNT.getMode(stack, index) == 0);
+                () -> ItemGunBaseNT.getSecondary(stack, index)
+                        && ItemGunBaseNT.getMode(stack, index) == 0);
     };
 
-    /** Canonical old-HBM order. Ammo registration flattens these metadata values into item ids. */
+    /** Canonical 1.12.2 order. Ammo registration flattens these metadata values into item ids. */
     public enum EnumAmmo {
         STONE, STONE_AP, STONE_IRON, STONE_SHOT,
         M357_BP, M357_SP, M357_FMJ, M357_JHP, M357_AP, M357_EXPRESS,
@@ -110,7 +114,7 @@ public class GunFactory {
         P45_SP, P45_FMJ, P45_JHP, P45_AP, P45_DU,
         CT_HOOK, CT_MORTAR, CT_MORTAR_CHARGE, NUKE_BALEFIRE, BMG50_SM;
         public static final EnumAmmo[] VALUES = values();
-        /** Creative/reload presentation order from original-hbm; omitted secret and unsupported entries stay registered. */
+        /** Creative/reload presentation order from 1.7; omitted secret and unsupported entries stay registered. */
         public static final EnumAmmo[] order = {
             STONE, STONE_AP, STONE_IRON, STONE_SHOT,
             M357_BP, M357_SP, M357_FMJ, M357_JHP, M357_AP, M357_EXPRESS,

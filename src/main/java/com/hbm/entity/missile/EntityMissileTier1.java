@@ -1,8 +1,12 @@
 package com.hbm.entity.missile;
 
+import com.hbm.api.entity.IRadarDetectableNT;
+import com.hbm.entity.ModNtmEntities;
+import com.hbm.explosion.ExplosionChaos;
 import com.hbm.explosion.ExplosionLarge;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMissileItems;
+import com.hbm.particle.helper.ExplosionCreator;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.world.entity.EntityType;
@@ -42,7 +46,7 @@ public abstract class EntityMissileTier1 extends EntityMissileBaseNT {
         public EntityMissileGeneric(Level world, float x, float y, float z, int a, int b) {
             super(ModMissileEntities.MISSILE_GENERIC.get(), world, x, y, z, a, b);
         }
-        @Override public void onMissileImpact(HitResult hit) { this.explodeStandard(15F, 24, false); com.hbm.particle.helper.ExplosionCreator.composeEffectSmall(level(), getX(), getY(), getZ()); }
+        @Override public void onMissileImpact(HitResult hit) { this.explodeStandard(15F, 24, false); ExplosionCreator.composeEffectSmall(level(), getX(), getY(), getZ()); }
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_generic_small.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_generic.get()); }
     }
@@ -62,7 +66,7 @@ public abstract class EntityMissileTier1 extends EntityMissileBaseNT {
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.ingot_steel.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_decoy.get()); }
         @Override public String getRadarName() { return "radar.target.tier4"; }
-        @Override public int getBlipLevel() { return com.hbm.api.entity.IRadarDetectableNT.TIER4; }
+        @Override public int getBlipLevel() { return IRadarDetectableNT.TIER4; }
     }
 
     /** The same blast as the generic, but it leaves the crater burning. */
@@ -71,14 +75,14 @@ public abstract class EntityMissileTier1 extends EntityMissileBaseNT {
         public EntityMissileIncendiary(Level world, float x, float y, float z, int a, int b) {
             super(ModMissileEntities.MISSILE_INCENDIARY.get(), world, x, y, z, a, b);
         }
-        @Override public void onMissileImpact(HitResult hit) { this.explodeStandard(15F, 24, true); com.hbm.particle.helper.ExplosionCreator.composeEffectSmall(level(), getX(), getY(), getZ()); }
+        @Override public void onMissileImpact(HitResult hit) { this.explodeStandard(15F, 24, true); ExplosionCreator.composeEffectSmall(level(), getX(), getY(), getZ()); }
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_incendiary_small.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_incendiary.get()); }
     }
 
     /**
      * Bunker buster: fifteen stacked vanilla blasts, one per block <em>downwards</em>. It digs rather
-     * than spreads, which is the entire point — a surface warhead cannot reach a buried base.
+     * than spreads, which is the entire point: a surface warhead cannot reach a buried base.
      */
     public static class EntityMissileBunkerBuster extends EntityMissileTier1 {
         public EntityMissileBunkerBuster(EntityType<?> type, Level world) { super(type, world); }
@@ -104,14 +108,14 @@ public abstract class EntityMissileTier1 extends EntityMissileBaseNT {
             this.isCluster = true;
         }
         public EntityMissileCluster(Level level, float x, float y, float z, int targetX, int targetZ) {
-            super(com.hbm.entity.ModNtmEntities.MISSILE_CLUSTER.get(), level, x, y, z, targetX, targetZ);
+            super(ModNtmEntities.MISSILE_CLUSTER.get(), level, x, y, z, targetX, targetZ);
             this.isCluster = true;
         }
 
         @Override
         public void onMissileImpact(HitResult mop) {
             level().explode(this, getX(), getY(), getZ(), 5F, Level.ExplosionInteraction.TNT);
-            com.hbm.explosion.ExplosionChaos.cluster(level(), getX(), getY(), getZ(), 25, getYRot(), getXRot(),
+            ExplosionChaos.cluster(level(), getX(), getY(), getZ(), 25, getYRot(), getXRot(),
                     (float) Math.PI * 0.25F, (float) Math.PI * 0.25F, 1F);
         }
 

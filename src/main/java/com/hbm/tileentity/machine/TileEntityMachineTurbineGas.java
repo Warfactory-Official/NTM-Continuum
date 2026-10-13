@@ -1,5 +1,9 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.data.FluidDataMaps;
+import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import com.hbm.api.environment.Environment;
+import com.hbm.client.sound.GasTurbineSoundHandler;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
@@ -72,7 +76,7 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
      * {@code data/hbm/value_maps/fluid/gas_turbine_fuel_consumption.json}; 5 for a fuel without a value (1.7's default).
      */
     static double maxFuelConsumption(FluidType fuel) {
-        Double value = com.hbm.api.data.FluidDataMaps.GAS_TURBINE_FUEL.get(fuel.getFluid());
+        Double value = FluidDataMaps.GAS_TURBINE_FUEL.get(fuel.getFluid());
         return value == null ? 5D : value;
     }
 
@@ -126,7 +130,7 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTurbineGas turbine) {
-        com.hbm.client.sound.GasTurbineSoundHandler.tickLoop(turbine);
+        GasTurbineSoundHandler.tickLoop(turbine);
     }
 
     private void updateFuelType() {
@@ -165,7 +169,7 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
 
     private void startup(Level level) {
         // hbm-space: no air, no ignition; the turbine drops straight back to off (com.hbm.api.environment.Environment)
-        if (!com.hbm.api.environment.Environment.breatheAir(level, worldPosition, 0)) {
+        if (!Environment.breatheAir(level, worldPosition, 0)) {
             state = 0;
             return;
         }
@@ -236,7 +240,7 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
         double consumption = maxConsumption * 0.05D + maxConsumption * throttle / 100D;
         fuelToConsume += consumption;
         // hbm-space: the running turbine breathes as much oxygen as it burns fuel, and stops without it
-        if (!com.hbm.api.environment.Environment.breatheAir(level, worldPosition, (int) Math.floor(fuelToConsume))) {
+        if (!Environment.breatheAir(level, worldPosition, (int) Math.floor(fuelToConsume))) {
             state = 0;
             return;
         }
@@ -335,7 +339,7 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
         DirPos[] ports = {
                 getFuelPos()[0], getFuelPos()[1], getWaterPos()[0], getWaterPos()[1], getSteamPos()
         };
-        return com.hbm.api.energymk2.IEnergyConnectorBlock.isPort(ports, pos, dir);
+        return IEnergyConnectorBlock.isPort(ports, pos, dir);
     }
 
     @Override public boolean canConnect(FluidType type, ForgeDirection dir) { return dir != ForgeDirection.DOWN; }

@@ -3,6 +3,7 @@ package com.hbm.gametest;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.config.WorldConfig;
+import com.hbm.world.feature.CrustColumnFeature;
 import com.hbm.world.feature.DepthDepositPlacer;
 import com.hbm.world.feature.OreVeinPlacer;
 import net.minecraft.core.BlockPos;
@@ -30,16 +31,14 @@ public final class OreWorldgenGameTests {
     private static final int BOX = 40;      // x/z extent of a scratch box
     private static final int BOX_H = 28;    // y extent
 
-    // ---------------------------------------------------------------- ore_vein_shape
+    // Ore vein shape
 
     /**
-     * The vein generator must be vanilla's swelling ellipsoid, not the random walk the port shipped
-     * before this wave.
+     * The vein generator must be vanilla's swelling ellipsoid, not a random walk.
      *
      * <p>The discriminator is volume: a walk of {@code size} steps can place at most {@code size}
      * blocks (and usually fewer, since steps revisit cells), whereas the ellipsoid sweeps a swelling
-     * tube and places many times that. A size-16 vein placing ≤ 16 blocks means the placeholder is
-     * back.
+     * tube and places many times that. A size-16 vein placing ≤ 16 blocks means the generator is a walk.
      */
     public static void oreVeinShape(GameTestHelper helper) {
         BlockPos origin = scratch(helper);
@@ -65,7 +64,7 @@ public final class OreWorldgenGameTests {
 
     /**
      * The {@code +8} x/z offset inherited from vanilla {@code WorldGenMinable}. It is a real quirk of
-     * HBM's generator — every vein sits 8 blocks off the position the caller chose — and removing it
+     * HBM's generator: every vein sits 8 blocks off the position the caller chose, and removing it
      * would shift the entire ore layer, so it is pinned here.
      */
     public static void oreVeinOffset(GameTestHelper helper) {
@@ -140,7 +139,7 @@ public final class OreWorldgenGameTests {
     }
 
     /**
-     * Host-rock targeting. The gneiss family replaces {@code stone_gneiss} and nothing else — this is
+     * Host-rock targeting. The gneiss family replaces {@code stone_gneiss} and nothing else. This is
      * what makes the schist stratum a hard ordering dependency, since a gneiss vein run before the band
      * exists silently places nothing.
      */
@@ -179,8 +178,8 @@ public final class OreWorldgenGameTests {
     }
 
     /**
-     * The depth deposit: an ore core inside a depth-rock shell, and — deliberately, per the upstream
-     * comment "yes you've heard right, bedrock" — it replaces bedrock too.
+     * The depth deposit: an ore core inside a depth-rock shell. It replaces bedrock too, as the upstream
+     * comment says: "yes you've heard right, bedrock".
      */
     public static void oreDepthDeposit(GameTestHelper helper) {
         BlockPos origin = scratch(helper);
@@ -279,7 +278,7 @@ public final class OreWorldgenGameTests {
         for (int i = 0; i < 200; i++) {
             RandomSource rand = RandomSource.create(31L + i);
             for (int k = 0; k < 30; k++) {
-                com.hbm.world.feature.CrustColumnFeature.scan(level, new BlockPos(origin.getX() + rand.nextInt(16),
+                CrustColumnFeature.scan(level, new BlockPos(origin.getX() + rand.nextInt(16),
                         16 + rand.nextInt(96), origin.getZ() + rand.nextInt(16)), smolderingState);
             }
         }
@@ -300,7 +299,7 @@ public final class OreWorldgenGameTests {
         helper.succeed();
     }
 
-    // ---------------------------------------------------------------- scratch-volume helpers
+    // Scratch-volume helpers
 
     /** Bottom-north-west corner of this test's scratch box, well above the test platform. */
     private static BlockPos scratch(GameTestHelper helper) {

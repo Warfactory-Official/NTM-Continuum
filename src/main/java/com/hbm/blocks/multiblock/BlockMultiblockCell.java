@@ -1,10 +1,12 @@
 package com.hbm.blocks.multiblock;
 
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.block.RenderShape;
@@ -13,9 +15,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
 import java.util.function.BiConsumer;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /** Shared invisible folded cell for future cores that do not supply their own visible cell state. */
-public class BlockMultiblockCell extends dev.golem.core.world.CompatBlock {
+public class BlockMultiblockCell extends CompatBlock {
 
     /**
      * A piston may not take one cell out of a machine. 1.7 refused the stroke because
@@ -36,12 +41,12 @@ public class BlockMultiblockCell extends dev.golem.core.world.CompatBlock {
 
 
     /** hbm-space {@code internalPlayers} (V-175): the owner's walk-out rule reaches its shared cells too. */
-    @Override public net.minecraft.world.phys.shapes.VoxelShape getCollisionShape(BlockState state,
-            net.minecraft.world.level.BlockGetter level, BlockPos pos, net.minecraft.world.phys.shapes.CollisionContext context) {
+    @Override public VoxelShape getCollisionShape(BlockState state,
+            BlockGetter level, BlockPos pos, CollisionContext context) {
         if (BlockMultiblockCore.walkOutAfterPlacing) {
             BlockPos core = MultiblockSurface.coreOfCell(level, pos);
             BlockMultiblockCore owner = core == null ? null : MultiblockSurface.foldedCore(level.getBlockState(core));
-            if (owner != null && owner.ignoresCollisionFor(context)) return net.minecraft.world.phys.shapes.Shapes.empty();
+            if (owner != null && owner.ignoresCollisionFor(context)) return Shapes.empty();
         }
         return super.getCollisionShape(state, level, pos, context);
     }

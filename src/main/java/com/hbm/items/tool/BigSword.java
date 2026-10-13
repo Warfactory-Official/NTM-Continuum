@@ -9,7 +9,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 /**
- * 1.7 {@code BigSword}: a plain {@code EMERALD} sword ({@code 4 + 3} attack) whose right-click does nothing —
+ * 1.7 {@code BigSword}: a plain {@code EMERALD} sword ({@code 4 + 3} attack) whose right-click does nothing.
  * its plasma-beam {@code onUsingTick} was commented out in the original, and {@code onItemRightClick}
  * returned the stack without starting the sword block. Its unused {@code worldObj/posX/Y/Z} fields are dropped.
  */

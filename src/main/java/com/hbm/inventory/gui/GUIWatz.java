@@ -4,7 +4,10 @@ import com.hbm.inventory.container.ContainerWatz;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.TileEntityWatz;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.nbt.CompoundTag;
@@ -22,10 +25,10 @@ import java.util.Optional;
  * which is the operator's main at-a-glance warning; the three thin bars on the right are the shared
  * column volumes (cold coolant, hot coolant, mud) and the padlock toggles the per-slot pellet filter.
  */
-public class GUIWatz extends dev.golem.core.gui.CompatContainerScreen<ContainerWatz> {
+public class GUIWatz extends CompatContainerScreen<ContainerWatz> {
 
     private static final Identifier TEXTURE =
-            dev.golem.core.Ids.of("hbm", "textures/gui/reactors/gui_watz.png");
+            Ids.of("hbm", "textures/gui/reactors/gui_watz.png");
 
     private static final int LOCK_X = 142;
     private static final int LOCK_Y = 70;
@@ -118,7 +121,7 @@ public class GUIWatz extends dev.golem.core.gui.CompatContainerScreen<ContainerW
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         TileEntityWatz watz = this.menu.getWatz();
         if (watz == null || !this.isHovering(LOCK_X, LOCK_Y, LOCK_SIZE, LOCK_SIZE, event.x(), event.y())) return false;
 

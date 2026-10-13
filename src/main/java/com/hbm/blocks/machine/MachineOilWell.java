@@ -16,9 +16,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Oil Derrick block — 1:1 port of the 1.12.2 {@code MachineOilWell}: a 10-tall structure with a 1-high
+ * Oil Derrick block, a 1:1 port of the 1.12.2 {@code MachineOilWell}: a 10-tall structure with a 1-high
  * 3×3 base at ground level, a 9-high 1×1 tower above the core, and the 4 base corners one block up
- * (the old custom checkRequirement/fillSpace, copied verbatim). Core at the clicked position (offset 0).
+ * (the old custom checkRequirement/fillSpace, copied unchanged). Core at the clicked position (offset 0).
  */
 public class MachineOilWell extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
@@ -56,7 +56,7 @@ public class MachineOilWell extends BlockMultiblockMachine implements IEnergyCon
     }
 
     /**
-     * No super: getDimensions is the placement envelope and is wider than what 1.7 actually fills -- the
+     * No super: getDimensions is the placement envelope and is wider than what 1.7 actually fills; the
      * four edge-centre cells at ground level stay empty, which is what the derrick stands on.
      */
     @Override

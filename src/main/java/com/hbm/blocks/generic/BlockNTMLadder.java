@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -11,7 +12,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-/** Vanilla ladder behavior with the old HBM {@code ladder_red_top} cap exception. */
+/** Vanilla ladder behavior with the 1.12.2 {@code ladder_red_top} cap exception. */
 public class BlockNTMLadder extends LadderBlock {
 
     private static final VoxelShape NORTH_TOP = Block.box(0, 0, 14, 16, 4, 16);
@@ -27,12 +28,12 @@ public class BlockNTMLadder extends LadderBlock {
     }
 
     @Override
-    public boolean canSurvive(BlockState state, LevelReader level, net.minecraft.core.BlockPos pos) {
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         return top || super.canSurvive(state, level, pos);
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, net.minecraft.core.BlockPos pos,
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos,
                                CollisionContext context) {
         if (!top) return super.getShape(state, level, pos, context);
         return switch (state.getValue(FACING)) {

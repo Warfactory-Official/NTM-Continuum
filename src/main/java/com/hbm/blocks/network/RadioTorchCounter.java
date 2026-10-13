@@ -1,7 +1,7 @@
 package com.hbm.blocks.network;
 
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.radio.RadioTargets;
+import com.hbm.tileentity.network.RadioTargets;
 import com.hbm.tileentity.network.TileEntityRadioTorchCounter;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;

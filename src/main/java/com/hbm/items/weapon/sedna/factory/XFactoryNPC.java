@@ -6,6 +6,7 @@ import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.sound.ModSounds;
 import com.hbm.util.BobMathUtil;
 import com.hbm.lib.ModDamageSources.DamageClass;
+import dev.golem.core.world.Effects;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -23,7 +24,7 @@ import java.util.List;
  * registry, and none of these are loadable into a magazine, so they get their own factory the way
  * {@link XFactoryWarhead} does.
  *
- * <p>Two families of 1.7 field have no sedna counterpart and are deliberately dropped rather than approximated:
+ * <p>Two families of 1.7 field have no sedna counterpart and are dropped rather than approximated:
  * {@code style} (ORB / ROCKET / METEOR) and {@code setToBolt(trail)} were renderer choices with no mechanical
  * effect, and {@code vPFX} named a 1.7 particle string. The {@code plasmablast} broadcast on the UFO rocket's
  * impact has no ported particle type either - the same gap the artillery warheads recorded.
@@ -31,9 +32,8 @@ import java.util.List;
  * <p>1.7 rolled an absolute {@code dmgMin..dmgMax} per shot where sedna's config carries a multiplier against a
  * base the shooter passes in, so each config's 1.7 range collapses to the constant beside it.
  *
- * <p>Muzzle velocity moved the other way. 1.7 passed it per shot and read {@code config.velocity} only on the gun
- * path; sedna scales the unit heading by {@code config.velocity + accel} every tick, so the per-shot number lives
- * in the config here. {@code worm_laser} is the one config two shooters fire at different speeds - the head at 1,
+ * <p>Muzzle velocity lives in the config. 1.7 passed it per shot and read {@code config.velocity} only on the gun
+ * path; sedna scales the unit heading by {@code config.velocity + accel} every tick. {@code worm_laser} is the one config two shooters fire at different speeds - the head at 1,
  * the saucer at 2 - and the saucer makes up the difference with {@code accel}.
  */
 public final class XFactoryNPC {
@@ -88,7 +88,7 @@ public final class XFactoryNPC {
                                                for (Entity entity : bullet.level().getEntities(bullet,
                                                        bullet.getBoundingBox().inflate(2.5D))) {
                                                    if (entity.distanceToSqr(hit) < 2.5D * 2.5D) {
-                                                       dev.golem.core.world.Effects.ignite(entity, 3);
+                                                       Effects.ignite(entity, 3);
                                                    }
                                                }
                                                bullet.discard();

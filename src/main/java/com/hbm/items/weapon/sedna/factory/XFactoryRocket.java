@@ -15,8 +15,13 @@ import com.hbm.items.weapon.sedna.Crosshair;
 import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
+import com.hbm.items.weapon.sedna.impl.ItemGunStinger;
+import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
+import com.hbm.sound.ModGunSounds;
+import com.hbm.util.EntityDamageUtil;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import com.hbm.mixin.FireBlockAccessor;
 import com.hbm.lib.ModDamageSources;
@@ -43,7 +48,7 @@ import net.minecraft.world.phys.Vec3;
  * motor, which is why its config velocity is zero and the acceleration lives on the entity.
  *
  * <p>The launchers that fire the other variants ({@code rocket_rpzb}, {@code rocket_qd},
- * {@code rocket_ncrpa}) are absent — only the missile launcher's belt is built here, since the
+ * {@code rocket_ncrpa}) are absent. Only the missile launcher's belt is built here, since the
  * Richard turret is its only consumer.
  */
 public final class XFactoryRocket {
@@ -72,20 +77,20 @@ public final class XFactoryRocket {
                 || !ItemGunBaseNT.getIsAiming(held));
     };
 
-    public static final BiConsumer<net.minecraft.world.item.ItemStack, ItemGunBaseNT.LambdaContext>
+    public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext>
             LAMBDA_STINGER_SECONDARY_PRESS = (stack, ctx) ->
-                    com.hbm.items.weapon.sedna.impl.ItemGunStinger.setIsLockingOn(stack, true);
-    public static final BiConsumer<net.minecraft.world.item.ItemStack, ItemGunBaseNT.LambdaContext>
+                    ItemGunStinger.setIsLockingOn(stack, true);
+    public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext>
             LAMBDA_STINGER_SECONDARY_RELEASE = (stack, ctx) ->
-                    com.hbm.items.weapon.sedna.impl.ItemGunStinger.setIsLockingOn(stack, false);
-    public static final BiConsumer<net.minecraft.world.item.ItemStack, ItemGunBaseNT.LambdaContext>
+                    ItemGunStinger.setIsLockingOn(stack, false);
+    public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext>
             LAMBDA_MISSILE_LAUNCHER_PRIMARY_PRESS = (stack, ctx) ->
                     missileLauncherPrimary(stack, ctx);
 
-    private static void missileLauncherPrimary(net.minecraft.world.item.ItemStack stack,
+    private static void missileLauncherPrimary(ItemStack stack,
             ItemGunBaseNT.LambdaContext ctx) {
         if (ItemGunBaseNT.getIsAiming(stack)) {
-            net.minecraft.world.entity.Entity target = com.hbm.items.weapon.sedna.impl.ItemGunStinger.getLockonTarget(
+            Entity target = ItemGunStinger.getLockonTarget(
                     ctx.getPlayer(), 150D, 20D);
             if (target != null) {
                 ItemGunBaseNT.setLockonTarget(stack, target);
@@ -131,12 +136,12 @@ public final class XFactoryRocket {
         Entity victim = entityHit.getEntity();
         DamageSource source = ModDamageSources.bullet(level, DamageClass.EXPLOSIVE.type(), bullet,
                 bullet.getThrower());
-        if (victim instanceof net.minecraft.world.entity.LivingEntity living) {
+        if (victim instanceof LivingEntity living) {
             // 1.7: attackEntityFromNT(living, source, dmg * 3, true, true, 0.5, 5, 0.2) - knockback multiplier 0.5
-            com.hbm.util.EntityDamageUtil.attackEntityFromNT(living, source, bullet.damage * 3F, true, true, 0.5D, 5F, 0.2F);
+            EntityDamageUtil.attackEntityFromNT(living, source, bullet.damage * 3F, true, true, 0.5D, 5F, 0.2F);
         } else {
             // 1.7: plain attackEntityFrom for non-living targets
-            com.hbm.util.EntityDamageUtil.attackEntityFromIgnoreIFrame(victim, source, bullet.damage * 3F);
+            EntityDamageUtil.attackEntityFromIgnoreIFrame(victim, source, bullet.damage * 3F);
         }
     };
 
@@ -165,7 +170,7 @@ public final class XFactoryRocket {
 
     /**
      * A blast, a patch of lingering fire, and ordinary vanilla flame on anything nearby that will take
-     * it — the last is what makes an incendiary round set the scenery alight rather than just the mob
+     * it. The flame is what makes an incendiary round set the scenery alight rather than just the mob
      * standing in it. Flammability is read off vanilla's own burn-odds map rather than upstream's
      * per-face Forge query, which has no Fabric counterpart; the answer differs only for a block that
      * burns on some faces and not others, and vanilla has none.
@@ -245,13 +250,13 @@ public final class XFactoryRocket {
         return copy;
     }
 
-    /** 1.7 {@code LAMBDA_RECOIL_ROCKET}: deliberately empty in the source. */
+    /** 1.7 {@code LAMBDA_RECOIL_ROCKET}: empty in the source. */
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_ROCKET = (stack, ctx) -> { };
 
     private static Receiver rocketReceiver(float damage, int delay, int reload, int jam,
-            com.hbm.items.weapon.sedna.mags.IMagazine<?> mag) {
+            IMagazine<?> mag) {
         return new Receiver(0).dmg(damage).delay(delay).reload(reload).jam(jam)
-                .sound(com.hbm.sound.ModGunSounds.FIRE_ROCKET::get, 1F, 1F)
+                .sound(ModGunSounds.FIRE_ROCKET::get, 1F, 1F)
                 .mag(mag).offset(1, -0.0625 * 1.5, -0.1875D);
     }
 

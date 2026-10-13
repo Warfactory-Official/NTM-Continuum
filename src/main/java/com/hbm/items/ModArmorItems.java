@@ -1,7 +1,14 @@
 package com.hbm.items;
 
+import com.hbm.items.armor.ArmorNCRPAMelee;
+import com.hbm.items.armor.ArmorNCRPARanged;
+import com.hbm.items.armor.ArmorRPAMelee;
+import com.hbm.potion.ModEffects;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
+import dev.golem.core.Ids;
+import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
@@ -29,16 +36,17 @@ import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Effects;
 import dev.golem.core.world.GolemArmorMaterial;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Item;
 
 /**
  * Hand-registered armour. Kept out of the generated {@link ModItems} so codegen never clobbers these
- * stateful {@link ArmorFSB} items — the same arrangement {@link ModGearItems} and {@code ModGunItems}
+ * stateful {@link ArmorFSB} items, the same arrangement {@link ModGearItems} and {@code ModGunItems}
  * use.
  *
  * <p>Every suit follows upstream's shape: the <b>helmet</b> carries the whole set's configuration and
  * the other three pieces {@code cloneStats} it, so the numbers exist in exactly one place. Statics are
- * declared helmet-first for that reason — a clone of a not-yet-initialised field would silently copy
+ * declared helmet-first for that reason, since a clone of a not-yet-initialised field would silently copy
  * defaults.
  */
 public final class ModArmorItems {
@@ -48,7 +56,7 @@ public final class ModArmorItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    // ---- regular steel and titanium armour ----
+    // Regular steel and titanium armour
     // 1.12.2 ModItems.java:484-491. ArmorFSB has no custom set flags for either set.
     public static final RegistryObject<ArmorFSB> steel_helmet =
             plain("steel_helmet", () -> HbmArmorMaterials.STEEL, ArmorSlot.HELMET);
@@ -68,7 +76,7 @@ public final class ModArmorItems {
     public static final RegistryObject<ArmorFSB> titanium_boots =
             plain("titanium_boots", () -> HbmArmorMaterials.TITANIUM, ArmorSlot.BOOTS);
 
-    // ---- ordinary ArmorFSB families ----
+    // Ordinary ArmorFSB families
     public static final RegistryObject<ArmorFSB> cobalt_helmet =
             plain("cobalt_helmet", () -> HbmArmorMaterials.COBALT, ArmorSlot.HELMET);
     public static final RegistryObject<ArmorFSB> cobalt_plate =
@@ -96,7 +104,7 @@ public final class ModArmorItems {
     public static final RegistryObject<ArmorFSB> schrabidium_boots =
             plain("schrabidium_boots", () -> HbmArmorMaterials.SCHRABIDIUM, ArmorSlot.BOOTS);
 
-    // ---- Taurun (1.12.2 ModItemsArmor.java:308-318): the undead soldier's loadout. The icons are 1.7
+    // Taurun (1.12.2 ModItemsArmor.java:308-318): the undead soldier's loadout. The icons are 1.7
     // ArmorTaurun's renderStandard OBJ icons (ArmorSetDeclarations); the worn OBJ body model is a renderer
     // follow-up recorded in the entity port manifest. ----
     public static final RegistryObject<ArmorFSB> taurun_helmet =
@@ -144,7 +152,7 @@ public final class ModArmorItems {
     public static final RegistryObject<ArmorFSB> paa_boots =
             plain("paa_boots", () -> HbmArmorMaterials.PAA, ArmorSlot.BOOTS);
 
-    // ---- T-51b power armour ----
+    // T-51b power armour
     // 1.12.2 ModItems.java:532-544. maxPower 1,000,000 / chargeRate 10,000 / consumption 1,000 / drain 5.
     private static final long T51_POWER = 1_000_000L;
     private static final long T51_CHARGE_RATE = 10_000L;
@@ -160,7 +168,7 @@ public final class ModArmorItems {
     public static final RegistryObject<ArmorFSBPowered> t51_boots =
             powered("t51_boots", () -> HbmArmorMaterials.T51, ArmorSlot.BOOTS);
 
-    // ---- Blackjack electric armor and its jetpack chest variant ----
+    // Blackjack electric armor and its jetpack chest variant
     private static final long BJ_POWER = 10_000_000L;
     private static final long BJ_CHARGE_RATE = 10_000L;
     private static final long BJ_CONSUMPTION = 1_000L;
@@ -175,7 +183,7 @@ public final class ModArmorItems {
     public static final RegistryObject<ArmorBJ> bj_legs = bj("bj_legs", ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorBJ> bj_boots = bj("bj_boots", ArmorSlot.BOOTS);
 
-    // ---- DNT nanosuit ----
+    // DNT nanosuit
     private static final long DNS_POWER = 1_000_000_000L;
     private static final long DNS_CHARGE_RATE = 1_000_000L;
     private static final long DNS_CONSUMPTION = 100_000L;
@@ -196,7 +204,7 @@ public final class ModArmorItems {
     public static final RegistryObject<ArmorFSBPowered> ncrpa_legs = paPowered("ncrpa_legs", ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorFSBPowered> ncrpa_boots = paPowered("ncrpa_boots", ArmorSlot.BOOTS);
 
-    // ---- direct-wear and armor-module jetpacks ----
+    // Direct-wear and armor-module jetpacks
     public static final RegistryObject<JetpackRegular> jetpack_fly =
             jetpack("jetpack_fly", p -> new JetpackRegular(Fluids.KEROSENE, 12_000, p));
     public static final RegistryObject<JetpackBreak> jetpack_break =
@@ -252,14 +260,14 @@ public final class ModArmorItems {
     }
 
     private static <T extends JetpackBase> RegistryObject<T> jetpack(String name,
-                                                                       java.util.function.Function<Item.Properties, T> factory) {
+                                                                       Function<Item.Properties, T> factory) {
         RegistryObject<T> ro = REG.item(name, factory, p -> p.stacksTo(1)).transform(Presets.sprite());
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
     }
 
     private static RegistryObject<JetpackGlider> glider(String name,
-                                                         java.util.function.Function<Item.Properties, JetpackGlider> factory) {
+                                                         Function<Item.Properties, JetpackGlider> factory) {
         RegistryObject<JetpackGlider> ro = REG.item(name, factory, p -> p.stacksTo(1));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
@@ -317,7 +325,7 @@ public final class ModArmorItems {
         configurePlainSet(schrabHelmet, schrabidium_plate.get(), schrabidium_legs.get(), schrabidium_boots.get(), 3.0D);
 
         ArmorFSB asbestosHelmet = asbestos_helmet.get().setOverlay(
-                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/misc/overlay_asbestos.png"));
+                Ids.of(Constants.MOD_ID, "textures/misc/overlay_asbestos.png"));
 
         ArmorFSB paa = paa_plate.get().setNoHelmet(true)
                 .addEffect(Effects.instance(Effects.haste(), 30, 0));
@@ -336,8 +344,8 @@ public final class ModArmorItems {
                 .setJump(ModSounds.IRON_JUMP)
                 .setFall(ModSounds.IRON_LAND);
 
-        // Only the helmet carries the hazard classes: upstream's cloneStats deliberately does not copy
-        // them, and ArmorRegistry's checks read the HEAD slot. Nor is T-51b registered as a hazmat set —
+        // Only the helmet carries the hazard classes: upstream's cloneStats does not copy
+        // them, and ArmorRegistry's checks read the HEAD slot. Nor is T-51b registered as a hazmat set:
         // it is not in any of 1.12.2's checkForHazmat lists; its radiation protection is setRadResist
         // alone.
         t51_plate.get().cloneStats(helmet);
@@ -351,8 +359,8 @@ public final class ModArmorItems {
                 .setHasGeigerSound(true)
                 .addEffect(Effects.instance(Effects.speed(), 30, 1))
                 .addEffect(Effects.instance(Effects.jumpBoost(), 30, 0))
-                .addEffect(Effects.instance(net.minecraft.world.effect.MobEffects.SATURATION, 30, 0))
-                 .addEffect(Effects.instanceRegistered(com.hbm.potion.ModEffects.RADX.get(), 30, 0))
+                .addEffect(Effects.instance(MobEffects.SATURATION, 30, 0))
+                 .addEffect(Effects.instanceRegistered(ModEffects.RADX.get(), 30, 0))
                 .setStep(ModSounds.METAL_STEP)
                 .setJump(ModSounds.IRON_JUMP)
                 .setFall(ModSounds.IRON_LAND);
@@ -397,7 +405,7 @@ public final class ModArmorItems {
         rpa_plate.get().cloneStats(rpa);
         rpa_legs.get().cloneStats(rpa);
         rpa_boots.get().cloneStats(rpa);
-        for (var piece : java.util.List.of(rpa_helmet, rpa_plate, rpa_legs, rpa_boots)) piece.get().setArmorModel("rpa"); // G-C: worn ModelArmorRPA
+        for (var piece : List.of(rpa_helmet, rpa_plate, rpa_legs, rpa_boots)) piece.get().setArmorModel("rpa"); // G-C: worn ModelArmorRPA
 
         ArmorFSBPowered ncrpa = ncrpa_helmet.get();
         ncrpa.addEffect(Effects.instance(Effects.strength(), 20, 2)).enableVATS(true)
@@ -406,12 +414,12 @@ public final class ModArmorItems {
                 .setJump(ModSounds.STEP_POWERED)
                 .setFall(ModSounds.STEP_POWERED);
         ncrpa_plate.get().cloneStats(ncrpa);
-        for (var piece : java.util.List.of(ncrpa_helmet, ncrpa_plate, ncrpa_legs, ncrpa_boots)) piece.get().setArmorModel("ncrpa"); // G-C: worn ModelArmorNCRPA
+        for (var piece : List.of(ncrpa_helmet, ncrpa_plate, ncrpa_legs, ncrpa_boots)) piece.get().setArmorModel("ncrpa"); // G-C: worn ModelArmorNCRPA
         ncrpa_legs.get().cloneStats(ncrpa);
         ncrpa_boots.get().cloneStats(ncrpa);
-        ArmorPAWeapons.registerMelee(rpa_plate.get(), new com.hbm.items.armor.ArmorRPAMelee());
-        ArmorPAWeapons.registerMelee(ncrpa_plate.get(), new com.hbm.items.armor.ArmorNCRPAMelee());
-        ArmorPAWeapons.registerRanged(ncrpa_plate.get(), new com.hbm.items.armor.ArmorNCRPARanged());
+        ArmorPAWeapons.registerMelee(rpa_plate.get(), new ArmorRPAMelee());
+        ArmorPAWeapons.registerMelee(ncrpa_plate.get(), new ArmorNCRPAMelee());
+        ArmorPAWeapons.registerRanged(ncrpa_plate.get(), new ArmorNCRPARanged());
         jetpack_fly.get().setArmorModel("jetpack_regular");
         jetpack_break.get().setArmorModel("jetpack_break");
         jetpack_vector.get().setArmorModel("jetpack_vector");

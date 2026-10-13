@@ -1,10 +1,18 @@
 package com.hbm.items.weapon.sedna;
 
+import com.hbm.config.GeneralConfig;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.client.ClientPlayerAccess;
 import com.hbm.items.IKeybindReceiver;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.armor.ArmorTrenchmaster;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
+import com.hbm.items.weapon.sedna.mags.MagazineBelt;
+import com.hbm.items.weapon.sedna.mags.MagazineElectricEngine;
+import com.hbm.items.weapon.sedna.mags.MagazineEnergy;
+import com.hbm.items.weapon.sedna.mags.MagazineFluid;
+import com.hbm.items.weapon.sedna.mags.MagazineInfinite;
+import com.hbm.items.weapon.sedna.mags.MagazineLiquidEngine;
 import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -12,15 +20,28 @@ import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.machine.ItemFluidId;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 import com.hbm.items.ModBatteryItems;
+import com.hbm.lib.Library;
+import com.hbm.packet.HbmPackets;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
+import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
@@ -32,6 +53,7 @@ import net.minecraft.ChatFormatting;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.Supplier;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * The base class for every Sedna-generation gun.
@@ -41,13 +63,13 @@ import java.util.function.Supplier;
  * independent and a gun keeps its magazine when dropped, traded or stored.
  *
  * <h2>Where the state lives</h2>
- * Upstream keeps one NBT compound per stack and writes to it every tick on the server. That is kept —
- * the same key names, the same per-config-index suffixes — but split across two components:
+ * Upstream keeps one NBT compound per stack and writes to it every tick on the server. That is kept:
+ * the same key names, the same per-config-index suffixes, but split across two components:
  *
  * <ul>
- *   <li>{@link ModDataComponents#GUN_STATE} — the state machine's scratch space: timer, state,
+ *   <li>{@link ModDataComponents#GUN_STATE}: the state machine's scratch space: timer, state,
  *       animation timer, button flags. Rewritten constantly.
- *   <li>{@link ModDataComponents#GUN_DATA} — what a player would be upset to lose: wear, fire mode,
+ *   <li>{@link ModDataComponents#GUN_DATA}: what a player would be upset to lose: wear, fire mode,
  *       magazine contents.
  * </ul>
  *
@@ -60,7 +82,7 @@ import java.util.function.Supplier;
  * evaluation itself lives in {@code XWeaponModManager}; smoke node evolution is shared here so renderers
  * only consume the source-shaped attached list.
  */
-public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IKeybindReceiver {
+public class ItemGunBaseNT extends CompatItem implements IKeybindReceiver {
 
     public static final List<ItemGunBaseNT> INSTANCES = new ArrayList<>();
     public static final List<Item> secrets = new ArrayList<>();
@@ -105,8 +127,8 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     public final WeaponQuality quality;
 
     /** {@code "#.##"} with US symbols, as the original {@code FORMAT_DMG}. */
-    private static final java.text.DecimalFormat FORMAT_DMG = new java.text.DecimalFormat("#.##",
-            java.text.DecimalFormatSymbols.getInstance(java.util.Locale.US));
+    private static final DecimalFormat FORMAT_DMG = new DecimalFormat("#.##",
+            DecimalFormatSymbols.getInstance(Locale.US));
 
     /** The original {@code addInformation}: one diagnostic block per receiver configuration, then the quality line. */
     @Override
@@ -123,7 +145,7 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
                 if (receiver == null) continue;
                 IMagazine<?> magazine = receiver.getMagazine(stack);
                 if (magazine == null) continue;
-                if (!(magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineInfinite)) {
+                if (!(magazine instanceof MagazineInfinite)) {
                     ItemStack icon = player != null ? magazine.getIconForHUD(stack, player)
                             : tooltipAmmoIcon(magazine, stack, magazine.getType(stack, null));
                     String state = player != null ? magazine.reportAmmoStateForHUD(stack, player)
@@ -183,11 +205,11 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     private static ItemStack tooltipAmmoIcon(IMagazine<?> magazine, ItemStack stack, Object ammo) {
         if (ammo instanceof BulletConfig bullet) return bullet.toStack();
         if (ammo instanceof FluidType fluid && fluid != Fluids.NONE) return ItemFluidIcon.make(fluid);
-        if (magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineEnergy
-                || magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineElectricEngine) {
+        if (magazine instanceof MagazineEnergy
+                || magazine instanceof MagazineElectricEngine) {
             return new ItemStack(ModBatteryItems.PACKS.get(EnumBatteryPack.BATTERY_REDSTONE).get());
         }
-        if (magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineFluid fluidMagazine) {
+        if (magazine instanceof MagazineFluid fluidMagazine) {
             FluidType fluid = fluidMagazine.getType(stack, null);
             return fluid == null || fluid == Fluids.NONE ? ItemStack.EMPTY : ItemFluidId.make(fluid);
         }
@@ -195,19 +217,19 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     }
 
     private static String tooltipAmmoState(IMagazine<?> magazine, ItemStack stack) {
-        if (magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineInfinite) return "∞";
-        if (magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineEnergy
-                || magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineElectricEngine) {
-            return com.hbm.lib.Library.getShortNumber(magazine.getAmount(stack, null)) + "/"
-                    + com.hbm.lib.Library.getShortNumber(magazine.getCapacity(stack)) + "HE";
+        if (magazine instanceof MagazineInfinite) return "∞";
+        if (magazine instanceof MagazineEnergy
+                || magazine instanceof MagazineElectricEngine) {
+            return Library.getShortNumber(magazine.getAmount(stack, null)) + "/"
+                    + Library.getShortNumber(magazine.getCapacity(stack)) + "HE";
         }
-        if (magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineFluid) {
+        if (magazine instanceof MagazineFluid) {
             return magazine.getAmount(stack, null) + "mB";
         }
-        if (magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineLiquidEngine) {
+        if (magazine instanceof MagazineLiquidEngine) {
             return magazine.getAmount(stack, null) + "/" + magazine.getCapacity(stack) + "mB";
         }
-        if (magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineBelt) {
+        if (magazine instanceof MagazineBelt) {
             return "x" + magazine.getAmount(stack, null);
         }
         return magazine.getAmount(stack, null) + " / " + magazine.getCapacity(stack);
@@ -321,11 +343,11 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
      *
      * <p>The stored button flag is what makes this edge-triggered: the client sends state, and a press
      * handler only runs when the flag actually changes, so holding a key does not re-fire the handler
-     * every tick — sustained fire is the decider's job, not the keybind's.
+     * every tick. Sustained fire is the decider's job, not the keybind's.
      */
     public void handleKeybind(LivingEntity entity, Container inventory, ItemStack stack,
             EnumKeybind keybind, boolean newState) {
-        if (!com.hbm.config.GeneralConfig.enableGuns) return; // 1.7 1.20_enableGuns
+        if (!GeneralConfig.enableGuns) return; // 1.7 1.20_enableGuns
         for (int i = 0; i < configs_DNA.length; i++) {
             GunConfig config = getConfig(stack, i);
             LambdaContext ctx = new LambdaContext(config, entity, inventory, handOf(entity, stack), i);
@@ -379,8 +401,8 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
 
     public static void playAnimation(Player player, ItemStack stack, GunAnimation type, InteractionHand hand,
             int index) {
-        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
-            com.hbm.packet.HbmPackets.sendGunAnimation(serverPlayer, stack, type, hand, 0, index);
+        if (player instanceof ServerPlayer serverPlayer) {
+            HbmPackets.sendGunAnimation(serverPlayer, stack, type, hand, 0, index);
             setLastAnim(stack, index, type);
             setAnimTimer(stack, index, 0);
         }
@@ -453,29 +475,29 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     /**
      * The per-tick driver, and the only place gun state advances.
      *
-     * <p>Server-side only — Golem's item facade already filters the client out, which suits this design
-     * exactly: everything is decided on the server and the client learns about it through the stack's
-     * synced components plus the animation payload. Upstream's client half of {@code onUpdate}, the aim
-     * transition, lives in the client tick handler instead.
+     * <p>Server-side only: Golem's item facade filters the client out. Everything is decided on the
+     * server and the client learns about it through the stack's synced components plus the animation
+     * payload. Upstream's client half of {@code onUpdate}, the aim transition, lives in the client tick
+     * handler.
      */
     @Override
-    protected void compatInventoryTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
-            Entity entity, net.minecraft.world.entity.EquipmentSlot slotType, boolean isHeld) {
+    protected void compatInventoryTick(ItemStack stack, ServerLevel level,
+            Entity entity, EquipmentSlot slotType, boolean isHeld) {
         serverTick(stack, level, entity, isHeld,
-                slotType == net.minecraft.world.entity.EquipmentSlot.OFFHAND
+                slotType == EquipmentSlot.OFFHAND
                         ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
     }
 
     /**
-     * Advances one gun by one tick. Split out from the vanilla hook so tests — and anything else that
-     * has to drive a gun without an inventory tick behind it, such as a turret — can call it directly.
+     * Advances one gun by one tick. Split out from the vanilla hook so tests, and anything else that
+     * has to drive a gun without an inventory tick behind it, such as a turret, can call it directly.
      */
-    public void serverTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
+    public void serverTick(ItemStack stack, ServerLevel level,
             Entity entity, boolean isHeld) {
         serverTick(stack, level, entity, isHeld, handOf(entity, stack));
     }
 
-    public void serverTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
+    public void serverTick(ItemStack stack, ServerLevel level,
             Entity entity, boolean isHeld, InteractionHand hand) {
         if (!(entity instanceof LivingEntity living)) return;
         Player player = entity instanceof Player p ? p : null;
@@ -492,8 +514,8 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
         if (player != null && !getIsEquipped(stack) && isHeld) onEquip(player, stack, hand);
         setIsEquipped(stack, isHeld);
 
-        // Put the gun away and it re-draws when next selected — you cannot dodge a reload by
-        // hotbar-swapping. A jam is deliberately not cleared this way.
+        // Put the gun away and it re-draws when next selected: you cannot dodge a reload by
+        // hotbar-swapping. A jam is not cleared this way.
         if (!isHeld) {
             for (int i = 0; i < confNo; i++) {
                 if (getState(stack, i) != GunState.JAMMED) {
@@ -510,7 +532,7 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
 
         // 1.7: a Trenchmaster runs a reloading config's tick twice (the k loop), which is his faster reload.
         for (int i = 0; i < confNo; i++) for (int k = 0; k == 0 || (k < 2
-                && com.hbm.items.armor.ArmorTrenchmaster.isTrenchMaster(player)
+                && ArmorTrenchmaster.isTrenchMaster(player)
                 && getState(stack, i) == GunState.RELOADING); k++) {
             // Keep the upstream order: cue zero is played on the tick before the animation timer moves.
             if (configs[i].getOrchestra(stack) != null) {
@@ -536,8 +558,8 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
      * A gun rewrites its own animation clock every tick, and that is not a change of weapon.
      *
      * <p>Without this the hand renderer treats each tick's state as a fresh draw and never finishes
-     * raising the gun. Sixty-five of these are posed in camera space and never notice; the fire
-     * extinguisher, which keeps the pose vanilla hands it, was left below the bottom of the screen.
+     * raising the gun. Guns posed in camera space never notice; the fire extinguisher, which keeps the
+     * pose vanilla hands it, would stay below the bottom of the screen.
      */
     @Override
     public boolean compatIsSameHeldItem(ItemStack shown, ItemStack held) {
@@ -547,22 +569,22 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     /**
      * A held gun must never break a block: the left button is the trigger.
      *
-     * <p>This is only half the story — it stops the block from breaking, but the client still plays the
+     * <p>This is only half the story: it stops the block from breaking, but the client still plays the
      * swing and the cracking overlay. Suppressing the attack key itself is the client-side half, in the
      * keybind handler.
      */
     @Override
     public boolean compatCanDestroyBlock(ItemStack stack,
-            net.minecraft.world.level.block.state.BlockState state, Level level,
-            net.minecraft.core.BlockPos pos, LivingEntity user) {
+            BlockState state, Level level,
+            BlockPos pos, LivingEntity user) {
         return false;
     }
 
-    /* STATE ACCESSORS — all per config index. */
+    /* STATE ACCESSORS: all per config index. */
 
     public static int getTimer(ItemStack stack, int index) { return getValueInt(stack, KEY_TIMER + index); }
     public static void setTimer(ItemStack stack, int index, int value) { setValueInt(stack, KEY_TIMER + index, value); }
-    // state and last animation are saved by enum name, never by ordinal (History section 19ej-ids); absent = first constant
+    // state and last animation are saved by enum name, never by ordinal; absent = first constant
     public static GunState getState(ItemStack stack, int index) { return savedEnum(GunState.class, getValueString(stack, KEY_STATE + index)); }
     public static void setState(ItemStack stack, int index, GunState value) { setValueString(stack, KEY_STATE + index, value.name()); }
     public static int getMode(ItemStack stack, int index) { return getValueInt(stack, KEY_MODE + index); }
@@ -571,20 +593,20 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     public static void setIsAiming(ItemStack stack, boolean value) { setValueBool(stack, KEY_AIMING, value); }
     public static float getWear(ItemStack stack, int index) { return getValueFloat(stack, KEY_WEAR + index); }
     public static void setWear(ItemStack stack, int index, float value) { setValueFloat(stack, KEY_WEAR + index, value); }
-    // 1.7 kept the target's network entity id here; the port keeps its UUID (never persist numeric ids, History
-    // section 19ek-small) and resolves it on the server where 1.7 called getEntityByID.
+    // 1.7 kept the target's network entity id here; the port keeps its UUID (numeric ids are never persisted)
+    // and resolves it on the server where 1.7 called getEntityByID.
     public static String getLockonTarget(ItemStack stack) { return getValueString(stack, KEY_LOCKONTARGET); }
-    public static void setLockonTarget(ItemStack stack, net.minecraft.world.entity.Entity target) {
+    public static void setLockonTarget(ItemStack stack, Entity target) {
         setValueString(stack, KEY_LOCKONTARGET, target.getUUID().toString());
     }
     /** The locked-on entity in this level, or null (1.7 {@code worldObj.getEntityByID(getLockonTarget(stack))}). */
     public static net.minecraft.world.entity.@org.jspecify.annotations.Nullable Entity resolveLockonTarget(
-            net.minecraft.world.level.Level level, ItemStack stack) {
-        if (!(level instanceof net.minecraft.server.level.ServerLevel server)) return null;
+            Level level, ItemStack stack) {
+        if (!(level instanceof ServerLevel server)) return null;
         String id = getLockonTarget(stack);
         if (id.isEmpty()) return null;
         try {
-            return server.getEntity(java.util.UUID.fromString(id));
+            return server.getEntity(UUID.fromString(id));
         } catch (IllegalArgumentException notAUuid) {
             return null; // an old numeric save: no target, as if none was locked
         }
@@ -595,7 +617,7 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     public static void setLastAnim(ItemStack stack, int index, GunAnimation value) { setValueString(stack, KEY_LASTANIM + index, value.name()); }
     private static <E extends Enum<E>> E savedEnum(Class<E> type, String name) {
         E first = type.getEnumConstants()[0];
-        return name.isEmpty() ? first : com.hbm.util.SavedIds.byName(type, name, first);
+        return name.isEmpty() ? first : SavedIds.byName(type, name, first);
     }
     public static int getAnimTimer(ItemStack stack, int index) { return getValueInt(stack, KEY_ANIMTIMER + index); }
     public static void setAnimTimer(ItemStack stack, int index, int value) { setValueInt(stack, KEY_ANIMTIMER + index, value); }
@@ -647,7 +669,7 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
      * component marks the stack dirty and re-syncs it, so an unconditional write would put a gun that is
      * merely <i>being held</i> into a permanent packet loop.
      */
-    private static void write(ItemStack stack, String key, java.util.function.Consumer<CompoundTag> mutator) {
+    private static void write(ItemStack stack, String key, Consumer<CompoundTag> mutator) {
         var component = isPersistent(key) ? ModDataComponents.GUN_DATA : ModDataComponents.GUN_STATE;
         CompoundTag current = component.getOr(stack, EMPTY);
         CompoundTag next = current.copy();

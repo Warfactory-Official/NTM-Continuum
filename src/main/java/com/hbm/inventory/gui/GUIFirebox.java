@@ -1,5 +1,7 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerFirebox;
 import com.hbm.tileentity.machine.TileEntityFireboxBase;
@@ -16,13 +18,13 @@ import java.util.Locale;
 /**
  * Client screen for the firebox family. Reads the heat/burn state off the synced client
  * {@link TileEntityFireboxBase} (BufPacket): the horizontal heat bar, the burn-time bar and the flame
- * icon while burning — 1.7.10 {@code GUIFirebox} on {@code machine/gui_firebox.png} or, for the heating oven,
+ * icon while burning, from 1.7.10 {@code GUIFirebox} on {@code machine/gui_firebox.png} or, for the heating oven,
  * {@code machine/gui_heating_oven.png} (176×168, bars at tex 176,0 / 176,5 and the 18×18 flame at 176,10).
  */
-public class GUIFirebox extends dev.golem.core.gui.CompatContainerScreen<ContainerFirebox> {
+public class GUIFirebox extends CompatContainerScreen<ContainerFirebox> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_firebox.png");
-    private static final Identifier OVEN_TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_heating_oven.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/machine/gui_firebox.png");
+    private static final Identifier OVEN_TEXTURE = Ids.of("hbm", "textures/gui/machine/gui_heating_oven.png");
 
     public GUIFirebox(ContainerFirebox menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 168);

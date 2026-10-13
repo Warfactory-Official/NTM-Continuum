@@ -19,8 +19,7 @@ public class SatelliteMiner extends Satellite {
     /**
      * Wall-clock milliseconds of the last delivery, 1.7 {@code System.currentTimeMillis()} as the cargo pad
      * stamps it: 0 on a fresh satellite, so its first rocket comes at once, then one every ten minutes of real
-     * time (§19ec-satellites restored this from a level-time stamp, which held the first rocket back until the
-     * world was ten minutes old).
+     * time.
      */
     public long lastOp;
 

@@ -1,7 +1,12 @@
 package com.hbm.client;
 
 import com.google.gson.JsonObject;
+import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.client.render.util.RenderAccessoryUtility;
+import dev.golem.core.client.PlayerSkins;
+import dev.golem.core.client.ProfileSkins;
+import dev.golem.core.harness.HarnessQueryRegistry;
+import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 
@@ -15,13 +20,13 @@ public final class SpecialPlayerHarnessQueries {
     private SpecialPlayerHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_special", SpecialPlayerHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_special", SpecialPlayerHarnessQueries::query);
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {
         JsonObject json = new JsonObject();
         if (mc.player == null) return json;
-        Identifier cape = dev.golem.core.client.PlayerSkins.cape(mc.player);
+        Identifier cape = PlayerSkins.cape(mc.player);
         Identifier expected = RenderAccessoryUtility.getCloakFromPlayer(mc.player.getUUID(), mc.player.getName().getString());
         json.addProperty("name", mc.player.getName().getString());
         json.addProperty("uuid", mc.player.getUUID().toString());
@@ -29,9 +34,9 @@ public final class SpecialPlayerHarnessQueries {
         json.addProperty("expected", expected == null ? "" : expected.toString());
         // the skinned bobbleheads: whether each person's skin has been fetched and registered
         JsonObject skins = new JsonObject();
-        for (var type : com.hbm.blocks.generic.BlockBobble.BobbleType.VALUES) {
+        for (var type : BlockBobble.BobbleType.VALUES) {
             if (type.skinUuid == null) continue;
-            var skin = dev.golem.core.client.ProfileSkins.get(java.util.UUID.fromString(type.skinUuid));
+            var skin = ProfileSkins.get(UUID.fromString(type.skinUuid));
             skins.addProperty(type.name(), skin == null ? "" : skin.texture().toString());
         }
         json.add("bobble_skins", skins);

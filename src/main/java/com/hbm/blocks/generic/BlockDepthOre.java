@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Depth rock carrying an ore — original-hbm (1.7.10) {@code BlockDepthOre}. Identical to {@link BlockDepth}
+ * Depth rock carrying an ore: 1.7 {@code BlockDepthOre}. Identical to {@link BlockDepth}
  * (unbreakable except by a depth-rock tool, explosion resistance 10) except for what it drops.
  *
  * <p>1.7 {@code quantityDropped} is {@code base + rand(spread)} (cinnabar 2-4, zirconium and neodymium 2-3,

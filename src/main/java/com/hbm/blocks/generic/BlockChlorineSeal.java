@@ -2,6 +2,7 @@ package com.hbm.blocks.generic;
 
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import dev.golem.core.registry.TickingBlock;
@@ -45,7 +46,7 @@ public class BlockChlorineSeal extends CompatBlock implements TickingBlock {
             BlockState now = world.getBlockState(at);
             if (!now.is(gas.getBlock()) && !now.is(ModTerrainBlocks.vent_chlorine_seal.get())) return;
 
-            spread(world, at.relative(net.minecraft.core.Direction.values()[world.getRandom().nextInt(6)]), index + 1);
+            spread(world, at.relative(Direction.values()[world.getRandom().nextInt(6)]), index + 1);
         }
     }
 }

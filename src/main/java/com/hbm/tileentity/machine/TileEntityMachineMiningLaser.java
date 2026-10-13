@@ -1,7 +1,12 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.blocks.ModOilBlocks;
+import com.hbm.sound.ModSounds;
 import dev.golem.core.data.Tags;
 
+import dev.golem.core.hook.Hook;
+import dev.golem.core.hook.Verdict;
+import dev.golem.core.world.ItemStacks;
 import java.util.HashMap;
 import java.util.List;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -34,6 +39,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.LivingEntity;
@@ -55,13 +62,13 @@ import dev.golem.core.world.CompatEnchantments;
 import net.minecraft.world.phys.AABB;
 
 /**
- * Mining Laser (1.12.2 {@code TileEntityMachineMiningLaser}) — a ceiling-mounted quarry. While on, it
+ * Mining Laser (1.12.2 {@code TileEntityMachineMiningLaser}): a ceiling-mounted quarry. While on, it
  * scans a square of the current {@code targetY} layer (widened +2/level by EFFECT upgrades), locks the
  * beam onto the first breakable block, accumulates {@code breakProgress} by hardness (driving the vanilla
  * crack overlay via {@code destroyBlockProgress}), breaks with FORTUNE-enchanted loot, vacuums the drops
  * into 21 buffer slots, and descends a layer when one is cleared. Mined {@code ore_oil} converts into
  * 500 mB of crude oil (sent out the side arms); liquids in the path are deleted and dammed with
- * {@code sandbags}. All formulas ported verbatim (old update() lines 116–212).
+ * {@code sandbags}. All formulas are ported unchanged (old update() lines 116 to 212).
  *
  * <p>Slots: 0 battery, 1–8 upgrades, 9–29 output buffer. Deferred (documented): old
  * {@code IDrillInteraction} blocks and the gas-block check (neither system exists in the port).
@@ -106,7 +113,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineMiningLaser te) {
-        // Power from the TOP arm; crude oil out the 4 side arms (old sendFluid coords kept verbatim,
+        // Power from the TOP arm; crude oil out the 4 side arms (the old sendFluid coords are kept,
         // including the odd y±2 Z-direction pair).
 
         te.trySubscribe(level, pos.getX(), pos.getY() + 2, pos.getZ(), ForgeDirection.UP); // 1.7 updateConnections
@@ -137,7 +144,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
                     - (TileEntityMachineMiningLaser.consumption * Math.min(te.upgradeManager.getLevel(UpgradeType.POWER), 12) / 16)
                     + (TileEntityMachineMiningLaser.consumption * Math.min(te.upgradeManager.getLevel(UpgradeType.SPEED), 12) / 16);
 
-            // Scream upgrade: ×4 cycles, ×4 speed, ×20 consumption (1.12.2 verbatim).
+            // Scream upgrade: ×4 cycles, ×4 speed, ×20 consumption (1.12.2 values).
             boolean scream = te.hasUpgrade(ModUpgradeItems.upgrade_screm.get());
             if (scream) {
                 cycles *= 4;
@@ -182,10 +189,10 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
                 }
             }
 
-            // The scientists scream at the block being mined, once per beaming tick (old verbatim, volume 20).
+            // The scientists scream at the block being mined, once per beaming tick (old, volume 20).
             if (te.beam && scream) {
                 level.playSound(null, te.targetX + 0.5, te.targetY + 0.5, te.targetZ + 0.5,
-                        com.hbm.sound.ModSounds.SCREM.get(), net.minecraft.sounds.SoundSource.BLOCKS, 20.0F, 1.0F);
+                        ModSounds.SCREM.get(), SoundSource.BLOCKS, 20.0F, 1.0F);
             }
         } else {
             te.targetY = pos.getY() - 2;
@@ -243,10 +250,10 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
 
     /**
      * Breaks the target (old breakBlock): the drop-processing upgrades run in the old priority order
-     * (crystallizer → centrifuge → shredder → smelter); the centrifuge branch uses the feasible modern
-     * recipe table and falls back to the raw drop when that table has no match.
-     * a match spawns the processed output and suppresses the raw drop. Otherwise the block drops its
-     * loot with the FORTUNE level applied via a synthetic enchanted tool.
+     * (crystallizer, centrifuge, shredder, smelter). The centrifuge branch uses the feasible modern
+     * recipe table: a match spawns the processed output and suppresses the raw drop, and with no match
+     * the raw drop stands. Otherwise the block drops its loot with the FORTUNE level applied via a
+     * synthetic enchanted tool.
      */
     private void breakBlock(int fortune) {
         BlockPos targetPos = new BlockPos(targetX, targetY, targetZ);
@@ -322,11 +329,11 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
          * {@code ALLOW}: the listener consumed the item (discarded it, filled the tank ...); {@code DENY}: skip 1.7's
          * nullifier and ore-oil rules and buffer the item; {@code PASS}: next listener, then 1.7's rules.
          */
-        dev.golem.core.hook.Verdict pickUp(TileEntityMachineMiningLaser laser, ItemEntity item, boolean nullifier);
+        Verdict pickUp(TileEntityMachineMiningLaser laser, ItemEntity item, boolean nullifier);
     }
 
     /** First non-PASS answer wins; HBM registers none. NTM: Space: any fluid ore fills the tank, the nullifier by tag. */
-    public static final dev.golem.core.hook.Hook<Pickup> PICKUP = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<Pickup> PICKUP = Hook.notifying();
 
     /** Vacuums drops around the target into the buffer (old suckDrops), and sets nearby mobs on fire. */
     private void suckDrops() {
@@ -341,13 +348,13 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
 
         for (ItemEntity item : items) {
 
-            dev.golem.core.hook.Verdict verdict = dev.golem.core.hook.Verdict.PASS;
+            Verdict verdict = Verdict.PASS;
             for (Pickup listener : PICKUP) {
                 verdict = listener.pickUp(this, item, nullifier);
-                if (verdict != dev.golem.core.hook.Verdict.PASS) break;
+                if (verdict != Verdict.PASS) break;
             }
-            if (verdict == dev.golem.core.hook.Verdict.ALLOW) continue;
-            if (verdict == dev.golem.core.hook.Verdict.PASS) {
+            if (verdict == Verdict.ALLOW) continue;
+            if (verdict == Verdict.PASS) {
 
                 if (nullifier && ItemMachineUpgrade.isScrap(item.getItem())) {
                     item.discard();
@@ -355,7 +362,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
                 }
 
                 // Mined oil deposits become 500 mB of crude in the output tank instead of an item.
-                if (item.getItem().is(com.hbm.blocks.ModOilBlocks.ore_oil.get().asItem())) {
+                if (item.getItem().is(ModOilBlocks.ore_oil.get().asItem())) {
 
                     tank.setTankType(Fluids.OIL); // just to be sure
 
@@ -399,7 +406,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
     /** Pushes buffered output into an adjacent inventory at the side arms (old tryFillContainer). */
     private void tryFillContainer(int x, int y, int z) {
 
-        if (!(level.getBlockEntity(new BlockPos(x, y, z)) instanceof net.minecraft.world.Container container)) return;
+        if (!(level.getBlockEntity(new BlockPos(x, y, z)) instanceof Container container)) return;
         if (container == this) return;
 
         for (int i = 9; i <= 29; i++) {
@@ -416,7 +423,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
     }
 
     /** Simple vanilla-Container insert (merge then empty slots, honoring canPlaceItem); returns the remainder. */
-    private static ItemStack tryAddToContainer(net.minecraft.world.Container container, ItemStack stack) {
+    private static ItemStack tryAddToContainer(Container container, ItemStack stack) {
         ItemStack rest = stack.copy();
         for (int i = 0; i < container.getContainerSize() && !rest.isEmpty(); i++) {
             ItemStack existing = container.getItem(i);
@@ -425,7 +432,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
                 container.setItem(i, rest);
                 return ItemStack.EMPTY;
             }
-            if (dev.golem.core.world.ItemStacks.sameItemAndData(existing, rest)) {
+            if (ItemStacks.sameItemAndData(existing, rest)) {
                 int move = Math.min(rest.getCount(), Math.min(container.getMaxStackSize(), existing.getMaxStackSize()) - existing.getCount());
                 if (move > 0) {
                     existing.grow(move);
@@ -468,7 +475,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
         return (int) (breakProgress * i);
     }
 
-    // --- inventory gating ---
+    // Inventory gating
 
     /**
      * Slots: 0 battery, 1–8 upgrades. Outputs 9–29 must return true so the machine's own insertItem
@@ -486,13 +493,13 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
         return new int[]{1, 8};
     }
 
-    // --- WorldlyContainer: extract-only output buffer on every side (old getAccessibleSlotsFromSide) ---
+    // WorldlyContainer: extract-only output buffer on every side (old getAccessibleSlotsFromSide)
 
     @Override public int[] getSlotsForFace(Direction side) { return OUTPUT_SLOTS; }
     @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
     @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot >= 9 && slot <= 29; }
 
-    // --- connections: power at the TOP arm, oil out the side arms (old getConPos, quirks preserved) ---
+    // Connections: power at the TOP arm, oil out the side arms (old getConPos, quirks preserved)
 
     public DirPos[] getConPos() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
@@ -505,19 +512,19 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
         };
     }
 
-    // --- IEnergyReceiverMK2 ---
+    // IEnergyReceiverMK2
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
     @Override public long getMaxPower() { return maxPower; }
     @Override public long getReceiverSpeed() { return maxPower; }
 
-    // --- IFluidStandardSenderMK2 ---
+    // IFluidStandardSenderMK2
 
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tank}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
 
-    // --- IControlReceiver: the GUI on/off button (replaces the old AuxButtonPacket) ---
+    // IControlReceiver: the GUI on/off button (replaces the old AuxButtonPacket)
 
     @Override
     public void receiveControl(CompoundTag data) {
@@ -529,11 +536,11 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
 
     @Override
     public boolean hasPermission(Player player) {
-        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMachineMiningLaser menu
+        return player.containerMenu instanceof ContainerMachineMiningLaser menu
                 && menu.getLaser() == this && menu.stillValid(player);
     }
 
-    // --- IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo) ---
+    // IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo)
 
     @Override
     public boolean canProvideInfo(UpgradeType type, int level, boolean extendedInfo) {
@@ -573,7 +580,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
         return upgrades;
     }
 
-    // --- MenuProvider ---
+    // MenuProvider
 
     @Override
     public Component getDisplayName() {
@@ -585,7 +592,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
         return new ContainerMachineMiningLaser(containerId, playerInventory, this);
     }
 
-    // --- sync (BufPacket) + persistence (old serialize/deserialize order preserved) ---
+    // Sync (BufPacket) + persistence (old serialize/deserialize order preserved)
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

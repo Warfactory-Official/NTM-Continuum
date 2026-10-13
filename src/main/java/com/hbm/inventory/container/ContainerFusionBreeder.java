@@ -2,8 +2,10 @@ package com.hbm.inventory.container;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.items.ModAbilityToolItems;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -47,7 +49,7 @@ public class ContainerFusionBreeder extends AbstractContainerMenu {
         this.addSlot(validated(0, 26, 72));
         this.addSlot(validated(1, 48, 45));
         this.addSlot(takeOnly(2, 112, 45));
-        dev.golem.core.world.Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 118);
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 118);
     }
 
     private Slot validated(int index, int x, int y) {
@@ -86,7 +88,7 @@ public class ContainerFusionBreeder extends AbstractContainerMenu {
             if (!moveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_END, true)) return ItemStack.EMPTY;
         } else if (stack.getItem() instanceof IItemFluidId) {
             if (!moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
-        } else if (stack.is(com.hbm.items.ModAbilityToolItems.meteorite_sword_irradiated.get())) {
+        } else if (stack.is(ModAbilityToolItems.meteorite_sword_irradiated.get())) {
             // 1.7 transferStackInSlot sent every non-identifier to slot 1 through mergeItemStack, which never asked
             // isItemValid: shift-click was the only way the irradiated sword (no outgasser recipe) got in.
             if (!this.slots.get(1).hasItem()) {

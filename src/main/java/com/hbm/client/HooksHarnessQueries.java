@@ -4,6 +4,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
+import dev.golem.core.client.Fogs;
+import dev.golem.core.data.CompatChicken;
+import dev.golem.core.harness.HarnessQueryRegistry;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -11,7 +17,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
 /**
- * The {@code hbm_hooks} harness query (wave 2 HOOKS, History §19ek-hooks), on the integrated server and the client:
+ * The {@code hbm_hooks} harness query on the integrated server and the client:
  * <ul>
  *   <li>{@code set_soot} / {@code set_metal}: the soot / heavy metal of the player's pollution region;</li>
  *   <li>{@code find_biome}: the nearest position of that biome id (x, z within 6400 blocks), for the duck check;</li>
@@ -26,15 +32,15 @@ public final class HooksHarnessQueries {
     private HooksHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_hooks", HooksHarnessQueries::hooks);
+        HarnessQueryRegistry.register("hbm_hooks", HooksHarnessQueries::hooks);
     }
 
     private static JsonObject hooks(Minecraft mc, JsonObject params) {
         JsonObject json = new JsonObject();
         var server = mc.getSingleplayerServer();
         if (mc.player == null || server == null || mc.level == null) return json;
-        java.util.UUID id = mc.player.getUUID();
-        java.util.concurrent.CompletableFuture<JsonObject> result = new java.util.concurrent.CompletableFuture<>();
+        UUID id = mc.player.getUUID();
+        CompletableFuture<JsonObject> result = new CompletableFuture<>();
         server.execute(() -> {
             try {
                 JsonObject s = new JsonObject();
@@ -60,7 +66,7 @@ public final class HooksHarnessQueries {
                         }
                     }
                     JsonArray chickens = new JsonArray();
-                    for (var chicken : level.getEntitiesOfClass(dev.golem.core.data.CompatChicken.class, player.getBoundingBox().inflate(32, 256, 32))) {
+                    for (var chicken : level.getEntitiesOfClass(CompatChicken.class, player.getBoundingBox().inflate(32, 256, 32))) {
                         JsonObject c = new JsonObject();
                         c.addProperty("type", chicken.getType().toString());
                         c.addProperty("plain_egg", chicken.compatLaysPlainEgg());
@@ -77,18 +83,18 @@ public final class HooksHarnessQueries {
             }
         });
         try {
-            json.add("server", result.get(10, java.util.concurrent.TimeUnit.SECONDS));
+            json.add("server", result.get(10, TimeUnit.SECONDS));
         } catch (Exception e) {
             json.addProperty("error", e.toString());
         }
         JsonObject c = new JsonObject();
         c.addProperty("synced_soot", SmogFog.pollution[0]);
         c.addProperty("render_soot", SmogFog.renderSoot);
-        float far = dev.golem.core.client.Fogs.far(mc.getCameraEntity(), dev.golem.core.client.Fogs.renderDistanceBlocks());
+        float far = Fogs.far(mc.getCameraEntity(), Fogs.renderDistanceBlocks());
         c.addProperty("fog_far", Float.isNaN(far) ? -1F : far);
-        c.addProperty("render_distance_blocks", dev.golem.core.client.Fogs.renderDistanceBlocks());
+        c.addProperty("render_distance_blocks", Fogs.renderDistanceBlocks());
         c.addProperty("smog_tint", SmogFog.tint(SmogFog.renderSoot));
-        c.addProperty("smog_active", dev.golem.core.client.Fogs.active(mc.getCameraEntity()));
+        c.addProperty("smog_active", Fogs.active(mc.getCameraEntity()));
         json.add("client", c);
         return json;
     }

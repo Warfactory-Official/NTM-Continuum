@@ -1,8 +1,12 @@
 package com.hbm.world.gen;
 
+import com.hbm.Constants;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Locale;
+import java.util.Set;
+import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.placement.PlacementContext;
@@ -18,7 +22,7 @@ import java.util.stream.Stream;
  * {@code hbm:config}: a placement step that reads an {@code hbm.cfg} value when the chunk generates, so the 1.7 worldgen
  * keys ({@code 2.00_uraniumSpawnrate}, {@code 2.D00_overworldOres}, {@code 4.14_landmineSpawn}, ...) take effect without
  * rebuilding the data pack. The placed-feature files are written at build time (Dejson); this step is where they defer
- * to the config. History §19ej-8.
+ * to the config.
  *
  * <ul>
  *   <li>{@code count}: the position repeated {@code value * multiplier} times (1.7 {@code for (k < veinCount)}); a
@@ -37,17 +41,17 @@ public final class ConfigPlacement extends PlacementModifier {
         COUNT, CHANCE, SWITCH;
 
         static Mode parse(String s) {
-            return valueOf(s.toUpperCase(java.util.Locale.ROOT));
+            return valueOf(s.toUpperCase(Locale.ROOT));
         }
     }
 
-    private static final java.util.Set<String> WARNED = ConcurrentHashMap.newKeySet();
+    private static final Set<String> WARNED = ConcurrentHashMap.newKeySet();
 
     /** The current value of {@code key} ({@link WorldgenKeys}); an unknown key reads 0 (nothing placed) and logs once. */
     public static int value(String key) {
         IntSupplier supplier = WorldgenKeys.get(key);
         if (supplier == null) {
-            if (WARNED.add(key)) com.hbm.Constants.LOG.warn("hbm:config placement names unknown key '{}'; nothing placed", key);
+            if (WARNED.add(key)) Constants.LOG.warn("hbm:config placement names unknown key '{}'; nothing placed", key);
             return 0;
         }
         return supplier.getAsInt();
@@ -55,12 +59,12 @@ public final class ConfigPlacement extends PlacementModifier {
 
     public static final MapCodec<ConfigPlacement> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.STRING.fieldOf("key").forGetter(p -> p.key),
-            Codec.STRING.xmap(Mode::parse, m -> m.name().toLowerCase(java.util.Locale.ROOT)).fieldOf("mode").forGetter(p -> p.mode),
+            Codec.STRING.xmap(Mode::parse, m -> m.name().toLowerCase(Locale.ROOT)).fieldOf("mode").forGetter(p -> p.mode),
             Codec.INT.optionalFieldOf("multiplier", 1).forGetter(p -> p.multiplier)
     ).apply(i, ConfigPlacement::new));
 
     /** Set by {@code ModFeatures} once the type is registered. */
-    public static java.util.function.Supplier<PlacementModifierType<?>> TYPE;
+    public static Supplier<PlacementModifierType<?>> TYPE;
 
     private final String key;
     private final Mode mode;

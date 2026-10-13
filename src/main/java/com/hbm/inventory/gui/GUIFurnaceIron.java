@@ -2,6 +2,8 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerFurnaceIron;
 import com.hbm.tileentity.machine.TileEntityFurnaceIron;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -13,8 +15,8 @@ import java.util.List;
 import java.util.Optional;
 
 /** Iron furnace screen, preserving the old progress and burn bars. */
-public class GUIFurnaceIron extends dev.golem.core.gui.CompatContainerScreen<ContainerFurnaceIron> {
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_furnace_iron.png");
+public class GUIFurnaceIron extends CompatContainerScreen<ContainerFurnaceIron> {
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_furnace_iron.png");
 
     public GUIFurnaceIron(ContainerFurnaceIron menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 166);

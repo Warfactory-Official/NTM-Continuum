@@ -1,5 +1,6 @@
 package com.hbm.entity.grenade;
 
+import com.hbm.Constants;
 import dev.golem.core.data.Tags;
 
 import com.hbm.config.GeneralConfig;
@@ -23,7 +24,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * 1.7 EntityGrenadeBouncyBase: a fuse-timer grenade that ray-traces its step and bounces off blocks, never collides with entities; only the author's delta is ported on 26.2 Projectile.
+ * 1.7 EntityGrenadeBouncyBase: a fuse-timer grenade that ray-traces its step and bounces off blocks, never collides with entities; only the author's delta is ported on 26.1 Projectile.
  */
 public abstract class EntityGrenadeBouncyBase extends CompatProjectile {
 
@@ -113,7 +114,7 @@ public abstract class EntityGrenadeBouncyBase extends CompatProjectile {
         super.tick();
 
         xRotO = getXRot();
-        // 26.2: setXRot clamps; spin saturates, nothing observes
+        // 26.1: setXRot clamps; spin saturates, nothing observes
         setXRot(getXRot() - (float) (getDeltaMovement().length() * 25));
 
         double px = getX();
@@ -184,7 +185,7 @@ public abstract class EntityGrenadeBouncyBase extends CompatProjectile {
 
             if (GeneralConfig.enableExtendedLogging) {
                 Entity thrower = getOwner();
-                com.hbm.Constants.LOG.info("[GREN] Set off grenade at {} / {} / {} by {}!", (int) getX(), (int) getY(),
+                Constants.LOG.info("[GREN] Set off grenade at {} / {} / {} by {}!", (int) getX(), (int) getY(),
                         (int) getZ(), thrower instanceof Player player ? player.getDisplayName().getString() : "null");
             }
         }

@@ -1,5 +1,6 @@
 package com.hbm.lib;
 
+import com.hbm.Constants;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.api.energymk2.IEnergyConnectorMK2;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
@@ -7,22 +8,29 @@ import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.fluidmk2.IFluidConnectorMK2;
 import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.items.machine.ItemMachineUpgrade;
+import com.hbm.util.BobMathUtil;
+import dev.golem.core.Ids;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.text.DecimalFormat;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * HBM utility constants/helpers. Ported incrementally — currently just the directional aliases used
- * by the energy/fluid networks. More is added as later content is ported.
+ * HBM utility constants/helpers: the directional aliases used by the energy/fluid networks, and the
+ * ported 1.12.2 {@code Library} methods.
  */
 public final class Library {
 
     /** {@code hbm:<path>}; the ntm-next spelling kept by the copied entity classes. */
-    public static net.minecraft.resources.Identifier id(String path) {
-        return dev.golem.core.Ids.of(com.hbm.Constants.MOD_ID, path);
+    public static Identifier id(String path) {
+        return Ids.of(Constants.MOD_ID, path);
     }
 
     /**
@@ -30,16 +38,16 @@ public final class Library {
      * {@code hbm} (the form every HBM table already uses). {@link dev.golem.core.Ids#parse} would put a bare path in
      * {@code minecraft} instead, which is why HBM's lookups that also take addon ids go through this.
      */
-    public static net.minecraft.resources.Identifier parseId(String ref) {
+    public static Identifier parseId(String ref) {
         return parseId(ref, "", "");
     }
 
     /** {@link #parseId(String)} with {@code prefix} and {@code suffix} around the path (asset paths, e.g. textures). */
-    public static net.minecraft.resources.Identifier parseId(String ref, String prefix, String suffix) {
+    public static Identifier parseId(String ref, String prefix, String suffix) {
         int colon = ref.indexOf(':');
-        String namespace = colon < 0 ? com.hbm.Constants.MOD_ID : ref.substring(0, colon);
+        String namespace = colon < 0 ? Constants.MOD_ID : ref.substring(0, colon);
         String path = colon < 0 ? ref : ref.substring(colon + 1);
-        return dev.golem.core.Ids.of(namespace, prefix + path + suffix);
+        return Ids.of(namespace, prefix + path + suffix);
     }
 
 
@@ -51,12 +59,12 @@ public final class Library {
      * 1.12.2's two-decimal {@code DecimalFormat} ({@code "1.50M"}).
      */
     public static String getShortNumber(long value) {
-        return com.hbm.util.BobMathUtil.getShortNumber(value);
+        return BobMathUtil.getShortNumber(value);
     }
 
     private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("0.##");
 
-    /** A red→green progress colour (RGB int, no blue), ported from 1.12.2 {@code Library.getColorProgress}. */
+    /** A red to green progress colour (RGB int, no blue), ported from 1.12.2 {@code Library.getColorProgress}. */
     public static int getColorProgress(double fraction) {
         int r = (int) (255 * Math.min(1, fraction * -2 + 2));
         int g = (int) (255 * Math.min(1, fraction * 2));
@@ -118,10 +126,9 @@ public final class Library {
         return false;
     }
 
-    // --- battery items (the machine power-slot energy source) ------------------------------------
-    // Ported from the 1.12.2 Library, IBatteryItem-only (the Forge-Energy / FE branch is deferred to a
-    // per-loader capability bridge, see IMPLEMENTATION.md §13e). These drive the "battery in slot 0"
-    // power input every HBM machine uses.
+    // Battery items (the machine power-slot energy source)
+    // From the 1.12.2 Library, IBatteryItem only (the Forge-Energy / FE branch is not ported). These drive
+    // the "battery in slot 0" power input every HBM machine uses.
 
     /** Whether {@code stack} is an HBM battery item (can store HE). */
     public static boolean isBattery(ItemStack stack) {
@@ -130,7 +137,7 @@ public final class Library {
 
     /** Whether {@code stack} is a machine upgrade module (1.12.2 {@code Library.isMachineUpgrade}). */
     public static boolean isMachineUpgrade(ItemStack stack) {
-        return !stack.isEmpty() && stack.getItem() instanceof com.hbm.items.machine.ItemMachineUpgrade;
+        return !stack.isEmpty() && stack.getItem() instanceof ItemMachineUpgrade;
     }
 
     /** Whether {@code stack} is a battery with charge left and a non-zero discharge rate. */
@@ -192,8 +199,8 @@ public final class Library {
 
     /**
      * Drains a machine's internal {@code power} into a battery item in slot {@code index}, capped at
-     * {@code maxPower} (the parameter mirrors the old signature — it doesn't bound the transfer here).
-     * Returns the machine's new power level. Faithful port of the 1.12.2 {@code Library.chargeItemsFromTE}
+     * {@code maxPower} (the parameter mirrors the 1.12.2 signature but does not bound the transfer here).
+     * Returns the machine's new power level. Port of the 1.12.2 {@code Library.chargeItemsFromTE}
      * (the inverse of {@link #chargeTEFromItems}, used by generators like the diesel gen).
      */
     public static long chargeItemsFromTE(NTMItemHandler inventory, int index, long power, long maxPower) {
@@ -213,8 +220,8 @@ public final class Library {
         return hash;
     }
     /** ntm-next: the integer block columns along {@code vec0} from (x,y,z), with the step index as the 4th slot. */
-    public static java.util.List<int[]> getBlockPosInPath(int x, int y, int z, int length, net.minecraft.world.phys.Vec3 vec0) {
-        java.util.List<int[]> list = new java.util.ArrayList<>();
+    public static List<int[]> getBlockPosInPath(int x, int y, int z, int length, Vec3 vec0) {
+        List<int[]> list = new ArrayList<>();
         for (int i = 0; i <= length; i++) {
             list.add(new int[]{(int) (x + (vec0.x * i)), y, (int) (z + (vec0.z * i)), i});
         }

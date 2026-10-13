@@ -12,7 +12,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.SoundType;
 
 /**
- * The final armour wave B's one block: 1.7 {@code statue_elb_f}, the euphemium kit's statue ({@link DecoBlockAlt}).
+ * The one block of armour set B: 1.7 {@code statue_elb_f}, the euphemium kit's statue ({@link DecoBlockAlt}).
  * 1.7 registered it under its unlocalized name {@code tile.#undef}, which no modern id can spell, so it keeps its
  * field name. Hardness and resistance infinite, light level 15, the default stone step sound, no creative tab.
  */

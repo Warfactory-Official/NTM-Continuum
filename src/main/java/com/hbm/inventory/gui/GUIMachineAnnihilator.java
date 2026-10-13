@@ -5,6 +5,7 @@ import com.hbm.items.machine.ItemFluidId;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.inventory.container.ContainerMachineAnnihilator;
 import com.hbm.tileentity.machine.TileEntityMachineAnnihilator;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.net.GolemNetwork;
@@ -23,7 +24,7 @@ import java.util.Optional;
 /** 1.7 {@code GUIMachineAnnihilator}: {@code gui_annihilator.png}, 176x208, with the green pool-name field. */
 public final class GUIMachineAnnihilator extends CompatContainerScreen<ContainerMachineAnnihilator> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_annihilator.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_annihilator.png");
 
     private EditBox pool;
 

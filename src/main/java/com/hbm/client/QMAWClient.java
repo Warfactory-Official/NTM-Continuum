@@ -8,15 +8,17 @@ import dev.golem.core.client.ClientResourceReloads;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.KeyMappings;
 import dev.golem.core.client.Tooltips;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 /** Client registration and the short tooltip-to-F1 hand-off used by QMAW. */
 public final class QMAWClient {
     private static QuickManualAndWiki lastManual;
-    private static net.minecraft.client.gui.screens.Screen lastManualScreen;
+    private static Screen lastManualScreen;
     private static boolean qmawWasDown;
     private static boolean reloadPending;
 
@@ -36,7 +38,7 @@ public final class QMAWClient {
         ClientTicks.onEndTick(QMAWClient::openPending);
     }
 
-    private static void addTooltip(ItemStack stack, java.util.List<Component> lines) {
+    private static void addTooltip(ItemStack stack, List<Component> lines) {
         QuickManualAndWiki manual = QMAWLoader.find(stack);
         if (manual == null || HbmKeybindsClient.qmawKey == null) {
             lastManual = null;

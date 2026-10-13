@@ -1,8 +1,11 @@
 package com.hbm.items.weapon.sedna.factory;
 
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.client.FlamerTrailClientEffects;
 import com.hbm.entity.effect.EntityFireLingering;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
+import com.hbm.items.ModAmmoItems;
+import com.hbm.items.ModItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.items.weapon.sedna.Crosshair;
@@ -13,11 +16,18 @@ import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
 import com.hbm.items.weapon.sedna.impl.ItemGunChemthrower;
 import com.hbm.lib.ModDamageSources.DamageClass;
 import com.hbm.mixin.FireBlockAccessor;
+import com.hbm.particle.helper.FlameCreator;
+import com.hbm.sound.ModGunSounds;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -29,8 +39,8 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Flamethrower projectiles. Only the two gravity-free loads are built: they are what the Fritz turret
- * sprays, and it is the calibre's only consumer here — the handheld flamethrowers, their napalm and gas
- * loads and the Topaz/Daybreaker variants arrive with the guns.
+ * sprays, and it is the calibre's only consumer here. The handheld flamethrowers, their napalm and gas
+ * loads and the Topaz/Daybreaker variants belong to the guns.
  *
  * <p>A tongue of flame is a short-lived projectile, not a hitscan: it sets what it touches alight, and
  * where it lands it leaves a patch of {@link EntityFireLingering} that keeps burning after the burst.
@@ -80,14 +90,14 @@ public final class XFactoryFlamer {
     };
 
     /** 1.7 {@code LAMBDA_FIRE}: the client-side flame trail of a flamer round. */
-    public static final java.util.function.Consumer<net.minecraft.world.entity.Entity> LAMBDA_FIRE = bullet -> {
+    public static final Consumer<Entity> LAMBDA_FIRE = bullet -> {
         if (bullet.level().isClientSide())
-            com.hbm.client.FlamerTrailClientEffects.trail(bullet, com.hbm.particle.helper.FlameCreator.META_FIRE);
+            FlamerTrailClientEffects.trail(bullet, FlameCreator.META_FIRE);
     };
     /** 1.7 {@code LAMBDA_BALEFIRE}: the balefire round's green client-side trail. */
-    public static final java.util.function.Consumer<net.minecraft.world.entity.Entity> LAMBDA_BALEFIRE = bullet -> {
+    public static final Consumer<Entity> LAMBDA_BALEFIRE = bullet -> {
         if (bullet.level().isClientSide())
-            com.hbm.client.FlamerTrailClientEffects.trail(bullet, com.hbm.particle.helper.FlameCreator.META_BALEFIRE);
+            FlamerTrailClientEffects.trail(bullet, FlameCreator.META_BALEFIRE);
     };
 
     private XFactoryFlamer() {}
@@ -137,16 +147,16 @@ public final class XFactoryFlamer {
     }
 
     /** 1.7 flamer canister base: two steel plates back per 500 rounds, fire damage, no knockback. */
-    private static BulletConfig flame(java.util.function.Supplier<net.minecraft.world.item.Item> item) {
+    private static BulletConfig flame(Supplier<Item> item) {
         return new BulletConfig().setItem(item)
-                .setCasing(() -> new net.minecraft.world.item.ItemStack(com.hbm.items.ModItems.plate_steel.get(), 2), 500)
+                .setCasing(() -> new ItemStack(ModItems.plate_steel.get(), 2), 500)
                 .setupDamageClass(DamageClass.FIRE).setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F);
     }
 
     /** 1.7 {@code XFactoryFlamer.init}, clone for clone. */
     public static void init() {
         if (flame_diesel != null) return;
-        BulletConfig diesel = flame(com.hbm.items.ModAmmoItems.flame_diesel).setLife(100).setVel(1F).setGrav(0.02F)
+        BulletConfig diesel = flame(ModAmmoItems.flame_diesel).setLife(100).setVel(1F).setGrav(0.02F)
                 .setOnImpact(LAMBDA_IGNITE_FIRE).setOnUpdate(LAMBDA_FIRE).setOnRicochet(LAMBDA_LINGER_DIESEL);
         BulletConfig gas = flame(SpecialGunCatalog.standardAmmo("flame_gas")).setLife(10).setSpread(0.05F).setVel(1F)
                 .setGrav(0F).setOnImpact(LAMBDA_IGNITE_FIRE).setOnUpdate(LAMBDA_FIRE).setOnRicochet(LAMBDA_LINGER_GAS);
@@ -205,7 +215,7 @@ public final class XFactoryFlamer {
                 .delay(variant == 2 ? 10 : 1).auto(true).reload(90).jam(17)
                 .mag(new MagazineFullReload(0, variant == 1 ? 500 : variant == 2 ? 50 : 300)
                         .addConfigs(rounds)).offset(0.75, -0.0625, -0.25D).setupStandardFire();
-        if (variant == 2) receiver.sound(com.hbm.sound.ModGunSounds.FIRE_BLACK_POWDER::get, 1F, 1F);
+        if (variant == 2) receiver.sound(ModGunSounds.FIRE_BLACK_POWDER::get, 1F, 1F);
         return new GunConfig().dura(20_000).draw(10).inspect(17).crosshair(Crosshair.L_CIRCLE)
                 .rec(receiver)
                 .setupStandardConfiguration();
@@ -217,7 +227,7 @@ public final class XFactoryFlamer {
                         .mag(new MagazineFluid(0, ItemGunChemthrower.CAPACITY))
                         .canFire(ItemGunChemthrower.LAMBDA_CAN_FIRE)
                         .fire(ItemGunChemthrower.LAMBDA_FIRE).offset(0.75, -0.0625, -0.25D))
-                .smoke(com.hbm.items.weapon.sedna.factory.Lego.LAMBDA_STANDARD_SMOKE)
+                .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                 // 1.7: primary click and the decider only - no reload key and no aim toggle on the chemthrower.
                 .pp(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).decider(GunStateDecider.LAMBDA_STANDARD_DECIDER);
     }

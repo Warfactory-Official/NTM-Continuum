@@ -1,11 +1,14 @@
 package com.hbm.qmaw;
 
+import com.hbm.sound.ModSounds;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.KeyInput;
 import dev.golem.core.gui.MouseInput;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -46,7 +49,7 @@ public final class GuiQMAW extends CompatScreen {
         parse(page, Minecraft.getInstance().font);
     }
 
-    private String localized(java.util.Map<String, String> values) {
+    private String localized(Map<String, String> values) {
         String language = Minecraft.getInstance().getLanguageManager().getSelected();
         String value = values.get(language);
         if (value == null) value = values.get(QMAWLoader.EN_US);
@@ -73,7 +76,7 @@ public final class GuiQMAW extends CompatScreen {
         return contents;
     }
 
-    private void parse(QuickManualAndWiki page, net.minecraft.client.gui.Font manualFont) {
+    private void parse(QuickManualAndWiki page, Font manualFont) {
         String language = Minecraft.getInstance().getLanguageManager().getSelected();
         String toParse = page.contents.get(language);
         if (toParse == null) toParse = page.contents.get(QMAWLoader.EN_US);
@@ -284,7 +287,7 @@ public final class GuiQMAW extends CompatScreen {
         if (showTheMan()) {
             if (over(left + 60, top + HEIGHT - 84, 80, 80, event.x(), event.y())) {
                 Minecraft.getInstance().getSoundManager().play(
-                        SimpleSoundInstance.forUI(com.hbm.sound.ModSounds.ALARM_SINGER.get(), 1.0F));
+                        SimpleSoundInstance.forUI(ModSounds.ALARM_SINGER.get(), 1.0F));
                 return true;
             }
             return false;
@@ -404,15 +407,15 @@ public final class GuiQMAW extends CompatScreen {
                     missing ? 0xFFFF7F7F : 0xFF0094FF, missing ? 0xFFFF7F7F : 0xFFFFD800);
         }
 
-        private int width(net.minecraft.client.gui.Font font) {
+        private int width(Font font) {
             return font.width(text) + (icon != null && !icon.isEmpty() ? 18 : 0);
         }
 
-        private int height(net.minecraft.client.gui.Font font) {
+        private int height(Font font) {
             return Math.max(font.lineHeight, icon != null && !icon.isEmpty() ? 16 : 0);
         }
 
-        private void draw(GuiGraphicsExtractor graphics, net.minecraft.client.gui.Font font,
+        private void draw(GuiGraphicsExtractor graphics, Font font,
                           int x, int y, boolean mouseOver) {
             if (icon != null && !icon.isEmpty()) {
                 GuiDraw.item(graphics, icon, x, y - 1);

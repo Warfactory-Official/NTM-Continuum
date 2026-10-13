@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerNukeFleija;
 import com.hbm.tileentity.bomb.TileEntityNukeFleija;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -12,7 +13,7 @@ import net.minecraft.world.entity.player.Inventory;
 /** 1.7 {@code GUINukeFleija}: the schematic with one overlay per correctly filled slot. */
 public class GUINukeFleija extends CompatContainerScreen<ContainerNukeFleija> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/weapon/fleijaschematic.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/weapon/fleijaschematic.png");
 
     /** Per slot: destination x, y, source u, v, width, height. */
     private static final int[][] OVERLAYS = {

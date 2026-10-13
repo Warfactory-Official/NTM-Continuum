@@ -25,7 +25,7 @@ import static dev.golem.core.dejson.Crafting.stack;
  * <p>These are the mod's own recipe types, and what makes them their own is that an ingredient
  * here carries a constraint on the stack's components: the arty shell already at variant zero, the
  * cell that has to be empty, the fluid tank that is spent and left behind as an empty tank. The
- * ingredient vocabulary says those three things directly — {@code with}, {@code without} and
+ * ingredient vocabulary says those three things directly: {@code with}, {@code without} and
  * {@code remainder}.
  *
  * <p>{@code rbmk_fuel_disassembly} is here too, and is the one recipe with nothing to declare: its
@@ -290,7 +290,7 @@ public final class ModComponentRecipes {
     private static void smelting() {
         componentSmelt(NS, "ingot_chainsteel", item(ItemIds.ingot_chainsteel),
                 stack(ItemIds.ingot_chainsteel).with(ComponentIds.heat, ItemHot.LEGACY_HEAT), 0.0);
-        // 1.7 metadata = forge count: hbm:forge_count, absent on an unforged ingot (History §19es-itemvariant)
+        // 1.7 metadata = forge count: hbm:forge_count, absent on an unforged ingot
         componentSmelt(NS, "ingot_steel_dusted", item(ItemIds.ingot_steel_dusted).without(FORGE_COUNT),
                 stack(ItemIds.ingot_steel_dusted).with(ComponentIds.heat, ItemHot.LEGACY_HEAT), 1.0);
         for (int count = 1; count <= 9; count++) {

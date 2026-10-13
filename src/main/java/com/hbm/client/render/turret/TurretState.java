@@ -3,6 +3,7 @@ package com.hbm.client.render.turret;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -14,7 +15,7 @@ public final class TurretState<T extends TileEntityTurretBaseNT> {
     public final TurretFrame frame = new TurretFrame();
 
     /** Where a beam-firing turret's effect starts, filled by its emitter alongside the frame. */
-    public final org.joml.Matrix4f effect = new org.joml.Matrix4f();
+    public final Matrix4f effect = new Matrix4f();
 
     private final Emitter<T> emitter;
 

@@ -7,6 +7,7 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.items.tool.ItemGeigerCounter;
 import com.hbm.tileentity.machine.TileEntityGeiger;
 import com.hbm.util.ContaminationUtil;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -240,7 +241,7 @@ public final class GeigerCounterGameTests {
      * armor-reduced dose) as environmental radiation, no "received radiation" line.
      */
     private static void readout(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         HbmLivingProps.setRadiation(player, 250.04);
         HbmLivingProps.setRadBuf(player, 3.27);
         BlockPos at = BlockPos.containing(player.getX(), player.getY(), player.getZ());

@@ -3,12 +3,14 @@ package com.hbm.inventory;
 import com.hbm.Constants;
 import com.hbm.registration.Reg;
 import com.hbm.inventory.container.*;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 
-/** RBMK menus are deliberately separate from the general machine registrar. */
+/** RBMK menus are separate from the general machine registrar. */
 public final class ModRBMKMenus {
     private ModRBMKMenus() {}
 
@@ -24,9 +26,9 @@ public final class ModRBMKMenus {
     public static final RegistryObject<MenuType<MenuRBMKConsole>> RBMK_CONSOLE = register("rbmk_console", MenuRBMKConsole::new);
     public static final RegistryObject<MenuType<ContainerRBMKAutoloader>> RBMK_AUTOLOADER = register("rbmk_autoloader", ContainerRBMKAutoloader::new);
 
-    private static <T extends net.minecraft.world.inventory.AbstractContainerMenu> RegistryObject<MenuType<T>> register(
-            String id, dev.golem.core.gui.Menus.PosFactory<T> factory) {
-        return REG.menu(id, () -> dev.golem.core.gui.Menus.typeWithPos(factory));
+    private static <T extends AbstractContainerMenu> RegistryObject<MenuType<T>> register(
+            String id, Menus.PosFactory<T> factory) {
+        return REG.menu(id, () -> Menus.typeWithPos(factory));
     }
 
     public static void init() {}

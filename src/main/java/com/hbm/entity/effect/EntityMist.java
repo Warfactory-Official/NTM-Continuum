@@ -47,7 +47,7 @@ import net.minecraft.world.phys.AABB;
  * A cloud of fluid hanging in the air: an invisible box that applies its fluid's contact effects to
  * everything inside it, thinning as it ages, and never moving after it is placed.
  *
- * <p>Sibling of {@link EntityFireLingering} — same stationary-area shape, and likewise it does not
+ * <p>Sibling of {@link EntityFireLingering}, same stationary-area shape, and likewise it does not
  * call {@code super.tick()}: a gas cloud must not drown, suffocate or be pushed by fluids.
  *
  * <p>What a cloud does is read off the fluid, in 1.7's order: temperature (scalds above 100 °C, freezes
@@ -118,10 +118,10 @@ public class EntityMist extends CompatEntity {
     }
 
     /**
-     * 1.7's cloud is not fire-immune: {@code isBurning()} is what makes a flammable cloud explode, and a hot cloud
-     * or a flame sets it. The entity type is registered {@code fireImmune()}, which would make {@link #isOnFire}
-     * always false and that branch dead, so the cloud overrides it here. The cloud never runs the vanilla base
-     * tick (no fire countdown, lava or fire-block contact), exactly as 1.7's overridden {@code onEntityUpdate}.
+     * 1.7's cloud is not fire-immune: {@code isBurning()} makes a flammable cloud explode, and a hot cloud or a
+     * flame sets it. The entity type is registered {@code fireImmune()}, which would make {@link #isOnFire}
+     * always false, so the cloud overrides it. The cloud never runs the vanilla base tick (no fire countdown,
+     * lava or fire-block contact), as with 1.7's overridden {@code onEntityUpdate}.
      */
     @Override
     public boolean fireImmune() {
@@ -238,7 +238,7 @@ public class EntityMist extends CompatEntity {
         FT_Toxin toxin = type.getTrait(FT_Toxin.class);
         if (toxin != null && living != null) toxin.affect(living, intensity);
 
-        // 1.7: ender juice throws a living thing to a random spot, EntityChemical's teleport copied verbatim.
+        // 1.7: ender juice throws a living thing to a random spot, EntityChemical's teleport.
         if (type == Fluids.ENDERJUICE && living != null) EntityChemical.teleportRandomly(this, this.random, living);
 
         FT_Pheromone pheromone = type.getTrait(FT_Pheromone.class);

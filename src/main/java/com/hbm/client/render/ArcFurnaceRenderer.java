@@ -7,6 +7,7 @@ import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineArcFurnaceLarge;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.CompatRenderTypes;
@@ -37,13 +38,13 @@ public class ArcFurnaceRenderer extends GemBER<TileEntityMachineArcFurnaceLarge,
     }
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/arc_furnace.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/arc_furnace.obj"));
     private final Surface body = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/arc_furnace.png");
     private final Surface hot = Surface.emissive(
             Constants.MOD_ID + ":textures/models/machines/arc_furnace.png");
     private final RenderType streamType = CompatRenderTypes.entitySolid(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
+            Ids.of(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
 
     /**
      * The lid and everything mounted on it ride together, and each electrode slot shows one of four

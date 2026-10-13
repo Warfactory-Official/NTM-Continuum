@@ -1,8 +1,11 @@
 package com.hbm.handler.radiation;
 
+import com.hbm.Constants;
+import com.hbm.config.GeneralConfig;
 import dev.golem.core.world.ChunkSidecar;
 import dev.golem.core.world.Compat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -12,6 +15,11 @@ import com.hbm.config.RadiationConfig;
 import com.hbm.interfaces.IRadResistantBlock;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerChunkCache;
@@ -22,7 +30,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 
 /**
- * The chunk radiation engine — a faithful port of the <i>behaviour</i> of 1.12.2's {@code RadiationSystemNT}
+ * The chunk radiation engine: a faithful port of the <i>behaviour</i> of 1.12.2's {@code RadiationSystemNT}
  * (the pocket model). Radiation is a per-block density (RAD/s) stored per <b>pocket</b>: a maximal
  * flood-filled region of non-{@link IRadResistantBlock} blocks within a 16³ section. Rad-resistant blocks
  * are walls, so a sealed lead room holds its radiation separately from the rest of its section. Radiation
@@ -32,9 +40,9 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
  * <p>A step is in two halves and the split is the safety property, not an optimisation. {@link
  * WorldRadiationData#prepare()} builds every section the sweep will touch <b>on the server thread</b>,
  * because building reads block state; the sweep that follows runs on {@link #RAD_POOL} and touches
- * nothing but plain numeric arrays. The fork flood-fills off-thread and this deliberately does not.
+ * nothing but plain numeric arrays. The fork flood-fills off-thread and this does not.
  *
- * <p>The sweeps are parity-bucketed exactly as the fork's are — in a pass only chunks of one coordinate
+ * <p>The sweeps are parity-bucketed exactly as the fork's are. In a pass only chunks of one coordinate
  * parity exchange with their {@code +axis} neighbour, so every chunk is written by at most one pair and
  * the pairs need no locking. The server thread joins before returning, so no other tick logic races the
  * density arrays.
@@ -45,10 +53,10 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
  * radiation costs rather than what the world does.
  *
  * <p><b>Deviations from the fork.</b> The payload is a sidecar rather than extra fields on the chunk's
- * own NBT — the same per-chunk granularity without a mixin on three different chunk serializers — and
- * there is no {@code sun.misc.Unsafe} and no SIMD: the sweep is plain Java over {@code double[]}. The
- * observable gameplay — spread through air, sealing by resistant blocks, the exact decay and diffusivity
- * constants — matches.
+ * own NBT. That gives the same per-chunk granularity without a mixin on three different chunk serializers.
+ * There is no {@code sun.misc.Unsafe} and no SIMD: the sweep is plain Java over {@code double[]}. Observable
+ * gameplay matches: spread through air, sealing by resistant blocks, and the exact decay and diffusivity
+ * constants.
  */
 public final class RadiationSystemNT {
 
@@ -58,7 +66,7 @@ public final class RadiationSystemNT {
     static final double RAD_MAX = Double.MAX_VALUE / 2.0D;
     static final short WALL = -1;
 
-    /** The fork's {@code sanitize}: NaN → 0, |v| below epsilon → 0, clamp to [0, RAD_MAX]. */
+    /** The fork's {@code sanitize}: NaN to 0, |v| below epsilon to 0, clamp to [0, RAD_MAX]. */
     static double sanitize(double v) {
         if (Double.isNaN(v) || Math.abs(v) < RAD_EPSILON) return 0.0D;
         return Math.max(Math.min(v, RAD_MAX), 0.0D);
@@ -74,24 +82,24 @@ public final class RadiationSystemNT {
 
     /**
      * The diffusion pool, mirroring the fork's {@code RAD_POOL = ForkJoinPool.commonPool()}. Each tick the
-     * server thread launches the parallel diffusion sweep here and <b>joins</b> — so the server thread is
+     * server thread launches the parallel diffusion sweep here and <b>joins</b>, so the server thread is
      * quiescent during the parallel phase and no other tick logic races the density arrays. Section
      * building (which reads block state) is done on the server thread <i>before</i> the sweep, so the
      * off-thread phase only touches plain numeric arrays (safer than the fork, which flood-fills off-thread).
      */
-    static final java.util.concurrent.ForkJoinPool RAD_POOL = java.util.concurrent.ForkJoinPool.commonPool();
+    static final ForkJoinPool RAD_POOL = ForkJoinPool.commonPool();
 
-    // ---- tuning (derived from RadiationConfig, mirroring the fork's updateConfigValues) ----
+    // Tuning (derived from RadiationConfig, mirroring the fork's updateConfigValues)
     static double dT() { return RadiationConfig.radTickRate / 20.0D; }
-    /** {@code exp(ln0.5 · dT/halfLife)} — the fork's retention factor per simulation step. */
+    /** {@code exp(ln0.5 · dT/halfLife)}, the fork's retention factor per simulation step. */
     static double retentionDt() { return Math.pow(0.5D, dT() / RadiationConfig.radHalfLifeSeconds); }
     static double diffusionDt() { return RadiationConfig.radDiffusivity * dT(); }
 
     static long ticks;
-    /** Increments once per executed simulation step — selects the sweep permutation + pass flips (fork's workEpoch). */
+    /** Increments once per executed simulation step. Selects the sweep permutation and pass flips (fork's workEpoch). */
     static long workEpoch;
 
-    // ================= public API (called via ChunkRadiationManager.proxy) =================
+    // Public API (called via ChunkRadiationManager.proxy)
 
     public static double getRadForCoord(ServerLevel level, BlockPos pos) {
         WorldRadiationData data = worldMap.get(level);
@@ -137,7 +145,7 @@ public final class RadiationSystemNT {
         if (data != null) data.markDirty(pos);
     }
 
-    // ================= lifecycle (wired from the loader entrypoints) =================
+    // Lifecycle (wired from the loader entrypoints)
 
     /**
      * Ticks every loaded level's radiation once per server tick (subject to {@code radTickRate}). Faithful
@@ -147,11 +155,11 @@ public final class RadiationSystemNT {
      */
     public static void tickServer(MinecraftServer server) {
         // 1.7 RADIATION_01_enableChunkRads gated the chunk system's tick (ChunkRadiationManager); only the switch is
-        // ported, the engine is unchanged (History §19ej-8)
-        if (!com.hbm.config.GeneralConfig.enableRads || !RadiationConfig.enableChunkRads) return;
+        // ported, the engine is unchanged
+        if (!GeneralConfig.enableRads || !RadiationConfig.enableChunkRads) return;
         ticks++;
 
-        // World block decay: drain ONE queued high-radiation pocket per level per tick — like the fork,
+        // World block decay: drain ONE queued high-radiation pocket per level per tick, like the fork,
         // this runs every world tick, NOT behind the radTickRate gate (the queue is fed by the decay pass).
         if (RadiationConfig.worldRadEffects) {
             for (ServerLevel level : server.getAllLevels()) {
@@ -164,7 +172,7 @@ public final class RadiationSystemNT {
         if ((ticks + 17) % Math.max(1, RadiationConfig.radTickRate) != 0) return;
         workEpoch++;
 
-        java.util.List<WorldRadiationData> worlds = new ArrayList<>();
+        List<WorldRadiationData> worlds = new ArrayList<>();
         for (ServerLevel level : server.getAllLevels()) {
             WorldRadiationData data = worldMap.get(level);
             if (data != null) worlds.add(data);
@@ -174,12 +182,12 @@ public final class RadiationSystemNT {
         // 1) server thread: build sections (reads block state) for active + frontier.
         for (WorldRadiationData data : worlds) data.prepare();
 
-        // 2) parallel phase (joined): the density-exchange sweeps + decay — pure array math, no MC access.
+        // 2) parallel phase (joined): the density-exchange sweeps and decay. Pure array math, no MC access.
         for (WorldRadiationData data : worlds) {
             if (!data.runParallelSimulation(workEpoch)) {
                 // The failed step was rolled back. Leave the world live and retry on the next gate;
                 // reporting failure here is important because a joined worker failure is not success.
-                com.hbm.Constants.LOG.error("[HBM] radiation step {} failed; retrying", workEpoch);
+                Constants.LOG.error("[HBM] radiation step {} failed; retrying", workEpoch);
             }
         }
     }
@@ -191,7 +199,7 @@ public final class RadiationSystemNT {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("radiation worker interrupted", e);
-        } catch (java.util.concurrent.ExecutionException e) {
+        } catch (ExecutionException e) {
             Throwable cause = e.getCause();
             if (cause instanceof Error error) throw error;
             if (cause instanceof RuntimeException runtime) throw runtime;
@@ -219,7 +227,7 @@ public final class RadiationSystemNT {
 
     /**
      * The level is going away: persist what is loaded, then release the region files. What is on disk
-     * stays there — this ends a session, not the world's radiation.
+     * stays there. This ends a session, not the world's radiation.
      */
     public static void closeWorld(ServerLevel level) {
         WorldRadiationData data = worldMap.remove(level);
@@ -240,9 +248,7 @@ public final class RadiationSystemNT {
         return worldMap.computeIfAbsent(level, WorldRadiationData::new);
     }
 
-    // ============================================================================
     // Per-level state
-    // ============================================================================
     static final class WorldRadiationData {
 
         final ServerLevel level;
@@ -262,8 +268,8 @@ public final class RadiationSystemNT {
          * fork's destructionQueue), drained one per tick on the server thread by
          * {@link RadiationWorldHandler#handleWorldDestruction}.
          */
-        final java.util.concurrent.ConcurrentLinkedQueue<int[]> destructionQueue = new java.util.concurrent.ConcurrentLinkedQueue<>();
-        final java.util.concurrent.atomic.AtomicInteger destructionQueueSize = new java.util.concurrent.atomic.AtomicInteger();
+        final ConcurrentLinkedQueue<int[]> destructionQueue = new ConcurrentLinkedQueue<>();
+        final AtomicInteger destructionQueueSize = new AtomicInteger();
         private static final int DESTRUCTION_QUEUE_CAP = 512;
 
         WorldRadiationData(ServerLevel level) {
@@ -296,7 +302,7 @@ public final class RadiationSystemNT {
             return key;
         }
 
-        // ---- coordinate helpers ----
+        // Coordinate helpers
         private ChunkRad chunkAt(int cx, int cz, boolean create) {
             long key = ChunkPos.pack(cx, cz);
             ChunkRad cr = chunks.get(key);
@@ -312,7 +318,7 @@ public final class RadiationSystemNT {
          * Takes the read started when this chunk arrived, if it has one outstanding.
          *
          * <p>This is the only place that waits for the disk, and it is reached only when something asks
-         * this chunk about its radiation — which is the moment the answer is actually needed. An
+         * this chunk about its radiation. That is the moment the answer is actually needed. An
          * outstanding read is therefore also a proof: every route to a chunk's radiation comes through
          * {@link #chunkAt}, so a chunk whose read is still outstanding is a chunk nothing has touched
          * since it arrived, and what the sidecar holds for it is still what it should hold.
@@ -324,7 +330,7 @@ public final class RadiationSystemNT {
             if (payload == null) return;
             double[][] densities = RadiationPayload.decode(payload);
             if (densities == null) {
-                com.hbm.Constants.LOG.warn("[HBM] discarding unreadable stored radiation for chunk [{}, {}]",
+                Constants.LOG.warn("[HBM] discarding unreadable stored radiation for chunk [{}, {}]",
                         cr.cx, cr.cz);
                 return;
             }
@@ -333,7 +339,7 @@ public final class RadiationSystemNT {
         }
 
         /**
-         * Writes a chunk's radiation, or clears its entry — and does neither where the sidecar already
+         * Writes a chunk's radiation, or clears its entry, and does neither where the sidecar already
          * holds exactly this. A save then costs what the radiation that <i>moved</i> costs, rather than
          * what all the radiation costs, and a chunk that has none is never written at all.
          */
@@ -426,7 +432,7 @@ public final class RadiationSystemNT {
          * the live map, which stays fixed during the join since chunk load/unload runs on the server thread). */
         private transient List<ChunkRad> snapshot = List.of();
 
-        // ---- server-thread pre-pass: build the sections the sweep will touch (reads block state) ----
+        // Server-thread pre-pass: build the sections the sweep will touch (reads block state)
         void prepare() {
             snapshot = new ArrayList<>(chunks.values());
             for (ChunkRad cr : snapshot) {
@@ -456,12 +462,12 @@ public final class RadiationSystemNT {
             if (sr != null) sr.ensureBuilt();
         }
 
-        // ---- parallel phase: parity-bucketed exchange sweeps + decay, launched on RAD_POOL and joined ----
+        // Parallel phase: parity-bucketed exchange sweeps and decay, launched on RAD_POOL and joined
         /**
          * One simulation step, mirroring the fork's {@code runExactExchangeSweeps} exactly: the three axis
          * sweeps run in one of <b>6 permutations</b> selected by {@code workEpoch % 6}, with the pass-order
          * flips {@code fx = epoch&1}, {@code fz = epoch&2} (which parity bucket sweeps first per horizontal
-         * axis) and {@code yPar = epoch&4} (the Y sweep's starting parity) — then the decay pass
+         * axis) and {@code yPar = epoch&4} (the Y sweep's starting parity). Then the decay pass
          * ({@code postSweepDecayAndEffects}).
          */
         boolean runParallelSimulation(long epoch) {
@@ -498,7 +504,7 @@ public final class RadiationSystemNT {
                     default -> { sweepAxis(all, Axis.Z, fz); sweepY(all, yPar); sweepAxis(all, Axis.X, fx); }
                 }
 
-                // decay (per-chunk disjoint) — postSweepDecayAndEffects.
+                // decay (per-chunk disjoint): postSweepDecayAndEffects.
                 double retention = retentionDt();
                 submitJoin(() -> all.parallelStream().forEach(cr -> cr.decay(retention)));
                 return true;
@@ -517,15 +523,15 @@ public final class RadiationSystemNT {
                 destructionQueue.clear();
                 destructionQueue.addAll(queuedBefore);
                 destructionQueueSize.set(queuedBefore.size());
-                com.hbm.Constants.LOG.error("[HBM] radiation worker failed; rolled back simulation step", failure);
+                Constants.LOG.error("[HBM] radiation worker failed; rolled back simulation step", failure);
                 return false;
             }
         }
 
         /**
-         * One horizontal axis, two parity passes ({@code flip} reverses which parity goes first — the fork's
+         * One horizontal axis, two parity passes ({@code flip} reverses which parity goes first, the fork's
          * {@code fx}/{@code fz}). In a pass, only chunks whose {@code cx}/{@code cz} has the given parity
-         * exchange with their +axis neighbour, so every chunk is written by at most one pair → the pairs are
+         * exchange with their +axis neighbour, so every chunk is written by at most one pair. The pairs are
          * disjoint and run in parallel with no locking (the fork's parity-bucketing).
          */
         private void sweepAxis(List<ChunkRad> all, Axis axis, boolean flip) {
@@ -545,16 +551,14 @@ public final class RadiationSystemNT {
             }
         }
 
-        /** Y sweep: internal to each chunk → whole chunks are disjoint, run them all in parallel.
-         * {@code startParity} = the fork's {@code yPar} (which section-index parity exchanges first). */
+        /** Y sweep: internal to each chunk, so whole chunks are disjoint and run in parallel.
+         * {@code startParity} is the fork's {@code yPar} (which section-index parity exchanges first). */
         private void sweepY(List<ChunkRad> all, int startParity) {
             submitJoin(() -> all.parallelStream().forEach(cr -> cr.exchangeY(startParity)));
         }
     }
 
-    // ============================================================================
     // Per-chunk data: one SectionRad per section that radiation has reached
-    // ============================================================================
     static final class ChunkRad {
 
         final WorldRadiationData world;
@@ -611,9 +615,9 @@ public final class RadiationSystemNT {
             return false;
         }
 
-        /** Y-axis exchange, internal to this chunk (section i ↔ i+1). Two parity passes over the section
-         * index so no section is written twice in one pass — the vertical analogue of the horizontal
-         * parity-bucketing; {@code startParity} = the fork's alternating {@code yPar}. Runs on a pool
+        /** Y-axis exchange, internal to this chunk (section i and i+1). Two parity passes over the section
+         * index so no section is written twice in one pass. This is the vertical analogue of the horizontal
+         * parity-bucketing; {@code startParity} is the fork's alternating {@code yPar}. Runs on a pool
          * worker; only this chunk's own sections are touched. */
         void exchangeY(int startParity) {
             for (int pass = 0; pass < 2; pass++) {
@@ -655,7 +659,7 @@ public final class RadiationSystemNT {
     private enum Axis { X, Y, Z }
 
     /**
-     * Exchanges radiation across the positive-{@code axis} face between two sections' pockets — the exact
+     * Exchanges radiation across the positive-{@code axis} face between two sections' pockets. The exact
      * 2-node analytical solution from the old {@code SectionRef.exchangeWith*} family:
      * <pre>
      *   e     = exp(−(area / distSum) · (1/vA + 1/vB) · diffusionDt)
@@ -670,9 +674,9 @@ public final class RadiationSystemNT {
      * sealed pockets never exchange.
      */
     private static void exchangeFace(SectionRad a, SectionRad b, Axis axis) {
-        // Runs on a pool worker during the joined parallel phase — must NOT touch block state. Sections
+        // Runs on a pool worker during the joined parallel phase, so it must NOT touch block state. Sections
         // are pre-built on the server thread in WorldRadiationData.prepare(); skip any that isn't
-        // (old: KIND_NONE → no exchange).
+        // (old: KIND_NONE means no exchange).
         if (a == null || b == null || !a.built || !b.built) return;
         if (a.maxDensity <= RAD_EPSILON && b.maxDensity <= RAD_EPSILON) return;
         if (a.pocketCount == 0 || b.pocketCount == 0) return;
@@ -708,8 +712,8 @@ public final class RadiationSystemNT {
                     pairAreas[found]++;
                 } else {
                     if (pairCount == pairKeys.length) {
-                        pairKeys = java.util.Arrays.copyOf(pairKeys, pairCount * 2);
-                        pairAreas = java.util.Arrays.copyOf(pairAreas, pairCount * 2);
+                        pairKeys = Arrays.copyOf(pairKeys, pairCount * 2);
+                        pairAreas = Arrays.copyOf(pairAreas, pairCount * 2);
                     }
                     pairKeys[pairCount] = key;
                     pairAreas[pairCount] = 1;
@@ -749,9 +753,7 @@ public final class RadiationSystemNT {
         return (y << 8) | (z << 4) | x;
     }
 
-    // ============================================================================
     // Per-section pocket data
-    // ============================================================================
     static final class SectionRad {
 
         final WorldRadiationData world;
@@ -799,9 +801,9 @@ public final class RadiationSystemNT {
             LevelChunkSection sec = world.section(cx, sy, cz);
             pocketOf = new short[SECTION_BLOCKS];
             if (sec == null || sec.hasOnlyAir()) {
-                // one pocket covering the whole section (fast path for sky/air) — centre of mass is the
+                // one pocket covering the whole section (fast path for sky/air). Centre of mass is the
                 // exact section centre (7.5), so every face distance is 8.0 (the old code's uniform 8.0d).
-                java.util.Arrays.fill(pocketOf, (short) 0);
+                Arrays.fill(pocketOf, (short) 0);
                 pocketCount = 1;
                 density = density != null && density.length == 1 ? density : new double[] {0D};
                 volume = new int[] {SECTION_BLOCKS};
@@ -819,7 +821,7 @@ public final class RadiationSystemNT {
                 }
             }
             // flood fill non-wall blocks into pockets, accumulating each pocket's centre-of-mass sums
-            java.util.Arrays.fill(pocketOf, WALL);
+            Arrays.fill(pocketOf, WALL);
             int[] stack = new int[SECTION_BLOCKS];
             List<Integer> vols = new ArrayList<>();
             List<long[]> sums = new ArrayList<>(); // per pocket: {sumX, sumY, sumZ}
@@ -854,7 +856,7 @@ public final class RadiationSystemNT {
                 int vol = vols.get(i);
                 volume[i] = vol;
                 long[] s = sums.get(i);
-                // Per-pocket centre-of-mass distance to each face — the old SectionRef face ordinals:
+                // Per-pocket centre-of-mass distance to each face. The old SectionRef face ordinals:
                 // 0=DOWN, 1=UP, 2=NORTH(-z), 3=SOUTH(+z), 4=WEST(-x), 5=EAST(+x); ±0.5 as in getFaceDist.
                 double comX = (double) s[0] / vol, comY = (double) s[1] / vol, comZ = (double) s[2] / vol;
                 faceDist[i * 6] = (float) (comY + 0.5D);
@@ -897,7 +899,7 @@ public final class RadiationSystemNT {
             short p = pocketOf[idx(x, y, z)];
             if (p == WALL) return;
             double current = density[p];
-            if (amount > 0 && current >= max) return;   // fork: at/above max → no-op
+            if (amount > 0 && current >= max) return;   // fork: at/above max, no-op
             double next = current + amount;
             if (next > max) next = max;
             next = sanitize(next);
@@ -913,14 +915,14 @@ public final class RadiationSystemNT {
                 density[i] = d;
                 if (d > max) max = d;
 
-                // World block decay roll — the fork's postSweep effects: pockets holding >= 5 RAD have a
+                // World block decay roll. The fork's postSweep effects: pockets holding >= 5 RAD have a
                 // 1-in-100 chance per executed decay step to be queued for surface destruction (the
                 // hardcoded fork threshold; RadiationConfig.worldRadThreshold is unused in the NT path
-                // there too). Runs on a pool worker — only queues a numeric key, no MC access.
+                // there too). Runs on a pool worker. It only queues a numeric key, with no MC access.
                 // The fork also rolled fogRad/fogCh rad-fog spawns here; the port's fog is RadiationFog (1.7
-                // cadence, read-only, §19ej-6), so this numeric pass stays free of MC access.
+                // cadence, read-only), so this numeric pass stays free of MC access.
                 if (d >= 5.0D && RadiationConfig.worldRadEffects
-                        && java.util.concurrent.ThreadLocalRandom.current().nextInt(100) == 0) {
+                        && ThreadLocalRandom.current().nextInt(100) == 0) {
                     world.queueDestruction(cx, sy, cz, i);
                 }
             }

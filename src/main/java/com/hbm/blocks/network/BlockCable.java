@@ -5,6 +5,7 @@ import com.hbm.api.energymk2.PowerGraph;
 import com.hbm.api.energymk2.PowerGraphProvider;
 import com.hbm.capability.MachineCaps;
 import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Mirror;
@@ -50,7 +51,7 @@ import java.util.Map;
  * <p>Ported from 1.12.2's {@code BlockCable} (which used an OBJ-baked model + {@code getActualState});
  * the 26.1 equivalent is connection properties + a multipart blockstate + {@code updateShape}.
  */
-public class BlockCable extends dev.golem.core.world.CompatBlock implements TickingBlock, SimpleWaterloggedBlock {
+public class BlockCable extends CompatBlock implements TickingBlock, SimpleWaterloggedBlock {
 
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
     public static final BooleanProperty UP = BlockStateProperties.UP;

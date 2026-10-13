@@ -1,5 +1,6 @@
 package com.hbm.inventory.recipes;
 
+import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.recipes.loader.DataRecipeTable;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec.ItemOut;
@@ -7,6 +8,8 @@ import com.hbm.items.ModItems;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.Ids;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -25,7 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Shredder recipes — an exact-item lookup {@code input Item → output ItemStack}, with <b>scrap as the
+ * Shredder recipes, an exact-item lookup {@code input Item -> output ItemStack}, with <b>scrap as the
  * universal fallback</b>: 1.7's {@code getShredderResult} returns {@code ModItems.scrap} for any
  * unlisted item, which is why the shredder accepts (and grinds) literally anything.
  *
@@ -33,15 +36,14 @@ import java.util.Optional;
  * <ol>
  *   <li><b>Explicit rows</b> ({@code registerDefaults}): the datapack table {@code hbm:shredder}, one file per input
  *       in {@code data/hbm/recipe/shredder/} ({@code {"type": "hbm:shredder", "input": "hbm:scrap", "output":
- *       "hbm:dust"}}; the input may also be a {@code #tag}, which stands for each member). The rows were converted once
- *       from the former Java table (the generated 1.12.2 explicit list, the 1.7 entries restored in fix phase 3, the
- *       tungsten crate and bobblehead, every bedrock ore grade and the modern deepslate counterparts) and are the
- *       source now; {@code gen/ShredderRecipesGenerated} and its generator are retired.</li>
+ *       "hbm:dust"}}; the input may also be a {@code #tag}, which stands for each member). The rows are the 1.12.2
+ *       explicit list, the 1.7 entries, the tungsten crate and bobblehead, every bedrock ore grade and the modern
+ *       deepslate counterparts.</li>
  *   <li><b>The tag sweeps</b> ({@code registerPost}) stay rules: the vanilla log/plank/sapling/wool/terracotta tags
  *       and the old ore-dictionary scan on {@code c:} tags ({@code c:ingots/<mat>}, {@code c:plates/<mat>},
  *       {@code c:gems/<mat>} grind to one {@code c:dusts/<mat>}; ores and raw materials to 2; storage blocks to 9 (4
  *       without an ingot or gem); dusts to generic dust). Because the inputs come from tags, <i>another mod's</i>
- *       iron ingot shreds to HBM iron powder — exactly the cross-mod behaviour the ore dictionary gave 1.7.</li>
+ *       iron ingot shreds to HBM iron powder, exactly the cross-mod behaviour the ore dictionary gave 1.7.</li>
  * </ol>
  * Every entry is first-wins (1.7's {@code setRecipe} kept the first): the explicit rows in recipe-id order, then the
  * sweeps. The bobblehead's variant scrap ({@link DecoCrateMachineRecipes#bobbleScrap}) is a rule ahead of the table.
@@ -72,7 +74,7 @@ public final class ShredderRecipes {
     /** Declares the table at mod construction. */
     public static void declare() {}
 
-    /** The result of shredding {@code stack} — never empty; unlisted items yield scrap. */
+    /** The result of shredding {@code stack}, never empty; unlisted items yield scrap. */
     public static ItemStack getShredderResult(ItemStack stack) {
         Map<Item, ItemStack> table = table();
         if (stack.isEmpty()) return new ItemStack(ModItems.scrap.get());
@@ -114,7 +116,7 @@ public final class ShredderRecipes {
 
     /**
      * The old loops over the {@code logWood}/{@code plankWood}/{@code treeSapling} ore-dict lists and the
-     * 16 wool / stained-clay metas — now the equivalent vanilla tags, so modded woods work too.
+     * 16 wool / stained-clay metas, done here with the equivalent vanilla tags, so modded woods work too.
      */
     private static void registerVanillaSweeps(Map<Item, ItemStack> recipes) {
         for (Item item : itemsOf(ItemTags.LOGS)) set(recipes, item, new ItemStack(ModItems.powder_sawdust.get(), 4));
@@ -130,7 +132,7 @@ public final class ShredderRecipes {
     }
 
     /**
-     * The dust a material's shapes grind into when it isn't {@code c:dusts/<mat>} — the old fork's
+     * The dust a material's shapes grind into when it isn't {@code c:dusts/<mat>}, the old fork's
      * ore-dict aliases ({@code dustColtan} was {@code powder_coltan_ore}, the crushed-ore intermediate,
      * not {@code powder_coltan}).
      */
@@ -140,7 +142,7 @@ public final class ShredderRecipes {
             "raw_iron", "powder_iron", "raw_gold", "powder_gold", "raw_copper", "powder_copper");
 
     /**
-     * The ore-dictionary sweep, on tags. Mirrors the old {@code registerPost} shape-by-shape — and like
+     * The ore-dictionary sweep, on tags. Mirrors the old {@code registerPost} shape-by-shape, and like
      * it, iterates the whole namespace ({@code Registry.getTags()} over {@code c:}), not just HBM's own
      * material list, so vanilla and cross-mod materials get recipes whenever a {@code c:dusts/<mat>}
      * exists.
@@ -148,7 +150,7 @@ public final class ShredderRecipes {
     private static void registerTagSweep(Map<Item, ItemStack> recipes) {
         // bucket every c:<shape>/<material> item tag by material
         Map<String, Map<String, TagKey<Item>>> byMat = new HashMap<>();
-        dev.golem.core.world.Compat.itemTagKeys().forEach(tag -> {
+        Compat.itemTagKeys().forEach(tag -> {
             Identifier id = tag.location();
             int slash = id.getPath().indexOf('/');
             if (!id.getNamespace().equals("c") || slash < 0) return;
@@ -172,7 +174,7 @@ public final class ShredderRecipes {
                     if (shapes.containsKey(two)) for (Item item : itemsOf(shapes.get(two))) set(recipes, item, new ItemStack(d, 2));
                 }
                 if (shapes.containsKey("storage_blocks")) {
-                    // 1.7: 9 dust, but 4 when the material has no ingot or gem (redstone, sulfur, niter, ...)
+                    // 1.7: 9 dust, but 4 when the material has no ingot or gem (redstone, sulfur, niter,...)
                     int count = shapes.containsKey("ingots") || shapes.containsKey("gems") ? 9 : 4;
                     for (Item item : itemsOf(shapes.get("storage_blocks"))) set(recipes, item, new ItemStack(d, count));
                 }
@@ -193,7 +195,7 @@ public final class ShredderRecipes {
     // --- tag / registry helpers ---
 
     private static TagKey<Item> cTag(String path) {
-        return TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", path));
+        return TagKey.create(Registries.ITEM, Ids.of("c", path));
     }
 
     /** The items in an item tag; empty when the tag doesn't exist (the {@code doesOreNameExist} guard). */
@@ -211,7 +213,7 @@ public final class ShredderRecipes {
         Item first = null;
         Item preferred = null;
         int lowestPref = -1;
-        String[] mods = com.hbm.config.GeneralConfig.preferredOutputMod;
+        String[] mods = GeneralConfig.preferredOutputMod;
         for (Item item : itemsOf(tag)) {
             if (first == null) first = item;
             String modid = BuiltInRegistries.ITEM.getKey(item).getNamespace();
@@ -230,6 +232,6 @@ public final class ShredderRecipes {
 
     /** A direct {@code hbm:<id>} lookup (the tiny dusts have no {@code c:} tag). */
     private static Optional<Item> firstOfId(String path) {
-        return BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.of("hbm", path));
+        return BuiltInRegistries.ITEM.getOptional(Ids.of("hbm", path));
     }
 }

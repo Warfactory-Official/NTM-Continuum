@@ -2,6 +2,8 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerBlastFurnace;
 import com.hbm.tileentity.machine.TileEntityMachineBlastFurnace;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -13,9 +15,9 @@ import java.util.List;
 import java.util.Optional;
 
 /** Blast furnace screen preserving the legacy 176x222 layout and two fluid gauges. */
-public class GUIBlastFurnace extends dev.golem.core.gui.CompatContainerScreen<ContainerBlastFurnace> {
+public class GUIBlastFurnace extends CompatContainerScreen<ContainerBlastFurnace> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_blast_furnace.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_blast_furnace.png");
 
     public GUIBlastFurnace(ContainerBlastFurnace menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 222);

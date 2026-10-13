@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.inventory.SlotCraftingOutput;
 import com.hbm.inventory.recipes.CyclotronRecipes;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
@@ -52,9 +53,9 @@ public class ContainerMachineCyclotron extends AbstractContainerMenu {
         addSlot(validated(3, 101, 18));
         addSlot(validated(4, 101, 36));
         addSlot(validated(5, 101, 54));
-        addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 6, 131, 18)); // 1.7 SlotCraftingOutput
-        addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 7, 131, 36)); // 1.7 SlotCraftingOutput
-        addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 8, 131, 54)); // 1.7 SlotCraftingOutput
+        addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 6, 131, 18)); // 1.7 SlotCraftingOutput
+        addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 7, 131, 36)); // 1.7 SlotCraftingOutput
+        addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 8, 131, 54)); // 1.7 SlotCraftingOutput
         addSlot(validated(9, 168, 83));
         addSlot(validated(10, 60, 81));
         addSlot(validated(11, 78, 81));

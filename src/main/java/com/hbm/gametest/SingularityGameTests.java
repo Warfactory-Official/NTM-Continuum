@@ -1,15 +1,22 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.blocks.ModFluidNetBlocks;
+import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.entity.ModEntities;
+import com.hbm.entity.effect.EntityBlackHole;
 import com.hbm.entity.effect.EntityRagingVortex;
 import com.hbm.entity.projectile.EntityRubble;
 import com.hbm.blocks.machine.MachineCyclotron;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.items.ModArmorItems;
 import com.hbm.items.ModBombItems;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.ModelState;
+import com.hbm.items.special.CellVariants;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
+import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.api.fluidmk2.FluidNetwork;
 import com.hbm.lib.ForgeDirection;
@@ -21,15 +28,24 @@ import com.hbm.items.gear.ArmorFSBPowered;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.special.ItemSingularity;
 import dev.golem.core.Ids;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.world.Raycasts;
 import dev.golem.core.world.Recipes;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -91,7 +107,7 @@ public final class SingularityGameTests {
         helper.assertTrue(four.getCount() == 4 && ItemCell.isFullCell(four, Fluids.AMAT),
                 "getFullCell(fluid, count) did not preserve the old stack-count meaning");
 
-        java.util.List<ItemStack> deuteriumGrid = new java.util.ArrayList<>();
+        List<ItemStack> deuteriumGrid = new ArrayList<>();
         for (int i = 0; i < 9; i++) deuteriumGrid.add(empty.copy());
         deuteriumGrid.set(4, new ItemStack(ModBombItems.mike_deut.get()));
         ItemStack deuterium = Recipes.craftingResult(helper.getLevel(), 3, 3, deuteriumGrid)
@@ -99,17 +115,17 @@ public final class SingularityGameTests {
         helper.assertTrue(deuterium.is(ModSingularityItems.cell.get()) && deuterium.getCount() == 8
                         && ItemCell.isFullCell(deuterium, Fluids.DEUTERIUM)
                         && ModDataComponents.fluidAmount(deuterium) == ItemCell.CAPACITY
-                        && com.hbm.items.ModelState.of(deuterium) == com.hbm.items.special.CellVariants.DEUTERIUM,
+                        && ModelState.of(deuterium) == CellVariants.DEUTERIUM,
                 "empty-cell recipe did not produce a model-selecting full deuterium cell");
         deuteriumGrid.set(0, antimatter.copyWithCount(1));
         helper.assertTrue(Recipes.craftingResult(helper.getLevel(), 3, 3, deuteriumGrid).isEmpty(),
                 "empty-cell recipe accepted a filled cell");
 
-        java.util.List<ItemStack> syringeGrid = new java.util.ArrayList<>();
+        List<ItemStack> syringeGrid = new ArrayList<>();
         for (int i = 0; i < 9; i++) syringeGrid.add(ItemStack.EMPTY);
         syringeGrid.set(1, new ItemStack(ModItems.plate_iron.get()));
         syringeGrid.set(4, empty.copy());
-        syringeGrid.set(7, new ItemStack(net.minecraft.world.level.block.Blocks.IRON_BARS.asItem()));
+        syringeGrid.set(7, new ItemStack(Blocks.IRON_BARS.asItem()));
         ItemStack syringe = Recipes.craftingResult(helper.getLevel(), 3, 3, syringeGrid)
                 .orElse(ItemStack.EMPTY);
         helper.assertTrue(syringe.is(ModItems.syringe_empty.get()) && syringe.getCount() == 6,
@@ -132,7 +148,7 @@ public final class SingularityGameTests {
                         && ItemCell.isEmptyCell(full)
                         && ModDataComponents.fluid(full) == Fluids.NONE
                         && ModDataComponents.fluidAmount(full) == 0
-                        && com.hbm.items.ModelState.of(full) == com.hbm.items.special.CellVariants.EMPTY,
+                        && ModelState.of(full) == CellVariants.EMPTY,
                 "whole-cell drain did not clear fluid components");
 
         ItemStack partial = new ItemStack(ModSingularityItems.cell.get());
@@ -158,8 +174,8 @@ public final class SingularityGameTests {
 
         ItemStack pellet = Recipes.craftingResult(helper.getLevel(), 3, 3, pelletGrid(antimatter))
                 .orElse(ItemStack.EMPTY);
-        java.util.List<ItemStack> pelletRemainders = Recipes.craftingRemainders(
-                helper.getLevel(), 3, 3, pelletGrid(antimatter)).orElse(java.util.List.of());
+        List<ItemStack> pelletRemainders = Recipes.craftingRemainders(
+                helper.getLevel(), 3, 3, pelletGrid(antimatter)).orElse(List.of());
         helper.assertTrue(pellet.is(ModSingularityItems.pellet_antimatter.get())
                         && pelletRemainders.size() == 9
                         && pelletRemainders.stream().allMatch(ItemCell::isEmptyCell),
@@ -193,11 +209,11 @@ public final class SingularityGameTests {
         EntityRubble rubble = new EntityRubble(ModEntities.RUBBLE.get(), helper.getLevel());
         rubble.setBlockState(Blocks.STONE.defaultBlockState());
         helper.assertTrue(rubble.getBlockState().is(Blocks.STONE), "rubble block-state carrier drifted");
-        Vec3 rotated = com.hbm.entity.effect.EntityBlackHole.rotatePull(new Vec3(1D, 0D, 0D));
+        Vec3 rotated = EntityBlackHole.rotatePull(new Vec3(1D, 0D, 0D));
         helper.assertTrue(Math.abs(rotated.x - Math.cos(Math.toRadians(15D))) < 1E-12
                         && Math.abs(rotated.z + Math.sin(Math.toRadians(15D))) < 1E-12,
                 "black-hole pull yaw has the wrong 1.12 sign");
-        helper.assertTrue(dev.golem.core.world.Raycasts.segmentIntersects(
+        helper.assertTrue(Raycasts.segmentIntersects(
                         new AABB(2D, 0D, 0D, 2.5D, 1D, 1D), new Vec3(0D, 0.5D, 0.5D),
                         new Vec3(4D, 0.5D, 0.5D), 0.3D),
                 "projectile sweep did not cross an entity box between endpoints");
@@ -206,11 +222,11 @@ public final class SingularityGameTests {
 
     public static void rubbleNearestImpact(GameTestHelper helper) {
         BlockPos origin = helper.absolutePos(new BlockPos(1, 10, 1));
-        var near = helper.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new BlockPos(2, 10, 1));
-        var far = helper.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new BlockPos(4, 10, 1));
+        var near = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 10, 1));
+        var far = helper.spawn(EntityType.ZOMBIE, new BlockPos(4, 10, 1));
         near.setPos(origin.getX() + 1.5D, origin.getY() + 0.5D, origin.getZ() + 0.5D);
         far.setPos(origin.getX() + 3.5D, origin.getY() + 0.5D, origin.getZ() + 0.5D);
-        java.util.List<net.minecraft.world.entity.Entity> hits = dev.golem.core.world.Raycasts.sweepEntities(
+        List<Entity> hits = Raycasts.sweepEntities(
                 helper.getLevel(), null,
                 new Vec3(origin.getX() + 0.5D, origin.getY() + 0.5D, origin.getZ() + 0.5D),
                 new Vec3(origin.getX() + 6.5D, origin.getY() + 0.5D, origin.getZ() + 0.5D),
@@ -242,19 +258,19 @@ public final class SingularityGameTests {
     public static void fluidProduction(GameTestHelper helper) {
         Fluids.init();
         TileEntityMachineCyclotron cyclotron = placeCyclotron(helper, new BlockPos(3, 1, 3));
-        helper.setBlock(new BlockPos(8, 1, 4), com.hbm.blocks.ModFluidNetBlocks.barrel_antimatter.get().defaultBlockState());
-        com.hbm.tileentity.machine.storage.TileEntityBarrel tank = (com.hbm.tileentity.machine.storage.TileEntityBarrel)
+        helper.setBlock(new BlockPos(8, 1, 4), ModFluidNetBlocks.barrel_antimatter.get().defaultBlockState());
+        TileEntityBarrel tank = (TileEntityBarrel)
                 helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(8, 1, 4)));
         for (BlockPos ductPos : new BlockPos[] {new BlockPos(6, 1, 4), new BlockPos(7, 1, 4),
                 new BlockPos(7, 1, 3)}) {
-            helper.setBlock(ductPos, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState());
+            helper.setBlock(ductPos, ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState());
             TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) helper.getLevel().getBlockEntity(
                     helper.absolutePos(ductPos));
             duct.setFluidType(Fluids.AMAT);
         }
         tank.tank.setTankType(Fluids.AMAT);
         tank.mode = 1;
-        com.hbm.tileentity.machine.storage.TileEntityBarrel.serverTick(helper.getLevel(), tank.getBlockPos(),
+        TileEntityBarrel.serverTick(helper.getLevel(), tank.getBlockPos(),
                 tank.getBlockState(), tank);
         FluidNetwork.distributeAll(helper.getLevel());
 
@@ -267,7 +283,7 @@ public final class SingularityGameTests {
             cyclotron.tanks[1].setFill(0);
             TileEntityMachineCyclotron.serverTick(helper.getLevel(), cyclotron.getBlockPos(),
                     cyclotron.getBlockState(), cyclotron);
-            com.hbm.tileentity.machine.storage.TileEntityBarrel.serverTick(helper.getLevel(), tank.getBlockPos(),
+            TileEntityBarrel.serverTick(helper.getLevel(), tank.getBlockPos(),
                     tank.getBlockState(), tank);
             FluidNetwork.distributeAll(helper.getLevel());
         }
@@ -278,7 +294,7 @@ public final class SingularityGameTests {
 
         tank.inventory.setStackInSlot(4, new ItemStack(ModSingularityItems.cell.get(), 4));
         for (int i = 0; i < 4; i++) {
-            com.hbm.tileentity.machine.storage.TileEntityBarrel.serverTick(helper.getLevel(), tank.getBlockPos(),
+            TileEntityBarrel.serverTick(helper.getLevel(), tank.getBlockPos(),
                     tank.getBlockState(), tank);
         }
         ItemStack cells = tank.inventory.getStackInSlot(5);
@@ -288,14 +304,14 @@ public final class SingularityGameTests {
                 "antimatter barrel did not fill component-backed cells from networked AMAT");
 
         // 1.7 CraftingManager:325 builds the singularity from anti-schrabidium cells, not antimatter
-        // (§19ed-gaps-a): network AMAT cells must be refused, component ASCHRAB cells accepted.
+        // Network AMAT cells must be refused, component ASCHRAB cells accepted.
         ItemStack amatResult = Recipes.craftingResult(helper.getLevel(), 3, 3,
                 singularityGrid(cells.copyWithCount(1))).orElse(ItemStack.EMPTY);
         helper.assertTrue(amatResult.isEmpty(), "antimatter cells must not assemble the singularity (1.7 uses ASCHRAB)");
-        java.util.List<ItemStack> grid = singularityGrid(ItemCell.getFullCell(Fluids.ASCHRAB, 1));
+        List<ItemStack> grid = singularityGrid(ItemCell.getFullCell(Fluids.ASCHRAB, 1));
         ItemStack result = Recipes.craftingResult(helper.getLevel(), 3, 3, grid).orElse(ItemStack.EMPTY);
-        java.util.List<ItemStack> remainders = Recipes.craftingRemainders(helper.getLevel(), 3, 3, grid)
-                .orElse(java.util.List.of());
+        List<ItemStack> remainders = Recipes.craftingRemainders(helper.getLevel(), 3, 3, grid)
+                .orElse(List.of());
         helper.assertTrue(result.is(ModSingularityItems.singularity.get()) && remainders.size() == 9
                         && remainders.get(1).is(ModSingularityItems.cell.get())
                         && ItemCell.isEmptyCell(remainders.get(1)),
@@ -304,20 +320,20 @@ public final class SingularityGameTests {
     }
 
     public static void selfcharger(GameTestHelper helper) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
-                net.minecraft.world.level.GameType.SURVIVAL);
-        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,
-                new ItemStack(com.hbm.items.ModArmorItems.t51_helmet.get()));
-        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST,
-                new ItemStack(com.hbm.items.ModArmorItems.t51_plate.get()));
-        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS,
-                new ItemStack(com.hbm.items.ModArmorItems.t51_legs.get()));
-        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET,
-                new ItemStack(com.hbm.items.ModArmorItems.t51_boots.get()));
-        ItemStack helmet = player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD);
+        Player player = GameTestHelpers.mockPlayer(helper,
+                GameType.SURVIVAL);
+        player.setItemSlot(EquipmentSlot.HEAD,
+                new ItemStack(ModArmorItems.t51_helmet.get()));
+        player.setItemSlot(EquipmentSlot.CHEST,
+                new ItemStack(ModArmorItems.t51_plate.get()));
+        player.setItemSlot(EquipmentSlot.LEGS,
+                new ItemStack(ModArmorItems.t51_legs.get()));
+        player.setItemSlot(EquipmentSlot.FEET,
+                new ItemStack(ModArmorItems.t51_boots.get()));
+        ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
         ArmorFSBPowered powered = (ArmorFSBPowered) helmet.getItem();
         powered.setCharge(helmet, 1_000);
-        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
+        player.setItemInHand(InteractionHand.MAIN_HAND,
                 new ItemStack(ModSelfchargerItems.battery_sc_uranium.get()));
         powered.armorTick(helper.getLevel(), player, helmet);
         helper.assertTrue(powered.getCharge(helmet) == 996,
@@ -331,17 +347,17 @@ public final class SingularityGameTests {
         return (TileEntityMachineCyclotron) helper.getLevel().getBlockEntity(absolute);
     }
 
-    private static java.util.List<ItemStack> singularityGrid(ItemStack cell) {
-        java.util.List<ItemStack> grid = new java.util.ArrayList<>();
+    private static List<ItemStack> singularityGrid(ItemStack cell) {
+        List<ItemStack> grid = new ArrayList<>();
         for (int i = 0; i < 9; i++) grid.add(ItemStack.EMPTY);
         for (int slot : new int[] {1, 3, 5, 7}) grid.set(slot, cell.copy());
         for (int slot : new int[] {0, 2, 6, 8}) grid.set(slot, new ItemStack(ModItems.nugget_euphemium.get()));
-        grid.set(4, new ItemStack(com.hbm.blocks.ModHazardBlocks.block_schrabidium.get().asItem()));
+        grid.set(4, new ItemStack(ModHazardBlocks.block_schrabidium.get().asItem()));
         return grid;
     }
 
-    private static java.util.List<ItemStack> pelletGrid(ItemStack cell) {
-        java.util.List<ItemStack> grid = new java.util.ArrayList<>();
+    private static List<ItemStack> pelletGrid(ItemStack cell) {
+        List<ItemStack> grid = new ArrayList<>();
         for (int i = 0; i < 9; i++) grid.add(cell.copy());
         return grid;
     }

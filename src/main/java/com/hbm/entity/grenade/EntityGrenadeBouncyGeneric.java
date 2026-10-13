@@ -4,6 +4,7 @@ import com.hbm.items.ModEntityItems;
 import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.SynchedData;
 import com.hbm.items.weapon.ItemGenericGrenade;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -19,7 +20,7 @@ import dev.golem.core.data.DataOut;
  */
 public class EntityGrenadeBouncyGeneric extends EntityGrenadeBouncyBase implements IGenericGrenade {
 
-    // 1.7: dataWatcher 12 - item id; 26.2 syncs the item
+    // 1.7: dataWatcher 12 - item id; 26.1 syncs the item
     private static final EntityDataAccessor<ItemStack> GRENADE =
             SynchedEntityData.defineId(EntityGrenadeBouncyGeneric.class, EntityDataSerializers.ITEM_STACK);
 
@@ -68,13 +69,13 @@ public class EntityGrenadeBouncyGeneric extends EntityGrenadeBouncyBase implemen
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.store("grenade", dev.golem.core.world.ItemStacks.optionalCodec(), entityData.get(GRENADE));
+        output.store("grenade", ItemStacks.optionalCodec(), entityData.get(GRENADE));
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        input.read("grenade", dev.golem.core.world.ItemStacks.optionalCodec()).ifPresent(stack -> entityData.set(GRENADE, stack));
+        input.read("grenade", ItemStacks.optionalCodec()).ifPresent(stack -> entityData.set(GRENADE, stack));
     }
 
     @Override

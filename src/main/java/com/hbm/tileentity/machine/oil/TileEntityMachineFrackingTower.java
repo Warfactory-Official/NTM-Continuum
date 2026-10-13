@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.oil;
 
+import com.hbm.api.data.DepositDataMaps;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -21,19 +22,20 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 
 /**
- * Fracking Tower — 1:1 port of the 1.12.2 {@code TileEntityMachineFrackingTower}. Extends the shared
+ * Fracking Tower: 1:1 port of the 1.12.2 {@code TileEntityMachineFrackingTower}. Extends the shared
  * {@link TileEntityOilDrillBase}: maxPower 5M, 5000 HE/tick, delay 20, drills to the world floor. A third
  * tank {@code [2] FRACKSOL 64k} (receiving) is consumed 10 mB per pump ({@link #canPump}); each suck also
  * blights the surface via {@link OilSpot} (range 75). Sucks both {@code ore_oil} (1000 oil + 100-500 gas,
  * 2% deplete) and {@code ore_bedrock_oil} (100 oil + 10-50 gas, never depletes). Reuses the oil-well GUI.
  *
- * <p>Deviations (§20): {@code getDrillDepth()} maps the old {@code 0} to the 26.1 world floor; IPersistentNBT
+ * <p>Deviations: {@code getDrillDepth()} maps the old {@code 0} to the 26.1 world floor; IPersistentNBT
  * / IConfigurableMachine deferred (per the drill precedent).
  */
 public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
@@ -93,14 +95,14 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
      */
     @FunctionalInterface
     public interface Blight {
-        Verdict blight(ServerLevel level, BlockPos tower, BlockPos deposit, com.hbm.api.data.DepositDataMaps.Deposit kind);
+        Verdict blight(ServerLevel level, BlockPos tower, BlockPos deposit, DepositDataMaps.Deposit kind);
     }
 
     public static final Hook<Blight> BLIGHT = Hook.of(listeners -> (level, tower, deposit, kind) ->
             Verdict.first(listeners, listener -> listener.blight(level, tower, deposit, kind)));
 
     @Override
-    public void onSuck(BlockPos pos, com.hbm.api.data.DepositDataMaps.Deposit deposit) {
+    public void onSuck(BlockPos pos, DepositDataMaps.Deposit deposit) {
         // 1.7 ore_oil: 1000 oil + 100-500 gas, 2% drain; ore_bedrock_oil: 100 + 10-50, never drains (yield 0.1, no empty)
         suckDeposit(pos, deposit, oilPerDeposit, gasPerDepositMin, gasPerDepositMax, drainChance);
         tanks[2].setFill(tanks[2].getFill() - solutionRequired);
@@ -116,7 +118,7 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
 
     /** 1.7 {@code TileEntityMachineFrackingTower.updateConnections}: power and the fracking solution. */
     @Override
-    protected void updateConnections(net.minecraft.world.level.Level level) {
+    protected void updateConnections(Level level) {
         for (DirPos port : getConPos()) {
             this.trySubscribe(level, port);
             this.trySubscribe(tanks[2].getTankType(), level, port);

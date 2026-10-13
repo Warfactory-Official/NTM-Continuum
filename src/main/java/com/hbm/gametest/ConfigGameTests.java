@@ -1,16 +1,30 @@
 package com.hbm.gametest;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.hbm.Constants;
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.config.Configuration;
+import com.hbm.config.DungeonConfig;
 import com.hbm.config.GeneralConfig;
+import com.hbm.config.MachineConfig;
 import com.hbm.config.MobConfig;
 import com.hbm.config.PotionConfig;
 import com.hbm.config.RadiationConfig;
 import com.hbm.config.WorldConfig;
+import com.hbm.explosion.ExplosionNukeGeneric;
+import com.hbm.inventory.recipes.StorageDrumRecipes;
 import com.hbm.main.MainRegistry;
+import com.hbm.tileentity.machine.TileEntityChimneyBrick;
+import com.hbm.tileentity.machine.rbmk.RBMKDials;
 import com.hbm.world.gen.ConfigPlacement;
 import com.hbm.world.gen.WorldgenKeys;
+import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTests;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.function.IntSupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.util.RandomSource;
@@ -22,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Fix wave phase 8 (History §19ej-8): {@code hbm.cfg}. A freshly written file holds every applicable 1.7 key with its
+ * {@code hbm.cfg}. A freshly written file holds every applicable 1.7 key with its
  * 1.7 effective default and none of the not-applicable ones ({@link Config17Table}, generated from the 1.7 source), and
  * a sample of keys is flipped to show it reaches the code it gates.
  */
@@ -85,9 +99,9 @@ public final class ConfigGameTests {
                     helper.assertTrue(expected.contains(category + "/" + key), "hbm.cfg holds a key 1.7 did not have: " + category + "/" + key);
                 }
             }
-            // 248 (§19ej-8) + 57 since §19ek-hooks (6.04, 10.04, RADWORLD_03, POL_01/03/06/07, 5.01/5.02/5.05-5.43, 9 dungeon
-            // chances) + 1 (1.31_enableSkyboxes, §19ek-visual) = 306 written, 33 not applicable (§19ek-final). Exact on
-            // purpose: a key added to or dropped from the writer without its table row is drift and must fail here.
+            // 248 + 57 hook keys (6.04, 10.04, RADWORLD_03, POL_01/03/06/07, 5.01/5.02/5.05-5.43, 9 dungeon
+            // chances) + 1 (1.31_enableSkyboxes) = 306 written, 33 not applicable. The check is exact:
+            // a key added to or dropped from the writer without its table row is drift and must fail here.
             helper.assertTrue(written + absent == 339 && written == 306 && absent == 33, "339 1.7 keys = 306 written + 33 not applicable, got "
                     + written + " + " + absent);
             // the parsed values are the 1.7 effective defaults too (spot checks of the reported mismatches)
@@ -165,26 +179,26 @@ public final class ConfigGameTests {
                     && MobConfig.bombardierChance[2] == 0 && RadiationConfig.sootFogThreshold == 105D, "rampant overrides (pollutionMult 3, smog 35*3)");
             helper.assertTrue(MobConfig.trueRam(), "trueRam() with rampant mode");
             // the chimney reads the rampant override
-            helper.assertTrue(new com.hbm.tileentity.machine.TileEntityChimneyBrick(BlockPos.ZERO,
-                    com.hbm.smoke.SmokeChainRegistration.chimney_brick.get().defaultBlockState()).getPollutionMod() == 0.4D,
+            helper.assertTrue(new TileEntityChimneyBrick(BlockPos.ZERO,
+                    ModMachineBlocks.chimney_brick.get().defaultBlockState()).getPollutionMod() == 0.4D,
                     "brick chimney under rampant mode = 12.R06_rampantSmokeStackOverride 0.4");
 
             helper.assertTrue(PotionConfig.potionSickness == 2, "8.S0_potionSickness TERRARIA = 2");
-            helper.assertTrue(com.hbm.explosion.ExplosionNukeGeneric.getSchrabOreChance() == 33, "LBSM schrab ore rate 33");
-            helper.assertTrue(com.hbm.inventory.recipes.StorageDrumRecipes.longDecayChance() == 15 * 60 * 20,
+            helper.assertTrue(ExplosionNukeGeneric.getSchrabOreChance() == 33, "LBSM schrab ore rate 33");
+            helper.assertTrue(StorageDrumRecipes.longDecayChance() == 15 * 60 * 20,
                     "LBSM_shortDecay: long decay 15 minutes");
-            helper.assertTrue(com.hbm.config.MachineConfig.scaleRTGPowerActive(), "9.00_scaleRTGPower read");
+            helper.assertTrue(MachineConfig.scaleRTGPowerActive(), "9.00_scaleRTGPower read");
             // 528 is off: its sub-switches stay forced off whatever the file says (1.7 loadFromConfig)
             helper.assertTrue(!GeneralConfig.enable528NetherBurn && !GeneralConfig.enable528ReasimBoilers
-                    && !com.hbm.config.DungeonConfig.enable528BosniaSimulator, "X528 switches forced off without 528 mode");
+                    && !DungeonConfig.enable528BosniaSimulator, "X528 switches forced off without 528 mode");
 
             // 528 on forces LBSM off and lets its sub-switches through
             Files.writeString(file, Files.readString(file).replace("B:enable528Mode=false", "B:enable528Mode=true"));
             MainRegistry.loadConfig(new Configuration(file));
             helper.assertTrue(GeneralConfig.enable528 && !GeneralConfig.enableLBSM && GeneralConfig.enable528NetherBurn
-                    && GeneralConfig.enable528ReasimBoilers && com.hbm.tileentity.machine.rbmk.RBMKDials.getReasimBoilers(helper.getLevel()),
+                    && GeneralConfig.enable528ReasimBoilers && RBMKDials.getReasimBoilers(helper.getLevel()),
                     "528 mode: LBSM off, X528 switches on, the RBMK ReaSim dial forced on");
-            helper.assertTrue(com.hbm.explosion.ExplosionNukeGeneric.getSchrabOreChance() == 250, "LBSM off again: 250");
+            helper.assertTrue(ExplosionNukeGeneric.getSchrabOreChance() == 250, "LBSM off again: 250");
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -225,14 +239,14 @@ public final class ConfigGameTests {
             helper.assertTrue(kept > 60 && kept < 140, "1 in 200 over 20000 draws ~ 100, got " + kept);
 
             // every key a placed feature names is bound
-            for (Map.Entry<String, java.util.function.IntSupplier> e : WorldgenKeys.all().entrySet()) {
+            for (Map.Entry<String, IntSupplier> e : WorldgenKeys.all().entrySet()) {
                 helper.assertTrue(e.getValue() != null, "binding for " + e.getKey());
             }
             // the shipped placed feature starts with the master switch and counts by the config key
-            com.google.gson.JsonObject json = resource(helper, "worldgen/placed_feature/ore_gneiss_uranium.json");
-            com.google.gson.JsonArray placement = json.getAsJsonArray("placement");
-            com.google.gson.JsonObject first = placement.get(0).getAsJsonObject();
-            com.google.gson.JsonObject second = placement.get(1).getAsJsonObject();
+            JsonObject json = resource(helper, "worldgen/placed_feature/ore_gneiss_uranium.json");
+            JsonArray placement = json.getAsJsonArray("placement");
+            JsonObject first = placement.get(0).getAsJsonObject();
+            JsonObject second = placement.get(1).getAsJsonObject();
             helper.assertTrue("hbm:config".equals(first.get("type").getAsString()) && "2.D00_overworldOres".equals(first.get("key").getAsString())
                     && "switch".equals(first.get("mode").getAsString()), "ore_gneiss_uranium begins with the 2.D00 switch");
             helper.assertTrue("2.00_uraniumSpawnrate".equals(second.get("key").getAsString()) && second.get("multiplier").getAsInt() == 3,
@@ -246,12 +260,12 @@ public final class ConfigGameTests {
     }
 
     /** A file of the loaded data pack, from the server's resource manager. */
-    private static com.google.gson.JsonObject resource(GameTestHelper helper, String path) {
-        var resource = helper.getLevel().getServer().getResourceManager().getResource(dev.golem.core.Ids.of("hbm", path))
+    private static JsonObject resource(GameTestHelper helper, String path) {
+        var resource = helper.getLevel().getServer().getResourceManager().getResource(Ids.of("hbm", path))
                 .orElseThrow(() -> new IllegalStateException("missing data/hbm/" + path));
-        try (java.io.Reader reader = resource.openAsReader()) {
-            return com.google.gson.JsonParser.parseReader(reader).getAsJsonObject();
-        } catch (java.io.IOException e) {
+        try (Reader reader = resource.openAsReader()) {
+            return JsonParser.parseReader(reader).getAsJsonObject();
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

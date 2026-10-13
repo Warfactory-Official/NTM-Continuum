@@ -1,6 +1,7 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.items.ModFuelItems;
+import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -14,12 +15,12 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import java.util.List;
 
 /**
- * Burning nether coal — the 1.12.2 {@code BlockNetherCoal}, a {@code BlockOutgas(randomTick, rate=5,
+ * Burning nether coal: the 1.12.2 {@code BlockNetherCoal}, a {@code BlockOutgas(randomTick, rate=5,
  * onBreak)} that drops {@code coal_infernal}, ignites anything touching it, and licks flame/smoke out
  * of every non-downward face that borders air.
  *
  * <p>It inherits the outgas behaviour (a radon pocket on random tick and on break) from
- * {@link BlockOutgas} exactly as upstream does — the class really is an outgas block, which is why
+ * {@link BlockOutgas} exactly as upstream does: the class really is an outgas block, which is why
  * mining it in the nether leaves gas behind.
  */
 public class BlockNetherCoal extends BlockOutgas {
@@ -39,7 +40,7 @@ public class BlockNetherCoal extends BlockOutgas {
 
     @Override
     protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-        if (!level.isClientSide()) dev.golem.core.world.Effects.ignite(entity, 3);
+        if (!level.isClientSide()) Effects.ignite(entity, 3);
     }
 
     @Override

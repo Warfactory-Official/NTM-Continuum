@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the diesel generator — 1.7.10 {@code ContainerMachineDiesel}: fuel container in (17,17),
+ * Menu for the diesel generator, 1.7.10 {@code ContainerMachineDiesel}: fuel container in (17,17),
  * emptied out (17,53), battery (141,71), fluid identifier (35,71); 176×203 with the player inventory at
  * 121/179. Button 0 is the on/off switch.
  */

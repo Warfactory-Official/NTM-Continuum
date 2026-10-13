@@ -2,13 +2,14 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.MenuCrate;
 import com.hbm.tileentity.machine.storage.CrateType;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 /** The crate minecart's screen: {@link GUICrate}'s drawing over the cart's {@link MenuCrate}. */
-public class GUICartCrate extends dev.golem.core.gui.CompatContainerScreen<MenuCrate> {
+public class GUICartCrate extends CompatContainerScreen<MenuCrate> {
 
     private final CrateType type;
 

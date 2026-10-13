@@ -63,7 +63,7 @@ public class MachineBatterySocket extends BlockMultiblockMachine implements IEne
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityBatterySocket socket)) return null;
 
-        // Read the SYNCED carried stack, not getPower()/getMaxPower() — those read the slot-0 inventory
+        // Read the synced carried stack, not getPower()/getMaxPower(). Those read the slot-0 inventory
         // item, which is only synced to the client while the container is open (so the HUD would show a
         // frozen charge with no GUI open). syncStack is broadcast every tick via the BufPacket.
         long power = TileEntityBatterySocket.powerFromStack(socket.syncStack);

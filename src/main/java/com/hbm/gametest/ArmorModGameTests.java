@@ -5,6 +5,7 @@ import com.hbm.handler.ArmorModEvents;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.ModArmorItems;
 import com.hbm.items.ModArmorModItems;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
@@ -12,6 +13,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
@@ -32,16 +34,16 @@ public final class ArmorModGameTests {
         ArmorModEvents.onLivingUpdate(player);
 
         helper.assertTrue(Math.abs(player.getMaxHealth() - 40F) < 1.0E-4F, "heart container max health " + player.getMaxHealth());
-        double kb = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE);
+        double kb = player.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
         helper.assertTrue(Math.abs(kb - 0.5D) < 1.0E-6D, "iron cladding knockback resistance " + kb);
-        double damage = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+        double damage = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
         helper.assertTrue(Math.abs(damage - 1.5D) < 1.0E-6D, "servo attack damage " + damage);
         helper.assertTrue(Effects.has(player, Effects.haste()), "servo haste missing");
 
         player.setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
         ArmorModEvents.onLivingUpdate(player);
         helper.assertTrue(Math.abs(player.getMaxHealth() - 20F) < 1.0E-4F, "max health not restored " + player.getMaxHealth());
-        kb = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE);
+        kb = player.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
         helper.assertTrue(kb == 0D, "knockback resistance not restored " + kb);
         helper.succeed();
     }
@@ -83,7 +85,7 @@ public final class ArmorModGameTests {
     }
 
     private static Player player(GameTestHelper helper) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
         player.setPos(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
         return player;

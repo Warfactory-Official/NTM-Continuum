@@ -7,6 +7,7 @@ import com.hbm.tileentity.machine.fusion.TileEntityFusionTorus;
 import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -18,27 +19,26 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The fusion torus — port of the 1.12.2 {@code RenderFusionTorus}. Three moving parts:
+ * The fusion torus, a port of the 1.12.2 {@code RenderFusionTorus}. Three moving parts:
  *
  * <ul>
  *   <li>the static <b>Torus</b> vessel,</li>
  *   <li>the <b>Magnet</b> ring, which spins at a speed the block entity ramps with stored power, and</li>
- *   <li>four <b>Bolts</b> covers, drawn only on the arms that have something attached — so a connected
+ *   <li>four <b>Bolts</b> covers, drawn only on the arms that have something attached, so a connected
  *       port visibly opens up.</li>
  * </ul>
  *
  * <p>The burning plasma is <b>three additive layers</b> over the same geometry, each scrolling at its
  * own rate: a banded base sheet, a bright travelling glow, and a sparkle field that also drifts
- * sideways. That layering <i>is</i> the plasma — the base texture alone is a set of faint grey bands,
+ * sideways. That layering <i>is</i> the plasma: the base texture alone is a set of faint grey bands,
  * so drawing it once reads as a flat block of the recipe's colour and nothing more.
  *
  * <p>1.12 draws them with {@code blendFunc(SRC_ALPHA, ONE)}, {@code depthMask(false)} and culling off,
- * scrolling each with the GL texture matrix. All three parts of that state matter and no stock render
- * type has them together, so {@link CompatRenderTypes#plasmaGlow} declares the pipeline: the blend is
- * <b>alpha-weighted</b> additive (plain {@code ONE/ONE} ignores the vertex alpha and the pulse
- * disappears), depth is tested but not written (coincident layers would otherwise z-fight and flicker),
- * and culling is off so the shell is seen from inside. The scroll is baked into the vertices, giving
- * one cached type per texture instead of a fresh one every frame.
+ * scrolling each with the GL texture matrix. No stock render type has all three, so
+ * {@link CompatRenderTypes#plasmaGlow} declares the pipeline: the blend is <b>alpha-weighted</b> additive
+ * (plain {@code ONE/ONE} ignores the vertex alpha and the pulse disappears), depth is tested but not
+ * written (coincident layers would z-fight), and culling is off so the shell is seen from inside. The
+ * scroll is baked into the vertices, giving one cached type per texture.
  */
 public class FusionTorusRenderer extends GemBER<TileEntityFusionTorus, FusionTorusRenderState> {
 
@@ -54,14 +54,14 @@ public class FusionTorusRenderer extends GemBER<TileEntityFusionTorus, FusionTor
     private final RenderType sparkleLayer;
 
     public FusionTorusRenderer() {
-        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/fusion/torus.obj"));
+        this.model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/fusion/torus.obj"));
         this.shell = Surface.cutout(Constants.MOD_ID + ":textures/models/fusion/torus.png");
         this.plasmaLayer = CompatRenderTypes.plasmaGlow(
-                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma.png"));
+                Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma.png"));
         this.glowLayer = CompatRenderTypes.plasmaGlow(
-                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma_glow.png"));
+                Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma_glow.png"));
         this.sparkleLayer = CompatRenderTypes.plasmaGlow(
-                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma_sparkle.png"));
+                Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma_sparkle.png"));
     }
 
     /** The model is fifteen blocks across; it has to keep drawing from well outside its own cell. */
@@ -117,7 +117,7 @@ public class FusionTorusRenderer extends GemBER<TileEntityFusionTorus, FusionTor
 
     /**
      * The plasma is the same shell mesh three times over with its texture scrolled by the clock, and the
-     * scroll is baked into the vertices rather than into the render type — so its triangles differ every
+     * scroll is baked into the vertices rather than into the render type, so its triangles differ every
      * frame and it has no resident form.
      */
     @Override
@@ -151,7 +151,7 @@ public class FusionTorusRenderer extends GemBER<TileEntityFusionTorus, FusionTor
                 model.renderPart("Plasma", pose, buffer, 0xF000F0, OverlayTexture.NO_OVERLAY, color, u, v, false));
     }
 
-    /** The doubled layers overshoot 1.0 deliberately; clamp on the way into the byte. */
+    /** The doubled layers overshoot 1.0; clamp on the way into the byte. */
     private static int channel(float value) {
         return Math.max(0, Math.min(255, Math.round(value * 255F)));
     }

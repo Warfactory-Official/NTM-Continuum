@@ -6,24 +6,22 @@ import dev.golem.core.dejson.Tags;
  * Every {@code c:} convention tag hbm's materials belong to, declared through Golem Core's
  * {@code dejson} vocabulary instead of written as JSON.
  *
- * <p>The {@value #FILES_REPLACED} tag files these declarations stand in for have been deleted.
- * 578 of them said the only thing a material tag usually says — that {@code c:ingots/iron} contains
- * {@code hbm:ingot_iron} — which is not a fact about iron so much as a restatement of
- * {@link MaterialShapes}, one file at a time. Those are now a single line per material listing the
- * shapes it comes in, and the item name is derived from the shape exactly as the item's own
- * registration derives it.
+ * <p>These declarations stand in for {@value #FILES_REPLACED} tag files. 578 of those said what a
+ * material tag usually says, that {@code c:ingots/iron} contains {@code hbm:ingot_iron}, which restates
+ * {@link MaterialShapes} one file at a time. Here it is a single line per material listing the shapes it
+ * comes in, and the item name is derived from the shape as the item's own registration derives it.
  *
  * <p>Those derivable lines, and the tags the registrations imply that are not derivable (an item whose
  * name does not follow its shape, {@code c:ingots/carbon} being {@code hbm:ingot_graphite}; a tag that also
  * admits a vanilla item; the {@code any_*} aggregates, which are tags of tags), are written by
- * {@code port-tools/gen_material_tags.py} into {@link ModMaterialTagsGenerated}. Re-run the generator after a
- * content wave; do not edit that class. What is left here are the tags no registration implies: dyes, tars,
- * glass, the tiny dusts named differently from their items, and the one block tag.
+ * {@code port-tools/gen_material_tags.py} into {@link ModMaterialTagsGenerated}. Re-run the generator after
+ * adding content; do not edit that class. What is left here are the tags no registration implies: dyes,
+ * tars, glass, the tiny dusts named differently from their items, and the one block tag.
  *
  * <p>{@link com.hbm.gametest.MaterialTagGameTests} is the other half: it asks the live item
- * registry which {@code <prefix>_<material>} items actually exist and fails if one of them is in no
- * tag, which is the failure this file cannot see on its own — a silently untagged item makes a
- * recipe reject a valid ingredient and nothing anywhere reports it.
+ * registry which {@code <prefix>_<material>} items exist and fails if one of them is in no tag. This
+ * file cannot see that failure itself, and a silently untagged item makes a recipe reject a valid
+ * ingredient with nothing reported.
  */
 public final class ModMaterialTags {
 
@@ -66,7 +64,7 @@ public final class ModMaterialTags {
         tag("cokes", "hbm:coke_coal", "hbm:coke_lignite", "hbm:coke_petroleum");
         tag("concretes", "hbm:concrete", "hbm:concrete_smooth", "hbm:concrete_asbestos", "hbm:ducrete",
                 "hbm:ducrete_smooth",
-                // 1.7's wildcard concrete_colored / concrete_colored_ext: one item per colour (History §19es-itemvariant)
+                // 1.7's wildcard concrete_colored / concrete_colored_ext: one item per colour
                 "hbm:concrete_white", "hbm:concrete_orange", "hbm:concrete_magenta", "hbm:concrete_light_blue", "hbm:concrete_yellow", "hbm:concrete_lime", "hbm:concrete_pink", "hbm:concrete_gray", "hbm:concrete_silver", "hbm:concrete_cyan", "hbm:concrete_purple", "hbm:concrete_blue", "hbm:concrete_brown", "hbm:concrete_green", "hbm:concrete_red", "hbm:concrete_black",
                 "hbm:concrete_ext_machine", "hbm:concrete_ext_machine_stripe", "hbm:concrete_ext_indigo", "hbm:concrete_ext_purple", "hbm:concrete_ext_pink", "hbm:concrete_ext_hazard", "hbm:concrete_ext_sand", "hbm:concrete_ext_bronze");
         tag("dusts/actinium_tiny", "hbm:powder_actinium_tiny");

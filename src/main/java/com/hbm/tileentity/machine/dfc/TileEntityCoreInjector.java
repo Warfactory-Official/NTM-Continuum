@@ -29,7 +29,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Feeds the core its two fuels down the same line the beams travel. The two identifier slots per tank
  * choose what it carries, and a core reached along the facing is topped up from whichever tank matches
- * it — or retyped to match, if the core's own tank is empty.
+ * it, or retyped to match, if the core's own tank is empty.
  */
 public class TileEntityCoreInjector extends TileEntityMachineBase
         implements MenuProvider, IFluidStandardReceiverMK2 {
@@ -95,7 +95,7 @@ public class TileEntityCoreInjector extends TileEntityMachineBase
     }
 
     /**
-     * The identifier slot pair for a tank — upstream's {@code tanks[t].setType(in, out, inventory)}: the
+     * The identifier slot pair for a tank, upstream's {@code tanks[t].setType(in, out, inventory)}: the
      * identifier retypes the tank and then passes from the in slot to the out slot, so the out slot has to
      * be free before the swap can happen.
      */

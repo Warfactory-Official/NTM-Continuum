@@ -12,13 +12,12 @@ import dev.golem.core.world.CompatFireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Digamma flame — the 1.12.2 {@code DigammaFlame}: what a DRX-wavelength FEL beam leaves behind, and
+ * Digamma flame (the 1.12.2 {@code DigammaFlame}): what a DRX-wavelength FEL beam leaves behind, and
  * the signature of digamma weaponry.
  *
- * <p>Deliberately <b>eternal</b>: {@code canDie} is false and the tick rate is 72,000 ticks (an hour),
- * so once it exists it stays. It never catches anything alight either — it does not spread, it just
- * sits there irradiating. Standing in it applies 0.05 digamma per tick, a contamination type that has
- * no cure.
+ * <p>It is <b>eternal</b>: {@code canDie} is false and the tick rate is 72,000 ticks (an hour),
+ * so once it exists it stays. It never catches anything alight and does not spread; it sits there
+ * irradiating. Standing in it applies 0.05 digamma per tick, a contamination type that has no cure.
  *
  * <p>Blast resistance 150 means explosives will not clear it; the only way to remove it is to break it.
  */
@@ -28,7 +27,7 @@ public class BlockDigammaFlame extends CompatFireBlock {
         super(properties, 1.0F, BlockDigammaFlame::new);
     }
 
-    /** Nothing is flammable to a digamma flame — it does not propagate. */
+    /** Nothing is flammable to a digamma flame: it does not propagate. */
     @Override
     protected boolean canBurn(BlockState state) {
         return false;

@@ -1,22 +1,25 @@
 package com.hbm.items.machine;
 
+import com.hbm.api.data.MachinePartDataMaps;
 import com.hbm.inventory.fluid.FluidCombustion.FuelGrade;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.List;
+import java.util.Map;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
 /**
- * Combustion-engine piston set — 1:1 port of the 1.12.2 {@code items/machine/ItemPistons}. The old
+ * Combustion-engine piston set: 1:1 port of the 1.12.2 {@code items/machine/ItemPistons}. The old
  * metadata item becomes one registered item per {@link Variant} (id {@code piston_set_<variant>}); each
  * carries a per-fuel-grade efficiency array (indexed by {@link FuelGrade}) the combustion engine reads.
  * The tooltip lists the efficiency per grade, matching the old {@code addInformation}.
  */
 public class ItemPistons extends CompatItem {
 
-    /** Old {@code EnumPistonType} — eff indexed by {@link FuelGrade#ordinal()} (LOW, MEDIUM, HIGH, AERO, GAS). */
+    /** Old {@code EnumPistonType}: eff indexed by {@link FuelGrade#ordinal()} (LOW, MEDIUM, HIGH, AERO, GAS). */
     public enum Variant {
         STEEL(1.00, 0.75, 0.25, 0.00, 0.00),
         DURA(0.50, 1.00, 0.90, 0.50, 0.00),
@@ -54,7 +57,7 @@ public class ItemPistons extends CompatItem {
      * else HBM's enum constant.
      */
     public double[] efficiency() {
-        java.util.Map<String, Double> data = com.hbm.api.data.MachinePartDataMaps.PISTON.get(this);
+        Map<String, Double> data = MachinePartDataMaps.PISTON.get(this);
         if (data == null) return variant.eff;
         double[] eff = new double[FuelGrade.values().length];
         for (FuelGrade grade : FuelGrade.values()) eff[grade.ordinal()] = data.getOrDefault(grade.name(), 0D);
@@ -63,7 +66,7 @@ public class ItemPistons extends CompatItem {
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-                                         java.util.List<Component> tooltip, TooltipFlag flag) {
+                                         List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("desc.item.pistonEfficiency").withStyle(ChatFormatting.YELLOW));
         double[] eff = efficiency();
         for (int i = 0; i < eff.length; i++) {

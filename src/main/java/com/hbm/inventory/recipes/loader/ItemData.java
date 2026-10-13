@@ -12,6 +12,7 @@ import dev.golem.core.world.ItemStacks;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -36,7 +37,7 @@ public record ItemData(Optional<FluidType> fluid, Optional<Integer> fluidAmount,
             Optional.empty(), Optional.empty());
 
     /** {@link GenericRecipeCodec#FLUID}, restated: the two classes initialise each other's codecs otherwise. */
-    private static final Codec<FluidType> FLUID = net.minecraft.core.registries.BuiltInRegistries.FLUID.byNameCodec().comapFlatMap(
+    private static final Codec<FluidType> FLUID = BuiltInRegistries.FLUID.byNameCodec().comapFlatMap(
             fluid -> {
                 FluidType type = com.hbm.inventory.fluid.Fluids.fromVanilla(fluid);
                 return type == com.hbm.inventory.fluid.Fluids.NONE && fluid != net.minecraft.world.level.material.Fluids.EMPTY

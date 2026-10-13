@@ -21,13 +21,13 @@ import org.jspecify.annotations.Nullable;
  * {@code data/hbm/recipe/ammo_press/} ({@code {"output": {"id", "count"}, "grid": [9 slots], "order": n}}; a slot is an
  * ingredient or {@code ""} for a slot that must stay empty, row by row). The press selects a recipe by its recipe id
  * ({@code hbm:ammo_press/m357_bp}) and saves that id, so a reload that adds or reorders rows never changes what a press
- * makes. Converted once from the Java port of original-hbm's 89 positional rows (each row whose items exist; 1.7's
+ * makes. Converted once from the Java port of 1.7's 89 positional rows (each row whose items exist; 1.7's
  * {@code Fluids.X.getDict(amount)} slots are {@code fluid_container} ingredients). {@code order} keeps 1.7's list order
  * for the selection screen.
  */
 public final class AmmoPressRecipes {
 
-    /** Number of positional rows in original-hbm's default Ammo Press table. */
+    /** Number of positional rows in 1.7's default Ammo Press table. */
     public static final int SOURCE_RECIPE_COUNT = 89;
 
     private AmmoPressRecipes() {}

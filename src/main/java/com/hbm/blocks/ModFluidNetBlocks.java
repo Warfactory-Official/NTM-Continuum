@@ -3,10 +3,10 @@ package com.hbm.blocks;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.blocks.fluid.BlockAcid;
+import com.hbm.blocks.fluid.ModWorldFluids;
 import com.hbm.blocks.fluid.BlockCorium;
 import com.hbm.blocks.machine.BlockFluidBarrel;
 import com.hbm.blocks.fluid.BlockRadLava;
-import com.hbm.blocks.fluid.BlockStaticFluid;
 import com.hbm.blocks.fluid.BlockSulfuricAcid;
 import com.hbm.blocks.fluid.BlockToxic;
 import com.hbm.blocks.fluid.BlockVolcanicLava;
@@ -37,7 +37,9 @@ import dev.golem.core.dejson.When;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.Compat;
+import java.util.function.Consumer;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
@@ -183,37 +185,34 @@ public final class ModFluidNetBlocks {
             p -> p.strength(5.0F, 10.0F).sound(SoundType.STONE).noOcclusion().requiresCorrectToolForDrops())
             .transform(FOUNDRY_TANK_STATES.and(SELF_PICKAXE));
 
-    // --- fluid blocks (1.7 blocks/fluid, static; see BlockStaticFluid) ---
+    // --- fluid blocks (1.7 blocks/fluid): Golem Core world fluids, declared in ModWorldFluids ---
 
-    public static final RegistryObject<BlockAcid> acid_block = REG.block("acid_block", BlockAcid::new, p -> fluid(p, 5))
-            .transform(fluidCube("acid"));
-    public static final RegistryObject<BlockToxic> toxic_block = REG.block("toxic_block", p -> new BlockToxic(p, true), p -> fluid(p, 15))
-            .transform(fluidCube("toxic"));
-    public static final RegistryObject<BlockToxic> schrabidic_block = REG.block("schrabidic_block", p -> new BlockToxic(p, true), p -> fluid(p, 0))
-            .transform(fluidCube("schrabidic_acid"));
-    public static final RegistryObject<BlockSulfuricAcid> sulfuric_acid_block = REG.block("sulfuric_acid_block", BlockSulfuricAcid::new, p -> fluid(p, 0))
-            .transform(fluidCube("sulfuric_acid"));
-    public static final RegistryObject<BlockCorium> corium_block = REG.block("corium_block", BlockCorium::new, p -> fluid(p, 10, false)) // 1.7 CoriumFinite: isReplaceable() false, no random tick
-            .transform(fluidCube("corium"));
-    public static final RegistryObject<BlockVolcanicLava> volcanic_lava_block = REG.block("volcanic_lava_block", BlockVolcanicLava::new, p -> fluid(p, 15).randomTicks())
-            .transform(fluidCube("volcanic_lava"));
-    public static final RegistryObject<BlockRadLava> rad_lava_block = REG.block("rad_lava_block", BlockRadLava::new, p -> fluid(p, 15).randomTicks())
-            .transform(fluidCube("rad_lava"));
-
-    private static BlockBehaviour.Properties fluid(BlockBehaviour.Properties p, int light) {
-        return fluid(p, light, true);
-    }
-
-    private static BlockBehaviour.Properties fluid(BlockBehaviour.Properties p, int light, boolean replaceable) {
-        // 1.7: setResistance(500), hardness 100 (BlockFluidBase), the fluid's luminosity, no drops.
-        p = p.strength(100.0F, 500.0F).noOcclusion().noLootTable().pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY);
-        if (replaceable) p = p.replaceable();
-        return light > 0 ? p.lightLevel(state -> light) : p;
-    }
+    public static final RegistryObject<BlockAcid> acid_block = REG.block("acid_block", BlockAcid::new,
+                    p -> ModWorldFluids.properties(p, ModWorldFluids.ACID, true))
+            .transform(ModWorldFluids.blockstate("acid"));
+    public static final RegistryObject<BlockToxic> toxic_block = REG.block("toxic_block",
+                    p -> new BlockToxic(p, ModWorldFluids.TOXIC, true), p -> ModWorldFluids.properties(p, ModWorldFluids.TOXIC, true))
+            .transform(ModWorldFluids.blockstate("toxic"));
+    public static final RegistryObject<BlockToxic> schrabidic_block = REG.block("schrabidic_block",
+                    p -> new BlockToxic(p, ModWorldFluids.SCHRABIDIC, true), p -> ModWorldFluids.properties(p, ModWorldFluids.SCHRABIDIC, true))
+            .transform(ModWorldFluids.blockstate("schrabidic_acid"));
+    public static final RegistryObject<BlockSulfuricAcid> sulfuric_acid_block = REG.block("sulfuric_acid_block", BlockSulfuricAcid::new,
+                    p -> ModWorldFluids.properties(p, ModWorldFluids.SULFURIC_ACID, true))
+            .transform(ModWorldFluids.blockstate("sulfuric_acid"));
+    // 1.7 CoriumFinite: isReplaceable() false
+    public static final RegistryObject<BlockCorium> corium_block = REG.block("corium_block", BlockCorium::new,
+                    p -> ModWorldFluids.properties(p, ModWorldFluids.CORIUM, false))
+            .transform(ModWorldFluids.blockstate("corium"));
+    public static final RegistryObject<BlockVolcanicLava> volcanic_lava_block = REG.block("volcanic_lava_block", BlockVolcanicLava::new,
+                    p -> ModWorldFluids.properties(p, ModWorldFluids.VOLCANIC_LAVA, true))
+            .transform(ModWorldFluids.blockstate("volcanic_lava"));
+    public static final RegistryObject<BlockRadLava> rad_lava_block = REG.block("rad_lava_block", BlockRadLava::new,
+                    p -> ModWorldFluids.properties(p, ModWorldFluids.RAD_LAVA, true))
+            .transform(ModWorldFluids.blockstate("rad_lava"));
 
     // --- block items ---
 
-    private static Reg.Handle<FluidNetBlockItem> item(RegistryObject<? extends net.minecraft.world.level.block.Block> block,
+    private static Reg.Handle<FluidNetBlockItem> item(RegistryObject<? extends Block> block,
                                                       HbmTab tab) {
         Reg.Handle<FluidNetBlockItem> item = REG.blockItem(block, FluidNetBlockItem::new, Compat::blockDescription);
         return tab != null ? item.tab(tab) : item;
@@ -227,15 +226,9 @@ public final class ModFluidNetBlocks {
                 .and(SELF_PICKAXE);
     }
 
-    /** The static fluid blocks: still texture on the ends, flowing on the sides (1.7 getIcon); no item, no drops. */
-    private static Preset fluidCube(String texture) {
-        return Presets.shape(Models.renderType("minecraft:translucent", Models.cubeBottomTop(
-                        "hbm:blocks/" + texture + "_still", "hbm:blocks/" + texture + "_flowing", "hbm:blocks/" + texture + "_still")))
-                .noItem();
-    }
 
     /** A multipart blockstate built part by part (the duct shapes the Variants vocabulary cannot say). */
-    private static Preset multipart(java.util.function.Consumer<States.MultipartFile> parts) {
+    private static Preset multipart(Consumer<States.MultipartFile> parts) {
         return handle -> {
             States.MultipartFile file = States.multipart(handle.namespace(), handle.path());
             parts.accept(file);
@@ -318,13 +311,8 @@ public final class ModFluidNetBlocks {
         item(vitrified_barrel, HbmTab.BOMBS);
         item(lox_barrel, HbmTab.BOMBS);
         item(taint_barrel, HbmTab.BOMBS);
-        // The fluid blocks have no item (1.7 setCreativeTab(null), placed by their buckets only).
+        // The fluid blocks have no item (1.7 setCreativeTab(null)): their buckets place them.
     }
 
     public static void init() {}
-
-    /** Whether {@code block} is one of the static fluid blocks (for the buckets' place check). */
-    public static boolean isFluidBlock(net.minecraft.world.level.block.Block block) {
-        return block instanceof BlockStaticFluid;
-    }
 }

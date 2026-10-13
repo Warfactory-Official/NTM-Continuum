@@ -41,7 +41,7 @@ public final class EquipReceiverHandler {
             if (!held.isEmpty() && !now.equals(before) && item instanceof IEquipReceiver receiver) {
                 receiver.onEquip(player, held);
             }
-            // old-hbm's off-hand edge (onEquip(player, OFF_HAND)); only receivers that override onEquipOffHand act on it
+            // 1.12.2's off-hand edge (onEquip(player, OFF_HAND)); only receivers that override onEquipOffHand act on it
             ItemStack off = player.getOffhandItem();
             Item offItem = off.isEmpty() ? Items.AIR : off.getItem();
             Object offNow = offItem instanceof IEquipReceiver keyed ? keyed.equipKey(off) : offItem;

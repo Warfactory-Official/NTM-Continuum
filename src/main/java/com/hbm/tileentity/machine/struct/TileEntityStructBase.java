@@ -16,12 +16,12 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * Watches for its {@link StructPattern} to be built around it and then transmutes into the finished
  * multiblock. Port of 1.12.2's {@code TileEntityWatzStruct} / {@code TileEntityFusionTorusStruct},
- * whose hand-written {@code cbr(...)} ladders are now the pattern.
+ * whose hand-written {@code cbr(...)} ladders this class replaces.
  *
  * <p>The scan runs once a second, matching upstream's {@code getTotalWorldTime() % 20}. On a match the
- * struct block becomes the multiblock's core, facing north -- assembly is not direction sensitive
- * upstream -- and the core block fills in its own cells — which necessarily overwrites the component blocks the player just built, exactly
- * as upstream does.
+ * struct block becomes the multiblock's core, facing north (assembly is not direction sensitive
+ * upstream), and the core block fills in its own cells, which necessarily overwrites the component
+ * blocks the player just built, exactly as upstream does.
  */
 public abstract class TileEntityStructBase extends TileEntityLoadedBase {
 
@@ -42,6 +42,6 @@ public abstract class TileEntityStructBase extends TileEntityLoadedBase {
         BlockMultiblockCore machine = te.target();
         BlockMultiblockCore.withoutTeardown(() ->
                 MultiblockHandlerXR.placeAssembled(level, pos, machine, Direction.NORTH));
-        // `te` no longer exists — setBlock above destroyed this BlockEntity. Touch nothing after here.
+        // `te` is gone: setBlock above destroyed this BlockEntity. Touch nothing after here.
     }
 }

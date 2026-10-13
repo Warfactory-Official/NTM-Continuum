@@ -1,10 +1,15 @@
 package com.hbm.entity.missile;
 
+import com.hbm.entity.ModNtmEntities;
 import com.hbm.explosion.ExplosionChaos;
+import com.hbm.explosion.ExplosionLarge;
+import com.hbm.explosion.ExplosionNT;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMissileItems;
+import com.hbm.particle.helper.ExplosionCreator;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -40,11 +45,11 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
     /**
      * Four nozzles, upstream's exactly.
      *
-     * <p>The offset vector is built by yawing onto the heading, pitching, and yawing straight back —
-     * which leaves a vector of length ½ perpendicular to the body — and the four trails are that
-     * vector and three shuffles of its components. The shuffles are not a clean 90° rotation (the
-     * third and fourth reuse {@code z} where {@code y} would be expected); that is upstream's, and it
-     * is kept, because what it produces is the flared four-engine plume players know.
+     * <p>The offset vector is built by yawing onto the heading, pitching, and yawing straight back,
+     * which leaves a vector of length ½ perpendicular to the body. The four trails are that vector and
+     * three shuffles of its components. The shuffles are not a clean 90° rotation (the third and fourth
+     * reuse {@code z} where {@code y} would be expected); that is upstream's and it produces the flared
+     * four-engine plume.
      */
     @Override
     protected void spawnContrail() {
@@ -62,13 +67,13 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
         public EntityMissileBurst(Level world, float x, float y, float z, int a, int b) {
             super(ModMissileEntities.MISSILE_BURST.get(), world, x, y, z, a, b);
         }
-        @Override public void onMissileImpact(HitResult hit) { this.explodeStandard(50F, 48, false); com.hbm.particle.helper.ExplosionCreator.composeEffectLarge(level(), getX(), getY(), getZ()); }
+        @Override public void onMissileImpact(HitResult hit) { this.explodeStandard(50F, 48, false); ExplosionCreator.composeEffectLarge(level(), getX(), getY(), getZ()); }
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_generic_large.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_burst.get()); }
     }
 
     /**
-     * The largest conventional warhead: a 50-power blast that leaves fire, then <em>two</em> sweeps —
+     * The largest conventional warhead: a 50-power blast that leaves fire, then <em>two</em> sweeps:
      * a 10-block one that ignites everything regardless of material, inside a 25-block one that
      * ignites what will burn.
      */
@@ -79,9 +84,9 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
         }
         @Override public void onMissileImpact(HitResult hit) {
             this.explodeStandard(50F, 48, true);
-            com.hbm.particle.helper.ExplosionCreator.composeEffectLarge(level(), getX(), getY(), getZ());
+            ExplosionCreator.composeEffectLarge(level(), getX(), getY(), getZ());
             // 1.7 Tier3:76-77, (int)-truncated centre
-            if (level() instanceof net.minecraft.server.level.ServerLevel server) {
+            if (level() instanceof ServerLevel server) {
                 ExplosionChaos.igniteAllBlocks(server, (int) getX(), (int) getY(), (int) getZ(), 10);
                 ExplosionChaos.igniteFlammableBlocks(server, (int) getX(), (int) getY(), (int) getZ(), 25);
             }
@@ -97,14 +102,14 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
             this.isCluster = true;
         }
         public EntityMissileRain(Level level, float x, float y, float z, int targetX, int targetZ) {
-            super(com.hbm.entity.ModNtmEntities.MISSILE_RAIN.get(), level, x, y, z, targetX, targetZ);
+            super(ModNtmEntities.MISSILE_RAIN.get(), level, x, y, z, targetX, targetZ);
             this.isCluster = true;
         }
 
         @Override
         public void onMissileImpact(HitResult mop) {
             level().explode(this, getX(), getY(), getZ(), 25F, Level.ExplosionInteraction.TNT);
-            com.hbm.explosion.ExplosionChaos.cluster(level(), getX(), getY(), getZ(), 100, getYRot(), getXRot(),
+            ExplosionChaos.cluster(level(), getX(), getY(), getZ(), 100, getYRot(), getXRot(),
                     (float) Math.PI * 0.25F, (float) Math.PI * 0.25F, 1F);
         }
 
@@ -123,18 +128,18 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
     public static class EntityMissileDrill extends EntityMissileTier3 {
         public EntityMissileDrill(EntityType<?> type, Level level) { super(type, level); }
         public EntityMissileDrill(Level level, float x, float y, float z, int targetX, int targetZ) {
-            super(com.hbm.entity.ModNtmEntities.MISSILE_DRILL.get(), level, x, y, z, targetX, targetZ);
+            super(ModNtmEntities.MISSILE_DRILL.get(), level, x, y, z, targetX, targetZ);
         }
 
         @Override
         public void onMissileImpact(HitResult mop) {
             // 1.7: 30 stacked ExplosionNT(10F), each with ExAttrib.ERRODE (concrete -> gravel, at 60%).
             for (int i = 0; i < 30; i++) {
-                com.hbm.explosion.ExplosionNT.explodeErode(level(), this, getX(), getY() - i, getZ(), 10F);
+                ExplosionNT.explodeErode(level(), this, getX(), getY() - i, getZ(), 10F);
             }
-            com.hbm.explosion.ExplosionLarge.spawnParticles(level(), getX(), getY(), getZ(), 25);
-            com.hbm.explosion.ExplosionLarge.spawnShrapnels(level(), getX(), getY(), getZ(), 12);
-            com.hbm.explosion.ExplosionLarge.jolt(level(), getX(), getY(), getZ(), 10, 50, 1);
+            ExplosionLarge.spawnParticles(level(), getX(), getY(), getZ(), 25);
+            ExplosionLarge.spawnShrapnels(level(), getX(), getY(), getZ(), 12);
+            ExplosionLarge.jolt(level(), getX(), getY(), getZ(), 10, 50, 1);
         }
 
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_buster_large.get()); }

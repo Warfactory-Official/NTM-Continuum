@@ -10,7 +10,7 @@ import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
 
 /**
- * {@code hbm:crust_column}: the body of 1.7 {@code HbmWorldGen.generateNether}'s two surface loops — for a column
+ * {@code hbm:crust_column}: the body of 1.7 {@code HbmWorldGen.generateNether}'s two surface loops, for a column
  * and a depth {@code d}, every netherrack block in {@code d-5 .. d} with air directly above becomes {@code state}.
  * 1.7 ran it 30 times per chunk with {@code ore_nether_smoldering} and once with {@code geysir_nether}; the column is
  * the placed feature's {@code in_square} and {@code d = 16 + rand.nextInt(96)} its uniform {@code height_range}

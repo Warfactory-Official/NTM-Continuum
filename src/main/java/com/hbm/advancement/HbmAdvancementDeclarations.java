@@ -30,8 +30,7 @@ public final class HbmAdvancementDeclarations {
     private static final String NS = "hbm";
     private static boolean declared;
 
-    /** 1.7 {@code Fluids.ASCHRAB} id, the Taste of Blood icon's fluid; held against the registry by a GameTest. */
-    /** The icon's fluid, by registry name (never a numeric fluid id, History section 19ej-ids). */
+    /** 1.7 {@code Fluids.ASCHRAB}, the Taste of Blood icon's fluid, by registry name (never a numeric id); a GameTest holds it against the registry. */
     public static final String ASCHRAB_ID = "hbm:aschrab";
     public static final int ASCHRAB_COLOR = 0xb50000;
 

@@ -1,10 +1,11 @@
 package com.hbm.inventory.container;
 
-import com.hbm.assemblyfactory.AssemblyFactoryRegistrations;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyFactory;
+import com.hbm.util.AchievementHandler;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -16,6 +17,8 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.ModMenus;
 
 /** Menu for the Assembly Factory: 60 machine slots and the 36-slot player inventory. */
 public final class ContainerMachineAssemblyFactory extends AbstractContainerMenu {
@@ -42,7 +45,7 @@ public final class ContainerMachineAssemblyFactory extends AbstractContainerMenu
     private ContainerMachineAssemblyFactory(int containerId, Inventory playerInventory,
                                             @Nullable TileEntityMachineAssemblyFactory factory,
                                             ContainerLevelAccess access) {
-        super(AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY_MENU.get(), containerId);
+        super(ModMenus.MACHINE_ASSEMBLY_FACTORY.get(), containerId);
         this.factory = factory;
         this.machine = factory != null ? factory : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
@@ -87,7 +90,7 @@ public final class ContainerMachineAssemblyFactory extends AbstractContainerMenu
     @Override
     public boolean stillValid(Player player) {
         return Containers.stillValidMultiblock(access, player,
-                AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get());
+                ModMachineBlocks.machine_assembly_factory.get());
     }
 
     @Override
@@ -162,8 +165,8 @@ public final class ContainerMachineAssemblyFactory extends AbstractContainerMenu
 
         private void onCrafting(ItemStack stack) {
             if (craftBuffer <= 0) return;
-            dev.golem.core.world.ItemStacks.onCraftedBy(stack, player, craftBuffer);
-            com.hbm.util.AchievementHandler.fire(player, stack); // 1.7 SlotCraftingOutput.checkAchievements
+            ItemStacks.onCraftedBy(stack, player, craftBuffer);
+            AchievementHandler.fire(player, stack); // 1.7 SlotCraftingOutput.checkAchievements
             craftBuffer = 0;
         }
     }

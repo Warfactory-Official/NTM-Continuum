@@ -7,6 +7,7 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -20,9 +21,9 @@ import net.minecraft.world.phys.Vec3;
 public final class RTGRenderer<T extends TileEntityLoadedBase> extends GemBER<T, RTGRenderState> {
 
     private final WavefrontObj body = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/rtg.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/rtg.obj"));
     private final WavefrontObj connector = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/rtg_connector.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/rtg_connector.obj"));
     private final Surface cell = Surface.cutoutNoCull(
             Constants.MOD_ID + ":textures/models/machines/rtg_cell.png");
     private final Surface polonium = Surface.cutoutNoCull(

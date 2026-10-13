@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine.storage;
 
+import com.hbm.items.block.ItemBlockMassStorage;
+import com.hbm.items.block.ItemBlockTemplateCrate;
 import dev.golem.core.registry.BlockTag;
 import dev.golem.core.world.Compat;
 import com.hbm.Constants;
@@ -90,8 +92,8 @@ public final class ModStorageBlocks {
         massStorageItem(MassStorageType.IRON, mass_storage_iron);
         massStorageItem(MassStorageType.DESH, mass_storage_desh);
         massStorageItem(MassStorageType.MASS, mass_storage);
-        REG.<BlockTemplateCrate, com.hbm.items.block.ItemBlockTemplateCrate>blockItem(crate_template,
-                        com.hbm.items.block.ItemBlockTemplateCrate::new, Compat::blockDescription)
+        REG.<BlockTemplateCrate, ItemBlockTemplateCrate>blockItem(crate_template,
+                        ItemBlockTemplateCrate::new, Compat::blockDescription)
                 .tab(HbmTab.MACHINES);
     }
 
@@ -127,8 +129,8 @@ public final class ModStorageBlocks {
     }
 
     private static void massStorageItem(MassStorageType type, RegistryObject<BlockMassStorage> block) {
-        REG.<BlockMassStorage, com.hbm.items.block.ItemBlockMassStorage>blockItem(block,
-                        (storage, p) -> new com.hbm.items.block.ItemBlockMassStorage(storage, p, type),
+        REG.<BlockMassStorage, ItemBlockMassStorage>blockItem(block,
+                        (storage, p) -> new ItemBlockMassStorage(storage, p, type),
                         Compat::blockDescription)
                 .tab(HbmTab.MACHINES);
     }

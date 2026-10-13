@@ -1,5 +1,12 @@
 package com.hbm.entity.logic;
 
+import com.hbm.Constants;
+import com.hbm.advancement.AwardRegions;
+import com.hbm.advancement.DetonationTrigger;
+import com.hbm.advancement.HbmCriteria;
+import com.hbm.api.environment.Environment;
+import com.hbm.saveddata.satellites.SatelliteDetector;
+import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.Tags;
 
 import dev.golem.core.data.CompatEntity;
@@ -14,6 +21,7 @@ import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.damagesource.DamageSource;
@@ -33,7 +41,7 @@ import java.util.UUID;
  * entities and advances the {@link ExplosionNukeRayBatched} crater, removing itself when the crater
  * completes. Ported from 1.12.2's {@code EntityNukeExplosionMK5}.
  *
- * <p>It carries no model — a vanilla {@code NoopRenderer} is registered for it (see
+ * <p>It carries no model: a vanilla {@code NoopRenderer} is registered for it (see
  * {@code HbmEntityRenderers}). The strength is {@code 2 * radius}; for the Fat Man that is
  * {@code 2 * 175}.
  *
@@ -45,7 +53,7 @@ import java.util.UUID;
  * <p>Like 1.12.2's {@code EntityExplosionChunkloading}, it holds its own chunk forced for as long as
  * the crater is running: a blast that outlives the player walking away must keep carving.
  *
- * <p><b>Deferred vs 1.12.2:</b> the glowing-one conversion (tick-42 seam below — the mob isn't ported),
+ * <p><b>Deferred vs 1.12.2:</b> the glowing-one conversion (tick-42 seam below: the mob isn't ported),
  * the Manhattan advancement, and the threaded explosion algorithms. The detonator is
  * tracked for those future hooks but otherwise unused.
  */
@@ -96,8 +104,8 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
     }
 
     @Override
-    protected void defineData(dev.golem.core.data.SynchedData data) {
-        // No synced data — the entity is invisible and purely server-driven.
+    protected void defineData(SynchedData data) {
+        // No synced data: the entity is invisible and purely server-driven.
     }
 
     @Override
@@ -116,8 +124,8 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
         // hbm-space CelestialNukeShockHandler.onEntityJoinWorld: announced once, on the blast's first server tick
         if (!announced) {
             announced = true;
-            if (level() instanceof net.minecraft.server.level.ServerLevel server) {
-                com.hbm.api.environment.Environment.nuclearBlast(server, getX(), getZ(), radius);
+            if (level() instanceof ServerLevel server) {
+                Environment.nuclearBlast(server, getX(), getZ(), radius);
             }
         }
 
@@ -127,9 +135,9 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
         }
 
         // 1.7 MK5.onUpdate: achManhattan for every player in the world, on every tick the blast lives
-        if (level() instanceof net.minecraft.server.level.ServerLevel server) {
-            com.hbm.advancement.AwardRegions.inLevel(server, p -> com.hbm.advancement.HbmCriteria.detonation(p,
-                    com.hbm.advancement.DetonationTrigger.Kind.NUKE));
+        if (level() instanceof ServerLevel server) {
+            AwardRegions.inLevel(server, p -> HbmCriteria.detonation(p,
+                    DetonationTrigger.Kind.NUKE));
         }
 
         double r2 = this.radius * 2.0D;
@@ -152,8 +160,8 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
         if (!initialized) {
             explosion = new ExplosionNukeRayBatched(level(), (int) getX(), (int) getY(), (int) getZ(), strength, radius);
             explosion.setDetonator(detonator);
-            com.hbm.saveddata.satellites.SatelliteDetector.reportEvent(level(), com.hbm.saveddata.satellites.SatelliteDetector.DURATION_HIGH,
-                    com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity.HIGH, getX(), getZ());
+            SatelliteDetector.reportEvent(level(), SatelliteDetector.DURATION_HIGH,
+                    SatelliteDetector.BurstIntensity.HIGH, getX(), getZ());
             initialized = true;
         }
 
@@ -161,11 +169,11 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
             explosion.update(BombConfig.mk5);
         } else {
             if (explosion instanceof ExplosionNukeRayBatched batched && batched.hasFailed()) {
-                com.hbm.Constants.LOG.error("[NUKE] blast aborted after a ray worker failure; fallout suppressed");
+                Constants.LOG.error("[NUKE] blast aborted after a ray worker failure; fallout suppressed");
                 discard();
                 return;
             }
-            com.hbm.Constants.LOG.info("[NUKE] blast entity finished at tick {}", tickCount);
+            Constants.LOG.info("[NUKE] blast entity finished at tick {}", tickCount);
             if (fallout) {
                 EntityFalloutRain rain = new EntityFalloutRain(ModEntities.FALLOUT_RAIN.get(), level());
                 rain.setPos(getX(), getY(), getZ());
@@ -255,8 +263,8 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
         strength = input.getIntOr("strength", 0);
         fallout = input.getBooleanOr("fallout", true);
         falloutAdd = input.getIntOr("falloutAdd", 0);
-        detonator = input.read("detonator", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
-        // The in-flight crater bitsets are not persisted — a blast interrupted by a save restarts.
+        detonator = input.read("detonator", UUIDUtil.CODEC).orElse(null);
+        // The in-flight crater bitsets are not persisted: a blast interrupted by a save restarts.
     }
 
     @Override
@@ -265,6 +273,6 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
         output.putInt("strength", strength);
         output.putBoolean("fallout", fallout);
         output.putInt("falloutAdd", falloutAdd);
-        if (detonator != null) output.store("detonator", net.minecraft.core.UUIDUtil.CODEC, detonator);
+        if (detonator != null) output.store("detonator", UUIDUtil.CODEC, detonator);
     }
 }

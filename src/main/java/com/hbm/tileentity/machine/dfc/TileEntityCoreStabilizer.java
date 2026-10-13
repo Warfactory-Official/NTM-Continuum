@@ -31,7 +31,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * What keeps the core from detonating. Every tick it spends {@code watts^4} HE to raise the core's field
- * to at least {@code watts}, and burns the same number of ticks off its lens doing it — so the field a
+ * to at least {@code watts}, and burns the same number of ticks off its lens doing it, so the field a
  * core can hold is bounded by how much lens the player is willing to feed it.
  *
  * <p>The thirteenth machine with a redstone-over-radio surface.

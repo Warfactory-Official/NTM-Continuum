@@ -68,8 +68,8 @@ public class ContainerMachineKeyForge extends AbstractContainerMenu {
 
     /**
      * The old {@code transferStackInSlot}, odd routing included: only the source slot (index 0) shifts
-     * out to the player; everything else — the copy and random slots as well as the player's
-     * inventory — shifts into the source slot.
+     * out to the player; everything else (the copy and random slots as well as the player's
+     * inventory) shifts into the source slot.
      */
     @Override
     public ItemStack quickMoveStack(Player player, int index) {

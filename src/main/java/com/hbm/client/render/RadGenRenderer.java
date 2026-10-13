@@ -7,6 +7,7 @@ import com.hbm.tileentity.machine.TileEntityMachineRadGen;
 import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -25,7 +26,7 @@ public final class RadGenRenderer extends GemBER<TileEntityMachineRadGen, RadGen
     private static final int GLASS_TINT = 0x4D80BFFF;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/radgen.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/radgen.obj"));
     private final Surface body = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/rad_gen_body.png");
     private final Surface glass = Surface.translucent(

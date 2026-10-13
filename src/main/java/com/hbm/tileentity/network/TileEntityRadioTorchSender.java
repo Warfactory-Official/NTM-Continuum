@@ -1,15 +1,15 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.blocks.network.RadioTorchBase;
-import com.hbm.radio.ModRadioBlockEntities;
 import dev.golem.core.world.Redstone;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.ModBlockEntities;
 
 public class TileEntityRadioTorchSender extends TileEntityRadioTorchBase {
     public TileEntityRadioTorchSender(BlockPos pos, BlockState state) {
-        super(ModRadioBlockEntities.RADIO_TORCH_SENDER.get(), pos, state);
+        super(ModBlockEntities.RADIO_TORCH_SENDER.get(), pos, state);
     }
 
     @Override

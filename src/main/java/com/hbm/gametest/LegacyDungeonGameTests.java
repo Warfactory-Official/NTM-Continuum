@@ -1,10 +1,12 @@
 package com.hbm.gametest;
 
+import com.hbm.Constants;
 import com.hbm.blocks.ModDecoCrateBlocks;
 import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.blocks.ModExplosivesBlocks;
 import com.hbm.blocks.ModRadarUtilityBlocks;
 import com.hbm.blocks.machine.SoyuzCapsule;
+import com.hbm.config.DungeonConfig;
 import com.hbm.tileentity.bomb.TileEntityLandmine;
 import com.hbm.tileentity.deco.TileEntityLanternBehemoth;
 import com.hbm.tileentity.machine.storage.TileEntityCrateBase;
@@ -15,6 +17,8 @@ import com.hbm.world.gen.LegacyDungeonStructure;
 import com.hbm.world.gen.LegacyDungeonStructure.Kind;
 import com.hbm.world.gen.LegacyDungeonWorld;
 import com.hbm.world.gen.component.LegacyBlock;
+import java.util.EnumMap;
+import java.util.function.BiPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -44,7 +48,7 @@ public final class LegacyDungeonGameTests {
     private LegacyDungeonGameTests() {}
 
     /** Ground (stone) below {@code surface}, air above; {@code water} columns hold water instead of the top 3 blocks. */
-    static LegacyDungeonWorld.Terrain flat(int surface, java.util.function.BiPredicate<Integer, Integer> water) {
+    static LegacyDungeonWorld.Terrain flat(int surface, BiPredicate<Integer, Integer> water) {
         return new LegacyDungeonWorld.Terrain() {
             @Override
             public LegacyBlock block(int x, int y, int z) {
@@ -83,7 +87,7 @@ public final class LegacyDungeonGameTests {
     /** Every builder on a flat site writes its landmark blocks, the same way twice; a wet site gets nothing. */
     public static void builders(GameTestHelper helper) {
         LegacyDungeonWorld.Terrain land = flat(70, (x, z) -> false);
-        Map<Kind, LegacyBlock> landmark = new java.util.EnumMap<>(Kind.class);
+        Map<Kind, LegacyBlock> landmark = new EnumMap<>(Kind.class);
         landmark.put(Kind.ANTENNA, ModBlocks.pole_top);
         landmark.put(Kind.DESERT_ATOM, ModBlocks.crashed_balefire);
         landmark.put(Kind.LIBRARY_DUNGEON, Blocks.mob_spawner);
@@ -129,7 +133,7 @@ public final class LegacyDungeonGameTests {
         LegacyDungeonWorld.Terrain wet = flat(70, (x, z) -> true);
         helper.assertTrue(LegacyDungeonStructure.simulate(Kind.ANTENNA, 0, 70, 0, 42L, wet).size() == 0, "no antenna on water");
         helper.assertTrue(LegacyDungeonStructure.simulate(Kind.DESERT_ATOM, 0, 70, 0, 42L, wet).size() == 0, "no power plant on water");
-        com.hbm.Constants.LOG.info("[WG-D] legacy dungeon runs: {}", sizes);
+        Constants.LOG.info("[WG-D] legacy dungeon runs: {}", sizes);
         helper.succeed();
     }
 
@@ -177,18 +181,18 @@ public final class LegacyDungeonGameTests {
     /** Each scattered block with its 1.7 setup: locked filled safe, armed mines, broken lantern, rusted capsule with a record. */
     public static void features(GameTestHelper helper) {
         // the test server's world has Generate Structures off, which 1.7's enableDungeons flag (2) follows
-        int flag = com.hbm.config.DungeonConfig.enableDungeons;
-        com.hbm.config.DungeonConfig.enableDungeons = 1;
+        int flag = DungeonConfig.enableDungeons;
+        DungeonConfig.enableDungeons = 1;
         try {
             featuresEnabled(helper);
         } finally {
-            com.hbm.config.DungeonConfig.enableDungeons = flag;
+            DungeonConfig.enableDungeons = flag;
         }
     }
 
     private static void featuresEnabled(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        net.minecraft.world.level.block.state.BlockState stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        BlockState stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
         for (int x = 0; x < 12; x++) for (int z = 0; z < 5; z++) level.setBlock(helper.absolutePos(new BlockPos(x, 1, z)), stone, 3);
 
         BlockPos safePos = helper.absolutePos(new BlockPos(1, 2, 1));

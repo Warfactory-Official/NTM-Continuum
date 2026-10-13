@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
+import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -9,6 +10,7 @@ import com.hbm.inventory.material.Mats;
 import com.hbm.items.ModAutogenItems;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityWatz;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.Containers;
@@ -24,12 +26,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /**
- * One segment of the Watz power plant — a cross whose arms reach three blocks out on each horizontal
+ * One segment of the Watz power plant: a cross whose arms reach three blocks out on each horizontal
  * axis, three blocks tall. Segments stack every three blocks; the bottom one runs the simulation for
  * the whole column (see {@link TileEntityWatz}).
  *
  * <p>The footprint is not a box, so it is built from five overlapping {@link MultiblockHandlerXR}
- * passes — the base dimensions plus four with negative extents that carve the arms — exactly as
+ * passes: the base dimensions plus four with negative extents that carve the arms, exactly as
  * upstream. Nine cells are promoted to ports: the four arm tips at core level and at +2, plus the
  * centre-top cell.
  *
@@ -75,13 +77,13 @@ public class Watz extends BlockMultiblockMachine implements IFluidConnectorBlock
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         // Not while a sub-level system carries the reactor: it lives on at the new position and must not drop its kit.
-        if (!level.isClientSide() && !state.getValue(CELL) && drop && !dev.golem.core.world.SubLevels.isMoving(level)) {
+        if (!level.isClientSide() && !state.getValue(CELL) && drop && !SubLevels.isMoving(level)) {
             drop(level, pos, new ItemStack(ModMachineBlocks.watz_casing_tooled.get(), 48));
             for (int i = 0; i < 3; i++) {
                 drop(level, pos, new ItemStack(ModAutogenItems.get(MaterialShapes.BOLT, Mats.MAT_DURA), 64));
             }
-            drop(level, pos, new ItemStack(com.hbm.blocks.ModBlocks.watz_element.get(), 36));
-            drop(level, pos, new ItemStack(com.hbm.blocks.ModBlocks.watz_cooler.get(), 26));
+            drop(level, pos, new ItemStack(ModBlocks.watz_element.get(), 36));
+            drop(level, pos, new ItemStack(ModBlocks.watz_cooler.get(), 26));
             drop(level, pos, new ItemStack(ModMachineBlocks.struct_watz_core.get(), 1));
         }
         super.onBlockRemoved(state, level, pos, movedByPiston);

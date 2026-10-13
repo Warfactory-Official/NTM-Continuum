@@ -12,6 +12,8 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityHeaterHeatex;
 import com.hbm.util.TickPhase;
 import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.net.GolemBuffers;
+import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -155,7 +157,7 @@ public final class HeatexGameTests {
         original.amountToCool = 321;
         original.tickDelay = 17;
 
-        var buffer = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
+        var buffer = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         original.serialize(buffer);
         TileEntityHeaterHeatex copy = new TileEntityHeaterHeatex(BlockPos.ZERO,
                 ModMachineBlocks.heater_heatex.get().defaultBlockState());

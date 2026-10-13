@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.packet.ControlEventPayload;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
@@ -26,7 +27,7 @@ import com.hbm.tileentity.network.TileEntityCraneBoxer;
 /** 1.7 {@code GUICraneBoxer}. */
 public class GUICraneBoxer extends CompatContainerScreen<ContainerCraneBoxer> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_crane_boxer.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_crane_boxer.png");
 
     public GUICraneBoxer(ContainerCraneBoxer menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 185);

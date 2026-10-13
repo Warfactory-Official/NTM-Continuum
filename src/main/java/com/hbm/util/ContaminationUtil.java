@@ -1,6 +1,13 @@
 package com.hbm.util;
 
+import com.hbm.entity.mob.EntityCreeperNuclear;
+import com.hbm.entity.mob.EntityDuck;
+import com.hbm.entity.mob.EntityQuackos;
+import dev.golem.core.hook.Hook;
+import dev.golem.core.hook.Verdict;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.Effects;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.hbm.api.event.HbmEvents;
@@ -17,6 +24,7 @@ import com.hbm.interfaces.IRadiationImmune;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.potion.ModEffects;
 import com.hbm.items.ModDataComponents;
+import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -55,7 +63,7 @@ public class ContaminationUtil {
      * Calculates how much radiation can be applied to this entity by calculating resistance.
      */
     public static double calculateRadiationMod(LivingEntity entity) {
-        if (dev.golem.core.world.Effects.hasRegistered(entity, ModEffects.MUTATION.get())) return 0D;
+        if (Effects.hasRegistered(entity, ModEffects.MUTATION.get())) return 0D;
         double mult = 1D;
         // TODO(compat): per-entity RAD_MULT_KEY persistent-data multiplier
 
@@ -66,11 +74,11 @@ public class ContaminationUtil {
     /** Extra geiger counter lines, printed after the player's contamination. */
     @FunctionalInterface
     public interface GeigerLines {
-        void lines(Player player, java.util.function.Consumer<Component> out);
+        void lines(Player player, Consumer<Component> out);
     }
 
     /** Plain HBM registers none (H-82); NTM: Space prints hbm-space's "Player radioactivity" (neutron activation). */
-    public static final dev.golem.core.hook.Hook<GeigerLines> GEIGER_LINES = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<GeigerLines> GEIGER_LINES = Hook.notifying();
 
     /**
      * 1.7 {@code printGeigerData}: chunk radiation, the environmental radiation buffer (RAD/s of the last second, not
@@ -105,7 +113,7 @@ public class ContaminationUtil {
         String resPrefix = "" + ChatFormatting.WHITE;
         if (resKoeff > 0) resPrefix += ChatFormatting.GREEN;
 
-        List<Component> out = new java.util.ArrayList<>();
+        List<Component> out = new ArrayList<>();
         out.add(line(ChatFormatting.GOLD, Component.literal("===== ☢ ")
                 .append(Component.translatable("geiger.title")).append(Component.literal(" ☢ ====="))));
         out.add(line(ChatFormatting.YELLOW, Component.translatable("geiger.chunkRad")
@@ -223,7 +231,7 @@ public class ContaminationUtil {
         return HazardSystem.getRawRadsFromStack(stack) > 0;
     }
 
-    /** Neutron activation reads — data-component based; system is config-off, kept minimal. */
+    /** Neutron activation reads, data-component based; system is config-off, kept minimal. */
     public static float getNeutronRads(ItemStack stack) {
         if (stack.isEmpty() || isRadItem(stack)) return 0F;
         return ModDataComponents.NEUTRON_ACTIVATION.getOr(stack, 0F) * stack.getCount();
@@ -288,21 +296,21 @@ public class ContaminationUtil {
      * does not {@code PASS} decides ({@code ALLOW} immune, {@code DENY} not). HBM registers none. NTM: Space: hbm-space
      * dropped the ocelot (and so the cat) from the list.
      */
-    public static final dev.golem.core.hook.Hook<java.util.function.Function<Entity, dev.golem.core.hook.Verdict>> RAD_IMMUNE =
-            dev.golem.core.hook.Hook.notifying();
+    public static final Hook<java.util.function.Function<Entity, Verdict>> RAD_IMMUNE =
+            Hook.notifying();
 
     public static boolean isRadImmune(Entity e) {
         if (e instanceof LivingEntity living &&
-                dev.golem.core.world.Effects.hasRegistered(living, ModEffects.MUTATION.get())) return true;
-        for (java.util.function.Function<Entity, dev.golem.core.hook.Verdict> listener : RAD_IMMUNE) {
-            dev.golem.core.hook.Verdict verdict = listener.apply(e);
-            if (verdict == dev.golem.core.hook.Verdict.ALLOW) return true;
-            if (verdict == dev.golem.core.hook.Verdict.DENY) return false;
+                Effects.hasRegistered(living, ModEffects.MUTATION.get())) return true;
+        for (java.util.function.Function<Entity, Verdict> listener : RAD_IMMUNE) {
+            Verdict verdict = listener.apply(e);
+            if (verdict == Verdict.ALLOW) return true;
+            if (verdict == Verdict.DENY) return false;
         }
         // 1.7 immuneEntities (nuclear creeper, mooshroom, zombie, skeleton, quackos, ocelot, IRadiationImmune); the
         // cat (1.7's tamed ocelot), the undead horses and armour stands are the port's additions.
-        return e instanceof com.hbm.entity.mob.EntityCreeperNuclear
-                || e instanceof com.hbm.entity.mob.EntityQuackos
+        return e instanceof EntityCreeperNuclear
+                || e instanceof EntityQuackos
                 || e instanceof MushroomCow
                 || e instanceof Zombie
                 || e instanceof AbstractSkeleton
@@ -375,7 +383,7 @@ public class ContaminationUtil {
         if (!(e instanceof LivingEntity entity))
             return;
 
-        if (e instanceof com.hbm.entity.mob.EntityDuck || e instanceof Ocelot || e instanceof Cat)
+        if (e instanceof EntityDuck || e instanceof Ocelot || e instanceof Cat)
             return;
 
         if (entity instanceof Player player && (player.isCreative() || player.isSpectator()))
@@ -384,7 +392,7 @@ public class ContaminationUtil {
         if (e instanceof Player && e.tickCount < 200)
             return;
 
-        if (dev.golem.core.world.Effects.hasRegistered(entity, ModEffects.STABILITY.get())) return;
+        if (Effects.hasRegistered(entity, ModEffects.STABILITY.get())) return;
 
         if (!(entity instanceof Player player && ArmorUtil.checkForDigamma(player)))
             HbmLivingProps.incrementDigamma(entity, f);
@@ -454,7 +462,7 @@ public class ContaminationUtil {
                 fireDmg /= (float) (dmgLen * dmgLen * res * res);
                 if (fireDmg > 0.025) {
                     Compat.hurt(e, serverLevel, serverLevel.damageSources().inFire(), fireDmg);
-                    dev.golem.core.world.Effects.ignite(e, 5);
+                    Effects.ignite(e, 5);
                 }
             }
 

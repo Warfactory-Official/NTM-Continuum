@@ -11,6 +11,7 @@ import com.hbm.items.special.ItemBedrockOreGraded;
 import com.hbm.items.special.ItemBedrockOreGraded.Grade;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.EnumMap;
@@ -39,7 +40,7 @@ public final class ModBedrockOreItems {
     static {
         for (Grade grade : Grade.values()) {
             if (grade == Grade.BASE) continue;
-            Map<BedrockOreType, RegistryObject<ItemBedrockOreGraded>> byType = new java.util.concurrent.ConcurrentHashMap<>();
+            Map<BedrockOreType, RegistryObject<ItemBedrockOreGraded>> byType = new ConcurrentHashMap<>();
             for (BedrockOreType type : BedrockOreType.VALUES) {
                 byType.put(type, REG.item(id(grade, type), p -> new ItemBedrockOreGraded(p, grade, type))
                         .icon(d -> EnergyBedrockDeclarations.gradeModel(d, grade.name().toLowerCase(Locale.ROOT),

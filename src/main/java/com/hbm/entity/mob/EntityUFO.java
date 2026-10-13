@@ -1,5 +1,6 @@
 package com.hbm.entity.mob;
 
+import com.hbm.particle.helper.HbmEffectNT;
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatMob;
@@ -15,6 +16,7 @@ import com.hbm.sound.ModSounds;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
+import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.network.chat.Component;
@@ -238,7 +240,7 @@ public class EntityUFO extends CompatMob implements Enemy, IRadiationImmune {
             if (!canTarget(entity)) continue;
 
             Compat.hurt(entity, level, ModDamageSources.source(level, ModDamageSources.COMBINE, this, entity), 1000F);
-            dev.golem.core.world.Effects.ignite(entity, 5);
+            Effects.ignite(entity, 5);
 
             if (entity instanceof LivingEntity living) {
                 ContaminationUtil.contaminate(living, HazardType.RADIATION, ContaminationType.CREATIVE, 5F);
@@ -247,8 +249,8 @@ public class EntityUFO extends CompatMob implements Enemy, IRadiationImmune {
 
         // 1.7: two still muke clouds a tick at the beam's foot, one half a tick ahead along the motion (150 blocks)
         Vec3 motion = getDeltaMovement();
-        com.hbm.particle.helper.HbmEffectNT.Ufo.send(level, getX(), groundY + 0.5, getZ(), null, 150D);
-        com.hbm.particle.helper.HbmEffectNT.Ufo.send(level, getX() + motion.x * 0.5, groundY + 0.5,
+        HbmEffectNT.Ufo.send(level, getX(), groundY + 0.5, getZ(), null, 150D);
+        HbmEffectNT.Ufo.send(level, getX() + motion.x * 0.5, groundY + 0.5,
                 getZ() + motion.z * 0.5, null, 150D);
     }
 

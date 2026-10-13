@@ -7,6 +7,7 @@ import dev.golem.core.world.ArmorSlot;
 import com.hbm.lib.ModDamageSources;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.GolemArmorMaterial;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -24,7 +25,7 @@ public class ArmorBJ extends ArmorFSBPowered {
     public void armorTick(Level level, Player player, ItemStack stack) {
         super.armorTick(level, player, stack);
         if (this != ModArmorItems.bj_helmet.get() || !ArmorFSB.hasFSBArmorIgnoreCharge(player)
-                || ArmorFSB.hasFSBArmor(player) || !(level instanceof net.minecraft.server.level.ServerLevel server)) return;
+                || ArmorFSB.hasFSBArmor(player) || !(level instanceof ServerLevel server)) return;
 
         ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
         if (helmet.isEmpty()) return;

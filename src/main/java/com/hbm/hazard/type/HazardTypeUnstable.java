@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 /**
  * Timed self-detonating items (old {@code HazardTypeUnstable}). The old class carried a per-stack NBT
  * timer that spawned a {@code EntityNukeExplosionMK5} when it ran out; no ported item uses it yet, so
- * the behaviour is a stub kept for API shape — port the timer/detonation when the first unstable item
+ * the behaviour is a stub kept for API shape; port the timer/detonation when the first unstable item
  * (e.g. the Solinium grenade chain) lands.
  */
 public class HazardTypeUnstable implements IHazardType {

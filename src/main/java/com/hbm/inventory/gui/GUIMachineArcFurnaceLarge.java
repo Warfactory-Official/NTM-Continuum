@@ -3,27 +3,34 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerMachineArcFurnaceLarge;
 import com.hbm.inventory.material.Mats;
 import com.hbm.packet.ControlEventPayload;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.machine.TileEntityMachineArcFurnaceLarge;
+import dev.golem.core.Ids;
+import dev.golem.core.client.KeyMappings;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * 1.7.10 {@code GUIMachineArcFurnaceLarge} ({@code processing/gui_arc_furnace.png}, 176x256), with solid/liquid
  * toggle and stacked molten output. Not reproduced: 1.7's second additive (SRC_ALPHA, ONE) 30%-white pass over
  * each molten layer, which needs a tinted additive blit Core does not offer yet.
  */
-public class GUIMachineArcFurnaceLarge extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineArcFurnaceLarge>
+public class GUIMachineArcFurnaceLarge extends CompatContainerScreen<ContainerMachineArcFurnaceLarge>
         implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm",
+    private static final Identifier TEXTURE = Ids.of("hbm",
             "textures/gui/processing/gui_arc_furnace.png");
 
     public GUIMachineArcFurnaceLarge(ContainerMachineArcFurnaceLarge menu, Inventory inventory, Component title) {
@@ -80,7 +87,7 @@ public class GUIMachineArcFurnaceLarge extends dev.golem.core.gui.CompatContaine
         TileEntityMachineArcFurnaceLarge furnace = menu.getFurnace();
         if (furnace == null) return;
         if (GuiUtil.hover(mouseX, mouseY, leftPos + 152, topPos + 36, 16, 70)) {
-            boolean shift = dev.golem.core.client.KeyMappings.isKeyDown(org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT);
+            boolean shift = KeyMappings.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT);
             List<Component> lines = new ArrayList<>();
             if (furnace.liquids.isEmpty()) lines.add(Component.literal(ChatFormatting.RED + "Empty"));
             for (Mats.MaterialStack material : furnace.liquids) lines.add(Component.literal(ChatFormatting.YELLOW
@@ -92,12 +99,12 @@ public class GUIMachineArcFurnaceLarge extends dev.golem.core.gui.CompatContaine
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         TileEntityMachineArcFurnaceLarge furnace = menu.getFurnace();
         // 1.7 checkClick(x, y, 151, 17, 18, 18): x [151,169), y (17,35].
         if (furnace != null && GuiUtil.hover(event.x(), event.y(), leftPos + 151, topPos + 17, 18, 18)) {
             GuiUtil.playClickSound();
-            net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+            CompoundTag data = new CompoundTag();
             data.putBoolean("liquid", true);
             GolemNetwork.sendToServer(ControlEventPayload.CODEC,
                     new ControlEventPayload(furnace.getBlockPos(), data));
@@ -106,7 +113,7 @@ public class GUIMachineArcFurnaceLarge extends dev.golem.core.gui.CompatContaine
         return false;
     }
 
-    @Override public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    @Override public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return menu.getFurnace();
     }
 }

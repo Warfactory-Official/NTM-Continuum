@@ -1,10 +1,12 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerTurretBase;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.turret.TileEntityTurretArty;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import com.hbm.tileentity.turret.TileEntityTurretHIMARS;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
@@ -35,7 +37,7 @@ import net.minecraft.world.item.ItemStack;
 public final class GUITurretBase extends CompatContainerScreen<ContainerTurretBase> {
 
     private static final Identifier FALLBACK_TEXTURE =
-            dev.golem.core.Ids.of("hbm", "textures/gui/weapon/gui_turret_base.png");
+            Ids.of("hbm", "textures/gui/weapon/gui_turret_base.png");
 
     private static final int SWITCH_X = 115, SWITCH_Y = 26, SWITCH_SIZE = 18;
     private static final int MODE_X = 151, MODE_Y = 16, MODE_SIZE = 18;
@@ -116,7 +118,7 @@ public final class GUITurretBase extends CompatContainerScreen<ContainerTurretBa
 
     /** 1.7 {@code GUITurretFritz}: {@code tank.renderTank(guiLeft + 134, guiTop + 115, z, 7, 52)}; only the Fritz has one. */
     private void drawTank(GuiGraphicsExtractor graphics, TileEntityTurretBaseNT turret) {
-        com.hbm.inventory.fluid.tank.FluidTankNTM tank = turret.turretTank();
+        FluidTankNTM tank = turret.turretTank();
         if (tank == null || tank.getMaxFill() <= 0) return;
         GuiUtil.tank(graphics, tank, this.leftPos + TANK_X, this.topPos + TANK_Y + TANK_H, TANK_W, TANK_H);
     }
@@ -207,7 +209,7 @@ public final class GUITurretBase extends CompatContainerScreen<ContainerTurretBa
             return;
         }
 
-        com.hbm.inventory.fluid.tank.FluidTankNTM tank = turret.turretTank();
+        FluidTankNTM tank = turret.turretTank();
         if (tank != null && over(TANK_X, TANK_Y, TANK_W, TANK_H, mouseX, mouseY)) {
             GuiUtil.tooltip(graphics, this.font, GuiUtil.tankTooltip(tank), mouseX, mouseY);
         }

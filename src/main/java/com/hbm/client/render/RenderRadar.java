@@ -3,6 +3,7 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -19,7 +20,7 @@ public final class RenderRadar extends GemBER<TileEntityMachineRadarNT, RenderRa
         public float rotation;
     }
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/radar.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/machines/radar.obj"));
     private final Surface base = Surface.cutoutNoCull(Constants.MOD_ID + ":textures/models/machines/radar_base.png");
     private final Surface dish = Surface.cutoutNoCull(Constants.MOD_ID + ":textures/models/machines/radar_dish.png");
 

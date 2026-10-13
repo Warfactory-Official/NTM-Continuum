@@ -19,9 +19,9 @@ import com.hbm.config.TerrainConfig;
 /**
  * 1.7 {@code BlockMush} ({@code mush}): the glowing mushroom of the nuclear wasteland. Stays on any block
  * with a solid top (Forge's {@code canSustainPlant} for a Cave plant) or on the waste blocks, but only
- * spreads onto the waste set ({@code canMushGrowHere}); spreads to nearby waste ground on its random tick (one in 25, at most two other
- * mushrooms in range), turns the dead grass under it into glowing mycelium when the config allows, and
- * bonemeal (40%) grows it into the huge mushroom.
+ * spreads onto the waste set ({@code canMushGrowHere}). On its random tick (one in 25, at most two other
+ * mushrooms in range) it spreads to nearby waste ground and turns the dead grass under it into glowing
+ * mycelium when the config allows. Bonemeal (40%) grows it into the huge mushroom.
  */
 public class BlockMush extends BlockTerrainPlant implements CompatBonemealableBlock {
 
@@ -49,13 +49,13 @@ public class BlockMush extends BlockTerrainPlant implements CompatBonemealableBl
     @Override
     protected boolean canStay(BlockState state, LevelReader level, BlockPos pos) {
         if (pos.getY() < level.getMinY() || pos.getY() > level.getMaxY()) return false;
-        // 1.7 canBlockStay: Forge's canSustainPlant for EnumPlantType.Cave is isSideSolid(UP) — any solid top — OR the waste set
+        // 1.7 canBlockStay: Forge's canSustainPlant for EnumPlantType.Cave is isSideSolid(UP), which is any solid top, OR the waste set
         BlockPos below = pos.below();
         BlockState ground = level.getBlockState(below);
         return ground.isFaceSturdy(level, below, Direction.UP) || canMushGrowOn(ground);
     }
 
-    // ---------------------------------------------------------------- growth
+    // Growth
 
     @Override
     public boolean canBonemeal(LevelReader level, BlockPos pos, BlockState state) {
@@ -132,7 +132,7 @@ public class BlockMush extends BlockTerrainPlant implements CompatBonemealableBl
         }
     }
 
-    /** Placement of the huge glowing mushroom ({@code com.hbm.world.feature.HugeMush}, verbatim). */
+    /** Placement of the huge glowing mushroom ({@code com.hbm.world.feature.HugeMush}, unchanged). */
     public static final class HugeMush {
         private HugeMush() {}
 

@@ -1,14 +1,18 @@
 package com.hbm.items.special;
 
+import com.hbm.items.ModArmorSetBItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMedicineItems;
 import com.hbm.potion.ModEffects;
 import com.hbm.sound.ModSounds;
+import com.hbm.util.EnchantmentUtil;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.Effects;
+import dev.golem.core.world.Sounds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -64,7 +68,7 @@ public final class ItemSimpleConsumable extends CompatItem {
         switch (id) {
             case "iv_empty" -> {
                 giveSoundAndDecrement(level, player, hand, ModSounds.SYRINGE.get(),
-                        com.hbm.items.ModArmorSetBItems.iv_blood.get());
+                        ModArmorSetBItems.iv_blood.get());
                 player.setHealth(Math.max(player.getHealth() - 5F, 0F));
                 if (player.getHealth() <= 0) player.die(player.damageSources().magic());
             }
@@ -73,18 +77,18 @@ public final class ItemSimpleConsumable extends CompatItem {
                 player.heal(5F);
             }
             case "iv_xp_empty" -> {
-                if (com.hbm.util.EnchantmentUtil.getTotalExperience(player) >= 100) {
+                if (EnchantmentUtil.getTotalExperience(player) >= 100) {
                     giveSoundAndDecrement(level, player, hand, ModSounds.SYRINGE.get(),
-                            com.hbm.items.ModArmorSetBItems.iv_xp.get());
-                    com.hbm.util.EnchantmentUtil.setExperience(player,
-                            com.hbm.util.EnchantmentUtil.getTotalExperience(player) - 100);
+                            ModArmorSetBItems.iv_xp.get());
+                    EnchantmentUtil.setExperience(player,
+                            EnchantmentUtil.getTotalExperience(player) - 100);
                 }
             }
             case "iv_xp" -> {
                 giveSoundAndDecrement(level, player, hand,
-                        dev.golem.core.world.Sounds.minecraft("entity.experience_orb.pickup"),
-                        com.hbm.items.ModArmorSetBItems.iv_xp_empty.get());
-                com.hbm.util.EnchantmentUtil.addExperience(player, 100, false);
+                        Sounds.minecraft("entity.experience_orb.pickup"),
+                        ModArmorSetBItems.iv_xp_empty.get());
+                EnchantmentUtil.addExperience(player, 100, false);
             }
             default -> {
                 return false;
@@ -95,7 +99,7 @@ public final class ItemSimpleConsumable extends CompatItem {
 
     /** 1.7 {@code giveSoundAndDecrement}: one fewer, the sound at the user, the container back. */
     private static void giveSoundAndDecrement(ServerLevel level, Player player, InteractionHand hand,
-                                              net.minecraft.sounds.SoundEvent sound, Item container) {
+                                              SoundEvent sound, Item container) {
         level.playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS, 1.0F, 1.0F);
         shrinkAndReplace(player, hand, container);
     }

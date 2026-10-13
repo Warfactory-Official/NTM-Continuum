@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -16,6 +17,9 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import dev.golem.core.world.ItemStacks;
+import java.util.HashMap;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -35,8 +39,8 @@ import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Recipes;
 
 /**
- * Electric Furnace — a functional powered smelter. It draws HE from adjacent power networks (and a
- * battery item in slot 0) and smelts vanilla furnace recipes (slot 1 → slot 2), consuming power per
+ * Electric Furnace: a functional powered smelter. It draws HE from adjacent power networks (and a
+ * battery item in slot 0) and smelts vanilla furnace recipes (slot 1 -> slot 2), consuming power per
  * tick. Faithful port of the 1.12.2 {@code TileEntityMachineElectricFurnace}.
  *
  * <p>Slots: 0 battery, 1 input, 2 output, 3 upgrade (SPEED/POWER, 1.12.2 formulas on the base
@@ -86,7 +90,7 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
 
         if (level.getGameTime() % 40 == 0) { // 1.7 updateConnections every 40 ticks (the net keeps a subscriber 3 s)
-            for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+            for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
                 te.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
             }
         }
@@ -125,7 +129,7 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
         }
 
         // Drive the LIT block state (lit while smelting), matching the old off/on block swap. The LIT state
-        // is only RE-EVALUATED when `trigger` holds — crucially NOT on the completion tick where progress
+        // is only RE-EVALUATED when `trigger` holds, crucially NOT on the completion tick where progress
         // has just reset to 0 but smelting will continue (canProcess && hasPower, progress==0): there
         // `trigger` is false, so the state is left ON and doesn't flicker off for one tick. (Faithful to the
         // 1.12.2 `trigger = !hasPower || !canProcess || progress != 0` gate.)
@@ -147,7 +151,7 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
 
         ItemStack outSlot = inventory.getStackInSlot(2);
         if (outSlot.isEmpty()) return true;
-        if (!dev.golem.core.world.ItemStacks.sameItemAndData(outSlot, result)) return false;
+        if (!ItemStacks.sameItemAndData(outSlot, result)) return false;
         return outSlot.getCount() + result.getCount() <= outSlot.getMaxStackSize();
     }
 
@@ -161,7 +165,7 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
         inventory.getStackInSlot(1).shrink(1);
     }
 
-    // --- WorldlyContainer: hoppers extract the output (slot 2) or a drained battery (slot 0); insert a
+    // WorldlyContainer: hoppers extract the output (slot 2) or a drained battery (slot 0); insert a
     // battery (0) / smeltable (1). Restricts the "hopper underneath takes from every slot" behaviour. ---
 
     @Override
@@ -192,7 +196,7 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
         };
     }
 
-    // --- IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo) ---
+    // IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo)
 
     @Override
     protected int[] getUpgradeSlotRange() {
@@ -205,7 +209,7 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
     }
 
     @Override
-    public void provideInfo(UpgradeType type, int level, java.util.List<Component> info, boolean extendedInfo) {
+    public void provideInfo(UpgradeType type, int level, List<Component> info, boolean extendedInfo) {
         info.add(IUpgradeInfoProvider.getStandardLabel(ModMachineBlocks.machine_electric_furnace_off.get()));
         if (type == UpgradeType.SPEED) {
             info.add(Component.translatable(KEY_DELAY, "-" + (level * 25) + "%").withStyle(ChatFormatting.GREEN));
@@ -218,14 +222,14 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
     }
 
     @Override
-    public java.util.HashMap<UpgradeType, Integer> getValidUpgrades() {
-        java.util.HashMap<UpgradeType, Integer> upgrades = new java.util.HashMap<>();
+    public HashMap<UpgradeType, Integer> getValidUpgrades() {
+        HashMap<UpgradeType, Integer> upgrades = new HashMap<>();
         upgrades.put(UpgradeType.SPEED, 3);
         upgrades.put(UpgradeType.POWER, 3);
         return upgrades;
     }
 
-    // --- IEnergyReceiverMK2 ---
+    // IEnergyReceiverMK2
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
@@ -237,7 +241,7 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
     public boolean hasPower() { return power >= consumption; }
     public boolean isProcessing() { return progress > 0; }
 
-    // --- MenuProvider ---
+    // MenuProvider
 
     @Override
     public Component getDisplayName() {
@@ -249,7 +253,7 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
         return new ContainerMachineElectricFurnace(containerId, playerInventory, this);
     }
 
-    // --- sync (BufPacket) + persistence ---
+    // Sync (BufPacket) + persistence
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

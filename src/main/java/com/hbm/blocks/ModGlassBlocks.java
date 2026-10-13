@@ -13,14 +13,17 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import java.util.function.Supplier;
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * HBM's glass family (1.12.2 {@code BlockNTMGlass}, 12 variants).
  *
- * <p>{@code glass_quartz}, {@code glass_boron}, and {@code glass_lead} landed in earlier waves. The
- * remaining nine full-block variants are registered here against {@link BlockNTMGlass}.
+ * <p>The remaining nine full-block variants are registered here against {@link BlockNTMGlass}.
  */
 public final class ModGlassBlocks {
 
@@ -31,7 +34,7 @@ public final class ModGlassBlocks {
     private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
     /**
-     * Quartz glass — hardness 1, blast resistance 40, and it <b>drops itself</b> (the old
+     * Quartz glass: hardness 1, blast resistance 40, and it <b>drops itself</b> (the old
      * {@code doesDrop = true}), unlike vanilla glass. Not rad-resistant.
      */
     public static final RegistryObject<BlockNTMGlass> glass_quartz = REG.block("glass_quartz",
@@ -108,9 +111,9 @@ public final class ModGlassBlocks {
         return REG.block(id, p -> new BlockRadResistant(p) {
                     // 1.7 BlockNTMGlassCT is a BlockBreakable(.., false): faces against the same glass are not drawn
                     @Override
-                    public boolean skipRendering(net.minecraft.world.level.block.state.BlockState state,
-                                                 net.minecraft.world.level.block.state.BlockState adjacent,
-                                                 net.minecraft.core.Direction side) {
+                    public boolean skipRendering(BlockState state,
+                                                 BlockState adjacent,
+                                                 Direction side) {
                         return adjacent.is(this) || super.skipRendering(state, adjacent, side);
                     }
                 },
@@ -119,7 +122,7 @@ public final class ModGlassBlocks {
     }
 
     private static Reg.Handle<BlockNTMGlass> glass(String id, boolean drops, boolean radResistant,
-                                                        float hardness, float resistance, java.util.function.Supplier<SoundType> sound, int light,
+                                                        float hardness, float resistance, Supplier<SoundType> sound, int light,
                                                         HbmTab tab) {
         Reg.Handle<BlockNTMGlass> block = REG.block(id, p -> new BlockNTMGlass(p, radResistant),
                 p -> p.strength(hardness, resistance).sound(sound.get()).lightLevel(s -> light).noOcclusion()
@@ -128,11 +131,11 @@ public final class ModGlassBlocks {
         return block;
     }
 
-    private static void blockItem(String id, RegistryObject<? extends net.minecraft.world.level.block.Block> block) {
+    private static void blockItem(String id, RegistryObject<? extends Block> block) {
         blockItem(id, block, HbmTab.BLOCKS);
     }
 
-    private static void blockItem(String id, RegistryObject<? extends net.minecraft.world.level.block.Block> block,
+    private static void blockItem(String id, RegistryObject<? extends Block> block,
                                   HbmTab tab) {
         Reg.Handle<BlockItem> item = REG.blockItem(block, p -> Compat.blockDescription(p));
         ModTabs.addTo(tab, item);

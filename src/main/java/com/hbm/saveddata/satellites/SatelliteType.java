@@ -4,6 +4,7 @@ import com.hbm.api.registry.NamedRegistry;
 import com.hbm.itempool.ItemPools;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import dev.golem.core.data.Codecs;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -46,7 +47,7 @@ public final class SatelliteType {
      * being built, and would see null.
      */
     public static final Codec<Satellite> DISPATCH_CODEC =
-            dev.golem.core.data.Codecs.dispatch(CODEC, "type", Satellite::type, SatelliteType::codec);
+            Codecs.dispatch(CODEC, "type", Satellite::type, SatelliteType::codec);
 
     private final String name;
     private final Supplier<? extends Satellite> factory;

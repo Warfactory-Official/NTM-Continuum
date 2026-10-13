@@ -1,5 +1,8 @@
 package com.hbm.entity.item;
 
+import com.hbm.entity.ModNtmEntities;
+import dev.golem.core.data.Tags;
+import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.CompatFallingEntity;
 import com.hbm.blocks.machine.ISpotlight;
@@ -42,9 +45,9 @@ public class EntityFallingBlockNT extends CompatFallingEntity {
         super(type, level);
     }
 
-    // 26.2: FallingBlockEntity's state constructor hard-codes EntityTypes.FALLING_BLOCK.
+    // 26.1: FallingBlockEntity's state constructor hard-codes EntityTypes.FALLING_BLOCK.
     public static EntityFallingBlockNT fall(ServerLevel level, BlockPos pos, BlockState state) {
-        EntityFallingBlockNT entity = new EntityFallingBlockNT(com.hbm.entity.ModNtmEntities.FALLING_BLOCK_NT.get(), level);
+        EntityFallingBlockNT entity = new EntityFallingBlockNT(ModNtmEntities.FALLING_BLOCK_NT.get(), level);
         entity.setCarriedBlockState(state.hasProperty(BlockStateProperties.WATERLOGGED)
                 ? state.setValue(BlockStateProperties.WATERLOGGED, false)
                 : state);
@@ -61,7 +64,7 @@ public class EntityFallingBlockNT extends CompatFallingEntity {
 
     @Override
     public void tick() {
-        // 26.2: FallingBlockEntity.tick body retained
+        // 26.1: FallingBlockEntity.tick body retained
         if (this.getBlockState().isAir() || this.getBlockState().getBlock() instanceof ISpotlight) {
             // 1.7: spotlight sources are never valid falling entities.
             this.discard();
@@ -125,7 +128,7 @@ public class EntityFallingBlockNT extends CompatFallingEntity {
                             }
 
                             if (this.level().setBlock(pos, this.getBlockState(), 3)) {
-                                dev.golem.core.world.Compat.sendToTrackingPlayers(this,
+                                Compat.sendToTrackingPlayers(this,
                                         new ClientboundBlockUpdatePacket(pos, this.level().getBlockState(pos)));
                                 this.discard();
                                 if (block instanceof Fallable fallable) {
@@ -137,10 +140,10 @@ public class EntityFallingBlockNT extends CompatFallingEntity {
                                     if (blockEntity != null) {
                                         try {
                                             RegistryAccess registryAccess = this.level().registryAccess();
-                                            CompoundTag merged = dev.golem.core.registry.BlockEntities
+                                            CompoundTag merged = BlockEntities
                                                     .saveWithoutMetadata(blockEntity, registryAccess);
-                                            dev.golem.core.data.Tags.forEach(this.blockData, (name, tag) -> merged.put(name, tag.copy()));
-                                            dev.golem.core.registry.BlockEntities.loadWithComponents(blockEntity,
+                                            Tags.forEach(this.blockData, (name, tag) -> merged.put(name, tag.copy()));
+                                            BlockEntities.loadWithComponents(blockEntity,
                                                     merged, registryAccess);
                                         } catch (Exception exception) {
                                             LOGGER.error("Failed to load block entity from falling block", exception);

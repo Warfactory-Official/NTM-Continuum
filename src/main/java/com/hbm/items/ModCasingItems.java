@@ -15,7 +15,7 @@ import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
 
-/** Every identity from original-hbm's metadata-backed {@code casing} item. */
+/** Every identity from 1.7's metadata-backed {@code casing} item. */
 public final class ModCasingItems {
 
     private ModCasingItems() {}

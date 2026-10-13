@@ -9,8 +9,8 @@ import net.minecraft.sounds.SoundSource;
 
 /**
  * The electric heater's hum loop (the 1.12.2 {@code electricHum} AudioWrapper at volume 0.25). A
- * tickable client sound bound to one heater that stops itself once the heater stops. Client-only —
- * only constructed from {@link HeaterSoundHandler}.
+ * tickable client sound bound to one heater that stops itself once the heater stops. Client-only; only
+ * {@link HeaterSoundHandler} constructs it.
  */
 public class HeaterLoopSound extends AbstractTickableSoundInstance {
 

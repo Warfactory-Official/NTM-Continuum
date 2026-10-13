@@ -16,6 +16,7 @@ import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Variants;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import java.util.List;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -78,7 +79,7 @@ public final class ModNuclearBlocks {
     }
 
     static {
-        for (RegistryObject<? extends Block> block : java.util.List.of(ore_uranium, ore_uranium_scorched,
+        for (RegistryObject<? extends Block> block : List.of(ore_uranium, ore_uranium_scorched,
                 ore_gneiss_uranium, ore_gneiss_uranium_scorched, ore_nether_uranium, ore_nether_uranium_scorched)) {
             REG.blockItem(block).tab(HbmTab.RESOURCES);
         }

@@ -1,6 +1,8 @@
 package com.hbm.inventory.container;
 
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.inventory.SlotCraftingOutput;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineGasCent;
@@ -47,7 +49,7 @@ public class ContainerMachineGasCent extends AbstractContainerMenu {
 
         for (int row = 0; row < 2; row++) {
             for (int column = 0; column < 2; column++) {
-                addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, column + row * 2, 71 + column * 18, 53 + row * 18)); // 1.7 SlotCraftingOutput
+                addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, column + row * 2, 71 + column * 18, 53 + row * 18)); // 1.7 SlotCraftingOutput
             }
         }
         addSlot(validated(4, 182, 71));
@@ -86,7 +88,7 @@ public class ContainerMachineGasCent extends AbstractContainerMenu {
     @Override
     public boolean stillValid(Player player) {
         return Containers.stillValidMultiblock(access, player,
-                com.hbm.blocks.machine.ModMachineBlocks.machine_gascent.get());
+                ModMachineBlocks.machine_gascent.get());
     }
 
     @Override

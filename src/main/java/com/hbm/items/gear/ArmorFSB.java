@@ -12,20 +12,28 @@ import com.hbm.sound.ModSounds;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ArmorRegistry.HazardClass;
 import com.hbm.util.ContaminationUtil;
+import com.hbm.util.DamageResistanceHandler;
+import com.hbm.util.ShadyUtil;
+import dev.golem.core.render.Worn;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatArmorItem;
 import dev.golem.core.world.CompatTooltipContext;
+import dev.golem.core.world.DamageEvents;
 import dev.golem.core.world.Effects;
 import dev.golem.core.world.GolemArmorMaterial;
 import dev.golem.core.world.Attributes;
 import com.hbm.items.armor.ItemModInsert;
 import com.hbm.util.TickPhase;
+import dev.golem.core.world.StepHeight;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Supplier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -33,46 +41,48 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Full-set-bonus armour — the base every modelled HBM suit is built on.
+ * Full-set-bonus armour: the base every modelled HBM suit is built on.
  *
  * <p>Ported 1:1 from 1.12.2 {@code com.hbm.items.gear.ArmorFSB}. The idea is that a suit does nothing
  * special piece by piece: wear <em>all four</em> pieces of the same material and the chestplate's
- * configuration switches on for the whole set — potion effects re-applied every tick, radiation
- * resistance, hazard-class protection, footstep sounds, the hard-landing shockwave.
+ * configuration switches on for the whole set. That covers potion effects re-applied every tick, radiation
+ * resistance, hazard-class protection, footstep sounds and the hard-landing shockwave.
  *
  * <p>Set identity is <b>material equality</b>, not an item tag. Upstream compared {@code ArmorMaterial}
- * enum constants; here the same job is done by comparing {@link GolemArmorMaterial} instances by
- * reference, which is why each suit must declare exactly one material object and share it across its
- * four pieces.
+ * enum constants; here {@link GolemArmorMaterial} instances are compared by reference, so each suit must
+ * declare exactly one material object and share it across its four pieces.
  *
- * <p>Two deliberate departures from the old class, both because the target API moved:
+ * <p>Two departures from the 1.12.2 class, both because the target API differs:
  * <ul>
- * <li>The old constructor took a vanilla armour-layer <b>texture path</b>. From 26.1 that is the
- *     material's equipment asset, so the parameter is gone. Upstream passed a dummy path
- *     ({@code starmetal_1.png}) for every modelled suit anyway — the real body came from the OBJ model.
- * <li>{@code onArmorTick} does not exist as an override any more ({@code Item.inventoryTick} is
- *     server-only from 26.1, and the old hook has no cross-loader equivalent). The per-tick work is
- *     driven from {@code EntityEffectHandler}, which the {@code MixinLivingEntity} tick injection runs
- *     on both sides — see {@link #armorTick}.
+ * <li>There is no armour-layer <b>texture path</b> parameter: from 26.1 that is the material's equipment
+ *     asset. Upstream passed a dummy path ({@code starmetal_1.png}) for every modelled suit anyway; the real
+ *     body came from the OBJ model.
+ * <li>{@code onArmorTick} is not an override ({@code Item.inventoryTick} is server-only from 26.1 and the
+ *     1.12.2 hook has no cross-loader equivalent). The per-tick work is driven from
+ *     {@code EntityEffectHandler}, which the {@code MixinLivingEntity} tick injection runs on both sides; see
+ *     {@link #armorTick}.
  * </ul>
  */
 public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFillableItem {
 
     /** The material this piece belongs to. Set membership is reference equality on this object. */
     public final GolemArmorMaterial material;
-    /** Which piece this is. Needed because 26.1 no longer exposes a slot from the item. */
+    /** Which piece this is. Needed because 26.1 does not expose a slot from the item. */
     public final ArmorSlot slot;
 
     public List<MobEffectInstance> effects = new ArrayList<>();
@@ -166,13 +176,13 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
         return fill;
     }
 
-    // ---------------------------------------------------------------- set detection
+    // Set detection
 
     /**
      * Whether {@code entity} is wearing a complete, <em>working</em> set.
      *
      * <p>Every armour slot must hold an {@link ArmorFSB} of the chestplate's material and must answer
-     * {@link #isArmorEnabled} — which is how "out of power" disables a powered suit's bonuses without
+     * {@link #isArmorEnabled}, which is how "out of power" disables a powered suit's bonuses without
      * unequipping anything. The head slot is skipped for suits declaring {@link #setNoHelmet}.
      */
     public static boolean hasFSBArmor(Player entity) {
@@ -202,11 +212,11 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
     /**
      * As {@link #hasFSBArmorIgnoreCharge(Player)}, from the worn stacks alone.
      *
-     * <p>The renderer has no entity to ask from 26.1 on — it is handed a render state — so the set check
+     * <p>The renderer has no entity to ask from 26.1 on. It is handed a render state, so the set check
      * has to be expressible over just the four stacks. This is that form; the {@link Player} overload
-     * simply reads the slots and delegates.
+     * reads the slots and delegates.
      */
-    public static boolean hasFSBArmorIgnoreCharge(dev.golem.core.render.Worn worn) {
+    public static boolean hasFSBArmorIgnoreCharge(Worn worn) {
         if (!(worn.chest().getItem() instanceof ArmorFSB chestplate)) return false;
 
         for (ArmorSlot slot : ArmorSlot.values()) {
@@ -253,9 +263,8 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
     /**
      * A suit's own HUD, drawn after the standard charge bars. Upstream's {@code handleOverlay}.
      *
-     * <p>Empty here and overridden by suits that replace the vanilla readouts wholesale — HEV's
-     * Half-Life-style HP/armour/rad panel is the one that exists. That body arrives with the HEV suit;
-     * this is the seam it plugs into. Note that upstream calls its version <b>twice</b> per frame (once
+     * <p>Empty here and overridden by suits that replace the vanilla readouts wholesale, such as HEV's
+     * Half-Life-style HP/armour/rad panel. Upstream calls its version <b>twice</b> per frame (once
      * either side of the screen shake), which anything implementing it has to tolerate.
      *
      * <p>Called on the client only.
@@ -265,7 +274,7 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
     public void handleOverlay(Object graphics, Player player) {
     }
 
-    // ---------------------------------------------------------------- per-tick behaviour
+    // Per-tick behaviour
 
     /**
      * The set's per-tick work, driven from {@code EntityEffectHandler} for the chest slot.
@@ -280,14 +289,14 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
 
         // 1.7: the_NCR and Pheo always walk with the powered step while wearing any FSB chestplate (1.7 only called
         // handleTick for one), in place of the suit's own. 1.7 compared a UUID with a String here, so it never fired;
-        // fixed as old-hbm did (user decision, 2026-10-06).
+        // fixed as 1.12.2 did.
         boolean step = true;
-        if (com.hbm.util.ShadyUtil.is(player.getUUID(), com.hbm.util.ShadyUtil.the_NCR)
-                || com.hbm.util.ShadyUtil.is(player.getUUID(), com.hbm.util.ShadyUtil.Barnaby99_x)) {
+        if (ShadyUtil.is(player.getUUID(), ShadyUtil.the_NCR)
+                || ShadyUtil.is(player.getUUID(), ShadyUtil.Barnaby99_x)) {
             step = false;
-            if (player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).getItem() instanceof ArmorFSB
+            if (player.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof ArmorFSB
                     && player.level().isClientSide() && player.onGround()) {
-                steppy(player, com.hbm.sound.ModSounds.STEP_POWERED.get());
+                steppy(player, ModSounds.STEP_POWERED.get());
             }
         }
 
@@ -299,9 +308,9 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
         for (MobEffectInstance effect : chestplate.effects) {
             Object kind = effect.getEffect();
             // visible = false hides the particles (upstream's intent); showIcon = true keeps the status
-            // icon, which 1.12's five-argument PotionEffect also did. Letting showIcon follow visible —
-            // which the modern five-argument constructor does — makes a working set bonus indisting-
-            // uishable from a broken one.
+            // icon, which 1.12's five-argument PotionEffect also did. The modern five-argument constructor
+            // lets showIcon follow visible, which would make a working set bonus indistinguishable from a
+            // broken one.
             player.addEffect(Effects.instance(kind, effect.getDuration(), effect.getAmplifier(),
                     effect.isAmbient(), false, true));
         }
@@ -322,8 +331,8 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
     private static void updateStepSize(Player player) {
         ArmorFSB plate = chestplate(player);
         int size = plate != null && hasFSBArmor(player) ? plate.stepSize : 0;
-        if (size > 0) dev.golem.core.world.StepHeight.set(player, "hbm:armor_step_size", size + 0.003D);
-        else dev.golem.core.world.StepHeight.clear(player, "hbm:armor_step_size");
+        if (size > 0) StepHeight.set(player, "hbm:armor_step_size", size + 0.003D);
+        else StepHeight.clear(player, "hbm:armor_step_size");
     }
 
     private static void updateInsertSpeed(Player player) {
@@ -346,13 +355,13 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
      * seeded from vanilla's {@code nextStepDistance} field, so the suit's step tracks vanilla's without
      * consuming it. That field is <b>private</b> from 1.20 on, so the port keeps the equivalent counter
      * itself and reproduces vanilla's rule directly: step when {@code moveDist} passes the threshold,
-     * then set the threshold to {@code (int) moveDist + 1} — which is verbatim {@code Entity.nextStep()}.
+     * then set the threshold to {@code (int) moveDist + 1}, which matches {@code Entity.nextStep()}.
      * Same cadence, no access widener.
      *
      * <p>Client-side only, so the map never needs to persist and is keyed by player rather than stored
      * on the stack.
      */
-    private static final java.util.Map<java.util.UUID, Float> NEXT_STEP = new java.util.HashMap<>();
+    private static final Map<UUID, Float> NEXT_STEP = new HashMap<>();
 
     private static void steppy(Player player, SoundEvent sound) {
         float next = NEXT_STEP.getOrDefault(player.getUUID(), 1.0F);
@@ -377,19 +386,19 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
     }
 
     /** Damage hook implemented by suits whose legacy class intercepted LivingAttackEvent. */
-    public void handleAttack(dev.golem.core.world.DamageEvents.DamageEvent event) {
+    public void handleAttack(DamageEvents.DamageEvent event) {
     }
 
     /** Damage hook implemented by suits whose legacy class mutated LivingHurtEvent. */
-    public void handleHurt(dev.golem.core.world.DamageEvents.DamageEvent event) {
+    public void handleHurt(DamageEvents.DamageEvent event) {
     }
 
     /**
      * The hard-landing shockwave: a heavy suit landing from height throws everything nearby away.
      *
-     * <p>Constants are upstream's, unchanged — trigger above {@code fallDistance > 10}, a box inflated by
+     * <p>Constants are upstream's, unchanged. Trigger above {@code fallDistance > 10}, a box inflated by
      * 3 on X/Z only, and within a <em>horizontal</em> radius of 3 an impulse and damage that both scale
-     * with {@code 3 - distance}. Note the sign: {@code vec} points from the target to the player, so
+     * with {@code 3 - distance}. The sign matters: {@code vec} points from the target to the player, so
      * multiplying by {@code -2} pushes outward.
      */
     public static void handleFall(Player player, float fallDistance) {
@@ -427,7 +436,7 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
      * The geiger click a suit with a built-in counter makes, every 5 ticks from the chest slot.
      *
      * <p>Suppressed while the player is carrying a hand-held counter, so the two do not stack. The
-     * overlapping-threshold table is upstream's verbatim: several bands can match one dose and one of
+     * overlapping-threshold table is upstream's unchanged: several bands can match one dose and one of
      * them is picked at random, which is what makes the clicking irregular rather than metronomic.
      */
     public void armorTick(Level level, Player entity, ItemStack stack) {
@@ -452,28 +461,28 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
         int r = list.get(level.getRandom().nextInt(list.size()));
         if (r > 0) {
             level.playSound(null, entity.blockPosition(), ModSounds.GEIGER_SOUNDS[r - 1].get(),
-                    net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+                    SoundSource.PLAYERS, 1.0F, 1.0F);
         }
     }
 
     /** Whether the player is carrying a hand-held counter, which suppresses the suit's own clicking. */
     private static boolean carriesCounter(Player player) {
-        net.minecraft.world.entity.player.Inventory inventory = player.getInventory();
+        Inventory inventory = player.getInventory();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
-            net.minecraft.world.item.Item item = inventory.getItem(i).getItem();
+            Item item = inventory.getItem(i).getItem();
             if (item == ModGearItems.geiger_counter.get() || item == ModGearItems.dosimeter.get()) return true;
         }
         return false;
     }
 
-    // ---------------------------------------------------------------- model hiding
+    // Model hiding
 
     @Override
-    public boolean disablesPart(dev.golem.core.render.Worn worn, ItemStack stack, EnumPlayerPart part) {
+    public boolean disablesPart(Worn worn, ItemStack stack, EnumPlayerPart part) {
         return hidden.contains(part) && (!needsFullSet || hasFSBArmorIgnoreCharge(worn));
     }
 
-    // ---------------------------------------------------------------- builder
+    // Builder
 
     public ArmorFSB setHides(EnumPlayerPart... parts) {
         Collections.addAll(hidden, parts);
@@ -560,7 +569,7 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
      *
      * <p>1.12.2 needed a subclass per suit purely to override {@code getArmorModel}; here the worn model
      * is looked up by name in {@code ArmorRenderers}, so a suit that adds no behaviour needs no class of
-     * its own. Suits that <i>do</i> add behaviour — HEV's HUD, DNT's damage handling — still get one.
+     * its own. Suits that <i>do</i> add behaviour (HEV's HUD, DNT's damage handling) still get one.
      */
     public ArmorFSB setArmorModel(String armorModel) {
         this.armorModel = armorModel;
@@ -603,8 +612,8 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
      * Copies the helmet's configuration onto the other three pieces.
      *
      * <p>Upstream declares the whole set's behaviour on the helmet and clones it; the port keeps that so
-     * the numbers live in exactly one place. The effects list is shared rather than copied — it is never
-     * mutated after construction, which is upstream's own reasoning.
+     * the numbers live in one place. The effects list is shared, not copied, because it is never mutated after
+     * construction (upstream's own reasoning).
      */
     public ArmorFSB cloneStats(ArmorFSB original) {
         this.effects = original.effects;
@@ -621,11 +630,11 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
         this.fall = original.fall;
         this.armorModel = original.armorModel;
         this.setRadResist(original.radResist);
-        // The overlay is deliberately not copied: it is a helmet-only, fullscreen effect.
+        // The overlay is not copied: it is a helmet-only, fullscreen effect.
         return this;
     }
 
-    // ---------------------------------------------------------------- tooltip
+    // Tooltip
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
@@ -654,7 +663,7 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
             tooltip.addAll(toAdd);
         }
 
-        com.hbm.util.DamageResistanceHandler.addInfo(stack, tooltip);
+        DamageResistanceHandler.addInfo(stack, tooltip);
     }
 
     private static Component bonus(String key, ChatFormatting color, Object... args) {

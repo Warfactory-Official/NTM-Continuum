@@ -7,7 +7,7 @@ import java.util.Map;
  * The client's table of particle creators, keyed by the effect name that travels on the wire.
  *
  * <p>Client only. Upstream keeps both a set of named constants and a string map; both are kept here
- * because they serve different callers — HBM code that spawns an effect directly uses the constant,
+ * because they serve different callers. HBM code that spawns an effect directly uses the constant,
  * while the packet handler resolves by name.
  */
 public final class ParticleCreators {

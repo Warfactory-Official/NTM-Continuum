@@ -1,8 +1,7 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.radio.ModRadioBlockEntities;
-import com.hbm.radio.RadioTelexMenu;
+import com.hbm.inventory.container.RadioTelexMenu;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -27,6 +26,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.hbm.tileentity.ModBlockEntities;
 
 /**
  * The complete server-side TELEX state machine, ported from 1.12.2's {@code TileEntityRadioTelex}.
@@ -58,10 +58,10 @@ public class TileEntityRadioTelex extends TileEntityLoadedBase implements IContr
     public static final char CLEAR = '\u007f';
 
     public TileEntityRadioTelex(BlockPos pos, BlockState state) {
-        super(ModRadioBlockEntities.RADIO_TELEX.get(), pos, state);
+        super(ModBlockEntities.RADIO_TELEX.get(), pos, state);
     }
 
-    /** Runs on the server ticker. The order is intentionally send first, then receive, then sync. */
+    /** Runs on the server ticker. The order is send first, then receive, then sync. */
     public void serverTick() {
         if (level == null || level.isClientSide()) return;
 
@@ -152,7 +152,7 @@ public class TileEntityRadioTelex extends TileEntityLoadedBase implements IContr
         super.deserialize(buffer);
         for (int i = 0; i < LINE_COUNT; i++) {
             txBuffer[i] = buffer.readUtf(LINE_WIDTH);
-            // RX lines are appended from the radio stream and were unbounded in old-hbm.
+            // RX lines are appended from the radio stream and were unbounded in 1.12.2.
             rxBuffer[i] = buffer.readUtf();
         }
         txChannel = buffer.readUtf(CHANNEL_LENGTH);

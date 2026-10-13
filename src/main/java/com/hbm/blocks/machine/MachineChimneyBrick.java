@@ -1,6 +1,5 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.smoke.SmokeChainRegistration;
 import com.hbm.tileentity.machine.TileEntityChimneyBase;
 import com.hbm.tileentity.machine.TileEntityChimneyBrick;
 import net.minecraft.core.BlockPos;

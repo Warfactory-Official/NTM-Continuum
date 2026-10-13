@@ -1,10 +1,10 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.assemblyfactory.AssemblyFactoryRegistrations;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.MachineAssemblyFactory;
 import com.hbm.inventory.container.ContainerMachineAssemblyFactory;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModUpgradeItems;
@@ -15,12 +15,17 @@ import com.hbm.tileentity.machine.TileEntityMachineAssemblyFactory;
 import com.hbm.tileentity.machine.AssemblyFactoryArmLayout;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.net.GolemBuffers;
+import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import com.hbm.blocks.machine.ModMachineBlocks;
 
 /** Focused contracts for the four-lane Assembly Factory leaf. */
 public final class AssemblyFactoryGameTests {
@@ -41,7 +46,7 @@ public final class AssemblyFactoryGameTests {
 
     public static void layoutAndPorts(GameTestHelper helper) {
         TileEntityMachineAssemblyFactory factory = place(helper, new BlockPos(10, 1, 10));
-        MachineAssemblyFactory block = AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get();
+        MachineAssemblyFactory block = ModMachineBlocks.machine_assembly_factory.get();
         BlockPos core = factory.getBlockPos();
 
         helper.assertTrue(factory.getContainerSize() == 60 && factory.getConPos().length == 16 // 1.7.10: 16 ports
@@ -53,7 +58,7 @@ public final class AssemblyFactoryGameTests {
         for (DirPos port : factory.getCoolPos()) assertPort(helper, block, core, port);
         DirPos coolant = factory.getCoolPos()[0];
         BlockPos coolantCell = coolant.getPos().relative(coolant.getDir().toDirection().getOpposite());
-        helper.assertFalse(block.canConnect(com.hbm.inventory.fluid.Fluids.OIL, helper.getLevel(),
+        helper.assertFalse(block.canConnect(Fluids.OIL, helper.getLevel(),
                         coolantCell.getX(), coolantCell.getY(), coolantCell.getZ(), coolant.getDir()),
                 "Assembly Factory coolant proxy accepted a non-water fluid");
 
@@ -63,8 +68,8 @@ public final class AssemblyFactoryGameTests {
             Container container = block.getContainer(helper.getLevel().getBlockState(cell), helper.getLevel(), cell);
             helper.assertTrue(container != null && container.getContainerSize() == 60,
                     "Assembly Factory recipe-field proxy lost its inventory");
-            int[] slots = ((net.minecraft.world.WorldlyContainer) container)
-                    .getSlotsForFace(net.minecraft.core.Direction.NORTH);
+            int[] slots = ((WorldlyContainer) container)
+                    .getSlotsForFace(Direction.NORTH);
             helper.assertTrue(slots.length == 16 && slots[0] == TileEntityMachineAssemblyFactory.inputStart(lane)
                             && slots[12] == TileEntityMachineAssemblyFactory.outputSlot(0)
                             && slots[15] == TileEntityMachineAssemblyFactory.outputSlot(3),
@@ -81,7 +86,7 @@ public final class AssemblyFactoryGameTests {
                 "Assembly Factory port cell does not resolve to its core: " + cell);
         helper.assertTrue(block.canConnect(helper.getLevel(), cell, port.getDir()),
                 "Assembly Factory power/coolant port does not connect: " + port.getPos());
-        helper.assertTrue(block.canConnect(com.hbm.inventory.fluid.Fluids.WATER, helper.getLevel(),
+        helper.assertTrue(block.canConnect(Fluids.WATER, helper.getLevel(),
                         cell.getX(), cell.getY(), cell.getZ(), port.getDir()),
                 "Assembly Factory fluid port does not connect: " + port.getPos());
     }
@@ -159,9 +164,9 @@ public final class AssemblyFactoryGameTests {
         TileEntityMachineAssemblyFactory factory = place(helper, new BlockPos(10, 1, 10));
         factory.assemblerModule[0].recipe = "ass.firecloth";
         factory.assemblerModule[0].progress = 0.625D;
-        factory.inputTanks[0].setTankType(com.hbm.inventory.fluid.Fluids.WATER);
+        factory.inputTanks[0].setTankType(Fluids.WATER);
         factory.inputTanks[0].setFill(123);
-        factory.outputTanks[0].setTankType(com.hbm.inventory.fluid.Fluids.OXYGEN);
+        factory.outputTanks[0].setTankType(Fluids.OXYGEN);
         factory.outputTanks[0].setFill(456);
         factory.water.setFill(789);
         factory.lps.setFill(321);
@@ -169,14 +174,14 @@ public final class AssemblyFactoryGameTests {
         factory.maxPower = 2_000_000L;
         factory.didProcess[0] = true;
 
-        var buffer = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
+        var buffer = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         factory.serialize(buffer);
         TileEntityMachineAssemblyFactory copy = new TileEntityMachineAssemblyFactory(BlockPos.ZERO,
-                AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get().defaultBlockState());
+                ModMachineBlocks.machine_assembly_factory.get().defaultBlockState());
         copy.deserialize(buffer);
-        helper.assertTrue(copy.inputTanks[0].getTankType() == com.hbm.inventory.fluid.Fluids.WATER
+        helper.assertTrue(copy.inputTanks[0].getTankType() == Fluids.WATER
                         && copy.inputTanks[0].getFill() == 123
-                        && copy.outputTanks[0].getTankType() == com.hbm.inventory.fluid.Fluids.OXYGEN
+                        && copy.outputTanks[0].getTankType() == Fluids.OXYGEN
                         && copy.outputTanks[0].getFill() == 456
                         && copy.water.getFill() == 789 && copy.lps.getFill() == 321
                         && copy.power == 987_654L && copy.maxPower == 2_000_000L
@@ -266,7 +271,7 @@ public final class AssemblyFactoryGameTests {
 
     private static TileEntityMachineAssemblyFactory place(GameTestHelper helper, BlockPos relative) {
         BlockPos absolute = helper.absolutePos(relative);
-        MachineAssemblyFactory block = AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get();
+        MachineAssemblyFactory block = ModMachineBlocks.machine_assembly_factory.get();
         FoldedTestSupport.assemble(helper, block, relative);
         TileEntityMachineAssemblyFactory factory = GameTestHelpers.blockEntity(helper, relative,
                 TileEntityMachineAssemblyFactory.class);

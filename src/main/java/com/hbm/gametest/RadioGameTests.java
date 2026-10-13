@@ -1,8 +1,9 @@
 package com.hbm.gametest;
 
+import com.hbm.Constants;
+import com.hbm.blocks.network.RadioTorchBase;
 import com.hbm.packet.HbmPackets;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.radio.ModRadioBlocks;
 import com.hbm.tileentity.network.RTTYSystem;
 import com.hbm.tileentity.network.TileEntityRadioTorchReceiver;
 import com.hbm.tileentity.network.TileEntityRadioTorchReader;
@@ -14,7 +15,10 @@ import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedstoneLampBlock;
@@ -23,6 +27,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Map;
+import com.hbm.blocks.machine.ModMachineBlocks;
 
 /** Behavioral contracts for the shared Redstone-over-Radio bus and sender/receiver pair. */
 public final class RadioGameTests {
@@ -33,7 +38,7 @@ public final class RadioGameTests {
     private static final String TRANSFER_CHANNEL = "hbm-gametest-radio-transfer";
     private static final String STALE_CHANNEL = "hbm-gametest-radio-stale";
 
-    public static final GameTests.Suite TESTS = GameTests.suite(com.hbm.Constants.MOD_ID);
+    public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
     public static final GameTests.Function BUS = TESTS.function(
             "radio_bus", 40, 8, () -> RadioGameTests::busDelayAccumulationAndDimension);
     public static final GameTests.Function TRANSFER = TESTS.function(
@@ -53,11 +58,11 @@ public final class RadioGameTests {
 
     public static void init() {}
 
-    private static void busDelayAccumulationAndDimension(net.minecraft.gametest.framework.GameTestHelper helper) {
+    private static void busDelayAccumulationAndDimension(GameTestHelper helper) {
         Level level = helper.getLevel();
         RTTYSystem.clearChannel(level, BUS_CHANNEL);
         RTTYSystem.clearChannel(level, DIMENSION_CHANNEL);
-        net.minecraft.resources.ResourceKey<Level> other = level.dimension() == Level.OVERWORLD
+        ResourceKey<Level> other = level.dimension() == Level.OVERWORLD
                 ? Level.NETHER : Level.OVERWORLD;
         try {
             RTTYSystem.broadcast(level, BUS_CHANNEL, 4);
@@ -91,15 +96,15 @@ public final class RadioGameTests {
         }
     }
 
-    private static void sameChannelTransferAndOutput(net.minecraft.gametest.framework.GameTestHelper helper) {
+    private static void sameChannelTransferAndOutput(GameTestHelper helper) {
         RTTYSystem.clearChannel(helper.getLevel(), TRANSFER_CHANNEL);
         try {
             BlockPos senderPos = new BlockPos(2, 2, 2);
             BlockPos receiverPos = new BlockPos(6, 2, 2);
             helper.setBlock(senderPos.below(), Blocks.REDSTONE_BLOCK);
             helper.setBlock(receiverPos.below(), Blocks.STONE);
-            helper.setBlock(senderPos, ModRadioBlocks.RADIO_TORCH_SENDER.get().defaultBlockState());
-            helper.setBlock(receiverPos, ModRadioBlocks.RADIO_TORCH_RECEIVER.get().defaultBlockState());
+            helper.setBlock(senderPos, ModMachineBlocks.radio_torch_sender.get().defaultBlockState());
+            helper.setBlock(receiverPos, ModMachineBlocks.radio_torch_receiver.get().defaultBlockState());
             TileEntityRadioTorchSender sender = GameTestHelpers.blockEntity(
                     helper, senderPos, TileEntityRadioTorchSender.class);
             TileEntityRadioTorchReceiver receiver = GameTestHelpers.blockEntity(
@@ -115,9 +120,9 @@ public final class RadioGameTests {
             receiver.serverTick();
             helper.assertTrue(receiver.lastState == 15,
                     "Same-channel sender/receiver did not transfer redstone strength 15");
-            helper.assertTrue(helper.getBlockState(receiverPos).getValue(com.hbm.blocks.network.RadioTorchBase.LIT),
+            helper.assertTrue(helper.getBlockState(receiverPos).getValue(RadioTorchBase.LIT),
                     "Receiver LIT did not follow its nonzero output");
-            helper.assertTrue(ModRadioBlocks.RADIO_TORCH_RECEIVER.get().getSignal(
+            helper.assertTrue(ModMachineBlocks.radio_torch_receiver.get().getSignal(
                             helper.getBlockState(receiverPos), helper.getLevel(), helper.absolutePos(receiverPos), Direction.UP) == 15,
                     "Receiver block did not expose its tile's output strength");
 
@@ -131,7 +136,7 @@ public final class RadioGameTests {
 
             BlockPos lampPos = receiverPos.east();
             helper.setBlock(lampPos, Blocks.REDSTONE_LAMP);
-            helper.getLevel().updateNeighborsAt(helper.absolutePos(receiverPos), ModRadioBlocks.RADIO_TORCH_RECEIVER.get());
+            helper.getLevel().updateNeighborsAt(helper.absolutePos(receiverPos), ModMachineBlocks.radio_torch_receiver.get());
             helper.runAfterDelay(5, () -> {
                 try {
                     helper.assertTrue(helper.getBlockState(lampPos).getValue(RedstoneLampBlock.LIT),
@@ -147,11 +152,11 @@ public final class RadioGameTests {
         }
     }
 
-    private static void mappingAndStalePolling(net.minecraft.gametest.framework.GameTestHelper helper) {
+    private static void mappingAndStalePolling(GameTestHelper helper) {
         try {
             BlockPos pos = new BlockPos(2, 2, 2);
             helper.setBlock(pos.below(), Blocks.STONE);
-            helper.setBlock(pos, ModRadioBlocks.RADIO_TORCH_RECEIVER.get().defaultBlockState());
+            helper.setBlock(pos, ModMachineBlocks.radio_torch_receiver.get().defaultBlockState());
             TileEntityRadioTorchReceiver receiver = GameTestHelpers.blockEntity(
                     helper, pos, TileEntityRadioTorchReceiver.class);
             receiver.customMap = true;
@@ -182,7 +187,7 @@ public final class RadioGameTests {
         }
     }
 
-    private static void testMelody(net.minecraft.gametest.framework.GameTestHelper helper) {
+    private static void testMelody(GameTestHelper helper) {
         Map<Integer, String> expected = Map.ofEntries(
                 Map.entry(0, "4:6:0"),
                 Map.entry(8, "4:8:0-4:11:0-4:3:0"), Map.entry(16, "4:8:0-4:11:0-4:3:0"),
@@ -235,7 +240,7 @@ public final class RadioGameTests {
         helper.succeed();
     }
 
-    private static void lookOverlay(net.minecraft.gametest.framework.GameTestHelper helper) {
+    private static void lookOverlay(GameTestHelper helper) {
         Level level = helper.getLevel();
         BlockPos senderPos = new BlockPos(1, 2, 1);
         BlockPos receiverPos = new BlockPos(3, 2, 1);
@@ -246,10 +251,10 @@ public final class RadioGameTests {
         helper.setBlock(receiverPos.below(), Blocks.STONE);
         helper.setBlock(readerPos.below(), Blocks.STONE);
         helper.setBlock(logicPos.below(), Blocks.STONE);
-        helper.setBlock(senderPos, ModRadioBlocks.RADIO_TORCH_SENDER.get().defaultBlockState());
-        helper.setBlock(receiverPos, ModRadioBlocks.RADIO_TORCH_RECEIVER.get().defaultBlockState());
-        helper.setBlock(readerPos, ModRadioBlocks.RADIO_TORCH_READER.get().defaultBlockState());
-        helper.setBlock(logicPos, ModRadioBlocks.RADIO_TORCH_LOGIC.get().defaultBlockState());
+        helper.setBlock(senderPos, ModMachineBlocks.radio_torch_sender.get().defaultBlockState());
+        helper.setBlock(receiverPos, ModMachineBlocks.radio_torch_receiver.get().defaultBlockState());
+        helper.setBlock(readerPos, ModMachineBlocks.radio_torch_reader.get().defaultBlockState());
+        helper.setBlock(logicPos, ModMachineBlocks.radio_torch_logic.get().defaultBlockState());
 
         TileEntityRadioTorchSender sender = GameTestHelpers.blockEntity(helper, senderPos,
                 TileEntityRadioTorchSender.class);
@@ -268,27 +273,27 @@ public final class RadioGameTests {
         logic.channel = "overlay";
         logic.lastState = 3;
 
-        assertRadioOverlay(helper, ModRadioBlocks.RADIO_TORCH_SENDER.get(), level,
+        assertRadioOverlay(helper, ModMachineBlocks.radio_torch_sender.get(), level,
                 senderPos, "Signal: 7");
-        assertRadioOverlay(helper, ModRadioBlocks.RADIO_TORCH_RECEIVER.get(), level,
+        assertRadioOverlay(helper, ModMachineBlocks.radio_torch_receiver.get(), level,
                 receiverPos, "Signal: 12");
-        assertRadioOverlay(helper, ModRadioBlocks.RADIO_TORCH_READER.get(), level,
+        assertRadioOverlay(helper, ModMachineBlocks.radio_torch_reader.get(), level,
                 readerPos, "temperature: temperature");
-        assertRadioOverlay(helper, ModRadioBlocks.RADIO_TORCH_LOGIC.get(), level,
+        assertRadioOverlay(helper, ModMachineBlocks.radio_torch_logic.get(), level,
                 logicPos, "Signal: 3");
         helper.succeed();
     }
 
-    private static void machineLightSemantics(net.minecraft.gametest.framework.GameTestHelper helper) {
+    private static void machineLightSemantics(GameTestHelper helper) {
         Level level = helper.getLevel();
-        assertMachineDoesNotBlockLight(helper, level, ModRadioBlocks.RADIO_TELEX.get(), "TELEX",
+        assertMachineDoesNotBlockLight(helper, level, ModMachineBlocks.radio_telex.get(), "TELEX",
                 new BlockPos(2, 2, 2));
-        assertMachineDoesNotBlockLight(helper, level, ModRadioBlocks.RADIO_AUTOCAL.get(), "AUTOCAL",
+        assertMachineDoesNotBlockLight(helper, level, ModMachineBlocks.radio_autocal.get(), "AUTOCAL",
                 new BlockPos(4, 2, 2));
         helper.succeed();
     }
 
-    private static void assertMachineDoesNotBlockLight(net.minecraft.gametest.framework.GameTestHelper helper,
+    private static void assertMachineDoesNotBlockLight(GameTestHelper helper,
                                                        Level level, Block block, String name, BlockPos relative) {
         BlockPos absolute = helper.absolutePos(relative);
         for (BlockState state : block.getStateDefinition().getPossibleStates()) {
@@ -297,8 +302,8 @@ public final class RadioGameTests {
         }
     }
 
-    private static void assertRadioOverlay(net.minecraft.gametest.framework.GameTestHelper helper,
-                                           net.minecraft.world.level.block.Block block, Level level,
+    private static void assertRadioOverlay(GameTestHelper helper,
+                                           Block block, Level level,
                                            BlockPos pos, String expectedLine) {
         helper.assertTrue(block instanceof ILookOverlay, "Radio block has no look overlay: " + block);
         ILookOverlay.Data data = ((ILookOverlay) block).getLookOverlay(
@@ -307,10 +312,10 @@ public final class RadioGameTests {
                 "Radio look overlay missed: " + expectedLine);
     }
 
-    private static void supportPersistenceAndAuthorization(net.minecraft.gametest.framework.GameTestHelper helper) {
+    private static void supportPersistenceAndAuthorization(GameTestHelper helper) {
         BlockPos floor = new BlockPos(3, 3, 3);
         helper.setBlock(floor.below(), Blocks.STONE);
-        helper.setBlock(floor, ModRadioBlocks.RADIO_TORCH_SENDER.get().defaultBlockState());
+        helper.setBlock(floor, ModMachineBlocks.radio_torch_sender.get().defaultBlockState());
         TileEntityRadioTorchSender sender = GameTestHelpers.blockEntity(
                 helper, floor, TileEntityRadioTorchSender.class);
 
@@ -344,15 +349,15 @@ public final class RadioGameTests {
 
         BlockPos wall = new BlockPos(7, 3, 3);
         helper.setBlock(wall.west(), Blocks.STONE);
-        helper.setBlock(wall, ModRadioBlocks.RADIO_TORCH_RECEIVER.get().defaultBlockState()
-                .setValue(com.hbm.blocks.network.RadioTorchBase.FACING, Direction.EAST));
+        helper.setBlock(wall, ModMachineBlocks.radio_torch_receiver.get().defaultBlockState()
+                .setValue(RadioTorchBase.FACING, Direction.EAST));
         helper.assertTrue(helper.getBlockState(wall).canSurvive(helper.getLevel(), helper.absolutePos(wall)),
                 "Wall-mounted receiver rejected valid side support");
 
         BlockPos ceiling = new BlockPos(10, 3, 3);
         helper.setBlock(ceiling.above(), Blocks.STONE);
-        helper.setBlock(ceiling, ModRadioBlocks.RADIO_TORCH_RECEIVER.get().defaultBlockState()
-                .setValue(com.hbm.blocks.network.RadioTorchBase.FACING, Direction.DOWN));
+        helper.setBlock(ceiling, ModMachineBlocks.radio_torch_receiver.get().defaultBlockState()
+                .setValue(RadioTorchBase.FACING, Direction.DOWN));
         helper.assertTrue(helper.getBlockState(ceiling).canSurvive(helper.getLevel(), helper.absolutePos(ceiling)),
                 "Ceiling-mounted receiver rejected valid overhead support");
         helper.setBlock(wall.west(), Blocks.AIR);
@@ -361,24 +366,24 @@ public final class RadioGameTests {
         helper.succeed();
     }
 
-    private static void readerLogicConfiguration(net.minecraft.gametest.framework.GameTestHelper helper) {
+    private static void readerLogicConfiguration(GameTestHelper helper) {
         BlockPos absolute = helper.absolutePos(new BlockPos(2, 2, 2));
         TileEntityRadioTorchReader reader = new TileEntityRadioTorchReader(
-                absolute, ModRadioBlocks.RADIO_TORCH_READER.get().defaultBlockState());
+                absolute, ModMachineBlocks.radio_torch_reader.get().defaultBlockState());
         CompoundTag readerEdit = new CompoundTag();
         readerEdit.putBoolean("polling", true);
         readerEdit.putString("channels0", "reader-channel");
         readerEdit.putString("names0", "temperature");
         reader.receiveControl(readerEdit);
         TileEntityRadioTorchReader readerCopy = new TileEntityRadioTorchReader(
-                absolute.east(), ModRadioBlocks.RADIO_TORCH_READER.get().defaultBlockState());
+                absolute.east(), ModMachineBlocks.radio_torch_reader.get().defaultBlockState());
         GameTestHelpers.copyPersistentData(reader, readerCopy);
         helper.assertTrue(readerCopy.polling && "reader-channel".equals(readerCopy.channels[0])
                         && "temperature".equals(readerCopy.names[0]),
                 "Reader UI configuration did not persist through its save/load hooks");
 
         TileEntityRadioTorchLogic logic = new TileEntityRadioTorchLogic(
-                absolute, ModRadioBlocks.RADIO_TORCH_LOGIC.get().defaultBlockState());
+                absolute, ModMachineBlocks.radio_torch_logic.get().defaultBlockState());
         CompoundTag logicEdit = new CompoundTag();
         logicEdit.putBoolean("polling", true);
         logicEdit.putBoolean("descending", true);
@@ -388,13 +393,13 @@ public final class RadioGameTests {
         logic.receiveControl(logicEdit);
         helper.assertTrue(logic.parseSignal("43", 7), "Logic condition >= failed after a UI edit");
         TileEntityRadioTorchLogic logicCopy = new TileEntityRadioTorchLogic(
-                absolute.east(), ModRadioBlocks.RADIO_TORCH_LOGIC.get().defaultBlockState());
+                absolute.east(), ModMachineBlocks.radio_torch_logic.get().defaultBlockState());
         GameTestHelpers.copyPersistentData(logic, logicCopy);
         helper.assertTrue(logicCopy.polling && logicCopy.descending && "logic".equals(logicCopy.channel)
                         && "42".equals(logicCopy.mapping[7]) && logicCopy.conditions[7] == 2,
                 "Logic UI configuration did not persist through its save/load hooks");
 
-        var player = GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setPos(absolute.getCenter());
         helper.assertTrue(reader.hasPermission(player) && logic.hasPermission(player),
                 "Nearby player was denied reader/logic screen edits");

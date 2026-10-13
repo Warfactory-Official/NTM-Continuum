@@ -2,13 +2,14 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerCrateTemplate;
 import com.hbm.tileentity.machine.storage.TemplateCrateLayout;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 /** Client screen for the ordinary template crate, using its exact 176x168 old layout. */
-public class GUICrateTemplate extends dev.golem.core.gui.CompatContainerScreen<ContainerCrateTemplate> {
+public class GUICrateTemplate extends CompatContainerScreen<ContainerCrateTemplate> {
 
     public GUICrateTemplate(ContainerCrateTemplate menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, TemplateCrateLayout.GUI_WIDTH, TemplateCrateLayout.GUI_HEIGHT);

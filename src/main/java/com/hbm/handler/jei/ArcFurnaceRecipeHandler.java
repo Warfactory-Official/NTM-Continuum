@@ -1,6 +1,6 @@
 package com.hbm.handler.jei;
 
-import com.hbm.foundry.ArcFurnaceRecipes;
+import com.hbm.inventory.recipes.ArcFurnaceRecipes;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;

@@ -1,5 +1,7 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineF6Tank;
 import com.hbm.inventory.fluid.Fluids;
@@ -15,10 +17,10 @@ import java.util.Optional;
  * Port-only UF6/PUF6 tank screen (1.12.2 {@code GUIMachineUF6Tank}/{@code GUIMachinePuF6Tank}; 1.7 has no such GUI).
  * Labels follow the standard 1.7 container style.
  */
-public class GUIF6Tank extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineF6Tank> {
+public class GUIF6Tank extends CompatContainerScreen<ContainerMachineF6Tank> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/uf6tank.png");
-    private static final Identifier PUF6_TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/puf6tank.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/uf6tank.png");
+    private static final Identifier PUF6_TEXTURE = Ids.of("hbm", "textures/gui/puf6tank.png");
 
     public GUIF6Tank(ContainerMachineF6Tank menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 166);

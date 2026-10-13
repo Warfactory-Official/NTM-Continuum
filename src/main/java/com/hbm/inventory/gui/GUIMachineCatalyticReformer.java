@@ -1,5 +1,7 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineCatalyticReformer;
 import com.hbm.items.ModItems;
@@ -14,12 +16,12 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Screen for the catalytic reformer — 1.7.10 {@code GUIMachineCatalyticReformer}
+/** Screen for the catalytic reformer, 1.7.10 {@code GUIMachineCatalyticReformer}
  * ({@code processing/gui_catalytic_reformer.png}, 176×238). Power bar at x=17; 4 tank bars at x=35/107/125/143
  * (bottom y=70); white title at y=5; hovering the empty catalyst slot shows the converter as a stack hint. */
-public class GUIMachineCatalyticReformer extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineCatalyticReformer> {
+public class GUIMachineCatalyticReformer extends CompatContainerScreen<ContainerMachineCatalyticReformer> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_catalytic_reformer.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_catalytic_reformer.png");
     private static final int[] TANK_X = {35, 107, 125, 143};
 
     public GUIMachineCatalyticReformer(ContainerMachineCatalyticReformer menu, Inventory playerInventory, Component title) {

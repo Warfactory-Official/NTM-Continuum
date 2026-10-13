@@ -19,15 +19,15 @@ import java.util.Set;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Soldering station recipes. A recipe has three grouped ingredient sets — up to 3 <b>toppings</b> (slots 0–2), up to
- * 2 <b>pcb</b> (slots 3–4) and 1 <b>solder</b> (slot 5) — an optional fluid, and an output; {@link #getRecipe}
+ * Soldering station recipes. A recipe has three grouped ingredient sets: up to 3 <b>toppings</b> (slots 0–2), up to
+ * 2 <b>pcb</b> (slots 3–4) and 1 <b>solder</b> (slot 5), an optional fluid, and an output; {@link #getRecipe}
  * exact-set matches the six input slots against those groups. The datapack table {@code hbm:soldering}, one file per
  * recipe in {@code data/hbm/recipe/soldering/} ({@code {"output": item, "duration": ticks, "consumption": HE/t,
  * "fluid": {type, amount}, "toppings": [...], "pcb": [...], "solder": [...], "requires": ["!enable_528"], "order": n}};
  * the first match by {@code order} wins). {@link #toppings}, {@link #pcb} and {@link #solder} (what each slot group
  * accepts) are rebuilt from the rows.
  *
- * <p>Converted once from the Java port of 1.7's {@code SolderingRecipes}: the circuit chain (ANALOG, BASIC, ADVANCED,
+ * <p>Ported from 1.7's {@code SolderingRecipes}: the circuit chain (ANALOG, BASIC, ADVANCED,
  * CAPACITOR_BOARD, BISMOID, QUANTUM), the control units and the tier II/III upgrades (both inside 1.7's
  * {@code if(no528)}, so {@code "requires": ["!enable_528"]}: 528 mode makes them in the precision assembler), the tier-1
  * upgrades, the satellite ID chip and the two forcefield upgrades (formerly
@@ -63,7 +63,7 @@ public final class SolderingRecipes {
 
     /** The recipes in match order, always the current rows (read-only). */
     public static final List<SolderingRecipe> recipes = TableCodecs.view(() -> index().recipes());
-    /** The union of every group's ingredients — the TE/container use these to validate slot placement. */
+    /** The union of every group's ingredients; the TE/container use these to validate slot placement. */
     public static final Set<AStack> toppings = TableCodecs.setView(() -> index().toppings());
     public static final Set<AStack> pcb = TableCodecs.setView(() -> index().pcb());
     public static final Set<AStack> solder = TableCodecs.setView(() -> index().solder());
@@ -75,7 +75,7 @@ public final class SolderingRecipes {
     /** Declares the table at mod construction. */
     public static void declare() {}
 
-    /** One soldering recipe. Arrays, so a plain class (not a record) — matched by {@link #getRecipe}. */
+    /** One soldering recipe. Arrays, so a plain class (not a record), matched by {@link #getRecipe}. */
     public static final class SolderingRecipe {
         public final ItemStack output;
         public final int duration;

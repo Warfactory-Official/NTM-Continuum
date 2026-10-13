@@ -1,7 +1,9 @@
 package com.hbm.blocks.machine.storage;
 
+import com.hbm.Constants;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.machine.storage.TileEntityCrateSupply;
+import dev.golem.core.Ids;
 import dev.golem.core.world.CarriedBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
@@ -27,7 +29,7 @@ import org.jspecify.annotations.Nullable;
  */
 public class BlockCrateSupply extends CarriedBlock {
 
-    public static final TagKey<Item> CROWBAR = TagKey.create(Registries.ITEM, dev.golem.core.Ids.of(com.hbm.Constants.MOD_ID, "crowbar"));
+    public static final TagKey<Item> CROWBAR = TagKey.create(Registries.ITEM, Ids.of(Constants.MOD_ID, "crowbar"));
 
     public BlockCrateSupply(Properties properties) {
         super(properties);

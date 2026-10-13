@@ -7,6 +7,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.KeyMappings;
 import dev.golem.core.net.GolemNetwork;
+import java.util.Arrays;
 import net.minecraft.client.Minecraft;
 
 /** Client-side RBMK crane key registration and edge polling. */
@@ -28,7 +29,7 @@ public final class CraneKeybindHandler {
     private static void poll() {
         var player = Minecraft.getInstance().player;
         if (player == null) {
-            java.util.Arrays.fill(LAST_STATE, false);
+            Arrays.fill(LAST_STATE, false);
             return;
         }
         var props = HbmPlayerProps.getData(player);

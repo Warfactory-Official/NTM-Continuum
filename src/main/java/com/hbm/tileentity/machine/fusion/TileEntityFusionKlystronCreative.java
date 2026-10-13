@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 
 /**
- * Creative klystron — emits the highest ignition temperature any fuel cycle asks for, unconditionally,
+ * Creative klystron: emits the highest ignition temperature any fuel cycle asks for, unconditionally,
  * with no power draw, no air and no target to set. It exists so the rest of the fusion chain can be
  * built and tested without first standing up a power grid.
  *
@@ -30,7 +30,7 @@ public class TileEntityFusionKlystronCreative extends TileEntityFusionKlystron {
     @Override public String getDefaultName() { return "container.fusionKlystronCreative"; }
 
     /**
-     * Nothing. The creative klystron takes no power and no compressed air, so it subscribes nowhere --
+     * Nothing. The creative klystron takes no power and no compressed air, so it subscribes nowhere:
      * inheriting the real klystron's three ports would advertise a surface its own tick never reads.
      */
     @Override

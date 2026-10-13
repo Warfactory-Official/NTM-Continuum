@@ -1,5 +1,6 @@
 package com.hbm.client;
 
+import com.google.common.base.Suppliers;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModDecoContent;
 import com.hbm.blocks.ModDecoCrateBlocks;
@@ -14,8 +15,16 @@ import com.hbm.blocks.machine.pile.BlockPile;
 import com.hbm.blocks.machine.pile.ModPileBlocks;
 import dev.golem.core.render.ConnectedTextures;
 import dev.golem.core.registry.RegistryObject;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * The 1.7 {@code IBlockCT} blocks: each face in quarters from its {@code _ct} sheet (Core {@link ConnectedTextures}).
@@ -23,7 +32,7 @@ import net.minecraft.world.level.block.Block;
  * shell to shell cells and the ICF controller; the PWR shell to shell cells and the PWR controller. A converted port
  * cell (1.7 metadata 1) draws the port sheet.
  *
- * <p>Also (2026-10-06) the rest of 1.7's set: {@code BlockDecoCT} (deco metals; steel and rusty steel join each
+ * <p>Also the rest of 1.7's set: {@code BlockDecoCT} (deco metals; steel and rusty steel join each
  * other), {@code BlockNTMGlassCT} (eight glasses, reinforced glass and laminate), {@code BlockEnumMultiCT}
  * platemetal and {@code BlockPile}. The 1.12 port's extra CTM blocks ({@code block_actinium} and so on) are not
  * here: 1.7 drew them plain.
@@ -85,8 +94,8 @@ public final class ConnectedTextureRegistrations {
 
         // 1.7 platemetal was one BlockEnumMultiCT: each colour (metadata) draws its own sheet, and canConnect is
         // `this == block`, so every colour joins every other. The port flattened the colours into blocks.
-        java.util.function.Supplier<java.util.Set<Block>> platemetal = com.google.common.base.Suppliers.memoize(() -> {
-            java.util.Set<Block> blocks = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        Supplier<Set<Block>> platemetal = Suppliers.memoize(() -> {
+            Set<Block> blocks = Collections.newSetFromMap(new IdentityHashMap<>());
             ModDecoContent.platemetal.values().forEach(r -> blocks.add(r.get()));
             return blocks;
         })::get;
@@ -107,7 +116,7 @@ public final class ConnectedTextureRegistrations {
         String[] pileCore = {"hbm:blocks/pile_block_top", "hbm:blocks/pile_block_core_ct"};
         ConnectedTextures.register(ModPileBlocks.pile_block::get, (ConnectedTextures.FaceSheets) (state, face) -> {
             int meta = state.getValue(BlockPile.META);
-            if (face.getAxis() == net.minecraft.core.Direction.Axis.Y) return meta == BlockPile.META_CONTROL ? pileControl : pileTop;
+            if (face.getAxis() == Direction.Axis.Y) return meta == BlockPile.META_CONTROL ? pileControl : pileTop;
             return switch (meta) {
                 case BlockPile.META_FUEL_IN, BlockPile.META_AIR_IN -> pileIn;
                 case BlockPile.META_FUEL_OUT, BlockPile.META_AIR_OUT -> pileOut;
@@ -118,9 +127,9 @@ public final class ConnectedTextureRegistrations {
     }
 
     /** 1.7 {@code IBlockCT.canConnect} default: {@code this == block}. */
-    private static boolean self(net.minecraft.world.level.BlockGetter level, net.minecraft.core.BlockPos pos,
-                                net.minecraft.world.level.block.state.BlockState self,
-                                net.minecraft.world.level.block.state.BlockState neighbour) {
+    private static boolean self(BlockGetter level, BlockPos pos,
+                                BlockState self,
+                                BlockState neighbour) {
         return neighbour.getBlock() == self.getBlock();
     }
 

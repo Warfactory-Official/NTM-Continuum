@@ -1,5 +1,6 @@
 package com.hbm.entity.mob.ai;
 
+import dev.golem.core.world.Navigations;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -81,7 +82,7 @@ public class EntityAIMaskmanCasualApproach extends Goal {
 
     @Override
     public void start() {
-        dev.golem.core.world.Navigations.navigateTo(this.attacker.getNavigation(), this.entityPathEntity,
+        Navigations.navigateTo(this.attacker.getNavigation(), this.entityPathEntity,
                 this.speedTowardsTarget);
         this.pathTimer = 0;
     }
@@ -132,7 +133,7 @@ public class EntityAIMaskmanCasualApproach extends Goal {
             }
 
             Vec3 pos = getApproachPos(target);
-            if (!dev.golem.core.world.Navigations.navigateTo(this.attacker.getNavigation(), pos.x, pos.y, pos.z,
+            if (!Navigations.navigateTo(this.attacker.getNavigation(), pos.x, pos.y, pos.z,
                     this.speedTowardsTarget)) {
                 this.pathTimer += 15;
             }

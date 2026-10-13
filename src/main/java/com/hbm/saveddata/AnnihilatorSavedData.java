@@ -145,8 +145,8 @@ public final class AnnihilatorSavedData extends CompatSavedData<AnnihilatorSaved
         return switch (entry.key()) {
             case 0 -> BuiltInRegistries.ITEM.getValue(Ids.parse(entry.id()));
             case 1 -> {
-                // written before 2026-10-06 as "<item>@<metadata>" for a family kept on one item; every family is one
-                // item per type now, so the count goes to the base item (History §19es-itemvariant)
+                // Older saves wrote "<item>@<metadata>" for a family kept on one item. Every family is one
+                // item per type, so the count goes to the base item.
                 int at = entry.id().lastIndexOf('@');
                 yield BuiltInRegistries.ITEM.getValue(Ids.parse(at < 0 ? entry.id() : entry.id().substring(0, at)));
             }

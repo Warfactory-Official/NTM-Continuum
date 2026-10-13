@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import com.hbm.api.data.FluidDataMaps;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModEntityItems;
@@ -12,6 +13,7 @@ import com.hbm.lib.ItemIds;
 import dev.golem.core.Ids;
 import dev.golem.core.world.FilledContainers;
 import dev.golem.core.world.Ingredients;
+import java.util.TreeSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -68,9 +70,9 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
      */
     private static List<Fixed> fixed() {
         List<Fixed> rows = new ArrayList<>();
-        var map = com.hbm.api.data.FluidDataMaps.FLUID_CONTAINER.byId();
-        for (String full : new java.util.TreeSet<>(map.keySet())) {
-            com.hbm.api.data.FluidDataMaps.Container c = map.get(full);
+        var map = FluidDataMaps.FLUID_CONTAINER.byId();
+        for (String full : new TreeSet<>(map.keySet())) {
+            FluidDataMaps.Container c = map.get(full);
             FluidType type = Fluids.byRegistryName(c.fluid());
             if (type == Fluids.NONE) continue;
             rows.add(new Fixed(full, c.empty().orElse(""), type.getName(), c.amount()));
@@ -163,7 +165,7 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
         return examples;
     }
 
-    // ---- the same table as another mod's fluid handler sees it (History section 19ek-fluids) ----
+    // The same table as another mod's fluid handler sees it
 
     /** A fixed container: {@code full} holds {@code amount} of {@code fluid}; draining all of it leaves {@code empty}. */
     public record ForeignRow(Item full, ItemStack empty, FluidType fluid, int amount) {}

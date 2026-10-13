@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -13,7 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * Slowness III for two minutes ({@code onEntityWalking}). It does not tick (the original was constructed
  * with {@code tick = false}); thawing is done to it by {@code burning_earth} and the exothermic bomb.
  */
-public class BlockFrozenGrass extends dev.golem.core.world.CompatBlock {
+public class BlockFrozenGrass extends CompatBlock {
 
     public BlockFrozenGrass(Properties props) {
         super(props);

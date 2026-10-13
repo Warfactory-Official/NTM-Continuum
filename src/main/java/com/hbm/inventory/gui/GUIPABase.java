@@ -18,8 +18,8 @@ import java.util.Optional;
 
 /**
  * Shared chrome for the five particle-accelerator panels (1.7 {@code GUIPA*}). Every one of them is a 176 x 204 screen
- * carrying the same three readouts off {@link TileEntityCooledBase} — a power bar, the cold and warm
- * perfluoromethyl tanks, and the temperature the machine has to reach before it will run — so they are
+ * carrying the same three readouts off {@link TileEntityCooledBase} (a power bar, the cold and warm
+ * perfluoromethyl tanks, and the temperature the machine has to reach before it will run), so they are
  * drawn here once rather than in each subclass, the way {@code GUITurretBase} serves all fourteen
  * turrets.
  */

@@ -10,6 +10,8 @@ import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
+import java.util.function.Predicate;
+import java.util.stream.IntStream;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.nbt.CompoundTag;
@@ -112,14 +114,14 @@ public final class ScreenRBMKConsole extends RBMKContainerScreen<MenuRBMKConsole
         for (int flux : console.fluxBuffer) { highest = Math.max(highest, flux); lowest = Math.min(lowest, flux); }
         int range = Math.max(highest - lowest, 1);
         for (int i = 0; i < console.fluxBuffer.length - 1; i++) line(graphics, leftPos + (int) (7 + i * 74D / console.fluxBuffer.length), topPos + (int) (127 - (console.fluxBuffer[i] - lowest) * 24D / range), leftPos + (int) (7 + (i + 1) * 74D / console.fluxBuffer.length), topPos + (int) (127 - (console.fluxBuffer[i + 1] - lowest) * 24D / range));
-        dev.golem.core.gui.GuiDraw.pushMatrix(graphics);
-        dev.golem.core.gui.GuiDraw.scale(graphics, .5F, .5F);
+        GuiDraw.pushMatrix(graphics);
+        GuiDraw.scale(graphics, .5F, .5F);
         String high = Integer.toString(highest), low = Integer.toString(lowest);
         GuiDraw.text(graphics, font, Component.literal(high), (leftPos + 8) * 2, (topPos + 98) * 2, 0xFF00FF00, false);
         GuiDraw.text(graphics, font, Component.literal(high), (int) ((leftPos + 80 - font.width(high) * .5F) * 2), (topPos + 98) * 2, 0xFF00FF00, false);
         GuiDraw.text(graphics, font, Component.literal(low), (leftPos + 8) * 2, (int) ((topPos + 133 - font.lineHeight * .5F) * 2), 0xFF00FF00, false);
         GuiDraw.text(graphics, font, Component.literal(low), (int) ((leftPos + 80 - font.width(low) * .5F) * 2), (int) ((topPos + 133 - font.lineHeight * .5F) * 2), 0xFF00FF00, false);
-        dev.golem.core.gui.GuiDraw.popMatrix(graphics);
+        GuiDraw.popMatrix(graphics);
     }
 
     private void bar(GuiGraphicsExtractor graphics, int x, int y, int u, double value, double max) {
@@ -172,9 +174,9 @@ public final class ScreenRBMKConsole extends RBMKContainerScreen<MenuRBMKConsole
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(sound, pitch, 1.0F));
     }
 
-    private void select(BlockEntityRBMKConsole console, java.util.function.Predicate<RBMKColumn> predicate) { for (int i = 0; i < selection.length; i++) selection[i] = console.columns[i] != null && predicate.test(console.columns[i]); }
-    private int[] selectedIndices() { return java.util.stream.IntStream.range(0, selection.length).filter(i -> selection[i]).toArray(); }
-    private int[] selected(BlockEntityRBMKConsole console, RBMKColumnType type, boolean all) { return java.util.stream.IntStream.range(0, selection.length).filter(i -> console.columns[i] != null && console.columns[i].type == type && (all || selection[i])).toArray(); }
+    private void select(BlockEntityRBMKConsole console, Predicate<RBMKColumn> predicate) { for (int i = 0; i < selection.length; i++) selection[i] = console.columns[i] != null && predicate.test(console.columns[i]); }
+    private int[] selectedIndices() { return IntStream.range(0, selection.length).filter(i -> selection[i]).toArray(); }
+    private int[] selected(BlockEntityRBMKConsole console, RBMKColumnType type, boolean all) { return IntStream.range(0, selection.length).filter(i -> console.columns[i] != null && console.columns[i].type == type && (all || selection[i])).toArray(); }
     private static CompoundTag action(String action) { CompoundTag data = new CompoundTag(); data.putString("action", action); return data; }
     private void send(String action, int[] columns) { CompoundTag data = action(action); data.putIntArray("cols", columns); send(data); }
     private void send(String action, int[] columns, double level) { CompoundTag data = action(action); data.putIntArray("cols", columns); data.putDouble("level", level); send(data); }

@@ -6,6 +6,8 @@ import com.hbm.items.tool.ItemToolAbilityFueled;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.render.SubmitSink;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
@@ -49,7 +51,7 @@ final class ItemRenderChainsaw implements CustomItemRenderer {
         pose.pushPose();
         switch (type) {
             case EQUIPPED_FIRST_PERSON -> {
-                net.minecraft.client.player.LocalPlayer player = net.minecraft.client.Minecraft.getInstance().player;
+                LocalPlayer player = Minecraft.getInstance().player;
                 if (player != null) player.swinging = false;
 
                 float s0 = 0.35F;

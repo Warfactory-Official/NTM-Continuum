@@ -2,6 +2,7 @@ package com.hbm.client.render.entity;
 
 import com.hbm.entity.grenade.EntityDisperserCanister;
 import com.hbm.entity.grenade.IGenericGrenade;
+import com.hbm.items.weapon.ItemDisperser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.render.CameraInfo;
@@ -37,7 +38,7 @@ public class RenderGenericGrenade<T extends Entity> extends CompatEntityRenderer
     public void extract(T entity, State state, float partialTicks) {
         ItemStack stack;
         if (entity instanceof EntityDisperserCanister canister) {
-            com.hbm.items.weapon.ItemDisperser item = canister.getDisperserItem();
+            ItemDisperser item = canister.getDisperserItem();
             stack = item.make(canister.getFluid(), item.capacity);
         } else {
             stack = new ItemStack(((IGenericGrenade) entity).getGrenade());

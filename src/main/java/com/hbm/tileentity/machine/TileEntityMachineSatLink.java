@@ -19,7 +19,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * The dish that talks to orbit. It holds a frequency, and if it can see the sky it is connected to whatever
- * satellite answers on that frequency — which is the whole machine: a text channel between a radio torch on
+ * satellite answers on that frequency. That is the whole machine: a text channel between a radio torch on
  * the ground and something that is not in the world at all.
  *
  * <p>The fourteenth machine with a redstone-over-radio surface, and the only one whose function forwards to

@@ -3,7 +3,9 @@ package com.hbm.tileentity;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.interfaces.ICopiable;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import dev.golem.core.data.Tags;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -73,8 +75,8 @@ public interface IControlReceiverFilter extends IControlReceiver, ICopiable {
 
     /**
      * 1.7 {@code IControlReceiverFilter.pasteSettings}: the interface default additionally requires
-     * {@code index < listSize} on every slot, which the crane base's copy of the loop does not — with the
-     * term hoisted out of the loop the two are the same helper.
+     * {@code index < listSize} on every slot, which the crane base's copy of the loop does not. The term
+     * is hoisted out of the loop, so the two share one helper.
      */
     @Override
     default void pasteSettings(CompoundTag nbt, int index, Level level, Player player, BlockPos pos) {
@@ -114,7 +116,7 @@ public interface IControlReceiverFilter extends IControlReceiver, ICopiable {
     /** Stores {@code stack} under {@code "stack"} with the level's registries, the 1.7 {@code writeToNBT} of a filter. */
     static void writeStack(CompoundTag nbt, ItemStack stack, @Nullable Level level) {
         if (stack.isEmpty()) return;
-        DataResult<Tag> encoded = dev.golem.core.world.ItemStacks.optionalCodec()
+        DataResult<Tag> encoded = ItemStacks.optionalCodec()
                 .encodeStart(ops(level), stack);
         encoded.result().ifPresent(tag -> nbt.put("stack", tag));
     }
@@ -122,10 +124,10 @@ public interface IControlReceiverFilter extends IControlReceiver, ICopiable {
     static ItemStack readFilterStack(CompoundTag nbt, @Nullable Level level) {
         Tag tag = nbt.get("stack");
         if (tag == null) return ItemStack.EMPTY;
-        return dev.golem.core.world.ItemStacks.optionalCodec().parse(ops(level), tag).result().orElse(ItemStack.EMPTY);
+        return ItemStacks.optionalCodec().parse(ops(level), tag).result().orElse(ItemStack.EMPTY);
     }
 
-    private static com.mojang.serialization.DynamicOps<Tag> ops(@Nullable Level level) {
+    private static DynamicOps<Tag> ops(@Nullable Level level) {
         HolderLookup.Provider registries = level == null ? null : level.registryAccess();
         return registries == null ? NbtOps.INSTANCE : RegistryOps.create(NbtOps.INSTANCE, registries);
     }

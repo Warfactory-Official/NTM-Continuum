@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.fusion;
 
+import com.hbm.inventory.recipes.FusionRecipes;
+import com.hbm.saveddata.satellites.SatelliteRayScan;
 import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -13,7 +15,7 @@ import com.hbm.capability.MachineCaps;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.modules.machine.ModuleMachineFusion;
+import com.hbm.module.machine.ModuleMachineFusion;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
@@ -41,17 +43,17 @@ import com.hbm.sound.ModSounds;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * The fusion torus — a tokamak that burns a fluid fuel cycle into plasma energy.
+ * The fusion torus is a tokamak that burns a fluid fuel cycle into plasma energy.
  *
  * <p>It sits between two networks. Four <b>klystron</b> nodes, one per horizontal direction seven
- * blocks out, feed it microwave energy; the torus needs at least the running cycle's
+ * blocks out, feed it microwave energy. The torus needs at least the running cycle's
  * {@link FusionRecipe#ignitionTemp} in a tick to light at all. Four <b>plasma</b> nodes at the same
- * positions carry the output to boilers, MHD turbines, collectors and breeders — and the plasma half
+ * positions carry the output to boilers, MHD turbines, collectors and breeders. The plasma half
  * is <i>shared</i>: the more receivers hang off the reactor, the less each one gets, though the total
  * goes up (see {@link #getOutputIntensity}).
  *
- * <p>Actual throughput is the minimum of four fractions — stored power, and the fill of each of the
- * three fuel tanks — so a half-fed reactor runs at half rate rather than stalling. On top of that it
+ * <p>Actual throughput is the minimum of four fractions: stored power, and the fill of each of the
+ * three fuel tanks. So a half-fed reactor runs at half rate rather than stalling. On top of that it
  * must be cryogenically cool ({@link TileEntityCooledBase}) and lit.
  *
  * <p>The OpenComputers component {@code ntm_fusion_torus} is served to CC: Tweaked by
@@ -59,7 +61,7 @@ import net.minecraft.sounds.SoundSource;
  *
  * <p>Not ported: the redstone-over-radio provider, the tilt check (the
  * accelerator's structural-stress system, which no ported machine has yet), and the looping reactor
- * hum (no positional looped-audio facade). Recorded in IMPLEMENTATION.md §20.
+ * hum (no positional looped-audio facade).
  */
 public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuProvider, IControlReceiver, IRORValueProvider {
 
@@ -91,7 +93,7 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
 
     public TileEntityFusionTorus(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUSION_TORUS.get(), pos, state, SLOTS);
-        com.hbm.inventory.recipes.FusionRecipes.INSTANCE.registerRecipes(); // idempotent; registries are flushed by now
+        FusionRecipes.INSTANCE.registerRecipes(); // idempotent; registries are flushed by now
         this.tanks = new FluidTankNTM[]{
                 new FluidTankNTM(Fluids.NONE, 4_000),
                 new FluidTankNTM(Fluids.NONE, 4_000),
@@ -180,8 +182,8 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
             te.fuelConsumption = factor;
 
             if (level.getGameTime() % 20 == 15) {
-                com.hbm.saveddata.satellites.SatelliteRayScan.reportEvent(level, te.getBlockPos().getX(), te.getBlockPos().getY(),
-                        te.getBlockPos().getZ(), com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent.INFO_PARTICLE, 200);
+                SatelliteRayScan.reportEvent(level, te.getBlockPos().getX(), te.getBlockPos().getY(),
+                        te.getBlockPos().getZ(), SatelliteRayScan.RayEvent.INFO_PARTICLE, 200);
             }
         }
 
@@ -239,7 +241,7 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
     }
 
     /**
-     * How much of the plasma output each receiver gets. Sharing is deliberately lossy per receiver but
+     * How much of the plasma output each receiver gets. Sharing is lossy per receiver but
      * a net gain overall: one receiver takes 100%, two take 62.5% each (125% total), three 50% (150%),
      * four or more 43.75% (175%).
      */
@@ -272,10 +274,9 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
     /**
      * Where pipes attach: <b>vertically</b>, under the bottom ring and over the top one.
      *
-     * <p>This is not a stylistic choice. The reactor's mask reaches a full seven blocks on both
-     * horizontal axes, so a sideways port would put the pipe inside the machine's own mass — there is
-     * simply no room out to the side. Upstream routes every connection up or down for that reason, and
-     * the ports sit above/below the promoted cells at &plusmn;6 plus the centre column.
+     * <p>The reactor's mask reaches a full seven blocks on both horizontal axes, so a sideways port would
+     * put the pipe inside the machine's own mass. Upstream routes every connection up or down for that
+     * reason, and the ports sit above/below the promoted cells at &plusmn;6 plus the centre column.
      */
     public List<DirPos> getConPos() {
         List<DirPos> ports = new ArrayList<>();
@@ -297,15 +298,15 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
     }
 
     @Override public boolean hasPermission(Player player) {
-        return player.containerMenu instanceof com.hbm.inventory.container.ContainerFusionTorus menu
+        return player.containerMenu instanceof ContainerFusionTorus menu
                 && menu.getTorus() == this && menu.stillValid(player);
     }
 
     @Override
     public void receiveControl(CompoundTag data) {
-        if (dev.golem.core.data.Tags.getIntOr(data, "index", -1) != 0) return;
-        String selection = dev.golem.core.data.Tags.getStringOr(data, "selection", "null");
-        fusionModule.setRecipe(com.hbm.inventory.recipes.FusionRecipes.INSTANCE.getRecipe(selection) != null
+        if (Tags.getIntOr(data, "index", -1) != 0) return;
+        String selection = Tags.getStringOr(data, "selection", "null");
+        fusionModule.setRecipe(FusionRecipes.INSTANCE.getRecipe(selection) != null
                 ? selection : "null", false);
         fusionModule.progress = 0D;
         fusionModule.setupTanks(fusionModule.getRecipe());

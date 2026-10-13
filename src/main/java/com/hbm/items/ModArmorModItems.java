@@ -42,6 +42,7 @@ import com.hbm.items.armor.MaskOfInfamy;
 import com.hbm.sound.ModSounds;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ArmorRegistry.HazardClass;
+import dev.golem.core.Ids;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.ArmorSlot;
@@ -62,7 +63,7 @@ public final class ModArmorModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    // ---- materials (1.7 order {helmet, chest, legs, boots}; 1.7 armor had no toughness) ----
+    // Materials (1.7 order {helmet, chest, legs, boots}; 1.7 armor had no toughness)
     /**
      * Held apart so only the item factories reach them: the materials are registry-backed, and this class also
      * runs at build time (Dejson) without a game.
@@ -81,7 +82,7 @@ public final class ModArmorModItems {
                 Constants.MOD_ID, "infamy", 15, 2, 6, 5, 2, 9, 0.0F, 0.0F, "repairs/infamy");
     }
 
-    // ---- armor modules, 1.7 ModItems order ----
+    // Armor modules, 1.7 ModItems order
     public static final RegistryObject<ItemModGasmask> attachment_mask = mod("attachment_mask", p -> new ItemModGasmask(false, p));
     public static final RegistryObject<ItemModGasmask> attachment_mask_mono = mod("attachment_mask_mono", p -> new ItemModGasmask(true, p));
     public static final RegistryObject<ItemModTesla> back_tesla = mod("back_tesla", ItemModTesla::new);
@@ -127,7 +128,7 @@ public final class ModArmorModItems {
             .transform(Presets.sprite());
     public static final RegistryObject<ItemModShield> australium_iii = mod("australium_iii", p -> new ItemModShield(25F, p));
 
-    // ---- armor ----
+    // Armor
     public static final RegistryObject<MaskOfInfamy> mask_of_infamy = armor("mask_of_infamy",
             p -> new MaskOfInfamy(Materials.INFAMY, p));
 
@@ -177,14 +178,14 @@ public final class ModArmorModItems {
     public static void configure() {
 
         ArmorHazmatMask paa = hazmat_paa_helmet.get();
-        paa.setOverlay(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/misc/overlay_hazmat.png"));
+        paa.setOverlay(Ids.of(Constants.MOD_ID, "textures/misc/overlay_hazmat.png"));
         hazmat_paa_plate.get().cloneStats(paa);
         hazmat_paa_legs.get().cloneStats(paa);
         hazmat_paa_boots.get().cloneStats(paa);
 
         ArmorLiquidatorMask liquidator = liquidator_helmet.get();
         liquidator.setStep(ModSounds.METAL_STEP).setJump(ModSounds.IRON_JUMP).setFall(ModSounds.IRON_LAND);
-        liquidator.setOverlay(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/misc/overlay_dark.png"));
+        liquidator.setOverlay(Ids.of(Constants.MOD_ID, "textures/misc/overlay_dark.png"));
         liquidator_plate.get().cloneStats(liquidator);
         liquidator_legs.get().cloneStats(liquidator);
         liquidator_boots.get().cloneStats(liquidator);

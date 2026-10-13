@@ -3,43 +3,47 @@ package com.hbm.tileentity;
 import com.hbm.Constants;
 import com.hbm.registration.Reg;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
+import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal;
 import dev.golem.core.registry.BlockEntities;
 import com.hbm.tileentity.machine.rbmk.*;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import java.util.Arrays;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
-/** RBMK types are deliberately isolated until the complete reactor block wave is wired into bootstrap. */
+/** RBMK types are isolated until the complete reactor block set is wired into bootstrap. */
 public final class ModRBMKBlockEntities {
     private ModRBMKBlockEntities() {}
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
     private static final Reg REG = Reg.of(BLOCK_ENTITIES);
     /**
      * Every RBMK column ticks on both sides through {@link IRBMKTicking}, so the ticker is bound
-     * here once rather than restated by each of the twenty blocks that used to ask
+     * here once rather than restated by each of the twenty blocks, which would otherwise ask
      * {@code RBMKTickers.ticker(level, type, beType())}.
      */
-    private static <T extends net.minecraft.world.level.block.entity.BlockEntity & IRBMKTicking> RegistryObject<BlockEntityType<T>> type(
+    private static <T extends BlockEntity & IRBMKTicking> RegistryObject<BlockEntityType<T>> type(
             String id, BlockEntities.Factory<T> factory,
-            RegistryObject<? extends net.minecraft.world.level.block.Block>... blocks) {
+            RegistryObject<? extends Block>... blocks) {
         return REG.blockEntity(id, () -> BlockEntities.ticking(factory,
                 (level, pos, state, be) -> be.tickClient(),
                 (level, pos, state, be) -> be.tickServer(),
-                java.util.Arrays.stream(blocks).map(RegistryObject::get)
-                        .toArray(net.minecraft.world.level.block.Block[]::new)));
+                Arrays.stream(blocks).map(RegistryObject::get)
+                        .toArray(Block[]::new)));
     }
     /**
      * The debris left by a meltdown: a block entity that carries what was destroyed and never ticks.
      * The only RBMK type that is not an {@link IRBMKTicking} column.
      */
     @SafeVarargs
-    private static <T extends net.minecraft.world.level.block.entity.BlockEntity> RegistryObject<BlockEntityType<T>> inert(
+    private static <T extends BlockEntity> RegistryObject<BlockEntityType<T>> inert(
             String id, BlockEntities.Factory<T> factory,
-            RegistryObject<? extends net.minecraft.world.level.block.Block>... blocks) {
+            RegistryObject<? extends Block>... blocks) {
         return REG.blockEntity(id, () -> BlockEntities.type(factory,
-                java.util.Arrays.stream(blocks).map(RegistryObject::get)
-                        .toArray(net.minecraft.world.level.block.Block[]::new)));
+                Arrays.stream(blocks).map(RegistryObject::get)
+                        .toArray(Block[]::new)));
     }
 
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKRod>> RBMK_ROD=type("rbmk_fuel_rod",BlockEntityRBMKRod::new,ModRBMKBlocks.rbmk_fuel_rod,ModRBMKBlocks.rbmk_fuel_rod_moderated);
@@ -67,9 +71,9 @@ public final class ModRBMKBlockEntities {
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKGraph>> RBMK_GRAPH=type("rbmk_graph",BlockEntityRBMKGraph::new,ModRBMKBlocks.rbmk_graph);
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKIndicator>> RBMK_INDICATOR=type("rbmk_indicator",BlockEntityRBMKIndicator::new,ModRBMKBlocks.rbmk_indicator);
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKAutoloader>> RBMK_AUTOLOADER=type("rbmk_autoloader",BlockEntityRBMKAutoloader::new,ModRBMKBlocks.rbmk_autoloader);
-    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal>> RBMK_TERMINAL=
+    public static final RegistryObject<BlockEntityType<BlockEntityRBMKTerminal>> RBMK_TERMINAL=
             REG.blockEntity("rbmk_terminal", () -> BlockEntities.serverTicking(
-                    com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal::new,
+                    BlockEntityRBMKTerminal::new,
                     (level, pos, state, be) -> be.serverTick(),
                     ModRBMKBlocks.rbmk_terminal.get()));
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKDebris>> RBMK_DEBRIS=inert("rbmk_debris",BlockEntityRBMKDebris::new,ModRBMKBlocks.rbmk_debris,ModRBMKBlocks.rbmk_debris_burning,ModRBMKBlocks.rbmk_debris_radiating,ModRBMKBlocks.rbmk_debris_digamma);

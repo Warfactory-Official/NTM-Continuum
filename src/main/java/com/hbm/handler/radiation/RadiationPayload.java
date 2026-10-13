@@ -8,12 +8,11 @@ import java.nio.ByteBuffer;
  * flood fill produces. The indices are only meaningful against the same blocks, which is exactly the
  * guarantee a chunk gives while it is unloaded.
  *
- * <p>Nothing here is NBT. The predecessor stored every density as a boxed {@code Codec.DOUBLE} inside a
- * list tag, which costs a {@code Double} per pocket on both sides of every save; these are the same
- * eight bytes the simulation already holds, written straight out.
+ * <p>Nothing here is NBT: a list tag of boxed {@code Codec.DOUBLE} would cost a {@code Double} per pocket on both
+ * sides of every save, while these are the same eight bytes the simulation already holds, written straight out.
  *
  * <p>A leading version byte exists so a later format can be told apart from this one rather than
- * misread as it. Anything that does not parse is reported as absent — a chunk losing its parked
+ * misread as it. Anything that does not parse is reported as absent. A chunk losing its parked
  * radiation is recoverable, and the alternative is a malformed payload sizing an array.
  */
 public final class RadiationPayload {

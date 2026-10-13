@@ -17,7 +17,7 @@ import net.minecraft.world.item.ItemStack;
 /**
  * The gun state machine, ported from 1.12.2 {@code GunStateDecider}.
  *
- * <p>It runs on the tick a gun's timer runs out — that is the whole design: every action sets a state
+ * <p>It runs on the tick a gun's timer runs out. That is the whole design: every action sets a state
  * and a delay, and when the delay expires the decider works out what happens next. Draws finish, jams
  * clear, reloads either cycle again or end, and a held trigger on an automatic refires.
  */
@@ -54,7 +54,7 @@ public class GunStateDecider {
     }
 
     /**
-     * Performs one reload cycle. If more can still be loaded — a shotgun tube — it stays in RELOADING
+     * Performs one reload cycle. If more can still be loaded, as with a shotgun tube, it stays in RELOADING
      * and goes round again; otherwise the gun either jams or finishes the reload.
      */
     public static void deciderStandardReload(ItemStack stack, LambdaContext ctx, GunState lastState,
@@ -103,7 +103,7 @@ public class GunStateDecider {
 
     /**
      * Resolves the cooldown after a shot: refire if the gun is automatic and the trigger is still held,
-     * otherwise fall back to idle — or start a reload, for guns that reload themselves when empty.
+     * otherwise fall back to idle, or start a reload, for guns that reload themselves when empty.
      */
     public static void deciderAutoRefire(ItemStack stack, LambdaContext ctx, GunState lastState,
             int recIndex, int gunIndex, BooleanSupplier refireCondition) {
@@ -136,7 +136,7 @@ public class GunStateDecider {
             return;
         }
 
-        // Reload-on-empty, deliberately only for guns that do not refire on hold.
+        // Reload-on-empty, only for guns that do not refire on hold.
         if (rec.getReloadOnEmpty(stack) && rec.getMagazine(stack).getAmount(stack, ctx.inventory) <= 0) {
             ItemGunBaseNT.setIsAiming(stack, false);
             IMagazine<BulletConfig> mag = rec.getMagazine(stack);

@@ -11,6 +11,10 @@ import com.hbm.inventory.container.ContainerMachineSolderingStation;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.MachineCore;
+import dev.golem.core.world.ItemStacks;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 import net.minecraft.ChatFormatting;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -38,7 +42,7 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Soldering station — a multiblock that solders the higher-tier circuits from lower
+ * Soldering station: a multiblock that solders the higher-tier circuits from lower
  * circuits + lead fine-wire (+ a fluid at higher tiers). Auto-matches its recipe from the six grouped input
  * slots (3 toppings / 2 pcb / 1 solder), so no selector/blueprint is needed. Power + one receiving fluid
  * tank (typed by a {@code fluid_identifier} in slot 8).
@@ -93,8 +97,8 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         te.display = te.recipe != null ? te.recipe.output : ItemStack.EMPTY;
 
         // Adopt the matched recipe's fluid type when the tank has none, so the machine can subscribe to and
-        // pull that fluid from the network (it picks its fluid from the recipe, like the chemical plant — no
-        // fluid identifier needed). A tank already typed (slot-8 identifier, or an earlier recipe) is left as-is.
+        // pull that fluid from the network (it picks its fluid from the recipe, like the chemical plant, so no
+        // fluid identifier is needed). A tank already typed (slot-8 identifier, or an earlier recipe) is left as-is.
         if (te.recipe != null && te.recipe.fluid != null && te.tank.getTankType() == Fluids.NONE) {
             te.tank.setTankType(te.recipe.fluid.type);
         }
@@ -147,7 +151,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         }
         ItemStack out = inventory.getStackInSlot(6);
         if (!out.isEmpty()) {
-            if (!dev.golem.core.world.ItemStacks.sameItemAndData(out, recipe.output)) return false;
+            if (!ItemStacks.sameItemAndData(out, recipe.output)) return false;
             if (out.getCount() + recipe.output.getCount() > out.getMaxStackSize()) return false;
         }
         return true;
@@ -181,7 +185,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         }
     }
 
-    /** The 8 network-connection positions around the footprint, facing-dependent (ported verbatim). */
+    /** The 8 network-connection positions around the footprint, facing-dependent (ported as-is). */
     public DirPos[] getConPos() {
         ForgeDirection dir = MachineCore.facing(getBlockState());
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
@@ -210,22 +214,22 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
     }
 
     /** Valid if some group ingredient matches AND no other slot in the group already holds the same item. */
-    private boolean validForGroup(int slot, int from, int to, java.util.Set<AStack> group, ItemStack stack) {
+    private boolean validForGroup(int slot, int from, int to, Set<AStack> group, ItemStack stack) {
         for (int i = from; i < to; i++) {
             if (i != slot && !inventory.getStackInSlot(i).isEmpty()
-                    && dev.golem.core.world.ItemStacks.sameItemAndData(inventory.getStackInSlot(i), stack)) return false;
+                    && ItemStacks.sameItemAndData(inventory.getStackInSlot(i), stack)) return false;
         }
         for (AStack t : group) if (t.matchesRecipe(stack, true)) return true;
         return false;
     }
 
-    // --- WorldlyContainer: hoppers/pipes feed the inputs, pull the output ---
+    // WorldlyContainer: hoppers/pipes feed the inputs, pull the output
 
     @Override public int[] getSlotsForFace(Direction side) { return IO_SLOTS; }
     @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return slot <= 5 && isItemValidForSlot(slot, stack); }
     @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot == 6; }
 
-    // --- IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo) ---
+    // IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo)
 
     @Override
     protected int[] getUpgradeSlotRange() {
@@ -238,7 +242,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
     }
 
     @Override
-    public void provideInfo(UpgradeType type, int level, java.util.List<Component> info, boolean extendedInfo) {
+    public void provideInfo(UpgradeType type, int level, List<Component> info, boolean extendedInfo) {
         info.add(IUpgradeInfoProvider.getStandardLabel(ModMachineBlocks.machine_soldering_station.get()));
         if (type == UpgradeType.SPEED) {
             info.add(Component.translatable(KEY_DELAY, "-" + (level * 100 / 6) + "%").withStyle(ChatFormatting.GREEN));
@@ -254,27 +258,27 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
     }
 
     @Override
-    public java.util.HashMap<UpgradeType, Integer> getValidUpgrades() {
-        java.util.HashMap<UpgradeType, Integer> upgrades = new java.util.HashMap<>();
+    public HashMap<UpgradeType, Integer> getValidUpgrades() {
+        HashMap<UpgradeType, Integer> upgrades = new HashMap<>();
         upgrades.put(UpgradeType.SPEED, 3);
         upgrades.put(UpgradeType.POWER, 3);
         upgrades.put(UpgradeType.OVERDRIVE, 3);
         return upgrades;
     }
 
-    // --- IEnergyReceiverMK2 ---
+    // IEnergyReceiverMK2
 
     @Override public long getPower() { return Math.max(Math.min(power, maxPower), 0); }
     @Override public void setPower(long power) { this.power = power; }
     @Override public long getMaxPower() { return maxPower; }
     @Override public long getReceiverSpeed() { return maxPower; }
 
-    // --- IFluidStandardReceiverMK2 ---
+    // IFluidStandardReceiverMK2
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
 
-    // --- MenuProvider ---
+    // MenuProvider
 
     @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_soldering_station"); }
 
@@ -283,7 +287,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         return new ContainerMachineSolderingStation(containerId, playerInventory, this);
     }
 
-    // --- sync (BufPacket) + persistence ---
+    // Sync (BufPacket) + persistence
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
@@ -293,7 +297,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         buf.writeInt(progress);
         buf.writeInt(processTime);
         tank.serialize(buf);
-        dev.golem.core.world.ItemStacks.writeOptional(buf, display);
+        ItemStacks.writeOptional(buf, display);
     }
 
     @Override
@@ -304,7 +308,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         progress = buf.readInt();
         processTime = buf.readInt();
         tank.deserialize(buf);
-        display = dev.golem.core.world.ItemStacks.readOptional(buf);
+        display = ItemStacks.readOptional(buf);
     }
 
     @Override

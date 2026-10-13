@@ -9,7 +9,10 @@ import com.hbm.items.ModBatteryItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
+import com.hbm.items.machine.ItemBatteryPack;
+import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -110,7 +113,7 @@ public final class PlasmaForgeContainerGameTests {
     public static void transferRouting(GameTestHelper helper) {
         TileEntityFusionPlasmaForge forge = place(helper, new BlockPos(1, 1, 1));
         forge.plasmaModule.recipe = "plsm.weldiron";
-        try (var playerFixture = dev.golem.core.gametest.GameTestHelpers.mockServerPlayer(helper)) {
+        try (var playerFixture = GameTestHelpers.mockServerPlayer(helper)) {
             ServerPlayer player = playerFixture.player();
             ContainerMachinePlasmaForge menu = new ContainerMachinePlasmaForge(0, player.getInventory(), forge);
             ItemStack castIron = new ItemStack(ModAutogenItems.get(MaterialShapes.CASTPLATE, Mats.MAT_IRON), 2);
@@ -131,13 +134,13 @@ public final class PlasmaForgeContainerGameTests {
                     ModBatteryItems.PACKS.get(EnumBatteryPack.BATTERY_LEAD).get()));
             moved = menu.quickMoveStack(player, ContainerMachinePlasmaForge.MACHINE_SLOTS + 2);
             helper.assertTrue(!moved.isEmpty() && forge.getItem(TileEntityFusionPlasmaForge.SLOT_BATTERY)
-                            .getItem() instanceof com.hbm.items.machine.ItemBatteryPack,
+                            .getItem() instanceof ItemBatteryPack,
                     "A battery must shift-click into the battery slot");
 
             player.getInventory().setItem(12, new ItemStack(ModMachineItems.blueprint_plate.get()));
             moved = menu.quickMoveStack(player, ContainerMachinePlasmaForge.MACHINE_SLOTS + 3);
             helper.assertTrue(!moved.isEmpty() && forge.getItem(TileEntityFusionPlasmaForge.SLOT_BLUEPRINT)
-                            .getItem() instanceof com.hbm.items.machine.ItemBlueprints,
+                            .getItem() instanceof ItemBlueprints,
                     "A blueprint must shift-click into the blueprint slot");
 
             player.getInventory().setItem(13, new ItemStack(Items.STONE));
@@ -163,7 +166,7 @@ public final class PlasmaForgeContainerGameTests {
 
     public static void outputCrafting(GameTestHelper helper) {
         TileEntityFusionPlasmaForge forge = place(helper, new BlockPos(1, 1, 1));
-        try (var playerFixture = dev.golem.core.gametest.GameTestHelpers.mockServerPlayer(helper)) {
+        try (var playerFixture = GameTestHelpers.mockServerPlayer(helper)) {
             ServerPlayer player = playerFixture.player();
             ContainerMachinePlasmaForge menu = new ContainerMachinePlasmaForge(0, player.getInventory(), forge);
             int craftedBefore = player.getStats().getValue(Stats.ITEM_CRAFTED.get(Items.IRON_INGOT));
@@ -181,7 +184,7 @@ public final class PlasmaForgeContainerGameTests {
     }
 
     private static Player player(GameTestHelper helper) {
-        return dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        return GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
     }
 
     private static TileEntityFusionPlasmaForge place(GameTestHelper helper, BlockPos relative) {

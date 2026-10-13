@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.weapon.sedna.Crosshair;
@@ -25,12 +26,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
@@ -95,7 +99,7 @@ public class XFactoryDrill {
                             ctx.getPlayer().damageSources().playerAttack(ctx.getPlayer()), damage);
                 }
             }
-            if (player != null && mop instanceof net.minecraft.world.phys.BlockHitResult blockHit) {
+            if (player != null && mop instanceof BlockHitResult blockHit) {
                 BlockPos hitPos = blockHit.getBlockPos();
                 int aoe = player.isShiftKeyDown() ? 0 : getModdableAoE(stack, 1);
                 for (int i = -aoe; i <= aoe; i++) for (int j = -aoe; j <= aoe; j++) for (int k = -aoe; k <= aoe; k++)
@@ -123,7 +127,7 @@ public class XFactoryDrill {
                 && drill.canHarvestBlock(state);
         if (!canHarvest || (state.getDestroySpeed(world, pos) == -1.0F
                 && state.getDestroyProgress(player, world, pos) == 0.0F)
-                || state.is(com.hbm.blocks.ModDungeonBlocks.stone_keyhole.get())) {
+                || state.is(ModDungeonBlocks.stone_keyhole.get())) {
             if (!didPlink) {
                 world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.STONE_BREAK,
                         SoundSource.PLAYERS, 0.5F, 0.8F + world.getRandom().nextFloat() * 0.6F);
@@ -142,10 +146,10 @@ public class XFactoryDrill {
         } finally {
             if (movedToMainHand) player.setItemInHand(InteractionHand.MAIN_HAND, mainHand);
         }
-        if (destroyed && state.is(net.minecraft.world.level.block.Blocks.STONE) &&
-                world.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+        if (destroyed && state.is(Blocks.STONE) &&
+                world.getEntitiesOfClass(ItemEntity.class,
                         new AABB(pos).inflate(0.75D)).isEmpty()) {
-            Block.popResource(world, pos, new ItemStack(net.minecraft.world.level.block.Blocks.COBBLESTONE));
+            Block.popResource(world, pos, new ItemStack(Blocks.COBBLESTONE));
         }
         if (destroyed && world.getBlockState(pos).isAir()) world.levelEvent(null, 2001, pos, Block.getId(state));
     }

@@ -16,6 +16,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -55,7 +56,7 @@ public class MachineCyclotron extends BlockMultiblockMachine
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityMachineCyclotron cyclotron) {
             for (int i = 0; i < 4; i++) {
-                net.minecraft.world.item.Item plug = TileEntityMachineCyclotron.getItemForPlug(i);
+                Item plug = TileEntityMachineCyclotron.getItemForPlug(i);
                 if (plug != null && stack.getItem() == plug && !cyclotron.getPlug(i)) {
                     if (!level.isClientSide()) {
                         stack.shrink(1);
@@ -89,7 +90,7 @@ public class MachineCyclotron extends BlockMultiblockMachine
             this.slots = machine.getAccessibleSlotsFromSide(accessor);
         }
 
-        @Override public int[] getSlotsForFace(net.minecraft.core.Direction side) { return slots; }
+        @Override public int[] getSlotsForFace(Direction side) { return slots; }
         @Override public int getContainerSize() { return machine.getContainerSize(); }
         @Override public boolean isEmpty() { return machine.isEmpty(); }
         @Override public ItemStack getItem(int slot) { return machine.getItem(slot); }
@@ -102,12 +103,12 @@ public class MachineCyclotron extends BlockMultiblockMachine
         @Override public boolean canPlaceItem(int slot, ItemStack stack) { return machine.canPlaceItem(slot, stack); }
 
         @Override
-        public boolean canPlaceItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+        public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
             return contains(slot) && machine.isItemValidForSlot(slot, stack);
         }
 
         @Override
-        public boolean canTakeItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+        public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
             return contains(slot) && machine.canExtractItem(slot, stack, 1);
         }
 

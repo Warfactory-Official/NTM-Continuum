@@ -7,6 +7,8 @@ import dev.golem.core.data.SynchedData;
 import com.hbm.entity.projectile.EntityThrowableInterp;
 import com.hbm.items.weapon.grenade.*;
 import com.hbm.sound.ModSounds;
+import dev.golem.core.world.Compat;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -149,7 +151,7 @@ public class EntityGrenadeUniversal extends EntityThrowableInterp {
         setDeltaMovement(direction.getStepX() != 0 ? -velocity.x * bounce : velocity.x * 0.8D,
                 direction.getStepY() != 0 ? -velocity.y * bounce : velocity.y * 0.8D,
                 direction.getStepZ() != 0 ? -velocity.z * bounce : velocity.z * 0.8D);
-        dev.golem.core.world.Compat.syncPosition(this);
+        Compat.syncPosition(this);
         entityData.set(BOUNCES, getBounces() + 1);
     }
 
@@ -176,7 +178,7 @@ public class EntityGrenadeUniversal extends EntityThrowableInterp {
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.store("grenade", dev.golem.core.world.ItemStacks.optionalCodec(), getGrenadeItem());
+        output.store("grenade", ItemStacks.optionalCodec(), getGrenadeItem());
         output.putInt("bounces", getBounces());
         output.putInt("trail", getTrail());
     }
@@ -184,7 +186,7 @@ public class EntityGrenadeUniversal extends EntityThrowableInterp {
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        input.read("grenade", dev.golem.core.world.ItemStacks.optionalCodec()).ifPresent(this::setGrenadeItem);
+        input.read("grenade", ItemStacks.optionalCodec()).ifPresent(this::setGrenadeItem);
         entityData.set(BOUNCES, input.getIntOr("bounces", 0));
         entityData.set(TRAIL, input.getIntOr("trail", 0));
     }

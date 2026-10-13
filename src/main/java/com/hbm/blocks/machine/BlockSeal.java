@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModRadarUtilityBlocks;
 import com.hbm.interfaces.IBomb;
 import com.hbm.tileentity.machine.TileEntityHatch;
@@ -13,6 +14,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -82,7 +85,7 @@ public class BlockSeal extends CompatBlock implements IBomb {
 
     private static boolean isFrame(Level level, int x, int y, int z) {
         Block b = level.getBlockState(new BlockPos(x, y, z)).getBlock();
-        return b == com.hbm.blocks.ModBlocks.seal_frame.get() || b == ModRadarUtilityBlocks.seal_controller.get();
+        return b == ModBlocks.seal_frame.get() || b == ModRadarUtilityBlocks.seal_controller.get();
     }
 
     public static int getFrameSize(Level level, BlockPos pos) {
@@ -186,12 +189,12 @@ public class BlockSeal extends CompatBlock implements IBomb {
 
     /** Structure rotation and mirroring turn the placed facing, as vanilla's directional blocks do. */
     @Override
-    public BlockState rotate(BlockState state, net.minecraft.world.level.block.Rotation rotation) {
+    public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    public BlockState mirror(BlockState state, net.minecraft.world.level.block.Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 }

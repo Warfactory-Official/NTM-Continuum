@@ -2,6 +2,7 @@ package com.hbm.items.armor;
 
 import com.hbm.handler.ArmorModEvents;
 import com.hbm.handler.ArmorModHandler;
+import com.hbm.items.ModArmorModItems;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.DamageEvents;
 import dev.golem.core.world.Sounds;
@@ -64,6 +65,6 @@ public class ItemModCard extends ItemArmorMod {
         ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
         if (helmet.isEmpty()) return false;
         ItemStack mod = ArmorModHandler.pryMod(helmet, ArmorModHandler.helmet_only);
-        return mod.getItem() == com.hbm.items.ModArmorModItems.card_aos.get();
+        return mod.getItem() == ModArmorModItems.card_aos.get();
     }
 }

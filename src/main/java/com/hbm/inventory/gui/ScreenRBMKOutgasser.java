@@ -11,7 +11,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 /**
  * The 1.7 {@code GUIRBMKOutgasser}: {@code reactors/gui_rbmk_outgasser.png} (176x186), a 13-wide progress arrow at
- * (82, 50), the 10x42 gas gauge with its bottom at (115, 66), and the tank tooltip over (112, 21, 16, 48) — the
+ * (82, 50), the 10x42 gas gauge with its bottom at (115, 66), and the tank tooltip over (112, 21, 16, 48): the
  * 1.7 hover box is larger than the gauge it describes; kept as 1.7 had it. Labels come from
  * {@link RBMKContainerScreen#extractLabels}, which draws exactly 1.7's title and "Inventory" strings.
  */

@@ -4,7 +4,7 @@ import dev.golem.core.dejson.BiomeModifiers;
 import dev.golem.core.world.Spawns;
 
 /**
- * The five natural spawns of 1.7 {@code EntityMappings.writeMappings} (History §19ej-7):
+ * The five natural spawns of 1.7 {@code EntityMappings.writeMappings}:
  *
  * <pre>
  * addSpawn(EntityCreeperPhosgene.class, 5, 1, 1, monster, BiomeGenBase.getBiomeGenArray());
@@ -17,8 +17,8 @@ import dev.golem.core.world.Spawns;
  * 1.7's {@code addSpawn} skipped the mushroom island in every list. The creepers go into every biome of every
  * dimension, as in 1.7, and their own {@code checkSpawnRules} (1.7 {@code getCanSpawnHere}) keeps them to the
  * overworld, the volatile and gold ones below y 40. OCEAN and PLAINS are the port's 1.7 biome-dictionary tags
- * ({@code hbm:biome_dictionary/ocean} and {@code .../plains}, PLAINS including the savannas as 1.7 Forge registered them). 1.7 had no config switch
- * for these spawns.
+ * ({@code hbm:biome_dictionary/ocean} and {@code .../plains}, PLAINS including the savannas as 1.7 Forge registered
+ * them). 1.7 had no config switch for these spawns.
  *
  * <p>Placement: 1.7 {@code SpawnerAnimals} put land mobs on a solid top surface and water creatures in water over a
  * liquid; the type rules are modern vanilla's monster rule (difficulty, darkness, valid floor - the creepers' 1.7

@@ -9,7 +9,10 @@ import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -23,9 +26,9 @@ import java.util.List;
 import java.util.Optional;
 
 /** Plasma forge control panel, including recipe selection, energy, plasma ignition and fluid status. */
-public class GUIMachinePlasmaForge extends dev.golem.core.gui.CompatContainerScreen<ContainerMachinePlasmaForge> {
+public class GUIMachinePlasmaForge extends CompatContainerScreen<ContainerMachinePlasmaForge> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/reactors/gui_fusion_plasmaforge.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/reactors/gui_fusion_plasmaforge.png");
     private static final int RECIPE_X = PlasmaForgeGuiLayout.RECIPE_X;
     private static final int RECIPE_Y = PlasmaForgeGuiLayout.RECIPE_Y;
     private static final int RECIPE_SIZE = PlasmaForgeGuiLayout.RECIPE_SIZE;
@@ -58,7 +61,7 @@ public class GUIMachinePlasmaForge extends dev.golem.core.gui.CompatContainerScr
             if (forge.power >= recipe.power) led(graphics, x + 56, y + 76, 192);
         }
 
-        GuiDraw.item(graphics, recipe == null ? new net.minecraft.world.item.ItemStack(ModItems.template_folder.get()) : recipe.getIcon(),
+        GuiDraw.item(graphics, recipe == null ? new ItemStack(ModItems.template_folder.get()) : recipe.getIcon(),
                 x + PlasmaForgeGuiLayout.RECIPE_ICON_X, y + PlasmaForgeGuiLayout.RECIPE_ICON_Y);
         drawGauge(graphics, x + 34, y + 124, plasmaRecipe);
         drawGauge(graphics, x + 70, y + 124, forge.booster, forge.maxBooster);
@@ -240,7 +243,7 @@ public class GUIMachinePlasmaForge extends dev.golem.core.gui.CompatContainerScr
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         TileEntityFusionPlasmaForge forge = menu.getForge();
         if (forge != null && isHovering(RECIPE_X, RECIPE_Y, RECIPE_SIZE, RECIPE_SIZE, event.x(), event.y())) {
             GUIScreenRecipeSelector.openSelector(PlasmaForgeRecipes.INSTANCE, forge.getBlockPos(),

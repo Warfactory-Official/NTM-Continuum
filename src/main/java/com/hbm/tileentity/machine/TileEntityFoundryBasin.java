@@ -8,7 +8,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/** The large caster (1.12.2 {@code TileEntityFoundryBasin}) — takes size-1 molds, pour-only (no flow). */
+/** The large caster (1.12.2 {@code TileEntityFoundryBasin}), takes size-1 molds, pour-only (no flow). */
 public class TileEntityFoundryBasin extends TileEntityFoundryCastingBase {
 
     public TileEntityFoundryBasin(BlockPos pos, BlockState state) {

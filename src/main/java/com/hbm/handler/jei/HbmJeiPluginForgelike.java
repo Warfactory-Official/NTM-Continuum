@@ -15,13 +15,13 @@ import mezz.jei.api.registration.ISubtypeRegistration;
 import net.minecraft.resources.Identifier;
 
 /**
- * The Forge-like {@code @JeiPlugin} entrypoint, shared by NeoForge and Forge. Thin by design — all
+ * The Forge-like {@code @JeiPlugin} entrypoint, shared by NeoForge and Forge. Thin by design, all
  * category/recipe/catalyst logic lives in {@link HbmJeiPluginCommon} (compiled against
  * {@code jei-*-common-api}), so every loader shares it and only the annotated entrypoint is per-module.
  *
  * <p>Fabric needs its own copy ({@link HbmJeiPluginFabric}) because JEI discovers plugins differently
- * there — a {@code jei_mod_plugin} entrypoint in {@code fabric.mod.json} rather than an annotation
- * scan — but NeoForge and Forge discover this class the same way and need nothing loader-specific in
+ * there, a {@code jei_mod_plugin} entrypoint in {@code fabric.mod.json} rather than an annotation
+ * scan, but NeoForge and Forge discover this class the same way and need nothing loader-specific in
  * it, so widening the guard beats keeping a third identical copy.
  *
  * <p>On Forge 1.20.1 the class also opts out of "REI Plugin Compatibilities", which runs JEI plugins inside REI when

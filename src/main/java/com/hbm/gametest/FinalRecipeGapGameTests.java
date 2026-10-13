@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.config.VersatileConfig;
 import com.hbm.inventory.FluidContainerRegistry;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModFluidItems;
@@ -8,6 +9,7 @@ import com.hbm.items.ModFluidNetItems;
 import com.hbm.items.ModFuelItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemEnergy;
+import com.hbm.items.weapon.GunB92Cell;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
@@ -31,7 +33,7 @@ import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 /**
- * The recipe and data gaps closed in the final wave, checked through the real recipe manager: the 1.7
+ * The recipe and data gaps, checked through the real recipe manager: the 1.7
  * {@code getDict} fluid-container ingredient (any full container, the empty container left behind), the
  * metadata/component and crafting-tool ingredients, the {@code ContainerUpgradeCraftingHandler} content copy,
  * the furnace burn times on every loader (a real vanilla furnace burning a briquette), and the potion sickness
@@ -141,7 +143,7 @@ public final class FinalRecipeGapGameTests {
     }
 
     public static void componentMatch(GameTestHelper helper) {
-        // holotape: HOLO_DIGAMMA + a screwdriver that stays, one use more worn (one item per tape, History §19es-itemvariant)
+        // holotape: HOLO_DIGAMMA + a screwdriver that stays, one use more worn (one item per tape)
         Item holotape = item("hbm:holotape_image_holo_digamma");
         ItemStack digamma = new ItemStack(holotape);
         ItemStack screwdriver = new ItemStack(item("hbm:screwdriver"));
@@ -158,7 +160,7 @@ public final class FinalRecipeGapGameTests {
         helper.assertTrue(craft(helper, tape).isEmpty(), "another holotape variant does not restore");
 
         // rigged cell: the full B92 cell (1.7 meta 1 = charge 25, hbm:b92_energy); peroxide in the tank itself
-        ItemStack cell = com.hbm.items.weapon.GunB92Cell.getFullCell();
+        ItemStack cell = GunB92Cell.getFullCell();
         List<ItemStack> rig = grid(ModFluidItems.fluid_tank.get().make(Fluids.PEROXIDE, 1_000), cell,
                 tagged(helper, "c:wires/copper"));
         ItemStack rigged = craft(helper, rig);
@@ -252,7 +254,7 @@ public final class FinalRecipeGapGameTests {
         helper.assertTrue(can.getItem() instanceof ItemEnergy, "can_smart is an ItemEnergy");
         can.getItem().finishUsingItem(can, helper.getLevel(), player);
         helper.assertTrue(!player.getActiveEffects().isEmpty(), "the drink applied its own effects (speed etc.)");
-        helper.assertTrue(!com.hbm.config.VersatileConfig.hasPotionSickness(player),
+        helper.assertTrue(!VersatileConfig.hasPotionSickness(player),
                 "1.7 PotionConfig.potionSickness defaults OFF: a drink applies no potion sickness");
         helper.succeed();
     }

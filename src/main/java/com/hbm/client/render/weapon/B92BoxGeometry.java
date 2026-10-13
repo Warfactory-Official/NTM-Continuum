@@ -5,7 +5,7 @@ import dev.golem.core.render.gem.Quads;
 import java.util.List;
 
 /**
- * Source-compatible form of original-hbm's Techne {@code ModelB92}.
+ * Source-compatible form of 1.7's Techne {@code ModelB92}.
  *
  * <p>The old model is a tree of twenty textured boxes, not an OBJ. Keeping the boxes as GEM quads
  * preserves the authored pivots and lets the same model run through vanilla and the optional instanced

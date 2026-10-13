@@ -1,17 +1,21 @@
 package com.hbm.items;
 
 import com.hbm.Constants;
+import com.hbm.config.MachineConfig;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.hazard.HazardData;
 import com.hbm.hazard.HazardEntry;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.hazard.modifier.HazardModifierRTGRadiation;
+import com.hbm.inventory.ModRtgMenus;
+import com.hbm.inventory.recipes.RTGRecipes;
 import com.hbm.items.machine.DepletedRTGMaterial;
 import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.items.machine.ItemRTGPelletDepleted;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
+import com.hbm.tileentity.ModRtgBlockEntities;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -58,9 +62,9 @@ public final class ModRtgContent {
             3_384_000_000L, DepletedRTGMaterial.NEPTUNIUM, "Americium-241 RTG Pellet");   // 4.7 LONG
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG_POLONIUM = pellet("pellet_rtg_polonium", 50,
             9_936_000L, DepletedRTGMaterial.LEAD, "Polonium-210 RTG Pellet");             // 138 SHORT
-    public static final RegistryObject<ItemRTGPellet> PELLET_RTG_GOLD = pellet("pellet_rtg_gold", com.hbm.config.MachineConfig.rtgDecay() ? 200 : 100,
+    public static final RegistryObject<ItemRTGPellet> PELLET_RTG_GOLD = pellet("pellet_rtg_gold", MachineConfig.rtgDecay() ? 200 : 100,
             194_400L, DepletedRTGMaterial.MERCURY, "Gold-198 RTG Pellet");                // 2.7 SHORT
-    public static final RegistryObject<ItemRTGPellet> PELLET_RTG_LEAD = pellet("pellet_rtg_lead", com.hbm.config.MachineConfig.rtgDecay() ? 600 : 200,
+    public static final RegistryObject<ItemRTGPellet> PELLET_RTG_LEAD = pellet("pellet_rtg_lead", MachineConfig.rtgDecay() ? 600 : 200,
             21_600L, DepletedRTGMaterial.BISMUTH, "Lead-209 RTG Pellet");                 // 0.3 SHORT
     // port-only (1.12.2's pellet, not in 1.7): 6,000 heat over 1.12.2's 12 half-lives of 1,000 ticks, decaying linearly here
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG_BALEFIRE = pellet("pellet_rtg_balefire", 6_000,
@@ -94,13 +98,13 @@ public final class ModRtgContent {
 
     /** Called after ordinary recipe tables can safely resolve registered items. */
     public static void registerRecipes() {
-        com.hbm.inventory.recipes.RTGRecipes.registerAssembly();
+        RTGRecipes.registerAssembly();
     }
 
 
     /** Forces the local items, component, block entity, and menu entries into the deferred queues. */
     public static void init() {
-        com.hbm.tileentity.ModRtgBlockEntities.init();
-        com.hbm.inventory.ModRtgMenus.init();
+        ModRtgBlockEntities.init();
+        ModRtgMenus.init();
     }
 }

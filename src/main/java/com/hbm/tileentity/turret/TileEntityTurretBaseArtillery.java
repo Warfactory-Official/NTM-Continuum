@@ -20,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
  * What the two big guns share: a queue of fire missions, and a line-of-sight test that answers over the
  * horizon.
  *
- * <p>Artillery does not need to see its target — {@link #doLOSCheck} turns the ray cast off and the
+ * <p>Artillery does not need to see its target. {@link #doLOSCheck} turns the ray cast off and the
  * check becomes "is the target above the terrain height at its own column", which is how a shell lobbed
  * over a hill still finds something on the far side.
  */
@@ -43,7 +43,7 @@ public abstract class TileEntityTurretBaseArtillery extends TileEntityTurretBase
      * The emplacement's whole outer wall, both courses: four cells a side, four sides, two levels.
      *
      * <p>Deviation from 1.12.2, which rotates the ring's <em>positions</em> with the placement but asks
-     * every neighbour about a world-constant face — so a cable is asked about its south face whichever
+     * every neighbour about a world-constant face, so a cable is asked about its south face whichever
      * way the gun points, and the two agree at only one of the four facings. The outward face is
      * derived from the same vectors the positions are, which is what 1.12.2 was reaching for; at the
      * facing where its constants line up, this is identical.
@@ -102,7 +102,7 @@ public abstract class TileEntityTurretBaseArtillery extends TileEntityTurretBase
         return targetQueue.size();
     }
 
-    /** Where one waiting mission aims — not derivable from the count, and what a test asserts on. */
+    /** Where one waiting mission aims; it is not derivable from the count, and what a test asserts on. */
     public Vec3 queuedTarget(int index) {
         return targetQueue.get(index);
     }

@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.machine.TileEntityForceField;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -20,8 +21,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * 1.7 {@code MachineForceField}: the renderer-drawn emitter. A plain click opens its menu (a sneaking click is
  * swallowed without doing anything, as 1.7 returned true for it). While the field is up four particles rise
- * off the top each display tick — lava while the emitter is blinking red, red dust otherwise — and four
- * smoke puffs while it is cooling down. Breaking it spills the battery and the upgrades (the block
+ * off the top each display tick (lava while the emitter is blinking red, red dust otherwise), and four
+ * smoke puffs rise while it is cooling down. Breaking it spills the battery and the upgrades (the block
  * entity is a container, which vanilla empties on removal).
  */
 public class MachineForceField extends CompatBlock implements TickingBlock {
@@ -45,7 +46,7 @@ public class MachineForceField extends CompatBlock implements TickingBlock {
                                                  BlockHitResult hit) {
         if (!level.isClientSide() && !player.isShiftKeyDown() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof TileEntityForceField field) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, field, pos);
+            Menus.openWithPos(serverPlayer, field, pos);
         }
         return InteractionResult.SUCCESS;
     }

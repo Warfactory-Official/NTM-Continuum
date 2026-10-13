@@ -7,6 +7,7 @@ import com.hbm.items.machine.IItemFluidId;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.util.BobMathUtil;
 import dev.golem.core.registry.TickingBlock;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -39,7 +40,7 @@ import java.util.function.Consumer;
  * {@code fluid_diode.obj}. An identifier sets its fluid; a plain click opens its settings screen
  * (throughput, pressure, priority); sneaking does nothing, as in 1.7.
  */
-public class FluidPump extends dev.golem.core.world.CompatBlock implements TickingBlock, ILookOverlay {
+public class FluidPump extends CompatBlock implements TickingBlock, ILookOverlay {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 

@@ -11,6 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 
@@ -60,7 +61,7 @@ public record GunSoundPayload(boolean legacy, String soundId, SoundSource source
         GunSoundPayload payload = new GunSoundPayload(legacy, sound, source, x, y, z, volume, pitch, seed);
         double radius = sound.getRange(volume);
         double radiusSquared = radius * radius;
-        for (net.minecraft.server.level.ServerPlayer player : level.players()) {
+        for (ServerPlayer player : level.players()) {
             if (player.distanceToSqr(x, y, z) <= radiusSquared)
                 GolemNetwork.sendToPlayer(player, CODEC, payload);
         }

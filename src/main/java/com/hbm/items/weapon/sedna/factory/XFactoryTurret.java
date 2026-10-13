@@ -25,7 +25,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Rounds that belong to no gun: the turret systems feed from these directly — the Goalkeeper's belt
+ * Rounds that belong to no gun: the turret systems feed from these directly: the Goalkeeper's belt
  * and the 240 mm shells the Jeremy and the artillery fire.
  */
 public final class XFactoryTurret {

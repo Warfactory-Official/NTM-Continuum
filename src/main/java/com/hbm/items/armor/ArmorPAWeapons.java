@@ -1,5 +1,6 @@
 package com.hbm.items.armor;
 
+import com.hbm.client.ClientPlayerAccess;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.ModArmorItems;
 import java.util.IdentityHashMap;
@@ -32,12 +33,12 @@ public final class ArmorPAWeapons {
     // client type in any signature: a LocalPlayer here would make the verifier load client classes on
     // a dedicated server when ModArmorItems links this class.
     public static IPAMelee clientMelee() {
-        Player player = com.hbm.client.ClientPlayerAccess.player();
+        Player player = ClientPlayerAccess.player();
         return player == null ? null : melee(player);
     }
 
     public static IPARanged clientRanged() {
-        Player player = com.hbm.client.ClientPlayerAccess.player();
+        Player player = ClientPlayerAccess.player();
         return player == null ? null : ranged(player);
     }
 

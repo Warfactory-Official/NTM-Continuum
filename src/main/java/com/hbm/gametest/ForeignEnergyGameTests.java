@@ -22,13 +22,11 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
  * at the capability. Pipez is the peer: it is published for all three forge-like nodes, it needs no
  * other mod, and its energy pipe both exposes a handler per side and drives the transfer itself.
  *
- * <p>What a real peer proves that a synthetic one cannot is the transaction contract. Pipez decides
- * where to send by opening a transaction, calling {@code insert(1, …)} on every candidate destination,
- * and then <b>closing that transaction without committing it</b> — every tick, against every connection.
- * A handler that treats the call as final rather than journalling it does not fail loudly; it quietly
- * mints energy, one unit per destination per tick. The conservation assertion in
- * {@link #roundTrip} is what catches that, which is why it is asserted in a test whose headline claim
- * is about something else.
+ * <p>A real peer proves the transaction contract. Pipez decides where to send by opening a transaction,
+ * calling {@code insert(1, …)} on every candidate destination, and then <b>closing that transaction without
+ * committing it</b>: every tick, against every connection. A handler that treats the call as final rather
+ * than journalling it does not fail loudly; it quietly mints energy, one unit per destination per tick.
+ * The conservation assertion in {@link #roundTrip} catches that.
  *
  * <p>These tests skip where there is nothing to test: Fabric ships no standard energy capability, and a
  * node whose {@code deps.pipez} is blank has no peer on the runtime classpath.
@@ -54,9 +52,8 @@ public final class ForeignEnergyGameTests {
 
     /**
      * A row per test at a height nothing else uses. Plots sit close enough that a cable run reaching one
-     * edge is collinear with its neighbour's, and two collinear runs are correctly one network — at
-     * which point a test is measuring the plot next door through cells that park the moment that plot is
-     * released. {@code PowerNetworkGameTests} keeps its runs at y=1; these stay clear of them entirely.
+     * edge is collinear with its neighbour's, and two collinear runs are one network, so a test would
+     * measure the plot next door through cells that park the moment that plot is released. {@code PowerNetworkGameTests} keeps its runs at y=1; these stay clear of them entirely.
      */
     private static final int Y = 3;
     private static final int ROUND_TRIP_Z = 6;
@@ -71,8 +68,8 @@ public final class ForeignEnergyGameTests {
 
     /**
      * A charged net, a pipez pipe, and a second net that shares no cable with the first. Energy that
-     * arrives at the far battery crossed the capability boundary twice — out of our handler under
-     * pipez's transactions, and back into it — so the two directions are asserted by one reading.
+     * arrives at the far battery crossed the capability boundary twice: out of our handler under
+     * pipez's transactions, and back into it, so the two directions are asserted by one reading.
      */
     private static void roundTrip(GameTestHelper helper) {
         if (skip(helper)) return;
@@ -98,7 +95,7 @@ public final class ForeignEnergyGameTests {
         });
     }
 
-    /** Each side can see the other's handler — the lookup both mods' discovery is built on. */
+    /** Each side can see the other's handler: the lookup both mods' discovery is built on. */
     private static void face(GameTestHelper helper) {
         if (skip(helper)) return;
         ServerLevel level = helper.getLevel();
@@ -118,8 +115,8 @@ public final class ForeignEnergyGameTests {
 
     /**
      * Places a pipe already pulling from {@code from}. Pipez calls the side it draws from its extracting
-     * side and answers a pusher on that side too, so nothing moves either way — and no handler is even
-     * exposed — until one is set. Its one public setter is reached reflectively: the peer is a
+     * side and answers a pusher on that side too, so nothing moves either way, and no handler is even
+     * exposed until one is set. Its one public setter is reached reflectively: the peer is a
      * runtime-only dependency, and a node without it must still build.
      */
     private static BlockPos pipe(GameTestHelper helper, int x, int z, Direction from) {

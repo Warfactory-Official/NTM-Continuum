@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the oil-fired heater — 1.12.2 {@code ContainerOilburner} layout: fluid container in (26,17),
+ * Menu for the oil-fired heater: 1.12.2 {@code ContainerOilburner} layout. Fluid container in (26,17),
  * emptied container out (26,53), fluid identifier (44,71); 176×203 with the player inventory offset 37
  * (rows 121/139/157, hotbar 179). Buttons: 0 = burn toggle, 1/2 = mB/t setting up/down.
  */

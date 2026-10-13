@@ -1,11 +1,13 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.sound.ModSounds;
 import dev.golem.core.data.Tags;
 
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -123,7 +125,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase {
         }
     }
 
-    private void playSound(net.minecraft.sounds.SoundEvent sound, float volume, float pitch) {
+    private void playSound(SoundEvent sound, float volume, float pitch) {
         if (level == null) return;
         level.playSound(null, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), sound, SoundSource.BLOCKS, volume, pitch);
     }
@@ -133,7 +135,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase {
             toggleSerial++;
             isOpening = true;
             state = 1;
-            playSound(com.hbm.sound.ModSounds.REACTOR_START.get(), 0.5F, 0.75F);
+            playSound(ModSounds.REACTOR_START.get(), 0.5F, 0.75F);
         }
     }
 
@@ -147,7 +149,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase {
             toggleSerial++;
             isOpening = false;
             state = 1;
-            playSound(com.hbm.sound.ModSounds.REACTOR_START.get(), 0.5F, 0.75F);
+            playSound(ModSounds.REACTOR_START.get(), 0.5F, 0.75F);
         }
     }
 

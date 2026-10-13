@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import com.hbm.config.GeneralConfig;
 import dev.golem.core.registry.BlockTag;
 import dev.golem.core.registry.Loot;
 import com.hbm.registration.Presets;
@@ -72,7 +73,7 @@ public final class ModUtilityToolContent {
         Lifecycle.onServerStopping(server -> ToolKeybinds.clear());
 
         // 1.7 HazardRegistry: LBSM_safeCrates (in LBSM mode) keeps crates from becoming radioactive
-        if (!(com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMSafeCrates))
+        if (!(GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSafeCrates))
             HazardSystem.trafos.add(new HazardTransformerRadiationContainer());
         ItemFirstUse.register(ItemSettingsTool::useFirst);
     }

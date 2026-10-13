@@ -5,6 +5,7 @@ import dev.golem.core.data.CompatEntity;
 import com.hbm.interfaces.StoredItems;
 import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.tileentity.machine.storage.TileEntityCrateSupply;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -89,11 +90,11 @@ public class EntityParachuteCrate extends CompatEntity implements StoredItems {
 
     @Override
     protected void loadData(DataIn input) {
-        this.items = new ArrayList<>(input.read("items", dev.golem.core.world.ItemStacks.optionalCodec().listOf()).orElse(List.of()));
+        this.items = new ArrayList<>(input.read("items", ItemStacks.optionalCodec().listOf()).orElse(List.of()));
     }
 
     @Override
     protected void saveData(DataOut output) {
-        output.store("items", dev.golem.core.world.ItemStacks.optionalCodec().listOf(), List.copyOf(this.items));
+        output.store("items", ItemStacks.optionalCodec().listOf(), List.copyOf(this.items));
     }
 }

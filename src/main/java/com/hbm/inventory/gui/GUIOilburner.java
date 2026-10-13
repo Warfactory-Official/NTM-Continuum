@@ -1,9 +1,12 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerOilburner;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -15,15 +18,15 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * Screen for the oil-fired heater — 1.7.10 {@code GUIOilburner} ({@code machine/gui_oilburner.png}, 176×203):
+ * Screen for the oil-fired heater, 1.7.10 {@code GUIOilburner} ({@code machine/gui_oilburner.png}, 176×203):
  * heat bar 16×52 at (116,17) (fill u=194), tank bar 16×52 at (44,17), burn button 35×14 at (70,54)
  * (lit overlay u=210 while on), flame icon 18×18 at (79,34) (u=176) while burning. Setting readout on
  * the flame icon hover; left/right-click the flame area to raise/lower the mB/t setting (old
- * screwdriver IToolable — documented GUI stand-in).
+ * screwdriver IToolable, documented GUI stand-in).
  */
-public class GUIOilburner extends dev.golem.core.gui.CompatContainerScreen<ContainerOilburner> {
+public class GUIOilburner extends CompatContainerScreen<ContainerOilburner> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_oilburner.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/machine/gui_oilburner.png");
 
     public GUIOilburner(ContainerOilburner menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 203);
@@ -84,10 +87,10 @@ public class GUIOilburner extends dev.golem.core.gui.CompatContainerScreen<Conta
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.gameMode != null) {
-            // burn toggle — 1.7 hit area x [80,96), y (54,68]
+            // burn toggle, 1.7 hit area x [80,96), y (54,68]
             if (GuiUtil.hover(event.x(), event.y(), this.leftPos + 80, this.topPos + 54, 16, 14)) {
                 GuiUtil.playClickSound();
                 mc.gameMode.handleInventoryButtonClick(this.menu.containerId, 0);

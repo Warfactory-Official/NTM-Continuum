@@ -13,6 +13,7 @@ import dev.golem.core.render.anim.BusAnimationKeyframe.IType;
 import dev.golem.core.render.anim.BusAnimationSequence;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 
 /** Panzerschreck shield removal callback, including its incendiary fire action. */
@@ -27,7 +28,7 @@ public final class WeaponModPanzerschreckSawedOff extends WeaponModBase {
         Lego.LAMBDA_STANDARD_FIRE.accept(stack, ctx);
         if (ctx.entity != null) {
             HbmLivingProps.getData(ctx.entity).fire += 100;
-            if (ctx.entity.level() instanceof net.minecraft.server.level.ServerLevel level)
+            if (ctx.entity.level() instanceof ServerLevel level)
                 EntityDamageUtil.attackEntityFromIgnoreIFrame(ctx.entity,
                         ModDamageSources.bullet(level, ModDamageSources.DamageClass.FIRE.type(), ctx.entity, ctx.entity), 4F);
         }

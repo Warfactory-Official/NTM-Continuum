@@ -7,6 +7,7 @@ import com.hbm.blocks.ModBombs2Blocks;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.items.ModArmorItems;
+import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -204,7 +205,7 @@ public final class ExplosionThermo {
             if (e instanceof LivingEntity living) {
                 living.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 15 * 20, 4));
             }
-            dev.golem.core.world.Effects.ignite(e, 10); // 1.7 setFire(10)
+            Effects.ignite(e, 10); // 1.7 setFire(10)
         }
     }
 

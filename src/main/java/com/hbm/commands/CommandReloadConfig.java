@@ -7,6 +7,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import dev.golem.core.command.CompatCommands.ClientFeedback;
+import java.util.Locale;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -30,9 +31,9 @@ public final class CommandReloadConfig {
 
     public static <S> LiteralArgumentBuilder<S> build(Target target, Predicate<S> requirement, ClientFeedback<S> feedback) {
         SuggestionProvider<S> keys = (ctx, builder) -> {
-            String remaining = builder.getRemaining().toLowerCase(java.util.Locale.ROOT);
+            String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
             for (String key : target.map().get().keySet()) {
-                if (key.toLowerCase(java.util.Locale.ROOT).startsWith(remaining)) builder.suggest(key);
+                if (key.toLowerCase(Locale.ROOT).startsWith(remaining)) builder.suggest(key);
             }
             return builder.buildFuture();
         };

@@ -6,6 +6,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import dev.golem.core.command.CompatCommands.ClientFeedback;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -52,9 +54,9 @@ public final class CommandWikiRender {
                             Minecraft mc = Minecraft.getInstance();
                             GUIScreenWikiRender screen = new GUIScreenWikiRender(stacks.toArray(new ItemStack[0]),
                                     type, "wiki-block-renders-256", 16);
-                            java.util.concurrent.CompletableFuture.runAsync(() -> mc.execute(() -> mc.setScreen(screen)),
-                                    java.util.concurrent.CompletableFuture.delayedExecutor(100,
-                                            java.util.concurrent.TimeUnit.MILLISECONDS));
+                            CompletableFuture.runAsync(() -> mc.execute(() -> mc.setScreen(screen)),
+                                    CompletableFuture.delayedExecutor(100,
+                                            TimeUnit.MILLISECONDS));
                             return stacks.size();
                         }));
     }

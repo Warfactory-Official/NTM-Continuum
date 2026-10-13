@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.blocks.ModProductionBlocks;
+import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.Tags;
 
 import dev.golem.core.world.Compat;
@@ -9,6 +11,7 @@ import com.hbm.items.machine.ItemStamp;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
@@ -27,7 +30,7 @@ import dev.golem.core.data.DataOut;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Burner Press — a functional fuel-driven press. It burns furnace fuel (slot 0) to build up
+ * Burner Press: a functional fuel-driven press. It burns furnace fuel (slot 0) to build up
  * {@code burnTime}; while it has fuel and a valid stamp (slot 1) + ingredient (slot 2) it ramps a
  * {@code speed} gauge and drives the stamp head up/down ({@code progress}), producing the
  * {@link PressRecipes} output into slot 3 each full stroke. Faithful port of the 1.12.2
@@ -35,8 +38,8 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Slots: 0 fuel, 1 stamp, 2 input, 3 output, 4–12 storage buffer.
  *
- * <p>The {@code press_preheater} block (speeds up the stroke) lives in {@code com.hbm.production}; the
- * press-operate sound remains deferred (see IMPLEMENTATION.md §18).
+ * <p>The {@code press_preheater} block (speeds up the stroke) lives in {@code com.hbm.production}. The
+ * press-operate sound is not implemented (IMPLEMENTATION.md §18).
  */
 public class TileEntityMachinePress extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
 
@@ -75,9 +78,9 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePress te) {
         // 1.7: any of the six neighbours being a burner press preheater quadruples the spool-up.
         boolean preheated = false;
-        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             if (level.getBlockState(pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ))
-                    .is(com.hbm.blocks.ModProductionBlocks.PRESS_PREHEATER.get())) {
+                    .is(ModProductionBlocks.PRESS_PREHEATER.get())) {
                 preheated = true;
                 break;
             }
@@ -171,7 +174,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
 
         ItemStack outSlot = inventory.getStackInSlot(3);
         if (outSlot.isEmpty()) return true;
-        if (!dev.golem.core.world.ItemStacks.sameItemAndData(outSlot, output)) return false;
+        if (!ItemStacks.sameItemAndData(outSlot, output)) return false;
         return outSlot.getCount() + output.getCount() <= outSlot.getMaxStackSize();
     }
 
@@ -192,7 +195,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         return (progress * i) / maxProgress;
     }
 
-    // --- WorldlyContainer: hoppers extract only the output (slot 3) from below; insert fuel/stamp/input
+    // WorldlyContainer: hoppers extract only the output (slot 3) from below; insert fuel/stamp/input
     // from the sides. Without this a hopper under a plain Container BE pulls from every slot. ---
 
     @Override
@@ -210,7 +213,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         return slot == 3;
     }
 
-    // --- MenuProvider ---
+    // MenuProvider
 
     @Override
     public Component getDisplayName() {
@@ -222,7 +225,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         return new ContainerMachinePress(containerId, playerInventory, this);
     }
 
-    // --- sync (BufPacket) + persistence ---
+    // Sync (BufPacket) + persistence
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
@@ -230,7 +233,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         buf.writeInt(speed);
         buf.writeInt(burnTime);
         buf.writeInt(progress);
-        dev.golem.core.world.ItemStacks.writeOptional(buf, inventory.getStackInSlot(2));
+        ItemStacks.writeOptional(buf, inventory.getStackInSlot(2));
     }
 
     @Override
@@ -239,7 +242,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         speed = buf.readInt();
         burnTime = buf.readInt();
         progress = buf.readInt();
-        syncStack = dev.golem.core.world.ItemStacks.readOptional(buf);
+        syncStack = ItemStacks.readOptional(buf);
     }
 
     @Override

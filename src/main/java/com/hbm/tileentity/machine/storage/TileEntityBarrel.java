@@ -6,6 +6,7 @@ import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
+import com.hbm.blocks.machine.BlockFluidBarrel;
 import com.hbm.inventory.container.ContainerBarrel;
 import com.hbm.tileentity.ModFluidNetBlockEntities;
 import com.hbm.blocks.ModFluidNetBlocks;
@@ -25,6 +26,7 @@ import com.hbm.uninos.graph.EndpointRegistry;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
+import dev.golem.core.hook.Hook;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -42,6 +44,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -67,7 +70,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
     }
 
     /** For 1.7's subclasses that pass their own capacity to {@code TileEntityBarrel(int)} (the orbus). */
-    protected TileEntityBarrel(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos,
+    protected TileEntityBarrel(BlockEntityType<?> type, BlockPos pos,
                                BlockState state, int capacity) {
         super(type, pos, state, 6);
         this.tank = new FluidTankNTM(Fluids.NONE, capacity);
@@ -75,7 +78,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
 
     /** The barrel's capacity is a property of its block (12/6/16/24/16 thousand mB). */
     public static int capacityOf(Block block) {
-        return block instanceof com.hbm.blocks.machine.BlockFluidBarrel barrel ? barrel.capacity : 0;
+        return block instanceof BlockFluidBarrel barrel ? barrel.capacity : 0;
     }
 
     @Override
@@ -113,7 +116,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         if (level instanceof ServerLevel server) barrel.updateCells(server);
         if (barrel.mode != 1) {
             // 1.7: send mode provides at each port, receive mode subscribes there; any other mode leaves the role now
-            com.hbm.inventory.fluid.FluidType type = barrel.tank.getTankType();
+            FluidType type = barrel.tank.getTankType();
             for (DirPos dp : barrel.getConPos()) {
                 BlockPos at = dp.getPos();
                 if (barrel.mode == 2) barrel.tryProvide(barrel.tank, level, at, dp.getDir());
@@ -230,7 +233,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
     }
 
     /** The first listener answering true replaces 1.7's vanilla strength-5 explosion; HBM registers none. */
-    public static final dev.golem.core.hook.Hook<AntimatterBlast> ANTIMATTER_BLAST = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<AntimatterBlast> ANTIMATTER_BLAST = Hook.notifying();
 
     public void checkFluidInteraction() {
         if (level == null || level.isClientSide()) return;

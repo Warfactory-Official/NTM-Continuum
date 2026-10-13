@@ -2,11 +2,14 @@ package com.hbm.items.armor;
 
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.special.ItemCustomLore;
+import dev.golem.core.world.ArmorSlot;
+import dev.golem.core.world.Attributes;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.DamageEvents;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -68,10 +71,10 @@ public class ItemArmorMod extends ItemCustomLore {
      * Old {@code getModifiers}: the attribute modifiers this module grants while installed in {@code armor}
      * worn in {@code slot}. Applied and removed by {@code ArmorModEvents} as the worn stack changes.
      */
-    public void collectModifiers(ItemStack armor, dev.golem.core.world.ArmorSlot slot, List<Modifier> modifiers) {}
+    public void collectModifiers(ItemStack armor, ArmorSlot slot, List<Modifier> modifiers) {}
 
     /** One attribute modifier, named by attribute so the handler can resolve it on every version. */
-    public record Modifier(String attribute, double amount, dev.golem.core.world.Attributes.Op op) {
+    public record Modifier(String attribute, double amount, Attributes.Op op) {
         public static final String MAX_HEALTH = "max_health";
         public static final String KNOCKBACK_RESISTANCE = "knockback_resistance";
         public static final String ATTACK_DAMAGE = "attack_damage";
@@ -93,7 +96,7 @@ public class ItemArmorMod extends ItemCustomLore {
     }
 
     /** A plain coloured tooltip line. */
-    protected static net.minecraft.network.chat.MutableComponent coloured(ChatFormatting color, String text) {
+    protected static MutableComponent coloured(ChatFormatting color, String text) {
         return Component.literal(text).withStyle(color);
     }
 }

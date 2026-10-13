@@ -9,6 +9,7 @@ import com.hbm.items.armor.ArmorEuphemium;
 import com.hbm.items.armor.ArmorTrenchmaster;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.gear.ArmorFSBPowered;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.world.Effects;
 import dev.golem.core.world.StepHeight;
 import net.minecraft.core.BlockPos;
@@ -32,7 +33,7 @@ public final class ArmorSetGameTests {
     private ArmorSetGameTests() {}
 
     private static Player player(GameTestHelper helper) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         BlockPos origin = helper.absolutePos(new BlockPos(1, 1, 1));
         player.setPos(origin.getX() + 0.5D, origin.getY(), origin.getZ() + 0.5D);
         return player;

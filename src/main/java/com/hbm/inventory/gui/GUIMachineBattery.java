@@ -1,11 +1,16 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineBattery;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 
 import com.hbm.util.BobMathUtil;
@@ -16,14 +21,14 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Client screen for the energy storage blocks — 1.7.10 {@code GUIMachineBattery} (texture
+ * Client screen for the energy storage blocks, ported from 1.7.10 {@code GUIMachineBattery} (texture
  * {@code storage/gui_battery.png}, 176×166): energy bar 52×52 at (62,17), the unpowered and redstone-powered
  * I/O-mode buttons at (133,16) and (133,52), the priority button at (152,35), and the title followed by
  * the stored power in HE. Clicks dispatch through the vanilla {@code clickMenuButton} path.
  */
-public class GUIMachineBattery extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineBattery> {
+public class GUIMachineBattery extends CompatContainerScreen<ContainerMachineBattery> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_battery.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_battery.png");
 
     public GUIMachineBattery(ContainerMachineBattery menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 166);
@@ -102,12 +107,12 @@ public class GUIMachineBattery extends dev.golem.core.gui.CompatContainerScreen<
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         int button = button(event.x(), event.y(), leftPos, topPos);
         if (button >= 0) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.gameMode != null) {
-                mc.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 mc.gameMode.handleInventoryButtonClick(this.menu.containerId, button);
                 return true;
             }

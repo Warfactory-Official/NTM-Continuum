@@ -6,11 +6,16 @@ import com.hbm.inventory.recipes.AmmoPressRecipes.AmmoPressRecipe;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
+import dev.golem.core.world.ItemStacks;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -111,7 +116,7 @@ public class TileEntityMachineAmmoPress extends TileEntityMachineBase
             AmmoPressRecipe recipe = selected();
             if (recipe == null) return;
             ItemStack output = inventory.getStackInSlot(9);
-            if (!output.isEmpty() && (!dev.golem.core.world.ItemStacks.sameItemAndData(output, recipe.output)
+            if (!output.isEmpty() && (!ItemStacks.sameItemAndData(output, recipe.output)
                     || output.getCount() + recipe.output.getCount() > output.getMaxStackSize())) return;
             if (!hasIngredients(recipe)) return;
             produceAmmo(recipe);
@@ -207,28 +212,28 @@ public class TileEntityMachineAmmoPress extends TileEntityMachineBase
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        // the chosen recipe by its recipe id, never its list index (History sections 19ej-ids, 19fa-m2)
+        // the chosen recipe by its recipe id, never its list index
         output.putString("recipe", selectedRecipe);
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        if (input.getIntOr("recipe", Integer.MIN_VALUE) != Integer.MIN_VALUE) com.hbm.util.SavedIds.warnNumeric("recipe index", "recipe");
+        if (input.getIntOr("recipe", Integer.MIN_VALUE) != Integer.MIN_VALUE) SavedIds.warnNumeric("recipe index", "recipe");
         String saved = input.getStringOr("recipe", "");
         if (AmmoPressRecipes.byId(saved) != null || !saved.contains("#")) {
             selectedRecipe = saved;
         } else {
             // a save from before the recipes were data names the recipe by output and occurrence ("hbm:...x16#0")
-            int index = com.hbm.util.SavedIds.fromListKey(signatures(), saved);
+            int index = SavedIds.fromListKey(signatures(), saved);
             selectedRecipe = index < 0 ? "" : AmmoPressRecipes.recipes.get(index).id;
         }
     }
 
-    private static java.util.List<String> signatures() {
-        java.util.List<String> keys = new java.util.ArrayList<>();
+    private static List<String> signatures() {
+        List<String> keys = new ArrayList<>();
         for (AmmoPressRecipes.AmmoPressRecipe recipe : AmmoPressRecipes.recipes) {
-            keys.add(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(recipe.output.getItem()) + "x" + recipe.output.getCount());
+            keys.add(BuiltInRegistries.ITEM.getKey(recipe.output.getItem()) + "x" + recipe.output.getCount());
         }
         return keys;
     }

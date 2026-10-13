@@ -1,5 +1,8 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.blocks.network.BlockFluidDuct;
+import com.hbm.handler.ToolKeybinds;
+import com.hbm.tileentity.IFluidCopiable;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.DuctData;
@@ -15,10 +18,14 @@ import dev.golem.core.data.CompatBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -27,7 +34,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * fluid and does not tick.
  *
  * <p>Like the 1.12.2 {@code fluid_duct_mk2}, a duct defaults to {@code Fluids.NONE} and the player sets
- * its type by right-clicking with a {@code fluid_identifier} — it then forms a network with adjacent
+ * its type by right-clicking with a {@code fluid_identifier}: it then forms a network with adjacent
  * ducts and machines of that one fluid only, which on the graph is
  * {@link com.hbm.api.fluidmk2.FluidGraphProvider#dataCompatible}. The carried type is synced to the
  * client so the renderer can tint the duct's overlay.
@@ -37,11 +44,11 @@ import net.minecraft.world.level.block.state.BlockState;
  * graph existed a cell at all.
  */
 public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPipeMK2, ILoadedTile,
-        com.hbm.tileentity.IFluidCopiable {
+        IFluidCopiable {
 
     protected FluidType type = Fluids.NONE;
 
-    protected TileEntityFluidDuctNT(net.minecraft.world.level.block.entity.BlockEntityType<?> type,
+    protected TileEntityFluidDuctNT(BlockEntityType<?> type,
             BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
@@ -131,14 +138,14 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
     }
 
     @Override
-    public void pasteSettings(net.minecraft.nbt.CompoundTag nbt, int index, net.minecraft.world.level.Level level,
-                              net.minecraft.world.entity.player.Player player, BlockPos pos) {
+    public void pasteSettings(CompoundTag nbt, int index, Level level,
+                              Player player, BlockPos pos) {
         FluidType[] fluids = Fluids.readList(nbt, "fluids");
         if (fluids.length == 0) return;
         FluidType fluid = index < fluids.length ? fluids[index] : Fluids.NONE;
-        boolean ctrl = com.hbm.handler.ToolKeybinds.getKeyPressed(player,
-                com.hbm.handler.ToolKeybinds.EnumToolKey.TOOL_CTRL);
+        boolean ctrl = ToolKeybinds.getKeyPressed(player,
+                ToolKeybinds.EnumToolKey.TOOL_CTRL);
         // spreadType also refreshes the retyped ducts' connections, which a bare setFluidType would not.
-        com.hbm.blocks.network.BlockFluidDuct.spreadType(level, pos, fluid, getFluidType(), ctrl ? 64 : 1);
+        BlockFluidDuct.spreadType(level, pos, fluid, getFluidType(), ctrl ? 64 : 1);
     }
 }

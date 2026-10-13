@@ -6,8 +6,9 @@ import com.hbm.items.weapon.sedna.GunAnimation;
 import com.hbm.items.weapon.sedna.factory.Orchestras;
 import com.hbm.particle.SpentCasing;
 import com.hbm.particle.helper.CasingCreator;
+import java.util.function.BiConsumer;
 import net.minecraft.world.item.ItemStack;
-/** Grease-gun furniture stats; the old casing/orchestra presentation is intentionally separate. */
+/** Grease-gun furniture stats; the old casing/orchestra presentation is separate. */
 public class WeaponModGreasegun extends WeaponModBase {
     public WeaponModGreasegun(int id) { super(id, "FURNITURE"); setPriority(PRIORITY_ADDITIVE); }
     @Override public <T> T eval(T base, ItemStack gun, String key, Object parent) {
@@ -19,7 +20,7 @@ public class WeaponModGreasegun extends WeaponModBase {
         return base;
     }
 
-    public static final java.util.function.BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_GREASEGUN = (stack, ctx) -> {
+    public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_GREASEGUN = (stack, ctx) -> {
         var entity = ctx.entity;
         if (entity.level().isClientSide()) return;
         GunAnimation type = ItemGunBaseNT.getLastAnim(stack, ctx.configIndex);

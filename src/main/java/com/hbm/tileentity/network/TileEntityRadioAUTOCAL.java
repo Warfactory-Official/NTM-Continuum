@@ -3,12 +3,11 @@ package com.hbm.tileentity.network;
 import com.hbm.Constants;
 import com.hbm.config.AutocalConfig;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.modules.IParse;
-import com.hbm.modules.IParse.EnumStatementReturn;
-import com.hbm.modules.IParse.ParseContext;
-import com.hbm.modules.ParseMSES1Ext1;
-import com.hbm.radio.RadioAutocalMenu;
-import com.hbm.radio.ModRadioBlockEntities;
+import com.hbm.module.IParse;
+import com.hbm.module.IParse.EnumStatementReturn;
+import com.hbm.module.IParse.ParseContext;
+import com.hbm.module.ParseMSES1Ext1;
+import com.hbm.inventory.container.RadioAutocalMenu;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
@@ -29,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
+import com.hbm.tileentity.ModBlockEntities;
 
 /** Server-side MS-ES1 execution state and client display state for AUTOCAL. */
 public class TileEntityRadioAUTOCAL extends TileEntityLoadedBase
@@ -42,7 +42,7 @@ public class TileEntityRadioAUTOCAL extends TileEntityLoadedBase
     public ParseContext ctx;
 
     public TileEntityRadioAUTOCAL(BlockPos pos, BlockState state) {
-        super(ModRadioBlockEntities.RADIO_AUTOCAL.get(), pos, state);
+        super(ModBlockEntities.RADIO_AUTOCAL.get(), pos, state);
         this.ctx = new ParseContext(null);
     }
 

@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.CableData;
+import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.api.energymk2.IEnergyConductorMK2;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -12,6 +13,9 @@ import com.hbm.capability.MachineCaps;
 import com.hbm.inventory.container.ContainerMachineBattery;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.util.SavedIds;
+import net.minecraft.core.Direction;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.item.ItemStack;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -25,17 +29,18 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Energy Storage Block — the first machine ported onto the HBM BlockEntity tower
+ * Energy Storage Block: the first machine ported onto the HBM BlockEntity tower
  * ({@link TileEntityMachineBase}). It stores power and, per its configurable I/O mode, draws from /
  * pushes to / buffers the adjacent power network.
  *
- * <p>Behaviour ported from 1.7.10 ({@code storage/TileEntityMachineBattery}): two mode slots — {@link #redLow} (used while <b>not</b>
- * redstone-powered) and {@link #redHigh} (used while powered) — each one of input / buffer / output /
+ * <p>Behaviour ported from 1.7.10 ({@code storage/TileEntityMachineBattery}): two mode slots, {@link #redLow} (used while <b>not</b>
+ * redstone-powered) and {@link #redHigh} (used while powered): each one of input / buffer / output /
  * none, plus a connection {@link #priority}. The three are toggled by the GUI buttons (via the vanilla
  * {@code clickMenuButton} path) and synced to the screen on the BufPacket. Two item slots: slot 0
  * discharges a battery item into the block, slot 1 charges a battery item from it (top face: slot 0,
@@ -44,7 +49,7 @@ import dev.golem.core.data.DataOut;
  * <p>Energy reaches the GUI via the BufPacket (a full {@code long}, not a 16-bit {@code ContainerData}).
  */
 public class TileEntityMachineBattery extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, IEnergyProviderMK2, IEnergyConductorMK2, IRORValueProvider, IRORInteractive,
-        net.minecraft.world.WorldlyContainer {
+        WorldlyContainer {
 
     public static final long MAX_POWER = 1_000_000L;
     public long power = 0L;
@@ -80,7 +85,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
      * The tiered batteries (potato / lithium / schrabidium / dineutronium) are this same machine with
      * another capacity; 1.7 read it off the block ({@code MachineBattery.maxPower}), the port hands it in.
      */
-    protected TileEntityMachineBattery(net.minecraft.world.level.block.entity.BlockEntityType<?> type,
+    protected TileEntityMachineBattery(BlockEntityType<?> type,
                                        BlockPos pos, BlockState state, long maxPower) {
         // 1.7: 2 slots; 0 discharges an item into the block, 1 charges an item from it.
         super(type, pos, state, SLOT_COUNT);
@@ -142,7 +147,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
 
     /**
      * 1.7: "in buffer mode, becomes a cable block and provides power to itself". The cell is what makes
-     * that literal — two cable runs meeting at the battery are one network, so a generator on either
+     * that literal: two cable runs meeting at the battery are one network, so a generator on either
      * side reaches a machine on the other in a single round instead of every watt crossing through
      * storage at a twentieth of the buffer a tick. Its own two roles reach that network through the
      * pseudo-face.
@@ -160,30 +165,30 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         graph.setSelfEndpoint(key, true);
     }
 
-    // --- items (1.7 isItemValidForSlot accepts anything; sides as 1.7) ---
+    // Items (1.7 isItemValidForSlot accepts anything; sides as 1.7)
 
     @Override public boolean isItemValidForSlot(int slot, ItemStack stack) { return true; }
 
     @Override
-    public int[] getSlotsForFace(net.minecraft.core.Direction side) {
-        return side == net.minecraft.core.Direction.DOWN ? SLOTS_BOTTOM : side == net.minecraft.core.Direction.UP ? SLOTS_TOP : SLOTS_SIDE;
+    public int[] getSlotsForFace(Direction side) {
+        return side == Direction.DOWN ? SLOTS_BOTTOM : side == Direction.UP ? SLOTS_TOP : SLOTS_SIDE;
     }
 
     @Override
-    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
         return isItemValidForSlot(slot, stack);
     }
 
     @Override
-    public boolean canTakeItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
-        if (stack.getItem() instanceof com.hbm.api.energymk2.IBatteryItem item) {
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
+        if (stack.getItem() instanceof IBatteryItem item) {
             if (slot == 0 && item.getCharge(stack) == 0) return true;
             if (slot == 1 && item.getCharge(stack) == item.getMaxCharge(stack)) return true;
         }
         return false;
     }
 
-    // --- IEnergyHandler / receiver / provider (isLoaded() inherited from the tower) ---
+    // IEnergyHandler / receiver / provider (isLoaded() inherited from the tower)
 
     @Override
     public void setRemoved() {
@@ -233,7 +238,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         return getRelevantMode() == MODE_BUFFER;
     }
 
-    // --- per-tick sync ---
+    // Per-tick sync
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
@@ -255,7 +260,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         priority = ConnectionPriority.VALUES[buf.readByte()];
     }
 
-    // --- persistence (inventory + muffled + name handled by the base) ---
+    // Persistence (inventory + muffled + name handled by the base)
 
     @Override
     protected void saveData(DataOut output) {
@@ -263,7 +268,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         output.putLong("power", power);
         output.putShort("redLow", redLow);
         output.putShort("redHigh", redHigh);
-        com.hbm.util.SavedIds.putEnum(output, "priority", priority); // by name, never an ordinal
+        SavedIds.putEnum(output, "priority", priority); // by name, never an ordinal
     }
 
     @Override
@@ -272,10 +277,10 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         power = input.getLongOr("power", 0L);
         redLow = (short) input.getShortOr("redLow", (short) MODE_INPUT);
         redHigh = (short) input.getShortOr("redHigh", (short) MODE_OUTPUT);
-        priority = com.hbm.util.SavedIds.getEnum(input, "priority", ConnectionPriority.LOW);
+        priority = SavedIds.getEnum(input, "priority", ConnectionPriority.LOW);
     }
 
-    // --- MenuProvider ---
+    // MenuProvider
 
     @Override
     public Component getDisplayName() {

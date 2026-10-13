@@ -31,7 +31,7 @@ public final class NodeNetwork<D> {
     public long tracker;
     public int[] providerCursors;
     /**
-     * Reusable gather scratch for the ENERGY net, so a steady-state tick allocates nothing; deliberately does NOT cache MEMBERSHIP - a missed invalidation bump would be silent staleness.
+     * Reusable gather scratch for the ENERGY net, so a steady-state tick allocates nothing; does NOT cache MEMBERSHIP - a missed invalidation bump would be silent staleness.
      */
     public @Nullable Object energyGather;
     /**

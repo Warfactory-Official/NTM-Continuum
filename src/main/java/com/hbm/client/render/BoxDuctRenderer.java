@@ -22,7 +22,7 @@ import com.hbm.blocks.network.FluidDuctBoxExhaust;
  *
  * <p>The 1.7 renderer's per-face UV rotations ({@code uvRotateTop} etc.) are reproduced: a straight run along X
  * or Z, a vertical bend with an X arm and a horizontal bend each turn some faces' icons so the straight icon runs
- * along the duct (without them every horizontal run showed its bands across the pipe, 2026-10-12 playtest). The
+ * along the duct (without them every horizontal run showed its bands across the pipe). The
  * turned UVs are {@code RenderBlocks.renderFace*}'s for those flags, including its quirk of reflecting the
  * along-Y coordinate about the box's own centre ({@code minY + maxY - y}); see {@link #uv}.
  */
@@ -182,7 +182,7 @@ public class BoxDuctRenderer<T extends TileEntityFluidDuctNT> extends GemBER<T, 
         };
     }
 
-    /** The 1.7 {@code FluidDuctBox.getIcon(world, x, y, z, side)}, verbatim, as an icon index. */
+    /** The 1.7 {@code FluidDuctBox.getIcon(world, x, y, z, side)} as an icon index. */
     private static int icon(State s, int side) {
         int mask = s.mask, count = s.count;
         boolean pX = (mask & 32) != 0, nX = (mask & 16) != 0, pY = (mask & 8) != 0, nY = (mask & 4) != 0, pZ = (mask & 2) != 0, nZ = (mask & 1) != 0;
@@ -231,8 +231,8 @@ public class BoxDuctRenderer<T extends TileEntityFluidDuctNT> extends GemBER<T, 
             // 1.7: (nY || pY) && (pX || nX) turns top and bottom; !nY && !pY turns the four sides.
             state.shape = anyY && anyX ? CURVE_TB : !anyY ? CURVE_SIDES : CURVE;
         } else state.shape = JUNCTION;
-        // 1.7: the white duct takes ColorUtil.lightenColor(type colour, 0.25) — a quarter of the way to
-        // white — for every type, NONE (0x888888) included.
+        // 1.7: the white duct takes ColorUtil.lightenColor(type colour, 0.25), a quarter of the way to
+        // white, for every type, NONE (0x888888) included.
         int color = 0xFFFFFF;
         if (state.material == 2) {
             int c = be.getFluidType().getColor();

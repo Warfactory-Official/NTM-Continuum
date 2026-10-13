@@ -4,8 +4,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.world.gen.LegacyDungeonStructure;
 import com.hbm.world.gen.LegacyDungeonWorld;
+import dev.golem.core.harness.HarnessQueryRegistry;
+import dev.golem.core.registry.BlockEntities;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
@@ -13,13 +16,16 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
 /**
  * Harness query {@code hbm_wgd} (dev clients with the harness on): the WG-D legacy dungeon starts referenced by the chunk
@@ -34,7 +40,7 @@ public final class LegacyDungeonHarnessQueries {
     private LegacyDungeonHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_wgd", LegacyDungeonHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_wgd", LegacyDungeonHarnessQueries::query);
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {
@@ -67,12 +73,12 @@ public final class LegacyDungeonHarnessQueries {
         if (starts.isEmpty() && rebuild != null) {
             LegacyDungeonStructure.Kind kind = LegacyDungeonStructure.Kind.byId(rebuild);
             if (kind != null) {
-                LegacyDungeonStructure structure = new LegacyDungeonStructure(new net.minecraft.world.level.levelgen.structure.Structure.StructureSettings(
-                        net.minecraft.core.HolderSet.direct(List.of()), Map.of(),
-                        net.minecraft.world.level.levelgen.GenerationStep.Decoration.TOP_LAYER_MODIFICATION,
-                        net.minecraft.world.level.levelgen.structure.TerrainAdjustment.NONE), kind);
+                LegacyDungeonStructure structure = new LegacyDungeonStructure(new Structure.StructureSettings(
+                        HolderSet.direct(List.of()), Map.of(),
+                        GenerationStep.Decoration.TOP_LAYER_MODIFICATION,
+                        TerrainAdjustment.NONE), kind);
                 var generator = level.getChunkSource().getGenerator();
-                var context = new net.minecraft.world.level.levelgen.structure.Structure.GenerationContext(level.registryAccess(), generator,
+                var context = new Structure.GenerationContext(level.registryAccess(), generator,
                         generator.getBiomeSource(), level.getChunkSource().randomState(), level.getStructureManager(), level.getSeed(),
                         chunk, level, biome -> true);
                 var stub = structure.findValidGenerationPoint(context);
@@ -149,7 +155,7 @@ public final class LegacyDungeonHarnessQueries {
                             }
                         }
                         if (be instanceof SpawnerBlockEntity spawner) {
-                            var tag = dev.golem.core.registry.BlockEntities.saveWithoutMetadata(spawner, level.registryAccess());
+                            var tag = BlockEntities.saveWithoutMetadata(spawner, level.registryAccess());
                             spawners.add(String.valueOf(tag.get("SpawnData")));
                         }
                         entities.merge(String.valueOf(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(be.getType())), 1, Integer::sum);

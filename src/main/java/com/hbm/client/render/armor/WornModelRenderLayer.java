@@ -1,5 +1,6 @@
 package com.hbm.client.render.armor;
 
+import com.hbm.client.jetpack.JetpackClientVisuals;
 import com.hbm.items.armor.ArmorNo9;
 import com.hbm.items.armor.IWornModel;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -53,7 +54,7 @@ public class WornModelRenderLayer extends CompatHumanoidLayer {
         ArmorRenderer renderer = ArmorRenderers.get(model.wornModel());
         if (renderer == null) return;
         boolean crouching = parts.sneaking
-                && !com.hbm.client.jetpack.JetpackClientVisuals.freezesPlayerPose(parts.player());
+                && !JetpackClientVisuals.freezesPlayerPose(parts.player());
         HumanoidPose armorPose = crouching == parts.sneaking ? parts
                 : new HumanoidPose(parts.model(), false, parts.baby, parts.invisible, parts.player());
         No9ArmorRenderer.lampOn = ArmorNo9.isOn(head);

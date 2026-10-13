@@ -1,6 +1,8 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.items.ModDataComponents;
+import dev.golem.core.world.CustomRecipes;
+import dev.golem.core.world.ItemStackSpec;
 import java.util.List;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -11,10 +13,10 @@ public final class ComponentCopyShapelessRecipe
         extends dev.golem.core.world.ComponentCopyShapelessRecipe {
 
     public static final RecipeSerializer<ComponentCopyShapelessRecipe> SERIALIZER =
-            dev.golem.core.world.CustomRecipes.componentCopyShapeless(ComponentCopyShapelessRecipe::new);
+            CustomRecipes.componentCopyShapeless(ComponentCopyShapelessRecipe::new);
 
     private ComponentCopyShapelessRecipe(String namespace, String path, List<Ingredient> ingredients,
-                                         Ingredient copyFrom, dev.golem.core.world.ItemStackSpec result) {
+                                         Ingredient copyFrom, ItemStackSpec result) {
         super(namespace, path, ingredients, copyFrom, result);
     }
 
@@ -22,7 +24,7 @@ public final class ComponentCopyShapelessRecipe
     public static ComponentCopyShapelessRecipe of(List<Ingredient> ingredients, Ingredient copyFrom,
                                                    ItemStack result) {
         return new ComponentCopyShapelessRecipe("hbm", "component_copy_shapeless", ingredients, copyFrom,
-                dev.golem.core.world.ItemStackSpec.of(result));
+                ItemStackSpec.of(result));
     }
 
     @Override

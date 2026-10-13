@@ -4,6 +4,7 @@ import com.hbm.inventory.container.ContainerPAQuadrupole;
 import com.hbm.items.machine.ItemPACoil;
 import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
 import com.hbm.tileentity.machine.albion.TileEntityPAQuadrupole;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -15,7 +16,7 @@ import org.jspecify.annotations.Nullable;
 public class GUIPAQuadrupole extends GUIPABase<ContainerPAQuadrupole> {
 
     private static final Identifier TEXTURE =
-            dev.golem.core.Ids.of("hbm", "textures/gui/particleaccelerator/gui_quadrupole.png");
+            Ids.of("hbm", "textures/gui/particleaccelerator/gui_quadrupole.png");
 
     public GUIPAQuadrupole(ContainerPAQuadrupole menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);

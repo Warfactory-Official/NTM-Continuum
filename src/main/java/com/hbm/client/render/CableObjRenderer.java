@@ -2,6 +2,7 @@ package com.hbm.client.render;
 
 import com.hbm.blocks.network.BlockCable;
 import com.hbm.client.model.WavefrontObj;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -26,7 +27,7 @@ import java.util.Set;
  */
 public class CableObjRenderer<T extends BlockEntity> extends GemBER<T, CableRenderState> {
 
-    private static final Identifier OBJ = dev.golem.core.Ids.of("hbm", "models/blocks/cable_neo.obj");
+    private static final Identifier OBJ = Ids.of("hbm", "models/blocks/cable_neo.obj");
     private static final String[] PARTS = {"CX", "CY", "CZ", "Core", "posX", "negX", "posY", "negY", "posZ", "negZ"};
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);

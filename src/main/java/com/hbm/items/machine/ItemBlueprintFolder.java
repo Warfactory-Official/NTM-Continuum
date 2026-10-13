@@ -2,6 +2,7 @@ package com.hbm.items.machine;
 
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMachineItems;
 import dev.golem.core.world.CompatItem;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The old blueprint booklet: right-click chooses a recipe pool and creates a dynamic blueprint. */
-public final class ItemBlueprintFolder extends CompatItem implements com.hbm.items.LegacyMeta {
+public final class ItemBlueprintFolder extends CompatItem implements LegacyMeta {
 
     /** 1.7 metadata: 0 draws an ALT pool, 1 a DISCOVER pool, 2 a SECRET pool. */
     private final int variant;
@@ -41,7 +42,7 @@ public final class ItemBlueprintFolder extends CompatItem implements com.hbm.ite
         ItemStack held = player.getItemInHand(hand);
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
-        // Machine recipes are lazy in the modern port; old-hbm had already loaded them before item use.
+        // Machine recipes are lazy in the modern port; 1.12.2 had already loaded them before item use.
         AssemblyMachineRecipes.INSTANCE.registerRecipes();
         // 1.7 onItemRightClick: damage 0 ALT, 1 DISCOVER, 2 SECRET (the port had dropped the SECRET folder)
         String prefix = variant == 1 ? GenericRecipes.POOL_PREFIX_DISCOVER

@@ -8,11 +8,13 @@ import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachinePrecAss;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -24,7 +26,7 @@ import net.minecraft.world.phys.Vec3;
 public final class PrecisionAssemblerRenderer extends GemBER<TileEntityMachinePrecAss, PrecisionAssemblerRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/assembly_machine.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/assembly_machine.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/precass.png");
 
@@ -99,7 +101,7 @@ public final class PrecisionAssemblerRenderer extends GemBER<TileEntityMachinePr
         GenericRecipe recipe = PrecAssRecipes.INSTANCE.getRecipe(be.assemblerModule.recipe);
         if (recipe != null && be.getLevel() != null) {
             // Measured where the machine is seen: on a moving sub-level (Create Aeronautics) its block sits far from it.
-            double distanceSq = dev.golem.core.world.SubLevels.distanceSq(be.getLevel(),
+            double distanceSq = SubLevels.distanceSq(be.getLevel(),
                     be.getBlockPos().getX() + 0.5, be.getBlockPos().getY() + 1.0, be.getBlockPos().getZ() + 0.5,
                     cameraPosition.x, cameraPosition.y, cameraPosition.z);
             if (distanceSq < 35 * 35) {

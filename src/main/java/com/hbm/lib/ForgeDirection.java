@@ -4,9 +4,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Rotation;
 
 /**
- * HBM's own direction enum (copied from 1.7.10 ForgeDirection) — kept because vanilla
+ * HBM's own direction enum (copied from 1.7.10 ForgeDirection), kept because vanilla
  * {@link Direction} has no {@code UNKNOWN} value, which the power/fluid networks rely on as a
- * sentinel. Ported verbatim; {@code EnumFacing} -> {@link Direction}. The first six values match
+ * sentinel. Ported unchanged; {@code EnumFacing} maps to {@link Direction}. The first six values match
  * vanilla {@link Direction}'s ordinal order (DOWN, UP, NORTH, SOUTH, WEST, EAST).
  */
 public enum ForgeDirection {

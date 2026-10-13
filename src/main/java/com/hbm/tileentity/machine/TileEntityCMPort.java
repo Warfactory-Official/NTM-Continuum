@@ -6,8 +6,10 @@ import com.hbm.api.fluidmk2.IFluidProviderMK2;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModCustomMachineBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.uninos.graph.PortClaims;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,7 +27,7 @@ import org.jspecify.annotations.Nullable;
  */
 public class TileEntityCMPort extends TileEntityLoadedBase
         implements IEnergyReceiverMK2, IEnergyProviderMK2, IFluidReceiverMK2, IFluidProviderMK2,
-        com.hbm.uninos.graph.PortClaims.Delegate {
+        PortClaims.Delegate {
 
     /** 1.7: the controller subscribes and provides at its connection positions; the port only fronts it. */
     @Override
@@ -75,8 +77,8 @@ public class TileEntityCMPort extends TileEntityLoadedBase
     // --- fluid ---
 
     @Override
-    public boolean canConnect(FluidType type, com.hbm.lib.ForgeDirection dir) {
-        return dir != com.hbm.lib.ForgeDirection.UNKNOWN;
+    public boolean canConnect(FluidType type, ForgeDirection dir) {
+        return dir != ForgeDirection.UNKNOWN;
     }
 
     @Override

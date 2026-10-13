@@ -38,13 +38,13 @@ import static com.hbm.util.DamageResistanceHandler.CATEGORY_FIRE;
 import static com.hbm.util.DamageResistanceHandler.CATEGORY_PHYSICAL;
 
 /**
- * The remaining full armour sets of 1.7 {@code ModItemsArmor} (part A): advanced alloy, CMB, bismuth,
+ * Full armour sets of 1.7 {@code ModItemsArmor}: advanced alloy, CMB, bismuth,
  * euphemium, the zirconium pants, the dineutronium joke set, Steel Ranger (AJR) and its AJRO repaint, the
  * HEV Mark IV, Fau's digamma suit and the Trenchmaster.
  *
  * <p>The shape is {@link ModArmorItems}': the helmet (the chestplate for helmet-less suits) carries the
  * whole set's configuration in {@link #configure()} and the other pieces {@code cloneStats} it. Numbers are
- * the 1.7 declarations verbatim. The AJR suits share {@link HbmArmorMaterials#AJR} with RPA/NCRPA exactly as
+ * the 1.7 declarations as written. The AJR suits share {@link HbmArmorMaterials#AJR} with RPA/NCRPA exactly as
  * upstream's four suits all used {@code aMatAJR}, so mixed pieces of those four count as one set.
  */
 public final class ModArmorSetItems {
@@ -54,7 +54,7 @@ public final class ModArmorSetItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    // ---- plain ArmorFSB sets (ModItemsArmor.java:70-81, 110-120) ----
+    // Plain ArmorFSB sets (ModItemsArmor.java:70-81, 110-120)
     public static final RegistryObject<ArmorFSB> alloy_helmet = plain("alloy_helmet", () -> HbmArmorMaterials.ALLOY, ArmorSlot.HELMET);
     public static final RegistryObject<ArmorFSB> alloy_plate = plain("alloy_plate", () -> HbmArmorMaterials.ALLOY, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorFSB> alloy_legs = plain("alloy_legs", () -> HbmArmorMaterials.ALLOY, ArmorSlot.LEGGINGS);
@@ -72,19 +72,19 @@ public final class ModArmorSetItems {
     public static final RegistryObject<ArmorFSB> dnt_legs = plain("dnt_legs", () -> HbmArmorMaterials.DNT, ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorFSB> dnt_boots = plain("dnt_boots", () -> HbmArmorMaterials.DNT, ArmorSlot.BOOTS);
 
-    // ---- ArmorBismuth (ModItemsArmor.java:52-61) ----
+    // ArmorBismuth (ModItemsArmor.java:52-61)
     public static final RegistryObject<ArmorBismuth> bismuth_helmet = bismuth("bismuth_helmet", ArmorSlot.HELMET);
     public static final RegistryObject<ArmorBismuth> bismuth_plate = bismuth("bismuth_plate", ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorBismuth> bismuth_legs = bismuth("bismuth_legs", ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorBismuth> bismuth_boots = bismuth("bismuth_boots", ArmorSlot.BOOTS);
 
-    // ---- ArmorEuphemium (ModItemsArmor.java:37-40): no creative tab, epic, never wears ----
+    // ArmorEuphemium (ModItemsArmor.java:37-40): no creative tab, epic, never wears
     public static final RegistryObject<ArmorEuphemium> euphemium_helmet = euphemium("euphemium_helmet", ArmorSlot.HELMET);
     public static final RegistryObject<ArmorEuphemium> euphemium_plate = euphemium("euphemium_plate", ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorEuphemium> euphemium_legs = euphemium("euphemium_legs", ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorEuphemium> euphemium_boots = euphemium("euphemium_boots", ArmorSlot.BOOTS);
 
-    // ---- ArmorAJR / ArmorAJRO (ModItemsArmor.java:161-189): 2.5 MHE, 10 kHE/t charge, 2 kHE per point, 25/t ----
+    // ArmorAJR / ArmorAJRO (ModItemsArmor.java:161-189): 2.5 MHE, 10 kHE/t charge, 2 kHE per point, 25/t
     private static final long AJR_POWER = 2_500_000L;
     private static final long AJR_CHARGE = 10_000L;
     private static final long AJR_CONSUMPTION = 2_000L;
@@ -108,7 +108,7 @@ public final class ModArmorSetItems {
     public static final RegistryObject<ArmorAJRO> ajro_boots = powered("ajro_boots",
             p -> new ArmorAJRO(HbmArmorMaterials.AJR, ArmorSlot.BOOTS, p, AJR_POWER, AJR_CHARGE, AJR_CONSUMPTION, AJR_DRAIN));
 
-    // ---- ArmorHEV (ModItemsArmor.java:254-266): 1 MHE, 10 kHE/t, 2.5 kHE per point, no idle drain ----
+    // ArmorHEV (ModItemsArmor.java:254-266): 1 MHE, 10 kHE/t, 2.5 kHE per point, no idle drain
     public static final RegistryObject<ArmorHEV> hev_helmet = powered("hev_helmet",
             p -> new ArmorHEV(HbmArmorMaterials.HEV, ArmorSlot.HELMET, p, 1_000_000L, 10_000L, 2_500L, 0L));
     public static final RegistryObject<ArmorHEV> hev_plate = powered("hev_plate",
@@ -118,7 +118,7 @@ public final class ModArmorSetItems {
     public static final RegistryObject<ArmorHEV> hev_boots = powered("hev_boots",
             p -> new ArmorHEV(HbmArmorMaterials.HEV, ArmorSlot.BOOTS, p, 1_000_000L, 10_000L, 2_500L, 0L));
 
-    // ---- ArmorDigamma (ModItemsArmor.java:271-286): 10 MHE, 10 kHE/t, 2.5 kHE per point, no idle drain ----
+    // ArmorDigamma (ModItemsArmor.java:271-286): 10 MHE, 10 kHE/t, 2.5 kHE per point, no idle drain
     public static final RegistryObject<ArmorDigamma> fau_helmet = powered("fau_helmet",
             p -> new ArmorDigamma(HbmArmorMaterials.FAU, ArmorSlot.HELMET, p, 10_000_000L, 10_000L, 2_500L, 0L));
     public static final RegistryObject<ArmorDigamma> fau_plate = powered("fau_plate",
@@ -128,7 +128,7 @@ public final class ModArmorSetItems {
     public static final RegistryObject<ArmorDigamma> fau_boots = powered("fau_boots",
             p -> new ArmorDigamma(HbmArmorMaterials.FAU, ArmorSlot.BOOTS, p, 10_000_000L, 10_000L, 2_500L, 0L));
 
-    // ---- ArmorTrenchmaster (ModItemsArmor.java:319-333): setMaxDamage(0) ----
+    // ArmorTrenchmaster (ModItemsArmor.java:319-333): setMaxDamage(0)
     public static final RegistryObject<ArmorTrenchmaster> trenchmaster_helmet = trenchmaster("trenchmaster_helmet", ArmorSlot.HELMET);
     public static final RegistryObject<ArmorTrenchmaster> trenchmaster_plate = trenchmaster("trenchmaster_plate", ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorTrenchmaster> trenchmaster_legs = trenchmaster("trenchmaster_legs", ArmorSlot.LEGGINGS);

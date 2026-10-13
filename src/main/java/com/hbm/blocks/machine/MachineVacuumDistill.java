@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/** Vacuum Distiller block — 3×3×9 the folded core (dims {@code {8,0,1,1,1,1}}, offset 1) with the
+/** Vacuum Distiller block: 3×3×9, the folded core (dims {@code {8,0,1,1,1,1}}, offset 1), with the
  * 4 base corners marked as extras (the fluid ports). Mirrors {@link MachineRefinery}. */
 public class MachineVacuumDistill extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 

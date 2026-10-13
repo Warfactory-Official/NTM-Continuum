@@ -1,5 +1,10 @@
 package com.hbm.world.gen.terrain;
 
+import com.google.gson.JsonElement;
+import com.mojang.serialization.JsonOps;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.level.biome.Biome;
@@ -37,7 +42,7 @@ public final class LegacyClimate {
         return biome.value().hasPrecipitation() && biome.value().getBaseTemperature() >= 0.15F;
     }
 
-    private static final java.util.Map<Biome, Float> DOWNFALL = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+    private static final Map<Biome, Float> DOWNFALL = Collections.synchronizedMap(new WeakHashMap<>());
 
     /**
      * 1.7 {@code biome.rainfall}: the modern downfall. The field is private in every supported version, but the biome's
@@ -45,12 +50,12 @@ public final class LegacyClimate {
      * per biome. 1.7's {@code BiomeGenBase} default, 0.5, if the encoding has none.
      */
     public static float downfall(Holder<Biome> biome) {
-        return DOWNFALL.computeIfAbsent(biome.value(), value -> Biome.NETWORK_CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, value)
+        return DOWNFALL.computeIfAbsent(biome.value(), value -> Biome.NETWORK_CODEC.encodeStart(JsonOps.INSTANCE, value)
                 .resultOrPartial(error -> {})
-                .filter(com.google.gson.JsonElement::isJsonObject)
+                .filter(JsonElement::isJsonObject)
                 .map(json -> json.getAsJsonObject().get("downfall"))
-                .filter(com.google.gson.JsonElement::isJsonPrimitive)
-                .map(com.google.gson.JsonElement::getAsFloat)
+                .filter(JsonElement::isJsonPrimitive)
+                .map(JsonElement::getAsFloat)
                 .orElse(0.5F));
     }
 

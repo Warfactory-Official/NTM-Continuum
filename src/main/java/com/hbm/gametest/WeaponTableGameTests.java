@@ -2,12 +2,24 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.blocks.machine.ModWeaponTableBlocks;
+import com.hbm.client.render.weapon.DaniStaticLayout;
+import com.hbm.client.render.weapon.WeaponTableFrames;
+import com.hbm.creativetabs.HbmTab;
+import com.hbm.creativetabs.ModTabs;
+import com.hbm.extprop.HbmPlayerProps;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModGunItems;
 import com.hbm.items.ModWeaponModItems;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.container.ContainerWeaponTable;
+import com.hbm.items.weapon.grenade.ItemGrenadeExtra;
+import com.hbm.items.weapon.grenade.ItemGrenadeFilling;
+import com.hbm.items.weapon.grenade.ItemGrenadeFuze;
+import com.hbm.items.weapon.grenade.ItemGrenadeShell;
+import com.hbm.items.weapon.grenade.ItemGrenadeUniversal;
 import com.hbm.items.weapon.sedna.factory.GunFactory.EnumModSpecial;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.factory.GunFactory;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.impl.ItemGunDrill;
 import com.hbm.items.weapon.sedna.mags.MagazineElectricEngine;
@@ -21,16 +33,24 @@ import dev.golem.core.gametest.GameTests;
 import dev.golem.core.gui.CompatContainerMenu;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.world.ItemStacks;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.AABB;
@@ -108,30 +128,30 @@ public final class WeaponTableGameTests {
      * (19 pairs x 5 fuzes x 5 = 475, shell-major), and getItemStackLimit is the shell's (NUKE 1, TECH 2, else 4).
      */
     private static void grenadeSubItemsAndStackLimits(GameTestHelper helper) {
-        List<ItemStack> sub = com.hbm.items.weapon.grenade.ItemGrenadeUniversal.subItems();
+        List<ItemStack> sub = ItemGrenadeUniversal.subItems();
         helper.assertTrue(sub.size() == 475, "grenade_universal sub-items: expected 475, got " + sub.size());
-        var first = com.hbm.items.weapon.grenade.ItemGrenadeUniversal.getData(sub.get(0));
-        helper.assertTrue(first.shell() == com.hbm.items.weapon.grenade.ItemGrenadeShell.EnumGrenadeShell.FRAG
-                        && first.filling() == com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling.POWDER
-                        && first.fuze() == com.hbm.items.weapon.grenade.ItemGrenadeFuze.EnumGrenadeFuze.S3
+        var first = ItemGrenadeUniversal.getData(sub.get(0));
+        helper.assertTrue(first.shell() == ItemGrenadeShell.EnumGrenadeShell.FRAG
+                        && first.filling() == ItemGrenadeFilling.EnumGrenadeFilling.POWDER
+                        && first.fuze() == ItemGrenadeFuze.EnumGrenadeFuze.S3
                         && first.extra() == null, "first grenade sub-item must be frag/powder/s3: " + first);
-        var second = com.hbm.items.weapon.grenade.ItemGrenadeUniversal.getData(sub.get(1));
-        helper.assertTrue(second.extra() == com.hbm.items.weapon.grenade.ItemGrenadeExtra.EnumGrenadeExtra.GLUE,
+        var second = ItemGrenadeUniversal.getData(sub.get(1));
+        helper.assertTrue(second.extra() == ItemGrenadeExtra.EnumGrenadeExtra.GLUE,
                 "second grenade sub-item must add the first extra: " + second);
         for (ItemStack stack : sub) {
-            var data = com.hbm.items.weapon.grenade.ItemGrenadeUniversal.getData(stack);
+            var data = ItemGrenadeUniversal.getData(stack);
             helper.assertTrue(stack.getMaxStackSize() == data.shell().getStackLimit(),
                     data + " stacks to " + stack.getMaxStackSize() + ", not " + data.shell().getStackLimit());
         }
         int[] expected = {4, 4, 2, 1};
-        var shells = com.hbm.items.weapon.grenade.ItemGrenadeShell.EnumGrenadeShell.values();
+        var shells = ItemGrenadeShell.EnumGrenadeShell.values();
         for (int i = 0; i < shells.length; i++) {
             helper.assertTrue(shells[i].getStackLimit() == expected[i], shells[i] + " limit");
         }
         // a nuke grenade must not merge into another one
-        ItemStack nuke = com.hbm.items.weapon.grenade.ItemGrenadeUniversal.make(shells[3],
-                com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling.NUCLEAR,
-                com.hbm.items.weapon.grenade.ItemGrenadeFuze.EnumGrenadeFuze.S3);
+        ItemStack nuke = ItemGrenadeUniversal.make(shells[3],
+                ItemGrenadeFilling.EnumGrenadeFilling.NUCLEAR,
+                ItemGrenadeFuze.EnumGrenadeFuze.S3);
         helper.assertFalse(nuke.isStackable(), "a nuke grenade must not be stackable");
         helper.succeed();
     }
@@ -144,22 +164,22 @@ public final class WeaponTableGameTests {
     private static void grenadeHeldCounter(GameTestHelper helper) {
         ServerPlayer held = GameTestHelpers.mockServerPlayerInLevel(helper);
         ServerPlayer stowed = GameTestHelpers.mockServerPlayerInLevel(helper);
-        var shell = com.hbm.items.weapon.grenade.ItemGrenadeShell.EnumGrenadeShell.FRAG;
-        held.getInventory().setItem(0, com.hbm.items.weapon.grenade.ItemGrenadeUniversal.make(shell,
-                com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling.HE,
-                com.hbm.items.weapon.grenade.ItemGrenadeFuze.EnumGrenadeFuze.S3));
-        stowed.getInventory().setItem(4, com.hbm.items.weapon.grenade.ItemGrenadeUniversal.make(shell,
-                com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling.HE,
-                com.hbm.items.weapon.grenade.ItemGrenadeFuze.EnumGrenadeFuze.S3));
-        com.hbm.extprop.HbmPlayerProps.getData(held).grenadeDeployment = 99;
-        com.hbm.extprop.HbmPlayerProps.getData(stowed).grenadeDeployment = 0;
+        var shell = ItemGrenadeShell.EnumGrenadeShell.FRAG;
+        held.getInventory().setItem(0, ItemGrenadeUniversal.make(shell,
+                ItemGrenadeFilling.EnumGrenadeFilling.HE,
+                ItemGrenadeFuze.EnumGrenadeFuze.S3));
+        stowed.getInventory().setItem(4, ItemGrenadeUniversal.make(shell,
+                ItemGrenadeFilling.EnumGrenadeFilling.HE,
+                ItemGrenadeFuze.EnumGrenadeFuze.S3));
+        HbmPlayerProps.getData(held).grenadeDeployment = 99;
+        HbmPlayerProps.getData(stowed).grenadeDeployment = 0;
         tickInventories(helper, held, stowed, 0, 21);
     }
 
     private static void tickInventories(GameTestHelper helper, ServerPlayer held, ServerPlayer stowed, int done, int total) {
         if (done == total) {
-            int deployed = com.hbm.extprop.HbmPlayerProps.getData(held).grenadeDeployment;
-            int other = com.hbm.extprop.HbmPlayerProps.getData(stowed).grenadeDeployment;
+            int deployed = HbmPlayerProps.getData(held).grenadeDeployment;
+            int other = HbmPlayerProps.getData(stowed).grenadeDeployment;
             helper.assertTrue(deployed == total - 1, "held grenade: " + total + " ticks (first one the equip) must leave "
                     + (total - 1) + ", got " + deployed);
             helper.assertTrue(other == 0, "a grenade outside the selected slot must not draw, got " + other);
@@ -169,7 +189,7 @@ public final class WeaponTableGameTests {
         held.getInventory().tick();
         stowed.getInventory().tick();
         if (done == 0) {
-            helper.assertTrue(com.hbm.extprop.HbmPlayerProps.getData(held).grenadeDeployment == 0,
+            helper.assertTrue(HbmPlayerProps.getData(held).grenadeDeployment == 0,
                     "the equip tick resets the counter to 0 and does not advance it");
         }
         helper.runAfterDelay(1, () -> tickInventories(helper, held, stowed, done + 1, total));
@@ -177,7 +197,7 @@ public final class WeaponTableGameTests {
 
     /** Regression: a gun that entered by shift-click after another gun left must not crash or leak mods. */
     private static void secondGunAfterShiftClick(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.stack(EnumModSpecial.BAYONET);
         Item bayonetItem = bayonet.getItem();
         player.getInventory().setItem(0, new ItemStack(ModGunItems.gun_carbine.get()));
@@ -208,9 +228,9 @@ public final class WeaponTableGameTests {
 
     /** Regression: a modifier installed on configuration 1 must survive the gun leaving the table. */
     private static void config1QuickMoveKeepsMod(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
         player.getInventory().setItem(0, new ItemStack(ModGunItems.gun_light_revolver_dani.get()));
-        player.getInventory().setItem(1, ModWeaponModItems.weapon_mod_test.stack(com.hbm.items.weapon.sedna.factory.GunFactory.EnumModTest.FIRERATE));
+        player.getInventory().setItem(1, ModWeaponModItems.weapon_mod_test.stack(GunFactory.EnumModTest.FIRERATE));
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         int hotbar = ContainerWeaponTable.PLAYER_START + 27;
         Menus.click(menu, hotbar, 0, CompatContainerMenu.ClickAction.PICKUP, player);
@@ -248,7 +268,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void failedTransferPreservesGun(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             player.getInventory().setItem(i, new ItemStack(Items.COBBLESTONE, 64));
         }
@@ -269,7 +289,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void ordinaryPickupCarriesMods(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.stack(EnumModSpecial.BAYONET);
@@ -288,7 +308,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void quickMoveCarriesMods(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.stack(EnumModSpecial.BAYONET);
@@ -320,7 +340,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void modifierQuickMoveConservesItems(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.stack(EnumModSpecial.BAYONET);
@@ -339,7 +359,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void shiftClickConservesItems(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.stack(EnumModSpecial.BAYONET);
@@ -359,7 +379,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void hotbarSwapConservesItems(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         menu.getSlot(ContainerWeaponTable.GUN_SLOT).set(gun);
@@ -386,7 +406,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void playerInventoryClickConservesItems(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.stack(EnumModSpecial.BAYONET);
         Item bayonetItem = bayonet.getItem();
@@ -416,7 +436,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void onTakeUsesRemovalSnapshot(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack outgoing = new ItemStack(ModGunItems.gun_carbine.get());
         menu.getSlot(ContainerWeaponTable.GUN_SLOT).set(outgoing);
@@ -449,7 +469,7 @@ public final class WeaponTableGameTests {
             menu.getSlot(ContainerWeaponTable.GUN_SLOT).set(gun);
             menu.getSlot(0).set(bayonet);
 
-            java.util.Set<Integer> before = new java.util.HashSet<>();
+            Set<Integer> before = new HashSet<>();
             for (ItemEntity entity : helper.getLevel().getEntitiesOfClass(ItemEntity.class,
                     player.getBoundingBox().inflate(4D))) before.add(entity.getId());
             menu.removed(player);
@@ -470,16 +490,16 @@ public final class WeaponTableGameTests {
     }
 
     private static void weaponsTabHasNoDuplicateEntries(GameTestHelper helper) {
-        var weapons = com.hbm.creativetabs.ModTabs.get(com.hbm.creativetabs.HbmTab.WEAPONS).getKey();
-        List<?> contents = com.hbm.creativetabs.ModTabs.CONTENTS.get(weapons);
+        var weapons = ModTabs.get(HbmTab.WEAPONS).getKey();
+        List<?> contents = ModTabs.CONTENTS.get(weapons);
         helper.assertTrue(contents.size() == contents.stream().distinct().count(),
                 "Weapons tab registry entries must not be emitted more than once");
-        List<ItemStack> output = new java.util.ArrayList<>();
-        for (var entry : com.hbm.creativetabs.ModTabs.CONTENTS.get(weapons)) {
+        List<ItemStack> output = new ArrayList<>();
+        for (var entry : ModTabs.CONTENTS.get(weapons)) {
             Item item = entry.get();
-            if (com.hbm.creativetabs.ModTabs.shouldDisplay(weapons, item)) output.add(new ItemStack(item));
+            if (ModTabs.shouldDisplay(weapons, item)) output.add(new ItemStack(item));
         }
-        var custom = com.hbm.creativetabs.ModTabs.STACK_CONTENTS.get(weapons);
+        var custom = ModTabs.STACK_CONTENTS.get(weapons);
         if (custom != null) custom.forEach(supplier -> output.addAll(supplier.get()));
         for (int i = 0; i < output.size(); i++) for (int j = i + 1; j < output.size(); j++) {
             helper.assertFalse(ItemStacks.sameItemAndData(output.get(i), output.get(j)),
@@ -488,7 +508,7 @@ public final class WeaponTableGameTests {
         helper.succeed();
     }
 
-    private static int count(net.minecraft.world.entity.player.Player player, Item item) {
+    private static int count(Player player, Item item) {
         int count = 0;
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack stack = player.getInventory().getItem(i);
@@ -497,7 +517,7 @@ public final class WeaponTableGameTests {
         return count;
     }
 
-    private static ItemStack find(net.minecraft.world.entity.player.Player player, Item item) {
+    private static ItemStack find(Player player, Item item) {
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack stack = player.getInventory().getItem(i);
             if (stack.is(item)) return stack;
@@ -519,7 +539,7 @@ public final class WeaponTableGameTests {
 
         helper.assertTrue(drillItem.canHarvestBlock(Blocks.BEDROCK.defaultBlockState()),
                 "the drill canHarvestBlock gate must remain unconditionally true");
-        helper.assertTrue(drillItem.tryEmpty(com.hbm.inventory.fluid.Fluids.GASOLINE, 321, drill) == 321
+        helper.assertTrue(drillItem.tryEmpty(Fluids.GASOLINE, 321, drill) == 321
                         && drillItem.getFill(drill) == 100,
                 "tryEmpty must report the requested amount without draining the drill");
 
@@ -541,16 +561,16 @@ public final class WeaponTableGameTests {
 
         ItemStack dieselMod = ModWeaponModItems.weapon_mod_special.stack(EnumModSpecial.ENGINE_DIESEL);
         ItemStack canisters = ModWeaponModItems.weapon_mod_special.stack(EnumModSpecial.CANISTERS);
-        XWeaponModManager.install((net.minecraft.server.level.ServerLevel) player.level(), drill, 0,
+        XWeaponModManager.install((ServerLevel) player.level(), drill, 0,
                 dieselMod, canisters);
         IMagazine<?> dieselMagazine = drillItem.getConfig(drill, 0).getReceivers(drill)[0].getMagazine(drill);
         helper.assertTrue(dieselMagazine instanceof MagazineLiquidEngine diesel
-                        && diesel.accepted()[0] == com.hbm.inventory.fluid.Fluids.DIESEL
+                        && diesel.accepted()[0] == Fluids.DIESEL
                         && diesel.getCapacity(drill) == 12_000,
                 "the diesel engine and canister must compose through the compatible liquid magazine");
 
         ItemStack electricMod = ModWeaponModItems.weapon_mod_special.stack(EnumModSpecial.ENGINE_ELECTRIC);
-        XWeaponModManager.install((net.minecraft.server.level.ServerLevel) player.level(), drill, 0, electricMod);
+        XWeaponModManager.install((ServerLevel) player.level(), drill, 0, electricMod);
         IMagazine<?> electricMagazine = drillItem.getConfig(drill, 0).getReceivers(drill)[0].getMagazine(drill);
         helper.assertTrue(electricMagazine instanceof MagazineElectricEngine,
                 "the electric engine must replace the drill magazine with MagazineElectricEngine");
@@ -599,7 +619,7 @@ public final class WeaponTableGameTests {
         readyDrill(player, drillItem, drill, InteractionHand.OFF_HAND);
 
         HitResult ray = EntityDamageUtil.getMouseOver(player, 5D);
-        helper.assertTrue(ray instanceof net.minecraft.world.phys.BlockHitResult hit
+        helper.assertTrue(ray instanceof BlockHitResult hit
                         && hit.getBlockPos().equals(block),
                 "the real drill trigger must aim at the placed breakable block");
         fireDrillKey(player);
@@ -680,12 +700,12 @@ public final class WeaponTableGameTests {
                                      InteractionHand hand) {
         player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
         player.setItemInHand(hand, drill);
-        for (int i = 0; i < 2; i++) drillItem.serverTick(drill, (net.minecraft.server.level.ServerLevel) player.level(), player, true, hand);
+        for (int i = 0; i < 2; i++) drillItem.serverTick(drill, (ServerLevel) player.level(), player, true, hand);
     }
 
     private static void readyDrill(ServerPlayer player, ItemGunDrill drillItem, ItemStack drill,
                                     InteractionHand hand) {
-        for (int i = 0; i < 20; i++) drillItem.serverTick(drill, (net.minecraft.server.level.ServerLevel) player.level(), player, true, hand);
+        for (int i = 0; i < 20; i++) drillItem.serverTick(drill, (ServerLevel) player.level(), player, true, hand);
     }
 
     private static void fireDrillKey(ServerPlayer player) {
@@ -694,7 +714,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void drillFortuneInstallUninstall(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack drill = new ItemStack(ModGunItems.gun_drill.get());
         ItemStack magnet = ModWeaponModItems.weapon_mod_special.stack(EnumModSpecial.MAGNET);
@@ -717,7 +737,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void configSyncContract(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack stack = new ItemStack(ModGunItems.gun_light_revolver_dani.get());
         ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
@@ -732,17 +752,17 @@ public final class WeaponTableGameTests {
     }
 
     /**
-     * The weapon table frames each gun with its own 1.7 {@code setupModTable} (History §19es-weapontable): every
+     * The weapon table frames each gun with its own 1.7 {@code setupModTable}: every
      * Sedna gun that had an {@code ItemRenderWeaponBase} in 1.7 has exactly that frame, and {@code gun_fireext}
      * (1.7 {@code ItemRenderFireExt}, no table preview) has none. Spot rows are the unusual 1.7 values.
      */
     private static void modTableFrames(GameTestHelper helper) {
-        var frames = com.hbm.client.render.weapon.WeaponTableFrames.all();
-        java.util.Set<String> unframed = new java.util.TreeSet<>();
-        java.util.Set<String> framed = new java.util.TreeSet<>();
-        for (Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+        var frames = WeaponTableFrames.all();
+        Set<String> unframed = new TreeSet<>();
+        Set<String> framed = new TreeSet<>();
+        for (Item item : BuiltInRegistries.ITEM) {
             if (!(item instanceof ItemGunBaseNT)) continue;
-            String path = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).getPath();
+            String path = BuiltInRegistries.ITEM.getKey(item).getPath();
             (frames.containsKey(path) ? framed : unframed).add(path);
         }
         helper.assertTrue(unframed.equals(NO_TABLE_PREVIEW), "Sedna guns without a weapon-table frame must be exactly "
@@ -760,11 +780,11 @@ public final class WeaponTableGameTests {
         assertFrame(helper, "gun_minigun_dual", 6.25, 90, 0, 0, 0);
         assertFrame(helper, "gun_spas12", 10, 90, 0, -0.5, -4.25);
         // ItemRenderDANI.renderModTable: index == 1 ? celestial : lunar.
-        helper.assertTrue(com.hbm.client.render.weapon.DaniStaticLayout.forModTable(0)
-                .equals(java.util.List.of(com.hbm.client.render.weapon.DaniStaticLayout.Draw.LUNAR)),
+        helper.assertTrue(DaniStaticLayout.forModTable(0)
+                .equals(List.of(DaniStaticLayout.Draw.LUNAR)),
                 "Dani configuration 0 must show the lunar revolver");
-        helper.assertTrue(com.hbm.client.render.weapon.DaniStaticLayout.forModTable(1)
-                .equals(java.util.List.of(com.hbm.client.render.weapon.DaniStaticLayout.Draw.CELESTIAL)),
+        helper.assertTrue(DaniStaticLayout.forModTable(1)
+                .equals(List.of(DaniStaticLayout.Draw.CELESTIAL)),
                 "Dani configuration 1 must show the celestial revolver");
         for (var akimbo : List.of(ModGunItems.gun_uzi_akimbo, ModGunItems.gun_star_f_akimbo,
                 ModGunItems.gun_minigun_dual, ModGunItems.gun_light_revolver_dani)) {
@@ -778,13 +798,13 @@ public final class WeaponTableGameTests {
      * Sedna guns 1.7 gave no {@code ItemRenderWeaponBase} (its {@code GUIWeaponTable} then drew no gun): the fire
      * extinguisher ({@code ItemRenderFireExt}) and the power-armour ranged arm (sprite only).
      */
-    private static final java.util.Set<String> NO_TABLE_PREVIEW = java.util.Set.of("gun_fireext", "gun_pa_ranged");
+    private static final Set<String> NO_TABLE_PREVIEW = Set.of("gun_fireext", "gun_pa_ranged");
 
     private static void assertFrame(GameTestHelper helper, String item, double scale, double yaw,
             double x, double y, double z) {
-        var frame = com.hbm.client.render.weapon.WeaponTableFrames.forItem(item);
+        var frame = WeaponTableFrames.forItem(item);
         helper.assertTrue(frame != null && frame.equals(
-                new com.hbm.client.render.weapon.WeaponTableFrames.Frame(scale, yaw, x, y, z)),
+                new WeaponTableFrames.Frame(scale, yaw, x, y, z)),
                 item + " weapon-table frame must be 1.7's S(-" + scale + ") Ry(" + yaw + ") T(" + x + ", " + y
                         + ", " + z + "), got " + frame);
     }

@@ -1,5 +1,7 @@
 package com.hbm.client.render;
 
+import com.hbm.client.render.flywheel.FlywheelCompat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
@@ -11,6 +13,7 @@ import com.hbm.client.NukeScreenEffects;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.effect.EntityNukeTorex.Cloudlet;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.golem.core.render.gem.GemEntityRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -28,43 +31,40 @@ import org.joml.Vector3f;
  * Renders {@link EntityNukeTorex}: 1.7's {@code RenderTorex} on the 26.1 submit API.
  *
  * <ul>
- *   <li><b>Cloudlets</b> — shared interpolated/sorted render rows feed either Core's optional persistent
+ *   <li><b>Cloudlets</b>: shared interpolated/sorted render rows feed either Core's optional persistent
  *       billboard instances or one fallback {@code submitCustomGeometry} batch on a depth-writing
  *       {@link RenderType}: 1.7's colour times brightness, fullbright.</li>
- *   <li><b>Flare</b> — for the first 100 ticks, 3 source-alpha additive gaussian billboards with no depth
+ *   <li><b>Flare</b>: for the first 100 ticks, 3 source-alpha additive gaussian billboards with no depth
  *       write, matching 1.7's flashWrapper.</li>
  * </ul>
- * 1.12.2's 300-spike ray burst is not 1.7 and is gone (History section 19ej-1d).
+ * 1.12.2's 300-spike ray burst is not 1.7 and is not ported.
  *
  * It also latches the HUD {@link NukeScreenEffects} flash/shake timestamps and the local player's
  * hurt-camera-tilt when the blast is close, exactly like the original.
  */
 public class TorexRenderer
-        extends dev.golem.core.render.gem.GemEntityRenderer<EntityNukeTorex, TorexRenderState> {
+        extends GemEntityRenderer<EntityNukeTorex, TorexRenderState> {
 
     private static final Identifier CLOUDLET_TEX = Ids.of(Constants.MOD_ID, "textures/particle/particle_base.png");
     private static final Identifier FLARE_TEX = Ids.of(Constants.MOD_ID, "textures/particle/flare.png");
 
     /**
      * The cloudlet layer. {@code RenderType.create} is package-private (common can't build a custom type on
-     * the WEATHER pipeline), so we use the closest public factory: {@code entityTranslucent} — translucent
+     * the WEATHER pipeline), so we use the closest public factory: {@code entityTranslucent}: translucent
      * blend, no cull, and crucially <b>depth-test on / depth-write ON</b>.
      *
-     * <p><b>Why depth-write ON (a deliberate divergence from the old {@code depthMask(false)}):</b> the old
-     * 1.12.2 renderer drew the whole cloud <em>last</em> (in {@code RenderWorldLastEvent}), after water and
-     * clouds, so ordering was never an issue. 26.1 flushes entity translucent features <em>before</em>
-     * translucent terrain (water) and before the separate clouds/weather passes — and with depth‑write off
-     * the cloudlets leave no depth, so far‑away water and clouds (which both depth‑test the main buffer)
-     * paint straight over them. Writing depth makes the cloud occlude that farther geometry. The pipeline's
-     * {@code ALPHA_CUTOUT 0.1} discards the wispiest fragments before they write depth, so the soft edges
-     * survive. (An entity‑renderer can't reorder itself after the water/cloud passes; only a per‑loader
-     * late world‑render hook could, which 26.1's FrameGraph makes unreliable — hence this approach.)
+     * <p><b>Depth-write ON, unlike 1.12.2's {@code depthMask(false)}:</b> 1.12.2 drew the whole cloud <em>last</em>
+     * (in {@code RenderWorldLastEvent}), after water and clouds. 26.1 flushes entity translucent features
+     * <em>before</em> translucent terrain (water) and the separate clouds/weather passes, and with depth-write off
+     * the cloudlets leave no depth, so far-away water and clouds (which both depth-test the main buffer) paint
+     * straight over them. The pipeline's {@code ALPHA_CUTOUT 0.1} discards the wispiest fragments before they write
+     * depth, so the soft edges survive. An entity renderer cannot reorder itself after those passes, and a
+     * per-loader late world-render hook is unreliable under 26.1's FrameGraph.
      *
-     * <p>Non‑emissive is also what gets the brightness right: the shader multiplies the vertex colour by the
-     * real lightmap texture, so the vertices carry the plain colour + the old brightness‑derived lightmap
-     * {@code br} on UV2 (see {@link #submitCloudlets}) — exactly the old renderer's {@code color × lightmap(br)}.
-     * (An emissive type skips the lightmap, and folding {@code br/255} into RGB by hand is a too‑dim linear
-     * approximation of the lightmap curve — that was the "cloud too dark" bug.)
+     * <p>Non-emissive gets the brightness right: the shader multiplies the vertex colour by the real lightmap
+     * texture, so the vertices carry the plain colour plus the brightness-derived lightmap {@code br} on UV2 (see
+     * {@link #submitCloudlets}), which is 1.12.2's {@code color × lightmap(br)}. An emissive type skips the lightmap,
+     * and folding {@code br/255} into RGB by hand is a too-dim linear approximation of the lightmap curve.
      */
     private static final RenderType CLOUDLET_TYPE = CompatRenderTypes.entityTranslucent(CLOUDLET_TEX);
 
@@ -78,8 +78,8 @@ public class TorexRenderer
     }
 
     /**
-     * Nothing here is a resident mesh — the cloudlets and flare are camera-facing billboards and the
-     * flash is three hundred rays rebuilt each frame — so the declaration holds no parts. What it does
+     * Nothing here is a resident mesh: the cloudlets and flare are camera-facing billboards and the
+     * flash is three hundred rays rebuilt each frame, so the declaration holds no parts. What it does
      * carry is the one property of the model rather than of a frame: the cloud reaches far outside its
      * own bounding box and must never be culled with it.
      */
@@ -107,10 +107,10 @@ public class TorexRenderer
         // Draw order via explicit buckets: the no-depth additive flare must follow the depth-writing
         // cloudlets (1.7 drew the flare after the cloudlets). Within one bucket, custom geometry is stored in
         // a HashMap keyed by RenderType (CustomFeatureRenderer.Storage), so cross-RenderType submission
-        // order is NOT preserved — buckets are the only guarantee.
-        //   order 1: cloudlets (depth-write on — the far-water/clouds occlusion fix)
+        // order is NOT preserved; buckets are the only guarantee.
+        //   order 1: cloudlets (depth-write on, so far-water and clouds occlude correctly)
         //   order 2: flare
-        boolean instanced = com.hbm.client.render.flywheel.FlywheelCompat.isTorexBillboardsActive(cloud);
+        boolean instanced = FlywheelCompat.isTorexBillboardsActive(cloud);
         if (!instanced) {
             TorexCloudletRenderData.sort(cloud, camera.pos);
             submitCloudlets(cloud, poseStack, collector.order(1), camera, partialTicks);
@@ -135,7 +135,7 @@ public class TorexRenderer
         }
     }
 
-    // ---- Cloudlets ----
+    // Cloudlets
 
     private void submitCloudlets(EntityNukeTorex cloud, PoseStack poseStack, SubmitSink collector,
                                  CameraInfo camera, float partialTicks) {
@@ -155,7 +155,7 @@ public class TorexRenderer
                 float px = (float) (x - ox), py = (float) (y - oy), pz = (float) (z - oz);
                 float rx = rightBase.x * size, ry = rightBase.y * size, rz = rightBase.z * size;
                 float ux = upBase.x * size, uy = upBase.y * size, uz = upBase.z * size;
-                // Counter-clockwise from the camera (BL→BR→TR→TL, the DragonFireballRenderer order) so the
+                // Counter-clockwise from the camera (BL, BR, TR, TL, as in DragonFireballRenderer) so the
                 // quad is a FRONT face: the PER_FACE_LIGHTING shader negates the light dots for back faces
                 // (lightAccum 0.4 instead of 1.0), which rendered the whole cloud at 40% brightness when
                 // these were emitted clockwise. Each corner keeps its old UV.
@@ -168,13 +168,13 @@ public class TorexRenderer
         });
     }
 
-    private static void cloudletVertex(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
+    private static void cloudletVertex(VertexConsumer buffer, PoseStack.Pose pose,
                                        float x, float y, float z, float u, float v, float r, float g, float b, float a, int packedLight) {
         Vertexes.vertex(buffer, pose, x, y, z, r, g, b, a, u, v,
                 OverlayTexture.NO_OVERLAY, packedLight, 0F, 1F, 0F);
     }
 
-    // ---- Flare ----
+    // Flare
 
     private void submitFlare(EntityNukeTorex cloud, PoseStack poseStack, SubmitSink collector,
                              CameraInfo camera, float partialTicks) {
@@ -204,7 +204,7 @@ public class TorexRenderer
         collector.submitCustomGeometry(poseStack, type, geometry);
     }
 
-    private static void flareVertex(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
+    private static void flareVertex(VertexConsumer buffer, PoseStack.Pose pose,
                                      float x, float y, float z, float u, float v,
                                      float r, float g, float b, float alpha, int packedLight) {
         // Core preserves old white/alpha/lightmap rows on 26.1 and adapts them for legacy energySwirl.

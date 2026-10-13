@@ -1,10 +1,13 @@
 package com.hbm.config;
 
+import com.hbm.Constants;
+
+
 /**
  * 1.7 {@code GeneralConfig} ({@code hbm.cfg} categories {@code 01_general}, {@code 528}, {@code LESS BULLSHIT MODE}),
  * read by {@link #loadFromConfig}. The field initialisers are 1.7's effective defaults. Fields with no 1.7 key (the
  * 1.12.2-only crucible charges, asbestos dust, carbon monoxide and gas switches, radon, the HE:FE ratio, enableRads,
- * advancedRadiation) are port-side constants that are not in {@code hbm.cfg} (History §19ej-8).
+ * advancedRadiation) are port-side constants that are not in {@code hbm.cfg}.
  */
 public final class GeneralConfig {
 
@@ -13,8 +16,8 @@ public final class GeneralConfig {
     /** 1.7 {@code 1.18_enableExtendedLogging}: logs detonator use, nuclear explosions, launches, grenades. */
     public static boolean enableExtendedLogging = false;
     /**
-     * old-hbm {@code 1.33_crucible_max_charges}: how many hits and slices a crucible holds before it needs the tungsten
-     * crate's laser again (16; a value of 0 or less falls back to 16, as old-hbm did).
+     * 1.12.2 {@code 1.33_crucible_max_charges}: how many hits and slices a crucible holds before it needs the tungsten
+     * crate's laser again (16; a value of 0 or less falls back to 16, as 1.12.2 did).
      */
     public static int crucibleMaxCharges = 16;
 
@@ -24,12 +27,12 @@ public final class GeneralConfig {
     public static boolean enableRads = true;
     /** 1.7 {@code 1.06_enableRadHotspotSpawn}: lets the Sellafield crater ("radiation hotspot") generate. */
     public static boolean enableRad = true;
-    /** 1.7 {@code 1.32_enableImpactWorldProvider}: the post-impact sky, fog, light and star changes (History §19ej-6). */
+    /** 1.7 {@code 1.32_enableImpactWorldProvider}: the post-impact sky, fog, light and star changes. */
     public static boolean enableImpactWorldProvider = true;
     /** 1.7 {@code 1.31_enableSkyboxes}: the custom overworld sky renderers (impact sky, digamma/lode star, satellite). */
     public static boolean enableSkyboxes = true;
 
-    /** 1.7 {@code 1.17_enableCataclysm}: a burning FOEQ satellite falls from Y 500 above every mob that dies (History §19ej-7). */
+    /** 1.7 {@code 1.17_enableCataclysm}: a burning FOEQ satellite falls from Y 500 above every mob that dies. */
     public static boolean enableCataclysm = false;
 
     /** Enables the advanced (pocket-based) chunk radiation system. This fork has no simple fallback. */
@@ -72,7 +75,7 @@ public final class GeneralConfig {
     /** Allows dense radon to leave a fallout layer when it dissipates. */
     public static boolean denseRadonFallout = true;
 
-    // ---------------------------------------------------------------- worldgen switches (see WorldConfig)
+    // Worldgen switches (see WorldConfig)
 
     /**
      * Old {@code 1.02_enablePlutoniumNetherOre}. <b>Off by default upstream</b>, so nether plutonium
@@ -85,20 +88,20 @@ public final class GeneralConfig {
 
     /**
      * Old {@code 1.26_enableExplosiveGas}. (Upstream really did give both gas switches the same
-     * {@code 1.26_} key prefix — a config-file collision in 1.12.2, irrelevant here.)
+     * {@code 1.26_} key prefix: a config-file collision in 1.12.2, irrelevant here.)
      */
     public static boolean enableExplosiveGas = true;
 
-    /** Old {@code X528_enableColtanSpawning} — the plain scattered coltan vein. Off by default. */
+    /** Old {@code X528_enableColtanSpawning}: the plain scattered coltan vein. Off by default. */
     public static boolean enable528ColtanSpawn = false;
 
-    /** Old {@code X528_enableColtanDepsoit} (sic) — the gaussian coltan deposit field. */
+    /** Old {@code X528_enableColtanDepsoit} (sic): the gaussian coltan deposit field. */
     public static boolean enable528ColtanDeposit = true;
 
-    /** Old {@code X528_oreColtanFrequency} — vein attempts per chunk for the scattered coltan. */
+    /** Old {@code X528_oreColtanFrequency}: vein attempts per chunk for the scattered coltan. */
     public static int coltanRate = 2;
 
-    // ---------------------------------------------------------------- 1.7 keys added with hbm.cfg (§19ej-8)
+    // 1.7 keys in hbm.cfg
 
     /** 1.7 {@code 1.20_enableGuns}: false makes the new-system guns ignore every keybind (no firing or reloading). */
     public static boolean enableGuns = true;
@@ -111,7 +114,7 @@ public final class GeneralConfig {
     /** 1.7 {@code 1.37_enableGuideBook}: written by 1.7, its only reader commented out. */
     public static boolean enableGuideBook = true;
     /** 1.7 {@code 1.42_preferredOutputMod}: the namespaces the shredder's tag sweep prefers, in order. */
-    public static String[] preferredOutputMod = new String[] {com.hbm.Constants.MOD_ID};
+    public static String[] preferredOutputMod = new String[] {Constants.MOD_ID};
 
     /** 1.7 {@code X528_forceReasimBoilers}: keeps the RBMK ReaSim boiler dial on (528 mode only). */
     public static boolean enable528ReasimBoilers = false;
@@ -143,7 +146,7 @@ public final class GeneralConfig {
 
     /**
      * 1.7 {@code GeneralConfig.loadFromConfig}, categories {@code 01_general}, {@code 528} and {@code LESS BULLSHIT MODE}.
-     * Keys for systems that do not exist here are left out (History §19ej-8 lists them): Thermos, packet threading,
+     * Keys for systems that do not exist here are left out: Thermos, packet threading,
      * recipe sync, debug mode, modded-dimension ores, render-distance check, ComparableStack errors, skyboxes, the
      * fluid-container ore dictionary, MOTD, the Paulscode sound channels, Mekanism, the load screen and machine gravity.
      */
@@ -172,7 +175,7 @@ public final class GeneralConfig {
         enableKeybindOverlap = config.get(CATEGORY_GENERAL, "1.34_enableKeybindOverlap", true, "If enabled, will handle keybinds that would otherwise be ignored due to overlapping.").getBoolean(true);
         enableGuideBook = config.get(CATEGORY_GENERAL, "1.37_enableGuideBook", true, "If enabled, gives players the guide book when joining the world for the first time").getBoolean(true);
         preferredOutputMod = CommonConfig.createConfigStringList(config,CATEGORY_GENERAL,"1.42_preferredOutputMod",
-                "The mod which is preferred as output when certain machines autogenerate recipes. Currently used for the shredder", new String[] {com.hbm.Constants.MOD_ID});
+                "The mod which is preferred as output when certain machines autogenerate recipes. Currently used for the shredder", new String[] {Constants.MOD_ID});
         enableExpensiveMode = config.get(CATEGORY_GENERAL, "1.99_enableExpensiveMode", false, "It does what the name implies.").getBoolean(false);
 
         final String CATEGORY_528 = CommonConfig.CATEGORY_528;

@@ -6,7 +6,7 @@ package com.hbm.items.weapon.sedna;
  * <p>Ported from {@code AnimationEnums.GunAnimation} in 1.12.2. The server-side state machine emits
  * these cues at exactly the right moments; the client binds them to the per-gun bus-animation tables.
  *
- * <p>Ordinals are load-bearing — they travel over the wire in the animation payload — so entries are
+ * <p>Ordinals are load-bearing: they travel over the wire in the animation payload, so entries are
  * kept in upstream's order, {@code RELOAD_EMPTY} included even though upstream deprecates it.
  */
 public enum GunAnimation {
@@ -30,7 +30,7 @@ public enum GunAnimation {
     SPINDOWN,
     /** Drawing the weapon. */
     EQUIP,
-    /** Looking the weapon over — also the "you have no ammo" response. */
+    /** Looking the weapon over, also the "you have no ammo" response. */
     INSPECT,
     JAMMED;
 

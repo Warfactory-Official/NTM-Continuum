@@ -11,6 +11,7 @@ import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.world.CompatItem;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.ChatFormatting;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -41,7 +42,7 @@ public class ItemOreDensityScanner extends CompatItem {
         // hbm-space: the types of the body the player stands on (ItemBedrockOreBase.SOURCE); plain HBM: its six
         ItemBedrockOreBase.OreField field = ItemBedrockOreBase.field(world, x, z);
 
-        for (java.util.Map.Entry<BedrockOreType, Double> entry : field.levels().entrySet()) {
+        for (Map.Entry<BedrockOreType, Double> entry : field.levels().entrySet()) {
             BedrockOreType type = entry.getKey();
             double level = entry.getValue();
             GolemNetwork.sendToPlayer(player, PlayerInformPayload.CODEC, PlayerInformPayload.of(

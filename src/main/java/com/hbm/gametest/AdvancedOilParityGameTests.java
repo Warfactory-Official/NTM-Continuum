@@ -15,12 +15,13 @@ import com.hbm.tileentity.machine.oil.TileEntityMachinePyroOven;
 import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 
 /**
  * Server-side contracts for the advanced-oil operation gates that drive the client animation/audio state.
- * Registration in the shared test aggregator is intentionally left to the central test owner.
+ * Registration in the shared test aggregator is left to the central test owner.
  */
 public final class AdvancedOilParityGameTests {
 
@@ -29,7 +30,7 @@ public final class AdvancedOilParityGameTests {
     public static void pyroProgressGate(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 1, 3);
         helper.setBlock(relative, ModMachineBlocks.machine_pyrooven.get().defaultBlockState());
-        TileEntityMachinePyroOven oven = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityMachinePyroOven oven = GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachinePyroOven.class);
         helper.assertTrue(oven != null, "Pyro oven core BlockEntity was not created");
 
@@ -50,7 +51,7 @@ public final class AdvancedOilParityGameTests {
         BlockPos relative = new BlockPos(3, 1, 3);
         helper.setBlock(relative, ModMachineBlocks.machine_combustion_engine.get().defaultBlockState()
                 );
-        TileEntityMachineCombustionEngine engine = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityMachineCombustionEngine engine = GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineCombustionEngine.class);
         helper.assertTrue(engine != null, "Combustion engine core BlockEntity was not created");
 
@@ -80,7 +81,7 @@ public final class AdvancedOilParityGameTests {
     public static void refuelerIdleGate(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 1, 3);
         helper.setBlock(relative, ModMachineBlocks.refueler.get().defaultBlockState());
-        TileEntityRefueler refueler = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityRefueler refueler = GameTestHelpers.blockEntity(
                 helper, relative, TileEntityRefueler.class);
         helper.assertTrue(refueler != null, "Refueler BlockEntity was not created");
 
@@ -95,13 +96,13 @@ public final class AdvancedOilParityGameTests {
     public static void refuelerFillsAcrossTicks(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 1, 3);
         helper.setBlock(relative, ModMachineBlocks.refueler.get().defaultBlockState());
-        TileEntityRefueler refueler = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityRefueler refueler = GameTestHelpers.blockEntity(
                 helper, relative, TileEntityRefueler.class);
         helper.assertTrue(refueler != null, "Refueler BlockEntity was not created");
 
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ItemStack drill = new ItemStack(ModGunItems.gun_drill.get());
-        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, drill);
+        player.setItemInHand(InteractionHand.MAIN_HAND, drill);
         player.setPos(helper.absolutePos(relative).getX() + 0.5D, helper.absolutePos(relative).getY(),
                 helper.absolutePos(relative).getZ() + 0.5D);
         refueler.tank.setTankType(Fluids.GASOLINE);
@@ -124,7 +125,7 @@ public final class AdvancedOilParityGameTests {
         TileEntityMachineOilWell well = GameTestHelpers.blockEntity(helper, relative, TileEntityMachineOilWell.class);
         helper.assertTrue(well != null, "Oil well BlockEntity was not created");
 
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerMachineOilWell menu = new ContainerMachineOilWell(0, player.getInventory(), well);
         ItemStack bucket = new ItemStack(Items.BUCKET);
         helper.assertTrue(menu.getSlot(1).mayPlace(bucket) && !menu.getSlot(2).mayPlace(bucket)

@@ -13,8 +13,17 @@ import com.hbm.items.weapon.grenade.ItemGrenadeShell.EnumGrenadeShell;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.Lego;
 import com.hbm.items.weapon.sedna.factory.XFactoryCatapult;
+import com.hbm.items.weapon.sedna.factory.XFactoryEnergy;
+import com.hbm.packet.PlasmaBlastPayload;
+import com.hbm.particle.helper.EntityEffects;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.saveddata.satellites.SatelliteDetector;
 import com.hbm.sound.ModSounds;
 import com.hbm.lib.ModDamageSources.DamageClass;
+import dev.golem.core.world.Fires;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -59,7 +68,7 @@ public class ItemGrenadeFilling extends Item {
             bullet.discard();
         });
         laser = new BulletConfig().setBeam().setupDamageClass(DamageClass.LASER).setLife(3).setRenderRotations(false)
-                                  .setThresholdNegation(10F).setOnBeamImpact(com.hbm.items.weapon.sedna.factory.XFactoryEnergy.LAMBDA_STANDARD_BEAM_HIT);
+                                  .setThresholdNegation(10F).setOnBeamImpact(XFactoryEnergy.LAMBDA_STANDARD_BEAM_HIT);
     }
 
     public static void explode(EntityGrenadeUniversal grenade) {
@@ -141,7 +150,7 @@ public class ItemGrenadeFilling extends Item {
         if (!(level instanceof ServerLevel server)) return;
         for (int i = 0; i < 3; i++) {
             // 1.7: three haze clouds scattered 4 blocks (gaussian) around the grenade, sent 150 blocks
-            com.hbm.particle.helper.HbmEffectNT.Haze.sendAround(server,
+            HbmEffectNT.Haze.sendAround(server,
                     grenade.getX() + server.getRandom().nextGaussian() * 4, grenade.getY(),
                     grenade.getZ() + server.getRandom().nextGaussian() * 4, null,
                     grenade.getX(), grenade.getY(), grenade.getZ(), 150D);
@@ -159,7 +168,7 @@ public class ItemGrenadeFilling extends Item {
                     if (!server.getBlockState(pos).isAir()) continue;
                     for (Direction direction : Direction.values()) {
                         BlockPos neighbor = pos.relative(direction);
-                        if (dev.golem.core.world.Fires.isFlammable(server, neighbor, server.getBlockState(neighbor),
+                        if (Fires.isFlammable(server, neighbor, server.getBlockState(neighbor),
                                 direction.getOpposite())) {
                             server.setBlock(pos, BaseFireBlock.getState(server, pos), 3);
                             break;
@@ -237,13 +246,13 @@ public class ItemGrenadeFilling extends Item {
     }
 
     public static void spawnMush(EntityGrenadeUniversal grenade) {
-        com.hbm.saveddata.satellites.SatelliteDetector.reportEvent(grenade.level(), com.hbm.saveddata.satellites.SatelliteDetector.DURATION_LOW,
-                com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity.LOW, grenade.getX(), grenade.getZ());
+        SatelliteDetector.reportEvent(grenade.level(), SatelliteDetector.DURATION_LOW,
+                SatelliteDetector.BurstIntensity.LOW, grenade.getX(), grenade.getZ());
         grenade.level().playSound(null, grenade.getX(), grenade.getY(), grenade.getZ(),
                 ModSounds.MUKE_EXPLOSION.get(), SoundSource.BLOCKS, 15.0F, 1.0F);
         if (!(grenade.level() instanceof ServerLevel server)) return;
         // 1.7: polaroid easter egg dropped; the 1-in-100 roll stays.
-        com.hbm.particle.helper.EntityEffects.muke(server, grenade.getX(), grenade.getY() + 0.5D, grenade.getZ(), false, server.getRandom().nextInt(100) == 0, 250);
+        EntityEffects.muke(server, grenade.getX(), grenade.getY() + 0.5D, grenade.getZ(), false, server.getRandom().nextInt(100) == 0, 250);
     }
 
     public static void explodeStandardEnergy(EntityGrenadeUniversal grenade, float damage, float range,
@@ -265,7 +274,7 @@ public class ItemGrenadeFilling extends Item {
         if (!(grenade.level() instanceof ServerLevel server)) return;
         float yaw = server.getRandom().nextFloat() * 180F;
         for (int i = 0; i < 3; i++) {
-            com.hbm.packet.PlasmaBlastPayload.send(server, grenade.getX(), grenade.getY() + 0.125D, grenade.getZ(), r, g, b, -60F + 60F * i, yaw, scale);
+            PlasmaBlastPayload.send(server, grenade.getX(), grenade.getY() + 0.125D, grenade.getZ(), r, g, b, -60F + 60F * i, yaw, scale);
         }
     }
 
@@ -311,13 +320,13 @@ public class ItemGrenadeFilling extends Item {
 
         private final int bodyColor;
         private final int labelColor;
-        public final java.util.Set<EnumGrenadeShell> compatibleShells;
+        public final Set<EnumGrenadeShell> compatibleShells;
 
         EnumGrenadeFilling(int bodyColor, int labelColor, EnumGrenadeShell... compatibleShells) {
             this.bodyColor = bodyColor;
             this.labelColor = labelColor;
-            this.compatibleShells = java.util.Collections.unmodifiableSet(
-                    java.util.EnumSet.copyOf(java.util.Arrays.asList(compatibleShells)));
+            this.compatibleShells = Collections.unmodifiableSet(
+                    EnumSet.copyOf(Arrays.asList(compatibleShells)));
         }
 
         public int bodyColor() {

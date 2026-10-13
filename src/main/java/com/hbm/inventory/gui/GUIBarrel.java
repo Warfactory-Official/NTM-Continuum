@@ -2,7 +2,10 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerBarrel;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -18,9 +21,9 @@ import java.util.Optional;
  * (71, 69), and the mode button at (151, 34) whose 18×18 icon comes from the strip at u=176, v=mode*18.
  * Same layout as the fluid tank's screen, which the tank readout code is shared with.
  */
-public class GUIBarrel extends dev.golem.core.gui.CompatContainerScreen<ContainerBarrel> {
+public class GUIBarrel extends CompatContainerScreen<ContainerBarrel> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_barrel.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_barrel.png");
 
     private static final int BAR_X = 71, BAR_TOP = 17, BAR_W = 34, BAR_H = 52, BAR_BOTTOM = 69;
     private static final int BTN_X = 151, BTN_Y = 34, BTN_W = 18, BTN_H = 18;
@@ -59,7 +62,7 @@ public class GUIBarrel extends dev.golem.core.gui.CompatContainerScreen<Containe
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         // 1.7 hit box: guiLeft + 151 <= x < guiLeft + 169, guiTop + 35 < y <= guiTop + 53.
         if (in17(BTN_X, BTN_Y + 1, BTN_W, BTN_H, event.x(), event.y())) {
             Minecraft mc = Minecraft.getInstance();

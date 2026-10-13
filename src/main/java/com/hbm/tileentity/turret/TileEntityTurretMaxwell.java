@@ -1,13 +1,18 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
+import com.hbm.items.ModFinalConsumableItems;
 import com.hbm.items.ModUpgradeItems;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.lib.ModDamageSources;
+import com.hbm.potion.ModEffects;
+import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.util.EntityDamageUtil;
+import dev.golem.core.world.Effects;
 import java.util.HashMap;
 import java.util.List;
 import net.minecraft.ChatFormatting;
@@ -19,12 +24,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The MASER. It takes no ammunition at all — its nine slots hold machine upgrades, and the only thing
+ * The MASER. It takes no ammunition at all: its nine slots hold machine upgrades, and the only thing
  * it consumes is power. Damage, range, draw and afterburn all read off those upgrades.
  *
  * <p>The gore 1.12.2 throws when the beam finishes something off is absent: this port has no giblet
@@ -72,7 +78,7 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT implements I
                     new ItemStack(ModUpgradeItems.upgrade_overdrive_1.get()),
                     new ItemStack(ModUpgradeItems.upgrade_overdrive_2.get()),
                     new ItemStack(ModUpgradeItems.upgrade_overdrive_3.get()),
-                    new ItemStack(com.hbm.items.ModFinalConsumableItems.upgrade_5g.get()),
+                    new ItemStack(ModFinalConsumableItems.upgrade_5g.get()),
                     new ItemStack(ModUpgradeItems.upgrade_screm.get()));
         }
         return upgradeDisplay;
@@ -162,7 +168,7 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT implements I
             screm = false;
             for (int i = SLOT_AMMO_FIRST; i <= SLOT_AMMO_LAST; i++) {
                 ItemStack stack = inventory.getStackInSlot(i);
-                if (stack.is(com.hbm.items.ModFinalConsumableItems.upgrade_5g.get())) fiveG = true;
+                if (stack.is(ModFinalConsumableItems.upgrade_5g.get())) fiveG = true;
                 if (stack.is(ModUpgradeItems.upgrade_screm.get())) screm = true;
             }
         }
@@ -187,21 +193,21 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT implements I
         int speed = upgradeManager.getLevel(UpgradeType.SPEED);
         int afterburn = upgradeManager.getLevel(UpgradeType.AFTERBURN);
 
-        if (fiveG && target instanceof net.minecraft.world.entity.player.Player player) {
+        if (fiveG && target instanceof Player player) {
             // 1.7: a player in the beam of a 5G-equipped MASER gets thirty minutes of Death instead of damage
-            player.addEffect(dev.golem.core.world.Effects.instanceRegistered(
-                    com.hbm.potion.ModEffects.DEATH.get(), 30 * 60 * 20, 0, true, true));
+            player.addEffect(Effects.instanceRegistered(
+                    ModEffects.DEATH.get(), 30 * 60 * 20, 0, true, true));
         } else {
             EntityDamageUtil.attackEntityFromIgnoreIFrame(target, ModDamageSources.microwave(level),
                     (overdrive * 10 + speed + 1F) * 0.25F);
         }
 
-        if (afterburn > 0) dev.golem.core.world.Effects.ignite(target, afterburn * 3);
+        if (afterburn > 0) Effects.ignite(target, afterburn * 3);
 
         if (!target.isAlive() && target instanceof LivingEntity living) {
             if (screm) {
                 server.playSound(null, living.getX(), living.getY(), living.getZ(),
-                        com.hbm.sound.ModSounds.SCREM.get(), SoundSource.HOSTILE, 20.0F, 1.0F);
+                        ModSounds.SCREM.get(), SoundSource.HOSTILE, 20.0F, 1.0F);
             } else {
                 server.playSound(null, living.getX(), living.getY(), living.getZ(),
                         SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, SoundSource.HOSTILE, 2.0F,
@@ -237,7 +243,7 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT implements I
     @Override
     public void provideInfo(UpgradeType type, int level, List<Component> info, boolean extendedInfo) {
         info.add(IUpgradeInfoProvider.getStandardLabel(
-                com.hbm.blocks.turret.ModTurretBlocks.turret_maxwell.get()));
+                ModTurretBlocks.turret_maxwell.get()));
         if (type == UpgradeType.SPEED) {
             info.add(Component.literal("Damage +0." + (level * 25) + "/t").withStyle(ChatFormatting.GREEN));
         }

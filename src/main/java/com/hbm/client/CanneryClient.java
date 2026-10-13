@@ -23,7 +23,7 @@ import java.util.List;
  * open, holding Left Shift and pressing the QMAW key opens the presentation of whatever was last hovered
  * in that screen; the plain QMAW key keeps opening the manual ({@link QMAWClient} yields to Shift, as the
  * 1.7 handler did). Both keys are polled physically, because a screen owns key dispatch and 1.20.1 hands
- * a shared key to only one mapping — the reason {@link QMAWClient} polls too.
+ * a shared key to only one mapping. That is the reason {@link QMAWClient} polls too.
  */
 public final class CanneryClient {
 

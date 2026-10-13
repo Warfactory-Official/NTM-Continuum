@@ -1,6 +1,7 @@
 package com.hbm.tileentity.deco;
 
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -10,8 +11,8 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The shared half of 1.7's {@code TileEntityBobble}, {@code TileEntitySnowglobe} and {@code TileEntityPlushie}:
  * the figure's type, sent whole on chunk load (1.7's description packet). 1.7 saved the type as a byte ordinal; the
- * port saves the type's name ({@code "strength"}), as every enum (AGENTS.md: numeric ids are never persisted,
- * History §19es-itemvariant). An old byte reads as the NONE type with one WARN.
+ * port saves the type's name ({@code "strength"}), as every enum (numeric ids are never persisted, see AGENTS.md).
+ * An old byte reads as the NONE type with one WARN.
  */
 public abstract class TileEntityTrinket extends TileEntityLoadedBase {
 
@@ -51,11 +52,11 @@ public abstract class TileEntityTrinket extends TileEntityLoadedBase {
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        com.hbm.util.SavedIds.putEnum(output, "type", typeValues()[typeOrdinal()]);
+        SavedIds.putEnum(output, "type", typeValues()[typeOrdinal()]);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static int readType(DataIn input, Enum<?>[] values) {
-        return com.hbm.util.SavedIds.getEnum(input, "type", (Enum) values[0]).ordinal();
+        return SavedIds.getEnum(input, "type", (Enum) values[0]).ordinal();
     }
 }

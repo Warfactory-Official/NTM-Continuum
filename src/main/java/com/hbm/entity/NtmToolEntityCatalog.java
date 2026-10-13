@@ -9,7 +9,7 @@ import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 
-/** Entity registration owned by the specialized Sedna tool wave. */
+/** Entity registration owned by the Sedna tool entities. */
 public final class NtmToolEntityCatalog {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES =
             DeferredRegister.createEntityTypes(Constants.MOD_ID);

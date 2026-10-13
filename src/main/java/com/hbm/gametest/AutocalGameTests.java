@@ -1,9 +1,8 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.radio.ModRadioBlocks;
-import com.hbm.modules.IParse;
-import com.hbm.modules.ParseMSES1Ext1;
+import com.hbm.module.IParse;
+import com.hbm.module.ParseMSES1Ext1;
 import com.hbm.tileentity.network.RTTYSystem;
 import com.hbm.tileentity.network.TileEntityRadioAUTOCAL;
 import dev.golem.core.gametest.GameTestHelpers;
@@ -15,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import com.hbm.blocks.machine.ModMachineBlocks;
 
 /** Behavioral contracts for the old AUTOCAL interpreter and execution loop. */
 public final class AutocalGameTests {
@@ -159,7 +159,7 @@ public final class AutocalGameTests {
     }
 
     private static TileEntityRadioAUTOCAL place(GameTestHelper helper, BlockPos relative) {
-        helper.setBlock(relative, ModRadioBlocks.RADIO_AUTOCAL.get().defaultBlockState());
+        helper.setBlock(relative, ModMachineBlocks.radio_autocal.get().defaultBlockState());
         return GameTestHelpers.blockEntity(helper, relative, TileEntityRadioAUTOCAL.class);
     }
 }

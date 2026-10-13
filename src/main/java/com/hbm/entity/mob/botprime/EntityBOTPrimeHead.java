@@ -7,6 +7,8 @@ import com.hbm.advancement.BossKilledTrigger;
 import com.hbm.advancement.HbmCriteria;
 import com.hbm.entity.mob.ai.EntityAINearestAttackableTargetNT;
 import com.hbm.items.ModItems;
+import dev.golem.core.registry.Entities;
+import dev.golem.core.world.LivingHurtAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -83,7 +85,7 @@ public class EntityBOTPrimeHead extends EntityBOTPrimeBase {
         BlockPos at = blockPosition();
 
         for (int i = 0; i < BODY_SEGMENTS; i++) {
-            EntityBOTPrimeBody segment = dev.golem.core.registry.Entities.create(ModNtmEntities.BALLS_O_TRON_SEG.get(), level.getLevel(), reason);
+            EntityBOTPrimeBody segment = Entities.create(ModNtmEntities.BALLS_O_TRON_SEG.get(), level.getLevel(), reason);
             if (segment == null) continue;
             segment.setPartNumber(i);
             segment.setPos(at.getX(), at.getY(), at.getZ());
@@ -109,7 +111,7 @@ public class EntityBOTPrimeHead extends EntityBOTPrimeBase {
         if (getHealth() < getMaxHealth() && this.tickCount % 6 == 0) {
             if (this.targetedEntity != null) {
                 heal(1F);
-            } else if (((dev.golem.core.world.LivingHurtAccess) this).golem$lastHurtByPlayer() == null) {
+            } else if (((LivingHurtAccess) this).golem$lastHurtByPlayer() == null) {
                 heal(4F);
             }
         }

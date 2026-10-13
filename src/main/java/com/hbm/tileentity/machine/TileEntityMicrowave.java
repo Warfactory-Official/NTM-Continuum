@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -58,7 +59,7 @@ public class TileEntityMicrowave extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMicrowave te) {
-        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             te.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
         }
         te.power = Library.chargeTEFromItems(te.inventory, 2, te.power, maxPower);
@@ -189,7 +190,7 @@ public class TileEntityMicrowave extends TileEntityMachineBase
         return new ContainerMicrowave(containerId, playerInventory, this);
     }
 
-    /** 1.7 writes the tag and then returns null — the copy tool never receives the speed. Kept as-is. */
+    /** 1.7 writes the tag and then returns null: the copy tool never receives the speed. Kept as-is. */
     @Override
     public @Nullable CompoundTag getSettings(Level level, BlockPos pos) {
         CompoundTag nbt = new CompoundTag();

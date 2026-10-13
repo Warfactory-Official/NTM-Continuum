@@ -11,6 +11,7 @@ import com.hbm.tileentity.machine.dfc.TileEntityCoreReceiver;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreStabilizer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
@@ -22,7 +23,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The four aimed parts of a dark fusion core. Each draws its own body and, where it has one, the beam it
- * is currently running — all four are {@code RenderShape.INVISIBLE} blocks, so this is the whole
+ * is currently running. All four are {@code RenderShape.INVISIBLE} blocks, so this is the whole
  * appearance.
  *
  * <p>The stabiliser shares the injector's mesh, as upstream does: there is no stabiliser model in the
@@ -39,7 +40,7 @@ public final class CoreComponentRenderers {
         private final Surface surface;
 
         protected Base(String model, String texture) {
-            this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/" + model + ".obj"));
+            this.model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/" + model + ".obj"));
             this.surface = Surface.cutout(Constants.MOD_ID + ":textures/models/machines/" + texture + ".png");
         }
 

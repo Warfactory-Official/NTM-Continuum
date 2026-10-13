@@ -18,8 +18,8 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * Watches for a launch complex to be built around it: the thirteen-by-thirteen apron and its two outriggers
  * in launcher plate, four concrete legs under them, and a service tower of scaffolding forty-six blocks
- * tall beside a shorter mast. When it all checks out the scaffolding is taken back down — it was there to
- * build with, not to keep — and the launcher forms in its place.
+ * tall beside a shorter mast. When it all checks out the scaffolding is taken back down. It was there to
+ * build with, not to keep, and the launcher forms in its place.
  *
  * <p>This one does not go through {@code StructPattern} as the Watz segment does: the shape is around five
  * thousand cells, and the preview that pattern drives tests every cell per frame. Upstream's own preview

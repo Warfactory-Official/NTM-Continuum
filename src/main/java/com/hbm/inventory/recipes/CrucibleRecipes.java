@@ -9,6 +9,7 @@ import com.hbm.inventory.recipes.loader.MaterialCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Comparator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -29,10 +30,9 @@ import java.util.Optional;
  * Recipes operate on molten {@link Mats.MaterialStack quanta} (n = nugget = 8, i = ingot = 72), run every
  * {@code frequency} ticks while the crucible's recipe stack holds all inputs, and are picked by the player in the
  * recipe-selector GUI (the crucible saves the recipe {@code name}). {@code order} is the selector's display order (1.7's
- * registration order). The 13 files were converted once from the former Java table (1.7 {@code CrucibleRecipes}
- * defaults restricted to ported materials) and are the source now.
+ * registration order). The 13 files are 1.7's {@code CrucibleRecipes} defaults restricted to ported materials.
  *
- * <p><b>IMPORTANT (1.7 comment kept):</b> crucibles do not have stack size checks for the recipe's result — make sure
+ * <p>Crucibles do not have stack size checks for the recipe's result, so make sure
  * material doesn't "expand" when alloying.
  */
 public class CrucibleRecipes extends GenericRecipes {
@@ -63,7 +63,7 @@ public class CrucibleRecipes extends GenericRecipes {
     /** Declares the table at mod construction. */
     public static void declare() {}
 
-    /** One alloying recipe: quanta inputs → quanta outputs, once per {@code frequency} ticks. */
+    /** One alloying recipe: quanta inputs to quanta outputs, once per {@code frequency} ticks. */
     public static class CrucibleRecipe extends GenericRecipe {
 
         public Mats.MaterialStack[] input;
@@ -140,7 +140,7 @@ public class CrucibleRecipes extends GenericRecipes {
             recipe.bindIcon();
             recipes.add(recipe);
         }
-        recipes.sort(java.util.Comparator.comparingInt(recipe -> recipe.order)); // stable: ties stay in recipe-id order
+        recipes.sort(Comparator.comparingInt(recipe -> recipe.order)); // stable: ties stay in recipe-id order
         rebuild(recipes);
     }
 }

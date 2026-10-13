@@ -42,7 +42,7 @@ public abstract class GiantTankRenderer<T extends TileEntityMachineGiantTank>
     /**
      * The machine's own placement, stated for the declared body. Its twin
      * {@link #applyMachineTransform} says the same thing to a pose stack, for the contents and the
-     * hazard plate — those are built from the fill level rather than placed, so they keep drawing.
+     * hazard plate: those are built from the fill level rather than placed, so they keep drawing.
      */
     protected abstract void placeMachine(Gem.Part<GiantTankRenderState> part);
 

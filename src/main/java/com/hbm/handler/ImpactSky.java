@@ -1,5 +1,6 @@
 package com.hbm.handler;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.config.GeneralConfig;
 import com.hbm.saveddata.TomSaveData;
 import dev.golem.core.world.Skies;
@@ -41,7 +42,7 @@ public final class ImpactSky implements Skies.Modifier {
     @Override
     public boolean active(Level level) {
         // the overworld's WorldProviderNTM in 1.7; any surface world an addon names (com.hbm.api.environment.Environment)
-        return GeneralConfig.enableImpactWorldProvider && com.hbm.api.environment.Environment.isSurface(level)
+        return GeneralConfig.enableImpactWorldProvider && Environment.isSurface(level)
                 && (dust(level) > 0 || fire(level) > 0);
     }
 

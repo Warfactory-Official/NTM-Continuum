@@ -3,6 +3,10 @@ package com.hbm.items.weapon;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.packet.SpecialDeathPayload;
 import dev.golem.core.net.GolemNetwork;
+import dev.golem.core.world.Compat;
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -23,9 +27,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The server half of old-hbm {@code PacketMobSlicer.Handler}: which living things a drawn cut hits, and their deaths.
+ * The server half of 1.12.2 {@code PacketMobSlicer.Handler}: which living things a drawn cut hits, and their deaths.
  *
- * <p>Rays from the eyes, the look direction blended towards the cut's start direction in steps of 0.1. old-hbm stepped
+ * <p>Rays from the eyes, the look direction blended towards the cut's start direction in steps of 0.1. 1.12.2 stepped
  * a float ({@code i <= 1} with {@code i += 0.1F}), which reaches 1.0000001 after ten steps, so it casts ten rays
  * (0 .. 0.9) and never the start direction itself; the loop is kept as written. Each ray is three blocks long ({@code Library.rayTraceIncludeEntities}: blocks first, then living, alive entities whose box
  * grown by 0.3 the shortened ray crosses, nearest first). A crucible needs a charge and spends one if anything was hit.
@@ -48,8 +52,8 @@ public final class MobSlicer {
      * 1.12 {@code getEntityData().setBoolean("killedByMobSlicer", true)}, read only by the revive handler during this
      * very death ("we don't want to make a Schrodinger death"); a weak set holds the same fact without NBT.
      */
-    private static final java.util.Set<LivingEntity> SLICED =
-            java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
+    private static final Set<LivingEntity> SLICED =
+            Collections.newSetFromMap(new WeakHashMap<>());
 
     /** Whether {@code entity} is dying (or died) by a cut: revives must not bring it back. */
     public static boolean killedByMobSlicer(LivingEntity entity) {
@@ -140,7 +144,7 @@ public final class MobSlicer {
         victim.die(source);
         if (victim instanceof Player) return;
         if (victim instanceof EnderDragon dragon && victim.level() instanceof ServerLevel level) {
-            dev.golem.core.world.Compat.kill(dragon, level);
+            Compat.kill(dragon, level);
             return;
         }
         victim.setHealth(health);

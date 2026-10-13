@@ -1,11 +1,14 @@
 package com.hbm.inventory.container;
 
+import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.recipes.ElectrolyserMetalRecipes;
 import com.hbm.items.machine.IItemFluidId;
+import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineElectrolyser;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,6 +20,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
@@ -152,13 +156,13 @@ public final class ContainerMachineElectrolyser extends AbstractContainerMenu {
         boolean targetMetal = id == MODE_METAL;
         if (targetMetal == metal) return false;
         electrolyser.lastSelectedGUI = targetMetal ? 1 : 0;
-        dev.golem.core.gui.Menus.openWithPos(serverPlayer, electrolyser, electrolyser.getBlockPos());
+        Menus.openWithPos(serverPlayer, electrolyser, electrolyser.getBlockPos());
         return true;
     }
 
     private static boolean isFluidContainer(ItemStack stack) {
-        return stack.getItem() instanceof com.hbm.api.fluidmk2.IFillableItem
-                || stack.getItem() instanceof com.hbm.items.machine.ItemFluidBucket
-                || stack.is(net.minecraft.world.item.Items.BUCKET);
+        return stack.getItem() instanceof IFillableItem
+                || stack.getItem() instanceof ItemFluidBucket
+                || stack.is(Items.BUCKET);
     }
 }

@@ -1,11 +1,14 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -34,7 +37,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** Fuel-fired DiFurnace block, with the old active variant represented by {@link #LIT}. */
-public class MachineDiFurnace extends dev.golem.core.world.CompatBlock
+public class MachineDiFurnace extends CompatBlock
         implements TickingBlock, WorldlyContainerHolder {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -103,9 +106,9 @@ public class MachineDiFurnace extends dev.golem.core.world.CompatBlock
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                   BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
-        if (!level.isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }
@@ -170,7 +173,7 @@ public class MachineDiFurnace extends dev.golem.core.world.CompatBlock
     }
 
     public static boolean hasExtension(Level level, BlockPos pos) {
-        return level.getBlockState(pos.above()).is(DiFurnaceContent.MACHINE_DIFURNACE_EXTENSION.get());
+        return level.getBlockState(pos.above()).is(ModMachineBlocks.machine_difurnace_ext.get());
     }
 
     /** Changes only state properties, so the block entity survives the old active/inactive transition. */

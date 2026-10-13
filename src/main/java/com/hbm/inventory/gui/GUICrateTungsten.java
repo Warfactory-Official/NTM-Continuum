@@ -2,6 +2,8 @@ package com.hbm.inventory.gui;
 
 import com.hbm.blocks.generic.BlockStorageCrate;
 import com.hbm.inventory.container.ContainerCrateTungsten;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -12,10 +14,10 @@ import net.minecraft.world.entity.player.Inventory;
  * 1.7 {@code GUICrateTungsten}: 176x168, the hot sheet while a laser heats the crate, white labels (the sheet is
  * dark).
  */
-public class GUICrateTungsten extends dev.golem.core.gui.CompatContainerScreen<ContainerCrateTungsten> {
+public class GUICrateTungsten extends CompatContainerScreen<ContainerCrateTungsten> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_crate_tungsten.png");
-    private static final Identifier TEXTURE_HOT = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_crate_tungsten_hot.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_crate_tungsten.png");
+    private static final Identifier TEXTURE_HOT = Ids.of("hbm", "textures/gui/storage/gui_crate_tungsten_hot.png");
 
     public GUICrateTungsten(ContainerCrateTungsten menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 168);

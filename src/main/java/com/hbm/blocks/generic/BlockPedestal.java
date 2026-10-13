@@ -6,6 +6,7 @@ import com.hbm.inventory.recipes.PedestalRecipes;
 import com.hbm.inventory.recipes.PedestalRecipes.PedestalExtraCondition;
 import com.hbm.inventory.recipes.PedestalRecipes.PedestalRecipe;
 import com.hbm.items.ModArmorModItems;
+import com.hbm.items.ModExplosivesItems;
 import com.hbm.items.armor.ItemModDefuser;
 import com.hbm.particle.helper.ExplosionSmallCreator;
 import com.hbm.tileentity.ModDungeonBlockEntities;
@@ -51,10 +52,11 @@ import java.util.Map;
  * and the first recipe whose nine cells match exactly - item and count, empty for empty - consumes the eight
  * outer stacks and turns its own into the product with a small blast. The moon/sun conditions read the sky as
  * 1.7 did; the karma conditions ask whether any player within 20 blocks has a reputation of at least 10 (good) or
- * at most -10 (bad) ({@link HbmPlayerProps}, earned and lost at old lanterns). 1.7 also counted a "legendary" statistic for everyone within 50 blocks; the port has no such stat.
+ * at most -10 (bad) ({@link HbmPlayerProps}, earned and lost at old lanterns). 1.7 also counted a "legendary"
+ * statistic for everyone within 50 blocks; the port has no such stat.
  *
  * <p>A pedestal holding a charm of protection or a meteorite charm registers itself every second for the
- * meteor handler 1.7 consulted, which the port does not have yet; the registry is kept so it can. A golden
+ * meteor handler 1.7 consulted (the port has no such handler; the registry is kept). A golden
  * defuser on a pedestal defuses every creeper within 25 blocks every three seconds.
  */
 public class BlockPedestal extends CompatBlock implements TickingBlock {
@@ -122,8 +124,8 @@ public class BlockPedestal extends CompatBlock implements TickingBlock {
         TileEntityPedestal center = tileArray[4];
         if (center == null) return;
         // 1.7: the players whose reputation the karma conditions read, within 20 of the centre block
-        java.util.List<Player> nearbyPlayers = level.getEntitiesOfClass(Player.class,
-                new net.minecraft.world.phys.AABB(x, y, z, x + 1, y + 1, z + 1).inflate(20, 20, 20));
+        List<Player> nearbyPlayers = level.getEntitiesOfClass(Player.class,
+                new AABB(x, y, z, x + 1, y + 1, z + 1).inflate(20, 20, 20));
 
         float angle = Skies.celestialAngle(level, pos);
         int moon = Skies.moonPhase(level, pos);
@@ -207,7 +209,7 @@ public class BlockPedestal extends CompatBlock implements TickingBlock {
                 pushPedestalEntry(level, PedestalEntryType.CHARM_OF_PROTECTION, pos);
             if (pedestal.item.is(ModArmorModItems.meteor_charm.get()))
                 pushPedestalEntry(level, PedestalEntryType.METEORITE_CHARM, pos);
-            if (level.getGameTime() % 60 == 0 && pedestal.item.is(com.hbm.items.ModExplosivesItems.defuser_gold.get()))
+            if (level.getGameTime() % 60 == 0 && pedestal.item.is(ModExplosivesItems.defuser_gold.get()))
                 pedestal.castrateCreepers();
         }
 

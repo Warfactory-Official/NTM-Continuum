@@ -5,7 +5,10 @@ import com.hbm.inventory.recipes.AmmoPressRecipes;
 import com.hbm.inventory.recipes.AmmoPressRecipes.AmmoPressRecipe;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilOutput;
+import com.hbm.items.ModAmmoItems;
+import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.factory.GunCatalogue;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -14,8 +17,9 @@ import net.minecraft.world.item.Item;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import net.minecraft.world.item.ItemStack;
 
-/** Audit contracts for the original-hbm gun and ammunition obtainment boundary. */
+/** Audit contracts for the 1.7 gun and ammunition obtainment boundary. */
 public final class GunObtainmentDataAuditGameTests {
 
     private static final Set<String> ORIGINAL_ANVIL_AMMO_OUTPUTS = Set.of(
@@ -36,14 +40,14 @@ public final class GunObtainmentDataAuditGameTests {
             "gun_drill", "gun_pa_melee", "gun_pa_ranged", "gun_b92", "gun_b92_ammo", "gun_fireext");
 
     /**
-     * Original-hbm items whose registry name starts with {@code gun_} but which are not guns: the two
+     * 1.7 items whose registry name starts with {@code gun_} but which are not guns: the two
      * weapon repair kits (1.7 {@code ModItems.gun_kit_1/2}, {@code ItemRepairKit}). Named explicitly so
      * the gun check above stays strict for everything else.
      */
     private static final List<String> ORIGINAL_NON_GUN_ITEMS = List.of("gun_kit_1", "gun_kit_2");
 
     /**
-     * The guns original-hbm fires without a report of their own: the two flamethrowers and the
+     * The guns 1.7 fires without a report of their own: the two flamethrowers and the
      * chemthrower run a looping client sound instead, the Tau charges, and the tools and the B92 have
      * no {@code .sound(...)} on any receiver upstream either.
      */
@@ -57,7 +61,7 @@ public final class GunObtainmentDataAuditGameTests {
     public static void ammoPressCatalogue(GameTestHelper helper) {
         List<AmmoPressRecipe> recipes = AmmoPressRecipes.getRecipes();
         helper.assertTrue(recipes.size() == AmmoPressRecipes.SOURCE_RECIPE_COUNT,
-                "Ammo Press must expose all 89 dependency-complete original-hbm rows: " + recipes.size());
+                "Ammo Press must expose all 89 dependency-complete 1.7 rows: " + recipes.size());
         Set<String> outputs = new HashSet<>();
         for (AmmoPressRecipe recipe : recipes) {
             String path = BuiltInRegistries.ITEM.getKey(recipe.output.getItem()).getPath();
@@ -76,7 +80,7 @@ public final class GunObtainmentDataAuditGameTests {
                         && outputs.contains("ammo_standard_m44_bp")
                         && outputs.contains("ammo_standard_p22_sp")
                         && outputs.contains("ammo_standard_p9_sp"),
-                "the four first original-hbm Ammo Press families must remain in source order");
+                "the four first 1.7 Ammo Press families must remain in source order");
         helper.succeed();
     }
 
@@ -133,15 +137,15 @@ public final class GunObtainmentDataAuditGameTests {
                 "weapon catalogue registration count changed: " + guns);
         helper.assertTrue(ammo == GunCatalogue.EXPECTED_AMMO_ITEMS,
                 "ammo catalogue registration count changed: " + ammo);
-        helper.assertTrue(BuiltInRegistries.ITEM.getKey(com.hbm.items.ModAmmoItems.designator_arty_range.get())
+        helper.assertTrue(BuiltInRegistries.ITEM.getKey(ModAmmoItems.designator_arty_range.get())
                         .getPath().equals("designator_arty_range"),
                 "non-ammo obtainment item must remain registered beside the ammo catalogue");
 
-        int configCount = com.hbm.items.weapon.sedna.BulletConfigs.all().size();
+        int configCount = BulletConfigs.all().size();
         helper.assertTrue(configCount == GunCatalogue.EXPECTED_BULLET_CONFIGS,
                 "factory catalogue registration count changed: " + configCount);
         GunCatalogue.init();
-        helper.assertTrue(com.hbm.items.weapon.sedna.BulletConfigs.all().size() == configCount,
+        helper.assertTrue(BulletConfigs.all().size() == configCount,
                 "repeated catalogue initialization must not duplicate bullet configs");
         helper.succeed();
     }
@@ -156,11 +160,11 @@ public final class GunObtainmentDataAuditGameTests {
             if (!(item instanceof ItemGunBaseNT gun)) continue;
             String path = BuiltInRegistries.ITEM.getKey(item).getPath();
             if (ORIGINAL_SILENT_GUNS.contains(path)) continue;
-            net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item);
+            ItemStack stack = new ItemStack(item);
             for (int index = 0; gun.isValidConfigIndex(index); index++) {
-                com.hbm.items.weapon.sedna.Receiver[] receivers = gun.getConfig(stack, index).getReceivers(stack);
+                Receiver[] receivers = gun.getConfig(stack, index).getReceivers(stack);
                 if (receivers == null) continue;
-                for (com.hbm.items.weapon.sedna.Receiver receiver : receivers) {
+                for (Receiver receiver : receivers) {
                     helper.assertTrue(receiver.getFireSound(stack) != null,
                             "Gun receiver fires with no sound: " + path + " config " + index);
                     checked++;

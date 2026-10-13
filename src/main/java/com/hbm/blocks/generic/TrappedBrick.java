@@ -10,6 +10,7 @@ import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatBlock;
 import dev.golem.core.world.Effects;
+import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -71,7 +72,7 @@ public class TrappedBrick extends CompatBlock {
         }
 
         public String id() {
-            return "brick_jungle_trap_" + name().toLowerCase(java.util.Locale.ROOT);
+            return "brick_jungle_trap_" + name().toLowerCase(Locale.ROOT);
         }
     }
 

@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine.storage;
 
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
@@ -36,7 +37,7 @@ public class TileEntityCrateSupply extends TileEntityMachineBase {
     }
 
     @Override
-    protected void removeSavedComponents(dev.golem.core.data.DataOut output) {
+    protected void removeSavedComponents(DataOut output) {
         super.removeSavedComponents(output);
         output.discard("inventory");
     }

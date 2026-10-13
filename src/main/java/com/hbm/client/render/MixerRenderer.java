@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.machine.TileEntityMachineMixer;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -18,7 +19,7 @@ import net.minecraft.world.phys.Vec3;
 public final class MixerRenderer extends GemBER<TileEntityMachineMixer, MixerRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/mixer.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/mixer.obj"));
     private final Surface body = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/mixer.png");
     private final Surface fluid = Surface.translucent(

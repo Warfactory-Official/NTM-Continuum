@@ -7,6 +7,7 @@ import com.hbm.items.ModToolItems;
 import com.hbm.items.tool.ItemTooling;
 import com.hbm.handler.NTMToolHandler;
 import dev.golem.core.Ids;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.BlockPos;
@@ -82,7 +83,7 @@ public final class ToolingGameTests {
     }
 
     private static void invoke(GameTestHelper helper, ItemStack stack, int x) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setItemInHand(InteractionHand.MAIN_HAND, stack);
         BlockPos pos = helper.absolutePos(new BlockPos(x, 1, 1));
         BlockHitResult hit = new BlockHitResult(

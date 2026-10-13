@@ -14,6 +14,7 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.data.Tags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -31,7 +32,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 
 /**
- * Fusion klystron — the microwave emitter that ignites a torus.
+ * Fusion klystron: the microwave emitter that ignites a torus.
  *
  * <p>It turns stored HE and compressed air into <b>klystron energy</b> (KyU), which is never stored:
  * it is produced and delivered in the same tick, and the torus consumes it in that same tick. The
@@ -173,7 +174,7 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
     public void receiveControl(CompoundTag data) {
         if (!data.contains("amount")) return;
         // Mth.clamp has no long overload below 26.1.
-        long amount = dev.golem.core.data.Tags.getLongOr(data, "amount", 0L);
+        long amount = Tags.getLongOr(data, "amount", 0L);
         this.outputTarget = Math.max(0L, Math.min(amount, MAX_OUTPUT));
         setChanged();
     }

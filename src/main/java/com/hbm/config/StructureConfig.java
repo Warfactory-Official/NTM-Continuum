@@ -1,15 +1,20 @@
 package com.hbm.config;
 
+import com.hbm.Constants;
+import java.util.Locale;
+
+
 /**
  * 1.7 {@code StructureConfig}: the NBT structure generator's switches and weights. {@link #loadFromConfig} reads the
- * run-time keys from {@code hbm.cfg} (History §19ej-8); the rest are build-time constants. The values are the ones 1.7 actually generated with, i.e. the <b>defaults of its config
- * file</b> ({@code loadFromConfig}), not the field initialisers it overwrote on load: those differ for
+ * run-time keys from {@code hbm.cfg}; the rest are build-time constants. The values are the ones 1.7 actually
+ * generated with, i.e. the <b>defaults of its config file</b> ({@code loadFromConfig}), not the field
+ * initialisers it overwrote on load: those differ for
  * {@code structureMaxChunks} (12 vs 16), lighthouse (4 vs 1), dish (20 vs 10), radio (30 vs 25) and the two null
  * weights (plains 4 vs 20, ocean 15 vs 35).
  *
  * <p>Every key is read from {@code hbm.cfg} and used at generation: the spacing by the {@code hbm:config_spread}
- * placement of the {@code hbm:ntm_structures} set, the toggles and weights by {@code NBTStructure.GenStructure.wins}
- * (History §19ek-hooks). The set's own weights are only the defaults. This class must not touch a Minecraft class (the
+ * placement of the {@code hbm:ntm_structures} set, the toggles and weights by {@code NBTStructure.GenStructure.wins}.
+ * The set's own weights are only the defaults. This class must not touch a Minecraft class (the
  * Dejson generator reads it in a plain JVM).
  */
 public final class StructureConfig {
@@ -136,8 +141,8 @@ public final class StructureConfig {
         structureMaxChunks = CommonConfig.setDef(structureMaxChunks, 12);
 
         if (structureMinChunks > structureMaxChunks) {
-            com.hbm.Constants.LOG.error("Fatal error config: Minimum value has been set higher than the maximum value!");
-            com.hbm.Constants.LOG.error(String.format(java.util.Locale.US, "Errored values will default back to %1$d and %2$d respectively, PLEASE REVIEW CONFIGURATION DESCRIPTION BEFORE MEDDLING WITH VALUES!", 8, 24));
+            Constants.LOG.error("Fatal error config: Minimum value has been set higher than the maximum value!");
+            Constants.LOG.error(String.format(Locale.US, "Errored values will default back to %1$d and %2$d respectively, PLEASE REVIEW CONFIGURATION DESCRIPTION BEFORE MEDDLING WITH VALUES!", 8, 24));
             structureMinChunks = 8;
             structureMaxChunks = 24;
         }

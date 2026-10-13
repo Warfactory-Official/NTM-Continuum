@@ -6,6 +6,7 @@ import com.hbm.blocks.ModSteelBlocks;
 import com.hbm.blocks.generic.BlockScaffold;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.deco.TileEntityDeco;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Geometry;
@@ -22,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The OBJ-modelled decorations — boxcar, boat, satellites, the steel structural pieces and the
- * scaffold — all served by one renderer that looks its model up from the block it is on.
+ * The OBJ-modelled decorations, boxcar, boat, satellites, the steel structural pieces and the
+ * scaffold, all served by one renderer that looks its model up from the block it is on.
  *
  * <p>Each family poses differently, so the model states one joint per family and fills the one or two
  * mesh-shaped slots under it from the block. A part per decoration would put a hundred buckets on
@@ -92,7 +93,7 @@ public class DecoObjRenderer extends GemBER<TileEntityDeco, DecoRenderState> {
             // the block's floor at (0.5, 0, 0.5); metas 4 (placed on a N/S face) and 12 (E/W face) lie on their
             // side with pitch 90 about origins (0.5, 0.5, 0) and (1, 0.5, 0.5). Pose ops compose outer-first, so
             // the Y rotation precedes the Z rotation here; the reverse order laid both side-placed states out of
-            // their block (2026-09-29 playtest).
+            // their block.
             switch (orientation) {
                 case HORIZONTAL_NS -> scaffold.rotate(Gem.Axes.Y, -90F).translate(0F, -0.5F, 0F);
                 case HORIZONTAL_EW -> scaffold.rotate(Gem.Axes.Y, -180F).translate(0F, -0.5F, 0F);
@@ -152,7 +153,7 @@ public class DecoObjRenderer extends GemBER<TileEntityDeco, DecoRenderState> {
         put(ModDecoBlocks.steel_roof.get(), Style.STEEL, noYaw, piece("models/deco/steel_roof.obj", "deco/steelroof"));
 
         Geometry scaffold = WavefrontObj.load(
-                dev.golem.core.Ids.of(Constants.MOD_ID, "models/blocks/scaffold.obj")).all();
+                Ids.of(Constants.MOD_ID, "models/blocks/scaffold.obj")).all();
         Map<BlockScaffold.Variant, Piece> scaffoldPieces = new EnumMap<>(BlockScaffold.Variant.class);
         for (BlockScaffold.Variant variant : BlockScaffold.Variant.values()) {
             scaffoldPieces.put(variant, new Piece(scaffold,
@@ -186,7 +187,7 @@ public class DecoObjRenderer extends GemBER<TileEntityDeco, DecoRenderState> {
     }
 
     private static Piece piece(String obj, String texture) {
-        return new Piece(WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, obj)).all(),
+        return new Piece(WavefrontObj.load(Ids.of(Constants.MOD_ID, obj)).all(),
                 Surface.cutout(Constants.MOD_ID + ":textures/models/" + texture + ".png"));
     }
 

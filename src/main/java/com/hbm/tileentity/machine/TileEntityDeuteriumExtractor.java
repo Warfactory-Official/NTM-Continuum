@@ -13,6 +13,7 @@ import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Converts water to heavy water using the legacy 50:1 ratio and energy cost. */
@@ -23,7 +24,7 @@ public class TileEntityDeuteriumExtractor extends TileEntityMachineBase
     public final FluidTankNTM[] tanks;
     public long power;
 
-    protected TileEntityDeuteriumExtractor(net.minecraft.world.level.block.entity.BlockEntityType<?> type,
+    protected TileEntityDeuteriumExtractor(BlockEntityType<?> type,
                                            BlockPos pos, BlockState state, int waterCapacity, int heavyWaterCapacity,
                                            long maxPower) {
         super(type, pos, state, 0);

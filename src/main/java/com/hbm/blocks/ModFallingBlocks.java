@@ -10,6 +10,7 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import java.util.function.Supplier;
 import net.minecraft.world.item.BlockItem;
 import com.hbm.blocks.generic.BlockFallingBase;
 import net.minecraft.world.level.block.SoundType;
@@ -18,11 +19,10 @@ import net.minecraft.world.level.block.SoundType;
  * The 1.12.2 {@code BlockFallingBase} family: gravity-affected, shovel-mineable blocks. Hand-registered
  * (the generated {@link ModBlocks} only covers plain full cubes), so codegen never clobbers them.
  *
- * <p>{@code BlockFallingBase} is a bare {@code BlockFalling}, so the port's {@link BlockFallingBase} is a
- * drop-in — the only per-block variation is hardness / blast resistance / sound, which the 1.12.2
- * registrations set individually and which are reproduced here.
+ * <p>{@code BlockFallingBase} is a bare {@code BlockFalling}, so the only per-block variation is hardness /
+ * blast resistance / sound, which the 1.12.2 registrations set individually and which are reproduced here.
  *
- * <p><b>Deferred:</b> the {@code gravel_diamond} easter-egg tooltip (26.1 {@code Block} has no
+ * <p>The {@code gravel_diamond} easter-egg tooltip is not ported (26.1 {@code Block} has no
  * {@code appendHoverText}; it would need a custom {@code BlockItem}, as the anvils do).
  */
 public final class ModFallingBlocks {
@@ -40,7 +40,7 @@ public final class ModFallingBlocks {
             .loot(Loot.self())
             .tag(BlockTag.SHOVEL);
 
-    /** The shredded-diamond-ore drop (and the mod's long-running non-joke — see the class javadoc). */
+    /** The shredded-diamond-ore drop (and the mod's long-running non-joke, see the class javadoc). */
     public static final RegistryObject<BlockFallingBase> gravel_diamond =
             falling("gravel_diamond", 0.6F, 0.6F, () -> SoundType.GRAVEL)
             .transform(Presets.cubeAll().viaItemModel())
@@ -65,13 +65,13 @@ public final class ModFallingBlocks {
             .loot(Loot.self())
             .tag(BlockTag.SHOVEL);
 
-    /** Tar sand — the oil-sand-bubble worldgen block; liquefies into BITUMEN (old {@code ModBlocks.ore_oil_sand}). */
+    /** Tar sand, the oil-sand-bubble worldgen block; liquefies into BITUMEN (old {@code ModBlocks.ore_oil_sand}). */
     public static final RegistryObject<BlockFallingBase> ore_oil_sand = falling("ore_oil_sand", 0.5F, 1.0F, () -> SoundType.SAND)
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.SHOVEL);
 
-    /** Lead-mixed sand — the PUREX vitrification medium (old {@code ModBlocks.sand_lead}, hardness 0.5). */
+    /** Lead-mixed sand, the PUREX vitrification medium (old {@code ModBlocks.sand_lead}, hardness 0.5). */
     public static final RegistryObject<BlockFallingBase> sand_lead = falling("sand_lead", 0.5F, 0.5F, () -> SoundType.SAND)
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
@@ -114,18 +114,18 @@ public final class ModFallingBlocks {
             .loot(Loot.self())
             .tag(BlockTag.SHOVEL);
 
-    /** Digamma ash — laid under every cell a DRX laser burns through (old {@code BlockHazardFalling}). */
+    /** Digamma ash, laid under every cell a DRX laser burns through (old {@code BlockHazardFalling}). */
     public static final RegistryObject<BlockFallingBase> ash_digamma = falling("ash_digamma", 0.5F, 150.0F, () -> SoundType.SAND)
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.SHOVEL);
 
-    private static Reg.Handle<BlockFallingBase> falling(String id, float hardness, float resistance, java.util.function.Supplier<SoundType> sound) {
+    private static Reg.Handle<BlockFallingBase> falling(String id, float hardness, float resistance, Supplier<SoundType> sound) {
         return falling(id, hardness, resistance, sound, HbmTab.RESOURCES);
     }
 
     private static Reg.Handle<BlockFallingBase> falling(String id, float hardness, float resistance,
-                                                             java.util.function.Supplier<SoundType> sound, HbmTab tab) {
+                                                             Supplier<SoundType> sound, HbmTab tab) {
         Reg.Handle<BlockFallingBase> block = REG.block(id, BlockFallingBase::new,
                 p -> p.strength(hardness, resistance).sound(sound.get()));
         Reg.Handle<BlockItem> item = REG.blockItem(block, p -> Compat.blockDescription(p));

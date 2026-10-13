@@ -1,8 +1,10 @@
 package com.hbm.blocks.machine.storage;
 
+import com.hbm.inventory.container.ContainerMassStorage;
 import com.hbm.tileentity.machine.storage.MassStorageType;
 import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
 import com.hbm.interfaces.ILookOverlay;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.world.CarriedBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -10,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
@@ -36,7 +39,7 @@ import java.util.function.Supplier;
  * A parameterized mass-storage block. Registration supplies the matching BE type and menu type.
  *
  * <p>1.7 packs the facing into metadata ({@code meta / 4}: north, south, west, east) and draws the front
- * texture — and {@code RenderMassStorage}'s panel — on the side that faced the placer. A block saved
+ * texture and {@code RenderMassStorage}'s panel on the side that faced the placer. A block saved
  * before this property existed loads with the default, north, which is 1.7's metadata-0 face.
  */
 public class BlockMassStorage extends CarriedBlock implements ILookOverlay {
@@ -45,7 +48,7 @@ public class BlockMassStorage extends CarriedBlock implements ILookOverlay {
 
     private final MassStorageType storageType;
     private final Supplier<? extends BlockEntityType<TileEntityMassStorage>> blockEntityType;
-    private final Supplier<net.minecraft.world.inventory.MenuType<com.hbm.inventory.container.ContainerMassStorage>> menuType;
+    private final Supplier<MenuType<ContainerMassStorage>> menuType;
 
     public BlockMassStorage(Properties properties, MassStorageType storageType) {
         this(properties, storageType, storageType::blockEntityType, storageType::menuType);
@@ -53,7 +56,7 @@ public class BlockMassStorage extends CarriedBlock implements ILookOverlay {
 
     public BlockMassStorage(Properties properties, MassStorageType storageType,
                             Supplier<? extends BlockEntityType<TileEntityMassStorage>> blockEntityType,
-                            Supplier<net.minecraft.world.inventory.MenuType<com.hbm.inventory.container.ContainerMassStorage>> menuType) {
+                            Supplier<MenuType<ContainerMassStorage>> menuType) {
         super(properties);
         this.storageType = storageType;
         this.blockEntityType = blockEntityType;
@@ -104,7 +107,7 @@ public class BlockMassStorage extends CarriedBlock implements ILookOverlay {
                                                   BlockHitResult hit) {
         if (!level.isClientSide() && !player.isShiftKeyDown() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return level.isClientSide() || !player.isShiftKeyDown()
                 ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;

@@ -76,7 +76,7 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
     /**
      * Buffer mode makes the tank a length of duct: it holds its own footprint as cells, so runs touching
      * two different ports are one network. Every other mode gives them back and lets the ducts find it by
-     * probing. A tilted tank stops external work, but a buffer's cells stay — it is still plumbing.
+     * probing. A tilted tank stops external work, but a buffer's cells stay, and it is still plumbing.
      */
     private void updateNetwork(Level level) {
         if (!(level instanceof ServerLevel server)) return;

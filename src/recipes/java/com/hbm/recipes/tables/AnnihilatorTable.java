@@ -13,6 +13,7 @@ import static com.hbm.inventory.OreDictManager.U;
 
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
+import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.recipes.AnnihilatorRecipes;
 import com.hbm.inventory.recipes.AnnihilatorRecipes.MilestoneRow;
 import com.hbm.inventory.recipes.AnnihilatorRecipes.Row;
@@ -82,7 +83,7 @@ public final class AnnihilatorTable extends RecipeSource<Row> {
     }
 
     /** 1.7 {@code recipes.put(MAT.shape(), recipe)}, keyed by the ore name; the id is the tag path with {@code _} for {@code /}. */
-    private void put(com.hbm.inventory.RecipesCommon.AStack tag, AnnihilatorRecipe recipe) {
+    private void put(RecipesCommon.AStack tag, AnnihilatorRecipe recipe) {
         if (tag instanceof ComparableStack stack) {
             put(stack, recipe);
             return;

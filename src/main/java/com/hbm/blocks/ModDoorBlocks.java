@@ -17,6 +17,7 @@ import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.BlockSets;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.SoundType;
@@ -36,6 +37,7 @@ import com.hbm.blocks.machine.BlastDoor;
 import com.hbm.blocks.machine.DummyBlockBlast;
 import com.hbm.sound.ModDoorSounds;
 import com.hbm.tileentity.DoorDecl;
+import net.minecraft.world.level.material.PushReaction;
 
 /**
  * Blocks and block items of the door family: the fourteen {@link BlockDoorGeneric} doors, the old
@@ -142,7 +144,7 @@ public final class ModDoorBlocks {
         }
         Models.Group doorModels = models;
         return REG.<DoorBlock>block(name, p -> BlockSets.door(Sets.MOD_DOOR_TYPE, p),
-                        p -> p.strength(hardness, resistance).sound(SoundType.METAL).noOcclusion().pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY))
+                        p -> p.strength(hardness, resistance).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY))
                 .model(d -> d.models(doorModels).states(doorStates()).item(Models.generated("hbm:items/" + name)))
                 .loot(Loot.selfWhen("half", "lower"))
                 .tag(BlockTag.PICKAXE);
@@ -172,7 +174,7 @@ public final class ModDoorBlocks {
     }
 
     private static RegistryObject<BlockItem> item(HbmTab tab, String name, RegistryObject<? extends Block> block,
-                                                 Function<net.minecraft.world.item.Item.Properties, net.minecraft.world.item.Item.Properties> props) {
+                                                 Function<Item.Properties, Item.Properties> props) {
         return REG.blockItem(block, props::apply).tab(tab);
     }
 

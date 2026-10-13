@@ -28,8 +28,8 @@ import java.util.TreeSet;
  * Holds the damage-type table against the two things it has to agree with: the keys the game code
  * actually damages people through, and what the loaded registry says those types are.
  *
- * <p>The declaration and {@link ModDamageSources} are separate classes for a build reason — the
- * generator runs in a plain JVM and cannot load a class full of Minecraft — so the one thing that
+ * <p>The declaration and {@link ModDamageSources} are separate classes for a build reason: the
+ * generator runs in a plain JVM and cannot load a class full of Minecraft, so the one thing that
  * could go wrong is that they drift. A key with no type throws at the moment of damage; a type with
  * no key is dead weight nobody notices. Both are cheap to check and neither is visible otherwise.
  */

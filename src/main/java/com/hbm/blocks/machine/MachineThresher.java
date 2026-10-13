@@ -8,6 +8,7 @@ import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineAutosaw;
 import dev.golem.core.registry.TickingBlock;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -44,7 +45,7 @@ import com.hbm.tileentity.machine.TileEntityMachineThresher;
  * <p>1.7 stores the facing as the metadata {@code 3/4/2/5} by player yaw quadrant, which is the player's
  * own horizontal look direction; the tile then works with its opposite.
  */
-public class MachineThresher extends dev.golem.core.world.CompatBlock
+public class MachineThresher extends CompatBlock
         implements TickingBlock, IFluidConnectorBlockMK2, IToolable, ILookOverlay {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;

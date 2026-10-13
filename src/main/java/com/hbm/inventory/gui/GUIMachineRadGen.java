@@ -2,6 +2,8 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMachineRadGen;
 import com.hbm.tileentity.machine.TileEntityMachineRadGen;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -12,8 +14,8 @@ import java.util.List;
 import java.util.Optional;
 
 /** Compact RadGen screen with one progress bar and one output bar per channel. */
-public class GUIMachineRadGen extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineRadGen> {
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_radgen.png");
+public class GUIMachineRadGen extends CompatContainerScreen<ContainerMachineRadGen> {
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/gui_radgen.png");
 
     public GUIMachineRadGen(ContainerMachineRadGen menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 184);

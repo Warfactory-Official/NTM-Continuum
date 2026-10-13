@@ -19,7 +19,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * The ICF's seed block (1.7 {@code BlockICFStruct}): place it, build the reactor's 17-long vessel around it out
  * of ICF components, and its {@link TileEntityICFStruct} turns into the finished reactor. Unlike the Watz and
- * fusion seeds this one <b>is</b> direction sensitive — the placer's facing (1.7 metadata 2..5) orients both the
+ * fusion seeds this one <b>is</b> direction sensitive: the placer's facing (1.7 metadata 2..5) orients both the
  * shape it waits for and the reactor it becomes.
  */
 public class BlockICFStruct extends CompatBlock implements TickingBlock {
@@ -41,7 +41,7 @@ public class BlockICFStruct extends CompatBlock implements TickingBlock {
         return new TileEntityICFStruct(pos, state);
     }
 
-    /** 1.7 {@code onBlockPlacedBy}: yaw quadrant 0/1/2/3 → metadata 2/5/3/4, i.e. facing back at the placer. */
+    /** 1.7 {@code onBlockPlacedBy}: yaw quadrant 0/1/2/3 maps to metadata 2/5/3/4, i.e. facing back at the placer. */
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
         return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());

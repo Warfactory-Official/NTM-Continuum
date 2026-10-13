@@ -5,6 +5,7 @@ import com.hbm.entity.missile.EntityMissileTier0;
 import com.hbm.items.ModMissileItems;
 import com.hbm.items.ModWandItems;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -31,7 +32,7 @@ public final class WandGameTests {
     /** 1.7 ItemWand: crouch-click saves the block, two plain clicks fill the inclusive box with it. */
     public static void constructionWandFillsBox(GameTestHelper helper) {
         helper.setBlock(new BlockPos(4, 2, 4), Blocks.GOLD_BLOCK.defaultBlockState());
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.CREATIVE);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.CREATIVE);
         ItemStack wand = new ItemStack(ModWandItems.wand.get());
         player.setItemInHand(InteractionHand.MAIN_HAND, wand);
 

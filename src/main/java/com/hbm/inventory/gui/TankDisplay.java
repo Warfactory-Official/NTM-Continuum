@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.util.BobMathUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
@@ -11,13 +12,13 @@ import java.util.List;
  * How a fluid tank presents itself: the rectangle it fills, the tint it fills it with, and the
  * lines it says on hover. None of that needs a client.
  *
- * <p>It used to live on the screens, which is where it is drawn from, and that made it unreachable
- * from a dedicated-server GameTest. Not because any of it calls a client method — resolving the
- * owning class pulls in its superclass, and NeoForge answers a client superclass on a server with
+ * <p>It lives here rather than on the screens, which draw it, so a dedicated-server GameTest can reach
+ * it. None of it calls a client method, but resolving the owning class pulls in its superclass, and
+ * NeoForge answers a client superclass on a server with
  * {@code Attempted to load class … for invalid dist DEDICATED_SERVER}. {@code GUIMachineTurbineGas}
  * extends {@code AbstractContainerScreen}; {@code GuiUtil} imports {@code Minecraft} and
- * {@code SimpleSoundInstance}. Either is enough. So the arithmetic and the text moved here, where
- * nothing in the signatures or the imports is client-only, and the screens call in.
+ * {@code SimpleSoundInstance}. Here nothing in the signatures or the imports is client-only, and the
+ * screens call in.
  */
 public final class TankDisplay {
 
@@ -49,7 +50,7 @@ public final class TankDisplay {
                     .withStyle(ChatFormatting.RED));
             // 1.7 FluidTank.renderTankInfo: the blinking compressor warning under the pressure line.
             lines.add(Component.literal("Pressurized, use compressor!").withStyle(
-                    com.hbm.util.BobMathUtil.getBlink() ? ChatFormatting.RED : ChatFormatting.DARK_RED));
+                    BobMathUtil.getBlink() ? ChatFormatting.RED : ChatFormatting.DARK_RED));
         }
         tank.getTankType().addInfo(lines);
         return lines;

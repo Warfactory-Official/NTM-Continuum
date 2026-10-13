@@ -3,10 +3,15 @@ package com.hbm.client.particle;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.golem.core.Ids;
+import dev.golem.core.client.ClientResourceReloads;
+import dev.golem.core.client.ClientTicks;
+import dev.golem.core.client.Colors;
 import dev.golem.core.client.Frames;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.Renderers;
 import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.WorldEffects;
 import java.util.ArrayList;
@@ -37,7 +42,7 @@ import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
 import org.joml.Vector3f;
 
-/** Client lifetime and Core submission path for original-hbm's skeleton and giblet effects. */
+/** Client lifetime and Core submission path for 1.7's skeleton and giblet effects. */
 public final class DisintegrationParticles {
     private static final Identifier SKELETON_MODEL = Ids.of(Constants.MOD_ID, "models/effect/skeleton.obj");
     private static final Identifier SKELETON_TEXTURE = Ids.of(Constants.MOD_ID, "textures/particle/skeleton.png");
@@ -70,7 +75,7 @@ public final class DisintegrationParticles {
         if (initialized) return;
         initialized = true;
         WorldEffects.init();
-        dev.golem.core.client.ClientTicks.onEndTick(DisintegrationParticles::tick);
+        ClientTicks.onEndTick(DisintegrationParticles::tick);
         Billboards.registerPool(Pool.class, List.of(
                         new Billboards.Layer(MEAT.toString(), Billboards.Mode.DEPTH_WRITING_TRANSLUCENT,
                                 Billboards.Uv.ROTATED_180),
@@ -83,7 +88,7 @@ public final class DisintegrationParticles {
                 },
                 pool -> GIBLETS.isEmpty());
         WorldEffects.onBegin(camera -> submit(camera));
-        dev.golem.core.client.ClientResourceReloads.register(Constants.MOD_ID,
+        ClientResourceReloads.register(Constants.MOD_ID,
                 "disintegration_particles", () -> { clear(); model = null; declaration = null; });
     }
 
@@ -165,7 +170,7 @@ public final class DisintegrationParticles {
     }
 
     private static Billboards.RowWriter quads(PoseStack.Pose pose,
-            com.mojang.blaze3d.vertex.VertexConsumer buffer, CameraInfo camera,
+            VertexConsumer buffer, CameraInfo camera,
             Vector3f right, Vector3f up) {
         return (x, y, z, halfSize, red, green, blue, alpha, packedLight) -> {
             float cx = (float) (x - camera.pos.x);
@@ -312,7 +317,7 @@ public final class DisintegrationParticles {
             PoseStack pose = new PoseStack();
             pose.translate(Mth.lerp(partial, xo, x) - camera.pos.x, Mth.lerp(partial, yo, y) - camera.pos.y,
                     Mth.lerp(partial, zo, z) - camera.pos.z);
-            int light = dev.golem.core.render.Renderers.lightAt(Minecraft.getInstance().level,
+            int light = Renderers.lightAt(Minecraft.getInstance().level,
                     BlockPos.containing(x, y, z));
             Gem.replay(declaration(), this, pose, WorldEffects.sink(0), light);
         }
@@ -332,7 +337,7 @@ public final class DisintegrationParticles {
         private int tint(float partial) {
             float alpha = lifetime - (age + partial) < 40F
                     ? Math.max(0F, (lifetime - (age + partial)) / 40F) : 1F;
-            return dev.golem.core.client.Colors.colorFromFloat(alpha, brightness, brightness, brightness);
+            return Colors.colorFromFloat(alpha, brightness, brightness, brightness);
         }
 
         private static WavefrontObj model() {
@@ -390,7 +395,7 @@ public final class DisintegrationParticles {
         }
         boolean expired() { return age >= lifetime; }
         void write(Billboards.LayerWriter layers, float partial) {
-            int light = dev.golem.core.render.Renderers.lightAt(Minecraft.getInstance().level,
+            int light = Renderers.lightAt(Minecraft.getInstance().level,
                     BlockPos.containing(x, y, z));
             layers.layer(type).row(Mth.lerp(partial, xo, x), Mth.lerp(partial, yo, y),
                     Mth.lerp(partial, zo, z), 0.1F, 1F, 1F, 1F, 1F, light);

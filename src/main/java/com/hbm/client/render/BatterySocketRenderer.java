@@ -1,8 +1,12 @@
 package com.hbm.client.render;
 
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.items.machine.ItemBatteryCreative;
+import com.hbm.items.machine.ItemBatterySC;
+import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -31,11 +35,11 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
 
     private static final Surface EMPTY = Surface.cutout("hbm:textures/models/machines/battery_socket.png");
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of("hbm", "models/battery_socket.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of("hbm", "models/battery_socket.obj"));
     /** 1.7's {@code battery.obj} "Supports" part, split into its own file so the pack icons need not exclude it. */
-    private final WavefrontObj supports = WavefrontObj.load(dev.golem.core.Ids.of("hbm", "models/battery_socket_supports.obj"));
-    private final WavefrontObj horse = WavefrontObj.load(dev.golem.core.Ids.of("hbm", "models/mobs/horse.obj"));
-    private static final Identifier SUNBURST = dev.golem.core.Ids.of("hbm", "textures/models/horse/sunburst.png");
+    private final WavefrontObj supports = WavefrontObj.load(Ids.of("hbm", "models/battery_socket_supports.obj"));
+    private final WavefrontObj horse = WavefrontObj.load(Ids.of("hbm", "models/mobs/horse.obj"));
+    private static final Identifier SUNBURST = Ids.of("hbm", "textures/models/horse/sunburst.png");
     private final Map<Identifier, Surface> skins = new HashMap<>();
 
     /** Match the 1.12.2 RenderBatterySocket placement: centre, facing-rotate, then its model offset. */
@@ -95,16 +99,16 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
         if (stack != null && stack.getItem() instanceof ItemBatteryPack battery) {
             var pack = battery.stats();
             state.batteryPart = pack.capacitor() ? "Capacitor" : "Battery";
-            state.batteryTexture = dev.golem.core.Ids.parse(pack.texture());
-        } else if (stack != null && stack.getItem() instanceof com.hbm.items.machine.ItemBatterySC) {
+            state.batteryTexture = Ids.parse(pack.texture());
+        } else if (stack != null && stack.getItem() instanceof ItemBatterySC) {
             // 1.7 RenderBatterySocket: every radiovoltaic variant is the "Battery" body in battery_sc.png
             state.batteryPart = "Battery";
-            state.batteryTexture = com.hbm.items.machine.ItemBatterySC.SOCKET_TEXTURE;
+            state.batteryTexture = ItemBatterySC.SOCKET_TEXTURE;
         } else {
             state.batteryPart = null;
             state.batteryTexture = null;
             if (stack != null && !stack.isEmpty()) {
-                if (stack.getItem() instanceof com.hbm.items.machine.ItemBatteryCreative) {
+                if (stack.getItem() instanceof ItemBatteryCreative) {
                     state.creative = true;
                 } else {
                     state.other.extract(level, stack, ItemDisplayContext.GROUND);
@@ -146,7 +150,7 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
 
         Random rand = new Random(state.gameTime / 5);
         rand.nextBoolean();
-        int animation = (int) (com.hbm.util.GameTime.now() % 1000L) / 50;
+        int animation = (int) (GameTime.now() % 1000L) / 50;
         for (int i = -1; i <= 1; i += 2) for (int j = -1; j <= 1; j += 2) if (rand.nextInt(4) == 0) {
             pose.pushPose();
             pose.translate(0D, 0.75D, 0D);

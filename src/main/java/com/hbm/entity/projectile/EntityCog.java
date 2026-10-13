@@ -182,7 +182,7 @@ public class EntityCog extends EntityThrowableInterp {
     protected void saveData(DataOut output) {
         super.saveData(output);
         output.putInt("rot", getOrientation());
-        // 1.7 saved the gear's metadata; the port names the gear (History §19es-itemvariant): steel = gear_large_steel
+        // 1.7 saved the gear's metadata; the port names the gear: steel = gear_large_steel
         output.putBoolean("steel", getMeta() == 1);
     }
 

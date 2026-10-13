@@ -13,13 +13,12 @@ import static dev.golem.core.dejson.Crafting.stack;
 /**
  * Every shaped hbm recipe, declared through Golem Core's {@code dejson} vocabulary.
  *
- * <p>A pattern and its symbols are the recipe, and they are all that is here. The type line, the
- * category, the key block and the result wrapper were the same in all {@value #FILES_REPLACED} of
- * the files these stand in for, and a declaration says them once.
+ * <p>A pattern and its symbols are the recipe, and they are all that is declared here. The type line, the
+ * category, the key block and the result wrapper are the same in all {@value #FILES_REPLACED} recipes and a
+ * declaration says them once.
  *
- * <p>Recipe ids are carried through unchanged rather than derived from the output. They are visible
- * — the recipe book remembers them, JEI bookmarks them — so renaming one would reset progress
- * for no gain.
+ * <p>Recipe ids are not derived from the output. The recipe book remembers them and JEI bookmarks them, so
+ * renaming one resets progress.
  */
 public final class ModShapedRecipes {
 
@@ -978,7 +977,7 @@ public final class ModShapedRecipes {
                 "L", VanillaIds.ladder, "#", TagIds.ingots_titanium);
         shaped(NS, "lamp_demon", ItemIds.lamp_demon, rows(" D ", "S S"),
                 "D", ItemIds.demon_core_closed, "S", TagIds.ingots_steel);
-        // no "laser_crystal_bale": the item is old-hbm 1.12.2's name for 1.7's laser_crystal_dnt, and 1.12.2's grid
+        // no "laser_crystal_bale": the item is 1.12.2's name for 1.7's laser_crystal_dnt, and 1.12.2's grid
         // (CraftingManager:387) is 1.7's laser_crystal_dnt grid (CraftingManager:343), which FinalConsumableDeclarations
         // states; two results on one grid let the bale shadow the 1.7 crystal.
         shaped(NS, "laser_crystal_bismuth", ItemIds.laser_crystal_bismuth, rows("QUQ", "BCB", "QTQ"),

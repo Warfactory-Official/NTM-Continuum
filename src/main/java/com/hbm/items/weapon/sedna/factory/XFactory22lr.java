@@ -4,7 +4,9 @@ import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import net.minecraft.world.item.ItemStack;
 
 /** The Gen-3 .22 LR rounds, ported from upstream's {@code XFactory22lr}. */
@@ -51,6 +53,6 @@ public final class XFactory22lr {
     }
 
     /** 1.7 {@code LAMBDA_NAME_SILENCED} (gun_am180, gun_star_f). */
-    public static final java.util.function.Function<ItemStack, String> LAMBDA_NAME_SILENCED = stack ->
-            com.hbm.items.weapon.sedna.mods.XWeaponModManager.hasUpgrade(stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SILENCER) ? XFactory12ga.mutated(stack, "_silenced") : null;
+    public static final Function<ItemStack, String> LAMBDA_NAME_SILENCED = stack ->
+            XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SILENCER) ? XFactory12ga.mutated(stack, "_silenced") : null;
 }

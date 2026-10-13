@@ -33,7 +33,7 @@ public class TileEntityCreativeGenerator extends BlockEntity implements IEnergyP
 
     @Override
     public void setPower(long power) {
-        // infinite source — ignore drains
+        // Infinite source: ignore drains
     }
 
     @Override
@@ -43,7 +43,7 @@ public class TileEntityCreativeGenerator extends BlockEntity implements IEnergyP
 
     @Override
     public long getProviderSpeed() {
-        // 100 MHE/t per side — 1000× the original 100 kHE to feed the high-power machines (mining laser etc.).
+        // 100 MHE/t per side, 1000× the original 100 kHE to feed the high-power machines (mining laser etc.).
         return 100_000_000L;
     }
 

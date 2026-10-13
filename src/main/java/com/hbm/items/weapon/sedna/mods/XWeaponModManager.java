@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.mods;
 
+import com.hbm.items.ItemFamily;
 import com.hbm.items.ModGunItems;
 import com.hbm.items.ModWeaponModItems;
 import com.hbm.items.ItemEnumMulti;
@@ -11,6 +12,7 @@ import com.hbm.util.SavedIds;
 import dev.golem.core.world.ItemStacks;
 import dev.golem.core.registry.RegistryObject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +64,7 @@ public final class XWeaponModManager {
     /**
      * Installed modifiers are saved by name under this key + config index, comma-separated
      * ({@code "hbm:silencer,hbm:scope"}). 1.7 saved the numeric ids under {@link #KEY_MOD_LIST}; numeric ids are never
-     * persisted now (AGENTS.md section 8; an addon's number would also collide with HBM's).
+     * persisted (AGENTS.md section 8; an addon's number would also collide with HBM's).
      */
     public static final String KEY_MOD_NAMES = "KEY_MOD_NAMES_";
     /**
@@ -313,7 +315,7 @@ public final class XWeaponModManager {
         }
     }
 
-    private static <E extends Enum<E>> WeaponModDefinition def(com.hbm.items.ItemFamily<E, ItemEnumMulti> family, E variant) {
+    private static <E extends Enum<E>> WeaponModDefinition def(ItemFamily<E, ItemEnumMulti> family, E variant) {
         return new WeaponModDefinition(() -> family.stack(variant));
     }
 
@@ -475,7 +477,7 @@ public final class XWeaponModManager {
         CompoundTag data = ItemGunBaseNT.getGunData(stack);
         String saved = Tags.getStringOr(data, KEY_MOD_NAMES + cfg, "");
         if (saved.isEmpty()) {
-            // a gun modded before 2026-10-08 carries 1.7's numeric ids: not read, the mods are gone (one WARN)
+            // a gun carrying 1.7's numeric mod ids is not read, and its mods are dropped (one WARN)
             if (Tags.contains(data, KEY_MOD_LIST + cfg)) SavedIds.warnNumeric("weapon modifier id", KEY_MOD_LIST + cfg);
             return new int[0];
         }
@@ -486,7 +488,7 @@ public final class XWeaponModManager {
             int handle = handle(name);
             if (handle >= 0) ids[count++] = handle;
         }
-        return count == ids.length ? ids : java.util.Arrays.copyOf(ids, count);
+        return count == ids.length ? ids : Arrays.copyOf(ids, count);
     }
 
     private static int idOf(IWeaponMod mod) {

@@ -2,6 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
+import com.hbm.blocks.machine.rbmk.RBMKLoader;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.handler.neutron.NeutronHandler;
 import com.hbm.handler.neutron.NeutronNodeWorld;
@@ -13,15 +14,24 @@ import com.hbm.items.machine.ItemRBMKRod;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKBoiler;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKControl;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKDebris;
+import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKGraph;
+import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKIndicator;
+import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKKeyPad;
+import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKLever;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKRod;
+import com.hbm.tileentity.network.RTTYSystem;
+import dev.golem.core.Ids;
+import dev.golem.core.gametest.GameTestHelpers;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Block;
 
 /** Deterministic RBMK contracts copied from the current ntm-next implementation. */
 public final class RBMKGameTests {
@@ -52,12 +62,12 @@ public final class RBMKGameTests {
     public static void foldedColumn(GameTestHelper helper) {
         BlockPos core = new BlockPos(3, 1, 3);
         var block = ModRBMKBlocks.rbmk_fuel_rod.get();
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         helper.setBlock(core, block.defaultBlockState());
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(core), block.defaultBlockState(), player,
                 new ItemStack(block));
 
-        helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, BlockEntityRBMKRod.class) != null,
+        helper.assertTrue(GameTestHelpers.blockEntity(helper, core, BlockEntityRBMKRod.class) != null,
                 "The folded RBMK core must create its fuel-channel block entity");
         for (int y = 1; y <= 3; y++) {
             BlockPos cell = core.above(y);
@@ -101,7 +111,7 @@ public final class RBMKGameTests {
                 "A cool linked rod must match fuel disassembly");
         ItemStack pellets = recipe.assembleItemStacks(List.of(depleted));
         helper.assertTrue(pellets.is(ModRBMKItems.pelletFor(rod)) && pellets.getCount() == 8
-                        && ((com.hbm.items.machine.ItemRBMKPellet) pellets.getItem()).getVariant(pellets) == 7
+                        && ((ItemRBMKPellet) pellets.getItem()).getVariant(pellets) == 7
                         && ModDataComponents.RBMK_PELLET.getOr(pellets, null) != null
                         && ModDataComponents.RBMK_PELLET.getOr(pellets, null).depletion() == 2
                         && ModDataComponents.RBMK_PELLET.getOr(pellets, null).xenon(),
@@ -115,7 +125,7 @@ public final class RBMKGameTests {
     public static void control(GameTestHelper helper) {
         BlockPos pos = new BlockPos(2, 1, 2);
         helper.setBlock(pos, ModRBMKBlocks.rbmk_control.get().defaultBlockState());
-        BlockEntityRBMKControl control = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
+        BlockEntityRBMKControl control = GameTestHelpers.blockEntity(helper, pos,
                 BlockEntityRBMKControl.class);
         CompoundTag packet = new CompoundTag();
         packet.putDouble("level", 4D);
@@ -131,8 +141,8 @@ public final class RBMKGameTests {
         BlockPos sourcePos = new BlockPos(1, 1, 1), targetPos = sourcePos.east();
         helper.setBlock(sourcePos, ModRBMKBlocks.rbmk_fuel_rod.get().defaultBlockState());
         helper.setBlock(targetPos, ModRBMKBlocks.rbmk_fuel_rod.get().defaultBlockState());
-        BlockEntityRBMKRod source = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, sourcePos, BlockEntityRBMKRod.class);
-        BlockEntityRBMKRod target = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, targetPos, BlockEntityRBMKRod.class);
+        BlockEntityRBMKRod source = GameTestHelpers.blockEntity(helper, sourcePos, BlockEntityRBMKRod.class);
+        BlockEntityRBMKRod target = GameTestHelpers.blockEntity(helper, targetPos, BlockEntityRBMKRod.class);
         source.inventory.setStackInSlot(0, new ItemStack(ModRBMKItems.rbmk_fuel_po210be.get()));
         target.inventory.setStackInSlot(0, new ItemStack(ModRBMKItems.rbmk_fuel_ueu.get()));
         target.tickServer(); // marks the receiving channel as fuelled without creating a stream
@@ -150,7 +160,7 @@ public final class RBMKGameTests {
     public static void boiler(GameTestHelper helper) {
         BlockPos pos = new BlockPos(2, 1, 2);
         helper.setBlock(pos, ModRBMKBlocks.rbmk_boiler.get().defaultBlockState());
-        BlockEntityRBMKBoiler boiler = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
+        BlockEntityRBMKBoiler boiler = GameTestHelpers.blockEntity(helper, pos,
                 BlockEntityRBMKBoiler.class);
         boiler.feed.setFill(100);
         boiler.heat = 110D;
@@ -166,7 +176,7 @@ public final class RBMKGameTests {
                 ModRBMKBlocks.rbmk_debris_radiating.get(), ModRBMKBlocks.rbmk_debris_digamma.get())) {
             BlockPos pos = new BlockPos(1, 1, 1);
             helper.setBlock(pos, block.defaultBlockState());
-            helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, BlockEntityRBMKDebris.class) != null,
+            helper.assertTrue(GameTestHelpers.blockEntity(helper, pos, BlockEntityRBMKDebris.class) != null,
                     "Debris variant " + BuiltInRegistries.BLOCK.getKey(block) + " must use the RBMK debris state carrier");
         }
         helper.succeed();
@@ -182,22 +192,22 @@ public final class RBMKGameTests {
         var level = helper.getLevel();
         BlockPos keyPos = new BlockPos(1, 1, 1);
         helper.setBlock(keyPos, ModRBMKBlocks.rbmk_key_pad.get().defaultBlockState());
-        var keypad = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, keyPos, com.hbm.tileentity.machine.rbmk.BlockEntityRBMKKeyPad.class);
+        var keypad = GameTestHelpers.blockEntity(helper, keyPos, BlockEntityRBMKKeyPad.class);
         helper.assertTrue(keypad != null, "The keypad must create its block entity");
         String keyChannel = "gt_rbmk_kp_" + level.getGameTime();
         keypad.keys[0].active = true;
         keypad.keys[0].rtty = keyChannel;
         keypad.keys[0].command = "42";
         keypad.keys[0].click();
-        var keyKey = new com.hbm.tileentity.network.RTTYSystem.ChannelKey(level.dimension(), keyChannel);
-        helper.assertTrue("42".equals(String.valueOf(com.hbm.tileentity.network.RTTYSystem.newMessages.get(keyKey)))
+        var keyKey = new RTTYSystem.ChannelKey(level.dimension(), keyChannel);
+        helper.assertTrue("42".equals(String.valueOf(RTTYSystem.newMessages.get(keyKey)))
                         && keypad.keys[0].isPressed && keypad.keys[0].clickTimer == 7,
                 "A non-polling key must broadcast its command and hold down for seven ticks");
-        com.hbm.tileentity.network.RTTYSystem.clearChannel(level, keyChannel);
+        RTTYSystem.clearChannel(level, keyChannel);
 
         BlockPos leverPos = new BlockPos(2, 1, 1);
         helper.setBlock(leverPos, ModRBMKBlocks.rbmk_lever.get().defaultBlockState());
-        var lever = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, leverPos, com.hbm.tileentity.machine.rbmk.BlockEntityRBMKLever.class);
+        var lever = GameTestHelpers.blockEntity(helper, leverPos, BlockEntityRBMKLever.class);
         String leverChannel = "gt_rbmk_lv_" + level.getGameTime();
         lever.levers[1].active = true;
         lever.levers[1].rtty = leverChannel;
@@ -206,15 +216,15 @@ public final class RBMKGameTests {
         for (int i = 0; i < 9; i++) lever.tickServer();
         helper.assertTrue(lever.levers[1].flipProgress < 1F, "The lever must still be moving after nine ticks");
         lever.tickServer();
-        var leverKey = new com.hbm.tileentity.network.RTTYSystem.ChannelKey(level.dimension(), leverChannel);
+        var leverKey = new RTTYSystem.ChannelKey(level.dimension(), leverChannel);
         helper.assertTrue(lever.levers[1].flipProgress == 1F
-                        && "7".equals(String.valueOf(com.hbm.tileentity.network.RTTYSystem.newMessages.get(leverKey))),
+                        && "7".equals(String.valueOf(RTTYSystem.newMessages.get(leverKey))),
                 "A non-polling lever must reach the bottom on the tenth tick and send its ON command once");
-        com.hbm.tileentity.network.RTTYSystem.clearChannel(level, leverChannel);
+        RTTYSystem.clearChannel(level, leverChannel);
 
         BlockPos lampPos = new BlockPos(3, 1, 1);
         helper.setBlock(lampPos, ModRBMKBlocks.rbmk_indicator.get().defaultBlockState());
-        var lamp = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, lampPos, com.hbm.tileentity.machine.rbmk.BlockEntityRBMKIndicator.class).indicators[0];
+        var lamp = GameTestHelpers.blockEntity(helper, lampPos, BlockEntityRBMKIndicator.class).indicators[0];
         lamp.min = 10; lamp.max = 20;
         lamp.decideLight(15); boolean inside = lamp.light;
         lamp.decideLight(25); boolean outside = lamp.light;
@@ -226,26 +236,26 @@ public final class RBMKGameTests {
 
         BlockPos graphPos = new BlockPos(4, 1, 1);
         helper.setBlock(graphPos, ModRBMKBlocks.rbmk_graph.get().defaultBlockState());
-        var graph = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, graphPos, com.hbm.tileentity.machine.rbmk.BlockEntityRBMKGraph.class).graphs[0];
+        var graph = GameTestHelpers.blockEntity(helper, graphPos, BlockEntityRBMKGraph.class).graphs[0];
         graph.pushValue(5); graph.pushValue(9);
         helper.assertTrue(graph.values[29] == 9 && graph.values[28] == 5 && graph.values[27] == 0,
                 "Graph samples must shift left with the newest at the end");
 
         BlockPos core = new BlockPos(1, 3, 3);
         helper.setBlock(core.below(2), ModRBMKBlocks.rbmk_loader.get().defaultBlockState());
-        var positions = com.hbm.blocks.machine.rbmk.RBMKLoader.outputPositions(level, helper.absolutePos(core), false);
+        var positions = RBMKLoader.outputPositions(level, helper.absolutePos(core), false);
         helper.assertTrue(positions.length == 6 && positions[5].getPos().equals(helper.absolutePos(core.below(3))),
                 "A connector two blocks below the core must add its four sides and underside to the outputs");
-        helper.assertTrue(com.hbm.blocks.machine.rbmk.RBMKLoader.outputPositions(level, helper.absolutePos(new BlockPos(5, 3, 5)), false).length == 1,
+        helper.assertTrue(RBMKLoader.outputPositions(level, helper.absolutePos(new BlockPos(5, 3, 5)), false).length == 1,
                 "Without a connector only the column top is an output");
         helper.succeed();
     }
 
     private static void checkId(GameTestHelper helper, Object entry, String path) {
-        Identifier expected = dev.golem.core.Ids.of("hbm", path);
-        if (entry instanceof net.minecraft.world.level.block.Block block) {
+        Identifier expected = Ids.of("hbm", path);
+        if (entry instanceof Block block) {
             helper.assertTrue(expected.equals(BuiltInRegistries.BLOCK.getKey(block)), "Wrong block id for " + path);
-        } else if (entry instanceof net.minecraft.world.item.Item item) {
+        } else if (entry instanceof Item item) {
             helper.assertTrue(expected.equals(BuiltInRegistries.ITEM.getKey(item)), "Wrong item id for " + path);
         } else {
             helper.fail("Unsupported registry entry for " + path);

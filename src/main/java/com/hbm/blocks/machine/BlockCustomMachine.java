@@ -3,7 +3,9 @@ package com.hbm.blocks.machine;
 import com.hbm.config.CustomMachineConfigJSON;
 import com.hbm.config.CustomMachineConfigJSON.MachineConfiguration;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModWandItems;
 import com.hbm.tileentity.machine.TileEntityCustomMachine;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -78,7 +80,7 @@ public class BlockCustomMachine extends CompatBlock implements TickingBlock {
 
                 if (tile.checkStructure()) {
                     if (player instanceof ServerPlayer serverPlayer && tile.config != null) {
-                        dev.golem.core.gui.Menus.openWithPos(serverPlayer, tile, pos);
+                        Menus.openWithPos(serverPlayer, tile, pos);
                     }
                 } else if (isStructureWand(player.getMainHandItem())) {
                     tile.buildStructure();
@@ -91,7 +93,7 @@ public class BlockCustomMachine extends CompatBlock implements TickingBlock {
     }
 
     private static boolean isStructureWand(ItemStack held) {
-        return held.is(com.hbm.items.ModWandItems.wand_s.get());
+        return held.is(ModWandItems.wand_s.get());
     }
 
     @Override

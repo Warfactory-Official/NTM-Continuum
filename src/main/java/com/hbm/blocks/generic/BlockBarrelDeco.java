@@ -5,13 +5,18 @@ import com.hbm.blocks.bomb.BlockTNTBase;
 import com.hbm.entity.explosive.EntityPrimedExplosive;
 import com.hbm.tileentity.network.TileEntityBarrelDeco;
 import com.hbm.api.block.IToolable;
+import dev.golem.core.world.Fires;
+import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -53,7 +58,7 @@ public abstract class BlockBarrelDeco extends BlockTNTBase implements EntityBloc
         this.kind = kind;
         this.flammable = flammable;
         // 1.7 RedBarrel/YellowBarrel -> BlockFlammable(en, flam): (2, 15) when flammable, else (0, 0)
-        dev.golem.core.world.Fires.setFlammable(this, flammable ? 2 : 0, flammable ? 15 : 0);
+        Fires.setFlammable(this, flammable ? 2 : 0, flammable ? 15 : 0);
     }
 
     public String barrelTexture() {
@@ -108,9 +113,9 @@ public abstract class BlockBarrelDeco extends BlockTNTBase implements EntityBloc
     }
 
     @Override
-    protected boolean onExplosion(BlockState state, net.minecraft.server.level.ServerLevel level, BlockPos pos,
-                                  net.minecraft.world.level.Explosion explosion,
-                                  java.util.function.BiConsumer<ItemStack, BlockPos> onHit) {
+    protected boolean onExplosion(BlockState state, ServerLevel level, BlockPos pos,
+                                  Explosion explosion,
+                                  BiConsumer<ItemStack, BlockPos> onHit) {
         level.removeBlock(pos, false);
         pop(level, pos);
         return true;
@@ -132,7 +137,7 @@ public abstract class BlockBarrelDeco extends BlockTNTBase implements EntityBloc
     }
 
     @Override
-    public void onProjectileHit(Level level, BlockState state, BlockHitResult hit, net.minecraft.world.entity.projectile.Projectile projectile) {}
+    public void onProjectileHit(Level level, BlockState state, BlockHitResult hit, Projectile projectile) {}
 
     @Override
     public boolean onScrew(Level level, Player player, BlockPos pos, Direction side, Vec3 hit, InteractionHand hand, IToolable.ToolType tool) {

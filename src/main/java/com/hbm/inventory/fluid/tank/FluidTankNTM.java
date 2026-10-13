@@ -15,12 +15,10 @@ import org.jspecify.annotations.NonNull;
  * HBM's fluid tank: a typed, pressurised fill buffer used by every fluid machine/pipe. It holds a
  * {@link FluidType}, a fill amount, a capacity, and a pressure level.
  *
- * <p>26.1 slim port: the 1.12.2 original implemented Forge's {@code IFluidHandler}/{@code IFluidTank},
- * carried embedded GL tank-rendering, and handled canister item fill/unload. All of that is stripped
- * here — the network/machines only need the typed buffer + persistence. The GL render moves to a
- * client-side GUI helper later; item I/O comes back with the fluid-container item port. Persistence is
- * via 26.1 {@code DataOut}/{@code DataIn} (NBT) and {@code RegistryFriendlyByteBuf} (the
- * per-tick BufPacket sync), replacing the old {@code NBTTagCompound}/{@code ByteBuf}.
+ * <p>Slimmer than the 1.12.2 original, which implemented Forge's {@code IFluidHandler}/{@code IFluidTank},
+ * carried GL tank rendering and handled canister item fill/unload: the network and machines only need the
+ * typed buffer and its persistence. Persistence is via {@code DataOut}/{@code DataIn} (NBT) and
+ * {@code RegistryFriendlyByteBuf} (the per-tick BufPacket sync).
  *
  * @author hbm, mlbv
  */
@@ -119,7 +117,7 @@ public class FluidTankNTM implements Cloneable {
     public void writeToNBT(DataOut nbt, String s) {
         nbt.putInt(s, fluid);
         nbt.putInt(s + "_max", maxFluid);
-        Fluids.write(nbt, s + "_type", type); // registry name, never the numeric id (History section 19ej-ids)
+        Fluids.write(nbt, s + "_type", type); // registry name, never the numeric id
         nbt.putShort(s + "_p", (short) pressure);
     }
 

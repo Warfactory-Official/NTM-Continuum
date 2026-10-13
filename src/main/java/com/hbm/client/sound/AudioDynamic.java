@@ -72,7 +72,7 @@ public class AudioDynamic extends AbstractTickableSoundInstance {
 
     public void start() {
         SoundManager manager = Minecraft.getInstance().getSoundManager();
-        // 26.2: play() replaces the channel entry.
+        // 26.1: play() replaces the channel entry.
         if (!manager.isActive(this)) {
             manager.play(this);
         }

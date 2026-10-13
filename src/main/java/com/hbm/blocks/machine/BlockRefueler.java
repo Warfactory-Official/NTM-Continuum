@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import com.hbm.lib.DirPos;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.inventory.fluid.FluidType;
@@ -8,6 +9,7 @@ import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityRefueler;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,11 +39,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Refueler block — 1:1 port of the 1.12.2 {@code BlockRefueler}: a single horizontal-facing INVISIBLE
+ * Refueler block, a 1:1 port of the 1.12.2 {@code BlockRefueler}: a single horizontal-facing INVISIBLE
  * fuel pad drawn by {@code RefuelerRenderer}. Fluid-ID right-click retypes the tank. Collision is a
- * 12/16-tall slab (the old directional slab is simplified to a uniform pad — §20).
+ * 12/16-tall slab (the directional slab is simplified to a uniform pad).
  */
-public class BlockRefueler extends dev.golem.core.world.CompatBlock implements TickingBlock, IFluidConnectorBlockMK2 {
+public class BlockRefueler extends CompatBlock implements TickingBlock, IFluidConnectorBlockMK2 {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 12, 16);
@@ -108,11 +110,11 @@ public class BlockRefueler extends dev.golem.core.world.CompatBlock implements T
                 && IEnergyConnectorBlock.isPort(portOf(te), new BlockPos(x, y, z), dir);
     }
 
-    private static com.hbm.lib.DirPos[] portOf(TileEntityRefueler te) {
+    private static DirPos[] portOf(TileEntityRefueler te) {
         // pipe connects on the side opposite the facing (matches the TE's subscribe port)
         Direction facing = te.getBlockState().hasProperty(FACING) ? te.getBlockState().getValue(FACING) : Direction.NORTH;
         ForgeDirection dir = ForgeDirection.getOrientation(facing.get3DDataValue()).getOpposite();
         BlockPos p = te.getBlockPos();
-        return new com.hbm.lib.DirPos[]{ new com.hbm.lib.DirPos(p.getX() + dir.offsetX, p.getY(), p.getZ() + dir.offsetZ, dir) };
+        return new DirPos[]{ new DirPos(p.getX() + dir.offsetX, p.getY(), p.getZ() + dir.offsetZ, dir) };
     }
 }

@@ -1,11 +1,16 @@
 package com.hbm.client;
 
+import com.google.gson.JsonObject;
+import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.blocks.EnergyBedrockDeclarations;
 import com.hbm.client.render.HbmBlockEntityRenderers;
 import com.hbm.client.render.PowerCableBoxRenderer;
 import com.hbm.client.render.RenderCharger;
 import com.hbm.tileentity.ModEnergyBedrockBlockEntities;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import dev.golem.core.render.Sprites;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.ItemStack;
 
 /** Block-entity renderers of the energy extras, and the computed bedrock ore grade sprites. */
 public final class EnergyBedrockClientRegistrations {
@@ -24,12 +29,12 @@ public final class EnergyBedrockClientRegistrations {
         HbmBlockEntityRenderers.regGem(sink, ModEnergyBedrockBlockEntities.ENERGY_CABLE_BOX.get(), PowerCableBoxRenderer::new);
         HbmBlockEntityRenderers.regGem(sink, ModEnergyBedrockBlockEntities.CHARGER.get(), RenderCharger::new);
         // harness: the charge of whatever battery the player holds (a charge has no damage value to read)
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_battery", (mc, params) -> {
-            com.google.gson.JsonObject json = new com.google.gson.JsonObject();
+        HarnessQueryRegistry.register("hbm_battery", (mc, params) -> {
+            JsonObject json = new JsonObject();
             if (mc.player == null) return json;
-            net.minecraft.world.item.ItemStack held = mc.player.getMainHandItem();
-            json.addProperty("id", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(held.getItem()).toString());
-            if (held.getItem() instanceof com.hbm.api.energymk2.IBatteryItem battery) {
+            ItemStack held = mc.player.getMainHandItem();
+            json.addProperty("id", BuiltInRegistries.ITEM.getKey(held.getItem()).toString());
+            if (held.getItem() instanceof IBatteryItem battery) {
                 json.addProperty("charge", battery.getCharge(held));
                 json.addProperty("max", battery.getMaxCharge(held));
             }

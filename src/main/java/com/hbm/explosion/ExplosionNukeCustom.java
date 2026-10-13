@@ -8,6 +8,7 @@ import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityBalefire;
 import com.hbm.entity.logic.EntityNukeExplosionMK3;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
+import dev.golem.core.hook.Hook;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
@@ -37,7 +38,7 @@ public final class ExplosionNukeCustom {
     }
 
     /** The first listener that answers true replaces 1.7's balefire; HBM registers none. NTM: Space's is antimatter. */
-    public static final dev.golem.core.hook.Hook<AntimatterStage> ANTIMATTER = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<AntimatterStage> ANTIMATTER = Hook.notifying();
 
     public static void explodeCustom(Level level, double x, double y, double z, float tnt, float nuke, float hydro,
                                      float amat, float dirty, float schrab, float euph) {

@@ -1,5 +1,6 @@
 package com.hbm.world.gen.nbt;
 
+import com.hbm.world.gen.component.Component;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public class JigsawPiece {
      * Replaces matching blocks using the result of a BlockSelector. 1.7 keyed it by {@code Block}; blocks do not exist
      * when spawns register, so the key is the port block's id path (e.g. {@code meteor_brick}).
      */
-    public java.util.Map<String, com.hbm.world.gen.component.Component.BlockSelector> blockTable;
+    public Map<String, Component.BlockSelector> blockTable;
 
     /** Moves every single column to the terrain (for digging out trenches, natural formations, etc). */
     public boolean conformToTerrain = false;

@@ -1,8 +1,9 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.environment.Environment;
+import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import dev.golem.core.data.Tags;
 
-import com.hbm.blocks.machine.DiFurnaceContent;
 import com.hbm.blocks.machine.MachineDiFurnace;
 import com.hbm.inventory.container.ContainerDiFurnace;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -28,12 +29,14 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.ModBlockEntities;
 
 /** Fuel-fired DiFurnace controller, ported from the old TileEntityDiFurnace. */
 public class TileEntityDiFurnace extends TileEntityMachinePolluting
-        implements MenuProvider, WorldlyContainer, com.hbm.api.fluidmk2.IFluidStandardSenderMK2 {
+        implements MenuProvider, WorldlyContainer, IFluidStandardSenderMK2 {
 
     public static final int MAX_FUEL = 12_800;
     public static final int PROCESSING_SPEED = 400;
@@ -50,7 +53,7 @@ public class TileEntityDiFurnace extends TileEntityMachinePolluting
     public byte sideLower = 1;
 
     public TileEntityDiFurnace(BlockPos pos, BlockState state) {
-        super(DiFurnaceContent.DI_FURNACE.get(), pos, state, 4, SMOKE_BUFFER);
+        super(ModBlockEntities.MACHINE_DIFURNACE.get(), pos, state, 4, SMOKE_BUFFER);
     }
 
     @Override
@@ -97,8 +100,8 @@ public class TileEntityDiFurnace extends TileEntityMachinePolluting
         int fuelPower = DiFurnaceRecipes.getItemPower(fuel);
         // hbm-space's breatheAir(0): a fuel that burns needs air where the furnace stands (a check, nothing consumed);
         // lava does not burn. Always true on Earth, so plain HBM is unchanged (com.hbm.api.environment.Environment).
-        if (fuelPower > 0 && !fuel.is(net.minecraft.world.item.Items.LAVA_BUCKET)
-                && !com.hbm.api.environment.Environment.breatheAir(level, pos, 0)) {
+        if (fuelPower > 0 && !fuel.is(Items.LAVA_BUCKET)
+                && !Environment.breatheAir(level, pos, 0)) {
             fuelPower = 0;
         }
         if (fuel.isEmpty() || fuelPower <= 0 || this.fuel > MAX_FUEL - fuelPower) return false;

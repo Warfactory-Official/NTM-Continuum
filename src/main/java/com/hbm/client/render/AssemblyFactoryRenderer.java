@@ -10,6 +10,7 @@ import com.hbm.tileentity.machine.TileEntityMachineAssemblyFactory;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -17,6 +18,7 @@ import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
@@ -37,11 +39,11 @@ public final class AssemblyFactoryRenderer
     private static final double DISPLAY_DISTANCE = 35D * 35D;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/assembly_factory.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/assembly_factory.obj"));
     private final Surface body = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/assembly_factory.png");
     private final RenderType sparksType = CompatRenderTypes.entityTranslucentEmissive(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/assembly_factory_sparks.png"));
+            Ids.of(Constants.MOD_ID, "textures/models/machines/assembly_factory_sparks.png"));
 
     /**
      * Four sliders on one gantry, each carrying an arm of the assembly machine's shape; the two outer
@@ -131,7 +133,7 @@ public final class AssemblyFactoryRenderer
         long gameTime = be.getLevel() == null ? 0L : be.getLevel().getGameTime();
         state.sparksU = (float) ((gameTime / 10D + partialTicks) % 10D);
         // Measured where the machine is seen: on a moving sub-level (Create Aeronautics) its block sits far from it.
-        state.nearby = dev.golem.core.world.SubLevels.distanceSq(be.getLevel(),
+        state.nearby = SubLevels.distanceSq(be.getLevel(),
                 be.getBlockPos().getX() + 0.5D, be.getBlockPos().getY() + 1D, be.getBlockPos().getZ() + 0.5D,
                 cameraPosition.x, cameraPosition.y, cameraPosition.z) < DISPLAY_DISTANCE;
 

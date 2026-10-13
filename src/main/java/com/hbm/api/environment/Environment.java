@@ -5,12 +5,14 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 import dev.golem.core.hook.Hook;
 import dev.golem.core.hook.Verdict;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -21,14 +23,13 @@ import org.jetbrains.annotations.Nullable;
  * same way, and HBM's machines follow it.
  *
  * <p>The query points are exactly where hbm-space (NTM: Space for 1.7.10) changed HBM to consult its celestial bodies
- * and atmospheres, so a plain HBM install behaves exactly as original HBM: every default below is the 1.7 rule the
+ * and atmospheres, so a plain HBM install behaves exactly as 1.7: every default below is the 1.7 rule the
  * fork replaced, never the fork's own Earth values.
  */
 public final class Environment {
 
     private Environment() {}
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Breathing (hbm-space TileEntityMachineBase.breatheAir, ChunkAtmosphereManager.canBreathe)
 
     /** A listener's answer to "can a fire breathe here, consuming {@code amount} of oxygen?". */
@@ -66,7 +67,6 @@ public final class Environment {
         return BREATHING.invoker().breathe(level, pos, amount).orElse(unanswered);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Pressure (hbm-space CBT_Atmosphere.getPressure)
 
     /** A listener's air pressure at a position, in atmospheres, or {@link Double#NaN} to leave it to the next listener. */
@@ -104,7 +104,6 @@ public final class Environment {
         return inOrbit(level) || pressure(level, pos) < VACUUM_PRESSURE;
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Surface and orbit (1.7 provider.isSurfaceWorld / dimensionId == 0; hbm-space CelestialBody.inOrbit)
 
     /** A listener's answer to "is this level a surface world?" ({@link Verdict#PASS} leaves it to the next one). */
@@ -141,7 +140,6 @@ public final class Environment {
         return ORBIT.invoker().orbit(level).orElse(false);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Sunlight (hbm-space WorldProviderCelestial.getSunPower)
 
     /** A listener's sun-power multiplier at a position, or {@link Double#NaN} to leave it to the next listener. */
@@ -165,7 +163,6 @@ public final class Environment {
         return Double.isNaN(sun) ? 1.0D : sun;
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Groundwater (hbm-space CBT_Water: the body's water table)
 
     /**
@@ -202,7 +199,6 @@ public final class Environment {
         return GROUNDWATER.invoker().groundwater(level, pos);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Gravity (hbm-space CelestialBody.getGravity)
 
     /**
@@ -235,7 +231,6 @@ public final class Environment {
         return Double.isNaN(gravity) ? 1.0D : gravity;
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Gas into and out of the air (hbm-space FT_Gaseous.release / capture, CelestialBody.emitGas)
 
     /** A listener told that {@code mB} of a gas was vented into the air at {@code pos}. */
@@ -293,7 +288,6 @@ public final class Environment {
         return GROWTH.invoker().grow(level, pos).orElse(true);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Living entities (hbm-space EntityEffectHandler.handleOxy / handleCorrosion / celestial sun radiation)
 
     /**
@@ -301,12 +295,12 @@ public final class Environment {
      * (where hbm-space ran {@code handleOxy} and {@code handleCorrosion}). An addon keeps its own state (oxygen,
      * corrosion) in a Golem {@code EntityData} attachment of its own, never in HBM's living props.
      */
-    public static final Hook<java.util.function.Consumer<LivingEntity>> LIVING_TICK = Hook.notifying();
+    public static final Hook<Consumer<LivingEntity>> LIVING_TICK = Hook.notifying();
 
     /** Runs {@link #LIVING_TICK} for {@code entity}. */
     public static void livingTick(LivingEntity entity) {
         if (LIVING_TICK.isEmpty()) return;
-        for (java.util.function.Consumer<LivingEntity> listener : LIVING_TICK) listener.accept(entity);
+        for (Consumer<LivingEntity> listener : LIVING_TICK) listener.accept(entity);
     }
 
     /** A listener's ambient radiation floor in RAD/s at a position, or NaN (or 0) to add none. */
@@ -331,7 +325,6 @@ public final class Environment {
         return (float) floor;
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Events other mods track (hbm-space CBT_Impact, CBT_Lights)
 
     /** A listener told that Tom's impact happened in {@code level} at {@code pos}. */
@@ -351,14 +344,14 @@ public final class Environment {
     /** A listener told that an HBM light block came on at {@code pos}. */
     @FunctionalInterface
     public interface LightOn {
-        void lightOn(ServerLevel level, BlockPos pos, net.minecraft.world.level.block.state.BlockState state);
+        void lightOn(ServerLevel level, BlockPos pos, BlockState state);
     }
 
     /** Notified when a spotlight is (re)lit; hbm-space registered the light with the body for its night-side view. */
     public static final Hook<LightOn> LIGHT_ON = Hook.notifying();
 
     /** Runs {@link #LIGHT_ON}. */
-    public static void lightOn(ServerLevel level, BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+    public static void lightOn(ServerLevel level, BlockPos pos, BlockState state) {
         for (LightOn listener : LIGHT_ON) listener.lightOn(level, pos, state);
     }
 
@@ -381,7 +374,6 @@ public final class Environment {
         for (NuclearBlast listener : NUCLEAR_BLAST) listener.blast(level, x, z, radius);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // Satellites (hbm-space SatelliteSavedData.getData(world, x, z), XSatelliteRegistry.getTargetDimensionId)
 
     /**

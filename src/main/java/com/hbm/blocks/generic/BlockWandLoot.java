@@ -8,6 +8,7 @@ import com.hbm.interfaces.IBomb;
 import com.hbm.interfaces.ICopiable;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.itempool.ItemPool;
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.tool.ItemKeyPin;
 import com.hbm.items.tool.ItemLock;
@@ -22,6 +23,7 @@ import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -38,6 +40,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.DirectionalPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -126,7 +129,7 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
             if (block != null) {
                 if (!level.isClientSide()) {
                     loot.replaceState = block.defaultBlockState();
-                    loot.replaceMeta = com.hbm.items.LegacyMeta.of(held);
+                    loot.replaceMeta = LegacyMeta.of(held);
 
                     List<String> poolNames = loot.getPoolNames(block == ModDungeonBlocks.deco_loot.get());
                     if (!poolNames.contains(loot.poolName)) {
@@ -306,7 +309,7 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
                     inventory.setItem(rand.nextInt(size), drawn);
                 } else {
                     for (int i = 0; i < drawn.getCount(); i++) {
-                        inventory.setItem(rand.nextInt(size), dev.golem.core.world.ItemStacks.copyWithCount(drawn, 1));
+                        inventory.setItem(rand.nextInt(size), ItemStacks.copyWithCount(drawn, 1));
                     }
                 }
             }
@@ -322,7 +325,7 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
         }
 
         @Override
-        public void transformTE(net.minecraft.world.level.LevelAccessor level, int coordBaseMode) {
+        public void transformTE(LevelAccessor level, int coordBaseMode) {
             triggerReplace = !ServerConfig.STRUCTURE_DEBUG.get();
             placedRotation = Mth.wrapDegrees(placedRotation + coordBaseMode * 90);
         }

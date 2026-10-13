@@ -5,6 +5,7 @@ import com.hbm.blocks.machine.MachineDiesel;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityMachineDiesel;
 import com.hbm.util.GameTime;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -16,7 +17,7 @@ import net.minecraft.world.phys.Vec3;
 public class DieselGenRenderer extends GemBER<TileEntityMachineDiesel, DieselGenRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/dieselgen.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/dieselgen.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/dieselgen.png");
 

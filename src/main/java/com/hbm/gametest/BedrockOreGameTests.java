@@ -2,8 +2,10 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.blocks.ModOreBlocks;
+import com.hbm.blocks.generic.BlockDepth;
 import com.hbm.blocks.generic.OreDrops;
 import com.hbm.inventory.fluid.FluidStack;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.material.MaterialShapes;
@@ -19,6 +21,7 @@ import com.hbm.world.feature.BedrockOreFeature;
 import com.mojang.serialization.Codec;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.Recipes;
 import net.minecraft.core.BlockPos;
@@ -26,6 +29,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -39,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** Focused old-hbm contracts for bedrock/depth ore generation and extraction. */
+/** Focused 1.12.2 contracts for bedrock/depth ore generation and extraction. */
 public final class BedrockOreGameTests {
 
     private BedrockOreGameTests() {}
@@ -199,9 +203,9 @@ public final class BedrockOreGameTests {
         ItemStack quartz = BedrockOreFeature.weightedNetherDeposit(2L, 7, -11).resource().get();
         helper.assertTrue(phosphorus.is(ModFuelItems.powder_fire.get()) && phosphorus.getCount() == 4,
                 "Old deterministic Nether roll 143 must select phosphorus");
-        helper.assertTrue(glowstone.is(net.minecraft.world.item.Items.GLOWSTONE_DUST) && glowstone.getCount() == 4,
+        helper.assertTrue(glowstone.is(Items.GLOWSTONE_DUST) && glowstone.getCount() == 4,
                 "Old deterministic Nether roll 65 must select glowstone");
-        helper.assertTrue(quartz.is(net.minecraft.world.item.Items.QUARTZ) && quartz.getCount() == 4,
+        helper.assertTrue(quartz.is(Items.QUARTZ) && quartz.getCount() == 4,
                 "Old deterministic Nether roll 224 must select quartz");
         helper.succeed();
     }
@@ -210,13 +214,13 @@ public final class BedrockOreGameTests {
         BlockPos pos = helper.absolutePos(new BlockPos(3, 1, 1));
         BlockState depth = ModOreBlocks.stone_depth.get().defaultBlockState();
         helper.getLevel().setBlock(pos, depth, 3);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
-        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(net.minecraft.world.item.Items.NETHERITE_PICKAXE));
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.NETHERITE_PICKAXE));
         helper.assertTrue(depth.getDestroySpeed(helper.getLevel(), pos) < 0F
                         && depth.getDestroyProgress(player, helper.getLevel(), pos) == 0F,
                 "Ordinary top-tier tools must not mine depth rock");
 
-        helper.assertTrue(com.hbm.blocks.generic.BlockDepth.DEPTH_TOOL_PROGRESS == (float) (1D / 50D),
+        helper.assertTrue(BlockDepth.DEPTH_TOOL_PROGRESS == (float) (1D / 50D),
                 "An accepted IDepthRockTool must receive 1.7's exact 1/50 relative progress");
 
         // 1.7 BlockDepthOre.quantityDroppedWithBonus: quantity * (max(rand(fortune + 2) - 1, 0) + 1)
@@ -239,7 +243,7 @@ public final class BedrockOreGameTests {
 
     public static void saveLoad(GameTestHelper helper) {
         BedrockOreBlockEntity original = place(helper, new BlockPos(4, 1, 1));
-        original.setDeposit(new ItemStack(net.minecraft.world.item.Items.QUARTZ, 4),
+        original.setDeposit(new ItemStack(Items.QUARTZ, 4),
                 new FluidStack(Fluids.SOLVENT, 2_000), 4, 0xF0EFDD, 9);
         Map<String, Object> data = new HashMap<>();
         original.saveDeposit(new MemoryOutput(data));
@@ -247,7 +251,7 @@ public final class BedrockOreGameTests {
         BedrockOreBlockEntity copy = new BedrockOreBlockEntity(original.getBlockPos().east(), original.getBlockState());
         copy.loadDeposit(new MemoryInput(data));
         FluidStack acid = copy.getAcidRequirement();
-        helper.assertTrue(copy.getResource().is(net.minecraft.world.item.Items.QUARTZ)
+        helper.assertTrue(copy.getResource().is(Items.QUARTZ)
                         && copy.getResource().getCount() == 4 && acid != null
                         && acid.type == Fluids.SOLVENT && acid.fill == 2_000
                         && copy.getTier() == 4 && copy.getColor() == 0xF0EFDD && copy.getShape() == 9,
@@ -263,10 +267,10 @@ public final class BedrockOreGameTests {
 
     private static BedrockOreBlockEntity place(GameTestHelper helper, BlockPos relative) {
         helper.setBlock(relative, ModOreBlocks.ore_bedrock_block.get().defaultBlockState());
-        return dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, relative, BedrockOreBlockEntity.class);
+        return GameTestHelpers.blockEntity(helper, relative, BedrockOreBlockEntity.class);
     }
 
-    private static FluidTankNTM tank(com.hbm.inventory.fluid.FluidType type, int amount) {
+    private static FluidTankNTM tank(FluidType type, int amount) {
         FluidTankNTM tank = new FluidTankNTM(type, 16_000);
         tank.setFill(amount);
         return tank;

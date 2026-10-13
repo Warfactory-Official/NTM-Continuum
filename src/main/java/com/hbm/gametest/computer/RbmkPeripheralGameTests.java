@@ -94,7 +94,7 @@ public final class RbmkPeripheralGameTests {
 
     private static final BlockPos POS = new BlockPos(1, 1, 1);
 
-    // ---- columns ----
+    // Columns
 
     private static void fuelRod(GameTestHelper helper) {
         // a ReaSim moderated channel: the rod row covers the subclass, and 1.7 reports the block's moderation
@@ -218,7 +218,7 @@ public final class RbmkPeripheralGameTests {
         });
     }
 
-    // ---- consoles ----
+    // Consoles
 
     private static void console(GameTestHelper helper) {
         helper.setBlock(POS, ModRBMKBlocks.rbmk_console.get().defaultBlockState());
@@ -309,7 +309,7 @@ public final class RbmkPeripheralGameTests {
         });
     }
 
-    // ---- panels ----
+    // Panels
 
     private static void numitron(GameTestHelper helper) {
         helper.setBlock(POS, ModRBMKBlocks.rbmk_numitron.get().defaultBlockState());
@@ -421,7 +421,7 @@ public final class RbmkPeripheralGameTests {
         });
     }
 
-    // ---- support ----
+    // Support
 
     /**
      * Places a full column at {@link #POS} as a player would and checks 1.7's reach: the core and the top answer

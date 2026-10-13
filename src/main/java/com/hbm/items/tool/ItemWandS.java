@@ -32,7 +32,7 @@ import java.util.Set;
  *
  * <p>The blacklist is 1.7's {@code blocks}/{@code metas} int arrays. A 1.7 (block, meta) pair is one flattened
  * block state, so {@code blocks} is a list of block-state names ({@code namespace:block[prop=value]}); a global
- * block-state id is never saved (History section 19ej-ids).
+ * block-state id is never saved.
  *
  * <p>The second click places a {@code wand_structure} saving block one below the box's minimum corner and hands it
  * the box size and this wand's blacklist; its screen then saves the box as an {@code NBTStructure} file.
@@ -172,7 +172,7 @@ public class ItemWandS extends CompatItem {
 
         CompoundTag tag = data(stack);
         if (player.isShiftKeyDown()) {
-            tag.put("blocks", SavedIds.stateList(java.util.List.of()));
+            tag.put("blocks", SavedIds.stateList(List.of()));
             tag.remove("metas");
             player.sendSystemMessage(Component.literal("Cleared blacklist"));
         }

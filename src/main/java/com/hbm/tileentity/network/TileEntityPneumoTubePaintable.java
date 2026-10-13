@@ -1,5 +1,6 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -59,7 +60,7 @@ public class TileEntityPneumoTubePaintable extends TileEntityPneumoTube {
     public CompoundTag getSettings(Level level, BlockPos pos) {
         CompoundTag nbt = super.getSettings(level, pos);
         if (nbt == null) nbt = new CompoundTag();
-        if (camo != null) com.hbm.util.SavedIds.putState(nbt, "paintblock", camo);
+        if (camo != null) SavedIds.putState(nbt, "paintblock", camo);
         return nbt;
     }
 
@@ -67,7 +68,7 @@ public class TileEntityPneumoTubePaintable extends TileEntityPneumoTube {
     public void pasteSettings(CompoundTag nbt, int index, Level level, Player player, BlockPos pos) {
         super.pasteSettings(nbt, index, level, player, pos);
         if (Tags.contains(nbt, "paintblock")) {
-            setCamo(com.hbm.util.SavedIds.getState(nbt, "paintblock", camo));
+            setCamo(SavedIds.getState(nbt, "paintblock", camo));
         }
     }
 

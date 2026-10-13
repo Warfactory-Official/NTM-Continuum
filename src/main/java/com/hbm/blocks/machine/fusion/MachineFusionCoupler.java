@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Fusion coupler — the bridge between a torus's plasma output and another torus's klystron input,
+ * Fusion coupler: the bridge between a torus's plasma output and another torus's klystron input,
  * letting reactors be chained. All the behaviour is in {@link TileEntityFusionCoupler}.
  */
 public class MachineFusionCoupler extends BlockMultiblockMachine {

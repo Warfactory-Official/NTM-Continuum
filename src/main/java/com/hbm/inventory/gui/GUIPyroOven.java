@@ -1,5 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerPyroOven;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePyroOven;
@@ -8,12 +11,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-/** Screen for the pyro oven — 1.7.10 {@code GUIPyroOven} ({@code processing/gui_pyrooven.png}, 176×204 on 256×256).
+/** Screen for the pyro oven, the 1.7.10 {@code GUIPyroOven} ({@code processing/gui_pyrooven.png}, 176×204 on 256×256).
  * Power bar x=152 (src u=176 v=64−i), progress arrow (57,47) src(176,0) 27 wide; tanks x=8/116 (bottom y=70);
  * upgrade info panel at (108,76). */
-public class GUIPyroOven extends dev.golem.core.gui.CompatContainerScreen<ContainerPyroOven> implements IUpgradeInfoProviderSource {
+public class GUIPyroOven extends CompatContainerScreen<ContainerPyroOven> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_pyrooven.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_pyrooven.png");
 
     public GUIPyroOven(ContainerPyroOven menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 204);
@@ -64,7 +67,7 @@ public class GUIPyroOven extends dev.golem.core.gui.CompatContainerScreen<Contai
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getTile();
     }
 }

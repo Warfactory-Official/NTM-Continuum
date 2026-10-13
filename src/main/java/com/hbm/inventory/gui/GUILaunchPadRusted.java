@@ -6,6 +6,7 @@ import com.hbm.inventory.container.ContainerLaunchPadRusted;
 import com.hbm.items.ModItems;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadRusted;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.GuiEntities;
@@ -19,6 +20,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -26,8 +29,8 @@ import java.util.Optional;
 import java.util.Random;
 
 /**
- * 1.7 {@code GUILaunchPadRusted}: {@code gui_launch_pad_rusted.png}, 176x236. Lamps for the codes and key, and —
- * once both are in and the missile is still loaded — the pad's eight-digit launch code, seeded from its x/z.
+ * 1.7 {@code GUILaunchPadRusted}: {@code gui_launch_pad_rusted.png}, 176x236. Lamps for the codes and key and,
+ * once both are in and the missile is still loaded, the pad's eight-digit launch code, seeded from its x/z.
  * Clicking the missile slot's release button (26,36) asks the pad to drop the missile into it.
  *
  * <p>The locked-in missile stands in the same bay the launch pad screen uses, fitted from the model's bounds the
@@ -35,7 +38,7 @@ import java.util.Random;
  */
 public class GUILaunchPadRusted extends CompatContainerScreen<ContainerLaunchPadRusted> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/weapon/gui_launch_pad_rusted.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/weapon/gui_launch_pad_rusted.png");
 
     private EntityMissileTier4.@Nullable EntityMissileDoomsdayRusted preview;
 
@@ -110,7 +113,7 @@ public class GUILaunchPadRusted extends CompatContainerScreen<ContainerLaunchPad
         float high = body.model().boundsMax()[1] * modelScale;
         float size = 100F / Math.max(high - low, 0.001F);
         GuiEntities.draw(graphics, preview, leftPos + 52, topPos + 17, leftPos + 87, topPos + 124, size,
-                new org.joml.Vector3f(0F, (low + high) / 2F, 0F), new org.joml.Quaternionf().rotateZ((float) Math.PI));
+                new Vector3f(0F, (low + high) / 2F, 0F), new Quaternionf().rotateZ((float) Math.PI));
     }
 
     @Override

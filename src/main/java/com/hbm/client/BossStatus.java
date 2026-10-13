@@ -19,10 +19,10 @@ import java.util.UUID;
  * is on screen, disappears about 100 frames after it leaves view, unloads or dies, and there is only one bar (the
  * last boss rendered wins).
  *
- * <p>The port used server boss events tied to entity tracking until History §19ek-small. A boss the client no
- * longer drew (Quackos cannot be killed and keeps teleporting back from the void) kept its bar for as long as the
- * server tracked it. The bar itself is still vanilla's overlay: one fixed id is added, replaced and removed
- * client-side through {@code BossHealthOverlay.update}, so it looks like every other boss bar.
+ * <p>The client drives the bar, not the server's boss events, which would keep a bar for a boss the client no
+ * longer draws (Quackos cannot be killed and keeps teleporting back from the void). The bar is vanilla's overlay:
+ * one fixed id is added, replaced and removed client-side through {@code BossHealthOverlay.update}, so it looks
+ * like every other boss bar.
  */
 public final class BossStatus {
 

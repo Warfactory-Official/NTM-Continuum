@@ -3,6 +3,7 @@ package com.hbm.blocks.machine.pile;
 import com.hbm.api.block.IToolable;
 import com.hbm.items.ModFuelItems;
 import com.hbm.blocks.ModNuclearMiscBlocks;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
@@ -19,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
  * into a drilled pile channel along the clicked axis (1.7 upstream dropped that path together with the
  * legacy pile; 1.12 is the reference for it).
  */
-public class BlockGraphite extends dev.golem.core.world.CompatBlock implements IToolable {
+public class BlockGraphite extends CompatBlock implements IToolable {
 
     public BlockGraphite(Properties properties) {
         super(properties);

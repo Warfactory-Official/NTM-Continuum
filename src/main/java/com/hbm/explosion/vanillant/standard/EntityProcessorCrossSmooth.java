@@ -1,11 +1,15 @@
 package com.hbm.explosion.vanillant.standard;
 
 import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.items.weapon.sedna.factory.ConfettiUtil;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.lib.ModDamageSources.DamageClass;
+import com.hbm.util.EntityDamageUtil;
+import dev.golem.core.world.Compat;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 /**
  * A blast whose damage falls off linearly with distance instead of following vanilla's curve, and
@@ -51,12 +55,12 @@ public class EntityProcessorCrossSmooth extends EntityProcessorCross {
 
         float damage = source.exploder == entity ? amount * 0.5F : amount;
         DamageSource dmg = ModDamageSources.bullet(level, clazz.type(), null,
-                source.exploder instanceof net.minecraft.world.entity.LivingEntity living ? living : null);
-        if (!(entity instanceof net.minecraft.world.entity.LivingEntity living)) {
-            dev.golem.core.world.Compat.hurt(entity, level, dmg, damage);
+                source.exploder instanceof LivingEntity living ? living : null);
+        if (!(entity instanceof LivingEntity living)) {
+            Compat.hurt(entity, level, dmg, damage);
         } else {
-            com.hbm.util.EntityDamageUtil.attackEntityFromNT(living, dmg, damage, true, false, 0F, pierceDT, pierceDR);
-            if (!living.isAlive()) com.hbm.items.weapon.sedna.factory.ConfettiUtil.decideConfetti(living, dmg);
+            EntityDamageUtil.attackEntityFromNT(living, dmg, damage, true, false, 0F, pierceDT, pierceDR);
+            if (!living.isAlive()) ConfettiUtil.decideConfetti(living, dmg);
         }
     }
 

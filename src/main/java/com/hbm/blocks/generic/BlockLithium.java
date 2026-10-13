@@ -14,8 +14,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * 1.7 {@code BlockLithium} ({@code block_lithium}): a beaconable metal block that detonates (strength 15,
- * no fire, smoking) the moment water touches any of its six faces — on placement or on a neighbour
- * change — destroying itself without drops first. In the rain it smokes.
+ * no fire, smoking) the moment water touches any of its six faces, on placement or on a neighbour
+ * change, destroying itself without drops first. In the rain it smokes.
  */
 public class BlockLithium extends BlockBeaconable {
 

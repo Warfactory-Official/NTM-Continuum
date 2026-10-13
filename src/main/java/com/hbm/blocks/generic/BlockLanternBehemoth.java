@@ -8,15 +8,18 @@ import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.items.tool.ItemBlowtorch;
 import com.hbm.tileentity.deco.TileEntityLanternBehemoth;
 import com.hbm.util.InventoryUtil;
+import dev.golem.core.platform.Lifecycle;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -92,10 +95,10 @@ public class BlockLanternBehemoth extends BlockMultiblockMachine implements IToo
      * core down and counts.
      */
     @Override
-    protected void removedAt(BlockState state, net.minecraft.server.level.ServerLevel level, BlockPos pos, boolean movedByPiston) {
+    protected void removedAt(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         if (!state.getValue(CELL)) {
             BlockPos at = pos.immutable();
-            List<Player> near = new ArrayList<>(level.getEntitiesOfClass(Player.class, new net.minecraft.world.phys.AABB(
+            List<Player> near = new ArrayList<>(level.getEntitiesOfClass(Player.class, new AABB(
                     at.getX() - 50, at.getY() - 50, at.getZ() - 50, at.getX() + 51, at.getY() + 51, at.getZ() + 51)));
             synchronized (PENDING_REMOVALS) {
                 PENDING_REMOVALS.add(new PendingRemoval(level, at, this, near));
@@ -104,7 +107,7 @@ public class BlockLanternBehemoth extends BlockMultiblockMachine implements IToo
         super.removedAt(state, level, pos, movedByPiston);
     }
 
-    private record PendingRemoval(net.minecraft.server.level.ServerLevel level, BlockPos pos, BlockLanternBehemoth block,
+    private record PendingRemoval(ServerLevel level, BlockPos pos, BlockLanternBehemoth block,
                                   List<Player> near) {}
 
     private static final List<PendingRemoval> PENDING_REMOVALS = new ArrayList<>();
@@ -114,7 +117,7 @@ public class BlockLanternBehemoth extends BlockMultiblockMachine implements IToo
     public static void initReputationHook() {
         if (hooked) return;
         hooked = true;
-        dev.golem.core.platform.Lifecycle.onServerTick(server -> settleRemovals());
+        Lifecycle.onServerTick(server -> settleRemovals());
     }
 
     /** Charges the players near every lantern core removed this tick that did not come back. */

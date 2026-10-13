@@ -4,7 +4,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 
 /**
  * A {@link net.minecraft.world.level.block.entity.BlockEntity} that syncs to the client by cramming
- * arbitrary data into a network buffer (the old HBM "BufPacket" mechanism), rather than via vanilla's
+ * arbitrary data into a network buffer (the 1.12.2 "BufPacket" mechanism), rather than via vanilla's
  * NBT update tag. Ported from 1.12.2 with {@code ByteBuf} → {@link RegistryFriendlyByteBuf} so item
  * stacks and other registry-aware values can be streamed.
  *

@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.blocks.machine.MachineThresher;
 import com.hbm.tileentity.machine.TileEntityMachineThresher;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -20,7 +21,7 @@ import net.minecraft.world.phys.Vec3;
 public final class RenderThresher extends GemBER<TileEntityMachineThresher, ThresherRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/thresher.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/thresher.obj"));
     private final Surface surface = Surface.cutout(Constants.MOD_ID + ":textures/models/machines/thresher.png");
 
     @Override

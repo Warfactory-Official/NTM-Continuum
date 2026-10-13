@@ -10,6 +10,7 @@ import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import com.hbm.items.machine.ItemCassette;
 
@@ -23,7 +24,7 @@ public final class ModPowerGenItems {
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
-    private static final Map<TrackType, RegistryObject<ItemCassette>> TRACKS = new java.util.LinkedHashMap<>();
+    private static final Map<TrackType, RegistryObject<ItemCassette>> TRACKS = new LinkedHashMap<>();
 
     static {
         for (TrackType track : TrackType.VALUES) {

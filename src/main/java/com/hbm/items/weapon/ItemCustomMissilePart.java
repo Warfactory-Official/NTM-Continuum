@@ -1,6 +1,10 @@
 package com.hbm.items.weapon;
 
+import com.hbm.api.registry.NamedRegistry;
+import com.hbm.client.ClientEffects;
 import com.hbm.entity.missile.EntityMissileCustom;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -19,7 +23,7 @@ import java.util.function.Consumer;
  * is its own Item; the builder call in ModItems decides which of the five it is and what its attribute row holds.
  *
  * 1.7 kept a {@code HashMap<Integer, ItemCustomMissilePart> parts} so it could map a datawatcher-synced numeric item
- * id back to the part. 26.2 syncs the ItemStack itself, so the map has no callers and is dropped.
+ * id back to the part. 26.1 syncs the ItemStack itself, so the map has no callers and is dropped.
  */
 public class ItemCustomMissilePart extends CompatItem {
 
@@ -89,17 +93,17 @@ public class ItemCustomMissilePart extends CompatItem {
     }
 
     /**
-     * What a warhead does on impact: 1.7's twelve, as a registry of records keyed by name. 1.7 let addons reuse ten
+     * What a warhead does on impact: 1.7's twelve, as a registry of records keyed by name. 1.7 lets addons reuse ten
      * dummy constants ({@code CUSTOM0..9}) by writing {@code impactCustom}/{@code updateCustom}/{@code labelCustom} onto
-     * them, so two addons fought over the same slots; here an addon registers its own warhead with {@link #register}
+     * them, so two addons can fight over the same slots; here an addon registers its own warhead with {@link #register}
      * (NTM: Space's Apollo and satellite payloads) and gives it to its parts with {@code makeWarhead}. HBM's own
      * impacts stay in {@code EntityMissileCustom.onMissileImpact}, keyed on these constants. The type is never saved:
      * a missile carries its part items.
      */
     public static final class WarheadType {
 
-        public static final com.hbm.api.registry.NamedRegistry<WarheadType> REGISTRY =
-                new com.hbm.api.registry.NamedRegistry<>("warhead type", WarheadType::name);
+        public static final NamedRegistry<WarheadType> REGISTRY =
+                new NamedRegistry<>("warhead type", WarheadType::name);
 
         public static final WarheadType HE = builtin("he", () -> key("he", ChatFormatting.YELLOW));
         public static final WarheadType INC = builtin("inc", () -> key("incendiary", ChatFormatting.GOLD));
@@ -173,38 +177,38 @@ public class ItemCustomMissilePart extends CompatItem {
      */
     public static final class FuelType {
 
-        public static final com.hbm.api.registry.NamedRegistry<FuelType> REGISTRY =
-                new com.hbm.api.registry.NamedRegistry<>("missile fuel type", FuelType::name);
+        public static final NamedRegistry<FuelType> REGISTRY =
+                new NamedRegistry<>("missile fuel type", FuelType::name);
 
         public static final FuelType KEROSENE = register("kerosene", "kerosene_peroxide", ChatFormatting.LIGHT_PURPLE,
-                com.hbm.client.ClientEffects.Contrail.KEROSENE,
-                () -> com.hbm.inventory.fluid.Fluids.KEROSENE, () -> com.hbm.inventory.fluid.Fluids.PEROXIDE);
+                ClientEffects.Contrail.KEROSENE,
+                () -> Fluids.KEROSENE, () -> Fluids.PEROXIDE);
         public static final FuelType SOLID = register("solid", "solid", ChatFormatting.GOLD,
-                com.hbm.client.ClientEffects.Contrail.SOLID, null, null);
+                ClientEffects.Contrail.SOLID, null, null);
         public static final FuelType HYDROGEN = register("hydrogen", "hydrogen", ChatFormatting.DARK_AQUA,
-                com.hbm.client.ClientEffects.Contrail.HYDROGEN,
-                () -> com.hbm.inventory.fluid.Fluids.HYDROGEN, () -> com.hbm.inventory.fluid.Fluids.OXYGEN);
+                ClientEffects.Contrail.HYDROGEN,
+                () -> Fluids.HYDROGEN, () -> Fluids.OXYGEN);
         public static final FuelType XENON = register("xenon", "xenon", ChatFormatting.DARK_PURPLE, null,
-                () -> com.hbm.inventory.fluid.Fluids.XENON, null);
+                () -> Fluids.XENON, null);
         public static final FuelType BALEFIRE = register("balefire", "balefire", ChatFormatting.GREEN,
-                com.hbm.client.ClientEffects.Contrail.BALEFIRE,
-                () -> com.hbm.inventory.fluid.Fluids.BALEFIRE, () -> com.hbm.inventory.fluid.Fluids.PEROXIDE);
+                ClientEffects.Contrail.BALEFIRE,
+                () -> Fluids.BALEFIRE, () -> Fluids.PEROXIDE);
 
         private final String name;
         private final String key;
         private final ChatFormatting color;
         /** The plume a missile burning this leaves; null for none. */
-        public final com.hbm.client.ClientEffects.@Nullable Contrail contrail;
+        public final ClientEffects.@Nullable Contrail contrail;
         /**
          * What the custom launcher's two tanks hold for it (1.7 {@code TileEntityLaunchTable.updateTypes}): the fuel
          * tank's fluid, null for a solid fuel (the launcher's solid-fuel store), and the oxidiser, null for none.
          */
-        public final java.util.function.@Nullable Supplier<com.hbm.inventory.fluid.FluidType> fuel;
-        public final java.util.function.@Nullable Supplier<com.hbm.inventory.fluid.FluidType> oxidizer;
+        public final java.util.function.@Nullable Supplier<FluidType> fuel;
+        public final java.util.function.@Nullable Supplier<FluidType> oxidizer;
 
-        private FuelType(String name, String key, ChatFormatting color, com.hbm.client.ClientEffects.@Nullable Contrail contrail,
-                         java.util.function.@Nullable Supplier<com.hbm.inventory.fluid.FluidType> fuel,
-                         java.util.function.@Nullable Supplier<com.hbm.inventory.fluid.FluidType> oxidizer) {
+        private FuelType(String name, String key, ChatFormatting color, ClientEffects.@Nullable Contrail contrail,
+                         java.util.function.@Nullable Supplier<FluidType> fuel,
+                         java.util.function.@Nullable Supplier<FluidType> oxidizer) {
             this.name = name;
             this.key = key;
             this.color = color;
@@ -219,9 +223,9 @@ public class ItemCustomMissilePart extends CompatItem {
          * fluids (null fuel: solid; null oxidiser: none).
          */
         public static FuelType register(String name, String key, ChatFormatting color,
-                                        com.hbm.client.ClientEffects.@Nullable Contrail contrail,
-                                        java.util.function.@Nullable Supplier<com.hbm.inventory.fluid.FluidType> fuel,
-                                        java.util.function.@Nullable Supplier<com.hbm.inventory.fluid.FluidType> oxidizer) {
+                                        ClientEffects.@Nullable Contrail contrail,
+                                        java.util.function.@Nullable Supplier<FluidType> fuel,
+                                        java.util.function.@Nullable Supplier<FluidType> oxidizer) {
             return REGISTRY.register(new FuelType(name, key, color, contrail, fuel, oxidizer));
         }
 

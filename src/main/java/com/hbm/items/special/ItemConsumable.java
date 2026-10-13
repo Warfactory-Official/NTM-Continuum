@@ -1,6 +1,8 @@
 package com.hbm.items.special;
 
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.config.VersatileConfig;
+import com.hbm.items.ModItems;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.potion.ModEffects;
 import com.hbm.inventory.fluid.Fluids;
@@ -12,10 +14,12 @@ import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.Effects;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -67,15 +71,15 @@ public final class ItemConsumable extends CompatItem {
         switch (id) {
             case "syringe_antidote" -> {
                 // 1.7 ItemSimpleConsumable.effectAntidote: sickness only through the (default-off) config
-                if (!com.hbm.config.VersatileConfig.hasPotionSickness(target)) {
+                if (!VersatileConfig.hasPotionSickness(target)) {
                     Effects.clear(target);
                     play(level, target, ModSounds.SYRINGE.get());
-                    shrinkAndReplace(user, hand, com.hbm.items.ModItems.syringe_empty.get());
-                    com.hbm.config.VersatileConfig.applyPotionSickness(target, 5);
+                    shrinkAndReplace(user, hand, ModItems.syringe_empty.get());
+                    VersatileConfig.applyPotionSickness(target, 5);
                 }
             }
             case "syringe_awesome" -> {
-                if (com.hbm.config.VersatileConfig.hasPotionSickness(target)) return;
+                if (VersatileConfig.hasPotionSickness(target)) return;
                 add(target, MobEffects.REGENERATION, 50 * 20, 9);
                 add(target, Effects.resistance(), 50 * 20, 9);
                 add(target, MobEffects.FIRE_RESISTANCE, 50 * 20, 0);
@@ -87,47 +91,47 @@ public final class ItemConsumable extends CompatItem {
                 add(target, MobEffects.ABSORPTION, 50 * 20, 4);
                 add(target, MobEffects.NAUSEA, 5 * 20, 4);
                 play(level, target, ModSounds.SYRINGE.get());
-                shrinkAndReplace(user, hand, com.hbm.items.ModItems.syringe_empty.get());
-                com.hbm.config.VersatileConfig.applyPotionSickness(target, 5);
+                shrinkAndReplace(user, hand, ModItems.syringe_empty.get());
+                VersatileConfig.applyPotionSickness(target, 5);
             }
             case "syringe_poison" -> {
                 play(level, target, ModSounds.SYRINGE.get());
-                shrinkAndReplace(user, hand, com.hbm.items.ModItems.syringe_empty.get());
+                shrinkAndReplace(user, hand, ModItems.syringe_empty.get());
                 Compat.hurt(target, level, level.getRandom().nextBoolean()
                         ? ModDamageSources.euthanizedSelf(level) : ModDamageSources.euthanizedSelf2(level), 30F);
             }
             case "syringe_metal_stimpak" -> {
-                if (com.hbm.config.VersatileConfig.hasPotionSickness(target)) return;
+                if (VersatileConfig.hasPotionSickness(target)) return;
                 target.heal(5F);
-                com.hbm.config.VersatileConfig.applyPotionSickness(target, 5);
+                VersatileConfig.applyPotionSickness(target, 5);
                 play(level, target, ModSounds.SYRINGE.get());
-                shrinkAndReplace(user, hand, com.hbm.items.ModItems.syringe_metal_empty.get());
+                shrinkAndReplace(user, hand, ModItems.syringe_metal_empty.get());
             }
             case "syringe_metal_medx" -> {
-                if (com.hbm.config.VersatileConfig.hasPotionSickness(target)) return;
+                if (VersatileConfig.hasPotionSickness(target)) return;
                 add(target, Effects.resistance(), 4 * 60 * 20, 2);
-                com.hbm.config.VersatileConfig.applyPotionSickness(target, 5);
+                VersatileConfig.applyPotionSickness(target, 5);
                 play(level, target, ModSounds.SYRINGE.get());
-                shrinkAndReplace(user, hand, com.hbm.items.ModItems.syringe_metal_empty.get());
+                shrinkAndReplace(user, hand, ModItems.syringe_metal_empty.get());
             }
             case "syringe_metal_psycho" -> {
-                if (com.hbm.config.VersatileConfig.hasPotionSickness(target)) return;
+                if (VersatileConfig.hasPotionSickness(target)) return;
                 add(target, Effects.resistance(), 2 * 60 * 20, 0);
                 add(target, Effects.strength(), 2 * 60 * 20, 0);
-                com.hbm.config.VersatileConfig.applyPotionSickness(target, 5);
+                VersatileConfig.applyPotionSickness(target, 5);
                 play(level, target, ModSounds.SYRINGE.get());
-                shrinkAndReplace(user, hand, com.hbm.items.ModItems.syringe_metal_empty.get());
+                shrinkAndReplace(user, hand, ModItems.syringe_metal_empty.get());
             }
             case "syringe_metal_super" -> {
-                if (com.hbm.config.VersatileConfig.hasPotionSickness(target)) return;
+                if (VersatileConfig.hasPotionSickness(target)) return;
                 target.heal(25F);
                 add(target, MobEffects.SLOWNESS, 10 * 20, 0);
-                com.hbm.config.VersatileConfig.applyPotionSickness(target, 15);
+                VersatileConfig.applyPotionSickness(target, 15);
                 play(level, target, ModSounds.SYRINGE.get());
-                shrinkAndReplace(user, hand, com.hbm.items.ModItems.syringe_metal_empty.get());
+                shrinkAndReplace(user, hand, ModItems.syringe_metal_empty.get());
             }
             case "med_bag" -> {
-                if (com.hbm.config.VersatileConfig.hasPotionSickness(target)) return;
+                if (VersatileConfig.hasPotionSickness(target)) return;
                 target.setHealth(target.getMaxHealth());
                 Effects.remove(target, MobEffects.BLINDNESS);
                 Effects.remove(target, MobEffects.NAUSEA);
@@ -138,7 +142,7 @@ public final class ItemConsumable extends CompatItem {
                 Effects.remove(target, MobEffects.WEAKNESS);
                 Effects.remove(target, MobEffects.WITHER);
                 Effects.removeRegistered(target, ModEffects.RADIATION.get());
-                com.hbm.config.VersatileConfig.applyPotionSickness(target, 15);
+                VersatileConfig.applyPotionSickness(target, 15);
                 user.getItemInHand(hand).shrink(1);
             }
             case "syringe_taint" -> {
@@ -146,8 +150,8 @@ public final class ItemConsumable extends CompatItem {
                 add(target, MobEffects.NAUSEA, 5 * 20, 0);
                 play(level, target, ModSounds.SYRINGE.get());
                 shrinkAndReplace(user, hand, level.getRandom().nextBoolean()
-                        ? com.hbm.items.ModItems.syringe_metal_empty.get()
-                        : com.hbm.items.ModItems.bottle2_empty.get());
+                        ? ModItems.syringe_metal_empty.get()
+                        : ModItems.bottle2_empty.get());
             }
             case "cbt_device" -> {
                 Effects.addRegistered(target, ModEffects.BANG.get(), 30, 0);
@@ -165,7 +169,7 @@ public final class ItemConsumable extends CompatItem {
                 add(target, MobEffects.MINING_FATIGUE, 30 * 20, 9);
             }
             case "jetpack_tank" -> {
-                ItemStack jetpack = target.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST);
+                ItemStack jetpack = target.getItemBySlot(EquipmentSlot.CHEST);
                 if (jetpack.getItem() instanceof JetpackFueledBase jetItem && jetItem.fuel == Fluids.KEROSENE) {
                     int oldFuel = JetpackFueledBase.getFuel(jetpack);
                     int newFuel = Math.min(oldFuel + 1000, jetItem.maxFuel);
@@ -185,7 +189,7 @@ public final class ItemConsumable extends CompatItem {
         Effects.add(target, effect, duration, amplifier);
     }
 
-    private static void play(ServerLevel level, LivingEntity target, net.minecraft.sounds.SoundEvent sound) {
+    private static void play(ServerLevel level, LivingEntity target, SoundEvent sound) {
         level.playSound(null, target.getX(), target.getY(), target.getZ(), sound,
                 SoundSource.PLAYERS, 1.0F, 1.0F);
     }

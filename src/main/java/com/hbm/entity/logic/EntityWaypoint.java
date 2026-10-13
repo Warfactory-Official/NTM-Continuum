@@ -10,6 +10,7 @@ import com.hbm.config.MobConfig;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;
 import com.hbm.entity.mob.glyphid.EntityGlyphid;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -123,7 +124,7 @@ public class EntityWaypoint extends CompatEntity {
             double y = bb.minY + random.nextDouble() * (bb.maxY - bb.minY);
             double z = bb.minZ + (random.nextDouble() - 0.5) * (bb.maxZ - bb.minZ);
 
-            level().addParticle(dev.golem.core.world.Compat.dust(getColor(), 1.0F), x, y, z, 0D, 0D, 0D);
+            level().addParticle(Compat.dust(getColor(), 1.0F), x, y, z, 0D, 0D, 0D);
         }
     }
 

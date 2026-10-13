@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import com.hbm.config.GeneralConfig;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -100,7 +101,7 @@ public final class RBMKDials {
 
     public static boolean getReasimBoilers(Level world) {
         // 1.7: the gamerule OR hbm.cfg X528_forceReasimBoilers (forced off outside 528 mode)
-        return reasimBoilers || com.hbm.config.GeneralConfig.enable528ReasimBoilers;
+        return reasimBoilers || GeneralConfig.enable528ReasimBoilers;
     }
 
     public static double getReaSimBoilerSpeed(Level world) {

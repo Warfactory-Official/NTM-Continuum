@@ -3,6 +3,8 @@ package com.hbm.gametest;
 import com.hbm.items.ModArmorItems;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.handler.HazmatRegistry;
+import dev.golem.core.Ids;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -40,14 +42,14 @@ public final class SteelTitaniumArmorGameTests {
     private static void assertPiece(GameTestHelper helper, RegistryObject<? extends Item> entry, String path,
             EquipmentSlot slot, int defense, int maxDamage) {
         Item item = entry.get();
-        Identifier expected = dev.golem.core.Ids.of("hbm", path);
+        Identifier expected = Ids.of("hbm", path);
         helper.assertTrue(expected.equals(BuiltInRegistries.ITEM.getKey(item)), "Wrong armour id for " + path);
 
         ItemStack stack = new ItemStack(item);
         helper.assertTrue(stack.getMaxDamage() == maxDamage,
                 path + " max damage is " + stack.getMaxDamage() + ", expected " + maxDamage);
 
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setItemSlot(slot, stack);
         // Equipment attributes are reconciled by LivingEntity's normal tick path, not by setItemSlot.
         player.tick();
@@ -59,7 +61,7 @@ public final class SteelTitaniumArmorGameTests {
     private static void assertSet(GameTestHelper helper, RegistryObject<? extends Item> helmet,
             RegistryObject<? extends Item> plate, RegistryObject<? extends Item> legs,
             RegistryObject<? extends Item> boots, String name, double coefficient) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(helmet.get()));
         player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(plate.get()));
         player.setItemSlot(EquipmentSlot.LEGS, new ItemStack(legs.get()));

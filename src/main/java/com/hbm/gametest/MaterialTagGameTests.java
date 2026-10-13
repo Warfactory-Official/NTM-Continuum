@@ -24,9 +24,9 @@ import java.util.Map;
  * The half of the material tags that a declaration cannot state: whether it is complete.
  *
  * <p>{@link ModMaterialTags} says which shapes a material comes in, and the generator turns each
- * into a tag. What neither can see is an item that exists in the registry and is in no tag at all —
+ * into a tag. What neither can see is an item that exists in the registry and is in no tag at all:
  * the one failure mode of a derived tag set, and a silent one. Nothing crashes; a recipe that asks
- * for {@code #c:plates/steel} simply refuses a steel plate, in a machine, for a player, with no
+ * for {@code #c:plates/steel} refuses a steel plate, in a machine, for a player, with no
  * entry in any log. So the check runs the other way round here, from the registry back to the tags.
  */
 public final class MaterialTagGameTests {

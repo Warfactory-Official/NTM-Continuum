@@ -10,7 +10,7 @@ import net.minecraft.sounds.SoundSource;
 /**
  * The looping "motor" hum an assembly machine plays while it's processing. A tickable client sound bound
  * to one machine; it stops itself once the machine stops processing or is removed (the 1.12.2
- * {@code AudioWrapper} loop). Client-only — only constructed from {@link AssemblerSoundHandler}.
+ * {@code AudioWrapper} loop). Client-only, and only constructed from {@link AssemblerSoundHandler}.
  */
 public class AssemblerLoopSound extends AbstractTickableSoundInstance {
 

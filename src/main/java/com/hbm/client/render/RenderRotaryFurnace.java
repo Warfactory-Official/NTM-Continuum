@@ -6,6 +6,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineRotaryFurnace;
 import com.hbm.tileentity.MachineCore;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -23,10 +24,10 @@ import net.minecraft.world.phys.Vec3;
 public final class RenderRotaryFurnace extends GemBER<TileEntityMachineRotaryFurnace, RotaryFurnaceRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/rotary_furnace.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/rotary_furnace.obj"));
     private final Surface surface = Surface.cutout(Constants.MOD_ID + ":textures/models/machines/rotary_furnace.png");
     private final RenderType streamType = CompatRenderTypes.entitySolid(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
+            Ids.of(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
 
     @Override
     protected void setup(Gem.Model<RotaryFurnaceRenderState> declaration) {

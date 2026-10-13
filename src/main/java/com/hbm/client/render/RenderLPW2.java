@@ -6,6 +6,7 @@ import com.hbm.tileentity.machine.TileEntityMachineLPW2;
 import com.hbm.tileentity.MachineCore;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -31,11 +32,11 @@ public final class RenderLPW2 extends GemBER<TileEntityMachineLPW2, LPW2RenderSt
     private static final float SERVER_SWAY = 0.0625F * 0.25F;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/lpw2.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/lpw2.obj"));
     private final Surface surface = Surface.cutoutCull(
             Constants.MOD_ID + ":textures/models/machines/lpw2.png");
     private final RenderType screen = CompatRenderTypes.entityCutoutCull(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/lpw2_term_error.png"));
+            Ids.of(Constants.MOD_ID, "textures/models/machines/lpw2_term_error.png"));
 
     @Override
     protected void setup(Gem.Model<LPW2RenderState> declaration) {

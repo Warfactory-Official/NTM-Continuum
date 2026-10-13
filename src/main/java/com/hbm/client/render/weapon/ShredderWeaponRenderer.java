@@ -7,11 +7,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
-/** Exact Gem port of original-hbm ItemRenderShredder for both autoshotgun skins. */
+/** Exact Gem port of 1.7 ItemRenderShredder for both autoshotgun skins. */
 public final class ShredderWeaponRenderer extends WeaponRenderer {
-    private static final net.minecraft.resources.Identifier MODEL_ID=Ids.of("hbm","models/weapons/shredder.obj");
+    private static final Identifier MODEL_ID=Ids.of("hbm","models/weapons/shredder.obj");
     private final Surface body;
     private WavefrontObj model;
     public ShredderWeaponRenderer(String texture){body=Surface.cutout("hbm:textures/models/weapons/"+texture+".png");}

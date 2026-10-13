@@ -22,7 +22,7 @@ import org.jspecify.annotations.Nullable;
  * block: the corner cells are the ports (power and fluid, open on their two outward faces and underneath, where
  * 1.7's {@code getConPos} reached), the edge cells are plain plate. The dummy ids are therefore not registered.
  *
- * <p>Only the centre block answers a detonator — the GUI says as much — and redstone on any of the nine blocks
+ * <p>Only the centre block answers a detonator (the GUI says as much), and redstone on any of the nine blocks
  * fires it, which the tile checks itself every tick as upstream did.
  */
 public class CompactLauncher extends BlockMultiblockMachine implements IBomb, IEnergyConnectorBlock, IFluidConnectorBlockMK2 {

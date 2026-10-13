@@ -98,8 +98,8 @@ public class ItemModGasmask extends ItemArmorMod implements IGasMask {
     }
 
     /**
-     * Sneak-use pulls the filter back out (upstream). Installing follows the port's gas-mask convention —
-     * the filter held in the other hand — because 1.7's installing {@code ItemFilter.onItemRightClick}
+     * Sneak-use pulls the filter back out (upstream). Installing follows the port's gas-mask convention:
+     * the filter held in the other hand, because 1.7's installing {@code ItemFilter.onItemRightClick}
      * is not ported.
      */
     @Override

@@ -103,7 +103,7 @@ public class BlockRebar extends CompatBlock implements TickingBlock, SimpleWater
     }
 
     /*
-     * Collision is the bars (port deviation, user decision 2026-10-07): 1.7's full cube kept a waterlogged rebar's
+     * Collision is the bars (a port deviation): 1.7's full cube kept a waterlogged rebar's
      * water in, since vanilla fluid only leaves through faces the collision does not cover. The outline and the
      * support shape stay the 1.7 full cube.
      */

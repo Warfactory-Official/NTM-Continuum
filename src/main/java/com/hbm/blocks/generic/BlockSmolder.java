@@ -1,6 +1,8 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.items.ModFuelItems;
+import dev.golem.core.world.CompatBlock;
+import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
@@ -13,7 +15,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import java.util.List;
 
 /**
- * Smoldering netherrack — the 1.12.2 {@code BlockSmolder}. Drops {@code powder_fire}, sets anything
+ * Smoldering netherrack, the 1.12.2 {@code BlockSmolder}. Drops {@code powder_fire}, sets anything
  * standing on it on fire for 3 seconds, and spits lava/flame particles from its top face when the
  * block above is air.
  *
@@ -22,7 +24,7 @@ import java.util.List;
  * than strictly walking on top. Standing on a full cube puts the entity's feet inside it, so the
  * practical behaviour matches.
  */
-public class BlockSmolder extends dev.golem.core.world.CompatBlock {
+public class BlockSmolder extends CompatBlock {
 
     public BlockSmolder(Properties properties) {
         super(properties);
@@ -37,7 +39,7 @@ public class BlockSmolder extends dev.golem.core.world.CompatBlock {
 
     @Override
     protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-        if (!level.isClientSide()) dev.golem.core.world.Effects.ignite(entity, 3);
+        if (!level.isClientSide()) Effects.ignite(entity, 3);
     }
 
     @Override

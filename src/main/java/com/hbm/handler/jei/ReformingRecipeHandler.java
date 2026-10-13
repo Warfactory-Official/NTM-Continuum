@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-/** JEI category for the catalytic reformer — 1 input droplet → 3 output droplets. */
+/** JEI category for the catalytic reformer: 1 input droplet to 3 output droplets. */
 public class ReformingRecipeHandler extends JEIUniversalHandler<ReformingRecipeHandler.Entry> {
 
     public record Entry(FluidType input, ReformingRecipes.ReformingRecipe recipe) {}

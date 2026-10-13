@@ -21,6 +21,7 @@ import net.minecraft.sounds.SoundEvents;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * 1.7 {@code GUIScreenBobmazon}: the 217x229 catalogue, three offers a page. Each offer is an 18x18 folder
@@ -215,7 +216,7 @@ public class GUIScreenBobmazon extends CompatScreen {
     }
 
     /** Opened by {@code ItemCatalog} on the client with the held catalogue's offers. */
-    public static void open(net.minecraft.world.item.ItemStack held) {
+    public static void open(ItemStack held) {
         List<Offer> offers = BobmazonOfferFactory.getOffers(held);
         if (offers != null) Minecraft.getInstance().setScreen(new GUIScreenBobmazon(offers));
     }

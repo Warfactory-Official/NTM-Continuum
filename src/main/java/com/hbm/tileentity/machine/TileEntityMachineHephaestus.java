@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -171,7 +172,7 @@ public class TileEntityMachineHephaestus extends TileEntityLoadedBase implements
         Block b = level.getBlockState(at).getBlock();
 
         if (b == Blocks.LAVA) return 5;
-        if (b == com.hbm.blocks.ModFluidNetBlocks.volcanic_lava_block.get()) return 150;
+        if (b == ModFluidNetBlocks.volcanic_lava_block.get()) return 150;
 
         Block fissure = oreVolcano();
         if (fissure != null && b == fissure) {

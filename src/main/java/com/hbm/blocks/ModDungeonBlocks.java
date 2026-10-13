@@ -60,14 +60,11 @@ import java.util.function.UnaryOperator;
  * skeleton holder, the loot pile, the old lantern, the dungeon spawner, the two dungeon action blocks, the four
  * vanilla-style cart rails and rebar.
  *
- * <p>Metadata families are flattened the port's way ({@code <base>_<variant>}): {@code brick_forgotten_*},
+ * <p>Metadata families are flattened as {@code <base>_<variant>}: {@code brick_forgotten_*},
  * {@code brick_forgotten_lock_*}, {@code brick_jungle_trap_<trap>} and {@code brick_jungle_glyph_<n>}. Hardness and
- * resistance are 1.7's numbers as written; 1.7's {@code Material.rock}/{@code iron} blocks need a pickaxe.
- * Blocks 1.7 kept out of every creative tab stay out of them here.
- *
- * <p>Each block's models, blockstate, item model, loot and tags are stated on its registration (Reg; emitted by
- * Dejson at build time). The pedestal and rebar models are plain boxes built here; the recipes stay in
- * {@link DungeonDeclarations}.
+ * resistance are 1.7's numbers; 1.7's {@code Material.rock}/{@code iron} blocks need a pickaxe. Blocks 1.7 kept out
+ * of every creative tab are out of them here. The pedestal and rebar models are plain boxes built here; the recipes
+ * are in {@link DungeonDeclarations}.
  */
 public final class ModDungeonBlocks {
 
@@ -110,7 +107,7 @@ public final class ModDungeonBlocks {
         return p -> p.strength(-1.0F, resistance).sound(SoundType.STONE).noLootTable();
     }
 
-    // ---- forgotten dungeon (BlockForgottenBrick / BlockForgottenLock, unbreakable, 666 666): drops nothing ----
+    // Forgotten dungeon (BlockForgottenBrick / BlockForgottenLock, unbreakable, 666 666): drops nothing
     public static final RegistryObject<BlockForgottenBrick> brick_forgotten = forgotten("brick_forgotten", BlockForgottenBrick.Variant.DEFAULT,
             column("hbm:blocks/brick_forgotten_top", "hbm:blocks/brick_forgotten"));
     public static final RegistryObject<BlockForgottenBrick> brick_forgotten_bw = forgotten("brick_forgotten_bw", BlockForgottenBrick.Variant.BW,
@@ -138,7 +135,7 @@ public final class ModDungeonBlocks {
                 .loot(Loot.nothing());
     }
 
-    // ---- jungle temple (Material.rock, 15 / 360, block tab) ----
+    // Jungle temple (Material.rock, 15 / 360, block tab)
     public static final RegistryObject<FragileBrick> brick_jungle_fragile = block("brick_jungle_fragile", FragileBrick::new, rock(15.0F, 360.0F), HbmTab.BLOCKS)
             .transform(cube("brick_jungle_fragile")).loot(Loot.silkTouchOnly()).tag(BlockTag.PICKAXE); // 1.7 FragileBrick: nothing, silk keeps it
     public static final RegistryObject<Block> brick_jungle_lava = block("brick_jungle_lava", Block::new,
@@ -183,7 +180,7 @@ public final class ModDungeonBlocks {
     public static final RegistryObject<BlockBallsSpawner> brick_jungle_circle = block("brick_jungle_circle", BlockBallsSpawner::new, rock(15.0F, 360.0F), HbmTab.BLOCKS)
             .transform(cube("brick_jungle_circle")).loot(Loot.self()).tag(BlockTag.PICKAXE);
 
-    // ---- hidden structure blocks (no creative tab) ----
+    // Hidden structure blocks (no creative tab)
     /** 1.7 {@code BlockKeyhole extends BlockStone}, which set no hardness of its own. */
     public static final RegistryObject<BlockKeyhole> stone_keyhole = block("stone_keyhole", BlockKeyhole::new,
             p -> p.strength(0.0F, 0.0F).sound(SoundType.STONE), null)
@@ -243,7 +240,7 @@ public final class ModDungeonBlocks {
             .transform(Presets.sprite("hbm:blocks/logic_block"))
             .loot(Loot.self());
 
-    // ---- rails (1.7 transport tab; the port has no vanilla-tab hook, so the machine tab like the large rails) ----
+    // Rails (1.7 transport tab. The port has no vanilla-tab hook, so they sit on the machine tab like the large rails).
     public static final RegistryObject<RailGeneric> rail_wood = rail("rail_wood", p -> new RailGeneric(p).setMaxSpeed(0.2F),
             "rail_wood", "rail_wood_turned").tag(BlockTag.AXE);
     public static final RegistryObject<RailGeneric> rail_narrow = rail("rail_narrow", RailGeneric::new,
@@ -276,7 +273,7 @@ public final class ModDungeonBlocks {
                 .tag(BlockTag.of("minecraft:rails"));
     }
 
-    // ---- rebar (Material.iron, 15 / 20, block tab) ----
+    // Rebar (Material.iron, 15 / 20, block tab)
     public static final RegistryObject<BlockRebar> rebar = block("rebar", BlockRebar::new,
             p -> p.strength(15.0F, 20.0F).sound(SoundType.STONE).noOcclusion().requiresCorrectToolForDrops()
                     .isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false), HbmTab.BLOCKS)
@@ -284,7 +281,7 @@ public final class ModDungeonBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    // ---- blockstate tables and element models ----
+    // Blockstate tables and element models
 
     private static Map<String, List<Placement>> keyholeStates() {
         Map<String, List<Placement>> keyhole = new LinkedHashMap<>();

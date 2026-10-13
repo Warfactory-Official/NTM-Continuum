@@ -7,12 +7,17 @@ import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.storage.MassStorageType;
 import com.hbm.tileentity.machine.storage.MassStorageItemData;
 import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
+import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.net.GolemBuffers;
 import dev.golem.core.world.ItemStacks;
+import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -116,7 +121,7 @@ public final class MassStorageGameTests {
                 "manual stack output changed");
 
         TileEntityMassStorage copy = place(helper, MassStorageType.IRON, new BlockPos(5, 1, 2));
-        var buffer = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
+        var buffer = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         source.serialize(buffer);
         copy.deserialize(buffer);
         helper.assertTrue(copy.getStockpile() == source.getStockpile() && copy.output == source.output
@@ -130,7 +135,7 @@ public final class MassStorageGameTests {
         TileEntityMassStorage storage = place(helper, MassStorageType.WOOD, new BlockPos(2, 1, 2));
         storage.setFilter(new ItemStack(Items.IRON_INGOT));
         storage.setStockpile(10);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ContainerMassStorage menu = new ContainerMassStorage(1, player.getInventory(), storage,
                 ModMenus.MASS_STORAGE::get);
         helper.assertTrue(menu.slots.size() == 39, "mass-storage menu must expose three plus 36 slots");
@@ -185,10 +190,10 @@ public final class MassStorageGameTests {
             TileEntityMassStorage storage = place(helper, type, new BlockPos(2 + type.ordinal() * 2, 1, 2));
             BlockState state = storage.getBlockState();
             helper.assertTrue(state.hasProperty(BlockMassStorage.FACING)
-                            && state.getValue(BlockMassStorage.FACING) == net.minecraft.core.Direction.NORTH,
+                            && state.getValue(BlockMassStorage.FACING) == Direction.NORTH,
                     "mass storage must default to a north front: " + type.id);
-            helper.assertTrue(state.rotate(net.minecraft.world.level.block.Rotation.CLOCKWISE_90)
-                            .getValue(BlockMassStorage.FACING) == net.minecraft.core.Direction.EAST,
+            helper.assertTrue(state.rotate(Rotation.CLOCKWISE_90)
+                            .getValue(BlockMassStorage.FACING) == Direction.EAST,
                     "rotating mass storage must turn its front: " + type.id);
         }
         helper.succeed();
@@ -216,6 +221,6 @@ public final class MassStorageGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        return dev.golem.core.gametest.GameTestHelpers.resourceExists(MassStorageGameTests.class, path);
+        return GameTestHelpers.resourceExists(MassStorageGameTests.class, path);
     }
 }

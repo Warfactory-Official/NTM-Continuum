@@ -163,7 +163,7 @@ public final class ForeignEnergyBridge {
     }
 
     /**
-     * Fold a dying net's bridge into this one at a merge; everything that must survive is position-blind, so addition IS conservation - the published budgets are deliberately not summed, the next round republishes.
+     * Fold a dying net's bridge into this one at a merge; everything that must survive is position-blind, so addition IS conservation. The published budgets are not summed; the next round republishes.
      */
     public void absorb(ForeignEnergyBridge other) {
         injectedHe += other.injectedHe;
@@ -222,7 +222,7 @@ public final class ForeignEnergyBridge {
     }
 
     /**
-     * Republish both budgets from the round that just finished, and drop stamps that can no longer suppress anything. NATIVE demand only - counting foreign receivers would advertise a re-export appetite and circulate.
+     * Republish both budgets from the round that just finished, and drop stamps that cannot suppress anything. NATIVE demand only: counting foreign receivers would advertise a re-export appetite and circulate.
      */
     public void publish(long surplusHe, long unmetNativeHe, long gameTime) {
         extractBudgetHe = Math.max(0, surplusHe);

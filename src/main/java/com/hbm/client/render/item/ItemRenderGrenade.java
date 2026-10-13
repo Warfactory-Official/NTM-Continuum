@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -258,5 +259,5 @@ public final class ItemRenderGrenade implements CustomItemRenderer {
                 (p, buffer) -> model.renderPart(part, p, buffer, light, NO_OVERLAY, color));
     }
 
-    private static final int NO_OVERLAY = net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY;
+    private static final int NO_OVERLAY = OverlayTexture.NO_OVERLAY;
 }

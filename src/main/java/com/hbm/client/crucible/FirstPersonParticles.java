@@ -4,6 +4,7 @@ import com.hbm.physics.V3;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.golem.core.render.Vertexes;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
 
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * old-hbm {@code ModEventHandlerClient.firstPersonAuxParticles} as the crucible used it: {@code ParticleCrucibleSpark}
+ * 1.12.2 {@code ModEventHandlerClient.firstPersonAuxParticles} as the crucible used it: {@code ParticleCrucibleSpark}
  * and {@code ParticleCrucibleLightning}, which live in the first-person blade's own space and are ticked by the client
  * and drawn only by the crucible's blade callback ({@code ItemRenderCrucible}).
  */
@@ -59,7 +60,7 @@ public final class FirstPersonParticles {
 
     /**
      * {@code ParticleCrucibleSpark}: a quad stretched along its motion, facing the eye, drifting with {@code am}
-     * plus a random motion re-picked inside a 30 degree cone every 1..6 ticks. old-hbm read {@code amx/amy/amz} in the
+     * plus a random motion re-picked inside a 30 degree cone every 1..6 ticks. 1.12.2 read {@code amx/amy/amz} in the
      * constructor before assigning them, so the first motion is always the random {@code ±0.0075} one.
      */
     static final class Spark extends Particle {
@@ -144,7 +145,7 @@ public final class FirstPersonParticles {
         /**
          * Third person (port addition): the same bolt (same seed, same main chain) with its forks inside the cone
          * around the chain ({@code CrucibleLightning.generate(..., alongChain = true)}). First person draws {@link #node},
-         * old-hbm's own forks.
+         * 1.12.2's own forks.
          */
         final CrucibleLightning.Node thirdPersonNode;
 
@@ -196,7 +197,7 @@ public final class FirstPersonParticles {
                      float x2, float y2, float z2, float u2, float v2,
                      float x3, float y3, float z3, float u3, float v3) {
         int light = 0xF000F0;
-        int overlay = net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY;
+        int overlay = OverlayTexture.NO_OVERLAY;
         Vertexes.vertex(buffer, pose, x0, y0, z0, color, u0, v0, overlay, light, 0F, 1F, 0F);
         Vertexes.vertex(buffer, pose, x1, y1, z1, color, u1, v1, overlay, light, 0F, 1F, 0F);
         Vertexes.vertex(buffer, pose, x2, y2, z2, color, u2, v2, overlay, light, 0F, 1F, 0F);

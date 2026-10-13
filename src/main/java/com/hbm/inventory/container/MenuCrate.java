@@ -1,12 +1,15 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.ModMenus;
+import com.hbm.items.block.CrateHeldOpening;
 import com.hbm.tileentity.machine.storage.CrateType;
+import dev.golem.core.gui.CompatContainerMenu;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
@@ -16,7 +19,7 @@ import net.minecraft.world.item.ItemStack;
  * Vanilla's container-minecart open path carries no extra data, so the client builds it over a plain
  * container of the type's slot count and the slots sync as usual.
  */
-public class MenuCrate extends dev.golem.core.gui.CompatContainerMenu {
+public class MenuCrate extends CompatContainerMenu {
 
     private final CrateType type;
     private final Container container;
@@ -36,7 +39,7 @@ public class MenuCrate extends dev.golem.core.gui.CompatContainerMenu {
      * The same layout over another menu type: the held crate ({@code com.hbm.inventory.ModHeldCrateMenus}) whose hotbar
      * slot {@code heldSlot} holds the crate itself and may not be touched (1.7 {@code SlotPlayerCrateLocked}).
      */
-    public MenuCrate(net.minecraft.world.inventory.MenuType<?> menuType, int containerId, Inventory playerInv,
+    public MenuCrate(MenuType<?> menuType, int containerId, Inventory playerInv,
                      CrateType type, Container container, int heldSlot) {
         super(menuType, containerId);
         this.heldSlot = heldSlot;
@@ -69,7 +72,7 @@ public class MenuCrate extends dev.golem.core.gui.CompatContainerMenu {
 
     @Override
     protected boolean handleClick(int slotId, int button, ClickAction action, Player player) {
-        return com.hbm.items.block.CrateHeldOpening.blocksClick(this, heldSlot, slotId, button, action);
+        return CrateHeldOpening.blocksClick(this, heldSlot, slotId, button, action);
     }
 
     @Override
@@ -81,7 +84,7 @@ public class MenuCrate extends dev.golem.core.gui.CompatContainerMenu {
     public void removed(Player player) {
         super.removed(player);
         container.stopOpen(player);
-        if (container instanceof com.hbm.items.block.CrateHeldOpening.HeldCrate held) held.closed();
+        if (container instanceof CrateHeldOpening.HeldCrate held) held.closed();
     }
 
     @Override

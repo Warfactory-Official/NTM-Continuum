@@ -15,12 +15,11 @@ import static dev.golem.core.dejson.Damage.type;
  * Every hbm damage type and the vanilla tags it belongs to, declared through Golem Core's
  * {@code dejson} vocabulary instead of written as JSON.
  *
- * <p>The {@value #FILES_REPLACED} files these declarations stand in for have been deleted: 32
- * damage types and the 6 vanilla tag files that said which of them ignore armour, ignore
- * resistance potions, or count as a projectile. Those were the same fact written twice in two
- * namespaces, and the second copy was the one nothing forced you to update — a damage type added
- * without its {@code bypasses_armor} entry does not fail, it just starts being stopped by a
- * breastplate.
+ * <p>These declarations stand in for {@value #FILES_REPLACED} JSON files: 32 damage types and the 6
+ * vanilla tag files that say which of them ignore armour, ignore resistance potions, or count as a
+ * projectile. Written as JSON that is one fact in two namespaces, and nothing forces the second copy to
+ * be updated: a damage type added without its {@code bypasses_armor} entry does not fail, it just starts
+ * being stopped by a breastplate.
  *
  * <p>{@link ModDamageSources} holds the {@code ResourceKey} for each of these and is what the game
  * code uses; it cannot hold the table itself because the generator runs in a plain JVM and that
@@ -53,7 +52,7 @@ public final class ModDamageTypes {
                 type("blackhole").tags(BYPASSES_ARMOR),
                 type("blacklung").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("blender").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                // old-hbm ModDamageSource crucible/slicer: setDamageIsAbsolute().setDamageBypassesArmor()
+                // 1.12.2 ModDamageSource crucible/slicer: setDamageIsAbsolute().setDamageBypassesArmor()
                 type("crucible").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("slicer").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("broadcast").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),

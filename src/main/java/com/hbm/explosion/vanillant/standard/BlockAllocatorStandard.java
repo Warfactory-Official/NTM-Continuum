@@ -14,9 +14,9 @@ import org.jspecify.annotations.Nullable;
  * Vanilla's own ray allocator, with the ray count made a parameter.
  *
  * <p>Vanilla fixes the resolution at 16 rays per cube edge; missiles ask for 24, 32 or 48 so that a
- * 50-power blast still carves a smooth sphere instead of a starburst. Everything else — the 0.3 step,
- * the {@code 0.7 + rand·0.6} power roll, the {@code (resistance + 0.3) · step} attenuation — is
- * vanilla's, and is what makes a VNT explosion eat exactly as much stone as a TNT of the same size.
+ * 50-power blast still carves a smooth sphere instead of a starburst. The 0.3 step, the
+ * {@code 0.7 + rand·0.6} power roll and the {@code (resistance + 0.3) · step} attenuation are vanilla's, so a VNT
+ * explosion eats exactly as much stone as a TNT of the same size.
  */
 public class BlockAllocatorStandard implements IBlockAllocator {
 
@@ -77,7 +77,7 @@ public class BlockAllocatorStandard implements IBlockAllocator {
 
                         if (!state.isAir()) {
                             // Vanilla's default damage calculator: the greater of the block's and the
-                            // fluid's resistance. The entity-based variant is not reproduced — no HBM
+                            // fluid's resistance. The entity-based variant is not reproduced: no HBM
                             // exploder overrides it.
                             float blockResistance = Math.max(state.getBlock().getExplosionResistance(),
                                     world.getFluidState(cursor).getExplosionResistance());

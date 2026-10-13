@@ -1,9 +1,13 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.api.data.HazardDataMaps;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.util.ContaminationUtil;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -15,19 +19,19 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * A radioactive / otherwise hazardous block, 1.7's {@code BlockHazard}. It does (any subset):
  * <ul>
- * <li><b>{@code radIn}</b> — 1.7 {@code updateTick}: {@code ChunkRadiationManager.incrementRad(rad)} every 20 ticks
+ * <li><b>{@code radIn}</b>, as 1.7 {@code updateTick}: {@code ChunkRadiationManager.incrementRad(rad)} every 20 ticks
  *     ({@code tickRate} 20, re-scheduled from {@code onBlockAdded}), uncapped, with {@code rad} the block item's
  *     RADIATION hazard × 0.1; {@code addRadiation(rad)} sets {@code radIn = rad·0.1}.</li>
- * <li><b>{@code rad3d}</b> — an area contamination pulse every second ({@code ContaminationUtil.radiate}, range 32): not
+ * <li><b>{@code rad3d}</b>: an area contamination pulse every second ({@code ContaminationUtil.radiate}, range 32): not
  *     1.7 (its blocks have none); kept for an addon's {@code radiation_emission} {@code area}.</li>
- * <li><b>contact</b> — applies the block's item hazards to any entity standing in/on it
+ * <li><b>contact</b>: applies the block's item hazards to any entity standing in/on it
  *     ({@code HazardSystem.applyHazards}).</li>
  * </ul>
  * Radiation values are assigned after registration by {@link com.hbm.blocks.ModHazardBlocks#initHazards()}
  * from the block‑item's configured RADIATION hazard (the old {@code getRawRadsFromBlock} two‑step), so
  * holding the block irradiates you too.
  */
-public class BlockHazard extends dev.golem.core.world.CompatBlock {
+public class BlockHazard extends CompatBlock {
 
     private float radIn = 0.0F;
     private float radMax = 0.0F;
@@ -59,8 +63,8 @@ public class BlockHazard extends dev.golem.core.world.CompatBlock {
      * a datapack reload changes it (1.7 copied the block item's RADIATION hazard into the block once, at start-up);
      * else what {@link #addRadiation}/{@link #addRad3d} set in code.
      */
-    private com.hbm.api.data.HazardDataMaps.@org.jspecify.annotations.Nullable Emission emission() {
-        return com.hbm.api.data.HazardDataMaps.RADIATION_EMISSION.get(this);
+    private HazardDataMaps.@org.jspecify.annotations.Nullable Emission emission() {
+        return HazardDataMaps.RADIATION_EMISSION.get(this);
     }
 
     public float getRadIn() { var e = emission(); return e != null ? e.radiation() * 0.1F : radIn; }
@@ -131,9 +135,9 @@ public class BlockHazard extends dev.golem.core.world.CompatBlock {
     }
 
     /** Emits a particle on each air‑adjacent face (a slim port of the old {@code sPart}). */
-    private void spawnFaces(Level level, BlockPos pos, RandomSource random, net.minecraft.core.particles.ParticleOptions particle) {
-        for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
-            if (dir == net.minecraft.core.Direction.DOWN && display == DisplayEffect.FLAMES) continue;
+    private void spawnFaces(Level level, BlockPos pos, RandomSource random, ParticleOptions particle) {
+        for (Direction dir : Direction.values()) {
+            if (dir == Direction.DOWN && display == DisplayEffect.FLAMES) continue;
             BlockPos np = pos.relative(dir);
             if (!level.getBlockState(np).isAir()) continue;
             double ix = pos.getX() + 0.5 + dir.getStepX() * 0.5 + (random.nextDouble() - 0.5) * (dir.getStepX() == 0 ? 1 : 0);
@@ -143,6 +147,6 @@ public class BlockHazard extends dev.golem.core.world.CompatBlock {
         }
     }
 
-    /** Client‑side ambient particle style (the old {@code ExtDisplayEffect}; SPARKS/SCHRAB need the HBM particle system → mapped to NONE/MYCELIUM). */
+    /** Client‑side ambient particle style (the old {@code ExtDisplayEffect}; SPARKS/SCHRAB need the HBM particle system, so they map to NONE/MYCELIUM). */
     public enum DisplayEffect { NONE, RADFOG, FLAMES, LAVAPOP }
 }

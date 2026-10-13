@@ -15,6 +15,7 @@ import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -102,7 +103,7 @@ public final class RenderPlushie extends GemBER<TileEntityPlushie, RenderPlushie
         state.type = type;
         state.squish = -1F;
         if (type == PlushieType.NUMBERNINE) {
-            state.cigarette.extract(net.minecraft.client.Minecraft.getInstance().level, new ItemStack(
+            state.cigarette.extract(Minecraft.getInstance().level, new ItemStack(
                     BuiltInRegistries.ITEM.getValue(Ids.of(Constants.MOD_ID, "cigarette"))), ItemDisplayContext.NONE);
         } else {
             state.cigarette.clear();

@@ -39,7 +39,7 @@ final class GemModels {
 
     /^*
      * Keyed on the lump's <em>name</em> rather than the object, because a resource reload rebuilds the
-     * renderers and the same OBJ comes back as a fresh {@link Geometry} — with different triangles if a
+     * renderers and the same OBJ comes back as a fresh {@link Geometry}, with different triangles if a
      * pack replaced the file. Keying on identity would hold the old model forever and grow the map on
      * every reload; keying on the name replaces it, which is also what makes a pack swap take effect.
      ^/
@@ -93,8 +93,8 @@ final class GemModels {
         private static final int STRIDE = 8;
 
         /^*
-         * {@code WavefrontObj} emits unindexed triangle soup — three fresh vertices per triangle and an
-         * identity index list — so index <i>i</i> is vertex <i>i</i> for every mesh here, and one
+         * {@code WavefrontObj} emits unindexed triangle soup, three fresh vertices per triangle and an
+         * identity index list, so index <i>i</i> is vertex <i>i</i> for every mesh here, and one
          * shared run serves them all exactly as {@code QuadIndexSequence.INSTANCE} serves every quad.
          ^/
         private static final IndexSequence SEQUENTIAL = (ptr, count) -> {
@@ -133,10 +133,9 @@ final class GemModels {
         /^*
          * The one shared sequence, never a fresh lambda.
          *
-         * <p>{@code IndexPool} keys its runs on the sequence's <em>identity</em> and sizes each to the
-         * largest mesh that asked for it, then looks a mesh's own offset back up by that same identity.
-         * Returning a new object per call misses that lookup, and the mesh draws from whatever offset
-         * the miss returns — which shows up as geometry that is partly or wholly absent.
+         * <p>{@code IndexPool} keys its runs on the sequence's <em>identity</em> and looks a mesh's offset
+         * back up by that same identity. A new object per call misses the lookup, and the mesh draws from
+         * whatever offset the miss returns: geometry that is partly or wholly absent.
          ^/
         @Override
         public IndexSequence indexSequence() {

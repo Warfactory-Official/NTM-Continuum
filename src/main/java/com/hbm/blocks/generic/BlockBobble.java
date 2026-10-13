@@ -1,6 +1,7 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.tileentity.deco.TileEntityBobble;
+import com.hbm.util.ShadyUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -79,13 +80,13 @@ public class BlockBobble extends BlockTrinket {
         PEEP("Peep", "LePeeperSauvage", "Coilgun, Leadburster and Congo Lake models, BDCL QC", "Fluffy ears can't hide in ash, nor snow.", true, "CARD_BOARD"),
         MELLOW("MELLOWARPEGGIATION", "Mellow", "NBT Structures, industrial lighting, animation tools", "Make something cool now, ask for permission later.", true, "CARD_PROCESSOR"),
         ABEL("Abel1502", "Abel1502", "Abilities GUI, optimizations and many QoL improvements", "NANTO SUBARASHII", true, "CPU_REGISTER"),
-        // old-hbm (1.12 Community Edition) additions, in its order; three wear their person's real skin
+        // 1.12.2 additions, in its order; three wear their person's real skin
         MOVBLOCK("movblock", "movblock", "Threaded MK5 and some part of 1.12.2 Community Edition", "In three dimensions!", true, "CPU_LOGIC",
-                com.hbm.util.ShadyUtil.movblock),
+                ShadyUtil.movblock),
         LEAFIA("りー (Ri/Leafia)", "Leafia", "Custom Control Panel shenanigans$and porting (such as RoR panels) since 2026", "Control panel #1 sniffer$Also 1.12.2 sniffer$$This was the best I could model", false, "BOARD_BLANK"),
         HACKER6329("Hacker6329", "Hacker6329", "Partially fillable fluid barrels and some fixes.", "\"movblock i told you my v2 system wasn't the issue.\"", true, "CARD_BOARD",
-                com.hbm.util.ShadyUtil.Hacker6329),
-        EOS("EOS", "EOS", "Ported some stuff. Refactor code", "string[0] = EOS;", true, "MEM_16K_A", com.hbm.util.ShadyUtil.EOS);
+                ShadyUtil.Hacker6329),
+        EOS("EOS", "EOS", "Ported some stuff. Refactor code", "string[0] = EOS;", true, "MEM_16K_A", ShadyUtil.EOS);
 
         public static final BobbleType[] VALUES = values();
 
@@ -97,7 +98,7 @@ public class BlockBobble extends BlockTrinket {
         public final boolean skinLayers;
         /** 1.7 {@code ItemPlasticScrap.ScrapType} the shredder turns this figure into (the port has no scrap subtypes). */
         public String scrap; // not final, see contribution (E-096)
-        /** old-hbm {@code skinUuid}: the person whose Mojang skin the figure wears, or null for a modelled figure. */
+        /** 1.12.2 {@code skinUuid}: the person whose Mojang skin the figure wears, or null for a modelled figure. */
         public final String skinUuid;
 
         BobbleType(String name, String label, String contribution, String inscription, boolean layers, String scrap) {

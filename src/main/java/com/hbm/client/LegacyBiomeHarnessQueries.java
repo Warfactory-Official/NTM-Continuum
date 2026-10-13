@@ -8,6 +8,9 @@ import com.hbm.world.gen.NTMStructureDeclarations;
 import com.hbm.world.gen.nbt.NBTStructure;
 import com.hbm.world.gen.terrain.LegacyClimate;
 import dev.golem.core.Ids;
+import dev.golem.core.harness.HarnessQueryRegistry;
+import dev.golem.core.world.Biomes;
+import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -50,8 +53,8 @@ public final class LegacyBiomeHarnessQueries {
     private LegacyBiomeHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_legacy_biome", (mc, p) -> ask(mc, "hbm_legacy_biome", p));
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_modded_biome", (mc, p) -> ask(mc, "hbm_modded_biome", p));
+        HarnessQueryRegistry.register("hbm_legacy_biome", (mc, p) -> ask(mc, "hbm_legacy_biome", p));
+        HarnessQueryRegistry.register("hbm_modded_biome", (mc, p) -> ask(mc, "hbm_modded_biome", p));
     }
 
     private static JsonObject ask(Minecraft mc, String kind, JsonObject params) {
@@ -164,7 +167,7 @@ public final class LegacyBiomeHarnessQueries {
     private static JsonObject modded(ServerLevel level, JsonObject p) {
         String id = p.get("biome").getAsString();
         String[] name = id.split(":", 2);
-        Holder<Biome> biome = dev.golem.core.world.Biomes.holder(level.registryAccess(), dev.golem.core.world.Biomes.key(name[0], name[1]));
+        Holder<Biome> biome = Biomes.holder(level.registryAccess(), Biomes.key(name[0], name[1]));
         ChunkGenerator generator = level.getChunkSource().getGenerator();
         RandomState random = level.getChunkSource().randomState();
         ChunkPos chunk = new ChunkPos(i(p, "x", 0) >> 4, i(p, "z", 0) >> 4);
@@ -192,7 +195,7 @@ public final class LegacyBiomeHarnessQueries {
         if (p.has("spawns")) {
             for (String spawn : p.get("spawns").getAsString().split(",")) {
                 if (spawn.isBlank()) continue;
-                TagKey<Biome> tag = hasStructure(spawn.toLowerCase(java.util.Locale.ROOT));
+                TagKey<Biome> tag = hasStructure(spawn.toLowerCase(Locale.ROOT));
                 Structure.GenerationContext context = new Structure.GenerationContext(level.registryAccess(), generator,
                         new FixedBiomeSource(biome), random, level.getStructureManager(), level.getSeed(), chunk, level, h -> h.is(tag));
                 JsonObject s = new JsonObject();
@@ -217,7 +220,7 @@ public final class LegacyBiomeHarnessQueries {
         if (p.has("dungeons")) {
             for (String kindName : p.get("dungeons").getAsString().split(",")) {
                 if (kindName.isBlank()) continue;
-                LegacyDungeonStructure.Kind kind = LegacyDungeonStructure.Kind.valueOf(kindName.toUpperCase(java.util.Locale.ROOT));
+                LegacyDungeonStructure.Kind kind = LegacyDungeonStructure.Kind.valueOf(kindName.toUpperCase(Locale.ROOT));
                 TagKey<Biome> tag = hasStructure(kind.id);
                 JsonObject d = new JsonObject();
                 d.addProperty("inTag", biome.is(tag));

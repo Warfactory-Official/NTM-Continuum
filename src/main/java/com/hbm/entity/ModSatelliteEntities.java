@@ -3,6 +3,7 @@ package com.hbm.entity;
 import com.hbm.Constants;
 import com.hbm.registration.Reg;
 import com.hbm.entity.logic.EntityOrbitalLaser;
+import dev.golem.core.Ids;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.Entities;
 import dev.golem.core.registry.RegistryObject;
@@ -28,7 +29,7 @@ public final class ModSatelliteEntities {
 
     /** The entry's registry key, as {@code DeferredRegister#register(name, key -> ...)} handed it to the factory. */
     private static ResourceKey<EntityType<?>> key(String name) {
-        return ResourceKey.create(Registries.ENTITY_TYPE, dev.golem.core.Ids.of(Constants.MOD_ID, name));
+        return ResourceKey.create(Registries.ENTITY_TYPE, Ids.of(Constants.MOD_ID, name));
     }
 
     public static void init() {}

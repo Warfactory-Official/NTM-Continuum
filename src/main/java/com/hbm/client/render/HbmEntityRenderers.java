@@ -1,14 +1,25 @@
 package com.hbm.client.render;
 
+import com.hbm.Constants;
+import com.hbm.client.render.entity.NtmEntityRenderers;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.ModRBMKEntities;
+import com.hbm.entity.NtmToolEntityCatalog;
+import com.hbm.entity.missile.IMissilePitch;
 import com.hbm.entity.missile.ModMissileEntities;
+import dev.golem.core.platform.Platform;
 import dev.golem.core.render.CompatEntityRenderState;
 import dev.golem.core.render.gem.GemEntityRenderer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.FallingBlockRenderer;
 import net.minecraft.client.renderer.entity.NoopRenderer;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import com.hbm.client.render.projectile.BeamProjectileRenderer;
@@ -23,7 +34,7 @@ import com.hbm.client.render.projectile.RenderBeamBomb;
  * {@code EntityRenderersEvent.RegisterRenderers#registerEntityRenderer}, Fabric via
  * {@code EntityRendererRegistry.register}). Client-only.
  *
- * <p>The nuke explosion entity is invisible, so it uses vanilla's {@code NoopRenderer} — every entity
+ * <p>The nuke explosion entity is invisible, so it uses vanilla's {@code NoopRenderer}; every entity
  * type still needs <em>a</em> renderer registered or the client errors when one spawns.
  */
 public final class HbmEntityRenderers {
@@ -35,14 +46,14 @@ public final class HbmEntityRenderers {
         <T extends Entity> void register(EntityType<? extends T> type, EntityRendererProvider<T> provider);
     }
 
-    private static final java.util.List<java.util.function.Consumer<Sink>> EXTENSIONS = new java.util.ArrayList<>();
+    private static final List<Consumer<Sink>> EXTENSIONS = new ArrayList<>();
 
     /**
      * Renderers for entity types that only some nodes register (a node-specific source root such as
      * {@code src/happyghast}). They are bound inside {@link #registerAll}, through the same sink, so
      * {@link #verifyCoverage} sees them. Call on the client before the loader registers renderers.
      */
-    public static synchronized void addExtension(java.util.function.Consumer<Sink> extension) {
+    public static synchronized void addExtension(Consumer<Sink> extension) {
         EXTENSIONS.add(extension);
     }
 
@@ -61,7 +72,7 @@ public final class HbmEntityRenderers {
         regGem(sink, ModEntities.CHEMICAL.get(), ChemicalProjectileRenderer::new);
         sink.register(ModEntities.BEAM_BOMB.get(), RenderBeamBomb::new);
         regGem(sink, ModEntities.BEAM_MK4.get(), BeamProjectileRenderer::new);
-        regGem(sink, com.hbm.entity.NtmToolEntityCatalog.COIN.get(), CoinProjectileRenderer::new);
+        regGem(sink, NtmToolEntityCatalog.COIN.get(), CoinProjectileRenderer::new);
         regGem(sink, ModEntities.BLACK_HOLE.get(), BlackHoleRenderer::new);
         regGem(sink, ModEntities.VORTEX.get(), BlackHoleRenderer::new);
         regGem(sink, ModEntities.RAGING_VORTEX.get(), BlackHoleRenderer::new);
@@ -98,7 +109,7 @@ public final class HbmEntityRenderers {
         missile(sink, ModMissileEntities.MISSILE_STEALTH.get(), "missile_stealth.obj", "missile_stealth.png", 2.0F);
         missile(sink, ModMissileEntities.MISSILE_ANTI_BALLISTIC.get(), "missile_abm.obj", "missile_abm.png", 1.0F);
 
-        com.hbm.client.render.entity.NtmEntityRenderers.registerAll(sink);
+        NtmEntityRenderers.registerAll(sink);
 
         EXTENSIONS.forEach(extension -> extension.accept(sink));
     }
@@ -109,23 +120,23 @@ public final class HbmEntityRenderers {
      * invisible. Loaders call this after {@link #registerAll} with the set of types they saw registered. Missing
      * types fail loudly in a development run and are logged otherwise.
      */
-    public static void verifyCoverage(java.util.Set<EntityType<?>> bound) {
-        java.util.List<String> missing = new java.util.ArrayList<>();
-        for (EntityType<?> type : net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE) {
+    public static void verifyCoverage(Set<EntityType<?>> bound) {
+        List<String> missing = new ArrayList<>();
+        for (EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
             String id = EntityType.getKey(type).toString();
-            if (id.startsWith(com.hbm.Constants.MOD_ID + ":") && !bound.contains(type)) missing.add(id);
+            if (id.startsWith(Constants.MOD_ID + ":") && !bound.contains(type)) missing.add(id);
         }
         if (missing.isEmpty()) {
-            com.hbm.Constants.LOG.info("Entity renderers: every hbm entity type has a renderer ({} bound)", bound.size());
+            Constants.LOG.info("Entity renderers: every hbm entity type has a renderer ({} bound)", bound.size());
             return;
         }
         String message = missing.size() + " hbm entity types have no renderer: " + String.join(", ", missing);
-        if (dev.golem.core.platform.Platform.isDevelopment()) throw new IllegalStateException(message);
-        com.hbm.Constants.LOG.error(message);
+        if (Platform.isDevelopment()) throw new IllegalStateException(message);
+        Constants.LOG.error(message);
     }
 
     /** A sink that records what it binds, for {@link #verifyCoverage}. */
-    public static Sink recording(Sink downstream, java.util.Set<EntityType<?>> bound) {
+    public static Sink recording(Sink downstream, Set<EntityType<?>> bound) {
         return new Sink() {
             @Override
             public <T extends Entity> void register(EntityType<? extends T> type, EntityRendererProvider<T> provider) {
@@ -135,15 +146,15 @@ public final class HbmEntityRenderers {
         };
     }
 
-    private static <T extends Entity & com.hbm.entity.missile.IMissilePitch> void missile(Sink sink, EntityType<T> type, String model, String texture, float scale) {
+    private static <T extends Entity & IMissilePitch> void missile(Sink sink, EntityType<T> type, String model, String texture, float scale) {
         regGem(sink, type, context -> new MissileRenderer<>(context, model, texture, scale));
     }
 
     /**
      * Registers a renderer that declares its model, and builds that declaration at creation.
      *
-     * <p>A part naming a mesh group the model does not have throws, and this is the moment where that
-     * is a startup failure naming the renderer rather than an entity that quietly draws nothing.
+     * <p>A part naming a mesh group the model lacks throws here, as a startup failure naming the renderer,
+     * not as an entity that quietly draws nothing.
      */
     public static <T extends Entity, S extends CompatEntityRenderState, R extends GemEntityRenderer<T, S>>
             void regGem(Sink sink, EntityType<? extends T> type, Function<EntityRendererProvider.Context, R> provider) {
@@ -155,7 +166,7 @@ public final class HbmEntityRenderers {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static net.minecraft.client.renderer.entity.EntityRenderer rubbleRenderer(
+    private static EntityRenderer rubbleRenderer(
             EntityRendererProvider.Context context) {
         return new FallingBlockRenderer(context);
     }

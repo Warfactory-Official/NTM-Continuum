@@ -1,5 +1,7 @@
 package com.hbm.items;
 
+import com.hbm.items.weapon.CrucibleNetwork;
+import com.hbm.items.weapon.ItemSwordCutter;
 import dev.golem.core.registry.ItemTag;
 import dev.golem.core.registry.Preset;
 import com.hbm.registration.Presets;
@@ -58,7 +60,7 @@ public final class ModAbilityToolItems {
 
     public static final RegistryObject<SoundEvent> CHAINSAW_SOUND = sound("weapon.chainsaw");
     public static final RegistryObject<SoundEvent> CRUCIBLE_DEPLOY = sound("weapon.cdeploy");
-    /** old-hbm {@code HBMSoundHandler.crucibleSwing}: a charged crucible's swing, played by the server. */
+    /** 1.12.2 {@code HBMSoundHandler.crucibleSwing}: a charged crucible's swing, played by the server. */
     public static final RegistryObject<SoundEvent> CRUCIBLE_SWING = sound("weapon.crucible_swing");
 
     private static RegistryObject<SoundEvent> sound(String id) {
@@ -98,7 +100,7 @@ public final class ModAbilityToolItems {
     /** smashing_hammer: tMatSteel with setMaxDamage(2500). */
     public static final ToolTier tMatSteelHammer = ToolTier.of(3, 2500, 8.0F, 2.0F, 10, () -> repairs("steel"));
     /**
-     * old-hbm {@code MaterialRegistry.matCrucible}: CRUCIBLE (level 3, 10000 uses, 50, 100, enchantability 200). The
+     * 1.12.2 {@code MaterialRegistry.matCrucible}: CRUCIBLE (level 3, 10000 uses, 50, 100, enchantability 200). The
      * charge is the item's own count (see {@link ItemCrucible}); the uses are real wear, two per hit.
      */
     public static final ToolTier matCrucible = new ToolTier(3, 10000, 50.0F, 100.0F, 200, null);
@@ -572,8 +574,8 @@ public final class ModAbilityToolItems {
 
     public static final RegistryObject<RedstoneSword> redstone_sword = reg("redstone_sword", T, RedstoneSword::new, held("redstone_sword", "redstone_sword").and(tag("swords")));
 
-    /** original-hbm 1.7 {@code ModItems.crucible = new ItemCrucible(5000, 1F, matCrucible)} (old-hbm 1.12 used 500; user chose
-     *  the 1.7 damage on 2026-10-03, everything else stays 1.12); the tab holds it charged. */
+    /** 1.7 {@code ModItems.crucible = new ItemCrucible(5000, 1F, matCrucible)} (1.12.2 used 500; the 1.7
+     *  damage is kept, everything else follows 1.12). The tab holds it charged. */
     public static final RegistryObject<ItemCrucible> crucible = reg("crucible", null,
             p -> new ItemCrucible(p, 5000, 1F, matCrucible), rendered("crucible", "teisr").and(tag("swords")));
 
@@ -613,10 +615,10 @@ public final class ModAbilityToolItems {
         ItemToolAbility.ABILITY_CONFIG.getClass();
         ItemToolAbilityFueled.FUEL.getClass();
         ItemCrucible.init();
-        com.hbm.items.weapon.ItemSwordCutter.init();
-        com.hbm.items.weapon.CrucibleNetwork.init();
+        ItemSwordCutter.init();
+        CrucibleNetwork.init();
         GolemNetwork.declarePlayToClient(PlayerInformPayload.CODEC);
         GolemNetwork.registerPlayToServer(ToolAbilityControlPayload.CODEC, ToolAbilityControlPayload::handleServer);
-        com.hbm.items.AbilityToolDeclarations.declare(); // repair tags and recipes; models and tool tags are chained above
+        AbilityToolDeclarations.declare(); // repair tags and recipes; models and tool tags are chained above
     }
 }

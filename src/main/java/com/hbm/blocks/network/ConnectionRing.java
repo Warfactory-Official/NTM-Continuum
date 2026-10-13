@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * <p>Vanilla rotates a {@code Direction} property for free, because it knows the value is a
  * direction. A ring of six booleans carries the same information and vanilla cannot see it, so
- * {@code rotate} and {@code mirror} default to returning the state unchanged — and a block that
+ * {@code rotate} and {@code mirror} default to returning the state unchanged, and a block that
  * says nothing keeps its connections pointing the way they pointed in the file.
  *
  * <p>That is not cosmetic for a cable or a duct. A structure template placed at a rotation lays

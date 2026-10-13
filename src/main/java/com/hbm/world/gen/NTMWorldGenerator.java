@@ -12,6 +12,7 @@ import dev.golem.core.world.Structures;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
+import net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType;
 
 /**
  * 1.7 {@code NTMWorldGenerator}: the NBT structures that generate in the overworld.
@@ -43,11 +44,11 @@ public final class NTMWorldGenerator {
     public static final RegistryObject<StructureType<NBTStructure.GenStructure>> NBT_STRUCTURE =
             REG.register(Registries.STRUCTURE_TYPE, "nbt", () -> Structures.type(NBTStructure.GenStructure.CODEC));
 
-    public static final DeferredRegister<net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType<?>> STRUCTURE_PLACEMENTS =
+    public static final DeferredRegister<StructurePlacementType<?>> STRUCTURE_PLACEMENTS =
             DeferredRegister.create(Registries.STRUCTURE_PLACEMENT, Constants.MOD_ID);
 
     /** {@code hbm:config_spread}: random_spread spacing read from hbm.cfg (1.7 5.01/5.02 and the 4.xx dungeon chances). */
-    public static final RegistryObject<net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType<ConfigSpreadPlacement>> CONFIG_SPREAD =
+    public static final RegistryObject<StructurePlacementType<ConfigSpreadPlacement>> CONFIG_SPREAD =
             Reg.of(STRUCTURE_PLACEMENTS).register(Registries.STRUCTURE_PLACEMENT, "config_spread",
                     () -> Structures.placementType(ConfigSpreadPlacement.CODEC));
 

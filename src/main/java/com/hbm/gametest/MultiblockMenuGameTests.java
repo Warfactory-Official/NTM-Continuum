@@ -2,30 +2,37 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.tileentity.machine.rbmk.BlockEntityCraneConsole;
+import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKConsole;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
 /**
  * Right-clicking a machine opens its menu.
  *
- * <p>This is asserted by actually clicking — {@code helper.useBlock} drives the same entry point the
- * player does — because the defect it exists to catch lives entirely in that path. Every other menu
- * test in this repo builds its container directly, which is a fine way to assert slot layout and a
- * useless way to notice that no click ever reaches the container at all. A folded machine is clicked
- * on a <b>cell</b> far more often than on its core, and a cell carries no block entity, so the click
- * has to be carried to the core before anything can be opened.
+ * <p>This is asserted by actually clicking with {@code helper.useBlock}, which drives the same entry point the
+ * player does, because the defect it catches lives entirely in that path. Every other menu test builds its
+ * container directly, which checks slot layout but never notices that no click reaches the container. A
+ * folded machine is clicked on a <b>cell</b> far more often than on its core, and a cell carries no block
+ * entity, so the click has to be carried to the core before anything can be opened.
  *
- * <p>The position the menu binds to is asserted too, not just that one opened: the screen is bound to
- * the core so that walking away from the machine closes it, and binding it to the clicked cell would
- * look correct until someone tested the range.
+ * <p>The position the menu binds to is asserted too: the screen is bound to the core so that walking away
+ * closes it, and binding it to the clicked cell would look correct until someone tested the range.
  */
 public final class MultiblockMenuGameTests {
 
@@ -85,13 +92,13 @@ public final class MultiblockMenuGameTests {
      */
     private static void consoleCells(GameTestHelper helper, boolean crane) {
         ServerLevel level = helper.getLevel();
-        com.hbm.blocks.multiblock.BlockMultiblockMachine block = crane
-                ? com.hbm.blocks.machine.rbmk.ModRBMKBlocks.rbmk_crane_console.get()
-                : com.hbm.blocks.machine.rbmk.ModRBMKBlocks.rbmk_console.get();
+        BlockMultiblockMachine block = crane
+                ? ModRBMKBlocks.rbmk_crane_console.get()
+                : ModRBMKBlocks.rbmk_console.get();
         BlockPos clicked = new BlockPos(4, 1, 3);
         BlockPos clickedAbs = helper.absolutePos(clicked);
         BlockPos core;
-        java.util.List<BlockPos> cells = new java.util.ArrayList<>();
+        List<BlockPos> cells = new ArrayList<>();
         try (GameTestHelpers.MockServerPlayer mock = GameTestHelpers.mockServerPlayer(helper)) {
             mock.player().setYRot(0F);
             // outside the desk's player check (1.7 checkRequirement refuses a placement over a player)
@@ -103,7 +110,7 @@ public final class MultiblockMenuGameTests {
             helper.assertTrue(core != null, "the console did not form; the clicked position holds "
                     + level.getBlockState(clickedAbs));
             helper.assertFalse(core.equals(clickedAbs), "the clicked position must be a cell");
-            Direction facing = level.getBlockState(core).getValue(com.hbm.blocks.multiblock.BlockMultiblockCore.FACING);
+            Direction facing = level.getBlockState(core).getValue(BlockMultiblockCore.FACING);
             block.visitPlacedCells(core, facing, (pos, mask) -> cells.add(pos.immutable()));
             helper.assertTrue(level.getBlockEntity(core) != null, "the core must carry the console's block entity");
             for (BlockPos cell : cells) {
@@ -118,7 +125,7 @@ public final class MultiblockMenuGameTests {
                 mock.player().setShiftKeyDown(true);
                 helper.useBlock(clicked, mock.player());
                 mock.player().setShiftKeyDown(false);
-                int offset = ((com.hbm.tileentity.machine.rbmk.BlockEntityCraneConsole) level.getBlockEntity(core))
+                int offset = ((BlockEntityCraneConsole) level.getBlockEntity(core))
                         .craneRotationOffset;
                 helper.assertTrue(offset == 90, "a sneak-click on a cell must turn the core's crane, offset " + offset);
             } else {
@@ -133,8 +140,8 @@ public final class MultiblockMenuGameTests {
         // a cell block entity saved before cells stopped carrying one
         BlockPos stale = cells.get(cells.size() - 1);
         BlockState staleState = level.getBlockState(stale);
-        level.setBlockEntity(crane ? new com.hbm.tileentity.machine.rbmk.BlockEntityCraneConsole(stale, staleState)
-                : new com.hbm.tileentity.machine.rbmk.BlockEntityRBMKConsole(stale, staleState));
+        level.setBlockEntity(crane ? new BlockEntityCraneConsole(stale, staleState)
+                : new BlockEntityRBMKConsole(stale, staleState));
         helper.assertTrue(level.getBlockEntity(stale) != null, "the stale cell block entity was not accepted");
         BlockPos finalCore = core;
         helper.runAfterDelay(3, () -> {
@@ -147,8 +154,8 @@ public final class MultiblockMenuGameTests {
                 helper.assertFalse(level.getBlockState(cell).is(block), "breaking a cell left cell " + cell);
             }
             int drops = 0;
-            for (net.minecraft.world.entity.item.ItemEntity item : level.getEntitiesOfClass(
-                    net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(finalCore).inflate(6))) {
+            for (ItemEntity item : level.getEntitiesOfClass(
+                    ItemEntity.class, new AABB(finalCore).inflate(6))) {
                 if (item.getItem().is(block.asItem())) drops += item.getItem().getCount();
             }
             helper.assertTrue(drops == 1, "breaking a cell must drop exactly one console, dropped " + drops);

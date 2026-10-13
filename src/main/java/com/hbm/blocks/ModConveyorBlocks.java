@@ -13,12 +13,14 @@ import dev.golem.core.dejson.States;
 import dev.golem.core.dejson.Variant;
 import dev.golem.core.dejson.Variants;
 import dev.golem.core.dejson.When;
+import dev.golem.core.world.Compat;
 import net.minecraft.world.item.Item;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
@@ -152,9 +154,9 @@ public final class ModConveyorBlocks {
     public static final RegistryObject<BlockItem> PISTON_INSERTER_ITEM = item("piston_inserter", PISTON_INSERTER);
 
     // 1.7 machineTab for the cranes; belts and the piston inserter had no tab
-    private static Reg.Handle<BlockItem> item(String name, RegistryObject<? extends net.minecraft.world.level.block.Block> block) {
+    private static Reg.Handle<BlockItem> item(String name, RegistryObject<? extends Block> block) {
         return REG.<BlockItem>item(name, (Item.Properties properties) -> new ConveyorBlockItem(block.get(),
-                dev.golem.core.world.Compat.blockDescription(properties)));
+                Compat.blockDescription(properties)));
     }
 
     /**
@@ -178,7 +180,7 @@ public final class ModConveyorBlocks {
     }
 
     /** A multipart blockstate built part by part (the chute's authored arms). */
-    private static Preset multipart(java.util.function.UnaryOperator<States.MultipartFile> parts) {
+    private static Preset multipart(UnaryOperator<States.MultipartFile> parts) {
         return handle -> parts.apply(States.multipart(handle.namespace(), handle.path())).register();
     }
 

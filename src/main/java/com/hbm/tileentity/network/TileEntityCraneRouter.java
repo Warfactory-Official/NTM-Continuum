@@ -1,7 +1,7 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.tileentity.IControlReceiverFilter;
-import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.module.ModulePatternMatcher;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -11,6 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -22,7 +23,7 @@ import com.hbm.inventory.container.ContainerCraneRouter;
 import com.hbm.tileentity.ModConveyorBlockEntities;
 
 /** 1.7 {@code tileentity/network/TileEntityCraneRouter} ("Conveyor Sorter"): six five-slot filters, one per side. */
-public class TileEntityCraneRouter extends TileEntityMachineBase implements IControlReceiverFilter, net.minecraft.world.MenuProvider {
+public class TileEntityCraneRouter extends TileEntityMachineBase implements IControlReceiverFilter, MenuProvider {
 
     public static final int SLOT_COUNT = 5 * 6;
 

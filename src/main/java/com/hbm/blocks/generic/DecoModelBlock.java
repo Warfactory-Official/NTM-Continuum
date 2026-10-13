@@ -2,6 +2,8 @@ package com.hbm.blocks.generic;
 
 import dev.golem.core.world.BlockTickScheduler;
 import dev.golem.core.world.CompatBlock;
+import java.util.EnumMap;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -146,7 +148,7 @@ public class DecoModelBlock extends CompatBlock implements EntityBlock {
 
         /** {@code pole.obj}'s three 2x2 posts, centred on the block, before {@code DecoModelRenderer}'s yaw. */
         private static final double[][] POSTS = {{0, -5}, {5, 5}, {-5, 5}};
-        private static final java.util.Map<Direction, VoxelShape> COLLISION = new java.util.EnumMap<>(Direction.class);
+        private static final Map<Direction, VoxelShape> COLLISION = new EnumMap<>(Direction.class);
 
         static {
             for (Direction look : Direction.Plane.HORIZONTAL) {
@@ -169,8 +171,8 @@ public class DecoModelBlock extends CompatBlock implements EntityBlock {
         }
 
         /*
-         * Collision is the three posts (port deviation, user decision 2026-10-07): 1.7's full cube kept a waterlogged
-         * pole's water in, since vanilla fluid only leaves through faces the collision does not cover. The outline
+         * port: collision is the three posts. 1.7's full cube would keep a waterlogged pole's water in,
+         * since vanilla fluid only leaves through faces the collision does not cover. The outline
          * and the support shape stay the 1.7 full cube; the gaps between posts are narrower than a player.
          */
         @Override

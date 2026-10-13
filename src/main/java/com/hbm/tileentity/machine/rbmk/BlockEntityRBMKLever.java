@@ -1,6 +1,8 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import com.hbm.blocks.machine.rbmk.RBMKMiniPanelBase;
 import com.hbm.interfaces.IControlReceiver;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModRBMKBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -9,6 +11,7 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.sounds.SoundEvent;
@@ -117,17 +120,17 @@ public class BlockEntityRBMKLever extends TileEntityLoadedBase implements IContr
             if (arcFlash) {
                 sound(ModSounds.SPARK.get(), 1F);
                 // 1.7: dir is the panel's facing, rot = dir.getRotation(UP), i.e. its clockwise neighbour
-                net.minecraft.core.Direction dir = getBlockState().getValue(com.hbm.blocks.machine.rbmk.RBMKMiniPanelBase.FACING);
-                net.minecraft.core.Direction rot = dir.getClockWise();
+                Direction dir = getBlockState().getValue(RBMKMiniPanelBase.FACING);
+                Direction rot = dir.getClockWise();
                 for (int i = 0; i < 2; i++) {
                     double spread = (index - 0.5) * (i == 0 ? 0.375 : 0.625);
                     double x = worldPosition.getX() + 0.5 + dir.getStepX() * 0.4 - rot.getStepX() * spread;
                     double y = worldPosition.getY() + 0.4375 - 0.03125;
                     double z = worldPosition.getZ() + 0.5 + dir.getStepZ() * 0.4 - rot.getStepZ() * spread;
-                    net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+                    CompoundTag data = new CompoundTag();
                     data.putByte("count", (byte) 5);
                     data.putBoolean("small", true);
-                    com.hbm.particle.helper.HbmEffectNT.Tau.send(level, x, y, z, data, 25);
+                    HbmEffectNT.Tau.send(level, x, y, z, data, 25);
                 }
             }
         }

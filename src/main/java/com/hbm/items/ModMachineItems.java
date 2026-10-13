@@ -20,8 +20,11 @@ import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.items.machine.ItemFluidId;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.inventory.material.MaterialShapes;
+import com.hbm.items.machine.ItemTurretBiometry;
+import com.hbm.items.machine.ItemTurretChip;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import java.util.Locale;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -32,6 +35,10 @@ import dev.golem.core.dejson.ItemModels;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Tints;
 import net.minecraft.world.item.Item;
+import com.hbm.items.machine.ItemArcElectrode;
+import com.hbm.items.machine.ItemArcElectrodeBurnt;
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * Hand-registered machine items (templates, etc.) that aren't part of the generated {@link ModItems}.
@@ -44,17 +51,17 @@ public final class ModMachineItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    /** Turret targeting chip — the biometry card a turret accepts in its chip slot. */
-    public static final RegistryObject<com.hbm.items.machine.ItemTurretChip> turret_chip = REG.<com.hbm.items.machine.ItemTurretChip>item(
-            "turret_chip", com.hbm.items.machine.ItemTurretChip::new, p -> p.stacksTo(1))
+    /** Turret targeting chip: the biometry card a turret accepts in its chip slot. */
+    public static final RegistryObject<ItemTurretChip> turret_chip = REG.<ItemTurretChip>item(
+            "turret_chip", ItemTurretChip::new, p -> p.stacksTo(1))
             .transform(Presets.sprite());
 
-    /** Handheld biometric scanner — writes the holder's name onto a turret whitelist. */
-    public static final RegistryObject<com.hbm.items.machine.ItemTurretBiometry> turret_biometry = REG.<com.hbm.items.machine.ItemTurretBiometry>item(
-            "turret_biometry", com.hbm.items.machine.ItemTurretBiometry::new, p -> p.stacksTo(1))
+    /** Handheld biometric scanner: writes the holder's name onto a turret whitelist. */
+    public static final RegistryObject<ItemTurretBiometry> turret_biometry = REG.<ItemTurretBiometry>item(
+            "turret_biometry", ItemTurretBiometry::new, p -> p.stacksTo(1))
             .icon(d -> d.models(Models.generated("hbm:items/rei_scanner")));
 
-    /** Assembly machine "plates" template — unlocks the metal-plate recipes. */
+    /** Assembly machine "plates" template: unlocks the metal-plate recipes. */
     public static final RegistryObject<ItemBlueprints> blueprint_plate = REG.<ItemBlueprints>item(
             "blueprint_plate", p -> new ItemBlueprints(p, AssemblyMachineRecipes.POOL_PLATES), p -> p.stacksTo(1))
             .icon(d -> d.models(Models.generated("hbm:items/blueprints")));
@@ -67,7 +74,7 @@ public final class ModMachineItems {
                     .definition(ItemModels.select("hbm:model_state").when("1", ItemModels.model("hbm:item/blueprints_discover")).when("2", ItemModels.model("hbm:item/blueprints_secret")).when("3", ItemModels.model("hbm:item/blueprints_528")).fallback(ItemModels.model("hbm:item/blueprints"))));
     /**
      * The booklet which turns into a randomly selected blueprint on right-click: 1.7 metadata 0 ({@code blueprint_folder})
-     * and 1 ({@code blueprint_folder_discover}), one item each as in ntm-next (History §19es-itemvariant).
+     * and 1 ({@code blueprint_folder_discover}), one item each as in ntm-next.
      */
     public static final RegistryObject<ItemBlueprintFolder> blueprint_folder = REG.<ItemBlueprintFolder>item(
             "blueprint_folder", p -> new ItemBlueprintFolder(p, 0), p -> p.stacksTo(1)).transform(Presets.sprite());
@@ -81,13 +88,13 @@ public final class ModMachineItems {
             "broken_item", ItemBroken::new)
             .transform(Presets.sprite());
 
-    /** Fluid identifier — a dedicated one per fluid; set a tank/duct's type with it. */
+    /** Fluid identifier: a dedicated one per fluid; set a tank/duct's type with it. */
     public static final RegistryObject<ItemFluidId> fluid_identifier = REG.<ItemFluidId>item(
             "fluid_identifier", ItemFluidId::new, p -> p.stacksTo(1))
             .transform(Presets.sprite("hbm:items/fluid_identifier_multi", "hbm:items/fluid_identifier_overlay").tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
 
-    // --- shredder blades (wear parts; two per shredder). Durabilities are the 1.12.2 values; desh has
-    // none, which means unbreakable (the original's maxDamage == 0). ---
+    // Shredder blades (wear parts; two per shredder). Durabilities are the 1.12.2 values; desh has
+    // none, which means unbreakable (the original's maxDamage == 0).
 
     public static final RegistryObject<ItemBlades> blades_steel = REG.<ItemBlades>item(
             "blades_steel", ItemBlades::new, p -> p.stacksTo(1).durability(400))
@@ -101,15 +108,15 @@ public final class ModMachineItems {
             "blades_desh", ItemBlades::new, p -> p.stacksTo(1))
             .transform(Presets.sprite());
 
-    /** Foundry scraps — solidified molten material (material + quanta amount in data components). */
+    /** Foundry scraps: solidified molten material (material + quanta amount in data components). */
     public static final RegistryObject<ItemScraps> scraps = REG.<ItemScraps>item(
             "scraps", ItemScraps::new, p -> p.stacksTo(64))
             .icon(d -> d.models(Models.generated("hbm:items/scraps"))
                     .definition(ItemModels.customModelDataFlag(0, ItemModels.model("hbm:item/scraps_liquid", Tints.customModelData(0, 16777215)), ItemModels.model("hbm:item/scraps", Tints.customModelData(0, 16777215)))));
 
-    // --- FEL laser crystals: the wavelength "lens" a Free Electron Laser is loaded with. Each one
+    // FEL laser crystals: the wavelength "lens" a Free Electron Laser is loaded with. Each one
     // unlocks the SILEX recipes at or below its wavelength and multiplies the speed of the weaker
-    // ones (see TileEntitySILEX.process). ---
+    // ones (see TileEntitySILEX.process).
 
     public static final RegistryObject<ItemFELCrystal> laser_crystal_co2 = REG.<ItemFELCrystal>item(
             "laser_crystal_co2", (Item.Properties p) -> new ItemFELCrystal(p, EnumWavelengths.IR, false))
@@ -123,10 +130,67 @@ public final class ModMachineItems {
     public static final RegistryObject<ItemFELCrystal> laser_crystal_bale = REG.<ItemFELCrystal>item(
             "laser_crystal_bale", (Item.Properties p) -> new ItemFELCrystal(p, EnumWavelengths.GAMMA, false))
             .transform(Presets.sprite());
-    /** The digamma crystal shows scrambled text instead of a description — upstream's easter egg. */
+    /** The digamma crystal shows scrambled text instead of a description (upstream's easter egg). */
     public static final RegistryObject<ItemFELCrystal> laser_crystal_digamma = REG.<ItemFELCrystal>item(
             "laser_crystal_digamma", (Item.Properties p) -> new ItemFELCrystal(p, EnumWavelengths.DRX, true))
             .transform(Presets.sprite());
+
+    // Large arc furnace electrodes (1.7 ItemArcElectrode / ItemArcElectrodeBurnt), fresh and burnt per type
+
+    public static final RegistryObject<ItemArcElectrode> arc_electrode =
+            arcElectrode("arc_electrode", ItemArcElectrode.ElectrodeType.GRAPHITE);
+    public static final RegistryObject<ItemArcElectrode> arc_electrode_lanthanium =
+            arcElectrode("arc_electrode_lanthanium", ItemArcElectrode.ElectrodeType.LANTHANIUM);
+    public static final RegistryObject<ItemArcElectrode> arc_electrode_desh =
+            arcElectrode("arc_electrode_desh", ItemArcElectrode.ElectrodeType.DESH);
+    public static final RegistryObject<ItemArcElectrode> arc_electrode_saturnite =
+            arcElectrode("arc_electrode_saturnite", ItemArcElectrode.ElectrodeType.SATURNITE);
+
+    public static final RegistryObject<ItemArcElectrodeBurnt> arc_electrode_burnt =
+            arcElectrodeBurnt("arc_electrode_burnt", ItemArcElectrode.ElectrodeType.GRAPHITE);
+    public static final RegistryObject<ItemArcElectrodeBurnt> arc_electrode_burnt_lanthanium =
+            arcElectrodeBurnt("arc_electrode_burnt_lanthanium", ItemArcElectrode.ElectrodeType.LANTHANIUM);
+    public static final RegistryObject<ItemArcElectrodeBurnt> arc_electrode_burnt_desh =
+            arcElectrodeBurnt("arc_electrode_burnt_desh", ItemArcElectrode.ElectrodeType.DESH);
+    public static final RegistryObject<ItemArcElectrodeBurnt> arc_electrode_burnt_saturnite =
+            arcElectrodeBurnt("arc_electrode_burnt_saturnite", ItemArcElectrode.ElectrodeType.SATURNITE);
+
+    private static final Map<ItemArcElectrode.ElectrodeType, RegistryObject<ItemArcElectrode>> ARC_ELECTRODES =
+            new EnumMap<>(ItemArcElectrode.ElectrodeType.class);
+    private static final Map<ItemArcElectrode.ElectrodeType, RegistryObject<ItemArcElectrodeBurnt>> ARC_ELECTRODES_BURNT =
+            new EnumMap<>(ItemArcElectrode.ElectrodeType.class);
+
+    static {
+        ARC_ELECTRODES.put(ItemArcElectrode.ElectrodeType.GRAPHITE, arc_electrode);
+        ARC_ELECTRODES.put(ItemArcElectrode.ElectrodeType.LANTHANIUM, arc_electrode_lanthanium);
+        ARC_ELECTRODES.put(ItemArcElectrode.ElectrodeType.DESH, arc_electrode_desh);
+        ARC_ELECTRODES.put(ItemArcElectrode.ElectrodeType.SATURNITE, arc_electrode_saturnite);
+        ARC_ELECTRODES_BURNT.put(ItemArcElectrode.ElectrodeType.GRAPHITE, arc_electrode_burnt);
+        ARC_ELECTRODES_BURNT.put(ItemArcElectrode.ElectrodeType.LANTHANIUM, arc_electrode_burnt_lanthanium);
+        ARC_ELECTRODES_BURNT.put(ItemArcElectrode.ElectrodeType.DESH, arc_electrode_burnt_desh);
+        ARC_ELECTRODES_BURNT.put(ItemArcElectrode.ElectrodeType.SATURNITE, arc_electrode_burnt_saturnite);
+    }
+
+    /** The fresh electrode item of a type. */
+    public static ItemArcElectrode arcElectrode(ItemArcElectrode.ElectrodeType type) {
+        return ARC_ELECTRODES.get(type).get();
+    }
+
+    /** The burnt electrode item of a type. */
+    public static ItemArcElectrodeBurnt arcElectrodeBurnt(ItemArcElectrode.ElectrodeType type) {
+        return ARC_ELECTRODES_BURNT.get(type).get();
+    }
+
+    private static RegistryObject<ItemArcElectrode> arcElectrode(String name, ItemArcElectrode.ElectrodeType type) {
+        return REG.<ItemArcElectrode>item(name, p -> new ItemArcElectrode(p, type),
+                        p -> p.stacksTo(1).durability(type.durability))
+                .transform(Presets.handheld("hbm:items/arc_electrode." + type.name().toLowerCase(Locale.ROOT)));
+    }
+
+    private static RegistryObject<ItemArcElectrodeBurnt> arcElectrodeBurnt(String name, ItemArcElectrode.ElectrodeType type) {
+        return REG.<ItemArcElectrodeBurnt>item(name, p -> new ItemArcElectrodeBurnt(p, type), p -> p.stacksTo(64))
+                .transform(Presets.handheld("hbm:items/arc_electrode_burnt." + type.name().toLowerCase(Locale.ROOT)));
+    }
 
     static {
         ModTabs.addTo(HbmTab.TEMPLATES, blueprint_plate);
@@ -141,7 +205,15 @@ public final class ModMachineItems {
         ModTabs.addTo(HbmTab.CONTROL, blades_steel);
         ModTabs.addTo(HbmTab.CONTROL, blades_titanium);
         ModTabs.addTo(HbmTab.CONTROL, blades_desh);
-        // One identifier per fluid in the creative menu (skip NONE), each pre-set to its fluid — the 26.1
+        ModTabs.addTo(HbmTab.CONTROL, arc_electrode);
+        ModTabs.addTo(HbmTab.CONTROL, arc_electrode_lanthanium);
+        ModTabs.addTo(HbmTab.CONTROL, arc_electrode_desh);
+        ModTabs.addTo(HbmTab.CONTROL, arc_electrode_saturnite);
+        ModTabs.addTo(HbmTab.CONTROL, arc_electrode_burnt);
+        ModTabs.addTo(HbmTab.CONTROL, arc_electrode_burnt_lanthanium);
+        ModTabs.addTo(HbmTab.CONTROL, arc_electrode_burnt_desh);
+        ModTabs.addTo(HbmTab.CONTROL, arc_electrode_burnt_saturnite);
+        // One identifier per fluid in the creative menu (skip NONE), each pre-set to its fluid: the 26.1
         // equivalent of the 1.12.2 ItemFluidIDMulti's one-metadata-per-fluid subtypes. Resolved lazily at
         // tab-build time, after Fluids.init() has populated.
         ModTabs.addStacksTo(HbmTab.TEMPLATES, () -> {

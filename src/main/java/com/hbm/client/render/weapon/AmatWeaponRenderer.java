@@ -8,11 +8,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
-/** Exact Gem port of original-hbm ItemRenderAmat; the skin is selected by the registration helper. */
+/** Exact Gem port of 1.7 ItemRenderAmat; the skin is selected by the registration helper. */
 public final class AmatWeaponRenderer extends WeaponRenderer {
-    private static final net.minecraft.resources.Identifier MODEL_ID=Ids.of("hbm","models/weapons/amat.obj");
+    private static final Identifier MODEL_ID=Ids.of("hbm","models/weapons/amat.obj");
     private static final Surface SILENCER=Surface.cutout("hbm:textures/models/weapons/g3_attachments.png");
     private final Surface body;
     private WavefrontObj model,g3Model;

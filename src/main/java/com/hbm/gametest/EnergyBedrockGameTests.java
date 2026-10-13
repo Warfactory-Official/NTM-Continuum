@@ -1,7 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.ModEnergyBedrockBlocks;
-import com.hbm.foundry.ArcFurnaceRecipes;
+import com.hbm.inventory.recipes.ArcFurnaceRecipes;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
@@ -16,6 +16,7 @@ import com.hbm.tileentity.network.TileEntityConverterHeRf;
 import com.hbm.tileentity.network.TileEntityConverterRfHe;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import java.util.Arrays;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
@@ -54,7 +55,7 @@ public final class EnergyBedrockGameTests {
 
         ItemStack[] rad = CentrifugeRecipes.getOutput(ore(Grade.PRIMARY_RAD));
         helper.assertTrue(rad != null && rad.length == 4 && rad[0].is(ModBedrockOreItems.get(Grade.PRIMARY_NORAD, BedrockOreType.LIGHT_METAL))
-                && rad[0].getCount() == 2, "radsolvent split " + java.util.Arrays.toString(rad));
+                && rad[0].getCount() == 2, "radsolvent split " + Arrays.toString(rad));
 
         ArcFurnaceRecipes.ArcFurnaceRecipe arc = ArcFurnaceRecipes.getOutput(ore(Grade.PRIMARY_FIRST), true);
         helper.assertTrue(arc != null && arc.fluidOutput.length == 2

@@ -1,19 +1,26 @@
 package com.hbm.entity.missile;
 
+import com.hbm.blocks.ModFluidNetBlocks;
+import com.hbm.blocks.ModTerrainBlocks;
 import com.hbm.config.BombConfig;
+import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
+import com.hbm.explosion.ExplosionLarge;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMissileItems;
 import dev.golem.core.data.SynchedData;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -21,13 +28,12 @@ import org.jspecify.annotations.Nullable;
 /**
  * The Atlas family: nuclear warheads, launched from the silo.
  *
- * <p>Each of these spawns the same two entities the Fat Man does — an {@link EntityNukeExplosionMK5}
- * crater and an {@link EntityNukeTorex} mushroom cloud — differing only in radius and fallout. That is
- * why tier 4 was portable ahead of tiers 0–3: its payload was already here.
+ * <p>Each of these spawns the same two entities the Fat Man does, an {@link EntityNukeExplosionMK5}
+ * crater and an {@link EntityNukeTorex} mushroom cloud, differing only in radius and fallout.
  *
  * <p>{@link #ROT_IDX} is the pad's facing, pushed to the client by the launch pad at spawn. Its only
- * consumer upstream is the contrail, which is deferred, so it is currently carried and not read — kept
- * because the launch pad sets it and dropping it would silently change what a future contrail sees.
+ * consumer upstream is the contrail, which is not ported, so it is carried and not read; the launch pad
+ * sets it, and a future contrail needs it.
  */
 public abstract class EntityMissileTier4 extends EntityMissileBaseNT {
 
@@ -76,7 +82,7 @@ public abstract class EntityMissileTier4 extends EntityMissileBaseNT {
     /**
      * Three trails: one to the side, one down the axis, one to the other side.
      *
-     * <p>{@link #ROT_IDX} — the pad's facing, pushed over at spawn — pre-rotates the side offset so
+     * <p>{@link #ROT_IDX}, the pad's facing, pushed over at spawn, pre-rotates the side offset so
      * the boosters sit where the model has them however the pad was placed. This is that byte's only
      * consumer, upstream and here.
      */
@@ -107,7 +113,7 @@ public abstract class EntityMissileTier4 extends EntityMissileBaseNT {
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_nuclear.get()); }
     }
 
-    /** MIRV: double radius. Upstream never actually splits it — the "cluster" is the yield. */
+    /** MIRV: double radius. Upstream never actually splits it, the "cluster" is the yield. */
     public static class EntityMissileMirv extends EntityMissileTier4 {
         public EntityMissileMirv(EntityType<?> type, Level world) { super(type, world); }
         public EntityMissileMirv(Level world, float x, float y, float z, int a, int b) {
@@ -118,7 +124,7 @@ public abstract class EntityMissileTier4 extends EntityMissileBaseNT {
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_nuclear_cluster.get()); }
     }
 
-    /** Doomsday: MIRV yield plus a hundred extra fallout — the salted warhead. */
+    /** Doomsday: MIRV yield plus a hundred extra fallout, the salted warhead. */
     public static class EntityMissileDoomsday extends EntityMissileTier4 {
         public EntityMissileDoomsday(EntityType<?> type, Level world) { super(type, world); }
         public EntityMissileDoomsday(Level world, float x, float y, float z, int a, int b) {
@@ -156,30 +162,30 @@ public abstract class EntityMissileTier4 extends EntityMissileBaseNT {
     public static class EntityMissileVolcano extends EntityMissileTier4 {
         public EntityMissileVolcano(EntityType<?> type, Level level) { super(type, level); }
         public EntityMissileVolcano(Level level, float x, float y, float z, int targetX, int targetZ) {
-            super(com.hbm.entity.ModNtmEntities.MISSILE_VOLCANO.get(), level, x, y, z, targetX, targetZ);
+            super(ModNtmEntities.MISSILE_VOLCANO.get(), level, x, y, z, targetX, targetZ);
         }
 
         @Override
         public void onMissileImpact(HitResult mop) {
-            com.hbm.explosion.ExplosionLarge.explode(level(), getX(), getY(), getZ(), 10.0F, true, true, true);
+            ExplosionLarge.explode(level(), getX(), getY(), getZ(), 10.0F, true, true, true);
 
             // 1.7 then fills a 3x3x3 with volcanic lava (plain setBlock, meta 0, flags 3) and puts the volcano core
             // (meta 0 = the bare, static-active "volcano_core") in the centre cell. Positions use floor(pos + offset).
-            net.minecraft.world.level.block.state.BlockState lava =
-                    com.hbm.blocks.ModFluidNetBlocks.volcanic_lava_block.get().defaultBlockState();
+            BlockState lava =
+                    ModFluidNetBlocks.volcanic_lava_block.get().defaultBlockState();
             for (int x = -1; x <= 1; x++) {
                 for (int y = -1; y <= 1; y++) {
                     for (int z = -1; z <= 1; z++) {
-                        level().setBlock(new net.minecraft.core.BlockPos(
+                        level().setBlock(new BlockPos(
                                 (int) Math.floor(getX() + x), (int) Math.floor(getY() + y), (int) Math.floor(getZ() + z)),
-                                lava, net.minecraft.world.level.block.Block.UPDATE_ALL);
+                                lava, Block.UPDATE_ALL);
                     }
                 }
             }
-            level().setBlock(new net.minecraft.core.BlockPos(
+            level().setBlock(new BlockPos(
                     (int) Math.floor(getX()), (int) Math.floor(getY()), (int) Math.floor(getZ())),
-                    com.hbm.blocks.ModTerrainBlocks.volcanoCore("volcano_core").defaultBlockState(),
-                    net.minecraft.world.level.block.Block.UPDATE_ALL);
+                    ModTerrainBlocks.volcanoCore("volcano_core").defaultBlockState(),
+                    Block.UPDATE_ALL);
         }
 
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_volcano.get()); }

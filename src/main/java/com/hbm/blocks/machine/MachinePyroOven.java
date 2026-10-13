@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/** Pyro Oven block — 1:1 port of the 1.12.2 {@code MachinePyroOven} (dims {@code {2,0,3,3,2,2}}, offset 3;
+/** Pyro Oven block: 1:1 port of the 1.12.2 {@code MachinePyroOven} (dims {@code {2,0,3,3,2,2}}, offset 3;
  * a row of 5 makeExtra ports along one side + one at y+2). */
 public class MachinePyroOven extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 

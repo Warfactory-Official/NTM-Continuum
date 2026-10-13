@@ -28,14 +28,14 @@ import static dev.golem.core.dejson.Features.rarity;
  * ({@code hbm:legacy_dungeon}), {@code worldgen/structure_set/<id>.json}, the biome tag
  * {@code hbm:has_structure/<id>}, and all of them in the structure tag {@code #hbm:legacy_dungeons}.
  *
- * <p><b>The 1/n chance</b> (read from {@code hbm.cfg} at generation by {@code hbm:config_spread}). 1.7 rolled {@code rand.nextInt(n) == 0} independently in every chunk. A modern structure
- * set offers one candidate chunk per {@code spacing x spacing} region ({@code random_spread}), kept with probability
- * {@code frequency}. With {@code spacing = floor(sqrt(n))}, {@code separation} 0 (the candidate may be any chunk of the
- * region, so neighbours are possible, as in 1.7) and {@code frequency = spacing^2 / n}, every chunk is a site with
- * probability exactly {@code 1/n}, as in 1.7 (e.g. the antenna, n 250: spacing 15, frequency 0.9; the library, n 64:
- * spacing 8, frequency 1). What modern placement cannot give is 1.7's independence: two sites never share a region.
- * The biome test runs on the candidate (biome tag), as 1.7's ran before its roll, so the per-chunk rate inside the
- * right biomes is 1/n in both.
+ * <p><b>The 1/n chance</b> (read from {@code hbm.cfg} at generation by {@code hbm:config_spread}). 1.7 rolled
+ * {@code rand.nextInt(n) == 0} independently in every chunk. A modern structure set offers one candidate chunk per
+ * {@code spacing x spacing} region ({@code random_spread}), kept with probability {@code frequency}. With
+ * {@code spacing = floor(sqrt(n))}, {@code separation} 0 (the candidate may be any chunk of the region, so
+ * neighbours are possible, as in 1.7) and {@code frequency = spacing^2 / n}, every chunk is a site with probability
+ * exactly {@code 1/n} (the antenna, n 250: spacing 15, frequency 0.9; the library, n 64: spacing 8, frequency 1).
+ * Modern placement cannot give 1.7's independence: two sites never share a region. The biome test runs on the
+ * candidate (biome tag), as 1.7's ran before its roll, so the per-chunk rate inside the right biomes is 1/n in both.
  *
  * <p><b>Biomes.</b> 1.7 tested {@code biome.temperature}, {@code biome.rainfall} and {@code canSpawnLightningBolt()}
  * (rain that does not fall as snow). {@link #CLIMATE} gives every vanilla overworld biome its 1.7 counterpart's values
@@ -44,7 +44,7 @@ import static dev.golem.core.dejson.Features.rarity;
  * modded biome the same three questions, so each climate tag also lists {@code #hbm:biome_dictionary/overworld} (see
  * {@code NTMStructureDeclarations}) and {@link LegacyDungeonStructure} runs the rule on the biome at the site: a table
  * biome through its row, any other through its own temperature, rain and downfall ({@code LegacyClimate}). The jungle
- * dungeon stays 1.7's identity test (three vanilla jungles); the unrestricted ones take every overworld biome.
+ * dungeon keeps 1.7's identity test (three vanilla jungles); the unrestricted ones take every overworld biome.
  *
  * <p><b>Scattered blocks</b> ({@link com.hbm.world.feature.DungeonBlockFeature}): one configured and placed feature
  * each ({@code rarity_filter} = the 1.7 chance, {@code in_square}, {@code heightmap MOTION_BLOCKING} = 1.7's
@@ -198,7 +198,7 @@ public final class LegacyDungeonDeclarations {
         return out;
     }
 
-    // ------------------------------------------------------------------------------------------------ declaration
+    // Declarations
 
     public static void declare() {
         if (declared) return;
@@ -235,7 +235,7 @@ public final class LegacyDungeonDeclarations {
             Data.declare("data/" + NS + "/worldgen/structure/" + id + ".json", structure);
 
             // hbm:config_spread "dungeon:<id>": spacing(n) / separation 0 / keep chance frequency(n), n read from
-            // hbm.cfg (4.xx_*Spawn) at generation (History §19ek-hooks)
+            // hbm.cfg (4.xx_*Spawn) at generation
             JsonObject placement = new JsonObject();
             placement.addProperty("type", NS + ":config_spread");
             placement.addProperty("salt", dungeon.salt());
@@ -265,7 +265,7 @@ public final class LegacyDungeonDeclarations {
         JsonObject[] onSurface = {inSquare(), heightmap("MOTION_BLOCKING"), biome()};
         List<String> overworld = new ArrayList<>();
 
-        // every feature is listed; hbm:config reads the hbm.cfg switch and chance when the chunk generates (§19ej-8)
+        // every feature is listed; hbm:config reads the hbm.cfg switch and chance when the chunk generates
         overworld.add(gated("locked_safe", onSurface, ModBiomeModifiers.cfgSwitch(WorldgenKeys.VAULTS),
                 ModBiomeModifiers.cfgChance(WorldgenKeys.VAULT)));
         overworld.add(gated("landmine_ap", onSurface, ModBiomeModifiers.cfgSwitch(WorldgenKeys.MINES),

@@ -1,5 +1,6 @@
 package com.hbm.entity.cart;
 
+import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.world.Compat;
 import com.hbm.inventory.container.MenuCrate;
@@ -7,6 +8,7 @@ import com.hbm.items.tool.ItemModMinecart;
 import com.hbm.items.tool.ItemModMinecart.EnumCartBase;
 import com.hbm.items.tool.ItemModMinecart.EnumMinecart;
 import com.hbm.tileentity.machine.storage.CrateType;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -37,7 +39,7 @@ public class EntityMinecartCrate extends EntityMinecartContainerBase {
         super(ModNtmEntities.CART_CRATE.get(), level, x, y, z, base);
         // 1.7 restored the crate's contents from the item's own NBT when placed
         if (stack != null && !stack.isEmpty()) {
-            NonNullList<ItemStack> carried = dev.golem.core.world.ItemStacks.carriedItems(stack, getItemStacks().size());
+            NonNullList<ItemStack> carried = ItemStacks.carriedItems(stack, getItemStacks().size());
             for (int i = 0; i < carried.size(); i++) getItemStacks().set(i, carried.get(i));
         }
     }
@@ -51,16 +53,16 @@ public class EntityMinecartCrate extends EntityMinecartContainerBase {
         List<ItemStack> held = List.copyOf(getItemStacks());
         boolean any = held.stream().anyMatch(s -> !s.isEmpty());
         clearContent();
-        dev.golem.core.world.Compat.kill(this, level);
+        Compat.kill(this, level);
 
         if (!Compat.entityDrops(level)) return;
 
         ItemStack stack = getCartItem();
-        if (hasCustomName()) dev.golem.core.world.ItemStacks.setCustomName(stack, getCustomName());
+        if (hasCustomName()) ItemStacks.setCustomName(stack, getCustomName());
 
         ItemStack packed = stack.copy();
-        if (any) dev.golem.core.world.ItemStacks.setCarriedItems(packed, held);
-        boolean oversize = dev.golem.core.world.ItemStacks.compressedSize(packed, level.registryAccess()) > 6000;
+        if (any) ItemStacks.setCarriedItems(packed, held);
+        boolean oversize = ItemStacks.compressedSize(packed, level.registryAccess()) > 6000;
 
         if (oversize) {
             // 1.7: also dropped the packed cart beside a bonus empty one; the block crate's own guard ejects the hold
@@ -85,7 +87,7 @@ public class EntityMinecartCrate extends EntityMinecartContainerBase {
 
     @Override
     public BlockState getDefaultDisplayBlockState() {
-        return com.hbm.blocks.machine.storage.ModStorageBlocks.crate_steel.get().defaultBlockState();
+        return ModStorageBlocks.crate_steel.get().defaultBlockState();
     }
 
     @Override

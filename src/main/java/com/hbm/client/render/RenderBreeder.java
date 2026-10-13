@@ -5,6 +5,7 @@ import com.hbm.tileentity.machine.TileEntityMachineReactorBreeding;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -20,8 +21,8 @@ import java.util.Random;
 public final class RenderBreeder extends MachineObjRenderer<TileEntityMachineReactorBreeding> {
 
     public RenderBreeder() {
-        super(90F, 1F, new ModelDef(dev.golem.core.Ids.of(Constants.MOD_ID, "models/reactors/breeder.obj"),
-                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/breeder.png"), true));
+        super(90F, 1F, new ModelDef(Ids.of(Constants.MOD_ID, "models/reactors/breeder.obj"),
+                Ids.of(Constants.MOD_ID, "textures/models/machines/breeder.png"), true));
     }
 
     /** The machine state plus whether the breeder is mid-cycle. */

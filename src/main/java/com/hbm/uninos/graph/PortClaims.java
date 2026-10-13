@@ -4,6 +4,7 @@ import com.hbm.lib.ForgeDirection;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.core.BlockPos;
@@ -31,12 +32,12 @@ import java.util.ArrayList;
  * pipe stands at.
  *
  * <p>A user class that never claims a role for a fluid (or for power) keeps the face rule for it: every face its
- * {@code canConnect} opens. That is the port's own content that never had per-port calls, and anything still
- * missing its 1.7 calls; it is what every machine did before this table existed, never less. Which classes those are
- * is learnt, per class, role and fluid, and never assumed: the first time a net (or a foreign pipe) has something to
- * move for such a triple and no claim of it was ever made, the triple waits {@link #GRACE_TICKS} without a role, as a
- * 1.7 machine had none before its first {@code trySubscribe}; a claim in that time makes it per port for good,
- * otherwise it falls back to the face rule (and still becomes per port at its first claim).
+ * {@code canConnect} opens. That covers the port's own content that never had per-port calls, and anything still
+ * missing its 1.7 calls. Which classes those are is learnt per class, role and fluid, never assumed: the first
+ * time a net (or a foreign pipe) has something to move for such a triple and no claim of it was ever made, the
+ * triple waits {@link #GRACE_TICKS} without a role, as a 1.7 machine had none before its first
+ * {@code trySubscribe}. A claim in that time makes it per port for good; otherwise it falls back to the face
+ * rule (and still becomes per port at its first claim).
  */
 public final class PortClaims {
 
@@ -67,8 +68,8 @@ public final class PortClaims {
     private static final Reference2ObjectOpenHashMap<Class<?>, ReferenceOpenHashSet<Object>> SUBSCRIBES = new Reference2ObjectOpenHashMap<>();
 
     /** Per user class, per role: when a net first had something to move for an unlearnt fluid, in server ticks. */
-    private static final Reference2ObjectOpenHashMap<Class<?>, it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap<Object>> PROVIDES_SEEN = new Reference2ObjectOpenHashMap<>();
-    private static final Reference2ObjectOpenHashMap<Class<?>, it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap<Object>> SUBSCRIBES_SEEN = new Reference2ObjectOpenHashMap<>();
+    private static final Reference2ObjectOpenHashMap<Class<?>, Reference2LongOpenHashMap<Object>> PROVIDES_SEEN = new Reference2ObjectOpenHashMap<>();
+    private static final Reference2ObjectOpenHashMap<Class<?>, Reference2LongOpenHashMap<Object>> SUBSCRIBES_SEEN = new Reference2ObjectOpenHashMap<>();
 
     private final Long2ObjectOpenHashMap<ArrayList<Claim>> byCell = new Long2ObjectOpenHashMap<>();
     private long lastSweep;
@@ -87,9 +88,7 @@ public final class PortClaims {
         return claims;
     }
 
-    // ------------------------------------------------------------------------------------------------------------
     // The calls (1.7 trySubscribe / tryProvide / tryUnsubscribe)
-    // ------------------------------------------------------------------------------------------------------------
 
     /**
      * Records that {@code user} plays {@code role} for {@code type} at the port whose duct stands at {@code x, y, z}
@@ -138,9 +137,7 @@ public final class PortClaims {
         types.add(type);
     }
 
-    // ------------------------------------------------------------------------------------------------------------
     // The question a net asks
-    // ------------------------------------------------------------------------------------------------------------
 
     /**
      * May the net give {@code user} the role {@code role} for {@code type} through the duct cell {@code cell}, reached
@@ -158,7 +155,7 @@ public final class PortClaims {
         if (!(level instanceof ServerLevel server)) return false;
         long now = server.getServer().getTickCount();
         var seen = (role == PROVIDE ? PROVIDES_SEEN : SUBSCRIBES_SEEN).get(cls);
-        if (seen == null) (role == PROVIDE ? PROVIDES_SEEN : SUBSCRIBES_SEEN).put(cls, seen = new it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap<>(4));
+        if (seen == null) (role == PROVIDE ? PROVIDES_SEEN : SUBSCRIBES_SEEN).put(cls, seen = new Reference2LongOpenHashMap<>(4));
         if (!seen.containsKey(type)) {
             seen.put(type, now);
             return false;

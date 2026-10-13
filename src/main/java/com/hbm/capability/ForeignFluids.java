@@ -5,6 +5,7 @@ import com.hbm.api.fluidmk2.FluidNetwork;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.fluidmk2.IFluidDirectionalMK2;
+import com.hbm.api.fluidmk2.IFluidMultiUserMK2;
 import com.hbm.api.fluidmk2.IFluidPipeMK2;
 import com.hbm.api.fluidmk2.IFluidProviderMK2;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
@@ -46,7 +47,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * HBM's machines and container items on the loaders' standard fluid capabilities (History section 19ek-fluids), so
+ * HBM's machines and container items on the loaders' standard fluid capabilities, so
  * other mods' pipes, tanks and probes can see and move HBM fluids. Core's {@link FluidExposure} owns the loader
  * spellings (NeoForge 26.1/1.21.1, Forge 1.20.1, Fabric's Transfer API with droplets); this class only says what an
  * HBM machine and an HBM container are, in HBM's own terms.
@@ -83,9 +84,7 @@ public final class ForeignFluids {
         FluidExposure.exposeItems(CONTAINERS, item -> item instanceof IFillableItem || isHbm(item));
     }
 
-    // ------------------------------------------------------------------------------------------------------------
     // Machines
-    // ------------------------------------------------------------------------------------------------------------
 
     /** HBM blocks that can be or front a fluid machine: block entities and folded multiblock connector cells. */
     private static boolean carriesFluids(Block block) {
@@ -104,7 +103,7 @@ public final class ForeignFluids {
         BlockEntity be = candidate(level, pos, side);
         if (!(be instanceof IFluidUserMK2)) return null;
         // the user this face reaches, as for a duct (a machine with several users, IFluidMultiUserMK2)
-        IFluidUserMK2 user = com.hbm.api.fluidmk2.IFluidMultiUserMK2.resolve(be, pos, side);
+        IFluidUserMK2 user = IFluidMultiUserMK2.resolve(be, pos, side);
         if (user == null) return null;
         FluidTankNTM[] tanks = user.getAllTanks();
         if (tanks == null || tanks.length == 0) return null;
@@ -285,9 +284,7 @@ public final class ForeignFluids {
         }
     }
 
-    // ------------------------------------------------------------------------------------------------------------
     // Container items
-    // ------------------------------------------------------------------------------------------------------------
 
     private static volatile @Nullable Set<Item> rowItems;
 

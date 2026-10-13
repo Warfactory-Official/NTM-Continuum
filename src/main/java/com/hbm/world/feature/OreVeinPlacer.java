@@ -12,12 +12,10 @@ import java.util.function.Predicate;
 
 /**
  * The 1.12.2 ore-vein placer: {@code DungeonToolbox.generateOre} driving
- * {@code WorldGenMinableNonCascade}, whose body is a verbatim copy of vanilla 1.12's
+ * {@code WorldGenMinableNonCascade}, whose body is a copy of vanilla 1.12's
  * {@code WorldGenMinable} ellipsoid.
  *
- * <p>This replaces the port's earlier placeholder, which walked a random 3×3×3 step per block and
- * produced visibly wrong vein shapes. The real algorithm sweeps a line at a random horizontal angle
- * and fills a swelling ellipsoid around it:
+ * <p>The algorithm sweeps a line at a random horizontal angle and fills a swelling ellipsoid around it:
  *
  * <pre>
  *   f  = rand.nextFloat() * PI                      // vein bearing
@@ -28,7 +26,7 @@ import java.util.function.Predicate;
  *                d10 = (sin(PI * i/n) + 1) * d9 + 1 // thickest in the middle
  * </pre>
  *
- * <p><b>The {@code +8} offsets are upstream behaviour, kept verbatim.</b> They came along when HBM
+ * <p><b>The {@code +8} offsets are upstream behaviour, kept as is.</b> They came along when HBM
  * copied vanilla's generator, where the caller passed a chunk-corner position; here the caller already
  * picks a random in-chunk x/z, so the effective vein centre sits 8 blocks off the chosen point. Removing
  * it would shift every vein in the mod.
@@ -37,7 +35,7 @@ public final class OreVeinPlacer {
 
     private OreVeinPlacer() {}
 
-    // ---------------------------------------------------------------- replaceable predicates
+    // Replaceable predicates
 
     /**
      * The old {@code WorldUtil.STONE_PREDICATE}: stone plus the <i>natural</i> stone variants
@@ -59,12 +57,12 @@ public final class OreVeinPlacer {
     /** End veins target end stone exactly, as upstream. */
     public static final Predicate<BlockState> END_STONE = state -> state.is(Blocks.END_STONE);
 
-    /** A vein that replaces one exact block — the gneiss family targets {@code stone_gneiss}. */
+    /** A vein that replaces one exact block: the gneiss family targets {@code stone_gneiss}. */
     public static Predicate<BlockState> exactly(Block block) {
         return state -> state.is(block);
     }
 
-    // ---------------------------------------------------------------- the driver
+    // The driver
 
     /**
      * {@code DungeonToolbox.generateOre}: {@code count} veins, each at a random in-chunk x/z and
@@ -84,7 +82,7 @@ public final class OreVeinPlacer {
     }
 
     /**
-     * One vein — the vanilla ellipsoid sweep, verbatim. Writes with flags {@code 2 | 16} (send to
+     * One vein: the vanilla ellipsoid sweep. Writes with flags {@code 2 | 16} (send to
      * clients, skip neighbour updates), matching upstream.
      */
     public static void placeVein(WorldGenLevel level, RandomSource rand, int x, int y, int z, int numberOfBlocks,
@@ -140,9 +138,9 @@ public final class OreVeinPlacer {
 
     /**
      * A 26.1 feature may only write inside the origin chunk ± 1 (writing further corrupts neighbouring
-     * chunks or deadlocks generation). The 1.12 generator had no such rule — it used a deferred
+     * chunks or deadlocks generation). The 1.12 generator had no such rule: it used a deferred
      * "phased structure" scheduler to write across chunk borders later. Veins are small enough that
-     * clamping is the faithful-enough answer; the same clamp the oil-sand bubble already uses.
+     * clamping is close enough to 1.12; the oil-sand bubble uses the same clamp.
      */
     private static boolean isWritable(WorldGenLevel level, BlockPos pos) {
         return level.hasChunk(pos.getX() >> 4, pos.getZ() >> 4)

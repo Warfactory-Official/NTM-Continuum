@@ -16,6 +16,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -36,7 +37,7 @@ public class ItemLeadBox extends CompatItem {
     }
 
     @Override
-    protected int compatUseDuration(ItemStack stack, net.minecraft.world.entity.LivingEntity entity) {
+    protected int compatUseDuration(ItemStack stack, LivingEntity entity) {
         return 1;
     }
 

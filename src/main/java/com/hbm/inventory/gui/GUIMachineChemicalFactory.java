@@ -6,8 +6,12 @@ import com.hbm.inventory.recipes.ChemicalPlantRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBlueprints;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalFactory;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -18,12 +22,12 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 import java.util.Optional;
 
-/** The 248x216 four-lane Chemical Factory screen — 1.7.10 {@code GUIMachineChemicalFactory} ({@code processing/gui_chemical_factory.png}). */
+/** The 248x216 four-lane Chemical Factory screen, ported from 1.7.10 {@code GUIMachineChemicalFactory} ({@code processing/gui_chemical_factory.png}). */
 public class GUIMachineChemicalFactory
-        extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineChemicalFactory>
+        extends CompatContainerScreen<ContainerMachineChemicalFactory>
         implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of(
+    private static final Identifier TEXTURE = Ids.of(
             "hbm", "textures/gui/processing/gui_chemical_factory.png");
 
     public GUIMachineChemicalFactory(ContainerMachineChemicalFactory menu, Inventory playerInventory,
@@ -101,7 +105,7 @@ public class GUIMachineChemicalFactory
         GuiDraw.text(graphics, font, playerInventoryTitle, 26, imageHeight - 96 + 2, 0xFF404040, false);
     }
 
-    /** 1.7 {@code renderTank(guiLeft + x, guiTop + y + height, ...)} — the 1.7 call passes the bottom edge. */
+    /** 1.7 {@code renderTank(guiLeft + x, guiTop + y + height, ...)}: the 1.7 call passes the bottom edge. */
     private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y, int width, int height) {
         GuiUtil.tank(graphics, tank, leftPos + x, topPos + y + height, width, height);
     }
@@ -155,7 +159,7 @@ public class GUIMachineChemicalFactory
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         TileEntityMachineChemicalFactory factory = menu.getFactory();
         if (factory == null) return false;
         for (int lane = 0; lane < TileEntityMachineChemicalFactory.LANES; lane++) {
@@ -171,7 +175,7 @@ public class GUIMachineChemicalFactory
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return menu.getFactory();
     }
 }

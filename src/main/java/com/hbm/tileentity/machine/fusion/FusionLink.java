@@ -11,10 +11,10 @@ import org.jspecify.annotations.Nullable;
 /**
  * The fusion beams: a klystron to a torus, and a torus to whatever it powers.
  *
- * <p>These were the last two things on UNINOS, and they were never distribution — both nets had an
- * empty {@code update()}. All they ever did was answer "is there a machine at the coordinate my beam
- * lands on", which the nodespace did by giving every machine a node and linking two whose coordinates
- * coincided. A whole per-tick graph scan for a question that is one map lookup.
+ * <p>The 1.7 plasma and klystron nets did no distribution: both had an empty {@code update()}. All they
+ * did was answer "is there a machine at the coordinate my beam lands on", which the nodespace did by
+ * giving every machine a node and linking two whose coordinates coincided. That is a per-tick graph scan
+ * for what is one map lookup.
  *
  * <p>It is a map lookup rather than a block lookup because the coordinate a beam lands on need not hold
  * a block: the torus claims positions seven out from its core, a klystron four out from its own, and
@@ -28,8 +28,8 @@ public final class FusionLink {
 
     /**
      * Claims {@code at} for {@code owner} on {@code domains}. Idempotent and called from the machine's
-     * tick, exactly as the node creation it replaces was; the table evicts on chunk unload, which is
-     * what the node's {@code expired} flag used to mean.
+     * tick, like 1.7's node creation. The table evicts on chunk unload, which stands in for 1.7's node
+     * {@code expired} flag.
      */
     public static void claim(@Nullable Level level, BlockEntity owner, BlockPos at, int domains) {
         if (!(level instanceof ServerLevel server)) return;

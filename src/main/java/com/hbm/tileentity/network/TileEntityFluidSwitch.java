@@ -2,6 +2,7 @@ package com.hbm.tileentity.network;
 
 import com.hbm.tileentity.ModFluidNetBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import com.hbm.blocks.network.FluidSwitch;
 
@@ -12,7 +13,7 @@ public class TileEntityFluidSwitch extends TileEntityFluidValve {
         super(ModFluidNetBlockEntities.SWITCH.get(), pos, state);
     }
 
-    protected TileEntityFluidSwitch(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    protected TileEntityFluidSwitch(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 }

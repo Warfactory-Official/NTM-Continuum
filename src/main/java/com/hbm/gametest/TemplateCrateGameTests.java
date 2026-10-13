@@ -6,6 +6,7 @@ import com.hbm.inventory.container.ContainerCrateTemplate;
 import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.storage.TemplateCrateLayout;
 import com.hbm.tileentity.machine.storage.TileEntityCrateTemplate;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.level.GameType;
@@ -38,7 +39,7 @@ public final class TemplateCrateGameTests {
         helper.assertTrue(crate.getItem(0).getItem() == Items.DIAMOND && crate.getItem(0).getCount() == 3,
                 "template crate inventory did not retain its contents");
 
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ContainerCrateTemplate menu = new ContainerCrateTemplate(1, player.getInventory(), crate,
                 ModMenus.CRATE_TEMPLATE::get);
         helper.assertTrue(menu.slots.size() == 63, "template-crate menu must expose 27 plus 36 slots");
@@ -56,7 +57,7 @@ public final class TemplateCrateGameTests {
                 "data/hbm/loot_table/blocks/crate_template.json"
         };
         for (String asset : assets) {
-            helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.resourceExists(TemplateCrateGameTests.class, asset),
+            helper.assertTrue(GameTestHelpers.resourceExists(TemplateCrateGameTests.class, asset),
                     "template-crate asset is missing: " + asset);
         }
         helper.succeed();

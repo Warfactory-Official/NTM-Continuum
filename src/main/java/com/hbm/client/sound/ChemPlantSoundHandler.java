@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Client-side audio for the chemical plant — a single looping operating sound while it's processing,
- * ported from the 1.12.2 client sound branch. Driven from the machine's client ticker. Client-only —
- * never referenced from a server tick path, so a dedicated server never loads it.
+ * Client-side audio for the chemical plant: a single looping operating sound while it's processing,
+ * ported from the 1.12.2 client sound branch. Driven from the machine's client ticker. Client-only.
+ * Never referenced from a server tick path, so a dedicated server never loads it.
  */
 public final class ChemPlantSoundHandler {
 

@@ -24,10 +24,11 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix3f;
 
 /**
- * 1.7 {@code RenderMassStorage}: the unit's front panel — the stored type drawn as a GUI icon, its
- * abbreviated count in green, and a red-to-green fill bar — laid flat on the block's front face in the
+ * 1.7 {@code RenderMassStorage}: the unit's front panel, the stored type drawn as a GUI icon, its
+ * abbreviated count in green, and a red-to-green fill bar, laid flat on the block's front face in the
  * face's own 16-pixel space, pushed 0.005 out of it against z-fighting. Everything is full-bright (1.7
  * sets the lightmap to 240/240).
  */
@@ -130,12 +131,12 @@ public final class RenderMassStorage implements CompatBER<TileEntityMassStorage,
      * every visible face's normal onto the panel's outward axis, which is what 26.1 computes and
      * normalises. 1.20.1's {@code PoseStack.scale} takes a cube root of the negative scale product and
      * never normalises, so the same scale lights the icon from a garbage direction (a visibly dark icon).
-     * Writing the squashed matrix directly — the face's rotation, the in-plane axes reduced 10,000:1 —
+     * Writing the squashed matrix directly (the face's rotation, the in-plane axes reduced 10,000:1)
      * gives every node the same outward-facing normals: normalised on 1.21+, clamped to the unit axis by
      * 1.20.1's byte packing.
      */
     private static void flattenedNormals(PoseStack pose, float panelAngle) {
-        pose.last().normal().set(new org.joml.Matrix3f()
+        pose.last().normal().set(new Matrix3f()
                 .rotateZ((float) Math.PI)
                 .rotateY((float) Math.toRadians(panelAngle))
                 .scale(0.01F, -0.01F, -10000F));

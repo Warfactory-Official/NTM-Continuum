@@ -8,6 +8,7 @@ import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityCrucible;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -24,10 +25,10 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Renderer for the crucible — a port of the 1.12.2 {@code RenderCrucible} TESR. Draws the basin OBJ,
+ * Renderer for the crucible, a port of the 1.12.2 {@code RenderCrucible} TESR. Draws the basin OBJ,
  * the molten pool surface (the untinted lava texture at a height proportional to the total stored
- * mass, fullbright) and the two pour streams (thin tinted columns at the front/back spouts, replacing
- * the old {@code HbmEffectNT.Foundry} particle).
+ * mass, fullbright) and the two pour streams (thin tinted columns at the front/back spouts, in place of
+ * 1.12.2's {@code HbmEffectNT.Foundry} particle).
  */
 public class CrucibleRenderer extends GemBER<TileEntityCrucible, CrucibleRenderState> {
 
@@ -43,10 +44,10 @@ public class CrucibleRenderer extends GemBER<TileEntityCrucible, CrucibleRenderS
     private final RenderType streamType;
 
     public CrucibleRenderer() {
-        Identifier obj = dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/crucible.obj");
-        Identifier tex = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/crucible_heat.png");
-        Identifier lavaPool = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/lava.png");
-        Identifier lavaGray = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/lava_gray.png");
+        Identifier obj = Ids.of(Constants.MOD_ID, "models/machines/crucible.obj");
+        Identifier tex = Ids.of(Constants.MOD_ID, "textures/models/machines/crucible_heat.png");
+        Identifier lavaPool = Ids.of(Constants.MOD_ID, "textures/models/machines/lava.png");
+        Identifier lavaGray = Ids.of(Constants.MOD_ID, "textures/models/machines/lava_gray.png");
         this.model = WavefrontObj.load(obj);
         this.basin = Surface.cutout(tex.toString());
         this.lava = Surface.emissive(lavaPool.toString());

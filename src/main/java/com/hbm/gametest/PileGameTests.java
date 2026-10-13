@@ -1,5 +1,6 @@
 package com.hbm.gametest;
 
+import com.hbm.api.block.IToolable;
 import com.hbm.blocks.machine.pile.BlockPile;
 import com.hbm.blocks.machine.pile.BlockPileDevice;
 import com.hbm.blocks.machine.pile.ModPileBlocks;
@@ -14,6 +15,7 @@ import com.hbm.tileentity.machine.pile.TileEntityPileCore.PileChannelType;
 import com.hbm.tileentity.machine.pile.TileEntityPileCore.PileOrientation;
 import com.hbm.tileentity.machine.pile.TileEntityPileLoader;
 import com.hbm.tileentity.machine.pile.TileEntityPileVent;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -21,6 +23,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -59,7 +63,7 @@ public final class PileGameTests {
         assertMeta(helper, new BlockPos(6, 5, 6), BlockPile.META_EDGE);
         assertMeta(helper, new BlockPos(4, 3, 4), BlockPile.META_DUMMY);
 
-        TileEntityPileBaseMK2 cell = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityPileBaseMK2 cell = GameTestHelpers.blockEntity(
                 helper, new BlockPos(4, 3, 4), TileEntityPileBaseMK2.class);
         helper.assertTrue(cell != null && cell.getCore() == core, "Pile cell did not point at its core");
         helper.succeed();
@@ -67,7 +71,7 @@ public final class PileGameTests {
 
     public static void channels(GameTestHelper helper) {
         TileEntityPileCore core = assemble(helper);
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
 
         drill(helper, player, FUEL_MOUTH, Direction.NORTH);
         drill(helper, player, CONTROL_MOUTH, Direction.UP);
@@ -103,7 +107,7 @@ public final class PileGameTests {
     /** A neutron source alone makes flux; a breeding rod beside it takes burn-up and heats the channel. */
     public static void reaction(GameTestHelper helper) {
         TileEntityPileCore core = assemble(helper);
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         drill(helper, player, FUEL_MOUTH, Direction.NORTH);
 
         PileChannel fuel = core.fuelChannels.get(0);
@@ -133,7 +137,7 @@ public final class PileGameTests {
     /** The loader docks to the fuel mouth and reports the far rod; the control rod docks to its channel. */
     public static void devices(GameTestHelper helper) {
         TileEntityPileCore core = assemble(helper);
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         drill(helper, player, FUEL_MOUTH, Direction.NORTH);
         drill(helper, player, CONTROL_MOUTH, Direction.UP);
         drill(helper, player, VENT_MOUTH, Direction.EAST);
@@ -267,13 +271,13 @@ public final class PileGameTests {
             }
         }
 
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         boolean handled = ModPileBlocks.pile_brick.get().onScrew(helper.getLevel(), player,
                 helper.absolutePos(CORE), Direction.NORTH, Vec3.ZERO, InteractionHand.MAIN_HAND,
-                com.hbm.api.block.IToolable.ToolType.HAND_DRILL);
+                IToolable.ToolType.HAND_DRILL);
         helper.assertTrue(handled, "Hand drill did not act on the graphite box");
 
-        TileEntityPileCore core = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityPileCore core = GameTestHelpers.blockEntity(
                 helper, CORE, TileEntityPileCore.class);
         helper.assertTrue(core != null, "Pile core BlockEntity was not created");
         return core;
@@ -282,24 +286,24 @@ public final class PileGameTests {
     private static void drill(GameTestHelper helper, Player player, BlockPos relative, Direction side) {
         boolean handled = ModPileBlocks.pile_block.get().onScrew(helper.getLevel(), player,
                 helper.absolutePos(relative), side, Vec3.ZERO, InteractionHand.MAIN_HAND,
-                com.hbm.api.block.IToolable.ToolType.HAND_DRILL);
+                IToolable.ToolType.HAND_DRILL);
         helper.assertTrue(handled, "Hand drill was refused at " + relative + " from " + side);
     }
 
-    private static <T extends net.minecraft.world.level.block.entity.BlockEntity> T device(
+    private static <T extends BlockEntity> T device(
             GameTestHelper helper, BlockPos relative, int meta, Class<T> type) {
         helper.setBlock(relative, ModPileBlocks.pile_device.get().defaultBlockState()
                 .setValue(BlockPileDevice.META, meta));
-        T device = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, relative, type);
+        T device = GameTestHelpers.blockEntity(helper, relative, type);
         helper.assertTrue(device != null, "Pile device BlockEntity was not created at " + relative);
         return device;
     }
 
-    private interface Ticker<T extends net.minecraft.world.level.block.entity.BlockEntity> {
-        void tick(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, T device);
+    private interface Ticker<T extends BlockEntity> {
+        void tick(Level level, BlockPos pos, BlockState state, T device);
     }
 
-    private static <T extends net.minecraft.world.level.block.entity.BlockEntity> void tick(
+    private static <T extends BlockEntity> void tick(
             GameTestHelper helper, BlockPos relative, T device, Ticker<T> ticker) {
         BlockPos absolute = helper.absolutePos(relative);
         ticker.tick(helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), device);
@@ -317,6 +321,6 @@ public final class PileGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        return dev.golem.core.gametest.GameTestHelpers.resourceExists(PileGameTests.class, path);
+        return GameTestHelpers.resourceExists(PileGameTests.class, path);
     }
 }

@@ -2,6 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.config.GeneralConfig;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.BlastFurnaceRecipesNT;
 import com.hbm.inventory.recipes.DiFurnaceRecipes;
@@ -16,6 +17,8 @@ import com.hbm.inventory.recipes.PrecAssRecipes;
 import com.hbm.inventory.recipes.loader.DataGenericRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.hbm.inventory.recipes.loader.GenericRecipes;
+import com.hbm.items.ModFuelItems;
 import dev.golem.core.gametest.GameTests;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -23,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +36,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 /**
- * The GenericRecipe machine tables as datapack tables (M2, R-A): each loads from {@code data/hbm/recipe/<machine>}
- * exactly as converted from its former Java table (row counts per config mode, sample rows field for field, the
- * indexes a table derives), the config modes swap the expensive inputs, 528 pools and conditional rows on a rebuild,
- * and every row survives its file form and the client sync form.
+ * The GenericRecipe machine tables as datapack tables: each loads from {@code data/hbm/recipe/<machine>}
+ * and is checked against the Java tables' values (row counts per config mode, sample rows field for field, the
+ * indexes a table derives); the config modes swap the expensive inputs, 528 pools and conditional rows on a
+ * rebuild; and every row survives its file form and the client sync form.
  */
 public final class GenericRecipeTableGameTests {
 
@@ -97,8 +101,8 @@ public final class GenericRecipeTableGameTests {
         }
     }
 
-    /** Rows per table and config mode of the Java tables converted on 2026-10-08 (fluid packs included). */
-    static final Map<String, Integer> EXPECTED_COUNTS = new java.util.HashMap<>();
+    /** Rows per table and config mode of the Java tables (fluid packs included). */
+    static final Map<String, Integer> EXPECTED_COUNTS = new HashMap<>();
 
     static {
         EXPECTED_COUNTS.put("assembly_machine.noex_no528", 615);
@@ -162,7 +166,7 @@ public final class GenericRecipeTableGameTests {
         helper.succeed();
     }
 
-    /** {table, mode, name, describe} of rows of the Java tables converted on 2026-10-08 (row conditions not shown). */
+    /** {table, mode, name, describe} of rows of the Java tables (row conditions not shown). */
     static final String[][] SAMPLE_ROWS = {
             {"assembly_machine", "noex_no528", "ass.gascent",
                     "ass.gascent d=400 p=100 in=hbm:centrifuge_elementx4,#c:ingots/any_plasticx8,#c:ingots/deshx2,#c:plates/steelx8,hbm:circuit_advancedx1, fin= out=hbm:machine_gascentx1%1.0, fout= icon=- named=false wrap=null pools=- group=null ex=hbm:centrifuge_elementx4,mat:steel/WELDEDPLATEx4,hbm:item_expensive_heavy_framex1,hbm:item_expensive_circuitx1, pools528=528.gascent"},
@@ -487,7 +491,7 @@ public final class GenericRecipeTableGameTests {
             helper.assertTrue(gascent.inputItemEx != null && gascent.inputItem == gascent.inputItemEx,
                     "expensive mode puts ass.gascent's expensive inputs in effect");
             helper.assertTrue(gascent.isPartOfPool("528.gascent")
-                            && com.hbm.inventory.recipes.loader.GenericRecipes.blueprintPools.get("528.gascent").contains("ass.gascent"),
+                            && GenericRecipes.blueprintPools.get("528.gascent").contains("ass.gascent"),
                     "528 mode puts ass.gascent in its 528 pool");
             helper.assertTrue(AssemblyMachineRecipes.INSTANCE.getRecipe("ass.overdrive1") == null,
                     "528 mode drops the assembly overdrive rows (1.7 no528 block)");
@@ -496,7 +500,7 @@ public final class GenericRecipeTableGameTests {
         });
         GenericRecipe gascent = AssemblyMachineRecipes.INSTANCE.getRecipe("ass.gascent");
         helper.assertTrue(gascent.inputItem != gascent.inputItemEx && !gascent.isPooled()
-                        && !com.hbm.inventory.recipes.loader.GenericRecipes.blueprintPools.getOrDefault("528.gascent", List.of()).contains("ass.gascent")
+                        && !GenericRecipes.blueprintPools.getOrDefault("528.gascent", List.of()).contains("ass.gascent")
                         && AssemblyMachineRecipes.INSTANCE.getRecipe("ass.overdrive1") != null
                         && PrecAssRecipes.INSTANCE.getRecipe("precass.chip") == null,
                 "the default modes are restored on the next rebuild");
@@ -510,7 +514,7 @@ public final class GenericRecipeTableGameTests {
         // DERIVED_END
         helper.assertTrue(DiFurnaceRecipes.getItemPower(new ItemStack(Items.COAL)) == 200
                         && DiFurnaceRecipes.getItemPower(new ItemStack(Items.LAVA_BUCKET)) == 12_800
-                        && DiFurnaceRecipes.getItemPower(new ItemStack(com.hbm.items.ModFuelItems.solid_fuel.get())) == 400
+                        && DiFurnaceRecipes.getItemPower(new ItemStack(ModFuelItems.solid_fuel.get())) == 400
                         && DiFurnaceRecipes.getItemPower(new ItemStack(Items.STICK)) == 0,
                 "DiFurnace fuel values from hbm:difurnace_fuel");
         helper.succeed();
@@ -540,7 +544,7 @@ public final class GenericRecipeTableGameTests {
     static String extra(DataGenericRecipes<?> table) {
         StringBuilder out = new StringBuilder();
         if (table == MixerRecipes.INSTANCE) {
-            for (Map.Entry<com.hbm.inventory.fluid.FluidType, MixerRecipes.MixerRecipe[]> e : MixerRecipes.recipes.entrySet()) {
+            for (Map.Entry<FluidType, MixerRecipes.MixerRecipe[]> e : MixerRecipes.recipes.entrySet()) {
                 for (MixerRecipes.MixerRecipe r : e.getValue()) {
                     out.append(e.getKey().getKey()).append(": out=").append(r.output).append(" t=").append(r.processTime)
                             .append(" f1=").append(r.input1 == null ? "-" : r.input1.type.getKey() + "x" + r.input1.fill)

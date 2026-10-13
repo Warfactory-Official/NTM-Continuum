@@ -96,13 +96,13 @@ public final class NTMComponentStructures {
         NBTStructure.registerStructure(meteorDungeon());
     }
 
-    private static JigsawPiece piece(String name, com.hbm.world.gen.nbt.NBTStructure structure, Map<String, BlockSelector> blockTable) {
+    private static JigsawPiece piece(String name, NBTStructure structure, Map<String, BlockSelector> blockTable) {
         JigsawPiece piece = new JigsawPiece(name, structure);
         piece.blockTable = blockTable;
         return piece;
     }
 
-    /** 1.7 {@code NTMWorldGenerator}: {@code meteor_dungeon}, verbatim (pools, weights, fallbacks, block tables). */
+    /** 1.7 {@code NTMWorldGenerator}: {@code meteor_dungeon} with 1.7's pools, weights, fallbacks and block tables. */
     private static SpawnCondition meteorDungeon() {
         // 1.7 shared one selector per table entry across the whole dungeon; the selectors synchronise their pick
         MeteorBricks meteorBricks = new MeteorBricks();

@@ -1,5 +1,6 @@
 package com.hbm.hazard.transformer;
 
+import com.hbm.api.data.HazardDataMaps;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Hazards attached to items from outside the registry, as lambdas — the fork's
+ * Hazards attached to items from outside the registry, as lambdas: the fork's
  * {@code HazardTransformerPostCustom} modernised.
  *
  * <p>{@link HazardSystem#register} answers "this item is radioactive". This answers the cases it
@@ -37,11 +38,11 @@ import org.jspecify.annotations.Nullable;
  * <p>Hooks run in the post phase, after overrides and mutexes have settled, so nothing downstream
  * clears what one adds. The order is multiplier, then item hooks, then tag hooks, then predicate
  * hooks, each group in registration order. A hook is handed the live entry list and edits it in
- * place; the fork's copy-and-return shape is gone, along with its pointer-equality merge.
+ * place (unlike the fork's copy-and-return shape, there is no pointer-equality merge).
  *
- * <p>The hooks are also the one part of the hazard system written by someone else, so a throwing
- * hook is caught rather than allowed to take down a resolve batch, and reported once per hook
- * instead of on every lookup — a tooltip alone would otherwise reprint it every frame.
+ * <p>Hooks are the one part of the hazard system written by someone else, so a throwing hook is
+ * caught rather than allowed to take down a resolve batch, and reported once per hook instead of on
+ * every lookup. A tooltip alone would otherwise reprint it every frame.
  *
  * <p>Every mutator drops the caches: a hook added after a stack was resolved would otherwise not be
  * seen until that slot changed again.
@@ -61,7 +62,7 @@ public final class HazardTransformerCustom implements IHazardTransformer {
     private HazardTransformerCustom() {}
 
     static {
-        com.hbm.api.data.HazardDataMaps.HAZARD_MULTIPLIER.changed.register(HazardSystem::clearCaches);
+        HazardDataMaps.HAZARD_MULTIPLIER.changed.register(HazardSystem::clearCaches);
     }
 
     public static void onItem(final Item item, final BiConsumer<ItemStack, List<HazardEntry>> hook) {
@@ -82,7 +83,7 @@ public final class HazardTransformerCustom implements IHazardTransformer {
         return remove(TAG_HOOKS, tag, hook);
     }
 
-    /** A hook for stacks no item or tag key can select — component state, durability, enchantments. */
+    /** A hook for stacks no item or tag key can select: component state, durability, enchantments. */
     public static void onMatching(final Predicate<ItemStack> when, final BiConsumer<ItemStack, List<HazardEntry>> hook) {
         MATCHERS.add(new Matcher(when, hook));
         HazardSystem.clearCaches();
@@ -138,7 +139,7 @@ public final class HazardTransformerCustom implements IHazardTransformer {
         final Item item = stack.getItem();
         Double multiplier = MULTIPLIERS.get(item);
         // the data form (hbm:hazard_multiplier); a code multiplier set at runtime wins
-        if (multiplier == null) multiplier = com.hbm.api.data.HazardDataMaps.HAZARD_MULTIPLIER.get(item);
+        if (multiplier == null) multiplier = HazardDataMaps.HAZARD_MULTIPLIER.get(item);
         if (multiplier != null && !entries.isEmpty() && !multiplier.isNaN() && multiplier != 1D) {
             final List<HazardEntry> scaled = new ArrayList<>(entries.size());
             for (final HazardEntry entry : entries) scaled.add(entry.clone(multiplier));

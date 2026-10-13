@@ -5,6 +5,7 @@ import com.hbm.items.weapon.sedna.Crosshair;
 import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.impl.ItemGunStinger;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -15,7 +16,7 @@ import net.minecraft.world.item.ItemStack;
 public final class GunCrosshairOverlay {
 
     private static final Identifier MISC =
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/misc/overlay_misc.png");
+            Ids.of(Constants.MOD_ID, "textures/misc/overlay_misc.png");
 
     private GunCrosshairOverlay() {}
 

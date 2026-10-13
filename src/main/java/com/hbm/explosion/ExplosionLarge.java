@@ -3,6 +3,8 @@ package com.hbm.explosion;
 import com.hbm.entity.projectile.EntityShrapnel;
 import com.hbm.api.event.HbmEvents;
 import com.hbm.particle.helper.ExplosionCreator;
+import com.hbm.particle.helper.HbmEffectNT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Blocks;
@@ -26,12 +28,12 @@ import org.jspecify.annotations.Nullable;
  * explosion or a nuclear entity; this class is the garnish around it: the vanilla blast a small
  * warhead makes, and the wreckage a destroyed missile leaves behind.
  *
- * <p><b>What is ported.</b> {@link #explode} and {@link #spawnMissileDebris} — the two that change what
+ * <p><b>What is ported.</b> {@link #explode} and {@link #spawnMissileDebris}: the two that change what
  * a player ends up holding. Debris is the reason shooting a missile down is worth doing: it drops a
  * randomised share of the missile's parts plus a 1-in-10 warhead.
  *
-     * <p>The smoke, rubble and shrapnel helpers intentionally retain their old effect boundaries: the
-     * server names effects or spawns projectiles, while the client builds the particles.
+ * <p>The smoke, rubble and shrapnel helpers keep the 1.7 effect boundaries: the
+ * server names effects or spawns projectiles, while the client builds the particles.
  */
 public final class ExplosionLarge {
 
@@ -48,7 +50,7 @@ public final class ExplosionLarge {
 
     /**
      * Scatters a missile's parts. Each stack in {@code debris} drops a random count from 0 to its own
-     * size, and {@code rareDrop} — the warhead — lands one time in ten.
+     * size, and {@code rareDrop} (the warhead) lands one time in ten.
      *
      * <p>The items are given the missile's own motion plus a gaussian spread and are then advanced two
      * ticks' worth by hand, which is upstream's way of getting them clear of the fireball before the
@@ -91,7 +93,7 @@ public final class ExplosionLarge {
         }
     }
 
-    // --- upstream's debris counts ---
+    // Upstream's debris counts
 
     /**
      * 1.7 :256-258. {@code -i/15} divides as INTs, so the exponent is a whole number: strength 10 yields 15
@@ -111,31 +113,31 @@ public final class ExplosionLarge {
 
     /** Sends the legacy expanding smoke cloud to tracking clients. */
     public static void spawnParticles(Level world, double x, double y, double z, int count) {
-        net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+        CompoundTag data = new CompoundTag();
         data.putInt("count", count);
-        com.hbm.particle.helper.HbmEffectNT.Smoke_Cloud.send(world, x, y, z, data);
+        HbmEffectNT.Smoke_Cloud.send(world, x, y, z, data);
     }
 
     /** 1.7 spawnParticlesRadial (:34): smoke mode "radial". */
     public static void spawnParticlesRadial(Level world, double x, double y, double z, int count) {
-        net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+        CompoundTag data = new CompoundTag();
         data.putInt("count", count);
-        com.hbm.particle.helper.HbmEffectNT.Smoke_Radial.send(world, x, y, z, data);
+        HbmEffectNT.Smoke_Radial.send(world, x, y, z, data);
     }
 
     /** 1.7 spawnFoam (:43): smoke mode "foamSplash". 1.7 sends no "range", so every bubble starts at the centre. */
     public static void spawnFoam(Level world, double x, double y, double z, int count) {
-        net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+        CompoundTag data = new CompoundTag();
         data.putInt("count", count);
-        com.hbm.particle.helper.HbmEffectNT.Smoke_FoamSplash.send(world, x, y, z, data);
+        HbmEffectNT.Smoke_FoamSplash.send(world, x, y, z, data);
     }
 
     /** 1.7 spawnShock (:52): smoke mode "shock", sent half a block up. */
     public static void spawnShock(Level world, double x, double y, double z, int count, double strength) {
-        net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+        CompoundTag data = new CompoundTag();
         data.putInt("count", count);
         data.putDouble("strength", strength);
-        com.hbm.particle.helper.HbmEffectNT.Smoke_Shock.send(world, x, y + 0.5, z, data);
+        HbmEffectNT.Smoke_Shock.send(world, x, y + 0.5, z, data);
     }
 
     /** Spawns the legacy stone fragments used by dirty blasts. */
@@ -149,7 +151,7 @@ public final class ExplosionLarge {
             double motionX = random.nextGaussian() * 0.75D * (1 + count / 50);
             double motionZ = random.nextGaussian() * 0.75D * (1 + count / 50);
             rubble.setDeltaMovement(motionX, motionY, motionZ);
-            rubble.setBlockState(net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+            rubble.setBlockState(Blocks.STONE.defaultBlockState());
             world.addFreshEntity(rubble);
         }
     }
@@ -159,8 +161,8 @@ public final class ExplosionLarge {
         if (count <= 0) return;
         var random = world.getRandom();
         for (int i = 0; i < count; i++) {
-            com.hbm.entity.projectile.EntityShrapnel shrapnel =
-                    new com.hbm.entity.projectile.EntityShrapnel(com.hbm.entity.ModEntities.SHRAPNEL.get(), world);
+            EntityShrapnel shrapnel =
+                    new EntityShrapnel(ModEntities.SHRAPNEL.get(), world);
             shrapnel.setPos(x, y, z);
             double motionY = ((random.nextFloat() * 0.5D) + 0.5D)
                     * (1 + count / (15 + random.nextInt(21))) + random.nextFloat() / 50D * count;
@@ -177,8 +179,8 @@ public final class ExplosionLarge {
                                            double motionX, double motionY, double motionZ, int count, double deviation) {
         var random = world.getRandom();
         for (int i = 0; i < count; i++) {
-            com.hbm.entity.projectile.EntityShrapnel shrapnel =
-                    new com.hbm.entity.projectile.EntityShrapnel(com.hbm.entity.ModEntities.SHRAPNEL.get(), world);
+            EntityShrapnel shrapnel =
+                    new EntityShrapnel(ModEntities.SHRAPNEL.get(), world);
             shrapnel.setPos(x, y, z);
             shrapnel.setDeltaMovement(motionX + random.nextGaussian() * deviation,
                     motionY + random.nextGaussian() * deviation,
@@ -205,17 +207,17 @@ public final class ExplosionLarge {
                 double x0 = x + vx * i, y0 = y + vy * i, z0 = z + vz * i;
                 pos.set((int) x0, (int) y0, (int) z0);
                 if (world.isClientSide()) continue;
-                net.minecraft.world.level.block.state.BlockState state = world.getBlockState(pos);
-                if (!state.getFluidState().isEmpty()) world.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                BlockState state = world.getBlockState(pos);
+                if (!state.getFluidState().isEmpty()) world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
                 if (state.isAir() || state.getBlock().getExplosionResistance() > 70F) continue;
-                com.hbm.entity.projectile.EntityRubble rubble =
-                        new com.hbm.entity.projectile.EntityRubble(com.hbm.entity.ModEntities.RUBBLE.get(), world);
+                EntityRubble rubble =
+                        new EntityRubble(ModEntities.RUBBLE.get(), world);
                 rubble.setPos(x0 + 0.5D, y0 + 0.5D, z0 + 0.5D);
                 rubble.setBlockState(state);
                 Vec3 pull = new Vec3(x - rubble.getX(), y - rubble.getY(), z - rubble.getZ()).normalize();
                 rubble.setDeltaMovement(pull.scale(vel));
                 world.addFreshEntity(rubble);
-                world.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
                 break;
             }
         }
@@ -225,8 +227,8 @@ public final class ExplosionLarge {
     public static void spawnTracers(Level world, double x, double y, double z, int count) {
         var random = world.getRandom();
         for (int i = 0; i < count; i++) {
-            com.hbm.entity.projectile.EntityShrapnel shrapnel =
-                    new com.hbm.entity.projectile.EntityShrapnel(com.hbm.entity.ModEntities.SHRAPNEL.get(), world);
+            EntityShrapnel shrapnel =
+                    new EntityShrapnel(ModEntities.SHRAPNEL.get(), world);
             shrapnel.setPos(x, y, z);
             double motionY = ((random.nextFloat() * 0.5D) + 0.5D)
                     * (1 + count / (15 + random.nextInt(21))) + random.nextFloat() / 50D * count * 0.25D;
@@ -238,7 +240,7 @@ public final class ExplosionLarge {
         }
     }
 
-    // --- ntm-next entity port (merge_explosion_helpers.py) ---
+    // ntm-next entity port (merge_explosion_helpers.py)
 
 
     public static void explode(Level level, double x, double y, double z, float strength, boolean cloud, boolean rubble,

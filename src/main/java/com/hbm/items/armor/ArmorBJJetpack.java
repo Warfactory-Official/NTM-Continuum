@@ -2,6 +2,7 @@ package com.hbm.items.armor;
 
 import com.hbm.handler.JetpackHandler;
 import com.hbm.items.gear.ArmorFSB;
+import com.hbm.sound.ModSounds;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.GolemArmorMaterial;
@@ -41,7 +42,7 @@ public class ArmorBJJetpack extends ArmorBJ {
             player.setDeltaMovement(player.getDeltaMovement().x, y, player.getDeltaMovement().z);
             player.fallDistance = 0;
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                    com.hbm.sound.ModSounds.IMMOLATOR_SHOOT.get(), SoundSource.PLAYERS, 0.125F, 1.5F);
+                    ModSounds.IMMOLATOR_SHOOT.get(), SoundSource.PLAYERS, 0.125F, 1.5F);
             if (!level.isClientSide()) JetpackHandler.sendExhaust(player, JetpackHandler.EXHAUST_BJ);
         } else if (player.isShiftKeyDown() && !player.onGround()) {
             var motion = player.getDeltaMovement();

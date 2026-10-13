@@ -2,7 +2,7 @@ package com.hbm.explosion;
 
 import dev.golem.core.data.Tags;
 
-import com.hbm.tags.HbmBlockTags;
+import com.hbm.lib.HbmBlockTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.level.Level;
@@ -66,7 +66,7 @@ public class ExplosionFleija {
                 pos.set(this.posX + x, this.posY + y, this.posZ + z);
                 BlockState state = this.worldObj.getBlockState(pos);
                 if (state.is(HbmBlockTags.FLEIJA_IMMUNE)) continue;
-                // 26.2: y>0 leaves a 64-block shell; spare floor.
+                // 26.1: y>0 leaves a 64-block shell; spare floor.
                 if (this.posY + y <= 0
                         && state.getBlock().getExplosionResistance() > 2_000_000F) continue;
                 this.worldObj.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
@@ -74,7 +74,7 @@ public class ExplosionFleija {
         }
     }
 
-    // 26.2: prefixed flat keys onto driver output.
+    // 26.1: prefixed flat keys onto driver output.
     public void saveToNbt(DataOut nbt, String name) {
         nbt.putInt(name + "posX", posX);
         nbt.putInt(name + "posY", posY);

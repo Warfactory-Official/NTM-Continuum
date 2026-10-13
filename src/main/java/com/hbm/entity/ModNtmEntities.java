@@ -112,6 +112,7 @@ import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.Entities;
 import dev.golem.core.registry.LivingAttributes;
 import dev.golem.core.registry.RegistryObject;
+import java.util.Objects;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -121,7 +122,7 @@ import net.minecraft.world.entity.monster.Creeper;
 /**
  * Entity types brought over from ntm-next's {@code ModEntities} (ids, hitboxes, tracking ranges and
  * attribute sets as written there, themselves the 1.7 {@code EntityMappings} values). Entities the
- * port had already registered before this wave keep their existing registry classes and ids.
+ * port had already registered keep their existing registry classes and ids.
  *
  * <p>The seven glyphid/waypoint/acid-bomb classes that registered themselves in ntm-next keep a
  * {@code TYPE} field on the class, registered through {@link #ENTITY_TYPES}, so their callers stay as
@@ -468,12 +469,12 @@ public final class ModNtmEntities {
 
     /** Touches every self-registering entity class so its {@code TYPE} lands before the registry flush. */
     public static void init() {
-        java.util.Objects.requireNonNull(EntityWaypoint.TYPE);
-        java.util.Objects.requireNonNull(EntityParasiteMaggot.TYPE);
-        java.util.Objects.requireNonNull(EntityGlyphidBlaster.TYPE);
-        java.util.Objects.requireNonNull(EntityGlyphidBombardier.TYPE);
-        java.util.Objects.requireNonNull(EntityGlyphidBrawler.TYPE);
-        java.util.Objects.requireNonNull(EntityGlyphidDigger.TYPE);
-        java.util.Objects.requireNonNull(EntityAcidBomb.TYPE);
+        Objects.requireNonNull(EntityWaypoint.TYPE);
+        Objects.requireNonNull(EntityParasiteMaggot.TYPE);
+        Objects.requireNonNull(EntityGlyphidBlaster.TYPE);
+        Objects.requireNonNull(EntityGlyphidBombardier.TYPE);
+        Objects.requireNonNull(EntityGlyphidBrawler.TYPE);
+        Objects.requireNonNull(EntityGlyphidDigger.TYPE);
+        Objects.requireNonNull(EntityAcidBomb.TYPE);
     }
 }

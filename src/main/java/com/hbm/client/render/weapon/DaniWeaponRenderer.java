@@ -26,9 +26,9 @@ public final class DaniWeaponRenderer extends WeaponRenderer {
 
     /*
      * The item base has already applied the current hand's display transform before this renderer is
-     * called. The old offhand copy was a second ordinary third-person item draw, so move that draw from
-     * the current hand frame into the other hand frame. These are the two hand transforms represented by
-     * gun_obj_dani_base.json, expressed in model space.
+     * called. The 1.7 offhand copy is a second ordinary third-person item draw, so that draw moves from the
+     * current hand frame into the other hand frame. These are the two hand transforms of
+     * gun_obj_dani_base.json, in model space.
      */
     private static final RelativeHand RIGHT_TO_LEFT = relativeHandTransform(
             ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
@@ -57,7 +57,7 @@ public final class DaniWeaponRenderer extends WeaponRenderer {
 
     /**
      * Which rest draws appear is {@link DaniStaticLayout}'s answer for the context, and it is not a
-     * subset of one list — a slot shows both revolvers, a hand shows this hand's and the other hand's,
+     * subset of one list: a slot shows both revolvers, a hand shows this hand's and the other hand's,
      * the head shows only the lunar one. Each is therefore its own gated subtree rather than a loop.
      */
     @Override

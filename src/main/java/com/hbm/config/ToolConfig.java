@@ -24,7 +24,7 @@ public final class ToolConfig {
     public static boolean abilityMercury = true;
     public static boolean abilityExplosion = true;
 
-    /** 1.7 {@code loadFromConfig}, category {@code 11_tools} (History §19ej-8). */
+    /** 1.7 {@code loadFromConfig}, category {@code 11_tools}. */
     public static void loadFromConfig(Configuration config) {
 
         final String CATEGORY_TOOLS = CommonConfig.CATEGORY_TOOLS;

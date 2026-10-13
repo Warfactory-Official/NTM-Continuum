@@ -1,10 +1,12 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.generic.OreDrops;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.machine.ItemScraps;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatBlock;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,6 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.storage.loot.LootParams;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -83,11 +86,11 @@ public final class MachineBoiler extends CompatBlock {
      * {@code MachineBoiler} is a plain opaque cube without a tile entity, so silk touch keeps the boiler.
      */
     @Override
-    public java.util.List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder params) {
-        if (com.hbm.blocks.generic.OreDrops.silkTouch(params)) return java.util.List.of(new ItemStack(this));
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+        if (OreDrops.silkTouch(params)) return List.of(new ItemStack(this));
         ItemStack scraps = ItemScraps.create(new Mats.MaterialStack(Mats.MAT_STEEL, MaterialShapes.INGOT.quantity));
         scraps.setCount(3 + params.getLevel().getRandom().nextInt(4));
-        return java.util.List.of(scraps);
+        return List.of(scraps);
     }
 
     @Override

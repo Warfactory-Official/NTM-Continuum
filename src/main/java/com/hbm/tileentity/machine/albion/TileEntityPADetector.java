@@ -1,9 +1,12 @@
 package com.hbm.tileentity.machine.albion;
 
+import com.hbm.advancement.AwardRegions;
+import com.hbm.advancement.HbmCriteria;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.container.ContainerPADetector;
 import com.hbm.inventory.recipes.ParticleAcceleratorRecipes;
 import com.hbm.inventory.recipes.ParticleAcceleratorRecipes.ParticleAcceleratorRecipe;
+import com.hbm.items.ModRBMKItems;
 import com.hbm.lib.DirPos;
 import com.hbm.saveddata.satellites.SatelliteDetector;
 import com.hbm.saveddata.satellites.SatelliteRayScan;
@@ -18,6 +21,7 @@ import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -26,13 +30,14 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
 /**
  * End of the beamline: the detector smashes the particle and reads the result off
- * {@link ParticleAcceleratorRecipes}. It is the strictest component in the machine — the beam must
+ * {@link ParticleAcceleratorRecipes}. It is the strictest component in the machine: the beam must
  * arrive perfectly focused, and it must carry at least the recipe's momentum, or the run ends in a
  * crash instead of a product.
  *
@@ -160,12 +165,12 @@ public class TileEntityPADetector extends TileEntityCooledBase
 
             BlockPos pos = getBlockPos();
             // 1.7 achOmega12: a digamma particle made here, every player in the box grown by 100/50/100
-            for (net.minecraft.world.item.ItemStack made : new net.minecraft.world.item.ItemStack[] {recipe.output1, recipe.output2}) {
-                if (made != null && made.is(com.hbm.items.ModRBMKItems.particle_digamma.get())
-                        && level instanceof net.minecraft.server.level.ServerLevel server) {
-                    com.hbm.advancement.AwardRegions.nearby(server, new net.minecraft.world.phys.AABB(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
+            for (ItemStack made : new ItemStack[] {recipe.output1, recipe.output2}) {
+                if (made != null && made.is(ModRBMKItems.particle_digamma.get())
+                        && level instanceof ServerLevel server) {
+                    AwardRegions.nearby(server, new AABB(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
                                     pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D).inflate(100D, 50D, 100D),
-                            player -> com.hbm.advancement.HbmCriteria.PARTICLE_PRODUCED.fire(player, made));
+                            player -> HbmCriteria.PARTICLE_PRODUCED.fire(player, made));
                     break;
                 }
             }

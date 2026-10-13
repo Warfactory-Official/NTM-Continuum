@@ -1,12 +1,19 @@
 package com.hbm.items.special;
 
+import com.hbm.advancement.HbmCriteria;
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.config.VersatileConfig;
+import com.hbm.explosion.ExplosionLarge;
+import com.hbm.items.ModConsumableTailItems;
 import com.hbm.items.ModItems;
+import dev.golem.core.hook.Hook;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.Effects;
+import java.util.function.Function;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
@@ -20,7 +27,7 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 
 /**
- * Modern port of old-hbm's ItemEnergy. The old item family used one implementation with per-item
+ * Modern port of 1.12.2's ItemEnergy. The old item family used one implementation with per-item
  * branches; keeping the id table here preserves the exact source effects while sharing the modern
  * use and container handling.
  */
@@ -48,7 +55,7 @@ public final class ItemEnergy extends CompatItem {
 
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
-        if (com.hbm.config.VersatileConfig.hasPotionSickness(player)) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (VersatileConfig.hasPotionSickness(player)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (container == Container.BOTTLE && !hasBottleOpener(player)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         player.startUsingItem(hand);
         return InteractionResult.CONSUME;
@@ -59,18 +66,18 @@ public final class ItemEnergy extends CompatItem {
         if (!(level instanceof ServerLevel server) || !(entity instanceof Player player)) return stack;
         apply(server, player);
         // 1.7 achRadium fires inside coffee_radium's onEaten branch; the criterion names the coffee
-        if (id.equals("coffee_radium") && player instanceof net.minecraft.server.level.ServerPlayer drinker) {
-            com.hbm.advancement.HbmCriteria.CONSUMED.fire(drinker, stack.copyWithCount(1));
+        if (id.equals("coffee_radium") && player instanceof ServerPlayer drinker) {
+            HbmCriteria.CONSUMED.fire(drinker, stack.copyWithCount(1));
         }
         // 1.7 VersatileConfig.applyPotionSickness(player, 5): off at the default PotionConfig
-        com.hbm.config.VersatileConfig.applyPotionSickness(player, 5);
+        VersatileConfig.applyPotionSickness(player, 5);
         if (player.getAbilities().instabuild) return stack;
 
         stack.shrink(1);
         ItemStack empty;
         if (container == Container.NONE) {
             Item given = null;
-            for (java.util.function.Function<String, Item> listener : EMPTY) {
+            for (Function<String, Item> listener : EMPTY) {
                 given = listener.apply(id);
                 if (given != null) break;
             }
@@ -93,7 +100,7 @@ public final class ItemEnergy extends CompatItem {
      * What a drink without a can or bottle leaves (ADDON-API-INVENTORY H-75), by its id ({@code "coffee"}); the first
      * non-null item wins, none leaves nothing (1.7). HBM registers none; NTM: Space gives coffee its mug.
      */
-    public static final dev.golem.core.hook.Hook<java.util.function.Function<String, Item>> EMPTY = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<Function<String, Item>> EMPTY = Hook.notifying();
 
     private static ItemStack capFor(String id) {
         return switch (id) {
@@ -111,8 +118,8 @@ public final class ItemEnergy extends CompatItem {
 
     private static boolean hasBottleOpener(Player player) {
         for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++)
-            if (player.getInventory().getItem(slot).is(com.hbm.items.ModConsumableTailItems.bottle_opener.get())) return true;
-        if (player.getOffhandItem().is(com.hbm.items.ModConsumableTailItems.bottle_opener.get())) return true;
+            if (player.getInventory().getItem(slot).is(ModConsumableTailItems.bottle_opener.get())) return true;
+        if (player.getOffhandItem().is(ModConsumableTailItems.bottle_opener.get())) return true;
         return false;
     }
 
@@ -135,7 +142,7 @@ public final class ItemEnergy extends CompatItem {
             case "bottle_sparkle" -> { player.heal(10F); add(player, Effects.speed(), 120 * 20, 1); add(player, Effects.resistance(), 120 * 20, 2); add(player, Effects.strength(), 120 * 20, 2); add(player, Effects.haste(), 120 * 20, 1); HbmLivingProps.incrementRadiation(player, 5F); }
             case "bottle_rad" -> { player.heal(10F); add(player, Effects.speed(), 120 * 20, 1); add(player, Effects.resistance(), 120 * 20, 2); add(player, MobEffects.FIRE_RESISTANCE, 120 * 20, 0); add(player, Effects.strength(), 120 * 20, 4); add(player, Effects.haste(), 120 * 20, 1); HbmLivingProps.incrementRadiation(player, 15F); }
             // 1.7: "Totally not made from nitroglycerine." A size-50 large explosion (cloud, no rubble/shrapnel).
-            case "chocolate_milk" -> com.hbm.explosion.ExplosionLarge.explode(level, player.getX(), player.getY(), player.getZ(), 50, true, false, false);
+            case "chocolate_milk" -> ExplosionLarge.explode(level, player.getX(), player.getY(), player.getZ(), 50, true, false, false);
             case "coffee", "coffee_radium" -> { player.heal(10F); add(player, Effects.speed(), 60 * 20, 2); if (id.equals("coffee_radium")) HbmLivingProps.incrementRadiation(player, 500F); }
             default -> { }
         }

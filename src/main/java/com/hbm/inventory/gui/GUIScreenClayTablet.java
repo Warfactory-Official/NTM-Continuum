@@ -4,6 +4,7 @@ import com.hbm.inventory.recipes.PedestalRecipes;
 import com.hbm.inventory.recipes.PedestalRecipes.Input;
 import com.hbm.inventory.recipes.PedestalRecipes.PedestalExtraCondition;
 import com.hbm.inventory.recipes.PedestalRecipes.PedestalRecipe;
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModUtilityToolItems;
 import dev.golem.core.Ids;
@@ -84,7 +85,7 @@ public class GUIScreenClayTablet extends CompatScreen {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack held = player.getMainHandItem();
-        if (!held.isEmpty()) tabletMeta = com.hbm.items.LegacyMeta.of(held);
+        if (!held.isEmpty()) tabletMeta = LegacyMeta.of(held);
 
         int tabletOffset = tabletMeta == 1 ? 84 : 0;
         int iconOffset = tabletMeta == 1 ? 16 : 0;

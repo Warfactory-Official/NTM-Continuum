@@ -1,5 +1,6 @@
 package com.hbm.gametest;
 
+import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.PyroOvenRecipes;
 import com.hbm.inventory.recipes.SILEXRecipes;
@@ -14,6 +15,8 @@ import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBatteryPack;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.machine.ItemPlateFuel;
+import dev.golem.core.Ids;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
@@ -21,7 +24,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-/** Registry, state, tag, and deferred-recipe contracts for the ingredient item wave. */
+/** Registry, state, tag, and deferred-recipe contracts for the ingredient items. */
 public final class IngredientGameTests {
 
     private IngredientGameTests() {}
@@ -93,7 +96,7 @@ public final class IngredientGameTests {
         boolean soot = false;
         for (PyroOvenRecipes.PyroOvenRecipe recipe : PyroOvenRecipes.getAll()) {
             if (recipe.outputItem != null && recipe.outputItem.is(ModIngredientItems.ash(EnumAshType.SOOT))) {
-                soot = recipe.duration == 40 && recipe.inputItem instanceof com.hbm.inventory.RecipesCommon.TagStack tag
+                soot = recipe.duration == 40 && recipe.inputItem instanceof RecipesCommon.TagStack tag
                         && tag.tag.equals(PyroOvenRecipes.TARS);
             }
         }
@@ -121,14 +124,14 @@ public final class IngredientGameTests {
     }
 
     private static void assertId(GameTestHelper helper, Item item, String path) {
-        Identifier expected = dev.golem.core.Ids.of("hbm", path);
-        helper.assertTrue(expected.equals(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item)),
+        Identifier expected = Ids.of("hbm", path);
+        helper.assertTrue(expected.equals(BuiltInRegistries.ITEM.getKey(item)),
                 "Expected item id " + expected + ", got "
-                        + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item));
+                        + BuiltInRegistries.ITEM.getKey(item));
     }
 
     private static void assertTag(GameTestHelper helper, Item item, String path) {
-        TagKey<Item> tag = TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", path));
+        TagKey<Item> tag = TagKey.create(Registries.ITEM, Ids.of("c", path));
         helper.assertTrue(new ItemStack(item).is(tag), "Item is missing c:" + path + " membership");
     }
 }

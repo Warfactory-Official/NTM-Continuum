@@ -1,5 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachinePrecAss;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -8,6 +11,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.tileentity.machine.TileEntityMachinePrecAss;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -18,11 +22,11 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 import java.util.Optional;
 
-/** Precision assembler screen — 1.7.10 {@code GUIMachinePrecAss} ({@code processing/gui_precass.png}, 176x256). */
-public final class GUIMachinePrecAss extends dev.golem.core.gui.CompatContainerScreen<ContainerMachinePrecAss>
+/** Precision assembler screen: 1.7.10 {@code GUIMachinePrecAss} ({@code processing/gui_precass.png}, 176x256). */
+public final class GUIMachinePrecAss extends CompatContainerScreen<ContainerMachinePrecAss>
         implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_precass.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_precass.png");
     private static final int BTN_X = 7, BTN_Y = 125, BTN_W = 18, BTN_H = 18;
 
     public GUIMachinePrecAss(ContainerMachinePrecAss menu, Inventory playerInventory, Component title) {
@@ -45,7 +49,7 @@ public final class GUIMachinePrecAss extends dev.golem.core.gui.CompatContainerS
                     176F, 61F, progress, 16, 256, 256);
         }
 
-        // 1.7: renderTank(guiLeft + 8 / + 80, guiTop + 115, z, 52, 16, 1) — horizontal, y is the bottom edge.
+        // 1.7: renderTank(guiLeft + 8 / + 80, guiTop + 115, z, 52, 16, 1). Horizontal, y is the bottom edge.
         GuiUtil.tankHorizontal(graphics, te.inputTank, leftPos + 8, topPos + 115, 52, 16);
         GuiUtil.tankHorizontal(graphics, te.outputTank, leftPos + 80, topPos + 115, 52, 16);
 
@@ -106,7 +110,7 @@ public final class GUIMachinePrecAss extends dev.golem.core.gui.CompatContainerS
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         TileEntityMachinePrecAss te = menu.getAssembler();
         if (te != null && GuiUtil.hover(event.x(), event.y(), leftPos + BTN_X, topPos + BTN_Y, BTN_W, BTN_H)) {
             GUIScreenRecipeSelector.openSelector(PrecAssRecipes.INSTANCE, te.getBlockPos(),
@@ -117,7 +121,7 @@ public final class GUIMachinePrecAss extends dev.golem.core.gui.CompatContainerS
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return menu.getAssembler();
     }
 }

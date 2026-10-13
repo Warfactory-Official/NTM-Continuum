@@ -13,9 +13,11 @@ import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemEntityRenderer;
 import dev.golem.core.render.gem.Geometry;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 /** Tumbling, type-specific RBMK column fragment. */
@@ -26,7 +28,7 @@ public final class RBMKDebrisRenderer extends GemEntityRenderer<EntityRBMKDebris
     private static final Identifier[] TEXTURES = {
             texture("blank"), texture("element"), texture("fuel"), texture("control"), texture("graphite"), texture("lid")};
 
-    public RBMKDebrisRenderer(net.minecraft.client.renderer.entity.EntityRendererProvider.Context context) { super(context); shadowRadius = .5F; }
+    public RBMKDebrisRenderer(EntityRendererProvider.Context context) { super(context); shadowRadius = .5F; }
 
     /** One debris-shaped slot holding whichever of the six pieces this one is, tumbling about a diagonal. */
     @Override protected void setup(Gem.Model<State> declaration) {
@@ -57,6 +59,6 @@ public final class RBMKDebrisRenderer extends GemEntityRenderer<EntityRBMKDebris
         int type = 1;
         int spin;
         float rot;
-        final org.joml.Matrix4f tumble = new org.joml.Matrix4f();
+        final Matrix4f tumble = new Matrix4f();
     }
 }

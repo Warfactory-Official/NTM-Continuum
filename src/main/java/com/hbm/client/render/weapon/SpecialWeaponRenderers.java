@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.hbm.client.anim.HbmAnimations;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
@@ -138,8 +139,8 @@ public final class SpecialWeaponRenderers {
      * rather than snapping to the count the server has already applied.
      */
     static int shellCount(WeaponPose state, int rail) {
-        com.hbm.client.anim.HbmAnimations.Animation running =
-                com.hbm.client.anim.HbmAnimations.getRelevantAnim(state.hand, rail);
+        HbmAnimations.Animation running =
+                HbmAnimations.getRelevantAnim(state.hand, rail);
         if (running != null && running.animation.getBus("SHELLS") != null) {
             return (int) state.bus("SHELLS", rail)[0];
         }

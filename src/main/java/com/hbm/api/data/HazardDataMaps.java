@@ -3,10 +3,12 @@ package com.hbm.api.data;
 import com.hbm.Constants;
 import com.hbm.hazard.HazardSpec;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.data.DataMaps;
 import dev.golem.core.data.DataMaps.DataMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 
 /**
@@ -44,11 +46,11 @@ public final class HazardDataMaps {
      * the chunk (a tenth per tick received, capped at the full value), {@code area} is an entity pulse every second.
      * 1.7 took {@code radiation} from the block item's RADIATION hazard once at start-up; it is stated per block here.
      */
-    public static final DataMap<net.minecraft.world.level.block.Block, Emission> RADIATION_EMISSION = DataMaps.map(HazardDataMaps.class,
+    public static final DataMap<Block, Emission> RADIATION_EMISSION = DataMaps.map(HazardDataMaps.class,
             Constants.MOD_ID, "radiation_emission", "block", () -> BuiltInRegistries.BLOCK, Emission.CODEC);
 
     public record Emission(float radiation, float area) {
-        public static final Codec<Emission> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.create(i -> i.group(
+        public static final Codec<Emission> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.FLOAT.optionalFieldOf("radiation", 0F).forGetter(Emission::radiation),
                 Codec.FLOAT.optionalFieldOf("area", 0F).forGetter(Emission::area)
         ).apply(i, Emission::new));

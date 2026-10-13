@@ -61,7 +61,7 @@ public final class NeoForgeClientInit {
         HbmClientRegistrations.installEntityEffects();
         HbmClientRegistrations.installArmorLayers();
 
-        // Look-overlay HUD (battery charge / duct type / ...) — a GUI layer drawn above the vanilla HUD,
+        // Look-overlay HUD (battery charge / duct type / ...), a GUI layer drawn above the vanilla HUD,
         // so its text is extracted/submitted in the same pass (mirrors Fabric's HudElementRegistry).
         modBus.addListener((RegisterGuiLayersEvent event) -> {
             HbmClientRegistrations.registerHud((id, renderer) -> event.registerAboveAll(
@@ -70,7 +70,7 @@ public final class NeoForgeClientInit {
         });
 
         HbmClientRegistrations.installScreensAndRenderers();
-        // Block tint sources (sellafite shade tint) — Golem picks the era's colour API and the moment
+        // Block tint sources (sellafite shade tint), Golem picks the era's colour API and the moment
         // this loader allows registering one.
         HbmClientRegistrations.registerBlockColors();
 

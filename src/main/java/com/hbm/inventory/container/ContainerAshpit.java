@@ -1,6 +1,5 @@
 package com.hbm.inventory.container;
 
-import com.hbm.smoke.SmokeChainRegistration;
 import com.hbm.tileentity.machine.TileEntityAshpit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -12,6 +11,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
+import com.hbm.inventory.ModMenus;
 
 /** Five take-only ash output slots followed by the unchanged 1.12.2 player inventory layout. */
 public final class ContainerAshpit extends AbstractContainerMenu {
@@ -27,7 +27,7 @@ public final class ContainerAshpit extends AbstractContainerMenu {
     }
 
     public ContainerAshpit(int containerId, Inventory playerInventory, @Nullable TileEntityAshpit ashpit) {
-        super(SmokeChainRegistration.ASHPIT_MENU.get(), containerId);
+        super(ModMenus.ASHPIT.get(), containerId);
         this.ashpit = ashpit;
         this.machine = ashpit != null ? ashpit : new SimpleContainer(MACHINE_SLOTS);
 

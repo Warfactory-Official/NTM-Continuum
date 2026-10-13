@@ -14,6 +14,7 @@ import com.hbm.interfaces.IBomb;
 import com.hbm.items.weapon.sedna.factory.XFactoryCatapult;
 import com.hbm.main.MainRegistry;
 import com.hbm.particle.helper.EntityEffects;
+import com.hbm.saveddata.satellites.SatelliteDetector;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
@@ -225,8 +226,8 @@ public class Landmine extends CompatBlock implements TickingBlock, IBomb, IToola
                 XFactoryCatapult.irradiate(level, x, y, z, 1.5F);
                 EntityEffects.muke(level, x + 0.5, y + 0.5, z + 0.5, false,
                         MainRegistry.polaroidID == 11 || level.getRandom().nextInt(100) == 0, 250);
-                com.hbm.saveddata.satellites.SatelliteDetector.reportEvent(level, com.hbm.saveddata.satellites.SatelliteDetector.DURATION_LOW,
-                        com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity.LOW, x + 0.5, z + 0.5);
+                SatelliteDetector.reportEvent(level, SatelliteDetector.DURATION_LOW,
+                        SatelliteDetector.BurstIntensity.LOW, x + 0.5, z + 0.5);
                 level.playSound(null, x + 0.5, y + 0.5, z + 0.5, ModSounds.MUKE_EXPLOSION.get(), SoundSource.BLOCKS,
                         25.0F, 0.9F); // upstream: "this has to be the single worst solution ever"
             }

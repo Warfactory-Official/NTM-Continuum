@@ -14,7 +14,7 @@ import java.util.function.IntSupplier;
  * The {@code hbm.cfg} keys that the placed features read through {@code hbm:config} ({@link ConfigPlacement}), each
  * bound to the config field that holds its value. The key written into a placed-feature file is the 1.7 config key, so
  * a reader of the data pack can find it in {@code hbm.cfg}. No Minecraft class here: the build-time declarations
- * ({@link ModBiomeModifiers}, {@link LegacyDungeonDeclarations}) name these keys in a plain JVM. History §19ej-8.
+ * ({@link ModBiomeModifiers}, {@link LegacyDungeonDeclarations}) name these keys in a plain JVM.
  */
 public final class WorldgenKeys {
 

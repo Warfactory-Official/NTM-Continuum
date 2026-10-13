@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.tileentity.IFluidCopiable;
 import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
@@ -28,21 +29,21 @@ import com.hbm.sound.MachineAudio;
 import com.hbm.sound.AudioWrapper;
 
 /**
- * Heat Boiler — 1:1 port of the 1.12.2 {@code TileEntityHeatBoiler} ({@code heat_boiler}): the
- * OIL→HOTOIL (and water→steam) converter. No GUI/inventory — readouts via the block's look-overlay,
- * typing via a fluid identifier right-click. Pulls heat from the {@link IHeatSource} below (diffusion
- * 0.1, cap 3.2M TU as in 1.7.10, passive cooling otherwise), converts via {@link HeatRecipes} first-step data
- * (output tank auto-resized to {@code inMax·produced/req}), and — old boiler-burst behavior — when the
- * output tank is completely full ({@code outputOps == 0}) it explodes: the 3×3×2 upper body is cleared
- * and a strength-5 explosion fires ({@code level.explode} stands in for the unported ExplosionVNT;
- * the burst husk renders via {@code boiler_burst.obj}).
+ * Heat Boiler: 1:1 port of the 1.12.2 {@code TileEntityHeatBoiler} ({@code heat_boiler}): the
+ * OIL to HOTOIL (and water to steam) converter. No GUI or inventory: readouts come from the block's
+ * look-overlay, typing from a fluid identifier right-click. Pulls heat from the {@link IHeatSource} below
+ * (diffusion 0.1, cap 3.2M TU as in 1.7.10, passive cooling otherwise), converts via {@link HeatRecipes}
+ * first-step data (output tank auto-resized to {@code inMax·produced/req}), and, as in the old boiler-burst
+ * behavior, when the output tank is completely full ({@code outputOps == 0}) it explodes: the 3×3×2 upper
+ * body is cleared and a strength-5 explosion fires ({@code level.explode} stands in for the unported
+ * ExplosionVNT; the burst husk renders via {@code boiler_burst.obj}).
  *
  * <p>1.7's Tom-impact fire heating ({@code +0.0005%} of the remaining buffer per tick under open sky) is
- * ported. Skips (§20): IPersistentNBT/IConfigurableMachine. IFluidCopiable (water/steam ids) is back, as 1.7. Port seam: heat is polled through a
- * multiblock cell below by resolving its core (old used proxy TEs).
+ * ported. Not ported: IPersistentNBT/IConfigurableMachine. IFluidCopiable (water/steam ids) follows 1.7.
+ * Port seam: heat is polled through a multiblock cell below by resolving its core (the old code used proxy TEs).
  */
 public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IRORValueProvider,
-        com.hbm.tileentity.IFluidCopiable {
+        IFluidCopiable {
 
     public static final int maxHeat = 3_200_000; // 1.7.10 (1.12.2 raised it to 12.8M)
     public static final double diffusion = 0.1D;
@@ -146,10 +147,10 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
                 }
                 this.level.removeBlock(this.worldPosition.above(), false);
 
-                // ExplosionVNT (strength 5, range-mod 3) unported — vanilla stand-in, documented §20.
+                // ExplosionVNT (strength 5, range-mod 3) unported, with a vanilla stand-in (see IMPLEMENTATION.md §20).
                 // ExplosionInteraction.NONE: the old boiler-burst ExplosionVNT set only entity/player
                 // processors and NO BlockAllocator, i.e. it damaged entities but destroyed no blocks. A
-                // block-destroying interaction here blows up the boiler's own cells → one self-drop per
+                // block-destroying interaction here blows up the boiler's own cells, giving one self-drop per
                 // destroyed cell ("drops multiple of itself") and, with teardown suppressed, orphans.
                 this.level.explode(null, base.getX() + 0.5D, base.getY() + 2D, base.getZ() + 0.5D, 5F, Level.ExplosionInteraction.NONE);
             });
@@ -160,7 +161,7 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
         BlockPos below = worldPosition.below();
         BlockEntity con = level.getBlockEntity(below);
 
-        // Port seam: the heater below may expose only a dummy cell here — resolve to its core.
+        // Port seam: the heater below may expose only a dummy cell here, so resolve to its core.
         if (!(con instanceof IHeatSource)) {
             con = MachineCore.at(level, below, level.getBlockState(below));
         }

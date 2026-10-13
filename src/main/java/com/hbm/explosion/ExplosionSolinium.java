@@ -64,7 +64,7 @@ public class ExplosionSolinium {
         }
     }
 
-    // 26.2: flat prefixed keys on driver output.
+    // 26.1: flat prefixed keys on driver output.
     public void saveToNbt(DataOut nbt, String name) {
         nbt.putInt(name + "posX", posX);
         nbt.putInt(name + "posY", posY);

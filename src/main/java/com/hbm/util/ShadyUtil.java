@@ -6,10 +6,10 @@ import net.minecraft.world.entity.Entity;
 
 /**
  * 1.7 {@code ShadyUtil}: the UUIDs of the players who get an accessory or a special effect. 1.7's names and values,
- * plus the four old-hbm (1.12) added (Golem, movblock, Hacker6329, EOS). The capes are in
+ * plus the four 1.12.2 added (Golem, movblock, Hacker6329, EOS). The capes are in
  * {@code RenderAccessoryUtility}, the effects in {@link com.hbm.handler.SpecialPlayers}.
  *
- * <p>Not ported (user decision, 2026-10-06): the sign hashes and {@code smoosh} that unlocked the hidden Bobmazon
+ * <p>Not ported: the sign hashes and {@code smoosh} that unlocked the hidden Bobmazon
  * catalogue, Bob's {@code !gv} debug chat command, and everything to do with Alcater.
  */
 public final class ShadyUtil {
@@ -46,7 +46,7 @@ public final class ShadyUtil {
     public static final String Adam29Adam29 = "bbae7bfa-0eba-40ac-a0dd-f3b715e73e61";
     public static final String ege444 = "42ee978c-442a-4cd8-95b6-29e469b6df10";
     public static final String LePeeperSauvage = "433c2bb7-018c-4d51-acfe-27f907432b5e";
-    // old-hbm (1.12) additions
+    // 1.12.2 additions
     public static final String Golem = "058b52a6-05b7-4d11-8cfa-2db665d9a521";
     public static final String movblock = "d45aac48-013d-4efd-aa4d-bc40d6b6026d";
     public static final String Hacker6329 = "a53a3807-cd85-4833-b791-0c27705bb6fd";

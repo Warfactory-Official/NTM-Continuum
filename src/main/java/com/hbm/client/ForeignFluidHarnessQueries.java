@@ -7,6 +7,7 @@ import com.hbm.inventory.fluid.Fluids;
 import dev.golem.core.fluid.FluidCompat;
 import dev.golem.core.fluid.FluidView;
 import dev.golem.core.fluid.TokenFluids;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
- * The {@code hbm_fluidcaps} harness query (History section 19ek-fluids), read by {@code ForeignFluidCaps}. Every move
+ * The {@code hbm_fluidcaps} harness query, read by {@code ForeignFluidCaps}. Every move
  * goes through the loader's standard fluid capability ({@link FluidCompat}), as another mod's pipe would. Ops:
  * {@code registry} (HBM fluids in the vanilla fluid registry), {@code find} (the tanks at {@code x,y,z} on {@code side}),
  * {@code insert}/{@code extract} ({@code fluid} = an HBM fluid name, {@code mb}), {@code move} (extract at
@@ -40,7 +41,7 @@ public final class ForeignFluidHarnessQueries {
     public static volatile Supplier<List<String>> jeiFluids = null;
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_fluidcaps", ForeignFluidHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_fluidcaps", ForeignFluidHarnessQueries::query);
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {

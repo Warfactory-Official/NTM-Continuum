@@ -1,8 +1,10 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.ModRtgBlockEntities;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityMachineRTG;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -19,7 +21,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The single-block, 15-pellet grey radioisotope generator. */
-public final class MachineRTG extends dev.golem.core.world.CompatBlock implements TickingBlock {
+public final class MachineRTG extends CompatBlock implements TickingBlock {
     public MachineRTG(Properties properties) {
         super(properties);
     }
@@ -41,7 +43,7 @@ public final class MachineRTG extends dev.golem.core.world.CompatBlock implement
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }

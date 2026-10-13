@@ -200,7 +200,7 @@ public abstract class EntityUFOBase extends CompatMob implements Enemy {
     }
 
     /**
-     * 1.7 {@code canAttackClass(Class)}: 26.2 dropped the type-keyed variant, and {@code canAttack} only takes
+     * 1.7 {@code canAttackClass(Class)}: 26.1 dropped the type-keyed variant, and {@code canAttack} only takes
      * a {@link net.minecraft.world.entity.LivingEntity}, so the saucers' "not my own kind" rule is stated here.
      */
     protected boolean canTarget(Entity entity) {

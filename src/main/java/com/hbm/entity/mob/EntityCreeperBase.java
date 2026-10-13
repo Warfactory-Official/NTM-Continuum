@@ -1,6 +1,7 @@
 package com.hbm.entity.mob;
 
 import dev.golem.core.data.CompatCreeper;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.ItemTags;
@@ -40,7 +41,7 @@ public abstract class EntityCreeperBase extends CompatCreeper {
         // additionally admits Stray and Bogged
         if (!(source.getEntity() instanceof AbstractSkeleton)) return;
 
-        dev.golem.core.world.Compat.randomItemOf(ItemTags.CREEPER_DROP_MUSIC_DISCS, random)
+        Compat.randomItemOf(ItemTags.CREEPER_DROP_MUSIC_DISCS, random)
              .ifPresent(disc -> spawnAtLocation(level, new ItemStack(disc)));
     }
 

@@ -4,7 +4,7 @@ import com.hbm.tileentity.IControlReceiverFilter;
 import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.api.conveyor.IEnterableBlock;
 import com.hbm.entity.item.EntityMovingItem;
-import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.module.ModulePatternMatcher;
 import com.hbm.util.InventoryUtil;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -18,6 +18,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -249,17 +250,17 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements ICo
     }
 
     @Override
-    public CompoundTag getSettings(net.minecraft.world.level.Level level, BlockPos pos) {
+    public CompoundTag getSettings(Level level, BlockPos pos) {
         return super.getSettings(level, pos);
     }
 
     @Override
-    public void pasteSettings(CompoundTag nbt, int index, net.minecraft.world.level.Level level, Player player, BlockPos pos) {
+    public void pasteSettings(CompoundTag nbt, int index, Level level, Player player, BlockPos pos) {
         super.pasteSettings(nbt, index, level, player, pos);
     }
 
     @Override
-    public String[] infoForDisplay(net.minecraft.world.level.Level level, BlockPos pos) {
+    public String[] infoForDisplay(Level level, BlockPos pos) {
         return super.infoForDisplay(level, pos);
     }
 }

@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/** Compressor block — 1:1 port of the 1.12.2 {@code MachineCompressor} (dims {@code {2,0,1,2,1,1}},
+/** Compressor block: 1:1 port of the 1.12.2 {@code MachineCompressor} (dims {@code {2,0,1,2,1,1}},
  * offset 2; two extra body fills + 3 makeExtra power/fluid ports). */
 public class MachineCompressor extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 

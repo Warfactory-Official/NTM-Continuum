@@ -1,5 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerLiquefactor;
 import com.hbm.tileentity.machine.oil.TileEntityMachineLiquefactor;
@@ -9,13 +12,13 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
- * Screen for the liquefactor — 1.7.10 {@code GUILiquefactor} ({@code processing/gui_liquefactor.png}, 176×204):
+ * Screen for the liquefactor, 1.7.10 {@code GUILiquefactor} ({@code processing/gui_liquefactor.png}, 176×204):
  * power bar 16×52 at (134,18) (fill u=176), progress arrow up to 42×35 at (42,17) (u=192), the
  * "powered" LED 9×12 at (138,4) (u=176,v=52), tank 16×52 at x=71 (bottom y=88).
  */
-public class GUILiquefactor extends dev.golem.core.gui.CompatContainerScreen<ContainerLiquefactor> implements IUpgradeInfoProviderSource {
+public class GUILiquefactor extends CompatContainerScreen<ContainerLiquefactor> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_liquefactor.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_liquefactor.png");
 
     public GUILiquefactor(ContainerLiquefactor menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 204);
@@ -59,7 +62,7 @@ public class GUILiquefactor extends dev.golem.core.gui.CompatContainerScreen<Con
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getLiquefactor();
     }
 }

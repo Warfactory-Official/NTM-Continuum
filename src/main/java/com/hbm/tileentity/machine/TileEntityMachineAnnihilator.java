@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.lib.DirPos;
 import dev.golem.core.data.Tags;
 
@@ -254,7 +255,7 @@ public class TileEntityMachineAnnihilator extends TileEntityMachineBase
 
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[] {tank}; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[] {tank}; }
-    @Override public com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority getFluidPriority() { return com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority.LOW; }
+    @Override public IEnergyReceiverMK2.ConnectionPriority getFluidPriority() { return IEnergyReceiverMK2.ConnectionPriority.LOW; }
 
     @Override public Component getDisplayName() { return Component.translatable("container.annihilator"); }
 
@@ -271,7 +272,7 @@ public class TileEntityMachineAnnihilator extends TileEntityMachineBase
     @Override
     public void receiveControl(CompoundTag data) {
         if (data.contains("pool")) {
-            String pool = dev.golem.core.data.Tags.getStringOr(data, "pool", "");
+            String pool = Tags.getStringOr(data, "pool", "");
             if (pool != null && !pool.isEmpty()) {
                 this.pool = pool;
                 this.markChanged();

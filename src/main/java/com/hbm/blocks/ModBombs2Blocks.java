@@ -29,7 +29,7 @@ import com.hbm.blocks.bomb.NukeSolinium;
 import com.hbm.items.bomb.ItemPrototypeBlock;
 
 /**
- * The special bombs of original-hbm's nuke tab that are not MK5 devices, plus the four frozen blocks the
+ * The special bombs of 1.7's nuke tab that are not MK5 devices, plus the four frozen blocks the
  * endothermic bomb leaves behind. All bombs were {@code Material.iron}, hardness 5, resistance 200.
  * Each block's model, blockstate, loot and mining tag is stated on its registration (Reg; emitted by Dejson).
  *

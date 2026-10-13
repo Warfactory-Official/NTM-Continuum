@@ -6,6 +6,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityRefueler;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -21,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 public class RefuelerRenderer extends GemBER<TileEntityRefueler, RefuelerRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/refueler.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/refueler.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/refueler.png");
     /** The old pass disabled texturing and used SRC_ALPHA/ONE additive blending. */
@@ -57,7 +58,7 @@ public class RefuelerRenderer extends GemBER<TileEntityRefueler, RefuelerRenderS
     }
 
     /**
-     * The fuel column is drawn with position and colour only — no texture and no normal — so it is not a
+     * The fuel column is drawn with position and colour only, with no texture and no normal, so it is not a
      * surface either backend could bucket, and it keeps the vanilla path.
      */
     @Override

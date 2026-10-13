@@ -1,5 +1,6 @@
 package com.hbm.inventory.recipes.loader;
 
+import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.items.machine.ItemFluidIcon;
@@ -31,9 +32,9 @@ public class GenericRecipe {
     public FluidStack[] outputFluid;
     /**
      * Per-output drop chance, index-aligned with {@link #outputItem}; a missing entry means guaranteed.
-     * An explicit {@code 0} means the output never drops, matching the original {@code ChanceOutput} — a parallel
-     * array keeps every existing {@code outputItems(ItemStack...)} call site untouched. As in the original,
-     * the roll happens per <i>item</i> in the stack, so a 50% ×4 output averages two items.
+     * An explicit {@code 0} means the output never drops, matching the original {@code ChanceOutput}. A parallel
+     * array keeps every {@code outputItems(ItemStack...)} call site untouched. As in the original, the roll
+     * happens per <i>item</i> in the stack, so a 50% ×4 output averages two items.
      */
     public float[] outputChance;
     /**
@@ -196,7 +197,7 @@ public class GenericRecipe {
      */
     public GenericRecipe inputItemsEx(AStack... input) {
         this.inputItemEx = input;
-        if (com.hbm.config.GeneralConfig.enableExpensiveMode) {
+        if (GeneralConfig.enableExpensiveMode) {
             keepNormal();
             this.inputItem = input;
         }
@@ -206,7 +207,7 @@ public class GenericRecipe {
     /** 1.7 {@code inputFluidsEx}: the fluid counterpart of {@link #inputItemsEx}. */
     public GenericRecipe inputFluidsEx(FluidStack... input) {
         this.inputFluidEx = input;
-        if (com.hbm.config.GeneralConfig.enableExpensiveMode) {
+        if (GeneralConfig.enableExpensiveMode) {
             keepNormal();
             this.inputFluid = input;
         }
@@ -216,7 +217,7 @@ public class GenericRecipe {
     /** 1.7 {@code setPools528}: blueprint pools that replace the normal ones while {@code enable528} is on (off by default). */
     public GenericRecipe setPools528(String... pools) {
         this.blueprintPools528 = pools;
-        if (com.hbm.config.GeneralConfig.enable528) {
+        if (GeneralConfig.enable528) {
             keepNormal();
             this.blueprintPools = pools;
         }
@@ -336,7 +337,7 @@ public class GenericRecipe {
     public ItemStack getIcon() {
         if (!icon.isEmpty()) return icon;
         if (outputItem != null && outputItem.length > 0) return outputItem[0];
-        // No item output → represent the recipe by its first output (or input) fluid's droplet icon.
+        // No item output: represent the recipe by its first output (or input) fluid's droplet icon.
         if (outputFluid != null && outputFluid.length > 0) return ItemFluidIcon.make(outputFluid[0]);
         if (inputFluid != null && inputFluid.length > 0) return ItemFluidIcon.make(inputFluid[0]);
         return ItemStack.EMPTY;

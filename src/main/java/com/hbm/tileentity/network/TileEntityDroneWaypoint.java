@@ -1,11 +1,13 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.tileentity.IRelocatable;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.item.EntityDeliveryDrone;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -23,12 +25,12 @@ import com.hbm.tileentity.ModDroneBlockEntities;
  * 1.7 {@code TileEntityDroneWaypoint}: a transport-drone relay. Drones arriving at its stand-off point (its
  * facing times {@link #height}) are sent on to the next link.
  */
-public class TileEntityDroneWaypoint extends TileEntityLoadedBase implements IDroneLinkable, com.hbm.tileentity.IRelocatable {
+public class TileEntityDroneWaypoint extends TileEntityLoadedBase implements IDroneLinkable, IRelocatable {
 
     /** A sub-level move carried this waypoint; its next link follows when that block was carried too. */
     @Override
-    public void relocate(dev.golem.core.world.SubLevels.Move move) {
-        next = com.hbm.tileentity.IRelocatable.followNullable(move, next);
+    public void relocate(SubLevels.Move move) {
+        next = IRelocatable.followNullable(move, next);
         setChanged();
     }
 

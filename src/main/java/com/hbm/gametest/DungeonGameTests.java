@@ -5,8 +5,12 @@ import com.hbm.blocks.generic.BlockPedestal;
 import com.hbm.blocks.generic.BlockRebar;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.PedestalRecipes;
+import com.hbm.world.gen.util.LogicBlockActions;
+import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
@@ -24,7 +28,7 @@ public final class DungeonGameTests {
      * Then 2000 mB: the bottom layer tops out at 50 more each (capped), 1900 come back. Once both are at 1000 the
      * next delivery goes to the upper rebar.
      */
-    public static void rebarFillsLowestLayer(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void rebarFillsLowestLayer(GameTestHelper helper) {
         BlockPos a = new BlockPos(1, 1, 1), b = new BlockPos(2, 1, 1), top = new BlockPos(2, 2, 1);
         for (BlockPos p : new BlockPos[]{a, b, top}) helper.setBlock(p, ModDungeonBlocks.rebar.get().defaultBlockState());
         BlockRebar.TileEntityRebar ra = GameTestHelpers.blockEntity(helper, a, BlockRebar.TileEntityRebar.class);
@@ -51,7 +55,7 @@ public final class DungeonGameTests {
     }
 
     /** Dani's revolver: gold east and west, lead north and south, the revolver in the middle; redstone performs it. */
-    public static void pedestalRitual(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void pedestalRitual(GameTestHelper helper) {
         BlockPos center = new BlockPos(4, 1, 4);
         int[][] cells = {{0, 0}, {0, -3}, {0, 3}, {-3, 0}, {3, 0}, {-2, -2}, {2, -2}, {-2, 2}, {2, 2}};
         for (int[] c : cells) helper.setBlock(center.offset(c[0], 0, c[1]), ModDungeonBlocks.pedestal.get().defaultBlockState());
@@ -62,14 +66,14 @@ public final class DungeonGameTests {
         set(helper, center.offset(3, 0, 0), "hbm:plate_gold");
 
         helper.assertTrue(PedestalRecipes.matches(new PedestalRecipes.Input("#c:plates/lead", 1),
-                com.hbm.world.gen.util.LogicBlockActions.stack("hbm:plate_lead", 1)), "lead plate does not match #c:plates/lead");
+                LogicBlockActions.stack("hbm:plate_lead", 1)), "lead plate does not match #c:plates/lead");
         helper.assertTrue(!PedestalRecipes.matches(new PedestalRecipes.Input("#c:plates/lead", 1),
-                com.hbm.world.gen.util.LogicBlockActions.stack("hbm:plate_lead", 2)), "two plates matched a count of one");
+                LogicBlockActions.stack("hbm:plate_lead", 2)), "two plates matched a count of one");
 
         helper.setBlock(center.offset(0, 0, 1), Blocks.REDSTONE_BLOCK.defaultBlockState());
         helper.runAfterDelay(2, () -> {
             ItemStack out = GameTestHelpers.blockEntity(helper, center, BlockPedestal.TileEntityPedestal.class).getItem();
-            helper.assertTrue(out.is(net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.parse("hbm:gun_light_revolver_dani"))),
+            helper.assertTrue(out.is(BuiltInRegistries.ITEM.getValue(Ids.parse("hbm:gun_light_revolver_dani"))),
                     "the ritual made " + out);
             helper.assertTrue(GameTestHelpers.blockEntity(helper, center.offset(3, 0, 0), BlockPedestal.TileEntityPedestal.class)
                     .getItem().isEmpty(), "the east gold plate was not consumed");
@@ -77,8 +81,8 @@ public final class DungeonGameTests {
         });
     }
 
-    private static void set(net.minecraft.gametest.framework.GameTestHelper helper, BlockPos pos, String id) {
+    private static void set(GameTestHelper helper, BlockPos pos, String id) {
         GameTestHelpers.blockEntity(helper, pos, BlockPedestal.TileEntityPedestal.class)
-                .setItem(com.hbm.world.gen.util.LogicBlockActions.stack(id, 1));
+                .setItem(LogicBlockActions.stack(id, 1));
     }
 }

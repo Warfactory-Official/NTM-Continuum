@@ -1,6 +1,7 @@
 package com.hbm.uninos.networkproviders;
 
 import com.hbm.blocks.generic.BlockRebar;
+import java.util.HashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -32,7 +33,7 @@ public final class RebarNetwork {
 
     /** Every rebar face-connected to {@code start}, itself included. */
     public static synchronized List<BlockPos> linksOf(Level level, BlockPos start) {
-        Map<BlockPos, List<BlockPos>> perLevel = CACHE.computeIfAbsent(level, key -> new java.util.HashMap<>());
+        Map<BlockPos, List<BlockPos>> perLevel = CACHE.computeIfAbsent(level, key -> new HashMap<>());
         List<BlockPos> cached = perLevel.get(start);
         if (cached != null) return cached;
 

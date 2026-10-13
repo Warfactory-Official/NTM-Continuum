@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import net.minecraft.world.phys.AABB;
 
 /** Persistent accident aftermath: an initially burning, highly radioactive reactor wreck. */
 public class TileEntityZirnoxDestroyed extends CompatBlockEntity {
@@ -47,7 +48,7 @@ public class TileEntityZirnoxDestroyed extends CompatBlockEntity {
 
         if (wreck.onFire) {
             for (LivingEntity living : level.getEntitiesOfClass(LivingEntity.class,
-                    new net.minecraft.world.phys.AABB(pos).inflate(5.0D))) {
+                    new AABB(pos).inflate(5.0D))) {
                 if (living.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) < 25.0D) {
                     Compat.hurt(living, (ServerLevel) level, level.damageSources().onFire(), 2.0F);
                 }

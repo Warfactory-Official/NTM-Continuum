@@ -18,7 +18,7 @@ import static dev.golem.core.dejson.Crafting.shapeless;
 /**
  * Dejson declarations for {@link ModArmorSetBItems}: the fuelled/powered suits' typed item data, repair tags and
  * the 1.7 recipes ({@code ArmorRecipes}, {@code CraftingManager}, {@code ConsumableRecipes}).
- * Touches no Minecraft class. This wave's own ids are spelled out, since {@code ItemIds} is regenerated after it.
+ * Touches no Minecraft class. The ids here are spelled out, since {@code ItemIds} may not have them yet.
  * The plain sprites and {@code statue_elb_f} are stated on their registrations (Reg).
  *
  * <p>The three fuelled/powered suits drew their icon through {@code renderStandard} over the worn OBJ, like the

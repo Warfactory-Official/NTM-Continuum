@@ -43,7 +43,7 @@ public final class ModShapelessRecipes {
     }
 
     /**
-     * The 41 materials original-hbm (1.7.10) passes to the three-item {@code MineralRecipes.addBillet(billet, ingot,
+     * The 41 materials 1.7 passes to the three-item {@code MineralRecipes.addBillet(billet, ingot,
      * nugget)} (MineralRecipes.java:112-154), as {@code {material, ingot id, nugget id}}. Only nuclear waste breaks
      * the {@code ingot_X}/{@code nugget_X} spelling. The two-item {@code addBillet(billet, nugget)} materials
      * (australium greater/lesser) have no ingot and are declared above as plain lines.
@@ -66,9 +66,9 @@ public final class ModShapelessRecipes {
      *   <li>{@code addBilletToIngot}: three billets to two ingots, shapeless, and {@code "##"} of ingots to three
      *       billets.</li>
      * </ul>
-     * A billet is six nuggets and an ingot nine, so both directions conserve material. The port used to read the
-     * call as {@code addBillet(billet, nugget)} with the ingot as the nugget, making one billet from six ingots
-     * and six ingots from one billet (a 9x duplication loop); fixed 2026-10-03 (History section 19ej-1a).
+     * A billet is six nuggets and an ingot nine, so both directions conserve material. Reading the
+     * call as {@code addBillet(billet, nugget)} with the ingot as the nugget would make one billet from six ingots
+     * and six ingots from one billet (a 9x duplication loop).
      */
     private static void billets() {
         for (String[] row : BILLETS) {

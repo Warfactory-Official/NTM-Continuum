@@ -2,6 +2,7 @@ package com.hbm.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
+import dev.golem.core.client.Frames;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
@@ -44,7 +45,7 @@ public final class BalefireGlint {
     public static void submit(PoseStack poseStack, SubmitSink sink, Geometry geometry, int layers, float scale,
                               float speed) {
         LocalPlayer player = Minecraft.getInstance().player;
-        float offset = (player == null ? 0 : player.tickCount) + dev.golem.core.client.Frames.partialTick();
+        float offset = (player == null ? 0 : player.tickCount) + Frames.partialTick();
         sink.submitCustomGeometry(poseStack, CompatRenderTypes.glint(SHEET, false), (pose, buffer) -> {
             for (int k = 0; k < layers; k++) {
                 float movement = offset * (0.001F + k * 0.003F) * speed;

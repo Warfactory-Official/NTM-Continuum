@@ -1,5 +1,7 @@
 package com.hbm.client;
 
+import com.hbm.client.jetpack.JetpackClientBridge;
+import com.hbm.client.jetpack.JetpackClientVisuals;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.gear.ArmorFSBPowered;
 import dev.golem.core.gui.GuiDraw;
@@ -15,13 +17,13 @@ import net.minecraft.world.item.ItemStack;
  * The power-armour charge bars, stacked above the vanilla armour row.
  *
  * <p>Ports 1.12.2's {@code ModEventHandlerClient.getBars} + {@code onHUDRenderBar}. One row per worn
- * piece that has something to report, drawn only while a full set is worn — {@code hasFSBArmorIgnoreCharge},
+ * piece that has something to report, drawn only while a full set is worn ({@code hasFSBArmorIgnoreCharge}),
  * so a flat suit still shows four empty bars rather than vanishing.
  *
  * <p>Geometry is upstream's: 81 pixels wide starting at {@code width/2 - 91}, a one-pixel dark track
  * around a one-pixel fill, and each drawn row pushing the next up by 4.
  *
- * <p><b>Where the rows sit vertically</b> is the one thing that could not be ported literally — see
+ * <p><b>Where the rows sit vertically</b> is the one thing that could not be ported literally. See
  * {@link #FIRST_ROW}. Upstream's {@code -10} when the player has no armour value is kept for the same
  * reason it exists: no armour row was drawn, so nothing reserved that space.
  *
@@ -43,11 +45,10 @@ public final class ArmorHudOverlay {
      *
      * <p>Vanilla stacks the left-hand column upwards: the hotbar, then the health row at
      * {@code height - 39}, then the armour row at {@code height - 49} occupying roughly ten pixels. The
-     * bars belong <b>above</b> all of that, so the first row starts one row clear of the armour icons.
+     * bars sit <b>above</b> all of that, one row clear of the armour icons.
      *
-     * <p>This is the piece that could not be ported literally. Upstream reads and advances Forge's
-     * {@code GuiIngameForge.left_height}, which no other loader has; reconstructing it as "39 + 10" put
-     * the bars <i>on top of</i> the armour icons, which is what the first playtest found.
+     * <p>Upstream reads and advances Forge's {@code GuiIngameForge.left_height}, which no other loader
+     * has. Reconstructing it as "39 + 10" puts the bars <i>on top of</i> the armour icons.
      */
     private static final int FIRST_ROW = 53;
     /** Vertical pitch between rows, upstream's {@code left_height += 4}. */
@@ -70,13 +71,13 @@ public final class ArmorHudOverlay {
             int height = mc.getWindow().getGuiScaledHeight();
             GuiDraw.blit(graphics, helmet.overlay(), 0, 0, 0F, 0F, width, height, 256, 256);
         }
-        // Creative never spends charge — ArmorFSBPowered.armorTick returns early there — so the bars
+        // Creative never spends charge (ArmorFSBPowered.armorTick returns early there), so the bars
         // would sit permanently full and tell the player nothing. Hiding them is a deliberate departure
         // from upstream, which draws them regardless; do not "restore" it for faithfulness.
         if (player.isCreative()) return;
-        boolean directJetpack = com.hbm.client.jetpack.JetpackClientVisuals.kind(player) != null
-                && !com.hbm.client.jetpack.JetpackClientVisuals.kind(player).equals(
-                com.hbm.client.jetpack.JetpackClientVisuals.GLIDER);
+        boolean directJetpack = JetpackClientVisuals.kind(player) != null
+                && !JetpackClientVisuals.kind(player).equals(
+                JetpackClientVisuals.GLIDER);
         if (!ArmorFSB.hasFSBArmorIgnoreCharge(player) && !directJetpack) return;
 
         List<Row> rows = new ArrayList<>();
@@ -115,13 +116,13 @@ public final class ArmorHudOverlay {
             float fill = max <= 0 ? 0F : (float) powered.getCharge(stack) / max;
             return new Row(Math.max(0F, Math.min(1F, fill)), 0xFF00FF00);
         }
-        String path = com.hbm.client.jetpack.JetpackClientVisuals.path(stack);
+        String path = JetpackClientVisuals.path(stack);
         if (path != null && path.startsWith("jetpack_")) {
-            com.hbm.client.jetpack.JetpackClientBridge.Fuel fuel =
-                    com.hbm.client.jetpack.JetpackClientBridge.fuel(stack);
+            JetpackClientBridge.Fuel fuel =
+                    JetpackClientBridge.fuel(stack);
             if (fuel != null && fuel.capacity() > 0) {
                 float fill = Math.max(0F, Math.min(1F, fuel.amount() / (float) fuel.capacity()));
-                return new Row(fill, com.hbm.client.jetpack.JetpackClientVisuals.fuelColor(fuel.type()));
+                return new Row(fill, JetpackClientVisuals.fuelColor(fuel.type()));
             }
         }
         return null;

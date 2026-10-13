@@ -7,7 +7,7 @@ import java.util.Locale;
  * as 2 and anything else - including its default "OFF" - as 0, so potion sickness is off out of the box.
  *
  * <p>The twelve {@code 8.00}..{@code 8.11} potion-ID keys are not ported: effects are registered by name, and the port
- * persists no numeric ids (History §19ej-8).
+ * persists no numeric ids.
  */
 public final class PotionConfig {
 

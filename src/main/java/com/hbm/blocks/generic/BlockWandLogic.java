@@ -7,6 +7,7 @@ import com.hbm.config.ServerConfig;
 import com.hbm.interfaces.IBomb;
 import com.hbm.interfaces.ICopiable;
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.items.LegacyMeta;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.world.gen.nbt.ILegacyStructureTile;
@@ -35,6 +36,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -97,7 +99,7 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
                 if (level.getBlockEntity(pos) instanceof TileEntityWandLogic logic) {
                     if (!level.isClientSide()) {
                         logic.disguise = block;
-                        logic.disguiseMeta = com.hbm.items.LegacyMeta.of(stack) & 15;
+                        logic.disguiseMeta = LegacyMeta.of(stack) & 15;
                         logic.setChanged();
                     }
                     return InteractionResult.SUCCESS;
@@ -218,7 +220,7 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
         }
 
         @Override
-        public void transformTE(net.minecraft.world.level.LevelAccessor level, int coordBaseMode) {
+        public void transformTE(LevelAccessor level, int coordBaseMode) {
             triggerReplace = !ServerConfig.STRUCTURE_DEBUG.get();
         }
 

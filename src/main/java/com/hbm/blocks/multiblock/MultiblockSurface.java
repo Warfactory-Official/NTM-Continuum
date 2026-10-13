@@ -1,11 +1,18 @@
 package com.hbm.blocks.multiblock;
 
 import com.hbm.capability.CapRole;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
@@ -48,15 +55,15 @@ public final class MultiblockSurface {
 
     /**
      * The client has no server index, so it walks back to the core. The candidates are the exact offsets
-     * some registered machine places a cell at, negated — a few hundred deltas rather than the 35937 of a
-     * bounding cube, and every one of them a position a core could actually occupy. Cells cluster, so the
-     * last answer is tried first and usually stands. The candidates are sorted nearest first.
+     * some registered machine places a cell at, negated: a few hundred deltas rather than the 35937 of a
+     * bounding cube, each a position a core could occupy. Cells cluster, so the last answer is tried first
+     * and usually stands. The candidates are sorted nearest first.
      *
      * <p>A {@link BlockGetter} that is not a {@link Level} may be a section-compile region, which can read only
-     * {@link #REGION_REACH} blocks around any position it is asked about and throws beyond that (vanilla's
-     * {@code RenderSectionRegion} indexes a 3x3x3 section array). Some machine's deltas exceed that reach, so a
-     * door cell next to a section edge crashed the chunk compile (AO asks the neighbour's collision shape). Reads
-     * past the reach are tried and skipped when the getter cannot answer them; the cell's own core is always
+     * {@link #REGION_REACH} blocks around any position and throws beyond that (vanilla's
+     * {@code RenderSectionRegion} indexes a 3x3x3 section array). Some machine's deltas exceed that reach, and a
+     * door cell next to a section edge would crash the chunk compile (AO asks the neighbour's collision shape).
+     * Reads past the reach are tried and skipped when the getter cannot answer them; the cell's own core is
      * within reach for every machine small enough to be drawn from such a region.
      */
     private static @Nullable BlockPos clientCoreOf(BlockGetter level, BlockPos cell) {
@@ -110,8 +117,8 @@ public final class MultiblockSurface {
     }
 
     private static long[] buildClientCandidates() {
-        it.unimi.dsi.fastutil.longs.LongOpenHashSet deltas = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
-        for (net.minecraft.world.level.block.Block block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {
+        LongOpenHashSet deltas = new LongOpenHashSet();
+        for (Block block : BuiltInRegistries.BLOCK) {
             if (!(block instanceof BlockMultiblockCore core)) continue;
             for (Direction facing : Direction.values()) {
                 if (facing.getAxis().isVertical()) continue;
@@ -122,8 +129,8 @@ public final class MultiblockSurface {
         }
         long[] sorted = deltas.toLongArray();
         // nearest first: a section-compile region answers those without a range check (see clientCoreOf)
-        return java.util.Arrays.stream(sorted).boxed()
-                .sorted(java.util.Comparator.comparingInt(MultiblockSurface::reach)
+        return Arrays.stream(sorted).boxed()
+                .sorted(Comparator.comparingInt(MultiblockSurface::reach)
                         .thenComparingLong(Long::longValue))
                 .mapToLong(Long::longValue).toArray();
     }
@@ -133,7 +140,7 @@ public final class MultiblockSurface {
     }
 
     /**
-     * The block entity of the multiblock {@code pos} belongs to — what 1.7's {@code findCoreTE} answered,
+     * The block entity of the multiblock {@code pos} belongs to. This is what 1.7's {@code findCoreTE} answered,
      * off the index instead of a metadata walk. {@code pos} may be the core itself or any of its cells.
      */
     public static @Nullable BlockEntity coreEntity(BlockGetter level, BlockPos pos) {
@@ -174,7 +181,7 @@ public final class MultiblockSurface {
                 pos.getY() - core.getY(), pos.getZ() - core.getZ(), domains);
     }
 
-    /** The passive accept surface alone — the item route's question; see {@code isPassiveOnlyOpenAt}. */
+    /** The passive accept surface alone. This is the item route's question; see {@code isPassiveOnlyOpenAt}. */
     public static boolean isPassiveOpen(Level level, BlockPos pos, Direction side, int passiveDomains) {
         BlockMultiblockCore.FoldedOwner owner = ownerOf(level, pos);
         if (owner == null) {
@@ -192,11 +199,11 @@ public final class MultiblockSurface {
      * Every block a folded machine at {@code core} is made of: the core plus each placed cell the core
      * index still attributes to it (ntm-next's {@code rigidStructureBlocks}, for the falling multiblock).
      */
-    public static java.util.List<BlockPos> rigidStructureBlocks(Level level, BlockPos core) {
+    public static List<BlockPos> rigidStructureBlocks(Level level, BlockPos core) {
         BlockState state = level.getBlockState(core);
         BlockMultiblockCore block = foldedCore(state);
-        if (block == null) return java.util.List.of();
-        java.util.List<BlockPos> out = new java.util.ArrayList<>();
+        if (block == null) return List.of();
+        List<BlockPos> out = new ArrayList<>();
         out.add(core.immutable());
         long corePacked = core.asLong();
         ServerLevel server = level instanceof ServerLevel s ? s : null;

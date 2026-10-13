@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-/** JEI category for the catalytic cracker — {input 100, STEAM 200} → {left, right (unless NONE),
+/** JEI category for the catalytic cracker: {input 100, STEAM 200} → {left, right (unless NONE),
  * SPENTSTEAM 2}. */
 public class CrackingRecipeHandler extends JEIUniversalHandler<CrackingRecipeHandler.Entry> {
 

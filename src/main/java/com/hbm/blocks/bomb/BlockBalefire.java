@@ -1,13 +1,16 @@
 package com.hbm.blocks.bomb;
 
+import com.hbm.mixin.FireBlockAccessor;
 import com.hbm.potion.ModEffects;
 import dev.golem.core.world.Effects;
+import dev.golem.core.world.Fires;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import dev.golem.core.world.CompatFireBlock;
@@ -19,17 +22,15 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 /**
- * Balefire — the 1.12.2 {@code Balefire} block: the green-white flame left behind by balefire
- * ordnance, and by a GAMMA-wavelength FEL beam burning through a block.
+ * The 1.12.2 {@code Balefire} block: the green-white flame left behind by balefire ordnance, and by a
+ * GAMMA-wavelength FEL beam burning through a block.
  *
- * <p>It is a fire block with the spread rules turned up hard. Where vanilla fire tries to catch six
- * neighbours and spreads into a 3×3×(−1..4) box, balefire uses the <b>same box but a flat 500/300
- * catch chance</b> and, critically, a {@code h = 3} radius — a 7×7×6 volume per tick — so it engulfs an
- * area rather than creeping along fuel. It also seeds neighbouring balefire with a lower age, which
- * keeps the fire alive far longer than vanilla's.
+ * <p>A fire block with the spread rules turned up. Vanilla fire tries to catch six neighbours and spreads
+ * into a 3×3×(−1..4) box; balefire uses the <b>same box with a flat 500/300 catch chance</b> and an
+ * {@code h = 3} radius (a 7×7×6 volume per tick), so it engulfs an area rather than creeping along fuel.
+ * It seeds neighbouring balefire with a lower age, which keeps the fire alive far longer than vanilla's.
  *
- * <p>Standing in it sets you on fire for 10 seconds <i>and</i> applies radiation X (5 s), which is what
- * makes it lethal rather than merely damaging.
+ * <p>Standing in it sets you on fire for 10 seconds <i>and</i> applies radiation X (5 s).
  */
 public class BlockBalefire extends CompatFireBlock {
 
@@ -63,7 +64,7 @@ public class BlockBalefire extends CompatFireBlock {
 
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (!dev.golem.core.world.Fires.canSpreadAround(level, pos)) return;
+        if (!Fires.canSpreadAround(level, pos)) return;
 
         int age = state.getValue(AGE);
         if (age < 15) {
@@ -90,7 +91,7 @@ public class BlockBalefire extends CompatFireBlock {
         spread(level, pos, random, age);
     }
 
-    /** The 7×7×6 area sweep — {@code h = 3} instead of vanilla's 1. */
+    /** The 7×7×6 area sweep: {@code h = 3} instead of vanilla's 1. */
     private void spread(ServerLevel level, BlockPos pos, RandomSource random, int age) {
         final int h = 3;
         BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
@@ -141,7 +142,7 @@ public class BlockBalefire extends CompatFireBlock {
             // Upstream called TNT's own "destroyed while lit" path; 26.1's equivalent is to replace the
             // block with a primed entity, which is what that path ultimately did.
             level.removeBlock(pos, false);
-            level.addFreshEntity(new net.minecraft.world.entity.item.PrimedTnt(
+            level.addFreshEntity(new PrimedTnt(
                     level, pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, null));
         }
     }
@@ -156,16 +157,15 @@ public class BlockBalefire extends CompatFireBlock {
     /**
      * 26.1 keeps the burn/spread tables inside the vanilla {@code FireBlock} instance rather than on
      * each block (1.12's {@code Block.getFlammability}/{@code getFireSpreadSpeed}), and both lookups
-     * are private — hence the {@link com.hbm.mixin.FireBlockAccessor} invokers, which the fallout
-     * sweep already relies on. Reading the real table keeps balefire's spread numerically identical
-     * to the original instead of approximating it.
+     * are private, hence the {@link com.hbm.mixin.FireBlockAccessor} invokers that the fallout sweep
+     * also uses. Reading the real table keeps balefire's spread identical to the original.
      */
     private static int flammability(BlockState state) {
-        return ((com.hbm.mixin.FireBlockAccessor) Blocks.FIRE).hbm$getBurnOdds(state);
+        return ((FireBlockAccessor) Blocks.FIRE).hbm$getBurnOdds(state);
     }
 
     private static int fireSpreadSpeed(BlockState state) {
-        return ((com.hbm.mixin.FireBlockAccessor) Blocks.FIRE).hbm$getIgniteOdds(state);
+        return ((FireBlockAccessor) Blocks.FIRE).hbm$getIgniteOdds(state);
     }
 
     @Override

@@ -3,6 +3,9 @@ package com.hbm.blocks.bomb;
 import com.hbm.api.block.IToolable;
 import com.hbm.entity.explosive.EntityPrimedExplosive;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.CompatBlock;
+import dev.golem.core.world.Fires;
+import dev.golem.core.world.ItemStacks;
 import java.util.function.BiConsumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -31,7 +34,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /** Shared legacy TNT behavior: configurable break ignition and a custom persistent primed entity. */
-public abstract class BlockTNTBase extends dev.golem.core.world.CompatBlock implements IToolable {
+public abstract class BlockTNTBase extends CompatBlock implements IToolable {
 
     public static final BooleanProperty ARMED = BooleanProperty.create("armed");
     private static final int POP_FUSE = 20;
@@ -40,7 +43,7 @@ public abstract class BlockTNTBase extends dev.golem.core.world.CompatBlock impl
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(ARMED, false));
         // 1.7 BlockTNTBase: super(Material.tnt, 15, 100, ...) - BlockFlammable encouragement 15, flammability 100
-        dev.golem.core.world.Fires.setFlammable(this, 15, 100);
+        Fires.setFlammable(this, 15, 100);
     }
 
     @Override
@@ -94,7 +97,7 @@ public abstract class BlockTNTBase extends dev.golem.core.world.CompatBlock impl
         if (!level.isClientSide()) {
             prime(level, pos, state.setValue(ARMED, true), player);
             level.removeBlock(pos, false);
-            dev.golem.core.world.ItemStacks.hurtAndBreak(stack, 1, player, hand);
+            ItemStacks.hurtAndBreak(stack, 1, player, hand);
         }
         return InteractionResult.SUCCESS;
     }

@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import dev.golem.core.Ids;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.DyeColor;
@@ -39,7 +40,7 @@ public final class PylonDyes {
     public static int colorFromDye(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return 0;
         for (DyeColor color : DyeColor.values()) {
-            TagKey<Item> tag = TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/" + color.getName()));
+            TagKey<Item> tag = TagKey.create(Registries.ITEM, Ids.of("c", "dyes/" + color.getName()));
             if (stack.is(tag)) return NAME_TO_COLOR.getOrDefault(color, 0);
         }
         return 0;

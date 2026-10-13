@@ -1,16 +1,24 @@
 package com.hbm.items.special;
 
+import com.hbm.config.BombConfig;
 import com.hbm.config.WeaponConfig;
+import com.hbm.entity.effect.EntityCloudFleija;
+import com.hbm.entity.logic.EntityNukeExplosionMK3;
+import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModSingularityItems;
 import com.hbm.api.fluidmk2.IFillableItem;
+import com.hbm.items.ModelState;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -19,7 +27,7 @@ import net.minecraft.world.item.TooltipFlag;
 import java.util.List;
 
 /** Component-backed replacement for the old metadata fluid cell used by the antimatter recipe. */
-public final class ItemCell extends CompatItem implements IFillableItem, com.hbm.items.ModelState {
+public final class ItemCell extends CompatItem implements IFillableItem, ModelState {
     public static final int CAPACITY = 1_000;
 
     public ItemCell(Item.Properties properties) {
@@ -65,7 +73,7 @@ public final class ItemCell extends CompatItem implements IFillableItem, com.hbm
 
     /**
      * {@code hbm:model_state}: the 1.7 cell item ({@link CellVariants}) whose sprite this cell draws, from its fluid
-     * (saved by name). Nothing about the sprite is stored on the stack (History §19es-itemvariant).
+     * (saved by name). Nothing about the sprite is stored on the stack.
      */
     @Override
     public int modelState(ItemStack stack) {
@@ -89,7 +97,7 @@ public final class ItemCell extends CompatItem implements IFillableItem, com.hbm
         return variantOf(fluid) != CellVariants.EMPTY;
     }
 
-    /** Full cells leave one empty cell, while an empty cell is deliberately not a container item. */
+    /** Full cells leave one empty cell, while an empty cell is not a container item. */
     public static ItemStack remainder(ItemStack stack) {
         return isEmptyCell(stack) ? ItemStack.EMPTY
                 : isFullCell(stack, getFluidType(stack)) ? new ItemStack(ModSingularityItems.cell.get())
@@ -162,23 +170,23 @@ public final class ItemCell extends CompatItem implements IFillableItem, com.hbm
 
     public static void tickDropped(ItemEntity entity) {
         if (!(entity.getItem().getItem() instanceof ItemCell) || entity.level().isClientSide()) return;
-        if (!entity.onGround() || !(entity.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
+        if (!entity.onGround() || !(entity.level() instanceof ServerLevel level)) return;
         FluidType fluid = getFluidType(entity.getItem());
         if (!isFullCell(entity.getItem(), fluid) || (fluid != Fluids.AMAT && fluid != Fluids.ASCHRAB)) return;
 
         double x = entity.getX(), y = entity.getY(), z = entity.getZ();
         if (WeaponConfig.dropCell) {
             if (fluid == Fluids.AMAT) {
-                new com.hbm.explosion.vanillant.ExplosionVNT(level, x, y, z, antimatterDropStrength).makeAmat().explode();
+                new ExplosionVNT(level, x, y, z, antimatterDropStrength).makeAmat().explode();
             } else {
-                int radius = com.hbm.config.BombConfig.aSchrabRadius;
-                com.hbm.entity.logic.EntityNukeExplosionMK3 ex =
-                        com.hbm.entity.logic.EntityNukeExplosionMK3.statFacFleija(level, x, y, z, radius);
+                int radius = BombConfig.aSchrabRadius;
+                EntityNukeExplosionMK3 ex =
+                        EntityNukeExplosionMK3.statFacFleija(level, x, y, z, radius);
                 if (!ex.isRemoved()) {
-                    level.playSound(null, x, y, z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE.value(),
-                            net.minecraft.sounds.SoundSource.BLOCKS, 100.0F, level.getRandom().nextFloat() * 0.1F + 0.9F);
+                    level.playSound(null, x, y, z, SoundEvents.GENERIC_EXPLODE.value(),
+                            SoundSource.BLOCKS, 100.0F, level.getRandom().nextFloat() * 0.1F + 0.9F);
                     level.addFreshEntity(ex);
-                    level.addFreshEntity(com.hbm.entity.effect.EntityCloudFleija.statFac(level, radius, x, y, z));
+                    level.addFreshEntity(EntityCloudFleija.statFac(level, radius, x, y, z));
                 }
             }
         }
@@ -188,7 +196,7 @@ public final class ItemCell extends CompatItem implements IFillableItem, com.hbm
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        // 1.7 ItemDrop.addInformation, verbatim: plain grey lines, no drop badge.
+        // 1.7 ItemDrop.addInformation: plain grey lines, no drop badge.
         FluidType fluid = getFluidType(stack);
         if (fluid == Fluids.AMAT) {
             tooltip.add(Component.literal("Warning: Exposure to matter will"));

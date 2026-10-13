@@ -1,6 +1,8 @@
 package com.hbm.blocks.network;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.uninos.graph.LevelNodeGraph;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
@@ -9,9 +11,12 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.network.TileEntityFluidValve;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -34,7 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** A manually toggled, typed fluid-pipe gate. */
-public class FluidValve extends dev.golem.core.world.CompatBlock
+public class FluidValve extends CompatBlock
         implements TickingBlock, IFluidConnectorBlockMK2, ILookOverlay {
 
     public static final BooleanProperty OPEN = BooleanProperty.create("open");
@@ -83,14 +88,14 @@ public class FluidValve extends dev.golem.core.world.CompatBlock
 
     /**
      * A block appearing beside a valve is the one endpoint transition nothing else announces, exactly as
-     * for a duct — an open valve is a conductor with faces of its own.
+     * for a duct: an open valve is a conductor with faces of its own.
      */
     @Override
     protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
                                      boolean movedByPiston) {
         super.onNeighborChanged(state, level, pos, neighbourBlock, movedByPiston);
-        if (level instanceof net.minecraft.server.level.ServerLevel server) {
-            com.hbm.uninos.graph.LevelNodeGraph.invalidateEndpointsAt(server, pos);
+        if (level instanceof ServerLevel server) {
+            LevelNodeGraph.invalidateEndpointsAt(server, pos);
         }
     }
 
@@ -102,7 +107,7 @@ public class FluidValve extends dev.golem.core.world.CompatBlock
         if (!level.isClientSide()) {
             boolean open = !state.getValue(OPEN);
             level.setBlock(pos, state.setValue(OPEN, open), 3);
-            level.playSound(null, pos, ModSounds.REACTOR_START.get(), net.minecraft.sounds.SoundSource.BLOCKS,
+            level.playSound(null, pos, ModSounds.REACTOR_START.get(), SoundSource.BLOCKS,
                     1.0F, open ? 1.0F : 0.85F);
             level.updateNeighborsAt(pos, this);
             if (level.getBlockEntity(pos) instanceof TileEntityFluidValve valve) valve.updateState();
@@ -114,7 +119,7 @@ public class FluidValve extends dev.golem.core.world.CompatBlock
     public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
         return world.getBlockState(new BlockPos(x, y, z)).getValue(OPEN)
                 && world.getBlockEntity(new BlockPos(x, y, z)) instanceof TileEntityFluidValve valve
-                && valve.getFluidType() != com.hbm.inventory.fluid.Fluids.NONE
+                && valve.getFluidType() != Fluids.NONE
                 && valve.canConnect(type, dir);
     }
 

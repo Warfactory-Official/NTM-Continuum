@@ -8,30 +8,32 @@ import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityFEL;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import java.awt.Color;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * FEL renderer — port of the 1.12.2 {@code RenderFEL}. The emitter body is static; what needs a custom
+ * FEL renderer: port of the 1.12.2 {@code RenderFEL}. The emitter body is static; what needs a custom
  * renderer is the <b>beam</b>, drawn with {@link BeamPronter} (the same helper the mining laser uses)
  * from the aperture out to whatever the beam is currently hitting.
  *
- * <p>Old yaw map N0/S180/W90/E270 — the standard facing map, so no base offset.
+ * <p>Old yaw map N0/S180/W90/E270: the standard facing map, so no base offset.
  *
  * <p>The beam gate here uses {@code pow(2)}, exactly as 1.7.10's {@code RenderFEL} (and the GUI and audio
- * ramp), while the server cost is {@code 3^ordinal} — an upstream inconsistency, preserved.
+ * ramp), while the server cost is {@code 3^ordinal}: an upstream inconsistency, preserved.
  */
 public class FELRenderer extends GemBER<TileEntityFEL, FELRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/fel.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/fel.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/fel.png");
 
@@ -65,7 +67,7 @@ public class FELRenderer extends GemBER<TileEntityFEL, FELRenderState> {
         state.color = be.mode.renderedBeamColor == 0
                 // VISIBLE has no fixed colour: the original cycles the hue very slowly (÷2000) at low
                 // brightness (0.1), giving a dim shifting glow rather than a rainbow strobe.
-                ? java.awt.Color.HSBtoRGB(gameTime(be) / 2000.0F, 0.5F, 0.1F) & 0xFFFFFF
+                ? Color.HSBtoRGB(gameTime(be) / 2000.0F, 0.5F, 0.1F) & 0xFFFFFF
                 : be.mode.renderedBeamColor;
     }
 

@@ -5,6 +5,10 @@ import com.hbm.blocks.generic.BlockGasBase;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.client.particle.ParticleGasCloud;
 import com.hbm.items.tool.ItemDosimeter;
+import dev.golem.core.harness.HarnessQueryRegistry;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -25,7 +29,7 @@ public final class DosimeterGasHarnessQueries {
     private DosimeterGasHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_dosimeter_gas", DosimeterGasHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_dosimeter_gas", DosimeterGasHarnessQueries::query);
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {
@@ -36,8 +40,8 @@ public final class DosimeterGasHarnessQueries {
         json.addProperty("chance", BlockGasBase.ashGlassesParticleChance);
         var server = mc.getSingleplayerServer();
         if (mc.player == null || server == null) return json;
-        java.util.UUID id = mc.player.getUUID();
-        java.util.concurrent.CompletableFuture<JsonObject> result = new java.util.concurrent.CompletableFuture<>();
+        UUID id = mc.player.getUUID();
+        CompletableFuture<JsonObject> result = new CompletableFuture<>();
         server.execute(() -> {
             JsonObject s = new JsonObject();
             try {
@@ -50,7 +54,7 @@ public final class DosimeterGasHarnessQueries {
             result.complete(s);
         });
         try {
-            json.add("server", result.get(10, java.util.concurrent.TimeUnit.SECONDS));
+            json.add("server", result.get(10, TimeUnit.SECONDS));
         } catch (Exception e) {
             json.addProperty("error", e.toString());
         }

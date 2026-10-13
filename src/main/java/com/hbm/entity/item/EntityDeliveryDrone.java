@@ -1,5 +1,6 @@
 package com.hbm.entity.item;
 
+import dev.golem.core.data.Inventories;
 import dev.golem.core.data.Tags;
 
 import com.hbm.items.ModEntityItems;
@@ -11,6 +12,7 @@ import com.hbm.items.tool.ItemDrone;
 import com.hbm.items.tool.ItemDrone.EnumDroneType;
 import com.hbm.util.ChunkShapeHelper;
 import com.hbm.util.ChunkUtil;
+import dev.golem.core.world.ItemStacks;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.world.ContainerHelper;
@@ -134,7 +136,7 @@ public class EntityDeliveryDrone extends EntityDroneBase implements Container {
         this.forcedChunks.clear();
     }
 
-    // 26.2: forced chunks outlive entities where 1.7 tickets died with theirs
+    // 26.1: forced chunks outlive entities where 1.7 tickets died with theirs
     @Override
     public void remove(RemovalReason reason) {
         clearChunkLoader();
@@ -145,8 +147,8 @@ public class EntityDeliveryDrone extends EntityDroneBase implements Container {
     protected void loadData(DataIn input) {
         super.loadData(input);
         this.slots.clear();
-        dev.golem.core.data.Inventories.load(input, this.slots);
-        // the carried fluid: registry name + amount (never the numeric fluid id, History section 19ej-ids)
+        Inventories.load(input, this.slots);
+        // the carried fluid: registry name + amount (never the numeric fluid id)
         this.fluid = input.child("fluid").map(tag -> new FluidStack(Fluids.read(tag, "type"),
                 tag.getIntOr("amount", 0), tag.getIntOr("pressure", 0))).orElse(null);
         setExpress(input.getBooleanOr("express", false));
@@ -156,7 +158,7 @@ public class EntityDeliveryDrone extends EntityDroneBase implements Container {
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        dev.golem.core.data.Inventories.save(output, this.slots, true);
+        Inventories.save(output, this.slots, true);
         if (this.fluid != null) {
             DataOut tag = output.child("fluid");
             Fluids.write(tag, "type", this.fluid.type);
@@ -201,7 +203,7 @@ public class EntityDeliveryDrone extends EntityDroneBase implements Container {
     @Override
     public void setItem(int slot, ItemStack stack) {
         this.slots.set(slot, stack);
-        dev.golem.core.world.ItemStacks.limitSize(stack, getMaxStackSize());
+        ItemStacks.limitSize(stack, getMaxStackSize());
     }
 
     @Override

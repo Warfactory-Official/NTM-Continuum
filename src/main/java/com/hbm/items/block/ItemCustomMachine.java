@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * 1.7 {@code ItemCustomMachine}: one controller item per configured machine. 1.7 kept the machine's index in the
  * damage value ({@code index + 100}); the port names the configuration instead ({@link ModDataComponents#CUSTOM_MACHINE},
- * its {@code unlocalizedName}), so no number is saved (History §19es-itemvariant).
+ * its {@code unlocalizedName}), so no number is saved.
  */
 public class ItemCustomMachine extends CompatBlockItem {
 

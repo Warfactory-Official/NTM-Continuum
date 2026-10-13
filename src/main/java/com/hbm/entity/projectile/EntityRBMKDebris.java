@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.ModRBMKEntities;
@@ -11,6 +12,7 @@ import dev.golem.core.data.CompatEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.SynchedData;
+import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -33,7 +35,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-/** Flying RBMK column fragments. This is intentionally separate from ZIRNOX debris: its ascent destroys a 3x3x3 path. */
+/** Flying RBMK column fragments. This is separate from ZIRNOX debris: its ascent destroys a 3x3x3 path. */
 public class EntityRBMKDebris extends CompatEntity {
 
     private static final EntityDataAccessor<Integer> TYPE =
@@ -60,12 +62,12 @@ public class EntityRBMKDebris extends CompatEntity {
 
     @Override
     protected void loadData(DataIn input) {
-        setDebrisType(com.hbm.util.SavedIds.getEnum(input, "debtype", DebrisType.BLANK));
+        setDebrisType(SavedIds.getEnum(input, "debtype", DebrisType.BLANK));
     }
 
     @Override
     protected void saveData(DataOut output) {
-        com.hbm.util.SavedIds.putEnum(output, "debtype", getDebrisType()); // by name; the synched int is session-only
+        SavedIds.putEnum(output, "debtype", getDebrisType()); // by name; the synched int is session-only
     }
 
     @Override
@@ -165,11 +167,11 @@ public class EntityRBMKDebris extends CompatEntity {
         LID(ModRBMKItems.rbmk_lid, 300 * 20, 1.0F, 0.5F);
 
         private static final DebrisType[] VALUES = values();
-        private final dev.golem.core.registry.RegistryObject<? extends Item> item;
+        private final RegistryObject<? extends Item> item;
         private final int lifetime;
         private final EntityDimensions dimensions;
 
-        DebrisType(dev.golem.core.registry.RegistryObject<? extends Item> item, int lifetime, float width, float height) {
+        DebrisType(RegistryObject<? extends Item> item, int lifetime, float width, float height) {
             this.item = item;
             this.lifetime = lifetime;
             this.dimensions = EntityDimensions.scalable(width, height);

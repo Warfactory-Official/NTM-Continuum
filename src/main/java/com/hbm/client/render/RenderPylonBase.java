@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.tileentity.network.TileEntityPylonBase;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.Renderers;
@@ -35,8 +36,8 @@ public abstract class RenderPylonBase<T extends TileEntityPylonBase> extends Gem
     /** The old {@code ClientConfig.RENDER_CABLE_HANG}: straight wires when off. */
     public static boolean RENDER_CABLE_HANG = true;
 
-    private static final Identifier WIRE = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/network/wire.png");
-    private static final Identifier WIRE_GREYSCALE = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/network/wire_greyscale.png");
+    private static final Identifier WIRE = Ids.of(Constants.MOD_ID, "textures/models/network/wire.png");
+    private static final Identifier WIRE_GREYSCALE = Ids.of(Constants.MOD_ID, "textures/models/network/wire_greyscale.png");
     private static final int COUNT = 10;
     public static final int LINE_COLOR = 0xBB3311;
 

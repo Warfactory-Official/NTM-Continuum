@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.saveddata.TomSaveData;
 import dev.golem.core.data.Tags;
 
 import com.hbm.tileentity.MachineCore;
@@ -17,7 +18,9 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.sounds.SoundSource;
@@ -48,9 +51,9 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
         for (DirPos connection : te.getConPos()) te.trySubscribe(te.tanks[0].getTankType(), level, connection);
         te.tryPullHeat(level);
         // 1.7 Tom-impact fire heating: +0.0005% of the remaining buffer per tick under sky light > 7.
-        if (level instanceof net.minecraft.server.level.ServerLevel server
-                && level.getBrightness(net.minecraft.world.level.LightLayer.SKY, pos) > 7) {
-            com.hbm.saveddata.TomSaveData tom = com.hbm.saveddata.TomSaveData.published(server);
+        if (level instanceof ServerLevel server
+                && level.getBrightness(LightLayer.SKY, pos) > 7) {
+            TomSaveData tom = TomSaveData.published(server);
             if (tom != null && tom.fire > 1e-5) te.heat += (int) ((maxHeat - te.heat) * 0.000005D);
         }
         te.isOn = false;

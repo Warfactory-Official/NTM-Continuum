@@ -1,7 +1,9 @@
 package com.hbm.items.tool;
 
 import com.hbm.Constants;
+import com.hbm.api.event.HbmEvents;
 import com.hbm.config.GeneralConfig;
+import com.hbm.config.WeaponConfig;
 import com.hbm.interfaces.IBomb;
 import com.hbm.items.ModDataComponents;
 import com.hbm.sound.ModSounds;
@@ -81,7 +83,7 @@ public class ItemDropDetonator extends CompatItem {
         if (item.kind == Kind.DEADMAN) {
             BlockPos pos = ModDataComponents.DETONATOR_TARGET.get(stack).orElse(null);
             if (pos != null && level.getBlockState(pos).getBlock() instanceof IBomb bomb) {
-                com.hbm.api.event.HbmEvents.detonate(bomb, level, pos, entity);
+                HbmEvents.detonate(bomb, level, pos, entity);
                 if (GeneralConfig.enableExtendedLogging) {
                     Constants.LOG.info("[DET] Tried to detonate block at {} / {} / {} by dead man's switch!",
                             pos.getX(), pos.getY(), pos.getZ());
@@ -90,7 +92,7 @@ public class ItemDropDetonator extends CompatItem {
             level.explode(entity, entity.getX(), entity.getY(), entity.getZ(), 0.0F, Level.ExplosionInteraction.TNT);
             entity.discard();
         } else {
-            if (com.hbm.config.WeaponConfig.dropDead) { // 1.7 10.05_dropDead
+            if (WeaponConfig.dropDead) { // 1.7 10.05_dropDead
                 level.explode(entity, entity.getX(), entity.getY(), entity.getZ(), 15.0F, Level.ExplosionInteraction.TNT);
                 if (GeneralConfig.enableExtendedLogging) {
                     Constants.LOG.info("[DET] Detonated dead man's explosive at {} / {} / {}!",

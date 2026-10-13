@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/** The large caster block (1.12.2 {@code foundry_basin}) — full block, takes size-1 molds, pour-only.
+/** The large caster block (1.12.2 {@code foundry_basin}): full block, takes size-1 molds, pour-only.
  * Drawn by the BER (the old {@code foundry_basin.obj}), so the block itself is invisible. */
 public class FoundryBasin extends FoundryCastingBase {
 

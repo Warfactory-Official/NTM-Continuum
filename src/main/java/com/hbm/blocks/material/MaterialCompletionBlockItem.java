@@ -8,8 +8,8 @@ import net.minecraft.world.level.block.Block;
 
 /**
  * One block item per state of a 1.7 metadata block (concrete colours, lightstone, the structure wand): each places
- * its own state. The item knows its 1.7 metadata ({@link #variant()}), which is never stored on the stack (History
- * §19es-itemvariant). The 1.7 name {@code block.hbm.<block>.<variant>} is kept.
+ * its own state. The item knows its 1.7 metadata ({@link #variant()}), which is never stored on the stack.
+ * The 1.7 name {@code block.hbm.<block>.<variant>} is kept.
  */
 public final class MaterialCompletionBlockItem extends CompatBlockItem implements LegacyMeta {
 

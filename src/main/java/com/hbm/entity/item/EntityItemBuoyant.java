@@ -27,7 +27,7 @@ public class EntityItemBuoyant extends CompatItemEntity {
         this(ModNtmEntities.ITEM_BUOYANT.get(), level);
         setPos(x, y, z);
         setItem(stack);
-        // 26.2: ItemEntity's positional ctor hardcodes EntityTypes.ITEM, so a subclass cannot reach its scatter
+        // 26.1: ItemEntity's positional ctor hardcodes EntityTypes.ITEM, so a subclass cannot reach its scatter
         setDeltaMovement(random.nextDouble() * 0.2 - 0.1, 0.2, random.nextDouble() * 0.2 - 0.1);
     }
 

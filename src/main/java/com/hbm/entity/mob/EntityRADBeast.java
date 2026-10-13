@@ -12,6 +12,7 @@ import com.hbm.items.ModZirnoxItems;
 import com.hbm.items.machine.ZirnoxFuel;
 import com.hbm.sound.ModSounds;
 import com.hbm.lib.ModDamageSources;
+import dev.golem.core.world.Navigations;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -224,7 +225,7 @@ public class EntityRADBeast extends CompatMonster implements IRadiationImmune {
 
         int looting = 0;
         if (source.getEntity() instanceof LivingEntity attacker) {
-            looting = dev.golem.core.world.Compat.lootingLevel(level, attacker);
+            looting = Compat.lootingLevel(level, attacker);
         }
 
         // 1.7: a guaranteed polonium nugget per looting level
@@ -293,7 +294,7 @@ public class EntityRADBeast extends CompatMonster implements IRadiationImmune {
             // 1.7 repathed on a missing path or one tick in twenty, but not on a tick attackEntity set hasAttacked:
             // inside pulse range it keeps walking the path it has and then stands its ground
             if (!hasAttacked && (this.beast.getNavigation().isDone() || this.beast.getRandom().nextInt(20) == 0)) {
-                dev.golem.core.world.Navigations.navigateTo(this.beast.getNavigation(), target, 1.0D);
+                Navigations.navigateTo(this.beast.getNavigation(), target, 1.0D);
             }
 
             // 1.7 dropped its path one tick in a hundred

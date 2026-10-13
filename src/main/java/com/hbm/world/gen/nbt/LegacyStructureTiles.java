@@ -1,10 +1,16 @@
 package com.hbm.world.gen.nbt;
 
 import com.hbm.Constants;
+import com.hbm.api.energymk2.IEnergyHandlerMK2;
+import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.blocks.generic.BlockSkeletonHolder;
+import com.hbm.blocks.generic.DungeonSpawner;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.util.EnumUtil;
+import com.hbm.util.SavedIds;
+import dev.golem.core.Ids;
 import dev.golem.core.data.NbtFiles;
 import dev.golem.core.data.Tags;
 import dev.golem.core.registry.BlockEntities;
@@ -23,6 +29,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SkullBlock;
+import net.minecraft.world.level.block.WallSkullBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
@@ -127,9 +134,9 @@ public final class LegacyStructureTiles {
     }
 
     /**
-     * The bundled files are verbatim 1.7 data, so their fluids are 1.7 numbers: every tank's {@code <name>_type}
+     * The bundled files are 1.7 data, so their fluids are 1.7 numbers: every tank's {@code <name>_type}
      * (1.7 {@code FluidTank.writeToNBT}, recognised by its {@code <name>_max} sibling) and a pipe's {@code type}. The
-     * port saves a fluid only by registry name (History section 19ej-ids), so they are translated here through the
+     * port saves a fluid only by registry name, so they are translated here through the
      * frozen 1.7 table ({@link Fluids#byLegacyId}) - the one place a 1.7 fluid number is still read.
      */
     private static void legacyFluidIds(String id, CompoundTag data) {
@@ -144,17 +151,17 @@ public final class LegacyStructureTiles {
         }
         // 1.7 enum ordinals the port now saves by name: the battery's ConnectionPriority, the dungeon spawner's type
         if (id.equals("tileentity_battery") && Tags.hasInt(data, "priority")) {
-            com.hbm.util.SavedIds.putEnum(data, "priority", com.hbm.util.EnumUtil.grabEnumSafely(
-                    com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority.class, Tags.getIntOr(data, "priority", 0)));
+            SavedIds.putEnum(data, "priority", EnumUtil.grabEnumSafely(
+                    IEnergyHandlerMK2.ConnectionPriority.class, Tags.getIntOr(data, "priority", 0)));
         }
-        // the bobblehead's figure: 1.7 saved the BobbleType ordinal as a byte, the port its name (History §19es-itemvariant)
+        // the bobblehead's figure: 1.7 saved the BobbleType ordinal as a byte, the port its name
         if (id.equals("tileentity_ntm_bobblehead") && Tags.hasInt(data, "type")) {
-            com.hbm.util.SavedIds.putEnum(data, "type",
-                    com.hbm.blocks.generic.BlockBobble.BobbleType.of(Tags.getIntOr(data, "type", 0)));
+            SavedIds.putEnum(data, "type",
+                    BlockBobble.BobbleType.of(Tags.getIntOr(data, "type", 0)));
         }
         if (id.equals("tileentity_ntm_dungeon_spawner") && Tags.hasInt(data, "type")) {
-            com.hbm.util.SavedIds.putEnum(data, "type", com.hbm.util.EnumUtil.grabEnumSafely(
-                    com.hbm.blocks.generic.DungeonSpawner.EnumSpawnerType.class, Tags.getIntOr(data, "type", 0)));
+            SavedIds.putEnum(data, "type", EnumUtil.grabEnumSafely(
+                    DungeonSpawner.EnumSpawnerType.class, Tags.getIntOr(data, "type", 0)));
         }
     }
 
@@ -199,7 +206,7 @@ public final class LegacyStructureTiles {
     private static @Nullable Item item(String id) {
         int colon = id.indexOf(':');
         if (colon <= 0) return null;
-        var key = dev.golem.core.Ids.of(id.substring(0, colon), id.substring(colon + 1));
+        var key = Ids.of(id.substring(0, colon), id.substring(colon + 1));
         if (!BuiltInRegistries.ITEM.containsKey(key)) return null;
         Item item = BuiltInRegistries.ITEM.getValue(key);
         return item == Items.AIR ? null : item;
@@ -257,7 +264,7 @@ public final class LegacyStructureTiles {
     private static boolean skull(LevelAccessor level, BlockPos pos, CompoundTag nbt, int coordBaseMode) {
         BlockState placed = level.getBlockState(pos);
         int type = Tags.getIntOr(nbt, "SkullType", 0);
-        boolean wall = placed.hasProperty(net.minecraft.world.level.block.WallSkullBlock.FACING);
+        boolean wall = placed.hasProperty(WallSkullBlock.FACING);
         Block block = switch (type) {
             case 1 -> wall ? Blocks.WITHER_SKELETON_WALL_SKULL : Blocks.WITHER_SKELETON_SKULL;
             case 2 -> wall ? Blocks.ZOMBIE_WALL_HEAD : Blocks.ZOMBIE_HEAD;
@@ -267,8 +274,8 @@ public final class LegacyStructureTiles {
         };
         BlockState state;
         if (wall) {
-            Direction facing = placed.getValue(net.minecraft.world.level.block.WallSkullBlock.FACING);
-            state = block.defaultBlockState().setValue(net.minecraft.world.level.block.WallSkullBlock.FACING, facing);
+            Direction facing = placed.getValue(WallSkullBlock.FACING);
+            state = block.defaultBlockState().setValue(WallSkullBlock.FACING, facing);
         } else {
             state = block.defaultBlockState().setValue(SkullBlock.ROTATION, Tags.getIntOr(nbt, "Rot", 0) & 15)
                     .rotate(rotationOf(coordBaseMode));

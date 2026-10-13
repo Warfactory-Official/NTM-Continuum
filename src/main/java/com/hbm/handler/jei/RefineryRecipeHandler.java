@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * JEI category for the refinery — universal grid: the hot-oil input droplet in, the 4 fraction droplets
+ * JEI category for the refinery, universal grid: the hot-oil input droplet in, the 4 fraction droplets
  * plus the byproduct item out (matching the old {@code RefineryRecipeHandler} display).
  */
 public class RefineryRecipeHandler extends JEIUniversalHandler<RefineryRecipeHandler.Entry> {

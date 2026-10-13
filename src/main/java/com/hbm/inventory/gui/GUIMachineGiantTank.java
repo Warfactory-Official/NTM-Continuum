@@ -2,7 +2,10 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMachineGiantTank;
 import com.hbm.tileentity.machine.TileEntityMachineGiantTank;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -12,9 +15,9 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.Optional;
 
 /** The 1.7 {@code GUIBarrel} (176x166), shared by both giant storage machines (1.7 BAT9000/Orbus extend TileEntityBarrel). */
-public class GUIMachineGiantTank extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineGiantTank> {
+public class GUIMachineGiantTank extends CompatContainerScreen<ContainerMachineGiantTank> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_barrel.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_barrel.png");
     private static final int TANK_X = 71, TANK_TOP = 17, TANK_WIDTH = 34, TANK_HEIGHT = 52;
     private static final int MODE_X = 151, MODE_Y = 34, MODE_SIZE = 18;
 
@@ -53,7 +56,7 @@ public class GUIMachineGiantTank extends dev.golem.core.gui.CompatContainerScree
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         // 1.7 GUIBarrel hit box: guiLeft + 151 <= x < guiLeft + 169, guiTop + 35 < y <= guiTop + 53.
         if (in17(MODE_X, MODE_Y + 1, MODE_SIZE, MODE_SIZE, event.x(), event.y())) {
             GuiUtil.playClickSound();

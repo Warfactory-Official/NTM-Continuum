@@ -6,6 +6,8 @@ import com.hbm.items.gear.ArmorFSBPowered;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.DamageEvents;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -25,7 +27,7 @@ public class ItemModPads extends ItemArmorMod {
     private static final EquipmentSlot[] ARMOR = {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST,
             EquipmentSlot.HEAD};
 
-    private static final java.util.Map<Player, Float> LAST_MOVE = new java.util.WeakHashMap<>();
+    private static final Map<Player, Float> LAST_MOVE = new WeakHashMap<>();
 
     private final float damageMod;
     private final boolean charging;

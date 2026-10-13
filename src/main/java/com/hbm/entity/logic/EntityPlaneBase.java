@@ -11,6 +11,7 @@ import com.hbm.lib.ModDamageSources;
 import com.hbm.particle.helper.ExplosionSmallCreator;
 import com.hbm.sound.ModSounds;
 
+import dev.golem.core.hook.Hook;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -37,7 +38,7 @@ public abstract class EntityPlaneBase extends CompatEntity {
     }
 
     /** Every listener runs; HBM registers none. NTM: Space adds hbm-space's large explosion effect. */
-    public static final dev.golem.core.hook.Hook<Crash> CRASH = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<Crash> CRASH = Hook.notifying();
 
 
     private static final EntityDataAccessor<Float> DATA_HEALTH =

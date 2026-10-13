@@ -1,5 +1,6 @@
 package com.hbm.blocks.material;
 
+import com.hbm.blocks.generic.HbmStairBlock;
 import dev.golem.core.dejson.Variants;
 import dev.golem.core.dejson.Slots;
 import dev.golem.core.dejson.Models;
@@ -125,7 +126,7 @@ public final class MaterialCompletionRegistrations {
     private static final String[] LIGHTSTONE_NAMES = {"unrefined", "tile", "bricks", "bricks_chiseled", "chiseled"};
 
     /*
-     * 1.7's metadata items, one registered block item per state as ntm-next names them (History §19es-itemvariant):
+     * 1.7's metadata items, one registered block item per state as ntm-next names them:
      * concrete_<dye> (light gray is 1.7's "silver"), concrete_ext_<type>, lightstone_<type>. The blocks keep their one
      * id and named state property; each item places its state, and drops/pick-block answer the state's item. Member 0
      * is registered last so the block's own item (Block.asItem) stays the 1.7 metadata-0 item on every loader.
@@ -187,7 +188,7 @@ public final class MaterialCompletionRegistrations {
     /** A stair over one texture; drops itself, pickaxe. */
     private static RegistryObject<Block> stair(String id, Supplier<? extends Block> base, String texture,
                                                 float hardness, float resistance) {
-        return REG.<Block>block(id, p -> new com.hbm.blocks.generic.HbmStairBlock(
+        return REG.<Block>block(id, p -> new HbmStairBlock(
                                 base.get().defaultBlockState(), p),
                         p -> p.strength(hardness, resistance).sound(SoundType.STONE).requiresCorrectToolForDrops())
                 .transform(Presets.shape(Models.stairsAll(texture)).states(Variants.stairs()))

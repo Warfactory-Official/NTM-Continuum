@@ -9,6 +9,6 @@ public class SolderingRenderState extends CompatRenderState {
     public float yaw;
     public final CompatItemRenderState outputItem = new CompatItemRenderState();
     public boolean showItem;
-    /** Whether the output item is a 3D block model (vs a flat item) — picks the float orientation. */
+    /** Whether the output item is a 3D block model (vs a flat item), which picks the float orientation. */
     public boolean itemIs3d;
 }

@@ -51,7 +51,7 @@ import java.util.function.Consumer;
  * a scale/yaw/vertical offset come from the item-model JSON, so the icon's framing can be tuned without
  * recompiling.
  *
- * <p>This class is only the 26.1 plumbing — the codec, and the bridge from vanilla's collector to
+ * <p>This class is only the 26.1 plumbing: the codec, and the bridge from vanilla's collector to
  * {@link dev.golem.core.render.SubmitSink}. The model itself lives in {@link MachineItemModel}, which
  * older versions drive from a BEWLR instead.
  */
@@ -576,9 +576,9 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
          * {@code renderer} names the ported 1.7 renderer; {@code frame} the shared engine pose it sits in
          * ({@code weapon}: the bare slot an {@code IItemRenderer} got; {@code machine}: {@code ItemRenderBase}'s);
          * {@code flat}, optional, the model shown in a slot the renderer declines. {@code generated} and
-         * {@code handheld} are sprite frames: the renderer is posed in {@code flat}'s own display, and draws the sprite
-         * itself before what it adds (see {@code ItemSprites} for why it cannot be vanilla's). {@code sprite} is read only by the pre-26.1 path, which has no
-         * baked flat model to fall back on.
+         * {@code handheld} are sprite frames: the renderer is posed in {@code flat}'s own display and draws the
+         * sprite itself before what it adds (see {@code ItemSprites}). {@code sprite} is read only by the
+         * pre-26.1 path, which has no baked flat model to fall back on.
          */
         public record Unbaked(String renderer, String frame, Optional<Identifier> flat) implements ItemModel.Unbaked {
 

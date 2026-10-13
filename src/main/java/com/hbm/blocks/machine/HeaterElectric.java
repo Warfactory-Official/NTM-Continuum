@@ -8,6 +8,8 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityHeaterElectric;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -22,8 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Electric heating unit (1.12.2 {@code heater_electric}): a dummyable power→heat converter; a heat
- * consumer sits on its core. No GUI — the setting (0–10) is cycled by right-clicking (sneak = down; the
+ * Electric heating unit (1.12.2 {@code heater_electric}): a dummyable power-to-heat converter; a heat
+ * consumer sits on its core. No GUI: the setting (0 to 10) is cycled by right-clicking (sneak = down; the
  * old screwdriver/hand-drill tools aren't ported), and the look-overlay shows heat/consumption/output.
  * Cables connect at the single rear power port.
  */
@@ -55,8 +57,8 @@ public class HeaterElectric extends BlockMultiblockMachine implements IEnergyCon
             if (MultiblockSurface.coreEntity(level, pos) instanceof TileEntityHeaterElectric te) {
                 if (player.isShiftKeyDown()) te.toggleSettingDown();
                 else te.toggleSettingUp();
-                if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
-                    sp.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                if (player instanceof ServerPlayer sp) {
+                    sp.sendSystemMessage(Component.literal(
                             "Setting: " + te.setting + " (" + te.getHeatGen() + " TU/t, " + te.getConsumption() + " HE/t)"), true);
                 }
             }

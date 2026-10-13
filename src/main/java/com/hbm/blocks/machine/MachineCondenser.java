@@ -1,11 +1,14 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.util.BobMathUtil;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityCondenser;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
@@ -20,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Passive steam condenser; the look overlay lists both tanks, as the 1.12.2 {@code printHook} did. */
-public class MachineCondenser extends dev.golem.core.world.CompatBlock implements TickingBlock, ILookOverlay {
+public class MachineCondenser extends CompatBlock implements TickingBlock, ILookOverlay {
     public MachineCondenser(Properties properties) { super(properties); }
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new TileEntityCondenser(pos, state); }
         /** Look-overlay: green {@code ->} for the incoming spent steam, red {@code <-} for the water it sends. */
@@ -42,8 +45,8 @@ public class MachineCondenser extends dev.golem.core.world.CompatBlock implement
      */
     public static void vacuumWarning(Level level, TileEntityCondenser condenser, List<String> text) {
         if (!condenser.evaporates(level, condenser.getBlockPos())) return;
-        text.add("&[" + (com.hbm.util.BobMathUtil.getBlink() ? 0xff0000 : 0xffff00) + "&]! ! ! "
-                + net.minecraft.network.chat.Component.translatableWithFallback("atmosphere.noVacuum",
+        text.add("&[" + (BobMathUtil.getBlink() ? 0xff0000 : 0xffff00) + "&]! ! ! "
+                + Component.translatableWithFallback("atmosphere.noVacuum",
                         "REQUIRES ATMOSPHERE").getString() + " ! ! !");
     }
 

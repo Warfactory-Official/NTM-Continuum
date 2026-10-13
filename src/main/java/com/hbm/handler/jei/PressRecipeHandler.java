@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * JEI category for the press (burner + electric) — a faithful port of the 1.12.2
+ * JEI category for the press (burner + electric), a port of the 1.12.2
  * {@code PressRecipeHandler}: its own {@code gui_nei_press.png} background (which carries the vertical
- * stamp→ingredient→output art), the stamp slot on top {@code (48,6)}, the ingredient below {@code (48,42)},
+ * stamp, ingredient, and output art), the stamp slot on top {@code (48,6)}, the ingredient below {@code (48,42)},
  * the output at {@code (111,24)}, and the animated press-head {@code (0,86,18,18)} cycling downward at
  * {@code (47,24)} between them. The stamp slot cycles every registered stamp of the recipe's type.
  */
@@ -30,7 +30,7 @@ public class PressRecipeHandler extends HbmRecipeCategory<PressRecipes.PressReci
 
     private final Drawable progress;
 
-    /** StampType → all registered stamp items of that type (built once from ModStampItems). */
+    /** Every registered stamp item per StampType (built once from ModStampItems). */
     private static Map<StampType, List<ItemStack>> stampsByType;
 
     public PressRecipeHandler(ViewerType<PressRecipes.PressRecipe> type, Component title, ItemStack icon) {

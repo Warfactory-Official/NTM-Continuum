@@ -1,5 +1,9 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.Ids;
+import dev.golem.core.world.Compat;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.material.FluidState;
 import dev.golem.core.world.CompatBlock;
@@ -30,8 +34,8 @@ import dev.golem.core.world.BlockTickScheduler;
  * each other, to fence gates and to opaque full blocks, exactly like the old {@code canConnectFenceTo}.
  *
  * <p>Collision is the old {@code addCollisionBoxesToList}: a 4-px post column plus 4-px arms, one
- * block tall (not the 1.5 of a vanilla fence). The visuals — flat chain-link panes through the
- * block centre and the post — are the hand-authored multipart blockstate; the post's visibility rule
+ * block tall (not the 1.5 of a vanilla fence). The visuals (flat chain-link panes through the
+ * block centre and the post) are the hand-authored multipart blockstate; the post's visibility rule
  * is spelled out there as the six "not a straight run" cases. Waterloggable (port addition, see
  * {@link Waterlogging}).
  */
@@ -71,8 +75,8 @@ public class BlockMetalFence extends CompatBlock implements SimpleWaterloggedBlo
     public static final class Connects {
         private Connects() {}
 
-        public static final net.minecraft.tags.TagKey<Block> TAG = net.minecraft.tags.TagKey.create(
-                net.minecraft.core.registries.Registries.BLOCK, dev.golem.core.Ids.of("hbm", "metal_fence_connects"));
+        public static final TagKey<Block> TAG = TagKey.create(
+                Registries.BLOCK, Ids.of("hbm", "metal_fence_connects"));
     }
 
     /**
@@ -84,7 +88,7 @@ public class BlockMetalFence extends CompatBlock implements SimpleWaterloggedBlo
         if (state.getBlock() instanceof BlockMetalFence || state.getBlock() instanceof FenceGateBlock) return true;
         if (state.is(Connects.TAG)) return true;
         return !Block.isExceptionForConnection(state) && state.isFaceSturdy(level, neighbour, towards.getOpposite())
-                && dev.golem.core.world.Compat.isSolidRender(state);
+                && Compat.isSolidRender(state);
     }
 
     private BlockState connections(BlockState state, BlockGetter level, BlockPos pos) {

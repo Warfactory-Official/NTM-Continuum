@@ -15,10 +15,12 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.item.Items;
 
 /**
  * The 1.7 achievement tree as loaded advancements, the custom trigger predicates that grant them, and the ntm*
@@ -50,7 +52,7 @@ public final class AdvancementCommandGameTests {
     public static void treeLoaded(GameTestHelper helper) {
         ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
         List<String> missing = new ArrayList<>();
-        boolean satellites = item("sat_gerald") != net.minecraft.world.item.Items.AIR;
+        boolean satellites = item("sat_gerald") != Items.AIR;
         for (String id : IDS) {
             if (!satellites && id.startsWith("horizons_")) continue;
             if (Advancements.isDone(player, Constants.MOD_ID + ":" + id) == null) missing.add(id);
@@ -91,7 +93,7 @@ public final class AdvancementCommandGameTests {
         expect(helper, player, "boss_ufo", true);
         expect(helper, player, "boss_worm", false);
 
-        HbmCriteria.ITEM_PRODUCED.fire(player, new ItemStack(net.minecraft.world.item.Items.IRON_INGOT));
+        HbmCriteria.ITEM_PRODUCED.fire(player, new ItemStack(Items.IRON_INGOT));
         expect(helper, player, "burner_press", false);
         HbmCriteria.ITEM_PRODUCED.fire(player, new ItemStack(item("machine_press")));
         expect(helper, player, "burner_press", true);
@@ -117,7 +119,7 @@ public final class AdvancementCommandGameTests {
         expect(helper, player, "hidden", true);
         HbmCriteria.ROOM_OPENED.fire(player);
         expect(helper, player, "red_room", true);
-        HbmCriteria.DISSOLVED.fire(player, new ItemStack(net.minecraft.world.item.Items.SLIME_BALL));
+        HbmCriteria.DISSOLVED.fire(player, new ItemStack(Items.SLIME_BALL));
         expect(helper, player, "sulfuric", true);
         HbmCriteria.CONSUMED.fire(player, new ItemStack(item("coffee_radium")));
         expect(helper, player, "radium", true);
@@ -163,7 +165,7 @@ public final class AdvancementCommandGameTests {
         helper.assertTrue(actual == done, "hbm:" + id + (done ? " was not granted" : " was granted by a near miss"));
     }
 
-    private static net.minecraft.world.item.Item item(String path) {
+    private static Item item(String path) {
         return BuiltInRegistries.ITEM.getValue(Ids.of(Constants.MOD_ID, path));
     }
 }

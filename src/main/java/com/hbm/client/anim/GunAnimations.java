@@ -11,6 +11,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import dev.golem.core.Ids;
@@ -19,10 +21,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 /**
  * Which animation each gun plays for each cue.
  *
- * <p>Upstream hangs this off the gun config itself ({@code GunConfig.anim(...)}), which forces a common
- * class to name a client-only animation type. Here the table is registered per item on the client
- * instead: the server-side config stays free of render types, and the cue that arrives over
- * {@code GunAnimationPayload} is looked up here.
+ * <p>Upstream hangs this off the gun config ({@code GunConfig.anim(...)}), which forces a common class to name a
+ * client-only animation type. Here the table is registered per item on the client, and the cue that arrives over
+ * {@code GunAnimationPayload} is looked up in it.
  *
  * <p>The keyframes are ports of 1.12.2's {@code XFactory357.LAMBDA_ATLAS_ANIMS} and
  * {@code Lego.LAMBDA_DEBUG_ANIMS}, value for value and millisecond for millisecond.
@@ -32,10 +33,9 @@ public final class GunAnimations {
     /**
      * Declared tables, keyed by a <em>supplier</em> of the item.
      *
-     * <p>Lazy on purpose: on NeoForge the client entry point runs during mod construction, before the
-     * item registry is flushed, so resolving an item here would throw the same "Missing key in
-     * ResourceKey[minecraft:item]" this port has already hit twice. The map is built on first lookup,
-     * which happens at render time — long after registration.
+     * <p>Lazy: on NeoForge the client entry point runs during mod construction, before the item registry is
+     * flushed, so resolving an item here would throw "Missing key in ResourceKey[minecraft:item]". The map is
+     * built on first lookup, at render time.
      */
     private static final Map<Supplier<Item>, AnimationTable> DECLARED = new LinkedHashMap<>();
     private static Map<Item, AnimationTable> resolved;
@@ -52,7 +52,7 @@ public final class GunAnimations {
         resolved = null;
     }
 
-    /** The animation {@code item} plays for {@code cue}, or null when it has none — which is fine. */
+    /** The animation {@code item} plays for {@code cue}, or null when it has none; that is fine. */
     public static BusAnimation get(ItemStack stack, GunAnimation cue, int rail) {
         if (!(stack.getItem() instanceof ItemGunBaseNT gun) || !gun.isValidConfigIndex(rail)) return null;
         if (resolved == null) {
@@ -606,7 +606,7 @@ public final class GunAnimations {
             case EQUIP -> new BusAnimation().addBus("EQUIP", seq().addPos(60, 0, 0, 0)
                     .addPos(0, 0, 0, 1000, IType.SIN_DOWN));
             case CYCLE -> new BusAnimation().addBus("GAUGE", seq().addPos(0, 0,
-                    135 + net.minecraft.client.Minecraft.getInstance().player.getRandom().nextInt(136),
+                    135 + Minecraft.getInstance().player.getRandom().nextInt(136),
                     100, IType.SIN_DOWN).addPos(0, 0, 0, 500, IType.SIN_DOWN))
                     .addBus("PISTON", seq().addPos(0, 0, 3, 100, IType.SIN_UP))
                     .addBus("NUKE", seq().addPos(0, 0, 3, 100, IType.SIN_UP).addPos(0, 0, 0, 0));
@@ -838,7 +838,7 @@ public final class GunAnimations {
     /** Held-ammo count for the primary magazine, as the source lambdas read it on the client. */
     private static int heldAmmo(ItemStack stack, int rail) {
         ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
-        net.minecraft.client.player.LocalPlayer player = net.minecraft.client.Minecraft.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         return gun.getPrimaryMagazine(stack, rail).getAmount(stack, player == null ? null : player.getInventory());
     }
 
@@ -1068,7 +1068,7 @@ public final class GunAnimations {
 
     /**
      * The break-action revolver. The reload is the interesting one: the latch flips up, the barrel
-     * assembly tips forward, the whole gun rotates out of view to be reloaded and comes back — five
+     * assembly tips forward, the whole gun rotates out of view to be reloaded and comes back: five
      * buses staggered against each other.
      */
     private static BusAnimation atlas(GunAnimation type) {
@@ -1110,7 +1110,7 @@ public final class GunAnimations {
         };
     }
 
-    /** The debug gun — upstream's {@code LAMBDA_DEBUG_ANIMS}, a li'lpip variant. */
+    /** The debug gun: upstream's {@code LAMBDA_DEBUG_ANIMS}, a li'lpip variant. */
     private static BusAnimation debug(GunAnimation type) {
         return switch (type) {
             case CYCLE -> new BusAnimation()
@@ -1148,7 +1148,7 @@ public final class GunAnimations {
     private static BusAnimation star(ItemStack stack, GunAnimation type, int rail) {
         ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
         int ammo = gun.getPrimaryMagazine(stack, rail).getAmount(stack,
-                net.minecraft.client.Minecraft.getInstance().player.getInventory());
+                Minecraft.getInstance().player.getInventory());
 
         return switch (type) {
             case EQUIP -> new BusAnimation()
@@ -1214,7 +1214,7 @@ public final class GunAnimations {
         };
     }
 
-    /** The legacy AM180 table; the JSON/Bezier importer is intentionally still outside this slice. */
+    /** The legacy AM180 table; the JSON/Bezier importer is not ported here. */
     private static BusAnimation am180Legacy(GunAnimation type) {
         return switch (type) {
             case EQUIP -> new BusAnimation()

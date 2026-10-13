@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.TileEntityFurnaceCombination;
 import net.minecraft.core.BlockPos;
@@ -69,7 +70,7 @@ public class ContainerFurnaceCombination extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, com.hbm.blocks.machine.ModMachineBlocks.machine_furnace_combination.get());
+        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_furnace_combination.get());
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityStirling;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -21,7 +22,7 @@ public final class StirlingRenderer extends GemBER<TileEntityStirling, StirlingR
     private static final Surface[] SURFACES = {skin("stirling"), skin("stirling_steel"), skin("stirling_creative")};
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/stirling.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/stirling.obj"));
 
     @Override
     protected void setup(Gem.Model<StirlingRenderState> declaration) {

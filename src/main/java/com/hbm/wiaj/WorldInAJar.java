@@ -8,6 +8,8 @@ import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.wiaj.cannery.Dummies;
+import java.util.HashMap;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
@@ -23,12 +25,12 @@ import org.jspecify.annotations.Nullable;
  * The scripted jar: a small cube of blocks plus the "tile entities" a script parks in it.
  *
  * <p>1.7 handed this to {@code RenderBlocks} as an {@code IBlockAccess}, and every ISBRH that looked at its
- * neighbours — cables, ducts, foundry channels — found the jar's dummy connectors and drew its arms. The
- * blocks now live in Golem Core's {@link dev.golem.core.render.WorldInAJar}, which the block tesselator
+ * neighbours (cables, ducts, foundry channels) found the jar's dummy connectors and drew its arms. The
+ * blocks live in Golem Core's {@link dev.golem.core.render.WorldInAJar}, which the block tesselator
  * reads as a level. A modern cable or channel does not look at its neighbours while drawing: it bakes them
  * into its block state when a neighbour changes. So whenever a block or tile in the jar changes, the
  * connection state of that cell and its six neighbours is recomputed here with the same rules the 1.7
- * renderers applied — the one thing a level would have done that a jar has to do itself.
+ * renderers applied: the one thing a level would have done that a jar has to do itself.
  *
  * <p>Tiles are plain objects, as they effectively were upstream: a {@link Dummies.JarDummyConnector}, or a
  * block entity that is never added to a level and exists only so its renderer has something to read.
@@ -51,7 +53,7 @@ public class WorldInAJar {
 
     private dev.golem.core.render.WorldInAJar blocks;
     private Object[] tiles;
-    private final java.util.Map<Integer, BlockEntity> standIns = new java.util.HashMap<>();
+    private final Map<Integer, BlockEntity> standIns = new HashMap<>();
 
     public WorldInAJar(int x, int y, int z) {
         this.sizeX = x;
@@ -95,7 +97,7 @@ public class WorldInAJar {
 
     /**
      * A block entity for a block that the port draws with its block-entity renderer rather than a block
-     * model — a barrel, say — standing in the jar without a tile of its own. 1.7 drew such blocks (ISBRHs)
+     * model, such as a barrel, standing in the jar without a tile of its own. 1.7 drew such blocks (ISBRHs)
      * in the block pass from the block alone; this lends the renderer the block entity it reads. Null for
      * blocks with a model, or without a block entity.
      */

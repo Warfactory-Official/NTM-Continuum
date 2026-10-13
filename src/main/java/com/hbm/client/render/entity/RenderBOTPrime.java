@@ -1,5 +1,6 @@
 package com.hbm.client.render.entity;
 
+import com.hbm.client.BossStatus;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.entity.mob.botprime.EntityBOTPrimeBody;
 import com.hbm.entity.mob.botprime.EntityBOTPrimeHead;
@@ -17,6 +18,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import net.minecraft.world.BossEvent;
 
 /**
  * 1.7 {@code RenderWormHead} / {@code RenderWormBody}: the same routine twice over with a different mesh and
@@ -56,8 +58,8 @@ public class RenderBOTPrime<T extends EntityWormBaseNT> extends CompatEntityRend
     @Override
     public void extract(T entity, State state, float partialTicks) {
         // 1.7 RenderWormHead pushed BossStatus; the body segments did not
-        if (entity instanceof com.hbm.entity.mob.botprime.EntityBOTPrimeHead)
-            com.hbm.client.BossStatus.set(entity, net.minecraft.world.BossEvent.BossBarColor.PINK); // 1.7 render-pushed BossStatus
+        if (entity instanceof EntityBOTPrimeHead)
+            BossStatus.set(entity, BossEvent.BossBarColor.PINK); // 1.7 render-pushed BossStatus
         state.yaw = Mth.rotLerp(partialTicks, entity.yRotO, entity.getYRot());
         state.pitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
     }

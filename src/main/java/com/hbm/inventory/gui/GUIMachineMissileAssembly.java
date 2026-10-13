@@ -5,6 +5,7 @@ import com.hbm.entity.missile.EntityMissileCustom;
 import com.hbm.handler.MissileStruct;
 import com.hbm.inventory.container.ContainerMachineMissileAssembly;
 import com.hbm.tileentity.machine.TileEntityMachineMissileAssembly;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.GuiEntities;
@@ -32,7 +33,7 @@ import org.jspecify.annotations.Nullable;
  */
 public class GUIMachineMissileAssembly extends CompatContainerScreen<ContainerMachineMissileAssembly> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_missile_assembly.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/gui_missile_assembly.png");
 
     private @Nullable EntityMissileCustom preview;
     private @Nullable MissileStruct previewFor;

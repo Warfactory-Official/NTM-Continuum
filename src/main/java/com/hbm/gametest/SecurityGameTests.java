@@ -10,6 +10,7 @@ import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 
 /** Behavioural contracts for the locksmith table and the pin-carrying items. */
 public final class SecurityGameTests {
@@ -52,7 +53,7 @@ public final class SecurityGameTests {
         BlockPos pos = new BlockPos(1, 1, 1);
         helper.setBlock(pos, ModSecurityBlocks.machine_keyforge.get().defaultBlockState());
         TileEntityMachineKeyForge forge = GameTestHelpers.blockEntity(helper, pos, TileEntityMachineKeyForge.class);
-        var player = GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ContainerMachineKeyForge menu = new ContainerMachineKeyForge(1, player.getInventory(), forge);
         int[][] expected = {{44, 36}, {80, 36}, {116, 36}};
         for (int i = 0; i < expected.length; i++) {

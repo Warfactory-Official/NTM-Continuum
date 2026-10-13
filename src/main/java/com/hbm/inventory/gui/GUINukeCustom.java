@@ -3,6 +3,7 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerNukeCustom;
 import com.hbm.tileentity.bomb.TileEntityNukeCustom;
 import com.hbm.explosion.ExplosionNukeCustom;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.ChatFormatting;
@@ -22,7 +23,7 @@ import java.util.Optional;
  */
 public class GUINukeCustom extends CompatContainerScreen<ContainerNukeCustom> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/weapon/gunbombschematic.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/weapon/gunbombschematic.png");
 
     public GUINukeCustom(ContainerNukeCustom menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 222);

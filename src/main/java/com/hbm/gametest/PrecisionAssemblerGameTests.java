@@ -3,6 +3,7 @@ package com.hbm.gametest;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.container.ContainerMachinePrecAss;
+import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.PrecAssRecipes;
@@ -14,6 +15,7 @@ import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.tileentity.machine.TileEntityMachinePrecAss;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
@@ -60,7 +62,7 @@ public final class PrecisionAssemblerGameTests {
         GeneralConfig.enable528 = true;
         try {
             TileEntityMachinePrecAss te = place(helper, new BlockPos(1, 1, 1));
-            Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+            Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
             ContainerMachinePrecAss menu = new ContainerMachinePrecAss(0, player.getInventory(), te);
 
             helper.assertTrue(menu.slots.size() == 58, "Precision assembler menu must have 22 machine + 36 player slots");
@@ -72,7 +74,7 @@ public final class PrecisionAssemblerGameTests {
                     "Precision assembler outputs must be a 3x3 grid at the legacy coordinates");
 
             te.assemblerModule.recipe = "precass.chip";
-            helper.assertTrue(menu.getSlot(1).mayPlace(new ItemStack(com.hbm.items.ModMachineItems.blueprints.get())),
+            helper.assertTrue(menu.getSlot(1).mayPlace(new ItemStack(ModMachineItems.blueprints.get())),
                     "Blueprint slot must accept dynamic blueprints");
             helper.assertFalse(menu.getSlot(1).mayPlace(new ItemStack(Items.PAPER)),
                     "Blueprint slot must reject paper");
@@ -82,7 +84,7 @@ public final class PrecisionAssemblerGameTests {
                     "Precision output slots must be take-only");
 
             te.assemblerModule.recipe = "precass.chip_bismoid";
-            te.inputTank.conform(new com.hbm.inventory.fluid.FluidStack(Fluids.PERFLUOROMETHYL, 1_000));
+            te.inputTank.conform(new FluidStack(Fluids.PERFLUOROMETHYL, 1_000));
             te.assemblerModule.setupTanks(te.assemblerModule.getRecipe());
             helper.assertTrue(te.inputTank.getMaxFill() >= 4_000,
                     "Precision input tank must retain the legacy 4,000 mB minimum capacity");
@@ -137,7 +139,7 @@ public final class PrecisionAssemblerGameTests {
         helper.assertTrue(tooltip.stream().anyMatch(line -> line.getString().equals(recipeLabel)),
                 "Blueprint tooltip must list recipes in its pool");
 
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setItemInHand(InteractionHand.MAIN_HAND, blueprint);
         player.getInventory().add(new ItemStack(Items.PAPER));
         int paperBefore = player.getInventory().countItem(Items.PAPER);
@@ -158,7 +160,7 @@ public final class PrecisionAssemblerGameTests {
         List<Component> secretTooltip = ItemBlueprints.getPoolTooltip(secret);
         helper.assertTrue(secretTooltip.stream().anyMatch(line -> line.getString().equals("Cannot be copied!")),
                 "Secret blueprint tooltip must reject copying");
-        Player secretPlayer = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player secretPlayer = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         secretPlayer.setItemInHand(InteractionHand.MAIN_HAND, secret);
         secretPlayer.getInventory().add(new ItemStack(Items.PAPER));
         int secretPaper = secretPlayer.getInventory().countItem(Items.PAPER);

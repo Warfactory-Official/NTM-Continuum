@@ -4,18 +4,23 @@ import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.handler.BossSpawnHandler;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The five-block-tall ZIRNOX reactor multiblock and its original five access cells. */
@@ -29,7 +34,7 @@ public class MachineZirnox extends BlockMultiblockMachine implements IFluidConne
         return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityReactorZirnox reactor ? reactor : null;
     }
     @Override protected void onNeighborChanged(BlockState state, Level level, BlockPos pos,
-                                                net.minecraft.world.level.block.Block block, boolean movedByPiston) {
+                                                Block block, boolean movedByPiston) {
         if (level.isClientSide()) return;
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityReactorZirnox reactor)) return;
@@ -97,10 +102,10 @@ public class MachineZirnox extends BlockMultiblockMachine implements IFluidConne
 
     /** 1.7 {@code onBlockActivated}: {@code BossSpawnHandler.markFBI} on every non-sneaking use. */
     @Override
-    protected net.minecraft.world.InteractionResult useAtCore(net.minecraft.world.level.block.state.BlockState state,
-            net.minecraft.world.level.Level level, net.minecraft.core.BlockPos core, net.minecraft.world.entity.player.Player player,
-            net.minecraft.world.phys.BlockHitResult hit) {
-        if (!level.isClientSide() && !player.isShiftKeyDown()) com.hbm.handler.BossSpawnHandler.markFBI(player);
+    protected InteractionResult useAtCore(BlockState state,
+            Level level, BlockPos core, Player player,
+            BlockHitResult hit) {
+        if (!level.isClientSide() && !player.isShiftKeyDown()) BossSpawnHandler.markFBI(player);
         return super.useAtCore(state, level, core, player, hit);
     }
 

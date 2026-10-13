@@ -1,5 +1,6 @@
 package com.hbm.items;
 
+import com.hbm.items.tool.WeaponSpecial;
 import com.hbm.registration.Reg;
 import com.hbm.registration.Presets;
 import com.hbm.Constants;
@@ -9,9 +10,10 @@ import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.special.ItemEnergy;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.world.ToolTier;
 import net.minecraft.world.item.Item;
 
-/** Source-backed drink and stimulant family from old-hbm's ItemEnergy. */
+/** Source-backed drink and stimulant family from 1.12.2's ItemEnergy. */
 public final class ModConsumableTailItems {
     private ModConsumableTailItems() {}
 
@@ -40,10 +42,10 @@ public final class ModConsumableTailItems {
     }
 
     /** 1.7 MainRegistry.enumToolMaterialBottleOpener ("OPENER"): level 1, 250 uses, 1.5 speed, 0.5 damage, ench 200. */
-    public static final dev.golem.core.world.ToolTier OPENER = new dev.golem.core.world.ToolTier(1, 250, 1.5F, 0.5F, 200, null);
+    public static final ToolTier OPENER = new ToolTier(1, 250, 1.5F, 0.5F, 200, null);
     /** 1.7: a {@code WeaponSpecial} sword whose hits roll one of four debuffs, not a plain item. */
-    public static final RegistryObject<com.hbm.items.tool.WeaponSpecial> bottle_opener = REG.item("bottle_opener",
-            p -> new com.hbm.items.tool.WeaponSpecial(p, OPENER, com.hbm.items.tool.WeaponSpecial.Kind.BOTTLE_OPENER),
+    public static final RegistryObject<WeaponSpecial> bottle_opener = REG.item("bottle_opener",
+            p -> new WeaponSpecial(p, OPENER, WeaponSpecial.Kind.BOTTLE_OPENER),
             p -> p.stacksTo(1)).transform(Presets.handheld());
     static { ModTabs.addTo(HbmTab.CONSUMABLES, bottle_opener); }
     public static final RegistryObject<ItemEnergy> can_smart = can("can_smart");

@@ -6,7 +6,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Block;
 
 /**
- * Server-side senders for original-hbm (1.7.10)'s per-entity {@code sweat} and {@code vomit} bursts
+ * Server-side senders for 1.7's per-entity {@code sweat} and {@code vomit} bursts
  * ({@code EntityEffectHandler}, {@code HbmLivingProps.setDigamma}, {@code EntityPigeon}). 1.7 sent an
  * {@code AuxParticlePacketNT} at (0, 0, 0) to everyone within {@code range} of the entity; the client reads the
  * entity id from the tag. Server-safe: no client types.

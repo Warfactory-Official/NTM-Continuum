@@ -165,7 +165,7 @@ public final class ConfigCraftingRecipes {
         toolSet("schrabidium", TagIds.ingots_schrabidium);
     }
 
-    // ---- 1.7 helpers -----------------------------------------------------------------------------------------------
+    // 1.7 helpers
 
     /** 1.7 {@code addRecipeAuto(new ItemStack(plate, 4), "##", "##", '#', ingot)}. */
     private static void plate(String name, String result, String ingot) {

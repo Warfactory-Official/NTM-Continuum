@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * The two-block coolant pump that caps a Watz column. Its presence three blocks above the bottom
- * segment's core, plus a redstone signal two blocks above that, is what switches the reactor on — the
+ * segment's core, plus a redstone signal two blocks above that, is what switches the reactor on. The
  * pump has no logic of its own; the reactor looks it up.
  */
 public class WatzPump extends BlockMultiblockMachine {

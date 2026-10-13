@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.block.IBlowable;
+import com.hbm.api.environment.Environment;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.api.block.IToolable;
 import com.hbm.lib.ForgeDirection;
@@ -8,6 +9,7 @@ import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -32,6 +34,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -39,7 +42,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.function.Supplier;
 
 /** The six-way redstone fan with the legacy obstruction, force, particle, and tool-mode behavior. */
-public class MachineFan extends dev.golem.core.world.CompatBlock implements TickingBlock, IToolable {
+public class MachineFan extends CompatBlock implements TickingBlock, IToolable {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
@@ -159,7 +162,7 @@ public class MachineFan extends dev.golem.core.world.CompatBlock implements Tick
 
             if (fan.indirectlyPowered) {
                 if (!level.isClientSide()) {
-                    fan.hasAtmosphere = com.hbm.api.environment.Environment.pressure(level, pos) > 0.01D;
+                    fan.hasAtmosphere = Environment.pressure(level, pos) > 0.01D;
                 }
             }
 
@@ -186,7 +189,7 @@ public class MachineFan extends dev.golem.core.world.CompatBlock implements Tick
                     effectiveRange = distance;
                 }
 
-                net.minecraft.world.phys.AABB area = FanPhysics.affectedBox(pos, direction, effectiveRange);
+                AABB area = FanPhysics.affectedBox(pos, direction, effectiveRange);
                 for (Entity entity : level.getEntitiesOfClass(Entity.class, area)) {
                     double distance = Math.sqrt(entity.distanceToSqr(pos.getX() + 0.5D,
                             pos.getY() + 0.5D, pos.getZ() + 0.5D));

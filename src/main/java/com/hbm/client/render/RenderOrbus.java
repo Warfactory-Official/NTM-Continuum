@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.storage.TileEntityMachineOrbus;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.CompatRenderTypes;
@@ -34,8 +35,8 @@ public final class RenderOrbus extends GemBER<TileEntityMachineOrbus, RenderOrbu
         public float interp;
     }
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/orbus.obj"));
-    private final WavefrontObj sphere = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/sphere_uv.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/machines/orbus.obj"));
+    private final WavefrontObj sphere = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/sphere_uv.obj"));
     private final Surface skin = Surface.cutoutCull(Constants.MOD_ID + ":textures/models/machines/orbus.png");
 
     @Override

@@ -5,6 +5,7 @@ import com.hbm.api.energymk2.IEnergyConnectorMK2;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.network.TileEntityDiode;
 import com.hbm.lib.ForgeDirection;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -26,7 +27,7 @@ public class RenderCableDiode extends GemBER<TileEntityDiode, CableRenderState> 
 
     private static final String[] ARMS = {"posX", "negX", "posY", "negY", "posZ", "negZ"};
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of("hbm", "models/blocks/cable_neo.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of("hbm", "models/blocks/cable_neo.obj"));
     private final Surface surface = Surface.cutout("hbm:textures/models/blocks/cable_neo.png");
 
     @Override

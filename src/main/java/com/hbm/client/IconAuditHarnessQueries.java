@@ -3,6 +3,7 @@ package com.hbm.client;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.creativetabs.ModTabs;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import dev.golem.core.world.ItemStacks;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ public final class IconAuditHarnessQueries {
     private IconAuditHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_icon_audit", IconAuditHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_icon_audit", IconAuditHarnessQueries::query);
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {

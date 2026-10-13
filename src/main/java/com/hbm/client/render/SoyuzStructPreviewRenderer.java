@@ -3,6 +3,7 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzStruct;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderState;
@@ -15,15 +16,15 @@ import java.util.List;
 
 /**
  * The Soyuz launch-complex ghost, 1.7 {@code RenderSoyuzMultiblock}: a small translucent cube in every
- * cell of the complex the {@link TileEntitySoyuzStruct} is waiting for — launcher plate for the apron,
+ * cell of the complex the {@link TileEntitySoyuzStruct} is waiting for: launcher plate for the apron,
  * outriggers and the two tower decks, concrete for the six legs, scaffold for the service tower and the
  * mast.
  *
- * <p>Deliberately upstream's behaviour rather than {@link StructPreviewRenderer}'s: every cell is drawn
- * whether or not it is already built. Upstream has no satisfied-cell test here, and the complex is some
- * five thousand cells, so testing each one per frame would cost more than drawing it. The boxes are
- * upstream's, box for box, in the same order and with the same three textures (each block's top icon,
- * {@code concrete} for {@code concrete_smooth}); the alpha is upstream's {@code glColor4f(1, 1, 1, 0.75)}.
+ * <p>Unlike {@link StructPreviewRenderer}, every cell is drawn whether or not it is already built, as
+ * upstream does: the complex is some five thousand cells, so testing each one per frame would cost more than
+ * drawing it. The boxes are upstream's, box for box, in the same order and with the same three textures
+ * (each block's top icon, {@code concrete} for {@code concrete_smooth}); the alpha is upstream's
+ * {@code glColor4f(1, 1, 1, 0.75)}.
  *
  * <p>Upstream drew with the block's own light; the ghost is drawn full-bright like every other struct
  * preview in this port, so a complex being built at night stays readable.
@@ -60,8 +61,8 @@ public final class SoyuzStructPreviewRenderer implements CompatBER<TileEntitySoy
         return true;
     }
 
-    // No shouldRender override: the default is the only place viewDistance() is applied, and 1.7's
-    // getMaxRenderDistanceSquared was 65536 (256 blocks).
+    // No shouldRender override: viewDistance() is the only place the range is applied, and 1.7's
+    // getMaxRenderDistanceSquared is 65536 (256 blocks).
     @Override
     public int viewDistance() {
         return 256;
@@ -99,6 +100,6 @@ public final class SoyuzStructPreviewRenderer implements CompatBER<TileEntitySoy
     }
 
     private static Identifier tex(String name) {
-        return dev.golem.core.Ids.of(Constants.MOD_ID, "textures/blocks/" + name + ".png");
+        return Ids.of(Constants.MOD_ID, "textures/blocks/" + name + ".png");
     }
 }

@@ -3,6 +3,7 @@ package com.hbm.explosion.vanillant.standard;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.interfaces.IBlockMutator;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -20,7 +21,7 @@ public class BlockMutatorBalefire implements IBlockMutator {
         BlockState here = explosion.world.getBlockState(pos);
         BlockState below = explosion.world.getBlockState(pos.below());
 
-        if (here.isAir() && dev.golem.core.world.Compat.isSolidRender(below, explosion.world, pos.below())
+        if (here.isAir() && Compat.isSolidRender(below, explosion.world, pos.below())
                 && explosion.world.getRandom().nextInt(3) == 0) {
             explosion.world.setBlockAndUpdate(pos, ModBombBlocks.balefire.get().defaultBlockState());
         }

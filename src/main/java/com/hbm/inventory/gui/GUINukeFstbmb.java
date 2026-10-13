@@ -3,6 +3,7 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerNukeFstbmb;
 import com.hbm.tileentity.bomb.TileEntityNukeBalefire;
 import com.hbm.packet.ControlEventPayload;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.KeyInput;
@@ -23,7 +24,7 @@ import net.minecraft.world.entity.player.Inventory;
  */
 public class GUINukeFstbmb extends CompatContainerScreen<ContainerNukeFstbmb> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/weapon/fstbmbschematic.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/weapon/fstbmbschematic.png");
 
     private EditBox timer;
 

@@ -1,5 +1,6 @@
 package com.hbm.inventory.recipes;
 
+import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.recipes.loader.DataRecipeTable;
 import com.hbm.inventory.recipes.loader.FluidRecipeCodecs;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
@@ -7,6 +8,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.world.ItemStacks;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -62,14 +64,14 @@ public final class StorageDrumRecipes {
 
     /** 1.7 {@code VersatileConfig.getLongDecayChance}: 3 h, 15 h in 528 mode, 15 min with LBSM_shortDecay. */
     public static int longDecayChance() {
-        return com.hbm.config.GeneralConfig.enable528 ? 15 * HOUR
-                : (com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMShorterDecay) ? 15 * MINUTE : 3 * HOUR;
+        return GeneralConfig.enable528 ? 15 * HOUR
+                : (GeneralConfig.enableLBSM && GeneralConfig.enableLBSMShorterDecay) ? 15 * MINUTE : 3 * HOUR;
     }
 
     /** 1.7 {@code VersatileConfig.getShortDecayChance}: 15 min, 3 h in 528 mode, 3 min with LBSM_shortDecay. */
     public static int shortDecayChance() {
-        return com.hbm.config.GeneralConfig.enable528 ? 3 * HOUR
-                : (com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMShorterDecay) ? 3 * MINUTE : 15 * MINUTE;
+        return GeneralConfig.enable528 ? 3 * HOUR
+                : (GeneralConfig.enableLBSM && GeneralConfig.enableLBSMShorterDecay) ? 3 * MINUTE : 15 * MINUTE;
     }
 
     private static final int MINUTE = 60 * 20;
@@ -117,6 +119,6 @@ public final class StorageDrumRecipes {
 
     private static boolean same(ItemStack expected, ItemStack actual) {
         return !actual.isEmpty() && expected.getItem() == actual.getItem()
-                && dev.golem.core.world.ItemStacks.sameItemAndData(expected, actual);
+                && ItemStacks.sameItemAndData(expected, actual);
     }
 }

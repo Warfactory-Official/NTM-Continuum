@@ -6,9 +6,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Scales a hazard level by context (e.g. RBMK rod depletion). The concrete RBMK/RTG/fuel modifiers
- * are deferred until their items are ported; the interface + evaluation order are kept so registered
- * entries carry them unchanged.
+ * Scales a hazard level by context (e.g. RBMK rod depletion). Registered entries carry their modifiers
+ * in evaluation order.
  *
  * <p>One method, so a modifier is a lambda:
  * {@code entry.addMod((stack, holder, level) -> level * stack.getCount())}. {@code holder} is null

@@ -3,6 +3,8 @@ package com.hbm.gametest;
 import com.hbm.Constants;
 import com.hbm.items.ModCatalystItems;
 import com.hbm.items.ModFoodItems;
+import com.hbm.items.machine.ItemCatalyst;
+import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.RegistryObject;
@@ -88,13 +90,13 @@ public final class FoodCatalystGameTests {
     private static void assertFood(GameTestHelper helper, RegistryObject<? extends Item> entry, String path,
                                    int nutrition, float saturation, boolean wolfFood) {
         Item item = entry.get();
-        helper.assertTrue(dev.golem.core.Ids.of(Constants.MOD_ID, path).equals(BuiltInRegistries.ITEM.getKey(item)),
+        helper.assertTrue(Ids.of(Constants.MOD_ID, path).equals(BuiltInRegistries.ITEM.getKey(item)),
                 "Wrong food id for " + path);
         var food = ItemStacks.foodProperties(new ItemStack(item));
         helper.assertTrue(food != null && ItemStacks.foodNutrition(food) == nutrition
                         && Math.abs(ItemStacks.foodSaturationModifier(food) - saturation) < 0.0001F,
                 path + " has incorrect food values");
-        TagKey<Item> wolfFoodTag = TagKey.create(Registries.ITEM, dev.golem.core.Ids.minecraft("wolf_food"));
+        TagKey<Item> wolfFoodTag = TagKey.create(Registries.ITEM, Ids.minecraft("wolf_food"));
         helper.assertTrue(new ItemStack(item).is(wolfFoodTag) == wolfFood,
                 path + " has incorrect wolf-food tag");
     }
@@ -110,14 +112,14 @@ public final class FoodCatalystGameTests {
     private static void assertCatalyst(GameTestHelper helper, RegistryObject<? extends Item> entry, String path,
                                        int color, long powerAbs, float powerMod, float heatMod, float fuelMod) {
         Item item = entry.get();
-        helper.assertTrue(dev.golem.core.Ids.of(Constants.MOD_ID, path).equals(BuiltInRegistries.ITEM.getKey(item)),
+        helper.assertTrue(Ids.of(Constants.MOD_ID, path).equals(BuiltInRegistries.ITEM.getKey(item)),
                 "Wrong catalyst id for " + path);
-        com.hbm.items.machine.ItemCatalyst catalyst = (com.hbm.items.machine.ItemCatalyst) item;
+        ItemCatalyst catalyst = (ItemCatalyst) item;
         helper.assertTrue(catalyst.getColor() == color && catalyst.powerAbs == powerAbs
                         && catalyst.powerMod == powerMod && catalyst.heatMod == heatMod && catalyst.fuelMod == fuelMod,
                 path + " has incorrect catalyst values");
         ItemStack stack = new ItemStack(item);
-        helper.assertTrue(com.hbm.items.machine.ItemCatalyst.getPowerAbs(stack) == powerAbs,
+        helper.assertTrue(ItemCatalyst.getPowerAbs(stack) == powerAbs,
                 path + " power accessor is incorrect");
     }
 }

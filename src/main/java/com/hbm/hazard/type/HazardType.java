@@ -16,11 +16,10 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * A hazard assembled from lambdas instead of from a class, carrying a payload of the author's own
- * type. This is the extension point for "a hazard the mod does not have": nothing about radiation,
- * heat or asbestos is privileged, and a hazard declared here is indistinguishable from the built-in
- * ones to {@link com.hbm.hazard.HazardSystem} — it registers on items and tags the same way, folds
- * through the same override/mutex rules, takes the same {@link IHazardModifier}s, and rides the same
- * carried-item scan.
+ * type. This is the extension point for "a hazard the mod does not have". A hazard declared here is
+ * indistinguishable from the built-in ones to {@link com.hbm.hazard.HazardSystem}: it registers on items
+ * and tags the same way, folds through the same override/mutex rules, takes the same
+ * {@link IHazardModifier}s, and rides the same carried-item scan.
  *
  * <pre>{@code
  * record Acid(int seconds, boolean eatsArmour) {}
@@ -36,11 +35,9 @@ import org.jspecify.annotations.Nullable;
  * HazardSystem.register(MyItems.VIAL, new HazardData().addEntry(CORROSIVE, 2D, new Acid(8, true)));
  * }</pre>
  *
- * <p>Every lambda is optional; an omitted one is simply not called, so a hazard that only matters on
- * the ground is a single {@link Builder#onDropped} and a hazard that only annotates a tooltip is a
- * single {@link Builder#tooltip}. With no tooltip lambda the type prints {@code [trait.<path>]} in
- * the colour given to {@link Builder#trait} — {@code trait.<namespace>.<path>} outside this mod's
- * namespace, so a third-party hazard cannot collide with an HBM translation key.
+ * <p>Every lambda is optional; an omitted one is not called. With no tooltip lambda the type prints
+ * {@code [trait.<path>]} in the colour given to {@link Builder#trait} ({@code trait.<namespace>.<path>}
+ * outside this mod's namespace, so a third-party hazard cannot collide with an HBM translation key).
  *
  * <p>Payloads are read through {@link Class#isInstance}, not an unchecked cast: an entry carrying
  * someone else's payload degrades to the declared default instead of throwing inside a hazard tick.
@@ -88,7 +85,7 @@ public final class HazardType<P> implements IHazardType {
         this.trait = builder.trait;
     }
 
-    /** A hazard with no payload — every lambda receives {@code null} for it. */
+    /** A hazard with no payload, every lambda receives {@code null} for it. */
     public static Builder<Void> builder(final Identifier id) {
         return new Builder<>(id, Void.class);
     }
@@ -110,7 +107,7 @@ public final class HazardType<P> implements IHazardType {
         return new HazardEntry(this, level, defaultPayload);
     }
 
-    /** An entry of this hazard carrying {@code payload}, which its lambdas then receive verbatim. */
+    /** An entry of this hazard carrying {@code payload}, which its lambdas then receive unchanged. */
     public HazardEntry entry(final double level, final @Nullable P payload) {
         return new HazardEntry(this, level, payload);
     }

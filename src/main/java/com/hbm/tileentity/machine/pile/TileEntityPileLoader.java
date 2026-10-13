@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * The ram that shoves a fuel rod into a horizontal channel. One stroke pushes a single rod in at the
  * mouth, which shunts every rod already in the channel one place deeper and drops the last one out of the
- * far end — so a pile is refuelled by feeding it, not by emptying it.
+ * far end, so a pile is refuelled by feeding it, not by emptying it.
  *
  * <p>Upstream calls the ram's position {@code level}; here it is {@code travel}, because
  * {@code BlockEntity} already owns a field called {@code level}. Sided automation is per <i>face</i>
@@ -134,7 +134,7 @@ public class TileEntityPileLoader extends TileEntityPileDeviceBase implements Wo
         return stack.getItem() instanceof ItemPileRodMK2;
     }
 
-    // --- inventory ---
+    // Inventory
 
     @Override public int getContainerSize() { return 1; }
     @Override public boolean isEmpty() { return stack.isEmpty(); }
@@ -163,7 +163,7 @@ public class TileEntityPileLoader extends TileEntityPileDeviceBase implements Wo
     @Override public boolean canPlaceItemThroughFace(int slot, ItemStack itemStack, Direction side) { return isItemLoadable(itemStack); }
     @Override public boolean canTakeItemThroughFace(int slot, ItemStack itemStack, Direction side) { return false; }
 
-    // --- sync + save ---
+    // Sync + save
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
@@ -208,7 +208,7 @@ public class TileEntityPileLoader extends TileEntityPileDeviceBase implements Wo
         stack = input.read("stack", ItemStack.CODEC).orElse(ItemStack.EMPTY);
     }
 
-    // --- redstone over radio ---
+    // Redstone over radio
 
     @Override
     public String[] getFunctionInfo() {

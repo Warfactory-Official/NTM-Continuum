@@ -63,7 +63,7 @@ public final class ModBlocks {
 
     /** Ore that grants mining XP and (typically) drops a material item via its loot table. */
     /**
-     * An ore block with an experience drop. Every 1.7 caller passes 0: original-hbm (1.7.10) {@code BlockOre} never
+     * An ore block with an experience drop. Every 1.7 caller passes 0: 1.7 {@code BlockOre} never
      * overrides {@code getExpDrop}, so its ores give no experience (the per-ore xp values were 1.12.2's
      * {@code BlockNTMOre}; fix wave 4, 2026-10-03). Only {@code BlockSellafieldOre}'s gems pay 3-7 in 1.7.
      */

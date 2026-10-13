@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -17,7 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.nbt.CompoundTag;
 import com.hbm.particle.helper.HbmEffectNT;
 
-/** Passive 100 mB/t spent-steam condenser used to close the ZIRNOX water loop. */
+/** Passive 100 mB/t spent-steam condenser that closes the ZIRNOX water loop. */
 public class TileEntityCondenser extends TileEntityMachineBase implements IFluidStandardTransceiverMK2 {
 
     public FluidTankNTM input;
@@ -83,7 +84,7 @@ public class TileEntityCondenser extends TileEntityMachineBase implements IFluid
      * never on plain HBM). hbm-space's Tom-firestorm evaporation is the fork's own addition, not 1.7, and is not here.
      */
     public boolean evaporates(Level level, BlockPos pos) {
-        return !vacuumOptimised && com.hbm.api.environment.Environment.isVacuum(level, pos);
+        return !vacuumOptimised && Environment.isVacuum(level, pos);
     }
 
     protected boolean extraCondition(int amount) { return true; }

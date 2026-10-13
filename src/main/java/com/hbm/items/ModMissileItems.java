@@ -1,5 +1,6 @@
 package com.hbm.items;
 
+import com.hbm.items.tool.ItemDetonator;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import com.hbm.Constants;
@@ -18,22 +19,20 @@ import dev.golem.core.registry.RegistryObject;
 
 /**
  * The launchable missiles and the designators that aim them, declared exactly as 1.12.2's
- * {@code ModItems} declares them — same ids, same form factors, same tiers, same fuels.
+ * {@code ModItems} declares them: same ids, same form factors, same tiers, same fuels.
  *
-     * <p><b>All 31 missile items exist.</b> Not all of them fly yet: a missile is launchable only if
-     * {@code TileEntityLaunchPadBase} has an entity registered for it. The remaining entries depend on
-     * unported black-hole, schrabidium, cluster, drill, thermonuclear, volcano or shuttle subsystems;
-     * a launch pad refuses those items rather than reporting Ready and silently doing nothing. See
-     * IMPLEMENTATION.md §20 for the list and what each one is waiting on.
+ * <p>All 31 missile items exist, but a missile is launchable only if {@code TileEntityLaunchPadBase} has an
+ * entity registered for it. The rest depend on unported black-hole, schrabidium, cluster, drill,
+ * thermonuclear, volcano or shuttle subsystems; a launch pad refuses those items rather than reporting
+ * Ready and silently doing nothing. See IMPLEMENTATION.md §20 for the list.
  *
  * <p>The plain {@code detonator} is here too: it is how a pad is fired by hand (shift-click to bind,
  * click to launch), and without it a pad can only be triggered by redstone.
  *
- * <p>{@code sat_designator} remains deferred because it belongs to the satellite system. The
- * manual coordinate designator is implemented here with the source GUI and server payload.
- * {@code designator_arty_range} belongs to the artillery system and is declared by that slice.
- * artillery systems rather than to this one. The other three detonators
- * ({@code detonator_laser}/{@code _multi}/{@code _deadman}) are their own wave.
+ * <p>{@code sat_designator} belongs to the satellite system and {@code designator_arty_range} to the
+ * artillery items; neither is declared here. The manual coordinate designator is, with the source GUI and
+ * server payload. The other three detonators ({@code detonator_laser}/{@code _multi}/{@code _deadman})
+ * are not in this set.
  */
 public final class ModMissileItems {
 
@@ -42,7 +41,7 @@ public final class ModMissileItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    // --- designators ---
+    // Designators
 
     public static final RegistryObject<ItemDesignator> designator =
             REG.item("designator", ItemDesignator::new).transform(Presets.sprite());
@@ -55,13 +54,13 @@ public final class ModMissileItems {
             REG.item("designator_manual", ItemDesignatorManual::new).transform(Presets.sprite());
 
     /**
-     * The detonator. Lives here rather than with the tools because it is the launch pad's manual trigger
-     * — upstream files it under the CONTROL tab, which is kept.
+     * The detonator. Lives here rather than with the tools because it is the launch pad's manual trigger.
+     * Upstream files it under the CONTROL tab, which is kept.
      */
-    public static final RegistryObject<com.hbm.items.tool.ItemDetonator> detonator =
-            REG.item("detonator", com.hbm.items.tool.ItemDetonator::new).transform(Presets.handheld());
+    public static final RegistryObject<ItemDetonator> detonator =
+            REG.item("detonator", ItemDetonator::new).transform(Presets.handheld());
 
-    // --- tier 0: the micro family, all solid-fuelled ---
+    // Tier 0: the micro family, all solid-fuelled
 
     public static final RegistryObject<ItemMissileStandard> missile_micro =
             missile("missile_micro", MissileFormFactor.MICRO, MissileTier.TIER0);
@@ -81,7 +80,7 @@ public final class ModMissileItems {
     public static final RegistryObject<ItemMissileStandard> missile_test =
             missile("missile_test", MissileFormFactor.MICRO, MissileTier.TIER0);
 
-    // --- tier 1: the V2 family ---
+    // Tier 1: the V2 family
 
     public static final RegistryObject<ItemMissileStandard> missile_generic =
             missile("missile_generic", MissileFormFactor.V2, MissileTier.TIER1);
@@ -95,11 +94,11 @@ public final class ModMissileItems {
             missile("missile_decoy", MissileFormFactor.V2, MissileTier.TIER1);
     public static final RegistryObject<ItemMissileStandard> missile_anti_ballistic =
             missile("missile_anti_ballistic", MissileFormFactor.ABM, MissileTier.TIER1);
-    /** Tier 1 by radar class but a STRONG airframe — upstream's own mismatch, kept. */
+    /** Tier 1 by radar class but a STRONG airframe: upstream's own mismatch, kept. */
     public static final RegistryObject<ItemMissileStandard> missile_stealth =
             missile("missile_stealth", MissileFormFactor.STRONG, MissileTier.TIER1);
 
-    // --- tier 2: the strong family ---
+    // Tier 2: the strong family
 
     public static final RegistryObject<ItemMissileStandard> missile_strong =
             missile("missile_strong", MissileFormFactor.STRONG, MissileTier.TIER2);
@@ -112,7 +111,7 @@ public final class ModMissileItems {
     public static final RegistryObject<ItemMissileStandard> missile_emp_strong =
             missile("missile_emp_strong", MissileFormFactor.STRONG, MissileTier.TIER2);
 
-    // --- tier 3: the huge family ---
+    // Tier 3: the huge family
 
     public static final RegistryObject<ItemMissileStandard> missile_burst =
             missile("missile_burst", MissileFormFactor.HUGE, MissileTier.TIER3);
@@ -128,7 +127,7 @@ public final class ModMissileItems {
     public static final RegistryObject<ItemMissileStandard> missile_shuttle =
             missile("missile_shuttle", MissileFormFactor.OTHER, MissileTier.TIER3, MissileFuel.KEROSENE_PEROXIDE);
 
-    // --- tier 4: the atlas family ---
+    // Tier 4: the atlas family
 
     public static final RegistryObject<ItemMissileStandard> missile_nuclear =
             missile("missile_nuclear", MissileFormFactor.ATLAS, MissileTier.TIER4);

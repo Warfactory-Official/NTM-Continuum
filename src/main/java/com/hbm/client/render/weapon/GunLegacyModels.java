@@ -24,7 +24,7 @@ import net.minecraft.world.item.ItemStack;
  *
  * <p>26.1 resolves {@code {"type": "hbm:gun", "weapon": "atlas"}} in an item definition to a
  * {@link GunItemModel}. Older versions never read those files, so they are parsed here on resource
- * reload for the one thing that matters — which weapon renderer an item wants — and the draw goes
+ * reload for the one thing that matters, which weapon renderer an item wants, and the draw goes
  * through the loader's "render this item yourself" hook, which <em>does</em> receive the display
  * context. Same renderers, same animations; only the plumbing differs.
  *
@@ -86,7 +86,7 @@ public final class GunLegacyModels {
      * Draws {@code stack} if it is a gun; returns whether it did.
      *
      * <p>The first-person body rebuilds its own pose from the camera, so the transform vanilla has
-     * already applied for the hand is discarded inside — exactly as on 26.1.
+     * already applied for the hand is discarded inside, exactly as on 26.1.
      ^/
     public static boolean render(ItemStack stack, ItemDisplayContext context, PoseStack poseStack,
             MultiBufferSource buffers, int light, int overlay) {

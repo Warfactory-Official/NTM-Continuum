@@ -4,6 +4,7 @@ import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.blocks.network.FluidDuctNeo;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -29,7 +30,7 @@ public class NeoDuctRenderer<T extends TileEntityFluidDuctNT> extends GemBER<T, 
         public int skin = 0;
     }
 
-    private static final Identifier OBJ = dev.golem.core.Ids.of("hbm", "models/blocks/pipe_neo.obj");
+    private static final Identifier OBJ = Ids.of("hbm", "models/blocks/pipe_neo.obj");
     private static final String[] PARTS = {
             "pX", "nX", "pY", "nY", "pZ", "nZ",
             "ppn", "ppp", "npn", "npp", "pnn", "pnp", "nnn", "nnp"};

@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityFurnaceCombination;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
@@ -66,7 +67,7 @@ public final class CombinationFurnaceRenderer extends GemBER<TileEntityFurnaceCo
                 });
     }
 
-    private static void flameVertex(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
+    private static void flameVertex(VertexConsumer buffer, PoseStack.Pose pose,
                                     float x, float y, float z, float u, float v) {
         Vertexes.vertex(buffer, pose, x, y, z, 1F, 1F, 1F, 1F, u, v,
                 OverlayTexture.NO_OVERLAY, 0x00F000F0, 0F, 1F, 0F);

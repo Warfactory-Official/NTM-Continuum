@@ -6,6 +6,7 @@ import dev.golem.core.world.BlockTickScheduler;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -63,7 +64,7 @@ public abstract class BlockTerrainPlant extends CompatBlock {
     protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
                                        Direction direction, BlockPos neighbourPos, BlockState neighbourState) {
         if (!canStay(state, level, pos)) {
-            if (dropsWhenUnsupported(state) && level instanceof net.minecraft.server.level.ServerLevel server) {
+            if (dropsWhenUnsupported(state) && level instanceof ServerLevel server) {
                 dropResources(state, server, pos);
             }
             // air, or the water a waterlogged plant was holding

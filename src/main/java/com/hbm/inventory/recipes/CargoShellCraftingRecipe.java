@@ -2,6 +2,7 @@ package com.hbm.inventory.recipes;
 
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.weapon.ItemAmmoArty;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatCustomRecipe;
 import dev.golem.core.world.CustomRecipes;
@@ -26,7 +27,7 @@ public final class CargoShellCraftingRecipe extends CompatCustomRecipe {
     }
 
     private static boolean emptyShell(ItemStack stack) {
-        return ModAmmoItems.ammo_arty.is(stack, com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType.CARGO)
+        return ModAmmoItems.ammo_arty.is(stack, ItemAmmoArty.ArtilleryShellType.CARGO)
                 && !ModDataComponents.ARTY_CARGO.has(stack);
     }
 

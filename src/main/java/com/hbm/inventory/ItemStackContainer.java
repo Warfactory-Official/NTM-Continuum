@@ -2,6 +2,8 @@ package com.hbm.inventory;
 
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.data.ItemContents;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -30,7 +32,7 @@ public final class ItemStackContainer extends SimpleContainer {
 
     @Override
     public void setChanged() {
-        java.util.List<ItemStack> stacks = new java.util.ArrayList<>(getContainerSize());
+        List<ItemStack> stacks = new ArrayList<>(getContainerSize());
         for (int slot = 0; slot < getContainerSize(); slot++) stacks.add(getItem(slot));
         component.set(target, new ItemContents(stacks));
     }

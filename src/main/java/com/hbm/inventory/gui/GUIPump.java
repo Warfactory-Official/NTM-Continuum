@@ -17,7 +17,7 @@ import net.minecraft.sounds.SoundEvents;
 
 /**
  * The 1.7 {@code GUIPump}: a plain screen (not a container) with a throughput text box and two cycling
- * buttons — pressure (0–5 PU) and priority — at y=100, in three 90×20 columns from x = width/2 − 150.
+ * buttons, pressure (0–5 PU) and priority, at y=100, in three 90×20 columns from x = width/2 − 150.
  * Everything is sent to the pump as one control packet when the screen closes, exactly as 1.7 did in
  * {@code onGuiClosed}. The buttons are drawn here rather than as vanilla widgets.
  */

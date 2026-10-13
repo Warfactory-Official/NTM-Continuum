@@ -7,9 +7,11 @@ import com.hbm.items.weapon.sedna.GunAnimation;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.util.EntityDamageUtil;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerLevel;
@@ -101,9 +103,9 @@ public final class XFactory9mm {
     };
 
     /** 1.7 {@code LAMBDA_NAME_GREASEGUN}. */
-    public static final java.util.function.Function<ItemStack, String> LAMBDA_NAME_GREASEGUN = stack ->
-            com.hbm.items.weapon.sedna.mods.XWeaponModManager.hasUpgrade(stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_GREASEGUN_CLEAN) ? XFactory12ga.mutated(stack, "_m3") : null;
+    public static final Function<ItemStack, String> LAMBDA_NAME_GREASEGUN = stack ->
+            XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_GREASEGUN_CLEAN) ? XFactory12ga.mutated(stack, "_m3") : null;
     /** 1.7 {@code LAMBDA_NAME_UZI}. */
-    public static final java.util.function.Function<ItemStack, String> LAMBDA_NAME_UZI = stack ->
-            com.hbm.items.weapon.sedna.mods.XWeaponModManager.hasUpgrade(stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SILENCER) ? XFactory12ga.mutated(stack, "_richter") : null;
+    public static final Function<ItemStack, String> LAMBDA_NAME_UZI = stack ->
+            XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SILENCER) ? XFactory12ga.mutated(stack, "_richter") : null;
 }

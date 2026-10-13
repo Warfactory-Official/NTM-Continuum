@@ -14,7 +14,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Renderer for the foundry channel (1.12.2 {@code RenderFoundryChannel}): draws the molten metal level
- * inside the gutter — a brightened tint of the material's {@code moltenColor} on {@code lava_gray},
+ * inside the gutter: a brightened tint of the material's {@code moltenColor} on {@code lava_gray},
  * covering the centre plus each connected arm at {@code y = 0.125 + amount/capacity × 0.25}.
  */
 public class FoundryChannelRenderer extends GemBER<TileEntityFoundryChannel, FoundryChannelRenderer.State> {

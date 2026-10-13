@@ -28,8 +28,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 /**
- * Fix wave phase 1D (2026-10-03, History section 19ej-1d): explosion values computed from original-hbm
- * (1.7.10), the specification.
+ * Explosion values computed from 1.7, the specification.
  */
 public final class Fix1DGameTests {
 

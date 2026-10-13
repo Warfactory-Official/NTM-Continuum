@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-/** JEI category for the solidifier — input droplet in, output item out. */
+/** JEI category for the solidifier: input droplet in, output item out. */
 public class SolidificationRecipeHandler extends JEIUniversalHandler<SolidificationRecipeHandler.Entry> {
 
     public record Entry(FluidType input, SolidificationRecipes.SolidRecipe recipe) {}

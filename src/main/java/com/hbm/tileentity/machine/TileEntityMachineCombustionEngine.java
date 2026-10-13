@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.environment.Environment;
+import com.hbm.client.sound.CombustionEngineSoundHandler;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
@@ -42,8 +44,8 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Combustion Engine — 1:1 port of the 1.12.2 {@code TileEntityMachineCombustionEngine}: an
- * {@link IEnergyProviderMK2} generator burning DIESEL-grade fuels. 5 slots (0→1 fuel container drain,
+ * Combustion Engine, 1:1 port of the 1.12.2 {@code TileEntityMachineCombustionEngine}: an
+ * {@link IEnergyProviderMK2} generator burning DIESEL-grade fuels. 5 slots (0->1 fuel container drain,
  * 2 piston set, 3 battery to charge, 4 fluid identifier). maxPower 2.5M; throttle {@code setting 0-30}
  * ({@code speed = setting·2} mB×10/tick); {@code power += toBurn · combustionEnergy/10_000 · pistonEff}.
  * A sub-mB {@code tenth} accumulator preserves fractional burn.
@@ -51,7 +53,7 @@ import dev.golem.core.data.DataOut;
  * <p>Every fifth burning tick the fuel's {@code FT_Polluting} burn table goes into the 50 mB smoke tanks,
  * which leave through the four fuel ports.
  *
- * <p>Deferred (§20): OpenComputers {@code SimpleComponent}, IFluidCopiable.
+ * <p>Deferred: OpenComputers {@code SimpleComponent}, IFluidCopiable.
  */
 public class TileEntityMachineCombustionEngine extends TileEntityMachinePolluting
         implements MenuProvider, IEnergyProviderMK2, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive {
@@ -91,7 +93,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
                 && fill > 0 && fuel != null) {
             double eff = pistonItem.efficiency()[fuel.grade().ordinal()];
             // hbm-space breatheAir: the setting's worth of oxygen every 5 ticks (com.hbm.api.environment.Environment)
-            if (eff > 0 && com.hbm.api.environment.Environment.breatheAir(level, pos,
+            if (eff > 0 && Environment.breatheAir(level, pos,
                     TickPhase.every(level, pos, 5L) ? te.setting : 0)) {
                 int speed = te.setting * 2;
                 int toBurn = Math.min(fill, speed);
@@ -125,7 +127,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
         float swingSpeed = (te.doorAngle / 10F) + 3;
         if (te.playersUsing > 0) te.doorAngle += swingSpeed; else te.doorAngle -= swingSpeed;
         te.doorAngle = Mth.clamp(te.doorAngle, 0F, 135F);
-        com.hbm.client.sound.CombustionEngineSoundHandler.tickLoop(te);
+        CombustionEngineSoundHandler.tickLoop(te);
     }
 
     @Override
@@ -141,7 +143,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if (level != null && level.isClientSide()) com.hbm.client.sound.CombustionEngineSoundHandler.onRemoved(this);
+        if (level != null && level.isClientSide()) CombustionEngineSoundHandler.onRemoved(this);
     }
 
     public DirPos[] getConPos() {
@@ -158,13 +160,13 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
         };
     }
 
-    /** Drains a fluid container in slot 0 into the tank, emptied container → slot 1. */
+    /** Drains a fluid container in slot 0 into the tank, emptied container to slot 1. */
     private void loadTank() {
         ItemStack in = inventory.getStackInSlot(0);
         if (in.isEmpty()) return;
 
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
             setChanged();
             return;
         }
@@ -220,7 +222,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
         if (slot == 2) return stack.getItem() instanceof ItemPistons;
         if (slot == 3) return Library.isBattery(stack);
         if (slot == 4) return stack.getItem() instanceof IItemFluidId;
-        // slot 1 (emptied container out) stays TRUE — machine writes it via insertItem
+        // slot 1 (emptied container out) stays TRUE, machine writes it via insertItem
         return true;
     }
 

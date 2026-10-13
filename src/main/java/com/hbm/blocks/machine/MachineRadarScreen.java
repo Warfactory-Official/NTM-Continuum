@@ -15,7 +15,7 @@ import net.minecraft.world.phys.BlockHitResult;
  * 1.7 {@code MachineRadarScreen}: a 2x2 panel ({@code {1, 0, 0, 0, 1, 0}}, offset 0) that shows what its linked
  * radar sees. A plain click opens the linked radar's map, when there is one; 1.7 then returned {@code false}
  * on the client and {@code true} on the server, so a click never falls through to the held item unless the
- * player sneaks — which is how the radar linker is used on it.
+ * player sneaks, which is how the radar linker is used on it.
  */
 public class MachineRadarScreen extends BlockMultiblockMachine {
 

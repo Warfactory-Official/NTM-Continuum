@@ -3,14 +3,23 @@ package com.hbm.world.feature;
 import com.hbm.blocks.ModDecoContent;
 import com.hbm.saveddata.TomSaveData;
 import com.mojang.serialization.Codec;
+import dev.golem.core.world.Structures;
 import dev.golem.core.world.Vegetation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.StructureTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.feature.Feature;
@@ -99,11 +108,11 @@ public class ImpactAftermathFeature extends Feature<NoneFeatureConfiguration> {
      */
     public static BlockState villageBlock(BlockState state, RandomSource rand) {
         if (state.isAir()) return null;
-        if (state.instrument() == net.minecraft.world.level.block.state.properties.NoteBlockInstrument.BASS
+        if (state.instrument() == NoteBlockInstrument.BASS
                 || state.is(BlockTags.LOGS)
-                || (state.getSoundType() == net.minecraft.world.level.block.SoundType.GLASS && !state.is(BlockTags.ICE))
-                || state.is(Blocks.LADDER) || state.getBlock() instanceof net.minecraft.world.level.block.CropBlock
-                || state.is(Blocks.CHEST) || state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock
+                || (state.getSoundType() == SoundType.GLASS && !state.is(BlockTags.ICE))
+                || state.is(Blocks.LADDER) || state.getBlock() instanceof CropBlock
+                || state.is(Blocks.CHEST) || state.getBlock() instanceof DoorBlock
                 || state.is(BlockTags.WOOL) || state.is(BlockTags.BEDS)
                 || state.is(Blocks.WATER)
                 || isStoneHalfSlab(state)) {
@@ -125,12 +134,12 @@ public class ImpactAftermathFeature extends Feature<NoneFeatureConfiguration> {
         if (!(state.is(Blocks.SMOOTH_STONE_SLAB) || state.is(Blocks.SANDSTONE_SLAB) || state.is(Blocks.PETRIFIED_OAK_SLAB)
                 || state.is(Blocks.COBBLESTONE_SLAB) || state.is(Blocks.BRICK_SLAB) || state.is(Blocks.STONE_BRICK_SLAB)
                 || state.is(Blocks.NETHER_BRICK_SLAB) || state.is(Blocks.QUARTZ_SLAB))) return false;
-        return state.getValue(net.minecraft.world.level.block.SlabBlock.TYPE) != net.minecraft.world.level.block.state.properties.SlabType.DOUBLE;
+        return state.getValue(SlabBlock.TYPE) != SlabType.DOUBLE;
     }
 
     /** Rewrites the village blocks of the chunk at {@code chunkPos}; true when anything changed. */
-    static boolean wreckVillages(WorldGenLevel level, net.minecraft.world.level.ChunkPos chunkPos, RandomSource rand) {
-        var starts = dev.golem.core.world.Structures.startsIn(level, chunkPos, net.minecraft.tags.StructureTags.VILLAGE);
+    static boolean wreckVillages(WorldGenLevel level, ChunkPos chunkPos, RandomSource rand) {
+        var starts = Structures.startsIn(level, chunkPos, StructureTags.VILLAGE);
         if (starts.isEmpty()) return false;
         int minX = chunkPos.getMinBlockX(), minZ = chunkPos.getMinBlockZ();
         int maxX = minX + 15, maxZ = minZ + 15;

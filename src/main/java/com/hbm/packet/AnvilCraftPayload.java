@@ -7,7 +7,7 @@ import dev.golem.core.net.GolemPayload;
 import net.minecraft.resources.Identifier;
 
 /**
- * C2S payload for the anvil's construction crafting — the 26.1 port of {@code AnvilCraftPacket}. Carries
+ * C2S payload for the anvil's construction crafting, the 26.1 port of {@code AnvilCraftPacket}. Carries
  * the recipe id of the construction row (1.7 sent its index in the recipe list; the rows are datapack recipes here, and
  * a reload on the server can reorder the list before the client has the new one, so an index could craft another
  * recipe) and the mode (0 = craft one, 1 = craft up to 64). Fully validated server-side in {@link HbmPackets#handleAnvilCraft}.

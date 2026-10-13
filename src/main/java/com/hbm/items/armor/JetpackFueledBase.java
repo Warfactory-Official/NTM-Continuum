@@ -1,6 +1,7 @@
 package com.hbm.items.armor;
 
 import com.hbm.api.fluidmk2.IFillableItem;
+import com.hbm.handler.ArmorModHandler;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.ModDataComponents;
 import dev.golem.core.world.CompatTooltipContext;
@@ -75,8 +76,8 @@ public abstract class JetpackFueledBase extends JetpackBase implements IFillable
     @Override
     public void addArmorModDescription(List<Component> tooltip, ItemStack stack, ItemStack armor) {
         // Old JetpackFueledBase reads the module back from the chest slot before showing its fuel line.
-        ItemStack jetpack = com.hbm.handler.ArmorModHandler.pryMod(armor,
-                com.hbm.handler.ArmorModHandler.plate_only);
+        ItemStack jetpack = ArmorModHandler.pryMod(armor,
+                ArmorModHandler.plate_only);
         if (jetpack.isEmpty()) return;
         tooltip.add(Component.literal("  ").append(stack.getHoverName().copy().withStyle(ChatFormatting.RED))
                 .append(Component.literal(" (" + fuel.getDisplayNameString() + ": " + getFuel(jetpack)

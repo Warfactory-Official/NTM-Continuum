@@ -5,12 +5,15 @@ import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityHeaterHeatex;
+import dev.golem.core.gui.Menus;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -53,7 +56,7 @@ public class HeaterHeatex extends BlockMultiblockMachine implements IFluidConnec
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (player.isShiftKeyDown()) {
-            if (!(stack.getItem() instanceof com.hbm.items.machine.IItemFluidId identifier)) {
+            if (!(stack.getItem() instanceof IItemFluidId identifier)) {
                 return InteractionResult.TRY_WITH_EMPTY_HAND;
             }
             if (level.isClientSide()) return InteractionResult.SUCCESS;
@@ -80,14 +83,14 @@ public class HeaterHeatex extends BlockMultiblockMachine implements IFluidConnec
 
     private InteractionResult openMenu(Level level, BlockPos pos, Player player) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
-        if (!(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) {
+        if (!(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityHeaterHeatex heater)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-        dev.golem.core.gui.Menus.openWithPos(serverPlayer, heater, core);
+        Menus.openWithPos(serverPlayer, heater, core);
         return InteractionResult.SUCCESS;
     }
 

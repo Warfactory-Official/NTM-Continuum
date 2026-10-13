@@ -8,18 +8,24 @@ import com.hbm.items.gear.ArmorFSBPowered;
 import com.hbm.items.gear.IArmorDisableModel.EnumPlayerPart;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ArmorRegistry.HazardClass;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.render.Worn;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * GameTests for the power-armour stack.
  *
- * <p>These exist because "the armour does nothing" is not one failure — the set bonus, the charge drain,
+ * <p>These exist because "the armour does nothing" is not one failure: the set bonus, the charge drain,
  * the configuration pass and the worn model each fail independently and look identical from inside the
  * game. Each test pins exactly one link in the chain so a break localises itself instead of needing a
  * playtest to bisect.
@@ -30,7 +36,7 @@ public final class ArmorGameTests {
 
     /** A mock player standing in the structure. See {@code GunGameTests.player} for why the pos is set. */
     private static Player player(GameTestHelper helper) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         BlockPos origin = helper.absolutePos(new BlockPos(1, 1, 1));
         player.setPos(origin.getX() + 0.5D, origin.getY(), origin.getZ() + 0.5D);
         return player;
@@ -50,8 +56,8 @@ public final class ArmorGameTests {
      * The configuration pass ran at all.
      *
      * <p>Everything else depends on this: {@code ModArmorItems.configure()} is what installs the effects,
-     * the hazard classes, the radiation resistance, the hidden hat and the model name. If it never runs —
-     * or runs before the items exist — the suit registers fine, wears fine, and does absolutely nothing.
+     * the hazard classes, the radiation resistance, the hidden hat and the model name. If it never runs,
+     * or runs before the items exist, the suit registers and wears fine and does nothing.
      */
     public static void configured(GameTestHelper helper) {
         ArmorFSB helmet = (ArmorFSB) ModArmorItems.t51_helmet.get();
@@ -116,7 +122,7 @@ public final class ArmorGameTests {
         helper.succeed();
     }
 
-    /** A flat suit keeps rendering but stops working — upstream's isArmorEnabled gate. */
+    /** A flat suit keeps rendering but stops working. This is upstream's isArmorEnabled gate. */
     public static void flatSuitDisablesBonuses(GameTestHelper helper) {
         Player player = player(helper);
         ItemStack chest = suitUp(player);
@@ -150,9 +156,8 @@ public final class ArmorGameTests {
      * The set bonus's effect is applied with its status <b>icon</b> showing.
      *
      * <p>Upstream hides the particles only. Modern Minecraft's five-argument {@code MobEffectInstance}
-     * ties {@code showIcon} to {@code visible}, so the literal transcription hides the icon too — and an
-     * effect with no particles and no icon is indistinguishable, in game, from one that never applied.
-     * That is exactly what the first playtest reported as "strength doesn't apply".
+     * ties {@code showIcon} to {@code visible}, so the literal transcription hides the icon too, and an
+     * effect with no particles and no icon looks in game like one that never applied.
      */
     public static void setBonusEffectIsVisible(GameTestHelper helper) {
         Player player = player(helper);
@@ -175,16 +180,15 @@ public final class ArmorGameTests {
      * The hard landing fires for a player who <b>may fly</b>, i.e. in creative.
      *
      * <p>{@code Player.causeFallDamage} returns early whenever the player may fly and never calls
-     * {@code super}, so a hook on {@code LivingEntity.causeFallDamage} never runs in creative — which is
-     * how most testing is done, and how this shipped broken. Upstream covers the same branch with
-     * {@code PlayerFlyableFallEvent} alongside {@code LivingFallEvent}.
+     * {@code super}, so a hook on {@code LivingEntity.causeFallDamage} never runs in creative. Upstream
+     * covers the same branch with {@code PlayerFlyableFallEvent} alongside {@code LivingFallEvent}.
      *
      * <p>This drives {@code causeFallDamage} on a <b>creative</b> player rather than calling
-     * {@code handleFall} directly, because the routing is the thing that broke — the shockwave itself was
-     * always correct. A test that called {@code handleFall} would have passed throughout the bug.
+     * {@code handleFall} directly, because the routing is what can break; a direct {@code handleFall}
+     * call would pass either way.
      */
     public static void hardLandingThrowsEntities(GameTestHelper helper) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.CREATIVE);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.CREATIVE);
         BlockPos origin = helper.absolutePos(new BlockPos(1, 1, 1));
         player.setPos(origin.getX() + 0.5D, origin.getY(), origin.getZ() + 0.5D);
         player.getAbilities().mayfly = true;
@@ -193,16 +197,16 @@ public final class ArmorGameTests {
         helper.assertTrue(player.getAbilities().mayfly,
                 "the test player cannot fly, so it does not exercise the creative fall branch");
 
-        net.minecraft.world.entity.LivingEntity victim =
-                helper.spawn(net.minecraft.world.entity.EntityType.PIG, new BlockPos(1, 1, 1));
+        LivingEntity victim =
+                helper.spawn(EntityType.PIG, new BlockPos(1, 1, 1));
         victim.setPos(player.getX() + 1.0D, player.getY(), player.getZ());
-        victim.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+        victim.setDeltaMovement(Vec3.ZERO);
 
         float health = victim.getHealth();
         // The shockwave finds its victims with a level query. On 26.1 a plot's entity section can still be
         // hidden from such queries on the test's first tick (a freshly loaded chunk): the pig exists but is not
-        // returned yet, and the landing would hit nothing. Land once the query sees the pig (History 19es-final).
-        net.minecraft.world.phys.AABB around = player.getBoundingBox().inflate(3, 0, 3);
+        // returned yet, and the landing would hit nothing. Land once the query sees the pig.
+        AABB around = player.getBoundingBox().inflate(3, 0, 3);
         boolean[] landed = {false};
         helper.succeedWhen(() -> {
             if (!landed[0]) {
@@ -211,7 +215,7 @@ public final class ArmorGameTests {
                 landed[0] = true;
                 // The real entry point. Player.causeFallDamage returns early for a flying player and never calls
                 // super, which is why the hook cannot live on LivingEntity.
-                dev.golem.core.world.Compat.causeFallDamage(player, 20F, 1F, player.damageSources().fall());
+                Compat.causeFallDamage(player, 20F, 1F, player.damageSources().fall());
             }
             helper.assertTrue(victim.getDeltaMovement().horizontalDistanceSqr() > 0.0D,
                     "the hard landing did not throw a nearby entity — the creative fall path is not routed");
@@ -220,13 +224,13 @@ public final class ArmorGameTests {
         });
     }
 
-    /** A fall below the threshold does nothing at all — upstream's {@code fallDistance > 10} gate. */
+    /** A fall below the threshold does nothing at all. This is upstream's {@code fallDistance > 10} gate. */
     public static void shortFallDoesNothing(GameTestHelper helper) {
         Player player = player(helper);
         suitUp(player);
 
-        net.minecraft.world.entity.LivingEntity victim =
-                helper.spawn(net.minecraft.world.entity.EntityType.PIG, new BlockPos(1, 1, 1));
+        LivingEntity victim =
+                helper.spawn(EntityType.PIG, new BlockPos(1, 1, 1));
         victim.setPos(player.getX() + 1.0D, player.getY(), player.getZ());
         float health = victim.getHealth();
 

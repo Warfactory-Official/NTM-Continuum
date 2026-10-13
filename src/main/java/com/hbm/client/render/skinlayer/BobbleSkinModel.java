@@ -9,9 +9,9 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 
 /**
- * old-hbm {@code BobbleSkinModel}: a bobblehead figure built from a player's real skin, each body part a base box and a
+ * 1.12.2 {@code BobbleSkinModel}: a bobblehead figure built from a player's real skin, each body part a base box and a
  * slightly larger overlay box from {@link SkinBoxVoxelizer}, the head half again as large as the body. Drawn
- * double-sided and blended (old-hbm: culling off, {@code SRC_ALPHA, ONE_MINUS_SRC_ALPHA}, alpha test {@code > 0}),
+ * double-sided and blended (1.12.2: culling off, {@code SRC_ALPHA, ONE_MINUS_SRC_ALPHA}, alpha test {@code > 0}),
  * lit by the parts' normals; the head bobs on the wall clock as {@code renderGuy}'s does.
  */
 public final class BobbleSkinModel {
@@ -96,7 +96,7 @@ public final class BobbleSkinModel {
         pose.mulPose(Axis.ZP.rotationDegrees((float) rot[2]));
     }
 
-    /** old-hbm {@code render(time, rotLeftArm, rotRightArm, rotLeftLeg, rotRightLeg, rotBody, rotHead)}. */
+    /** 1.12.2 {@code render(time, rotLeftArm, rotRightArm, rotLeftLeg, rotRightLeg, rotBody, rotHead)}. */
     public void render(PoseStack pose, SubmitSink sink, Identifier texture, long time, BobbleFigure.Pose figure, int light) {
         RenderType type = CompatRenderTypes.entityTranslucent(texture);
         pose.pushPose();

@@ -17,8 +17,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the steam turbine — 1.12.2 {@code ContainerMachineTurbine}: fluid identifier in (8,17) and out
- * (8,53), input canister bay (44,17) → (44,53), battery (98,53), output canister bay (152,17) → (152,53);
+ * Menu for the steam turbine, 1.12.2 {@code ContainerMachineTurbine}: fluid identifier in (8,17) and out
+ * (8,53), input canister bay (44,17) to (44,53), battery (98,53), output canister bay (152,17) to (152,53);
  * 176×168 with the player inventory at 84/142.
  */
 public class ContainerMachineTurbine extends AbstractContainerMenu {

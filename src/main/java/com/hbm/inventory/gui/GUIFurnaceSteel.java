@@ -2,6 +2,8 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerFurnaceSteel;
 import com.hbm.tileentity.machine.TileEntityFurnaceSteel;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -13,8 +15,8 @@ import java.util.Locale;
 import java.util.Optional;
 
 /** Steel furnace screen with three progress/bonus lanes and the heat gauge. */
-public class GUIFurnaceSteel extends dev.golem.core.gui.CompatContainerScreen<ContainerFurnaceSteel> {
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_furnace_steel.png");
+public class GUIFurnaceSteel extends CompatContainerScreen<ContainerFurnaceSteel> {
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_furnace_steel.png");
 
     public GUIFurnaceSteel(ContainerFurnaceSteel menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 166);

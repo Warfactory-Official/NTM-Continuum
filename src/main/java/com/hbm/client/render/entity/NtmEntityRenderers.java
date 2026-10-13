@@ -1,11 +1,13 @@
 package com.hbm.client.render.entity;
 
+import com.hbm.client.BossStatus;
 import com.hbm.client.render.BlackHoleRenderer;
 import com.hbm.client.render.HbmEntityRenderers;
 import com.hbm.client.render.HbmEntityRenderers.Sink;
 import com.hbm.client.render.MissileRenderer;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.ModNtmEntities;
+import com.hbm.entity.item.EntityTntNtm;
 import com.hbm.entity.logic.EntityWaypoint;
 import com.hbm.entity.missile.IMissilePitch;
 import com.hbm.entity.mob.EntityParasiteMaggot;
@@ -22,8 +24,12 @@ import com.hbm.main.ResourceManager;
 import dev.golem.core.render.VanillaRenderers;
 import dev.golem.core.render.living.CompatChickenRenderer;
 import dev.golem.core.render.living.CompatCreeperRenderer;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.world.BossEvent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.chicken.Chicken;
 
 /**
  * Renderer bindings for the ntm-next entity port, one line per {@link ModNtmEntities} handle plus the seven
@@ -53,8 +59,8 @@ public final class NtmEntityRenderers {
         sink.register(ModNtmEntities.ITEM_BUOYANT.get(), VanillaRenderers.item());
         // A visible entity with no renderer crashes the render thread; the vanilla TNT block reads the fuse.
         // hbm-space's tumbling charges (V-181) only with EntityTntNtm.spin; plain HBM keeps vanilla's renderer
-        net.minecraft.client.renderer.entity.EntityRendererProvider<com.hbm.entity.item.EntityTntNtm> vanillaTnt = VanillaRenderers.tnt();
-        sink.register(ModNtmEntities.TNT_NTM.get(), context -> com.hbm.entity.item.EntityTntNtm.spin
+        EntityRendererProvider<EntityTntNtm> vanillaTnt = VanillaRenderers.tnt();
+        sink.register(ModNtmEntities.TNT_NTM.get(), context -> EntityTntNtm.spin
                 ? new RenderTNTPrimedBase(context) : vanillaTnt.create(context));
         // 1.7's RenderNeoCart drew the NTM chassis mesh with a per-material skin; that renderer needs the
         // rail-following pose 26.1 keeps private, so the whole roster rides vanilla minecart geometry.
@@ -82,10 +88,10 @@ public final class NtmEntityRenderers {
         sink.register(ModNtmEntities.QUACKOS.get(), ctx -> new CompatChickenRenderer(ctx, ResourceManager.duck_tex, 7.5F, 25F) {
             // 1.7 RenderQuacc pushed BossStatus from doRender, which ran only for an entity in range and in the frustum
             @Override
-            public boolean shouldRender(net.minecraft.world.entity.animal.chicken.Chicken entity,
-                                        net.minecraft.client.renderer.culling.Frustum frustum, double camX, double camY, double camZ) {
+            public boolean shouldRender(Chicken entity,
+                                        Frustum frustum, double camX, double camY, double camZ) {
                 boolean render = super.shouldRender(entity, frustum, camX, camY, camZ);
-                if (render) com.hbm.client.BossStatus.set(entity, net.minecraft.world.BossEvent.BossBarColor.YELLOW);
+                if (render) BossStatus.set(entity, BossEvent.BossBarColor.YELLOW);
                 return render;
             }
         });
@@ -181,7 +187,7 @@ public final class NtmEntityRenderers {
                 EntityPinkCloudFX::particleAge, EntityPinkCloudFX::maxAge));
 
         // Missiles: the micro body is the old missileTaint OBJ at 2x, as the pre-existing tier 0 pair; the rest
-        // reuse the tier bodies the missile wave already loads.
+        // reuse the tier bodies that the missile renderers already load.
         missile(sink, ModNtmEntities.MISSILE_TEST.get(), "missile_micro.obj", "missile_test.png", 1.0F);
         missile(sink, ModNtmEntities.MISSILE_SCHRABIDIUM.get(), "missile_micro.obj", "missile_micro_schrab.png", 1.0F);
         missile(sink, ModNtmEntities.MISSILE_BHOLE.get(), "missile_micro.obj", "missile_micro_bhole.png", 1.0F);

@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.items.machine.ItemMachineUpgrade;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
@@ -18,8 +19,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Menu for the mining laser: battery (0), 2×4 upgrades (1–8) and the 3×7 take-only output buffer
- * (9–29), plus the player inventory (222-tall layout) — the 1.12.2 {@code ContainerMachineMiningLaser}
- * coordinates verbatim.
+ * (9–29), plus the player inventory (222-tall layout), using the 1.12.2 {@code ContainerMachineMiningLaser}
+ * coordinates.
  */
 public class ContainerMachineMiningLaser extends AbstractContainerMenu {
 
@@ -49,7 +50,7 @@ public class ContainerMachineMiningLaser extends AbstractContainerMenu {
         for (int i = 0; i < 2; i++) for (int j = 0; j < 4; j++) {
             this.addSlot(validated(1 + i * 4 + j, 98 + j * 18, 18 + i * 18));
         }
-        // output buffer, 3 rows × 7 columns (take only — filled by the machine's vacuum)
+        // output buffer, 3 rows × 7 columns (take only, filled by the machine's vacuum)
         for (int i = 0; i < 3; i++) for (int j = 0; j < 7; j++) {
             this.addSlot(takeOnly(9 + i * 7 + j, 44 + j * 18, 72 + i * 18));
         }
@@ -95,7 +96,7 @@ public class ContainerMachineMiningLaser extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof com.hbm.items.machine.ItemMachineUpgrade) {
+            } else if (stack.getItem() instanceof ItemMachineUpgrade) {
                 // upgrades go straight to the upgrade slots (the 1.12.2 TransferStrategy routing)
                 if (!this.moveItemStackTo(stack, 1, 9, false)) return ItemStack.EMPTY;
             } else {

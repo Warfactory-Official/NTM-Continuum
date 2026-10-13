@@ -1,10 +1,14 @@
 package com.hbm.util;
 
+import com.hbm.config.ServerConfig;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -23,7 +27,7 @@ public final class EntityDamageUtil {
     public static void attackEntityFromIgnoreIFrame(Entity victim, DamageSource source, float amount) {
         if (!(victim.level() instanceof ServerLevel level)) return;
         victim.invulnerableTime = 0;
-        dev.golem.core.world.Compat.hurt(victim, level, source, amount);
+        Compat.hurt(victim, level, source, amount);
     }
 
 
@@ -34,19 +38,19 @@ public final class EntityDamageUtil {
      * not applied (documented gap in entity-port-manifest.md). With {@code /ntmserver DAMAGE_COMPATIBILITY_MODE} on
      * it is 1.7's "super compatibility" path, which does apply the multiplier.
      */
-    public static boolean attackEntityFromNT(net.minecraft.world.entity.LivingEntity living, DamageSource source,
+    public static boolean attackEntityFromNT(LivingEntity living, DamageSource source,
                                              float amount, boolean ignoreIFrame, boolean allowSpecialCancel,
                                              double knockbackMultiplier, float pierceDT, float pierce) {
         if (!(living.level() instanceof ServerLevel level)) return false;
         if (ignoreIFrame) living.invulnerableTime = 0;
-        if (!com.hbm.config.ServerConfig.DAMAGE_COMPATIBILITY_MODE.get()) {
+        if (!ServerConfig.DAMAGE_COMPATIBILITY_MODE.get()) {
             return DamageResistanceHandler.hurt(level, living, source, amount, pierceDT, pierce);
         }
         // 1.7 /ntmserver DAMAGE_COMPATIBILITY_MODE: "attackEntitySuperCompatibility" - vanilla's own hurt, then the
         // velocity it had put back and HBM's knockback (scaled by knockbackMultiplier) instead of vanilla's.
         // 1.7 odd thing kept: its velocity cache read motionX three times, so Y and Z come back as the old X.
         if (ignoreIFrame) living.hurtTime = 0;
-        net.minecraft.world.phys.Vec3 motion = living.getDeltaMovement();
+        Vec3 motion = living.getDeltaMovement();
         boolean ret = DamageResistanceHandler.hurt(level, living, source, amount, pierceDT, pierce);
         living.setDeltaMovement(motion.x, motion.x, motion.x);
         Entity entity = source.getEntity();
@@ -63,12 +67,12 @@ public final class EntityDamageUtil {
     }
 
     /** 1.7 {@code EntityDamageUtil.knockBack}: vanilla's 1.7 knockback with the strength scaled by {@code multiplier}. */
-    public static void knockBack(net.minecraft.world.entity.LivingEntity living, double motionX, double motionZ, double multiplier) {
-        if (living.getRandom().nextDouble() >= living.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE)) {
+    public static void knockBack(LivingEntity living, double motionX, double motionZ, double multiplier) {
+        if (living.getRandom().nextDouble() >= living.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE)) {
             living.hurtMarked = true; // 1.7 isAirBorne: send the new velocity
             double horizontal = Math.sqrt(motionX * motionX + motionZ * motionZ);
             double magnitude = 0.4D * multiplier;
-            net.minecraft.world.phys.Vec3 m = living.getDeltaMovement();
+            Vec3 m = living.getDeltaMovement();
             double mx = m.x / 2.0D - motionX / horizontal * magnitude;
             double my = m.y / 2.0D + magnitude;
             double mz = m.z / 2.0D - motionZ / horizontal * magnitude;
@@ -86,7 +90,7 @@ public final class EntityDamageUtil {
         Vec3 from = attacker.position().add(0D, attacker.getEyeHeight(), 0D);
         Vec3 look = attacker.getViewVector(1F);
         Vec3 end = from.add(look.scale(reach));
-        net.minecraft.world.phys.BlockHitResult blockHit = Compat.clip(attacker.level(), from, end,
+        BlockHitResult blockHit = Compat.clip(attacker.level(), from, end,
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE);
         HitResult block = blockHit.getType() == HitResult.Type.MISS ? null : blockHit;
         Entity pointedEntity = null;
@@ -96,7 +100,7 @@ public final class EntityDamageUtil {
 
         for (Entity entity : attacker.level().getEntities(attacker, search,
                 candidate -> candidate.isAlive() && !candidate.isSpectator()
-                        && (candidate.isPickable() || candidate instanceof net.minecraft.world.entity.LivingEntity))) {
+                        && (candidate.isPickable() || candidate instanceof LivingEntity))) {
             AABB box = entity.getBoundingBox().inflate(entity.getPickRadius() + threshold);
             Vec3 location = box.clip(from, end).orElse(null);
             if (box.contains(from)) {

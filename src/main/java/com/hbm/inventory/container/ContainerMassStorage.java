@@ -4,6 +4,7 @@ import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -78,7 +79,7 @@ public class ContainerMassStorage extends CompatContainerMenu {
             public boolean mayPickup(Player player) {
                 return ContainerMassStorage.this.storage == null
                         || ContainerMassStorage.this.storage.canTakeItemThroughFace(
-                        TileEntityMassStorage.OUTPUT_SLOT, getItem(), net.minecraft.core.Direction.UP);
+                        TileEntityMassStorage.OUTPUT_SLOT, getItem(), Direction.UP);
             }
         });
 

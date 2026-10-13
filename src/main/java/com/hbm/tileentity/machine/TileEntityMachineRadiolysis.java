@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.items.ModFinalConsumableItems;
+import com.hbm.items.food.ItemConserve;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
@@ -161,8 +163,8 @@ public class TileEntityMachineRadiolysis extends TileEntityMachineBase
 
         // 1.7 eats one ItemFood per cycle, except the pancake; the canned conserves were never ItemFood
         if (ItemStacks.foodProperties(input) != null
-                && !input.is(com.hbm.items.ModFinalConsumableItems.pancake.get())
-                && !(input.getItem() instanceof com.hbm.items.food.ItemConserve)) {
+                && !input.is(ModFinalConsumableItems.pancake.get())
+                && !(input.getItem() instanceof ItemConserve)) {
             inventory.extractItem(12, 1, false);
             input = inventory.getStackInSlot(12);
         }

@@ -16,7 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
-/** Menu for the catalytic reformer — 1.12.2 {@code ContainerMachineCatalyticReformer} layout (176×238). */
+/** Menu for the catalytic reformer, 1.12.2 {@code ContainerMachineCatalyticReformer} layout (176×238). */
 public class ContainerMachineCatalyticReformer extends AbstractContainerMenu {
 
     public static final int MACHINE_SLOTS = 11;

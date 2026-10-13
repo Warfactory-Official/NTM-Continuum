@@ -22,7 +22,7 @@ public final class DoorGameTests {
 
     private DoorGameTests() {}
 
-    /** The fire door: dims {2,0,0,0,2,1}, range {-1,0,0,3,4,1} — a 3-wide, 4-tall opening moving up the Y axis. */
+    /** The fire door: dims {2,0,0,0,2,1}, range {-1,0,0,3,4,1}: a 3-wide, 4-tall opening moving up the Y axis. */
     public static void fireDoorOpensAndCloses(GameTestHelper helper) {
         BlockDoorGeneric block = ModDoorBlocks.FIRE_DOOR.get();
         BlockPos core = helper.absolutePos(new BlockPos(6, 1, 6));

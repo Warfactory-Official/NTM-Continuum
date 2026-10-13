@@ -5,6 +5,7 @@ import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModelState;
 import com.hbm.items.machine.ItemGear;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
@@ -33,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The legacy one-core Stirling engine family. */
-public class MachineStirling extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay, com.hbm.items.ModelState {
+public class MachineStirling extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay, ModelState {
 
     public MachineStirling(Properties properties) {
         super(properties);

@@ -25,17 +25,17 @@ import org.jspecify.annotations.Nullable;
 import java.util.function.BiConsumer;
 
 /**
- * A folded core whose cells are its own block, told apart by {@link #CELL} — what a 1.7
+ * A folded core whose cells are its own block, told apart by {@link #CELL}: what a 1.7
  * {@code BlockDummyable} machine becomes.
  *
  * <p>Deviation from ntm-next, which registers a bucketed cell block per owner triple: blast resistance,
  * hardness and map colour are each read off a per-block field, so a cell shared between machines answers
- * one set for all of them, and the bucket table is what makes the position-blind vanilla getters correct
- * there. A cell that <i>is</i> the machine's own block has nothing to get wrong — it answers every one of
- * them, and the sound, the tool and the drop, by construction, for no registry entries and no table.
+ * one set for all of them, and the bucket table makes the position-blind vanilla getters correct there.
+ * A cell that <i>is</i> the machine's own block answers all of them, and the sound, the tool and the drop,
+ * by construction, with no registry entries and no table.
  *
- * <p>What is folded is unchanged: a cell carries no pointer home, and {@link MultiblockCoreIndex} remains
- * the sole cell-to-core authority. {@link #CELL} says only whether a position is a cell, never whose.
+ * <p>A cell carries no pointer home; {@link MultiblockCoreIndex} is the sole cell-to-core authority.
+ * {@link #CELL} says only whether a position is a cell, never whose.
  */
 public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
 
@@ -71,8 +71,8 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
     protected abstract BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state);
 
     /**
-     * A block entity a cell still carries from a save made before its machine gave cells none (the RBMK consoles
-     * until 2026-10-12): removes it and answers true, so the caller's tick stops there. Old worlds only.
+     * A block entity a cell still carries from a save made before its machine gave cells none (the RBMK
+     * consoles): removes it and answers true, so the caller's tick stops there. Old worlds only.
      */
     public static boolean removeIfAtCell(BlockEntity blockEntity) {
         BlockState state = blockEntity.getBlockState();
@@ -85,7 +85,7 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
     }
 
     /**
-     * The core of the multiblock {@code pos} belongs to, or null where the index has no answer — which is
+     * The core of the multiblock {@code pos} belongs to, or null where the index has no answer, which is
      * every cell of a half-torn structure, and every cell on a client that has not yet meshed its core.
      */
     protected static @Nullable BlockPos coreOf(BlockGetter level, BlockPos pos, BlockState state) {

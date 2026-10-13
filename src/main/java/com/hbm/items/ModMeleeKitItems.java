@@ -37,6 +37,7 @@ import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.ToolTier;
+import java.util.function.UnaryOperator;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.ItemTags;
@@ -106,7 +107,7 @@ public final class ModMeleeKitItems {
     public static final List<String> IDS = new ArrayList<>();
 
     private static <I extends Item> RegistryObject<I> reg(String id, HbmTab tab, Function<Item.Properties, I> factory,
-                                                         java.util.function.UnaryOperator<Item.Properties> properties,
+                                                         UnaryOperator<Item.Properties> properties,
                                                          Preset model) {
         RegistryObject<I> ro = REG.item(id, factory, properties).transform(model);
         IDS.add(id);

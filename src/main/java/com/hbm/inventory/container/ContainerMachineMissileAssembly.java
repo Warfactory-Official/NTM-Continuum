@@ -16,7 +16,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * 1.7 {@code ContainerMachineMissileAssembly}: chip (8,36), warhead (26,36), fuselage (44,36), fins (62,36),
  * thruster (80,36), take-only output (152,36); player inventory at y=140 (176x222). Button 0 builds. Shift-click
- * from the inventory tries slots 0-4 in order — upstream's {@code mergeItemStack(0, 5)}.
+ * from the inventory tries slots 0-4 in order, upstream's {@code mergeItemStack(0, 5)}.
  */
 public class ContainerMachineMissileAssembly extends AbstractContainerMenu {
 

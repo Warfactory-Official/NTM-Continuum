@@ -3,6 +3,7 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.deco.TileEntityLanternBehemoth;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -22,7 +23,7 @@ public class RenderLanternBehemoth extends GemBER<TileEntityLanternBehemoth, Ren
         public int glowTint = 0xFF00FF00;
     }
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/deco/lantern.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/deco/lantern.obj"));
     private final Surface skin = Surface.cutoutNoCull(Constants.MOD_ID + ":textures/models/deco/lantern_rusty.png");
     private final Surface lamp = Surface.emissive(Constants.MOD_ID + ":textures/models/misc/white.png");
 

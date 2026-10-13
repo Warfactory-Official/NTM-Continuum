@@ -3,7 +3,11 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerMachineElectrolyser;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.material.Mats;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.machine.TileEntityMachineElectrolyser;
+import dev.golem.core.Ids;
+import dev.golem.core.client.KeyMappings;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
 import net.minecraft.ChatFormatting;
@@ -15,13 +19,14 @@ import net.minecraft.world.entity.player.Inventory;
 
 import java.util.List;
 import java.util.Optional;
+import org.lwjgl.glfw.GLFW;
 
 /** The two 1.7.10 electrolyser screens ({@code GUIElectrolyserMetal} / {@code GUIElectrolyserFluid}) share this renderer and select their background by menu mode. */
-public final class GUIMachineElectrolyser extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineElectrolyser>
+public final class GUIMachineElectrolyser extends CompatContainerScreen<ContainerMachineElectrolyser>
         implements IUpgradeInfoProviderSource {
 
-    private static final Identifier FLUID_TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_electrolyser_fluid.png");
-    private static final Identifier METAL_TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_electrolyser_metal.png");
+    private static final Identifier FLUID_TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_electrolyser_fluid.png");
+    private static final Identifier METAL_TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_electrolyser_metal.png");
 
     public GUIMachineElectrolyser(ContainerMachineElectrolyser menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 210, 204);
@@ -69,7 +74,7 @@ public final class GUIMachineElectrolyser extends dev.golem.core.gui.CompatConta
                 0xFF000000 | (material.material.moltenColor & 0xFFFFFF));
     }
 
-    /** 1.7 {@code renderTank(guiLeft + x, guiTop + 70, z, 16, 52)} — the 1.7 call passes the bottom edge. */
+    /** 1.7 {@code renderTank(guiLeft + x, guiTop + 70, z, 16, 52)}: the 1.7 call passes the bottom edge. */
     private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y) {
         GuiUtil.tank(graphics, tank, leftPos + x, topPos + y + 52, 16, 52);
     }
@@ -124,11 +129,11 @@ public final class GUIMachineElectrolyser extends dev.golem.core.gui.CompatConta
     private void materialTooltip(GuiGraphicsExtractor graphics, Mats.@org.jspecify.annotations.Nullable MaterialStack stack, int x, int y) {
         GuiDraw.tooltip(graphics, font, stack == null ? List.of(Component.literal("Empty").withStyle(ChatFormatting.RED))
                 : List.of(Component.literal(stack.material.getDisplayName() + ": "
-                        // 1.7: Keyboard.isKeyDown(KEY_LSHIFT) — the physical left shift key, not the sneak state.
-                        + Mats.formatAmount(stack.amount, dev.golem.core.client.KeyMappings.isKeyDown(
-                        org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT))).withStyle(ChatFormatting.YELLOW)),
+                        // 1.7: Keyboard.isKeyDown(KEY_LSHIFT): the physical left shift key, not the sneak state.
+                        + Mats.formatAmount(stack.amount, KeyMappings.isKeyDown(
+                        GLFW.GLFW_KEY_LEFT_SHIFT))).withStyle(ChatFormatting.YELLOW)),
                 Optional.empty(), x, y);
     }
 
-    @Override public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() { return menu.getElectrolyser(); }
+    @Override public IUpgradeInfoProvider getUpgradeInfoProvider() { return menu.getElectrolyser(); }
 }

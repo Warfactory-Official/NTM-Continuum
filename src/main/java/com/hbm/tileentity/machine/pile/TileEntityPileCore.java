@@ -12,8 +12,10 @@ import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.particle.helper.FlameCreator;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import java.util.Arrays;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -32,8 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The brain of an assembled Chicago Pile. It owns the channels drilled through the graphite — fuel,
- * ventilation and control — and runs the neutron economy between them once a tick.
+ * The brain of an assembled Chicago Pile. It owns the channels drilled through the graphite (fuel,
+ * ventilation and control) and runs the neutron economy between them once a tick.
  *
  * <p>Neutrons move by <b>segment</b>, not by ray: every channel is binned into the vertical slice of the
  * pile it enters through, each fuel slice pools the neutrons its rods emit, and the pool then walks
@@ -41,8 +43,8 @@ import java.util.List;
  * rod throttles the whole pile rather than just its neighbours, and why the simulation costs the same
  * whether the pile is minimal or fifteen blocks on a side.
  *
- * <p>Deferred: the burning debris thrown out on meltdown still flies and detonates, but does not trail
- * flame — the trail is a client-only particle and {@code BulletConfig}'s update hook runs on both sides.
+ * <p>Not ported: the burning debris thrown out on meltdown flies and detonates but does not trail flame. The
+ * trail is a client-only particle and {@code BulletConfig}'s update hook runs on both sides.
  */
 public class TileEntityPileCore extends TileEntityLoadedBase {
 
@@ -426,7 +428,7 @@ public class TileEntityPileCore extends TileEntityLoadedBase {
         output.putInt("left", left);
         output.putInt("right", right);
         output.putInt("up", up);
-        com.hbm.util.SavedIds.putEnum(output, "orientation", orientation); // by name, never an ordinal
+        SavedIds.putEnum(output, "orientation", orientation); // by name, never an ordinal
 
         writeChannels(output, "fuelChannels", fuelChannels);
         writeChannels(output, "ventChannels", ventilationChannels);
@@ -447,7 +449,7 @@ public class TileEntityPileCore extends TileEntityLoadedBase {
         left = input.getIntOr("left", 0);
         right = input.getIntOr("right", 0);
         up = input.getIntOr("up", 0);
-        orientation = com.hbm.util.SavedIds.getEnum(input, "orientation", PileOrientation.NEITHER);
+        orientation = SavedIds.getEnum(input, "orientation", PileOrientation.NEITHER);
 
         segments = new PileSegment[width];
         fuelChannels.clear();
@@ -470,7 +472,7 @@ public class TileEntityPileCore extends TileEntityLoadedBase {
     private PileChannel readChannel(DataIn input) {
         PileChannel chan = new PileChannel(
                 input.getIntOr("x", 0), input.getIntOr("y", 0), input.getIntOr("z", 0),
-                com.hbm.util.SavedIds.getEnum(input, "dir", ForgeDirection.DOWN));
+                SavedIds.getEnum(input, "dir", ForgeDirection.DOWN));
 
         if (chan.type == PileChannelType.FUEL) {
             for (DataIn rod : input.childrenListOrEmpty("rods")) {
@@ -515,14 +517,14 @@ public class TileEntityPileCore extends TileEntityLoadedBase {
             this.type = type != null ? type : PileChannelType.getChannelType(dir, orientation);
             this.length = length >= 0 ? length : channelLength(this.type);
             this.rods = new ItemStack[Math.max(0, this.length)];
-            java.util.Arrays.fill(this.rods, ItemStack.EMPTY);
+            Arrays.fill(this.rods, ItemStack.EMPTY);
         }
 
         void write(DataOut output) {
             output.putInt("x", entry.getPos().getX());
             output.putInt("y", entry.getPos().getY());
             output.putInt("z", entry.getPos().getZ());
-            com.hbm.util.SavedIds.putEnum(output, "dir", entry.getDir());
+            SavedIds.putEnum(output, "dir", entry.getDir());
 
             if (type == PileChannelType.FUEL) {
                 DataOut.ChildList list = output.childrenList("rods");

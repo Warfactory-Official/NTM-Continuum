@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerFunnel;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
@@ -12,7 +13,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 /** 1.7 {@code GUIFunnel}: 176x168 processing sheet with the mode button at (159,73). */
 public final class GUIFunnel extends CompatContainerScreen<ContainerFunnel> {
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_funnel.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_funnel.png");
     public GUIFunnel(ContainerFunnel menu, Inventory inventory, Component title) { super(menu, inventory, title, 176, 168); }
 
     @Override public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {

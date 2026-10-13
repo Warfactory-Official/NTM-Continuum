@@ -9,6 +9,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.rbmk.RBMKDials;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -18,7 +19,7 @@ import net.minecraft.world.level.Level;
  * output attach below the reactor. It connects heatable fluids from above and coolable fluids (or
  * perfluoromethyl) on every other face; the column itself pushes into the ducts around it.
  */
-public class RBMKLoader extends dev.golem.core.world.CompatBlock implements IFluidConnectorBlockMK2 {
+public class RBMKLoader extends CompatBlock implements IFluidConnectorBlockMK2 {
 
     public RBMKLoader(Properties properties) { super(properties); }
 

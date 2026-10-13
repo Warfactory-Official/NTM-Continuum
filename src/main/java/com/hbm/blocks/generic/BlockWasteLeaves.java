@@ -11,7 +11,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Dead leaves — original-hbm (1.7.10) {@code WasteLeaves}. A random tick has a 1 in 30 chance to remove the
+ * Dead leaves, from 1.7 {@code WasteLeaves}. A random tick has a 1 in 30 chance to remove the
  * block; when the space below is air the leaves come down as a falling single {@code leaves_layer} that
  * places itself where it lands and never drops as an item (1.7 {@code field_145813_c = false}). One client
  * display tick in seven sheds a {@code deadleaf} particle from the underside when it is open.

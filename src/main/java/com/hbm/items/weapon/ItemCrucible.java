@@ -3,12 +3,17 @@ package com.hbm.items.weapon;
 import com.hbm.Constants;
 import com.hbm.config.GeneralConfig;
 import com.hbm.items.ModAbilityToolItems;
+import com.hbm.packet.CrucibleAnimPayload;
 import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.util.ShadyUtil;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.world.CompatTooltipContext;
+import dev.golem.core.world.HeldItemState;
 import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.ToolTier;
 import dev.golem.core.world.Tools;
+import java.util.Set;
+import java.util.function.Predicate;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -18,6 +23,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -30,7 +37,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * old-hbm {@code ItemCrucible}: the demon-core sword, an {@link ItemSwordCutter} with {@value #DEFAULT_MAX} charges
+ * 1.12.2 {@code ItemCrucible}: the demon-core sword, an {@link ItemSwordCutter} with {@value #DEFAULT_MAX} charges
  * ({@code GeneralConfig.crucibleMaxCharges}), replacing the 1.7 three-charge sword.
  *
  * <ul>
@@ -38,41 +45,42 @@ import java.util.concurrent.ConcurrentHashMap;
  *       drawn: {@code doSpecialClick}) and every cut that hits something spends one. The tooltip bar and the
  *       durability bar show it. The creative tab holds a charged crucible; the recipe makes an empty one (item damage
  *       3 of the CRUCIBLE material's 10,000). The tungsten crate's laser recharges one holding fewer than three.</li>
- *   <li>Charged: 5000 attack damage (1.7 value; effective in full because CommonClass raises vanilla's 2048 ATTACK_DAMAGE bound) and +100% movement; empty: 5 damage and +80% movement. The stack-sensitive
- *       {@code getAttributeModifiers} override named no attack speed, so the player's base speed applies.</li>
+ *   <li>Charged: 5000 attack damage (1.7 value; effective in full because CommonClass raises vanilla's 2048
+ *       ATTACK_DAMAGE bound) and +100% movement; empty: 5 damage and +80% movement. The stack-sensitive
+ *       {@code getAttributeModifiers} override names no attack speed, so the player's base speed applies.</li>
  *   <li>Every hit also wears the sword by two (1.12 {@code ItemSwordAbility.hitEntity} and {@code ItemSword.hitEntity}
- *       each damaged it by one); the durability bar shows the charge instead, as in old-hbm.</li>
+ *       each damaged it by one); the durability bar shows the charge instead, as in 1.12.2.</li>
  *   <li>Equip: the deploy animation and, when charged, {@code weapon.cDeploy} at volume 5. Swing: the random swing
  *       animation unless drawing a cut (in first person the 1.7 crucible swing; in third person vanilla's arm swing,
- *       which is no longer cancelled), and {@code weapon.crucible_swing} when charged.</li>
+ *       which is not cancelled), and {@code weapon.crucible_swing} when charged.</li>
  *   <li>A charged hit that kills bursts the victim into redstone-block dust ({@code ceil(maxHealth / 3)} capped at 250,
  *       four particles each).</li>
  * </ul>
  */
-public class ItemCrucible extends ItemSwordCutter implements dev.golem.core.world.HeldItemState {
+public class ItemCrucible extends ItemSwordCutter implements HeldItemState {
 
     public static final int DEFAULT_MAX = 16;
-    /** old-hbm NBT {@code charges}. */
+    /** 1.12.2 NBT {@code charges}. */
     public static final GolemComponent<Integer> CHARGES = GolemComponent.integer(Constants.MOD_ID, "charges");
-    /** old-hbm {@code cSwing}: SWING_ROT/SWING_TRANS over 75 + 150 + 500 ms. */
+    /** 1.12.2 {@code cSwing}: SWING_ROT/SWING_TRANS over 75 + 150 + 500 ms. */
     public static final int CSWING_MILLIS = 725;
 
     /**
-     * {@code ItemCrucible.doSpecialClick}, sent every client tick from {@code updateClient} (AuxButton 1000). old-hbm kept
+     * {@code ItemCrucible.doSpecialClick}, sent every client tick from {@code updateClient} (AuxButton 1000). 1.12.2 kept
      * one static flag for the whole server, which only made sense in single player; the port keeps it per player.
      */
     private static final Map<UUID, Boolean> SPECIAL_CLICK = new ConcurrentHashMap<>();
 
     /**
      * Players whose last hit was free ({@code doSpecialClick}) and whose cut has not arrived yet. The flag is client
-     * state the server cannot check, and old-hbm honoured it unconditionally, so a client that always sent it hit for
+     * state the server cannot check, and 1.12.2 honoured it unconditionally, so a client that always sent it hit for
      * free forever. An honest free hit is the left click that also sends the drawn cut (attack first, then the swing
      * that sends {@code PacketMobSlicer}), so it is always followed by its cut: one free hit per cut is exactly what an
      * honest client can use, and a further hit before the cut arrives spends a charge as usual.
      */
-    private static final java.util.Set<UUID> FREE_HIT_OPEN = ConcurrentHashMap.newKeySet();
+    private static final Set<UUID> FREE_HIT_OPEN = ConcurrentHashMap.newKeySet();
 
-    /** old-hbm {@code getAttributeModifiers(slot, stack)} named no attack speed: the player's base speed (no modifier). */
+    /** 1.12.2 {@code getAttributeModifiers(slot, stack)} named no attack speed: the player's base speed (no modifier). */
     public ItemCrucible(Properties properties, float damage, double movement, ToolTier material) {
         super(properties, damage, 0F, movement, material);
     }
@@ -106,7 +114,7 @@ public class ItemCrucible extends ItemSwordCutter implements dev.golem.core.worl
     }
 
     /**
-     * The client's flag, honoured only while the main hand holds a charged crucible. old-hbm's flag went stale when the
+     * The client's flag, honoured only while the main hand holds a charged crucible. 1.12.2's flag went stale when the
      * last charge was spent mid-cut (the client stops reporting at zero charges), which hid the empty crucible's swing
      * until it was recharged; an empty crucible is never "drawing a cut" here.
      */
@@ -136,7 +144,7 @@ public class ItemCrucible extends ItemSwordCutter implements dev.golem.core.worl
     }
 
     /** Drops the state of players {@code absent} says are gone (logout). */
-    static void forgetPlayers(java.util.function.Predicate<UUID> absent) {
+    static void forgetPlayers(Predicate<UUID> absent) {
         SPECIAL_CLICK.keySet().removeIf(absent);
         FREE_HIT_OPEN.removeIf(absent);
     }
@@ -160,8 +168,8 @@ public class ItemCrucible extends ItemSwordCutter implements dev.golem.core.worl
     }
 
     @Override
-    protected void compatInventoryTick(ItemStack stack, ServerLevel level, net.minecraft.world.entity.Entity owner,
-                                       net.minecraft.world.entity.EquipmentSlot slot, boolean held) {
+    protected void compatInventoryTick(ItemStack stack, ServerLevel level, Entity owner,
+                                       EquipmentSlot slot, boolean held) {
         super.compatInventoryTick(stack, level, owner, slot, held);
         syncModifiers(stack);
     }
@@ -180,7 +188,7 @@ public class ItemCrucible extends ItemSwordCutter implements dev.golem.core.worl
     }
 
     /**
-     * {@code onEquip(player, OFF_HAND)}: old-hbm sent the deploy animation to the off-hand slot (which its renderer never
+     * {@code onEquip(player, OFF_HAND)}: 1.12.2 sent the deploy animation to the off-hand slot (which its renderer never
      * draws: an off-hand crucible is invisible in first person unless the main hand holds one too) and, charged, played
      * {@code cDeploy}. The sound is the observable part, so that is what happens here.
      */
@@ -193,7 +201,7 @@ public class ItemCrucible extends ItemSwordCutter implements dev.golem.core.worl
 
     /**
      * 1.12 fired {@code onEquip} whenever the held stack's item <em>or damage</em> changed ({@code areItemsEqual}); a
-     * hit wears the crucible, so the deploy (animation and sound) replays after every hit, as it did in old-hbm.
+     * hit wears the crucible, so the deploy (animation and sound) replays after every hit, as it did in 1.12.2.
      */
     @Override
     public Object equipKey(ItemStack stack) {
@@ -205,7 +213,7 @@ public class ItemCrucible extends ItemSwordCutter implements dev.golem.core.worl
      * drawn the attack animation ({@code cSwing} cue; the 1.7 swing bus, see {@code CrucibleClient.swing17}) is started
      * on the holder's client, and a charged crucible plays {@code weapon.crucible_swing} at the swinger.
      *
-     * <p>User decision (2026-10-02): vanilla's arm swing is <em>not</em> cancelled any more (old-hbm returned true on
+     * <p>Vanilla's arm swing is <em>not</em> cancelled (1.12.2 returned true on
      * both sides; 1.7's crucible returned false). Third person (F5, and every other player through the server's swing
      * broadcast) shows the normal sword swing; first person still shows only the crucible's own animation, because its
      * first-person renderer clears the local swing as 1.7's did ({@code isSwingInProgress = false}).
@@ -217,9 +225,9 @@ public class ItemCrucible extends ItemSwordCutter implements dev.golem.core.worl
             return false;
         }
         // 1.7: Tankish's crucible is recharged by every swing (setItemDamage(0))
-        if (com.hbm.util.ShadyUtil.is(player.getUUID(), com.hbm.util.ShadyUtil.Tankish)) charge(stack);
+        if (ShadyUtil.is(player.getUUID(), ShadyUtil.Tankish)) charge(stack);
         if (!doSpecialClick(player) && hand == InteractionHand.MAIN_HAND) {
-            com.hbm.packet.CrucibleAnimPayload.send(player, com.hbm.packet.CrucibleAnimPayload.CSWING);
+            CrucibleAnimPayload.send(player, CrucibleAnimPayload.CSWING);
             // the client starts cSwing only while no swing runs (SWING_ROT x back at 0)
             if (!busRunning(player)) busStarted(player, CSWING_MILLIS);
         }
@@ -231,7 +239,7 @@ public class ItemCrucible extends ItemSwordCutter implements dev.golem.core.worl
     }
 
     /**
-     * old-hbm drew the first-person crucible from {@code RenderSpecificHandEvent} at equip progress 0 whatever the hand
+     * 1.12.2 drew the first-person crucible from {@code RenderSpecificHandEvent} at equip progress 0 whatever the hand
      * renderer was doing, so a charge spent (a component change) never lowered it: the same item is the same raise.
      * (The deploy still replays on a hit, through {@link #equipKey} on the server, as in 1.12.)
      */

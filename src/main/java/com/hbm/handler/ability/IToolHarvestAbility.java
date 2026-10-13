@@ -1,5 +1,6 @@
 package com.hbm.handler.ability;
 
+import com.hbm.api.registry.NamedRegistry;
 import com.hbm.config.ToolConfig;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
@@ -10,6 +11,7 @@ import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemToolAbility;
 import dev.golem.core.world.CompatEnchantments;
 import dev.golem.core.world.Recipes;
+import java.util.ArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -106,7 +108,7 @@ public interface IToolHarvestAbility extends IBaseAbility {
         @Override
         public void onHarvestBlock(int level, ServerLevel world, BlockPos pos, ServerPlayer player, BlockState state) {
             // 1.7 block.getDrops(world, x, y, z, meta, 0): the plain drops, no tool and no fortune.
-            List<ItemStack> drops = new java.util.ArrayList<>(Block.getDrops(state, world, pos, world.getBlockEntity(pos)));
+            List<ItemStack> drops = new ArrayList<>(Block.getDrops(state, world, pos, world.getBlockEntity(pos)));
 
             boolean doesSmelt = false;
 
@@ -216,7 +218,7 @@ public interface IToolHarvestAbility extends IBaseAbility {
      * addon ability registers here ({@code REGISTRY.register(MY_ABILITY)}) at mod construction so a saved preset finds
      * it again; giving it to a tool is the tool's own {@code addAbility}.
      */
-    com.hbm.api.registry.NamedRegistry<IToolHarvestAbility> REGISTRY = com.hbm.api.registry.NamedRegistry.of(
+    NamedRegistry<IToolHarvestAbility> REGISTRY = NamedRegistry.of(
             "tool harvest ability", IToolHarvestAbility::getName, NONE, SILK, LUCK, SMELTER, SHREDDER, CENTRIFUGE, CRYSTALLIZER, MERCURY);
 
     static IToolHarvestAbility getByName(String name) {

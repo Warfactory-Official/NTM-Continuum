@@ -3,7 +3,10 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerMachineGasCent;
 import com.hbm.inventory.recipes.GasCentrifugeRecipes.PseudoFluidType;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.machine.TileEntityMachineGasCent;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -16,10 +19,10 @@ import java.util.List;
 import java.util.Optional;
 
 /** Gas centrifuge screen, 1.7 {@code GUIMachineGasCent} ({@code processing/gui_centrifuge_gas.png}, 206x204). */
-public class GUIMachineGasCent extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineGasCent>
+public class GUIMachineGasCent extends CompatContainerScreen<ContainerMachineGasCent>
         implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm",
+    private static final Identifier TEXTURE = Ids.of("hbm",
             "textures/gui/processing/gui_centrifuge_gas.png");
     private static final int SHEET = 256;
 
@@ -122,7 +125,7 @@ public class GUIMachineGasCent extends dev.golem.core.gui.CompatContainerScreen<
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return menu.getGasCent();
     }
 }

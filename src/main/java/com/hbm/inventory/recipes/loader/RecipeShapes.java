@@ -33,7 +33,7 @@ public final class RecipeShapes {
 
     private RecipeShapes() {}
 
-    // ------------------------------------------------------------------ item inputs
+    // Item inputs
 
     /**
      * {@link GenericRecipeCodec#STACK} / {@link TableCodecs#INGREDIENT}: {@code {"ingredient": id or "#tag", "count"}}
@@ -107,7 +107,7 @@ public final class RecipeShapes {
         return count == null ? null : unhashed(object.get("id").getAsString(), count);
     });
 
-    // ------------------------------------------------------------------ item outputs
+    // Item outputs
 
     /** {@link GenericRecipeCodec#ITEM_OUT} / {@link ItemSpec#CODEC}: {@code "id"}, or {@code {"id", "count"}}; no chance. */
     public static final Shape STACK_OUT = shape(value -> {
@@ -145,7 +145,7 @@ public final class RecipeShapes {
     public static final Shape CHANCE_OUTPUT_OBJECT = shape(value -> chanceObject(itemOut(value)),
             json -> json.isJsonObject() ? readStack(json, true) : null);
 
-    // ------------------------------------------------------------------ fluids
+    // Fluids
 
     /** {@link GenericRecipeCodec#FLUID_STACK}: {@code {"type", "amount"}}; one with a non-zero pressure reads as null. */
     public static final Shape FLUID_STACK = shape(value -> {
@@ -168,7 +168,7 @@ public final class RecipeShapes {
     public static final Shape FLUID_ID = shape(value -> new JsonPrimitive(fluid(value).id()),
             json -> isString(json) ? new FluidAmount(json.getAsString(), 1000) : null);
 
-    // ------------------------------------------------------------------ helpers
+    // Helpers
 
     private static Shape shape(Function<Object, JsonElement> write, Function<JsonElement, Object> read) {
         return new Shape() {

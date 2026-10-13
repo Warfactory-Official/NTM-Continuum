@@ -86,9 +86,9 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
     }
 
     /**
-     * Genuinely two trees, not one with its buses at rest: the greasegun's stock sits four units back
-     * in the hand and at the origin in a slot, and the uzi's is folded 180° in the hand. Upstream wrote
-     * a separate rest-pose part list for that reason, and the gate on {@code animated} is that list.
+     * Two trees, not one with its buses at rest: the greasegun's stock sits four units back in the hand and
+     * at the origin in a slot, and the uzi's is folded 180° in the hand. Upstream has a separate rest-pose
+     * part list for that, and the gate on {@code animated} is that list.
      *
      * <p>The greasegun's ejection flap is translated up by 0.53125 and back down by 0.5125, a
      * thousandth short. That is upstream's, and the part was authored against it.

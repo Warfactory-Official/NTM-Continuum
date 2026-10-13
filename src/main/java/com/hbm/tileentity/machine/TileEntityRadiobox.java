@@ -5,6 +5,7 @@ import com.hbm.blocks.machine.Radiobox;
 import com.hbm.entity.mob.EntityFBI;
 import com.hbm.entity.mob.EntityFBIDrone;
 import com.hbm.items.ModItems;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.tileentity.ModDecoCrateBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -35,7 +36,7 @@ public class TileEntityRadiobox extends TileEntityLoadedBase implements IEnergyR
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityRadiobox box) {
-        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             box.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
         }
         if (state.getValue(Radiobox.ON) && (box.power >= 25000 || box.infinite)) {

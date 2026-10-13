@@ -3,6 +3,7 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerCoreReceiver;
 import com.hbm.util.BobMathUtil;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreReceiver;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -12,7 +13,7 @@ import net.minecraft.world.entity.player.Inventory;
 /** The receiver's panel, ported from 1.7 {@code GUICoreReceiver}: what came down the beam last tick, and what that is worth in HE. */
 public class GUICoreReceiver extends GUIDFCBase<ContainerCoreReceiver> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/dfc/gui_receiver.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/dfc/gui_receiver.png");
 
     public GUICoreReceiver(ContainerCoreReceiver menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 166);

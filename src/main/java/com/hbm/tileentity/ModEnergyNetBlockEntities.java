@@ -2,6 +2,7 @@ package com.hbm.tileentity;
 
 import com.hbm.Constants;
 import com.hbm.registration.Reg;
+import com.hbm.tileentity.machine.TileEntityMachineBattery;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -81,7 +82,7 @@ public final class ModEnergyNetBlockEntities {
                     ModEnergyNetBlocks.capacitor_schrabidate.get()));
     public static final RegistryObject<BlockEntityType<TileEntityBatteryTier>> BATTERY_TIER =
             REG.blockEntity("machine_battery_tier", () -> BlockEntities.serverTicking(TileEntityBatteryTier::new,
-                    com.hbm.tileentity.machine.TileEntityMachineBattery::serverTick,
+                    TileEntityMachineBattery::serverTick,
                     ModEnergyNetBlocks.machine_battery_potato.get(), ModEnergyNetBlocks.machine_lithium_battery.get(),
                     ModEnergyNetBlocks.machine_schrabidium_battery.get(), ModEnergyNetBlocks.machine_dineutronium_battery.get()));
     public static final RegistryObject<BlockEntityType<TileEntityHEVBattery>> HEV_BATTERY =

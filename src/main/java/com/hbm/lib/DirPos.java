@@ -3,7 +3,7 @@ package com.hbm.lib;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-/** A block position paired with a direction — a connection point for the node networks. */
+/** A block position paired with a direction: a connection point for the node networks. */
 public class DirPos {
 
     protected ForgeDirection dir;

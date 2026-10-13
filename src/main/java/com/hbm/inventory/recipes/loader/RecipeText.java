@@ -3,6 +3,7 @@ package com.hbm.inventory.recipes.loader;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
+import com.hbm.inventory.RecipesCommon;
 import dev.golem.core.world.ItemStacks;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -36,7 +37,7 @@ public final class RecipeText {
         if (stack == null) return "-";
         String kind;
         if (stack instanceof TagStack tag) kind = "#" + tag.tag.location();
-        else if (stack instanceof com.hbm.inventory.RecipesCommon.MaterialStack material) {
+        else if (stack instanceof RecipesCommon.MaterialStack material) {
             kind = "mat:" + material.material.name + "/" + material.shape;
         } else if (stack instanceof ComparableStack comparable) {
             kind = String.valueOf(BuiltInRegistries.ITEM.getKey(comparable.item));

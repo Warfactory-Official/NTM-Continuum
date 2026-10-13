@@ -1,5 +1,8 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.environment.Environment;
+import com.hbm.inventory.container.Containers;
+import com.hbm.inventory.material.NTMMaterial;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
@@ -17,7 +20,7 @@ import com.hbm.inventory.recipes.RotaryFurnaceRecipes.RotaryFurnaceRecipe;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.modules.ModuleBurnTime;
+import com.hbm.module.ModuleBurnTime;
 import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -25,6 +28,7 @@ import com.hbm.util.CrucibleUtil;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -118,7 +122,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
             te.trySubscribe(te.tanks[1].getTankType(), level, con);
             if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, con);
         }
-        if (te.tanks[0].getTankType() != com.hbm.inventory.fluid.Fluids.NONE) {
+        if (te.tanks[0].getTankType() != Fluids.NONE) {
             for (DirPos con : te.getFluidPos()) te.trySubscribe(te.tanks[0].getTankType(), level, con);
         }
 
@@ -214,8 +218,8 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         ForgeDirection dir = MachineCore.facing(state);
         ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
 
-        if (te.burnTime > 0 && net.minecraft.client.Minecraft.getInstance().player != null
-                && net.minecraft.client.Minecraft.getInstance().player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 25 * 25) {
+        if (te.burnTime > 0 && Minecraft.getInstance().player != null
+                && Minecraft.getInstance().player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 25 * 25) {
             var rand = level.getRandom();
             level.addParticle(ParticleTypes.FLAME,
                     pos.getX() + 0.5 + dir.offsetX * 0.5 + rot.offsetX + rand.nextGaussian() * 0.25,
@@ -301,7 +305,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         }
 
         // hbm-space canBreathe = breatheAir(1), the last check (com.hbm.api.environment.Environment)
-        return com.hbm.api.environment.Environment.breatheAir(level, worldPosition, 1);
+        return Environment.breatheAir(level, worldPosition, 1);
     }
 
     public void consumeItems(RotaryFurnaceRecipe recipe) {
@@ -371,7 +375,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
     @Override
     public boolean stillValid(Player player) {
         return level != null && level.getBlockEntity(worldPosition) == this
-                && com.hbm.inventory.container.Containers.inRangeOfMultiblock(level, worldPosition, player);
+                && Containers.inRangeOfMultiblock(level, worldPosition, player);
     }
 
     @Override
@@ -431,7 +435,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         this.burnTime = input.getIntOr("burn", 0);
         this.burnHeat = input.getDoubleOr("heat", 1D);
         this.maxBurnTime = input.getIntOr("maxBurn", 0);
-        com.hbm.inventory.material.NTMMaterial outType = Mats.read(input, "outType");
+        NTMMaterial outType = Mats.read(input, "outType");
         if (outType != null) {
             this.output = new MaterialStack(outType, input.getIntOr("outAmount", 0));
         } else {

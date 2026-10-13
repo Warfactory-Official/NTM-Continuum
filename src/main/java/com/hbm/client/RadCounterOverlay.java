@@ -1,5 +1,8 @@
 package com.hbm.client;
 
+import com.hbm.config.ClientConfig;
+import dev.golem.core.Ids;
+import dev.golem.core.data.Inventories;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.Constants;
 import com.hbm.items.ModGearItems;
@@ -13,7 +16,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * The radiation-survey HUD — a 94×18 bar (scaled to 1000 RAD accumulated) with warning icons + a RAD/s
+ * The radiation-survey HUD, a 94×18 bar (scaled to 1000 RAD accumulated) with warning icons + a RAD/s
  * readout, shown while the local player carries a geiger counter or dosimeter. Ported from 1.12.2's
  * {@code RenderScreenOverlay.renderRadCounter}: the bar geometry, the 74-px scale, the 1-second survey
  * sampling and the 2.5/10/25 RAD/s warning thresholds are copied. Registered per loader next to
@@ -23,7 +26,7 @@ public final class RadCounterOverlay {
 
     private RadCounterOverlay() {}
 
-    private static final Identifier MISC = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/misc/overlay_misc.png");
+    private static final Identifier MISC = Ids.of(Constants.MOD_ID, "textures/misc/overlay_misc.png");
 
     private static float lastRadResult, prevRadResult;
     private static long lastRadSurvey;
@@ -47,8 +50,8 @@ public final class RadCounterOverlay {
         int length = 74;
         int bar = getScaled(in, 1000, length);
 
-        int posX = 16 + com.hbm.config.ClientConfig.GEIGER_OFFSET_HORIZONTAL;
-        int posY = mc.getWindow().getGuiScaledHeight() - 20 - com.hbm.config.ClientConfig.GEIGER_OFFSET_VERTICAL;
+        int posX = 16 + ClientConfig.GEIGER_OFFSET_HORIZONTAL;
+        int posY = mc.getWindow().getGuiScaledHeight() - 20 - ClientConfig.GEIGER_OFFSET_VERTICAL;
 
         // frame + fill
         GuiDraw.blit(graphics, MISC, posX, posY, 0, 0, 94, 18, 256, 256);
@@ -78,7 +81,7 @@ public final class RadCounterOverlay {
     private static boolean carriesCounter(Player player) {
         Item geiger = ModGearItems.geiger_counter.get();
         Item dosimeter = ModGearItems.dosimeter.get();
-        for (ItemStack stack : dev.golem.core.data.Inventories.main(player.getInventory())) {
+        for (ItemStack stack : Inventories.main(player.getInventory())) {
             if (stack.is(geiger) || stack.is(dosimeter)) return true;
         }
         return false;

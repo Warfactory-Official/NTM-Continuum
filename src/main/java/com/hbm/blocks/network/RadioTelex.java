@@ -1,7 +1,6 @@
 package com.hbm.blocks.network;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.radio.ModRadioBlockEntities;
 import com.hbm.tileentity.network.TileEntityRadioTelex;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
@@ -36,7 +35,7 @@ public final class RadioTelex extends BlockMultiblockMachine {
         return 0;
     }
 
-    /** Sneaking is deliberately not a GUI action, matching the old block's activation path. */
+    /** Sneaking is not a GUI action, matching the 1.7 block's activation path. */
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                    BlockHitResult hit) {

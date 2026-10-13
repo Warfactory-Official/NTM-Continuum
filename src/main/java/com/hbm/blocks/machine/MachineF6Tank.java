@@ -4,6 +4,7 @@ import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineF6Tank;
 import net.minecraft.core.BlockPos;
@@ -61,7 +62,7 @@ public abstract class MachineF6Tank extends BlockMultiblockMachine implements IF
     @Override
     public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
         return MultiblockSurface.coreEntity(world, new BlockPos(x, y, z)) instanceof TileEntityMachineF6Tank tank
-                && (type == com.hbm.inventory.fluid.Fluids.NONE || type == tank.tank.getTankType())
+                && (type == Fluids.NONE || type == tank.tank.getTankType())
                 && super.canConnect(type, world, x, y, z, dir);
     }
 }

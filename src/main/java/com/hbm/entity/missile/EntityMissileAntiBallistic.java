@@ -1,5 +1,7 @@
 package com.hbm.entity.missile;
 
+import com.hbm.api.entity.IRadarDetectableNT;
+import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.logic.EntityChunkLoader;
@@ -9,6 +11,10 @@ import dev.golem.core.data.CompatEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import java.util.List;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,12 +27,12 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The anti-ballistic missile — 1.12.2's {@code EntityMissileAntiBallistic}, the only missile that
+ * The anti-ballistic missile, 1.12.2's {@code EntityMissileAntiBallistic}, the only missile that
  * steers.
  *
  * <p>It launches straight up for ten ticks (so it clears the pad), then hunts: every tick without a
  * target it re-scans for the nearest {@link EntityMissileBaseNT} within radar range, and with one it
- * aims at a <em>predicted</em> position — the target's own last-tick displacement extrapolated over the
+ * aims at a <em>predicted</em> position, the target's own last-tick displacement extrapolated over the
  * closing time, which is what lets a 1.5-blocks-per-tick interceptor meet a missile moving four times
  * that fast.
  *
@@ -34,7 +40,7 @@ import org.jspecify.annotations.Nullable;
  * missile in a 30-block cube, which is one more than a missile's 50 and so guarantees the kill even
  * against several at once.
  *
- * <p>Stealth missiles are skipped by the scan — that is the coating's whole purpose.
+ * <p>Stealth missiles are skipped by the scan; that is the coating's purpose.
  *
  * <p>Radius 1: like ballistic missiles on the modern nonblocking ticket layer, the ABM claims the 3×3
  * around itself. Its turning path makes that full envelope necessary rather than directional lookahead.
@@ -45,17 +51,17 @@ import org.jspecify.annotations.Nullable;
  * {@code ExplosionLarge.spawnShock}'s lock-on ring (its particle family is unported).
  */
 public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLoader, IMissilePitch,
-        com.hbm.api.entity.IRadarDetectableNT {
+        IRadarDetectableNT {
 
     /** See {@link IMissilePitch}: the interceptor dives, so its pitch runs past −90 too. */
-    public static final net.minecraft.network.syncher.EntityDataAccessor<Float> PITCH =
-            net.minecraft.network.syncher.SynchedEntityData.defineId(EntityMissileAntiBallistic.class,
-                    net.minecraft.network.syncher.EntityDataSerializers.FLOAT);
+    public static final EntityDataAccessor<Float> PITCH =
+            SynchedEntityData.defineId(EntityMissileAntiBallistic.class,
+                    EntityDataSerializers.FLOAT);
 
     private float pitchO;
     private float pitchNow;
 
-    /** The base step length. {@code velocity} scales it, ramping 0 → 6 at 0.1 per tick. */
+    /** The base step length. {@code velocity} scales it, ramping from 0 to 6 at 0.1 per tick. */
     private static final double BASE_SPEED = 1.5D;
     /** Upstream reads this off the radar block; the radar is unported, so its value is inlined. */
     private static final int RADAR_RANGE = 1000;
@@ -78,14 +84,14 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
     }
 
     @Override
-    protected void defineData(dev.golem.core.data.SynchedData data) {
+    protected void defineData(SynchedData data) {
         super.defineData(data);
         data.define(PITCH, 0F);
     }
 
     @Override
     public float getMissilePitch(float partialTick) {
-        return net.minecraft.util.Mth.lerp(partialTick, this.pitchO, this.pitchNow);
+        return Mth.lerp(partialTick, this.pitchO, this.pitchNow);
     }
 
     @Override
@@ -160,9 +166,8 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
      * Nearest live missile within radar range, ignoring stealth airframes.
      *
      * <p>Upstream never updates {@code dist} inside the loop, so this actually picks the <em>last</em>
-     * candidate under 1000 blocks rather than the nearest. Kept as-is: the ABM's own 15-block proximity
-     * burst makes the choice matter far less than it looks, and "fix" here would change interception
-     * behaviour that players have tuned batteries around.
+     * candidate under 1000 blocks rather than the nearest. Kept as upstream has it: fixing it would change
+     * interception behaviour that players have tuned batteries around.
      */
     private void targetMissile() {
         Entity closest = null;

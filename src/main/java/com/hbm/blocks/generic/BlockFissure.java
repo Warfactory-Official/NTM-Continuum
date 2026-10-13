@@ -27,7 +27,7 @@ import com.hbm.tileentity.ModTerrainBlockEntities;
 /**
  * 1.7 {@code BlockFissure} ({@code ore_volcano}, "Geothermal Vent"): unbreakable bedrock with a molten
  * overlay that keeps the block above it flooded with volcanic lava on its random tick (radioactive lava
- * when {@code crater} is set — the old non-zero meta placed by the crater feature) and pushes 1,000 mB of
+ * when {@code crater} is set, the non-zero meta placed by the crater feature) and pushes 1,000 mB of
  * {@code LAVA} per tick into whatever fluid receiver sits on top of it. The Hephaestus counts it as a
  * 300-heat source by registry id.
  */

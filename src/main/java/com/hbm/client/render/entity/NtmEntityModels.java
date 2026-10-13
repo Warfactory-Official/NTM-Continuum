@@ -9,7 +9,7 @@ import dev.golem.core.Ids;
  * its {@code ResourceManager} beside the textures; here they are client-only, since loading an OBJ
  * needs the client resource manager and {@code ResourceManager} is reachable from common code.
  *
- * <p>Every file is byte-identical to original-hbm's (a few carry original's camelCase names re-spelled
+ * <p>Every file is byte-identical to 1.7's (a few carry original's camelCase names re-spelled
  * lowercase, since modern identifiers reject uppercase): see {@code entity-port-manifest.md}.
  */
 public final class NtmEntityModels {

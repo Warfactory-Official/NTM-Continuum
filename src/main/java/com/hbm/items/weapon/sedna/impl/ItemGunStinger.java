@@ -1,7 +1,12 @@
 package com.hbm.items.weapon.sedna.impl;
 
+import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.sound.ModSounds;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
@@ -12,13 +17,13 @@ public class ItemGunStinger extends ItemGunBaseNT {
     public static final String KEY_LOCKINGON = "lockingon";
     public static final String KEY_LOCKONPROGRESS = "lockonprogress";
 
-    public ItemGunStinger(Properties properties, WeaponQuality quality, com.hbm.items.weapon.sedna.GunConfig... configs) {
+    public ItemGunStinger(Properties properties, WeaponQuality quality, GunConfig... configs) {
         super(properties, quality, configs);
     }
 
     @Override
-    protected void compatInventoryTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
-            Entity entity, net.minecraft.world.entity.EquipmentSlot slot, boolean held) {
+    protected void compatInventoryTick(ItemStack stack, ServerLevel level,
+            Entity entity, EquipmentSlot slot, boolean held) {
         super.compatInventoryTick(stack, level, entity, slot, held);
         if (!(entity instanceof Player player)) return;
         if (!held) {
@@ -44,8 +49,8 @@ public class ItemGunStinger extends ItemGunBaseNT {
         setLockonProgress(stack, Math.min(60, getLockonProgress(stack) + 1));
         if (getLockonProgress(stack) >= 60 && !getIsLockedOn(stack)) {
             // 1.7: playSoundAtEntity(player, TECH_BLEEP, 1, 1) once, when the lock is acquired
-            level.playSound(null, player.getX(), player.getY(), player.getZ(), com.hbm.sound.ModSounds.TECH_BLEEP.get(),
-                    net.minecraft.sounds.SoundSource.PLAYERS, 1F, 1F);
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BLEEP.get(),
+                    SoundSource.PLAYERS, 1F, 1F);
             setIsLockedOn(stack, true);
         }
     }

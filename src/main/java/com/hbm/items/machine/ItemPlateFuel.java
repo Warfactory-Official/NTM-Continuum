@@ -1,5 +1,6 @@
 package com.hbm.items.machine;
 
+import com.hbm.api.data.ReactorDataMaps;
 import com.hbm.items.ModDataComponents;
 import com.hbm.lib.Library;
 import dev.golem.core.world.CompatItem;
@@ -27,14 +28,14 @@ public class ItemPlateFuel extends CompatItem {
     }
 
     /** The plate values: the {@code hbm:plate_fuel} entry, else the constructor's. */
-    public com.hbm.api.data.ReactorDataMaps.PlateFuel stats() {
-        com.hbm.api.data.ReactorDataMaps.PlateFuel data = com.hbm.api.data.ReactorDataMaps.PLATE_FUEL.get(this);
+    public ReactorDataMaps.PlateFuel stats() {
+        ReactorDataMaps.PlateFuel data = ReactorDataMaps.PLATE_FUEL.get(this);
         return data != null ? data : codeStats();
     }
 
     /** The code defaults (constructor or enum values) that the data map entry overrides. */
-    public com.hbm.api.data.ReactorDataMaps.PlateFuel codeStats() {
-        return new com.hbm.api.data.ReactorDataMaps.PlateFuel(lifeTime, function, reactivity);
+    public ReactorDataMaps.PlateFuel codeStats() {
+        return new ReactorDataMaps.PlateFuel(lifeTime, function, reactivity);
     }
 
     public int lifeTime() { return stats().lifeTime(); }

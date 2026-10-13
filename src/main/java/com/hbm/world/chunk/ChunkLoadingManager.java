@@ -2,9 +2,11 @@ package com.hbm.world.chunk;
 
 import com.hbm.Constants;
 import dev.golem.core.platform.Lifecycle;
+import dev.golem.core.world.Compat;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -20,19 +22,17 @@ import net.minecraft.world.level.Level;
  * to provide.
  *
  * <p><b>Why vanilla and not a loader API.</b> {@code setChunkForced} exists unchanged on every node
- * from 1.20.1 to 26.1 and gives a fully ticking chunk, which is rung 1 of the mixin ladder — NeoForge's
- * {@code TicketController} and Fabric's absence of one would have meant two implementations behind a
- * facade for no behavioural gain. What vanilla does <em>not</em> give is ownership: the forced set is a
- * flat boolean set, so two holders over one chunk would clobber each other and a crash would pin
- * chunks forever. Both gaps are closed here — refcounts for the first, {@link ForcedChunkData} plus
- * the grace window below for the second.
+ * from 1.20.1 to 26.1 and gives a fully ticking chunk (rung 1 of the mixin ladder). NeoForge's
+ * {@code TicketController} and Fabric's lack of one would need two implementations behind a facade. What
+ * vanilla does <em>not</em> give is ownership: the forced set is a flat boolean set, so two holders over one
+ * chunk would clobber each other and a crash would pin chunks forever. Refcounts close the first gap,
+ * {@link ForcedChunkData} plus the grace window below the second.
  *
  * <p><b>The grace window.</b> On the first server tick after a level comes up, every chunk HBM had
- * recorded is re-forced under an internal ticket which is released {@value #RESTORE_GRACE_TICKS} ticks
- * later. That is the analogue of Forge handing a persisted ticket back through {@code LoadingCallback}:
- * the chunk stays up long enough for the entity inside it to tick and claim it for itself, and anything
- * unclaimed at the end of the window (its owner died, or the server crashed mid-flight) is dropped
- * instead of leaking.
+ * recorded is re-forced under an internal ticket released {@value #RESTORE_GRACE_TICKS} ticks later, like
+ * Forge handing a persisted ticket back through {@code LoadingCallback}. The chunk stays up long enough for
+ * the entity inside it to tick and claim it, and anything unclaimed at the end (its owner died, or the server
+ * crashed mid-flight) is dropped.
  *
  * <p>Server-thread only, like every chunk operation.
  */
@@ -51,10 +51,10 @@ public final class ChunkLoadingManager {
          * Chunks that were already in the level's forced set when HBM first claimed them. The set is one flag
          * per chunk, not a refcount (1.7's ForgeChunkManager gave every mod its own tickets instead), so HBM
          * leaves the flag alone for these when its last claim goes: clearing it would unload a chunk someone
-         * else forced — a /forceload, or a GameTest plot whose test had not started yet and then never did.
+         * else forced (a /forceload, or a GameTest plot whose test has not started yet).
          */
-        final it.unimi.dsi.fastutil.longs.LongOpenHashSet borrowed = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
-        final Set<ChunkLoaderTicket> tickets = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+        final LongOpenHashSet borrowed = new LongOpenHashSet();
+        final Set<ChunkLoaderTicket> tickets = Collections.newSetFromMap(new IdentityHashMap<>());
         ChunkLoaderTicket restoreTicket;
         long restoreExpiresAt = -1L;
         boolean restored;
@@ -73,7 +73,7 @@ public final class ChunkLoadingManager {
 
     /**
      * Hands out a fresh ticket for {@code level}. The ticket holds nothing until it is told to
-     * {@link ChunkLoaderTicket#force} something — upstream's contract note 3: request lazily, from the
+     * {@link ChunkLoaderTicket#force} something. Upstream's contract note 3: request lazily, from the
      * first server-side update, never from entity construction or NBT reading.
      */
     public static ChunkLoaderTicket requestTicket(ServerLevel level, String owner) {
@@ -101,16 +101,16 @@ public final class ChunkLoadingManager {
         int count = state.refCounts.addTo(packed, 1);
         if (count == 0) {
             // updateChunkForced, NOT setChunkForced: the latter is this call plus a blocking
-            // getChunk(x, z), so claiming a wide area — a fallout disc is thousands of chunks — pays a
+            // getChunk(x, z), so claiming a wide area (a fallout disc is thousands of chunks) pays a
             // full chunk generation on the server thread per chunk before any work starts. A real Fat
-            // Man measured 20.6 s of server thread on 1,057 such chunks (§19z-j). Claiming is a
-            // registration; callers here all poll for the chunk anyway.
+            // Man measured 20.6 s of server thread on 1,057 such chunks. Here a claim is only a
+            // registration; callers poll for the chunk anyway.
             int chunkX = ChunkPos.getX(packed), chunkZ = ChunkPos.getZ(packed);
             // A chunk still in HBM's own save record is HBM's from before a restart, not someone else's.
-            boolean external = dev.golem.core.world.Compat.isChunkForced(level, chunkX, chunkZ)
+            boolean external = Compat.isChunkForced(level, chunkX, chunkZ)
                     && !ForcedChunkData.get(level).chunks().contains(packed);
             if (external) state.borrowed.add(packed);
-            else dev.golem.core.world.Compat.updateChunkForced(level, chunkX, chunkZ, true);
+            else Compat.updateChunkForced(level, chunkX, chunkZ, true);
             ForcedChunkData.get(level).add(packed);
         }
     }
@@ -122,7 +122,7 @@ public final class ChunkLoadingManager {
         if (remaining <= 0) {
             state.refCounts.remove(packed);
             if (!state.borrowed.remove(packed)) {
-                dev.golem.core.world.Compat.updateChunkForced(level, ChunkPos.getX(packed), ChunkPos.getZ(packed), false);
+                Compat.updateChunkForced(level, ChunkPos.getX(packed), ChunkPos.getZ(packed), false);
             }
             ForcedChunkData.get(level).remove(packed);
         }

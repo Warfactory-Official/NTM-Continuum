@@ -2,6 +2,7 @@ package com.hbm.blocks.bomb;
 
 import com.hbm.interfaces.IBomb;
 import com.hbm.tileentity.bomb.TileEntityNukeBomb;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -25,7 +26,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Block-side plumbing shared by the special bombs ({@code nuke_custom}, {@code nuke_fleija},
- * {@code nuke_solinium}, {@code nuke_prototype}, {@code nuke_fstbmb}). Original-hbm gave each of them a
+ * {@code nuke_solinium}, {@code nuke_prototype}, {@code nuke_fstbmb}). 1.7 gave each of them a
  * copy of the same {@code BlockContainer} boilerplate: invisible (TESR-drawn), a 2..5 facing metadata
  * written by {@code onBlockPlacedBy}, right-click opens the GUI unless sneaking, redstone calls
  * {@code explode}. The facing numbering follows the port's {@link NukeBombBlock#FACING} so the renderers
@@ -79,7 +80,7 @@ public abstract class NukeBomb2Block extends CompatBlock implements TickingBlock
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }

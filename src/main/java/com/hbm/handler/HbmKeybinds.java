@@ -15,9 +15,9 @@ public class HbmKeybinds {
     public enum EnumKeybind {
         /** Primary fire. Aliased to the vanilla attack button, which is suppressed while a gun is held. */
         GUN_PRIMARY,
-        /** Secondary fire — underbarrel, alt mode. */
+        /** Secondary fire: underbarrel, alt mode. */
         GUN_SECONDARY,
-        /** Tertiary — aim down sights on the standard configuration. */
+        /** Tertiary: aim down sights on the standard configuration. */
         GUN_TERTIARY,
         RELOAD,
         /** Advanced glider activation (J). */

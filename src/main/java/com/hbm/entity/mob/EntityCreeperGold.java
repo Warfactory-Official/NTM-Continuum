@@ -8,6 +8,7 @@ import com.hbm.explosion.vanillant.standard.EntityProcessorStandard;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectStandard;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import com.hbm.items.ModItems;
+import dev.golem.core.world.Compat;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -48,7 +49,7 @@ public class EntityCreeperGold extends EntityCreeperBase {
 
         int looting = 0;
         if (source.getEntity() instanceof LivingEntity attacker) {
-            looting = dev.golem.core.world.Compat.lootingLevel(level, attacker);
+            looting = Compat.lootingLevel(level, attacker);
         }
 
         int amount = killedByPlayer ? 5 + random.nextInt(6 + looting * 2) : 3;

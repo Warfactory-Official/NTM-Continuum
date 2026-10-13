@@ -8,11 +8,15 @@ import com.hbm.api.entity.RadarEntry;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerMachineRadarNT;
+import com.hbm.items.ISatChip;
 import com.hbm.items.ModRadarUtilityItems;
+import com.hbm.items.ModSatelliteItems;
 import com.hbm.items.tool.ItemCoordinateBase;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.saveddata.SatelliteSavedData;
+import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteDetector;
 import com.hbm.saveddata.satellites.SatelliteRayScan;
 import com.hbm.sound.ModSounds;
@@ -20,6 +24,16 @@ import com.hbm.tileentity.ModRadarUtilityBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.data.Tags;
+import dev.golem.core.gui.Menus;
+import dev.golem.core.world.Chunks;
+import dev.golem.core.world.SubLevels;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -138,7 +152,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
 
     protected void updateServer(ServerLevel level) {
         if (this.map == null || this.map.length != 40_000) this.map = new byte[40_000];
-        this.origin = dev.golem.core.world.SubLevels.toWorldBlock(level, worldPosition);
+        this.origin = SubLevels.toWorldBlock(level, worldPosition);
         int x0 = origin.getX(), y0 = origin.getY(), z0 = origin.getZ();
 
         // 1.7 charges from slot 9 and then again from slot 0 - slot 0 is the first link slot; the odd second
@@ -207,7 +221,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
     public void sampleSlot(ServerLevel level, int slot) {
         int x0 = origin.getX(), z0 = origin.getZ();
         int chunkLoads = 0;
-        java.util.Set<Long> loaded = null;
+        Set<Long> loaded = null;
         for (int i = 0; i < 100; i++) {
             int index = slot * 100 + i;
             int iX = (index % 200) * getRange() * 2 / 200;
@@ -226,7 +240,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
                     chunkLoads++;
                     continue;
                 }
-                long key = dev.golem.core.world.Chunks.key(x >> 4, z >> 4);
+                long key = Chunks.key(x >> 4, z >> 4);
                 if (chunkLoads >= chunkLoadCap && (loaded == null || !loaded.contains(key))) continue;
                 // 1.7 WorldUtil.provideChunk: the chunk off disk if it was ever saved, never generated
                 int[] heights = savedHeights(level, x >> 4, z >> 4);
@@ -235,7 +249,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
                     this.map[index] = 50;
                 } else {
                     this.map[index] = (byte) Mth.clamp(heights[(x & 15) + (z & 15) * 16], 50, 128);
-                    if (loaded == null) loaded = new java.util.HashSet<>();
+                    if (loaded == null) loaded = new HashSet<>();
                     if (loaded.add(key)) chunkLoads++;
                 }
             }
@@ -256,7 +270,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
             if (this.map[index] != 0) continue;
             int x = origin.getX() - getRange() + (index % 200) * getRange() * 2 / 200;
             int z = origin.getZ() - getRange() + index / 200 * getRange() * 2 / 200;
-            long key = dev.golem.core.world.Chunks.key(x >> 4, z >> 4);
+            long key = Chunks.key(x >> 4, z >> 4);
             if (key == previous) continue;
             previous = key;
             if (level.hasChunk(x >> 4, z >> 4) || savedChunks.containsKey(key)) continue;
@@ -270,8 +284,8 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
      * (no loading, no generation). The read is asynchronous and started once per chunk, ahead of the visit by
      * {@link #prefetchSlot} or at the visit when that was missed.
      */
-    private final java.util.Map<Long, java.util.concurrent.CompletableFuture<int[]>> savedChunks = new java.util.HashMap<>();
-    private final java.util.concurrent.atomic.AtomicInteger readsInFlight = new java.util.concurrent.atomic.AtomicInteger();
+    private final Map<Long, CompletableFuture<int[]>> savedChunks = new HashMap<>();
+    private final AtomicInteger readsInFlight = new AtomicInteger();
     /** The answer for a chunk that was never saved, or is no finished chunk: no height map, 1.7's absent chunk. */
     protected static final int[] NEVER_SAVED = new int[0];
     protected static final int PREFETCH_TICKS = 8;
@@ -285,15 +299,15 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
     private void startRead(ServerLevel server, int cx, int cz, long key) {
         if (savedChunks.size() > 16384) savedChunks.clear(); // a full 1000-block range is 15,625 chunks
         readsInFlight.incrementAndGet();
-        savedChunks.put(key, dev.golem.core.world.Chunks.readSavedHeights(server, cx, cz, Heightmap.Types.MOTION_BLOCKING)
+        savedChunks.put(key, Chunks.readSavedHeights(server, cx, cz, Heightmap.Types.MOTION_BLOCKING)
                 .thenApply(h -> h == null ? NEVER_SAVED : h)
                 .whenComplete((h, error) -> readsInFlight.decrementAndGet()));
     }
 
     /** The saved heights of an unloaded chunk; {@link #NEVER_SAVED} for none; null while the read is still in flight. */
     private int @org.jspecify.annotations.Nullable [] savedHeights(ServerLevel server, int cx, int cz) {
-        long key = dev.golem.core.world.Chunks.key(cx, cz);
-        java.util.concurrent.CompletableFuture<int[]> read = savedChunks.get(key);
+        long key = Chunks.key(cx, cz);
+        CompletableFuture<int[]> read = savedChunks.get(key);
         if (read == null) {
             startRead(server, cx, cz, key);
             return null;
@@ -528,38 +542,38 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
     @Override
     public void receiveControl(Player player, CompoundTag data) {
 
-        if (dev.golem.core.data.Tags.contains(data, "missiles")) this.scanMissiles = !this.scanMissiles;
-        if (dev.golem.core.data.Tags.contains(data, "shells")) this.scanShells = !this.scanShells;
-        if (dev.golem.core.data.Tags.contains(data, "players")) this.scanPlayers = !this.scanPlayers;
-        if (dev.golem.core.data.Tags.contains(data, "smart")) this.smartMode = !this.smartMode;
-        if (dev.golem.core.data.Tags.contains(data, "red")) this.redMode = !this.redMode;
-        if (dev.golem.core.data.Tags.contains(data, "map")) this.showMap = !this.showMap;
-        if (dev.golem.core.data.Tags.contains(data, "clear")) this.clearFlag = true;
+        if (Tags.contains(data, "missiles")) this.scanMissiles = !this.scanMissiles;
+        if (Tags.contains(data, "shells")) this.scanShells = !this.scanShells;
+        if (Tags.contains(data, "players")) this.scanPlayers = !this.scanPlayers;
+        if (Tags.contains(data, "smart")) this.smartMode = !this.smartMode;
+        if (Tags.contains(data, "red")) this.redMode = !this.redMode;
+        if (Tags.contains(data, "map")) this.showMap = !this.showMap;
+        if (Tags.contains(data, "clear")) this.clearFlag = true;
 
-        if (dev.golem.core.data.Tags.contains(data, "gui1") && player instanceof ServerPlayer serverPlayer) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, this, worldPosition);
+        if (Tags.contains(data, "gui1") && player instanceof ServerPlayer serverPlayer) {
+            Menus.openWithPos(serverPlayer, this, worldPosition);
         }
 
-        if (dev.golem.core.data.Tags.contains(data, "link")) {
-            int id = dev.golem.core.data.Tags.getIntOr(data, "link", -1);
+        if (Tags.contains(data, "link")) {
+            int id = Tags.getIntOr(data, "link", -1);
             if (id < 0 || id > 7) return;
             ItemStack link = inventory.getStackInSlot(id);
 
             // 1.7: a sat_relay in the link slot hands a map click to the satellite on its frequency
-            if (!link.isEmpty() && link.getItem() == com.hbm.items.ModSatelliteItems.sat_relay.get()
+            if (!link.isEmpty() && link.getItem() == ModSatelliteItems.sat_relay.get()
                     && level instanceof ServerLevel server) {
-                com.hbm.saveddata.satellites.Satellite sat = com.hbm.saveddata.SatelliteSavedData.get(server)
-                        .getSatFromFreq(com.hbm.items.ISatChip.getFreqS(link));
+                Satellite sat = SatelliteSavedData.get(server)
+                        .getSatFromFreq(ISatChip.getFreqS(link));
 
-                if (dev.golem.core.data.Tags.contains(data, "launchPosX")) {
-                    int x = dev.golem.core.data.Tags.getIntOr(data, "launchPosX", 0);
-                    int z = dev.golem.core.data.Tags.getIntOr(data, "launchPosZ", 0);
+                if (Tags.contains(data, "launchPosX")) {
+                    int x = Tags.getIntOr(data, "launchPosX", 0);
+                    int z = Tags.getIntOr(data, "launchPosZ", 0);
                     int y = 60; // 1.7: "one day I will make radars transmit Y coordinate as well"
                     bleep(player);
                     // 1.7 dereferenced sat unguarded (a server crash on an empty frequency); guarded here
                     if (sat != null) {
                         sat.onCoordAction(server, player, x, y, z);
-                        com.hbm.saveddata.SatelliteSavedData.get(server).setDirty();
+                        SatelliteSavedData.get(server).setDirty();
                     }
                 }
             }
@@ -567,12 +581,12 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
                 BlockPos pos = ItemCoordinateBase.getPosition(link);
 
                 if (pos != null && level != null && level.getBlockEntity(pos) instanceof IRadarCommandReceiver rec) {
-                    if (dev.golem.core.data.Tags.contains(data, "launchEntity")) {
-                        Entity entity = level.getEntity(dev.golem.core.data.Tags.getIntOr(data, "launchEntity", -1));
+                    if (Tags.contains(data, "launchEntity")) {
+                        Entity entity = level.getEntity(Tags.getIntOr(data, "launchEntity", -1));
                         if (entity != null && rec.sendCommandEntity(entity)) bleep(player);
-                    } else if (dev.golem.core.data.Tags.contains(data, "launchPosX")) {
-                        int x = dev.golem.core.data.Tags.getIntOr(data, "launchPosX", 0);
-                        int z = dev.golem.core.data.Tags.getIntOr(data, "launchPosZ", 0);
+                    } else if (Tags.contains(data, "launchPosX")) {
+                        int x = Tags.getIntOr(data, "launchPosX", 0);
+                        int z = Tags.getIntOr(data, "launchPosZ", 0);
                         if (rec.sendCommandPosition(x, origin.getY(), z)) bleep(player);
                     }
                 }

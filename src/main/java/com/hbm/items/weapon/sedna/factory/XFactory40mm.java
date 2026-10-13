@@ -1,9 +1,13 @@
 package com.hbm.items.weapon.sedna.factory;
 
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.effect.EntityFireLingering;
+import com.hbm.entity.logic.EntityC130;
+import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
+import com.hbm.lib.ModDamageSources;
 import com.hbm.mixin.FireBlockAccessor;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
@@ -11,17 +15,24 @@ import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
 import com.hbm.explosion.vanillant.standard.EntityProcessorCrossSmooth;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectWeapon;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
+import com.hbm.sound.ModSounds;
+import com.hbm.util.EntityDamageUtil;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
-/** The 26 mm flare and 40 mm grenade families from original-hbm's XFactory40mm. */
+/** The 26 mm flare and 40 mm grenade families from 1.7's XFactory40mm. */
 public final class XFactory40mm {
 
     public static BulletConfig g26_flare;
@@ -35,20 +46,20 @@ public final class XFactory40mm {
 
     private XFactory40mm() {}
 
-    public static final java.util.function.BiConsumer<com.hbm.entity.projectile.EntityBulletBaseMK4, HitResult>
+    public static final BiConsumer<EntityBulletBaseMK4, HitResult>
             LAMBDA_STANDARD_IGNITE = (bullet, hit) -> {
         if (hit instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity living) {
             HbmLivingProps.getData(living).setFire(HbmLivingProps.getFire(living) + 200);
         }
     };
 
-    public static final java.util.function.BiConsumer<com.hbm.entity.projectile.EntityBulletBaseMK4, HitResult>
+    public static final BiConsumer<EntityBulletBaseMK4, HitResult>
             LAMBDA_STANDARD_EXPLODE = (bullet, hit) -> {
         Lego.standardExplode(bullet, hit, 5F);
         bullet.discard();
     };
 
-    public static final java.util.function.BiConsumer<com.hbm.entity.projectile.EntityBulletBaseMK4, HitResult>
+    public static final BiConsumer<EntityBulletBaseMK4, HitResult>
             LAMBDA_STANDARD_EXPLODE_DEMO = (bullet, hit) -> {
         if (hit instanceof EntityHitResult entityHit && bullet.tickCount < 3
                 && entityHit.getEntity() == bullet.getThrower()) return;
@@ -64,31 +75,31 @@ public final class XFactory40mm {
         bullet.discard();
     };
 
-    public static final java.util.function.BiConsumer<com.hbm.entity.projectile.EntityBulletBaseMK4, HitResult>
+    public static final BiConsumer<EntityBulletBaseMK4, HitResult>
             LAMBDA_STANDARD_EXPLODE_HEAT = (bullet, hit) -> {
         if (hit instanceof EntityHitResult entityHit && bullet.tickCount < 3
                 && entityHit.getEntity() == bullet.getThrower()) return;
         Lego.standardExplode(bullet, hit, 3.5F);
         bullet.discard();
         if (hit instanceof EntityHitResult entityHit && bullet.level() instanceof ServerLevel level) {
-            var source = com.hbm.lib.ModDamageSources.bullet(level,
-                    com.hbm.lib.ModDamageSources.DamageClass.EXPLOSIVE.type(), bullet, bullet.getThrower());
+            var source = ModDamageSources.bullet(level,
+                    ModDamageSources.DamageClass.EXPLOSIVE.type(), bullet, bullet.getThrower());
             if (entityHit.getEntity() instanceof LivingEntity living) {
                 // 1.7 XFactory40mm: attackEntityFromNT(living, source, dmg * 3, true, true, 0.5, 3, 0.15) - the 40 mm
                 // shaped charge pierces less than the rocket's (5, 0.2).
-                com.hbm.util.EntityDamageUtil.attackEntityFromNT(living, source, bullet.damage * 3F, true, true, 0.5D, 3F, 0.15F);
+                EntityDamageUtil.attackEntityFromNT(living, source, bullet.damage * 3F, true, true, 0.5D, 3F, 0.15F);
             } else {
-                com.hbm.util.EntityDamageUtil.attackEntityFromIgnoreIFrame(entityHit.getEntity(), source, bullet.damage * 3F);
+                EntityDamageUtil.attackEntityFromIgnoreIFrame(entityHit.getEntity(), source, bullet.damage * 3F);
             }
         }
     };
 
-    public static final java.util.function.BiConsumer<com.hbm.entity.projectile.EntityBulletBaseMK4, HitResult>
+    public static final BiConsumer<EntityBulletBaseMK4, HitResult>
             LAMBDA_STANDARD_EXPLODE_INC = (bullet, hit) -> spawnFire(bullet, hit, false, 200);
-    public static final java.util.function.BiConsumer<com.hbm.entity.projectile.EntityBulletBaseMK4, HitResult>
+    public static final BiConsumer<EntityBulletBaseMK4, HitResult>
             LAMBDA_STANDARD_EXPLODE_PHOSPHORUS = (bullet, hit) -> spawnFire(bullet, hit, true, 400);
 
-    private static void spawnFire(com.hbm.entity.projectile.EntityBulletBaseMK4 bullet, HitResult hit,
+    private static void spawnFire(EntityBulletBaseMK4 bullet, HitResult hit,
                                   boolean phosphorus, int duration) {
         if (hit instanceof EntityHitResult entityHit && bullet.tickCount < 3
                 && entityHit.getEntity() == bullet.getThrower()) return;
@@ -116,31 +127,31 @@ public final class XFactory40mm {
     }
 
     /** 1.7 {@code LAMBDA_SPAWN_C130_SUPPLIESS} (sic). */
-    public static final java.util.function.Consumer<net.minecraft.world.entity.Entity> LAMBDA_SPAWN_C130_SUPPLIES =
-            entity -> spawnPlane(entity, com.hbm.entity.logic.EntityC130.C130PayloadType.SUPPLIES);
+    public static final Consumer<Entity> LAMBDA_SPAWN_C130_SUPPLIES =
+            entity -> spawnPlane(entity, EntityC130.C130PayloadType.SUPPLIES);
     /** 1.7 {@code LAMBDA_SPAWN_C130_WEAPONS}. */
-    public static final java.util.function.Consumer<net.minecraft.world.entity.Entity> LAMBDA_SPAWN_C130_WEAPONS =
-            entity -> spawnPlane(entity, com.hbm.entity.logic.EntityC130.C130PayloadType.WEAPONS);
+    public static final Consumer<Entity> LAMBDA_SPAWN_C130_WEAPONS =
+            entity -> spawnPlane(entity, EntityC130.C130PayloadType.WEAPONS);
 
     /**
      * 1.7 {@code XFactory40mm.spawnPlane}: 40 ticks after firing, the airdrop flare bleeps at its shooter and calls a
      * C-130 that overflies the flare's column at the terrain height and drops a crate of the requested payload.
      */
-    public static void spawnPlane(net.minecraft.world.entity.Entity entity,
-                                  com.hbm.entity.logic.EntityC130.C130PayloadType payload) {
+    public static void spawnPlane(Entity entity,
+                                  EntityC130.C130PayloadType payload) {
         if (!(entity.level() instanceof ServerLevel level) || entity.tickCount != 40) return;
-        com.hbm.entity.projectile.EntityBulletBaseMK4 bullet = (com.hbm.entity.projectile.EntityBulletBaseMK4) entity;
-        net.minecraft.world.entity.Entity thrower = bullet.getThrower();
+        EntityBulletBaseMK4 bullet = (EntityBulletBaseMK4) entity;
+        Entity thrower = bullet.getThrower();
         if (thrower != null) {
-            level.playSound(null, thrower.getX(), thrower.getY(), thrower.getZ(), com.hbm.sound.ModSounds.TECH_BLEEP.get(),
-                    net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+            level.playSound(null, thrower.getX(), thrower.getY(), thrower.getZ(), ModSounds.TECH_BLEEP.get(),
+                    SoundSource.PLAYERS, 1.0F, 1.0F);
         }
-        com.hbm.entity.logic.EntityC130 c130 = new com.hbm.entity.logic.EntityC130(
-                com.hbm.entity.ModNtmEntities.C130.get(), level);
+        EntityC130 c130 = new EntityC130(
+                ModNtmEntities.C130.get(), level);
         int x = (int) Math.floor(bullet.getX());
         int z = (int) Math.floor(bullet.getZ());
         // 1.7 World.getHeightValue: the column's surface height.
-        int y = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, x, z);
+        int y = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
         c130.fac(level, x, y, z, payload);
         // 1.7 WorldUtil.loadAndSpawnEntityInWorld + TrackerUtil.setTrackingRange(250): fac() force-loads the spawn
         // chunk and the C130 entity type already tracks far beyond 250 blocks.

@@ -6,17 +6,16 @@ import com.hbm.uninos.graph.Distribution;
 import java.util.List;
 
 /**
- * Arbitration for the FLUID net, lifted unchanged off the network it used to live in.
+ * Arbitration for the FLUID net.
  *
  * <p>Pressure bands outermost, priority tiers highest-first inside each, weighted share within a tier,
  * and a round-robin cursor so a line of equal claimants does not always fill the same one first. The
- * energy bus has no such cursor because 1.7's energy law has none; 1.7's fluid law has none either, but
- * this rotation is behaviour that already shipped, and moving discovery off UNINOS is not the change
- * that should decide which machine on a shared line fills first.
+ * energy bus has no such cursor because 1.7's energy law has none. 1.7's fluid law has none either; the
+ * rotation is port behaviour.
  *
- * <p>What is <b>not</b> reproduced from 1.7, and was already not being reproduced here, is its
- * cumulative subtraction of {@code received} across priority tiers — which charges every later tier for
- * what the earlier ones took, twice over — and its random scapegoat loop for the unsettled remainder.
+ * <p>Not reproduced from 1.7: its cumulative subtraction of {@code received} across priority tiers, which
+ * charges every later tier for what the earlier ones took, twice over, and its random scapegoat loop for
+ * the unsettled remainder.
  */
 public final class FluidBus {
 

@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Fractioning Tower Separator's core BlockEntity — a render/structure anchor with no logic (1.12.2
+ * Fractioning Tower Separator's core BlockEntity: a render/structure anchor with no logic (1.12.2
  * {@code TileEntitySpacer}). It only exists so the spacer multiblock has a core to hang its renderer on.
  */
 public class TileEntitySpacer extends TileEntityLoadedBase {

@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.machine.TileEntityMachineSatLinker;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -36,7 +37,7 @@ public class MachineSatLinker extends CompatBlock implements TickingBlock {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof TileEntityMachineSatLinker linker) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, linker, pos);
+            Menus.openWithPos(serverPlayer, linker, pos);
         }
         return InteractionResult.SUCCESS;
     }

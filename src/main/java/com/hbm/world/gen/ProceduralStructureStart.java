@@ -23,7 +23,7 @@ public class ProceduralStructureStart {
     public final List<StructurePiece> components = new ArrayList<>();
     /** List of queued components to call buildComponent on randomly. Iterated over until hard limits reached. */
     public List<StructurePiece> queuedComponents = new ArrayList<>();
-    /** List of the component weights for this particular structure -- weights removed as components are 'used up.' */
+    /** List of the component weights for this particular structure; weights are removed as components are 'used up.' */
     protected List<Weight> componentWeightList; //Make sure to initialize the array list to the weight array size, since might as well
 
     private final int chunkX;

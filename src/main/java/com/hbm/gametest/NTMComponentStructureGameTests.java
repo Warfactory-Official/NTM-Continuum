@@ -1,5 +1,8 @@
 package com.hbm.gametest;
 
+import com.hbm.Constants;
+import com.hbm.tileentity.bomb.TileEntityLaunchPadRusted;
+import com.hbm.tileentity.network.TileEntityRadioTorchBase;
 import com.hbm.world.gen.NTMComponentStructures;
 import com.hbm.world.gen.ProceduralStructureStart;
 import com.hbm.world.gen.component.BunkerComponents;
@@ -8,9 +11,11 @@ import com.hbm.world.gen.component.Component;
 import com.hbm.world.gen.component.OfficeFeatures;
 import com.hbm.world.gen.component.SiloComponent;
 import com.hbm.world.gen.nbt.JigsawPiece;
+import com.hbm.world.gen.nbt.JigsawPool;
 import com.hbm.world.gen.nbt.NBTStructure;
 import com.hbm.world.gen.nbt.SpawnCondition;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -20,9 +25,12 @@ import net.minecraft.world.Container;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.levelgen.FlatLevelSource;
+import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
+import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 
 import java.util.ArrayList;
@@ -43,9 +51,9 @@ public final class NTMComponentStructureGameTests {
     /** The start {@code /place structure} would build at {@code chunk} (biome check off). */
     public static List<StructurePiece> assemble(ServerLevel level, String spawn, ChunkPos chunk) {
         NBTStructure.GenStructure structure = new NBTStructure.GenStructure(new Structure.StructureSettings(
-                net.minecraft.core.HolderSet.direct(List.of()), Map.of(),
-                net.minecraft.world.level.levelgen.GenerationStep.Decoration.SURFACE_STRUCTURES,
-                net.minecraft.world.level.levelgen.structure.TerrainAdjustment.NONE), spawn);
+                HolderSet.direct(List.of()), Map.of(),
+                GenerationStep.Decoration.SURFACE_STRUCTURES,
+                TerrainAdjustment.NONE), spawn);
         var generator = level.getChunkSource().getGenerator();
         var context = new Structure.GenerationContext(level.registryAccess(), generator, generator.getBiomeSource(),
                 level.getChunkSource().randomState(), level.getStructureManager(), level.getSeed(), chunk, level, biome -> true);
@@ -107,9 +115,9 @@ public final class NTMComponentStructureGameTests {
         helper.succeed();
     }
 
-    private static JigsawPiece pieceNamed(com.hbm.world.gen.nbt.JigsawPool pool, String name) {
+    private static JigsawPiece pieceNamed(JigsawPool pool, String name) {
         // JigsawPool keeps its list package-private; the registered pieces are reachable by drawing from a clone
-        com.hbm.world.gen.nbt.JigsawPool clone = NBTStructure.getStructure("meteor_dungeon").getPool(poolName(pool));
+        JigsawPool clone = NBTStructure.getStructure("meteor_dungeon").getPool(poolName(pool));
         if (clone == null) return null;
         RandomSource rand = RandomSource.create(0);
         JigsawPiece piece;
@@ -119,7 +127,7 @@ public final class NTMComponentStructureGameTests {
         return null;
     }
 
-    private static String poolName(com.hbm.world.gen.nbt.JigsawPool pool) {
+    private static String poolName(JigsawPool pool) {
         for (var e : NBTStructure.getStructure("meteor_dungeon").pools.entrySet()) if (e.getValue() == pool) return e.getKey();
         return "";
     }
@@ -155,7 +163,7 @@ public final class NTMComponentStructureGameTests {
             }
             // the height is shared: jigsaw offsets are relative to the core, which sits at 32 (the test world is superflat:
             // there 1.7 took the terrain average unclamped)
-            boolean flat = level.getChunkSource().getGenerator() instanceof net.minecraft.world.level.levelgen.FlatLevelSource;
+            boolean flat = level.getChunkSource().getGenerator() instanceof FlatLevelSource;
             helper.assertTrue(flat || coreY == 32, "the core is at y 32: " + coreY);
             List<StructurePiece> again = assemble(level, "meteor_dungeon", chunk);
             helper.assertTrue(describe(again).equals(describe(pieces)), "the same chunk assembles the same dungeon");
@@ -164,7 +172,7 @@ public final class NTMComponentStructureGameTests {
         helper.assertTrue(counts.getOrDefault("meteor_spike", 0) > 0, "spikes are grown: " + counts);
         helper.assertTrue(counts.keySet().stream().anyMatch(n -> n.startsWith("meteor_room_")), "rooms are grown: " + counts);
         helper.assertTrue(counts.keySet().stream().anyMatch(n -> n.startsWith("meteor_3_")), "3x3 loot is grown: " + counts);
-        com.hbm.Constants.LOG.info("[WG-C] meteor dungeon: {} pieces over 6 starts: {}", total, counts);
+        Constants.LOG.info("[WG-C] meteor dungeon: {} pieces over 6 starts: {}", total, counts);
         helper.succeed();
     }
 
@@ -267,11 +275,11 @@ public final class NTMComponentStructureGameTests {
             // the launch pad core with its missile, the receiver torch under it on the silo's frequency
             BlockPos pad = new BlockPos(silo.getXWithOffset(19, 14), silo.getYWithOffset(1), silo.getZWithOffset(19, 14));
             BlockPos torch = pad.below();
-            helper.assertTrue(level.getBlockEntity(pad) instanceof com.hbm.tileentity.bomb.TileEntityLaunchPadRusted launch && launch.missileLoaded,
+            helper.assertTrue(level.getBlockEntity(pad) instanceof TileEntityLaunchPadRusted launch && launch.missileLoaded,
                     "the rusted pad is loaded: " + siloAt(level, 19, 1, 14));
-            helper.assertTrue(level.getBlockEntity(torch) instanceof com.hbm.tileentity.network.TileEntityRadioTorchBase radio
+            helper.assertTrue(level.getBlockEntity(torch) instanceof TileEntityRadioTorchBase radio
                     && radio.channel.equals(String.valueOf(silo.freq)), "the pad's torch listens on the silo frequency: " + siloAt(level, 19, 0, 14));
-            com.hbm.Constants.LOG.info("[WG-C] silo box {} pad {} ladder {} crate {} torch {}", piece.getBoundingBox(), siloAt(level, 19, 1, 14),
+            Constants.LOG.info("[WG-C] silo box {} pad {} ladder {} crate {} torch {}", piece.getBoundingBox(), siloAt(level, 19, 1, 14),
                     siloAt(level, 17, 3, 12), siloAt(level, 32, 13, 9), siloAt(level, 19, 0, 14));
         }
         helper.assertTrue(found.containsKey(signature), piece.getClass().getSimpleName() + " has its " + signature + ": " + found);
@@ -283,7 +291,7 @@ public final class NTMComponentStructureGameTests {
         StructurePiece loaded = piece.getType().load(StructurePieceSerializationContext.fromLevel(level), tag);
         helper.assertTrue(loaded.getClass() == piece.getClass() && loaded.getBoundingBox().equals(piece.getBoundingBox())
                 && ((Component) loaded).getCoordMode() == piece.getCoordMode(), "round trip: " + tag);
-        com.hbm.Constants.LOG.info("[WG-C] {} rot {} built {} containers {}/{}: {}", piece.getClass().getSimpleName(),
+        Constants.LOG.info("[WG-C] {} rot {} built {} containers {}/{}: {}", piece.getClass().getSimpleName(),
                 piece.getCoordMode(), built, c[1], c[0], found);
         helper.succeed();
     }
@@ -367,7 +375,7 @@ public final class NTMComponentStructureGameTests {
                     "within the distance limit: " + box);
         }
         helper.assertTrue(counts.size() >= 5, "several room types grow: " + counts);
-        com.hbm.Constants.LOG.info("[WG-C] bunker rooms over 20 starts: {}", counts);
+        Constants.LOG.info("[WG-C] bunker rooms over 20 starts: {}", counts);
         helper.succeed();
     }
 
@@ -392,7 +400,7 @@ public final class NTMComponentStructureGameTests {
             helper.assertTrue(!bunker.isEmpty() && bunker.get(0) instanceof BunkerComponents.StartingHub, "a bunker start: " + describe(bunker));
         }
         helper.assertTrue(counts.size() >= 4, "several buildings: " + counts);
-        com.hbm.Constants.LOG.info("[WG-C] features over 40 starts (superflat plains): {}", counts);
+        Constants.LOG.info("[WG-C] features over 40 starts (superflat plains): {}", counts);
         helper.succeed();
     }
 }

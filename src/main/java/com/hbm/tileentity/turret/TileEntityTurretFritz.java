@@ -11,6 +11,7 @@ import com.hbm.items.ModAmmoItems;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactoryFlamer;
+import com.hbm.lib.DirPos;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.data.DataIn;
@@ -22,6 +23,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -124,9 +126,9 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
 
     /** 1.7 {@code TileEntityTurretFritz.updateConnections}: power and the fuel tank at the same positions. */
     @Override
-    protected void updateConnections(net.minecraft.world.level.Level level) {
+    protected void updateConnections(Level level) {
         super.updateConnections(level);
-        for (com.hbm.lib.DirPos port : getConPos()) this.trySubscribe(tank.getTankType(), level, port);
+        for (DirPos port : getConPos()) this.trySubscribe(tank.getTankType(), level, port);
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityReactorResearch;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.CompatRenderTypes;
@@ -21,8 +22,8 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class RenderSmallReactor extends GemBER<TileEntityReactorResearch, RenderSmallReactor.State> {
 
-    private final WavefrontObj base = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/reactors/reactor_small_base.obj"));
-    private final WavefrontObj rods = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/reactors/reactor_small_rods.obj"));
+    private final WavefrontObj base = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/reactors/reactor_small_base.obj"));
+    private final WavefrontObj rods = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/reactors/reactor_small_rods.obj"));
     private final Surface baseSurface = Surface.cutoutNoCull(Constants.MOD_ID + ":textures/models/reactors/reactor_small_base.png");
     private final Surface rodSurface = Surface.cutoutNoCull(Constants.MOD_ID + ":textures/models/reactors/reactor_small_rods.png");
 

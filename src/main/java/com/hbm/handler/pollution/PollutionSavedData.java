@@ -1,10 +1,13 @@
 package com.hbm.handler.pollution;
 
 import com.hbm.Constants;
+import com.hbm.util.SavedIds;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.world.Chunks;
 import dev.golem.core.world.CompatSavedData;
+import java.util.LinkedHashMap;
+import java.util.Locale;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import org.jspecify.annotations.Nullable;
@@ -20,8 +23,8 @@ import java.util.Map;
  * <p>Shape follows NTM NEXT: a {@link ChunkPos} key holding a <b>region</b> coordinate rather than a
  * chunk one (1.7 indexes with {@code x >> 6}, which is four chunks a side), the four levels as one
  * float list per entry, and a non-creating {@link #getExisting} so the per-tick sweep allocates
- * nothing for a dimension nobody has polluted. The one deviation is the base class: NEXT is a
- * 26.2-only tree and names {@code SavedDataType} directly, which does not exist below 26.1, so this
+ * nothing for a dimension nobody has polluted. The one deviation is the base class: NEXT names
+ * {@code SavedDataType} directly, which does not exist below 26.1, so this
  * sits on Core's {@link CompatSavedData}.
  */
 public final class PollutionSavedData extends CompatSavedData<PollutionSavedData> {
@@ -33,8 +36,8 @@ public final class PollutionSavedData extends CompatSavedData<PollutionSavedData
 
     /**
      * One region: its pollution keyed by {@link PollutionType} name ({@code "soot"}). 1.7 saved one float per type in
-     * ordinal order; an ordinal-indexed list breaks the moment the enum changes, so it is never saved (History section
-     * 19ej-ids). A pre-2026-10-03 {@code values} list is ignored with one WARN.
+     * ordinal order. An ordinal-indexed list breaks the moment the enum changes, so it is never saved.
+     * A {@code values} list in the old ordinal form is ignored with one WARN.
      */
     private record Entry(int chunkX, int chunkZ, Map<String, Float> values, boolean legacyList) {}
 
@@ -74,9 +77,9 @@ public final class PollutionSavedData extends CompatSavedData<PollutionSavedData
         PollutionSavedData data = new PollutionSavedData();
         for (Entry e : entries) {
             PollutionData pd = new PollutionData();
-            if (e.legacyList()) com.hbm.util.SavedIds.warnNumeric("ordinal-indexed pollution list", "values");
+            if (e.legacyList()) SavedIds.warnNumeric("ordinal-indexed pollution list", "values");
             for (Map.Entry<String, Float> value : e.values().entrySet()) {
-                PollutionType type = com.hbm.util.SavedIds.byName(PollutionType.class, value.getKey(), null);
+                PollutionType type = SavedIds.byName(PollutionType.class, value.getKey(), null);
                 if (type != null) pd.pollution[type.ordinal()] = value.getValue();
             }
             data.pollution.put(new ChunkPos(e.chunkX(), e.chunkZ()), pd);
@@ -87,10 +90,10 @@ public final class PollutionSavedData extends CompatSavedData<PollutionSavedData
     private List<Entry> toEntries() {
         List<Entry> entries = new ArrayList<>(pollution.size());
         for (Map.Entry<ChunkPos, PollutionData> e : pollution.entrySet()) {
-            Map<String, Float> values = new java.util.LinkedHashMap<>();
+            Map<String, Float> values = new LinkedHashMap<>();
             for (PollutionType type : PollutionType.VALUES) {
                 float f = e.getValue().pollution[type.ordinal()];
-                if (f != 0F) values.put(type.name().toLowerCase(java.util.Locale.ROOT), f);
+                if (f != 0F) values.put(type.name().toLowerCase(Locale.ROOT), f);
             }
             entries.add(new Entry(Chunks.chunkX(e.getKey()), Chunks.chunkZ(e.getKey()), values, false));
         }

@@ -4,6 +4,7 @@ import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.entity.projectile.EntityChemical;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.GunAnimation;
@@ -16,8 +17,8 @@ import net.minecraft.world.item.ItemStack;
  * Fluid-backed chemthrower state; EntityChemical firing waits for the projectile owner.
  *
  * <p>The tank is the receiver's own {@link MagazineFluid}, read and written through its keys rather
- * than a private pair, so the fill/empty side and everything that goes through the magazine — the HUD
- * rail, the tooltip, the fire lambdas — agree on one number.
+ * than a private pair, so the fill/empty side and everything that goes through the magazine (the HUD
+ * rail, the tooltip, the fire lambdas) agree on one number.
  */
 public class ItemGunChemthrower extends ItemGunBaseNT implements IFillableItem {
     public static final int CONSUMPTION = 3;
@@ -25,7 +26,7 @@ public class ItemGunChemthrower extends ItemGunBaseNT implements IFillableItem {
     public static final int TRANSFER_SPEED = 50;
     private static final int MAG_INDEX = 0;
 
-    public ItemGunChemthrower(Properties properties, WeaponQuality quality, com.hbm.items.weapon.sedna.GunConfig... configs) {
+    public ItemGunChemthrower(Properties properties, WeaponQuality quality, GunConfig... configs) {
         super(properties, quality, configs);
     }
 

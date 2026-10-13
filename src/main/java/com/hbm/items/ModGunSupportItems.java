@@ -24,7 +24,7 @@ public final class ModGunSupportItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    // 1.7 ammo_container metadata 0/1, one item each (ntm-next ids; History §19es-itemvariant)
+    // 1.7 ammo_container metadata 0/1, one item each
     public static final RegistryObject<ItemAmmoContainer> ammo_container = REG.item(
             "ammo_container", p -> new ItemAmmoContainer(p, false), p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<ItemAmmoContainer> ammo_container_alt = REG.item(

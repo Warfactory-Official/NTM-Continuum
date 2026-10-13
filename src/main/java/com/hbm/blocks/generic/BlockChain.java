@@ -26,9 +26,9 @@ import org.jetbrains.annotations.Nullable;
 /**
  * 1.7 {@code BlockChain} (dungeon_chain): a climbable chain that hangs from the block above (old meta 0)
  * or flat against a wall (meta 2-5). {@link #FACING} is the side the chain faces, away from its
- * support, as the 1.12 blockstate spelt it; {@link #END} is the old "is the block below not holding
- * the chain" test that swapped in the {@code chain_end} icon and lifted the box by a quarter block —
- * a property here because a model cannot look at its neighbour. Waterloggable (port addition, see
+ * support, as the 1.12 blockstate spelt it; {@link #END} is the "is the block below not holding
+ * the chain" test that swaps in the {@code chain_end} icon and lifts the box by a quarter block.
+ * It is a property because a model cannot look at its neighbour. Waterloggable (port addition, see
  * {@link Waterlogging}).
  */
 public class BlockChain extends CompatBlock implements SimpleWaterloggedBlock {

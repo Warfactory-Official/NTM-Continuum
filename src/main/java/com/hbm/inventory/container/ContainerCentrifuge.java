@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.SlotCraftingOutput;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
@@ -44,10 +45,10 @@ public class ContainerCentrifuge extends AbstractContainerMenu {
 
         this.addSlot(validated(0, 44, 57)); // 1.7 ContainerCentrifuge positions
         this.addSlot(validated(1, 8, 57));
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 2, 70, 57)); // 1.7 SlotCraftingOutput
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 3, 90, 57)); // 1.7 SlotCraftingOutput
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 4, 110, 57)); // 1.7 SlotCraftingOutput
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 5, 130, 57)); // 1.7 SlotCraftingOutput
+        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 2, 70, 57)); // 1.7 SlotCraftingOutput
+        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 3, 90, 57)); // 1.7 SlotCraftingOutput
+        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 4, 110, 57)); // 1.7 SlotCraftingOutput
+        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 5, 130, 57)); // 1.7 SlotCraftingOutput
         this.addSlot(validated(6, 156, 31));
         this.addSlot(validated(7, 156, 49));
 

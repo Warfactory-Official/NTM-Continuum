@@ -27,7 +27,7 @@ public final class LagAnimationLoader {
         return load("lag");
     }
 
-    /** Loads one original-hbm JSON bus table from models/weapons/animations. */
+    /** Loads one 1.7 JSON bus table from models/weapons/animations. */
     public static Map<String, BusAnimation> load(String name) {
         Map<String, BusAnimation> cached = CACHE.get(name);
         if (cached != null) return cached;

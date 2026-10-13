@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityTesla;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.SubmitSink;
@@ -23,7 +24,7 @@ public class RenderTesla extends GemBER<TileEntityTesla, RenderTesla.State> {
         public int start;
     }
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/tesla.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/tesla.obj"));
     private final Surface surface = Surface.cutoutNoCull(Constants.MOD_ID + ":textures/models/tesla.png");
 
     @Override

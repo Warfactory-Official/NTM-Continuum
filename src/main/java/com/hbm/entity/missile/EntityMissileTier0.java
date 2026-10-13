@@ -1,5 +1,19 @@
 package com.hbm.entity.missile;
 
+import com.hbm.blocks.ModBombs2Blocks;
+import com.hbm.blocks.ModFalloutBlocks;
+import com.hbm.blocks.generic.BlockSellafieldSlaked;
+import com.hbm.config.BombConfig;
+import com.hbm.entity.ModEntities;
+import com.hbm.entity.ModNtmEntities;
+import com.hbm.entity.effect.EntityBlackHole;
+import com.hbm.entity.effect.EntityCloudFleija;
+import com.hbm.entity.effect.EntityEMPBlast;
+import com.hbm.entity.logic.EntityNukeExplosionMK3;
+import com.hbm.explosion.ExplosionNukeGeneric;
+import com.hbm.items.ModMissileItems;
+import com.hbm.items.ModSingularityItems;
+import dev.golem.core.world.Compat;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.util.Mth;
 import com.hbm.blocks.bomb.ModBombBlocks;
@@ -16,7 +30,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 /** The tier-0 missile family: micro, test, taint, schrabidium, black hole and EMP. */
 public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
@@ -62,7 +78,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
 
         @Override
         public ItemStack getMissileItemForInfo() {
-            return new ItemStack(com.hbm.items.ModMissileItems.missile_micro.get());
+            return new ItemStack(ModMissileItems.missile_micro.get());
         }
     }
 
@@ -78,8 +94,8 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
             if (level().isClientSide()) return;
 
             // 1.7 Tier0:127-131: a 5F blast at the hit vector, taint scattered around the hit BLOCK
-            net.minecraft.world.phys.Vec3 at = hit != null ? hit.getLocation() : position();
-            BlockPos block = hit instanceof net.minecraft.world.phys.BlockHitResult blockHit
+            Vec3 at = hit != null ? hit.getLocation() : position();
+            BlockPos block = hit instanceof BlockHitResult blockHit
                     ? blockHit.getBlockPos() : BlockPos.containing(at);
             level().explode(this, at.x, at.y, at.z, 5.0F, Level.ExplosionInteraction.TNT);
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
@@ -102,7 +118,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
 
         @Override
         public ItemStack getMissileItemForInfo() {
-            return new ItemStack(com.hbm.items.ModMissileItems.missile_taint.get());
+            return new ItemStack(ModMissileItems.missile_taint.get());
         }
     }
 
@@ -110,7 +126,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
     public static class EntityMissileTest extends EntityMissileTier0 {
         public EntityMissileTest(EntityType<?> type, Level level) { super(type, level); }
         public EntityMissileTest(Level level, float x, float y, float z, int targetX, int targetZ) {
-            super(com.hbm.entity.ModNtmEntities.MISSILE_TEST.get(), level, x, y, z, targetX, targetZ);
+            super(ModNtmEntities.MISSILE_TEST.get(), level, x, y, z, targetX, targetZ);
         }
 
         @Override
@@ -127,18 +143,18 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
                         if (dist > range) continue;
                         BlockPos pos = new BlockPos(x + iX, y + iY, z + iZ);
                         BlockState state = level().getBlockState(pos);
-                        boolean slaked = state.getBlock() == com.hbm.blocks.ModFalloutBlocks.sellafield_slaked.get();
+                        boolean slaked = state.getBlock() == ModFalloutBlocks.sellafield_slaked.get();
                         // 1.7: getBlockMetadata on sellafield_slaked == SHADE (0 otherwise)
-                        int shade = state.hasProperty(com.hbm.blocks.generic.BlockSellafieldSlaked.SHADE)
-                                ? state.getValue(com.hbm.blocks.generic.BlockSellafieldSlaked.SHADE) : 0;
+                        int shade = state.hasProperty(BlockSellafieldSlaked.SHADE)
+                                ? state.getValue(BlockSellafieldSlaked.SHADE) : 0;
                         // 1.7 clamps to meta 12; this port's slaked block carries ten shades, so the top is 9.
                         int charMeta = Math.min((int) Mth.clamp(12 - (dist / range) * (dist / range) * 13, 0, 12), 9);
 
                         // 1.7: isNormalCube -> isSolidRender
-                        if (dev.golem.core.world.Compat.isSolidRender(state)) {
+                        if (Compat.isSolidRender(state)) {
                             if (!slaked || shade < charMeta) {
-                                level().setBlock(pos, com.hbm.blocks.ModFalloutBlocks.sellafield_slaked.get().defaultBlockState()
-                                        .setValue(com.hbm.blocks.generic.BlockSellafieldSlaked.SHADE, charMeta), 3);
+                                level().setBlock(pos, ModFalloutBlocks.sellafield_slaked.get().defaultBlockState()
+                                        .setValue(BlockSellafieldSlaked.SHADE, charMeta), 3);
                             }
                         } else {
                             level().setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
@@ -149,74 +165,74 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
         }
 
         @Override public ItemStack getDebrisRareDrop() { return ItemStack.EMPTY; } // 1.7: null rare drop
-        @Override public ItemStack getMissileItemForInfo() { return new ItemStack(com.hbm.items.ModMissileItems.missile_test.get()); }
+        @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_test.get()); }
     }
 
     /** 1.7 EntityMissileSchrabidium: an anti-schrabidium fleija blast of {@code BombConfig.aSchrabRadius}. */
     public static class EntityMissileSchrabidium extends EntityMissileTier0 {
         public EntityMissileSchrabidium(EntityType<?> type, Level level) { super(type, level); }
         public EntityMissileSchrabidium(Level level, float x, float y, float z, int targetX, int targetZ) {
-            super(com.hbm.entity.ModNtmEntities.MISSILE_SCHRABIDIUM.get(), level, x, y, z, targetX, targetZ);
+            super(ModNtmEntities.MISSILE_SCHRABIDIUM.get(), level, x, y, z, targetX, targetZ);
         }
 
         @Override
         public void onMissileImpact(HitResult mop) {
-            int radius = com.hbm.config.BombConfig.aSchrabRadius;
+            int radius = BombConfig.aSchrabRadius;
 
-            com.hbm.entity.logic.EntityNukeExplosionMK3 ex =
-                    com.hbm.entity.logic.EntityNukeExplosionMK3.statFacFleija(level(), getX(), getY(), getZ(), radius);
+            EntityNukeExplosionMK3 ex =
+                    EntityNukeExplosionMK3.statFacFleija(level(), getX(), getY(), getZ(), radius);
             if (!ex.isRemoved()) { // 1.7: !ex.isDead
                 level().addFreshEntity(ex); // 1.7: WorldUtil.loadAndSpawnEntityInWorld(ex)
                 level().addFreshEntity(
-                        com.hbm.entity.effect.EntityCloudFleija.statFac(level(), radius, getX(), getY(), getZ()));
+                        EntityCloudFleija.statFac(level(), radius, getX(), getY(), getZ()));
             }
         }
 
         @Override public ItemStack getDebrisRareDrop() { return ItemStack.EMPTY; } // 1.7: null rare drop
-        @Override public ItemStack getMissileItemForInfo() { return new ItemStack(com.hbm.items.ModMissileItems.missile_schrabidium.get()); }
+        @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_schrabidium.get()); }
     }
 
     /** 1.7 EntityMissileBHole: a small blast that leaves a 1.5-size black hole. */
     public static class EntityMissileBHole extends EntityMissileTier0 {
         public EntityMissileBHole(EntityType<?> type, Level level) { super(type, level); }
         public EntityMissileBHole(Level level, float x, float y, float z, int targetX, int targetZ) {
-            super(com.hbm.entity.ModNtmEntities.MISSILE_BHOLE.get(), level, x, y, z, targetX, targetZ);
+            super(ModNtmEntities.MISSILE_BHOLE.get(), level, x, y, z, targetX, targetZ);
         }
 
         @Override
         public void onMissileImpact(HitResult mop) {
             level().explode(this, getX(), getY(), getZ(), 1.5F, Level.ExplosionInteraction.TNT);
 
-            com.hbm.entity.effect.EntityBlackHole hole = new com.hbm.entity.effect.EntityBlackHole(
-                    com.hbm.entity.ModEntities.BLACK_HOLE.get(), level(), 1.5F);
+            EntityBlackHole hole = new EntityBlackHole(
+                    ModEntities.BLACK_HOLE.get(), level(), 1.5F);
             hole.setPos(getX(), getY(), getZ());
             level().addFreshEntity(hole);
         }
 
-        @Override public ItemStack getDebrisRareDrop() { return new ItemStack(com.hbm.items.ModSingularityItems.black_hole.get()); }
-        @Override public ItemStack getMissileItemForInfo() { return new ItemStack(com.hbm.items.ModMissileItems.missile_bhole.get()); }
+        @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModSingularityItems.black_hole.get()); }
+        @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_bhole.get()); }
     }
 
     /** 1.7 EntityMissileEMP: a 50-block EMP drain plus the expanding EMP wave. */
     public static class EntityMissileEMP extends EntityMissileTier0 {
         public EntityMissileEMP(EntityType<?> type, Level level) { super(type, level); }
         public EntityMissileEMP(Level level, float x, float y, float z, int targetX, int targetZ) {
-            super(com.hbm.entity.ModNtmEntities.MISSILE_EMP.get(), level, x, y, z, targetX, targetZ);
+            super(ModNtmEntities.MISSILE_EMP.get(), level, x, y, z, targetX, targetZ);
         }
 
         @Override
         public void onMissileImpact(HitResult mop) {
-            com.hbm.explosion.ExplosionNukeGeneric.empBlast(level(),
+            ExplosionNukeGeneric.empBlast(level(),
                     new BlockPos((int) getX(), (int) getY(), (int) getZ()), 50);
 
-            com.hbm.entity.effect.EntityEMPBlast wave = new com.hbm.entity.effect.EntityEMPBlast(
-                    com.hbm.entity.ModNtmEntities.EMP_BLAST.get(), level());
+            EntityEMPBlast wave = new EntityEMPBlast(
+                    ModNtmEntities.EMP_BLAST.get(), level());
             wave.setPos(getX(), getY(), getZ());
             wave.setMaxAge(50);
             level().addFreshEntity(wave);
         }
 
-        @Override public ItemStack getDebrisRareDrop() { return new ItemStack(com.hbm.blocks.ModBombs2Blocks.emp_bomb.get()); }
-        @Override public ItemStack getMissileItemForInfo() { return new ItemStack(com.hbm.items.ModMissileItems.missile_emp.get()); }
+        @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModBombs2Blocks.emp_bomb.get()); }
+        @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_emp.get()); }
     }
 }

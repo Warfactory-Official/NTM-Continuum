@@ -8,13 +8,13 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-/** Applies original-hbm's held Sedna gun pose to the already prepared humanoid model. */
+/** Applies 1.7's held Sedna gun pose to the already prepared humanoid model. */
 public final class GunPlayerPose {
 
     private GunPlayerPose() {}
 
     /**
-     * Equivalent of original-hbm's {@code ModEventHandlerRenderer.onRenderHeldGun}.
+     * Equivalent of 1.7's {@code ModEventHandlerRenderer.onRenderHeldGun}.
      *
      * <p>The source sets {@code aimedBow} on the whole model, not only on the firing arm. The current
      * renderer can also submit a gun from the offhand, so the same source pose is selected from either

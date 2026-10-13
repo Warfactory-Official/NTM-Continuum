@@ -1,6 +1,8 @@
 package com.hbm.items.gear;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.handler.JetpackHandler;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.armor.JetpackFueledBase;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.world.CompatTooltipContext;
@@ -15,7 +17,7 @@ import net.minecraft.world.level.Level;
 /** Regular jetpack with the old automatic airborne hover assist. */
 public class JetpackBreak extends JetpackFueledBase {
 
-    public JetpackBreak(com.hbm.inventory.fluid.FluidType fuel, int maxFuel, Properties properties) {
+    public JetpackBreak(FluidType fuel, int maxFuel, Properties properties) {
         super(fuel, maxFuel, properties);
     }
 
@@ -34,7 +36,7 @@ public class JetpackBreak extends JetpackFueledBase {
         JetpackHandler.resetFlightTime(player);
         // hbm-space: thrust scaled up (never down) with gravity, the jet pushing along the view in free fall, and no
         // hovering without gravity (com.hbm.api.environment.Environment.gravity, 1 on plain HBM)
-        double gravity = com.hbm.api.environment.Environment.gravity(player);
+        double gravity = Environment.gravity(player);
         if (isActive(player)) {
             player.fallDistance = 0;
             if (gravity == 0D) {

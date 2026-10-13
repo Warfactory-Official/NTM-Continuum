@@ -2,22 +2,36 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.config.MachineConfig;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
+import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.container.ContainerMachineRTG;
+import com.hbm.inventory.gui.RtgGuiLayout;
+import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.RTGRecipes;
+import com.hbm.items.ModItems;
 import com.hbm.items.ModRtgContent;
 import com.hbm.items.machine.DepletedRTGMaterial;
 import com.hbm.items.machine.ItemRTGPellet;
+import com.hbm.items.machine.ItemRTGPelletDepleted;
+import com.hbm.tileentity.ModRtgBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineRTG;
 import com.hbm.util.RTGUtil;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.net.GolemBuffers;
+import dev.golem.core.registry.BlockEntities;
+import dev.golem.core.world.Compat;
+import dev.golem.core.world.Recipes;
 import io.netty.buffer.Unpooled;
+import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.RenderShape;
 
@@ -27,7 +41,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Behavioral contracts for the grey RTG and its fresh/depleted pellet family.
- * The render assertions intentionally record the user-requested 3D-only override: the old RTG world used
+ * The render assertions record the 3D-only override: the old RTG world used
  * a MODEL cube plus BER and the old inventory item used a cube, while this port is BER-only/OBJ-only.
  */
 public final class RtgGameTests {
@@ -61,7 +75,7 @@ public final class RtgGameTests {
             ItemRTGPellet pellet = registered.get();
             helper.assertTrue(pellet.getHeat() == heat[index]
                             && pellet.getMaxLifespan() == lifespan[index]
-                            && pellet.getDecayItem() instanceof com.hbm.items.machine.ItemRTGPelletDepleted decayed && decayed.material == residual[index],
+                            && pellet.getDecayItem() instanceof ItemRTGPelletDepleted decayed && decayed.material == residual[index],
                     "RTG pellet table drifted from 1.7 at index " + index + ": " + pellet.getHeat() + " / " + pellet.getMaxLifespan());
             index++;
         }
@@ -86,9 +100,9 @@ public final class RtgGameTests {
         ItemRTGPellet lead = ModRtgContent.PELLET_RTG_LEAD.get();
         ItemStack terminal = new ItemStack(lead);
         lead.setLifespan(terminal, 1L);
-        com.hbm.inventory.NTMItemHandler inventory = new com.hbm.inventory.NTMItemHandler(1);
+        NTMItemHandler inventory = new NTMItemHandler(1);
         inventory.setStackInSlot(0, terminal);
-        // 1.7 9.00_scaleRTGPower defaults off: the output is the flat 600 heat until the pellet is replaced (§19ej-8)
+        // 1.7 9.00_scaleRTGPower defaults off: the output is the flat 600 heat until the pellet is replaced
         helper.assertTrue(RTGUtil.updateRTGs(inventory, new int[]{0}) == 600
                         && inventory.getStackInSlot(0).is(lead)
                         && lead.getLifespan(inventory.getStackInSlot(0)) == 0L,
@@ -97,16 +111,16 @@ public final class RtgGameTests {
                         && inventory.getStackInSlot(0).is(ModRtgContent.PELLET_RTG_DEPLETED_BISMUTH.get()),
                 "The zero-life tick must output once, then replace the pellet");
         // with scaleRTGPower on, a lead pellet at 1 of 21,600 ticks gives ceil(600 / 21,600) = 1
-        boolean scale = com.hbm.config.MachineConfig.scaleRTGPower;
+        boolean scale = MachineConfig.scaleRTGPower;
         try {
-            com.hbm.config.MachineConfig.scaleRTGPower = true;
+            MachineConfig.scaleRTGPower = true;
             ItemStack spent = new ItemStack(lead);
             lead.setLifespan(spent, 1L);
             helper.assertTrue(RTGUtil.getPower(lead, spent) == 1, "scaleRTGPower on: a spent lead pellet must give 1 heat");
             lead.setLifespan(spent, 10_800L);
             helper.assertTrue(RTGUtil.getPower(lead, spent) == 300, "scaleRTGPower on: a half-spent lead pellet must give 300 heat");
         } finally {
-            com.hbm.config.MachineConfig.scaleRTGPower = scale;
+            MachineConfig.scaleRTGPower = scale;
         }
         helper.succeed();
     }
@@ -141,8 +155,8 @@ public final class RtgGameTests {
         ModRtgContent.PELLET_RTG.get().setLifespan(pellet, 123_456_789L);
         original.inventory.setStackInSlot(7, pellet);
 
-        CompoundTag tag = dev.golem.core.registry.BlockEntities.save(original, helper.getLevel().registryAccess());
-        BlockEntity loaded = dev.golem.core.registry.BlockEntities.load(original.getBlockPos(), original.getBlockState(),
+        CompoundTag tag = BlockEntities.save(original, helper.getLevel().registryAccess());
+        BlockEntity loaded = BlockEntities.load(original.getBlockPos(), original.getBlockState(),
                 tag, helper.getLevel().registryAccess());
         helper.assertTrue(loaded instanceof TileEntityMachineRTG, "Saved grey RTG did not recreate its registered type");
         TileEntityMachineRTG restored = (TileEntityMachineRTG) loaded;
@@ -153,7 +167,7 @@ public final class RtgGameTests {
 
         TileEntityMachineRTG synced = new TileEntityMachineRTG(BlockPos.ZERO,
                 ModMachineBlocks.machine_rtg_grey.get().defaultBlockState());
-        var buffer = dev.golem.core.net.GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
+        var buffer = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         original.serialize(buffer);
         synced.deserialize(buffer);
         buffer.release();
@@ -164,8 +178,8 @@ public final class RtgGameTests {
 
     public static void menu(GameTestHelper helper) {
         TileEntityMachineRTG rtg = place(helper, new BlockPos(1, 1, 1));
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
-                net.minecraft.world.level.GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper,
+                GameType.SURVIVAL);
         ContainerMachineRTG menu = new ContainerMachineRTG(0, player.getInventory(), rtg);
         helper.assertTrue(menu.slots.size() == 51, "RTG menu must have 15 machine + 36 player slots");
         for (int slot = 0; slot < 15; slot++) {
@@ -225,10 +239,10 @@ public final class RtgGameTests {
             helper.assertTrue(resourceExists("assets/hbm/items/" + id + ".json")
                             && resourceExists("assets/hbm/models/item/" + id + ".json")
                             && resourceExists("assets/hbm/textures/items/pellet_rtg_depleted."
-                            + material.name().toLowerCase(java.util.Locale.ROOT) + ".png"),
+                            + material.name().toLowerCase(Locale.ROOT) + ".png"),
                     "Missing depleted RTG pellet asset set: " + id);
         }
-        helper.assertTrue(com.hbm.tileentity.ModRtgBlockEntities.MACHINE_RTG.get().isValid(
+        helper.assertTrue(ModRtgBlockEntities.MACHINE_RTG.get().isValid(
                         ModMachineBlocks.machine_rtg_grey.get().defaultBlockState()),
                 "Grey RTG renderer target block is not registered on its block-entity type");
         helper.assertTrue(ModMachineBlocks.machine_rtg_grey.get().getRenderShape(
@@ -239,51 +253,51 @@ public final class RtgGameTests {
                         && !blockstate.contains("hbm:block/machine_rtg_grey"),
                 "Grey RTG blockstate must leave world geometry exclusively to RTGRenderer");
         String itemDefinition = resourceText("assets/hbm/items/machine_rtg_grey.json");
-        // 1.7 RenderRTGBlock.renderInventoryBlock on the block frame (icon-P2 2026-10-01): a direct raw OBJ model
+        // 1.7 RenderRTGBlock.renderInventoryBlock on the block frame: a direct raw OBJ model
         helper.assertTrue(itemDefinition.contains("rawLegacyTransform")
                         && itemDefinition.contains("hbm:machine_obj")
                         && itemDefinition.contains("hbm:models/machines/rtg.obj")
                         && itemDefinition.contains("hbm:textures/models/machines/rtg.png")
                         && !itemDefinition.contains("hbm:block/machine_rtg_grey"),
                 "Grey RTG item must resolve to the 3D OBJ, not the old cube model");
-        helper.assertFalse(com.hbm.inventory.gui.RtgGuiLayout.overlaps(
-                        com.hbm.inventory.gui.RtgGuiLayout.RECIPE_CLICK_X,
-                        com.hbm.inventory.gui.RtgGuiLayout.RECIPE_CLICK_Y,
-                        com.hbm.inventory.gui.RtgGuiLayout.RECIPE_CLICK_WIDTH,
-                        com.hbm.inventory.gui.RtgGuiLayout.RECIPE_CLICK_HEIGHT,
-                        com.hbm.inventory.gui.RtgGuiLayout.HEAT_X,
-                        com.hbm.inventory.gui.RtgGuiLayout.GAUGE_Y,
-                        com.hbm.inventory.gui.RtgGuiLayout.GAUGE_WIDTH,
-                        com.hbm.inventory.gui.RtgGuiLayout.GAUGE_HEIGHT),
+        helper.assertFalse(RtgGuiLayout.overlaps(
+                        RtgGuiLayout.RECIPE_CLICK_X,
+                        RtgGuiLayout.RECIPE_CLICK_Y,
+                        RtgGuiLayout.RECIPE_CLICK_WIDTH,
+                        RtgGuiLayout.RECIPE_CLICK_HEIGHT,
+                        RtgGuiLayout.HEAT_X,
+                        RtgGuiLayout.GAUGE_Y,
+                        RtgGuiLayout.GAUGE_WIDTH,
+                        RtgGuiLayout.GAUGE_HEIGHT),
                 "JEI Show Recipes area must not overlap the RTG heat tooltip");
-        helper.assertFalse(com.hbm.inventory.gui.RtgGuiLayout.overlaps(
-                        com.hbm.inventory.gui.RtgGuiLayout.RECIPE_CLICK_X,
-                        com.hbm.inventory.gui.RtgGuiLayout.RECIPE_CLICK_Y,
-                        com.hbm.inventory.gui.RtgGuiLayout.RECIPE_CLICK_WIDTH,
-                        com.hbm.inventory.gui.RtgGuiLayout.RECIPE_CLICK_HEIGHT,
-                        com.hbm.inventory.gui.RtgGuiLayout.POWER_X,
-                        com.hbm.inventory.gui.RtgGuiLayout.GAUGE_Y,
-                        com.hbm.inventory.gui.RtgGuiLayout.GAUGE_WIDTH,
-                        com.hbm.inventory.gui.RtgGuiLayout.GAUGE_HEIGHT),
+        helper.assertFalse(RtgGuiLayout.overlaps(
+                        RtgGuiLayout.RECIPE_CLICK_X,
+                        RtgGuiLayout.RECIPE_CLICK_Y,
+                        RtgGuiLayout.RECIPE_CLICK_WIDTH,
+                        RtgGuiLayout.RECIPE_CLICK_HEIGHT,
+                        RtgGuiLayout.POWER_X,
+                        RtgGuiLayout.GAUGE_Y,
+                        RtgGuiLayout.GAUGE_WIDTH,
+                        RtgGuiLayout.GAUGE_HEIGHT),
                 "JEI Show Recipes area must not overlap the RTG energy tooltip");
         helper.succeed();
     }
 
     public static void recipes(GameTestHelper helper) {
         for (var depleted : ModRtgContent.DEPLETED.values()) {
-            ItemStack remainder = dev.golem.core.world.Compat.craftingRemainder(new ItemStack(depleted.get()));
-            helper.assertTrue(remainder.is(com.hbm.items.ModItems.plate_iron.get()),
+            ItemStack remainder = Compat.craftingRemainder(new ItemStack(depleted.get()));
+            helper.assertTrue(remainder.is(ModItems.plate_iron.get()),
                     "A recycled depleted pellet must return its iron plate casing");
         }
         for (String id : new String[]{"rtg_fuel_pu238", "rtg_fuel_radium", "rtg_fuel_weak",
                 "rtg_fuel_strontium", "rtg_fuel_cobalt", "rtg_fuel_actinium", "rtg_fuel_americium",
                 "rtg_fuel_polonium", "rtg_fuel_gold", "rtg_fuel_lead", "rtg_recover_bismuth",
                 "rtg_recover_lead", "rtg_recover_neptunium", "rtg_recover_zirconium"}) {
-            helper.assertTrue(dev.golem.core.world.Recipes.hasRecipe(helper.getLevel(), "hbm", id),
+            helper.assertTrue(Recipes.hasRecipe(helper.getLevel(), "hbm", id),
                     "Missing dependency-complete old RTG recipe: " + id);
         }
         RTGRecipes.registerAssembly();
-        var assembly = com.hbm.inventory.recipes.AssemblyMachineRecipes.INSTANCE.getRecipe("ass.rtg");
+        var assembly = AssemblyMachineRecipes.INSTANCE.getRecipe("ass.rtg");
         helper.assertTrue(assembly != null && assembly.duration == 200 && assembly.power == 100
                         && assembly.outputItem.length == 1
                         && assembly.outputItem[0].is(ModMachineBlocks.machine_rtg_grey_item.get()),
@@ -293,7 +307,7 @@ public final class RtgGameTests {
 
     private static TileEntityMachineRTG place(GameTestHelper helper, BlockPos relative) {
         helper.setBlock(relative, ModMachineBlocks.machine_rtg_grey.get().defaultBlockState());
-        return dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, relative, TileEntityMachineRTG.class);
+        return GameTestHelpers.blockEntity(helper, relative, TileEntityMachineRTG.class);
     }
 
     private static double radiation(ItemStack stack) {
@@ -303,7 +317,7 @@ public final class RtgGameTests {
     private static boolean close(double a, double b) { return Math.abs(a - b) < 0.000001D; }
 
     private static boolean resourceExists(String path) {
-        return dev.golem.core.gametest.GameTestHelpers.resourceExists(RtgGameTests.class, path);
+        return GameTestHelpers.resourceExists(RtgGameTests.class, path);
     }
 
     private static String resourceText(String path) {

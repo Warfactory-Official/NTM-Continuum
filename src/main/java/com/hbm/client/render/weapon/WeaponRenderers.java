@@ -15,8 +15,8 @@ import net.minecraft.world.item.Items;
  * The weapon renderers, by name.
  *
  * <p>The item definition names one ({@code "weapon": "atlas"}) rather than describing the geometry,
- * because a Sedna weapon's first-person body is code — a hand-built transform tree reading animation
- * buses — not something a model JSON can express. What the JSON still owns is the {@code base} model
+ * because a Sedna weapon's first-person body is code: a hand-built transform tree reading animation
+ * buses, not something a model JSON can express. What the JSON still owns is the {@code base} model
  * whose {@code display{}} block frames the non-first-person contexts.
  */
 public final class WeaponRenderers {

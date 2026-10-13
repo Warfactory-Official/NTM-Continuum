@@ -1,16 +1,36 @@
 package com.hbm.client;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.hbm.capability.HbmLivingProps;
 import com.hbm.client.particle.AmatFlashParticles;
+import com.hbm.config.CustomMachineConfigJSON;
+import com.hbm.handler.ToolKeybinds;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.recipes.CustomMachineRecipes;
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModSingularityItems;
+import com.hbm.items.ModUtilityToolItems;
+import com.hbm.items.ModelState;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.weapon.ItemCrucible;
+import dev.golem.core.client.KeyMappings;
+import dev.golem.core.data.Tags;
+import dev.golem.core.harness.HarnessQueryRegistry;
+import dev.golem.core.platform.ConfigFiles;
 import dev.golem.core.world.ItemStacks;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -20,10 +40,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The {@code hbm_gapsa} harness query of gap batch A (§19ed-gaps-a), read by {@code FinalGapsA}: the server player's
+ * The {@code hbm_gapsa} harness query, read by {@code FinalGapsA}: the server player's
  * held stack (id, variant, crucible charge, whether its modifiers are suppressed), attack damage and health, every
  * cell in the inventory with its model variant; the client player's hurt time/duration (the knife's jolt) and the
- * live antimatter flashes. {@code {"give":"oldcell:<FLUID>"}} hands the player a cell saved the pre-2026-09-25 way
+ * live antimatter flashes. {@code {"give":"oldcell:<FLUID>"}} hands the player a cell saved in the old format
  * (model variant = fluid id), which no /give can spell identically on every node. Inert unless the harness runs.
  */
 public final class GapsAHarnessQueries {
@@ -31,7 +51,7 @@ public final class GapsAHarnessQueries {
     private GapsAHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_gapsa", GapsAHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_gapsa", GapsAHarnessQueries::query);
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {
@@ -68,7 +88,7 @@ public final class GapsAHarnessQueries {
             // left Alt too (as in 1.7), and Fabric below 26.1 dispatches a key to one mapping only, so isDown()
             // of the losing mapping stays false while the key is held; Core's isHeld() reads the winner as well
             if (mapping.getName().equals("key.hbm.copyToolAlt")) {
-                return mapping instanceof dev.golem.core.client.KeyMappings.Mapping held ? held.isHeld() : mapping.isDown();
+                return mapping instanceof KeyMappings.Mapping held ? held.isHeld() : mapping.isDown();
             }
         }
         return false;
@@ -84,40 +104,40 @@ public final class GapsAHarnessQueries {
      */
     private static int customMachines(JsonObject params) {
         String mode = params.get("custom_machines").getAsString();
-        java.nio.file.Path real = com.hbm.config.CustomMachineConfigJSON.configFile();
+        Path real = CustomMachineConfigJSON.configFile();
         if (mode.equals("restore")) {
-            com.hbm.config.CustomMachineConfigJSON.reloadFrom(real);
-            com.hbm.inventory.recipes.CustomMachineRecipes.reload();
-            return com.hbm.config.CustomMachineConfigJSON.niceList.size();
+            CustomMachineConfigJSON.reloadFrom(real);
+            CustomMachineRecipes.reload();
+            return CustomMachineConfigJSON.niceList.size();
         }
         try {
-            java.nio.file.Path dir = dev.golem.core.platform.ConfigFiles.configDir().resolve("hbmHarnessStaging");
-            java.nio.file.Path recipes = dir.resolve("hbmRecipes");
-            java.nio.file.Files.createDirectories(recipes);
-            com.google.gson.Gson gson = new com.google.gson.GsonBuilder().setPrettyPrinting().create();
+            Path dir = ConfigFiles.configDir().resolve("hbmHarnessStaging");
+            Path recipes = dir.resolve("hbmRecipes");
+            Files.createDirectories(recipes);
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
             JsonObject machines;
-            try (java.io.Reader reader = java.nio.file.Files.newBufferedReader(real, java.nio.charset.StandardCharsets.UTF_8)) {
+            try (Reader reader = Files.newBufferedReader(real, StandardCharsets.UTF_8)) {
                 machines = gson.fromJson(reader, JsonObject.class);
             }
             for (var machine : params.getAsJsonArray("machines")) machines.getAsJsonArray("machines").add(machine);
-            java.nio.file.Path staged = dir.resolve("hbmCustomMachines.json");
-            java.nio.file.Files.writeString(staged, gson.toJson(machines), java.nio.charset.StandardCharsets.UTF_8);
-            java.nio.file.Files.writeString(recipes.resolve(com.hbm.inventory.recipes.CustomMachineRecipes.getFileName()),
-                    gson.toJson(params.getAsJsonObject("recipes")), java.nio.charset.StandardCharsets.UTF_8);
-            com.hbm.config.CustomMachineConfigJSON.reloadFrom(staged);
-            com.hbm.inventory.recipes.CustomMachineRecipes.loadFrom(recipes);
-        } catch (java.io.IOException e) {
-            throw new java.io.UncheckedIOException(e);
+            Path staged = dir.resolve("hbmCustomMachines.json");
+            Files.writeString(staged, gson.toJson(machines), StandardCharsets.UTF_8);
+            Files.writeString(recipes.resolve(CustomMachineRecipes.getFileName()),
+                    gson.toJson(params.getAsJsonObject("recipes")), StandardCharsets.UTF_8);
+            CustomMachineConfigJSON.reloadFrom(staged);
+            CustomMachineRecipes.loadFrom(recipes);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        return com.hbm.config.CustomMachineConfigJSON.niceList.size();
+        return CustomMachineConfigJSON.niceList.size();
     }
 
     private static JsonObject onServer(ServerPlayer player, JsonObject params) {
         JsonObject json = new JsonObject();
         if (params.has("clearrads")) {
             // between scenario sections: the radioactive test items (cells, crucible) are lethal over a long run
-            com.hbm.capability.HbmLivingProps.setRadiation(player, 0);
-            com.hbm.capability.HbmLivingProps.setNeutron(player, 0);
+            HbmLivingProps.setRadiation(player, 0);
+            HbmLivingProps.setNeutron(player, 0);
             json.addProperty("cleared", true);
             return json;
         }
@@ -132,7 +152,7 @@ public final class GapsAHarnessQueries {
                 ItemStack cell = new ItemStack(ModSingularityItems.cell.get());
                 ModDataComponents.fluid(cell, fluid);
                 ModDataComponents.fluidAmount(cell, ItemCell.CAPACITY);
-                // no stored sprite number since History §19es-itemvariant: an "old" cell is any cell of the fluid
+                // no stored sprite number: an "old" cell is any cell of the fluid
                 json.addProperty("given", player.getInventory().add(cell));
                 player.inventoryMenu.broadcastChanges();
             }
@@ -141,20 +161,20 @@ public final class GapsAHarnessQueries {
         ItemStack held = player.getMainHandItem();
         json.addProperty("held", held.isEmpty() ? "" : BuiltInRegistries.ITEM.getKey(held.getItem()).toString());
         // the 1.7 metadata the held item stands for, or its drawn state (both computed, never stored)
-        json.addProperty("held_variant", held.getItem() instanceof com.hbm.items.LegacyMeta meta ? meta.legacyMeta()
-                : com.hbm.items.ModelState.of(held));
+        json.addProperty("held_variant", held.getItem() instanceof LegacyMeta meta ? meta.legacyMeta()
+                : ModelState.of(held));
         json.addProperty("crucible_charges", held.getItem() instanceof ItemCrucible ? ItemCrucible.getCharges(held) : -1);
         json.addProperty("modifiers_suppressed", ItemStacks.attributeModifiersSuppressed(held));
         json.addProperty("attack_damage", player.getAttributeValue(Attributes.ATTACK_DAMAGE));
-        json.addProperty("tool_alt", com.hbm.handler.ToolKeybinds.getKeyPressed(player,
-                com.hbm.handler.ToolKeybinds.EnumToolKey.TOOL_ALT));
-        json.addProperty("tool_ctrl", com.hbm.handler.ToolKeybinds.getKeyPressed(player,
-                com.hbm.handler.ToolKeybinds.EnumToolKey.TOOL_CTRL));
+        json.addProperty("tool_alt", ToolKeybinds.getKeyPressed(player,
+                ToolKeybinds.EnumToolKey.TOOL_ALT));
+        json.addProperty("tool_ctrl", ToolKeybinds.getKeyPressed(player,
+                ToolKeybinds.EnumToolKey.TOOL_CTRL));
         // the settings tool's paste selection, read in the same server step as tool_alt: FinalGapsA polls both
         // while Alt is held, so it can release the key before 1.7's 5-tick repeat cycles the selection again
-        net.minecraft.nbt.CompoundTag settings = com.hbm.items.ModUtilityToolItems.SETTINGS.getOr(held, null);
+        CompoundTag settings = ModUtilityToolItems.SETTINGS.getOr(held, null);
         json.addProperty("settings_copy_index", settings == null ? -1
-                : dev.golem.core.data.Tags.getIntOr(settings, "copyIndex", 0));
+                : Tags.getIntOr(settings, "copyIndex", 0));
         json.addProperty("health", player.getHealth());
         json.addProperty("max_health", player.getMaxHealth());
         JsonArray cells = new JsonArray();
@@ -165,7 +185,7 @@ public final class GapsAHarnessQueries {
             c.addProperty("slot", i);
             c.addProperty("count", stack.getCount());
             c.addProperty("fluid", ModDataComponents.fluid(stack).getRegistryName());
-            c.addProperty("variant", com.hbm.items.ModelState.of(stack));
+            c.addProperty("variant", ModelState.of(stack));
             c.addProperty("name", stack.getHoverName().getString());
             cells.add(c);
         }

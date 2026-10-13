@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMicrowave;
 import com.hbm.tileentity.machine.TileEntityMicrowave;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
@@ -16,7 +17,7 @@ import java.util.Optional;
 /** 1.7 {@code GUIMicrowave}: {@code gui_microwave.png}, 176x168; the two speed arrows at (43,25) and (43,43). */
 public final class GUIMicrowave extends CompatContainerScreen<ContainerMicrowave> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_microwave.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_microwave.png");
 
     public GUIMicrowave(ContainerMicrowave menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 168);

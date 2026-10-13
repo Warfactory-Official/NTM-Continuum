@@ -1,10 +1,22 @@
 package com.hbm.entity.effect;
 
+import com.hbm.Constants;
+import com.hbm.blocks.ModTerrainBlocks;
+import com.hbm.blocks.bomb.BlockVolcano;
+import com.hbm.blocks.multiblock.BlockMultiblockCell;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.Tags;
 
 import dev.golem.core.data.CompatEntity;
+import dev.golem.core.world.Chunks;
+import dev.golem.core.world.Compat;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
 
@@ -41,27 +53,27 @@ import dev.golem.core.data.DataOut;
 
 /**
  * The fallout sweep spawned when a nuclear crater completes, ported from 1.12.2's
- * {@code EntityFalloutRain}: it walks every chunk the fallout disc touches and "stomps" each column —
+ * {@code EntityFalloutRain}: it walks every chunk the fallout disc touches and "stomps" each column:
  * depositing the radioactive {@code fallout} ash layer (chance peaking at 70% of the scale),
  * petrifying/killing organics, converting terrain into the sellafite shade rings
  * ({@link FalloutConfig}), starting fires, and dropping now-unsupported soft blocks as falling blocks.
  * Invisible logic entity like {@code EntityNukeExplosionMK5} (NoopRenderer).
  *
- * <p><b>Threading (mirrors the fork):</b> the old entity scanned chunks off-thread on a ForkJoin pool
+ * <p><b>Threading (mirrors the fork):</b> the 1.12.2 entity scanned chunks off-thread on a ForkJoin pool
  * and applied block writes on the server thread within a {@code BombConfig.mk5} ms budget per tick.
- * This port does the same: {@link #tick} claims each chunk for background loading and harvests it with
- * {@code getChunkNow} on a later server tick, then hands the {@link LevelChunk} to the common pool where {@link #scanChunk} computes the
- * column stomps using <b>chunk-confined reads only</b> (workers must never call {@code Level} methods
- * — the server chunk map is main-thread-guarded), and the resulting ordered write lists are applied
- * back on the server thread under the budget. A fully single-threaded version processed 1–3 chunks
- * per tick and took minutes over a Fat Man's disc; the fork finished in tens of seconds.
+ * Here {@link #tick} claims each chunk for background loading and harvests it with {@code getChunkNow}
+ * on a later server tick, then hands the {@link LevelChunk} to the common pool, where {@link #scanChunk}
+ * computes the column stomps using <b>chunk-confined reads only</b> (workers must never call {@code Level}
+ * methods: the server chunk map is main-thread-guarded). The ordered write lists are applied back on the
+ * server thread under the budget. A single-threaded sweep processes 1 to 3 chunks per tick and takes
+ * minutes over a Fat Man's disc; the fork finishes in tens of seconds.
  *
-     * <p>Deferred vs the fork: the post-fallout thunderstorm. Biome coordinates are collected on the worker;
-     * biome state is resolved and rewritten on the server thread.
+ * <p>Not ported from the fork: the post-fallout thunderstorm. Biome coordinates are collected on the
+ * worker; biome state is resolved and rewritten on the server thread.
  *
  * <p>The chunk lists survive save/reload via NBT ({@code chunks}/{@code outerChunks} int-pair arrays);
  * chunks leave the lists only once their writes are fully applied, so an interrupted sweep resumes
- * (in-flight scans are simply redone).
+ * (in-flight scans are redone).
  */
 public class EntityFalloutRain extends CompatEntity {
 
@@ -100,39 +112,39 @@ public class EntityFalloutRain extends CompatEntity {
     private LongArrayList outerChunksToProcess = new LongArrayList();
     private boolean gathered = false;
 
-    /** Chunks claimed by this sweep — requested or scanning — so they are handed out only once. */
+    /** Chunks claimed by this sweep (requested or scanning), so they are handed out only once. */
     private final LongOpenHashSet inFlight = new LongOpenHashSet();
     /**
      * Chunks asked for but not in memory yet (server thread only).
      *
      * <p>The disc reaches far past whatever a player had loaded, so most of its chunks must be read from
-     * disk or generated. Asking for one and <em>waiting</em> — which is what {@code getChunk} does — puts
+     * disk or generated. Asking for one and <em>waiting</em>, which is what {@code getChunk} does, puts
      * that whole cost on the server thread, one stall per chunk. These are requested instead and
      * collected when they arrive, so the generation runs on the chunk system's own workers.
      */
-    private final it.unimi.dsi.fastutil.longs.LongOpenHashSet claimedChunks =
-            new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+    private final LongOpenHashSet claimedChunks =
+            new LongOpenHashSet();
     /**
      * How many chunks currently need each claim, so a chunk wanted by two neighbours is held once and
      * released once.
      */
-    private final it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap claimRefs =
-            new it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap();
+    private final Long2IntOpenHashMap claimRefs =
+            new Long2IntOpenHashMap();
     /** Chunks this sweep is holding, so they can all be dropped if it is removed mid-run. */
-    private final it.unimi.dsi.fastutil.longs.LongOpenHashSet heldChunks =
-            new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+    private final LongOpenHashSet heldChunks =
+            new LongOpenHashSet();
     /** Scans handed to the pool and not yet applied. Bounds pool width; requests are counted separately. */
     private int activeScans;
     /** Scan results awaiting application, produced by pool workers. */
     private final ConcurrentLinkedQueue<ChunkScan> completedScans = new ConcurrentLinkedQueue<>();
     /** Server-thread retry counts; a permanently failing chunk must abort the sweep, not vanish. */
-    private final it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap scanFailures =
-            new it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap();
+    private final Long2IntOpenHashMap scanFailures =
+            new Long2IntOpenHashMap();
     private boolean failed;
     /** The scan currently being applied (may span ticks if the budget runs out mid-chunk). */
     private ChunkScan applying;
 
-    // --- instrumentation: where the sweep's wall-clock goes (see IMPLEMENTATION-HISTORY §19z-h) ---
+    // Instrumentation: where the sweep's wall-clock goes
     private final long createdAt = System.currentTimeMillis();
     private long chunkResolveMs;
     private long applyMs;
@@ -196,11 +208,11 @@ public class EntityFalloutRain extends CompatEntity {
     }
 
     /** Diagnostics seam: the state writes one column's stomp emits (last write per position wins). */
-    public static java.util.Map<BlockPos, BlockState> stompColumnForTest(ServerLevel level, int x, int z,
+    public static Map<BlockPos, BlockState> stompColumnForTest(ServerLevel level, int x, int z,
                                                                         double distPercent, RandomSource rand) {
         ChunkScan scan = new ChunkScan(ChunkPos.pack(x >> 4, z >> 4));
         stompColumn(scan, level.getChunk(x >> 4, z >> 4), x, z, distPercent, rand);
-        java.util.Map<BlockPos, BlockState> writes = new java.util.LinkedHashMap<>();
+        Map<BlockPos, BlockState> writes = new LinkedHashMap<>();
         for (BlockWrite write : scan.stateWrites) writes.put(BlockPos.of(write.pos()), write.state());
         return writes;
     }
@@ -224,8 +236,8 @@ public class EntityFalloutRain extends CompatEntity {
     }
 
     @Override
-    protected void defineData(dev.golem.core.data.SynchedData data) {
-        // No synced data — server-driven and invisible (the old SCALE DataParameter fed a renderer we don't have).
+    protected void defineData(SynchedData data) {
+        // No synced data. Server-driven and invisible (there is no renderer for a scale value).
     }
 
     @Override
@@ -250,7 +262,7 @@ public class EntityFalloutRain extends CompatEntity {
         }
         gathered = true;
 
-        // Force the lazy transform table to build on the server thread — its unsynchronized first
+        // Force the lazy transform table to build on the server thread: its unsynchronized first
         // build must not race between pool workers.
         FalloutConfig.entries();
 
@@ -287,24 +299,19 @@ public class EntityFalloutRain extends CompatEntity {
      * Keeps the worker pool fed <b>without ever blocking the server thread on a chunk</b>.
      *
      * <p>Chunks already in memory go straight to the pool. Anything else is <em>claimed</em> with a
-     * loading-only ticket, which is a registration and nothing more, and picked up on a later tick once
-     * the chunk system has produced it in the background. Claims are dropped as their chunks are
-     * consumed, so the window rolls across the disc.
+     * loading-only ticket (a registration, nothing more) and picked up on a later tick once the chunk
+     * system has produced it. Claims are dropped as their chunks are consumed, so the window rolls across
+     * the disc.
      *
      * <p>The request depth is scan workers times the per-entity, 1..256-clamped snapshot of
-     * {@code BombConfig.falloutClaimWindow}. It must remain deep enough to hide generation latency but
-     * not flood worldgen: a Tsar at the former value 48 held 1,983 unique neighbourhood chunks and still
-     * parked 106,271 times while producing 10-second tick gaps.
+     * {@code BombConfig.falloutClaimWindow}: deep enough to hide generation latency, shallow enough not to
+     * flood worldgen.
      *
-     * <p><b>Both earlier versions of this method blocked, and the second one only looked like it did
-     * not.</b> The original called {@code server.getChunk}, an outright synchronous load-and-generate.
-     * §19z-h replaced it with {@code ServerChunkCache.getChunkFuture(…, create = true)} on the belief
-     * that this was the non-blocking half of the same call. It is not: called from the server thread it
-     * runs {@code mainThreadProcessor.managedBlock(future::isDone)} and waits for the chunk exactly like
-     * {@code getChunk} does. A real Fat Man measured <b>20.6 s of server thread across 1,057 generated
-     * chunks</b> — about 19 ms each — with a doomsday warhead at 57 s over 3,177. {@code ntm-next}'s
-     * {@code ChunkUtil} carries the warning in one line: <i>"Ticket only; never getChunkFuture - blocks
-     * server thread"</i>.
+     * <p>Neither {@code server.getChunk} (a synchronous load-and-generate) nor
+     * {@code ServerChunkCache.getChunkFuture(..., create = true)} may be used. The future looks
+     * non-blocking, but from the server thread it runs {@code mainThreadProcessor.managedBlock(future::isDone)}
+     * and waits like {@code getChunk}, about 19 ms per generated chunk. {@code ntm-next}'s {@code ChunkUtil}
+     * says the same: <i>"Ticket only; never getChunkFuture - blocks server thread"</i>.
      */
     private void dispatchScans(ServerLevel server) {
         int maxInFlight = scanParallelism;
@@ -365,9 +372,9 @@ public class EntityFalloutRain extends CompatEntity {
      * Claims a chunk <b>and its eight neighbours</b>.
      *
      * <p>The neighbours are the point. The notify pass runs {@code updateNeighborsAt}, which reads the six
-     * blocks around every converted cell through {@code Level.getBlockState} — and on a chunk border that
+     * blocks around every converted cell through {@code Level.getBlockState}, and on a chunk border that
      * reads into the next chunk, where {@code getBlockState} <b>synchronously loads and generates</b> if
-     * nobody has it. Claiming only the chunk being worked on left every border cell able to trigger a
+     * nobody has it. Claiming only the chunk being worked on would let any border cell trigger a
      * full chunk generation inside what looks like a block update.
      */
     private void claimWithNeighbours(int chunkX, int chunkZ) {
@@ -385,7 +392,7 @@ public class EntityFalloutRain extends CompatEntity {
     private void claimOne(long packed) {
         if (claimRefs.addTo(packed, 1) == 0) {
             heldChunks.add(packed);
-            dev.golem.core.world.Chunks.claimForLoading((ServerLevel) level(),
+            Chunks.claimForLoading((ServerLevel) level(),
                     ChunkPos.getX(packed), ChunkPos.getZ(packed));
             if (claimRefs.size() > peakClaims) peakClaims = claimRefs.size();
         }
@@ -395,7 +402,7 @@ public class EntityFalloutRain extends CompatEntity {
         if (claimRefs.addTo(packed, -1) - 1 <= 0) {
             claimRefs.remove(packed);
             if (heldChunks.remove(packed)) {
-                dev.golem.core.world.Chunks.releaseForLoading((ServerLevel) level(),
+                Chunks.releaseForLoading((ServerLevel) level(),
                         ChunkPos.getX(packed), ChunkPos.getZ(packed));
             }
         }
@@ -419,7 +426,7 @@ public class EntityFalloutRain extends CompatEntity {
                 scanChunk(scan, chunk, clamp, ex, ez, sc);
                 scan.completed = true;
             } catch (Throwable e) {
-                // The scan is deliberately published as failed, never as an empty successful scan.
+                // The scan is published as failed, never as an empty successful scan.
                 // Its local writes are discarded; the server thread decides whether to retry or abort.
                 scan.failure = e;
             } finally {
@@ -461,29 +468,29 @@ public class EntityFalloutRain extends CompatEntity {
         if (logged) return;
         logged = true;
         long total = System.currentTimeMillis() - createdAt;
-        com.hbm.Constants.LOG.info("[FALLOUT] scale={} done in {} ms wall over {} ticks: chunks {} ms "
+        Constants.LOG.info("[FALLOUT] scale={} done in {} ms wall over {} ticks: chunks {} ms "
                         + "({} resolved, {} requested on demand), apply {} ms ({} writes, {} writes/ms)",
                 getScale(), total, sweepTicks, chunkResolveMs, chunksResolved, chunksRequested,
                 applyMs, writesApplied, applyMs > 0 ? writesApplied / applyMs : writesApplied);
-        com.hbm.Constants.LOG.info("[FALLOUT]   writes: terrain {} in {} ms | ash {} in {} ms | "
+        Constants.LOG.info("[FALLOUT]   writes: terrain {} in {} ms | ash {} in {} ms | "
                         + "fire {} in {} ms | falling-block fall calls {} from {} unique markers in {} ms",
                 writesOther, msOther / 1_000_000L, writesFallout, msFallout / 1_000_000L,
                 writesFire, msFire / 1_000_000L, writesFalling, fallingMarkersApplied,
                 msFalling / 1_000_000L);
-        com.hbm.Constants.LOG.info("[FALLOUT]   scan dedup: {} superseded state writes and {} duplicate "
+        Constants.LOG.info("[FALLOUT]   scan dedup: {} superseded state writes and {} duplicate "
                         + "falling markers removed before apply",
                 duplicateStateWritesRemoved, duplicateFallingMarkersRemoved);
-        com.hbm.Constants.LOG.info("[FALLOUT]   notify pass: {} cells in {} ms ({} cells/ms) = "
+        Constants.LOG.info("[FALLOUT]   notify pass: {} cells in {} ms ({} cells/ms) = "
                         + "onPlace/removal {} ms + updateNeighborsAt {} ms [{}] + updateNeighbourShapes {} ms [{}]",
                 cellsNotified, msNotify / 1_000_000L,
                 msNotify > 1_000_000L ? cellsNotified / (msNotify / 1_000_000L) : cellsNotified,
                 msPlace / 1_000_000L,
                 msNeighbours / 1_000_000L, BombConfig.falloutNeighbourUpdates ? "on" : "OFF",
                 msShapes / 1_000_000L, BombConfig.falloutShapeUpdates ? "on" : "OFF");
-        com.hbm.Constants.LOG.info("[FALLOUT]   border cells: {} of them, {} with an unloaded neighbour "
+        Constants.LOG.info("[FALLOUT]   border cells: {} of them, {} with an unloaded neighbour "
                         + "chunk, costing {} ms of the neighbour pass",
                 borderCells, borderCellsMissingNeighbour, msBorderMissing / 1_000_000L);
-        com.hbm.Constants.LOG.info("[FALLOUT]   loading pipeline: {} scan workers x {} request window = "
+        Constants.LOG.info("[FALLOUT]   loading pipeline: {} scan workers x {} request window = "
                         + "{} unresolved requests max (+ up to {} active scans); peak {} unresolved/{} "
                         + "unique chunks; waits: {} chunk polls, "
                         + "{} centre apply parks, {} neighbourhood parks",
@@ -491,7 +498,7 @@ public class EntityFalloutRain extends CompatEntity {
                 peakUnresolvedRequests, peakClaims, chunkWaitPolls, centreApplyParks, neighbourhoodParks);
         // Peak claims measures the memory/generation working set. Golem's loading-only tickets do not
         // make these chunks simulate.
-        com.hbm.Constants.LOG.info("[FALLOUT]   server tick gap while sweeping: mean {} ms, worst {} ms "
+        Constants.LOG.info("[FALLOUT]   server tick gap while sweeping: mean {} ms, worst {} ms "
                         + "over {} gaps — the sweep's own work was {} ms of it",
                 tickGaps > 0 ? sumTickGapMs / tickGaps : 0, maxTickGapMs, tickGaps, applyMs + chunkResolveMs);
     }
@@ -499,8 +506,8 @@ public class EntityFalloutRain extends CompatEntity {
     private void applyScansTimed(ServerLevel server) {
         long deadline = System.nanoTime() + BombConfig.mk5 * 1_000_000L;
         // A chunk that parks waiting for its neighbourhood steps aside for the next one rather than
-        // ending the tick — but if every queued chunk is parked there is nothing else to do, so the
-        // number of consecutive parks is bounded by how many are waiting.
+        // ending the tick. If every queued chunk is parked there is nothing else to do, so the number
+        // of consecutive parks is bounded by how many are waiting.
         int parksThisTick = 0;
         while (true) {
             if (applying == null) applying = completedScans.poll();
@@ -515,11 +522,11 @@ public class EntityFalloutRain extends CompatEntity {
                 Throwable failure = applying.failure;
                 applying = null;
                 if (attempts <= MAX_SCAN_FAILURE_RETRIES) {
-                    com.hbm.Constants.LOG.error("[FALLOUT] chunk scan failed for [{}, {}]; retry {}/{}",
+                    Constants.LOG.error("[FALLOUT] chunk scan failed for [{}, {}]; retry {}/{}",
                             ChunkPos.getX(failedChunk), ChunkPos.getZ(failedChunk), attempts,
                             MAX_SCAN_FAILURE_RETRIES, failure);
                 } else {
-                    com.hbm.Constants.LOG.error("[FALLOUT] chunk scan failed {} times for [{}, {}]; aborting sweep",
+                    Constants.LOG.error("[FALLOUT] chunk scan failed {} times for [{}, {}]; aborting sweep",
                             attempts, ChunkPos.getX(failedChunk), ChunkPos.getZ(failedChunk), failure);
                     failed = true;
                     discard();
@@ -555,17 +562,17 @@ public class EntityFalloutRain extends CompatEntity {
      * the two-pass apply carries between ticks.
      *
      * <p>Two passes, like both references: every cell is written into the chunk's sections first, and
-     * only then is each changed cell's neighbourhood notified. That ordering matters — the notify pass
+     * only then is each changed cell's neighbourhood notified. That ordering matters: the notify pass
      * runs {@code updateNeighbourShapes}, and the shapes it should see are the finished ones.
      */
     private static final class ChunkScan {
         final long chunkPos;
         final List<BlockWrite> stateWrites = new ArrayList<>();
         final List<FallingWrite> fallingWrites = new ArrayList<>();
-        final it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap stateWriteIndices =
-                new it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap();
-        final it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap fallingWriteIndices =
-                new it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap();
+        final Long2IntOpenHashMap stateWriteIndices =
+                new Long2IntOpenHashMap();
+        final Long2IntOpenHashMap fallingWriteIndices =
+                new Long2IntOpenHashMap();
         final List<BiomeWrite> biomes = new ArrayList<>();
         int duplicateStateWrites;
         int duplicateFallingMarkers;
@@ -631,23 +638,19 @@ public class EntityFalloutRain extends CompatEntity {
      * <p>Returns true when the chunk is completely finished; false when the tick's budget ran out
      * part-way, in which case the next tick resumes from where it stopped.
      *
-     * <p><b>Why not {@code Level.setBlock} per write.</b> That is what this did, and on a real blast it
-     * measured <b>27 conversions per millisecond</b> — 37 µs each, against 1,560/ms for the same call in
-     * a quiet benchmark. Per block it pays a chunk lookup, four heightmap updates, a POI lookup pair, a
-     * chunk-holder change mark, and a light-engine {@code checkBlock} that allocates a task and submits
-     * it to the chunk task dispatcher. All of that is per-<em>chunk</em> work being done a million times;
-     * a doomsday warhead does 932,217 terrain conversions and spent <b>35 s</b> on them.
+     * <p><b>Why not {@code Level.setBlock} per write.</b> Per block it pays a chunk lookup, four heightmap
+     * updates, a POI lookup pair, a chunk-holder change mark, and a light-engine {@code checkBlock} that
+     * allocates a task and submits it to the chunk task dispatcher. That is per-<em>chunk</em> work done a
+     * million times: a doomsday warhead does 932,217 terrain conversions, and a real blast ran at 37 µs each.
      *
-     * <p>So the writes go straight into the sections and the chunk is repaired once — the same split the
-     * crater uses ({@link ChunkCarver}) and the same one both references use for this sweep
-     * ({@code ChunkUtil.applyAndSwap} plus a per-chunk notify pass). What is <em>kept</em> is the
-     * per-block neighbour and shape notification, because both references keep it and it is what makes
-     * unsupported blocks pop and attached blocks react; it is simply no longer bundled with everything
-     * else.
+     * <p>So the writes go straight into the sections and the chunk is repaired once, the same split the
+     * crater uses ({@link ChunkCarver}) and both references use for this sweep ({@code ChunkUtil.applyAndSwap}
+     * plus a per-chunk notify pass). The per-block neighbour and shape notification is kept, because both
+     * references keep it and it makes unsupported blocks pop and attached blocks react.
      *
-     * <p>Two cells still take the slow path, exactly as in the references: anything involving a block
-     * entity (a raw section write would orphan it and leave its POI record behind) and the falling-block
-     * markers, which are entity spawns rather than writes.
+     * <p>Two cases still take the slow path, as in the references: anything involving a block entity (a raw
+     * section write would orphan it and leave its POI record behind) and the falling-block markers, which
+     * are entity spawns rather than writes.
      */
     private boolean applyWrites(ServerLevel server, ChunkScan scan, long deadline) {
         int cx = ChunkPos.getX(scan.chunkPos);
@@ -672,12 +675,10 @@ public class EntityFalloutRain extends CompatEntity {
         // Park rather than read through a chunk nobody has.
         //
         // The notify pass runs updateNeighborsAt, which reads the six blocks around each cell; on a chunk
-        // border one of those is in the next chunk, and Level.getBlockState there does not fail — it
-        // *generates*, synchronously, on this thread. The 3x3 claim above asks for the neighbourhood, but
-        // asking is not arriving, and a real blast measured **111 cells that ran ahead of it costing
-        // 24,508 ms** — 98% of the whole notify pass, at 220 ms a cell. So the pass does not begin until
-        // the neighbourhood is actually resident. This is what both references do: their workers park on
-        // a missing chunk instead of touching it.
+        // border one of those is in the next chunk, and Level.getBlockState there does not fail, it
+        // *generates* synchronously on this thread (about 220 ms a cell). The 3x3 claim above asks for the
+        // neighbourhood, but asking is not arriving, so the pass does not begin until it is resident. Both
+        // references do the same: their workers park on a missing chunk instead of touching it.
         if (!neighbourhoodResident(server, cx, cz)) {
             neighbourhoodParks++;
             lastApplyParked = true;
@@ -789,8 +790,8 @@ public class EntityFalloutRain extends CompatEntity {
      * whole chunk.
      *
      * <p>{@code onPlace} is called by hand here, because a section write skips it and setBlockState would
-     * have run it. {@link com.hbm.blocks.generic.BlockFallout} itself no longer needs it (1.7's ash has no
-     * tick, History §19ek-small), but other placed blocks keep their vanilla placement behaviour.
+     * have run it. {@link com.hbm.blocks.generic.BlockFallout} does not need it (1.7's ash has no tick),
+     * but other placed blocks keep their vanilla placement behaviour.
      */
     private boolean notifyPass(ServerLevel server, LevelChunk chunk, ChunkScan scan,
                                BlockPos.MutableBlockPos pos, long deadline, int cx, int cz) {
@@ -809,7 +810,7 @@ public class EntityFalloutRain extends CompatEntity {
             // The removal hook that UPDATE_NEIGHBORS would have run inside setBlockState, and onPlace,
             // which a section write skips.
             if (!oldState.is(newState.getBlock())) {
-                dev.golem.core.world.Compat.affectNeighborsAfterRemoval(server, pos, oldState);
+                Compat.affectNeighborsAfterRemoval(server, pos, oldState);
             }
             newState.onPlace(server, pos.immutable(), oldState, false);
             long afterPlace = System.nanoTime();
@@ -830,7 +831,7 @@ public class EntityFalloutRain extends CompatEntity {
             }
 
             if (BombConfig.falloutNeighbourUpdates) {
-                dev.golem.core.world.Compat.updateNeighborsAt(server, pos, newState.getBlock());
+                Compat.updateNeighborsAt(server, pos, newState.getBlock());
             }
             long afterNeighbours = System.nanoTime();
             msNeighbours += afterNeighbours - afterPlace;
@@ -851,7 +852,7 @@ public class EntityFalloutRain extends CompatEntity {
         if (scan.changedPos.isEmpty() && scan.biomesChanged) {
             // No block write will produce a packet for this chunk, but clients still need the new biome
             // container. This is the same logical-main-thread handoff as the full repair path below.
-            dev.golem.core.world.Compat.markUnsaved(chunk);
+            Compat.markUnsaved(chunk);
             Biomes.resend(server, chunk);
             return true;
         }
@@ -894,17 +895,15 @@ public class EntityFalloutRain extends CompatEntity {
 
         chunksToProcess = new LongArrayList(inner);
         outerChunksToProcess = new LongArrayList(outer);
-        // Nearest-first, so the fallout spreads outwards from the blast the way it should look. Row-major
-        // was tried and works, but it makes the conversion sweep across the landscape like a wipe, which
-        // reads as a bug even though it is not; a deep enough claim window makes the ordering's effect on
-        // neighbour coherence irrelevant, so this one is chosen for how it looks.
+        // Nearest-first, so the fallout spreads outwards from the blast. A row-major order would work,
+        // but the conversion would sweep across the landscape like a wipe.
         sortByDistance(chunksToProcess, getX(), getZ());
         sortByDistance(outerChunksToProcess, getX(), getZ());
     }
 
     /**
      * Sorts a chunk list <b>furthest first</b>, because {@link #nextUndispatched} hands work out from the
-     * end of the list — so the sweep converts nearest-first and the fallout spreads outwards.
+     * end of the list, so the sweep converts nearest-first and the fallout spreads outwards.
      */
     private static void sortByDistance(LongArrayList chunks, double centreX, double centreZ) {
         long[] raw = chunks.toLongArray();
@@ -919,17 +918,17 @@ public class EntityFalloutRain extends CompatEntity {
         }
         Integer[] order = new Integer[raw.length];
         for (int i = 0; i < raw.length; i++) order[i] = i;
-        java.util.Arrays.sort(order, (a, b) -> Long.compare(keys[a], keys[b]));
+        Arrays.sort(order, (a, b) -> Long.compare(keys[a], keys[b]));
         chunks.clear();
         for (int i : order) chunks.add(raw[i]);
     }
 
-    // ------------------------------------------------------------------ worker side (pool threads)
+    // Worker side (pool threads)
 
     /**
      * Scans one chunk into an ordered write list. Runs on a pool thread: every read is confined to the
      * given {@link LevelChunk} (block states, the chunk-local heightmap, chunk-as-BlockGetter shape
-     * queries) — never {@code Level}/{@code ServerLevel}, whose chunk access is main-thread-guarded.
+     * queries), never {@code Level}/{@code ServerLevel}, whose chunk access is main-thread-guarded.
      * Biome decisions are deferred because biome containers are not worker-safe.
      */
     private void scanChunk(ChunkScan scan, LevelChunk chunk, boolean clampToRadius, double ex, double ez, int scale) {
@@ -977,7 +976,7 @@ public class EntityFalloutRain extends CompatEntity {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         BlockPos.MutableBlockPos posUp = new BlockPos.MutableBlockPos();
 
-        // Start at the surface, not the sky top (chunk-local heightmap; +1 = Level.getHeight parity).
+        // Start at the surface, not the sky top (chunk-local heightmap; +1 matches Level.getHeight).
         int top = Math.min(maxY, chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x & 15, z & 15) + 1);
         // 1.7 wrote each change into the world at once, so the next (lower) cell saw the column as already
         // transformed: ash lands on the ground under a canopy the sweep just burned away. The scan only
@@ -997,13 +996,13 @@ public class EntityFalloutRain extends CompatEntity {
 
             // 1.7 stomp:164-167: a volcano core turns into its radioactive twin (same behaviour) and the
             // column walk carries on below it without counting it
-            if (block instanceof com.hbm.blocks.bomb.BlockVolcano volcano && !volcano.radioactive) {
+            if (block instanceof BlockVolcano volcano && !volcano.radioactive) {
                 scan.addStateWrite(pos.asLong(),
-                        com.hbm.blocks.ModTerrainBlocks.volcanoCore(volcano.mode.id(true)).defaultBlockState());
+                        ModTerrainBlocks.volcanoCore(volcano.mode.id(true)).defaultBlockState());
                 continue;
             }
 
-            // fallout ash layer on the surface — chance peaks (0.1) at 70% of the scale
+            // fallout ash layer on the surface; chance peaks (0.1) at 70% of the scale
             BlockState stateUp = null;
             int upY = y + 1;
             boolean ash = false;
@@ -1017,14 +1016,14 @@ public class EntityFalloutRain extends CompatEntity {
                 ash = chance >= rand.nextDouble();
             }
 
-            // fires on flammables inside 65%; 1.7 had already set the ash, so the cell was no longer air
+            // fires on flammables inside 65%; 1.7 had already set the ash, so the cell was not air
             if (distPercent < 65 && ((FireBlockAccessor) Blocks.FIRE).hbm$getBurnOdds(state) > 0 && stateUp != null) {
                 if (!ash && stateUp.isAir() && rand.nextInt(5) == 0) {
                     scan.addStateWrite(BlockPos.asLong(x, upY, z), Blocks.FIRE.defaultBlockState());
                 }
             }
 
-            // the transform table — first matching entry wins
+            // the transform table: first matching entry wins
             boolean transformed = false;
             BlockState effective = state;
             for (FalloutEntry entry : entries) {
@@ -1040,7 +1039,7 @@ public class EntityFalloutRain extends CompatEntity {
             lastY = y;
             lastEffective = effective;
             // shift the remembered column down one cell
-            if (effectiveTopY != y + 1) java.util.Arrays.fill(effectiveAbove, null);
+            if (effectiveTopY != y + 1) Arrays.fill(effectiveAbove, null);
             System.arraycopy(effectiveAbove, 0, effectiveAbove, 1, effectiveAbove.length - 1);
             effectiveAbove[0] = effective;
             effectiveTopY = y;
@@ -1050,8 +1049,8 @@ public class EntityFalloutRain extends CompatEntity {
             // falling blocks (no drops). 1.7 tests the ORIGINAL block's hardness (stone bricks' 6
             // resistance as the bar) and skips multiblock parts, then drops what is now in the world at
             // y .. y + depth, i.e. the transformed cells. The port had restricted this to untransformed cells.
-            if (distPercent < 65 && y > bottomY && !(block instanceof com.hbm.blocks.multiblock.BlockMultiblockCore)
-                    && !(block instanceof com.hbm.blocks.multiblock.BlockMultiblockCell)) {
+            if (distPercent < 65 && y > bottomY && !(block instanceof BlockMultiblockCore)
+                    && !(block instanceof BlockMultiblockCell)) {
                 float hardnessHere = state.getDestroySpeed(chunk, pos);
                 if (hardnessHere >= 0.0F && hardnessHere <= stonebrickRes) {
                     BlockState below = chunk.getBlockState(posUp.set(x, y - 1, z));
@@ -1084,7 +1083,7 @@ public class EntityFalloutRain extends CompatEntity {
             // collision shape alone also admits leaves (walkable in modern Minecraft, not a normal cube in 1.7), so
             // three leaves the falloff band had spared stopped the column above the logs under them
             if (!transformed && state.isCollisionShapeFullBlock(chunk, pos)
-                    && dev.golem.core.world.Compat.isSolidRender(state, chunk, pos) && !state.isSignalSource()) solidDepth++;
+                    && Compat.isSolidRender(state, chunk, pos) && !state.isSignalSource()) solidDepth++;
         }
     }
 
@@ -1094,9 +1093,9 @@ public class EntityFalloutRain extends CompatEntity {
         claimedChunks.clear();
         claimRefs.clear();
         if (level() instanceof ServerLevel server) {
-            for (it.unimi.dsi.fastutil.longs.LongIterator it = heldChunks.iterator(); it.hasNext(); ) {
+            for (LongIterator it = heldChunks.iterator(); it.hasNext(); ) {
                 long packed = it.nextLong();
-                dev.golem.core.world.Chunks.releaseForLoading(server,
+                Chunks.releaseForLoading(server,
                         ChunkPos.getX(packed), ChunkPos.getZ(packed));
             }
         }
@@ -1104,7 +1103,7 @@ public class EntityFalloutRain extends CompatEntity {
         super.remove(reason);
     }
 
-    // ------------------------------------------------------------------ NBT
+    // NBT
 
     @Override
     protected void loadData(DataIn input) {

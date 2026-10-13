@@ -2,17 +2,24 @@ package com.hbm.tileentity.machine.soyuz;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.api.item.IDesignatorItem;
+import com.hbm.client.ClientEffects;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.missile.EntitySoyuz;
 import com.hbm.inventory.container.ContainerSoyuzLauncher;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.tank.CanisterBays;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.items.ModItems;
+import com.hbm.items.ModSatelliteItems;
 import com.hbm.items.special.ItemSoyuz;
 import com.hbm.blocks.machine.soyuz.SoyuzLauncher;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.sound.AudioSystem;
+import com.hbm.sound.ModPowerGenSounds;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -29,6 +36,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -43,8 +51,7 @@ import java.util.List;
  *
  * <p>1.7's {@code canLaunch} tests {@code hasRocket()} twice and never {@code hasOxy()}, so a launch needs
  * kerosene but not oxygen, while liftoff still drains both tanks. Clamped at zero here; 1.7's {@code FluidTank.setFill}
- * does not clamp, so a 1.7 launch short of oxygen left a negative oxygen fill (open port decision, 2026-10-12).
- * Ported as found. Nothing may be piped into the inventory (1.7 {@code isItemValidForSlot} is the base's false).
+ * does not clamp, so a 1.7 launch short of oxygen left a negative oxygen fill. Nothing may be piped into the inventory (1.7 {@code isItemValidForSlot} is the base's false).
  */
 public class TileEntitySoyuzLauncher extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardReceiverMK2 {
@@ -96,8 +103,8 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
                 this.trySubscribe(tanks[1].getTankType(), level, port);
             }
         }
-        com.hbm.inventory.fluid.tank.CanisterBays.process(inventory, tanks[0], 4, 5, before -> { });
-        com.hbm.inventory.fluid.tank.CanisterBays.process(inventory, tanks[1], 6, 7, before -> { });
+        CanisterBays.process(inventory, tanks[0], 4, 5, before -> { });
+        CanisterBays.process(inventory, tanks[1], 6, 7, before -> { });
         power = Library.chargeTEFromItems(inventory, SLOT_BATTERY, power, maxPower);
         rocketType = rocketType();
 
@@ -107,7 +114,7 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
         } else if (countdown > 0) {
             countdown--;
             if (countdown % 100 == 0 && countdown > 0) {
-                level.playSound(null, getBlockPos(), com.hbm.sound.ModPowerGenSounds.ALARM_HATCH.get(), SoundSource.BLOCKS, 100F, 1.1F);
+                level.playSound(null, getBlockPos(), ModPowerGenSounds.ALARM_HATCH.get(), SoundSource.BLOCKS, 100F, 1.1F);
             }
         } else {
             liftOff(level);
@@ -130,7 +137,7 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
         } else if (launcher.countdown > 0) {
             if (launcher.audio == null || !launcher.audio.isPlaying()) {
                 if (launcher.audio != null) launcher.audio.stopSound();
-                launcher.audio = com.hbm.sound.AudioSystem.getLoopedSound(ModSounds.SOYUZ_READY.get(), SoundSource.BLOCKS,
+                launcher.audio = AudioSystem.getLoopedSound(ModSounds.SOYUZ_READY.get(), SoundSource.BLOCKS,
                         pos.getX(), pos.getY(), pos.getZ(), 2.0F, 100F, 1.0F, 20);
                 if (launcher.audio != null) {
                     launcher.audio.updateVolume(100);
@@ -141,11 +148,11 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
             launcher.countdown--;
         }
 
-        List<EntitySoyuz> entities = level.getEntitiesOfClass(EntitySoyuz.class, new net.minecraft.world.phys.AABB(
+        List<EntitySoyuz> entities = level.getEntitiesOfClass(EntitySoyuz.class, new AABB(
                 pos.getX() - 0.5, pos.getY(), pos.getZ() - 0.5, pos.getX() + 1.5, pos.getY() + 10, pos.getZ() + 1.5));
 
         if (!entities.isEmpty()) {
-            com.hbm.client.ClientEffects.spawnSmokeShockRand(level, pos.getX() + 0.5, pos.getY() - 3, pos.getZ() + 0.5,
+            ClientEffects.spawnSmokeShockRand(level, pos.getX() + 0.5, pos.getY() - 3, pos.getZ() + 0.5,
                     50, level.getRandom().nextGaussian() * 3 + 6);
         }
     }
@@ -265,7 +272,7 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
 
     private net.minecraft.world.phys.@Nullable Vec3 designatorTarget() {
         ItemStack stack = inventory.getStackInSlot(SLOT_DESIGNATOR);
-        if (level == null || !(stack.getItem() instanceof com.hbm.api.item.IDesignatorItem designator)) return null;
+        if (level == null || !(stack.getItem() instanceof IDesignatorItem designator)) return null;
         return designator.getCoords(level, stack, getBlockPos());
     }
 
@@ -281,7 +288,7 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
     public int designator() {
         if (mode == 0) return 0;
         ItemStack stack = inventory.getStackInSlot(SLOT_DESIGNATOR);
-        if (level != null && stack.getItem() instanceof com.hbm.api.item.IDesignatorItem designator
+        if (level != null && stack.getItem() instanceof IDesignatorItem designator
                 && designator.isReady(level, stack, getBlockPos())) return 2;
         return 1;
     }
@@ -300,9 +307,9 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
     public int orbital() {
         if (mode == 1) return 0;
         ItemStack sat = inventory.getStackInSlot(SLOT_SATELLITE);
-        if (sat.is(com.hbm.items.ModSatelliteItems.sat_gerald.get())
-                || sat.is(com.hbm.items.ModSatelliteItems.sat_lunar_miner.get())) {
-            if (inventory.getStackInSlot(SLOT_ORBITAL).is(com.hbm.items.ModItems.missile_soyuz_lander.get())) return 2;
+        if (sat.is(ModSatelliteItems.sat_gerald.get())
+                || sat.is(ModSatelliteItems.sat_lunar_miner.get())) {
+            if (inventory.getStackInSlot(SLOT_ORBITAL).is(ModItems.missile_soyuz_lander.get())) return 2;
             return 1;
         }
         return 0;

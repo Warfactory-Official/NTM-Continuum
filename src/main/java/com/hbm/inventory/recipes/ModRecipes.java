@@ -1,8 +1,11 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.Constants;
+import com.hbm.inventory.FluidContainerRegistry;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.world.ComponentShapedRecipe;
+import dev.golem.core.world.ComponentSmeltingRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import com.hbm.registration.Reg;
@@ -22,17 +25,17 @@ public final class ModRecipes {
     public static final RegistryObject<RecipeSerializer<ComponentCopyShapelessRecipe>> COMPONENT_COPY_SHAPELESS =
             REG.register(Registries.RECIPE_SERIALIZER, "component_copy_shapeless", () -> ComponentCopyShapelessRecipe.SERIALIZER);
 
-    public static final RegistryObject<RecipeSerializer<dev.golem.core.world.ComponentShapedRecipe>> COMPONENT_SHAPED =
-            REG.register(Registries.RECIPE_SERIALIZER, "component_shaped", () -> dev.golem.core.world.ComponentShapedRecipe.SERIALIZER);
+    public static final RegistryObject<RecipeSerializer<ComponentShapedRecipe>> COMPONENT_SHAPED =
+            REG.register(Registries.RECIPE_SERIALIZER, "component_shaped", () -> ComponentShapedRecipe.SERIALIZER);
 
-    public static final RegistryObject<RecipeSerializer<dev.golem.core.world.ComponentSmeltingRecipe>> COMPONENT_SMELTING =
-            REG.register(Registries.RECIPE_SERIALIZER, "component_smelting", () -> dev.golem.core.world.ComponentSmeltingRecipe.SERIALIZER);
+    public static final RegistryObject<RecipeSerializer<ComponentSmeltingRecipe>> COMPONENT_SMELTING =
+            REG.register(Registries.RECIPE_SERIALIZER, "component_smelting", () -> ComponentSmeltingRecipe.SERIALIZER);
 
     /** 1.7 ShapelessOreRecipe with metadata/NBT, tag and getDict fluid-container ingredients. */
     public static final RegistryObject<RecipeSerializer<ComponentShapelessRecipe>> COMPONENT_SHAPELESS =
             REG.register(Registries.RECIPE_SERIALIZER, "component_shapeless", () -> ComponentShapelessRecipe.SERIALIZER);
 
-    // 1.7 IRecipe handlers and the Java-decided crafting recipes (History §19ej-1b)
+    // 1.7 IRecipe handlers and the Java-decided crafting recipes
     public static final RegistryObject<RecipeSerializer<GrenadeCraftingRecipe>> GRENADE_UNIVERSAL =
             REG.register(Registries.RECIPE_SERIALIZER, "grenade_universal", () -> GrenadeCraftingRecipe.SERIALIZER);
     public static final RegistryObject<RecipeSerializer<CargoShellCraftingRecipe>> AMMO_ARTY_CARGO =
@@ -50,6 +53,6 @@ public final class ModRecipes {
 
     public static void init() {
         // the container<amount><fluid> dictionary behind every fluid ingredient
-        com.hbm.inventory.FluidContainerRegistry.register();
+        FluidContainerRegistry.register();
     }
 }

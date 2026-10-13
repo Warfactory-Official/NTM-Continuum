@@ -1,5 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerSolidifier;
 import com.hbm.tileentity.machine.oil.TileEntityMachineSolidifier;
@@ -9,13 +12,13 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
- * Screen for the solidifier — 1.7.10 {@code GUISolidifier} ({@code processing/gui_solidifier.png}, 176×204):
+ * Screen for the solidifier: 1.7.10 {@code GUISolidifier} ({@code processing/gui_solidifier.png}, 176×204):
  * power bar 16×52 at (134,18) (fill u=176), progress arrow up to 42×35 at (42,17) (u=192), the
  * "powered" LED 9×12 at (138,4) (u=176,v=52), tank 16×52 at x=35 (bottom y=88).
  */
-public class GUISolidifier extends dev.golem.core.gui.CompatContainerScreen<ContainerSolidifier> implements IUpgradeInfoProviderSource {
+public class GUISolidifier extends CompatContainerScreen<ContainerSolidifier> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_solidifier.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_solidifier.png");
 
     public GUISolidifier(ContainerSolidifier menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 204);
@@ -59,7 +62,7 @@ public class GUISolidifier extends dev.golem.core.gui.CompatContainerScreen<Cont
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getSolidifier();
     }
 }

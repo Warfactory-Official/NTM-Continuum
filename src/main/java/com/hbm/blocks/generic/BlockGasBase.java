@@ -2,6 +2,7 @@ package com.hbm.blocks.generic;
 
 import com.hbm.items.ModArmorSetBItems;
 import com.hbm.particle.helper.HbmEffectNT;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /** Shared invisible-cell behaviour for the old {@code BlockGasBase} family. */
-public abstract class BlockGasBase extends dev.golem.core.world.CompatBlock {
+public abstract class BlockGasBase extends CompatBlock {
 
     /** 1.7 {@code BlockGasFlammable}'s {@code super(0.8F, 0.8F, 0.2F)}; the port's flammable gas is no BlockGasBase. */
     public static final float[] FLAMMABLE_COLOR = {0.8F, 0.8F, 0.2F};
@@ -112,7 +113,7 @@ public abstract class BlockGasBase extends dev.golem.core.world.CompatBlock {
         return true;
     }
 
-    /** Vanilla no longer exposes the old block-level isAir override; keep its outgas meaning locally. */
+    /** Vanilla does not expose a block-level isAir override, so the outgas meaning is kept locally. */
     protected static boolean isAirLike(BlockState state) {
         return state.isAir() || state.getBlock() instanceof BlockGasBase;
     }

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.inventory.fluid.FluidType;
@@ -15,6 +16,7 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.core.Direction;
@@ -54,7 +56,7 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
                 drain.tank.setFill(drain.tank.getFill() - toSpill);
                 FT_Polluting.pollute(level, pos, drain.tank.getTankType(), FluidReleaseType.SPILL, toSpill);
                 // hbm-space FT_Gaseous.release: a drained gas goes into the planet's air (com.hbm.api.environment)
-                com.hbm.api.environment.Environment.releaseGas(level, pos, drain.tank.getTankType(), toSpill);
+                Environment.releaseGas(level, pos, drain.tank.getTankType(), toSpill);
 
                 if (toSpill >= 100 && level.getRandom().nextInt(20) == 0
                         && FluidCombustion.isLiquidAndViscous(drain.tank.getTankType())
@@ -65,7 +67,7 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
                     Vec3 end = start.add(level.getRandom().nextGaussian() * 5D, -25D,
                             level.getRandom().nextGaussian() * 5D);
                     // Core's clip: a null-entity ClipContext throws on 26.1 (CollisionContext.of(null)).
-                    BlockHitResult hit = dev.golem.core.world.Compat.clip(level, start, end,
+                    BlockHitResult hit = Compat.clip(level, start, end,
                             ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE);
 
                     if (hit.getType() == HitResult.Type.BLOCK && hit.getDirection() == Direction.UP) {

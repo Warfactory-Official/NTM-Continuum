@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerBombMulti;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -15,7 +16,7 @@ import net.minecraft.world.entity.player.Inventory;
  */
 public class GUIBombMulti extends CompatContainerScreen<ContainerBombMulti> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/weapon/bomb_generic.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/weapon/bomb_generic.png");
 
     public GUIBombMulti(ContainerBombMulti menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 166);

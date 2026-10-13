@@ -22,13 +22,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.material.Fluid;
 
 /**
  * 1.7's per-port roles ({@link PortClaims}): a machine joins a net as a provider only through the ports it calls
  * {@code tryProvide} at, and as a receiver only through the ports it calls {@code trySubscribe} at, every tick. The
- * port's nets find machines by their faces, which once gave every connectable face both roles, so a machine's output
- * could leave through an input port and an input could be fed through an output port (playtest 2026-10-12, "fluid can
- * be stolen from machines"). Each leak test has a positive control on the right port, so a dead net cannot pass it.
+ * port's nets find machines by their faces, which would give every connectable face both roles, so a machine's
+ * output could leave through an input port and an input could be fed through an output port. Each leak test has a
+ * positive control on the right port, so a dead net cannot pass it.
  */
 public final class PortClaimGameTests {
 
@@ -127,7 +128,7 @@ public final class PortClaimGameTests {
             DirPos steam = turbine.getSteamPos();
             BlockPos waterCell = water.getPos().relative(water.getDir().getOpposite().toDirection());
             BlockPos steamCell = steam.getPos().relative(steam.getDir().getOpposite().toDirection());
-            net.minecraft.world.level.material.Fluid hot = Fluids.HOTSTEAM.getFluid();
+            Fluid hot = Fluids.HOTSTEAM.getFluid();
 
             FluidView atInlet = FluidCompat.find(level, waterCell, water.getDir().toDirection());
             long stolen = atInlet == null ? 0 : atInlet.extract(hot, 1_000, false);
@@ -155,7 +156,7 @@ public final class PortClaimGameTests {
      */
     private static void factoryCoolant(GameTestHelper helper) {
         BlockPos core = new BlockPos(6, 1, 6);
-        FoldedTestSupport.assemble(helper, com.hbm.assemblyfactory.AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get(), core);
+        FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_assembly_factory.get(), core);
         TileEntityMachineAssemblyFactory factory = GameTestHelpers.blockEntity(helper, core, TileEntityMachineAssemblyFactory.class);
         DirPos cool = factory.getCoolPos()[0];
         TileEntityBarrel feed = ductAndBarrel(helper, cool, Fluids.WATER, 2, 10_000);
@@ -174,7 +175,7 @@ public final class PortClaimGameTests {
     private static void batteryModes(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos rel = new BlockPos(2, 2, 2);
-        helper.setBlock(rel, com.hbm.blocks.machine.ModMachineBlocks.machine_battery.get().defaultBlockState());
+        helper.setBlock(rel, ModMachineBlocks.machine_battery.get().defaultBlockState());
         TileEntityMachineBattery battery = GameTestHelpers.blockEntity(helper, rel, TileEntityMachineBattery.class);
         BlockPos pos = helper.absolutePos(rel);
         long east = pos.east().asLong();

@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * 1.7 {@code BlockHangingVine} ({@code vine_phosphor}): glowing vines that hang from a solid face above
  * (or from more vine), halve the motion of anything inside them and cancel its fall distance. The old
- * renderer picked its icon from the block below — {@code part} carries the same choice: {@code ground}
+ * renderer picked its icon from the block below. {@code part} carries the same choice: {@code ground}
  * when the block below has a solid top, {@code middle} when it is more vine, {@code hang} otherwise.
  * Drops itself (the old {@code onSheared} placeholder also returned the block).
  */

@@ -1,5 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineChemicalPlant;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -8,6 +11,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalPlant;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -23,11 +27,11 @@ import java.util.Optional;
  * LEDs, the recipe-selector button with the selected/template-folder icon, and input ghost slots) and adds
  * six fluid tank bars (3 input on the left, 3 output on the right) drawn like {@link GUIMachineFluidTank}
  * (the fluid's own 16×16 sprite tiled into the fill height, or a solid colour fallback). Reads the live
- * client BlockEntity (synced via the BufPacket). Faithful to the 1.12.2 {@code GUIMachineChemicalPlant}.
+ * client BlockEntity (synced via the BufPacket). Layout follows the 1.12.2 {@code GUIMachineChemicalPlant}.
  */
-public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineChemicalPlant> implements IUpgradeInfoProviderSource {
+public class GUIMachineChemicalPlant extends CompatContainerScreen<ContainerMachineChemicalPlant> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_chemplant.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_chemplant.png");
     private static final int BTN_X = 7, BTN_Y = 125, BTN_W = 18, BTN_H = 18;
     // Tank bars: 16 wide × 34 tall, top at y=18 (so bottom at y=52).
     private static final int TANK_TOP = 18, TANK_W = 16, TANK_H = 34;
@@ -108,17 +112,17 @@ public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerS
                     List.of(Component.translatable("gui.recipe.setRecipe").withStyle(ChatFormatting.YELLOW)), Optional.empty(), mouseX, mouseY);
             return;
         }
-        // Fluid tank hover → name + mB.
+        // Fluid tank hover: name and mB.
         for (int i = 0; i < 3; i++) {
             if (in17(8 + i * 18, TANK_TOP, TANK_W, TANK_H, mouseX, mouseY)) { tankTooltip(graphics, te.inputTanks[i], mouseX, mouseY); return; }
             if (in17(80 + i * 18, TANK_TOP, TANK_W, TANK_H, mouseX, mouseY)) { tankTooltip(graphics, te.outputTanks[i], mouseX, mouseY); return; }
         }
-        // (No "Acceptable Upgrades" info panel here — the 1.12.2 chemical plant GUI has none; the upgrade
+        // (No "Acceptable Upgrades" info panel here: the 1.12.2 chemical plant GUI has none; the upgrade
         // item's own tooltip [ItemMachineUpgrade + IUpgradeInfoProviderSource] shows this machine's numbers.)
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getChemplant();
     }
 
@@ -134,7 +138,7 @@ public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerS
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         TileEntityMachineChemicalPlant te = this.menu.getChemplant();
         if (te != null && in17(BTN_X, BTN_Y, BTN_W, BTN_H, (int) event.x(), (int) event.y())) {
             GUIScreenRecipeSelector.openSelector(ChemicalPlantRecipes.INSTANCE, te.getBlockPos(),

@@ -1,16 +1,26 @@
 package com.hbm.gametest;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.storage.MachineBatteryREDD;
 import com.hbm.blocks.machine.storage.ModBatteryBlocks;
 import com.hbm.inventory.container.ContainerBatteryREDD;
+import com.hbm.items.ModBatteryItems;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.machine.ItemBatteryPack;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.storage.TileEntityBatteryREDD;
+import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.net.GolemBuffers;
+import io.netty.buffer.Unpooled;
+import java.util.Arrays;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
@@ -49,10 +59,10 @@ public final class BatteryReddGameTests {
             if (helper.getLevel().getBlockState(cell).getBlock() != block) continue;
             cells++;
             if (MultiblockSurface.carriesPassive(helper.getLevel(), cell,
-                    com.hbm.blocks.multiblock.BlockMultiblockCore.PASSIVE_POWER_IN)) extras++;
+                    BlockMultiblockCore.PASSIVE_POWER_IN)) extras++;
         }
         helper.assertTrue(cells == 45 && extras == 6, "FEnSU occupancy or six extra port cells changed");
-        helper.assertTrue(java.util.Arrays.equals(block.getDimensions(), new int[]{9, 0, 2, 2, 4, 4})
+        helper.assertTrue(Arrays.equals(block.getDimensions(), new int[]{9, 0, 2, 2, 4, 4})
                         && block.getOffset() == 2, "FEnSU dimensions/offset changed");
 
         TileEntityBatteryREDD battery = (TileEntityBatteryREDD) helper.getLevel().getBlockEntity(core);
@@ -112,11 +122,11 @@ public final class BatteryReddGameTests {
         original.delta = BigInteger.valueOf(-987654321L);
         original.redLow = TileEntityBatteryREDD.mode_buffer;
         original.redHigh = TileEntityBatteryREDD.mode_none;
-        original.priority = com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority.HIGH;
+        original.priority = IEnergyReceiverMK2.ConnectionPriority.HIGH;
         original.muffled = true;
 
-        RegistryFriendlyByteBuf buffer = dev.golem.core.net.GolemBuffers.wrap(
-                io.netty.buffer.Unpooled.buffer(), helper.getLevel());
+        RegistryFriendlyByteBuf buffer = GolemBuffers.wrap(
+                Unpooled.buffer(), helper.getLevel());
         original.serialize(buffer);
         TileEntityBatteryREDD copy = new TileEntityBatteryREDD(BlockPos.ZERO,
                 ModBatteryBlocks.machine_battery_redd.get().defaultBlockState());
@@ -134,7 +144,7 @@ public final class BatteryReddGameTests {
         helper.assertTrue(ModDataComponents.batteryReddMuffled(dropped),
                 "FEnSU dropped item did not retain its muffled state");
 
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         BlockPos clicked = helper.absolutePos(new BlockPos(18, 1, 3));
         player.setYRot(0F);
         player.setPos(clicked.getX() - 4D, clicked.getY(), clicked.getZ() - 4D);
@@ -149,31 +159,31 @@ public final class BatteryReddGameTests {
 
     public static void menuAndItemContract(GameTestHelper helper) {
         TileEntityBatteryREDD battery = place(helper, new BlockPos(3, 1, 3));
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ContainerBatteryREDD menu = new ContainerBatteryREDD(0, player.getInventory(), battery);
         helper.assertTrue(menu.slots.size() == 38
                         && menu.slots.get(0).x == 26 && menu.slots.get(0).y == 53
                         && menu.slots.get(1).x == 80 && menu.slots.get(1).y == 53
                         && menu.slots.get(2).x == 8 && menu.slots.get(2).y == 99,
                 "FEnSU menu coordinates or slot count changed");
-        ItemStack batteryItem = new ItemStack(com.hbm.items.ModBatteryItems.PACKS.get(
-                com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack.BATTERY_QUANTUM).get());
+        ItemStack batteryItem = new ItemStack(ModBatteryItems.PACKS.get(
+                ItemBatteryPack.EnumBatteryPack.BATTERY_QUANTUM).get());
         helper.assertTrue(menu.slots.get(0).mayPlace(batteryItem) && menu.slots.get(1).mayPlace(batteryItem),
                 "FEnSU slots must accept battery items");
-        helper.assertTrue(battery.getSlotsForFace(net.minecraft.core.Direction.NORTH).length == 0
-                        && !battery.canPlaceItemThroughFace(0, batteryItem, net.minecraft.core.Direction.NORTH)
-                        && !battery.canTakeItemThroughFace(1, batteryItem, net.minecraft.core.Direction.NORTH),
+        helper.assertTrue(battery.getSlotsForFace(Direction.NORTH).length == 0
+                        && !battery.canPlaceItemThroughFace(0, batteryItem, Direction.NORTH)
+                        && !battery.canTakeItemThroughFace(1, batteryItem, Direction.NORTH),
                 "FEnSU must not expose its GUI-only slots to sided automation");
         helper.assertTrue(menu.clickMenuButton(player, 0) && battery.redLow == TileEntityBatteryREDD.mode_buffer
                         && menu.clickMenuButton(player, 1) && battery.redHigh == TileEntityBatteryREDD.mode_none
                         && menu.clickMenuButton(player, 2)
-                        && battery.priority == com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority.NORMAL,
+                        && battery.priority == IEnergyReceiverMK2.ConnectionPriority.NORMAL,
                 "FEnSU mode/priority buttons changed");
         helper.succeed();
     }
 
     public static void itemModels(GameTestHelper helper) {
-        // FEnSU and BAT9000 follow 1.7's raw ItemRenderLibrary chain since icon-P2 (2026-10-01)
+        // FEnSU and BAT9000 follow 1.7's raw ItemRenderLibrary chain
         assertItemModel(helper, "machine_fensu", "hbm:models/machines/fensu.obj",
                 "hbm:textures/models/machines/fensus/fensu_light_blue.png", 1.0D, 0D, false, null, true);
         assertItemModel(helper, "machine_bigasstank", "hbm:models/machines/bigasstank.obj",
@@ -215,7 +225,7 @@ public final class BatteryReddGameTests {
         }
     }
 
-    private static boolean contains(com.google.gson.JsonArray values, String value) {
+    private static boolean contains(JsonArray values, String value) {
         if (values == null) return false;
         for (var element : values) if (value.equals(element.getAsString())) return true;
         return false;

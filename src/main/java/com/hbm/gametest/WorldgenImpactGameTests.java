@@ -3,6 +3,7 @@ package com.hbm.gametest;
 import com.hbm.Constants;
 import com.hbm.blocks.ModDecoContent;
 import com.hbm.blocks.ModFalloutBlocks;
+import com.hbm.blocks.generic.BlockDepth;
 import com.hbm.config.RadiationConfig;
 import com.hbm.config.WorldConfig;
 import com.hbm.handler.EntityEffectHandler;
@@ -16,12 +17,17 @@ import com.hbm.world.feature.LegacyPerlinNoise;
 import com.hbm.world.feature.OreLayer3DFeature;
 import com.hbm.world.feature.SchistStratumFeature;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.registry.Entities;
 import dev.golem.core.world.Biomes;
 import dev.golem.core.world.Spawns;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.block.Blocks;
@@ -31,7 +37,7 @@ import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Fix wave phase 6 (History §19ej-6): 1.7.10 worldgen formulas, Tom's impact aftermath and the ambient radiation,
+ * 1.7.10 worldgen formulas, Tom's impact aftermath and the ambient radiation,
  * each against values computed by hand from the 1.7 source.
  */
 public final class WorldgenImpactGameTests {
@@ -106,7 +112,7 @@ public final class WorldgenImpactGameTests {
         BlockState mycelium = ModFalloutBlocks.waste_mycelium.get().defaultBlockState();
         helper.assertTrue(earth.getDestroySpeed(helper.getLevel(), BlockPos.ZERO) == 0.6F, "waste earth hardness 0.6");
         helper.assertTrue(mycelium.getLightEmission() == 15, "waste mycelium light 15 (1.7 setLightLevel(1F))");
-        helper.assertTrue(com.hbm.blocks.generic.BlockDepth.DEPTH_TOOL_PROGRESS == (float) (1D / 50D), "depth tool 1/50");
+        helper.assertTrue(BlockDepth.DEPTH_TOOL_PROGRESS == (float) (1D / 50D), "depth tool 1/50");
         helper.succeed();
     }
 
@@ -150,8 +156,8 @@ public final class WorldgenImpactGameTests {
         ServerLevel level = helper.getLevel();
         TomSaveData data = TomSaveData.get(level);
         boolean before = data.impact;
-        Mob cow = dev.golem.core.registry.Entities.createDetached(EntityType.COW, level);
-        Mob chicken = dev.golem.core.registry.Entities.createDetached(EntityType.CHICKEN, level);
+        Mob cow = Entities.createDetached(EntityType.COW, level);
+        Mob chicken = Entities.createDetached(EntityType.CHICKEN, level);
         try {
             data.impact = false;
             helper.assertTrue(!ModEventHandlerImpact.denySpawn(cow, level, Spawns.Reason.NATURAL), "no impact, no veto");
@@ -181,31 +187,31 @@ public final class WorldgenImpactGameTests {
         TomSaveData data = TomSaveData.get(level);
         boolean before = data.impact;
         BlockPos at = helper.absolutePos(new BlockPos(2, 3, 2));
-        java.util.List<net.minecraft.world.entity.Entity> spawned = new java.util.ArrayList<>();
+        List<Entity> spawned = new ArrayList<>();
         try {
             data.impact = true;
-            helper.assertTrue(!added(level, spawned, EntityType.PILLAGER.spawn(level, at, net.minecraft.world.entity.EntitySpawnReason.PATROL)),
+            helper.assertTrue(!added(level, spawned, EntityType.PILLAGER.spawn(level, at, EntitySpawnReason.PATROL)),
                     "a patrol pillager must be refused after the impact");
-            helper.assertTrue(!added(level, spawned, EntityType.WANDERING_TRADER.spawn(level, at, net.minecraft.world.entity.EntitySpawnReason.EVENT)),
+            helper.assertTrue(!added(level, spawned, EntityType.WANDERING_TRADER.spawn(level, at, EntitySpawnReason.EVENT)),
                     "a wandering trader must be refused after the impact");
-            helper.assertTrue(!added(level, spawned, EntityType.TRADER_LLAMA.spawn(level, at, net.minecraft.world.entity.EntitySpawnReason.EVENT)),
+            helper.assertTrue(!added(level, spawned, EntityType.TRADER_LLAMA.spawn(level, at, EntitySpawnReason.EVENT)),
                     "a trader llama must be refused after the impact");
-            helper.assertTrue(!added(level, spawned, EntityType.PHANTOM.spawn(level, at, net.minecraft.world.entity.EntitySpawnReason.NATURAL)),
+            helper.assertTrue(!added(level, spawned, EntityType.PHANTOM.spawn(level, at, EntitySpawnReason.NATURAL)),
                     "a phantom (0.9 wide) must be refused after the impact");
-            helper.assertTrue(added(level, spawned, EntityType.PILLAGER.spawn(level, at, net.minecraft.world.entity.EntitySpawnReason.EVENT)),
+            helper.assertTrue(added(level, spawned, EntityType.PILLAGER.spawn(level, at, EntitySpawnReason.EVENT)),
                     "a raid pillager (EVENT) is not a world spawner and must spawn");
             data.impact = false;
-            helper.assertTrue(added(level, spawned, EntityType.PILLAGER.spawn(level, at, net.minecraft.world.entity.EntitySpawnReason.PATROL)),
+            helper.assertTrue(added(level, spawned, EntityType.PILLAGER.spawn(level, at, EntitySpawnReason.PATROL)),
                     "without the impact a patrol pillager must spawn");
         } finally {
             data.impact = before;
-            for (net.minecraft.world.entity.Entity e : spawned) e.discard();
+            for (Entity e : spawned) e.discard();
         }
         helper.succeed();
     }
 
-    private static boolean added(ServerLevel level, java.util.List<net.minecraft.world.entity.Entity> spawned,
-                                 net.minecraft.world.entity.Entity entity) {
+    private static boolean added(ServerLevel level, List<Entity> spawned,
+                                 Entity entity) {
         if (entity == null) return false;
         spawned.add(entity);
         return level.getEntity(entity.getUUID()) == entity;

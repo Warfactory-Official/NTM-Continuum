@@ -2,8 +2,13 @@ package com.hbm.items.weapon;
 
 import com.hbm.items.IEquipReceiver;
 import com.hbm.items.tool.ItemSwordAbility;
+import com.hbm.packet.CrucibleAnimPayload;
+import dev.golem.core.platform.Lifecycle;
+import dev.golem.core.world.Attacks;
 import dev.golem.core.world.SwingReceiver;
 import dev.golem.core.world.ToolTier;
+import java.util.function.Predicate;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -19,14 +24,14 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * old-hbm {@code ItemSwordCutter}: a sword that cuts mobs in half along a plane the player draws.
+ * 1.12.2 {@code ItemSwordCutter}: a sword that cuts mobs in half along a plane the player draws.
  *
  * <p>Hold right click and drag the view: the plane runs through the eye, the look direction at the click and the look
  * direction now (a black guide line is drawn between the two). Swing while still holding it and the client sends the
  * plane ({@code PacketMobSlicer}, here {@link com.hbm.packet.MobSlicerPayload}); the server cuts every living thing
  * the eleven rays between the two look directions hit within three blocks ({@link MobSlicer}).
  *
- * <p>All of that input is client state, as in old-hbm ("All of this stuff is client side, only for first person
+ * <p>All of that input is client state, as in 1.12.2 ("All of this stuff is client side, only for first person
  * rendering"); it lives in {@code com.hbm.client.crucible.CrucibleClient}, which this class reaches through
  * {@link #client}, set only on a physical client.
  */
@@ -74,17 +79,17 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver,
 
     /** The one attack interceptor ({@code onLeftClickEntity}) for every cutter. */
     public static void init() {
-        dev.golem.core.world.Attacks.interceptPlayerAttack(ItemSwordCutter::onLeftClickEntity);
-        dev.golem.core.platform.Lifecycle.onServerTick(ItemSwordCutter::forgetAbsentPlayers);
+        Attacks.interceptPlayerAttack(ItemSwordCutter::onLeftClickEntity);
+        Lifecycle.onServerTick(ItemSwordCutter::forgetAbsentPlayers);
     }
 
     /**
-     * Drops the per-player cutter state of everyone who is no longer online, so a logout clears it (by the next server
+     * Drops the per-player cutter state of everyone who is offline, so a logout clears it (by the next server
      * tick) and a relog starts fresh, as a new 1.12 client did.
      */
-    private static void forgetAbsentPlayers(net.minecraft.server.MinecraftServer server) {
+    private static void forgetAbsentPlayers(MinecraftServer server) {
         if (BUS_UNTIL.isEmpty() && LAST_CUT.isEmpty() && !ItemCrucible.hasPlayerState()) return;
-        java.util.function.Predicate<UUID> absent = id -> server.getPlayerList().getPlayer(id) == null;
+        Predicate<UUID> absent = id -> server.getPlayerList().getPlayer(id) == null;
         BUS_UNTIL.keySet().removeIf(absent);
         LAST_CUT.keySet().removeIf(absent);
         ItemCrucible.forgetPlayers(absent);
@@ -102,7 +107,7 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver,
     /**
      * {@code onLeftClickEntity}: while a main-hand bus animation plays, a click on an entity does not attack.
      *
-     * <p>Port addition (user decision, 2026-10-02): nor does the left click that confirms a cut. 1.12 let it attack the
+     * <p>The left click that confirms a cut does not attack either (port addition). 1.12 let it attack the
      * mob under the crosshair (the hit was free through {@code doSpecialClick}, and at 500 damage it killed before the
      * cut arrived). The client never sends that attack ({@code CrucibleClient} hands the click to Core
      * {@code AttackInput}, which only swings); this is the server's guard: a crucible whose holder reports a cut being
@@ -152,7 +157,7 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver,
     @Override
     public void onEquip(Player player, ItemStack stack) {
         if (player instanceof ServerPlayer server) {
-            com.hbm.packet.CrucibleAnimPayload.send(server, com.hbm.packet.CrucibleAnimPayload.EQUIP);
+            CrucibleAnimPayload.send(server, CrucibleAnimPayload.EQUIP);
         }
     }
 }

@@ -46,8 +46,8 @@ public final class FluidGraph {
      * two the tank happens to sit between. Every port's inner cell is linked to the machine's own, which
      * is also where it declares itself as an endpoint.
      *
-     * <p>Idempotent, and called every tick: a cell that is already there is only retyped, and retyping to
-     * the same fluid does nothing at all.
+     * <p>Idempotent and called every tick: an existing cell is only retyped, and retyping to the same fluid
+     * does nothing.
      *
      * @return the cells now held, to hand back to {@link #release}.
      */
@@ -82,7 +82,7 @@ public final class FluidGraph {
 
     public static final long[] NONE = new long[0];
 
-    /** The machine's own cell first — it is the anchor every port links to — then one cell per port. */
+    /** The machine's own cell first, as the anchor every port links to, then one cell per port. */
     private static long[] footprint(BlockPos core, DirPos[] ports) {
         LongArrayList cells = new LongArrayList(ports.length + 1);
         LongOpenHashSet seen = new LongOpenHashSet(ports.length + 1);

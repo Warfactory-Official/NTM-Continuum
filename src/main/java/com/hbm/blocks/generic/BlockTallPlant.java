@@ -80,7 +80,7 @@ public class BlockTallPlant extends BlockTerrainPlant implements CompatBonemeala
         level.setBlock(pos.above(), block.defaultBlockState().setValue(HALF, DoubleBlockHalf.UPPER), 3);
     }
 
-    // ---------------------------------------------------------------- support
+    // Support
 
     @Override
     protected boolean canStay(BlockState state, LevelReader level, BlockPos pos) {
@@ -131,7 +131,7 @@ public class BlockTallPlant extends BlockTerrainPlant implements CompatBonemeala
         return state;
     }
 
-    // ---------------------------------------------------------------- drops
+    // Drops
 
     /** 1.7 {@code getItemDropped/damageDropped/getDrops}: one flower item per half, plus willow leaves. */
     @Override
@@ -160,7 +160,7 @@ public class BlockTallPlant extends BlockTerrainPlant implements CompatBonemeala
         }
     }
 
-    // ---------------------------------------------------------------- growth
+    // Growth
 
     @Override
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {

@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the flare stack — 1.12.2 {@code ContainerMachineGasFlare}: battery (143,71), fluid container
+ * Menu for the flare stack, from 1.12.2 {@code ContainerMachineGasFlare}; battery (143,71), fluid container
  * in (17,17), emptied out (17,53), fluid identifier (35,71), upgrades (80,71)/(98,71); 176×203 with the
  * player inventory offset 37 (rows 121/139/157, hotbar 179). Buttons: 0 = valve, 1 = ignition.
  */

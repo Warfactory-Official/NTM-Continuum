@@ -2,6 +2,7 @@ package com.hbm.client.render.item;
 
 import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -21,8 +22,7 @@ import static com.hbm.client.render.item.CustomItemRenderers.*;
 
 /**
  * 1.7 {@code ItemRenderDetonatorLaser}, an {@code IItemRenderer} of its own that handled every slot, the inventory
- * included (the port had drawn the item as a flat handheld sprite until the 2026-10-01 icon audit). The body is
- * {@code Main} in its skin; then, unlit at lightmap 240/240 with culling off, the {@code Lights} untextured in red, a
+ * included. The body is {@code Main} in its skin; then, unlit at lightmap 240/240 with culling off, the {@code Lights} untextured in red, a
  * 32-segment yellow sine strip along the barrel ({@code sin(i * 0.5 - millis / 100) * 0.075}), and three random
  * six-digit red numbers on the display, re-rolled every 500 ms from {@code new Random(millis / 500)} exactly as 1.7
  * seeded it.
@@ -130,7 +130,7 @@ final class ItemRenderDetonatorLaser implements CustomItemRenderer {
     }
 
     /** One vertex of the strip: opaque 0xFFFF00, untextured, fullbright. */
-    private static void beam(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose, float y, float z) {
+    private static void beam(VertexConsumer buffer, PoseStack.Pose pose, float y, float z) {
         Vertexes.vertex(buffer, pose, 0F, y, z, 0xFFFFFF00, 0.5F, 0.5F, OverlayTexture.NO_OVERLAY, FULLBRIGHT,
                 0F, 1F, 0F); // flatCutout wants an upward normal
 

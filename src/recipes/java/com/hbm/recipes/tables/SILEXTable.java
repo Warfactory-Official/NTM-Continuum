@@ -23,6 +23,7 @@ import com.hbm.items.ModStorageDrumItems;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.items.special.ItemWasteStorage.LongWasteClass;
 import com.hbm.items.special.ItemWasteStorage.ShortWasteClass;
+import dev.golem.core.Ids;
 import dev.golem.core.world.RecipeSource;
 import java.util.ArrayList;
 import java.util.List;
@@ -731,7 +732,7 @@ public final class SILEXTable extends RecipeSource<Row> {
 
     /** 1.7 {@code new ComparableStack(ModItems.rbmk_pellet_<name>, 1, meta)}. */
     private static VariantStack pellet(String name, int meta) {
-        Item item = BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.of("hbm", "rbmk_pellet_" + name))
+        Item item = BuiltInRegistries.ITEM.getOptional(Ids.of("hbm", "rbmk_pellet_" + name))
                 .orElseThrow(() -> new IllegalStateException("no hbm:rbmk_pellet_" + name));
         return new VariantStack(item, meta);
     }

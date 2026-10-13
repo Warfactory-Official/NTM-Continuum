@@ -6,7 +6,9 @@ import com.hbm.entity.mob.EntityTeslaCrab;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.sound.ModSounds;
+import com.hbm.tileentity.machine.TileEntityTesla;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.CreeperFuse;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -56,7 +58,7 @@ public final class TeslaZap {
             double len = Math.sqrt(Math.pow(e.getX() - x, 2) + Math.pow(eyeY - y, 2) + Math.pow(e.getZ() - z, 2));
             // 1.7 compared against the coil's static TileEntityTesla.range (10), not the radius argument, so the
             // crabs' 3-block cube still reaches its corners (up to 3 * sqrt(3) away)
-            if (len > com.hbm.tileentity.machine.TileEntityTesla.range) continue;
+            if (len > TileEntityTesla.range) continue;
             if (isObstructed(level, x, y, z, e.getX(), eyeY, e.getZ())) continue;
 
             if (e instanceof EntityTaintCrab) {
@@ -78,7 +80,7 @@ public final class TeslaZap {
 
             if (e instanceof Creeper creeper) {
                 // 1.7:119 watcher 17 = powered
-                ((dev.golem.core.world.CreeperFuse) creeper).golem$setPowered(true);
+                ((CreeperFuse) creeper).golem$setPowered(true);
                 beams.add(new Vec3(e.getX(), eyeY, e.getZ()));
                 continue;
             }

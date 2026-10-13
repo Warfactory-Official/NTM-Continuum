@@ -21,7 +21,7 @@ public final class ClientAudioFactory implements AudioSystem.Factory {
         audio.updatePosition(x, y, z);
         audio.updateVolume(volume);
         audio.updateRange(range);
-        // 1.7: discards pitch; deliberately corrected.
+        // 1.7 discards pitch; this port corrects it.
         audio.updatePitch(pitch);
         return audio;
     }

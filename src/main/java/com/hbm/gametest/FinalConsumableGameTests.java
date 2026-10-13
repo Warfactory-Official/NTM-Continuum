@@ -1,12 +1,14 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.blocks.ModEnergyNetBlocks;
 import com.hbm.inventory.recipes.CombinationRecipes;
 import com.hbm.inventory.recipes.DiFurnaceRecipes;
 import com.hbm.items.ModFinalConsumableItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.food.ItemConserve.EnumFoodType;
 import com.hbm.items.machine.ItemBattery;
+import com.hbm.items.tool.ItemFusionCore;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
@@ -15,11 +17,13 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
 /**
- * Contracts of the final consumables wave: every id registered, the 1.7 battery semantics (an absent charge is
+ * Consumable contracts: every id registered, the 1.7 battery semantics (an absent charge is
  * full), the canned food's can key and hunger, cloth turning damp in water through the real item-entity tick, and
  * the briquettes in the combination oven and alloy furnace tables.
  */
@@ -62,11 +66,11 @@ public final class FinalConsumableGameTests {
         helper.assertTrue(cube.getMaxCharge(new ItemStack(cube)) == 1000000000000000000L, "electronium cube capacity");
         // 1.7 ModItems.hev_battery is an ItemFusionCore(150000) stacking to 4; the wall charger block's item is a separate
         // id (hev_battery_block) so the two do not collide in the port's one item registry.
-        net.minecraft.world.item.Item hev = ModFinalConsumableItems.hev_battery.get();
-        helper.assertTrue(hev instanceof com.hbm.items.tool.ItemFusionCore && new ItemStack(hev).getMaxStackSize() == 4,
+        Item hev = ModFinalConsumableItems.hev_battery.get();
+        helper.assertTrue(hev instanceof ItemFusionCore && new ItemStack(hev).getMaxStackSize() == 4,
                 "hbm:hev_battery is the 1.7 suit-battery item, stack size 4");
-        net.minecraft.world.item.Item hevBlockItem = com.hbm.blocks.ModEnergyNetBlocks.hev_battery.get().asItem();
-        helper.assertTrue(hevBlockItem instanceof net.minecraft.world.item.BlockItem && hevBlockItem != hev
+        Item hevBlockItem = ModEnergyNetBlocks.hev_battery.get().asItem();
+        helper.assertTrue(hevBlockItem instanceof BlockItem && hevBlockItem != hev
                         && BuiltInRegistries.ITEM.containsKey(Ids.of(Constants.MOD_ID, "hev_battery_block")),
                 "hbm:hev_battery_block is the wall charger block's item");
         helper.succeed();

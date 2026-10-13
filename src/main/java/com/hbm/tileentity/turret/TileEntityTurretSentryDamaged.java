@@ -14,7 +14,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The wrecked sentry found in worldgen: always on, never needs power or ammo, and shoots at anything
- * alive. Only one of its two barrels actually fires — the other just makes noise, which is 1.12.2's
+ * alive. Only one of its two barrels actually fires; the other just makes noise, which is 1.12.2's
  * behaviour and reads as the damage.
  */
 public class TileEntityTurretSentryDamaged extends TileEntityTurretSentry {

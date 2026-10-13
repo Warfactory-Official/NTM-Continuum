@@ -33,13 +33,12 @@ import java.util.function.Supplier;
 
 /**
  * Writes every {@code hbm:} registration this node made to {@code hbm-registry-dump.json} in the run
- * directory, as the before/after evidence for registration refactors (the 2026-10-01 {@code Reg}
- * migration): ids per registry in registration order, the creative-tab contents in display order, and
- * a fingerprint of each block, item, block-entity type and entity type built from properties the
- * registration chain sets. Two dumps that compare equal mean the registration code was rewritten
- * without changing what it registers. Never fails, so it is a tool rather than a test: it is declared only
- * when the GameTest filter names it, {@code -Pgametest.filter=.*registry_dump.*} (see {@link #requested()}),
- * and a full run neither writes the dump nor counts it as a pass.
+ * directory, as before/after evidence for registration refactors: ids per registry in registration order, the
+ * creative-tab contents in display order, and a fingerprint of each block, item, block-entity type and entity type
+ * built from properties the registration chain sets. Two dumps that compare equal mean a rewrite did not change
+ * what is registered. Never fails, so it is a tool rather than a test: it is declared only when the GameTest filter
+ * names it, {@code -Pgametest.filter=.*registry_dump.*} (see {@link #requested()}), and a full run neither writes
+ * the dump nor counts it as a pass.
  */
 public final class RegistryDumpGameTests {
 

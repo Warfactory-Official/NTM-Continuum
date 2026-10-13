@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
- * 1.7 {@code BlockWriting} — the marked concrete bricks. A right-click without sneaking recites the
+ * 1.7 {@code BlockWriting}: the marked concrete bricks. A right-click without sneaking recites the
  * long-term nuclear waste warning, in red, to the player.
  */
 public class BlockWriting extends CompatBlock {

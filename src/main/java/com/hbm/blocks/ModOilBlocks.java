@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import dev.golem.core.dejson.Shape;
 import dev.golem.core.registry.BlockTag;
 import dev.golem.core.registry.Loot;
 import com.hbm.registration.Presets;
@@ -19,11 +20,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 
 /**
- * The special oil-chain blocks (oil wave) — the ones whose 1.12.2 behavior a generated plain block
+ * The special oil-chain blocks, the ones whose 1.12.2 behavior a generated plain block
  * can't carry. {@code ore_oil} is hand-registered here (excluded from the gen_wave1 ore set via
  * {@code HAND_ORE_IDS}) as {@link BlockOilDeposit}; the generator still emits its blockstate/model/lang
- * and mineable tag. {@code oil_pipe} is the drill bore casing (old {@code BlockNoDrop}, no creative
- * tab, empty loot). {@code oil_spill} is the worldgen vent puddle (old {@code BlockLayering}, no loot).
+ * and mineable tag. {@code oil_pipe} and {@code oil_spill} are described on their fields.
  */
 public final class ModOilBlocks {
 
@@ -33,7 +33,7 @@ public final class ModOilBlocks {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
-    /** Live oil deposit — old {@code BlockNTMOre(OreEnum.OIL)}, hardness 5, resistance 10. */
+    /** Live oil deposit, old {@code BlockNTMOre(OreEnum.OIL)}, hardness 5, resistance 10. */
     public static final RegistryObject<BlockOilDeposit> ore_oil = REG.block("ore_oil",
             BlockOilDeposit::new, p -> p.strength(5.0F, 10.0F).requiresCorrectToolForDrops())
             .transform(Presets.cubeAll())
@@ -42,7 +42,7 @@ public final class ModOilBlocks {
             .tag(BlockTag.PICKAXE);
 
     /**
-     * Drill bore casing — old {@code BlockNoDrop}, Material.IRON, no creative tab. It drops nothing, but it is a
+     * Drill bore casing, old {@code BlockNoDrop}, Material.IRON, no creative tab. It drops nothing, but it is a
      * plain opaque cube without a tile entity, so 1.7's default {@code canSilkHarvest} lets silk touch keep it.
      */
     public static final RegistryObject<Block> oil_pipe = REG.block("oil_pipe",
@@ -51,7 +51,7 @@ public final class ModOilBlocks {
             .loot(Loot.silkTouchOnly())
             .tag(BlockTag.PICKAXE);
 
-    /** Surface oil puddle (worldgen vents) — old {@code BlockLayering}, hardness 0.1, snow sound. */
+    /** Surface oil puddle (worldgen vents), old {@code BlockLayering}, hardness 0.1, snow sound. */
     public static final RegistryObject<BlockLayering> oil_spill = REG.block("oil_spill",
             BlockLayering::new, p -> p.strength(0.1F).sound(SoundType.SNOW).noOcclusion())
             .model(d -> d.models(Models.group()
@@ -79,7 +79,7 @@ public final class ModOilBlocks {
     }
 
     /** One snow-layer height of the puddle (vanilla's snow_height models, retextured). */
-    private static dev.golem.core.dejson.Shape layer(int height) {
+    private static Shape layer(int height) {
         return Models.parented("minecraft:block/snow_height" + height,
                 Slots.of("particle", "hbm:blocks/oil_spill", "texture", "hbm:blocks/oil_spill"));
     }

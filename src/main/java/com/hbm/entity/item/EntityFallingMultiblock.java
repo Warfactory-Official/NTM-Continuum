@@ -1,5 +1,6 @@
 package com.hbm.entity.item;
 
+import com.hbm.packet.FallingMultiblockPayload;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.ModNtmEntities;
@@ -10,6 +11,8 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.StoredItems;
 import com.hbm.items.special.CarriedBlockItems;
 import com.mojang.serialization.Codec;
+import dev.golem.core.registry.BlockEntities;
+import dev.golem.core.world.Compat;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -33,7 +36,7 @@ import java.util.Objects;
 import java.util.stream.IntStream;
 
 /**
- * A folded multiblock falling AS ONE RIGID BODY; the port deliberately diverges from 1.7:201 - it falls as a whole, or not at all when any column is still supported.
+ * A folded multiblock falling AS ONE RIGID BODY; this port diverges from 1.7:201: it falls as a whole, or not at all when any column is still supported.
  */
 public class EntityFallingMultiblock extends CompatEntity implements StoredItems {
 
@@ -67,7 +70,7 @@ public class EntityFallingMultiblock extends CompatEntity implements StoredItems
             carriedInventory = CarriedBlockItems.load(coreState(), originCore, carriedBe, server.registryAccess());
         }
         if (carriedInventory != null && visitor.visit(carriedInventory)) {
-            carriedBe = dev.golem.core.registry.BlockEntities.saveWithoutMetadata(carriedInventory, server.registryAccess());
+            carriedBe = BlockEntities.saveWithoutMetadata(carriedInventory, server.registryAccess());
         }
     }
 
@@ -91,7 +94,7 @@ public class EntityFallingMultiblock extends CompatEntity implements StoredItems
     }
 
     /**
-     * Evaluate the structure at {@code core}; remove it and spawn the falling entity when every member can take one step down - all-or-nothing. Null when the core no longer resolves or a first step is obstructed.
+     * Evaluate the structure at {@code core}; remove it and spawn the falling entity when every member can take one step down, all-or-nothing. Null when the core does not resolve or a first step is obstructed.
      */
     public static @Nullable EntityFallingMultiblock tryFall(ServerLevel level, BlockPos core) {
         BlockState coreState = level.getBlockState(core);
@@ -119,13 +122,13 @@ public class EntityFallingMultiblock extends CompatEntity implements StoredItems
         if (!entity.canStep(level, 1)) return null;
 
         BlockEntity be = level.getBlockEntity(core);
-        if (be != null) entity.carriedBe = dev.golem.core.registry.BlockEntities.saveWithoutMetadata(be, level.registryAccess());
+        if (be != null) entity.carriedBe = BlockEntities.saveWithoutMetadata(be, level.registryAccess());
 
         // relocation, not a break: teardown suppressed, BE effects off
         BlockMultiblockCore.withoutTeardown(() -> {
             BlockState air = Blocks.AIR.defaultBlockState();
             for (BlockPos member : blocks) {
-                level.setBlock(member, air, Block.UPDATE_ALL | dev.golem.core.world.Compat.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS);
+                level.setBlock(member, air, Block.UPDATE_ALL | Compat.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS);
             }
         });
 
@@ -220,7 +223,7 @@ public class EntityFallingMultiblock extends CompatEntity implements StoredItems
         BlockPos newCore = originCore.below(committedDrop);
         BlockEntity be = level.getBlockEntity(newCore);
         if (carriedBe != null && be != null) {
-            dev.golem.core.registry.BlockEntities.loadCustomOnly(be, carriedBe, level.registryAccess());
+            BlockEntities.loadCustomOnly(be, carriedBe, level.registryAccess());
             be.setChanged();
         }
 
@@ -230,7 +233,7 @@ public class EntityFallingMultiblock extends CompatEntity implements StoredItems
 
     private void sendMembers() {
         if (level() instanceof ServerLevel) {
-            com.hbm.packet.FallingMultiblockPayload.send(this, originCore.asLong(), members, carriedBe);
+            FallingMultiblockPayload.send(this, originCore.asLong(), members, carriedBe);
         }
     }
 

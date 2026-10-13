@@ -9,7 +9,7 @@ import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.item.ItemStack;
 
-/** GEM port of original-hbm's ItemRenderNI4NI model hierarchy and dynamic material state. */
+/** GEM port of 1.7's ItemRenderNI4NI model hierarchy and dynamic material state. */
 public final class Ni4niWeaponRenderer extends WeaponRenderer {
     private static final Surface NORMAL = SpecialWeaponRenderers.texture("n_i_4_n_i");
     private static final Surface GREYSCALE = SpecialWeaponRenderers.texture("n_i_4_n_i_greyscale");
@@ -85,7 +85,7 @@ public final class Ni4niWeaponRenderer extends WeaponRenderer {
     }
 
     private static void staticCoins(Gem.Model<WeaponPose> declaration, WavefrontObj obj) {
-        // original-hbm's renderOther always showed all four coin sockets; only the held render gated them.
+        // 1.7's renderOther always showed all four coin sockets; only the held render gated them.
         declaration.part(obj.part("Coin1"), COIN).visibleIf(state -> !state.animated)
                 .tint(state -> 0xFF00FF00).light(state -> FULL_BRIGHT);
         declaration.part(obj.part("Coin2"), COIN).visibleIf(state -> !state.animated)

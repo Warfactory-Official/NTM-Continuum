@@ -3,6 +3,7 @@ package com.hbm.blocks.generic;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.entity.EntityHbmProps;
 import com.hbm.potion.ModEffects;
+import dev.golem.core.world.CompatBlock;
 import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,20 +25,20 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The radioactive fallout layer deposited by {@code EntityFalloutRain}, 1.7.10's {@code BlockFallout}: a thin
- * (2px) replaceable ash layer. 1.7 gives it no tick and no chunk radiation (History §19ek-small; an earlier port
- * took 1.12.2's self-rescheduling +1 RAD tick). Walking on it gives a non-creative living entity the radiation
+ * (2px) replaceable ash layer. 1.7 gives it no tick and no chunk radiation (1.12.2's self-rescheduling +1 RAD
+ * tick is not 1.7). Walking on it gives a non-creative living entity the radiation
  * effect for 10 minutes at amplifier 0; left-clicking it contaminates the player (1 RAD/s for 200 ticks, armor
  * counts). 1.7 also cleared the effect's curative items so milk could not remove it; the port has no cross-loader
  * curative-item hook, so milk still cures it there.
  *
- * <p>Support rules match the old {@code canPlaceBlockAt}: sits on leaves or any up-sturdy block,
+ * <p>Support rules match 1.7's {@code canPlaceBlockAt}: sits on leaves or any up-sturdy block,
  * never on ice/packed ice ({@link #canSupport}); the sweep also refuses a cell holding fluid
  * ({@link #canOccupy}). A layer that loses its support vanishes <b>without drops</b>: 1.7's
- * {@code onNeighborBlockChange} called {@code setBlockToAir}. Returning air from {@code updateShape}, the
- * snow-layer pattern used before, makes vanilla {@code destroyBlock} it with loot — one ash item per
- * cell, hundreds after a blast whose sweep removed the support (leaves, snow, collapsing sand).
+ * {@code onNeighborBlockChange} called {@code setBlockToAir}. Returning air from {@code updateShape}, as snow
+ * layers do, makes vanilla {@code destroyBlock} it with loot, one ash item per cell, hundreds after a blast
+ * whose sweep removed the support (leaves, snow, collapsing sand).
  */
-public class BlockFallout extends dev.golem.core.world.CompatBlock {
+public class BlockFallout extends CompatBlock {
 
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 2, 16);
 
@@ -78,7 +79,7 @@ public class BlockFallout extends dev.golem.core.world.CompatBlock {
         return state;
     }
 
-    /** 1.7 {@code onNeighborBlockChange} → {@code setBlockToAir}: an unsupported layer vanishes, dropping nothing. */
+    /** 1.7 {@code onNeighborBlockChange} calls {@code setBlockToAir}: an unsupported layer vanishes, dropping nothing. */
     @Override
     protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
                                      boolean movedByPiston) {

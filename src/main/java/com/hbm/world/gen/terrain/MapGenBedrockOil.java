@@ -10,13 +10,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 import java.util.Random;
 
 /**
- * {@code hbm:bedrock_oil}: 1.7 {@code world/gen/terrain/MapGenBedrockOil}. One origin in {@code bedrockOilSpawn} (200)
- * — rolled as {@code rand.nextInt(f) == f - 2}, verbatim — turns the floor within an L1 diamond
+ * {@code hbm:bedrock_oil}: 1.7 {@code world/gen/terrain/MapGenBedrockOil}. One origin in {@code bedrockOilSpawn} (200),
+ * rolled as {@code rand.nextInt(f) == f - 2}, turns the floor within an L1 diamond
  * ({@code |x| < 5}, {@code |z| < 5}, {@code |x| + y + |z| <= 6}, y the height above the floor) into
  * {@code ore_bedrock_oil}, then blights 50 gaussian (sigma 5) surface spots: dead or (1 in 10) oily dirt, a cadmium
  * willow one time in fifty and a dead plant one time in twenty on top, dirty sand, cracked stone. Range 4.
@@ -36,7 +37,7 @@ public class MapGenBedrockOil extends MapGenFeature {
     }
 
     @Override
-    protected boolean generate(WorldGenLevel level, net.minecraft.world.level.chunk.ChunkGenerator generator, Random rand, long originSeed, int seaLevel,
+    protected boolean generate(WorldGenLevel level, ChunkGenerator generator, Random rand, long originSeed, int seaLevel,
                                int originX, int originZ, int chunkX, int chunkZ, boolean forced) {
         if (frequency <= 1) return false;
         boolean roll = rand.nextInt(frequency) == frequency - 2;

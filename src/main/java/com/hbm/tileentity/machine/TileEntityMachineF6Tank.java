@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.fluidmk2.IInfiniteFluidItem;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -26,6 +27,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Common fixed-fluid tank implementation used by the UF6 and PuF6 variants. */
@@ -38,7 +40,7 @@ public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
     public final FluidTankNTM tank;
     public byte lastRedstone;
 
-    protected TileEntityMachineF6Tank(net.minecraft.world.level.block.entity.BlockEntityType<?> type,
+    protected TileEntityMachineF6Tank(BlockEntityType<?> type,
                                       BlockPos pos, BlockState state, FluidType fluid) {
         super(type, pos, state, 4);
         this.tank = new FluidTankNTM(fluid, CAPACITY);
@@ -177,7 +179,7 @@ public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
 
     private static boolean isFluidContainer(ItemStack stack) {
         return stack.getItem() instanceof IFillableItem
-                || stack.getItem() instanceof com.hbm.api.fluidmk2.IInfiniteFluidItem
+                || stack.getItem() instanceof IInfiniteFluidItem
                 || stack.getItem() instanceof ItemFluidBucket
                 || stack.is(Items.BUCKET);
     }

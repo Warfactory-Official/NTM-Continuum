@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.inventory.container.ContainerFirebox;
-import com.hbm.modules.ModuleBurnTime;
+import com.hbm.module.ModuleBurnTime;
 import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;

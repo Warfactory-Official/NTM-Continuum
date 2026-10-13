@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -22,6 +23,7 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import java.util.ArrayList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -85,8 +87,8 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
 
         for (DirPos dp : te.getConPos()) {
             te.trySubscribe(level, dp);
-            if (te.tanks[0].getTankType() != com.hbm.inventory.fluid.Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
-            if (te.tanks[1].getTankType() != com.hbm.inventory.fluid.Fluids.NONE) te.trySubscribe(te.tanks[1].getTankType(), level, dp);
+            if (te.tanks[0].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
+            if (te.tanks[1].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[1].getTankType(), level, dp);
         }
 
         te.upgradeManager.checkSlots(te.inventory, 3, 4);
@@ -243,8 +245,8 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         }
     }
 
-    private static java.util.List<String> signatures(FluidType output) {
-        java.util.List<String> keys = new java.util.ArrayList<>();
+    private static List<String> signatures(FluidType output) {
+        List<String> keys = new ArrayList<>();
         MixerRecipe[] recipes = MixerRecipes.getOutput(output);
         if (recipes == null) return keys;
         for (MixerRecipe recipe : recipes) {
@@ -282,7 +284,7 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
 
     @Override
     public boolean hasPermission(Player player) {
-        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMixer menu
+        return player.containerMenu instanceof ContainerMixer menu
                 && menu.getMixer() == this && menu.stillValid(player);
     }
 
@@ -349,7 +351,7 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         output.putLong("power", power);
         output.putInt("progress", progress);
         output.putInt("processTime", processTime);
-        // the chosen row by its name, never its index (History sections 19ej-ids, 19fa-m2)
+        // the chosen row by its name, never its index
         output.putString("recipe", recipeName);
         for (int i = 0; i < tanks.length; i++) tanks[i].writeToNBT(output, "tank" + i);
     }
@@ -361,11 +363,11 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         progress = input.getIntOr("progress", 0);
         processTime = input.getIntOr("processTime", 0);
         for (int i = 0; i < tanks.length; i++) tanks[i].readFromNBT(input, "tank" + i);
-        if (input.getIntOr("recipe", Integer.MIN_VALUE) != Integer.MIN_VALUE) com.hbm.util.SavedIds.warnNumeric("recipe index", "recipe");
+        if (input.getIntOr("recipe", Integer.MIN_VALUE) != Integer.MIN_VALUE) SavedIds.warnNumeric("recipe index", "recipe");
         String saved = input.getStringOr("recipe", "");
         if (saved.contains("#") && MixerRecipes.indexOf(tanks[2].getTankType(), saved) < 0) {
             // a save from before the recipes were data names the row by its inputs and occurrence ("hbm:water+-+true#0")
-            int index = com.hbm.util.SavedIds.fromListKey(signatures(tanks[2].getTankType()), saved);
+            int index = SavedIds.fromListKey(signatures(tanks[2].getTankType()), saved);
             MixerRecipe[] recipes = MixerRecipes.getOutput(tanks[2].getTankType());
             saved = index < 0 || recipes == null ? "" : recipes[index].name;
         }

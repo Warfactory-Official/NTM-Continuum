@@ -4,6 +4,7 @@ import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.interfaces.ICustomDamageHandler;
 import com.hbm.explosion.vanillant.interfaces.IEntityProcessor;
 import com.hbm.explosion.vanillant.interfaces.IEntityRangeMutator;
+import dev.golem.core.world.Compat;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -96,7 +97,7 @@ public class EntityProcessorStandard implements IEntityProcessor {
 
     public void attackEntity(Entity entity, ExplosionVNT source, float amount) {
         if (entity.level() instanceof ServerLevel serverLevel) {
-            dev.golem.core.world.Compat.hurt(entity, serverLevel, setExplosionSource(source), amount);
+            Compat.hurt(entity, serverLevel, setExplosionSource(source), amount);
         }
     }
 

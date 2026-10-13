@@ -4,8 +4,11 @@ import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.ModAutogenItems;
+import dev.golem.core.Ids;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.List;
+import java.util.Locale;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -20,7 +23,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * A casting mold — inserted into a foundry caster ({@code foundry_mold}, size 0) or basin
+ * A casting mold, inserted into a foundry caster ({@code foundry_mold}, size 0) or basin
  * ({@code foundry_basin}, size 1) to pick what the poured metal solidifies into. The 1.12.2
  * {@code ItemMold} was one metadata item; the port registers <b>one item per mold</b>
  * ({@link ModMoldItems}), each carrying its {@link Mold} definition. {@code MoldShape} output
@@ -43,14 +46,13 @@ public class ItemMold extends CompatItem {
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-                                         java.util.List<Component> tooltip, TooltipFlag flag) {
+                                         List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal(mold.getTitle()).withStyle(ChatFormatting.YELLOW));
         tooltip.add(Component.literal(Mats.formatAmount(mold.getCost(), false)).withStyle(ChatFormatting.GRAY));
         if (mold.size == 0) tooltip.add(Component.translatable("block.hbm.foundry_mold").withStyle(ChatFormatting.GOLD));
         if (mold.size == 1) tooltip.add(Component.translatable("block.hbm.foundry_basin").withStyle(ChatFormatting.RED));
     }
 
-    // ------------------------------------------------------------------------------------------------
 
     /** One mold definition (1.12.2 inner class, made static). {@code size}: 0 = mold caster, 1 = basin. */
     public abstract static class Mold {
@@ -64,7 +66,7 @@ public class ItemMold extends CompatItem {
             this.name = name;
         }
 
-        /** The cast item for a material — never null, {@link ItemStack#EMPTY} when there is no match. */
+        /** The cast item for a material; never null, {@link ItemStack#EMPTY} when there is no match. */
         public abstract ItemStack getOutput(NTMMaterial mat);
 
         /** The quanta needed to fill this mold (= the caster's capacity). */
@@ -99,7 +101,7 @@ public class ItemMold extends CompatItem {
             ItemStack first = ItemStack.EMPTY;
             for (Holder<Item> holder : BuiltInRegistries.ITEM.getTagOrEmpty(mat.tag(shape))) {
                 if (first.isEmpty()) first = new ItemStack(holder.value(), amount);
-                if (holder.unwrapKey().map(k -> dev.golem.core.Ids.keyId(k).getNamespace().equals("hbm")).orElse(false)) {
+                if (holder.unwrapKey().map(k -> Ids.keyId(k).getNamespace().equals("hbm")).orElse(false)) {
                     return new ItemStack(holder.value(), amount);
                 }
             }
@@ -117,7 +119,7 @@ public class ItemMold extends CompatItem {
         }
     }
 
-    /** Shape mold with fixed per-material overrides (stone/obsidian blocks → vanilla blocks). */
+    /** Shape mold with fixed per-material overrides (stone/obsidian blocks map to vanilla blocks). */
     public static class MoldBlock extends MoldShape {
 
         private final Map<NTMMaterial, Supplier<ItemStack>> blockOverrides = new LinkedHashMap<>();
@@ -210,7 +212,7 @@ public class ItemMold extends CompatItem {
 
     private static String prettify(String name) {
         StringBuilder sb = new StringBuilder();
-        for (String part : name.toLowerCase(java.util.Locale.US).split("_")) {
+        for (String part : name.toLowerCase(Locale.US).split("_")) {
             if (part.isEmpty()) continue;
             sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1)).append(' ');
         }

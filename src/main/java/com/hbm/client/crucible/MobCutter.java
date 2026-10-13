@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * The geometry half of old-hbm {@code ModelRendererUtil.generateCutParticles}: every cube of the victim's posed model
+ * The geometry half of 1.12.2 {@code ModelRendererUtil.generateCutParticles}: every cube of the victim's posed model
  * is cut by the plane into two convex pieces plus the cap polygon between them, the pieces on each side are grouped
  * into touching islands, and each island becomes a rigid body thrown 3.5 along the plane normal (the far side against
  * it). Plain math over {@code float[]} cubes ({@code EntityMeshes}' 24 vertices of x, y, z, u, v); no Minecraft type.

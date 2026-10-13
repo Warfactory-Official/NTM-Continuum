@@ -7,6 +7,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.weapon.ItemDisperser;
 import com.hbm.main.ResourceManager;
 import com.hbm.entity.ModNtmEntities;
+import java.util.function.Supplier;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -25,7 +26,7 @@ import org.jspecify.annotations.Nullable;
 public class EntityGlyphidBrenda extends EntityGlyphid {
 
     /** ntm-next wires this from ModEntities after registration; here the grunt type is the registered glyphid. */
-    public static final java.util.function.Supplier<EntityType<EntityGlyphid>> GRUNT_TYPE = () -> ModNtmEntities.GLYPHID.get();
+    public static final Supplier<EntityType<EntityGlyphid>> GRUNT_TYPE = () -> ModNtmEntities.GLYPHID.get();
 
     public EntityGlyphidBrenda(EntityType<? extends EntityGlyphidBrenda> type, Level level) {
         super(type, level);

@@ -1,5 +1,6 @@
 package com.hbm.items.armor;
 
+import com.hbm.handler.ArmorModHandler;
 import com.hbm.handler.JetpackHandler;
 import com.hbm.items.HbmArmorMaterials;
 import com.hbm.items.ModDataComponents;
@@ -50,7 +51,7 @@ public abstract class JetpackBase extends ArmorFSB {
 
     /** The old module table treats every JetpackBase as the chestplate-only module. */
     public final int moduleSlot() {
-        return com.hbm.handler.ArmorModHandler.plate_only;
+        return ArmorModHandler.plate_only;
     }
 
     public final boolean isActive(Player player) {

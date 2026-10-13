@@ -5,8 +5,12 @@ import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
+import dev.golem.core.Ids;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.world.ItemStacks;
+import java.util.function.Supplier;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 
 import java.util.LinkedHashMap;
@@ -22,9 +26,9 @@ import java.util.Map;
  * C4, coal pellets and resin burn, none of which 1.7 does, so those five are plain items here. Registering a burn time is
  * loader-specific in 26.1 and is done from one table, {@link FuelDataMapDeclarations#BURN_TIMES}:
  * <ul>
- *   <li><b>NeoForge</b> — data-driven: the {@code neoforge:furnace_fuels} data map {@link FuelDataMapDeclarations} declares (in common
+ *   <li><b>NeoForge</b> (data-driven): the {@code neoforge:furnace_fuels} data map {@link FuelDataMapDeclarations} declares (in common
  *       resources; Fabric ignores the file).</li>
- *   <li><b>Fabric</b> — code: a {@code FuelValueEvents.BUILD} listener in the {@code hbm} entrypoint,
+ *   <li><b>Fabric</b> (code): a {@code FuelValueEvents.BUILD} listener in the {@code hbm} entrypoint,
  *       which reads {@link #BURN_TIMES} directly.</li>
  * </ul>
  * Vanilla's own {@code FuelValues} table is built from hardcoded values + tags and cannot be added to
@@ -39,13 +43,13 @@ public final class ModFuelItems {
 
     /**
      * item -> furnace burn time in ticks for Fabric and Forge ({@code Fuels.register}): {@link FuelDataMapDeclarations#BURN_TIMES}
-     * with each id resolved when the loader asks, so the NeoForge data map and these can no longer drift apart.
+     * with each id resolved when the loader asks, so the NeoForge data map and these cannot drift apart.
      */
-    public static final Map<java.util.function.Supplier<? extends Item>, Integer> BURN_TIMES = new LinkedHashMap<>();
+    public static final Map<Supplier<? extends Item>, Integer> BURN_TIMES = new LinkedHashMap<>();
 
     static {
         FuelDataMapDeclarations.BURN_TIMES.forEach((id, ticks) -> BURN_TIMES.put(
-                () -> net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.parse(id)), ticks));
+                () -> BuiltInRegistries.ITEM.getValue(Ids.parse(id)), ticks));
     }
 
     /** A fuel item; its burn time is in {@link FuelDataMapDeclarations#BURN_TIMES}. */
@@ -90,7 +94,7 @@ public final class ModFuelItems {
     public static final RegistryObject<Item> crystal_coal = fuel("crystal_coal")
             .transform(Presets.sprite());
 
-    // --- non-fuel stragglers from the same 1.12.2 neighbourhood, needed by the shredder table ---
+    // Non-fuel stragglers from the same 1.12.2 neighbourhood, needed by the shredder table
 
     /**
      * 1.12.2 {@code ItemSchraranium}: its "nikonium" rename + easter-egg tooltip are gated on
@@ -99,9 +103,9 @@ public final class ModFuelItems {
     public static final RegistryObject<Item> ingot_schraranium = plain("ingot_schraranium")
             .transform(Presets.sprite());
 
-    /** 1.12.2 {@code ItemLemon(2, 0.5F, false, …)} — edible, 2 hunger / 0.5 saturation. */
+    /** 1.12.2 {@code ItemLemon(2, 0.5F, false, …)}: edible, 2 hunger / 0.5 saturation. */
     public static final RegistryObject<Item> powder_cement = REG.simpleItem("powder_cement",
-            p -> p.food(dev.golem.core.world.ItemStacks.food(2, 0.5F)))
+            p -> p.food(ItemStacks.food(2, 0.5F)))
             .transform(Presets.sprite());
 
     private static Reg.Handle<Item> plain(String name) {

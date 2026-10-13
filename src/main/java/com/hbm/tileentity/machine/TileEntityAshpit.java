@@ -5,7 +5,6 @@ import dev.golem.core.data.Tags;
 import com.hbm.inventory.container.ContainerAshpit;
 import com.hbm.items.ItemEnums.EnumAshType;
 import com.hbm.items.ModIngredientItems;
-import com.hbm.smoke.SmokeChainRegistration;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -13,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -20,6 +20,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import com.hbm.tileentity.ModBlockEntities;
+import net.minecraft.world.level.block.state.BlockState;
 
 /** Five-output ash collector for firebox ash and chimney fly ash/soot. */
 public class TileEntityAshpit extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
@@ -45,8 +47,8 @@ public class TileEntityAshpit extends TileEntityMachineBase implements MenuProvi
     public static int thresholdFly = 2_000;
     public static int thresholdSoot = 8_000;
 
-    public TileEntityAshpit(BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
-        super(SmokeChainRegistration.ASHPIT.get(), pos, state, SLOT_COUNT);
+    public TileEntityAshpit(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.MACHINE_ASHPIT.get(), pos, state, SLOT_COUNT);
     }
 
     @Override
@@ -59,7 +61,7 @@ public class TileEntityAshpit extends TileEntityMachineBase implements MenuProvi
         return true;
     }
 
-    public static void serverTick(Level level, BlockPos pos, net.minecraft.world.level.block.state.BlockState state,
+    public static void serverTick(Level level, BlockPos pos, BlockState state,
                                    TileEntityAshpit ashpit) {
         if (ashpit.processAsh(ashpit.ashLevelWood, EnumAshType.WOOD, thresholdWood)) ashpit.ashLevelWood -= thresholdWood;
         if (ashpit.processAsh(ashpit.ashLevelCoal, EnumAshType.COAL, thresholdCoal)) ashpit.ashLevelCoal -= thresholdCoal;
@@ -75,13 +77,13 @@ public class TileEntityAshpit extends TileEntityMachineBase implements MenuProvi
         ashpit.networkPackNT();
     }
 
-    public static void clientTick(Level level, BlockPos pos, net.minecraft.world.level.block.state.BlockState state,
+    public static void clientTick(Level level, BlockPos pos, BlockState state,
                                    TileEntityAshpit ashpit) {
         ashpit.prevDoorAngle = ashpit.doorAngle;
         float swingSpeed = ashpit.doorAngle / 10F + 3F;
         if (ashpit.playersUsing > 0) ashpit.doorAngle += swingSpeed;
         else ashpit.doorAngle -= swingSpeed;
-        ashpit.doorAngle = net.minecraft.util.Mth.clamp(ashpit.doorAngle, 0F, 135F);
+        ashpit.doorAngle = Mth.clamp(ashpit.doorAngle, 0F, 135F);
     }
 
     protected boolean processAsh(int level, EnumAshType type, int threshold) {
@@ -92,7 +94,7 @@ public class TileEntityAshpit extends TileEntityMachineBase implements MenuProvi
             ItemStack existing = inventory.getStackInSlot(i);
             if (existing.isEmpty()) {
                 inventory.setStackInSlot(i, ash.copy());
-                // This is the old extra subtraction. It intentionally names the wood counter for every type.
+                // This extra subtraction names the wood counter for every type.
                 ashLevelWood -= threshold;
                 return true;
             }

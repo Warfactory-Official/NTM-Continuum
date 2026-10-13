@@ -2,36 +2,48 @@ package com.hbm.gametest;
 
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
+import com.hbm.entity.ModEntities;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
+import com.hbm.entity.projectile.EntityBulletBeamBase;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.ModGunItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
+import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
+import com.hbm.items.weapon.sedna.factory.GunStateDecider;
+import com.hbm.items.weapon.sedna.factory.Lego;
 import com.hbm.items.weapon.sedna.factory.XFactory22lr;
 import com.hbm.items.weapon.sedna.factory.XFactory357;
 import com.hbm.items.weapon.sedna.factory.XFactory44;
 import com.hbm.items.weapon.sedna.factory.XFactory9mm;
+import com.hbm.items.weapon.sedna.factory.XFactoryPA;
 import com.hbm.items.weapon.sedna.impl.ItemGunChemthrower;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleTypeBase;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.render.anim.BusAnimationKeyframe;
 import dev.golem.core.render.anim.BusAnimationSequence;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * GameTests pinning the Sedna gun engine to upstream's behaviour: the reload cycle, ammo consumption,
@@ -39,7 +51,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
  * loaded round's config.
  *
  * <p>These drive the item's server tick directly rather than going through the keybind payload, which
- * keeps them independent of networking — the payload's only job is to call {@code handleKeybind}, which
+ * keeps them independent of networking; the payload's only job is to call {@code handleKeybind}, which
  * is exactly what these call.
  */
 public final class GunGameTests {
@@ -54,11 +66,11 @@ public final class GunGameTests {
      * A mock player standing inside the test structure.
      *
      * <p>{@code makeMockPlayer} builds a player that is never positioned or added to the level, so it
-     * sits at the world origin — which for a GameTest is millions of blocks from the structure. Anything
+     * sits at the world origin, which for a GameTest is millions of blocks from the structure. Anything
      * the player spawns would land there instead of here, so it is placed explicitly.
      */
     private static Player player(GameTestHelper helper) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         BlockPos origin = helper.absolutePos(new BlockPos(1, 1, 1));
         player.setPos(origin.getX() + 0.5D, origin.getY(), origin.getZ() + 0.5D);
         return player;
@@ -102,7 +114,7 @@ public final class GunGameTests {
                 player.getBoundingBox().inflate(64D));
     }
 
-    // ---------------------------------------------------------------- reloading
+    // Reloading
 
     /**
      * A reload consumes rounds from the inventory and fills the magazine, and the magazine adopts the
@@ -161,7 +173,7 @@ public final class GunGameTests {
         helper.succeed();
     }
 
-    // ---------------------------------------------------------------- firing
+    // Firing
 
     /** Every registered source gun must expose a live primary input and receiver fire route. */
     public static void gunFiringRoutes(GameTestHelper helper) {
@@ -194,7 +206,7 @@ public final class GunGameTests {
                     Receiver receiver = receivers[receiverIndex];
                     // PA receivers are provider-driven; every other receiver must expose its fire route.
                     if (receiver.getMagazine(stack) == null
-                            && gun instanceof com.hbm.items.weapon.sedna.factory.XFactoryPA.ItemGunPA) continue;
+                            && gun instanceof XFactoryPA.ItemGunPA) continue;
                     helper.assertTrue(receiver.getCanFire(stack) != null && receiver.getOnFire(stack) != null,
                             id + " config " + index + " receiver " + receiverIndex
                                     + " has a dormant firing route");
@@ -206,7 +218,7 @@ public final class GunGameTests {
     }
 
     /** Source akimbo/dual second rails are selected by secondary press, not primary press. */
-    private static boolean isSourceSecondaryOnly(net.minecraft.resources.Identifier id, int index) {
+    private static boolean isSourceSecondaryOnly(Identifier id, int index) {
         return "hbm".equals(id.getNamespace()) && index == 1
                 && SOURCE_SECONDARY_ONLY_CONFIGS.contains(id.getPath());
     }
@@ -256,11 +268,11 @@ public final class GunGameTests {
         lacunaeGun.handleKeybind(player, player.getInventory(), lacunae, EnumKeybind.RELOAD, true);
         tick(helper, player, lacunae, 120);
         int beamsBefore = helper.getLevel().getEntitiesOfClass(
-                com.hbm.entity.projectile.EntityBulletBeamBase.class,
+                EntityBulletBeamBase.class,
                 player.getBoundingBox().inflate(64D)).size();
         lacunaeGun.handleKeybind(player, player.getInventory(), lacunae, EnumKeybind.GUN_PRIMARY, true);
         helper.assertTrue(helper.getLevel().getEntitiesOfClass(
-                        com.hbm.entity.projectile.EntityBulletBeamBase.class,
+                        EntityBulletBeamBase.class,
                         player.getBoundingBox().inflate(64D)).size() == beamsBefore + 1,
                 "Lacunae minigun primary did not fire one beam");
 
@@ -343,7 +355,7 @@ public final class GunGameTests {
         helper.succeed();
     }
 
-    // ---------------------------------------------------------------- impact
+    // Impact
 
     /**
      * A bullet in flight actually hurts what it hits.
@@ -354,7 +366,7 @@ public final class GunGameTests {
      */
     public static void bulletDamagesMob(GameTestHelper helper) {
         Player player = player(helper);
-        var target = helper.spawn(net.minecraft.world.entity.EntityType.COW, new BlockPos(1, 2, 3));
+        var target = helper.spawn(EntityType.COW, new BlockPos(1, 2, 3));
         float before = target.getHealth();
 
         EntityBulletBaseMK4 bullet = aimedAt(helper, player, target, XFactory357.m357_sp, 10F);
@@ -382,7 +394,7 @@ public final class GunGameTests {
     /** Fires one round of {@code config} at an armoured zombie and reports the health it removed. */
     private static float damageThroughArmor(GameTestHelper helper, Player player, BlockPos where,
             BulletConfig config) {
-        var target = helper.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, where);
+        var target = helper.spawn(EntityType.ZOMBIE, where);
         target.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.DIAMOND_CHESTPLATE));
         target.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.DIAMOND_LEGGINGS));
         float before = target.getHealth();
@@ -395,9 +407,9 @@ public final class GunGameTests {
 
     /** A bullet placed just short of {@code target} and pointed at it. */
     private static EntityBulletBaseMK4 aimedAt(GameTestHelper helper, Player player,
-            net.minecraft.world.entity.LivingEntity target, BulletConfig config, float damage) {
+            LivingEntity target, BulletConfig config, float damage) {
         EntityBulletBaseMK4 bullet =
-                new EntityBulletBaseMK4(com.hbm.entity.ModEntities.BULLET_MK4.get(), helper.getLevel());
+                new EntityBulletBaseMK4(ModEntities.BULLET_MK4.get(), helper.getLevel());
         bullet.setBulletConfig(config);
         bullet.damage = damage;
         bullet.thrower = player;
@@ -412,33 +424,32 @@ public final class GunGameTests {
     /**
      * A round shatters glass and keeps going, as upstream's ricochet lambda does.
      *
-     * <p>Deliberately staged well above the mock player: a bullet's sweep takes the <em>nearest</em>
-     * hit along its whole path, so a shooter standing anywhere near the line of fire can absorb the
-     * shot the moment it stops being exempt, and the glass then survives. Keeping the flight path clear
-     * of every other entity is what makes this test deterministic rather than usually-passing.
+     * <p>Staged well above the mock player: a bullet's sweep takes the <em>nearest</em> hit along its
+     * whole path, so a shooter near the line of fire can absorb the shot once it stops being exempt, and
+     * the glass then survives. Keeping the flight path clear of other entities makes the test deterministic.
      */
     public static void bulletBreaksGlass(GameTestHelper helper) {
         Player player = player(helper);
         BlockPos glass = new BlockPos(1, 4, 3);
-        helper.setBlock(glass, net.minecraft.world.level.block.Blocks.GLASS);
+        helper.setBlock(glass, Blocks.GLASS);
 
         EntityBulletBaseMK4 bullet =
-                new EntityBulletBaseMK4(com.hbm.entity.ModEntities.BULLET_MK4.get(), helper.getLevel());
+                new EntityBulletBaseMK4(ModEntities.BULLET_MK4.get(), helper.getLevel());
         bullet.setBulletConfig(XFactory357.m357_sp);
         bullet.damage = 10F;
         bullet.thrower = player;
-        var to = net.minecraft.world.phys.Vec3.atCenterOf(helper.absolutePos(glass));
+        var to = Vec3.atCenterOf(helper.absolutePos(glass));
         bullet.setPos(to.subtract(0D, 0D, 1.5D));
         bullet.shoot(0D, 0D, 1D, 0F);
 
         helper.getLevel().addFreshEntity(bullet);
         bullet.tick();
 
-        helper.assertBlockNotPresent(net.minecraft.world.level.block.Blocks.GLASS, glass);
+        helper.assertBlockNotPresent(Blocks.GLASS, glass);
         helper.succeed();
     }
 
-    // ---------------------------------------------------------------- ammo differences
+    // Ammo differences
 
     /**
      * The .357 rounds differ in the ways upstream declares: AP penetrates and pierces armour, JHP hits
@@ -472,7 +483,7 @@ public final class GunGameTests {
                 "JHP .22 stats must match upstream");
         helper.assertTrue(XFactory22lr.p22_ap.doesPenetrate
                         && !XFactory22lr.p22_ap.damageFalloffByPen
-                        && XFactory22lr.p22_ap.damageMult == 1.25F // 1.7.10 value (fix wave 5; 1.5 was 1.12.2)
+                        && XFactory22lr.p22_ap.damageMult == 1.25F // 1.7.10 value (1.12.2 used 1.5)
                         && XFactory22lr.p22_ap.armorThresholdNegation == 2.5F
                         && XFactory22lr.p22_ap.armorPiercingPercent == 0.15F,
                 "AP .22 stats must match upstream");
@@ -493,7 +504,7 @@ public final class GunGameTests {
                 "JHP 9 mm stats must match upstream");
         helper.assertTrue(XFactory9mm.p9_ap.doesPenetrate
                         && !XFactory9mm.p9_ap.damageFalloffByPen
-                        && XFactory9mm.p9_ap.damageMult == 1.25F // 1.7.10 value (fix wave 5; 1.5 was 1.12.2)
+                        && XFactory9mm.p9_ap.damageMult == 1.25F // 1.7.10 value (1.12.2 used 1.5)
                         && XFactory9mm.p9_ap.armorThresholdNegation == 5F
                         && XFactory9mm.p9_ap.armorPiercingPercent == 0.15F,
                 "AP 9 mm stats must match upstream");
@@ -514,7 +525,7 @@ public final class GunGameTests {
                 "JHP .44 stats must match upstream");
         helper.assertTrue(XFactory44.m44_ap.doesPenetrate
                         && !XFactory44.m44_ap.damageFalloffByPen
-                        && XFactory44.m44_ap.damageMult == 1.25F // 1.7.10 value (fix wave 5; 1.5 was 1.12.2)
+                        && XFactory44.m44_ap.damageMult == 1.25F // 1.7.10 value (1.12.2 used 1.5)
                         && XFactory44.m44_ap.armorThresholdNegation == 7.5F
                         && XFactory44.m44_ap.armorPiercingPercent == 0.15F,
                 "AP .44 stats must match upstream");
@@ -669,13 +680,13 @@ public final class GunGameTests {
     public static void ammoRegistry(GameTestHelper helper) {
         for (BulletConfig config : XFactory357.all()) {
             helper.assertTrue(config.id != null, "every bullet config must carry a registry id");
-            helper.assertTrue(com.hbm.items.weapon.sedna.BulletConfigs.get(config.id) == config,
+            helper.assertTrue(BulletConfigs.get(config.id) == config,
                     "config " + config.id + " should resolve back to itself");
         }
         helper.succeed();
     }
 
-    // ---------------------------------------------------------------- wear
+    // Wear
 
     /** Wear degrades damage and accuracy on upstream's curves, and eventually causes jams. */
     public static void gunWearCurves(GameTestHelper helper) {
@@ -686,17 +697,17 @@ public final class GunGameTests {
         float dura = config.getDurability(stack);
 
         ItemGunBaseNT.setWear(stack, 0, dura * 0.4F);
-        helper.assertTrue(com.hbm.items.weapon.sedna.factory.Lego.getStandardWearDamage(stack, config, 0) == 1F,
+        helper.assertTrue(Lego.getStandardWearDamage(stack, config, 0) == 1F,
                 "a lightly worn gun should lose no damage");
-        helper.assertTrue(com.hbm.items.weapon.sedna.factory.GunStateDecider
+        helper.assertTrue(GunStateDecider
                 .getStandardJamChance(stack, config, 0) == 0F, "a lightly worn gun should never jam");
 
         ItemGunBaseNT.setWear(stack, 0, dura * 0.9F);
-        helper.assertTrue(com.hbm.items.weapon.sedna.factory.Lego.getStandardWearDamage(stack, config, 0) < 1F,
+        helper.assertTrue(Lego.getStandardWearDamage(stack, config, 0) < 1F,
                 "a badly worn gun should lose damage");
-        helper.assertTrue(com.hbm.items.weapon.sedna.factory.Lego.getStandardWearSpread(stack, config, 0) > 0F,
+        helper.assertTrue(Lego.getStandardWearSpread(stack, config, 0) > 0F,
                 "a badly worn gun should lose accuracy");
-        helper.assertTrue(com.hbm.items.weapon.sedna.factory.GunStateDecider
+        helper.assertTrue(GunStateDecider
                 .getStandardJamChance(stack, config, 0) > 0F, "a badly worn gun should be able to jam");
         helper.succeed();
     }
@@ -721,7 +732,7 @@ public final class GunGameTests {
         helper.succeed();
     }
 
-    // ---------------------------------------------------------------- state
+    // State
 
     /** Gun state survives a round-trip through the item's data components. */
     public static void gunStatePersists(GameTestHelper helper) {
@@ -762,7 +773,7 @@ public final class GunGameTests {
         Player player = player(helper);
         ItemStack stack = new ItemStack(ModGunItems.gun_debug.get());
         BlockPos pos = new BlockPos(1, 1, 1);
-        helper.setBlock(pos, net.minecraft.world.level.block.Blocks.STONE);
+        helper.setBlock(pos, Blocks.STONE);
 
         ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
         boolean canDestroy = gun.compatCanDestroyBlock(stack,
@@ -889,8 +900,8 @@ public final class GunGameTests {
 
     /**
      * The chemthrower's tank is its receiver's magazine, not a private pair of keys beside it. Every
-     * reader of a gun's ammunition goes through the receiver — the HUD rail, the tooltip, the fire
-     * lambdas — so a fill that only the item can see is a fill nothing displays, and a receiver with no
+     * reader of a gun's ammunition (the HUD rail, the tooltip, the fire lambdas) goes through the
+     * receiver, so a fill that only the item can see is a fill nothing displays, and a receiver with no
      * magazine at all takes the HUD down with it.
      */
     public static void chemthrowerTank(GameTestHelper helper) {

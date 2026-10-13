@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 import java.util.ArrayList;
 
-/** JEI category for the hydrotreater — {input 100, hydrogen} → {out1, out2}. */
+/** JEI category for the hydrotreater: {input 100, hydrogen} to {out1, out2}. */
 public class HydrotreatingRecipeHandler extends JEIUniversalHandler<HydrotreatingRecipeHandler.Entry> {
 
     public record Entry(FluidType input, HydrotreatingRecipes.HydrotreatingRecipe recipe) {}

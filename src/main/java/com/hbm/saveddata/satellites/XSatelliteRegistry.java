@@ -1,12 +1,17 @@
 package com.hbm.saveddata.satellites;
 
 import com.hbm.api.data.SatelliteDataMaps;
+import com.hbm.api.environment.Environment;
 import com.hbm.items.machine.ItemSatellite;
 import com.hbm.items.machine.ItemSatellite.EnumSatType;
 import com.hbm.saveddata.SatelliteSavedData;
+import dev.golem.core.Ids;
+import dev.golem.core.hook.Hook;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -44,8 +49,8 @@ public final class XSatelliteRegistry {
     public static ItemStack stackFor(SatelliteType type) {
         for (var entry : SatelliteDataMaps.SATELLITE.byId().entrySet()) {
             if (!entry.getValue().equals(type.name())) continue;
-            var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.parse(entry.getKey()));
-            if (item != null && item != net.minecraft.world.item.Items.AIR) return new ItemStack(item);
+            var item = BuiltInRegistries.ITEM.getValue(Ids.parse(entry.getKey()));
+            if (item != null && item != Items.AIR) return new ItemStack(item);
         }
         return ItemStack.EMPTY;
     }
@@ -61,7 +66,7 @@ public final class XSatelliteRegistry {
      * the chip's orbit settings onto the new satellite here; an addon copies its own item data into
      * {@link Satellite#extra}. {@code level} is the level whose satellites it joins.
      */
-    public static final dev.golem.core.hook.Hook<Orbited> ORBITED = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<Orbited> ORBITED = Hook.notifying();
 
     /** 1.7 {@code createFromItem}. */
     public static @Nullable Satellite createFromItem(ItemStack stack) {
@@ -87,7 +92,7 @@ public final class XSatelliteRegistry {
 
             if (sat != null) {
                 // hbm-space getTargetDimensionId: some satellites go to another body than the launch site's
-                ServerLevel target = com.hbm.api.environment.Environment.satelliteLevel(level, at, stack);
+                ServerLevel target = Environment.satelliteLevel(level, at, stack);
                 if (target != level) data = SatelliteSavedData.get(target);
                 for (Orbited listener : ORBITED) listener.orbited(target, stack, freq, sat);
                 data.sats.put(freq, sat);

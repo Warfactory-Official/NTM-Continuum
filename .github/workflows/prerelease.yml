@@ -89,6 +89,11 @@ jobs:
           for repo in new-hbm Golem-Core; do
             find $repo/versions/*/build/libs -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' -exec cp {} dist/ \;
           done
+          # Tag every jar with this build's number, so jars from different builds never share a file name:
+          # hbm-fabric-1.20.1-0.1.0+1.20.1.jar -> hbm-fabric-1.20.1-0.1.0+1.20.1-build.42.jar
+          for jar in dist/*.jar; do
+            mv "$jar" "${jar%.jar}-build.${{ github.run_number }}.jar"
+          done
           ls -l dist
           ls dist | grep -q '^hbm-' || { echo "No HBM jars produced"; exit 1; }
           version=$(grep -E '^mod.version=' new-hbm/gradle.properties | cut -d= -f2 | tr -d '[:space:]')

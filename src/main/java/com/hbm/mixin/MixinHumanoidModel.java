@@ -21,19 +21,19 @@ import net.minecraft.world.entity.LivingEntity;
  * reach:
  *
  * <ul>
- * <li><i>Vanilla API</i> — nothing exposes a hook between "the model has been posed" and "the model has
+ * <li><i>Vanilla API</i>: nothing exposes a hook between "the model has been posed" and "the model has
  *     been submitted", which is the only window in which a visibility flag has any effect. A render
  *     layer is too late: it runs after the body, and below 26.1 the body has already been drawn.
- * <li><i>Loader API</i> — NeoForge has {@code RenderPlayerEvent.Pre}/{@code Post}, which is what 1.12
+ * <li><i>Loader API</i>: NeoForge has {@code RenderPlayerEvent.Pre}/{@code Post}, which is what 1.12
  *     used, but fabric-api has no player-render event at all. Using the NeoForge one would put the same
  *     feature on three of six nodes.
- * <li><i>Access widener</i> — buys nothing; {@code ModelPart.visible} is already public. The obstacle is
+ * <li><i>Access widener</i>: buys nothing; {@code ModelPart.visible} is already public. The obstacle is
  *     timing, not visibility.
  * </ul>
  *
  * <p>It is the smallest mixin that works: one {@code @Inject} at {@code TAIL}, no cancellation, no
  * redirect. {@code HumanoidModel.setupAnim} is chosen because it is the last thing to touch the model
- * before submission, and — for players — it runs <i>after</i> {@code PlayerModel.setupAnim} has re-applied
+ * before submission, and (for players) it runs <i>after</i> {@code PlayerModel.setupAnim} has re-applied
  * the skin-customisation flags each frame, so restoring never fights the player's own settings.
  *
  * <p>The two branches exist because the method's descriptor changed: 26.1 poses from a render state,

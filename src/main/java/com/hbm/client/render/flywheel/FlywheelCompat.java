@@ -1,5 +1,6 @@
 package com.hbm.client.render.flywheel;
 
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.client.render.TorexCloudletRenderData;
 import com.hbm.entity.ModEntities;
@@ -24,25 +25,23 @@ import java.util.WeakHashMap;
  *
  * <ul>
  *   <li><b>The published engine</b>, {@code dev.engine_room}, on the 1.20.1 and 1.21.1 nodes. It is a
- *       separate mod that may not be installed, so no {@code dev.engine_room} type may be named here —
+ *       separate mod that may not be installed, so no {@code dev.engine_room} type may be named here:
  *       every such reference lives in {@link FlywheelVisuals}, a file that does not exist on a node
  *       without the engine and which this class names only from inside a {@code //? if flywheel}
  *       branch. That way the JVM never tries to resolve those classes when the engine is absent.</li>
  *   <li><b>The vendored engine</b>, {@code dev.golem.core.flywheel}, on both 26.1 nodes. Engine Room
  *       has a 26.1 source branch but no published artifact used by this build, so Golem Core carries
- *       that port instead. It ships inside
- *       a hard dependency and its entry point is present on every node with inert bodies, so it can be
- *       named unguarded — the discipline above exists for absent classes, and this one is never
- *       absent.</li>
+ *       that port instead. It ships inside Golem Core, a hard dependency, and its entry point is
+ *       present on every node with inert bodies, so it can be named unguarded. The discipline above
+ *       is for absent classes, and this one is never absent.</li>
  * </ul>
  *
- * <p>Both are optional twice over and a caller has to survive both cases: the engine may not be there
- * at all, and even when it is the player can switch the backend off. So an instanced visual is never
- * the only renderer for anything — it is an acceleration for a machine that must already draw
- * correctly through its vanilla {@code CompatBER}. Gate on {@link #isAvailable} and fall through when
- * it is false.
+ * <p>Both are optional twice over: the engine may not be there, and even when it is the player can
+ * switch the backend off. So an instanced visual is never the only renderer for anything. It is an
+ * acceleration for a machine that must already draw correctly through its vanilla {@code CompatBER}.
+ * Gate on {@link #isAvailable} and fall through when it is false.
  *
- * <p>Nothing outside this package may name a bridge class directly; that is the whole discipline.
+ * <p>Nothing outside this package may name a bridge class directly.
  */
 public final class FlywheelCompat {
 
@@ -80,9 +79,9 @@ public final class FlywheelCompat {
      *
      * <p>The published engine is a mod and subscribes itself, so this does nothing on those nodes. The
      * vendored one is a library: it has to be handed its listeners, and two of them are mod-bus
-     * registry events — {@code RegisterRenderPipelinesEvent} for both backends' pipelines. A listener
+     * registry events ({@code RegisterRenderPipelinesEvent} for both backends' pipelines). A listener
      * added from inside another startup event may already have missed its own, so this is called at
-     * construction time, which is where CE subscribes the same thirteen.
+     * construction time.
      *
      * <p>Safe to call unguarded: a node with no engine is a no-op.
      */
@@ -137,12 +136,12 @@ public final class FlywheelCompat {
      * The block that owns the visual for a mined position, for the crumbling overlay.
      *
      * <p>A folded multiblock puts the block entity somewhere other than where the player is usually
-     * swinging -- its cells carry none at all -- so without this the destroy-stage overlay silently
-     * fails to draw on every multiblock in the game.
+     * swinging (its cells carry none), so without this the destroy-stage overlay silently fails to draw
+     * on every multiblock.
      *
-     * <p>Deliberately not {@link MultiblockSurface#coreOfAny}: that falls through to a cell lookup for
-     * any state at all, and the client half of that lookup is a 33-cubed scan around the position. This
-     * runs per mined block per frame, so it has to reject a plain block on a state test alone.
+     * <p>Not {@link MultiblockSurface#coreOfAny}: that falls through to a cell lookup for any state, and
+     * the client half of that lookup is a 33-cubed scan around the position. This runs per mined block
+     * per frame, so it has to reject a plain block on a state test alone.
      */
     public static @Nullable BlockPos crumblingCore(Level level, BlockPos mined, BlockState state) {
         if (MultiblockSurface.isFoldedCell(state)) return cachedFoldedCore(level, mined);
@@ -155,9 +154,9 @@ public final class FlywheelCompat {
         if (packed != null) {
             BlockPos core = BlockPos.of(packed);
             BlockState coreState = level.getBlockState(core);
-            com.hbm.blocks.multiblock.BlockMultiblockCore block = MultiblockSurface.foldedCore(coreState);
+            BlockMultiblockCore block = MultiblockSurface.foldedCore(coreState);
             if (block != null && block.claimsCell(core, mined,
-                    coreState.getValue(com.hbm.blocks.multiblock.BlockMultiblockCore.FACING))) return core;
+                    coreState.getValue(BlockMultiblockCore.FACING))) return core;
             cache.remove(mined.asLong());
         }
 

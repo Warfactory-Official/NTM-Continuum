@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import dev.golem.core.world.ItemStacks;
 import java.util.List;
 import net.minecraft.world.item.ItemStack;
 
@@ -42,6 +43,6 @@ public class FluidContainerStack extends RecipesCommon.AStack {
     @Override
     public List<ItemStack> getDisplayStacks() {
         return FluidContainerRegistry.INSTANCE.examples(fluid, amount).stream()
-                .map(stack -> dev.golem.core.world.ItemStacks.copyWithCount(stack, stacksize)).toList();
+                .map(stack -> ItemStacks.copyWithCount(stack, stacksize)).toList();
     }
 }

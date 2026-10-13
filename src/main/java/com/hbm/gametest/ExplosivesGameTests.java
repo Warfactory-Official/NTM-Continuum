@@ -7,14 +7,19 @@ import com.hbm.blocks.ModExplosivesBlocks;
 import com.hbm.tileentity.bomb.TileEntityCharge;
 import com.hbm.tileentity.bomb.TileEntityLandmine;
 import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -42,7 +47,7 @@ public final class ExplosivesGameTests {
                 "AP mine trigger box must be the 1.7 1.5 x 1 box");
 
         // A mock player is not in the level's entity lists; a pig two blocks away is, and it is a LivingEntity.
-        net.minecraft.world.entity.LivingEntity pig = helper.spawn(net.minecraft.world.entity.EntityType.PIG, relative.east(2));
+        LivingEntity pig = helper.spawn(EntityType.PIG, relative.east(2));
         TileEntityLandmine.serverTick(helper.getLevel(), pos, helper.getLevel().getBlockState(pos), mine);
         helper.assertTrue(!mine.isPrimed(), "a mine must not prime while something stands in twice its trigger radius");
         helper.assertTrue(helper.getLevel().getBlockState(pos).is(block), "an unprimed mine must not detonate");
@@ -96,8 +101,8 @@ public final class ExplosivesGameTests {
                 Vec3.atCenterOf(pos), InteractionHand.MAIN_HAND, ToolType.DEFUSER), "the defuser must remove a disarmed charge");
         helper.assertTrue(helper.getLevel().getBlockState(pos).isAir() && !BlockChargeBase.safe,
                 "the second defuser use must remove the charge without detonating it");
-        helper.assertTrue(!helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
-                        new net.minecraft.world.phys.AABB(pos).inflate(2)).isEmpty(),
+        helper.assertTrue(!helper.getLevel().getEntitiesOfClass(ItemEntity.class,
+                        new AABB(pos).inflate(2)).isEmpty(),
                 "removing a charge with the defuser must drop the charge item");
         helper.succeed();
     }
@@ -106,6 +111,6 @@ public final class ExplosivesGameTests {
     private static void click(GameTestHelper helper, BlockPos pos, Player player) {
         BlockState state = helper.getLevel().getBlockState(pos);
         BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
-        dev.golem.core.world.Compat.useBlockWithoutItem(state, helper.getLevel(), player, hit);
+        Compat.useBlockWithoutItem(state, helper.getLevel(), player, hit);
     }
 }

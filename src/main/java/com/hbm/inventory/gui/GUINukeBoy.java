@@ -1,6 +1,8 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerNukeBoy;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.locale.Language;
@@ -13,9 +15,9 @@ import java.util.List;
 import java.util.Optional;
 
 /** Little Boy schematic screen, ported from 1.7 {@code GUINukeBoy}: the five installed-part overlays and the info panel. */
-public class GUINukeBoy extends dev.golem.core.gui.CompatContainerScreen<ContainerNukeBoy> {
+public class GUINukeBoy extends CompatContainerScreen<ContainerNukeBoy> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/weapon/lilboyschematic.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/weapon/lilboyschematic.png");
 
     public GUINukeBoy(ContainerNukeBoy menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 222);

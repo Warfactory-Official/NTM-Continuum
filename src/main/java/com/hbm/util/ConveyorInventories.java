@@ -1,5 +1,6 @@
 package com.hbm.util;
 
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.Container;
@@ -59,7 +60,7 @@ public final class ConveyorInventories {
             int index = access == null ? i : access[i];
             ItemStack stack = inv.getItem(index);
 
-            if (!stack.isEmpty() && dev.golem.core.world.ItemStacks.sameItemAndData(toAdd, stack)
+            if (!stack.isEmpty() && ItemStacks.sameItemAndData(toAdd, stack)
                     && stack.getCount() < Math.min(stack.getMaxStackSize(), limit)
                     && (sided == null || sided.canPlaceItemThroughFace(index, toAdd, side))
                     && inv.canPlaceItem(index, toAdd)) {

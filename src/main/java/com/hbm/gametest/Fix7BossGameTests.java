@@ -5,6 +5,7 @@ import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.mob.EntityCyberCrab;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.Entities;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
@@ -12,7 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 /**
- * Fix wave phase 7 (2026-10-03): crabs, the hunter chopper, the UFO and Balls-O-Tron against original-hbm
+ * Crabs, the hunter chopper, the UFO and Balls-O-Tron against 1.7
  * (1.7.10). Each mob is created detached from the world and its base attributes and hitbox are compared with the
  * 1.7 {@code applyEntityAttributes} and {@code setSize} values.
  */
@@ -86,7 +87,7 @@ public final class Fix7BossGameTests {
     }
 
     private static void spawned(GameTestHelper helper, EntityType<? extends LivingEntity> type, double health) {
-        LivingEntity entity = helper.spawn(type, new net.minecraft.core.BlockPos(1, 2, 1));
+        LivingEntity entity = helper.spawn(type, new BlockPos(1, 2, 1));
         try {
             check(helper, entity, "spawned max health", entity.getMaxHealth(), health);
             check(helper, entity, "spawned health", entity.getHealth(), health);

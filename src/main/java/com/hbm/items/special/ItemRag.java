@@ -2,6 +2,7 @@ package com.hbm.items.special;
 
 import com.hbm.items.ModFinalConsumableItems;
 import com.hbm.items.ModItems;
+import dev.golem.core.hook.Hook;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
@@ -52,7 +53,7 @@ public class ItemRag extends CompatItem {
     /**
      * Listeners in phase order; the first non-empty product wins. NTM: Space gives {@code rag_blood} above 500 RAD.
      */
-    public static final dev.golem.core.hook.Hook<Use> USE = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<Use> USE = Hook.notifying();
 
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {

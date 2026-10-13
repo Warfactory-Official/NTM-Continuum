@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/** Hydrotreater block — 3×3×7 the folded core (dims {@code {6,0,1,1,1,1}}, offset 1) with the
+/** Hydrotreater block: 3×3×7 the folded core (dims {@code {6,0,1,1,1,1}}, offset 1) with the
  * 4 base corners marked as extras (the fluid ports). */
 public class MachineHydrotreater extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 

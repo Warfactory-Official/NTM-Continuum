@@ -7,21 +7,28 @@ import com.hbm.api.fluidmk2.IFluidProviderMK2;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.handler.BossSpawnHandler;
 import com.hbm.handler.neutron.NeutronNodeWorld;
 import com.hbm.handler.neutron.RBMKNeutronHandler.RBMKNeutronNode;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.ModRBMKItems;
+import com.hbm.items.machine.ItemRBMKLid;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKBase;
 import com.hbm.tileentity.machine.rbmk.IRBMKTicking;
 import com.hbm.tileentity.machine.rbmk.RBMKDials;
+import dev.golem.core.gui.Menus;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
@@ -62,15 +69,15 @@ public abstract class RBMKBase extends BlockMultiblockCore implements IFluidConn
     protected abstract BlockEntityType<? extends BlockEntityRBMKBase> beType();
     protected abstract BlockEntityRBMKBase createCore(BlockPos pos, BlockState state);
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return state.getValue(PART) == Part.CORE ? createCore(pos, state) : null; }
-    @Override public boolean canConnect(com.hbm.inventory.fluid.FluidType type, net.minecraft.world.level.BlockGetter world, int x, int y, int z, com.hbm.lib.ForgeDirection dir) {
-        if (!(world instanceof Level level) || dir == com.hbm.lib.ForgeDirection.UNKNOWN) return false;
+    @Override public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+        if (!(world instanceof Level level) || dir == ForgeDirection.UNKNOWN) return false;
         BlockPos surface = new BlockPos(x, y, z), core = MultiblockSurface.coreOfAny(level, surface);
         if (core == null || !MultiblockSurface.isOpen(level, surface, level.getBlockState(surface), dir.toDirection())) return false;
         BlockEntity blockEntity = level.getBlockEntity(core);
         return blockEntity instanceof IFluidReceiverMK2 || blockEntity instanceof IFluidProviderMK2;
     }
-    @Override public boolean canConnect(net.minecraft.world.level.BlockGetter world, BlockPos pos, com.hbm.lib.ForgeDirection dir) {
-        if (!(world instanceof Level level) || dir == com.hbm.lib.ForgeDirection.UNKNOWN) return false;
+    @Override public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
+        if (!(world instanceof Level level) || dir == ForgeDirection.UNKNOWN) return false;
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !MultiblockSurface.isOpen(level, pos, level.getBlockState(pos), dir.toDirection())) return false;
         return level.getBlockEntity(core) instanceof IEnergyConnectorMK2 energy && energy.canConnect(dir);
@@ -79,14 +86,14 @@ public abstract class RBMKBase extends BlockMultiblockCore implements IFluidConn
     public @Nullable BlockPos rigidStructureCore(Level level, BlockPos member) { BlockState state = level.getBlockState(member); return state.getBlock() instanceof RBMKBase ? coreOf(level, member, state) : null; }
     @Override protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) { BlockPos core = coreOf(level, pos, state); return core == null ? 0 : super.onAnalogOutputSignal(level.getBlockState(core), level, core); }
     @Override protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (this instanceof RBMKRod || this instanceof RBMKStorage) com.hbm.handler.BossSpawnHandler.markFBI(player); // 1.7: rods and storage mark on any use
+        if (this instanceof RBMKRod || this instanceof RBMKStorage) BossSpawnHandler.markFBI(player); // 1.7: rods and storage mark on any use
         BlockPos core = coreOf(level, pos, state); if (core == null) return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
         BlockState coreState = level.getBlockState(core);
         // 1.7 openInv: a lid in hand on a lidless column is the lid's click (ItemRBMKLid.onItemUse), not the GUI's.
-        if (player.getMainHandItem().getItem() instanceof com.hbm.items.machine.ItemRBMKLid && !hasOwnLid() && !lidOf(coreState).present()) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (player.getMainHandItem().getItem() instanceof ItemRBMKLid && !hasOwnLid() && !lidOf(coreState).present()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (player.isShiftKeyDown() && !hasOwnLid()) { Lid lid = lidOf(coreState); if (lid.present()) { level.setBlock(core, coreState.setValue(LID, Lid.NONE), 3); if (NeutronNodeWorld.getNode(level, core) instanceof RBMKNeutronNode node) node.removeLid(); Block.popResource(level, core, new ItemStack(lid == Lid.GLASS ? ModRBMKItems.rbmk_lid_glass.get() : ModRBMKItems.rbmk_lid.get())); return InteractionResult.SUCCESS; } }
-        if (level.getBlockEntity(core) instanceof MenuProvider menu && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) { dev.golem.core.gui.Menus.openWithPos(serverPlayer, menu, core); return InteractionResult.SUCCESS; }
+        if (level.getBlockEntity(core) instanceof MenuProvider menu && player instanceof ServerPlayer serverPlayer) { Menus.openWithPos(serverPlayer, menu, core); return InteractionResult.SUCCESS; }
         return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
     public enum Lid implements StringRepresentable { NONE("none"), CONCRETE("concrete"), GLASS("glass"); private final String name; Lid(String name) { this.name = name; } @Override public String getSerializedName() { return name; } public boolean present() { return this != NONE; } }

@@ -4,11 +4,13 @@ import com.hbm.Constants;
 import com.hbm.config.FalloutConfig;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.Ids;
 import dev.golem.core.data.DataFiles;
 import dev.golem.core.data.DataMaps;
 import dev.golem.core.data.DataMaps.DataMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 /**
  * What explosions and radiation do to blocks, as data: the eroding blast's table ({@code hbm:erosion}), radiation's
@@ -25,7 +27,7 @@ public final class WorldDataMaps {
 
     /** Block ids by name, resolved at use time ({@code minecraft:air} for an unknown one). */
     public static Block blockOf(String id) {
-        return BuiltInRegistries.BLOCK.getOptional(dev.golem.core.Ids.parse(id)).orElse(net.minecraft.world.level.block.Blocks.AIR);
+        return BuiltInRegistries.BLOCK.getOptional(Ids.parse(id)).orElse(Blocks.AIR);
     }
 
     /** What an eroding blast (1.7 {@code ExplosionNT} {@code ERRODE}, the drill missile) leaves of a block: a block id. */

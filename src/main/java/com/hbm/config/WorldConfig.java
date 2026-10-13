@@ -4,12 +4,11 @@ package com.hbm.config;
  * 1.7 {@code WorldConfig}, read from {@code hbm.cfg} at start-up ({@link #loadFromConfig}). The field initialisers are
  * 1.7's config defaults, which the build-time declarations ({@code ModBiomeModifiers}) also see; the ore counts, chances
  * and switches reach the placed features at generation time through {@code hbm:config} ({@code ConfigPlacement}).
- * (History §19ej-8; the paragraphs below record where the values came from.)
  *
  * <p>Two flavours of number, matching upstream and easy to mix up:
  * <ul>
- *   <li><b>counts</b> — vein attempts <i>per chunk</i> (bigger = more ore).</li>
- *   <li><b>chances</b> — the {@code n} in {@code rand.nextInt(n) == 0}, i.e. one per <i>n</i> chunks
+ *   <li><b>counts</b>, vein attempts <i>per chunk</i> (bigger = more ore).</li>
+ *   <li><b>chances</b>: the {@code n} in {@code rand.nextInt(n) == 0}, i.e. one per <i>n</i> chunks
  *       (bigger = <i>less</i> ore). Every such field is named {@code …Chance}.</li>
  * </ul>
  *
@@ -21,7 +20,7 @@ public final class WorldConfig {
 
     private WorldConfig() {}
 
-    // ---------------------------------------------------------------- meteors (1.12.2 CATEGORY_METEOR)
+    // Meteors (1.12.2 CATEGORY_METEOR)
     /** {@code 5.00_enableMeteorStrikes}: toggles the spawning of meteors. */
     public static boolean enableMeteorStrikes = true;
     /** {@code 5.01_enableMeteorShowers}: meteor showers, a 1% chance for every spawned meteor. */
@@ -37,13 +36,13 @@ public final class WorldConfig {
     /** 1.7 {@code 5.05_meteorShowerDuration}: the longest a shower lasts, in ticks (it runs 75..100 % of this). */
     public static int meteorShowerDuration = 20 * 60 * 30;
 
-    // ---------------------------------------------------------------- overworld veins (count/chunk)
+    // Overworld veins (count/chunk)
     // Field names mirror upstream's CompatibilityConfig keys (thoriumSpawn = 01.11_thoriumSpawnrate);
     // only the ones that do something extra carry a note.
 
-    // 2026-09-25 (§19ec-worldfeatures): original-hbm (1.7) wins where 1.7 and 1.12 disagree. The values below are
-    // 1.7's config defaults (WorldConfig.loadFromConfig, what a 1.7 game generated with); the key named on a field
-    // is the 1.7 key. Differences from the 1.12 CompatibilityConfig values this class used to carry are noted.
+    // Where 1.7 and 1.12 disagree, 1.7 wins. The values below are 1.7's config defaults
+    // (WorldConfig.loadFromConfig, what a 1.7 game generated with); the key named on a field is the 1.7 key.
+    // Differences from the 1.12 CompatibilityConfig values are noted.
 
     /** Vein attempts per chunk, plain stone host. 1.7 {@code 2.00_uraniumSpawnrate}. */
     public static int uraniumSpawn = 7;
@@ -69,7 +68,7 @@ public final class WorldConfig {
     /** Old {@code 01.17_gasShaleSpawnRate}. Gneiss host, multiplied by 3. */
     public static int gasShaleSpawn = 5;
 
-    // ---------------------------------------------------------------- clusters (count/chunk)
+    // Clusters (count/chunk)
 
     public static int ironClusterSpawn = 4;
     public static int titaniumClusterSpawn = 2;
@@ -80,7 +79,7 @@ public final class WorldConfig {
      */
     public static int copperClusterSpawn = 4; // 1.7 2.C03_copperClusterSpawn (1.12 CompatibilityConfig had 3)
 
-    // ---------------------------------------------------------------- chance-gated (1 per N chunks)
+    // Chance-gated (1 per N chunks)
 
     /** One flammable-gas bubble per N chunks. 1.7 {@code 2.17_gasBubbleSpawnRate} (1.12 had 40). */
     public static int gasBubbleChance = 12;
@@ -89,7 +88,7 @@ public final class WorldConfig {
     /** One alexandrite vein per N chunks. Old {@code 01.32_alexandriteSpawnRate}. */
     public static int alexandriteChance = 100;
 
-    // ---------------------------------------------------------------- resource stone (WorldConfig-read)
+    // Resource stone (WorldConfig-read)
 
     /**
      * Limestone vein attempts per chunk, 1.7 {@code 2.L02_limestoneSpawn}: overworld only, size 16, y 25..54. (1.12
@@ -97,7 +96,7 @@ public final class WorldConfig {
      */
     public static int limestoneSpawn = 1;
 
-    // ---------------------------------------------------------------- 1.7 terrain + surface features
+    // 1.7 terrain + surface features
 
     /** 1.7 {@code 2.21_oilSpawnRate}: one oil bubble origin per N chunks (MapGenBubble). */
     public static int oilSpawn = 100;
@@ -113,15 +112,15 @@ public final class WorldConfig {
     /** 1.7 {@code 4.18_geyserChlorineSpawn}: one chlorine geyser per N plains chunks. */
     public static int geyserChlorine = 3000;
 
-    /** Old {@code WorldConfig.enableSulfurCave} — the sulfur cave-wall Perlin feature. */
+    /** Old {@code WorldConfig.enableSulfurCave}: the sulfur cave-wall Perlin feature. */
     public static boolean enableSulfurCave = true;
     public static boolean enableAsbestosCave = true;
-    /** Old {@code WorldConfig.enableHematite} — the 3D-noise ore layer. */
+    /** Old {@code WorldConfig.enableHematite}: the 3D-noise ore layer. */
     public static boolean enableHematite = true;
     public static boolean enableMalachite = true;
     public static boolean enableBauxite = true;
 
-    // ---------------------------------------------------------------- crater fallout biomes
+    // Crater fallout biomes
 
     /** Whether fallout sweeps may replace overworld biome columns with the crater biomes. */
     public static boolean enableCraterBiomes = true;
@@ -134,7 +133,7 @@ public final class WorldConfig {
     /** 1.7 {@code 17.R03_craterBiomeWaterMult}: multiplier for RAD/s in crater biomes when wet. */
     public static float craterBiomeWaterMult = 5F;
 
-    // ---------------------------------------------------------------- 1.7 master ore switches (2.D00-2.D02)
+    // 1.7 master ore switches (2.D00-2.D02)
 
     /** 1.7 {@code 2.D00_overworldOres}: whether overworld ores generate (not oil and the other special structures). */
     public static boolean overworldOre = true;
@@ -143,20 +142,20 @@ public final class WorldConfig {
     /** 1.7 {@code 2.D02_endOres}: whether end ores generate (not trixite crystals). */
     public static boolean endOre = true;
 
-    // ---------------------------------------------------------------- nether (count/chunk)
+    // Nether (count/chunk)
 
     public static int netherUraniumSpawn = 8;
     public static int netherTungstenSpawn = 10;
     public static int netherSulfurSpawn = 26;
-    /** Old {@code 02.N03_phosphorusSpawnrate} — places {@code ore_nether_fire}. */
+    /** Old {@code 02.N03_phosphorusSpawnrate}, places {@code ore_nether_fire}. */
     public static int netherPhosphorusSpawn = 24;
     public static int netherCoalSpawn = 8; // 1.7 2.N04_coalSpawnrate (1.12 had 24)
-    /** Old {@code 02.N06_cobaltSpawnrate}. Generates near the nether ROOF — see the feature. */
+    /** Old {@code 02.N06_cobaltSpawnrate}. Generates near the nether ROOF, see the feature. */
     public static int netherCobaltSpawn = 2;
     /** Old {@code 02.N05_plutoniumSpawnrate}. Gated off by {@link GeneralConfig#enablePlutoniumOre}. */
     public static int netherPlutoniumSpawn = 8;
 
-    // ---------------------------------------------------------------- end
+    // End
 
     /**
      * Old {@code 03.E01_tixiteSpawnrate}. Note the spelling drift upstream: the config key says
@@ -164,7 +163,7 @@ public final class WorldConfig {
      */
     public static int endTikiteSpawn = 8;
 
-    // ---------------------------------------------------------------- bedrock ore weights (2.B00-2.BN01)
+    // Bedrock ore weights (2.B00-2.BN01)
 
     /*
      * 1.7 wrote these keys, but nothing in 1.7 read the overworld ones (BedrockOre.generateAuto is noise-driven); they are
@@ -282,7 +281,7 @@ public final class WorldConfig {
         enableAsbestosCave = CommonConfig.createConfigBool(config, CATEGORY_OREGEN, "2.C01_enableAsbestosCave", "Toggles asbestos caves", true);
 
         final String CATEGORY_DUNGEON = CommonConfig.CATEGORY_DUNGEONS;
-        // the legacy dungeon chances are read at generation by hbm:config_spread (History §19ek-hooks)
+        // the legacy dungeon chances are read at generation by hbm:config_spread
         DungeonConfig.antennaStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.01_antennaSpawn", "Spawn antenna on every nTH chunk", 250);
         DungeonConfig.atomStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.02_atomSpawn", "Spawn power plant on every nTH chunk", 500);
         DungeonConfig.dungeonStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.04_dungeonSpawn", "Spawn library dungeon on every nTH chunk", 64);
@@ -311,7 +310,7 @@ public final class WorldConfig {
         meteorShowerDuration = CommonConfig.createConfigInt(config, CATEGORY_METEOR, "5.05_meteorShowerDuration", "Max duration of meteor shower in ticks", 20 * 60 * 30);
 
         final String CATEGORY_BIOMES = CommonConfig.CATEGORY_BIOMES;
-        // 17.B00..17.B02 (numeric crater biome ids) are not ported: biomes are registered by name (History §19ej-8)
+        // 17.B00..17.B02 (numeric crater biome ids) are not ported: biomes are registered by name
         enableCraterBiomes = CommonConfig.createConfigBool(config, CATEGORY_BIOMES, "17.B_toggle", "Enables the biome change caused by nuclear explosions", true);
         craterBiomeRad = (float) CommonConfig.createConfigDouble(config, CATEGORY_BIOMES, "17.R00_craterBiomeRad", "RAD/s for the crater biome", 5D);
         craterBiomeInnerRad = (float) CommonConfig.createConfigDouble(config, CATEGORY_BIOMES, "17.R01_craterBiomeInnerRad", "RAD/s for the inner crater biome", 25D);

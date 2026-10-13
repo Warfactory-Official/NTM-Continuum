@@ -71,7 +71,7 @@ public final class ContainerMachineRotaryFurnace extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return com.hbm.inventory.container.Containers.stillValidMultiblock(access, player,
+        return Containers.stillValidMultiblock(access, player,
                 ModProductionBlocks.MACHINE_ROTARY_FURNACE.get());
     }
 

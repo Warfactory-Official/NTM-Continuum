@@ -7,6 +7,7 @@ import com.hbm.registration.Reg;
 import com.hbm.items.machine.ItemZirnoxRod;
 import com.hbm.items.machine.ItemZirnoxWaste;
 import com.hbm.items.machine.ZirnoxFuel;
+import dev.golem.core.dejson.Tints;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import java.util.EnumMap;
@@ -44,7 +45,7 @@ public final class ModZirnoxItems {
                 RegistryObject<ItemZirnoxWaste> waste = REG.item("waste_" + fuel.wasteId,
                         ItemZirnoxWaste::new)
                         .transform(Presets.sprite("hbm:items/" + fuel.wasteTexture())
-                                .tints(dev.golem.core.dejson.Tints.customModelData(0, 0xFFFFFF)))
+                                .tints(Tints.customModelData(0, 0xFFFFFF)))
                         .tab(HbmTab.MATERIALS);
                 WASTE.put(fuel, waste);
             }

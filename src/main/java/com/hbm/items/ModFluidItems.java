@@ -1,5 +1,6 @@
 package com.hbm.items;
 
+import com.hbm.items.machine.ItemFluidDuct;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Tints;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Fluid-container items. Currently the {@code fluid_bucket} — a single item that carries any fluid (1000
+ * Fluid-container items. Currently the {@code fluid_bucket}, a single item that carries any fluid (1000
  * mB) via its data components, with one creative-menu variant per registered fluid. Kept out of the
  * generated {@link ModItems} so codegen never clobbers it.
  */
@@ -35,20 +36,20 @@ public final class ModFluidItems {
             .transform(Presets.sprite("minecraft:item/bucket", "hbm:items/fluid_bucket_fill")
                     .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
 
-    /** The fluid "droplet" icon — a per-fluid visual representation used by recipes (not a real item; no
+    /** The fluid "droplet" icon, a per-fluid visual representation used by recipes (not a real item; no
      * creative tab, like the 1.12.2 {@code setCreativeTab(null)}). */
     public static final RegistryObject<ItemFluidIcon> fluid_icon =
             REG.item("fluid_icon", ItemFluidIcon::new, p -> p.stacksTo(1))
             .transform(Presets.sprite().tints(Tints.customModelData(0, 0xFFFFFF)));
 
-    /** Universal fluid tank — a portable 1000&nbsp;mB container for any fluid (1.12.2 {@code fluid_tank_v2}).
+    /** Universal fluid tank, a portable 1000&nbsp;mB container for any fluid (1.12.2 {@code fluid_tank_v2}).
      * Stacks to 64 (containers holding the same fluid+amount merge; different contents don't). */
     public static final RegistryObject<ItemFluidTank> fluid_tank =
             REG.item("fluid_tank", p -> new ItemFluidTank(p, 1000, "fluid_tank"), p -> p.stacksTo(64))
             .transform(Presets.sprite("hbm:items/fluid_tank", "hbm:items/fluid_tank_overlay")
                     .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
 
-    /** Fluid barrel — a portable 16000&nbsp;mB container for any fluid (1.12.2 {@code fluid_barrel_v2}). */
+    /** Fluid barrel, a portable 16000&nbsp;mB container for any fluid (1.12.2 {@code fluid_barrel_v2}). */
     public static final RegistryObject<ItemFluidTank> fluid_barrel =
             REG.item("fluid_barrel", p -> new ItemFluidTank(p, 16000, "fluid_barrel"), p -> p.stacksTo(64))
             .transform(Presets.sprite("hbm:items/fluid_barrel", "hbm:items/fluid_barrel_overlay")
@@ -58,8 +59,8 @@ public final class ModFluidItems {
      * 1.7 {@code ModItems.fluid_duct} (templateTab): a duct pre-typed to one fluid, placed as a typed
      * {@code fluid_duct_neo}; pass 1 tinted with the fluid colour. One creative stack per fluid.
      */
-    public static final RegistryObject<com.hbm.items.machine.ItemFluidDuct> fluid_duct =
-            REG.item("fluid_duct", com.hbm.items.machine.ItemFluidDuct::new, p -> p)
+    public static final RegistryObject<ItemFluidDuct> fluid_duct =
+            REG.item("fluid_duct", ItemFluidDuct::new, p -> p)
             .transform(Presets.sprite("hbm:items/duct", "hbm:items/duct_overlay")
                     .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
 
@@ -75,7 +76,7 @@ public final class ModFluidItems {
             }
             return list;
         });
-        ModTabs.addStacksTo(HbmTab.TEMPLATES, () -> com.hbm.items.machine.ItemFluidDuct.creativeStacks(fluid_duct.get()));
+        ModTabs.addStacksTo(HbmTab.TEMPLATES, () -> ItemFluidDuct.creativeStacks(fluid_duct.get()));
         // The universal tank + barrel: an empty one plus one full of each fluid (1.12.2 controlTab).
         ModTabs.addStacksTo(HbmTab.CONTROL, () -> fluidContainerVariants(fluid_tank.get()));
         ModTabs.addStacksTo(HbmTab.CONTROL, () -> fluidContainerVariants(fluid_barrel.get()));

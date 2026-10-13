@@ -2,6 +2,7 @@ package com.hbm.entity.mob.ai;
 
 import com.hbm.entity.mob.EntityPigeon;
 import com.hbm.entity.mob.IFlyingCreature;
+import dev.golem.core.world.Navigations;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -58,7 +59,7 @@ public class EntityAIEatBread extends Goal {
         pigeon.getLookControl().setLookAt(item, 30.0F, pigeon.getMaxHeadXRot());
 
         if (pigeon.distanceTo(item) > 1) {
-            dev.golem.core.world.Navigations.navigateTo(pigeon.getNavigation(), item, speed);
+            Navigations.navigateTo(pigeon.getNavigation(), item, speed);
             return;
         }
 

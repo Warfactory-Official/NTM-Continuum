@@ -37,9 +37,9 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>1.7's {@code TileEntitySawmill.getOutput} was code, not a table: {@code stickWood} to sawdust, {@code logWood} to
  * its crafted planks x 6/4, {@code plankWood} to six sticks, {@code treeSapling} to one stick, in that order, with
- * {@code sawdustChance} 0 for sawdust, 0.1 for sticks and 0.5 otherwise. Converted once to five rows (the stick has
- * its own hidden row besides {@code c:rods/wooden}, as the port matched it separately), so an addon adds a sawing (NTM:
- * Space's vinyl and PVC woods) with a file.
+ * {@code sawdustChance} 0 for sawdust, 0.1 for sticks and 0.5 otherwise. These are five rows here (the stick has
+ * its own hidden row besides {@code c:rods/wooden}, as the port matches it separately), so an addon adds a sawing
+ * (NTM: Space's vinyl and PVC woods) with a file.
  */
 public final class SawmillRecipes {
 

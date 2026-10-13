@@ -20,12 +20,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 
 /**
- * Magnetohydrodynamic turbine — the fusion chain's electrical output, converting plasma straight to HE
+ * Magnetohydrodynamic turbine: the fusion chain's electrical output, converting plasma straight to HE
  * with no steam loop in between.
  *
  * <p>Conversion is better than unity ({@link #PLASMA_EFFICIENCY}), which is the point of the machine:
  * plasma is worth more through an MHD turbine than through a boiler and a steam turbine. But it only
- * pays out in full above {@link #MINIMUM_PLASMA} — feed it a trickle and it halves the yield, so the
+ * pays out in full above {@link #MINIMUM_PLASMA}; a trickle halves the yield, so the
  * turbine rewards one big reactor over several small ones.
  *
  * <p>It also has to be actively cooled: without perfluoromethyl to run through, it produces nothing at

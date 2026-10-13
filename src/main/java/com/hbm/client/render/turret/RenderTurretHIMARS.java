@@ -7,8 +7,8 @@ import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 
 /**
- * The rocket artillery. Its launcher pitches about X rather than Z — the pod is modelled lying along
- * the gun's own axis — and the crane slides the pod five blocks back over the reload, which is what
+ * The rocket artillery. Its launcher pitches about X rather than Z; the pod is modelled lying along
+ * the gun's own axis, and the crane slides the pod five blocks back over the reload, which is what
  * makes the animation read as loading rather than as the launcher jumping.
  *
  * <p>The caps are the rockets still in the tubes: one mesh per round left, drawn in the crane's frame.

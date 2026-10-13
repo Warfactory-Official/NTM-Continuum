@@ -1,13 +1,16 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.util.BobMathUtil;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
@@ -16,6 +19,7 @@ import net.minecraft.sounds.SoundEvents;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.item.ItemStack;
 
 /** Small client-GUI helpers shared by HBM screens (e.g. the energy-bar hover tooltip). */
 public final class GuiUtil {
@@ -68,8 +72,8 @@ public final class GuiUtil {
     }
 
     /**
-     * As {@link #energyTooltip(long, long)} plus the throughput line {@code ±<delta>HE/s} — green when
-     * charging, red when draining, yellow at zero — exactly as the original battery GUI drew it.
+     * As {@link #energyTooltip(long, long)} plus the throughput line {@code ±<delta>HE/s}, green when
+     * charging, red when draining, yellow at zero. This is exactly how the original battery GUI drew it.
      */
     public static List<Component> energyTooltip(long power, long maxPower, long delta) {
         List<Component> list = new ArrayList<>();
@@ -94,8 +98,8 @@ public final class GuiUtil {
         return TankDisplay.tooltip(tank);
     }
 
-    /** The shared HBM {@code gui_utility.png} icon sheet (info/warning glyphs) — the 1.12.2 {@code GuiInfoContainer.guiUtil}. */
-    private static final Identifier GUI_UTILITY = dev.golem.core.Ids.of("hbm", "textures/gui/gui_utility.png");
+    /** The shared HBM {@code gui_utility.png} icon sheet (info/warning glyphs), the 1.12.2 {@code GuiInfoContainer.guiUtil}. */
+    private static final Identifier GUI_UTILITY = Ids.of("hbm", "textures/gui/gui_utility.png");
 
     /** The 8×8 info-panel dimensions + a small-blue-"*" glyph, the hover target for the upgrade panel. */
     public static final int INFO_PANEL_SIZE = 8;
@@ -130,10 +134,9 @@ public final class GuiUtil {
     }
 
     /**
-     * The "Acceptable Upgrades:" list shown when hovering a machine's upgrade slots — a faithful port of
-     * the 1.12.2 {@code GuiInfoContainer.getUpgradeInfo}: one {@code upgrade.gui.<type>} line (with the
-     * machine's max stack level) per upgrade type the machine reacts to ({@code canProvideInfo} probed
-     * with the level-0 sentinel).
+     * The "Acceptable Upgrades:" list shown when hovering a machine's upgrade slots, as the 1.12.2
+     * {@code GuiInfoContainer.getUpgradeInfo}: one {@code upgrade.gui.<type>} line (with the machine's max stack
+     * level) per upgrade type the machine reacts to ({@code canProvideInfo} probed with the level-0 sentinel).
      */
     public static List<Component> upgradeInfo(IUpgradeInfoProvider provider) {
         List<Component> lines = new ArrayList<>();
@@ -155,7 +158,7 @@ public final class GuiUtil {
         return lines;
     }
 
-    // ---- 1:1 equivalents of the 1.7.10 GuiInfoContainer / FluidTank GUI helpers (formerly Gui17), in absolute
+    // 1:1 equivalents of the 1.7.10 GuiInfoContainer / FluidTank GUI helpers, in absolute
     // screen coordinates exactly as the 1.7 calls pass them (guiLeft + x).
 
 
@@ -217,8 +220,8 @@ public final class GuiUtil {
     }
 
     /** Shorthand for a plain multi-line tooltip at the mouse. */
-    public static void tooltip(GuiGraphicsExtractor graphics, net.minecraft.client.gui.Font font, List<Component> lines, int mouseX, int mouseY) {
-        GuiDraw.tooltip(graphics, font, lines, java.util.Optional.empty(), mouseX, mouseY);
+    public static void tooltip(GuiGraphicsExtractor graphics, Font font, List<Component> lines, int mouseX, int mouseY) {
+        GuiDraw.tooltip(graphics, font, lines, Optional.empty(), mouseX, mouseY);
     }
 
     /**
@@ -227,7 +230,7 @@ public final class GuiUtil {
      * Empty stacks (1.7 {@code stackSize == 0}) get the red-framed grey backing. Positioned at (x+12, y-12) and
      * flipped/clamped against the screen like 1.7.
      */
-    public static void stackText(GuiGraphicsExtractor graphics, net.minecraft.client.gui.Font font, int screenWidth, int screenHeight,
+    public static void stackText(GuiGraphicsExtractor graphics, Font font, int screenWidth, int screenHeight,
                                  List<Object[]> lines, int x, int y) {
         if (lines.isEmpty()) return;
         int height = 0;
@@ -270,7 +273,7 @@ public final class GuiUtil {
                 if (o instanceof String s) {
                     GuiDraw.text(graphics, font, s, minX + indent, minY + (hasStack ? 4 : 0), -1, true);
                     indent += font.width(s) + 2;
-                } else if (o instanceof net.minecraft.world.item.ItemStack stack) {
+                } else if (o instanceof ItemStack stack) {
                     if (stack.isEmpty()) {
                         GuiDraw.fill(graphics, minX + indent - 1, minY - 1, minX + indent + 17, minY + 17, 0xFFFF0000);
                         GuiDraw.fill(graphics, minX + indent, minY, minX + indent + 16, minY + 16, 0xFFB0B0B0);

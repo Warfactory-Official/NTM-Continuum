@@ -1,5 +1,6 @@
 package com.hbm.items.special;
 
+import com.hbm.items.ModStorageDrumItems;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -11,7 +12,7 @@ import java.util.List;
 
 /**
  * One member of the long/short storage-drum waste families: the family ({@link #base()}) and the waste class (1.7's
- * metadata, {@link #variant()}) are the item itself, as in ntm-next (History §19es-itemvariant).
+ * metadata, {@link #variant()}) are the item itself, as in ntm-next.
  */
 public final class ItemWasteStorage extends ItemNuclearWaste {
 
@@ -101,7 +102,7 @@ public final class ItemWasteStorage extends ItemNuclearWaste {
         if (!(item instanceof ItemWasteStorage waste)) {
             throw new IllegalArgumentException("Not a storage-drum waste item: " + item);
         }
-        return com.hbm.items.ModStorageDrumItems.family(waste.base).stack(variant);
+        return ModStorageDrumItems.family(waste.base).stack(variant);
     }
 
     @Override

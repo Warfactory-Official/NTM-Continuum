@@ -15,6 +15,7 @@ import com.hbm.tileentity.machine.TileEntityHeaterFirebox;
 import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
 import com.hbm.tileentity.machine.TileEntityHeaterOven;
 import com.hbm.tileentity.machine.TileEntityMachineWoodBurner;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -34,7 +35,7 @@ public final class CombustionHeatGameTests {
         helper.setBlock(relative, block.defaultBlockState());
         block.fillSpace(helper.getLevel(), core, Direction.NORTH);
 
-        TileEntityMachineWoodBurner burner = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityMachineWoodBurner burner = GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineWoodBurner.class);
         helper.assertTrue(burner != null, "Wood burner core BlockEntity was not created");
         FoldedTestSupport.assertPort(helper, relative, relative.south());
@@ -62,7 +63,7 @@ public final class CombustionHeatGameTests {
         BlockPos relative = new BlockPos(3, 1, 3);
         HeaterFirebox block = ModMachineBlocks.heater_firebox.get();
         helper.setBlock(relative, block.defaultBlockState());
-        TileEntityHeaterFirebox firebox = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityHeaterFirebox firebox = GameTestHelpers.blockEntity(
                 helper, relative, TileEntityHeaterFirebox.class);
         helper.assertTrue(firebox != null, "Firebox core BlockEntity was not created");
 
@@ -84,9 +85,9 @@ public final class CombustionHeatGameTests {
         helper.setBlock(relative, ModMachineBlocks.heater_oven.get().defaultBlockState());
         helper.setBlock(relative.below(), ModMachineBlocks.heater_firebox.get().defaultBlockState());
 
-        TileEntityHeaterOven oven = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityHeaterOven oven = GameTestHelpers.blockEntity(
                 helper, relative, TileEntityHeaterOven.class);
-        TileEntityHeaterFirebox source = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityHeaterFirebox source = GameTestHelpers.blockEntity(
                 helper, relative.below(), TileEntityHeaterFirebox.class);
         helper.assertTrue(oven != null && source != null, "Heating oven or source BlockEntity was not created");
 
@@ -101,7 +102,7 @@ public final class CombustionHeatGameTests {
         BlockPos relative = new BlockPos(3, 1, 3);
         HeaterOilburner block = ModMachineBlocks.heater_oilburner.get();
         helper.setBlock(relative, block.defaultBlockState());
-        TileEntityHeaterOilburner burner = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityHeaterOilburner burner = GameTestHelpers.blockEntity(
                 helper, relative, TileEntityHeaterOilburner.class);
         helper.assertTrue(burner != null, "Oil burner core BlockEntity was not created");
 
@@ -123,7 +124,7 @@ public final class CombustionHeatGameTests {
         BlockPos relative = new BlockPos(3, 1, 3);
         HeaterElectric block = ModMachineBlocks.heater_electric.get();
         helper.setBlock(relative, block.defaultBlockState());
-        TileEntityHeaterElectric heater = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityHeaterElectric heater = GameTestHelpers.blockEntity(
                 helper, relative, TileEntityHeaterElectric.class);
         helper.assertTrue(heater != null, "Electric heater core BlockEntity was not created");
 
@@ -142,7 +143,7 @@ public final class CombustionHeatGameTests {
         BlockPos core = helper.absolutePos(relative);
         helper.setBlock(relative, block.defaultBlockState());
         block.fillSpace(helper.getLevel(), core, Direction.NORTH);
-        TileEntityHeatBoilerIndustrial boiler = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityHeatBoilerIndustrial boiler = GameTestHelpers.blockEntity(
                 helper, relative, TileEntityHeatBoilerIndustrial.class);
         helper.assertTrue(boiler != null, "Industrial boiler core BlockEntity was not created");
 

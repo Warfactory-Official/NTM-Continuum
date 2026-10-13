@@ -7,6 +7,7 @@ import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.CompatRenderTypes;
@@ -36,8 +37,8 @@ public final class RenderMachineForceField extends GemBER<TileEntityForceField, 
         public float spin;
     }
 
-    private final WavefrontObj body = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/radar_base.obj"));
-    private final WavefrontObj top = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/forcefield_top.obj"));
+    private final WavefrontObj body = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/radar_base.obj"));
+    private final WavefrontObj top = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/forcefield_top.obj"));
     private final Surface bodySkin = Surface.cutoutNoCull(Constants.MOD_ID + ":textures/models/forcefield_base.png");
     private final Surface topSkin = Surface.cutoutNoCull(Constants.MOD_ID + ":textures/models/forcefield_top.png");
 

@@ -4,7 +4,9 @@ import com.hbm.tileentity.machine.TileEntityLockableBase;
 import com.hbm.tileentity.machine.storage.TileEntityCrateBase;
 import com.hbm.tileentity.machine.storage.TileEntityCrateTungsten;
 import com.hbm.tileentity.machine.storage.TileEntitySafe;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
+import dev.golem.core.world.CarriedBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -36,7 +38,7 @@ import org.jspecify.annotations.Nullable;
  * <p>{@link #HOT} is 1.7's metadata 1 on the tungsten crate: set while a laser keeps it heated. Placement faced
  * the crate towards the player (1.7 metadata 2..5); the safe shows its door on that face.
  */
-public class BlockStorageCrate extends dev.golem.core.world.CarriedBlock implements TickingBlock {
+public class BlockStorageCrate extends CarriedBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty HOT = BooleanProperty.create("hot");
@@ -73,7 +75,7 @@ public class BlockStorageCrate extends dev.golem.core.world.CarriedBlock impleme
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.getBlockEntity(pos) instanceof TileEntityCrateBase crate && crate.canAccess(player)
                 && player instanceof ServerPlayer serverPlayer) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, crate, pos);
+            Menus.openWithPos(serverPlayer, crate, pos);
             TileEntityCrateBase.spawnSpiders(player, level, crate);
         }
         return InteractionResult.SUCCESS;
@@ -107,9 +109,9 @@ public class BlockStorageCrate extends dev.golem.core.world.CarriedBlock impleme
 
     /** 1.7 {@code removedByPlayer} with {@code /ntmserver CRATE_KEEP_CONTENTS} off: see {@link com.hbm.blocks.generic.CrateKeepContents}. */
     @Override
-    protected void onPlayerWillDestroy(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos,
-                                       net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.entity.player.Player player) {
-        com.hbm.blocks.generic.CrateKeepContents.breakLoose(level, pos, state, player);
+    protected void onPlayerWillDestroy(Level level, BlockPos pos,
+                                       BlockState state, Player player) {
+        CrateKeepContents.breakLoose(level, pos, state, player);
         super.onPlayerWillDestroy(level, pos, state, player);
     }
 }

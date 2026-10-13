@@ -3,7 +3,7 @@ package com.hbm.config;
 /**
  * 1.7 {@code BombConfig}, read from {@code hbm.cfg} by {@link #loadFromConfig}. The fields after {@code falloutRange}
  * ({@code falloutClaimWindow}, {@code disableNuclear}, the crater/fallout update switches, {@code enableNukeClouds}) are
- * port-only constants with no {@code hbm.cfg} key (History §19ej-8).
+ * port-only constants with no {@code hbm.cfg} key.
  */
 public final class BombConfig {
 
@@ -61,19 +61,17 @@ public final class BombConfig {
     /**
      * 1.7 {@code 6.04_falloutDelay} ({@code fDelay}): ticks the fallout sweep waits between two {@link #mk5}-ms apply
      * bursts. 1.7 counts {@code tickDelay} down from this and applies when it reaches 0 (then resets and decrements in
-     * the same tick), so the default 4 applies on tick 5 and then every fourth tick (History §19ek-hooks).
+     * the same tick), so the default 4 applies on tick 5 and then every fourth tick.
      */
     public static int fDelay = 4;
 
     /**
      * On-demand fallout chunk requests retained per scan worker.
      *
-     * <p>A deep pipeline hides generation latency, but 48 held 720 unresolved centre requests plus the
-     * active scans and expanded them into 1,983 unique
-     * neighbourhood chunks during a Tsar sweep. That saturated worldgen hard enough to produce 10-second
-     * server tick gaps. Sixteen still keeps hundreds of chunks in flight without flooding the generator.
-     * Each fallout entity snapshots this value when it is created and clamps it to 1..256, so changing
-     * the setting affects new sweeps only and an extreme value cannot overflow the effective request cap.
+     * <p>A deep pipeline hides generation latency, but a window of 48 saturated worldgen during a Tsar sweep
+     * (1,983 unique neighbourhood chunks requested) and produced 10-second tick gaps. Sixteen still keeps hundreds
+     * of chunks in flight. Each fallout entity snapshots this value when created and clamps it to 1..256, so
+     * changing it affects new sweeps only.
      */
     public static int falloutClaimWindow = 16;
 
@@ -84,19 +82,17 @@ public final class BombConfig {
      * Clears the crater by writing whole chunk sections and repairing heightmaps/lighting once per
      * chunk, instead of calling {@code Level.setBlock} for every one of a Fat Man's millions of blocks.
      *
-     * <p>Worth roughly 2-6x on the destruction phase plus the lighting backlog the per-block path
-     * leaves behind. Set to false to fall back to the per-block loop -- the escape hatch for a lighting
-     * or heightmap problem in the wild, since a broken one leaves a black world and nobody can patch a
-     * jar mid-game.
+     * <p>Roughly 2-6x faster on the destruction phase plus the lighting backlog the per-block path leaves behind.
+     * Set to false to fall back to the per-block loop if a lighting or heightmap problem shows up.
      */
     public static boolean craterSectionCarve = true;
 
     /**
      * Whether the fallout sweep notifies each converted block's neighbours ({@code updateNeighborsAt}).
      *
-     * <p>1.12.2 did this — {@code notifyNeighborsOfStateChange} — so it is on by default and turning it
-     * off is a deliberate divergence: redstone, fluids and falling blocks next to a converted cell would
-     * not react until something else touched them.
+     * <p>1.12.2 does this with {@code notifyNeighborsOfStateChange}, so it is on by default. Turning it off
+     * diverges: redstone, fluids and falling blocks next to a converted cell do not react until something else
+     * touches them.
      */
     public static boolean falloutNeighbourUpdates = true;
 
@@ -108,17 +104,13 @@ public final class BombConfig {
      * or redstone dust sitting on a cell the sweep converts returns AIR from its {@code updateShape},
      * and without this pass it stays floating in mid-air.
      *
-     * <p>It was briefly defaulted off, on the theory that it was what made the sweep slow, and on the
-     * argument that 1.12.2 has no shape pass so leaving it out was faithful. <b>Both halves of that were
-     * wrong.</b> Measured on a real blast, the notify pass was 48,373 ms of `updateNeighborsAt` against
-     * <b>23 ms</b> here — it was never the cost. And 1.12.2 popping unsupported blocks from inside each
-     * block's own {@code neighborChanged} means upstream <em>did</em> pop them; modern vanilla just moved
-     * that logic into {@code updateShape}. Skipping it is not faithful to upstream's behaviour, only to
-     * its call graph.
+     * <p>1.12.2 has no separate shape pass, but it popped unsupported blocks from inside each block's own
+     * {@code neighborChanged}; modern vanilla moved that logic into {@code updateShape}. Skipping the pass would
+     * match 1.12.2's call graph, not its behaviour, and the pass is not the sweep's cost (23 ms against 48,373 ms
+     * for the neighbour notifications on a real blast).
      *
-     * <p>Kept as a switch because it is a real cost on a surface full of things — 3–4 µs a cell against
-     * 0.3 µs underground ({@code nuke_fallout_notify_cost}) — and someone converting a whole continent
-     * may want the trade. It is on by default because floating torches are a bug.
+     * <p>Kept as a switch because it costs 3-4 µs a cell on a surface full of things against 0.3 µs underground
+     * ({@code nuke_fallout_notify_cost}). On by default because floating torches are a bug.
      */
     public static boolean falloutShapeUpdates = true;
 
@@ -133,7 +125,7 @@ public final class BombConfig {
     public static boolean chunkloading = true;
     public static int explosionAlgorithm = 2;
 
-    /** 1.7 {@code loadFromConfig}, categories {@code 03_nukes} and {@code 06_explosions} (History §19ej-8). */
+    /** 1.7 {@code loadFromConfig}, categories {@code 03_nukes} and {@code 06_explosions}. */
     public static void loadFromConfig(Configuration config) {
 
         final String CATEGORY_NUKES = CommonConfig.CATEGORY_NUKES;

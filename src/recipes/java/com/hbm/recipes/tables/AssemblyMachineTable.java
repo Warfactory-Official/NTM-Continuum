@@ -3,7 +3,6 @@ package com.hbm.recipes.tables;
 import static com.hbm.inventory.OreDictManager.*;
 import static com.hbm.inventory.recipes.loader.GenericRecipes.POOL_PREFIX_ALT;
 
-import com.hbm.assemblyfactory.AssemblyFactoryRegistrations;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModBombs2Blocks;
 import com.hbm.blocks.ModCustomMissileBlocks;
@@ -28,8 +27,6 @@ import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
 import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.blocks.turret.ModTurretBlocks;
-import com.hbm.chemicalfactory.ChemicalFactoryRegistrations;
-import com.hbm.foundry.FoundryExpansion;
 import com.hbm.inventory.FluidContainerStack;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
@@ -89,6 +86,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import com.hbm.items.ModMachineItems;
 
 /**
  * 1.7 {@code AssemblyMachineRecipes.registerDefaults}. 1.7's two {@code enable528} branches are rows carrying
@@ -350,7 +348,7 @@ public final class AssemblyMachineTable extends GenericTableSource<GenericRecipe
                 .inputItems(new ComparableStack(ModItems.centrifuge_element.get(), 4), ANY_PLASTIC.ingot().count(8), DESH.ingot().count(2), STEEL.plate().count(8), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 1))
                 .inputItemsEx(new ComparableStack(ModItems.centrifuge_element.get(), 4), STEEL.plateWelded().count(4), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.HEAVY_FRAME), 1), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.CIRCUIT), 1))
                 .setPools528(GenericRecipes.POOL_PREFIX_528 + "gascent"));
-        this.register(new GenericRecipe("ass.arcfurnace").setup(200, 100).outputItems(new ItemStack(FoundryExpansion.ARC_FURNACE.get(), 1))
+        this.register(new GenericRecipe("ass.arcfurnace").setup(200, 100).outputItems(new ItemStack(ModMachineBlocks.machine_arc_furnace.get(), 1))
                 .inputItems(new TagStack(ANY_CONCRETE).count(12), ANY_PLASTIC.ingot().count(8), new ComparableStack(ModItems.ingot_firebrick.get(), 16),STEEL.plateCast().count(8), new ComparableStack(ModBlocks.machine_transformer.get().asItem(), 1), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ANALOG), 1))
                 .inputItemsEx(new TagStack(ANY_CONCRETE).count(12), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.HEAVY_FRAME), 4), new ComparableStack(ModItems.ingot_firebrick.get(), 16), new ComparableStack(ModBlocks.machine_transformer.get().asItem(), 1), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ANALOG), 3)));
         this.register(new GenericRecipe("ass.acidizer").setup(200, 100).outputItems(new ItemStack(ModMachineBlocks.machine_crystallizer.get().asItem(), 1))
@@ -464,13 +462,13 @@ public final class AssemblyMachineTable extends GenericTableSource<GenericRecipe
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.HEAVY_FRAME), 4), ANY_RESISTANTALLOY.ingot().count(8), ANY_RUBBER.ingot().count(24), new ComparableStack(ModItems.magnetron.get(), 16), new ComparableStack(ModItems.motor_desh.get(), 3), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.CIRCUIT), 6), new ComparableStack(ModItems.crt_display.get(), 4)));
         this.register(new GenericRecipe("ass.forcefield").setup(600, 100).outputItems(new ItemStack(ModRadarUtilityBlocks.machine_forcefield.get().asItem(), 1))
                 .inputItems(DURA.plate().count(8), new ComparableStack(ModItems.plate_desh.get(), 4), new ComparableStack(ModItems.coil_gold_torus.get(), 6), new ComparableStack(ModItems.coil_magnetized_tungsten.get(), 12), new ComparableStack(ModItems.motor.get(), 1), new ComparableStack(ModRadarUtilityItems.upgrade_radius.get(), 1), new ComparableStack(ModRadarUtilityItems.upgrade_health.get(), 1), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 4), new ComparableStack(ModBlocks.machine_transformer.get().asItem(), 1)));
-        this.register(new GenericRecipe("ass.strandcaster").setup(200, 100).outputItems(new ItemStack(FoundryExpansion.STRAND_CASTER.get(), 1))
+        this.register(new GenericRecipe("ass.strandcaster").setup(200, 100).outputItems(new ItemStack(ModMachineBlocks.machine_strand_caster.get(), 1))
                 .inputItems(new ComparableStack(ModItems.ingot_firebrick.get(), 16), STEEL.plateCast().count(6), CU.plateWelded().count(2), STEEL.shell().count(2), new TagStack(ANY_CONCRETE).count(8))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.HEAVY_FRAME), 1), new ComparableStack(ModItems.ingot_firebrick.get(), 16), STEEL.shell().count(4), new TagStack(ANY_CONCRETE).count(8)));
-        this.register(new GenericRecipe("ass.assemfac").setup(400, 100).outputItems(new ItemStack(AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get(), 1))
+        this.register(new GenericRecipe("ass.assemfac").setup(400, 100).outputItems(new ItemStack(ModMachineBlocks.machine_assembly_factory.get(), 1))
                 .inputItems(DURA.ingot().count(16), ANY_RESISTANTALLOY.ingot().count(8), RUBBER.ingot().count(16), B.ingot().count(8), STEEL.shell().count(4), new ComparableStack(ModItems.motor.get(), 12), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 16))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.HEAVY_FRAME), 4), ANY_RESISTANTALLOY.ingot().count(16), RUBBER.ingot().count(16), B.ingot().count(8), STEEL.shell().count(4), new ComparableStack(ModItems.motor.get(), 24), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.CIRCUIT), 4)));
-        this.register(new GenericRecipe("ass.chemfac").setup(400, 100).outputItems(new ItemStack(ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY.get(), 1))
+        this.register(new GenericRecipe("ass.chemfac").setup(400, 100).outputItems(new ItemStack(ModMachineBlocks.machine_chemical_factory.get(), 1))
                 .inputItems(DURA.ingot().count(16), ANY_RESISTANTALLOY.ingot().count(8), RUBBER.ingot().count(16), STEEL.shell().count(12), CU.pipe().count(8), new ComparableStack(ModItems.motor_desh.get(), 4), new ComparableStack(ModItems.coil_tungsten.get(), 16), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 16))
                 .inputItemsEx(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.HEAVY_FRAME), 4), ANY_RESISTANTALLOY.ingot().count(16), RUBBER.ingot().count(16), STEEL.shell().count(12), CU.pipe().count(16), new ComparableStack(ModItems.motor_desh.get(), 16), new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.CIRCUIT), 4)));
 
@@ -905,7 +903,7 @@ public final class AssemblyMachineTable extends GenericTableSource<GenericRecipe
         this.register(new GenericRecipe("ass.mpt10solid").setup(100, 100).outputItems(new ItemStack(ModCustomMissileItems.mp_thruster_10_solid.get(), 1))
                 .inputItems(new ComparableStack(ModItems.seg_10.get(), 1), DURA.pipe().count(1), W.ingot().count(4), STEEL.plate().count(4)));
         this.register(new GenericRecipe("ass.mpt10xenon").setup(100, 100).outputItems(new ItemStack(ModCustomMissileItems.mp_thruster_10_xenon.get(), 1))
-                .inputItems(new ComparableStack(ModItems.seg_10.get(), 1), DURA.plate().count(4), new ComparableStack(FoundryExpansion.ARC_ELECTRODE.get(), 1)));
+                .inputItems(new ComparableStack(ModItems.seg_10.get(), 1), DURA.plate().count(4), new ComparableStack(ModMachineItems.arc_electrode.get(), 1)));
         this.register(new GenericRecipe("ass.mpt15kero").setup(200, 100).outputItems(new ItemStack(ModCustomMissileItems.mp_thruster_15_kerosene.get(), 1))
                 .inputItems(new ComparableStack(ModItems.seg_15.get(), 1), STEEL.pipe().count(3), W.ingot().count(8), STEEL.plate().count(8)));
         this.register(new GenericRecipe("ass.mpt15kerodual").setup(200, 100).outputItems(new ItemStack(ModCustomMissileItems.mp_thruster_15_kerosene_dual.get(), 1))

@@ -2,6 +2,10 @@ package com.hbm.items.machine;
 
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -58,8 +62,8 @@ public class ItemCassette extends CompatItem {
      */
     public static final class TrackType {
 
-        private static final List<TrackType> ALL = new java.util.concurrent.CopyOnWriteArrayList<>();
-        private static final java.util.Map<String, TrackType> BY_NAME = new java.util.concurrent.ConcurrentHashMap<>();
+        private static final List<TrackType> ALL = new CopyOnWriteArrayList<>();
+        private static final Map<String, TrackType> BY_NAME = new ConcurrentHashMap<>();
 
         public static final TrackType NULL = register("NULL", " ", null, SoundType.SOUND, 0, 0);
         public static final TrackType HATCH = register("HATCH", "Hatch Siren", "alarm.hatch", SoundType.LOOP, 3358839, 250);
@@ -84,7 +88,7 @@ public class ItemCassette extends CompatItem {
         public static final TrackType RAZORTRAIN = register("RAZORTRAIN", "Razortrain Horn", "alarm.razortrain_horn", SoundType.SOUND, 7819501, 250);
 
         /** Every registered track in registration order, HBM's 1.7 tracks first. */
-        public static final List<TrackType> VALUES = java.util.Collections.unmodifiableList(ALL);
+        public static final List<TrackType> VALUES = Collections.unmodifiableList(ALL);
 
         private final String name;
         private final int ordinal;

@@ -1,6 +1,9 @@
 package com.hbm.recipes;
 
 import com.hbm.recipes.tables.*;
+import com.hbm.recipes.data.D1Sources;
+import com.hbm.recipes.data.D2Sources;
+import com.hbm.recipes.data.D3Sources;
 import dev.golem.core.world.DataSource;
 import dev.golem.core.world.RecipeSource;
 import dev.golem.core.world.DataSources;
@@ -80,9 +83,9 @@ public final class HbmDataSources implements DataSources {
                 new AnvilSmithingTable(),
                 new AnvilConstructionTable()));
         // data folders (fluid properties, data maps, item pools, removal lists, ...)
-        sources.addAll(com.hbm.recipes.data.D3Sources.sources());
-        sources.addAll(com.hbm.recipes.data.D1Sources.sources());
-        sources.addAll(com.hbm.recipes.data.D2Sources.sources());
+        sources.addAll(D3Sources.sources());
+        sources.addAll(D1Sources.sources());
+        sources.addAll(D2Sources.sources());
         return sources;
     }
 }

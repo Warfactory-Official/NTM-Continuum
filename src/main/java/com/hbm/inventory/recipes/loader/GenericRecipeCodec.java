@@ -6,9 +6,13 @@ import com.hbm.inventory.FluidContainerStack;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
+import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.material.MaterialShapes;
+import com.hbm.inventory.material.Mats;
+import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.ModDataComponents;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
@@ -24,6 +28,7 @@ import dev.golem.core.world.RecipeFields.Role;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -32,6 +37,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /**
  * The JSON form of a {@link GenericRecipe}: ntm-next's machine-recipe schema, so a datapack (or KubeJS) writes the same
@@ -76,7 +82,7 @@ public final class GenericRecipeCodec {
     private GenericRecipeCodec() {}
 
     public static final Codec<Either<TagKey<Item>, Item>> INGREDIENT =
-            Codec.either(TagKey.hashedCodec(Registries.ITEM), dev.golem.core.world.ItemStacks.itemCodec());
+            Codec.either(TagKey.hashedCodec(Registries.ITEM), ItemStacks.itemCodec());
 
     private record Input(Either<TagKey<Item>, Item> ingredient, int count, boolean exact, Optional<ItemData> data) {}
 
@@ -87,22 +93,22 @@ public final class GenericRecipeCodec {
             ItemData.CODEC.optionalFieldOf("item_data").forGetter(Input::data)
     ).apply(i, Input::new));
 
-    private record MaterialInput(com.hbm.inventory.material.NTMMaterial material,
-                                 com.hbm.inventory.material.MaterialShapes shape, int count) {}
+    private record MaterialInput(NTMMaterial material,
+                                 MaterialShapes shape, int count) {}
 
     /** HBM's autogen shapes (one item per shape, told apart by material): {@code {"material": "bscco", "shape": "wiredense"}}. */
     private static final Codec<MaterialInput> MATERIAL_INPUT = RecordCodecBuilder.create(i -> i.group(
             Codec.STRING.comapFlatMap(name -> {
-                com.hbm.inventory.material.NTMMaterial material = com.hbm.inventory.material.Mats.byName(name);
+                NTMMaterial material = Mats.byName(name);
                 return material == null ? DataResult.error(() -> "unknown material " + name) : DataResult.success(material);
             }, material -> material.name).fieldOf("material").forGetter(MaterialInput::material),
             Codec.STRING.comapFlatMap(name -> {
                 try {
-                    return DataResult.success(com.hbm.inventory.material.MaterialShapes.valueOf(name.toUpperCase(java.util.Locale.ROOT)));
+                    return DataResult.success(MaterialShapes.valueOf(name.toUpperCase(Locale.ROOT)));
                 } catch (IllegalArgumentException e) {
                     return DataResult.error(() -> "unknown material shape " + name);
                 }
-            }, shape -> shape.name().toLowerCase(java.util.Locale.ROOT)).fieldOf("shape").forGetter(MaterialInput::shape),
+            }, shape -> shape.name().toLowerCase(Locale.ROOT)).fieldOf("shape").forGetter(MaterialInput::shape),
             Codec.INT.optionalFieldOf("count", 1).forGetter(MaterialInput::count)
     ).apply(i, MaterialInput::new));
 
@@ -122,7 +128,7 @@ public final class GenericRecipeCodec {
             Codec.INT.optionalFieldOf("pressure", 0).forGetter(stack -> stack.pressure)
     ).apply(i, FluidStack::new));
 
-    // ------------------------------------------------------------------ typed ingredient kinds
+    // Typed ingredient kinds
 
     private record Typed<A>(String type, A body) {}
 
@@ -155,7 +161,7 @@ public final class GenericRecipeCodec {
 
     private static final Codec<RecipeIngredients.Cold> COLD = typed(TYPE_COLD,
             RecordCodecBuilder.<RecipeIngredients.Cold>mapCodec(i -> i.group(
-                    dev.golem.core.world.ItemStacks.itemCodec().fieldOf("item").forGetter(stack -> stack.item),
+                    ItemStacks.itemCodec().fieldOf("item").forGetter(stack -> stack.item),
                     Codec.INT.optionalFieldOf("count", 1).forGetter(stack -> stack.stacksize)
             ).apply(i, RecipeIngredients.Cold::new)));
 
@@ -180,7 +186,7 @@ public final class GenericRecipeCodec {
 
     private static final Codec<RecipeIngredients.FluidItem> FLUID_ITEM = typed(TYPE_FLUID_ITEM,
             RecordCodecBuilder.<RecipeIngredients.FluidItem>mapCodec(i -> i.group(
-                    dev.golem.core.world.ItemStacks.itemCodec().fieldOf("item").forGetter(stack -> stack.item),
+                    ItemStacks.itemCodec().fieldOf("item").forGetter(stack -> stack.item),
                     FLUID.fieldOf("fluid").forGetter(stack -> stack.fluid),
                     Codec.INT.optionalFieldOf("count", 1).forGetter(stack -> stack.stacksize)
             ).apply(i, RecipeIngredients.FluidItem::new)));
@@ -244,14 +250,14 @@ public final class GenericRecipeCodec {
             }
             if (ops.get(input, "material").result().isPresent()) {
                 return MATERIAL_INPUT.decode(ops, input).map(p -> p.mapFirst(material -> (AStack)
-                        new com.hbm.inventory.RecipesCommon.MaterialStack(material.material(), material.shape(), material.count())));
+                        new RecipesCommon.MaterialStack(material.material(), material.shape(), material.count())));
             }
             return INPUT.decode(ops, input).flatMap(p -> fromInput(p.getFirst()).map(stack -> Pair.of(stack, p.getSecond())));
         }
 
         @Override
         public <T> DataResult<T> encode(AStack stack, DynamicOps<T> ops, T prefix) {
-            if (stack instanceof com.hbm.inventory.RecipesCommon.MaterialStack material) {
+            if (stack instanceof RecipesCommon.MaterialStack material) {
                 return MATERIAL_INPUT.encode(new MaterialInput(material.material, material.shape, material.stacksize), ops, prefix);
             }
             if (stack instanceof FluidContainerStack container) return FLUID_CONTAINER.encode(container, ops, prefix);
@@ -262,7 +268,7 @@ public final class GenericRecipeCodec {
         }
     };
 
-    // ------------------------------------------------------------------ outputs
+    // Outputs
 
     /**
      * An item output held as item + count until it is needed: 26.1 decodes recipes before item components exist, so a
@@ -283,9 +289,9 @@ public final class GenericRecipeCodec {
     }
 
     /** {@code "id"} for a single item, else {@code {"id", "count"}}. */
-    public static final Codec<ItemOut> ITEM_OUT = Codec.either(dev.golem.core.world.ItemStacks.itemCodec(),
+    public static final Codec<ItemOut> ITEM_OUT = Codec.either(ItemStacks.itemCodec(),
             RecordCodecBuilder.<ItemOut>create(i -> i.group(
-                    dev.golem.core.world.ItemStacks.itemCodec().fieldOf("id").forGetter(ItemOut::item),
+                    ItemStacks.itemCodec().fieldOf("id").forGetter(ItemOut::item),
                     Codec.INT.optionalFieldOf("count", 1).forGetter(ItemOut::count)
             ).apply(i, ItemOut::new))).xmap(
             either -> either.map(item -> new ItemOut(item, 1), out -> out),
@@ -304,11 +310,11 @@ public final class GenericRecipeCodec {
             TagKey.codec(Registries.ITEM).fieldOf("tag").forGetter(output -> output.tag().orElseThrow()),
             Codec.INT.optionalFieldOf("count", 1).forGetter(output -> output.spec().count()),
             Codec.FLOAT.optionalFieldOf("chance").forGetter(Output::chance)
-    ).apply(i, (tag, count, chance) -> new Output(new ItemSpec(net.minecraft.world.item.Items.AIR, count, ItemData.NONE),
+    ).apply(i, (tag, count, chance) -> new Output(new ItemSpec(Items.AIR, count, ItemData.NONE),
             chance, Optional.of(tag))));
 
     /** {@code "id"} for one plain item, else {@code {"id", "count", "chance", "item_data"}} or {@code {"tag", "count"}}. */
-    private static final Codec<Output> OUTPUT = Codec.either(dev.golem.core.world.ItemStacks.itemCodec(),
+    private static final Codec<Output> OUTPUT = Codec.either(ItemStacks.itemCodec(),
             Codec.either(TAG_OUTPUT, OUTPUT_OBJECT)).xmap(
             either -> either.map(item -> new Output(new ItemSpec(item, 1, ItemData.NONE), Optional.empty(), Optional.empty()),
                     object -> object.map(output -> output, output -> output)),
@@ -364,7 +370,7 @@ public final class GenericRecipeCodec {
                 for (int index = 0; index < recipe.outputItem.length; index++) {
                     Optional<TagKey<Item>> tag = outputTag(recipe, index);
                     ItemSpec spec = tag.isPresent()
-                            ? new ItemSpec(net.minecraft.world.item.Items.AIR, recipe.outputTagCount(index), ItemData.NONE)
+                            ? new ItemSpec(Items.AIR, recipe.outputTagCount(index), ItemData.NONE)
                             : spec(recipe, recipe.outputItem[index]);
                     items.add(new Output(spec, chance(recipe, index), tag));
                 }
@@ -424,7 +430,7 @@ public final class GenericRecipeCodec {
         return Optional.ofNullable(array).map(Arrays::asList);
     }
 
-    // ------------------------------------------------------------------ rows
+    // Rows
 
     /** The config-mode variants and row conditions (separate from the base fields: a record codec holds 16). */
     private record Modes(Optional<List<AStack>> itemsEx, Optional<List<FluidStack>> fluidsEx,
@@ -505,16 +511,16 @@ public final class GenericRecipeCodec {
         }));
     }
 
-    // ------------------------------------------------------------------ script fields
+    // Script fields
 
     /**
      * This schema's fields for scripts ({@link RecipeFields}; Golem Core's KubeJS adapter makes
      * {@code event.recipes.<ns>.<table>(name, outputItems, inputItems, outputFluids, inputFluids, duration, power)} of
-     * them, every other key a builder method). {@code name} is required, as in a datapack file: it is the row's internal
-     * name, which machines save and recipe selectors show, so a script states it ({@code 'chem.my_gas'}). Every
-     * {@link DataGenericRecipes} table states these automatically; a subclass's own keys (fusion temperatures, ...) come
-     * on top ({@link DataGenericRecipes#DataGenericRecipes(String, String, java.util.function.Supplier, RecipeFields)}),
-     * or are offered as raw JSON when not stated. Shapes: {@link RecipeShapes}.
+     * them, every other key a builder method). {@code name} is required, as in a datapack file: machines save it
+     * and recipe selectors show it. Every {@link DataGenericRecipes} table states these; a subclass's own keys
+     * (fusion temperatures, ...) come on top
+     * ({@link DataGenericRecipes#DataGenericRecipes(String, String, java.util.function.Supplier, RecipeFields)}) or
+     * are offered as raw JSON. Shapes: {@link RecipeShapes}.
      */
     public static final RecipeFields FIELDS = RecipeFields.of()
             .add(field("name", Kind.STRING))
@@ -568,13 +574,13 @@ public final class GenericRecipeCodec {
         }));
     }
 
-    // ------------------------------------------------------------------ comparison
+    // Comparison
 
     /** One ingredient as text: id, {@code #tag}, {@code mat:}, {@code !exact} with its data, or its typed kind. */
     public static String describe(AStack stack) {
         String body;
         if (stack instanceof TagStack tag) body = "#" + tag.tag.location();
-        else if (stack instanceof com.hbm.inventory.RecipesCommon.MaterialStack material) body = "mat:" + material.material.name + "/" + material.shape;
+        else if (stack instanceof RecipesCommon.MaterialStack material) body = "mat:" + material.material.name + "/" + material.shape;
         else if (stack instanceof ComparableStack comparable) {
             Optional<ItemData> exact = exactData(comparable);
             body = BuiltInRegistries.ITEM.getKey(comparable.item) + exact.map(data -> "!exact" + data.describe()).orElse("");

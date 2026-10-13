@@ -2,6 +2,7 @@ package com.hbm.blocks.machine;
 
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.TickingBlock;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -18,15 +19,15 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Generic horizontal-facing machine block backed by a {@link BlockEntity}. This is the scaffolding
- * base for ported HBM machines: a placeable, directional, BlockEntity-carrying block. It deliberately
- * carries no processing logic, ticker or GUI — those land per machine in a later wave (see
+ * base for ported HBM machines: a placeable, directional, BlockEntity-carrying block. It
+ * carries no processing logic, ticker or GUI; those are added per machine (see
  * IMPLEMENTATION.md §18). Plain {@link Block} + {@link EntityBlock} (not BaseEntityBlock, which would
  * force a {@code codec()} and INVISIBLE render), mirroring {@link BlockMachineBattery}.
  *
  * <p>Each machine supplies its own BlockEntity via a {@link BlockEntities.Factory}, so no per-machine
  * block subclass is needed for the scaffold.
  */
-public class BlockMachine extends dev.golem.core.world.CompatBlock implements TickingBlock {
+public class BlockMachine extends CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 

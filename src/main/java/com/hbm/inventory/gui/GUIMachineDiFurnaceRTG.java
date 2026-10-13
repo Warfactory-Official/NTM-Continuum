@@ -5,6 +5,7 @@ import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.inventory.container.ContainerMachineDiFurnaceRTG;
 import com.hbm.tileentity.machine.TileEntityDiFurnaceRTG;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.registry.RegistryObject;
@@ -23,7 +24,7 @@ import java.util.Optional;
 /** 1.7 {@code GUIMachineDiFurnaceRTG}: {@code gui_rtg_difurnace.png}, 176x166, two info panels on the left edge. */
 public final class GUIMachineDiFurnaceRTG extends CompatContainerScreen<ContainerMachineDiFurnaceRTG> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_rtg_difurnace.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_rtg_difurnace.png");
 
     public GUIMachineDiFurnaceRTG(ContainerMachineDiFurnaceRTG menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 166);

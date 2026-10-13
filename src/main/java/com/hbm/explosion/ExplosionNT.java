@@ -1,5 +1,6 @@
 package com.hbm.explosion;
 
+import com.hbm.api.data.WorldDataMaps;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.explosion.vanillant.ExplosionVNT;
@@ -7,8 +8,14 @@ import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
 import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
 import com.hbm.explosion.vanillant.standard.EntityProcessorStandard;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
+import java.util.AbstractMap;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -20,9 +27,9 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>This port models {@code ExplosionNT} and its {@code ExAttrib} set as VNT parts: LAVA_V/LAVA_R is
  * {@code BlockMutatorLava}, NODROP is {@code setNoDrop}, NOSOUND/NOPARTICLE is "no SFX". {@code ERRODE} is
- * modelled the same way — {@link BlockAllocatorStandard#withErosion} (concrete the ray could not break is still
- * affected) and {@link BlockProcessorStandard#withErosion} (60% per block, nothing drops, the block becomes
- * {@link #errosion()}'s target) — and this class owns the table and the one caller's recipe, the drill missile.
+ * {@link BlockAllocatorStandard#withErosion} (concrete the ray could not break is still affected) plus
+ * {@link BlockProcessorStandard#withErosion} (60% per block, nothing drops, the block becomes
+ * {@link #errosion()}'s target). This class owns the table and the one caller's recipe, the drill missile.
  */
 public final class ExplosionNT {
 
@@ -36,24 +43,24 @@ public final class ExplosionNT {
         return EROSION_VIEW;
     }
 
-    private static final Map<Block, Block> EROSION_VIEW = new java.util.AbstractMap<>() {
+    private static final Map<Block, Block> EROSION_VIEW = new AbstractMap<>() {
         @Override
         public Block get(Object key) {
             if (!(key instanceof Block block)) return null;
-            String to = com.hbm.api.data.WorldDataMaps.EROSION.get(block);
-            return to == null ? null : com.hbm.api.data.WorldDataMaps.blockOf(to);
+            String to = WorldDataMaps.EROSION.get(block);
+            return to == null ? null : WorldDataMaps.blockOf(to);
         }
 
         @Override
         public boolean containsKey(Object key) {
-            return key instanceof Block block && com.hbm.api.data.WorldDataMaps.EROSION.get(block) != null;
+            return key instanceof Block block && WorldDataMaps.EROSION.get(block) != null;
         }
 
         @Override
-        public java.util.Set<Map.Entry<Block, Block>> entrySet() {
-            java.util.Set<Map.Entry<Block, Block>> set = new java.util.LinkedHashSet<>();
-            com.hbm.api.data.WorldDataMaps.EROSION.byId().forEach((from, to) -> set.add(Map.entry(
-                    com.hbm.api.data.WorldDataMaps.blockOf(from), com.hbm.api.data.WorldDataMaps.blockOf(to))));
+        public Set<Map.Entry<Block, Block>> entrySet() {
+            Set<Map.Entry<Block, Block>> set = new LinkedHashSet<>();
+            WorldDataMaps.EROSION.byId().forEach((from, to) -> set.add(Map.entry(
+                    WorldDataMaps.blockOf(from), WorldDataMaps.blockOf(to))));
             return set;
         }
     };
@@ -79,8 +86,8 @@ public final class ExplosionNT {
     /** {@code doExplosionB}'s {@code playSoundEffect("random.explode", 4, (1 + (r - r) * 0.2) * 0.7)}, nothing else. */
     private static void soundOnly(ExplosionVNT explosion, Level level, double x, double y, double z, float size) {
         if (level.isClientSide()) return;
-        net.minecraft.util.RandomSource rand = level.getRandom();
-        level.playSound(null, x, y, z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE.value(),
-                net.minecraft.sounds.SoundSource.BLOCKS, 4.0F, (1.0F + (rand.nextFloat() - rand.nextFloat()) * 0.2F) * 0.7F);
+        RandomSource rand = level.getRandom();
+        level.playSound(null, x, y, z, SoundEvents.GENERIC_EXPLODE.value(),
+                SoundSource.BLOCKS, 4.0F, (1.0F + (rand.nextFloat() - rand.nextFloat()) * 0.2F) * 0.7F);
     }
 }

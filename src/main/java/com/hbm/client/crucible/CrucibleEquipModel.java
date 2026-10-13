@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
+import dev.golem.core.render.Poses;
 import dev.golem.core.render.StaticMeshes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Geometry;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * old-hbm {@code ResourceManager.crucible_anim} / {@code crucible_equip}: the 1.12 first-person crucible, a Collada scene
+ * 1.12.2 {@code ResourceManager.crucible_anim} / {@code crucible_equip}: the 1.12 first-person crucible, a Collada scene
  * of six node-animated meshes (rightArm, leftArm, Hilt, GuardRight, Blade, GuardLeft) played over 1,060 ms, as
  * {@code AnimatedModel.renderAnimated} walked it.
  *
@@ -122,7 +123,7 @@ public final class CrucibleEquipModel {
         Transform[] track = tracks.get(node.name);
         Matrix4f matrix = track == null ? node.base
                 : track[playhead.first].interpolate(track[playhead.next], playhead.inter);
-        dev.golem.core.render.Poses.mulPose(pose, matrix);
+        Poses.mulPose(pose, matrix);
         if (node.geometry) draw.draw(node.name, pose);
         for (Node child : node.children) walk(child, playhead, pose, draw);
         pose.popPose();

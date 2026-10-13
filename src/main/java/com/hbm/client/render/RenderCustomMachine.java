@@ -5,6 +5,7 @@ import com.hbm.config.CustomMachineConfigJSON.MachineConfiguration.ComponentDefi
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityCustomMachine;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderState;
@@ -92,8 +93,8 @@ public class RenderCustomMachine implements CompatBER<TileEntityCustomMachine, R
                 }
             }
             String dir = "hbm".equals(ns) ? "textures/blocks/" : "textures/block/";
-            Identifier topTex = dev.golem.core.Ids.of(ns, dir + top + ".png");
-            Identifier sideTex = dev.golem.core.Ids.of(ns, dir + side + ".png");
+            Identifier topTex = Ids.of(ns, dir + top + ".png");
+            Identifier sideTex = Ids.of(ns, dir + side + ".png");
             var resources = Minecraft.getInstance().getResourceManager();
             if (resources.getResource(sideTex).isEmpty()) return null;
             if (resources.getResource(topTex).isEmpty()) topTex = sideTex;

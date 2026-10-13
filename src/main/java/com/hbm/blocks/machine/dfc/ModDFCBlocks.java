@@ -20,6 +20,7 @@ import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /** The dark fusion core: the reaction chamber, the three things that aim at it, and what goes inside. */
 public final class ModDFCBlocks {
@@ -66,7 +67,7 @@ public final class ModDFCBlocks {
 
     // The core is the one dark fusion block with no model of its own: it is RenderShape.INVISIBLE, as
     // 1.7's getRenderType() == -1, and 1.7 has no item renderer for it either, so the icon is the flat
-    // sprite that render type falls back to. Its art is a drawn orb, not a tileable face — the four
+    // sprite that render type falls back to. Its art is a drawn orb, not a tileable face: the four
     // aimed components next to it do have OBJ icons, declared as machine models.
     public static final RegistryObject<BlockItem> dfc_core_item = REG.blockItem(dfc_core)
             .transform(Presets.sprite("hbm:blocks/dfc_core"))
@@ -93,8 +94,8 @@ public final class ModDFCBlocks {
             p -> new ItemAMSCore(2500, 0.7F, 0.7F, true, p), p -> p.stacksTo(1).rarity(Rarity.EPIC))
             .transform(Presets.sprite()).tab(HbmTab.CONSUMABLES);
 
-    private static net.minecraft.world.level.block.state.BlockBehaviour.Properties machine(
-            net.minecraft.world.level.block.state.BlockBehaviour.Properties p) {
+    private static BlockBehaviour.Properties machine(
+            BlockBehaviour.Properties p) {
         return p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion();
     }
 

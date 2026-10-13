@@ -4,6 +4,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFallingBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
@@ -12,18 +13,17 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
- * Surface oil-blight scatter — 1:1 port of the 1.12.2 {@code world/feature/OilSpot}. Drops {@code count}
+ * Surface oil-blight scatter: 1:1 port of the 1.12.2 {@code world/feature/OilSpot}. Drops {@code count}
  * gaussian (σ = {@code width}) samples around (x, z); at each, walks the top 4 blocks and turns the
- * surface into dead/oily debris: grass/dirt → {@code dirt_oily} (1/10) or {@code dirt_dead}, sand →
- * {@code sand_dirty}(_red), stone → {@code stone_cracked}, leaves → air.
+ * surface into dead/oily debris: grass/dirt become {@code dirt_oily} (1/10) or {@code dirt_dead}, sand becomes
+ * {@code sand_dirty}(_red), stone becomes {@code stone_cracked}, leaves become air.
  *
  * <p>Called both from worldgen (the oil / bedrock-oil bubbles) and at runtime by the fracking tower
- * (per suck) — hence typed on {@link WorldGenLevel}, which {@code ServerLevel} implements.
+ * (per suck), hence typed on {@link WorldGenLevel}, which {@code ServerLevel} implements.
  *
- * <p>Deviations (IMPLEMENTATION.md §20): the plant-kill / mustard-willow branches (old
- * {@code BlockPlantEnumMeta}/{@code plant_dead}/{@code plant_flower}) are skipped — those blocks are
- * unported (same skip as {@link OilBubbleFeature}); {@code addWillows} is therefore a no-op. Surface
- * height comes from the WORLD_SURFACE heightmap (old {@code world.getHeight}).
+ * <p>Deviations: the plant-kill / mustard-willow branches ({@code BlockPlantEnumMeta}/{@code plant_dead}/
+ * {@code plant_flower}) are skipped, since those blocks are not ported (as in {@link OilBubbleFeature}); {@code addWillows}
+ * is therefore a no-op. Surface height comes from the WORLD_SURFACE heightmap (1.12.2 {@code world.getHeight}).
  */
 public final class OilSpot {
 
@@ -62,7 +62,7 @@ public final class OilSpot {
                 if (ground == Blocks.GRASS_BLOCK || ground == Blocks.DIRT) {
                     BlockState dirt = (rand.nextInt(10) == 0 ? ModFallingBlocks.dirt_oily : ModFallingBlocks.dirt_dead).get().defaultBlockState();
                     level.setBlock(pos, dirt, 2 | 16);
-                    // old: addWillows 1/50 mustard-willow placement — skipped (plant blocks unported)
+                    // 1.12.2: addWillows 1/50 mustard-willow placement, skipped (plant blocks not ported)
                     break;
 
                 } else if (ground == Blocks.SAND || ground == ModFallingBlocks.ore_oil_sand.get()) {
@@ -77,7 +77,7 @@ public final class OilSpot {
                     level.setBlock(pos, ModBlocks.stone_cracked.get().defaultBlockState(), 2 | 16);
                     break;
 
-                } else if (groundState.is(net.minecraft.tags.BlockTags.LEAVES)) {
+                } else if (groundState.is(BlockTags.LEAVES)) {
                     level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
                     break;
                 }

@@ -15,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
-/** Menu for the compressor — 1.12.2 {@code ContainerCompressor} layout (176×204): fluid identifier
+/** Menu for the compressor, using the 1.12.2 {@code ContainerCompressor} layout (176×204): fluid identifier
  * (17,72), battery (152,72), upgrades (52,72)/(70,72); player inventory at 122/180. Button id =
  * the compression level (0..4). */
 public class ContainerCompressor extends AbstractContainerMenu {
@@ -57,7 +57,7 @@ public class ContainerCompressor extends AbstractContainerMenu {
 
     public @Nullable TileEntityMachineCompressorBase getTile() { return te; }
 
-    /** Old {@code receiveControl("compression")} — the GUI's 5-way selector sends the level as the id. */
+    /** Old {@code receiveControl("compression")}: the GUI's 5-way selector sends the level as the id. */
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (te != null) { te.setCompression(id); return true; }

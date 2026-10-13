@@ -15,7 +15,9 @@ import com.hbm.util.ContaminationUtil;
 import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.hook.Hook;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -60,7 +62,7 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements IFlu
     }
 
     /** Plain HBM registers none (H-81); NTM: Space decays hbm-space's neutron activation here. */
-    public static final dev.golem.core.hook.Hook<SlotTick> SLOT_TICK = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<SlotTick> SLOT_TICK = Hook.notifying();
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityStorageDrum drum) {
         double rad = 0D;
@@ -127,17 +129,17 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements IFlu
     }
 
     @Override
-    public int[] getSlotsForFace(net.minecraft.core.Direction side) {
+    public int[] getSlotsForFace(Direction side) {
         return SLOTS;
     }
 
     @Override
-    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
         return isItemValidForSlot(slot, stack);
     }
 
     @Override
-    public boolean canTakeItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         return !ContaminationUtil.isContaminated(stack) && StorageDrumRecipes.getOutput(stack) == null;
     }
 

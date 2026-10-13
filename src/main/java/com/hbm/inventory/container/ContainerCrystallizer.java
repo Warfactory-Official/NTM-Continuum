@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.SlotCraftingOutput;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
@@ -17,9 +18,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the ore acidizer: input (0), battery (1), take-only output (2), fluid-container in (3) →
+ * Menu for the ore acidizer: input (0), battery (1), take-only output (2), fluid-container in (3),
  * emptied-container out (4, take-only), two inert upgrade slots (5–6) and the fluid-identifier slot
- * (7), plus the player inventory — the 1.12.2 {@code ContainerCrystallizer} layout. Slot placement is
+ * (7), plus the player inventory. This is the 1.12.2 {@code ContainerCrystallizer} layout. Slot placement is
  * gated by the machine's {@code canPlaceItem}; the screen reads the live (client) BlockEntity for the
  * power/progress/fluid bars.
  */
@@ -47,7 +48,7 @@ public class ContainerCrystallizer extends AbstractContainerMenu {
 
         this.addSlot(validated(0, 62, 45));    // input
         this.addSlot(validated(1, 152, 72));   // battery
-        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 2, 113, 45)); // output, 1.7 SlotCraftingOutput
+        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 2, 113, 45)); // output, 1.7 SlotCraftingOutput
         this.addSlot(validated(3, 17, 18));    // fluid-container in
         this.addSlot(takeOnly(4, 17, 54));     // emptied-container out
         this.addSlot(validated(5, 80, 18));    // upgrade

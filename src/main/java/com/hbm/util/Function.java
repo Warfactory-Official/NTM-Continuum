@@ -1,15 +1,17 @@
 package com.hbm.util;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 
 import java.util.Locale;
 
 /**
- * A response curve — the 1.12.2 {@code com.hbm.util.Function}, used to describe how a nuclear fuel
+ * A response curve: the 1.12.2 {@code com.hbm.util.Function}, used to describe how a nuclear fuel
  * reacts to flux and heat. Each subclass is one shape (linear, sqrt, quadratic, log, flat), with an
  * optional input divisor and offset applied before the curve.
  *
- * <p>Ported verbatim, including the deliberately-odd {@code sqrt} approximation from
+ * <p>Ported as-is, including the odd {@code sqrt} approximation from
  * {@code BobMathUtil} (kept here so a fuel's numbers match upstream's exactly) and the display strings
  * the fuel tooltips print.
  */
@@ -23,12 +25,12 @@ public abstract class Function {
      * {@code sqrt}, {@code quadratic} (with {@code v_off}), {@code log}, {@code passive}. 1.7's falling square root is a
      * {@code sqrt} with {@code level} 1/f and {@code off} f². Used by the reactor fuel data maps (PWR, Watz).
      */
-    public static final com.mojang.serialization.Codec<Function> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.<Function>create(i -> i.group(
-            com.mojang.serialization.Codec.STRING.fieldOf("type").forGetter(Function::typeName),
-            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("level", 0D).forGetter(Function::levelValue),
-            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("v_off", 0D).forGetter(f -> f instanceof FunctionDoubleArg d ? d.vOff : 0D),
-            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("div", 1D).forGetter(f -> f.div),
-            com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("off", 0D).forGetter(f -> f.off)
+    public static final Codec<Function> CODEC = RecordCodecBuilder.<Function>create(i -> i.group(
+            Codec.STRING.fieldOf("type").forGetter(Function::typeName),
+            Codec.DOUBLE.optionalFieldOf("level", 0D).forGetter(Function::levelValue),
+            Codec.DOUBLE.optionalFieldOf("v_off", 0D).forGetter(f -> f instanceof FunctionDoubleArg d ? d.vOff : 0D),
+            Codec.DOUBLE.optionalFieldOf("div", 1D).forGetter(f -> f.div),
+            Codec.DOUBLE.optionalFieldOf("off", 0D).forGetter(f -> f.off)
     ).apply(i, (type, level, vOff, div, off) -> {
         Function f = switch (type) {
             case "linear" -> new FunctionLinear(level);
@@ -56,7 +58,7 @@ public abstract class Function {
         return 0D;
     }
 
-    /** The German pronunciation of f(x) — "F von X", tee hee. */
+    /** The German pronunciation of f(x): "F von X", tee hee. */
     public abstract double effonix(double x);
 
     public abstract String getLabelForFuel();

@@ -3,7 +3,9 @@ package com.hbm.explosion;
 import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.ModBlocks;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -23,7 +25,7 @@ public class ExplosionTom {
     /**
      * How far from the impact the crater floods the ground below the old terrain with lava (ADDON-API-INVENTORY V-174).
      * 1.7: everywhere the crater reaches; hbm-space gated it, like the clearing above, at 500 blocks (NTM: Space sets
-     * 500), so outside the rim the ejecta no longer turns into a lava sheet.
+     * 500), so outside the rim the ejecta does not turn into a lava sheet.
      */
     public static double lavaRadius = Double.POSITIVE_INFINITY;
 
@@ -162,8 +164,8 @@ public class ExplosionTom {
                         }
                     }
                     // 1.7 flag 2, but its breakBlock still ran: keep the removal hook on 26.1
-                    if (level instanceof net.minecraft.server.level.ServerLevel server) {
-                        dev.golem.core.world.Compat.setBlockWithRemoval(server, new BlockPos(pX, y, pZ),
+                    if (level instanceof ServerLevel server) {
+                        Compat.setBlockWithRemoval(server, new BlockPos(pX, y, pZ),
                                 Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
                     } else {
                         level.setBlock(new BlockPos(pX, y, pZ), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
@@ -195,7 +197,7 @@ public class ExplosionTom {
     }
 
     /**
-     * 1.7 tested Material water/ice/snow plus {@code getCanBurn()}. 26.2 has no Material, so the three are
+     * 1.7 tested Material water/ice/snow plus {@code getCanBurn()}. 26.1 has no Material, so the three are
      * tags and burnability is the flammability the fire block already reads.
      */
     private static boolean isWashedAway(BlockState state) {

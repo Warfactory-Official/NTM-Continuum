@@ -1,12 +1,18 @@
 package com.hbm.items.armor;
 
+import com.hbm.advancement.HbmCriteria;
 import com.hbm.handler.ArmorModHandler;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.sound.ModSecuritySounds;
 import dev.golem.core.world.Attributes;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -56,15 +62,15 @@ public class ItemModKnife extends ItemArmorMod {
      * {@code PacketThreading}, which delivered it after that update, so the jolt won. Sending it on the next tick
      * keeps 1.7's order.
      */
-    private static final java.util.Map<net.minecraft.server.level.ServerPlayer, net.minecraft.nbt.CompoundTag> PENDING_JOLT =
-            new java.util.WeakHashMap<>();
+    private static final Map<ServerPlayer, CompoundTag> PENDING_JOLT =
+            new WeakHashMap<>();
 
     @Override
     public void modUpdate(LivingEntity entity, ItemStack armor) {
         if (entity.level().isClientSide()) return;
-        if (entity instanceof net.minecraft.server.level.ServerPlayer waiting) {
-            net.minecraft.nbt.CompoundTag jolt = PENDING_JOLT.remove(waiting);
-            if (jolt != null) com.hbm.particle.helper.HbmEffectNT.ProperJolt.sendTo(waiting, 0, 0, 0, jolt);
+        if (entity instanceof ServerPlayer waiting) {
+            CompoundTag jolt = PENDING_JOLT.remove(waiting);
+            if (jolt != null) HbmEffectNT.ProperJolt.sendTo(waiting, 0, 0, 0, jolt);
         }
         if (entity.tickCount % 50 != 0 || entity.getMaxHealth() <= 2F) return;
 
@@ -77,8 +83,8 @@ public class ItemModKnife extends ItemArmorMod {
         Attributes.removeTransient(attribute, TRIGAMMA_ID);
         Attributes.setPermanent(attribute, TRIGAMMA_ID, -(entity.getMaxHealth() - health + 2), Attributes.Op.ADD);
         if (entity.getHealth() > entity.getMaxHealth()) entity.setHealth(entity.getMaxHealth());
-        if (entity instanceof net.minecraft.server.level.ServerPlayer player) {
-            net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+        if (entity instanceof ServerPlayer player) {
+            CompoundTag data = new CompoundTag();
             if (entity.getMaxHealth() > 2F) {
                 data.putInt("time", 10000 + entity.getRandom().nextInt(10000));
                 data.putInt("maxTime", 10000);
@@ -86,7 +92,7 @@ public class ItemModKnife extends ItemArmorMod {
                 data.putInt("time", 0);
                 data.putInt("maxTime", 0);
                 // 1.7 achSomeWounds: the stab that brings a player's maximum health down to the floor
-                com.hbm.advancement.HbmCriteria.BLED_OUT.fire(player);
+                HbmCriteria.BLED_OUT.fire(player);
             }
             PENDING_JOLT.put(player, data);
         }

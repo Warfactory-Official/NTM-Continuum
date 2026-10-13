@@ -8,6 +8,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModArmorItems;
 import com.hbm.items.ModArmorModItems;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Armors;
 import dev.golem.core.world.Gliders;
@@ -15,13 +16,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 
 /**
- * Playtest 2026-10-12: armour modules on any armour (1.7 {@code ArmorModHandler.isApplicable} took any
+ * Armour modules on any armour (1.7 {@code ArmorModHandler.isApplicable} took any
  * {@code ItemArmor}), the port-only elytra module, and fillable items refuelling in the fluid tank's fill bay
  * (1.7 {@code FluidLoaderFillableItem}).
  */
@@ -60,7 +62,7 @@ public final class Pt1012ArmorGameTests {
 
         player.setItemSlot(EquipmentSlot.CHEST, installed.copy());
         ArmorModEvents.onLivingUpdate(player);
-        double damage = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+        double damage = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
         helper.assertTrue(Math.abs(damage - 1.5D) < 1.0E-6D, "servos on a diamond chestplate: attack damage " + damage);
         helper.succeed();
     }
@@ -140,11 +142,11 @@ public final class Pt1012ArmorGameTests {
         BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, block.defaultBlockState());
         block.fillSpace(helper.getLevel(), absolute, Direction.NORTH);
-        return dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, relative, TileEntityMachineFluidTank.class);
+        return GameTestHelpers.blockEntity(helper, relative, TileEntityMachineFluidTank.class);
     }
 
     private static Player player(GameTestHelper helper) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
         player.setPos(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
         return player;

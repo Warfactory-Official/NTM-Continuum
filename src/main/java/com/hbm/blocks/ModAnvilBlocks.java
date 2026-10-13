@@ -25,7 +25,7 @@ import static com.hbm.blocks.machine.NTMAnvil.*;
  * The 12 tiered NTM anvils (1.12.2 {@code ModBlocks} anvil block set). Hand-registered like
  * {@link ModDecoBlocks}; all share the {@code anvil} block-entity type (see
  * {@link com.hbm.tileentity.ModBlockEntities}) so {@link com.hbm.client.render.AnvilObjRenderer} can draw
- * their OBJ models. Loot/lang/pickaxe entries regenerate via {@code gen_wave1.py} ({@code MACHINE_BLOCK_IDS}).
+ * their OBJ models. Loot/lang/pickaxe entries regenerate from {@code MACHINE_BLOCK_IDS} in the port-tools generator.
  */
 public final class ModAnvilBlocks {
 
@@ -35,7 +35,7 @@ public final class ModAnvilBlocks {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
-    /** All registered anvils, in registration order — the shared BE type + renderer bind to these. */
+    /** All registered anvils, in registration order. The shared BE type and renderer bind to these. */
     public static final List<RegistryObject<NTMAnvil>> ANVILS = new ArrayList<>();
 
     public static final RegistryObject<NTMAnvil> anvil_iron           = anvil("anvil_iron", TIER_IRON)

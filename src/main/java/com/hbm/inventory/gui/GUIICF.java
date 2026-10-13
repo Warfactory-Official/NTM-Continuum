@@ -3,6 +3,7 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerICF;
 import com.hbm.tileentity.machine.TileEntityICF;
 import com.hbm.util.BobMathUtil;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -20,7 +21,7 @@ import java.util.Optional;
  */
 public class GUIICF extends CompatContainerScreen<ContainerICF> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/reactors/gui_icf.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/reactors/gui_icf.png");
 
     public GUIICF(ContainerICF menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 248, 222);

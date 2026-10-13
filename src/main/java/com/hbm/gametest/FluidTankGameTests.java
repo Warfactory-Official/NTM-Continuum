@@ -4,12 +4,15 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerMachineFluidTank;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModFluidItems;
+import com.hbm.items.ModFluidNetItems;
 import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 
 /** Directional container contracts for the legacy fluid tank. */
 public final class FluidTankGameTests {
@@ -52,16 +55,16 @@ public final class FluidTankGameTests {
         Fluids.init();
         TileEntityMachineFluidTank tank = placeTank(helper);
         tank.tank.setTankType(Fluids.GASOLINE);
-        ItemStack barrel = new ItemStack(com.hbm.items.ModFluidNetItems.fluid_barrel_infinite.get());
+        ItemStack barrel = new ItemStack(ModFluidNetItems.fluid_barrel_infinite.get());
         helper.assertTrue(tank.isItemValidForSlot(2, barrel), "the infinite barrel must be accepted by the input bay");
         helper.assertTrue(tank.isItemValidForSlot(4, barrel), "the infinite barrel must be accepted by the output bay as a drain");
-        ItemStack water = new ItemStack(com.hbm.items.ModFluidNetItems.inf_water.get());
+        ItemStack water = new ItemStack(ModFluidNetItems.inf_water.get());
         helper.assertTrue(!tank.isItemValidForSlot(2, water), "a typed infinite item must not enter a tank of another fluid");
 
         tank.inventory.setStackInSlot(2, barrel);
         TileEntityMachineFluidTank.serverTick(helper.getLevel(), tank.getBlockPos(), tank.getBlockState(), tank);
         helper.assertTrue(tank.tank.getFill() == tank.tank.getMaxFill()
-                        && tank.inventory.getStackInSlot(2).getItem() == com.hbm.items.ModFluidNetItems.fluid_barrel_infinite.get(),
+                        && tank.inventory.getStackInSlot(2).getItem() == ModFluidNetItems.fluid_barrel_infinite.get(),
                 "the infinite barrel must fill the tank in one tick and stay in the slot");
         helper.succeed();
     }
@@ -71,8 +74,8 @@ public final class FluidTankGameTests {
         TileEntityMachineFluidTank tank = placeTank(helper);
         tank.tank.setTankType(Fluids.GASOLINE);
         tank.tank.setFill(75);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
-                net.minecraft.world.level.GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper,
+                GameType.SURVIVAL);
         ContainerMachineFluidTank menu = new ContainerMachineFluidTank(0, player.getInventory(), tank);
         ItemStack full = ModFluidItems.fluid_tank.get().make(Fluids.GASOLINE, 75);
         ItemStack empty = new ItemStack(ModFluidItems.fluid_tank.get());
@@ -98,7 +101,7 @@ public final class FluidTankGameTests {
         BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, block.defaultBlockState());
         block.fillSpace(helper.getLevel(), absolute, Direction.NORTH);
-        return dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, relative,
+        return GameTestHelpers.blockEntity(helper, relative,
                 TileEntityMachineFluidTank.class);
     }
 }

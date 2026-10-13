@@ -7,22 +7,23 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
 /**
- * A portable universal fluid container — the 1.12.2 {@code ItemFluidTankV2}. One registered item holds
+ * A portable universal fluid container, the 1.12.2 {@code ItemFluidTankV2}. One registered item holds
  * any single {@link FluidType} up to {@link #capacity} mB; the fluid rides {@link ModDataComponents#FLUID}
  * and the amount rides {@link ModDataComponents#FLUID_AMOUNT}. Used for the <b>universal fluid tank</b>
  * (1000&nbsp;mB) and the <b>fluid barrel</b> (16000&nbsp;mB).
  *
  * <p>Implements {@link IFillableItem} so the machine fluid tank's loader slot can fill/empty it. The icon
  * is a base sprite ({@code hbm:items/<base>}) plus an overlay ({@code hbm:items/<base>_overlay}) tinted by
- * the fluid colour via the vanilla {@code custom_model_data} colour list (same trick as the fluid bucket);
- * the fill level shows on the vanilla durability bar. (The Forge {@code IFluidHandlerItem} capability and
- * the lead-shielded variant are dropped — re-add with the per-loader fluid capability bridge, §13d.)
+ * the fluid colour via the vanilla {@code custom_model_data} colour list (as the fluid bucket); the fill
+ * level shows on the vanilla durability bar. The Forge {@code IFluidHandlerItem} capability and the
+ * lead-shielded variant are not ported.
  */
 public class ItemFluidTank extends CompatItem implements IFillableItem {
 
@@ -35,7 +36,7 @@ public class ItemFluidTank extends CompatItem implements IFillableItem {
         this.base = base;
     }
 
-    // --- component access ---
+    // Component access
 
     public static FluidType getType(ItemStack stack) {
         return ModDataComponents.fluid(stack);
@@ -67,7 +68,7 @@ public class ItemFluidTank extends CompatItem implements IFillableItem {
         return stack;
     }
 
-    // --- IFillableItem ---
+    // IFillableItem
 
     @Override
     public boolean acceptsFluid(FluidType type, ItemStack stack) {
@@ -103,7 +104,7 @@ public class ItemFluidTank extends CompatItem implements IFillableItem {
         return getFill(stack) > 0 ? getType(stack) : Fluids.NONE;
     }
 
-    // --- display: name, fill bar, tooltip ---
+    // Display: name, fill bar, tooltip
 
     @Override
     public Component getName(ItemStack stack) {
@@ -131,7 +132,7 @@ public class ItemFluidTank extends CompatItem implements IFillableItem {
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-                                         java.util.List<Component> tooltip, TooltipFlag flag) {
+                                         List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal(getFill(stack) + " / " + capacity + " mB").withStyle(ChatFormatting.GRAY));
     }
 

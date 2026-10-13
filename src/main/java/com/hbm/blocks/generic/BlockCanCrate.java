@@ -6,6 +6,7 @@ import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.deco.TileEntityCanCrate;
 import dev.golem.core.Ids;
 import dev.golem.core.world.CompatBlock;
+import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.sounds.SoundSource;
@@ -77,7 +78,7 @@ public class BlockCanCrate extends CompatBlock implements EntityBlock {
     public ItemStack getRandomItem(RandomSource rand) {
         List<String> items = new ArrayList<>();
         for (ItemConserve.EnumFoodType type : ItemConserve.EnumFoodType.values())
-            items.add("canned_conserve_" + type.name().toLowerCase(java.util.Locale.US));
+            items.add("canned_conserve_" + type.name().toLowerCase(Locale.US));
         items.add("can_smart");
         items.add("can_creature");
         items.add("can_redbomb");

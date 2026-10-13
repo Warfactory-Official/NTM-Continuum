@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the refinery — 1.12.2 {@code ContainerMachineRefinery} layout (210×231): battery (186,72),
+ * Menu for the refinery, using the 1.12.2 {@code ContainerMachineRefinery} layout (210×231): battery (186,72),
  * input container pair (8,99)/(8,119), four output pairs at x=86/106/126/146 (99/119), sulfur out
  * (58,119), fluid identifier (186,106); player inventory at 150/208.
  */
@@ -101,7 +101,7 @@ public class ContainerMachineRefinery extends AbstractContainerMenu {
             } else if (stack.getItem() instanceof IItemFluidId) {
                 if (!this.moveItemStackTo(stack, 12, 13, false)) return ItemStack.EMPTY;
             } else {
-                // fluid containers → input load, then the four output loads
+                // fluid containers go to the input load, then the four output loads
                 if (!this.moveItemStackTo(stack, 1, 2, false)
                         && !this.moveItemStackTo(stack, 3, 4, false)
                         && !this.moveItemStackTo(stack, 5, 6, false)

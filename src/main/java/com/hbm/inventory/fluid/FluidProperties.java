@@ -19,14 +19,28 @@ import com.hbm.inventory.fluid.trait.FT_Polluting;
 import com.hbm.inventory.fluid.trait.FT_Toxin;
 import com.hbm.inventory.fluid.trait.FT_VentRadiation;
 import com.hbm.util.ArmorRegistry.HazardClass;
+import dev.golem.core.Ids;
+import dev.golem.core.data.DataFiles;
+import dev.golem.core.world.Effects;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -60,12 +74,11 @@ import net.minecraft.world.effect.MobEffectInstance;
  * }
  * </pre>
  *
- * <p>HBM's own fluids are authored files in HBM's jar (converted once from the former Java tables), applied when the
- * fluids are created so registration, menus and tooltips have them before any world; every datapack load then applies
- * the files of all datapacks (HBM's, addons', a server's), each replacing its fluid's properties. A fluid without a
- * file keeps what it had. An addon's fluid may get its defaults from code ({@link FluidType#addTraits}) or a file.
- * Another mod changes a fluid it does not own through the patch folder ({@link #PATCH_FOLDER}), never by replacing
- * the fluid's file.
+ * <p>HBM's own fluids are files in HBM's jar, applied when the fluids are created so registration, menus and
+ * tooltips have them before any world. Every datapack load then applies the files of all datapacks (HBM's, addons',
+ * a server's), each replacing its fluid's properties. A fluid without a file keeps what it had. An addon's fluid
+ * may get its defaults from code ({@link FluidType#addTraits}) or a file. Another mod changes a fluid it does not
+ * own through the patch folder ({@link #PATCH_FOLDER}), never by replacing the fluid's file.
  */
 public final class FluidProperties {
 
@@ -92,12 +105,12 @@ public final class FluidProperties {
     }
 
     /** A trait another mod adds to the file format: its class, how to read its JSON body, and how to write it back. */
-    public record TraitType(Class<?> type, java.util.function.Function<JsonObject, Object> reader,
-                            java.util.function.Function<Object, JsonObject> writer) {}
+    public record TraitType(Class<?> type, Function<JsonObject, Object> reader,
+                            Function<Object, JsonObject> writer) {}
 
-    private static final Map<String, TraitType> EXTRA_TRAITS = java.util.Collections.synchronizedMap(new LinkedHashMap<>());
+    private static final Map<String, TraitType> EXTRA_TRAITS = Collections.synchronizedMap(new LinkedHashMap<>());
     /** Every addon trait and flag class, in registration order (the tooltip's order, {@link FluidType#addInfo}). */
-    private static final List<Class<?>> ADDON_TYPES = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final List<Class<?>> ADDON_TYPES = new CopyOnWriteArrayList<>();
 
     /** The trait and flag classes other mods registered, in registration order. */
     public static List<Class<?>> addonTraitTypes() {
@@ -109,8 +122,8 @@ public final class FluidProperties {
      * {@code FluidTrait} registry; NTM: Space adds rocket fuel and terraforming traits). {@code name} should be
      * {@code <namespace>:<name>} for another mod's trait. Call at mod construction, before any datapack loads.
      */
-    public static void registerTrait(String name, Class<?> type, java.util.function.Function<JsonObject, Object> reader,
-                                     java.util.function.Function<Object, JsonObject> writer) {
+    public static void registerTrait(String name, Class<?> type, Function<JsonObject, Object> reader,
+                                     Function<Object, JsonObject> writer) {
         if (EXTRA_TRAITS.putIfAbsent(name, new TraitType(type, reader, writer)) != null) {
             throw new IllegalStateException("Fluid trait " + name + " registered twice");
         }
@@ -124,7 +137,7 @@ public final class FluidProperties {
         ADDON_TYPES.add(trait.getClass());
     }
 
-    // ------------------------------------------------------------------------------------------------ reading
+    // Reading
 
     /** Applies every file of a datapack load ({@code <ns>:<path>} to its JSON) to its fluid; a bad file is skipped. */
     public static synchronized void apply(Map<String, JsonElement> files) {
@@ -168,12 +181,12 @@ public final class FluidProperties {
         for (FluidType fluid : fluids) {
             String[] id = fluid.getRegistryName().split(":", 2);
             String path = "/data/" + id[0] + "/" + FOLDER + "/" + id[1] + ".json";
-            java.net.URL url = dev.golem.core.data.DataFiles.bundled(owner, path);
+            URL url = DataFiles.bundled(owner, path);
             if (url == null) continue;
             try (InputStream in = url.openStream()) {
                 apply(fluid, JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject());
                 applied++;
-            } catch (java.io.IOException | RuntimeException e) {
+            } catch (IOException | RuntimeException e) {
                 throw new IllegalStateException("The bundled fluid property file " + path + " is broken: " + e.getMessage(), e);
             }
         }
@@ -189,7 +202,7 @@ public final class FluidProperties {
                              int temperature, FluidHazard hazard, List<Object> traits) {
 
         public Properties {
-            hazard = java.util.Objects.requireNonNull(hazard);
+            hazard = Objects.requireNonNull(hazard);
             traits = List.copyOf(traits);
         }
 
@@ -301,7 +314,7 @@ public final class FluidProperties {
                     boolean fullBody = entry.get("full_body").getAsBoolean();
                     switch (entry.get("kind").getAsString()) {
                         case "direct_damage" -> trait.addEntry(new FT_Toxin.ToxinDirectDamage(
-                                ResourceKey.create(Registries.DAMAGE_TYPE, dev.golem.core.Ids.parse(entry.get("damage").getAsString())),
+                                ResourceKey.create(Registries.DAMAGE_TYPE, Ids.parse(entry.get("damage").getAsString())),
                                 entry.get("amount").getAsFloat(), entry.get("delay").getAsInt(), hazard(entry), fullBody));
                         case "effects" -> {
                             FT_Toxin.ToxinEffects effects = new FT_Toxin.ToxinEffects(hazard(entry), fullBody);
@@ -311,7 +324,7 @@ public final class FluidProperties {
                                 int duration = e.get("duration").getAsInt();
                                 int amplifier = e.has("amplifier") ? e.get("amplifier").getAsInt() : 0;
                                 // resolved when applied: HBM's own effects are not registered when fluids are created
-                                Supplier<MobEffectInstance> template = () -> dev.golem.core.world.Effects.instance(id, duration, amplifier);
+                                Supplier<MobEffectInstance> template = () -> Effects.instance(id, duration, amplifier);
                                 effects.add(template);
                             }
                             trait.addEntry(effects);
@@ -339,7 +352,7 @@ public final class FluidProperties {
         }
     }
 
-    // ------------------------------------------------------------------------------------------------ patches
+    // Patches
 
     /**
      * The patch folder: {@code data/<own ns>/fluid_property_patch/<fluid ns>/<fluid path>.json} changes another mod's
@@ -358,9 +371,9 @@ public final class FluidProperties {
      * </pre>
      *
      * After every load each patched fluid starts again from its own {@code fluid_property} file (or, for a fluid without
-     * one, its state before it was first patched), then takes every patch in patch-id order, that is by the patching
-     * mod's namespace: removals, then additions, then the overrides. A patch that disappears on {@code /reload} takes
-     * its change with it. A patch naming a fluid that is not registered (its mod is not installed) is ignored.
+     * one, its state before it was first patched), then takes every patch in patch-id order (the patching mod's
+     * namespace): removals, then additions, then the overrides. A patch that disappears on {@code /reload} takes its
+     * change with it. A patch naming an unregistered fluid (its mod is not installed) is ignored.
      */
     public static final String PATCH_FOLDER = "fluid_property_patch";
 
@@ -370,7 +383,7 @@ public final class FluidProperties {
     private static Map<String, JsonElement> patchFiles = Map.of();
     private static Map<String, List<JsonObject>> patches = Map.of();
     /** A patched fluid's state before its first patch, for a fluid without a property file. */
-    private static final Map<FluidType, Pristine> PRISTINE = new java.util.IdentityHashMap<>();
+    private static final Map<FluidType, Pristine> PRISTINE = new IdentityHashMap<>();
 
     private record Pristine(int color, int tint, int temperature, FluidHazard hazard, List<Object> traits) {
 
@@ -385,8 +398,8 @@ public final class FluidProperties {
 
     /** Declares both data folders (synced to clients by Golem {@code DataFiles}). HBM's entry calls this at mod construction. */
     public static void declare() {
-        dev.golem.core.data.DataFiles.folder(FOLDER, FluidProperties::apply);
-        dev.golem.core.data.DataFiles.folder(PATCH_FOLDER, FluidProperties::applyPatches);
+        DataFiles.folder(FOLDER, FluidProperties::apply);
+        DataFiles.folder(PATCH_FOLDER, FluidProperties::applyPatches);
     }
 
     /** The patch files of the last load, as {@link #applyPatches} received them (GameTests put them back with it). */
@@ -404,7 +417,7 @@ public final class FluidProperties {
         Map<String, List<JsonObject>> next = new LinkedHashMap<>();
         List<String> failures = new ArrayList<>();
         // by the patching namespace, then the path (a plain string sort would put "mod2:" before "mod:")
-        Map<String, JsonElement> ordered = new java.util.TreeMap<>(java.util.Comparator
+        Map<String, JsonElement> ordered = new TreeMap<>(Comparator
                 .comparing((String id) -> id.substring(0, Math.max(id.indexOf(':'), 0)))
                 .thenComparing(id -> id.substring(id.indexOf(':') + 1)));
         ordered.putAll(files);
@@ -426,7 +439,7 @@ public final class FluidProperties {
         }
         Map<String, List<JsonObject>> previous = patches;
         patches = next;
-        java.util.Set<String> touched = new java.util.TreeSet<>(previous.keySet());
+        Set<String> touched = new TreeSet<>(previous.keySet());
         touched.addAll(next.keySet());
         int applied = 0;
         for (String id : touched) {
@@ -552,8 +565,7 @@ public final class FluidProperties {
      *
      * <p>Two mods patching one fluid: every call re-applies all bundles registered so far to the fluids they patch, from
      * the fluid's unpatched state and in the patching namespace's order, which is the order a datapack load applies the
-     * same files in. So the state before any world is the state after the first load, whichever mod declared first
-     * (without this, a dependant addon's patch, declared later, won a conflict before the first load and lost it after).
+     * same files in. So the state before any world is the state after the first load, whichever mod declared first.
      */
     public static synchronized void applyBundledPatches(Class<?> owner, String namespace) {
         BUNDLES.put(namespace, owner);
@@ -563,11 +575,11 @@ public final class FluidProperties {
             List<JsonObject> list = new ArrayList<>();
             for (Map.Entry<String, Class<?>> bundle : BUNDLES.entrySet()) {
                 String path = "/data/" + bundle.getKey() + "/" + PATCH_FOLDER + "/" + id[0] + "/" + id[1] + ".json";
-                java.net.URL url = dev.golem.core.data.DataFiles.bundled(bundle.getValue(), path);
+                URL url = DataFiles.bundled(bundle.getValue(), path);
                 if (url == null) continue;
                 try (InputStream in = url.openStream()) {
                     list.add(JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject());
-                } catch (java.io.IOException | RuntimeException e) {
+                } catch (IOException | RuntimeException e) {
                     throw new IllegalStateException("The bundled fluid property patch " + path + " is broken: " + e.getMessage(), e);
                 }
             }
@@ -583,9 +595,9 @@ public final class FluidProperties {
     }
 
     /** Every mod's bundled patches so far, by patching namespace (sorted: the datapack order). */
-    private static final java.util.TreeMap<String, Class<?>> BUNDLES = new java.util.TreeMap<>();
+    private static final TreeMap<String, Class<?>> BUNDLES = new TreeMap<>();
 
-    // ------------------------------------------------------------------------------------------------ writing
+    // Writing
 
     /** {@code fluid}'s properties as a {@code fluid_property} file. */
     public static JsonObject write(FluidType fluid) {
@@ -740,7 +752,7 @@ public final class FluidProperties {
                     JsonObject e = new JsonObject();
                     if (entry instanceof FT_Toxin.ToxinDirectDamage damage) {
                         e.addProperty("kind", "direct_damage");
-                        e.addProperty("damage", dev.golem.core.Ids.keyId(damage.damage).toString());
+                        e.addProperty("damage", Ids.keyId(damage.damage).toString());
                         e.addProperty("amount", damage.amount);
                         e.addProperty("delay", damage.delay);
                     } else if (entry instanceof FT_Toxin.ToxinEffects effects) {
@@ -749,7 +761,7 @@ public final class FluidProperties {
                         for (Supplier<MobEffectInstance> template : effects.effects) {
                             MobEffectInstance instance = template.get();
                             JsonObject effect = new JsonObject();
-                            effect.addProperty("id", dev.golem.core.world.Effects.id(instance));
+                            effect.addProperty("id", Effects.id(instance));
                             effect.addProperty("duration", instance.getDuration());
                             effect.addProperty("amplifier", instance.getAmplifier());
                             list.add(effect);

@@ -3,8 +3,10 @@ package com.hbm.tileentity.bomb;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -18,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.UUID;
 
 /** Shared inventory, persistence, and tracking sync for the old component-built bomb blocks. */
-public abstract class TileEntityNukeBomb extends TileEntityMachineBase implements net.minecraft.world.MenuProvider {
+public abstract class TileEntityNukeBomb extends TileEntityMachineBase implements MenuProvider {
 
     /** The player who placed the bomb, used when redstone supplies no detonator entity. */
     public @Nullable UUID placerID;
@@ -61,7 +63,7 @@ public abstract class TileEntityNukeBomb extends TileEntityMachineBase implement
             ItemStack stack = inventory.getStackInSlot(i);
             buffer.writeBoolean(!stack.isEmpty());
             if (!stack.isEmpty()) {
-                buffer.writeVarInt(net.minecraft.core.registries.BuiltInRegistries.ITEM.getId(stack.getItem()));
+                buffer.writeVarInt(BuiltInRegistries.ITEM.getId(stack.getItem()));
                 buffer.writeVarInt(stack.getCount());
             }
         }
@@ -77,7 +79,7 @@ public abstract class TileEntityNukeBomb extends TileEntityMachineBase implement
                 int id = buffer.readVarInt();
                 int count = buffer.readVarInt();
                 if (i < inventory.getSlots() && id >= 0) {
-                    stack = new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(id), count);
+                    stack = new ItemStack(BuiltInRegistries.ITEM.byId(id), count);
                 }
             }
             if (i < inventory.getSlots()) inventory.setStackInSlot(i, stack);

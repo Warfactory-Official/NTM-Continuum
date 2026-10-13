@@ -3,6 +3,7 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityMachineSatDock;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -15,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class SatDockRenderer extends GemBER<TileEntityMachineSatDock, CompatRenderState> {
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/sat_dock.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/sat_dock.obj"));
     private final Surface skin = Surface.cutoutCull(Constants.MOD_ID + ":textures/models/sat_dock.png");
 
     @Override

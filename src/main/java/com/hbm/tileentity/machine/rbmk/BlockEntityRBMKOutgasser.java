@@ -16,6 +16,7 @@ import com.hbm.inventory.recipes.OutgasserRecipes.OutgasserRecipe;
 import com.hbm.tileentity.ModRBMKBlockEntities;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -53,7 +54,7 @@ public class BlockEntityRBMKOutgasser extends BlockEntityRBMKBase implements IRB
             if (gas.getFill() + fluid.fill > gas.getMaxFill()) return false;
         }
         ItemStack output = recipe.solidOutput(), slot = inventory.getStackInSlot(SLOT_OUTPUT);
-        return output.isEmpty() || slot.isEmpty() || dev.golem.core.world.ItemStacks.sameItemAndData(slot, output) && slot.getCount() + output.getCount() <= slot.getMaxStackSize();
+        return output.isEmpty() || slot.isEmpty() || ItemStacks.sameItemAndData(slot, output) && slot.getCount() + output.getCount() <= slot.getMaxStackSize();
     }
     private void process() {
         if (!(OutgasserRecipes.INSTANCE.getRecipe(inventory.getStackInSlot(SLOT_INPUT)) instanceof OutgasserRecipe recipe)) return;

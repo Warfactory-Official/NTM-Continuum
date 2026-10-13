@@ -4,7 +4,9 @@ import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.mob.EntityUndeadSoldier;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModUtilityToolItems;
+import com.hbm.items.special.ItemClayTablet;
 import com.hbm.tileentity.ModDungeonBlockEntities;
+import com.hbm.util.SavedIds;
 import com.hbm.world.gen.util.LogicBlockActions;
 import dev.golem.core.data.CompatBlockEntity;
 import dev.golem.core.data.DataIn;
@@ -77,14 +79,14 @@ public class DungeonSpawner extends CompatBlock implements TickingBlock {
         protected void saveData(DataOut out) {
             super.saveData(out);
             out.putInt("phase", phase);
-            com.hbm.util.SavedIds.putEnum(out, "type", type); // by name, never an ordinal (History 19ej-ids)
+            SavedIds.putEnum(out, "type", type); // by name, never an ordinal (History 19ej-ids)
         }
 
         @Override
         protected void loadData(DataIn in) {
             super.loadData(in);
             this.phase = in.getIntOr("phase", 0);
-            this.type = com.hbm.util.SavedIds.getEnum(in, "type", EnumSpawnerType.values()[0]);
+            this.type = SavedIds.getEnum(in, "type", EnumSpawnerType.values()[0]);
         }
     }
 
@@ -147,7 +149,7 @@ public class DungeonSpawner extends CompatBlock implements TickingBlock {
                 if (world.getRandom().nextInt(5) == 0) {
                     skeleton.setItem(LogicBlockActions.stack("hbm:item_secret_aberrator", 1));
                 } else {
-                    skeleton.setItem(com.hbm.items.special.ItemClayTablet.of(1));
+                    skeleton.setItem(ItemClayTablet.of(1));
                 }
             }
             world.setBlockAndUpdate(tile.getBlockPos(), Blocks.OBSIDIAN.defaultBlockState());

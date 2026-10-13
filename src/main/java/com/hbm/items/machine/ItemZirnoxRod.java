@@ -1,10 +1,17 @@
 package com.hbm.items.machine;
 
+import com.hbm.api.data.ReactorDataMaps;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModItems;
+import com.hbm.items.ModZirnoxItems;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.List;
+import java.util.Optional;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
@@ -26,25 +33,25 @@ public class ItemZirnoxRod extends CompatItem {
      * This rod's values: the {@code hbm:zirnox_fuel} item data map, else HBM's enum constant. An addon's rod is its own
      * {@code ItemZirnoxRod} (any constant) with a data-map entry.
      */
-    public com.hbm.api.data.ReactorDataMaps.ZirnoxFuel stats() {
-        com.hbm.api.data.ReactorDataMaps.ZirnoxFuel data = com.hbm.api.data.ReactorDataMaps.ZIRNOX_FUEL.get(this);
+    public ReactorDataMaps.ZirnoxFuel stats() {
+        ReactorDataMaps.ZirnoxFuel data = ReactorDataMaps.ZIRNOX_FUEL.get(this);
         if (data != null) return data;
         return codeStats();
     }
 
     /** The code defaults (constructor or enum values) that the data map entry overrides. */
-    public com.hbm.api.data.ReactorDataMaps.ZirnoxFuel codeStats() {
-        String into = fuel == ZirnoxFuel.TH232 ? key(com.hbm.items.ModZirnoxItems.active(ZirnoxFuel.THORIUM))
-                : fuel == ZirnoxFuel.LITHIUM ? key(com.hbm.items.ModItems.rod_zirnox_tritium.get())
-                : key(com.hbm.items.ModZirnoxItems.depleted(fuel));
-        java.util.Optional<String> waste = com.hbm.items.ModZirnoxItems.hasDepleted(fuel)
-                ? java.util.Optional.of(key(com.hbm.items.ModZirnoxItems.waste(fuel))) : java.util.Optional.empty();
-        return new com.hbm.api.data.ReactorDataMaps.ZirnoxFuel(fuel.maxLife, fuel.heat, fuel.breeding, fuel.baseRadiation,
+    public ReactorDataMaps.ZirnoxFuel codeStats() {
+        String into = fuel == ZirnoxFuel.TH232 ? key(ModZirnoxItems.active(ZirnoxFuel.THORIUM))
+                : fuel == ZirnoxFuel.LITHIUM ? key(ModItems.rod_zirnox_tritium.get())
+                : key(ModZirnoxItems.depleted(fuel));
+        Optional<String> waste = ModZirnoxItems.hasDepleted(fuel)
+                ? Optional.of(key(ModZirnoxItems.waste(fuel))) : Optional.empty();
+        return new ReactorDataMaps.ZirnoxFuel(fuel.maxLife, fuel.heat, fuel.breeding, fuel.baseRadiation,
                 fuel.depletedRadiation, into, waste);
     }
 
-    private static String key(net.minecraft.world.item.Item item) {
-        return net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).toString();
+    private static String key(Item item) {
+        return BuiltInRegistries.ITEM.getKey(item).toString();
     }
 
     public int getLife(ItemStack stack) {
@@ -72,8 +79,8 @@ public class ItemZirnoxRod extends CompatItem {
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-                                         java.util.List<Component> tooltip, TooltipFlag flag) {
-        com.hbm.api.data.ReactorDataMaps.ZirnoxFuel fuel = stats();
+                                         List<Component> tooltip, TooltipFlag flag) {
+        ReactorDataMaps.ZirnoxFuel fuel = stats();
         tooltip.add(Component.translatable("item.hbm.zirnox_rod.life", getLife(stack), fuel.maxLife())
                 .withStyle(ChatFormatting.GRAY));
         if (fuel.breeding()) {

@@ -4,6 +4,7 @@ import com.hbm.inventory.ModMeleeKitMenus;
 import com.hbm.inventory.container.ContainerToolBox;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMeleeKitItems;
+import com.hbm.items.ModelState;
 import dev.golem.core.data.ItemContents;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.world.Compat;
@@ -18,6 +19,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -35,7 +37,7 @@ import java.util.List;
  * here {@code hbm:toolbox_open}, ntm-next's TOOLBOX_OPEN). Contents ride {@code hbm:toolbox}, in place of 1.7's NBT item list, and are
  * ejected with a warning when their compressed size passes 6 kB exactly as {@code ItemInventory.checkNBT} did.
  */
-public class ItemToolBox extends CompatItem implements com.hbm.items.ModelState {
+public class ItemToolBox extends CompatItem implements ModelState {
 
     public static final int SIZE = 24;
 
@@ -44,7 +46,7 @@ public class ItemToolBox extends CompatItem implements com.hbm.items.ModelState 
     }
 
     @Override
-    protected int compatUseDuration(ItemStack stack, net.minecraft.world.entity.LivingEntity entity) {
+    protected int compatUseDuration(ItemStack stack, LivingEntity entity) {
         return 1;
     }
 

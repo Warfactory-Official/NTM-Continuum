@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.items.ModGunItems;
 import com.hbm.items.weapon.sedna.GunAnimation;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
@@ -11,13 +12,14 @@ import com.hbm.particle.helper.CasingCreator;
 import com.hbm.sound.ModGunSounds;
 import com.hbm.sound.ModSounds;
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Original-hbm's tick-indexed Sedna sound timelines.
+ * 1.7's tick-indexed Sedna sound timelines.
  *
  * <p>Positional one-shots use the seeded packet path. The source casing callbacks are kept beside their
  * authored timelines below; client loop state lives in {@code GunEffectState}.
@@ -27,7 +29,7 @@ public final class Orchestras {
     private Orchestras() {}
 
     private record Cue(GunAnimation[] types, int timer, Supplier<SoundEvent> sound, float volume, float pitch,
-            java.util.function.BiPredicate<ItemStack, ItemGunBaseNT.LambdaContext> when) {}
+            BiPredicate<ItemStack, ItemGunBaseNT.LambdaContext> when) {}
 
     private static Cue cue(GunAnimation type, int timer, Supplier<SoundEvent> sound, float volume, float pitch) {
         return new Cue(new GunAnimation[] {type}, timer, sound, volume, pitch, null);
@@ -60,7 +62,7 @@ public final class Orchestras {
 
     /**
      * Shared server tick plumbing only. Casing callbacks are supplied by each source orchestra;
-     * there is deliberately no fallback casing or universal CYCLE emission here.
+     * there is no fallback casing or universal CYCLE emission here.
      */
     private static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> timeline(Muzzle muzzle,
             CasingCallback casing, Cue... cues) {
@@ -69,7 +71,7 @@ public final class Orchestras {
             GunAnimation type = ItemGunBaseNT.getLastAnim(stack, ctx.configIndex);
             int timer = ItemGunBaseNT.getAnimTimer(stack, ctx.configIndex);
             if (((muzzle == Muzzle.CYCLE || (muzzle == Muzzle.NI4NI_CYCLE
-                    && stack.getItem() == com.hbm.items.ModGunItems.gun_n_i_4_n_i.get()))
+                    && stack.getItem() == ModGunItems.gun_n_i_4_n_i.get()))
                     && type == GunAnimation.CYCLE && timer == 0)
                     || (muzzle == Muzzle.CYCLE_OR_ALT
                     && (type == GunAnimation.CYCLE || type == GunAnimation.ALT_CYCLE) && timer == 0))
@@ -410,7 +412,7 @@ public final class Orchestras {
         SpentCasing casing = casing(stack, ctx, 0);
         if (casing != null) {
             boolean aiming = ItemGunBaseNT.getIsAiming(stack)
-                    && !(stack.getItem() == com.hbm.items.ModGunItems.gun_g3_zebra.get()
+                    && !(stack.getItem() == ModGunItems.gun_g3_zebra.get()
                     || XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SCOPE));
             CasingCreator.composeEffect(ctx.entity.level(), ctx.entity, 0.5D,
                     aiming ? 0D : -0.125D, aiming ? 0D : -0.25D, 0D, 0.18D, -0.12D, 0.01D,
@@ -487,7 +489,7 @@ public final class Orchestras {
         SpentCasing casing = casing(stack, ctx, 0);
         if (casing != null) {
             boolean aiming = ItemGunBaseNT.getIsAiming(stack);
-            int cba = (stack.getItem() == com.hbm.items.ModGunItems.gun_aberrator_eott.get()
+            int cba = (stack.getItem() == ModGunItems.gun_aberrator_eott.get()
                     && ctx.configIndex == 0) ? -1 : 1;
             CasingCreator.composeEffect(ctx.entity.level(), ctx.entity, 0.5D,
                     aiming ? 0D : -0.125D, aiming ? -0.0625D : -0.25D * cba,

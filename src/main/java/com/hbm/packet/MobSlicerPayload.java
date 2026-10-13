@@ -10,7 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * C2S: old-hbm {@code PacketMobSlicer}: the drawn cut, as the point one block along the starting look direction
+ * C2S: 1.12.2 {@code PacketMobSlicer}: the drawn cut, as the point one block along the starting look direction
  * ({@code startPos + eyes}), the plane's normal and the cutter's texture id. Three doubles, three doubles, one byte.
  */
 public record MobSlicerPayload(double x, double y, double z, double nx, double ny, double nz, byte tex)

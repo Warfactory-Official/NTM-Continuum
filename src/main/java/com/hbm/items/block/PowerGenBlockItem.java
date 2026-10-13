@@ -3,6 +3,7 @@ package com.hbm.items.block;
 import dev.golem.core.world.CompatBlockItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -23,7 +24,7 @@ public class PowerGenBlockItem extends CompatBlockItem {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        String id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(getBlock()).getPath();
+        String id = BuiltInRegistries.BLOCK.getKey(getBlock()).getPath();
         for (int i = 0; i < lines; i++) {
             tooltip.add(Component.translatable("block.hbm." + id + ".desc." + i).withStyle(ChatFormatting.YELLOW));
         }

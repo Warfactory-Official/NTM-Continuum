@@ -18,11 +18,13 @@ import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.EntityDamageUtil;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.Compat;
 import dev.golem.core.world.Effects;
 import dev.golem.core.world.Raycasts;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.MenuProvider;
@@ -41,7 +43,7 @@ import org.jspecify.annotations.Nullable;
  * The dark fusion core itself: a single block that the emitters aim at. Beam energy arriving through
  * {@link #burn(long)} is multiplied by the exotic core in its middle slot and by both fuels, comes back
  * out as more beam energy, and leaves heat behind. The stabilisers' field is the only thing keeping that
- * heat from becoming a crater — the core spends one point of field per tick, so a reaction that outruns
+ * heat from becoming a crater. The core spends one point of field per tick, so a reaction that outruns
  * its stabilisers detonates on the tick the field runs out.
  *
  * <p>Deviations from CE: a running core does not grant the dark-fusion advancement, which is not ported,
@@ -138,7 +140,7 @@ public class TileEntityCore extends TileEntityMachineBase implements MenuProvide
     /**
      * Whether another blast is already tearing through the neighbourhood. Upstream reads this off a static
      * table its own explosion entity keeps; this port's nuke entity keeps no such table, so the same
-     * question is asked of the world instead — which is only ever asked on the tick a core is about to go,
+     * question is asked of the world instead, which is only ever asked on the tick a core is about to go,
      * and gives the same answer: a core inside someone else's crater melts down rather than nesting a
      * second blast inside the first.
      */
@@ -180,13 +182,13 @@ public class TileEntityCore extends TileEntityMachineBase implements MenuProvide
             if (e instanceof Player player && ArmorUtil.checkForHazmat(player)) continue;
             if (Raycasts.isObstructed(level, eye,
                     new Vec3(e.getX(), e.getY() + e.getEyeHeight(), e.getZ()), null)) continue;
-            dev.golem.core.world.Compat.hurt(e, (net.minecraft.server.level.ServerLevel) level, ModDamageSources.ams(level), 1000F);
+            Compat.hurt(e, (ServerLevel) level, ModDamageSources.ams(level), 1000F);
             Effects.ignite(e, 3);
         }
 
         for (Entity e : level.getEntities(null, box(pos, scale))) {
             if (e instanceof Player player && ArmorUtil.checkForHaz2(player)) continue;
-            dev.golem.core.world.Compat.hurt(e, (net.minecraft.server.level.ServerLevel) level, ModDamageSources.amsCore(level), 10000F);
+            Compat.hurt(e, (ServerLevel) level, ModDamageSources.amsCore(level), 10000F);
         }
     }
 

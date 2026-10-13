@@ -28,8 +28,8 @@ import java.util.List;
  * plays geiger1. A right-click plays {@code hbm:item.tech_boop} and prints the GEIGER COUNTER readout
  * ({@link ContaminationUtil#printGeigerData}).
  *
- * <p>The port used to follow 1.12.2 here: it read the armor-reduced dose plus neutron activation, ticked on a
- * per-player phase and rolled the background click 1 in 100; none of that is 1.7.
+ * <p>This is not 1.12.2's counter: 1.7 reads no armor-reduced dose plus neutron activation, ticks on no
+ * per-player phase and rolls no 1-in-100 background click.
  */
 public class ItemGeigerCounter extends CompatItem {
 

@@ -16,18 +16,18 @@ import net.minecraft.world.level.block.state.BlockState;
  *   len + rand.nextInt(2) &lt;  size * fill  -&gt; the ore
  *   len + rand.nextInt(2) &lt;= size         -&gt; the depth-rock filler
  * </pre>
- * A cell is only touched if it is the generation target (stone / netherrack) <b>or bedrock</b> — the
- * original's comment on that line reads "yes you've heard right, bedrock", and it is what lets a
- * deposit chew a pocket out of the world floor. Preserved.
+ * A cell is only touched if it is the generation target (stone / netherrack) <b>or bedrock</b>. The
+ * original's comment on that line reads "yes you've heard right, bedrock", and it lets a deposit chew a
+ * pocket out of the world floor. Preserved.
  *
  * <p><b>Deepslate is 1.7's stone here.</b> 1.7 replaced plain stone at the world floor; a modern overworld floor is
  * deepslate, so an overworld deposit takes deepslate as well (the same host {@code MapGenBedrockOil} and the bedrock
- * ore's depth-rock cap use). Without it only the bedrock cells of the sphere were replaced. History §19ej-6.
+ * ore's depth-rock cap use). Without it only the bedrock cells of the sphere would be replaced.
  *
  * <p><b>Y rebasing (deviation):</b> upstream clamped to {@code 1 <= y <= 126} and centred deposits at
  * {@code y = 0..2}, which were the floor and ceiling of a 1.12 world. 26.1's overworld floor is −64 and
  * the nether roof is still 127, so the y band is expressed relative to {@link WorldGenLevel#getMinY()}
- * and the guard uses the level's real bounds — the same adjustment {@code MapGenBedrockOil} makes.
+ * and the guard uses the level's real bounds, the same adjustment {@code MapGenBedrockOil} makes.
  */
 public final class DepthDepositPlacer {
 
@@ -45,7 +45,7 @@ public final class DepthDepositPlacer {
 
     /**
      * The nether variant: replaces netherrack (or bedrock), fills with {@code stone_depth_nether}.
-     * {@code yBase} is an absolute y — upstream generated one set at the nether floor and one at the
+     * {@code yBase} is an absolute y. Upstream generated one set at the nether floor and one at the
      * roof (y = 125).
      */
     public static void nether(WorldGenLevel level, RandomSource rand, int chunkMinX, int chunkMinZ,
@@ -89,7 +89,7 @@ public final class DepthDepositPlacer {
                     if (!level.hasChunk(ix >> 4, kz >> 4)) continue;
 
                     BlockState current = level.getBlockState(pos);
-                    // "yes you've heard right, bedrock" — the deposit eats the world floor on purpose
+                    // "yes you've heard right, bedrock": the deposit eats the world floor
                     if (!current.is(Blocks.BEDROCK) && !isHost(current, genTarget)) continue;
 
                     double len = Math.sqrt(dx * (double) dx + dy * (double) dy + dz * (double) dz);

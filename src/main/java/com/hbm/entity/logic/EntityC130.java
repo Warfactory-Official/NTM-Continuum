@@ -1,5 +1,6 @@
 package com.hbm.entity.logic;
 
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.ModNtmEntities;
@@ -77,13 +78,13 @@ public class EntityC130 extends EntityPlaneBase {
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        this.payload = com.hbm.util.SavedIds.getEnum(input, "payload", C130PayloadType.values()[0]);
+        this.payload = SavedIds.getEnum(input, "payload", C130PayloadType.values()[0]);
     }
 
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        com.hbm.util.SavedIds.putEnum(output, "payload", this.payload); // by name, never an ordinal
+        SavedIds.putEnum(output, "payload", this.payload); // by name, never an ordinal
     }
 
     /**

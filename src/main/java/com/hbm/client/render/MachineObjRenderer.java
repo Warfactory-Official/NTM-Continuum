@@ -65,7 +65,7 @@ public class MachineObjRenderer<T extends BlockEntity> extends GemBER<T, Machine
 
     /**
      * @param offsetX,offsetZ a translation applied <b>after</b> the facing rotation (block units, in the
-     *                        rotated model frame) — the 1.12.2 footprint offset for asymmetric machines
+     *                        rotated model frame), the 1.12.2 footprint offset for asymmetric machines
      *                        (whose model isn't centred on the core cell). {@code 0,0} for centred machines.
      * @param frameParts OBJ parts drawn only when a block sits {@code frameHeight} above the core (the
      *                   1.12.2 "frame" condition); skipped otherwise. Empty = no conditional parts.
@@ -129,10 +129,9 @@ public class MachineObjRenderer<T extends BlockEntity> extends GemBER<T, Machine
     }
 
     /**
-     * entityCutout (alpha test) not entitySolid: the old TESRs ran with GL alpha-test on, so
-     * fully-transparent texels (e.g. the chemical plant's glass) are discarded instead of being drawn
-     * as opaque black. A double-sided body carries its reversed faces in the mesh, so it wants the
-     * culling type rather than the no-cull one.
+     * entityCutout (alpha test), not entitySolid: the 1.7 TESRs ran with GL alpha-test on, so fully-transparent
+     * texels (e.g. the chemical plant's glass) are discarded instead of drawn as opaque black. A double-sided
+     * body carries its reversed faces in the mesh, so it wants the culling type, not the no-cull one.
      */
     private Surface surfaceOf(Body body) {
         if (doubleSided) return Surface.cutoutCull(body.texture().toString());

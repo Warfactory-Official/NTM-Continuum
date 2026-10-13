@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.api.environment.Environment;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,6 +13,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
@@ -36,7 +38,7 @@ import com.hbm.tileentity.deco.TileEntityDecoModel;
 
 /**
  * 1.7 {@code Spotlight}: the cage lamp, fluorescent tube and halogen floodlight fixtures. Two blocks per
- * fixture (on/off) like the lamps, but with <b>inverted</b> redstone — they are lit by default and a
+ * fixture (on/off) like the lamps, but with <b>inverted</b> redstone: they are lit by default and a
  * signal switches them off. The old metadata {@code side << 1 | broken} is {@link #FACING} (the face the
  * fixture points away from) and {@link #BROKEN} (a structure-generated fixture that needs a click to
  * replace its bulb). The lit block lays a {@link SpotlightBeam} of {@code beamLength} along its facing.
@@ -186,7 +188,7 @@ public class Spotlight extends CompatBlock implements ISpotlight, EntityBlock {
     protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock, boolean movedByPiston) {
         if (level.isClientSide()) return;
         if (neighbourBlock instanceof SpotlightBeam) return;
-        if (neighbourBlock == net.minecraft.world.level.block.Blocks.AIR) return;
+        if (neighbourBlock == Blocks.AIR) return;
         if (!state.canSurvive(level, pos)) {
             level.destroyBlock(pos, true);
             return;
@@ -214,7 +216,7 @@ public class Spotlight extends CompatBlock implements ISpotlight, EntityBlock {
         level.setBlock(pos, copyTo(on.get(), state).setValue(BROKEN, false), 2);
         // hbm-space registered each repaired light with the body (CBT_Lights) for its night side seen from space
         if (level instanceof ServerLevel server) {
-            com.hbm.api.environment.Environment.lightOn(server, pos, server.getBlockState(pos));
+            Environment.lightOn(server, pos, server.getBlockState(pos));
         }
         for (Direction dir : Direction.values()) {
             BlockPos other = pos.relative(dir);

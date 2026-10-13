@@ -1,12 +1,16 @@
 package com.hbm.api.data;
 
 import com.hbm.Constants;
+import com.hbm.config.MachineConfig;
+import com.hbm.items.machine.ItemPlateFuel;
 import com.hbm.items.machine.ItemRBMKRod.EnumBurnFunc;
 import com.hbm.items.machine.ItemRBMKRod.EnumDepleteFunc;
 import com.hbm.items.machine.ItemRBMKRod.NType;
+import com.hbm.util.Function;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.Ids;
 import dev.golem.core.data.DataMaps;
 import dev.golem.core.data.DataMaps.DataMap;
 import java.util.Optional;
@@ -72,10 +76,10 @@ public final class ReactorDataMaps {
      * A PWR fuel rod, keyed by the fresh rod (1.7 {@code ItemPWRFuel.EnumPWRFuel}): heat per flux, the reaction curve, the
      * flux one rod yields before it is spent, and the hot and depleted items it becomes.
      */
-    public record PWRFuel(double heat, com.hbm.util.Function function, double yield, String hot, String depleted) {
+    public record PWRFuel(double heat, Function function, double yield, String hot, String depleted) {
         public static final Codec<PWRFuel> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.DOUBLE.fieldOf("heat").forGetter(PWRFuel::heat),
-                com.hbm.util.Function.CODEC.fieldOf("function").forGetter(PWRFuel::function),
+                Function.CODEC.fieldOf("function").forGetter(PWRFuel::function),
                 Codec.DOUBLE.optionalFieldOf("yield", 1_000_000_000D).forGetter(PWRFuel::yield),
                 Codec.STRING.fieldOf("hot").forGetter(PWRFuel::hot),
                 Codec.STRING.fieldOf("depleted").forGetter(PWRFuel::depleted)
@@ -89,7 +93,7 @@ public final class ReactorDataMaps {
 
     /** An item id resolved at use time ({@code minecraft:air} when unknown). */
     public static Item itemOf(String id) {
-        return BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.parse(id));
+        return BuiltInRegistries.ITEM.getValue(Ids.parse(id));
     }
 
     /**
@@ -119,17 +123,17 @@ public final class ReactorDataMaps {
      * yield, and the depleted pellet.
      */
     public record WatzPellet(int color, int colorDark, double passive, double heat, double mud,
-                             Optional<com.hbm.util.Function> burn, Optional<com.hbm.util.Function> heatDiv,
-                             Optional<com.hbm.util.Function> absorb, double yield, String depleted) {
+                             Optional<Function> burn, Optional<Function> heatDiv,
+                             Optional<Function> absorb, double yield, String depleted) {
         public static final Codec<WatzPellet> CODEC = RecordCodecBuilder.create(i -> i.group(
                 COLOR.fieldOf("color").forGetter(WatzPellet::color),
                 COLOR.fieldOf("color_dark").forGetter(WatzPellet::colorDark),
                 Codec.DOUBLE.optionalFieldOf("passive", 0D).forGetter(WatzPellet::passive),
                 Codec.DOUBLE.optionalFieldOf("heat", 0D).forGetter(WatzPellet::heat),
                 Codec.DOUBLE.fieldOf("mud").forGetter(WatzPellet::mud),
-                com.hbm.util.Function.CODEC.optionalFieldOf("burn").forGetter(WatzPellet::burn),
-                com.hbm.util.Function.CODEC.optionalFieldOf("heat_div").forGetter(WatzPellet::heatDiv),
-                com.hbm.util.Function.CODEC.optionalFieldOf("absorb").forGetter(WatzPellet::absorb),
+                Function.CODEC.optionalFieldOf("burn").forGetter(WatzPellet::burn),
+                Function.CODEC.optionalFieldOf("heat_div").forGetter(WatzPellet::heatDiv),
+                Function.CODEC.optionalFieldOf("absorb").forGetter(WatzPellet::absorb),
                 Codec.DOUBLE.optionalFieldOf("yield", 500_000_000D).forGetter(WatzPellet::yield),
                 Codec.STRING.fieldOf("depleted").forGetter(WatzPellet::depleted)
         ).apply(i, WatzPellet::new));
@@ -169,7 +173,7 @@ public final class ReactorDataMaps {
 
         /** The heat under the current decay setting. */
         public int effectiveHeat() {
-            return com.hbm.config.MachineConfig.rtgDecay() ? heatDecaying.orElse(heat) : heat;
+            return MachineConfig.rtgDecay() ? heatDecaying.orElse(heat) : heat;
         }
     }
 
@@ -199,11 +203,11 @@ public final class ReactorDataMaps {
      * lifetime in reaction events, the reaction curve (one of 1.7's five, {@code ItemPlateFuel.FunctionEnum}) and the
      * reactivity.
      */
-    public record PlateFuel(int lifeTime, com.hbm.items.machine.ItemPlateFuel.FunctionEnum function, int reactivity) {
+    public record PlateFuel(int lifeTime, ItemPlateFuel.FunctionEnum function, int reactivity) {
         public static final Codec<PlateFuel> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.INT.fieldOf("life_time").forGetter(PlateFuel::lifeTime),
-                Codec.STRING.xmap(com.hbm.items.machine.ItemPlateFuel.FunctionEnum::valueOf,
-                        com.hbm.items.machine.ItemPlateFuel.FunctionEnum::name).fieldOf("function").forGetter(PlateFuel::function),
+                Codec.STRING.xmap(ItemPlateFuel.FunctionEnum::valueOf,
+                        ItemPlateFuel.FunctionEnum::name).fieldOf("function").forGetter(PlateFuel::function),
                 Codec.INT.fieldOf("reactivity").forGetter(PlateFuel::reactivity)
         ).apply(i, PlateFuel::new));
     }

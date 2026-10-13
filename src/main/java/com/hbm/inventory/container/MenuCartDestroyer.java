@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.entity.cart.EntityMinecartDestroyer;
 import com.hbm.inventory.ModMenus;
+import dev.golem.core.gui.CompatContainerMenu;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -13,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
  * 1.7 {@code inventory/container/ContainerCartDestroyer}: two 3x3 ghost grids - the first nine match the exact
  * stack, the last nine the bare item. The slots are a filter, never storage.
  */
-public class MenuCartDestroyer extends dev.golem.core.gui.CompatContainerMenu {
+public class MenuCartDestroyer extends CompatContainerMenu {
 
     private final Container container;
 

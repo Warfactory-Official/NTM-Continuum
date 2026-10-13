@@ -1,10 +1,13 @@
 package com.hbm.entity.logic;
 
+import com.hbm.Constants;
+import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
 
 import com.hbm.config.GeneralConfig;
 import com.hbm.explosion.ExplosionBalefire;
 import com.hbm.explosion.ExplosionNukeGeneric;
+import dev.golem.core.hook.Hook;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
@@ -40,7 +43,7 @@ public class EntityBalefire extends EntityExplosionChunkloading {
     }
 
     /** Every listener runs on each server tick of every balefire. HBM registers none (1.7 behaviour). */
-    public static final dev.golem.core.hook.Hook<Tick> TICK = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<Tick> TICK = Hook.notifying();
 
     public EntityBalefire(EntityType<? extends EntityBalefire> type, Level level) {
         super(type, level);
@@ -58,7 +61,7 @@ public class EntityBalefire extends EntityExplosionChunkloading {
 
         if (!this.did) {
             if (!level().isClientSide() && GeneralConfig.enableExtendedLogging)
-                com.hbm.Constants.LOG.info("[NUKE] Initialized BF explosion at {} / {} / {} with strength {}!", getX(),
+                Constants.LOG.info("[NUKE] Initialized BF explosion at {} / {} / {} with strength {}!", getX(),
                         getY(), getZ(), destructionRange);
 
             exp = new ExplosionBalefire((int) getX(), (int) getY(), (int) getZ(), level(), this.destructionRange);
@@ -122,9 +125,9 @@ public class EntityBalefire extends EntityExplosionChunkloading {
 
     private static @Nullable Identifier parseVariant(String name) {
         try {
-            return dev.golem.core.Ids.parse(name);
+            return Ids.parse(name);
         } catch (RuntimeException e) {
-            com.hbm.Constants.LOG.warn("Balefire with an unreadable variant '{}' runs as plain balefire", name);
+            Constants.LOG.warn("Balefire with an unreadable variant '{}' runs as plain balefire", name);
             return null;
         }
     }

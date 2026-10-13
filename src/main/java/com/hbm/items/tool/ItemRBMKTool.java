@@ -3,10 +3,12 @@ package com.hbm.items.tool;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.blocks.machine.rbmk.RBMKConsole;
 import com.hbm.blocks.machine.rbmk.RBMKCraneConsole;
+import com.hbm.blocks.machine.rbmk.RBMKDisplay;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.items.ModDataComponents;
 import com.hbm.tileentity.machine.rbmk.BlockEntityCraneConsole;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKConsole;
+import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKDisplay;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -47,10 +49,10 @@ public class ItemRBMKTool extends Item {
         }
 
         // 1.7 ItemRBMKTool: the display panel takes the stored reactor position directly.
-        if (block instanceof com.hbm.blocks.machine.rbmk.RBMKDisplay) {
+        if (block instanceof RBMKDisplay) {
             Long target = ModDataComponents.RBMK_TOOL_TARGET.get(stack).orElse(null);
             if (target == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
-            if (!level.isClientSide() && level.getBlockEntity(pos) instanceof com.hbm.tileentity.machine.rbmk.BlockEntityRBMKDisplay display) {
+            if (!level.isClientSide() && level.getBlockEntity(pos) instanceof BlockEntityRBMKDisplay display) {
                 BlockPos targetPos = BlockPos.of(target);
                 display.setTarget(targetPos.getX(), targetPos.getY(), targetPos.getZ());
                 message(player, "item.rbmk_tool.set");

@@ -6,6 +6,7 @@ import com.hbm.inventory.container.ContainerPWR;
 import com.hbm.items.machine.ItemPWRFuel.EnumPWRFuel;
 import com.hbm.items.ModPwrItems;
 import com.hbm.tileentity.machine.TileEntityPWRController;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.KeyInput;
@@ -15,6 +16,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -33,7 +36,7 @@ import java.util.Optional;
  */
 public class GUIPWR extends CompatContainerScreen<ContainerPWR> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/reactors/gui_pwr.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/reactors/gui_pwr.png");
 
     private EditBox field;
 
@@ -81,7 +84,7 @@ public class GUIPWR extends CompatContainerScreen<ContainerPWR> {
         drawSmoothGauge(graphics, leftPos + 160, topPos + 40, (double) controller.hullHeat / (double) TileEntityPWRController.hullHeatCapacityBase);
 
         if (controller.typeLoaded >= 0 && controller.amountLoaded > 0) {
-            ItemStack display = new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(controller.typeLoaded));
+            ItemStack display = new ItemStack(BuiltInRegistries.ITEM.byId(controller.typeLoaded));
             GuiDraw.item(graphics, display, leftPos + 89, topPos + 5);
             // 1.7 drawItemStack: the count label through renderItemOverlayIntoGUI at half scale, which lands the
             // shadowed text at (x + 8.5 - w/4, y + 19.5) for a label of unscaled width w.
@@ -178,8 +181,8 @@ public class GUIPWR extends CompatContainerScreen<ContainerPWR> {
                     + (100 - (Math.round(controller.rodLevel * 100) / 100)) + "%")), mouseX, mouseY);
         } else if (legacyHover(88, 4, 18, 18, mouseX, mouseY)) {
             if (controller.typeLoaded >= 0 && controller.amountLoaded > 0) {
-                ItemStack display = new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(controller.typeLoaded));
-                tooltip(graphics, net.minecraft.client.gui.screens.Screen.getTooltipFromItem(Minecraft.getInstance(), display), mouseX, mouseY);
+                ItemStack display = new ItemStack(BuiltInRegistries.ITEM.byId(controller.typeLoaded));
+                tooltip(graphics, Screen.getTooltipFromItem(Minecraft.getInstance(), display), mouseX, mouseY);
             }
         } else if (legacyHover(8, 5, 16, 52, mouseX, mouseY)) {
             tooltip(graphics, GuiUtil.tankTooltip(controller.tanks[0]), mouseX, mouseY);

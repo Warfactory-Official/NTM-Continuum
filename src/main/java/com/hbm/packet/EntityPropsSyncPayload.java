@@ -7,7 +7,7 @@ import dev.golem.core.net.GolemPayload;
 import net.minecraft.resources.Identifier;
 
 /**
- * S2C payload syncing the local player's {@link com.hbm.entity.EntityHbmProps} — the 26.1 replacement
+ * S2C payload syncing the local player's {@link com.hbm.entity.EntityHbmProps}: the 26.1 replacement
  * for the old {@code HbmPlayerSyncPacket}. The blob is the props' versioned ByteBuf serialization
  * ({@code EntityHbmProps.serialize}); the client applies it to the local player's duck props. Sent
  * only to the owning player (every 5 ticks from {@code EntityEffectHandler}), so no entity id is

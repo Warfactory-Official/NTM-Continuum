@@ -15,7 +15,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Continuum has two multiblock systems, and a resolver that knows only one of them misses the other
  * in silence. The dummyable system kept its core at a fixed offset every cell could compute; a folded
  * multiblock's cells carry no offset at all and are resolved through the server's core index. A turret
- * pad is the second kind, and asking it for a dummy offset simply answers nothing — which is why a
+ * pad is the second kind, and asking it for a dummy offset answers nothing, which is why a
  * cable or a duct laid against one reached the turret through neither.
  */
 public final class MachineCore {

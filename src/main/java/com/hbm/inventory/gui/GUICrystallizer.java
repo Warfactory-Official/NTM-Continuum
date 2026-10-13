@@ -1,5 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerCrystallizer;
 import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
@@ -11,13 +14,13 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.List;
 
 /**
- * Client screen for the ore acidizer — 1.7.10 {@code GUICrystallizer} ({@code processing/gui_crystallizer_alt.png},
+ * Client screen for the ore acidizer: 1.7.10 {@code GUICrystallizer} ({@code processing/gui_crystallizer_alt.png},
  * 176×204). Power bar (152,18) 16×52 from (176, 64−i); progress arrow (80,47) 28×12 from (176,0); acid tank
  * (35, bottom 70) 16×52; upgrade info panel at (117,22) with the fixed 1.7 {@code desc.gui.upgrade*} text.
  */
-public class GUICrystallizer extends dev.golem.core.gui.CompatContainerScreen<ContainerCrystallizer> implements IUpgradeInfoProviderSource {
+public class GUICrystallizer extends CompatContainerScreen<ContainerCrystallizer> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_crystallizer_alt.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_crystallizer_alt.png");
 
     public GUICrystallizer(ContainerCrystallizer menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 204);
@@ -68,7 +71,7 @@ public class GUICrystallizer extends dev.golem.core.gui.CompatContainerScreen<Co
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getCrystallizer();
     }
 }

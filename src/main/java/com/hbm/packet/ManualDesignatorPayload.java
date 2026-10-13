@@ -3,6 +3,7 @@ package com.hbm.packet;
 import com.hbm.Constants;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMissileItems;
+import com.hbm.items.tool.ItemDesignatorManual;
 import dev.golem.core.Ids;
 import dev.golem.core.net.GolemCodec;
 import dev.golem.core.net.GolemPayload;
@@ -29,7 +30,7 @@ public record ManualDesignatorPayload(int operator, int value, int reference) im
                 || payload.reference < 0 || payload.reference > 1
                 || payload.value < 0 || payload.value > 100) return;
         ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (!(stack.getItem() instanceof com.hbm.items.tool.ItemDesignatorManual)) return;
+        if (!(stack.getItem() instanceof ItemDesignatorManual)) return;
 
         int x = ModDataComponents.DESIGNATOR_X.getOr(stack, 0);
         int z = ModDataComponents.DESIGNATOR_Z.getOr(stack, 0);

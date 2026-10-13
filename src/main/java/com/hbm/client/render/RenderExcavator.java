@@ -7,6 +7,7 @@ import com.hbm.tileentity.MachineCore;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -25,11 +26,11 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class RenderExcavator extends GemBER<TileEntityMachineExcavator, ExcavatorRenderState> {
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/mining_drill.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/machines/mining_drill.obj"));
     private final Surface surface = Surface.cutout(Constants.MOD_ID + ":textures/models/machines/mining_drill.png");
-    private final RenderType shaftType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/mining_drill.png"));
-    private final RenderType cobbleType = CompatRenderTypes.entitySolid(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/cobblestone.png"));
-    private final RenderType gravelType = CompatRenderTypes.entitySolid(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/gravel.png"));
+    private final RenderType shaftType = CompatRenderTypes.entityCutout(Ids.of(Constants.MOD_ID, "textures/models/machines/mining_drill.png"));
+    private final RenderType cobbleType = CompatRenderTypes.entitySolid(Ids.of(Constants.MOD_ID, "textures/models/machines/cobblestone.png"));
+    private final RenderType gravelType = CompatRenderTypes.entitySolid(Ids.of(Constants.MOD_ID, "textures/models/machines/gravel.png"));
 
     @Override
     protected void setup(Gem.Model<ExcavatorRenderState> declaration) {

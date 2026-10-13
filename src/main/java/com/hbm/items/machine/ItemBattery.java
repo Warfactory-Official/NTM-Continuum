@@ -7,6 +7,7 @@ import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
@@ -85,7 +86,7 @@ public class ItemBattery extends CompatItem implements IBatteryItem {
     @Override
     public int getBarColor(ItemStack stack) {
         float f = Math.max(0.0F, (float) ((double) getCharge(stack) / (double) maxCharge));
-        return net.minecraft.util.Mth.hsvToRgb(f / 3.0F, 1.0F, 1.0F);
+        return Mth.hsvToRgb(f / 3.0F, 1.0F, 1.0F);
     }
 
     @Override

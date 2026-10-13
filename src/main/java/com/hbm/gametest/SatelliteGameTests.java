@@ -1,6 +1,8 @@
 package com.hbm.gametest;
 
+import com.hbm.api.data.SatelliteDataMaps;
 import com.hbm.blocks.ModSatelliteBlocks;
+import com.hbm.blocks.machine.MachineSatDock;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.entity.logic.EntityDeathBlast;
 import com.hbm.entity.logic.EntityOrbitalLaser;
@@ -27,11 +29,13 @@ import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
 import com.hbm.tileentity.machine.TileEntityMachineSatDock;
 import com.hbm.tileentity.machine.TileEntityMachineSatLink;
 import com.hbm.tileentity.machine.TileEntityMachineSatLinker;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -72,7 +76,7 @@ public final class SatelliteGameTests {
             helper.assertTrue(XSatelliteRegistry.typeFor(ItemSatellite.make(chip)) == chips[chip.ordinal()],
                     chip + " must launch " + chips[chip.ordinal()]);
         }
-        helper.assertTrue(com.hbm.api.data.SatelliteDataMaps.SATELLITE.byId().size() == 12,
+        helper.assertTrue(SatelliteDataMaps.SATELLITE.byId().size() == 12,
                 "the satellite data map has 1.7's twelve registerSatellite entries");
         helper.assertTrue(XSatelliteRegistry.stackFor(SatelliteType.HORIZONS).is(ModSatelliteItems.sat_gerald.get()),
                 "Horizons' chip is sat_gerald");
@@ -234,7 +238,7 @@ public final class SatelliteGameTests {
         AABB box = new AABB(target).inflate(2, 400, 2);
         var blasts = level.getEntitiesOfClass(EntityDeathBlast.class, box);
         helper.assertTrue(blasts.size() == 1 && ray.lastShot == now, "fire spawns one death blast and stamps the shot");
-        blasts.forEach(net.minecraft.world.entity.Entity::discard);
+        blasts.forEach(Entity::discard);
 
         SatellitePrecisionLaser laser = new SatellitePrecisionLaser();
         laser.lastShot = now - SatellitePrecisionLaser.CHARGE_TIME - 1;
@@ -243,7 +247,7 @@ public final class SatelliteGameTests {
         helper.assertTrue(beams.size() == 1 && laser.targetX == target.getX(), "the coordinate action fires one orbital laser");
         laser.onCommand(level, SatellitePrecisionLaser.CMD_CANFIRE);
         helper.assertTrue("FALSE".equals(laser.tx), "the precision laser recharges for 5 s");
-        beams.forEach(net.minecraft.world.entity.Entity::discard);
+        beams.forEach(Entity::discard);
 
         SatelliteHorizons horizons = new SatelliteHorizons();
         horizons.onCommand(level, "settarget", "" + target.getX(), "" + target.getZ());
@@ -253,7 +257,7 @@ public final class SatelliteGameTests {
         helper.assertTrue(horizons.used, "Horizons is single use");
         var toms = level.getEntitiesOfClass(EntityTom.class, new AABB(target).inflate(2, 1000, 2));
         helper.assertTrue(toms.size() == 1 && toms.get(0).getY() >= 590, "Tom is dropped from y=600 over the target");
-        toms.forEach(net.minecraft.world.entity.Entity::discard);
+        toms.forEach(Entity::discard);
         horizons.onCommand(level, "settarget", "0", "0");
         helper.assertTrue("FALSE".equals(horizons.tx), "a used Horizons reports FALSE");
         helper.succeed();
@@ -314,7 +318,7 @@ public final class SatelliteGameTests {
     public static void linker(GameTestHelper helper) {
         BlockPos rel = new BlockPos(1, 1, 1);
         helper.setBlock(rel, ModSatelliteBlocks.machine_satlinker.get());
-        TileEntityMachineSatLinker linker = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, rel,
+        TileEntityMachineSatLinker linker = GameTestHelpers.blockEntity(helper, rel,
                 TileEntityMachineSatLinker.class);
         helper.assertTrue(linker != null, "the ID manager has its block entity");
 
@@ -338,13 +342,13 @@ public final class SatelliteGameTests {
         ServerLevel level = helper.getLevel();
         BlockPos rel = new BlockPos(3, 1, 3);
         FoldedTestSupport.assemble(helper, ModSatelliteBlocks.sat_dock.get(), rel);
-        TileEntityMachineSatDock dock = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, rel,
+        TileEntityMachineSatDock dock = GameTestHelpers.blockEntity(helper, rel,
                 TileEntityMachineSatDock.class);
         helper.assertTrue(dock != null, "the cargo pad has its block entity");
         BlockPos abs = helper.absolutePos(rel);
         BlockState state = level.getBlockState(abs);
-        helper.assertTrue(com.hbm.blocks.machine.MachineSatDock.isCore(state), "the rocket lands on the core cell");
-        helper.assertTrue(!com.hbm.blocks.machine.MachineSatDock.isCore(level.getBlockState(abs.east())),
+        helper.assertTrue(MachineSatDock.isCore(state), "the rocket lands on the core cell");
+        helper.assertTrue(!MachineSatDock.isCore(level.getBlockState(abs.east())),
                 "the pad's outer cells are not the core");
 
         SatelliteSavedData data = SatelliteSavedData.get(level);
@@ -410,7 +414,7 @@ public final class SatelliteGameTests {
 
     private static TileEntityMachineSatLink place(GameTestHelper helper) {
         FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_satlink.get(), LINK);
-        TileEntityMachineSatLink link = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityMachineSatLink link = GameTestHelpers.blockEntity(
                 helper, LINK, TileEntityMachineSatLink.class);
         helper.assertTrue(link != null, "Sat link BlockEntity was not created");
         return link;
@@ -423,6 +427,6 @@ public final class SatelliteGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        return dev.golem.core.gametest.GameTestHelpers.resourceExists(SatelliteGameTests.class, path);
+        return GameTestHelpers.resourceExists(SatelliteGameTests.class, path);
     }
 }

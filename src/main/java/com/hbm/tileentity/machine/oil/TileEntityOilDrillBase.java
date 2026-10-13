@@ -18,6 +18,7 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.TickPhase;
+import java.util.HashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.MenuProvider;
@@ -38,19 +39,19 @@ import java.util.List;
 import java.util.Queue;
 
 /**
- * Shared base of the oil derrick / pumpjack — 1:1 port of the 1.12.2 {@code TileEntityOilDrillBase}.
- * 8 slots (0 battery, 1→2 oil container unload, 3→4 gas container unload, 5-7 upgrades); tanks
+ * Shared base of the oil derrick / pumpjack, a 1:1 port of the 1.12.2 {@code TileEntityOilDrillBase}.
+ * 8 slots (0 battery, 1 to 2 oil container unload, 3 to 4 gas container unload, 5-7 upgrades); tanks
  * {@code [0] OIL 64k}, {@code [1] GAS 64k}, both send-only. Each {@link #getDelayEff()} ticks the drill
  * walks its column from {@code y-1} down to {@link #getDrillDepth()}: the first non-{@code oil_pipe}
- * block is sucked ({@link #trySuck} — a 256-node BFS through {@code ore_oil_empty} to the nearest live
- * {@code ore_oil}) or drilled through ({@link #tryDrill} — replaced by {@code oil_pipe} when explosion
+ * block is sucked ({@link #trySuck}, a 256-node BFS through {@code ore_oil_empty} to the nearest live
+ * {@code ore_oil}) or drilled through ({@link #tryDrill}, replaced by {@code oil_pipe} when explosion
  * resistance &lt; 1000). Power drains every eligible tick; the AFTERBURN upgrade burns tanked gas
- * ({@code level*10} mB/t → {@code +5 HE/mB}).
+ * ({@code level*10} mB/t gives {@code +5 HE/mB}).
  *
- * <p>Skips vs old (documented §20): IPersistentNBT (power/tanks don't survive item form),
+ * <p>Skipped from the old class (see IMPLEMENTATION.md §20): IPersistentNBT (power/tanks don't survive item form),
  * IConfigurableMachine, IFluidCopiable, the {@code ore_bedrock_oil} BFS target (deferred with the
  * fracking tower), and the oreUranium/oreAsbestos gas-pocket easter eggs ({@code onDrill} is an empty
- * seam — the gas blocks are unported).
+ * seam: the gas blocks are unported).
  */
 public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider {
@@ -128,7 +129,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         te.networkPackNT();
     }
 
-    /** Fills a fluid container in {@code loadSlot} FROM {@code tanks[tank]}, result → {@code outSlot}
+    /** Fills a fluid container in {@code loadSlot} FROM {@code tanks[tank]}, result in {@code outSlot}
      * (the old {@code FluidTankNTM.unloadTank}; same container handling as the chemplant). */
     protected void unloadTank(int tank, int loadSlot, int outSlot) {
         FluidTankNTM t = tanks[tank];
@@ -188,7 +189,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         }
     }
 
-    /** Old hook for the uranium/asbestos gas-pocket easter eggs — unported (gas blocks missing). */
+    /** Old hook for the uranium/asbestos gas-pocket easter eggs, unported (gas blocks missing). */
     public void onDrill(int y) {}
 
     public int getDrillDepth() {
@@ -211,7 +212,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
             BlockState currentState = level.getBlockState(currentPos);
             Block currentBlock = currentState.getBlock();
             // 1.7: a live deposit (ore_oil, or ore_bedrock_oil for the fracking tower) is sucked, a drained one searched
-            // through; both are hbm:fluid_deposit data now (DepositDataMaps), by block state where an addon's one block
+            // through; both are hbm:fluid_deposit data (DepositDataMaps), by block state where an addon's one block
             // carries several deposits (hbm:fluid_deposit_states)
             DepositDataMaps.Deposit deposit = DepositDataMaps.deposit(currentState);
             if (deposit != null && reaches(deposit)) {
@@ -230,7 +231,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         return false;
     }
 
-    /** Old {@code BobMathUtil.getShuffledDirs} — the 6 directions in random order. */
+    /** Old {@code BobMathUtil.getShuffledDirs}: the 6 directions in random order. */
     private List<ForgeDirection> getShuffledDirs() {
         List<ForgeDirection> dirs = new ArrayList<>(List.of(ForgeDirection.VALID_DIRECTIONS));
         Collections.shuffle(dirs);
@@ -274,11 +275,11 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
      */
     protected void suckDeposit(BlockPos pos, DepositDataMaps.Deposit deposit, int primary, int secondaryMin,
                                int secondaryMax, double drainChance) {
-        com.hbm.inventory.fluid.FluidType first = deposit.primaryFluid();
-        com.hbm.inventory.fluid.FluidType second = deposit.secondaryFluid();
+        FluidType first = deposit.primaryFluid();
+        FluidType second = deposit.secondaryFluid();
         tanks[0].setTankType(first);
         tanks[0].setFill(Math.min(tanks[0].getFill() + deposit.primaryAmount(primary), tanks[0].getMaxFill()));
-        if (second != com.hbm.inventory.fluid.Fluids.NONE) {
+        if (second != Fluids.NONE) {
             tanks[1].setTankType(second);
             int min = deposit.secondaryAmount(secondaryMin);
             int max = deposit.secondaryAmount(secondaryMax);
@@ -296,7 +297,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return Library.isBattery(stack);
-        // Slots 2/4 (filled-container outs) stay TRUE — the machine writes them via
+        // Slots 2/4 (filled-container outs) stay TRUE, because the machine writes them via
         // inventory.insertItem, which validates against this method; the menu's take-only slots block
         // the player.
         if (slot >= 5 && slot <= 7) return Library.isMachineUpgrade(stack);
@@ -322,8 +323,8 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
     }
 
     @Override
-    public java.util.HashMap<UpgradeType, Integer> getValidUpgrades() {
-        java.util.HashMap<UpgradeType, Integer> upgrades = new java.util.HashMap<>();
+    public HashMap<UpgradeType, Integer> getValidUpgrades() {
+        HashMap<UpgradeType, Integer> upgrades = new HashMap<>();
         upgrades.put(UpgradeType.SPEED, 3);
         upgrades.put(UpgradeType.POWER, 3);
         upgrades.put(UpgradeType.AFTERBURN, 3);

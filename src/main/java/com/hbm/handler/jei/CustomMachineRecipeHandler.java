@@ -10,6 +10,7 @@ import com.hbm.inventory.recipes.CustomMachineRecipes.CustomMachineRecipe;
 import com.hbm.items.machine.ItemFluidIcon;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.viewer.ViewerType;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -68,7 +69,7 @@ public final class CustomMachineRecipeHandler extends HbmRecipeCategory<CustomMa
             if (out.chance() != 1) {
                 String percent = chanceText(out.chance());
                 slot.addTooltipCallback((shown, tooltip) ->
-                        tooltip.add(Component.literal(percent).withStyle(net.minecraft.ChatFormatting.RED)));
+                        tooltip.add(Component.literal(percent).withStyle(ChatFormatting.RED)));
             }
         }
 

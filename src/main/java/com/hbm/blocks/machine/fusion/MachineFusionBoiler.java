@@ -4,10 +4,15 @@ import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionBoiler;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -39,16 +44,16 @@ public class MachineFusionBoiler extends BlockMultiblockMachine implements ILook
      * it the boiler is completely opaque - it has no GUI of its own.
      */
     @Override
-    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityFusionBoiler boiler)) return null;
 
-        java.util.List<String> text = new java.util.ArrayList<>();
-        text.add("§a-> §r" + String.format(java.util.Locale.US, "%,d", boiler.plasmaEnergy) + " TU");
-        com.hbm.inventory.fluid.tank.FluidTankNTM[] tanks = boiler.getAllTanks();
+        List<String> text = new ArrayList<>();
+        text.add("§a-> §r" + String.format(Locale.US, "%,d", boiler.plasmaEnergy) + " TU");
+        FluidTankNTM[] tanks = boiler.getAllTanks();
         for (int i = 0; i < tanks.length; i++) {
             text.add((i == 0 ? "§a-> §r" : "§c<- §r") + tanks[i].getTankType().getDisplayNameString()
-                    + ": " + String.format(java.util.Locale.US, "%,d", tanks[i].getFill())
-                    + "/" + String.format(java.util.Locale.US, "%,d", tanks[i].getMaxFill()) + " mB");
+                    + ": " + String.format(Locale.US, "%,d", tanks[i].getFill())
+                    + "/" + String.format(Locale.US, "%,d", tanks[i].getMaxFill()) + " mB");
         }
         return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }

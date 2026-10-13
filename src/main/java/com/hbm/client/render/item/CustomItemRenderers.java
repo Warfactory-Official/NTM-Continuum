@@ -6,10 +6,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
@@ -27,7 +29,7 @@ public final class CustomItemRenderers {
     /** Packed light 1.7 got from {@code setLightmapTextureCoords(240, 240)}. */
     static final int FULLBRIGHT = 0xF000F0;
 
-    private static final Map<String, Supplier<CustomItemRenderer>> FACTORIES = new java.util.concurrent.ConcurrentHashMap<>(Map.ofEntries(
+    private static final Map<String, Supplier<CustomItemRenderer>> FACTORIES = new ConcurrentHashMap<>(Map.ofEntries(
             Map.entry("shim", ItemRenderShim::new),
             Map.entry("gavel", ItemRenderGavel::new),
             Map.entry("big_sword", ItemRenderBigSword::new),
@@ -92,7 +94,7 @@ public final class CustomItemRenderers {
         }
 
         @Override
-        public void render(ItemStack stack, net.minecraft.world.item.ItemDisplayContext context, PoseStack pose,
+        public void render(ItemStack stack, ItemDisplayContext context, PoseStack pose,
                            SubmitSink sink, int light, int overlay, @Nullable LivingEntity owner) {
             get().render(stack, context, pose, sink, light, overlay, owner);
         }
@@ -103,7 +105,7 @@ public final class CustomItemRenderers {
         }
     }
 
-    // ---- shared by the renderers ----
+    // Shared by the renderers
 
     static Identifier tex(String path) {
         return Ids.of(Constants.MOD_ID, path);

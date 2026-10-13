@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineLargeTurbine;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -18,7 +19,7 @@ public final class LargeTurbineRenderer
         extends GemBER<TileEntityMachineLargeTurbine, LargeTurbineRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/turbine.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/turbine.obj"));
     private final Surface body = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/turbine.png");
     private final Surface blades = Surface.cutout(

@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * old-hbm {@code physics.GJK}: Gilbert-Johnson-Keerthi intersection and the expanding polytope for the contact,
+ * 1.12.2 {@code physics.GJK}: Gilbert-Johnson-Keerthi intersection and the expanding polytope for the contact,
  * statement for statement (including the float rounding of {@code V3.mult(float)} where the old code cast). Shared
  * scratch state as in the original; client thread only.
  */

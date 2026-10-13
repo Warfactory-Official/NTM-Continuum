@@ -6,6 +6,7 @@ import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.client.render.flywheel.FlywheelCompat;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.effect.EntityNukeTorex;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.render.Instancing;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
@@ -61,11 +62,10 @@ public final class FlywheelGameTests {
     }
 
     /**
-     * The engine must be impossible to reach from a dedicated server. It holds GL state and its whole
-     * draw path assumes a render thread, so CE gates it on a static initializer that throws off-client
-     * — and the value of that gate is precisely that a server-side caller fails loudly here instead of
-     * quietly opening a GL context on a headless box. This test is what proves the gate still bites:
-     * the suite runs on a dedicated server, so the class must refuse to initialize.
+     * The engine must be impossible to reach from a dedicated server. It holds GL state and its draw path
+     * assumes a render thread, so CE gates it on a static initializer that throws off-client: a
+     * server-side caller fails loudly instead of quietly opening a GL context on a headless box. The suite
+     * runs on a dedicated server, so the class must refuse to initialize.
      */
     public static void engineClientOnly(GameTestHelper helper) {
         if (!Instancing.isAvailable()) {
@@ -95,7 +95,7 @@ public final class FlywheelGameTests {
     public static void crumblingCoreFolded(GameTestHelper helper) {
         BlockMultiblockCore block = ModTurretBlocks.turret_chekhov.get();
         BlockPos clicked = helper.absolutePos(new BlockPos(2, 1, 2));
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
         player.setPos(clicked.getX() - 6D, clicked.getY(), clicked.getZ() - 6D);
         helper.getLevel().setBlock(clicked, block.defaultBlockState(), 3);

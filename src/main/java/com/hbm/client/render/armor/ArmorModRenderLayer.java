@@ -1,5 +1,6 @@
 package com.hbm.client.render.armor;
 
+import com.hbm.client.jetpack.JetpackClientVisuals;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.items.armor.ArmorLiquidatorMask;
@@ -88,7 +89,7 @@ public class ArmorModRenderLayer extends CompatHumanoidLayer {
             ArmorRenderer tesla = ArmorRenderers.get("back_tesla");
             if (tesla == null) return;
             boolean crouching = parts.sneaking
-                    && !com.hbm.client.jetpack.JetpackClientVisuals.freezesPlayerPose(parts.player());
+                    && !JetpackClientVisuals.freezesPlayerPose(parts.player());
             HumanoidPose armorPose = crouching == parts.sneaking ? parts
                     : new HumanoidPose(parts.model(), false, parts.baby, parts.invisible, parts.player());
             pose.pushPose();

@@ -2,8 +2,11 @@ package com.hbm.client.render;
 
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.inventory.FluidContainers;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineCombustionEngine;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -14,13 +17,13 @@ import net.minecraft.world.phys.Vec3;
 public final class CombustionEngineRenderer
         extends GemBER<TileEntityMachineCombustionEngine, CombustionEngineRenderState> {
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID,
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID,
             "models/machines/combustion_engine.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/combustion_engine.png");
 
     /**
-     * The canister is tinted by the fuel it holds, and white where the fuel has no legacy tint — which
+     * The canister is tinted by the fuel it holds, and white where the fuel has no legacy tint, which
      * is the same {@code 0xFFFFFFFF} the untinted path means, so it is one part either way.
      */
     @Override
@@ -56,9 +59,9 @@ public final class CombustionEngineRenderer
         };
         state.doorAngle = be.prevDoorAngle + (be.doorAngle - be.prevDoorAngle) * partialTicks;
 
-        com.hbm.inventory.fluid.FluidType tankType = be.tank.getTankType();
-        state.canisterColor = com.hbm.inventory.FluidContainers.hasCanister(tankType)
-                ? legacyCanisterTint(com.hbm.inventory.FluidContainers.canisterColor(tankType)) : 0xFFFFFFFF;
+        FluidType tankType = be.tank.getTankType();
+        state.canisterColor = FluidContainers.hasCanister(tankType)
+                ? legacyCanisterTint(FluidContainers.canisterColor(tankType)) : 0xFFFFFFFF;
     }
 
     // The legacy renderer tints with CD_Canister.color (the hbm:fluid_containers data map), not FluidType.color.

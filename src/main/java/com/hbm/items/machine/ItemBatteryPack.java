@@ -1,10 +1,13 @@
 package com.hbm.items.machine;
 
+import com.hbm.api.data.ReactorDataMaps;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.items.ModDataComponents;
 import com.hbm.lib.Library;
+import dev.golem.core.Ids;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -12,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
 /**
- * Modern HBM battery / capacitor item — the "actual storage" the {@code machine_battery_socket} holds.
+ * Modern HBM battery / capacitor item: the "actual storage" the {@code machine_battery_socket} holds.
  * Each {@link EnumBatteryPack} variant (6 batteries + 6 capacitors) is registered as its <b>own</b> item
  * in 26.1 (the old mod used a single item with metadata subtypes, which 1.21+ removed). The stored charge
  * lives in the {@link ModDataComponents#BATTERY_CHARGE} component (the old NBT {@code "charge"} long).
@@ -26,14 +29,14 @@ public class ItemBatteryPack extends CompatItem implements IBatteryItem {
     public final EnumBatteryPack pack;
 
     /** The pack values: the {@code hbm:battery_pack} entry, else HBM's enum constant. */
-    public com.hbm.api.data.ReactorDataMaps.BatteryPack stats() {
-        com.hbm.api.data.ReactorDataMaps.BatteryPack data = com.hbm.api.data.ReactorDataMaps.BATTERY_PACK.get(this);
+    public ReactorDataMaps.BatteryPack stats() {
+        ReactorDataMaps.BatteryPack data = ReactorDataMaps.BATTERY_PACK.get(this);
         return data != null ? data : codeStats();
     }
 
     /** The code defaults (constructor or enum values) that the data map entry overrides. */
-    public com.hbm.api.data.ReactorDataMaps.BatteryPack codeStats() {
-        return new com.hbm.api.data.ReactorDataMaps.BatteryPack(pack.capacity, pack.chargeRate,
+    public ReactorDataMaps.BatteryPack codeStats() {
+        return new ReactorDataMaps.BatteryPack(pack.capacity, pack.chargeRate,
                 pack.dischargeRate, pack.isCapacitor(), pack.texture.toString());
     }
 
@@ -101,7 +104,7 @@ public class ItemBatteryPack extends CompatItem implements IBatteryItem {
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-                                         java.util.List<Component> tooltip, TooltipFlag flag) {
+                                         List<Component> tooltip, TooltipFlag flag) {
         long c = getCharge(stack);
         var pack = stats();
         tooltip.add(Component.literal("Energy stored: " + Library.getShortNumber(c) + "/" + Library.getShortNumber(pack.capacity())
@@ -153,7 +156,7 @@ public class ItemBatteryPack extends CompatItem implements IBatteryItem {
 
         EnumBatteryPack(String name, long capacity, long chargeRate, long dischargeRate) {
             this.name = name;
-            this.texture = dev.golem.core.Ids.of("hbm", "textures/models/machines/" + name + ".png");
+            this.texture = Ids.of("hbm", "textures/models/machines/" + name + ".png");
             this.capacity = capacity;
             this.chargeRate = chargeRate;
             this.dischargeRate = dischargeRate;

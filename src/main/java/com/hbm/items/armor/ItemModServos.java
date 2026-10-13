@@ -2,6 +2,7 @@ package com.hbm.items.armor;
 
 import com.hbm.handler.ArmorModHandler;
 import dev.golem.core.world.ArmorSlot;
+import dev.golem.core.world.Armors;
 import dev.golem.core.world.Attributes;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.Effects;
@@ -67,7 +68,7 @@ public class ItemModServos extends ItemArmorMod {
     }
 
     private static ArmorSlot slotOf(ItemStack armor) {
-        return dev.golem.core.world.Armors.slotOf(armor);
+        return Armors.slotOf(armor);
 
     }
 }

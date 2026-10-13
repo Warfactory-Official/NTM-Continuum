@@ -1,9 +1,10 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.data.FluidDataMaps;
+import com.hbm.sound.ModProductionSounds;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
-import com.hbm.blocks.machine.AutosawFeature;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -15,6 +16,10 @@ import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.Plants;
+import java.util.AbstractSet;
+import java.util.Iterator;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -46,6 +51,7 @@ import java.util.Set;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.sound.MachineAudio;
 import com.hbm.sound.ModSounds;
+import com.hbm.tileentity.ModBlockEntities;
 
 /** The old autosaw machine logic, with modern block tags and API boundaries made explicit. */
 public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IFluidStandardReceiverMK2 {
@@ -57,7 +63,7 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
     private static final int FELL_VERTICAL_RANGE = 32;
     private static final int FELL_MAX_BASE_DEPTH = FELL_VERTICAL_RANGE / 2;
 
-    // 6 face neighbours + 12 edge neighbours; corners are deliberately excluded.
+    // 6 face neighbours + 12 edge neighbours; corners are excluded.
     private static final int[][] EIGHTEEN_DIRS = {
             {1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1},
             {1, 1, 0}, {1, -1, 0}, {-1, 1, 0}, {-1, -1, 0},
@@ -69,17 +75,17 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
      * The fuels the autosaw and the thresher burn: a live view of the {@code hbm:autosaw_fuel} fluid data map
      * ({@link com.hbm.api.data.FluidDataMaps#AUTOSAW_FUEL}; 1.7: wood oil, ethanol, fish oil, heavy oil).
      */
-    public static final Set<FluidType> acceptedFuels = new java.util.AbstractSet<>() {
+    public static final Set<FluidType> acceptedFuels = new AbstractSet<>() {
         @Override
         public boolean contains(Object o) {
             return o instanceof FluidType type && type != Fluids.NONE
-                    && Boolean.TRUE.equals(com.hbm.api.data.FluidDataMaps.AUTOSAW_FUEL.get(Fluids.toVanilla(type)));
+                    && Boolean.TRUE.equals(FluidDataMaps.AUTOSAW_FUEL.get(Fluids.toVanilla(type)));
         }
 
         @Override
-        public java.util.Iterator<FluidType> iterator() {
-            java.util.List<FluidType> list = new java.util.ArrayList<>();
-            com.hbm.api.data.FluidDataMaps.AUTOSAW_FUEL.byId().forEach((id, on) -> {
+        public Iterator<FluidType> iterator() {
+            List<FluidType> list = new ArrayList<>();
+            FluidDataMaps.AUTOSAW_FUEL.byId().forEach((id, on) -> {
                 if (Boolean.TRUE.equals(on) && Fluids.byRegistryName(id) != Fluids.NONE) list.add(Fluids.byRegistryName(id));
             });
             return list.iterator();
@@ -88,7 +94,7 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
         @Override
         public int size() {
             int n = 0;
-            for (java.util.Iterator<FluidType> it = iterator(); it.hasNext(); it.next()) n++;
+            for (Iterator<FluidType> it = iterator(); it.hasNext(); it.next()) n++;
             return n;
         }
     };
@@ -113,7 +119,7 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
     public float lastSpin;
 
     public TileEntityMachineAutosaw(BlockPos pos, BlockState state) {
-        super(AutosawFeature.MACHINE_AUTOSAW.get(), pos, state);
+        super(ModBlockEntities.MACHINE_AUTOSAW.get(), pos, state);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state,
@@ -208,7 +214,7 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
         }
 
         if (saw.audioPitch == 0F) saw.audioPitch = 1.0F + level.getRandom().nextFloat() * 0.1F;
-        saw.audio = MachineAudio.tick(saw.audio, saw.isOn && !saw.isSuspended, com.hbm.sound.ModProductionSounds.ENGINE.get(),
+        saw.audio = MachineAudio.tick(saw.audio, saw.isOn && !saw.isSuspended, ModProductionSounds.ENGINE.get(),
                 SoundSource.BLOCKS, pos, saw.getVolume(1F), 10F, saw.audioPitch, 10);
 
         saw.prevRotationYaw = saw.rotationYaw;
@@ -279,7 +285,7 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
         // The old plant_tall mustard-willow metadata range cannot be named here: that HBM plant family
         // is not present in the current source tree, and inventing a replacement would change behavior.
         if (blockState.getBlock() instanceof BonemealableBlock growable
-                && dev.golem.core.world.Plants.isValidBonemealTarget(growable, level, pos, blockState)) {
+                && Plants.isValidBonemealTarget(growable, level, pos, blockState)) {
             return true;
         }
 

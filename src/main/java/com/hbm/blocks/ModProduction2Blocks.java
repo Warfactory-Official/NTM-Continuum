@@ -8,6 +8,7 @@ import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Slots;
 import dev.golem.core.dejson.Variants;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.world.item.Item;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
@@ -126,7 +127,7 @@ public final class ModProduction2Blocks {
      * belong to the (unported) bedrock refining chain and are not registered here.
      */
     public static final Map<BedrockOreType, RegistryObject<ItemBedrockOreGraded>> BEDROCK_ORE_BASE =
-            new java.util.concurrent.ConcurrentHashMap<>(); // an addon type's BASE item joins via ModBedrockOreItems.add
+            new ConcurrentHashMap<>(); // an addon type's BASE item joins via ModBedrockOreItems.add
 
     static {
         for (BedrockOreType type : BedrockOreType.VALUES) {

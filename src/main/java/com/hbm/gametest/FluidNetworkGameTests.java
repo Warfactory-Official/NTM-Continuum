@@ -4,9 +4,16 @@ import com.hbm.Constants;
 import com.hbm.api.fluidmk2.DuctData;
 import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.fluidmk2.FluidNetwork;
+import com.hbm.api.fluidmk2.IFluidMultiUserMK2;
+import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.api.fluidmk2.IFluidUserMK2;
 import com.hbm.blocks.machine.MachineFluidTank;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.ModFluidNetBlocks;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModMachineItems;
+import com.hbm.items.machine.ItemFluidId;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
@@ -15,17 +22,28 @@ import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.graph.NodeNetwork;
+import com.hbm.uninos.graph.PortClaims;
+import dev.golem.core.data.ModelData;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The fluid contracts that must survive the move off UNINOS onto the node graph: what the plumbing
  * does, never how it is built. The energy suite is the sibling, and the two differ only where fluid
- * does — a duct carries one fluid, so the interesting question the power net never had to answer is
- * what happens where two of them meet.
+ * does. A duct carries one fluid, so the question the power net never had to answer is what happens
+ * where two of them meet.
  *
  * <p>A row per test at a height nothing else uses, for the same reason the energy suite keeps one: two
  * collinear runs in neighbouring plots are correctly one network, and a test that reaches the plot next
@@ -34,7 +52,7 @@ import net.minecraft.server.level.ServerLevel;
 public final class FluidNetworkGameTests {
 
     /** Long enough for every machine to claim its ports and an unclaiming class to pass its PortClaims grace. */
-    private static final int PORT_CLAIM_WAIT = (int) com.hbm.uninos.graph.PortClaims.GRACE_TICKS + 10;
+    private static final int PORT_CLAIM_WAIT = (int) PortClaims.GRACE_TICKS + 10;
 
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
@@ -65,8 +83,8 @@ public final class FluidNetworkGameTests {
 
     /**
      * A creative source at one end of a typed run fills a tank at the other. The two ends are reached by
-     * different routes — the source owns its own cell and answers for itself, the tank is a footprint
-     * whose port cell has no block entity and answers through its block — so one reading covers both.
+     * different routes: the source owns its own cell and answers for itself, the tank is a footprint
+     * whose port cell has no block entity and answers through its block. One reading covers both.
      */
     private static void join(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -90,7 +108,7 @@ public final class FluidNetworkGameTests {
     /** Taking a duct out of the middle of a run severs it, and the far half stops being served. */
     private static void split(GameTestHelper helper) {
         // the row lies outside the padded plot: hold it ticking, or its machines never claim their ports (PortClaims)
-        Runnable release = dev.golem.core.gametest.GameTests.holdChunks(helper, -4, 12, SPLIT_Z - 6, SPLIT_Z + 6);
+        Runnable release = GameTests.holdChunks(helper, -4, 12, SPLIT_Z - 6, SPLIT_Z + 6);
         ServerLevel level = helper.getLevel();
         TileEntityMachineFluidTank tank = tank(helper, new BlockPos(4, Y, SPLIT_Z), (short) 0);
         DirPos port = openPort(helper, tank);
@@ -130,14 +148,14 @@ public final class FluidNetworkGameTests {
     /**
      * Two ducts carrying different fluids never become one network, however they are laid. This is what
      * UNINOS got from giving every fluid a nodespace of its own and the graph gets from refusing to join
-     * two cells whose data differs — the one structural thing that has no energy counterpart.
+     * two cells whose data differs. That is the one structural thing with no energy counterpart.
      */
     private static void segregation(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos water = helper.absolutePos(new BlockPos(6, Y, TYPE_Z));
         BlockPos diesel = water.east();
-        level.setBlock(water, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
-        level.setBlock(diesel, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
+        level.setBlock(water, ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
+        level.setBlock(diesel, ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
         ((TileEntityFluidDuctNT) level.getBlockEntity(water)).setFluidType(Fluids.WATER);
         ((TileEntityFluidDuctNT) level.getBlockEntity(diesel)).setFluidType(Fluids.DIESEL);
 
@@ -166,19 +184,19 @@ public final class FluidNetworkGameTests {
         ServerLevel level = helper.getLevel();
         BlockPos first = helper.absolutePos(new BlockPos(2, Y, SPREAD_Z));
         for (int i = 0; i < 4; i++) {
-            level.setBlock(first.east(i), com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
+            level.setBlock(first.east(i), ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
         }
         BlockPos other = first.east(3);
         ((TileEntityFluidDuctNT) level.getBlockEntity(other)).setFluidType(Fluids.DIESEL);
 
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.CREATIVE);
-        net.minecraft.world.item.ItemStack stack = com.hbm.items.machine.ItemFluidId.make(Fluids.WATER);
-        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.CREATIVE);
+        ItemStack stack = ItemFluidId.make(Fluids.WATER);
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
         player.setShiftKeyDown(true);
-        var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(first),
+        var hit = new BlockHitResult(Vec3.atCenterOf(first),
                 Direction.UP, first, false);
-        stack.getItem().useOn(new net.minecraft.world.item.context.UseOnContext(level, player,
-                net.minecraft.world.InteractionHand.MAIN_HAND, stack, hit));
+        stack.getItem().useOn(new UseOnContext(level, player,
+                InteractionHand.MAIN_HAND, stack, hit));
 
         for (int i = 0; i < 3; i++) {
             helper.assertTrue(((TileEntityFluidDuctNT) level.getBlockEntity(first.east(i))).getFluidType() == Fluids.WATER,
@@ -203,14 +221,14 @@ public final class FluidNetworkGameTests {
 
     /**
      * Typing a duct in the middle of an untyped straight run: the graph folds that cell into a segment, and
-     * the retype must still reach the graph. It used to change only the block entity, so the graph kept the
-     * old fluid there and the run stayed cut in two after every duct was typed.
+     * the retype must still reach the graph. Changing only the block entity would leave the graph with the
+     * old fluid there, cutting the run in two after every duct is typed.
      */
     private static void interiorRetype(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos first = helper.absolutePos(new BlockPos(2, Y, INTERIOR_Z));
         for (int i = 0; i < 5; i++) {
-            level.setBlock(first.east(i), com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
+            level.setBlock(first.east(i), ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
         }
         LevelNodeGraph<DuctData> graph = FluidGraph.get(level);
         BlockPos middle = first.east(2);
@@ -232,19 +250,19 @@ public final class FluidNetworkGameTests {
 
     /** An identifier that carries only its fluid id (as /give builds it) gets the fluid's tint colour. */
     private static void identifierTint(GameTestHelper helper) {
-        net.minecraft.world.item.ItemStack bare = new net.minecraft.world.item.ItemStack(
-                com.hbm.items.ModMachineItems.fluid_identifier.get());
-        com.hbm.items.ModDataComponents.fluid(bare, Fluids.KEROSENE);
-        helper.assertTrue(dev.golem.core.data.ModelData.color(bare, -1) == -1, "a bare identifier starts without a colour");
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
-        ((com.hbm.items.machine.ItemFluidId) bare.getItem()).tickInventoryCompat(bare, helper.getLevel(), player,
-                net.minecraft.world.entity.EquipmentSlot.MAINHAND);
-        helper.assertTrue(dev.golem.core.data.ModelData.color(bare, -1) == Fluids.KEROSENE.getColor(),
+        ItemStack bare = new ItemStack(
+                ModMachineItems.fluid_identifier.get());
+        ModDataComponents.fluid(bare, Fluids.KEROSENE);
+        helper.assertTrue(ModelData.color(bare, -1) == -1, "a bare identifier starts without a colour");
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        ((ItemFluidId) bare.getItem()).tickInventoryCompat(bare, helper.getLevel(), player,
+                EquipmentSlot.MAINHAND);
+        helper.assertTrue(ModelData.color(bare, -1) == Fluids.KEROSENE.getColor(),
                 "the inventory tick did not store the kerosene tint");
         helper.succeed();
     }
 
-    private static boolean arm(net.minecraft.world.level.block.state.BlockState state, String side) {
+    private static boolean arm(BlockState state, String side) {
         for (var property : state.getProperties()) {
             if (property.getName().equals(side)) return Boolean.TRUE.equals(state.getValue(property));
         }
@@ -259,7 +277,7 @@ public final class FluidNetworkGameTests {
      */
     private static void exhaust(GameTestHelper helper) {
         // the row lies outside the padded plot: hold it ticking, or its machines never claim their ports (PortClaims)
-        Runnable release = dev.golem.core.gametest.GameTests.holdChunks(helper, -4, 12, EXHAUST_Z - 6, EXHAUST_Z + 6);
+        Runnable release = GameTests.holdChunks(helper, -4, 12, EXHAUST_Z - 6, EXHAUST_Z + 6);
         ServerLevel level = helper.getLevel();
         BlockPos source = helper.absolutePos(new BlockPos(1, Y, EXHAUST_Z));
         BlockPos sink = source.east(4);
@@ -282,7 +300,7 @@ public final class FluidNetworkGameTests {
                     "leaded smoke never crossed an exhaust run that was never typed to it");
 
             BlockPos poison = source.east(2).north();
-            level.setBlock(poison, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
+            level.setBlock(poison, ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
             ((TileEntityFluidDuctNT) level.getBlockEntity(poison)).setFluidType(Fluids.SMOKE_POISON);
             helper.assertTrue(graph.networkAt(poison.asLong()) == graph.networkAt(source.east(2).asLong()),
                     "a duct typed to any smoke must join the exhaust run beside it");
@@ -308,7 +326,7 @@ public final class FluidNetworkGameTests {
     }
 
     private static void duct(GameTestHelper helper, BlockPos pos) {
-        helper.getLevel().setBlock(pos, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
+        helper.getLevel().setBlock(pos, ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
         ((TileEntityFluidDuctNT) helper.getLevel().getBlockEntity(pos)).setFluidType(Fluids.WATER);
     }
 
@@ -328,7 +346,7 @@ public final class FluidNetworkGameTests {
      */
     private static void multiUser(GameTestHelper helper) {
         // the row lies outside the padded plot: hold it ticking, or its machines never claim their ports (PortClaims)
-        Runnable release = dev.golem.core.gametest.GameTests.holdChunks(helper, -4, 12, MULTI_Z - 6, MULTI_Z + 6);
+        Runnable release = GameTests.holdChunks(helper, -4, 12, MULTI_Z - 6, MULTI_Z + 6);
         ServerLevel level = helper.getLevel();
         BlockPos at = helper.absolutePos(new BlockPos(4, Y, MULTI_Z));
         level.setBlock(at, ModFluidNetBlocks.barrel_steel.get().defaultBlockState(), 3);
@@ -344,10 +362,10 @@ public final class FluidNetworkGameTests {
             settle(level);
             helper.assertTrue(barrel.second.getFill() > 0 && barrel.tank.getFill() == 0,
                     "the east face must fill the second receiver's tank only: second " + barrel.second.getFill()
-                            + ", own " + barrel.tank.getFill() + "; " + com.hbm.uninos.graph.PortClaims.describe(barrel.secondReceiverForTest(), Fluids.WATER)
+                            + ", own " + barrel.tank.getFill() + "; " + PortClaims.describe(barrel.secondReceiverForTest(), Fluids.WATER)
                             + "; now " + level.getServer().getTickCount()
-                            + "; source " + com.hbm.uninos.graph.PortClaims.describe(level.getBlockEntity(at.east(2)), Fluids.WATER)
-                            + " claimed " + com.hbm.uninos.graph.PortClaims.claimed(level, at.east().asLong(), com.hbm.lib.ForgeDirection.WEST, level.getBlockEntity(at.east(2)), Fluids.WATER, com.hbm.uninos.graph.PortClaims.PROVIDE)
+                            + "; source " + PortClaims.describe(level.getBlockEntity(at.east(2)), Fluids.WATER)
+                            + " claimed " + PortClaims.claimed(level, at.east().asLong(), ForgeDirection.WEST, level.getBlockEntity(at.east(2)), Fluids.WATER, PortClaims.PROVIDE)
                             + "; net " + FluidGraph.get(level).networkAt(at.east().asLong()));
 
             int second = barrel.second.getFill();
@@ -365,30 +383,30 @@ public final class FluidNetworkGameTests {
     }
 
     /** A steel barrel whose east face reaches a second receiver with a tank of its own. */
-    private static final class TwoUserBarrel extends TileEntityBarrel implements com.hbm.api.fluidmk2.IFluidMultiUserMK2 {
+    private static final class TwoUserBarrel extends TileEntityBarrel implements IFluidMultiUserMK2 {
 
-        final com.hbm.inventory.fluid.tank.FluidTankNTM second =
-                new com.hbm.inventory.fluid.tank.FluidTankNTM(Fluids.WATER, 8_000);
+        final FluidTankNTM second =
+                new FluidTankNTM(Fluids.WATER, 8_000);
 
-        private final com.hbm.api.fluidmk2.IFluidStandardReceiverMK2 secondReceiver =
-                new com.hbm.api.fluidmk2.IFluidStandardReceiverMK2() {
-                    @Override public com.hbm.inventory.fluid.tank.FluidTankNTM[] getReceivingTanks() {
-                        return new com.hbm.inventory.fluid.tank.FluidTankNTM[]{second};
+        private final IFluidStandardReceiverMK2 secondReceiver =
+                new IFluidStandardReceiverMK2() {
+                    @Override public FluidTankNTM[] getReceivingTanks() {
+                        return new FluidTankNTM[]{second};
                     }
-                    @Override public com.hbm.inventory.fluid.tank.FluidTankNTM[] getAllTanks() {
+                    @Override public FluidTankNTM[] getAllTanks() {
                         return getReceivingTanks();
                     }
                     @Override public boolean isLoaded() { return TwoUserBarrel.this.isLoaded(); }
                 };
 
-        TwoUserBarrel(BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+        TwoUserBarrel(BlockPos pos, BlockState state) {
             super(pos, state);
         }
 
         Object secondReceiverForTest() { return secondReceiver; }
 
         @Override
-        public com.hbm.api.fluidmk2.IFluidUserMK2 fluidUserAt(BlockPos pos, Direction face) {
+        public IFluidUserMK2 fluidUserAt(BlockPos pos, Direction face) {
             return face == Direction.EAST ? secondReceiver : null;
         }
     }
@@ -396,7 +414,7 @@ public final class FluidNetworkGameTests {
     private static TileEntityMachineFluidTank tank(GameTestHelper helper, BlockPos relative, short mode) {
         MachineFluidTank block = ModMachineBlocks.machine_fluidtank.get();
         helper.setBlock(relative, block.defaultBlockState());
-        TileEntityMachineFluidTank tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityMachineFluidTank tank = GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineFluidTank.class);
         block.fillSpace(helper.getLevel(), helper.absolutePos(relative), Direction.NORTH);
         tank.tank.setTankType(Fluids.WATER);

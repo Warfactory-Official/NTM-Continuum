@@ -5,20 +5,26 @@ import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
+import com.hbm.inventory.container.ContainerBlastFurnace;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.BlastFurnaceRecipesNT;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
+import com.hbm.items.ModAutogenItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.modules.machine.ModuleMachineBase;
+import com.hbm.module.machine.ModuleMachineBase;
 import com.hbm.tileentity.machine.TileEntityMachineBlastFurnace;
 import dev.golem.core.gametest.GameTestHelpers;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -42,7 +48,7 @@ public final class BlastFurnaceGameTests {
 
     public static void layout(GameTestHelper helper) {
         var block = ModMachineBlocks.machine_blast_furnace.get();
-        var clicked = new net.minecraft.core.BlockPos(4, 1, 2);
+        var clicked = new BlockPos(4, 1, 2);
         Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
         helper.setBlock(clicked, block.defaultBlockState());
@@ -53,7 +59,7 @@ public final class BlastFurnaceGameTests {
         TileEntityMachineBlastFurnace furnace = GameTestHelpers.blockEntity(helper, core,
                 TileEntityMachineBlastFurnace.class);
         helper.assertTrue(furnace != null, "Blast furnace controller setup failed");
-        helper.assertBlockProperty(core, BlockMultiblockCore.FACING, net.minecraft.core.Direction.NORTH);
+        helper.assertBlockProperty(core, BlockMultiblockCore.FACING, Direction.NORTH);
         FoldedTestSupport.assertPort(helper, core, core.above(6));
         FoldedTestSupport.assertPort(helper, core, core.offset(1, 0, 0));
         helper.assertTrue(furnace.getConPos().length == 6, "Blast furnace must expose six fluid/power ports");
@@ -67,7 +73,7 @@ public final class BlastFurnaceGameTests {
 
     public static void slotsAndMenu(GameTestHelper helper) {
         Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         TileEntityMachineBlastFurnace furnace = place(helper, pos);
         ItemStack coal = new ItemStack(Items.COAL);
         ItemStack junk = new ItemStack(Items.STONE);
@@ -76,13 +82,13 @@ public final class BlastFurnaceGameTests {
         helper.assertTrue(furnace.canInsertItem(1, new ItemStack(Items.IRON_INGOT))
                         && !furnace.canInsertItem(1, new ItemStack(Items.STONE)),
                 "The blast furnace input slots must accept only recipe ingredients");
-        helper.assertTrue(furnace.getSlotsForFace(net.minecraft.core.Direction.NORTH).length == 5
-                        && furnace.canTakeItemThroughFace(3, ItemStack.EMPTY, net.minecraft.core.Direction.NORTH)
-                        && !furnace.canTakeItemThroughFace(1, ItemStack.EMPTY, net.minecraft.core.Direction.NORTH),
+        helper.assertTrue(furnace.getSlotsForFace(Direction.NORTH).length == 5
+                        && furnace.canTakeItemThroughFace(3, ItemStack.EMPTY, Direction.NORTH)
+                        && !furnace.canTakeItemThroughFace(1, ItemStack.EMPTY, Direction.NORTH),
                 "Blast furnace sided slots changed");
 
         Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
-        var menu = new com.hbm.inventory.container.ContainerBlastFurnace(0, player.getInventory(), furnace);
+        var menu = new ContainerBlastFurnace(0, player.getInventory(), furnace);
         helper.assertTrue(menu.slots.size() == 41, "Blast furnace menu must have 5 machine slots + 36 player slots");
         assertSlot(helper, menu, 0, 80, 81);
         assertSlot(helper, menu, 1, 80, 27);
@@ -96,7 +102,7 @@ public final class BlastFurnaceGameTests {
 
     public static void processing(GameTestHelper helper) {
         Fluids.init();
-        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var pos = new BlockPos(1, 1, 1);
         TileEntityMachineBlastFurnace furnace = place(helper, pos);
         furnace.inventory.setStackInSlot(0, new ItemStack(Items.COAL));
         furnace.inventory.setStackInSlot(1, new ItemStack(Items.IRON_INGOT, 2));
@@ -116,7 +122,7 @@ public final class BlastFurnaceGameTests {
                 "Blast furnace did not produce two steel ingots");
         // 1.7 BlastFurnaceRecipesNT: the byproduct is ingot_raw[slag], the autogen slag ingot
         ItemStack slag = furnace.inventory.getStackInSlot(4);
-        helper.assertTrue(slag.getItem() == com.hbm.items.ModAutogenItems.get(MaterialShapes.INGOT, Mats.MAT_SLAG)
+        helper.assertTrue(slag.getItem() == ModAutogenItems.get(MaterialShapes.INGOT, Mats.MAT_SLAG)
                         && slag.getCount() == 1,
                 "Blast furnace did not produce its slag ingot byproduct");
         helper.assertTrue(furnace.fuel == TileEntityMachineBlastFurnace.FUEL_RATE,
@@ -134,8 +140,8 @@ public final class BlastFurnaceGameTests {
         NTMItemHandler inventory = new NTMItemHandler(2);
         ModuleMachineBase module = new ModuleMachineBase(0, energy, inventory) {
             { inputSlots = new int[]{0}; outputSlots = new int[]{1};
-              inputTanks = new com.hbm.inventory.fluid.tank.FluidTankNTM[]{new com.hbm.inventory.fluid.tank.FluidTankNTM(Fluids.WATER, 100)};
-              outputTanks = new com.hbm.inventory.fluid.tank.FluidTankNTM[]{new com.hbm.inventory.fluid.tank.FluidTankNTM(Fluids.STEAM, 100)}; }
+              inputTanks = new FluidTankNTM[]{new FluidTankNTM(Fluids.WATER, 100)};
+              outputTanks = new FluidTankNTM[]{new FluidTankNTM(Fluids.STEAM, 100)}; }
             @Override public GenericRecipes getRecipeSet() { return recipes; }
         };
         module.recipe = recipe.name;
@@ -186,12 +192,12 @@ public final class BlastFurnaceGameTests {
         helper.succeed();
     }
 
-    private static TileEntityMachineBlastFurnace place(GameTestHelper helper, net.minecraft.core.BlockPos pos) {
+    private static TileEntityMachineBlastFurnace place(GameTestHelper helper, BlockPos pos) {
         helper.setBlock(pos, ModMachineBlocks.machine_blast_furnace.get().defaultBlockState());
         return GameTestHelpers.blockEntity(helper, pos, TileEntityMachineBlastFurnace.class);
     }
 
-    private static void assertSlot(GameTestHelper helper, net.minecraft.world.inventory.AbstractContainerMenu menu,
+    private static void assertSlot(GameTestHelper helper, AbstractContainerMenu menu,
                                    int index, int x, int y) {
         var slot = menu.slots.get(index);
         helper.assertTrue(slot.x == x && slot.y == y,

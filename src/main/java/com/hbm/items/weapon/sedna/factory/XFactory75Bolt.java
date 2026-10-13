@@ -3,9 +3,10 @@ package com.hbm.items.weapon.sedna.factory;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.EntityHitResult;
 
-/** The .75 bolt family from original-hbm's XFactory75Bolt. */
+/** The .75 bolt family from 1.7's XFactory75Bolt. */
 public final class XFactory75Bolt {
 
     public static BulletConfig b75;
@@ -29,7 +30,7 @@ public final class XFactory75Bolt {
                 .setDamage(0.8F).setArmorPiercing(0.1F)
                 .setOnImpact((bullet, hit) -> {
                     if (hit instanceof EntityHitResult entityHit
-                            && entityHit.getEntity() instanceof net.minecraft.world.entity.LivingEntity living) {
+                            && entityHit.getEntity() instanceof LivingEntity living) {
                         HbmLivingProps.setPhosphorusAtLeast(living, 300);
                     }
                 }));

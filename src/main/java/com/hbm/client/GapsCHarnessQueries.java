@@ -7,6 +7,7 @@ import com.hbm.client.particle.ParticleSmokePlume;
 import com.hbm.client.particle.SparkParticles;
 import com.hbm.client.particle.TextParticles;
 import com.hbm.client.render.RenderOverhead;
+import com.hbm.client.render.armor.ArmorRenderers;
 import com.hbm.client.render.entity.EntityItemRenderers;
 import com.hbm.extprop.HbmPlayerProps;
 import com.hbm.handler.ArmorModHandler;
@@ -14,12 +15,15 @@ import com.hbm.items.ModArmorItems;
 import com.hbm.items.ModArmorModItems;
 import com.hbm.saveddata.SatelliteSavedData;
 import com.hbm.saveddata.satellites.SatelliteScanner;
+import dev.golem.core.Ids;
 import dev.golem.core.client.EquipProgress;
 import dev.golem.core.client.VanillaHud;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import dev.golem.core.render.ConnectedTextures;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The {@code hbm_gapsc} harness query of gap batch C (§19ed-gaps-c), read by {@code FinalGapsC}. Client: the held
+ * The {@code hbm_gapsc} harness query of gap batch C, read by {@code FinalGapsC}. Client: the held
  * slot's animation buses ({@code SWING_ROT}, {@code SWING_TRANS}, {@code GUARD_ROT}, {@code RECOIL}), the vanilla swing
  * flag, the hand's equip progress, live sparks/texts/markers, launch-smoke count, connected-texture registrations,
  * framed-item routing, the client's synced shield/magnet, and the HUD suppression flags. Server (params):
@@ -41,7 +45,7 @@ public final class GapsCHarnessQueries {
     private GapsCHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_gapsc", GapsCHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_gapsc", GapsCHarnessQueries::query);
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {
@@ -75,7 +79,7 @@ public final class GapsCHarnessQueries {
         if (params.has("framed")) {
             JsonObject framed = new JsonObject();
             for (var id : params.getAsJsonArray("framed")) {
-                var item = BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.parse(id.getAsString()));
+                var item = BuiltInRegistries.ITEM.getOptional(Ids.parse(id.getAsString()));
                 framed.addProperty(id.getAsString(), item.isPresent() && EntityItemRenderers.handles(new ItemStack(item.get())));
             }
             json.add("framed", framed);
@@ -87,8 +91,8 @@ public final class GapsCHarnessQueries {
         json.addProperty("hide_health", VanillaHud.hideHealth());
         json.addProperty("hide_armor", VanillaHud.hideArmor());
         json.addProperty("hud_suppressible", VanillaHud.supported());
-        json.addProperty("rpa_renderer", com.hbm.client.render.armor.ArmorRenderers.get("rpa") != null);
-        json.addProperty("ncrpa_renderer", com.hbm.client.render.armor.ArmorRenderers.get("ncrpa") != null);
+        json.addProperty("rpa_renderer", ArmorRenderers.get("rpa") != null);
+        json.addProperty("ncrpa_renderer", ArmorRenderers.get("ncrpa") != null);
 
         CompletableFuture<JsonObject> result = new CompletableFuture<>();
         server.execute(() -> {
@@ -119,7 +123,7 @@ public final class GapsCHarnessQueries {
         }
         if (params.has("lens")) {
             int freq = params.get("lens").getAsInt();
-            SatelliteSavedData.get((net.minecraft.server.level.ServerLevel) player.level()).put(freq, new SatelliteScanner());
+            SatelliteSavedData.get((ServerLevel) player.level()).put(freq, new SatelliteScanner());
             ItemStack lens = new ItemStack(ModArmorModItems.neutrino_lens.get());
             ModArmorModItems.neutrino_lens.get().setFreq(lens, freq);
             ItemStack helmet = new ItemStack(ModArmorItems.t51_helmet.get());

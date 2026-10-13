@@ -15,17 +15,17 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * Digamma matter — the 1.12.2 {@code DigammaMatter}. The rarest of the FEL's DRX outputs: it only
+ * Digamma matter: the 1.12.2 {@code DigammaMatter}. The rarest of the FEL's DRX outputs: it only
  * appears instead of {@link BlockDigammaFlame} when {@code MainRegistry.polaroidID == 11}, a 1-in-18
  * per-world easter egg.
  *
  * <p>It behaves like a spreading blight. On placement it schedules itself {@code 10 + rand(40)} ticks
  * out; when that fires it <b>deletes itself</b> and seeds every neighbour within a Manhattan distance
- * of 1 or 2 (i.e. faces and edges, not corners) at {@code meta + 1}. At {@code meta >= 7} it simply
+ * of 1 or 2 (i.e. faces and edges, not corners) at {@code meta + 1}. At {@code meta >= 7} it
  * vanishes, so the growth burns itself out after seven generations rather than consuming the world.
  *
  * <p>Unbreakable with 18,000,000 blast resistance: nothing removes it, you wait it out. It is
- * non-solid and has no collision — the old {@code getBoundingBox} even randomised its visual shape
+ * non-solid and has no collision: the old {@code getBoundingBox} even randomised its visual shape
  * every query, which is not reproducible under 26.1's cached shapes and is dropped.
  */
 public class BlockDigammaMatter extends Block {

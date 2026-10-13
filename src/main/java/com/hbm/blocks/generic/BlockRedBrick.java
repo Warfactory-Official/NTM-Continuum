@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * 1.7 {@code BlockRedBrick}, the Red Room brick: the "brick_red" face (or "brick_red_top" on up/down) is
- * drawn on the side the block was placed facing — {@code BlockPistonBase.determineOrientation}, i.e. the
+ * drawn on the side the block was placed facing: {@code BlockPistonBase.determineOrientation}, i.e. the
  * piston rule: pointing back toward the placer. Drops nothing.
  *
  * <p>1.7's metadata 6 matched no side, so every face showed the plain {@code brick_base}; the Red Room and the

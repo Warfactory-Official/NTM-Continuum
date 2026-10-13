@@ -1,13 +1,14 @@
 package com.hbm.client.render.entity;
 
 import com.hbm.Constants;
-import com.hbm.command.EntityRenderSmoke;
+import com.hbm.commands.EntityRenderSmoke;
 import dev.golem.core.client.ClientTicks;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Screenshot;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 
@@ -82,7 +83,7 @@ public final class EntityRenderSmokeClient {
         // Camera: first person, hovering over the grid's near edge looking down its rows; the yaw sweeps
         // across the grid so every column passes through the middle of a capture.
         minecraft.options.setCameraType(CameraType.FIRST_PERSON);
-        java.util.List<String> roster = EntityRenderSmoke.roster();
+        List<String> roster = EntityRenderSmoke.roster();
         int rows = (roster.size() + EntityRenderSmoke.columns() - 1) / EntityRenderSmoke.columns();
         double gridDepth = 8D + rows * EntityRenderSmoke.spacingZ();
         double camY, camZ, pitch;
@@ -107,7 +108,7 @@ public final class EntityRenderSmokeClient {
         minecraft.player.setYRot(sweep * 35F);
 
         if (ticks == 8 || ticks == 40 || ticks == 80 || ticks == 120 || ticks == 190 || ticks == 230 || ticks == 270) {
-            net.minecraft.client.Screenshot.grab(minecraft.gameDirectory, minecraft.getMainRenderTarget(),
+            Screenshot.grab(minecraft.gameDirectory, minecraft.getMainRenderTarget(),
                     message -> Constants.LOG.info("[HBM] Entity render capture: {}", message.getString()));
         }
 
@@ -143,7 +144,7 @@ public final class EntityRenderSmokeClient {
         Constants.LOG.info("[HBM] Entity render smoke: {} ported entity types in view, {} without a renderer{}",
                 seen.size(), unbound.size(), unbound.isEmpty() ? "" : " " + unbound);
         int missing = 0;
-        java.util.List<String> roster = EntityRenderSmoke.roster();
+        List<String> roster = EntityRenderSmoke.roster();
         for (String id : roster) {
             if (!seen.containsKey(Constants.MOD_ID + ":" + id)) {
                 missing++;

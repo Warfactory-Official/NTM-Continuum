@@ -5,6 +5,7 @@ import com.hbm.items.weapon.sedna.factory.XFactory556mm;
 import com.hbm.tileentity.ModBlockEntities;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
@@ -32,7 +33,7 @@ public class TileEntityTurretFriendly extends TileEntityTurretChekhov {
     }
 
     @Override
-    public net.minecraft.resources.Identifier guiTexture() {
+    public Identifier guiTexture() {
         return turretGui("friendly");
     }
 

@@ -68,9 +68,8 @@ public abstract class TileEntityMachineBase extends TileEntityInventoryBase {
     // --- muffler / volume ---
 
     /**
-     * Counts adjacent muffler blocks. The muffler block isn't ported yet (see IMPLEMENTATION.md §19),
-     * so this returns 0 for now — meaning no machine is muffled, the faithful default when no mufflers
-     * are placed. Wire this to the ported block when it lands.
+     * Counts adjacent muffler blocks. The muffler block is not ported, so this returns 0 and no machine is
+     * muffled, which is the 1.7 result when no mufflers are placed.
      */
     public int countMufflers() {
         return 0;

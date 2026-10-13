@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerNukeSolinium;
 import com.hbm.tileentity.bomb.TileEntityNukeSolinium;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -12,7 +13,7 @@ import net.minecraft.world.entity.player.Inventory;
 /** 1.7 {@code GUINukeSolinium}: overlays drawn from the texture's bottom strip (v = 222 / 236), plus the ready lamp. */
 public class GUINukeSolinium extends CompatContainerScreen<ContainerNukeSolinium> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/weapon/soliniumschematic.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/weapon/soliniumschematic.png");
 
     /** Per slot: destination x, y, source u, v, width, height. */
     private static final int[][] OVERLAYS = {

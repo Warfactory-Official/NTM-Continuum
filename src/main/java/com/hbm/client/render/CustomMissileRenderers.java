@@ -1,6 +1,7 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.client.render.entity.MissilePronter;
 import com.hbm.handler.MissileStruct;
@@ -22,6 +23,8 @@ import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import java.util.HashMap;
+import java.util.Map;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
@@ -178,7 +181,7 @@ public final class CustomMissileRenderers {
             if (te.load != null && te.load.fuselage() != null) te.height = (int) te.load.height();
             state.tableHeight = te.height;
             // 1.7 meta 2 (+Z) -> 0, 0 (+X) -> 90, 3 (-Z) -> 180, 1 (-X) -> 270
-            Direction facing = te.getBlockState().getValue(com.hbm.blocks.multiblock.BlockMultiblockCore.FACING);
+            Direction facing = te.getBlockState().getValue(BlockMultiblockCore.FACING);
             state.yaw = switch (facing) {
                 case EAST -> 90F;
                 case NORTH -> 180F;
@@ -247,7 +250,7 @@ public final class CustomMissileRenderers {
     public static final class PadLarge implements CompatBER<TileEntityLaunchPadLarge, PadLargeState> {
         private final WavefrontObj erector = obj("weapons/launch_pad_erector.obj");
         private final RenderType padSkin = CompatRenderTypes.entityCutoutCull(tex("launchpad/pad.png"));
-        private final java.util.Map<String, RenderType> skins = new java.util.HashMap<>();
+        private final Map<String, RenderType> skins = new HashMap<>();
 
         @Override public PadLargeState createRenderState() { return new PadLargeState(); }
         @Override public boolean shouldRenderOffScreen() { return true; }

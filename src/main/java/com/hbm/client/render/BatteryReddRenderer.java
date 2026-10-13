@@ -8,6 +8,7 @@ import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -15,6 +16,7 @@ import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,13 +33,13 @@ public final class BatteryReddRenderer extends GemBER<TileEntityBatteryREDD, Bat
     private static final float PLASMA_B = 0.75F;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/fensu2.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/fensu2.obj"));
     private final Surface body = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/fensu2.png");
     private final RenderType plasma = CompatRenderTypes.plasmaGlow(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma.png"));
+            Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma.png"));
     private final RenderType sparkle = CompatRenderTypes.plasmaGlow(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma_sparkle.png"));
+            Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma_sparkle.png"));
 
     @Override
     protected void setup(Gem.Model<BatteryReddRenderState> declaration) {
@@ -80,7 +82,7 @@ public final class BatteryReddRenderer extends GemBER<TileEntityBatteryREDD, Bat
         state.gameTime = blockEntity.getLevel() == null ? 0L : blockEntity.getLevel().getGameTime();
         state.gameMillis = GameTime.now();
         // Measured where the machine is seen: on a moving sub-level (Create Aeronautics) its block sits far from it.
-        state.sparkleNearby = dev.golem.core.world.SubLevels.distanceSq(blockEntity.getLevel(),
+        state.sparkleNearby = SubLevels.distanceSq(blockEntity.getLevel(),
                 blockEntity.getBlockPos().getX() + 0.5D, blockEntity.getBlockPos().getY() + 2.5D,
                 blockEntity.getBlockPos().getZ() + 0.5D, cameraPosition.x, cameraPosition.y, cameraPosition.z) < 100D * 100D;
     }

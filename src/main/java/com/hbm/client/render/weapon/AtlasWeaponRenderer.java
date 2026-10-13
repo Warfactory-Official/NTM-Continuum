@@ -4,6 +4,7 @@ import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
@@ -13,11 +14,11 @@ import net.minecraft.world.item.ItemStack;
  * The break-action revolver, a direct port of 1.12.2 {@code ItemRenderAtlas}.
  *
  * <p>The model is authored at 8×, hence the 0.125 scale, and several joints read a bus's Z component
- * as an <em>angle</em> rather than a translation — upstream's shorthand, not a transcription slip.
+ * as an <em>angle</em> rather than a translation, upstream's shorthand, not a transcription slip.
  */
 public class AtlasWeaponRenderer extends WeaponRenderer {
 
-    private static final Identifier MODEL = dev.golem.core.Ids.of("hbm", "models/weapons/bio_revolver.obj");
+    private static final Identifier MODEL = Ids.of("hbm", "models/weapons/bio_revolver.obj");
     private final Identifier texture;
 
     private WavefrontObj model;
@@ -27,7 +28,7 @@ public class AtlasWeaponRenderer extends WeaponRenderer {
     }
 
     public AtlasWeaponRenderer(String texture) {
-        this.texture = dev.golem.core.Ids.of("hbm", "textures/models/weapons/" + texture + ".png");
+        this.texture = Ids.of("hbm", "textures/models/weapons/" + texture + ".png");
     }
 
     private WavefrontObj model() {
@@ -57,7 +58,7 @@ public class AtlasWeaponRenderer extends WeaponRenderer {
     /**
      * Two details are upstream's and read like slips: the draw sweep pivots seven units <em>behind</em>
      * the weapon so it swings up into view rather than growing out of nothing, and the reload rotation
-     * is applied X, Z, Y — not X, Y, Z.
+     * is applied X, Z, Y, not X, Y, Z.
      */
     @Override
     protected void setup(Gem.Model<WeaponPose> declaration) {

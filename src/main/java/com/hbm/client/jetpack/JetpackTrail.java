@@ -1,6 +1,8 @@
 package com.hbm.client.jetpack;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.WorldEffects;
@@ -11,6 +13,8 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 /**
  * The jetpack's 20-tick dynamic ribbon. The insertion threshold and width are the old values: 0.1 and
@@ -19,7 +23,7 @@ import java.util.List;
  */
 public final class JetpackTrail {
 
-    private static final Identifier FRESNEL = dev.golem.core.Ids.of("hbm", "textures/models/bfg/fresnel_ms.png");
+    private static final Identifier FRESNEL = Ids.of("hbm", "textures/models/bfg/fresnel_ms.png");
     private static final float WIDTH = 0.025F;
     private static final float END_FADE = 0.15F;
 
@@ -61,27 +65,27 @@ public final class JetpackTrail {
 
     public void submit(PoseStack pose, CameraInfo camera) {
         if (points.size() < 2) return;
-        org.joml.Matrix4f viewToLocal = new org.joml.Matrix4f(pose.last().pose()).invert();
+        Matrix4f viewToLocal = new Matrix4f(pose.last().pose()).invert();
         List<Vec3> localPoints = new ArrayList<>(points.size());
         for (Vec3 point : points) localPoints.add(worldToLocal(point, camera, viewToLocal));
-        org.joml.Vector3f viewer = new org.joml.Vector3f(0F, 0F, 0F).mulPosition(viewToLocal);
+        Vector3f viewer = new Vector3f(0F, 0F, 0F).mulPosition(viewToLocal);
         Vec3 viewerPosition = new Vec3(viewer.x(), viewer.y(), viewer.z());
-        org.joml.Matrix4f localToView = new org.joml.Matrix4f(pose.last().pose());
+        Matrix4f localToView = new Matrix4f(pose.last().pose());
         pose.pushPose();
         WorldEffects.submit(pose, CompatRenderTypes.plasmaGlow(FRESNEL), 3,
                 (drawPose, buffer) -> drawRibbon(drawPose, buffer, localPoints, viewerPosition, localToView));
         pose.popPose();
     }
 
-    private static Vec3 worldToLocal(Vec3 point, CameraInfo camera, org.joml.Matrix4f viewToLocal) {
+    private static Vec3 worldToLocal(Vec3 point, CameraInfo camera, Matrix4f viewToLocal) {
         Vec3 relative = point.subtract(camera.pos);
-        org.joml.Vector3f view = camera.worldToRender(new org.joml.Vector3f((float) relative.x, (float) relative.y, (float) relative.z));
-        org.joml.Vector3f local = view.mulPosition(viewToLocal);
+        Vector3f view = camera.worldToRender(new Vector3f((float) relative.x, (float) relative.y, (float) relative.z));
+        Vector3f local = view.mulPosition(viewToLocal);
         return new Vec3(local.x(), local.y(), local.z());
     }
 
-    private void drawRibbon(PoseStack.Pose pose, com.mojang.blaze3d.vertex.VertexConsumer buffer,
-            List<Vec3> localPoints, Vec3 viewerPosition, org.joml.Matrix4f localToView) {
+    private void drawRibbon(PoseStack.Pose pose, VertexConsumer buffer,
+            List<Vec3> localPoints, Vec3 viewerPosition, Matrix4f localToView) {
         if (localPoints.size() < 2) return;
         Vec3 first = localPoints.get(0);
         Vec3 cross = cross(localPoints.get(1).subtract(first), viewerPosition.subtract(first), localToView);
@@ -101,10 +105,10 @@ public final class JetpackTrail {
         }
     }
 
-    private static Vec3 cross(Vec3 tangent, Vec3 toViewer, org.joml.Matrix4f localToView) {
+    private static Vec3 cross(Vec3 tangent, Vec3 toViewer, Matrix4f localToView) {
         Vec3 direction = tangent.cross(toViewer).normalize();
-        org.joml.Vector3f transformed = localToView.transformDirection(
-                new org.joml.Vector3f((float) direction.x, (float) direction.y, (float) direction.z));
+        Vector3f transformed = localToView.transformDirection(
+                new Vector3f((float) direction.x, (float) direction.y, (float) direction.z));
         float length = transformed.length();
         return direction.scale(length == 0F ? 0F : WIDTH / length);
     }
@@ -122,7 +126,7 @@ public final class JetpackTrail {
         return Math.max(min, Math.min(max, value));
     }
 
-    private static void vertex(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
+    private static void vertex(VertexConsumer buffer, PoseStack.Pose pose,
             Vec3 position, float u, float v, float alpha) {
         Vertexes.vertex(buffer, pose, (float) position.x, (float) position.y, (float) position.z,
                 0.7F, 0.7F, 0.7F, alpha, u, v, 0, 0xF000F0, 0F, 1F, 0F);

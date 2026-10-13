@@ -3,6 +3,7 @@ package com.hbm.util;
 import com.hbm.Constants;
 import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.blocks.generic.BlockLoot.TileEntityLoot;
+import com.hbm.inventory.recipes.MKUCraftingRecipe;
 import com.hbm.itempool.ItemPool;
 import com.hbm.itempool.ItemPools;
 import com.hbm.items.ModAmmoItems;
@@ -10,11 +11,13 @@ import com.hbm.items.special.ItemBookLore;
 import dev.golem.core.Ids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 
 /**
  * 1.7 {@code LootGenerator}: the named item arrangements a loot pile ({@code deco_loot}) is filled with by a
@@ -25,7 +28,7 @@ import net.minecraft.world.level.Level;
  * storage roll that adds nothing falls through to bones, and so on to the final {@code default}).
  *
  * <p>Gaps: {@code LOOT_METEOR} needs 1.7's {@code MKUCraftingHandler} (the per-world MKU recipe book), which is not
- * ported, so it adds nothing and falls through. ({@code POOL_PILE_SUPPLIES} is baked since fix wave 4, 2026-10-03.)
+ * ported, so it adds nothing and falls through. ({@code POOL_PILE_SUPPLIES} is baked in.)
  */
 public final class LootGenerator {
 
@@ -97,7 +100,7 @@ public final class LootGenerator {
         loot.addItem(stack, x + rand.nextGaussian() * 0.02, y, z + rand.nextGaussian() * 0.02);
     }
 
-    private static TileEntityLoot emptyPile(net.minecraft.world.level.LevelAccessor level, BlockPos pos) {
+    private static TileEntityLoot emptyPile(LevelAccessor level, BlockPos pos) {
         return level.getBlockEntity(pos) instanceof TileEntityLoot loot && loot.items.isEmpty() ? loot : null;
     }
 
@@ -106,7 +109,7 @@ public final class LootGenerator {
         return new ItemStack(item, count);
     }
 
-    public static void lootBooklet(net.minecraft.world.level.LevelAccessor level, BlockPos pos) { // LevelAccessor: also from worldgen (WG-D broken lantern)
+    public static void lootBooklet(LevelAccessor level, BlockPos pos) { // LevelAccessor: also from worldgen (WG-D broken lantern)
         TileEntityLoot loot = emptyPile(level, pos);
         if (loot != null) {
             loot.addItem(ItemBookLore.createBook("beacon", 12, 0x404040, 0xD637B3), 0, 0, 0);
@@ -128,7 +131,7 @@ public final class LootGenerator {
         }
     }
 
-    public static void lootMedicine(net.minecraft.world.level.LevelAccessor level, BlockPos pos) { // LevelAccessor: also filled from worldgen (WG-C components)
+    public static void lootMedicine(LevelAccessor level, BlockPos pos) { // LevelAccessor: also filled from worldgen (WG-C components)
         TileEntityLoot loot = emptyPile(level, pos);
         if (loot != null) {
             RandomSource rand = level.getRandom();
@@ -137,7 +140,7 @@ public final class LootGenerator {
         }
     }
 
-    public static void lootCapStash(net.minecraft.world.level.LevelAccessor level, BlockPos pos) { // LevelAccessor: worldgen (WG-C)
+    public static void lootCapStash(LevelAccessor level, BlockPos pos) { // LevelAccessor: worldgen (WG-C)
         TileEntityLoot loot = emptyPile(level, pos);
         if (loot != null) {
             RandomSource rand = level.getRandom();
@@ -152,7 +155,7 @@ public final class LootGenerator {
         }
     }
 
-    public static void lootMakeshiftGun(net.minecraft.world.level.LevelAccessor level, BlockPos pos) { // LevelAccessor: worldgen (WG-C)
+    public static void lootMakeshiftGun(LevelAccessor level, BlockPos pos) { // LevelAccessor: worldgen (WG-C)
         TileEntityLoot loot = emptyPile(level, pos);
         if (loot != null) {
             RandomSource rand = level.getRandom();
@@ -183,7 +186,7 @@ public final class LootGenerator {
         }
     }
 
-    private static void scattered(net.minecraft.world.level.LevelAccessor level, BlockPos pos, String pool, int base, int spread) {
+    private static void scattered(LevelAccessor level, BlockPos pos, String pool, int base, int spread) {
         TileEntityLoot loot = emptyPile(level, pos);
         if (loot != null) {
             RandomSource rand = level.getRandom();
@@ -194,27 +197,27 @@ public final class LootGenerator {
         }
     }
 
-    public static void lootBones(net.minecraft.world.level.LevelAccessor level, BlockPos pos) { // LevelAccessor: also filled from worldgen (GlyphidHive)
+    public static void lootBones(LevelAccessor level, BlockPos pos) { // LevelAccessor: also filled from worldgen (GlyphidHive)
         scattered(level, pos, ItemPools.POOL_PILE_BONES, 3, 3);
     }
 
-    public static void lootGlyphidHive(net.minecraft.world.level.LevelAccessor level, BlockPos pos) {
+    public static void lootGlyphidHive(LevelAccessor level, BlockPos pos) {
         scattered(level, pos, ItemPools.POOL_PILE_HIVE, 3, 3);
     }
 
     /** 1.7 lootBookMeteor: one random MKU ingredient and the book naming its slot in this world's MKU recipe. */
     public static void lootBookMeteor(Level level, BlockPos pos) {
         TileEntityLoot loot = emptyPile(level, pos);
-        if (loot != null && level instanceof net.minecraft.server.level.ServerLevel server) {
+        if (loot != null && level instanceof ServerLevel server) {
             RandomSource rand = level.getRandom();
-            String ingredient = com.hbm.inventory.recipes.MKUCraftingRecipe.randomIngredient(rand);
-            addItemWithDeviation(loot, rand, com.hbm.inventory.recipes.MKUCraftingRecipe.ingredientStack(ingredient), 0, 0, 0.25);
+            String ingredient = MKUCraftingRecipe.randomIngredient(rand);
+            addItemWithDeviation(loot, rand, MKUCraftingRecipe.ingredientStack(ingredient), 0, 0, 0.25);
             addItemWithDeviation(loot, rand,
-                    com.hbm.inventory.recipes.MKUCraftingRecipe.generateBook(server.getSeed(), ingredient), 0, 0, -0.25);
+                    MKUCraftingRecipe.generateBook(server.getSeed(), ingredient), 0, 0, -0.25);
         }
     }
 
-    public static void lootBookLore(net.minecraft.world.level.LevelAccessor level, BlockPos pos, ItemStack book) { // LevelAccessor: worldgen (WG-C)
+    public static void lootBookLore(LevelAccessor level, BlockPos pos, ItemStack book) { // LevelAccessor: worldgen (WG-C)
         TileEntityLoot loot = emptyPile(level, pos);
         if (loot != null) {
             RandomSource rand = level.getRandom();

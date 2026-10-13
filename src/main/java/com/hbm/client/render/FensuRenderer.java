@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.storage.TileEntityMachineFENSU;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -20,7 +21,7 @@ public final class FensuRenderer extends GemBER<TileEntityMachineFENSU, FensuRen
     private static final Map<DyeColor, Surface> SKINS = new EnumMap<>(DyeColor.class);
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/fensu.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/fensu.obj"));
 
     @Override
     protected void setup(Gem.Model<FensuRenderState> declaration) {

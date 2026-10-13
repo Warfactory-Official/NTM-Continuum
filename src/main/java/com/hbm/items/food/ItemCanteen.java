@@ -1,5 +1,6 @@
 package com.hbm.items.food;
 
+import com.hbm.config.VersatileConfig;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.Effects;
@@ -37,7 +38,7 @@ public class ItemCanteen extends CompatItem {
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (stack.getDamageValue() == 0 && !com.hbm.config.VersatileConfig.hasPotionSickness(player)) {
+        if (stack.getDamageValue() == 0 && !VersatileConfig.hasPotionSickness(player)) {
             player.startUsingItem(hand);
             return InteractionResult.CONSUME;
         }
@@ -51,7 +52,7 @@ public class ItemCanteen extends CompatItem {
             Effects.add(entity, MobEffects.NAUSEA, 10 * 20, 0);
             Effects.add(entity, Effects.strength(), 30 * 20, 2);
             // 1.7 VersatileConfig: off at the default PotionConfig.potionSickness
-            com.hbm.config.VersatileConfig.applyPotionSickness(entity, 5);
+            VersatileConfig.applyPotionSickness(entity, 5);
         }
         return stack;
     }

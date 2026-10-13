@@ -5,7 +5,10 @@ import com.hbm.explosion.vanillant.standard.EntityProcessorCrossSmooth;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectTiny;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectWeapon;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
+import com.hbm.particle.helper.ParticleEffects;
+import com.hbm.sound.ModGunSounds;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -33,7 +36,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 /**
- * Standardised building blocks a {@link GunConfig} is assembled from — upstream's "LEGO" bricks.
+ * Standardised building blocks a {@link GunConfig} is assembled from, upstream's "LEGO" bricks.
  *
  * <p>Ported from 1.12.2 {@code com.hbm.items.weapon.sedna.factory.Lego}. The projectile and explosion
  * seams retain the target's current entity contracts, while smoke nodes and fire ordering follow
@@ -82,15 +85,15 @@ public class Lego {
                 int mode = ItemGunBaseNT.getMode(stack, 0);
                 ItemGunBaseNT.setMode(stack, ctx.configIndex, 1 - mode);
                 ctx.entity.level().playSound(null, ctx.entity.getX(), ctx.entity.getY(), ctx.entity.getZ(),
-                        mode == 0 ? com.hbm.sound.ModGunSounds.SWITCH_MODE_1.get()
-                                : com.hbm.sound.ModGunSounds.SWITCH_MODE_2.get(),
+                        mode == 0 ? ModGunSounds.SWITCH_MODE_1.get()
+                                : ModGunSounds.SWITCH_MODE_2.get(),
                         SoundSource.PLAYERS, 1F, 1F);
             };
 
     /**
      * One trigger pull: fire if able, dry-fire if not, and cancel a reload in progress.
      *
-     * <p>Firing mid-reload does not fire — it flags the reload for cancellation, which is what lets you
+     * <p>Firing mid-reload does not fire: it flags the reload for cancellation, which is what lets you
      * break off topping up a shotgun tube to shoot.
      */
     public static void clickReceiver(ItemStack stack, LambdaContext ctx, int receiver) {
@@ -215,7 +218,7 @@ public class Lego {
                 // Position and heading come from the spawned bullet rather than the shooter, so the
                 // smoke sits at the barrel and points where the round actually went.
                 if (i == 0 && config.blackPowder) {
-                    com.hbm.particle.helper.ParticleEffects.blackPowder(level,
+                    ParticleEffects.blackPowder(level,
                             bullet.getX(), bullet.getY(), bullet.getZ(),
                             bullet.getDeltaMovement().x, bullet.getDeltaMovement().y,
                             bullet.getDeltaMovement().z,
@@ -248,7 +251,7 @@ public class Lego {
      * The renderer owns drawing these nodes; this method owns their lifetime and motion.
      */
     public static void handleStandardSmoke(LivingEntity entity, ItemStack stack, int smokeDuration,
-            double alphaDecay, double widthGrowth, net.minecraft.world.InteractionHand hand, int index) {
+            double alphaDecay, double widthGrowth, InteractionHand hand, int index) {
         ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
         long lastShot = gun.lastShotByHand[hand.ordinal()][index];
         List<SmokeNode> smokeNodes = gun.getConfig(stack, index).getSmokeNodes(hand);

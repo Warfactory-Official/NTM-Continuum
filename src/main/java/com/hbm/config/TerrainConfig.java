@@ -4,7 +4,6 @@ package com.hbm.config;
  * The 1.7 config switches the natural/terrain blocks read, with their upstream defaults. {@code enableMycelium} and
  * {@code enableVirus} are {@code hbm.cfg} keys read by {@code GeneralConfig.loadFromConfig}; {@code cleanupDeadDirt}
  * ({@code RADWORLD_03_regrow}) by {@code RadiationConfig.loadFromConfig}, read by waste earth's random tick
- * (History §19ek-hooks).
  */
 public final class TerrainConfig {
 

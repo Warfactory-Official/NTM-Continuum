@@ -19,51 +19,27 @@ import java.util.Set;
 /**
  * Holds the ticker declarations against the blocks that have to consume them.
  *
- * <p>A machine's ticker used to be restated by the block, in a {@code getTicker} override that
- * tested the side and identified the type. It is now declared once beside the block entity, and the
- * block says only that it is a {@code TickingBlock}. That is a better shape and a worse failure: a
- * block left on plain {@code EntityBlock} still compiles, still places, still keeps its inventory
- * and its GUI, and simply never ticks. Nothing in the language catches it and nothing in a normal
- * play session catches it quickly.
+ * <p>A machine's ticker is declared once beside the block entity, not restated by the block in a
+ * {@code getTicker} override. The block says only that it is a {@code TickingBlock}. The failure mode
+ * is quiet: a block left on plain {@code EntityBlock} still compiles, still places, still keeps its
+ * inventory and its GUI, and never ticks. Nothing in the language catches it and a normal play session
+ * does not catch it quickly.
  *
- * <p>So it is caught here, by asking every block the mod registers the question vanilla will ask it
- * — hand it the block entity type it would really get, and see whether a ticker comes back.
+ * <p>So this test asks every block the mod registers the question vanilla will ask it: hand it the block
+ * entity type it would really get and see whether a ticker comes back.
  */
 public final class TickerGameTests {
 
     private TickerGameTests() {}
 
     /**
-     * The number of block entity types that ticked before the ticker moved to registration, counted
-     * from the {@code getTicker} overrides that existed then. It is pinned because the risk this
+     * The number of block entity types that declare a ticker. It is pinned because the risk this
      * test exists for is a ticker quietly going missing, and a count is the only way a <i>deleted</i>
-     * declaration fails anything — every other check here looks at declarations that are present.
+     * declaration fails anything: every other check here looks at declarations that are present.
      *
-     * <p>It was 160 until the cable stopped ticking, and 159 until the fluid duct and the fluid valve
-     * followed it: each of their block entities existed only to mint a network node once, and a node is
-     * now a graph cell the block owns, so nothing is left for any of the three to do each tick.
-     *
-     * <p>217 since the 2026-09 content wave (energynet, fluidnet, pneumatic, door, powergen, nuclearmisc,
-     * production, turret and friends) registered sixty more ticking block entities; the sibling test
-     * saw 366 blocks over 265 types all answering with exactly the ticker declared, so the growth is
-     * honest and the pin follows it.
-     *
-     * <p>+2 for the bombs2 wave, +5 for the terrain wave (fissure, volcano core, geyser, vent, chlorine
-     * seal), +3 for the conventional-explosives wave (landmine, timed charge and crashed dud block
-     * entities), +3 for the deco wave (floodlight, floodlight beam, demon lamp): 217 + 13 = 230.
-     * +21 for the Norwood machine wave: five pile types, five dark-fusion types, six Albion types less
-     * the inert beamline, satlink, geiger, cargo elevator, RBMK terminal, two Soyuz types: 251.
-     * +3 for the Norwood deco wave (the lantern post, the cyber crab assembler, the firework
-     * battery): 254.
+     * <p>The cable, fluid duct and fluid valve do not tick: a network node is a graph cell the block owns,
+     * so none of the three has anything to do each tick.
      */
-    // +5: compact compressor, funnel, decon, small tower and large tower (2026-09-21).
-    // +45 for the final-content wave (2026-09-24), counted per registration: custom machine 1, custom
-    // missile 7 (two launcher cores, assembly, compact launcher, launch table, large and rusted pads),
-    // deco/crate 9, dungeon 6, energy/bedrock 3 (charger, two RF converters), ICF 5, radar/utility 7
-    // (two radars, screen, forcefield, teleporter, orbus, seal hatch) and RBMK 7 (display, key pad,
-    // lever, numitron, graph, indicator, autoloader): 259 + 45 = 304; +5 structure wands (loot, jigsaw,
-    // spawner, tandem, structure): 309; +1 armor set B (the Elbow statue's healing aura, statue_elb_f): 310;
-    // +2 satellites (§19ec: the ID manager machine_satlinker and the cargo landing pad sat_dock): 312.
     private static final int TICKING_TYPES = 312;
 
     public static void everyTickingBlockAnswersWithItsTicker(GameTestHelper helper) {
@@ -112,14 +88,13 @@ public final class TickerGameTests {
     }
 
     /**
-     * As many block entity types declare a ticker as had a {@code getTicker} override before.
+     * The number of block entity types that declare a ticker matches {@link #TICKING_TYPES}.
      *
      * <p>The other test here can only look at declarations that are present, so a declaration that
-     * was simply dropped — a {@code serverTicking} that went back to being a {@code type} — passes
-     * it silently. This is the check that fails for that, and a count is the only shape it can take:
-     * there is nothing left in the tree that remembers the machine used to tick.
+     * was dropped (a {@code serverTicking} that went back to being a {@code type}) passes
+     * it silently. A count is the only check that fails for that.
      *
-     * <p>It is deliberately not derived from reachability. Not every registered type is reachable from
+     * <p>It is not derived from reachability. Not every registered type is reachable from
      * a block's default state, so sweeping that way would make this number a measure of block shape
      * rather than of ticker coverage.
      */

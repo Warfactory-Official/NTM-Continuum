@@ -1,5 +1,6 @@
 package com.hbm.items.tool;
 
+import com.hbm.api.event.HbmEvents;
 import com.hbm.interfaces.IBomb;
 import com.hbm.interfaces.IBomb.BombReturnCode;
 import com.hbm.items.ModDataComponents;
@@ -22,15 +23,14 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 /**
- * Detonator — 1.12.2's {@code ItemDetonator}, and the way a player fires anything by hand.
+ * Detonator: 1.12.2's {@code ItemDetonator}, and the way a player fires anything by hand.
  *
  * <p><b>Shift</b> right-click a bomb block to bind its position; right-click in the air to set it off.
  * For a launch pad "setting it off" means launching, so this plus a designator is the whole manual
- * launch path — without it a pad can only be fired by redstone, which is what made the first playtest
- * conclude there was no way to launch at all.
+ * launch path. Without it a pad can only be fired by redstone.
  *
- * <p>The bound position was three NBT ints ({@code x}/{@code y}/{@code z}) and is now one packed
- * {@code BlockPos} component. Both failure cases keep upstream's chat feedback, which is the only thing
+ * <p>The bound position is one packed {@code BlockPos} component. Both failure cases keep upstream's
+ * chat feedback, which is the only thing
  * that tells a player <em>why</em> nothing happened: "position not set" when the detonator is unbound,
  * and "target incompatible or too far away" when the bound block is not a bomb (a launch pad broken
  * since binding, or a mis-click).
@@ -105,7 +105,7 @@ public class ItemDetonator extends CompatItem {
         level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BLEEP.get(),
                 SoundSource.AMBIENT, 1.0F, 1.0F);
         PendingDetonations.handoff(server, bound);
-        BombReturnCode result = com.hbm.api.event.HbmEvents.detonate(bomb, level, bound, player);
+        BombReturnCode result = HbmEvents.detonate(bomb, level, bound, player);
         // Upstream always reports "detonated"; the return code carries the real answer (a pad with no
         // designator, no fuel or an unlaunchable missile says so), so it is what gets printed.
         Component message = result.getUnlocalizedMessage().isEmpty()

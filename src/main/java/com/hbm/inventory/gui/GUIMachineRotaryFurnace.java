@@ -4,6 +4,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.container.ContainerMachineRotaryFurnace;
 import com.hbm.tileentity.machine.TileEntityMachineRotaryFurnace;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.ChatFormatting;
@@ -20,7 +21,7 @@ import java.util.Optional;
 /** 1.7 {@code GUIMachineRotaryFurnace}: {@code gui_rotary_furnace.png}, 176x186. */
 public final class GUIMachineRotaryFurnace extends CompatContainerScreen<ContainerMachineRotaryFurnace> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_rotary_furnace.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_rotary_furnace.png");
 
     public GUIMachineRotaryFurnace(ContainerMachineRotaryFurnace menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 186);

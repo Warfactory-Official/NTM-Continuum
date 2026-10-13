@@ -10,10 +10,9 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * Assembling a folded multiblock from a test, and asking whether a position ended up one of its cells.
  *
- * <p>What replaced {@code setValue(META, 12)} plus {@code formStructure}: a core is its default state with
- * a facing, and its cells are written by {@code fillSpace}. Membership is no longer readable off a cell's
- * own state — a cell carries no pointer home — so the assertion asks the index, which is the only thing
- * that knows.
+ * <p>A core is its default state with a facing, and its cells are written by {@code fillSpace} (1.7 used
+ * {@code META} 12 plus {@code formStructure}). Membership is not readable off a cell's own state (a cell
+ * carries no pointer home), so the assertion asks the index, which is the only thing that knows.
  */
 public final class FoldedTestSupport {
 
@@ -33,8 +32,8 @@ public final class FoldedTestSupport {
     }
 
     /**
-     * Assert the plot-relative {@code cell} is a port of the multiblock cored at plot-relative {@code core}
-     * -- open on at least one face. This is what {@code META >= extra} used to assert: 1.7 marked a cell a
+     * Assert the plot-relative {@code cell} is a port of the multiblock cored at plot-relative {@code core},
+     * open on at least one face. This is what {@code META >= extra} checked: 1.7 marked a cell a
      * port and recorded no face, so "is a port at all" is the whole of what it said.
      */
     public static void assertPort(GameTestHelper helper, BlockPos core, BlockPos cell) {
@@ -53,7 +52,7 @@ public final class FoldedTestSupport {
 
     /**
      * Assert the cell carries a passive proxy in {@code domains}. 1.7 spelled this {@code META >= extra}
-     * for a cell that holds a proxy but appears in no {@code getConPos} list -- a crown that takes items
+     * for a cell that holds a proxy but appears in no {@code getConPos} list, a crown that takes items
      * and nothing else.
      */
     public static void assertProxy(GameTestHelper helper, BlockPos core, BlockPos cell, int domains) {

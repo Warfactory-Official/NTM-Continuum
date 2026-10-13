@@ -1,5 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerCentrifuge;
 import com.hbm.tileentity.machine.TileEntityMachineCentrifuge;
@@ -15,10 +18,10 @@ import java.util.Optional;
  * ({@code processing/gui_centrifuge.png}, 182x189): power bar 16x37 at (8,18), four 12x36 progress columns
  * at x=72+20i filled one after another, and the upgrade info glyph at (160,16).
  */
-public class GUICentrifuge extends dev.golem.core.gui.CompatContainerScreen<ContainerCentrifuge>
+public class GUICentrifuge extends CompatContainerScreen<ContainerCentrifuge>
         implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_centrifuge.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_centrifuge.png");
 
     public GUICentrifuge(ContainerCentrifuge menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 182, 189);
@@ -73,7 +76,7 @@ public class GUICentrifuge extends dev.golem.core.gui.CompatContainerScreen<Cont
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getCentrifuge();
     }
 }

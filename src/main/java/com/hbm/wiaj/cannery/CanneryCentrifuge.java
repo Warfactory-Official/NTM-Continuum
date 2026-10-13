@@ -1,9 +1,11 @@
 package com.hbm.wiaj.cannery;
 
 import com.hbm.client.render.MachineRenderState;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
+import com.hbm.tileentity.network.TileEntityFluidDuctVariant;
 import com.hbm.wiaj.JarScene;
 import com.hbm.wiaj.JarScript;
 import com.hbm.wiaj.WorldInAJar;
@@ -144,8 +146,8 @@ public class CanneryCentrifuge extends CanneryBase {
     }
 
     /** A duct carrying {@code fluid}, as upstream's {@code new TileEntityPipeBaseNT(); setType(fluid)}. */
-    static TileEntityFluidDuctNT duct(com.hbm.inventory.fluid.FluidType fluid) {
-        TileEntityFluidDuctNT duct = new com.hbm.tileentity.network.TileEntityFluidDuctVariant(BlockPos.ZERO, block("hbm:fluid_duct_neo"));
+    static TileEntityFluidDuctNT duct(FluidType fluid) {
+        TileEntityFluidDuctNT duct = new TileEntityFluidDuctVariant(BlockPos.ZERO, block("hbm:fluid_duct_neo"));
         duct.setFluidType(fluid);
         return duct;
     }

@@ -3,8 +3,12 @@ package com.hbm.entity.mob;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.sedna.factory.XFactory762mm;
+import com.hbm.particle.helper.EntityEffects;
+import com.hbm.potion.ModEffects;
 import com.hbm.sound.ModSounds;
 import com.hbm.util.TeslaZap;
+import dev.golem.core.world.Compat;
+import dev.golem.core.world.Effects;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -17,6 +21,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
@@ -58,12 +63,12 @@ public class EntityTaintCrab extends EntityCyberCrab {
             // zap runs every tick; only a changed arc set is worth a packet
             if (!zapped.equals(targets)) {
                 targets = zapped;
-                com.hbm.particle.helper.EntityEffects.teslaArc(this, targets, 64);
+                EntityEffects.teslaArc(this, targets, 64);
             }
 
             AABB box = new AABB(getX() - 5, getY() - 5, getZ() - 5, getX() + 5, getY() + 5, getZ() + 5);
             for (LivingEntity e : server.getEntitiesOfClass(LivingEntity.class, box)) {
-                if (!(e instanceof EntityCyberCrab)) dev.golem.core.world.Effects.addRegistered(e, com.hbm.potion.ModEffects.RADIATION.get(), 10, 15);
+                if (!(e instanceof EntityCyberCrab)) Effects.addRegistered(e, ModEffects.RADIATION.get(), 10, 15);
             }
         }
 
@@ -76,8 +81,8 @@ public class EntityTaintCrab extends EntityCyberCrab {
 
         int looting = 0;
         // 1.7 EntityLivingBase.onDeath only read looting off an EntityPlayer killer
-        if (source.getEntity() instanceof net.minecraft.world.entity.player.Player attacker) {
-            looting = dev.golem.core.world.Compat.lootingLevel(level, attacker);
+        if (source.getEntity() instanceof Player attacker) {
+            looting = Compat.lootingLevel(level, attacker);
         }
 
         int amount = random.nextInt(3) + (looting > 0 ? random.nextInt(looting + 1) : 0);

@@ -3,6 +3,7 @@ package com.hbm.client.particle;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.particle.SpentCasing;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.golem.core.Ids;
 import dev.golem.core.client.Colors;
 import dev.golem.core.client.Frames;
@@ -14,6 +15,7 @@ import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
@@ -46,8 +48,8 @@ public final class CasingParticleGroup {
     public void submit(ClientLevel level, CameraInfo camera) {
         if (particles.isEmpty()) return;
         float partial = Frames.partialTick();
-        float playerYaw = net.minecraft.client.Minecraft.getInstance().player == null ? 0F
-                : net.minecraft.client.Minecraft.getInstance().player.getViewYRot(partial);
+        float playerYaw = Minecraft.getInstance().player == null ? 0F
+                : Minecraft.getInstance().player.getViewYRot(partial);
         for (ParticleSpentCasing casing : List.copyOf(particles)) {
             double px = casing.interpX(partial) - camera.pos.x;
             double py = casing.interpY(partial) - camera.pos.y;
@@ -135,7 +137,7 @@ public final class CasingParticleGroup {
         return 0xFF000000 | colors[Math.min(slot, colors.length - 1)];
     }
 
-    private static void drawSmoke(PoseStack.Pose pose, com.mojang.blaze3d.vertex.VertexConsumer buffer,
+    private static void drawSmoke(PoseStack.Pose pose, VertexConsumer buffer,
             float[] nodes, Vec3 vector, int light) {
         for (int i = 0; i + 7 < nodes.length; i += 4) {
             float nx = nodes[i], ny = nodes[i + 1], nz = nodes[i + 2], na = nodes[i + 3];

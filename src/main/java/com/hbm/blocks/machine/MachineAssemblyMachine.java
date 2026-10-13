@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
@@ -19,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 
 /** Assembly Machine: a 3×3×3 dummyable multiblock (core + 8 ringed "extra" dummies + fill); power and fluid ports on the ring, as 1.7. */
 public class MachineAssemblyMachine extends BlockMultiblockMachine implements WorldlyContainerHolder, IEnergyConnectorBlock,
-        com.hbm.api.fluidmk2.IFluidConnectorBlockMK2 {
+        IFluidConnectorBlockMK2 {
 
     public MachineAssemblyMachine(Properties properties) {
         super(properties);

@@ -11,11 +11,14 @@ import com.hbm.blocks.machine.MachineIGenerator;
 import com.hbm.blocks.machine.MachineLPW2;
 import com.hbm.blocks.ModPowerGenBlocks;
 import com.hbm.items.ModPowerGenItems;
+import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.tileentity.machine.TileEntityChungus;
 import com.hbm.tileentity.machine.TileEntityMachineHephaestus;
 import com.hbm.tileentity.machine.TileEntityMachineIGenerator;
 import com.hbm.tileentity.machine.TileEntityMachineLPW2;
 import com.hbm.tileentity.machine.TileEntityMachineSiren;
+import dev.golem.core.gametest.GameTestHelpers;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -169,8 +172,8 @@ public final class PowerGenGameTests {
     public static void lpw2AnimationClock(GameTestHelper helper) {
         BlockPos relative = new BlockPos(1, 1, 1);
         helper.setBlock(relative, ModPowerGenBlocks.MACHINE_LPW2.get().defaultBlockState());
-        TileEntityMachineLPW2 te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, relative, TileEntityMachineLPW2.class);
-        helper.assertTrue(te instanceof com.hbm.tileentity.TileEntityLoadedBase, "LPW-2 tile is a TileEntityLoadedBase");
+        TileEntityMachineLPW2 te = GameTestHelpers.blockEntity(helper, relative, TileEntityMachineLPW2.class);
+        helper.assertTrue(te instanceof TileEntityLoadedBase, "LPW-2 tile is a TileEntityLoadedBase");
         long time = helper.getLevel().getGameTime() % 1000000;
         helper.assertTrue(te.animationTime(0.25F) == (double) (time + 0.25F), "LPW-2 clock is world time + partial ticks");
         helper.succeed();
@@ -188,7 +191,7 @@ public final class PowerGenGameTests {
         }
         ILookOverlay.Data data = block.getLookOverlay(helper.getLevel(), core, null);
         helper.assertTrue(data != null && "Industrial Generator Memorial".equals(data.title())
-                        && data.lines().equals(java.util.List.of("In memory of all that we have lost")),
+                        && data.lines().equals(List.of("In memory of all that we have lost")),
                 "the memorial's look overlay is the dedication");
         helper.succeed();
     }

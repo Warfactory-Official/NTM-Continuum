@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.ContainerHelper;
@@ -13,7 +14,7 @@ import dev.golem.core.data.DataOut;
  * cannot use (they live in the loader APIs). Backed by a {@link NonNullList} of {@link ItemStack} and
  * persisted with {@link ContainerHelper} (the {@link ItemStack} codec).
  *
- * <p>The public method surface deliberately mirrors the old {@code ItemStackHandler} so ported machine
+ * <p>The public method surface mirrors the old {@code ItemStackHandler} so ported machine
  * code needs minimal edits: {@link #getSlots()}, {@link #getStackInSlot(int)},
  * {@link #setStackInSlot(int, ItemStack)}, {@link #insertItem(int, ItemStack, boolean)},
  * {@link #extractItem(int, int, boolean)}, {@link #getSlotLimit(int)}, plus the
@@ -78,7 +79,7 @@ public class NTMItemHandler {
         int limit = getStackLimit(slot, stack);
 
         if (!existing.isEmpty()) {
-            if (!dev.golem.core.world.ItemStacks.sameItemAndData(stack, existing)) return stack;
+            if (!ItemStacks.sameItemAndData(stack, existing)) return stack;
             limit -= existing.getCount();
         }
         if (limit <= 0) return stack;
@@ -86,7 +87,7 @@ public class NTMItemHandler {
         int toInsert = Math.min(limit, stack.getCount());
         if (!simulate) {
             if (existing.isEmpty()) {
-                stacks.set(slot, dev.golem.core.world.ItemStacks.copyWithCount(stack, toInsert));
+                stacks.set(slot, ItemStacks.copyWithCount(stack, toInsert));
             } else {
                 existing.grow(toInsert);
             }
@@ -94,7 +95,7 @@ public class NTMItemHandler {
         }
 
         int remainder = stack.getCount() - toInsert;
-        return remainder <= 0 ? ItemStack.EMPTY : dev.golem.core.world.ItemStacks.copyWithCount(stack, remainder);
+        return remainder <= 0 ? ItemStack.EMPTY : ItemStacks.copyWithCount(stack, remainder);
     }
 
     /** Extracts up to {@code amount} from {@code slot}. Mirrors {@code ItemStackHandler.extractItem}. */
@@ -112,10 +113,10 @@ public class NTMItemHandler {
             return simulate ? existing.copy() : existing;
         } else {
             if (!simulate) {
-                stacks.set(slot, dev.golem.core.world.ItemStacks.copyWithCount(existing, existing.getCount() - toExtract));
+                stacks.set(slot, ItemStacks.copyWithCount(existing, existing.getCount() - toExtract));
                 onContentsChanged(slot);
             }
-            return dev.golem.core.world.ItemStacks.copyWithCount(existing, toExtract);
+            return ItemStacks.copyWithCount(existing, toExtract);
         }
     }
 
@@ -123,7 +124,7 @@ public class NTMItemHandler {
         return stacks;
     }
 
-    // --- persistence ---
+    // Persistence
 
     /** Writes the inventory under the {@code "Items"} list (the {@link ContainerHelper} format). */
     public void save(DataOut output) {
@@ -134,7 +135,7 @@ public class NTMItemHandler {
         Inventories.load(input, stacks);
     }
 
-    // Kept for parity with future code that uses the registry-aware helpers; HolderLookup is unused for
+    // Kept with future code that uses the registry-aware helpers; HolderLookup is unused for
     // the plain ItemStack codec path but several call sites pass it through, so accept it explicitly.
     public void save(DataOut output, HolderLookup.Provider registries) {
         save(output);

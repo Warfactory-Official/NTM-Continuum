@@ -3,6 +3,8 @@ package com.hbm.util;
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial.SmeltingBehavior;
+import com.hbm.lib.ForgeDirection;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -87,7 +89,7 @@ public final class CrucibleUtil {
 
     /**
      * Tries to pour the stack onto the acceptor. Only {@code SMELTABLE} materials pour. Returns the
-     * leftover (never null on success — 0-amount stack when fully accepted) or null when rejected.
+     * leftover (never null on success, 0-amount stack when fully accepted) or null when rejected.
      */
     public static Mats.@Nullable MaterialStack tryPourStack(Level world, ICrucibleAcceptor acc, BlockHitResult mop,
                                                             Mats.MaterialStack stack, Vec3 @Nullable [] impactHolder) {
@@ -97,7 +99,7 @@ public final class CrucibleUtil {
             return null;
         }
 
-        com.hbm.lib.ForgeDirection side = com.hbm.lib.ForgeDirection.getOrientation(mop.getDirection().get3DDataValue());
+        ForgeDirection side = ForgeDirection.getOrientation(mop.getDirection().get3DDataValue());
         if (acc.canAcceptPartialPour(world, mop.getBlockPos(), hit.x, hit.y, hit.z, side, stack)) {
             Mats.MaterialStack left = acc.pour(world, mop.getBlockPos(), hit.x, hit.y, hit.z, side, stack);
             if (left == null) {
@@ -112,7 +114,7 @@ public final class CrucibleUtil {
 
     /** Raytraces from {@code start} to {@code end}; returns the hit {@link ICrucibleAcceptor} block (or null). */
     public static @Nullable ICrucibleAcceptor getPouringTarget(Level world, Vec3 start, Vec3 end, BlockHitResult @Nullable [] mopHolder) {
-        BlockHitResult mop = dev.golem.core.world.Compat.clip(world, start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY);
+        BlockHitResult mop = Compat.clip(world, start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY);
 
         if (mopHolder != null) {
             mopHolder[0] = mop;
@@ -126,7 +128,7 @@ public final class CrucibleUtil {
         return b instanceof ICrucibleAcceptor acc ? acc : null;
     }
 
-    /** Spill from a stack list — uses the first stack, then prunes emptied stacks. */
+    /** Spill from a stack list, uses the first stack, then prunes emptied stacks. */
     public static Mats.@Nullable MaterialStack spill(@Nullable BlockHitResult mop, boolean safe, List<Mats.MaterialStack> stacks,
                                                      int quanta, Vec3 @Nullable [] impactHolder) {
         Mats.MaterialStack top = stacks.get(0);

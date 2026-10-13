@@ -17,14 +17,14 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * The legacy, fuel-fired DiFurnace (1.7 {@code BlastFurnaceRecipes}, the two-input alloy furnace). This is deliberately
- * separate from the modern airblast {@link BlastFurnaceRecipesNT}: the old DiFurnace consumed one of two legacy alloy
- * inputs and emitted only its recipe result plus crafting remainders.
+ * The legacy, fuel-fired DiFurnace (1.7 {@code BlastFurnaceRecipes}, the two-input alloy furnace). It is
+ * separate from the airblast {@link BlastFurnaceRecipesNT}: the DiFurnace consumes one of two legacy alloy
+ * inputs and emits only its recipe result plus crafting remainders.
  *
- * <p>The recipes are the datapack table {@code hbm:difurnace}, one file per row in {@code data/hbm/recipe/difurnace/},
- * converted once from the former Java table and the source now. 1.7's {@code DictFrame} of a material's ingot, plate,
- * gem and dust is an {@code hbm:any_of} ingredient, its gasoline canister an {@code hbm:fluid_item}. The fuel values are
- * the item data map {@code hbm:difurnace_fuel} ({@link DiFurnaceDataMaps}).
+ * <p>The recipes are the datapack table {@code hbm:difurnace}, one file per row in {@code data/hbm/recipe/difurnace/}.
+ * 1.7's {@code DictFrame} of a material's ingot, plate, gem and dust is an {@code hbm:any_of} ingredient, its
+ * gasoline canister an {@code hbm:fluid_item}. The fuel values are the item data map {@code hbm:difurnace_fuel}
+ * ({@link DiFurnaceDataMaps}).
  */
 public final class DiFurnaceRecipes extends DataGenericRecipes<GenericRecipe> {
 

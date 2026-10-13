@@ -7,7 +7,7 @@ import java.util.Locale;
 
 /**
  * 1.7 {@code CommonConfig}: the {@code hbm.cfg} category names and the {@code createConfig*} helpers the
- * {@code loadFromConfig} methods use. Ported verbatim (History §19ej-8).
+ * {@code loadFromConfig} methods use. Ported unchanged.
  */
 public final class CommonConfig {
 

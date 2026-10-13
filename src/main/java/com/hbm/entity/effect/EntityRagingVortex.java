@@ -5,6 +5,7 @@ import dev.golem.core.data.Tags;
 import com.hbm.config.CompatibilityConfig;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
@@ -33,7 +34,7 @@ public final class EntityRagingVortex extends EntityBlackHole {
         float decrease = 0F;
         if (level().getRandom().nextInt(100) == 0) {
             decrease = 0.1F;
-            if (level() instanceof net.minecraft.server.level.ServerLevel server) {
+            if (level() instanceof ServerLevel server) {
                 server.explode(null, getX(), getY(), getZ(), 10F, false,
                         Level.ExplosionInteraction.TNT);
             }

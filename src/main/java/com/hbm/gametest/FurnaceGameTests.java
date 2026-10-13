@@ -1,5 +1,6 @@
 package com.hbm.gametest;
 
+import com.hbm.blocks.machine.MachineFurnaceBrick;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerFurnaceBrick;
@@ -11,6 +12,7 @@ import com.hbm.tileentity.machine.TileEntityFurnaceIron;
 import com.hbm.tileentity.machine.TileEntityFurnaceSteel;
 import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -36,7 +38,7 @@ public final class FurnaceGameTests {
                 "Brick furnace did not smelt iron ore");
         helper.assertTrue(furnace.inventory.getStackInSlot(0).isEmpty(),
                 "Brick furnace did not consume its input");
-        helper.assertBlockProperty(pos, com.hbm.blocks.machine.MachineFurnaceBrick.LIT, true);
+        helper.assertBlockProperty(pos, MachineFurnaceBrick.LIT, true);
         helper.succeed();
     }
 
@@ -55,13 +57,13 @@ public final class FurnaceGameTests {
         helper.assertTrue(furnace.processingTime == TileEntityFurnaceIron.baseTime && TileEntityFurnaceIron.baseTime == 160,
                 "Iron furnace base processing time must be the 1.7 160 ticks, was " + furnace.processingTime);
         // 1.7: 160 - (160 / 2) * speed / 3 -> speed 2 = 107, speed 3 = 80
-        furnace.inventory.setStackInSlot(4, new ItemStack(com.hbm.items.ModUpgradeItems.upgrade_speed_2.get()));
+        furnace.inventory.setStackInSlot(4, new ItemStack(ModUpgradeItems.upgrade_speed_2.get()));
         TileEntityFurnaceIron.serverTick(helper.getLevel(), helper.absolutePos(pos), furnace.getBlockState(), furnace);
         helper.assertTrue(furnace.processingTime == 107, "Speed 2 iron furnace time must be 107, was " + furnace.processingTime);
-        furnace.inventory.setStackInSlot(4, new ItemStack(com.hbm.items.ModUpgradeItems.upgrade_speed_3.get()));
+        furnace.inventory.setStackInSlot(4, new ItemStack(ModUpgradeItems.upgrade_speed_3.get()));
         TileEntityFurnaceIron.serverTick(helper.getLevel(), helper.absolutePos(pos), furnace.getBlockState(), furnace);
         helper.assertTrue(furnace.processingTime == 80, "Speed 3 iron furnace time must be 80, was " + furnace.processingTime);
-        helper.assertBlockProperty(pos, BlockMultiblockCore.FACING, net.minecraft.core.Direction.NORTH);
+        helper.assertBlockProperty(pos, BlockMultiblockCore.FACING, Direction.NORTH);
         helper.succeed();
     }
 

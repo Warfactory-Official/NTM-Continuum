@@ -19,7 +19,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /**
- * Foundry scraps — an arbitrary amount of a single molten {@link NTMMaterial}, solidified into an item
+ * Foundry scraps: an arbitrary amount of a single molten {@link NTMMaterial}, solidified into an item
  * (shovel-emptied crucibles/channels, broken foundry blocks, spilled pours). Melts back into exactly its
  * contents. The 1.12.2 {@code ItemScraps} stored material as item metadata + amount as NBT; the port uses
  * the {@link ModDataComponents#MATERIAL} (material name) + {@link ModDataComponents#MAT_AMOUNT} (quanta)
@@ -49,7 +49,7 @@ public class ItemScraps extends CompatItem {
 
     /**
      * {@code liquid} = the <b>molten</b> display form (the 1.12.2 {@code "liquid"} NBT flag, here
-     * custom_model_data flag 0): the {@code scraps_liquid} sprite and the bare material name — what the
+     * custom_model_data flag 0): the {@code scraps_liquid} sprite and the bare material name, which is what the
      * old crucible JEI screen shows, not an obtainable solid item.
      */
     public static ItemStack create(Mats.MaterialStack mats, boolean liquid) {

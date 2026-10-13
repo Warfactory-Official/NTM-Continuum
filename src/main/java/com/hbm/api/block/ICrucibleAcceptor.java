@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
 /**
- * A block that can receive molten material — the 1.12.2 {@code ICrucibleAcceptor}, verbatim. Implemented
+ * A block that can receive molten material (the 1.12.2 {@code ICrucibleAcceptor}). Implemented
  * on the <b>Block</b> (the pour raytrace only sees blocks); implementations delegate to their
  * BlockEntity. Both transfer methods return the LEFTOVER stack ({@code null} = fully accepted).
  */

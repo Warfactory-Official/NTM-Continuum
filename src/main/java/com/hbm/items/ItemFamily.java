@@ -33,7 +33,7 @@ public final class ItemFamily<E extends Enum<E>, I extends Item> {
     }
 
     /**
-     * Every constant of {@code type}, each registered by {@code member} — the Reg form, where the member's
+     * Every constant of {@code type}, each registered by {@code member}, the Reg form, where the member's
      * chain also states its declarations: {@code ItemFamily.of(T.class, t -> REG.item(...).transform(...))}.
      */
     public static <E extends Enum<E>, I extends Item> ItemFamily<E, I> of(Class<E> type,

@@ -1,12 +1,15 @@
 package com.hbm.client.particle;
 
+import com.hbm.lib.Library;
 import com.hbm.particle.SpentCasing;
 import dev.golem.core.render.Renderers;
+import java.util.Random;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import dev.golem.core.world.Sounds;
 import java.util.ArrayList;
@@ -17,7 +20,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public final class ParticleSpentCasing {
     public static final float SCALE = 0.05F;
     private static final float SMOKE_JITTER = 0.001F;
-    private static final java.util.Random RANDOM = new java.util.Random();
+    private static final Random RANDOM = new Random();
 
     public final SpentCasing config;
     public final List<SmokeNode> smokeNodes = new ArrayList<>();
@@ -98,8 +101,8 @@ public final class ParticleSpentCasing {
 
     private void move(ClientLevel level, double motionX, double motionY, double motionZ) {
         Vec3 initial = new Vec3(motionX, motionY, motionZ);
-        net.minecraft.world.phys.AABB bounds =
-                new net.minecraft.world.phys.AABB(x - width(), y, z - width(), x + width(), y + height(), z + width());
+        AABB bounds =
+                new AABB(x - width(), y, z - width(), x + width(), y + height(), z + width());
         List<VoxelShape> collisions = new ArrayList<>();
         level.getBlockCollisions(null, bounds.expandTowards(initial.x, initial.y, initial.z))
                 .forEach(collisions::add);
@@ -125,7 +128,7 @@ public final class ParticleSpentCasing {
             }
             if (config.getSound() != null && Math.abs(initial.y) >= 0.2D) {
                 // a bare name is one of HBM's plink sounds; an addon casing names its own sound as "ns:path"
-                var sound = Sounds.get(com.hbm.lib.Library.parseId(config.getSound()));
+                var sound = Sounds.get(Library.parseId(config.getSound()));
                 if (sound != null) level.playLocalSound(x, y, z, sound, SoundSource.PLAYERS,
                         SpentCasing.PLINK_LARGE.equals(config.getSound()) ? 1F : 0.5F,
                         1F + RANDOM.nextFloat() * 0.2F, false);

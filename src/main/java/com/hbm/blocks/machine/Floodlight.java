@@ -28,8 +28,8 @@ import com.hbm.client.render.FloodlightRenderer;
 import com.hbm.tileentity.machine.TileEntityFloodlight;
 
 /**
- * 1.7 {@code Floodlight}: the powered floodlight. Old metadata {@code side} (0-5) is {@link #FACING} — the
- * face it was placed on, which is also where power comes in from behind — and the {@code +6} the old
+ * 1.7 {@code Floodlight}: the powered floodlight. Old metadata {@code side} (0-5) is {@link #FACING}, the
+ * face it was placed on, which is also where power comes in from behind, and the {@code +6} the old
  * code added for an up/down fixture placed while looking north or south is {@link #FLIP}. The pitch of
  * the lamp head lives in the block entity ({@code rotation}) and is set from the placer's pitch, or
  * re-set with a screwdriver. Drawn by {@code FloodlightRenderer}.

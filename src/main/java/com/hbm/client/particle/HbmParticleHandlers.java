@@ -1,16 +1,24 @@
 package com.hbm.client.particle;
 
+import com.hbm.blocks.generic.BlockGasBase;
 import com.hbm.particle.helper.HbmEffectNT;
 import dev.golem.core.data.Tags;
 import dev.golem.core.render.Particles;
+import dev.golem.core.world.Compat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -68,9 +76,9 @@ public final class HbmParticleHandlers {
                     Tags.getFloatOr(data, "b", 1F));
             Particles.add(cloud);
         });
-        com.hbm.blocks.generic.BlockGasBase.localPlayer = () -> Minecraft.getInstance().player;
+        BlockGasBase.localPlayer = () -> Minecraft.getInstance().player;
         HbmEffectNT.Hadron.setHandler((level, x, y, z, data) -> {
-            if (level instanceof ClientLevel clientLevel) dev.golem.core.render.Particles.add(new ParticleHadron(clientLevel, x, y, z));
+            if (level instanceof ClientLevel clientLevel) Particles.add(new ParticleHadron(clientLevel, x, y, z));
         });
         HbmEffectNT.Bnuuy.setHandler((level, x, y, z, data) -> spawnBnuuy(level, data));
         AmatFlashParticles.register();
@@ -116,16 +124,16 @@ public final class HbmParticleHandlers {
     }
 
     /**
-     * One exhaust puff. A missile spawns these itself, client-side, so there is no packet to gate —
-     * upstream's 350-block cut-off is the gate, and it matters: an ICBM's trail is spawned every tick
+     * One exhaust puff. A missile spawns these itself, client-side, so there is no packet to gate.
+     * Upstream's 350-block cut-off is the gate, and it matters: an ICBM's trail is spawned every tick
      * for the whole flight, and without it a player would be building particles for a missile several
      * thousand blocks away that they cannot see.
      */
-    private static void spawnContrail(net.minecraft.world.level.Level level, double x, double y, double z,
-            net.minecraft.nbt.CompoundTag data) {
+    private static void spawnContrail(Level level, double x, double y, double z,
+            CompoundTag data) {
         if (!(level instanceof ClientLevel clientLevel)) return;
 
-        net.minecraft.world.entity.player.Player player = Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
         if (player == null || player.distanceToSqr(x, y, z) > 350D * 350D) return;
 
         ParticleRocketFlame flame = new ParticleRocketFlame(clientLevel, x, y, z)
@@ -145,15 +153,15 @@ public final class HbmParticleHandlers {
         Particles.add(flame);
     }
 
-    private static void spawnRBMKMush(net.minecraft.world.level.Level level, double x, double y, double z, float scale) {
+    private static void spawnRBMKMush(Level level, double x, double y, double z, float scale) {
         if (level instanceof ClientLevel clientLevel) {
             ParticleRBMKMush.spawn(clientLevel, x, y, z, scale);
-            clientLevel.addParticle(net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER,
+            clientLevel.addParticle(ParticleTypes.EXPLOSION_EMITTER,
                     x, y, z, 0D, 0D, 0D);
         }
     }
 
-    private static void spawnSawmillDamage(net.minecraft.world.level.Level level, double x, double y, double z,
+    private static void spawnSawmillDamage(Level level, double x, double y, double z,
                                            CompoundTag data) {
         if (!(level instanceof ClientLevel clientLevel)) return;
         int count = Tags.getIntOr(data, "count", 0);
@@ -173,11 +181,11 @@ public final class HbmParticleHandlers {
      * backwards at 0.025. 1.7 raised them by 0.25 when the <i>viewing</i> player sneaked (it read {@code player},
      * not the wearer); kept. {@code EntitySmokeFX}'s scale was forced to 0.5, against a default of about 1.125.
      */
-    private static void spawnBnuuy(net.minecraft.world.level.Level level, CompoundTag data) {
+    private static void spawnBnuuy(Level level, CompoundTag data) {
         if (!(level instanceof ClientLevel clientLevel)) return;
         if (Particles.quality() == Particles.Quality.MINIMAL) return;
-        net.minecraft.world.entity.Entity entity = clientLevel.getEntity(Tags.getIntOr(data, "player", -1));
-        if (!(entity instanceof net.minecraft.world.entity.player.Player p)) return;
+        Entity entity = clientLevel.getEntity(Tags.getIntOr(data, "player", -1));
+        if (!(entity instanceof Player p)) return;
 
         float angle = (float) -Math.toRadians(p.yBodyRot);
         Vec3 vec = new Vec3(0, 0, -0.6).yRot(angle);
@@ -201,11 +209,11 @@ public final class HbmParticleHandlers {
     }
 
     /** The server-packeted exhaust used by the non-glider jetpack families. */
-    private static void spawnJetpack(net.minecraft.world.level.Level level, CompoundTag data, int variant) {
+    private static void spawnJetpack(Level level, CompoundTag data, int variant) {
         if (!(level instanceof ClientLevel clientLevel)) return;
         if (Particles.quality() == Particles.Quality.MINIMAL && (variant == 1 || variant == 2)) return;
-        net.minecraft.world.entity.Entity entity = clientLevel.getEntity(Tags.getIntOr(data, "player", -1));
-        if (!(entity instanceof net.minecraft.world.entity.player.Player player)) return;
+        Entity entity = clientLevel.getEntity(Tags.getIntOr(data, "player", -1));
+        if (!(entity instanceof Player player)) return;
 
         float yaw = (float) Math.toRadians(player.yBodyRot);
         Vec3 side = new Vec3((float) Math.cos(yaw), 0D, (float) Math.sin(yaw));
@@ -225,9 +233,9 @@ public final class HbmParticleHandlers {
                 Vec3 smokeVelocity = variant == 0
                         ? player.getDeltaMovement().add(0D, -0.6D, 0D)
                         : player.getDeltaMovement().subtract(player.getViewVector(1F).scale(0.3D));
-                clientLevel.addParticle(net.minecraft.core.particles.ParticleTypes.FLAME, position.x, position.y,
+                clientLevel.addParticle(ParticleTypes.FLAME, position.x, position.y,
                         position.z, flameVelocity.x, flameVelocity.y, flameVelocity.z);
-                clientLevel.addParticle(net.minecraft.core.particles.ParticleTypes.SMOKE, position.x, position.y,
+                clientLevel.addParticle(ParticleTypes.SMOKE, position.x, position.y,
                         position.z, smokeVelocity.x, smokeVelocity.y, smokeVelocity.z);
             } else if (variant == 1) {
                 Particles.dust(clientLevel, position.x, position.y, position.z, 0.8F, 0.5F, 1F,
@@ -241,12 +249,12 @@ public final class HbmParticleHandlers {
             spawnKickup(clientLevel, player, base);
     }
 
-    private static void spawnKickup(ClientLevel level, net.minecraft.world.entity.player.Player player, Vec3 origin) {
+    private static void spawnKickup(ClientLevel level, Player player, Vec3 origin) {
         Vec3 target = origin.add(0D, -10D, 0D);
-        BlockHitResult hit = dev.golem.core.world.Compat.clip(level, origin, target,
-                net.minecraft.world.level.ClipContext.Block.COLLIDER,
-                net.minecraft.world.level.ClipContext.Fluid.NONE);
-        if (hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK || hit.getDirection() != Direction.UP) return;
+        BlockHitResult hit = Compat.clip(level, origin, target,
+                ClipContext.Block.COLLIDER,
+                ClipContext.Fluid.NONE);
+        if (hit.getType() != HitResult.Type.BLOCK || hit.getDirection() != Direction.UP) return;
 
         Vec3 location = hit.getLocation();
         double distance = origin.distanceTo(location);
@@ -260,10 +268,10 @@ public final class HbmParticleHandlers {
         }
     }
 
-    private static void spawnVanillaExtBlockDust(net.minecraft.world.level.Level level, double x, double y,
+    private static void spawnVanillaExtBlockDust(Level level, double x, double y,
             double z, CompoundTag data) {
         if (!(level instanceof ClientLevel clientLevel)) return;
-        var block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.byId(Tags.getIntOr(data, "block", -1));
+        var block = BuiltInRegistries.BLOCK.byId(Tags.getIntOr(data, "block", -1));
         if (block == Blocks.AIR) return;
         clientLevel.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, block.defaultBlockState()), x, y, z,
                 Tags.getDoubleOr(data, "mX", 0D), Tags.getDoubleOr(data, "mY", 0D),
@@ -274,7 +282,7 @@ public final class HbmParticleHandlers {
      * Maps upstream's creator-table key onto the effect constant.
      *
      * <p>The two spellings differ ({@code "explosionSmall"} vs {@code ExplosionSmall}) because both
-     * are upstream's and both are load-bearing — the string keys appear in old call sites, the enum
+     * are upstream's and both are load-bearing: the string keys appear in old call sites, the enum
      * travels on the wire. Matching case-insensitively keeps one table instead of two.
      */
     private static HbmEffectNT byCreatorKey(String key) {

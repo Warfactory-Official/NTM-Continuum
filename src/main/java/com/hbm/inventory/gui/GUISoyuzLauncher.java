@@ -3,6 +3,7 @@ package com.hbm.inventory.gui;
 import com.hbm.inventory.container.ContainerSoyuzLauncher;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
@@ -26,7 +27,7 @@ import java.util.Optional;
 public class GUISoyuzLauncher extends CompatContainerScreen<ContainerSoyuzLauncher> {
 
     private static final Identifier TEXTURE =
-            dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_soyuz.png");
+            Ids.of("hbm", "textures/gui/machine/gui_soyuz.png");
 
     public GUISoyuzLauncher(ContainerSoyuzLauncher menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 194, 244);

@@ -1,5 +1,6 @@
 package com.hbm.explosion;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.config.BombConfig;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.handler.radiation.ChunkRadiationManager;
@@ -12,6 +13,7 @@ import com.hbm.explosion.vanillant.standard.BlockMutatorFire;
 import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -28,7 +30,7 @@ public final class ExplosionNukeSmall {
     /** Keeps the old effect/sound/damage/entity ordering used by all small-nuke presets. */
     public static void explode(Level world, double x, double y, double z, MukeParams params) {
         if (params.particle != null) {
-            net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+            CompoundTag data = new CompoundTag();
             if (params.particle == HbmEffectNT.Muke
                     && (MainRegistry.polaroidID == 11 || world.getRandom().nextInt(100) == 0)) {
                 data.putBoolean("balefire", true);
@@ -65,7 +67,7 @@ public final class ExplosionNukeSmall {
 
         // hbm-space: CelestialNukeShockHandler.trigger for a mini nuke
         if (params.miniNuke && world instanceof ServerLevel server) {
-            com.hbm.api.environment.Environment.nuclearBlast(server, x, z, params.blastRadius);
+            Environment.nuclearBlast(server, x, z, params.blastRadius);
         }
 
         if (params.miniNuke) {

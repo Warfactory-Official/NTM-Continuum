@@ -16,15 +16,15 @@ import net.minecraft.world.InteractionHand;
 /**
  * One whole weapon's worth of configuration: its {@link Receiver}s, how worn it can get before it jams,
  * what each button does, and the state machine that ties them together. A gun item holds an array of
- * these — akimbo pistols are one item with two configs.
+ * these: akimbo pistols are one item with two configs.
  *
- * <p>Ported from 1.12.2 {@code com.hbm.items.weapon.sedna.GunConfig}. As with {@link Receiver}, the
- * Every getter retains the upstream {@code XWeaponModManager.eval} hook, so per-stack modifiers can
- * change stats without changing the gun declarations.
+ * <p>Ported from 1.12.2 {@code com.hbm.items.weapon.sedna.GunConfig}. As with {@link Receiver}, every
+ * getter keeps the upstream {@code XWeaponModManager.eval} hook, so per-stack modifiers can change stats
+ * without changing the gun declarations.
  *
- * <p>Smoke and orchestra callbacks are retained as common hooks; their client sound/particle consumers
- * remain separate. Animation tables stay in the client registration path so this class never names a
- * client-only renderer type.
+ * <p>Smoke and orchestra callbacks are common hooks; their client sound/particle consumers are separate.
+ * Animation tables stay in the client registration path so this class never names a client-only renderer
+ * type.
  */
 public class GunConfig {
 

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.items.machine.ItemScraps;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
@@ -16,6 +17,7 @@ import com.hbm.inventory.recipes.CrucibleRecipes.CrucibleRecipe;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -41,12 +43,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Crucible (1.12.2 {@code TileEntityCrucible}) — melts items into molten material quanta using heat
+ * Crucible (1.12.2 {@code TileEntityCrucible}): melts items into molten material quanta using heat
  * pulled from an {@link IHeatSource} directly below (diffusion 0.25 of the delta), runs the selected
  * alloying {@link CrucibleRecipe} on its <b>recipe stack</b>, collects everything else in the <b>waste
  * stack</b>, and pours both out via a downward raytrace ({@link CrucibleUtil}): waste out the back,
  * recipe output out the front. Slots 1–9 are the 3×3 input grid (limit 1/slot; slot 0 is unused, as in
- * the original); thrown items landing in the basin are vacuumed in. Constants verbatim; the
+ * the original); thrown items landing in the basin are vacuumed in. Constants as written; the
  * {@code IConfigurableMachine} JSON config is deferred, and the modern (non-legacy) crucible rules are
  * hardcoded. Each non-empty pour stack adds 1.7's {@code SOOT_PER_SECOND / 20} soot every tick.
  */
@@ -69,7 +71,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
 
     // Pour-stream visuals, synced to the client for the renderer (-1 colour = no stream). Each stream
     // has a server-only decay timer (the old ParticleFoundry lived 20 ticks): a successful pour refreshes
-    // it, and the stream stays shown until it lapses — so the intermittent per-tick pours (the channel
+    // it, and the stream stays shown until it lapses, so the intermittent per-tick pours (the channel
     // only accepts once every few ticks) read as one continuous stream instead of flickering.
     public int wastePourColor = -1;
     public float wastePourLen;
@@ -134,7 +136,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
                             pos.getX() + 0.5, pos.getY() + 0.5 + poolLevel, pos.getZ() + 0.5).inflate(1, 0, 1));
             for (LivingEntity entity : living) {
                 entity.hurt(level.damageSources().lava(), 5F);
-                dev.golem.core.world.Effects.ignite(entity, 5);
+                Effects.ignite(entity, 5);
             }
         }
 
@@ -437,7 +439,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         int recipeInputRequired = getQuantaFromType(recipe.input, stack.material);
         int matMaximum = recipeInputRequired * recipeZCapacity / recipeContent;
 
-        // (1.12.2 verbatim, including its quirks)
+        // (1.12.2 as written, including its quirks)
         if (recipeInputRequired + stack.amount <= matMaximum) {
             this.addToStack(this.recipeStack, stack.copy());
             return null;
@@ -459,7 +461,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
 
     @Override
     public boolean hasPermission(Player player) {
-        return player.containerMenu instanceof com.hbm.inventory.container.ContainerCrucible menu
+        return player.containerMenu instanceof ContainerCrucible menu
                 && menu.getCrucible() == this && menu.stillValid(player);
     }
 
@@ -484,7 +486,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         stacks.addAll(recipeStack);
         stacks.addAll(wasteStack);
         for (Mats.MaterialStack stack : stacks) {
-            com.hbm.items.machine.ItemScraps.spawnMats(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+            ItemScraps.spawnMats(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
                     new Mats.MaterialStack(stack.material, stack.amount));
         }
         recipeStack.clear();
@@ -564,7 +566,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         super.saveData(output);
         output.putString("recipe", this.recipe);
 
-        // 1.7 kept (material id, amount) int pairs; materials are saved by name here (History section 19ej-ids)
+        // 1.7 kept (material id, amount) int pairs; materials are saved by name here
         Mats.writeStacks(output, "rec", recipeStack);
         Mats.writeStacks(output, "was", wasteStack);
         output.putInt("progress", progress);

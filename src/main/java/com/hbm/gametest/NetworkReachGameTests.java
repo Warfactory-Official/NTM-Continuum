@@ -24,12 +24,12 @@ import java.util.List;
 /**
  * Every machine on a network is findable by the conductor laid against it.
  *
- * <p>This is the test the move off UNINOS made necessary. A machine used to announce itself to whatever
- * net was next to it, so one the net could not have found still worked. Discovery is a pull now: a
- * conductor probes the cell on the other side of its face and asks what owns it. A single-block machine
- * owns its own cell and answers for itself, but a multiblock's ports are cells with no block entity at
- * all, and the only thing that can speak for them is the block. A machine that fails this does not throw
- * and does not log — it simply never runs again, which is why a count of them is worth a test.
+ * <p>1.7's UNINOS had a machine announce itself to whatever net was next to it, so one the net could not
+ * have found still worked. Here discovery is a pull: a conductor probes the cell on the other side of its
+ * face and asks what owns it. A single-block machine owns its own cell and answers for itself, but a
+ * multiblock's ports are cells with no block entity, and only the block can speak for them. A machine
+ * that fails this does not throw and does not log; it is never reached, which is why a count of them is
+ * worth a test.
  *
  * <p>A folded multiblock's cells resolve through the server's core index, and a conductor touching one
  * reaches nothing without the block's own answer.
@@ -90,13 +90,11 @@ public final class NetworkReachGameTests {
     }
 
     /**
-     * A machine with no port cells at all needs nothing to speak for them. There is one, and it is one
-     * on purpose: the creative klystron takes no power and no air, so its {@code formStructure} marks no
-     * cells as ports and the question this test asks does not apply to it. It inherits the real
-     * klystron's interfaces all the same, which is why it has to be named here rather than detected.
+     * A machine with no port cells needs nothing to speak for them. The one exception is the creative
+     * klystron: it takes no power and no air, so its {@code formStructure} marks no cells as ports. It
+     * inherits the real klystron's interfaces all the same, so it is named here rather than detected.
      *
-     * <p>A second entry should be argued for, not added. "It has no ports" has to mean the block marks
-     * none, not that nobody has tried to plug into it yet.
+     * <p>"It has no ports" has to mean the block marks none, not that nobody has tried to plug into it yet.
      */
     private static boolean portless(Block block) {
         return block == ModMachineBlocks.fusion_klystron_creative.get();

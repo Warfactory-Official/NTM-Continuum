@@ -1,5 +1,6 @@
 package com.hbm.tileentity.network;
 
+import dev.golem.core.world.Compat;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
@@ -7,7 +8,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.module.ModulePatternMatcher;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.ItemStack;
@@ -99,7 +100,7 @@ public final class RequestNetwork {
     }
 
     /**
-     * 1.7: bidirectional, because 1.7's own ray trace answered differently from either end. 26.2's
+     * 1.7: bidirectional, because 1.7's own ray trace answered differently from either end. 26.1's
      * {@link Level#clip} is not that function and is asked once.
      */
     public static boolean hasPath(ServerLevel level, BlockPos from, BlockPos to) {
@@ -107,7 +108,7 @@ public final class RequestNetwork {
         Vec3 end = Vec3.atCenterOf(to);
         if (start.distanceTo(end) > MAX_LINK_RANGE) return false;
 
-        return dev.golem.core.world.Compat.clip(level, start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE)
+        return Compat.clip(level, start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE)
                 .getType() == HitResult.Type.MISS;
     }
 

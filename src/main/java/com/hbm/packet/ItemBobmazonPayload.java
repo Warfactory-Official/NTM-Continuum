@@ -9,6 +9,7 @@ import dev.golem.core.Ids;
 import dev.golem.core.net.GolemCodec;
 import dev.golem.core.net.GolemPayload;
 import dev.golem.core.world.Compat;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -76,8 +77,8 @@ public record ItemBobmazonPayload(int offer) implements GolemPayload {
 
     private static boolean isCap(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        String path = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
-        String namespace = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace();
+        String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
+        String namespace = BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace();
         if (!Constants.MOD_ID.equals(namespace)) return false;
         for (String cap : CAPS) if (cap.equals(path)) return true;
         return false;

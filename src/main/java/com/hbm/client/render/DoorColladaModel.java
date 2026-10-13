@@ -25,11 +25,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Runtime for a converted Collada scene and its exact local transform tracks — the transition seal's
+ * Runtime for a converted Collada scene and its exact local transform tracks: the transition seal's
  * {@code seal.dae}, converted to {@code seal.obj} + {@code seal_animation.json} the same way the
- * jetpack glider was ({@code com.hbm.client.jetpack.JetpackColladaModel}, of which this is the
- * door-owned copy with the resources as parameters). The old {@code AnimatedModel} interpolated a
- * decomposed transform per node between the two keyframes around the playhead; so does this.
+ * jetpack glider ({@code com.hbm.client.jetpack.JetpackColladaModel}, of which this is the door-owned copy with the
+ * resources as parameters). Like 1.7's {@code AnimatedModel}, it interpolates a decomposed transform per node
+ * between the two keyframes around the playhead.
  */
 public final class DoorColladaModel {
 
@@ -65,9 +65,9 @@ public final class DoorColladaModel {
     /**
      * Turns one scene node into a part; a node with no geometry becomes a joint.
      *
-     * <p>A node's track is resolved here rather than per frame, and an animated one is given the scratch
-     * its blend writes into: this channel runs once per node on every frame the glider is on screen, and
-     * a blend that allocates its own vectors, quaternion and matrix is a hundred objects a frame.
+     * <p>A node's track is resolved here, not per frame, and an animated one gets the scratch its blend writes
+     * into: the blend runs once per node every frame, and allocating its own vectors, quaternion and matrix would
+     * be a hundred objects a frame.
      */
     private void declare(Node node, Gem.Part<Pose> parent, Gem.Model<Pose> declaration) {
         Gem.Part<Pose> part;

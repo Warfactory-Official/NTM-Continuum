@@ -8,11 +8,13 @@ import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyMachine;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
@@ -26,13 +28,13 @@ import java.util.function.Function;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Animated renderer for the assembly machine — the worked example of porting a 1.12.2 OBJ TESR to the
+ * Animated renderer for the assembly machine, the worked example of porting a 1.12.2 OBJ TESR to the
  * 26.1 render-state pipeline. It replays the original renderer's transforms: a base + (conditional)
  * frame, a spinning ring, and under that ring two three-joint robotic arms (lower/upper arm, head,
  * striker). Animation state lives on the {@link TileEntityMachineAssemblyMachine} (advanced by its
  * client ticker); here it is read and interpolated by partial-ticks.
  *
- * <p>Each part is a separate {@code submitCustomGeometry} call — that snapshots the current pose, so
+ * <p>Each part is a separate {@code submitCustomGeometry} call, which snapshots the current pose, so
  * the accumulated joint transforms apply per part.
  */
 public class AssemblyMachineRenderer extends GemBER<TileEntityMachineAssemblyMachine, AssemblyRenderState> {
@@ -41,13 +43,13 @@ public class AssemblyMachineRenderer extends GemBER<TileEntityMachineAssemblyMac
     private static final int FRAME_HEIGHT = 3;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/assembly_machine.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/assembly_machine.obj"));
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/assembly_machine.png");
 
     /**
      * The ring carries both arms, and each arm is a chain of three hinges with a striker sliding on the
-     * end — upstream walks one pose stack down it without pushing, which is the same thing nested.
+     * end. Upstream walks one pose stack down it without pushing, which is the same thing nested.
      * The second arm is the first mirrored across Z, with its rotations negated.
      */
     @Override
@@ -118,7 +120,7 @@ public class AssemblyMachineRenderer extends GemBER<TileEntityMachineAssemblyMac
         GenericRecipe recipe = AssemblyMachineRecipes.INSTANCE.getRecipe(be.assemblerModule.recipe);
         if (recipe != null && be.getLevel() != null) {
             // Measured where the machine is seen: on a moving sub-level (Create Aeronautics) its block sits far from it.
-            double distanceSq = dev.golem.core.world.SubLevels.distanceSq(be.getLevel(),
+            double distanceSq = SubLevels.distanceSq(be.getLevel(),
                     be.getBlockPos().getX() + 0.5, be.getBlockPos().getY() + 1.0, be.getBlockPos().getZ() + 0.5,
                     cameraPosition.x, cameraPosition.y, cameraPosition.z);
             if (distanceSq < 35 * 35) {

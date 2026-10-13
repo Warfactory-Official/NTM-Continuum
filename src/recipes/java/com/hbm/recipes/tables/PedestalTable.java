@@ -17,7 +17,7 @@ import java.util.Optional;
  */
 public final class PedestalTable extends RecipeSource<Row> {
 
-    // 1.7 weapon_mod_special metadata SCOPE / SILENCER / FURNITURE_BLACK, items of their own (History §19es-itemvariant)
+    // 1.7 weapon_mod_special metadata SCOPE / SILENCER / FURNITURE_BLACK, items of their own
     private static final String SCOPE = "hbm:weapon_mod_special_scope";
     private static final String SILENCER = "hbm:weapon_mod_special_silencer";
     private static final String FURNITURE_BLACK = "hbm:weapon_mod_special_furniture_black";

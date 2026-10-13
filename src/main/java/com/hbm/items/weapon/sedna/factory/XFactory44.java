@@ -9,8 +9,10 @@ import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.projectile.EntityBoxcar;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.entity.projectile.EntityTorpedo;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.sound.ModSounds;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -109,6 +111,6 @@ public final class XFactory44 {
     }
 
     /** 1.7 {@code LAMBDA_NAME_NOPIP} (gun_heavy_revolver). */
-    public static final java.util.function.Function<ItemStack, String> LAMBDA_NAME_NOPIP = stack ->
-            com.hbm.items.weapon.sedna.mods.XWeaponModManager.hasUpgrade(stack, 0, com.hbm.items.weapon.sedna.mods.XWeaponModManager.ID_SCOPE) ? XFactory12ga.mutated(stack, "_scoped") : null;
+    public static final Function<ItemStack, String> LAMBDA_NAME_NOPIP = stack ->
+            XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SCOPE) ? XFactory12ga.mutated(stack, "_scoped") : null;
 }

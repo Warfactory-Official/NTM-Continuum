@@ -9,13 +9,16 @@ import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.ModItems;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineCentrifuge;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 
 /** Focused contracts for the standard four-output centrifuge. */
 public final class CentrifugeGameTests {
@@ -49,9 +52,9 @@ public final class CentrifugeGameTests {
                 "centrifuge core block entity was not created");
         helper.assertTrue(absolute.equals(MultiblockSurface.coreOfCell(helper.getLevel(), absolute.above())),
                 "centrifuge tower dummy did not resolve to the core");
-        helper.assertTrue(block.canConnect(helper.getLevel(), absolute, com.hbm.lib.ForgeDirection.EAST),
+        helper.assertTrue(block.canConnect(helper.getLevel(), absolute, ForgeDirection.EAST),
                 "centrifuge east power port did not connect");
-        helper.assertTrue(block.canConnect(helper.getLevel(), absolute, com.hbm.lib.ForgeDirection.WEST),
+        helper.assertTrue(block.canConnect(helper.getLevel(), absolute, ForgeDirection.WEST),
                 "centrifuge west power port did not connect");
         helper.succeed();
     }
@@ -99,8 +102,8 @@ public final class CentrifugeGameTests {
 
     public static void menu(GameTestHelper helper) {
         TileEntityMachineCentrifuge centrifuge = place(helper, new BlockPos(2, 1, 2));
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
-                net.minecraft.world.level.GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper,
+                GameType.SURVIVAL);
         ContainerCentrifuge menu = new ContainerCentrifuge(0, player.getInventory(), centrifuge);
 
         helper.assertTrue(menu.slots.size() == ContainerCentrifuge.MACHINE_SLOTS + 36,

@@ -4,6 +4,7 @@ import com.hbm.api.entity.RadarEntry;
 import com.hbm.lib.Library;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CharInput;
 import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;
@@ -37,7 +38,7 @@ import java.util.Optional;
  */
 public class GUIMachineRadarNT extends CompatScreen {
 
-    public static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_radar_nt.png");
+    public static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/machine/gui_radar_nt.png");
 
     protected final TileEntityMachineRadarNT radar;
     protected int xSize = 216;

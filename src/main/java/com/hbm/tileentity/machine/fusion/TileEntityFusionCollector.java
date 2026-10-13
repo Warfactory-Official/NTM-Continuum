@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Fusion collector — a passive dish that boosts the torus's output rate rather than consuming any of it.
+ * Fusion collector: a passive dish that boosts the torus's output rate rather than consuming any of it.
  *
  * <p>It registers on the plasma network as a receiver purely so the torus can see it; it takes no share
  * ({@link #receivesFusionPower()} is false, so it is not counted among the consumers that divide the
@@ -29,7 +29,7 @@ public class TileEntityFusionCollector extends TileEntityLoadedBase implements I
         FusionLink.claim(level, te, plasmaCell(pos, dir), MachineCaps.PLASMA_IN);
     }
 
-    /** False — the collector adds to the reactor's rate without taking a share of its output. */
+    /** False: the collector adds to the reactor's rate without taking a share of its output. */
     @Override public boolean receivesFusionPower() { return false; }
 
     @Override public boolean providesCollectorBonus() { return true; }

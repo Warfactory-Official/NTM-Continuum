@@ -10,11 +10,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Compressor ({@code machine_compressor}) — 1:1 port of the 1.12.2 {@code TileEntityMachineCompressor}.
+ * Compressor ({@code machine_compressor}): 1:1 port of the 1.12.2 {@code TileEntityMachineCompressor}.
  * Adds the client-side pump/fan animation on top of {@link TileEntityMachineCompressorBase}: the fan
  * spins 15°/tick and the pump strokes down at a randomised speed / up at 0.05 per tick while running.
  *
- * <p>Deferred (§20): the boltgun stroke sound at the bottom of each pump stroke.
+ * <p>Not ported: the boltgun stroke sound at the bottom of each pump stroke.
  */
 public class TileEntityMachineCompressor extends TileEntityMachineCompressorBase {
 
@@ -43,7 +43,7 @@ public class TileEntityMachineCompressor extends TileEntityMachineCompressorBase
             if (te.pistonDir) {
                 te.piston -= te.randSpeed;
                 if (te.piston <= 0) {
-                    // old: the boltgun stroke sound plays here (§20 — sound not ported)
+                    // old: the boltgun stroke sound plays here (sound not ported)
                     te.pistonDir = !te.pistonDir;
                 }
             } else {

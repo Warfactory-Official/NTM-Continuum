@@ -8,7 +8,7 @@ import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 /**
- * {@code hbm:australium}: 1.7's hardcoded australium pocket, verbatim — {@code rand.nextInt(4)} attempts a chunk, each a
+ * {@code hbm:australium}: 1.7's hardcoded australium pocket: {@code rand.nextInt(4)} attempts a chunk, each a
  * random position ({@code y = 15 + rand(15)}) that gets a size-50 vein only inside the fixed square
  * x, z in [-450, -350]. A fixed world location is not a chance, so it stays in the feature.
  */

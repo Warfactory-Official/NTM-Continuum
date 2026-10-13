@@ -2,6 +2,7 @@ package com.hbm.blocks.machine;
 
 import com.hbm.util.ContaminationUtil;
 import dev.golem.core.data.CompatBlockEntity;
+import dev.golem.core.hook.Hook;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -84,7 +85,7 @@ public class DemonLamp extends Block implements TickingBlock {
         }
 
         /** Plain HBM registers none (H-79); NTM: Space adds the dose as neutrons too (hbm-space). */
-        public static final dev.golem.core.hook.Hook<Irradiated> IRRADIATED = dev.golem.core.hook.Hook.notifying();
+        public static final Hook<Irradiated> IRRADIATED = Hook.notifying();
 
         public TileEntityDemonLamp(BlockPos pos, BlockState state) {
             super(ModDecoBlockEntities.DEMON_LAMP.get(), pos, state);

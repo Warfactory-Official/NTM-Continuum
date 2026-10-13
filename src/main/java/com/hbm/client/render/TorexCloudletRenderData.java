@@ -3,6 +3,7 @@ package com.hbm.client.render;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.effect.EntityNukeTorex.Cloudlet;
 import dev.golem.core.render.Billboards;
+import java.util.Random;
 import net.minecraft.world.phys.Vec3;
 import java.util.Comparator;
 
@@ -79,7 +80,7 @@ public final class TorexCloudletRenderData {
         double age = Math.min(cloud.tickCount + partialTicks, 100);
         float alpha = (float) ((100D - age) / 100F);
 
-        java.util.Random rand = new java.util.Random(cloud.getId());
+        Random rand = new Random(cloud.getId());
         for (int i = 0; i < 3; i++) {
             float x = (float) (rand.nextGaussian() * 0.5F * cloud.rollerSize);
             float y = (float) (rand.nextGaussian() * 0.5F * cloud.rollerSize);

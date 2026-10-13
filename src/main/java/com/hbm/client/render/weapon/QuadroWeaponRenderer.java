@@ -7,11 +7,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
-/** Exact Gem port of original-hbm ItemRenderQuadro. */
+/** Exact Gem port of 1.7 ItemRenderQuadro. */
 public final class QuadroWeaponRenderer extends WeaponRenderer {
-    private static final net.minecraft.resources.Identifier MODEL_ID=Ids.of("hbm","models/weapons/quadro.obj");
+    private static final Identifier MODEL_ID=Ids.of("hbm","models/weapons/quadro.obj");
     private static final Surface BODY=Surface.cutout("hbm:textures/models/weapons/quadro.png");
     private static final Surface ROCKET=Surface.cutout("hbm:textures/models/weapons/quadro_rocket.png");
     private WavefrontObj model;

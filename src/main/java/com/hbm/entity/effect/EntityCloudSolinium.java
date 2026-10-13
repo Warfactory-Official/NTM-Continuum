@@ -3,6 +3,7 @@ package com.hbm.entity.effect;
 import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;
+import dev.golem.core.registry.Entities;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -48,9 +49,9 @@ public class EntityCloudSolinium extends CompatEntity {
     public void tick() {
         this.age++;
 
-        // 26.2: server-only spawn; client cannot add entities
+        // 26.1: server-only spawn; client cannot add entities
         if (level() instanceof ServerLevel server) {
-            LightningBolt bolt = dev.golem.core.registry.Entities.createTriggered(net.minecraft.world.entity.EntityType.LIGHTNING_BOLT, server);
+            LightningBolt bolt = Entities.createTriggered(net.minecraft.world.entity.EntityType.LIGHTNING_BOLT, server);
             if (bolt != null) {
                 bolt.snapTo(getX(), getY() + 200, getZ());
                 server.addFreshEntity(bolt);

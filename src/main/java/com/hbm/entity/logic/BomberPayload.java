@@ -11,8 +11,8 @@ import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
  * What an {@link EntityBomber} drops: 1.7 {@code ItemBombCaller}'s eight payloads ({@code EntityBomber.type} 0..7),
- * as a registry of records keyed by name. The bomber saves the payload's name (the numeric {@code type} it used to
- * save broke the numeric-id rule, AGENTS.md section 8), so an addon's payload ({@code "ntmspace:airliner"}) loads
+ * as a registry of records keyed by name. The bomber saves the payload's name (a numeric {@code type} would break the
+ * numeric-id rule, AGENTS.md section 8), so an addon's payload ({@code "ntmspace:airliner"}) loads
  * back as itself.
  *
  * <p>A payload is the bomber's factory (the 1.7 {@code statFac*}: run timing and airframe style) and its drop, the
@@ -36,7 +36,7 @@ public record BomberPayload(String name, Factory factory, Drop drop) {
 
     public static final NamedRegistry<BomberPayload> REGISTRY = new NamedRegistry<>("bomber payload", BomberPayload::name);
 
-    // 1.7 type 0..7, statFac* values verbatim
+    // 1.7 type 0..7. The statFac* values are 1.7's.
     public static final BomberPayload CARPET = register("carpet",
             (level, x, y, z) -> EntityBomber.create(level, x, y, z, 50, 100, 2, "carpet"),
             bomber -> bomber.dropBomblet(EntityBombletZeta.HE, true));

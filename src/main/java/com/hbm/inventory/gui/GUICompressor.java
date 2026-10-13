@@ -1,8 +1,11 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerCompressor;
 import com.hbm.tileentity.machine.TileEntityMachineCompressorBase;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -10,14 +13,14 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
- * Screen for the compressor — 1.7.10 {@code GUICompressor} ({@code processing/gui_compressor.png}, 176×204 on a
+ * Screen for the compressor: 1.7.10 {@code GUICompressor} ({@code processing/gui_compressor.png}, 176×204 on a
  * 256×256 texture). Tanks at x=17/107 (bottom y=70); power bar x=152; progress bar (42,26) 55 wide ×17;
- * the 5-way compression selector at (43 + j·11, 46) 8×14 — its highlight blits from (193,18).
+ * the 5-way compression selector at (43 + j·11, 46) 8×14, and its highlight blits from (193,18).
  * The 1.7 title is drawn centred on <b>x=70</b> (not the panel centre) at y=6 in 0xC7C1A3.
  */
-public class GUICompressor extends dev.golem.core.gui.CompatContainerScreen<ContainerCompressor> {
+public class GUICompressor extends CompatContainerScreen<ContainerCompressor> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_compressor.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_compressor.png");
 
     public GUICompressor(ContainerCompressor menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 204);
@@ -81,11 +84,11 @@ public class GUICompressor extends dev.golem.core.gui.CompatContainerScreen<Cont
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         Minecraft mc = Minecraft.getInstance();
         double mx = event.x(), my = event.y();
 
-        // 1.7 bounds verbatim: x [43+j*11, 43+8+j*11), y (46, 46+14].
+        // 1.7 bounds: x [43+j*11, 43+8+j*11), y (46, 46+14].
         for (int j = 0; j < 5; j++) {
             if (mc.gameMode != null && GuiUtil.hover(mx, my, this.leftPos + 43 + j * 11, this.topPos + 46, 8, 14)) {
                 GuiUtil.playClickSound();

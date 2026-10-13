@@ -1,5 +1,6 @@
 package com.hbm.client.particle;
 
+import dev.golem.core.Ids;
 import java.util.Random;
 
 import dev.golem.core.render.CompatParticle;
@@ -20,7 +21,7 @@ import net.minecraft.resources.Identifier;
  */
 public final class ParticleRadiationFog extends CompatParticle {
 
-    private static final Identifier FOG = dev.golem.core.Ids.of("hbm", "fog");
+    private static final Identifier FOG = Ids.of("hbm", "fog");
     private static final float PARTICLE_SCALE = 7.5F;
 
     public ParticleRadiationFog(ClientLevel level, double x, double y, double z) {

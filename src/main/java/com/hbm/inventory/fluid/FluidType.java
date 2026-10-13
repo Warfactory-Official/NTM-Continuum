@@ -1,6 +1,7 @@
 package com.hbm.inventory.fluid;
 
 import com.hbm.Constants;
+import com.hbm.api.fluid.TooltipTrait;
 import com.hbm.inventory.fluid.trait.FT_Coolable;
 import com.hbm.inventory.fluid.trait.FT_Corrosive;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
@@ -12,6 +13,12 @@ import com.hbm.inventory.fluid.trait.FT_Toxin;
 import com.hbm.inventory.fluid.trait.FT_VentRadiation;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 import com.hbm.util.BobMathUtil;
+import dev.golem.core.Ids;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -20,12 +27,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import net.minecraft.world.level.material.Fluid;
 
 /**
  * A single fluid kind in HBM's own fluid system: the data object (traits, temperature, colour) every HBM system
- * works in. Each one is also registered as a vanilla {@code Fluid} ({@link #getFluid()}, History section
- * 19ek-fluids) so other mods can name it; that registry entry carries no behaviour of its own. Fluid networks are
- * segregated by type — water pipes never mix with oil pipes — which the fluid graph gets from
+ * works in. Each one is also registered as a vanilla {@code Fluid} ({@link #getFluid()}) so other mods can
+ * name it; that registry entry carries no behaviour of its own. Fluid networks are segregated by type
+ * (water pipes never mix with oil pipes), which the fluid graph gets from
  * {@link com.hbm.api.fluidmk2.FluidGraphProvider#dataCompatible} rather than from a nodespace per type.
  *
  * <p>The loader fluid capabilities (other mods moving HBM fluids) are {@link com.hbm.capability.ForeignFluids};
@@ -91,10 +99,10 @@ public class FluidType {
         this.registryName = namespace + ":" + this.key;
         this.unlocalized = namespace + "fluid." + this.key;
         this.fallbackName = titleCase(name);
-        this.texture = dev.golem.core.Ids.of(namespace, "textures/gui/fluids/" + this.key + ".png");
+        this.texture = Ids.of(namespace, "textures/gui/fluids/" + this.key + ".png");
         // in the fluid's own namespace like the texture: an addon fluid named like one of HBM's ("xenon") must not
         // share HBM's droplet sprite. com.hbm.client.FluidSprites#install(String) mints it.
-        this.icon = dev.golem.core.Ids.of(namespace, ICON_ART + "_" + this.key);
+        this.icon = Ids.of(namespace, ICON_ART + "_" + this.key);
         this.id = Fluids.registerSelf(this);
     }
 
@@ -155,13 +163,12 @@ public class FluidType {
     public String getName() { return this.stringId; }
 
     /**
-     * The fluid's name as the player should see it — the localised {@code hbmfluid.*} entry.
+     * The fluid's name as the player should see it: the localised {@code hbmfluid.*} entry.
      *
      * <p>Every display of a fluid name must come through here. Title-casing the internal id is
-     * <b>not</b> a substitute: it agrees with the real name for only 39 of the 156 fluids, and
-     * silently disagrees for the rest ({@code HEAVYOIL} is "Heavy Oil", {@code OIL} is "Crude Oil",
-     * {@code SMEAR} is "Industrial Oil", {@code WATZ} is "Poisonous Mud"). The title-cased id survives
-     * only as the fallback for a fluid that has no lang entry yet.
+     * <b>not</b> a substitute: it silently disagrees for many fluids ({@code OIL} is "Crude Oil",
+     * {@code SMEAR} is "Industrial Oil", {@code WATZ} is "Poisonous Mud"). The title-cased id is only
+     * the fallback for a fluid that has no lang entry.
      */
     public Component getDisplayName() {
         return Component.translatableWithFallback(this.unlocalized, this.fallbackName);
@@ -174,10 +181,10 @@ public class FluidType {
 
     /**
      * The vanilla {@code Fluid} this type is registered as, so other mods' tanks, pipes and recipe viewers can name
-     * it (History section 19ek-fluids): {@code hbm:<key>}, or vanilla water/lava/empty for WATER/LAVA/NONE. The two
+     * it: {@code hbm:<key>}, or vanilla water/lava/empty for WATER/LAVA/NONE. The two
      * are 1:1; {@link Fluids#fromVanilla} is the inverse. Valid once the registries are flushed.
      */
-    public net.minecraft.world.level.material.Fluid getFluid() {
+    public Fluid getFluid() {
         return Fluids.toVanilla(this);
     }
 
@@ -186,7 +193,7 @@ public class FluidType {
         return getDisplayName().getString();
     }
 
-    /** {@code HEAVY_OIL → "Heavy Oil"}. The fallback only; see {@link #getDisplayName()}. */
+    /** {@code HEAVY_OIL} becomes "Heavy Oil". The fallback only; see {@link #getDisplayName()}. */
     private static String titleCase(String id) {
         StringBuilder sb = new StringBuilder();
         for (String part : id.toLowerCase(Locale.US).split("_")) {
@@ -209,7 +216,7 @@ public class FluidType {
      * The droplet sprite for this fluid: the grayscale {@code fluid_icon} art recoloured onto
      * {@link #getColor()}, stitched into the item atlas by {@link com.hbm.client.FluidSprites}.
      *
-     * <p>A sprite id, not a texture path — there is no file behind it. Draw it with
+     * <p>A sprite id, not a texture path: there is no file behind it. Draw it with
      * {@link com.hbm.client.FluidSprites#draw}, which is what a screen or a JEI category wants when it
      * has somewhere to put a droplet but no item slot to put it in.
      */
@@ -227,18 +234,18 @@ public class FluidType {
     }
 
     /** Every trait this fluid has, in no particular order. */
-    public java.util.Collection<Object> traits() { return this.traits.values(); }
+    public Collection<Object> traits() { return this.traits.values(); }
 
     /**
      * {@link FluidProperties}: replaces colour, GUI tint, temperature, hazard diamond and every trait with a
      * {@code fluid_property} file's values (a datapack load replaces, it does not merge; patches are merged into the
      * file's values before this is called).
      */
-    synchronized void applyProperties(int color, int tint, int temperature, FluidHazard hazard, java.util.List<Object> traits) {
+    synchronized void applyProperties(int color, int tint, int temperature, FluidHazard hazard, List<Object> traits) {
         this.color = color;
         this.guiTint = tint;
         this.temperature = temperature;
-        this.hazard = java.util.Objects.requireNonNull(hazard);
+        this.hazard = Objects.requireNonNull(hazard);
         Map<Class<?>, Object> next = new HashMap<>();
         for (Object trait : traits) next.put(trait.getClass(), trait);
         this.traits = Map.copyOf(next);
@@ -251,7 +258,7 @@ public class FluidType {
 
     /** A code default for a fluid without a {@code fluid_property} file (1.7's constructor arguments {@code p, f, r, symbol}). */
     public FluidType setHazard(FluidHazard hazard) {
-        this.hazard = java.util.Objects.requireNonNull(hazard);
+        this.hazard = Objects.requireNonNull(hazard);
         return this;
     }
 
@@ -263,11 +270,11 @@ public class FluidType {
      * Whether the tooltip's hidden trait lines are shown: 1.7 polls physical left Shift. Common code cannot
      * reach the keyboard, so the client installs the real poll at startup; a server-side call sees false.
      */
-    private static volatile java.util.function.BooleanSupplier shiftHeld = () -> false;
+    private static volatile BooleanSupplier shiftHeld = () -> false;
 
     /** Installs the client's physical-Shift poll; called once from client registration. */
-    public static void setShiftHeldPoll(java.util.function.BooleanSupplier poll) {
-        shiftHeld = java.util.Objects.requireNonNull(poll);
+    public static void setShiftHeldPoll(BooleanSupplier poll) {
+        shiftHeld = Objects.requireNonNull(poll);
     }
 
     /** Adds the fluid facts currently represented by the port's fluid model to a tooltip. */
@@ -284,7 +291,7 @@ public class FluidType {
      * and Shift is up. The order is the registry's, never the order a fluid's traits were added in.
      */
     public void addInfo(List<Component> info, boolean shiftHeld) {
-        List<Component> hidden = new java.util.ArrayList<>();
+        List<Component> hidden = new ArrayList<>();
 
         if (temperature != ROOM_TEMPERATURE) {
             if (temperature < 0) info.add(Component.literal(temperature + "\u00b0C").withStyle(ChatFormatting.BLUE));
@@ -363,7 +370,7 @@ public class FluidType {
         // Traits another mod added to the format (FluidProperties.registerTrait/registerFlag), after HBM's, in their
         // registration order: 1.7 had one traitList that hbm-space appended to, so its lines follow the same rule.
         for (Class<?> type : FluidProperties.addonTraitTypes()) {
-            if (getTrait(type) instanceof com.hbm.api.fluid.TooltipTrait trait) {
+            if (getTrait(type) instanceof TooltipTrait trait) {
                 trait.addInfo(info);
                 hidden(info, hidden, shiftHeld, trait::addInfoHidden);
             }
@@ -379,7 +386,7 @@ public class FluidType {
 
     /** 1.7's per-trait {@code if(shiftHeld) trait.addInfoHidden(info); trait.addInfoHidden(hidden);}. */
     private static void hidden(List<Component> info, List<Component> hidden, boolean shiftHeld,
-            java.util.function.Consumer<List<Component>> adder) {
+            Consumer<List<Component>> adder) {
         if (shiftHeld) adder.accept(info);
         adder.accept(hidden);
     }

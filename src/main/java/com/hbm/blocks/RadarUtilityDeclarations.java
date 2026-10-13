@@ -56,7 +56,7 @@ public final class RadarUtilityDeclarations {
             item("machine_radar_large", model);
         }
         // RenderRadarScreen item: inventory T(0,-3,0) S(5.5); T(0,0,-0.5) renderAll. rawLegacyTransform does not
-        // re-centre on the OBJ bounds, so the half-block shift is restated (icon-P1 2026-10-01).
+        // re-centre on the OBJ bounds, so the half-block shift is restated.
         {
             JsonObject model = machine("hbm:models/machines/radar_screen.obj", "hbm:textures/models/machines/radar_screen.png");
             common(model, 1.0, 0.0, -3, 5.5);

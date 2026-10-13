@@ -17,9 +17,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Fracking Tower block — 1:1 port of the 1.12.2 {@code MachineFrackingTower}: a tall derrick built on a
+ * Fracking Tower block, 1:1 port of the 1.12.2 {@code MachineFrackingTower}: a tall derrick built on a
  * 1×1 core column (dims {@code {3,0,0,0,0,0}}, offset 0), plus a y+2 platform, four corner legs, two
- * downward drill shafts and a y+15 crown (the old custom checkRequirement/fillSpace, copied verbatim).
+ * downward drill shafts and a y+15 crown (the 1.12.2 custom checkRequirement/fillSpace, ported unchanged).
  */
 public class MachineFrackingTower extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 

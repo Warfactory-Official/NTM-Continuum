@@ -20,13 +20,13 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Range Designator — 1.12.2's {@code ItemDesignatorRange}. Same job as the plain
+ * Range Designator, ported from 1.12.2's {@code ItemDesignatorRange}. Same job as the plain
  * {@link ItemDesignator}, but it targets whatever the player is <em>looking at</em> up to 300 blocks
  * away instead of what they can reach, which is how a target is picked from a hilltop.
  */
 public class ItemDesignatorRange extends CompatItem implements IDesignatorItem {
 
-    /** Upstream's reach. Anything past the loaded chunks simply misses. */
+    /** Upstream's reach. Anything past the loaded chunks misses. */
     private static final double RANGE = 300D;
 
     public ItemDesignatorRange(Properties properties) {

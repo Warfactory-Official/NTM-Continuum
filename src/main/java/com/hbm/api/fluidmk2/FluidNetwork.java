@@ -30,15 +30,15 @@ import java.util.List;
 /**
  * One round of fluid over the node graph: find the machines at the net's edge faces, serve them by
  * {@linkplain FluidBus the same law the network always used}, and charge the round back to whoever
- * funded it. The energy side's {@code PowerNetwork} is the sibling to read this against — the two
- * differ only where fluid genuinely does.
+ * funded it. The energy side's {@code PowerNetwork} is the sibling to read this against; the two
+ * differ only where fluid does.
  *
  * <p>They differ in two places. A net is keyed to <b>one fluid</b>: UNINOS gave every
- * {@link FluidType} a nodespace of its own, and the graph gets the same partition out of
- * {@link FluidGraphProvider#dataCompatible} instead, so one save holds the whole level's plumbing and
- * a steam duct still never joins an oil duct. And a round is run <b>per pressure band</b>, 0 through
- * {@link IFluidUserMK2#HIGHEST_VALID_PRESSURE}, because a machine advertises a range of them and a
- * provider at one pressure cannot serve a receiver at another.
+ * {@link FluidType} a nodespace of its own, and the graph gets the same partition from
+ * {@link FluidGraphProvider#dataCompatible}, so one save holds the whole level's plumbing and
+ * a steam duct never joins an oil duct. And a round is run <b>per pressure band</b>, 0 through
+ * {@link IFluidUserMK2#HIGHEST_VALID_PRESSURE}, because a provider at one pressure cannot serve a
+ * receiver at another.
  *
  * <p>What does not differ is discovery. It is pull: a duct probes the faces of its own cells and asks what
  * is on the other side. Which role a machine found that way plays is 1.7's per-port answer: its own
@@ -143,13 +143,6 @@ public final class FluidNetwork {
     }
 
     /**
-     * The machine a face looks at, through the same three routes the energy net uses: the endpoint
-     * registry answers without touching the chunk, a block entity sitting on the cell answers for
-     * itself, and a folded footprint cell answers through the block, which is the only one of the three
-     * that knows where the core is. A machine's own {@code canConnect} gates both the side and the
-     * fluid, so a duct carrying the wrong fluid is refused here rather than at delivery.
-     */
-    /**
      * Is the chunk holding this face already resident? See {@code PowerNetwork.resident}: probing runs from
      * the server tick, and the block lookups below load a chunk synchronously when it is absent.
      */
@@ -157,6 +150,13 @@ public final class FluidNetwork {
         return level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null;
     }
 
+    /**
+     * The machine a face looks at, through the same three routes the energy net uses: the endpoint
+     * registry answers without touching the chunk, a block entity sitting on the cell answers for
+     * itself, and a folded footprint cell answers through the block, which alone knows where the core is.
+     * A machine's own {@code canConnect} gates both the side and the fluid, so a duct carrying the wrong
+     * fluid is refused here rather than at delivery.
+     */
     private static @Nullable BlockEntity userAt(ServerLevel level, BlockPos pos, int faceOrdinal, FluidType type) {
         return userAtFace(level, pos, faceOrdinal == EdgeFaces.SELF ? null : DIRS[faceOrdinal].getOpposite(), type);
     }

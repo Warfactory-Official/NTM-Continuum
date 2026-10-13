@@ -11,7 +11,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * 1.7 {@code BlockSpeedy} (asphalt): a player walking on it has their horizontal motion multiplied by
- * {@code speed} every tick, client side only — the old {@code IStepTickReceiver.onPlayerStep}. The
+ * {@code speed} every tick, client side only, the old {@code IStepTickReceiver.onPlayerStep}. The
  * stair and slab forms ({@code BlockSpeedyStairs}, the asphalt entry of the concrete multi-slab) are
  * nested here.
  */

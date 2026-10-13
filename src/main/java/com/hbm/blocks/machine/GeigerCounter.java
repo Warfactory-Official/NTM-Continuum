@@ -4,6 +4,8 @@ import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityGeiger;
 import com.hbm.util.ContaminationUtil;
+import dev.golem.core.registry.TickingBlock;
+import dev.golem.core.world.CompatBlock;
 import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
@@ -41,7 +43,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Like 1.7 (render type -1, a TESR), the block has no model of its own: the OBJ is drawn by
  * {@code HbmBlockEntityRenderers}' {@code BlockObjRenderer}. The shapes are 1.7's metadata bounds.
  */
-public class GeigerCounter extends dev.golem.core.world.CompatBlock implements dev.golem.core.registry.TickingBlock {
+public class GeigerCounter extends CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 

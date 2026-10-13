@@ -4,14 +4,14 @@ package com.hbm.entity.logic;
  * Contract for entity-backed chunk loaders, carried over from 1.12.2 along with its hard-won rules.
  *
  * <p>1. {@link #initChunkLoading()} is a bind/refresh hook, not the place to decide whether the entity
- * should chunkload at all. In 1.12.2 it took the {@code ForgeChunkManager.Ticket} — fresh or restored;
- * here there is no handback, so it takes nothing and simply obtains a
+ * should chunkload at all. In 1.12.2 it took the {@code ForgeChunkManager.Ticket}, fresh or restored;
+ * here there is no handback, so it takes nothing and obtains a
  * {@link com.hbm.world.chunk.ChunkLoaderTicket}.
  *
  * <p>2. Do <b>not</b> request a ticket while reading NBT. That old 1.7 pattern ran during
  * deserialization too, so a persisted entity could request a ticket before the restored one arrived.
  *
- * <p>3. Request lazily, once the entity is actually live on the server — from the first server-side
+ * <p>3. Request lazily, once the entity is actually live on the server, from the first server-side
  * tick, or from an explicit opt-in. An entity read from NBT gives the restore path a grace period
  * first (see {@link EntityChunkLoader}).
  *

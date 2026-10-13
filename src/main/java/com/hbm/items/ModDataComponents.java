@@ -1,10 +1,24 @@
 package com.hbm.items;
 
 import com.hbm.Constants;
+import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.machine.ItemRBMKPellet;
 import com.hbm.items.machine.RBMKFuelData;
+import com.hbm.items.tool.ItemModMinecart;
+import com.hbm.items.weapon.grenade.GrenadeData;
+import com.hbm.util.SavedIds;
 import com.mojang.serialization.Codec;
 import dev.golem.core.data.GolemComponent;
+import dev.golem.core.data.ItemContents;
 import dev.golem.core.data.ModelData;
+import dev.golem.core.world.ItemStacks;
+import java.util.List;
+import java.util.Locale;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 
 import java.math.BigInteger;
@@ -15,11 +29,11 @@ public final class ModDataComponents {
     private ModDataComponents() {}
 
     /**
-     * The fluid a container/identifier/icon item carries, saved as its registry name ({@code "hbm:oil"}, {@code "minecraft:water"}). Replaced
-     * the int {@code hbm:fluid_id} on 2026-10-03: numeric ids are never persisted (History section 19ej-ids).
+     * The fluid a container/identifier/icon item carries, saved as its registry name ({@code "hbm:oil"},
+     * {@code "minecraft:water"}), never as an int id: numeric ids are never persisted.
      */
-    public static final GolemComponent<com.hbm.inventory.fluid.FluidType> FLUID =
-            GolemComponent.of(Constants.MOD_ID, "fluid", () -> com.hbm.inventory.fluid.Fluids.CODEC);
+    public static final GolemComponent<FluidType> FLUID =
+            GolemComponent.of(Constants.MOD_ID, "fluid", () -> Fluids.CODEC);
     public static final GolemComponent<Integer> FLUID_AMOUNT = GolemComponent.integer(Constants.MOD_ID, "fluid_amount");
     public static final GolemComponent<Integer> FLUID_PRESSURE = GolemComponent.integer(Constants.MOD_ID, "fluid_pressure");
     /** Filled giant-tank block state carried when a giant tank is broken and picked up. */
@@ -35,28 +49,31 @@ public final class ModDataComponents {
     public static final GolemComponent<Integer> ZIRNOX_LIFE = GolemComponent.integer(Constants.MOD_ID, "zirnox_life");
     public static final GolemComponent<RBMKFuelData> RBMK_FUEL = GolemComponent.of(Constants.MOD_ID, "rbmk_fuel", RBMKFuelData.CODEC);
     /** The universal grenade's four 1.7 NBT selectors (shell, filling, fuze, extra). */
-    public static final GolemComponent<com.hbm.items.weapon.grenade.GrenadeData> GRENADE =
-            GolemComponent.of(Constants.MOD_ID, "grenade", com.hbm.items.weapon.grenade.GrenadeData.CODEC);
+    public static final GolemComponent<GrenadeData> GRENADE =
+            GolemComponent.of(Constants.MOD_ID, "grenade", GrenadeData.CODEC);
+    /** The old mirror-tool {@code posX}, {@code posY}, and {@code posZ} tag, as one typed position. */
+    public static final GolemComponent<BlockPos> MIRROR_TARGET =
+            GolemComponent.of(Constants.MOD_ID, "mirror_target", BlockPos.CODEC);
     /** 1.7 ItemModMinecart "base" - the chassis a cart item was crafted on. */
-    public static final GolemComponent<com.hbm.items.tool.ItemModMinecart.EnumCartBase> CART_BASE =
-            GolemComponent.of(Constants.MOD_ID, "cart_base", com.hbm.items.tool.ItemModMinecart.EnumCartBase.CODEC);
+    public static final GolemComponent<ItemModMinecart.EnumCartBase> CART_BASE =
+            GolemComponent.of(Constants.MOD_ID, "cart_base", ItemModMinecart.EnumCartBase.CODEC);
     /** 1.7 satellite chip "freq" NBT (ISatChip); ntm-next keeps it in its persistent-data compound. */
-    public static final GolemComponent<net.minecraft.nbt.CompoundTag> PERSISTENT_DATA =
+    public static final GolemComponent<CompoundTag> PERSISTENT_DATA =
             GolemComponent.compound(Constants.MOD_ID, "persistent_data");
-    // The typed states that replaced hbm:item_variant on the items that keep one id (History §19es-itemvariant),
-    // named as ntm-next names them. None of them is an id.
+    // Typed states for the items that keep one id where 1.7 used metadata, named as ntm-next names them.
+    // None of them is an id.
     /** A stirling engine still carrying its gear (1.7 metadata 0); absent means true. ntm-next HAS_COG. */
     public static final GolemComponent<Boolean> HAS_COG = GolemComponent.of(Constants.MOD_ID, "has_cog", Codec.BOOL);
     /** A sawmill still carrying its blade (1.7 metadata 0); absent means true. ntm-next HAS_BLADE. */
     public static final GolemComponent<Boolean> HAS_BLADE = GolemComponent.of(Constants.MOD_ID, "has_blade", Codec.BOOL);
     /** hbm-space: the wrong water table a table-bound infinite water item found (ItemInfiniteFluid), saved by name. */
-    public static final GolemComponent<com.hbm.inventory.fluid.FluidType> WRONG_WATER_TABLE =
-            GolemComponent.of(Constants.MOD_ID, "wrong_water_table", () -> com.hbm.inventory.fluid.Fluids.CODEC);
+    public static final GolemComponent<FluidType> WRONG_WATER_TABLE =
+            GolemComponent.of(Constants.MOD_ID, "wrong_water_table", () -> Fluids.CODEC);
     /** 1.7 ItemToolBox metadata 1: the box is open. ntm-next TOOLBOX_OPEN. */
     public static final GolemComponent<Boolean> TOOLBOX_OPEN = GolemComponent.of(Constants.MOD_ID, "toolbox_open", Codec.BOOL);
     /** An RBMK recycling pellet's depletion stage and xenon poisoning (1.7 metadata 0..9). ntm-next RBMK_PELLET. */
-    public static final GolemComponent<com.hbm.items.machine.ItemRBMKPellet.Stage> RBMK_PELLET = GolemComponent.of(
-            Constants.MOD_ID, "rbmk_pellet", () -> com.hbm.items.machine.ItemRBMKPellet.Stage.CODEC);
+    public static final GolemComponent<ItemRBMKPellet.Stage> RBMK_PELLET = GolemComponent.of(
+            Constants.MOD_ID, "rbmk_pellet", () -> ItemRBMKPellet.Stage.CODEC);
     /** How many times a dusted steel ingot has been forged (1.7 metadata 0..9, a count). ntm-next FORGE_COUNT. */
     public static final GolemComponent<Integer> FORGE_COUNT = GolemComponent.integer(Constants.MOD_ID, "forge_count");
     /**
@@ -77,8 +94,8 @@ public final class ModDataComponents {
     public static final GolemComponent<Integer> SAT_FREQUENCY =
             GolemComponent.integer(Constants.MOD_ID, "sat_frequency");
     /** What a cargo artillery shell is carrying. It survives the flight and comes back off the shell. */
-    // GolemComponent.itemStack, not a raw ItemStack codec: an ItemStack has no value equality, and 26.1 refused the
-    // first set ("Data components must implement equals and hashCode"), so no cargo shell could be loaded (§19ej-1b)
+    // GolemComponent.itemStack, not a raw ItemStack codec: an ItemStack has no value equality, and 26.1 refuses
+    // such a component ("Data components must implement equals and hashCode")
     public static final GolemComponent<ItemStack> ARTY_CARGO =
             GolemComponent.itemStack(Constants.MOD_ID, "arty_cargo");
     /** The old neutron-contamination float formerly stored directly on an item NBT tag. */
@@ -90,14 +107,14 @@ public final class ModDataComponents {
     public static final GolemComponent<String> BROKEN_ITEM = GolemComponent.string(Constants.MOD_ID, "broken_item");
     /** Internal energy carried by a dropped FEnSU machine block. */
     public static final GolemComponent<Long> FENSU_POWER = GolemComponent.longValue(Constants.MOD_ID, "fensu_power");
-    /** Dye colour carried by a dropped FEnSU machine block, by {@code DyeColor} name (never an ordinal, §19ek-small). */
-    public static final GolemComponent<String> FENSU_COLOR = GolemComponent.of(Constants.MOD_ID, "fensu_color", () -> com.hbm.util.SavedIds.NAME_CODEC);
+    /** Dye colour carried by a dropped FEnSU machine block, by {@code DyeColor} name (never an ordinal). */
+    public static final GolemComponent<String> FENSU_COLOR = GolemComponent.of(Constants.MOD_ID, "fensu_color", () -> SavedIds.NAME_CODEC);
     /** Unpowered redstone mode carried by a dropped FEnSU machine block. */
     public static final GolemComponent<Integer> FENSU_RED_LOW = GolemComponent.integer(Constants.MOD_ID, "fensu_red_low");
     /** Powered redstone mode carried by a dropped FEnSU machine block. */
     public static final GolemComponent<Integer> FENSU_RED_HIGH = GolemComponent.integer(Constants.MOD_ID, "fensu_red_high");
-    /** Network priority carried by a dropped FEnSU machine block, by enum name (never an ordinal, §19ek-small). */
-    public static final GolemComponent<String> FENSU_PRIORITY = GolemComponent.of(Constants.MOD_ID, "fensu_priority", () -> com.hbm.util.SavedIds.NAME_CODEC);
+    /** Network priority carried by a dropped FEnSU machine block, by enum name (never an ordinal). */
+    public static final GolemComponent<String> FENSU_PRIORITY = GolemComponent.of(Constants.MOD_ID, "fensu_priority", () -> SavedIds.NAME_CODEC);
     /** Arbitrary power carried by a dropped machine_battery_redd block; decimal encoding avoids a long cap. */
     public static final GolemComponent<BigInteger> BATTERY_REDD_POWER = GolemComponent.of(
             Constants.MOD_ID, "battery_redd_power", Codec.STRING.xmap(BigInteger::new, BigInteger::toString));
@@ -116,72 +133,71 @@ public final class ModDataComponents {
     /** 1.7 root NBT {@code ntmRedPill}: food laced on the anvil with a red pill (AnvilSmithingCyanideRecipe). */
     public static final GolemComponent<Boolean> NTM_RED_PILL = GolemComponent.of(Constants.MOD_ID, "ntm_red_pill", Codec.BOOL);
     /** Player names a turret biometry card protects; the 1.12.2 NBT string list. */
-    public static final GolemComponent<java.util.List<String>> TURRET_WHITELIST =
+    public static final GolemComponent<List<String>> TURRET_WHITELIST =
             GolemComponent.of(Constants.MOD_ID, "turret_whitelist", Codec.STRING.listOf());
     public static final GolemComponent<ItemStack> GAS_MASK_FILTER = GolemComponent.itemStack(Constants.MOD_ID, "gas_mask_filter");
 
     /**
-     * A designator's recorded target, X and Z (the old NBT {@code xCoord}/{@code zCoord}). Their
-     * <em>presence</em> is the "has a target" flag — upstream tested {@code hasTagCompound}, so a
-     * designator aimed at (0, 0) counts as aimed and one never used does not.
-     */
-    /**
      * The block a detonator is bound to (the old NBT {@code x}/{@code y}/{@code z} triple). Absent means
      * unbound, which the detonator reports rather than silently doing nothing.
      */
-    public static final GolemComponent<net.minecraft.core.BlockPos> DETONATOR_TARGET =
-            GolemComponent.of(Constants.MOD_ID, "detonator_target", net.minecraft.core.BlockPos.CODEC);
+    public static final GolemComponent<BlockPos> DETONATOR_TARGET =
+            GolemComponent.of(Constants.MOD_ID, "detonator_target", BlockPos.CODEC);
 
+    /**
+     * A designator's recorded target, X and Z (the old NBT {@code xCoord}/{@code zCoord}). Their
+     * <em>presence</em> is the "has a target" flag. Upstream tested {@code hasTagCompound}, so a
+     * designator aimed at (0, 0) counts as aimed and one never used does not.
+     */
     public static final GolemComponent<Integer> DESIGNATOR_X = GolemComponent.integer(Constants.MOD_ID, "designator_x");
     public static final GolemComponent<Integer> DESIGNATOR_Z = GolemComponent.integer(Constants.MOD_ID, "designator_z");
 
     /**
      * A powered armour piece's stored HE (the old NBT {@code "charge"} long).
      *
-     * <p>Kept separate from {@link #BATTERY_CHARGE} deliberately: absence means "full" here (a suit
+     * <p>Kept separate from {@link #BATTERY_CHARGE}: absence means "full" here (a suit
      * spawns charged) and "empty" there, so one component cannot serve both without a flag.
      */
     public static final GolemComponent<Long> ARMOR_CHARGE = GolemComponent.longValue(Constants.MOD_ID, "armor_charge");
 
     /** State saved on the advanced glider stack (the old {@code hbmJetpackAdvanced} compound). */
-    public static final GolemComponent<net.minecraft.nbt.CompoundTag> JETPACK_STATE =
+    public static final GolemComponent<CompoundTag> JETPACK_STATE =
             GolemComponent.compound(Constants.MOD_ID, "jetpack_state");
 
     /** Nine ordered armor-module slots, replacing the legacy {@code ntm_armor_mods.mod_slot_*} tag. */
-    public static final GolemComponent<dev.golem.core.data.ItemContents> ARMOR_MODS =
-            GolemComponent.of(Constants.MOD_ID, "armor_mods", dev.golem.core.data.ItemContents.CODEC);
+    public static final GolemComponent<ItemContents> ARMOR_MODS =
+            GolemComponent.of(Constants.MOD_ID, "armor_mods", ItemContents.CODEC);
 
     /**
-     * A gun's state-machine scratch space — timer, state, animation timer, button flags. Rewritten
+     * A gun's state-machine scratch space: timer, state, animation timer, button flags. Rewritten
      * constantly while a gun is held, and worth nothing once it is dropped.
      *
      * <p>Kept as a raw tag rather than a typed record because the keys are dynamic: every field is
      * suffixed with a config index, so an akimbo gun carries two of each. That is upstream's own layout
-     * ({@code timer_0}, {@code state_1}, …) and keeping it means the port of each accessor stayed a
-     * one-liner. See {@code ItemGunBaseNT} for the write-only-on-change guard that makes per-tick
-     * updates affordable.
+     * ({@code timer_0}, {@code state_1}, …), which keeps each accessor a one-liner. See {@code ItemGunBaseNT}
+     * for the write-only-on-change guard that makes per-tick updates affordable.
      */
-    public static final GolemComponent<net.minecraft.nbt.CompoundTag> GUN_STATE =
+    public static final GolemComponent<CompoundTag> GUN_STATE =
             GolemComponent.compound(Constants.MOD_ID, "gun_state");
 
     /** A gun's durable state: wear, fire mode, and its magazines' contents. */
-    public static final GolemComponent<net.minecraft.nbt.CompoundTag> GUN_DATA =
+    public static final GolemComponent<CompoundTag> GUN_DATA =
             GolemComponent.compound(Constants.MOD_ID, "gun_data");
     /** Fixed eight-slot contents carried by the reusable ammo bag. */
-    public static final GolemComponent<dev.golem.core.data.ItemContents> AMMO_BAG =
-            GolemComponent.of(Constants.MOD_ID, "ammo_bag", dev.golem.core.data.ItemContents.CODEC);
+    public static final GolemComponent<ItemContents> AMMO_BAG =
+            GolemComponent.of(Constants.MOD_ID, "ammo_bag", ItemContents.CODEC);
     /** Fixed fifteen-slot contents carried by the spent-casing bag. */
-    public static final GolemComponent<dev.golem.core.data.ItemContents> CASING_BAG =
-            GolemComponent.of(Constants.MOD_ID, "casing_bag", dev.golem.core.data.ItemContents.CODEC);
+    public static final GolemComponent<ItemContents> CASING_BAG =
+            GolemComponent.of(Constants.MOD_ID, "casing_bag", ItemContents.CODEC);
     /** Fractional casing progress, retained between shots until a whole casing is produced. */
-    public static final GolemComponent<net.minecraft.nbt.CompoundTag> CASING_PROGRESS =
+    public static final GolemComponent<CompoundTag> CASING_PROGRESS =
             GolemComponent.compound(Constants.MOD_ID, "casing_progress");
 
     /** The fluid {@code stack} carries; NONE when it carries none. */
-    public static com.hbm.inventory.fluid.FluidType fluid(ItemStack stack) {
-        return FLUID.getOr(stack, com.hbm.inventory.fluid.Fluids.NONE);
+    public static FluidType fluid(ItemStack stack) {
+        return FLUID.getOr(stack, Fluids.NONE);
     }
-    public static void fluid(ItemStack stack, com.hbm.inventory.fluid.FluidType value) { FLUID.set(stack, value); }
+    public static void fluid(ItemStack stack, FluidType value) { FLUID.set(stack, value); }
     public static void removeFluid(ItemStack stack) { FLUID.remove(stack); }
     public static int fluidAmount(ItemStack stack) { return FLUID_AMOUNT.getOr(stack, 0); }
     public static void fluidAmount(ItemStack stack, int value) { FLUID_AMOUNT.set(stack, value); }
@@ -205,7 +221,7 @@ public final class ModDataComponents {
     public static void wasteHot(ItemStack stack, boolean value) { FUEL_WASTE_HOT.set(stack, value); }
     public static void removeWasteHot(ItemStack stack) { FUEL_WASTE_HOT.remove(stack); }
     public static ItemStack gasMaskFilter(ItemStack stack) { return GAS_MASK_FILTER.getOr(stack, ItemStack.EMPTY).copy(); }
-    public static void gasMaskFilter(ItemStack stack, ItemStack filter) { GAS_MASK_FILTER.set(stack, dev.golem.core.world.ItemStacks.copyWithCount(filter, 1)); }
+    public static void gasMaskFilter(ItemStack stack, ItemStack filter) { GAS_MASK_FILTER.set(stack, ItemStacks.copyWithCount(filter, 1)); }
     public static void removeGasMaskFilter(ItemStack stack) { GAS_MASK_FILTER.remove(stack); }
     public static void removeCustomModelData(ItemStack stack) { ModelData.removeColor(stack); }
 
@@ -215,23 +231,23 @@ public final class ModDataComponents {
     public static void brokenItem(ItemStack stack, String value) { BROKEN_ITEM.set(stack, value); }
     public static long fensuPower(ItemStack stack) { return FENSU_POWER.getOr(stack, 0L); }
     public static void fensuPower(ItemStack stack, long value) { FENSU_POWER.set(stack, value); }
-    public static net.minecraft.world.item.DyeColor fensuColor(ItemStack stack, net.minecraft.world.item.DyeColor defaultValue) {
-        return com.hbm.util.SavedIds.byName(net.minecraft.world.item.DyeColor.class, FENSU_COLOR.getOr(stack, defaultValue.name()), defaultValue);
+    public static DyeColor fensuColor(ItemStack stack, DyeColor defaultValue) {
+        return SavedIds.byName(DyeColor.class, FENSU_COLOR.getOr(stack, defaultValue.name()), defaultValue);
     }
-    public static void setFensuColor(ItemStack stack, net.minecraft.world.item.DyeColor value) {
-        FENSU_COLOR.set(stack, value.name().toLowerCase(java.util.Locale.ROOT));
+    public static void setFensuColor(ItemStack stack, DyeColor value) {
+        FENSU_COLOR.set(stack, value.name().toLowerCase(Locale.ROOT));
     }
     public static int fensuRedLow(ItemStack stack, int defaultValue) { return FENSU_RED_LOW.getOr(stack, defaultValue); }
     public static void setFensuRedLow(ItemStack stack, int value) { FENSU_RED_LOW.set(stack, value); }
     public static int fensuRedHigh(ItemStack stack, int defaultValue) { return FENSU_RED_HIGH.getOr(stack, defaultValue); }
     public static void setFensuRedHigh(ItemStack stack, int value) { FENSU_RED_HIGH.set(stack, value); }
-    public static com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority fensuPriority(ItemStack stack,
-            com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority defaultValue) {
-        return com.hbm.util.SavedIds.byName(com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority.class,
+    public static IEnergyReceiverMK2.ConnectionPriority fensuPriority(ItemStack stack,
+            IEnergyReceiverMK2.ConnectionPriority defaultValue) {
+        return SavedIds.byName(IEnergyReceiverMK2.ConnectionPriority.class,
                 FENSU_PRIORITY.getOr(stack, defaultValue.name()), defaultValue);
     }
-    public static void setFensuPriority(ItemStack stack, com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority value) {
-        FENSU_PRIORITY.set(stack, value.name().toLowerCase(java.util.Locale.ROOT));
+    public static void setFensuPriority(ItemStack stack, IEnergyReceiverMK2.ConnectionPriority value) {
+        FENSU_PRIORITY.set(stack, value.name().toLowerCase(Locale.ROOT));
     }
     public static BigInteger batteryReddPower(ItemStack stack) {
         return BATTERY_REDD_POWER.getOr(stack, BigInteger.ZERO);

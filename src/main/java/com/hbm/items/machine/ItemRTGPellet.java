@@ -1,13 +1,18 @@
 package com.hbm.items.machine;
 
+import com.hbm.api.data.ReactorDataMaps;
+import com.hbm.config.MachineConfig;
 import com.hbm.items.ModRtgContent;
+import com.hbm.util.BobMathUtil;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.text.NumberFormat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -60,15 +65,15 @@ public final class ItemRTGPellet extends CompatItem {
     }
 
     /** This pellet's {@code hbm:rtg_pellet} entry, or null when it has none (then its constructor values apply). */
-    private com.hbm.api.data.ReactorDataMaps.@org.jspecify.annotations.Nullable RTGPellet stats() {
-        return com.hbm.api.data.ReactorDataMaps.RTG_PELLET.get(this);
+    private ReactorDataMaps.@org.jspecify.annotations.Nullable RTGPellet stats() {
+        return ReactorDataMaps.RTG_PELLET.get(this);
     }
 
     public short getHeat() { var s = stats(); return s != null ? (short) s.effectiveHeat() : heat; }
     public long getMaxLifespan() { var s = stats(); return s != null ? s.lifespan() : lifespan; }
-    public net.minecraft.world.item.Item getDecayItem() {
+    public Item getDecayItem() {
         var s = stats();
-        return s != null ? com.hbm.api.data.ReactorDataMaps.itemOf(s.decaysTo()) : decayItem.get();
+        return s != null ? ReactorDataMaps.itemOf(s.decaysTo()) : decayItem.get();
     }
 
     /** 1.7 {@code getLifespan}: the remaining life, written as the full life on first read ({@code PELLET_DEPLETION}). */
@@ -88,7 +93,7 @@ public final class ItemRTGPellet extends CompatItem {
     }
 
     public static ItemStack handleDecay(ItemStack stack, ItemRTGPellet pellet) {
-        if (!com.hbm.config.MachineConfig.rtgDecay()) return stack; // 1.7 9.01_doRTGsDecay
+        if (!MachineConfig.rtgDecay()) return stack; // 1.7 9.01_doRTGsDecay
         if (pellet.getLifespan(stack) <= 0L) {
             return new ItemStack(pellet.getDecayItem());
         }
@@ -141,16 +146,16 @@ public final class ItemRTGPellet extends CompatItem {
         String desc = getDescriptionId() + ".desc";
         tooltip.add(Component.translatable(desc));
         tooltip.add(Component.literal("Power Level: "
-                + (com.hbm.config.MachineConfig.scaleRTGPowerActive() ? getScaledPower(this, stack) : getHeat())));
+                + (MachineConfig.scaleRTGPowerActive() ? getScaledPower(this, stack) : getHeat())));
         tooltip.add(Component.literal("Decays to: ").append(new ItemStack(getDecayItem()).getHoverName()));
         // 1.7 BobMathUtil.toPercentage(life, maxLife): float division, the default locale's percent format
-        tooltip.add(Component.literal(java.text.NumberFormat.getPercentInstance()
+        tooltip.add(Component.literal(NumberFormat.getPercentInstance()
                 .format((float) getLifespan(stack) / (float) getMaxLifespan())));
         if (flag.isAdvanced()) {
             tooltip.add(Component.literal("EXTENDED INFO:"));
             tooltip.add(Component.literal(String.format(Locale.US, "%s / %s ticks", getLifespan(stack), getMaxLifespan())));
-            String[] timeLeft = com.hbm.util.BobMathUtil.ticksToDate(getLifespan(stack));
-            String[] maxLife = com.hbm.util.BobMathUtil.ticksToDate(getMaxLifespan());
+            String[] timeLeft = BobMathUtil.ticksToDate(getLifespan(stack));
+            String[] maxLife = BobMathUtil.ticksToDate(getMaxLifespan());
             tooltip.add(Component.literal(String.format(Locale.US, "Time remaining: %s y, %s d, %s h", (Object[]) timeLeft)));
             tooltip.add(Component.literal(String.format(Locale.US, "Maximum life: %s y, %s d, %s h", (Object[]) maxLife)));
         }

@@ -2,13 +2,18 @@ package com.hbm.gametest;
 
 import com.hbm.blocks.machine.MachineTurbofan;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.container.ContainerMachineTurbofan;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
 
 /** GameTests for the turbofan's footprint, exhaust ports, burn path, and menu. */
 public final class TurbofanGameTests {
@@ -53,7 +58,7 @@ public final class TurbofanGameTests {
     public static void anyFuelZeroOutput(GameTestHelper helper) {
         TileEntityMachineTurbofan fan = place(helper, new BlockPos(3, 1, 3));
         BlockPos core = helper.absolutePos(new BlockPos(3, 1, 3));
-        for (var type : new com.hbm.inventory.fluid.FluidType[] {Fluids.DIESEL, Fluids.WATER}) {
+        for (var type : new FluidType[] {Fluids.DIESEL, Fluids.WATER}) {
             fan.tank.setTankType(type);
             fan.tank.setFill(20);
             fan.power = 0;
@@ -64,7 +69,7 @@ public final class TurbofanGameTests {
                             + fan.consumption + " output=" + fan.output + " power=" + fan.power + " fill=" + fan.tank.getFill());
         }
         // beside port 0 at (3,1,1): 1.7 isBlockIndirectlyGettingPowered on the port cell
-        helper.setBlock(new BlockPos(3, 1, 0), net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK);
+        helper.setBlock(new BlockPos(3, 1, 0), Blocks.REDSTONE_BLOCK);
         fan.tank.setFill(20);
         TileEntityMachineTurbofan.serverTick(helper.getLevel(), core, fan.getBlockState(), fan);
         helper.assertTrue(!fan.wasOn && fan.tank.getFill() == 20, "a powered port stops the burn");
@@ -73,8 +78,8 @@ public final class TurbofanGameTests {
 
     public static void menu(GameTestHelper helper) {
         TileEntityMachineTurbofan fan = place(helper, new BlockPos(3, 1, 3));
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
-        var menu = new com.hbm.inventory.container.ContainerMachineTurbofan(0, player.getInventory(), fan);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var menu = new ContainerMachineTurbofan(0, player.getInventory(), fan);
         helper.assertTrue(menu.slots.size() == 41, "Turbofan menu must have 5 machine slots + player inventory");
         helper.assertTrue(menu.slots.get(2).x == 98 && menu.slots.get(2).y == 71,
                 "Turbofan upgrade slot is misplaced");
@@ -84,7 +89,7 @@ public final class TurbofanGameTests {
     private static TileEntityMachineTurbofan place(GameTestHelper helper, BlockPos pos) {
         MachineTurbofan block = ModMachineBlocks.machine_turbofan.get();
         helper.setBlock(pos, block.defaultBlockState());
-        TileEntityMachineTurbofan fan = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityMachineTurbofan fan = GameTestHelpers.blockEntity(
                 helper, pos, TileEntityMachineTurbofan.class);
         block.fillSpace(helper.getLevel(), helper.absolutePos(pos), Direction.NORTH);
         return fan;

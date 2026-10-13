@@ -4,12 +4,20 @@ import com.hbm.client.particle.ParticleContrail;
 import com.hbm.client.particle.ParticleExSmoke;
 import com.hbm.client.particle.ParticleGasFlame;
 import com.hbm.client.particle.ParticleRocketFlame;
+import com.hbm.entity.mob.EntityTaintCrab;
+import com.hbm.entity.mob.EntityTeslaCrab;
 import com.hbm.particle.helper.HbmEffectNT;
 import dev.golem.core.data.Tags;
 import dev.golem.core.render.Particles;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The client-side particle entry points the copied ntm-next entities call directly (a missile or plane
@@ -26,17 +34,17 @@ public final class ClientEffects {
     /** Installs the entity-effect handlers on the shared particle bus. Client only. */
     public static void install() {
         HbmEffectNT.TeslaArc.setHandler((level, x, y, z, data) -> {
-            net.minecraft.world.entity.Entity entity = level.getEntity(Tags.getIntOr(data, "entityID", -1));
-            java.util.List<net.minecraft.world.phys.Vec3> targets = new java.util.ArrayList<>();
-            net.minecraft.nbt.ListTag list = Tags.getListOrEmpty(data, "targets");
+            Entity entity = level.getEntity(Tags.getIntOr(data, "entityID", -1));
+            List<Vec3> targets = new ArrayList<>();
+            ListTag list = Tags.getListOrEmpty(data, "targets");
             for (int i = 0; i < list.size(); i++) {
-                net.minecraft.nbt.CompoundTag point = Tags.getCompoundOrEmpty(list, i);
-                targets.add(new net.minecraft.world.phys.Vec3(Tags.getDoubleOr(point, "x", 0D),
+                CompoundTag point = Tags.getCompoundOrEmpty(list, i);
+                targets.add(new Vec3(Tags.getDoubleOr(point, "x", 0D),
                         Tags.getDoubleOr(point, "y", 0D), Tags.getDoubleOr(point, "z", 0D)));
             }
-            if (entity instanceof com.hbm.entity.mob.EntityTeslaCrab tesla) {
+            if (entity instanceof EntityTeslaCrab tesla) {
                 tesla.targets = targets;
-            } else if (entity instanceof com.hbm.entity.mob.EntityTaintCrab taint) {
+            } else if (entity instanceof EntityTaintCrab taint) {
                 taint.targets = targets;
             }
         });

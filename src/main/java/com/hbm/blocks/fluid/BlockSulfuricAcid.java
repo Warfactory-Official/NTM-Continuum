@@ -1,8 +1,12 @@
 package com.hbm.blocks.fluid;
 
+import com.hbm.advancement.AwardRegions;
+import com.hbm.advancement.HbmCriteria;
 import com.hbm.lib.ModDamageSources;
+import dev.golem.core.fluid.FluidBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -13,17 +17,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The 1.7 {@code GenericFluidBlock} with {@code setDamage(acid, 5)} ({@code sulfuric_acid_block}):
+ * The 1.7 {@code GenericFluidBlock} with {@code setDamage(acid, 5)} ({@code sulfuric_acid_block}), a flowing
+ * {@code BlockFluidClassic} of the default 8 quanta on a 5-tick flow, of {@code Material.water} (water physics):
  * dropped items are held still and dissolved (0.5 acid damage every 20 ticks, a cloud every 5);
  * anything else has its fall slowed and takes 5 acid damage per contact tick; everything fizzes.
- * (1.7 also awarded an achievement for dissolving a slime ball; there is no achievement system here.)
+ * Dissolving a slime ball awards 1.7's {@code achSulfuric} to the players nearby (the {@code DISSOLVED} criterion).
  */
-public class BlockSulfuricAcid extends BlockStaticFluid {
+public class BlockSulfuricAcid extends FluidBlock {
 
     private static final float DAMAGE = 5F;
 
     public BlockSulfuricAcid(Properties properties) {
-        super(properties);
+        super(properties, ModWorldFluids.SULFURIC_ACID);
     }
 
     @Override
@@ -34,9 +39,9 @@ public class BlockSulfuricAcid extends BlockStaticFluid {
                 entity.hurt(ModDamageSources.source(level, ModDamageSources.ACID), DAMAGE * 0.1F);
                 if (entity.isRemoved() && item.getItem().is(Items.SLIME_BALL)) {
                     // 1.7 achSulfuric: every player in the dissolved item's box grown by 10
-                    if (level instanceof net.minecraft.server.level.ServerLevel server) {
-                        com.hbm.advancement.AwardRegions.nearby(server, entity.getBoundingBox().inflate(10D),
-                                player -> com.hbm.advancement.HbmCriteria.DISSOLVED.fire(player, item.getItem()));
+                    if (level instanceof ServerLevel server) {
+                        AwardRegions.nearby(server, entity.getBoundingBox().inflate(10D),
+                                player -> HbmCriteria.DISSOLVED.fire(player, item.getItem()));
                     }
                 }
             }

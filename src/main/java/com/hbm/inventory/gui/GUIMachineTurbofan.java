@@ -1,7 +1,10 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerMachineTurbofan;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -9,11 +12,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 
-/** Screen for the turbofan — 1.7.10 {@code GUIMachineTurbofan} ({@code generators/gui_turbofan.png}, 176x203). */
-public class GUIMachineTurbofan extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineTurbofan>
+/** Screen for the turbofan: 1.7.10 {@code GUIMachineTurbofan} ({@code generators/gui_turbofan.png}, 176x203). */
+public class GUIMachineTurbofan extends CompatContainerScreen<ContainerMachineTurbofan>
         implements IUpgradeInfoProviderSource {
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/generators/gui_turbofan.png");
-    private static final Identifier BLOOD_GAUGE = dev.golem.core.Ids.of("hbm", "textures/gui/gauges/small_round.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/generators/gui_turbofan.png");
+    private static final Identifier BLOOD_GAUGE = Ids.of("hbm", "textures/gui/gauges/small_round.png");
 
     public GUIMachineTurbofan(ContainerMachineTurbofan menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 203);
@@ -63,5 +66,5 @@ public class GUIMachineTurbofan extends dev.golem.core.gui.CompatContainerScreen
         }
     }
 
-    @Override public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() { return menu.getFan(); }
+    @Override public IUpgradeInfoProvider getUpgradeInfoProvider() { return menu.getFan(); }
 }

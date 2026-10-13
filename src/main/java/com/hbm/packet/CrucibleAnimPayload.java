@@ -9,7 +9,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * S2C: old-hbm's {@code AuxParticlePacketNT(HbmEffectNT.Anim, {hand, mode, name})} as the sword cutters sent it to
+ * S2C: 1.12.2's {@code AuxParticlePacketNT(HbmEffectNT.Anim, {hand, mode, name})} as the sword cutters sent it to
  * their holder: {@link #EQUIP} ({@code "equip"}, the Collada deploy) and {@link #CSWING} ({@code "cSwing"}, the
  * crucible's random swing). Always the main hand; the client keys the animation to the item it then holds.
  */

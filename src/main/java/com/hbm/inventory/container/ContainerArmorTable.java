@@ -1,9 +1,11 @@
 package com.hbm.inventory.container;
 
 import com.hbm.handler.ArmorModHandler;
+import com.hbm.inventory.ModMenus;
 import com.hbm.items.armor.JetpackBase;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.Armors;
+import dev.golem.core.world.CompatEnchantments;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -26,7 +28,7 @@ public final class ContainerArmorTable extends AbstractContainerMenu {
     public final SimpleContainer upgrades = new SimpleContainer(MODULE_SLOTS);
     public final SimpleContainer armor = new SimpleContainer(1);
     public ContainerArmorTable(int containerId, Inventory playerInventory, BlockPos pos) {
-        super(com.hbm.inventory.ModMenus.ARMOR_TABLE.get(), containerId);
+        super(ModMenus.ARMOR_TABLE.get(), containerId);
 
         addSlot(new UpgradeSlot(ArmorModHandler.helmet_only, 48, 27));
         addSlot(new UpgradeSlot(ArmorModHandler.plate_only, 84, 27));
@@ -75,7 +77,7 @@ public final class ContainerArmorTable extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        // The legacy container deliberately stayed valid unconditionally; the table has no block entity
+        // The legacy container stayed valid unconditionally; the table has no block entity
         // and can be safely closed by the client at any time without losing stack-owned state.
         return true;
     }
@@ -211,7 +213,7 @@ public final class ContainerArmorTable extends AbstractContainerMenu {
 
         @Override
         public boolean mayPickup(Player player) {
-            return (player.isCreative() || !dev.golem.core.world.CompatEnchantments.preventsArmorChange(getItem()))
+            return (player.isCreative() || !CompatEnchantments.preventsArmorChange(getItem()))
                     && super.mayPickup(player);
         }
 

@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Menu for the shredder: a 3×3 input grid (0-8), a 3×6 output grid (9-26), two blade slots (27/28) and a
  * battery slot (29), plus the player inventory. The GUI is 233px tall, so the player inventory sits 67px
- * lower than the 166px default — matching the 1.12.2 layout.
+ * lower than the 166px default, matching the 1.12.2 layout.
  */
 public class ContainerMachineShredder extends AbstractContainerMenu {
 
@@ -93,7 +93,7 @@ public class ContainerMachineShredder extends AbstractContainerMenu {
 
     /**
      * Shift-click routing (the old {@code TransferStrategy}): blades go to the blade slots, batteries to
-     * the battery slot, everything else into the input grid; machine → player otherwise.
+     * the battery slot, everything else into the input grid; machine -> player otherwise.
      */
     @Override
     public ItemStack quickMoveStack(Player player, int index) {

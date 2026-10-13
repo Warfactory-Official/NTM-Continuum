@@ -1,6 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerSoyuzCapsule;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -11,7 +12,7 @@ import net.minecraft.world.entity.player.Inventory;
 /** 1.7 {@code GUISoyuzCapsule}: {@code gui_soyuz_capsule.png} at 176x186, the title green and centred at x=115. */
 public class GUISoyuzCapsule extends CompatContainerScreen<ContainerSoyuzCapsule> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_soyuz_capsule.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/storage/gui_soyuz_capsule.png");
 
     public GUISoyuzCapsule(ContainerSoyuzCapsule menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 186);

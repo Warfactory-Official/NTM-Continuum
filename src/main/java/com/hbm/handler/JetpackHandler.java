@@ -1,5 +1,12 @@
 package com.hbm.handler;
 
+import com.hbm.Constants;
+import com.hbm.blocks.bomb.ModBombBlocks;
+import com.hbm.blocks.bomb.NukeMan;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.items.ModArmorItems;
 import com.hbm.items.ModDataComponents;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.items.armor.ArmorBJJetpack;
@@ -11,18 +18,25 @@ import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.packet.JetpackExhaustPayload;
 import com.hbm.packet.JetpackInputPayload;
 import com.hbm.packet.JetpackSyncPayload;
+import dev.golem.core.Ids;
 import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.data.Tags;
 import dev.golem.core.world.Movement;
+import java.util.EnumMap;
+import java.util.HashMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
@@ -128,11 +142,11 @@ public final class JetpackHandler {
     public static void startSmoke(ServerPlayer player) {
         if (player == null || !(player.level() instanceof ServerLevel level)) return;
         stopSmoke(player);
-        Map<EquipmentSlot, ItemStack> originalEquipment = new java.util.EnumMap<>(EquipmentSlot.class);
+        Map<EquipmentSlot, ItemStack> originalEquipment = new EnumMap<>(EquipmentSlot.class);
         for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET})
             originalEquipment.put(slot, player.getItemBySlot(slot).copy());
         SmokeSession session = new SmokeSession(player, level,
-                originalEquipment, new java.util.HashMap<>(), player.isNoGravity(), player.onGround(),
+                originalEquipment, new HashMap<>(), player.isNoGravity(), player.onGround(),
                 player.getDeltaMovement(), player.isShiftKeyDown(), "water".equals(System.getenv("HBM_JETPACK_CHECK_GEAR"))
                         || "occlusion".equals(System.getenv("HBM_JETPACK_CHECK_GEAR"))
                         || "crouch".equals(System.getenv("HBM_JETPACK_CHECK_GEAR"))
@@ -141,10 +155,10 @@ public final class JetpackHandler {
                         * ("reload".equals(System.getenv("HBM_JETPACK_CHECK_GEAR")) ? 2 : 1));
         SMOKE_SESSIONS.put(player.getUUID(), session);
 
-        ItemStack glider = new ItemStack(com.hbm.items.ModArmorItems.jetpack_glider.get());
-        com.hbm.items.gear.JetpackGlider jetpack = (com.hbm.items.gear.JetpackGlider) glider.getItem();
-        jetpack.tryFill(com.hbm.inventory.fluid.Fluids.KEROSENE, 20_000, glider);
-        ItemStack chest = new ItemStack(com.hbm.items.ModArmorItems.t51_plate.get());
+        ItemStack glider = new ItemStack(ModArmorItems.jetpack_glider.get());
+        JetpackGlider jetpack = (JetpackGlider) glider.getItem();
+        jetpack.tryFill(Fluids.KEROSENE, 20_000, glider);
+        ItemStack chest = new ItemStack(ModArmorItems.t51_plate.get());
         ArmorModHandler.applyMod(chest, glider);
         player.setItemSlot(EquipmentSlot.CHEST, chest);
         player.setOnGround(false);
@@ -162,8 +176,8 @@ public final class JetpackHandler {
             for (int i = 0; i < slots.length; i++) {
                 String name = armor + "_" + suffixes[i];
                 if ("bj".equals(armor) && i == 1) name = "bj_plate_jetpack";
-                player.setItemSlot(slots[i], new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(
-                        dev.golem.core.Ids.of("hbm", name))));
+                player.setItemSlot(slots[i], new ItemStack(BuiltInRegistries.ITEM.getValue(
+                        Ids.of("hbm", name))));
             }
             if ("crouch".equals(gear)) {
                 BlockPos platform = findEmptySky(level, player, 0);
@@ -172,7 +186,7 @@ public final class JetpackHandler {
                     throw new IllegalStateException("Crouch visual fixture could not find an empty sky platform");
                 }
                 for (BlockPos position : BlockPos.betweenClosed(platform.offset(-1, 0, -1), platform.offset(1, 0, 1))) {
-                    var platformState = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+                    var platformState = Blocks.STONE.defaultBlockState();
                     level.setBlock(position, platformState, 3);
                     session.temporaryBlocks().put(position, platformState);
                 }
@@ -190,22 +204,22 @@ public final class JetpackHandler {
             }
             player.connection.teleport(position.getX() + 0.5D, position.getY(), position.getZ() + 0.5D, 0F, 0F);
         } else if ("regular".equals(gear)) {
-            player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(com.hbm.items.ModArmorItems.jetpack_fly.get()));
+            player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(ModArmorItems.jetpack_fly.get()));
         } else if ("murk".equals(gear) || "limp".equals(gear)) {
             player.setItemSlot(EquipmentSlot.CHEST, new ItemStack("murk".equals(gear)
-                    ? com.hbm.items.ModArmorItems.wings_murk.get() : com.hbm.items.ModArmorItems.wings_limp.get()));
+                    ? ModArmorItems.wings_murk.get() : ModArmorItems.wings_limp.get()));
         } else if ("bomb".equals(gear)) {
             player.setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
             BlockPos position = player.blockPosition().offset(0, -1, 3);
             if (level.getBlockState(position).isAir()) {
-                var bomb = com.hbm.blocks.bomb.ModBombBlocks.nuke_man.get().defaultBlockState()
-                        .setValue(com.hbm.blocks.bomb.NukeMan.FACING, 2);
+                var bomb = ModBombBlocks.nuke_man.get().defaultBlockState()
+                        .setValue(NukeMan.FACING, 2);
                 level.setBlock(position, bomb, 3);
                 session.temporaryBlocks().put(position, bomb);
-                com.hbm.Constants.LOG.info("Bomb visual fixture at {} (player {}), block entity {}",
+                Constants.LOG.info("Bomb visual fixture at {} (player {}), block entity {}",
                         position, player.position(), level.getBlockEntity(position));
             } else {
-                com.hbm.Constants.LOG.warn("Bomb visual fixture skipped occupied position {}", position);
+                Constants.LOG.warn("Bomb visual fixture skipped occupied position {}", position);
             }
         } else if ("water".equals(gear) || "occlusion".equals(gear)) {
             BlockPos center = new BlockPos(player.getBlockX(), 240, player.getBlockZ());
@@ -223,8 +237,8 @@ public final class JetpackHandler {
             for (int y = -1; y <= 0; y++) for (int x = -7; x <= 7; x++) for (int z = -7; z <= 7; z++) {
                 BlockPos position = center.offset(x, y, z);
                 var state = y == -1 || Math.abs(x) == 7 || Math.abs(z) == 7
-                        ? net.minecraft.world.level.block.Blocks.STONE.defaultBlockState()
-                        : net.minecraft.world.level.block.Blocks.WATER.defaultBlockState();
+                        ? Blocks.STONE.defaultBlockState()
+                        : Blocks.WATER.defaultBlockState();
                 if (!level.setBlock(position, state, 3)) {
                     stopSmoke(player);
                     throw new IllegalStateException("Failed to place water visual fixture at " + position);
@@ -233,7 +247,7 @@ public final class JetpackHandler {
             }
             player.connection.teleport(center.getX() + 0.5D, center.getY() + 2D, center.getZ() + 0.5D,
                     0F, "occlusion".equals(gear) ? 0F : 60F);
-            com.hbm.Constants.LOG.info("Water visual fixture: {} contained source blocks at {} beneath player", 13 * 13, center);
+            Constants.LOG.info("Water visual fixture: {} contained source blocks at {} beneath player", 13 * 13, center);
         }
     }
 
@@ -260,9 +274,9 @@ public final class JetpackHandler {
         if (session == null) return false;
         // Drain the basin before removing its walls/floor so no scheduled flow escapes during cleanup.
         session.temporaryBlocks().forEach((position, state) -> {
-            if (state.is(net.minecraft.world.level.block.Blocks.WATER)
+            if (state.is(Blocks.WATER)
                     && session.level().getBlockState(position).equals(state)) session.level().setBlock(position,
-                            net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                            Blocks.AIR.defaultBlockState(), 3);
         });
         session.temporaryBlocks().forEach((position, state) -> {
             if (session.level().getBlockState(position).equals(state)) session.level().removeBlock(position, false);
@@ -270,7 +284,7 @@ public final class JetpackHandler {
         if (!session.temporaryBlocks().isEmpty()) {
             long remaining = session.temporaryBlocks().keySet().stream()
                     .filter(position -> !session.level().getBlockState(position).isAir()).count();
-            com.hbm.Constants.LOG.info("Visual fixture cleanup: {} positions, {} non-air remaining",
+            Constants.LOG.info("Visual fixture cleanup: {} positions, {} non-air remaining",
                     session.temporaryBlocks().size(), remaining);
         }
         if (!player.isRemoved()) {
@@ -289,8 +303,8 @@ public final class JetpackHandler {
     }
 
     /** Client-side source identity: equivalent network snapshots of one item are not equipment swaps. */
-    public static boolean isEquivalentClientSource(net.minecraft.world.item.ItemStack previous,
-                                                   net.minecraft.world.item.ItemStack current) {
+    public static boolean isEquivalentClientSource(ItemStack previous,
+                                                   ItemStack current) {
         if (previous == null || current == null || previous.isEmpty() || current.isEmpty()) {
             return previous != null && current != null && previous.isEmpty() && current.isEmpty();
         }
@@ -331,7 +345,7 @@ public final class JetpackHandler {
     }
 
     private record SmokeSession(ServerPlayer player, ServerLevel level, Map<EquipmentSlot, ItemStack> originalEquipment,
-                                Map<BlockPos, net.minecraft.world.level.block.state.BlockState> temporaryBlocks,
+                                Map<BlockPos, BlockState> temporaryBlocks,
                                  boolean originalNoGravity, boolean originalOnGround, Vec3 originalMotion, boolean originalSneaking,
                                  Vec3 originalPosition,
                                 long expiresAt) {}
@@ -350,9 +364,9 @@ public final class JetpackHandler {
 
     private static void refreshSource(Player player, JetpackInfo state) {
         ItemStackAccess source = findJetpack(player);
-        net.minecraft.world.item.ItemStack container = source.stack() == null ? null
+        ItemStack container = source.stack() == null ? null
                 : source.outer() == null ? source.stack() : source.outer();
-        net.minecraft.world.item.Item item = source.stack() == null ? null : source.stack().getItem();
+        Item item = source.stack() == null ? null : source.stack().getItem();
         boolean sameSource = player.level().isClientSide()
                 ? sameClientSource(state.sourceItem, item)
                 : state.sourceContainer == container && state.sourceItem == item;
@@ -401,7 +415,7 @@ public final class JetpackHandler {
     public static boolean isJetpackActive(Player player) {
         JetpackInfo state = getState(player);
         if (state == null) return false;
-        // The advanced glider has its own J/H/U controller and deliberately ignores the general C toggle.
+        // The advanced glider has its own J/H/U controller and ignores the general C toggle.
         if (hasGlider(player)) return state.opening && System.currentTimeMillis() - state.animTime > 1000L;
         if (!state.backpackEnabled) return false;
         return state.jetpackKeyDown;
@@ -431,7 +445,7 @@ public final class JetpackHandler {
         return state == null ? 0L : state.animTime;
     }
 
-    public static int getFuel(net.minecraft.world.item.ItemStack stack) {
+    public static int getFuel(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return 0;
         if (stack.getItem() instanceof JetpackFueledBase) return JetpackFueledBase.getFuel(stack);
         if (stack.getItem() instanceof JetpackGlider glider) return glider.getFill(stack);
@@ -443,7 +457,7 @@ public final class JetpackHandler {
         return jetpack.stack() == null ? 0 : getFuel(jetpack.stack());
     }
 
-    public static int getMaxFuel(net.minecraft.world.item.ItemStack stack) {
+    public static int getMaxFuel(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return 0;
         if (stack.getItem() instanceof JetpackFueledBase jetpack) return jetpack.maxFuel;
         if (stack.getItem() instanceof JetpackGlider glider) return glider.capacity;
@@ -455,46 +469,46 @@ public final class JetpackHandler {
         return jetpack.stack() == null ? 0 : getMaxFuel(jetpack.stack());
     }
 
-    public static com.hbm.inventory.fluid.FluidType getFuelType(net.minecraft.world.item.ItemStack stack) {
+    public static FluidType getFuelType(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return null;
         if (stack.getItem() instanceof JetpackFueledBase jetpack) return jetpack.fuel;
         if (stack.getItem() instanceof JetpackGlider glider) return glider.getFirstFluidType(stack);
         return null;
     }
 
-    public static com.hbm.inventory.fluid.FluidType getFuelType(Player player) {
+    public static FluidType getFuelType(Player player) {
         ItemStackAccess jetpack = findJetpack(player);
         return jetpack.stack() == null ? null : getFuelType(jetpack.stack());
     }
 
-    public static com.hbm.inventory.fluid.tank.FluidTankNTM getTank(Player player) {
+    public static FluidTankNTM getTank(Player player) {
         ItemStackAccess glider = findGlider(player);
-        return glider.stack() == null ? new com.hbm.inventory.fluid.tank.FluidTankNTM(
-                com.hbm.inventory.fluid.Fluids.NONE, 0) : ((JetpackGlider) glider.stack().getItem()).getTank(glider.stack());
+        return glider.stack() == null ? new FluidTankNTM(
+                Fluids.NONE, 0) : ((JetpackGlider) glider.stack().getItem()).getTank(glider.stack());
     }
 
-    public static void setTank(Player player, com.hbm.inventory.fluid.tank.FluidTankNTM tank) {
+    public static void setTank(Player player, FluidTankNTM tank) {
         ItemStackAccess glider = findGlider(player);
         if (glider.stack() == null) return;
         ((JetpackGlider) glider.stack().getItem()).setTank(glider.stack(), tank);
         if (glider.outer() != null) ArmorModHandler.applyMod(glider.outer(), glider.stack());
     }
 
-    public static float getSpeed(com.hbm.inventory.fluid.FluidType type) {
+    public static float getSpeed(FluidType type) {
         if (type == null) return 0F;
-        if (type == com.hbm.inventory.fluid.Fluids.KEROSENE) return 0.3F;
-        if (type == com.hbm.inventory.fluid.Fluids.KEROSENE_REFORM) return 0.4F;
-        if (type == com.hbm.inventory.fluid.Fluids.NITAN) return 0.5F;
-        if (type == com.hbm.inventory.fluid.Fluids.BALEFIRE) return 1.5F;
+        if (type == Fluids.KEROSENE) return 0.3F;
+        if (type == Fluids.KEROSENE_REFORM) return 0.4F;
+        if (type == Fluids.NITAN) return 0.5F;
+        if (type == Fluids.BALEFIRE) return 1.5F;
         return 0F;
     }
 
-    /** Drain is intentionally one for every supported fuel; thrust provides the scaling. */
-    public static int getDrain(com.hbm.inventory.fluid.FluidType type) {
-        return type == com.hbm.inventory.fluid.Fluids.KEROSENE
-                || type == com.hbm.inventory.fluid.Fluids.KEROSENE_REFORM
-                || type == com.hbm.inventory.fluid.Fluids.NITAN
-                || type == com.hbm.inventory.fluid.Fluids.BALEFIRE ? 1 : 0;
+    /** Drain is one for every supported fuel; thrust provides the scaling. */
+    public static int getDrain(FluidType type) {
+        return type == Fluids.KEROSENE
+                || type == Fluids.KEROSENE_REFORM
+                || type == Fluids.NITAN
+                || type == Fluids.BALEFIRE ? 1 : 0;
     }
 
     /** Resets the server's vanilla floating check through Core's loader/access seam. */
@@ -727,12 +741,12 @@ public final class JetpackHandler {
 
     private static void drainGlider(ItemStackAccess found, int amount) {
         JetpackGlider glider = (JetpackGlider) found.stack().getItem();
-        com.hbm.inventory.fluid.FluidType type = glider.getFirstFluidType(found.stack());
+        FluidType type = glider.getFirstFluidType(found.stack());
         int drained = glider.tryEmpty(type, amount, found.stack());
         if (drained > 0 && found.outer() != null) ArmorModHandler.applyMod(found.outer(), found.stack());
     }
 
-    private static boolean saveStateToStack(net.minecraft.world.item.ItemStack stack, JetpackInfo info) {
+    private static boolean saveStateToStack(ItemStack stack, JetpackInfo info) {
         CompoundTag next = info.writeToTag(new CompoundTag());
         if (ModDataComponents.JETPACK_STATE.has(stack)
                 && ModDataComponents.JETPACK_STATE.getOr(stack, new CompoundTag()).equals(next)) return false;
@@ -786,15 +800,15 @@ public final class JetpackHandler {
     }
 
     private static ItemStackAccess findJetpack(Player player) {
-        net.minecraft.world.item.ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+        ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
         if (chest.getItem() instanceof JetpackBase) return new ItemStackAccess(chest, null);
-        net.minecraft.world.item.ItemStack module = ArmorModHandler.pryMod(chest, ArmorModHandler.plate_only);
+        ItemStack module = ArmorModHandler.pryMod(chest, ArmorModHandler.plate_only);
         return module.getItem() instanceof JetpackBase || module.getItem() instanceof JetpackGlider
                 ? new ItemStackAccess(module, chest) : new ItemStackAccess(null, null);
     }
 
-    private static boolean sameClientSource(net.minecraft.world.item.Item previous,
-                                            net.minecraft.world.item.Item current) {
+    private static boolean sameClientSource(Item previous,
+                                            Item current) {
         return previous == current;
     }
 
@@ -803,8 +817,8 @@ public final class JetpackHandler {
         return jetpack.stack() != null && jetpack.stack().getItem() instanceof JetpackGlider ? jetpack : new ItemStackAccess(null, null);
     }
 
-    private record ItemStackAccess(net.minecraft.world.item.ItemStack stack,
-                                   net.minecraft.world.item.ItemStack outer) {}
+    private record ItemStackAccess(ItemStack stack,
+                                   ItemStack outer) {}
 
     public static final class JetpackInfo {
         public boolean opening;
@@ -831,7 +845,7 @@ public final class JetpackHandler {
         private boolean sneak;
         private boolean sprint;
         private ItemStack sourceContainer;
-        private net.minecraft.world.item.Item sourceItem;
+        private Item sourceItem;
         private long inputLastTick = Long.MIN_VALUE;
         private boolean inputReceived;
 

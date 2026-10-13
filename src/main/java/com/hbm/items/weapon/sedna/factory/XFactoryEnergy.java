@@ -24,6 +24,9 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -66,14 +69,14 @@ public final class XFactoryEnergy {
         vnt.setPlayerProcessor(new PlayerProcessorStandard());
         vnt.explode();
         beam.level().playSound(null, hit.x, hit.y, hit.z, ModGunSounds.TESLA_BLAST.get(),
-                net.minecraft.sounds.SoundSource.PLAYERS, 5.0F,
+                SoundSource.PLAYERS, 5.0F,
                 0.9F + beam.level().getRandom().nextFloat() * 0.2F);
 
         if (mop instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof LivingEntity living) {
-            living.addEffect(new net.minecraft.world.effect.MobEffectInstance(
-                    net.minecraft.world.effect.MobEffects.SLOWNESS, 60, 9));
-            living.addEffect(new net.minecraft.world.effect.MobEffectInstance(
-                    net.minecraft.world.effect.MobEffects.MINING_FATIGUE, 60, 9));
+            living.addEffect(new MobEffectInstance(
+                    MobEffects.SLOWNESS, 60, 9));
+            living.addEffect(new MobEffectInstance(
+                    MobEffects.MINING_FATIGUE, 60, 9));
         }
     };
 

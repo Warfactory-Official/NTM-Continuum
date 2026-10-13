@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 /**
- * Dropped nuclear-waste item: invulnerable and never despawns. 1.7's EntityItem delta is re-based onto 26.2 ItemEntity - hurtServer/hurtClient are final, so invulnerability rides the vanilla invulnerable flag.
+ * Dropped nuclear-waste item: invulnerable and never despawns. 1.7's EntityItem delta is re-based onto 26.1 ItemEntity - hurtServer/hurtClient are final, so invulnerability rides the vanilla invulnerable flag.
  */
 public class EntityItemWaste extends CompatItemEntity {
 

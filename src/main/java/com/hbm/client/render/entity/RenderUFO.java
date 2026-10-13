@@ -1,5 +1,6 @@
 package com.hbm.client.render.entity;
 
+import com.hbm.client.BossStatus;
 import com.hbm.client.render.BeamPronter;
 import com.hbm.client.render.BeamPronter.EnumBeamType;
 import com.hbm.client.render.BeamPronter.EnumWaveType;
@@ -17,6 +18,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.BossEvent;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 
@@ -46,7 +48,7 @@ public class RenderUFO extends CompatEntityRenderer<EntityUFO, RenderUFO.State> 
 
     @Override
     public void extract(EntityUFO entity, State state, float partialTicks) {
-        com.hbm.client.BossStatus.set(entity, net.minecraft.world.BossEvent.BossBarColor.PINK); // 1.7 render-pushed BossStatus
+        BossStatus.set(entity, BossEvent.BossBarColor.PINK); // 1.7 render-pushed BossStatus
         state.spin = (float) ((entity.tickCount + partialTicks) * 5D % 360D);
         state.alive = entity.isAlive();
         state.deathTilt = entity.deathTime + 30 + partialTicks;

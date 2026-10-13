@@ -1,6 +1,5 @@
 package com.hbm.inventory.container;
 
-import com.hbm.foundry.FoundryExpansion;
 import com.hbm.items.machine.ItemMold;
 import com.hbm.tileentity.machine.TileEntityMachineStrandCaster;
 import dev.golem.core.world.Compat;
@@ -15,6 +14,8 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.ModMenus;
 
 /** The old seven-slot Strand Caster menu: one mold and six output slots. */
 public class ContainerMachineStrandCaster extends AbstractContainerMenu {
@@ -36,7 +37,7 @@ public class ContainerMachineStrandCaster extends AbstractContainerMenu {
     private ContainerMachineStrandCaster(int id, Inventory playerInventory,
                                          @Nullable TileEntityMachineStrandCaster caster,
                                          ContainerLevelAccess access) {
-        super(FoundryExpansion.STRAND_CASTER_MENU.get(), id);
+        super(ModMenus.MACHINE_STRAND_CASTER.get(), id);
         this.caster = caster;
         this.machine = caster == null ? new SimpleContainer(MACHINE_SLOTS) : caster;
         this.access = access;
@@ -61,7 +62,7 @@ public class ContainerMachineStrandCaster extends AbstractContainerMenu {
     public @Nullable TileEntityMachineStrandCaster getCaster() { return caster; }
 
     @Override public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, FoundryExpansion.STRAND_CASTER.get());
+        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_strand_caster.get());
     }
 
     @Override

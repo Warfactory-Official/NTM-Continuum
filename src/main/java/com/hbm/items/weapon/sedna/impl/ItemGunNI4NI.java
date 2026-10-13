@@ -10,6 +10,7 @@ import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -71,7 +72,7 @@ public class ItemGunNI4NI extends ItemGunBaseNT implements ICustomizable {
     }
 
     @Override
-    public void customize(net.minecraft.server.level.ServerPlayer player, ItemStack stack, String... args) {
+    public void customize(ServerPlayer player, ItemStack stack, String... args) {
         if (args.length == 0) {
             resetColors(stack);
             player.sendSystemMessage(Component.translatable("desc.item.gunNI4NI.colorsReset").withStyle(ChatFormatting.GREEN));

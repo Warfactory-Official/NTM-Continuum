@@ -1,5 +1,6 @@
 package com.hbm.commands;
 
+import com.hbm.client.AdvancementHarnessQueries;
 import com.hbm.config.ClientConfig;
 import com.mojang.brigadier.CommandDispatcher;
 import dev.golem.core.command.CompatCommands;
@@ -15,7 +16,7 @@ public final class HbmClientCommands {
 
     public static void register() {
         ClientConfig.initConfig();
-        com.hbm.client.AdvancementHarnessQueries.register();
+        AdvancementHarnessQueries.register();
         CompatCommands.client(new CompatCommands.ClientTree() {
             @Override
             public <S> void register(CommandDispatcher<S> dispatcher, CompatCommands.ClientFeedback<S> feedback) {

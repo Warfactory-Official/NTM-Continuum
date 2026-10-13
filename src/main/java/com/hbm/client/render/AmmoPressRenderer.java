@@ -3,6 +3,7 @@ package com.hbm.client.render;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineAmmoPress;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -13,7 +14,7 @@ import net.minecraft.world.phys.Vec3;
 public class AmmoPressRenderer extends GemBER<TileEntityMachineAmmoPress, AmmoPressRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of("hbm", "models/machines/ammo_press.obj"));
+            Ids.of("hbm", "models/machines/ammo_press.obj"));
     /** The legacy TESR explicitly disabled face culling for this model. */
     private final Surface surface = Surface.cutoutNoCull("hbm:textures/models/machines/ammo_press.png");
 

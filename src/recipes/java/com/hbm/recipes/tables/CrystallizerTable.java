@@ -49,6 +49,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
@@ -65,7 +66,7 @@ import static com.hbm.inventory.OreDictManager.*;
 public final class CrystallizerTable extends RecipeSource<Row> {
 
     /** 1.7 {@code KEY_SAND}, the "sand" ore name: {@code c:sands} (sand and red sand, not suspicious sand). */
-    private static final TagKey<Item> KEY_SAND = TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", "sands"));
+    private static final TagKey<Item> KEY_SAND = TagKey.create(Registries.ITEM, Ids.of("c", "sands"));
 
     public CrystallizerTable() {
         super(CrystallizerRecipes.TABLE.table);
@@ -236,7 +237,7 @@ public final class CrystallizerTable extends RecipeSource<Row> {
         registerRecipe(new ComparableStack(ModOilItems.tar(EnumTarType.WAX)),       new CrystallizerRecipe(new ItemStack(ModItems.pellet_charged.get()), 200), new FluidStack(Fluids.IONGEL, 500));
         registerRecipe(new ComparableStack(ModOilItems.tar(EnumTarType.PARAFFIN)),  new CrystallizerRecipe(new ItemStack(ModMedicineItems.pill_red.get()), 200),  new FluidStack(Fluids.ESTRADIOL, 250));
 
-        registerRecipe(new TagStack(KEY_SAND), new CrystallizerRecipe(net.minecraft.world.level.block.Blocks.CLAY, 20), new FluidStack(Fluids.COLLOID, 1_000));
+        registerRecipe(new TagStack(KEY_SAND), new CrystallizerRecipe(Blocks.CLAY, 20), new FluidStack(Fluids.COLLOID, 1_000));
         registerRecipe(new ComparableStack(ModFallingBlocks.sand_quartz.get().asItem()), new CrystallizerRecipe(new ItemStack(ModItems.ball_dynamite.get(), 16), 20), new FluidStack(Fluids.NITROGLYCERIN, 1_000));
         // 1.7 NETHERQUARTZ.dust() (dustNetherQuartz) is c:dusts/quartz
         registerRecipe(dust("quartz"), new CrystallizerRecipe(new ItemStack(ModItems.ball_dynamite.get(), 4), 20), new FluidStack(Fluids.NITROGLYCERIN, 250));

@@ -7,6 +7,7 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -20,7 +21,7 @@ import com.hbm.tileentity.machine.TileEntityMachineAnnihilator;
  * stamps {@code inventory().fluid()} proxies on the front cell and the two front flank cells.
  */
 public final class MachineAnnihilator extends BlockMultiblockMachine
-        implements IFluidConnectorBlockMK2, net.minecraft.world.WorldlyContainerHolder {
+        implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     private static final int[] CHIMNEY = {8, -2, 1, 1, 1, 1};
 

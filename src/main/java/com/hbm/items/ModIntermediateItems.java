@@ -20,8 +20,8 @@ import java.util.Map;
 /**
  * The recipe-intermediate items ported from the 1.12.2 metadata-subtype {@code ItemEnumMulti} items
  * ({@code circuit} / {@code item_expensive} / {@code chunk_ore}). 1.21 has no metadata, so each enum
- * variant is its own registered item — id {@code <base>_<variant>} (e.g. {@code circuit_basic}) in the
- * MATERIALS tab — matching the pre-existing per-variant textures copied by
+ * variant is its own registered item, id {@code <base>_<variant>} (e.g. {@code circuit_basic}) in the
+ * MATERIALS tab, matching the pre-existing per-variant textures copied by
  * {@code port-tools/gen_intermediates.py}. Recipes reference them via the typed getters
  * ({@link #circuit}/{@link #expensive}/{@link #chunk}), the tag-system equivalent of the old
  * {@code ModItems.circuit.stackFromEnum(...)}.

@@ -1,16 +1,25 @@
 package com.hbm.client;
 
+import com.hbm.client.jetpack.JetpackClientVisuals;
+import com.hbm.config.GeneralConfig;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
+import com.hbm.handler.JetpackHandler;
+import com.hbm.inventory.gui.GUICalculator;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower;
 import com.hbm.packet.KeybindPayload;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.KeyMappings;
 import dev.golem.core.client.MouseInput;
+import dev.golem.core.client.PlayerInputs;
 import dev.golem.core.net.GolemNetwork;
+import java.util.Arrays;
+import java.util.UUID;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -18,7 +27,7 @@ import net.minecraft.world.item.ItemStack;
  * the server.
  *
  * <p>Ported from the client parts of 1.12.2 {@code HbmKeybinds}. The design point is that this reports
- * <em>state</em>, never intent — "the trigger is now down", not "fire a shot". Everything else is the
+ * <em>state</em>, never intent: "the trigger is down", not "fire a shot". Everything else is the
  * server's decision, so a modified client cannot fire faster than the gun cycles.
  *
  * <p>Default bindings match upstream: primary is the vanilla attack button, secondary and tertiary are
@@ -72,11 +81,11 @@ public final class HbmKeybindsClient {
 
     private static void onEndTick() {
         Minecraft mc = Minecraft.getInstance();
-        com.hbm.client.jetpack.JetpackClientVisuals.tick();
+        JetpackClientVisuals.tick();
         LocalPlayer player = mc.player;
         if (player == null || mc.level == null) {
             // Leaving a world must not leave the server believing a trigger is still held.
-            java.util.Arrays.fill(LAST_STATE, false);
+            Arrays.fill(LAST_STATE, false);
             lastJetpack = lastJetpackHover = lastJetpackHud = false;
             lastToggleJetpack = lastToggleHead = false;
             return;
@@ -84,15 +93,15 @@ public final class HbmKeybindsClient {
 
         // 1.7 KeyInputEvent: only fires with no screen open; the calculator replaces the (absent) screen.
         while (calculatorKey.consumeClick()) {
-            if (mc.screen == null) mc.setScreen(new com.hbm.inventory.gui.GUICalculator());
+            if (mc.screen == null) mc.setScreen(new GUICalculator());
         }
 
-        dev.golem.core.client.PlayerInputs.State input = dev.golem.core.client.PlayerInputs.read(player);
-        com.hbm.handler.JetpackHandler.sendInput(player, input.forward(), input.strafe(), input.jump(),
+        PlayerInputs.State input = PlayerInputs.read(player);
+        JetpackHandler.sendInput(player, input.forward(), input.strafe(), input.jump(),
                 input.sneak(), input.sprint());
 
         // Legacy HbmKeybinds.JETPACK follows vanilla Jump; only the advanced glider has a J toggle.
-        boolean jetpack = mc.screen == null && (com.hbm.handler.JetpackHandler.hasGlider(player)
+        boolean jetpack = mc.screen == null && (JetpackHandler.hasGlider(player)
                 ? jetpackActivateKey.isHeld() : KeyMappings.isHeld(mc.options.keyJump));
         boolean hover = mc.screen == null && jetpackHoverKey.isHeld();
         boolean hud = mc.screen == null && jetpackHudKey.isHeld();
@@ -113,7 +122,7 @@ public final class HbmKeybindsClient {
         // A screen is open: report everything released, so opening the inventory mid-burst stops it.
         boolean suppressed = mc.screen != null || !holdingGun;
 
-        // The vanilla attack mapping is deliberately drained below, so poll its physical mouse button.
+        // The vanilla attack mapping is drained below, so poll its physical mouse button.
         // Keyboard rebindings retain their ordinary mapping state.
         boolean primary = !suppressed && KeyMappings.isHeld(mc.options.keyAttack);
         report(EnumKeybind.GUN_PRIMARY, primary);
@@ -127,15 +136,15 @@ public final class HbmKeybindsClient {
             suppressAttack(mc);
             updateAiming(player);
             ItemGunBaseNT.clientHeldTick(player);
-            if (player.getMainHandItem().getItem() instanceof com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower) {
-                net.minecraft.world.entity.Entity hook = null;
-                java.util.UUID hookId = com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower.getLastHook(player.getMainHandItem());
+            if (player.getMainHandItem().getItem() instanceof ItemGunChargeThrower) {
+                Entity hook = null;
+                UUID hookId = ItemGunChargeThrower.getLastHook(player.getMainHandItem());
                 if (hookId != null) {
-                    for (net.minecraft.world.entity.Entity e : mc.level.entitiesForRendering()) {
+                    for (Entity e : mc.level.entitiesForRendering()) {
                         if (hookId.equals(e.getUUID())) { hook = e; break; }
                     }
                 }
-                com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower.clientGrappleTick(player, hook,
+                ItemGunChargeThrower.clientGrappleTick(player, hook,
                         primary, !suppressed && gunSecondaryKey.isHeld());
             }
         }
@@ -145,16 +154,15 @@ public final class HbmKeybindsClient {
      * Stops the attack button from also mining, swinging and cracking blocks while a gun is held.
      *
      * <p>Upstream does this by reflecting into {@code KeyMapping}'s private static binding map and
-     * unregistering the conflicting key. That reflection cannot survive the port, so the key is simply
-     * held down-cleared every tick and its buffered clicks are drained instead — same visible result,
-     * no reflection. The item's own {@code compatCanDestroyBlock} is the server-side backstop.
+     * unregistering the conflicting key. That reflection is not portable, so the key is
+     * cleared every tick and its buffered clicks are drained instead, with the same visible result. The item's own {@code compatCanDestroyBlock} is the server-side backstop.
      */
     private static void suppressAttack(Minecraft mc) {
         drain(mc.options.keyAttack);
         // Clear other vanilla actions only while they actually overlap a gun binding. This preserves
         // user rebindings while retaining the old mod's "gun action wins" behavior.
         // 1.7 1.34_enableKeybindOverlap gates the overlap handling
-        if (!com.hbm.config.GeneralConfig.enableKeybindOverlap) return;
+        if (!GeneralConfig.enableKeybindOverlap) return;
         if (overlapsGunBinding(mc.options.keyUse, mc)) drain(mc.options.keyUse);
         if (overlapsGunBinding(mc.options.keyPickItem, mc)) drain(mc.options.keyPickItem);
     }
@@ -199,7 +207,7 @@ public final class HbmKeybindsClient {
                 || mapping.same(reloadKey);
     }
 
-    /** Advances the aim transition — upstream runs this from the item's client-side update. */
+    /** Advances the aim transition. Upstream runs this from the item's client-side update. */
     private static void updateAiming(LocalPlayer player) {
         ItemStack held = player.getMainHandItem();
         if (!isGun(held)) held = player.getOffhandItem();
@@ -222,7 +230,7 @@ public final class HbmKeybindsClient {
     private static void reportJetpack(LocalPlayer player, EnumKeybind keybind, boolean state, boolean previous) {
         if (state == previous) return;
         // Predict the edge locally; the glider's normal armor tick remains the single local movement tick.
-        com.hbm.handler.JetpackHandler.handleKeybind(player, keybind, state);
+        JetpackHandler.handleKeybind(player, keybind, state);
         GolemNetwork.sendToServer(KeybindPayload.CODEC, new KeybindPayload(keybind.ordinal(), state));
     }
 

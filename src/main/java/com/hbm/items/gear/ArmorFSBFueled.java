@@ -19,7 +19,7 @@ import net.minecraft.world.level.Level;
  *
  * <ul>
  * <li><b>A fresh suit is full.</b> 1.7 wrote {@code maxFuel} into a missing tag from inside {@code getFill};
- *     here the missing component simply reads as {@code maxFuel}, the same answer without dirtying the stack
+ *     here the missing component reads as {@code maxFuel}, the same answer without dirtying the stack
  *     from a getter (see {@link ArmorFSBPowered}).</li>
  * <li><b>Damage burns fuel.</b> 1.7 overrode {@code setDamage} to take {@code damage * consumption} fuel and
  *     never store durability. The port's suits are unbreakable and {@code DamageResistanceHandler} forwards the
@@ -116,7 +116,7 @@ public class ArmorFSBFueled extends ArmorFSB {
         return (255 - j) << 16 | j << 8;
     }
 
-    // ---- IFillableItem: fill only, and only with the suit's own fuel ----
+    // IFillableItem: fill only, and only with the suit's own fuel
 
     @Override
     public boolean acceptsFluid(FluidType type, ItemStack stack) {

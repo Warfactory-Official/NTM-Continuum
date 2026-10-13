@@ -2,12 +2,14 @@ package com.hbm.entity.logic;
 
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.config.GeneralConfig;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.SynchedData;
 import com.hbm.entity.projectile.EntityBombletZeta;
 import com.hbm.entity.projectile.EntityBoxcar;
 import com.hbm.sound.AudioSystem;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.sound.ModSounds;
+import dev.golem.core.hook.Hook;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -40,7 +42,7 @@ public class EntityBomber extends EntityPlaneBase {
         net.minecraft.sounds.@org.jspecify.annotations.Nullable SoundEvent sound(EntityBomber bomber);
     }
 
-    public static final dev.golem.core.hook.Hook<LoopSound> LOOP_SOUND = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<LoopSound> LOOP_SOUND = Hook.notifying();
 
     private int bombStart = 75;
     private int bombStop = 125;
@@ -245,8 +247,8 @@ public class EntityBomber extends EntityPlaneBase {
         bombStart = input.getIntOr("bombStart", 75);
         bombStop = input.getIntOr("bombStop", 125);
         bombRate = input.getIntOr("bombRate", 3);
-        // the payload by name; a pre-2026-10-08 numeric type falls back to the carpet bomber with one WARN
-        if (input.getIntOr("type", Integer.MIN_VALUE) != Integer.MIN_VALUE) com.hbm.util.SavedIds.warnNumeric("bomber payload", "type");
+        // the payload by name; a legacy numeric type falls back to the carpet bomber with one WARN
+        if (input.getIntOr("type", Integer.MIN_VALUE) != Integer.MIN_VALUE) SavedIds.warnNumeric("bomber payload", "type");
         String saved = input.getStringOr("payload", BomberPayload.CARPET.name());
         payload = BomberPayload.byName(saved) != null ? saved : BomberPayload.CARPET.name();
         entityData.set(STYLE, input.getByteOr("style", (byte) 0));

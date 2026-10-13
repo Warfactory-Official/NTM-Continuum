@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.blocks.machine.SoyuzCapsule;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.storage.TileEntitySoyuzCapsule;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -20,7 +21,7 @@ public final class RenderCapsule extends GemBER<TileEntitySoyuzCapsule, RenderCa
         public boolean rusted;
     }
 
-    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/soyuz_lander.obj"));
+    private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/soyuz_lander.obj"));
     private final Surface clean = Surface.cutoutCull(Constants.MOD_ID + ":textures/models/soyuz_capsule/soyuz_lander.png");
     private final Surface rust = Surface.cutoutCull(Constants.MOD_ID + ":textures/models/soyuz_capsule/soyuz_lander_rust.png");
 

@@ -4,9 +4,13 @@ import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.handler.BossSpawnHandler;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
+import java.util.function.ObjIntConsumer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
@@ -22,6 +26,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -71,8 +76,8 @@ public class SoyuzLauncher extends BlockMultiblockMachine
      * 1.7 sets the core {@code SoyuzLauncher.height} above the block the complex grows from. Its
      * {@code checkRequirement}/{@code fillSpace} add that height back before stating the boxes, so every box is
      * relative to the CORE: the apron is the core's own course and the one below it, the legs and trenches the
-     * four courses under the apron (§19ec-satellites corrected an earlier reading that stated them from the ground
-     * block, which sank the whole footprint four blocks below the rendered pad).
+     * four courses under the apron. Stating them from the ground block would sink the whole footprint four
+     * blocks below the rendered pad.
      */
     /** 1.7 {@code onBlockPlacedBy}: {@code ForgeDirection dir = ForgeDirection.EAST}, whichever way the placer looks. */
     @Override
@@ -97,7 +102,7 @@ public class SoyuzLauncher extends BlockMultiblockMachine
      * on the face it turns outward. The ring is square and its four sides are stated together, so the set is the
      * same whichever way the pad faces.
      */
-    private static void ring(BlockPos ground, java.util.function.ObjIntConsumer<BlockPos> out) {
+    private static void ring(BlockPos ground, ObjIntConsumer<BlockPos> out) {
         for (int i = -6; i <= 6; i++) {
             int corner = i == 6 ? MASK_SOUTH : i == -6 ? MASK_NORTH : MASK_NONE;
             int end = i == 6 ? MASK_EAST : i == -6 ? MASK_WEST : MASK_NONE;
@@ -149,10 +154,10 @@ public class SoyuzLauncher extends BlockMultiblockMachine
 
     /** 1.7 {@code onBlockActivated}: {@code BossSpawnHandler.markFBI} on every non-sneaking use. */
     @Override
-    protected net.minecraft.world.InteractionResult useAtCore(net.minecraft.world.level.block.state.BlockState state,
-            net.minecraft.world.level.Level level, net.minecraft.core.BlockPos core, net.minecraft.world.entity.player.Player player,
-            net.minecraft.world.phys.BlockHitResult hit) {
-        if (!level.isClientSide() && !player.isShiftKeyDown()) com.hbm.handler.BossSpawnHandler.markFBI(player);
+    protected InteractionResult useAtCore(BlockState state,
+            Level level, BlockPos core, Player player,
+            BlockHitResult hit) {
+        if (!level.isClientSide() && !player.isShiftKeyDown()) BossSpawnHandler.markFBI(player);
         return super.useAtCore(state, level, core, player, hit);
     }
 

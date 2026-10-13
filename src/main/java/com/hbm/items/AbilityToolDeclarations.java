@@ -1,5 +1,6 @@
 package com.hbm.items;
 
+import com.hbm.items.special.ItemHot;
 import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
 import com.hbm.lib.VanillaIds;
@@ -125,7 +126,7 @@ public final class AbilityToolDeclarations {
         shaped(NS, "redstone_sword", "hbm:redstone_sword", rows("R", "R", "S"),
                 "R", TagIds.storage_blocks_redstone, "S", stick);
 
-        // old-hbm WeaponRecipes:334 — new ItemStack(crucible, 1, 3): item damage 3 and no charges (an empty crucible).
+        // 1.12.2 WeaponRecipes:334: new ItemStack(crucible, 1, 3): item damage 3 and no charges (an empty crucible).
         shaped(NS, "crucible", stack("hbm:crucible").with("minecraft:damage", 3), rows("MEM", "YDY", "YCY"),
                 "M", "hbm:ingot_meteorite_forged", "E", TagIds.ingots_euphemium, "Y", ItemIds.billet_yharonite,
                 "D", ItemIds.demon_core_closed, "C", ItemIds.ingot_chainsteel);
@@ -133,10 +134,10 @@ public final class AbilityToolDeclarations {
         // 1.7 SmeltingRecipes:168-171: the furnace reheats the meteorite materials (ItemHot.heatUp), and
         // sears the sword. heatUp on the seared sword (not an ItemHot) did nothing, so that one is plain.
         // 1.7 ItemHot.heat is static, so the last constructor (ingot_chainsteel, 100) wins and heatUp writes 100 for
-        // every hot item although the meteorite items were constructed with 200 (History §19ez; LEGACY_HEAT).
+        // every hot item although the meteorite items were constructed with 200 (see LEGACY_HEAT).
         for (String id : new String[]{"ingot_meteorite", "ingot_meteorite_forged", "blade_meteorite"}) {
             componentSmelt(NS, id + "_heat", item("hbm:" + id),
-                    stack("hbm:" + id).with("hbm:heat", com.hbm.items.special.ItemHot.LEGACY_HEAT), 0.0);
+                    stack("hbm:" + id).with("hbm:heat", ItemHot.LEGACY_HEAT), 0.0);
         }
         smelt(NS, "meteorite_sword_seared", "hbm:meteorite_sword", "hbm:meteorite_sword_seared", 0.0);
     }

@@ -9,6 +9,7 @@ import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import net.minecraft.world.item.Item;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -50,7 +51,7 @@ public final class ModWatzItems {
     public static ItemWatzPellet depleted(EnumWatzType type) { return DEPLETED.get(type).get(); }
 
     /** The depleted counterpart of a fresh pellet item, or null if the stack isn't a fresh pellet. */
-    public static @Nullable ItemWatzPellet depletedFor(net.minecraft.world.item.Item item) {
+    public static @Nullable ItemWatzPellet depletedFor(Item item) {
         return item instanceof ItemWatzPellet pellet && !pellet.depleted ? depleted(pellet.type) : null;
     }
 

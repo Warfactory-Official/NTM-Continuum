@@ -37,14 +37,14 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Shared base of the compressor — 1:1 port of the 1.12.2 {@code TileEntityMachineCompressorBase}. Raises
+ * Shared base of the compressor: 1:1 port of the 1.12.2 {@code TileEntityMachineCompressorBase}. Raises
  * a fluid's <b>pressure</b>, the gate the vacuum refinery (OIL @2) and hydrotreater (HYDROGEN @1) sit
  * behind. 4 slots (0 fluid identifier, 1 battery, 2-3 upgrades); tanks {@code [0] 16k} input (type via
- * slot 0, pressure via the GUI's 5-way compression selector) → {@code [1] 16k} output.
+ * slot 0, pressure via the GUI's 5-way compression selector) and {@code [1] 16k} output.
  *
- * <p>Per {@link CompressorRecipes}: with no recipe it's the generic 1000 mB → 1000 mB of the same type at
+ * <p>Per {@link CompressorRecipes}: with no recipe it's the generic 1000 mB to 1000 mB of the same type at
  * {@code pressure + 1}; with one, the recipe's own amounts/type/pressure. maxPower 100k, base process
- * 100t @ 2500 HE/t. SPEED/POWER ×3 + OVERDRIVE ×<b>9</b> (note: not 3), formulas verbatim.
+ * 100t @ 2500 HE/t. SPEED/POWER ×3 + OVERDRIVE ×<b>9</b> (not 3), with formulas unchanged.
  *
  * <p>Deferred (§20): the compact variant ({@code machine_compressor_compact}), IFluidCopiable paste,
  * the operating sound.
@@ -95,7 +95,7 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
         CompressorRecipe rec = CompressorRecipes.getRecipe(te.tanks[0].getTankType(), te.tanks[0].getPressure());
         int timeBase = rec != null ? rec.duration() : processTimeBase;
 
-        // Old quirk kept verbatim: the generic (recipe-less) path uses a hardcoded speed ladder, the
+        // Old quirk kept unchanged: the generic (recipe-less) path uses a hardcoded speed ladder, the
         // recipe path a plain divisor.
         if (rec == null) te.processTime = speedLevel == 3 ? 10 : speedLevel == 2 ? 20 : speedLevel == 1 ? 60 : timeBase;
         else te.processTime = timeBase / (speedLevel + 1);
@@ -149,7 +149,7 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
         }
     }
 
-    /** Old setupTanks: no recipe → same type at pressure+1; else the recipe's output type/pressure. */
+    /** Old setupTanks: no recipe gives the same type at pressure+1; else the recipe's output type/pressure. */
     protected void setupTanks() {
         CompressorRecipe recipe = CompressorRecipes.getRecipe(tanks[0].getTankType(), tanks[0].getPressure());
         if (recipe == null) {
@@ -170,7 +170,7 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
         }
     }
 
-    /** Old {@code receiveControl}'s "compression" — the GUI's 5-way input-pressure selector (button id = level). */
+    /** Old {@code receiveControl}'s "compression": the GUI's 5-way input-pressure selector (button id = level). */
     public void setCompression(int compression) {
         if (compression < 0 || compression > MAX_COMPRESSION) return;
         if (compression == tanks[0].getPressure()) return;

@@ -5,6 +5,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -32,8 +33,8 @@ public abstract class TileEntityChimneyBase extends TileEntityLoadedBase impleme
 
         // 1.7: the three smokes at the four connection points, every second (the net keeps a subscriber three)
         if (level.getGameTime() % 20 == 0) {
-            for (com.hbm.inventory.fluid.FluidType type : new com.hbm.inventory.fluid.FluidType[]{
-                    com.hbm.inventory.fluid.Fluids.SMOKE, com.hbm.inventory.fluid.Fluids.SMOKE_LEADED, com.hbm.inventory.fluid.Fluids.SMOKE_POISON}) {
+            for (FluidType type : new FluidType[]{
+                    Fluids.SMOKE, Fluids.SMOKE_LEADED, Fluids.SMOKE_POISON}) {
                 for (DirPos port : chimney.getConPos()) chimney.trySubscribe(type, level, port);
             }
         }
@@ -129,8 +130,8 @@ public abstract class TileEntityChimneyBase extends TileEntityLoadedBase impleme
     }
 
     @Override
-    public com.hbm.inventory.fluid.tank.FluidTankNTM[] getAllTanks() {
-        return new com.hbm.inventory.fluid.tank.FluidTankNTM[]{};
+    public FluidTankNTM[] getAllTanks() {
+        return new FluidTankNTM[]{};
     }
 
     @Override

@@ -5,14 +5,17 @@ import dev.golem.core.data.Tags;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModGunItems;
 import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 /** The reusable B92 cell. It siphons charge from a carried B92 and becomes a bomb at 25 charges. */
@@ -23,7 +26,7 @@ public final class GunB92Cell extends CompatItem {
     }
 
     @Override
-    protected void compatInventoryTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
+    protected void compatInventoryTick(ItemStack stack, ServerLevel level,
                                        Entity owner, EquipmentSlot slot, boolean held) {
         if (!(owner instanceof Player player) || getPower(stack) >= 25) return;
 
@@ -42,8 +45,8 @@ public final class GunB92Cell extends CompatItem {
     }
 
     @Override
-    protected void appendCompatHoverText(ItemStack stack, dev.golem.core.world.CompatTooltipContext context,
-                                         List<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("item.hbm.gun_b92_ammo.desc.0"));
         tooltip.add(Component.translatable("item.hbm.gun_b92_ammo.desc.1"));
         tooltip.add(Component.translatable("item.hbm.gun_b92_ammo.desc.2"));
@@ -53,7 +56,7 @@ public final class GunB92Cell extends CompatItem {
 
     /**
      * The cell's charge, {@code hbm:b92_energy} (ntm-next's component). 1.7 marked the full cell (25) with metadata 1
-     * as well; the port matches the full charge itself instead of a mirrored number (History §19es-itemvariant).
+     * as well; the port matches the full charge itself instead of a mirrored number.
      */
     public static int getPower(ItemStack stack) {
         return ModDataComponents.B92_ENERGY.getOr(stack, 0);
@@ -70,7 +73,7 @@ public final class GunB92Cell extends CompatItem {
     }
 
     /** Shared test/gameplay seam for the source cell tick without spelling the era-specific Item API. */
-    public void tickCell(ItemStack stack, net.minecraft.server.level.ServerLevel level, Player player) {
+    public void tickCell(ItemStack stack, ServerLevel level, Player player) {
         compatInventoryTick(stack, level, player, EquipmentSlot.MAINHAND, true);
     }
 }

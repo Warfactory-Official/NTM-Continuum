@@ -5,12 +5,18 @@ import com.google.gson.JsonObject;
 import com.hbm.config.WorldConfig;
 import com.hbm.entity.projectile.EntityMeteor;
 import com.hbm.handler.BossSpawnHandler;
+import dev.golem.core.Ids;
+import dev.golem.core.harness.HarnessQueryRegistry;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 
 import java.util.HashSet;
@@ -28,7 +34,7 @@ import java.util.concurrent.TimeUnit;
  *   <li>{@code mode=find}, box + {@code id}, {@code limit}: positions of that block in the box, top-down;</li>
  *   <li>{@code mode=biome}, {@code x y z}: the biome id there; {@code mode=top}, {@code x z}: the
  *       {@code MOTION_BLOCKING} surface y there, the block under it and the biome;</li>
- *   <li>{@code mode=meteor}: the meteor scheduler — optional {@code strikeChance} (sets
+ *   <li>{@code mode=meteor}: the meteor scheduler, with optional {@code strikeChance} (sets
  *       {@code WorldConfig.meteorStrikeChance}), {@code shower} (sets the shower ticks), {@code strike=true} (one
  *       strike roll's charm check + meteor on the player); returns the settings and the falling meteors.</li>
  * </ul>
@@ -38,7 +44,7 @@ public final class WorldFeatureHarnessQueries {
     private WorldFeatureHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_worldgen", WorldFeatureHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_worldgen", WorldFeatureHarnessQueries::query);
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {
@@ -66,7 +72,7 @@ public final class WorldFeatureHarnessQueries {
         return String.valueOf(BuiltInRegistries.BLOCK.getKey(state.getBlock()));
     }
 
-    private static JsonObject onServer(MinecraftServer server, ServerLevel level, java.util.UUID playerId, JsonObject p) {
+    private static JsonObject onServer(MinecraftServer server, ServerLevel level, UUID playerId, JsonObject p) {
         JsonObject json = new JsonObject();
         String mode = p.has("mode") ? p.get("mode").getAsString() : "count";
         switch (mode) {
@@ -76,7 +82,7 @@ public final class WorldFeatureHarnessQueries {
                 int y1 = Math.min(level.getMaxY() - 1, i(p, "y1", level.getMaxY() - 1));
                 Set<String> ids = new HashSet<>();
                 if (p.has("ids")) for (String s : p.get("ids").getAsString().split(",")) ids.add(s.trim());
-                java.util.List<String> contains = new java.util.ArrayList<>();
+                List<String> contains = new ArrayList<>();
                 if (p.has("contains")) for (String s : p.get("contains").getAsString().split(",")) contains.add(s.trim());
                 String find = p.has("id") ? p.get("id").getAsString() : null;
                 int limit = i(p, "limit", 64);
@@ -120,11 +126,11 @@ public final class WorldFeatureHarnessQueries {
             case "top" -> {
                 int x = i(p, "x", 0), z = i(p, "z", 0);
                 level.getChunk(x >> 4, z >> 4);
-                int y = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, x, z);
+                int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
                 json.addProperty("y", y);
                 json.addProperty("below", id(level.getBlockState(new BlockPos(x, y - 1, z))));
                 json.addProperty("biome", level.getBiome(new BlockPos(x, y, z)).unwrapKey()
-                        .map(k -> dev.golem.core.Ids.keyId(k).toString()).orElse("?"));
+                        .map(k -> Ids.keyId(k).toString()).orElse("?"));
             }
             case "features" -> {
                 // the biome's placed features per generation step, in order (all of them, vanilla included), and the
@@ -133,13 +139,13 @@ public final class WorldFeatureHarnessQueries {
                 JsonArray steps = new JsonArray();
                 for (var step : biome.value().getGenerationSettings().features()) {
                     JsonArray ids = new JsonArray();
-                    for (var holder : step) ids.add(holder.unwrapKey().map(k -> dev.golem.core.Ids.keyId(k).toString()).orElse("?"));
+                    for (var holder : step) ids.add(holder.unwrapKey().map(k -> Ids.keyId(k).toString()).orElse("?"));
                     steps.add(ids);
                 }
                 json.add("steps", steps);
             }
             case "biome" -> json.addProperty("biome", level.getBiome(new BlockPos(i(p, "x", 0), i(p, "y", 64), i(p, "z", 0)))
-                    .unwrapKey().map(k -> dev.golem.core.Ids.keyId(k).toString()).orElse("?"));
+                    .unwrapKey().map(k -> Ids.keyId(k).toString()).orElse("?"));
             case "meteor" -> {
                 if (p.has("strikeChance")) WorldConfig.meteorStrikeChance = p.get("strikeChance").getAsInt();
                 if (p.has("shower")) BossSpawnHandler.meteorShower = p.get("shower").getAsInt();

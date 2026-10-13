@@ -1,11 +1,13 @@
 package com.hbm.entity.cart;
 
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
 
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatMinecartContainer;
 import com.hbm.items.tool.ItemModMinecart.EnumCartBase;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -22,7 +24,7 @@ import dev.golem.core.data.DataOut;
 /**
  * 1.7 {@code entity/cart/EntityMinecartContainerBase}: the inventory-bearing half of the cart roster.
  *
- * <p>Java has no multiple inheritance and 26.2 hangs the container behaviour off
+ * <p>Java has no multiple inheritance and 26.1 hangs the container behaviour off
  * {@link AbstractMinecartContainer}, so this cannot extend {@link EntityMinecartNTM} the way 1.7 did.
  * The chassis accessor is therefore restated here; both halves answer {@link ICartChassis}.
  */
@@ -34,14 +36,14 @@ public abstract class EntityMinecartContainerBase extends CompatMinecartContaine
 
     protected EntityMinecartContainerBase(EntityType<? extends EntityMinecartContainerBase> type, Level level) {
         super(type, level);
-        // 26.2: AbstractMinecartContainer hardcodes 36 slots; this re-sizes to getContainerSize().
+        // 26.1: AbstractMinecartContainer hardcodes 36 slots; this re-sizes to getContainerSize().
         clearItemStacks();
     }
 
     protected EntityMinecartContainerBase(EntityType<? extends EntityMinecartContainerBase> type, Level level,
                                           double x, double y, double z, EnumCartBase base) {
         this(type, level);
-        dev.golem.core.world.Compat.setInitialPos(this, x, y, z);
+        Compat.setInitialPos(this, x, y, z);
         setBase(base);
     }
 
@@ -83,11 +85,11 @@ public abstract class EntityMinecartContainerBase extends CompatMinecartContaine
     @Override
     public void destroy(ServerLevel level, DamageSource source) {
         clearContent();
-        dev.golem.core.world.Compat.kill(this, level);
+        Compat.kill(this, level);
 
         if (Compat.entityDrops(level)) {
             ItemStack stack = getCartItem();
-            if (hasCustomName()) dev.golem.core.world.ItemStacks.setCustomName(stack, getCustomName());
+            if (hasCustomName()) ItemStacks.setCustomName(stack, getCustomName());
             spawnAtLocation(level, stack);
         }
     }
@@ -95,12 +97,12 @@ public abstract class EntityMinecartContainerBase extends CompatMinecartContaine
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        com.hbm.util.SavedIds.putEnum(output, "base", getBase()); // by name; the synched int is session-only
+        SavedIds.putEnum(output, "base", getBase()); // by name; the synched int is session-only
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        setBase(com.hbm.util.SavedIds.getEnum(input, "base", EnumCartBase.values()[0]));
+        setBase(SavedIds.getEnum(input, "base", EnumCartBase.values()[0]));
     }
 }

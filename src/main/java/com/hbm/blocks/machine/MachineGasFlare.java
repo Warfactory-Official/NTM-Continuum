@@ -15,8 +15,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Flare Stack block — 1:1 port of the 1.12.2 {@code MachineGasFlare}: a 12-tall 3×3 the folded core
- * (dims {@code {11,0,1,1,1,1}}, offset 1) with the 4 base side cells marked as extras (the fluid/power
+ * Flare Stack block, 1:1 port of the 1.12.2 {@code MachineGasFlare}: a 12-tall 3×3, the folded core
+ * (dims {@code {11,0,1,1,1,1}}, offset 1), with the 4 base side cells marked as extras (the fluid/power
  * ports on {@code getConPos}).
  */
 public class MachineGasFlare extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {

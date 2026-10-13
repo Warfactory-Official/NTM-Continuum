@@ -1,10 +1,10 @@
 package com.hbm.inventory.material;
 
 /**
- * The "shapes" a material can take — the modern tag-system port of HBM's 1.12.2 ore-dictionary prefixes
+ * The "shapes" a material can take: the tag-system port of HBM's 1.12.2 ore-dictionary prefixes
  * ({@code MaterialShapes}). Each shape maps an HBM item-name prefix (e.g. {@code ingot}, {@code plate},
  * {@code powder}) to a <b>common item tag</b> path segment (e.g. {@code ingots}, {@code plates},
- * {@code dusts}) under the {@code c:} namespace — so {@code (IRON, INGOT)} → {@code c:ingots/iron}, the
+ * {@code dusts}) under the {@code c:} namespace, so {@code (IRON, INGOT)} maps to {@code c:ingots/iron}, the
  * cross-mod equivalent of the old {@code "ingotIron"} ore-dict key.
  *
  * <p>The {@link #quantity} (in 1/72-of-an-ingot units, NUGGET = 8, INGOT = 72) is kept for the future
@@ -44,7 +44,7 @@ public enum MaterialShapes {
     /** The HBM item-name prefix (e.g. {@code ingot} in {@code ingot_steel}; for autogen items the shared
      * registry-name stem, e.g. {@code plate_cast}). */
     public final String itemPrefix;
-    /** The {@code c:} common-tag path segment (e.g. {@code ingots} → {@code c:ingots/<material>}). */
+    /** The {@code c:} common-tag path segment (e.g. {@code ingots} gives {@code c:ingots/<material>}). */
     public final String tagPlural;
     /** Material balance in 1/72-of-an-ingot units (for future recipe autogen). */
     public final int quantity;

@@ -1,12 +1,13 @@
 package com.hbm.inventory.recipes.anvil;
 
+import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.RecipesCommon.AStack;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
 /**
- * A two-input anvil smithing recipe (left + right slot → output), ported from 1.12.2. Matching is by
+ * A two-input anvil smithing recipe (left and right slots to output), ported from 1.12.2. Matching is by
  * {@link AStack} (exact item or tag); {@link #makeShapeless()} also accepts the mirrored arrangement.
  * In LBSM mode with {@code LBSM_recipeUnlockAnvil} every recipe is tier 1, as in 1.7. Subclasses: Mold, Hot, Rename, Cyanide.
  */
@@ -19,8 +20,8 @@ public class AnvilSmithingRecipe {
     protected boolean shapeless = false;
 
     public AnvilSmithingRecipe(int tier, ItemStack output, AStack left, AStack right) {
-        // 1.7 LBSM_recipeUnlockAnvil: every smithing recipe at tier 1 in LBSM mode (History §19ej-8)
-        this.tier = com.hbm.config.GeneralConfig.enableLBSM && com.hbm.config.GeneralConfig.enableLBSMUnlockAnvil ? 1 : tier;
+        // 1.7 LBSM_recipeUnlockAnvil: every smithing recipe at tier 1 in LBSM mode
+        this.tier = GeneralConfig.enableLBSM && GeneralConfig.enableLBSMUnlockAnvil ? 1 : tier;
         this.output = output;
         this.left = left;
         this.right = right;

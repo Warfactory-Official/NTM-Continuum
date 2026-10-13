@@ -7,7 +7,7 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A block that can be detonated. Ported from 1.12.2 ({@code World}→{@code Level}). Used by the
+ * A block that can be detonated. Ported from 1.12.2 ({@code World} to {@code Level}). Used by the
  * detonation paths (right-click detonator, redstone, remote triggers) to fire a bomb and report
  * whether it went off, was missing parts, etc.
  */
@@ -15,7 +15,7 @@ public interface IBomb {
 
     BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator);
 
-    /** Allows deferred triggers to retain attribution when the originating entity is no longer online. */
+    /** Allows deferred triggers to retain attribution when the originating entity is offline. */
     default BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator,
                                    @Nullable UUID detonatorId) {
         return explode(level, pos, detonator);

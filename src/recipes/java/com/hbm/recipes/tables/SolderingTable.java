@@ -45,6 +45,7 @@ import com.hbm.items.ModSatelliteItems;
 import com.hbm.items.ModUpgradeItems;
 import dev.golem.core.world.RecipeSource;
 import dev.golem.core.Ids;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -310,7 +311,7 @@ public final class SolderingTable extends RecipeSource<Row> {
     }
 
     private static List<String> with(List<String> requires, String flag) {
-        List<String> all = new java.util.ArrayList<>(requires);
+        List<String> all = new ArrayList<>(requires);
         all.add(flag);
         return List.copyOf(all);
     }

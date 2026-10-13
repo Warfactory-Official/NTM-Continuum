@@ -8,8 +8,11 @@ import com.hbm.entity.projectile.EntityBurningFOEQ;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.items.ModItems;
+import com.hbm.items.ModMeleeKitItems;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.util.MobUtil;
+import com.hbm.util.ShadyUtil;
+import dev.golem.core.platform.Platform;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.Deaths;
 import dev.golem.core.world.Spawns;
@@ -34,7 +37,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * The mob parts of 1.7 {@code ModEventHandler} (History §19ej-7): the rest of {@code onEntityDeath} (radiation reset,
+ * The mob parts of 1.7 {@code ModEventHandler}: the rest of {@code onEntityDeath} (radiation reset,
  * {@code enableCataclysm}, the HbMinecraft book, the hostile-mob key/launch-code drops and the zombie ingots; the
  * module items' share is in {@link com.hbm.handler.ArmorModEvents} and the boxcar achievement in
  * {@link com.hbm.entity.mob.EntityCreeperTainted}), {@code decorateMob} and {@code addAITasks}.
@@ -68,12 +71,12 @@ public final class ModEventHandlerMobs {
         }
 
         // 1.7 also matches any entity whose name is "HbMinecraft" (a name tag will do)
-        if (com.hbm.util.ShadyUtil.is(entity, com.hbm.util.ShadyUtil.HbMinecraft, "HbMinecraft")) {
-            drop(entity, level, com.hbm.items.ModMeleeKitItems.book_of_.get());
+        if (ShadyUtil.is(entity, ShadyUtil.HbMinecraft, "HbMinecraft")) {
+            drop(entity, level, ModMeleeKitItems.book_of_.get());
         }
 
         if (!Compat.mobLoot(level)) return;
-        if (!(source.getEntity() instanceof Player player) || dev.golem.core.platform.Platform.isFakePlayer(player)) return;
+        if (!(source.getEntity() instanceof Player player) || Platform.isFakePlayer(player)) return;
         for (Item item : playerKillDrops(entity, entity.getRandom())) drop(entity, level, item);
     }
 

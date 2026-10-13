@@ -1,5 +1,7 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineCoker;
 import com.hbm.tileentity.machine.oil.TileEntityMachineCoker;
@@ -12,11 +14,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-/** Screen for the coker — 1.7 {@code GUIMachineCoker} ({@code processing/gui_coker.png}, 176×204 on a 256×256
+/** Screen for the coker, 1.7 {@code GUIMachineCoker} ({@code processing/gui_coker.png}, 176×204 on a 256×256
  * texture). Progress bar (61,46) src(176,0), heat bar (61,55) src(176,5); tank bars at x=35/125 (bottom y=70). */
-public class GUIMachineCoker extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineCoker> {
+public class GUIMachineCoker extends CompatContainerScreen<ContainerMachineCoker> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_coker.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_coker.png");
 
     public GUIMachineCoker(ContainerMachineCoker menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 204);
@@ -41,7 +43,7 @@ public class GUIMachineCoker extends dev.golem.core.gui.CompatContainerScreen<Co
         int h = te.getHeatScaled(52);
         if (h > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 61, this.topPos + 55, 176.0F, 5.0F, h, 5, 256, 256);
 
-        // 1.7: tanks[i].renderTank(guiLeft + 35 / 125, guiTop + 70, z, 16, 52) — tinted, bottom-anchored.
+        // 1.7: tanks[i].renderTank(guiLeft + 35 / 125, guiTop + 70, z, 16, 52), tinted, bottom-anchored.
         Production2Gui.drawTank(graphics, te.tanks[0], this.leftPos + 35, this.topPos + 70, 16, 52);
         Production2Gui.drawTank(graphics, te.tanks[1], this.leftPos + 125, this.topPos + 70, 16, 52);
     }

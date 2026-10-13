@@ -36,8 +36,8 @@ import com.hbm.blocks.bomb.BlockVolcano;
  * <p>The volcano itself is built by what the core throws, not by the core: the {@link EntityShrapnel}
  * blobs pool lava and monoxide where they land (rising ones blast a lava pocket into whatever roof they
  * hit), {@link #raiseMagma} stacks lava on top of pooled lava, and the volcanic lava solidifies into
- * basalt on its random tick. Deviation from 1.7/ntm-next: the port's volcanic lava is a static block
- * (see {@link com.hbm.blocks.fluid.BlockStaticFluid}), so the pools do not flow down the flanks.
+ * basalt as it flows and on its random tick. The volcanic lava is a flowing world fluid
+ * ({@link com.hbm.blocks.fluid.BlockVolcanicLava}), so the pools run down the flanks as in 1.7.
  *
  * <p>{@code ExplosionNT} with {@code NODROP | LAVA_V/LAVA_R | NOSOUND | ALLMOD | NOHURT} is not in this
  * tree; {@link #lavaBlast} is the same blast on the {@link ExplosionVNT} pipeline, as ntm-next does it:

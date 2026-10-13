@@ -47,7 +47,7 @@ public final class ModEntityItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    // --- spawn items (1.7 ItemChopper family) ---
+    // Spawn items (1.7 ItemChopper family)
     public static final RegistryObject<ItemChopper> spawn_chopper = REG.item("chopper",
                     p -> new ItemChopper(p, () -> ModNtmEntities.HUNTER_CHOPPER.get()), p -> p.stacksTo(1))
             .transform(Presets.sprite()).tab(HbmTab.WEAPONS);
@@ -67,7 +67,7 @@ public final class ModEntityItems {
                     p -> new ItemChopper(p, () -> ModNtmEntities.DUCK.get()), p -> p.stacksTo(16))
             .transform(Presets.sprite()).tab(HbmTab.WEAPONS);
 
-    // --- vehicles ---
+    // Vehicles
     public static final RegistryObject<ItemBoatRubber> boat_rubber = REG.item("boat_rubber",
                     ItemBoatRubber::new, p -> p.stacksTo(1))
             .transform(Presets.sprite()).tab(HbmTab.MACHINES);
@@ -94,7 +94,7 @@ public final class ModEntityItems {
                             p -> new ItemDrone(p, d), p -> p)
                     .transform(Presets.sprite("hbm:items/drone." + d.name().toLowerCase(Locale.ROOT))));
 
-    // --- grenades (1.7 ModItems:3590 and the universal grenade parts) ---
+    // Grenades (1.7 ModItems:3590 and the universal grenade parts)
     public static final RegistryObject<ItemGrenadeDynamite> stick_dynamite = REG.item("stick_dynamite",
                     p -> new ItemGrenadeDynamite(p, 3), p -> p.stacksTo(16))
             .transform(Presets.sprite()).tab(HbmTab.WEAPONS);
@@ -124,7 +124,7 @@ public final class ModEntityItems {
         return REG.item(base + "_" + name, factory, p -> p).transform(Presets.sprite("hbm:items/" + base + "." + name));
     }
 
-    // --- dispersers (1.7 ModItems:3881; the empty canister/gland items already exist in ModItems) ---
+    // Dispersers (1.7 ModItems:3881; the empty canister/gland items already exist in ModItems)
     public static final RegistryObject<ItemDisperser> disperser_canister = REG.item("disperser_canister",
                     p -> new ItemDisperser(p, 2000, "disperser_canister", ItemDisperser.Kind.CANISTER,
                             Library.id("disperser_canister_empty"), Library.id("disperser_canister_overlay")),
@@ -142,13 +142,13 @@ public final class ModEntityItems {
         ModTabs.addStacksTo(HbmTab.WEAPONS, () -> glyphid_gland.get().creativeVariants());
     }
 
-    // --- drops ---
+    // Drops
     public static final RegistryObject<ItemPlasticBag> plastic_bag = REG.item("plastic_bag",
                     ItemPlasticBag::new, p -> p)
             .transform(Presets.sprite()).tab(HbmTab.CONSUMABLES);
     /**
      * 1.7 ModItems.bottled_cloud, the mask man's drop. In 1.7/ntm-next it is an armour module
-     * ({@code ItemModCloud}); this port's armour-module wave owns that behaviour, so the drop is a plain
+     * ({@code ItemModCloud}); this port's armour-module work owns that behaviour, so the drop is a plain
      * item until it is wired there.
      */
     public static final RegistryObject<Item> bottled_cloud = REG.item("bottled_cloud")

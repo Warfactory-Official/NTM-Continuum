@@ -1,13 +1,17 @@
 package com.hbm.client.render.projectile;
 
 import com.hbm.entity.projectile.EntityBulletBeamBase;
+import com.hbm.items.weapon.sedna.BulletConfig;
+import com.hbm.packet.ProjectileStatePayload;
 import dev.golem.core.render.CameraInfo;
+import dev.golem.core.render.CompatEntityRenderState;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemEntityRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
 
 /** Renders the old beam entity along its measured hitscan length. */
 public final class BeamProjectileRenderer extends GemEntityRenderer<EntityBulletBeamBase, BeamProjectileRenderer.State> {
@@ -21,7 +25,7 @@ public final class BeamProjectileRenderer extends GemEntityRenderer<EntityBullet
     @Override public void extract(EntityBulletBeamBase entity, State state, float partialTicks) {
         // The custom payload can arrive before or after the vanilla entity spawn. Resolve the pending
         // copy here as well as in tick so the first render after spawn does not lose the beam.
-        com.hbm.packet.ProjectileStatePayload.applyPending(entity);
+        ProjectileStatePayload.applyPending(entity);
         state.origin = entity.position();
         state.heading = new Vec3(entity.headingX, entity.headingY, entity.headingZ);
         if (entity.hasRenderState()) {
@@ -54,18 +58,18 @@ public final class BeamProjectileRenderer extends GemEntityRenderer<EntityBullet
         if (tracer != null) tracer.draw(state, poseStack, collector);
     }
 
-    public static final class State extends dev.golem.core.render.CompatEntityRenderState {
+    public static final class State extends CompatEntityRenderState {
         public Vec3 heading = Vec3.ZERO;
         /** Authoritative spawn point and endpoint, not a yaw/pitch reconstruction. */
         public Vec3 origin = Vec3.ZERO;
         public Vec3 endpoint = Vec3.ZERO;
         public Vec3 direction = Vec3.ZERO;
         public double length;
-        public com.hbm.items.weapon.sedna.BulletConfig config;
+        public BulletConfig config;
         public float yaw;
         public float pitch;
         public float age;
         public float partialTicks;
-        public org.joml.Quaternionf cameraOrientation;
+        public Quaternionf cameraOrientation;
     }
 }

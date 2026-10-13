@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -15,8 +16,8 @@ import org.jspecify.annotations.Nullable;
 import com.hbm.tileentity.machine.TileEntityMachineSiren;
 
 /**
- * 1.7 {@code MachineSiren}: a plain {@code BlockContainer} — {@code block_steel} top and bottom,
- * {@code machine_siren} on the sides, no facing — that opens its one-slot menu on a non-sneaking click and
+ * 1.7 {@code MachineSiren}: a plain {@code BlockContainer} with {@code block_steel} top and bottom,
+ * {@code machine_siren} on the sides and no facing. It opens its one-slot menu on a non-sneaking click and
  * spills the cassette when broken.
  */
 public class MachineSiren extends CompatBlock implements TickingBlock {
@@ -36,7 +37,7 @@ public class MachineSiren extends CompatBlock implements TickingBlock {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }

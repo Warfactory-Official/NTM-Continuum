@@ -10,10 +10,12 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.sound.ModSounds;
+import com.hbm.tileentity.IRelocatable;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -41,12 +43,12 @@ import com.hbm.tileentity.ModDroneBlockEntities;
  */
 public class TileEntityDroneCrate extends TileEntityMachineBase
         implements MenuProvider, IControlReceiver, IDroneLinkable, IFluidStandardTransceiverMK2, WorldlyContainer,
-        com.hbm.tileentity.IRelocatable {
+        IRelocatable {
 
     /** A sub-level move carried this crate; its next link follows when that block was carried too. */
     @Override
-    public void relocate(dev.golem.core.world.SubLevels.Move move) {
-        next = com.hbm.tileentity.IRelocatable.followNullable(move, next);
+    public void relocate(SubLevels.Move move) {
+        next = IRelocatable.followNullable(move, next);
         setChanged();
     }
 

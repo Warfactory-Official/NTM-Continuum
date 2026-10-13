@@ -7,6 +7,7 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityCondenserPowered;
 import com.hbm.lib.Library;
@@ -60,7 +61,7 @@ public class MachineCondenserPowered extends BlockMultiblockMachine
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
-    private static String tankLine(com.hbm.inventory.fluid.tank.FluidTankNTM tank) {
+    private static String tankLine(FluidTankNTM tank) {
         return tank.getTankType().getDisplayNameString() + ": "
                 + String.format(Locale.US, "%,d", tank.getFill()) + "/"
                 + String.format(Locale.US, "%,d", tank.getMaxFill()) + "mB";

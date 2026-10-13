@@ -1,8 +1,13 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.inventory.fluid.FluidCombustion;
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineGasFlare;
 import com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -12,20 +17,20 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.List;
 
 /**
- * Screen for the flare stack — 1.7.10 {@code GUIMachineGasFlare} ({@code generators/gui_flare_stack.png}, 176×203):
+ * Screen for the flare stack, 1.7.10 {@code GUIMachineGasFlare} ({@code generators/gui_flare_stack.png}, 176×203):
  * power bar 16×52 filling up to y=69 from u=176,v=94−j; the valve
  * indicator 35×10 at (79,15) (u=176,v=0) when on, the ignition indicator 35×14 at (79,49) (u=176,v=10)
  * when burning, the burning flame icon 18×18 at (88,29) (u=176,v=24), tank bar 16×52 at (35,17).
  */
-public class GUIMachineGasFlare extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineGasFlare> implements IUpgradeInfoProviderSource {
+public class GUIMachineGasFlare extends CompatContainerScreen<ContainerMachineGasFlare> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/generators/gui_flare_stack.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/generators/gui_flare_stack.png");
 
     public GUIMachineGasFlare(ContainerMachineGasFlare menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 203);
     }
 
-    /** 1.7 draws no machine title (commented out there) — only the inventory label at (8, ySize-96+2). */
+    /** 1.7 draws no machine title (commented out there), so only the inventory label at (8, ySize-96+2). */
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int xm, int ym) {
         GuiDraw.text(graphics, this.font, this.playerInventoryTitle, 8, this.imageHeight - 96 + 2, 4210752, false);
@@ -45,7 +50,7 @@ public class GUIMachineGasFlare extends dev.golem.core.gui.CompatContainerScreen
 
         if (te.isOn) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 79, this.topPos + 15, 176.0F, 0.0F, 35, 10, 256, 256);
         if (te.doesBurn) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 79, this.topPos + 49, 176.0F, 10.0F, 35, 14, 256, 256);
-        if (te.isOn && te.doesBurn && te.tank.getFill() > 0 && com.hbm.inventory.fluid.FluidCombustion.isFlammable(te.tank.getTankType())) {
+        if (te.isOn && te.doesBurn && te.tank.getFill() > 0 && FluidCombustion.isFlammable(te.tank.getTankType())) {
             GuiDraw.blit(graphics, TEXTURE, this.leftPos + 88, this.topPos + 29, 176.0F, 24.0F, 18, 18, 256, 256);
         }
 
@@ -70,7 +75,7 @@ public class GUIMachineGasFlare extends dev.golem.core.gui.CompatContainerScreen
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.gameMode != null) {
             // 1.7 hit boxes: x [89,105), y (16,26] valve; y (50,64] ignition dial.
@@ -89,7 +94,7 @@ public class GUIMachineGasFlare extends dev.golem.core.gui.CompatContainerScreen
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getFlare();
     }
 }

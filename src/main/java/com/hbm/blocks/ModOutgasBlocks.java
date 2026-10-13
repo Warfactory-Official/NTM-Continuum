@@ -10,6 +10,7 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.world.Compat;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -62,7 +63,7 @@ public final class ModOutgasBlocks {
                 p -> new BlockOutgas(p, true, rate, true, neighbour),
                 p -> props.apply(p).requiresCorrectToolForDrops().randomTicks());
         Reg.Handle<BlockItem> item = REG.blockItem(outgas,
-                p -> dev.golem.core.world.Compat.blockDescription(p));
+                p -> Compat.blockDescription(p));
         ModTabs.addTo(tab, item);
         return outgas;
     }

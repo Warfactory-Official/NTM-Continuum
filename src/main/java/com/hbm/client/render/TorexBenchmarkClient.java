@@ -3,9 +3,14 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.entity.effect.EntityNukeTorex;
 import dev.golem.core.client.ClientTicks;
+import dev.golem.core.platform.Platform;
+import dev.golem.core.render.Billboards;
 import java.util.Arrays;
+import java.util.Locale;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Screenshot;
+import net.minecraft.client.player.LocalPlayer;
 
 /** Development-only deterministic benchmark driver for the Torex cloudlet renderer. */
 public final class TorexBenchmarkClient {
@@ -38,14 +43,14 @@ public final class TorexBenchmarkClient {
     private static CameraType previousCameraType;
     private static Float previousYaw;
     private static Float previousPitch;
-    private static net.minecraft.client.player.LocalPlayer benchmarkPlayer;
+    private static LocalPlayer benchmarkPlayer;
     private static boolean restored;
     private static boolean shutdownPending;
 
     private TorexBenchmarkClient() {}
 
     public static void register() {
-        if (ENABLED && dev.golem.core.platform.Platform.isDevelopment()) {
+        if (ENABLED && Platform.isDevelopment()) {
             ClientTicks.onEndTick(TorexBenchmarkClient::tick);
         }
     }
@@ -97,7 +102,7 @@ public final class TorexBenchmarkClient {
             return;
         }
         if (finished && !captured) {
-            net.minecraft.client.Screenshot.grab(minecraft.gameDirectory, minecraft.getMainRenderTarget(),
+            Screenshot.grab(minecraft.gameDirectory, minecraft.getMainRenderTarget(),
                     message -> Constants.LOG.info("[TOREX-BENCH] capture {}", message.getString()));
             captured = true;
         }
@@ -134,7 +139,7 @@ public final class TorexBenchmarkClient {
             finish();
             return;
         }
-        int frameId = dev.golem.core.render.Billboards.frameId();
+        int frameId = Billboards.frameId();
         if (frameId == lastFrameId) return;
         lastFrameId = frameId;
         if (frameSamples < FRAME_NANOS.length) {
@@ -190,11 +195,11 @@ public final class TorexBenchmarkClient {
     }
 
     private static String millis(long[] samples, int count, double percentile) {
-        return String.format(java.util.Locale.ROOT, "%.3f", percentile(samples, count, percentile) / 1_000_000D);
+        return String.format(Locale.ROOT, "%.3f", percentile(samples, count, percentile) / 1_000_000D);
     }
 
     private static String micros(long[] samples, int count, double percentile) {
-        return String.format(java.util.Locale.ROOT, "%.1f", percentile(samples, count, percentile) / 1_000D);
+        return String.format(Locale.ROOT, "%.1f", percentile(samples, count, percentile) / 1_000D);
     }
 
     private static long percentile(long[] samples, int count, double percentile) {

@@ -28,8 +28,8 @@ import net.minecraft.world.phys.Vec3;
  * Ground fire that stays put: an invisible box that re-ignites everything standing in its column every
  * tick, and raises its own flames on each client rather than through particle packets.
  *
- * <p>1.12.2 overrides {@code onEntityUpdate} without calling super, so none of the base per-tick block
- * — fire ticks, air, void, fluid push — runs. That is reproduced here by not calling {@code super.tick()},
+ * <p>1.12.2 overrides {@code onEntityUpdate} without calling super, so none of the base per-tick work
+ * (fire ticks, air, void, fluid push) runs. This class does the same by not calling {@code super.tick()},
  * which is load-bearing: a lingering fire must not drown or suffocate.
  *
  * <p>Upstream's black-fire type is absent, since nothing that fires it is ported.

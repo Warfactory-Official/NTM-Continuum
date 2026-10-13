@@ -2,6 +2,7 @@ package com.hbm.client.render;
 
 import com.hbm.Constants;
 
+import dev.golem.core.render.Vertexes;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
@@ -40,7 +41,7 @@ public final class RBMKFuelRodRenderer<T extends BlockEntityRBMKRod> extends Gem
     /**
      * The static JSON contributes only the four casing faces; the recessed channel is an OBJ Inner plus
      * Cap at every column layer, with the fuel rods inside them. The height is a dial, so every layer
-     * it could reach is declared and the surplus hidden — a sealed declaration cannot grow when the
+     * it could reach is declared and the surplus hidden. A sealed declaration cannot grow when the
      * player changes the dial mid-session.
      */
     @Override
@@ -97,7 +98,7 @@ public final class RBMKFuelRodRenderer<T extends BlockEntityRBMKRod> extends Gem
 
     /**
      * Each stacked segment is lit by the block it occupies, not the lattice floor at the core. The cap
-     * above the shaft gets one more — same lesson as the control rod: the mouth cell is occluded by
+     * above the shaft gets one more. Same lesson as the control rod: the mouth cell is occluded by
      * neighbouring columns and renders near-black.
      */
     @Override
@@ -117,7 +118,7 @@ public final class RBMKFuelRodRenderer<T extends BlockEntityRBMKRod> extends Gem
 
     /**
      * The Cherenkov envelope is an additive sheet every quarter block up a stack whose height is a
-     * dial — a count rather than a shape, on a textureless pipeline no {@code Surface} can name.
+     * dial. It is a count rather than a shape, on a textureless pipeline no {@code Surface} can name.
      */
     @Override
     protected void submitUndeclared(State state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
@@ -126,10 +127,10 @@ public final class RBMKFuelRodRenderer<T extends BlockEntityRBMKRod> extends Gem
             pose.translate(0.5D, 0.75D, 0.5D);
             sink.submitCustomGeometry(pose, CompatRenderTypes.additiveDepthWrite(), (last, buffer) -> {
                 for (float y = 0; y <= state.layers - 1; y += .25F) {
-                    dev.golem.core.render.Vertexes.vertex(buffer, last, -.5F, y, -.5F, 0x1A66E6FF, 0, 0, OverlayTexture.NO_OVERLAY, 0, 0, 1, 0);
-                    dev.golem.core.render.Vertexes.vertex(buffer, last, -.5F, y,  .5F, 0x1A66E6FF, 0, 0, OverlayTexture.NO_OVERLAY, 0, 0, 1, 0);
-                    dev.golem.core.render.Vertexes.vertex(buffer, last,  .5F, y,  .5F, 0x1A66E6FF, 0, 0, OverlayTexture.NO_OVERLAY, 0, 0, 1, 0);
-                    dev.golem.core.render.Vertexes.vertex(buffer, last,  .5F, y, -.5F, 0x1A66E6FF, 0, 0, OverlayTexture.NO_OVERLAY, 0, 0, 1, 0);
+                    Vertexes.vertex(buffer, last, -.5F, y, -.5F, 0x1A66E6FF, 0, 0, OverlayTexture.NO_OVERLAY, 0, 0, 1, 0);
+                    Vertexes.vertex(buffer, last, -.5F, y,  .5F, 0x1A66E6FF, 0, 0, OverlayTexture.NO_OVERLAY, 0, 0, 1, 0);
+                    Vertexes.vertex(buffer, last,  .5F, y,  .5F, 0x1A66E6FF, 0, 0, OverlayTexture.NO_OVERLAY, 0, 0, 1, 0);
+                    Vertexes.vertex(buffer, last,  .5F, y, -.5F, 0x1A66E6FF, 0, 0, OverlayTexture.NO_OVERLAY, 0, 0, 1, 0);
                 }
             });
             pose.popPose();

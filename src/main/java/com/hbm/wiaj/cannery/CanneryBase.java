@@ -1,12 +1,15 @@
 package com.hbm.wiaj.cannery;
 
 import com.hbm.wiaj.JarScript;
+import dev.golem.core.Ids;
+import dev.golem.core.dejson.BlockStates;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -36,7 +39,7 @@ public abstract class CanneryBase {
 
     /** The registered item {@code id} ({@code namespace:path}); 1.7's meta items are flattened to their own ids. */
     protected static Item item(String id) {
-        return BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.parse(id));
+        return BuiltInRegistries.ITEM.getValue(Ids.parse(id));
     }
 
     protected static ItemStack stack(String id) {
@@ -49,7 +52,7 @@ public abstract class CanneryBase {
 
     /** The default state of block {@code id}, air if nothing is registered under it. */
     protected static BlockState block(String id) {
-        net.minecraft.world.level.block.Block block = dev.golem.core.dejson.BlockStates.block(id);
+        Block block = BlockStates.block(id);
         return block == null ? Blocks.AIR.defaultBlockState() : block.defaultBlockState();
     }
 }

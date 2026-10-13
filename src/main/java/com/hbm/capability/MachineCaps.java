@@ -15,9 +15,9 @@ import java.util.function.BiPredicate;
  * every tick and time them out three seconds later; the graph asks the block what it is instead, so
  * a machine in an unloaded chunk is a fact about the world rather than a subscription that lapsed.
  *
- * <p>The fluid bits are declared but carry no face gate here, unlike upstream: Continuum's fluid
- * network is still {@code FluidNetMK2} over UNINOS and has no {@code FluidFace} to gate on. Keeping
- * the bits means the domain mask is the same shape when the fluid net follows.
+ * <p>The fluid bits carry no face gate here, unlike upstream: Continuum's fluid network is
+ * {@code FluidNetMK2} over UNINOS and has no {@code FluidFace} to gate on. The bits are declared so the
+ * domain mask has the same shape as upstream's.
  */
 public final class MachineCaps {
 
@@ -36,10 +36,10 @@ public final class MachineCaps {
 
     /**
      * The fusion links, which are domains rather than caps: no block declares them and the builder below
-     * takes no argument for them. They name what a machine claims at a <b>position</b> — a fusion beam
-     * lands on a coordinate that need not hold a block at all — so the in/out halves are spelled
+     * takes no argument for them. They name what a machine claims at a <b>position</b>: a fusion beam
+     * lands on a coordinate that need not hold a block at all, so the in/out halves are spelled
      * separately, because which end of a link a machine is on is the whole of what the plasma and
-     * klystron nets used to carry.
+     * klystron nets carry.
      */
     public static final int PLASMA_IN = 1 << 7;
     public static final int PLASMA_OUT = 1 << 8;
@@ -103,7 +103,7 @@ public final class MachineCaps {
         return new MachineCaps(beType, powerIn, powerOut, fluidIn, true, items, itemsAtCells, fe, selfProvided, faces);
     }
 
-    /** Sided inventory at the core block entity only — a GUI inventory with no proxy cells. */
+    /** Sided inventory at the core block entity only: a GUI inventory with no proxy cells. */
     public MachineCaps items() {
         return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, true, itemsAtCells, fe, selfProvided, faces);
     }

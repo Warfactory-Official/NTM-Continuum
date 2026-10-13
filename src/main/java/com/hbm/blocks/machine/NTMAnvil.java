@@ -1,8 +1,10 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.inventory.container.ContainerAnvil;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.TileEntityAnvil;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -29,7 +31,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The NTM anvil — HBM's tiered crafting station, ported from the 1.12.2 {@code NTMAnvil}. A stateless
+ * The NTM anvil is HBM's tiered crafting station, ported from the 1.12.2 {@code NTMAnvil}. A stateless
  * GUI block: right-click opens {@link ContainerAnvil} (two smithing slots + the construction-recipe
  * browser); the {@link #tier} is baked into the block instance and gates which recipes it can run.
  *
@@ -39,7 +41,7 @@ import org.jspecify.annotations.Nullable;
   * {@code getBoundingBox}. <b>Deferred:</b> the old {@code BlockFalling} gravity (a falling-block entity
   * would render nothing for an INVISIBLE block).
  */
-public class NTMAnvil extends dev.golem.core.world.CompatBlock implements TickingBlock {
+public class NTMAnvil extends CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -86,7 +88,7 @@ public class NTMAnvil extends dev.golem.core.world.CompatBlock implements Tickin
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, new SimpleMenuProvider(
+            Menus.openWithPos(serverPlayer, new SimpleMenuProvider(
                     (id, inventory, p) -> new ContainerAnvil(id, inventory, pos),
                     Component.translatable("container.anvil", this.tier)), pos);
         }

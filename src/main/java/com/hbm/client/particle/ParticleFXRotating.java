@@ -6,11 +6,11 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 /**
  * {@link ParticleRotating} plus a remembered hue.
  *
- * <p>1.12.2 had two classes for this — {@code com.hbm.particle.ParticleRotating} and
- * {@code com.hbm.entity.particle.ParticleFXRotating} — carrying two copies of the same billboard
+ * <p>1.12.2 had two classes for this, {@code com.hbm.particle.ParticleRotating} and
+ * {@code com.hbm.entity.particle.ParticleFXRotating}, carrying two copies of the same billboard
  * maths, differing only in that this one kept a {@code hue} field and spun on
- * {@code hashCode()} rather than {@code identityHashCode()}. Both names are kept so ported subclasses
- * read like their originals, but the duplicated rendering is gone: everything lives in the parent.
+ * {@code hashCode()} rather than {@code identityHashCode()}. Both names exist so ported subclasses read like
+ * their originals; all rendering lives in the parent.
  */
 public abstract class ParticleFXRotating extends ParticleRotating {
 

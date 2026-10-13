@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The casting molds — the 1.12.2 {@code ItemMold} metadata table as one registered item per mold
- * (registry id {@code mold_<name>}), plus the {@code mold_base} crafting blank. Sizes/costs verbatim;
+ * The casting molds: the 1.12.2 {@code ItemMold} metadata table as one registered item per mold
+ * (registry id {@code mold_<name>}), plus the {@code mold_base} crafting blank. Sizes and costs are unchanged;
  * the casing mold entries use the ported metal casing family.
  */
 public final class ModMoldItems {

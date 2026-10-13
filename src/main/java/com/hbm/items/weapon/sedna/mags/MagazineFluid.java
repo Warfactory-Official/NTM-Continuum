@@ -45,7 +45,7 @@ public class MagazineFluid implements IMagazine<FluidType> {
     @Override public int getAmountBeforeReload(ItemStack stack) { return ItemGunBaseNT.getValueInt(stack, KEY_MAG_PREV + index); }
     @Override public void setAmountAfterReload(ItemStack stack, int amount) { ItemGunBaseNT.setValueInt(stack, KEY_MAG_AFTER + index, amount); }
     @Override public int getAmountAfterReload(ItemStack stack) { return ItemGunBaseNT.getValueInt(stack, KEY_MAG_AFTER + index); }
-    /** The loaded fluid, saved by registry name (never the numeric fluid id, History section 19ej-ids). */
+    /** The loaded fluid, saved by registry name (never the numeric fluid id). */
     public static FluidType getMagType(ItemStack stack, int index) { return Fluids.byRegistryName(ItemGunBaseNT.getValueString(stack, KEY_MAG_TYPE + index)); }
     public static void setMagType(ItemStack stack, int index, FluidType value) { ItemGunBaseNT.setValueString(stack, KEY_MAG_TYPE + index, value.getRegistryName()); }
     public static int getMagCount(ItemStack stack, int index) { return ItemGunBaseNT.getValueInt(stack, KEY_MAG_COUNT + index); }

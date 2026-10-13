@@ -1,27 +1,41 @@
 package com.hbm.util;
 
+import com.hbm.api.data.ArmorDataMaps;
 import com.hbm.api.entity.IResistanceProvider;
+import com.hbm.handler.ArmorModEvents;
 import com.hbm.handler.ArmorModHandler;
+import com.hbm.handler.ArmorUtil;
 import com.hbm.items.ModArmorItems;
 import com.hbm.items.ModGearItems;
 import com.hbm.items.armor.ItemArmorMod;
+import com.hbm.items.gear.ArmorFSB;
+import com.hbm.items.gear.ArmorFSBFueled;
 import com.hbm.items.gear.ArmorFSBPowered;
+import dev.golem.core.Ids;
+import dev.golem.core.world.Compat;
 import dev.golem.core.world.DamageEvents;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -64,19 +78,19 @@ public final class DamageResistanceHandler {
 
     /** The code-registered item stats (read-only view). */
     public static Map<Item, ResistanceStats> codeItemStats() {
-        return java.util.Collections.unmodifiableMap(ITEM_STATS);
+        return Collections.unmodifiableMap(ITEM_STATS);
     }
 
     /** The code-registered set stats as {helmet, chest, legs, boots} to stats, in registration order (read-only). */
     public static Map<List<Item>, ResistanceStats> codeSetStats() {
         Map<List<Item>, ResistanceStats> view = new LinkedHashMap<>();
-        SET_STATS.forEach((set, stats) -> view.put(java.util.Arrays.asList(set.helmet, set.chest, set.legs, set.boots), stats));
-        return java.util.Collections.unmodifiableMap(view);
+        SET_STATS.forEach((set, stats) -> view.put(Arrays.asList(set.helmet, set.chest, set.legs, set.boots), stats));
+        return Collections.unmodifiableMap(view);
     }
 
     /** The code-registered entity stats (read-only view). */
     public static Map<Class<? extends Entity>, ResistanceStats> codeEntityStats() {
-        return java.util.Collections.unmodifiableMap(ENTITY_STATS);
+        return Collections.unmodifiableMap(ENTITY_STATS);
     }
 
     /** 1.7 {@code itemStats.put}: resistances of a single worn piece, set or no set. */
@@ -147,13 +161,13 @@ public final class DamageResistanceHandler {
     }
 
     /** Server-authoritative damage call carrying Sedna's threshold and resistance piercing. */
-    public static boolean hurt(net.minecraft.server.level.ServerLevel level, Entity entity, DamageSource source,
+    public static boolean hurt(ServerLevel level, Entity entity, DamageSource source,
                                float amount, float pierceDT, float pierce) {
         boolean[] result = new boolean[1];
         setup(pierceDT, pierce);
         try {
             DamageEvents.withPiercing(pierceDT, pierce,
-                    () -> result[0] = dev.golem.core.world.Compat.hurt(entity, level, source, amount));
+                    () -> result[0] = Compat.hurt(entity, level, source, amount));
         } finally {
             reset();
         }
@@ -161,9 +175,9 @@ public final class DamageResistanceHandler {
     }
 
     private static void onEntityAttacked(DamageEvents.DamageEvent event) {
-        if (event.entity() instanceof net.minecraft.world.entity.player.Player player) {
+        if (event.entity() instanceof Player player) {
             ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
-            if (chest.getItem() instanceof com.hbm.items.gear.ArmorFSB fsb) fsb.handleAttack(event);
+            if (chest.getItem() instanceof ArmorFSB fsb) fsb.handleAttack(event);
             if (event.isCanceled()) return;
         }
         DamageSource source = event.source();
@@ -181,11 +195,11 @@ public final class DamageResistanceHandler {
 
     private static void onEntityHurt(DamageEvents.DamageEvent event) {
         // 1.7 onEntityDamaged: the player shield soaks first, then the armor modules run.
-        com.hbm.handler.ArmorModEvents.absorbShield(event);
+        ArmorModEvents.absorbShield(event);
         applyArmorModules(event);
-        if (event.entity() instanceof net.minecraft.world.entity.player.Player player) {
+        if (event.entity() instanceof Player player) {
             ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
-            if (chest.getItem() instanceof com.hbm.items.gear.ArmorFSB fsb) fsb.handleHurt(event);
+            if (chest.getItem() instanceof ArmorFSB fsb) fsb.handleHurt(event);
             if (event.isCanceled()) return;
         }
         float amount = calculateDamage(event.entity(), event.source(), event.amount(),
@@ -209,7 +223,7 @@ public final class DamageResistanceHandler {
 
     /** Replaces vanilla durability wear for powered suits with their configured HE drain. */
     private static void dischargePoweredArmor(LivingEntity entity, float amount) {
-        if (amount <= 0F || entity instanceof net.minecraft.world.entity.player.Player player && player.isCreative()) return;
+        if (amount <= 0F || entity instanceof Player player && player.isCreative()) return;
         int damage = (int) amount;
         if (damage <= 0) return;
         for (EquipmentSlot slot : ARMOR_SLOTS) {
@@ -217,13 +231,13 @@ public final class DamageResistanceHandler {
             if (stack.getItem() instanceof ArmorFSBPowered powered) {
                 powered.dischargeBattery(stack, (long) damage * powered.consumption);
                 stack.setDamageValue(0);
-            } else if (stack.getItem() instanceof com.hbm.items.gear.ArmorFSBFueled fueled) {
+            } else if (stack.getItem() instanceof ArmorFSBFueled fueled) {
                 fueled.burn(stack, damage); // 1.7 ArmorFSBFueled.setDamage
             }
         }
     }
 
-    /** The old hook is deliberately a no-op: a fully absorbed custom hit cancels before vanilla armor wear. */
+    /** The 1.7 hook is a no-op here: a fully absorbed custom hit cancels before vanilla armor wear. */
     public static void damageArmorNT(LivingEntity entity, float amount) {}
 
     public static float calculateDamage(LivingEntity entity, DamageSource damage, float amount,
@@ -253,7 +267,7 @@ public final class DamageResistanceHandler {
 
         ArmorSet worn = new ArmorSet(item(entity, EquipmentSlot.HEAD), item(entity, EquipmentSlot.CHEST),
                 item(entity, EquipmentSlot.LEGS), item(entity, EquipmentSlot.FEET));
-        com.hbm.api.data.ArmorDataMaps.ArmorSet dataSet = com.hbm.handler.ArmorUtil.wornSet(entity);
+        ArmorDataMaps.ArmorSet dataSet = ArmorUtil.wornSet(entity);
         ResistanceStats set = dataSet != null && dataSet.resistance().isPresent() ? dataSet.resistance().get() : SET_STATS.get(worn);
         if (set != null) {
             Resistance resistanceValue = set.getResistance(damage);
@@ -273,7 +287,7 @@ public final class DamageResistanceHandler {
             }
         }
 
-        ResistanceStats innate = com.hbm.api.data.ArmorDataMaps.ENTITY_DAMAGE_RESISTANCE.get(entity.getType());
+        ResistanceStats innate = ArmorDataMaps.ENTITY_DAMAGE_RESISTANCE.get(entity.getType());
         if (innate == null) innate = ENTITY_STATS.get(entity.getClass());
         if (innate != null) {
             Resistance resistanceValue = innate.getResistance(damage);
@@ -287,7 +301,7 @@ public final class DamageResistanceHandler {
 
     /** A piece's own stats: the data map's ({@code hbm:damage_resistance}), else a code registration. */
     public static ResistanceStats itemStats(Item item) {
-        ResistanceStats data = com.hbm.api.data.ArmorDataMaps.DAMAGE_RESISTANCE.get(item);
+        ResistanceStats data = ArmorDataMaps.DAMAGE_RESISTANCE.get(item);
         return data != null ? data : ITEM_STATS.get(item);
     }
 
@@ -295,19 +309,19 @@ public final class DamageResistanceHandler {
     private static volatile Map<Item, ArmorSet> dataSetsByPiece;
 
     static {
-        com.hbm.api.data.ArmorDataMaps.ARMOR_SETS.changed.register(() -> dataSetsByPiece = null);
+        ArmorDataMaps.ARMOR_SETS.changed.register(() -> dataSetsByPiece = null);
     }
 
     private static ArmorSet dataSetOf(Item item) {
         Map<Item, ArmorSet> index = dataSetsByPiece;
         if (index == null) {
-            index = new java.util.HashMap<>();
-            java.util.List<String> chests = new java.util.ArrayList<>(com.hbm.api.data.ArmorDataMaps.ARMOR_SETS.byId().keySet());
-            java.util.Collections.sort(chests);
+            index = new HashMap<>();
+            List<String> chests = new ArrayList<>(ArmorDataMaps.ARMOR_SETS.byId().keySet());
+            Collections.sort(chests);
             for (String chest : chests) {
-                com.hbm.api.data.ArmorDataMaps.ArmorSet value = com.hbm.api.data.ArmorDataMaps.ARMOR_SETS.byId().get(chest);
+                ArmorDataMaps.ArmorSet value = ArmorDataMaps.ARMOR_SETS.byId().get(chest);
                 if (value.resistance().isEmpty()) continue;
-                ArmorSet set = new ArmorSet(piece(value.helmet()), piece(java.util.Optional.of(chest)), piece(value.legs()), piece(value.boots()));
+                ArmorSet set = new ArmorSet(piece(value.helmet()), piece(Optional.of(chest)), piece(value.legs()), piece(value.boots()));
                 for (Item piece : new Item[] {set.helmet, set.chest, set.legs, set.boots}) {
                     if (piece != null) index.putIfAbsent(piece, set);
                 }
@@ -318,12 +332,12 @@ public final class DamageResistanceHandler {
     }
 
     private static ResistanceStats dataSetStats(Item chest) {
-        com.hbm.api.data.ArmorDataMaps.ArmorSet value = com.hbm.api.data.ArmorDataMaps.ARMOR_SETS.get(chest);
+        ArmorDataMaps.ArmorSet value = ArmorDataMaps.ARMOR_SETS.get(chest);
         return value == null ? null : value.resistance().orElse(null);
     }
 
-    private static Item piece(java.util.Optional<String> id) {
-        return id.map(s -> net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.parse(s))).orElse(null);
+    private static Item piece(Optional<String> id) {
+        return id.map(s -> BuiltInRegistries.ITEM.getValue(Ids.parse(s))).orElse(null);
     }
 
     private static Item item(LivingEntity entity, EquipmentSlot slot) {
@@ -369,7 +383,7 @@ public final class DamageResistanceHandler {
         public static final Codec<ResistanceStats> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.unboundedMap(Codec.STRING, Resistance.CODEC).optionalFieldOf("category", Map.of()).forGetter(s -> s.category),
                 Codec.unboundedMap(Codec.STRING, Resistance.CODEC).optionalFieldOf("exact", Map.of()).forGetter(s -> s.exact),
-                Resistance.CODEC.optionalFieldOf("other").forGetter(s -> java.util.Optional.ofNullable(s.other))
+                Resistance.CODEC.optionalFieldOf("other").forGetter(s -> Optional.ofNullable(s.other))
         ).apply(i, (category, exact, other) -> {
             ResistanceStats stats = new ResistanceStats();
             category.forEach((key, value) -> stats.addCategory(key, value.threshold(), value.resistance()));

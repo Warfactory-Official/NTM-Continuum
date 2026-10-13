@@ -1,6 +1,8 @@
 package com.hbm.items.weapon;
 
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.sound.ModSounds;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.data.Inventories;
@@ -22,7 +24,7 @@ import net.minecraft.world.level.Level;
  * Source ntm-next ammo container: supplies default ammunition for up to three carried Sedna guns. 1.7 metadata 1 (the
  * constrained box that skips expensive ammo) is its own item, {@code ammo_container_alt}, as in ntm-next.
  */
-public final class ItemAmmoContainer extends CompatItem implements com.hbm.items.LegacyMeta {
+public final class ItemAmmoContainer extends CompatItem implements LegacyMeta {
 
     private final boolean constrained;
 
@@ -58,7 +60,7 @@ public final class ItemAmmoContainer extends CompatItem implements com.hbm.items
             if (!player.getInventory().add(ammo)) player.drop(ammo, false);
         }
         serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
-                com.hbm.sound.ModSounds.ITEM_UNPACK.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                ModSounds.ITEM_UNPACK.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
         container.shrink(1);
         return InteractionResult.SUCCESS;
     }

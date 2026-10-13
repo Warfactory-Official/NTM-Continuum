@@ -2,6 +2,7 @@ package com.hbm.client.particle;
 
 import com.hbm.Constants;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.golem.core.Ids;
 import dev.golem.core.client.ClientResourceReloads;
 import dev.golem.core.client.ClientTicks;
@@ -108,7 +109,7 @@ public final class MukeParticles {
     }
 
     /**
-     * original-hbm (1.7.10) {@code ClientProxy} type {@code ufo}: one lone {@code ParticleMukeCloud} moving
+     * 1.7 {@code ClientProxy} type {@code ufo}: one lone {@code ParticleMukeCloud} moving
      * {@code gaussian * motion} sideways. The UFO's tractor beam sends no {@code motion}, so its two clouds a tick
      * stand still at the beam's foot (friction 0.95, 52..62 ticks). No flash, shockwave or camera jolt.
      */
@@ -304,7 +305,7 @@ public final class MukeParticles {
         }
 
         private Billboards.RowWriter quads(PoseStack.Pose pose,
-                com.mojang.blaze3d.vertex.VertexConsumer buffer, Vector3f right, Vector3f up) {
+                VertexConsumer buffer, Vector3f right, Vector3f up) {
             return new Billboards.RowWriter() {
                 @Override
                 public void row(double rowX, double rowY, double rowZ, float halfSize,
@@ -428,7 +429,7 @@ public final class MukeParticles {
         return shockwave;
     }
 
-    private static void quad(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
+    private static void quad(VertexConsumer buffer, PoseStack.Pose pose,
             float cx, float cy, float cz, Vector3f right, Vector3f up, float size,
             float u0, float u1, float v0, float v1, float red, float green, float blue, float alpha) {
         float rx = right.x * size, ry = right.y * size, rz = right.z * size;

@@ -25,7 +25,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The rocket artillery. It fires at a fixed forty-five degrees and lets the rocket do the aiming — only
+ * The rocket artillery. It fires at a fixed forty-five degrees and lets the rocket do the aiming. Only
  * the yaw is ever laid on the target, which is why {@link #alignTurret} ignores the pitch entirely.
  *
  * <p>Reloading is the visible part: the launcher levels out, the crane walks the pod back over five
@@ -58,7 +58,7 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery {
     }
 
     /**
-     * The HIMARS takes no Sedna round — its ammunition is {@link ItemAmmoHIMARS}, which carries a
+     * The HIMARS takes no Sedna round: its ammunition is {@link ItemAmmoHIMARS}, which carries a
      * warhead rather than a bullet config.
      */
     @Override

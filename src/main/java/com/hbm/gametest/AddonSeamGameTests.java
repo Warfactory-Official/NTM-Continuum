@@ -1,7 +1,10 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.api.computer.ComputerComponents;
+import com.hbm.blocks.generic.BlockMetalFence;
 import com.hbm.blocks.machine.struct.StructPattern;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.tool.ItemSurveyScanner;
 import com.hbm.items.weapon.sedna.BulletConfig;
@@ -10,7 +13,12 @@ import com.hbm.lib.Library;
 import com.hbm.world.gen.nbt.LegacyStructurePalette;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTests;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
@@ -18,6 +26,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 import java.util.List;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 /**
  * The namespace and start-up seams an addon (NTM: Space) goes through (ADDON-API-INVENTORY.md sections N, S, P): ids an
@@ -54,21 +64,21 @@ public final class AddonSeamGameTests {
      * an unknown name. Nothing is registered here (the record is built directly).
      */
     private static void computerComponents(GameTestHelper helper) {
-        for (com.hbm.api.computer.ComputerComponents.Component<?> component : com.hbm.api.computer.ComputerComponents.all()) {
+        for (ComputerComponents.Component<?> component : ComputerComponents.all()) {
             helper.assertTrue(!Constants.MOD_ID.equals(BuiltInRegistries.BLOCK.getKey(component.blocks().get(0).get()).getNamespace()),
                     "HBM must not serve its own blocks through ComputerComponents: " + component.name());
         }
-        helper.assertTrue(!com.hbm.api.computer.ComputerComponents.carries(Blocks.STONE), "stone is no component block");
-        java.util.Map<String, com.hbm.api.computer.ComputerComponents.Method<net.minecraft.world.level.block.entity.BlockEntity>> methods =
-                new java.util.LinkedHashMap<>();
+        helper.assertTrue(!ComputerComponents.carries(Blocks.STONE), "stone is no component block");
+        Map<String, ComputerComponents.Method<BlockEntity>> methods =
+                new LinkedHashMap<>();
         methods.put("echo", (machine, args) -> args);
         methods.put("first", (machine, args) -> new Object[] {args.length == 0 ? null : args[0]});
-        com.hbm.api.computer.ComputerComponents.Component<net.minecraft.world.level.block.entity.BlockEntity> component =
-                new com.hbm.api.computer.ComputerComponents.Component<>(net.minecraft.world.level.block.entity.BlockEntity.class,
+        ComputerComponents.Component<BlockEntity> component =
+                new ComputerComponents.Component<>(BlockEntity.class,
                         "test", methods, List.of());
         helper.assertTrue(List.copyOf(component.methods().keySet()).equals(List.of("echo", "first")), "method order");
         Object[] echoed = component.call(null, "echo", "a", 2.0);
-        helper.assertTrue(java.util.Arrays.equals(echoed, new Object[] {"a", 2.0}), "echo returned " + java.util.Arrays.toString(echoed));
+        helper.assertTrue(Arrays.equals(echoed, new Object[] {"a", 2.0}), "echo returned " + Arrays.toString(echoed));
         boolean refused = false;
         try {
             component.call(null, "missing");
@@ -84,16 +94,16 @@ public final class AddonSeamGameTests {
      * still joins only fences, fence gates and opaque full blocks (1.7 {@code canConnectFenceTo}).
      */
     private static void fenceConnects(GameTestHelper helper) {
-        helper.assertTrue(com.hbm.blocks.generic.BlockMetalFence.Connects.TAG.location().equals(Ids.of("hbm", "metal_fence_connects")),
+        helper.assertTrue(BlockMetalFence.Connects.TAG.location().equals(Ids.of("hbm", "metal_fence_connects")),
                 "tag id");
         Block fence = BuiltInRegistries.BLOCK.getOptional(Ids.of("hbm", "fence_metal")).orElse(Blocks.AIR);
-        helper.assertTrue(fence instanceof com.hbm.blocks.generic.BlockMetalFence, "hbm:fence_metal is the chain-link fence");
-        com.hbm.blocks.generic.BlockMetalFence metal = (com.hbm.blocks.generic.BlockMetalFence) fence;
-        net.minecraft.core.BlockPos pos = helper.absolutePos(new net.minecraft.core.BlockPos(1, 1, 1));
+        helper.assertTrue(fence instanceof BlockMetalFence, "hbm:fence_metal is the chain-link fence");
+        BlockMetalFence metal = (BlockMetalFence) fence;
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
         helper.getLevel().setBlock(pos, Blocks.OAK_FENCE_GATE.defaultBlockState(), 3);
-        helper.assertTrue(metal.canConnectFenceTo(helper.getLevel(), pos, net.minecraft.core.Direction.EAST), "joins a fence gate");
+        helper.assertTrue(metal.canConnectFenceTo(helper.getLevel(), pos, Direction.EAST), "joins a fence gate");
         helper.getLevel().setBlock(pos, Blocks.TORCH.defaultBlockState(), 3);
-        helper.assertTrue(!metal.canConnectFenceTo(helper.getLevel(), pos, net.minecraft.core.Direction.EAST), "joins a torch");
+        helper.assertTrue(!metal.canConnectFenceTo(helper.getLevel(), pos, Direction.EAST), "joins a torch");
         helper.succeed();
     }
 
@@ -154,7 +164,7 @@ public final class AddonSeamGameTests {
 
     private static void legacyPalette(GameTestHelper helper) {
         // HBM's names, bare and 1.7 "tile." form, are unchanged
-        Block steel = BuiltInRegistries.BLOCK.getOptional(Ids.of("hbm", "block_steel")).orElse(net.minecraft.world.level.block.Blocks.AIR);
+        Block steel = BuiltInRegistries.BLOCK.getOptional(Ids.of("hbm", "block_steel")).orElse(Blocks.AIR);
         helper.assertTrue(LegacyStructurePalette.resolve("hbm:tile.block_steel", 0).state().getBlock() == steel,
                 "hbm:tile.block_steel no longer resolves to HBM's steel block");
         // an addon namespace resolves through the registry; an unknown one is air (as an unknown 1.7 name always was)
@@ -164,8 +174,8 @@ public final class AddonSeamGameTests {
             Identifier id = Ids.keyId(entry.getKey());
             if (id.getNamespace().equals("minecraft") || id.getNamespace().equals(Constants.MOD_ID)) continue;
             Block block = entry.getValue();
-            if (block instanceof net.minecraft.world.level.block.StairBlock) continue;
-            if (block instanceof com.hbm.blocks.multiblock.BlockMultiblockCore) continue;
+            if (block instanceof StairBlock) continue;
+            if (block instanceof BlockMultiblockCore) continue;
             Block resolved = LegacyStructurePalette.resolve(id.getNamespace() + ":tile." + id.getPath(), 0).state().getBlock();
             helper.assertTrue(resolved == block, "the palette must resolve another namespace's block " + id
                     + " through the registry, got " + BuiltInRegistries.BLOCK.getKey(resolved));
@@ -187,7 +197,7 @@ public final class AddonSeamGameTests {
                             && findings.get(i).colour() == colours.get(i),
                     "finding " + i + " differs from 1.7: " + findings.get(i).message());
         }
-        Block depthNether = BuiltInRegistries.BLOCK.getOptional(Ids.of("hbm", "stone_depth_nether")).orElse(net.minecraft.world.level.block.Blocks.AIR);
+        Block depthNether = BuiltInRegistries.BLOCK.getOptional(Ids.of("hbm", "stone_depth_nether")).orElse(Blocks.AIR);
         helper.assertTrue(depthNether == Blocks.AIR || findings.get(3).matches().test(depthNether),
                 "nether depth rock must report as DEPTH ROCK");
         helper.assertTrue(!findings.get(0).matches().test(Blocks.STONE), "plain stone must not report");

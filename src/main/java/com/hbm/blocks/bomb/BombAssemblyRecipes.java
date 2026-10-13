@@ -1,6 +1,7 @@
 package com.hbm.blocks.bomb;
 
 import com.hbm.inventory.RecipesCommon.ComparableStack;
+import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.inventory.fluid.FluidStack;
@@ -9,6 +10,9 @@ import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ModBombItems;
 import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModItems;
+import dev.golem.core.Ids;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -28,7 +32,7 @@ public final class BombAssemblyRecipes {
         recipes.registerGenerated(new GenericRecipe("ass.ivymike").setup(600, 100)
                 .inputItems(new ComparableStack(ModItems.sphere_steel.get()), AL.shell().count(4),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 8),
-                        new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "dyes/light_gray")), 16))
+                        new RecipesCommon.TagStack(TagKey.create(Registries.ITEM, Ids.of("c", "dyes/light_gray")), 16))
                 .outputItems(new ItemStack(ModBombBlocks.nuke_mike.get()))
                 .setPools528("528.controller"));
         recipes.registerGenerated(new GenericRecipe("ass.mikecore").setup(1_200, 100)

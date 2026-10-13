@@ -7,6 +7,7 @@ import com.hbm.hazard.modifier.IHazardModifier;
 import com.hbm.hazard.type.IHazardType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.Ids;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -54,7 +55,7 @@ public record HazardSpec(boolean override, int mutex, boolean immune, List<Entry
     public HazardData toData() {
         HazardData data = new HazardData().setMutex(mutex).setOverride(override);
         for (Entry entry : entries) {
-            IHazardType type = HazardRegistry.getType(dev.golem.core.Ids.parse(entry.type()));
+            IHazardType type = HazardRegistry.getType(Ids.parse(entry.type()));
             if (type == null) {
                 if (REPORTED.add(entry.type())) Constants.LOG.warn("Hazards data map: unknown hazard type {}", entry.type());
                 continue;

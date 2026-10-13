@@ -1,21 +1,33 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.api.fluidmk2.FluidNetwork;
+import com.hbm.api.fluidmk2.IFluidProviderMK2;
+import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.blocks.ModFluidNetBlocks;
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.capability.ForeignFluids;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.items.ModFluidItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModFluidNetItems;
 import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.machine.TileEntityMachineDiesel;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
+import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.tileentity.network.TileEntityFluidPump;
+import com.hbm.uninos.graph.PortClaims;
 import dev.golem.core.fluid.FluidCompat;
 import dev.golem.core.fluid.FluidView;
 import dev.golem.core.fluid.TokenFluids;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.BlockEntities;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -24,6 +36,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluid;
@@ -32,15 +47,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * HBM fluids as vanilla {@code Fluid}s and HBM machines/containers on the loader's standard fluid capability
- * (History section 19ek-fluids). Every move here goes through {@link FluidCompat}, i.e. through whatever the loader's
+ * HBM fluids as vanilla {@code Fluid}s and HBM machines/containers on the loader's standard fluid capability.
+ * Every move here goes through {@link FluidCompat}, i.e. through whatever the loader's
  * capability lookup answers (NeoForge {@code Capabilities}, Forge {@code ForgeCapabilities}, Fabric
  * {@code FluidStorage}), never through HBM's classes directly, so the per-loader wiring is what is tested.
  */
 public final class ForeignFluidGameTests {
 
     /** Long enough for every machine to claim its ports and an unclaiming class to pass its PortClaims grace. */
-    private static final int PORT_CLAIM_WAIT = (int) com.hbm.uninos.graph.PortClaims.GRACE_TICKS + 10;
+    private static final int PORT_CLAIM_WAIT = (int) PortClaims.GRACE_TICKS + 10;
 
 
     private ForeignFluidGameTests() {}
@@ -177,7 +192,7 @@ public final class ForeignFluidGameTests {
                 CompoundTag saved = BlockEntities.saveWithoutMetadata(barrel, registries);
                 helper.assertTrue(saved.toString().contains("\"hbm:diesel\""), "the barrel saves diesel by name: " + saved);
                 BlockState state = level.getBlockState(pos);
-                TileEntityBarrel byHand = (TileEntityBarrel) ((net.minecraft.world.level.block.EntityBlock) state.getBlock()).newBlockEntity(pos, state);
+                TileEntityBarrel byHand = (TileEntityBarrel) ((EntityBlock) state.getBlock()).newBlockEntity(pos, state);
                 byHand.tank.setTankType(Fluids.DIESEL);
                 byHand.tank.setFill(15234);
                 byHand.mode = 2;
@@ -262,7 +277,7 @@ public final class ForeignFluidGameTests {
         helper.assertTrue(filled.is(canister) && ItemFluidTank.getType(filled) == Fluids.DIESEL && canister.getFill(filled) == 1000,
                 "the canister became a full diesel canister: " + filled);
 
-        FluidView tank = FluidCompat.findItem(new ItemStack(com.hbm.items.ModFluidItems.fluid_tank.get()));
+        FluidView tank = FluidCompat.findItem(new ItemStack(ModFluidItems.fluid_tank.get()));
         helper.assertTrue(tank != null && tank.insert(Fluids.STEAM.getFluid(), 250, false) == 250,
                 "the universal tank takes 250 mB steam");
         helper.assertTrue(tank.amount(0) == 250 && tank.fluid(0) == Fluids.STEAM.getFluid(), "the tank reads 250 mB steam");
@@ -271,7 +286,7 @@ public final class ForeignFluidGameTests {
     }
 
     /**
-     * Playtest 2026-10-12: "fluid can be stolen from machines". In 1.7 a machine offers a net only its
+     * Fluid must not be stolen from machines. In 1.7 a machine offers a net only its
      * {@code getSendingTanks} (it calls {@code sendFluid} on those alone); its input tanks are never supply. A diesel
      * generator (switched off, so it burns nothing) holding diesel beside an empty input barrel and an empty buffer
      * barrel on one diesel duct keeps every mB, a foreign extract on its tank face gets nothing while a foreign insert
@@ -280,9 +295,9 @@ public final class ForeignFluidGameTests {
     private static void inputNotDrained(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos dieselPos = helper.absolutePos(new BlockPos(2, Y, 3));
-        level.setBlock(dieselPos, com.hbm.blocks.machine.ModMachineBlocks.machine_diesel.get().defaultBlockState(), 3);
-        com.hbm.tileentity.machine.TileEntityMachineDiesel diesel =
-                (com.hbm.tileentity.machine.TileEntityMachineDiesel) level.getBlockEntity(dieselPos);
+        level.setBlock(dieselPos, ModMachineBlocks.machine_diesel.get().defaultBlockState(), 3);
+        TileEntityMachineDiesel diesel =
+                (TileEntityMachineDiesel) level.getBlockEntity(dieselPos);
         helper.assertTrue(diesel != null, "the diesel generator did not appear");
         diesel.isOn = false;
         diesel.tank.setTankType(Fluids.DIESEL);
@@ -290,7 +305,7 @@ public final class ForeignFluidGameTests {
 
         BlockPos ductPos = dieselPos.east();
         level.setBlock(ductPos, ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
-        ((com.hbm.tileentity.network.TileEntityFluidDuctNT) level.getBlockEntity(ductPos)).setFluidType(Fluids.DIESEL);
+        ((TileEntityFluidDuctNT) level.getBlockEntity(ductPos)).setFluidType(Fluids.DIESEL);
         BlockPos inPos = ductPos.east();
         BlockPos bufferPos = ductPos.south();
         level.setBlock(inPos, ModFluidNetBlocks.barrel_steel.get().defaultBlockState(), 3);
@@ -304,7 +319,7 @@ public final class ForeignFluidGameTests {
 
         // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
         helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
-            for (int pass = 0; pass < 8; pass++) com.hbm.api.fluidmk2.FluidNetwork.distributeAll(level);
+            for (int pass = 0; pass < 8; pass++) FluidNetwork.distributeAll(level);
             helper.assertTrue(input.tank.getFill() == 0 && buffer.tank.getFill() == 0,
                     "barrels drew a consumer's input through a duct: input " + input.tank.getFill() + ", buffer " + buffer.tank.getFill());
             helper.assertTrue(diesel.tank.getFill() == 8000, "the generator lost fuel to the net: " + diesel.tank.getFill());
@@ -324,7 +339,7 @@ public final class ForeignFluidGameTests {
             // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
             helper.runAfterDelay(3, () -> {
                 input.tank.setFill(1000);
-                for (int pass = 0; pass < 8 && diesel.tank.getFill() == 8500; pass++) com.hbm.api.fluidmk2.FluidNetwork.distributeAll(level);
+                for (int pass = 0; pass < 8 && diesel.tank.getFill() == 8500; pass++) FluidNetwork.distributeAll(level);
                 helper.assertTrue(diesel.tank.getFill() > 8500, "the duct never reached the generator, so the first half proved nothing");
                 helper.succeed();
             });
@@ -339,27 +354,27 @@ public final class ForeignFluidGameTests {
     private static void inputNotProvided(GameTestHelper helper) {
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
         Set<Class<?>> seen = new HashSet<>();
-        java.util.List<String> leaks = new java.util.ArrayList<>();
+        List<String> leaks = new ArrayList<>();
         int checked = 0;
-        for (net.minecraft.world.level.block.Block block : BuiltInRegistries.BLOCK) {
+        for (Block block : BuiltInRegistries.BLOCK) {
             if (!BuiltInRegistries.BLOCK.getKey(block).getNamespace().equals(Constants.MOD_ID)) continue;
-            if (!(block instanceof net.minecraft.world.level.block.EntityBlock entityBlock)) continue;
+            if (!(block instanceof EntityBlock entityBlock)) continue;
             try {
-                net.minecraft.world.level.block.entity.BlockEntity be = entityBlock.newBlockEntity(pos, block.defaultBlockState());
+                BlockEntity be = entityBlock.newBlockEntity(pos, block.defaultBlockState());
                 if (be == null || !seen.add(be.getClass())) continue;
-                if (!(be instanceof com.hbm.api.fluidmk2.IFluidProviderMK2 provider)
-                        || !(be instanceof com.hbm.api.fluidmk2.IFluidStandardReceiverMK2 receiver)) continue;
-                com.hbm.inventory.fluid.tank.FluidTankNTM[] receiving = receiver.getReceivingTanks();
-                com.hbm.inventory.fluid.tank.FluidTankNTM[] sending = provider instanceof com.hbm.api.fluidmk2.IFluidStandardSenderMK2 sender
-                        ? sender.getSendingTanks() : new com.hbm.inventory.fluid.tank.FluidTankNTM[0];
+                if (!(be instanceof IFluidProviderMK2 provider)
+                        || !(be instanceof IFluidStandardReceiverMK2 receiver)) continue;
+                FluidTankNTM[] receiving = receiver.getReceivingTanks();
+                FluidTankNTM[] sending = provider instanceof IFluidStandardSenderMK2 sender
+                        ? sender.getSendingTanks() : new FluidTankNTM[0];
                 boolean any = false;
-                for (com.hbm.inventory.fluid.tank.FluidTankNTM tank : receiving) {
+                for (FluidTankNTM tank : receiving) {
                     if (tank == null || contains(sending, tank)) continue;
                     FluidType type = tank.getTankType() == Fluids.NONE ? Fluids.WATER : tank.getTankType();
                     if (tank.getTankType() == Fluids.NONE) tank.setTankType(type);
                     tank.setFill(tank.getMaxFill());
                     long expected = 0;
-                    for (com.hbm.inventory.fluid.tank.FluidTankNTM out : sending) {
+                    for (FluidTankNTM out : sending) {
                         if (out != null && out != tank && out.getTankType() == type && out.getPressure() == tank.getPressure()) expected += out.getFill();
                     }
                     long available = provider.getFluidAvailable(type, tank.getPressure());
@@ -380,9 +395,9 @@ public final class ForeignFluidGameTests {
         helper.succeed();
     }
 
-    private static boolean contains(com.hbm.inventory.fluid.tank.FluidTankNTM[] tanks, com.hbm.inventory.fluid.tank.FluidTankNTM tank) {
+    private static boolean contains(FluidTankNTM[] tanks, FluidTankNTM tank) {
         if (tanks == null) return false;
-        for (com.hbm.inventory.fluid.tank.FluidTankNTM candidate : tanks) if (candidate == tank) return true;
+        for (FluidTankNTM candidate : tanks) if (candidate == tank) return true;
         return false;
     }
 

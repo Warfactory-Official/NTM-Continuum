@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +28,7 @@ public class BlockGraphiteRod extends BlockGraphiteDrilledBase {
 
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
-                                          net.minecraft.world.InteractionHand hand, ItemStack held, BlockHitResult hit) {
+                                          InteractionHand hand, ItemStack held, BlockHitResult hit) {
         return toggle(state, level, pos, player, hit);
     }
 

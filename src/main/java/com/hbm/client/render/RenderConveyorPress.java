@@ -6,6 +6,7 @@ import com.hbm.tileentity.machine.TileEntityConveyorPress;
 import com.hbm.tileentity.MachineCore;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -26,10 +27,10 @@ import net.minecraft.world.phys.Vec3;
 public final class RenderConveyorPress extends GemBER<TileEntityConveyorPress, ConveyorPressRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/conveyor_press.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/conveyor_press.obj"));
     private final Surface surface = Surface.cutout(Constants.MOD_ID + ":textures/models/machines/conveyor_press.png");
     private final RenderType beltType = CompatRenderTypes.entityCutout(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/conveyor_press_belt.png"));
+            Ids.of(Constants.MOD_ID, "textures/models/machines/conveyor_press_belt.png"));
 
     @Override
     protected void setup(Gem.Model<ConveyorPressRenderState> declaration) {

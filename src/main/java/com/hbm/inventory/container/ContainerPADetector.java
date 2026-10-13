@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.inventory.SlotCraftingOutput;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.albion.TileEntityPADetector;
 import dev.golem.core.world.Compat;
@@ -46,8 +47,8 @@ public class ContainerPADetector extends AbstractContainerMenu {
         addSlot(validated(0, 8, 72));
         addSlot(validated(1, 62, 18));
         addSlot(validated(2, 80, 18));
-        addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 3, 62, 45)); // 1.7 SlotCraftingOutput
-        addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 4, 80, 45));
+        addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 3, 62, 45)); // 1.7 SlotCraftingOutput
+        addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 4, 80, 45));
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 122);
     }
 

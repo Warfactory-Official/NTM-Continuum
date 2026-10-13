@@ -5,8 +5,10 @@ import com.hbm.lib.Library;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -136,12 +138,12 @@ public class MachineCapacitor extends CompatBlock implements TickingBlock, ILook
      * The whole item tooltip of a capacitor: {@code desc.capacitor.0/1} and {@link #persistentInfo}, in the order
      * {@link #capacityFirst} picks; {@code extra} goes after the description (hbm-space's {@code capacitor_complex} lore).
      */
-    public List<net.minecraft.network.chat.Component> tooltip(ItemStack stack, List<net.minecraft.network.chat.Component> extra) {
-        List<net.minecraft.network.chat.Component> desc = List.of(
-                net.minecraft.network.chat.Component.translatable("desc.capacitor.0").withStyle(net.minecraft.ChatFormatting.YELLOW),
-                net.minecraft.network.chat.Component.translatable("desc.capacitor.1").withStyle(net.minecraft.ChatFormatting.YELLOW));
-        List<net.minecraft.network.chat.Component> info = persistentInfo(stack);
-        List<net.minecraft.network.chat.Component> list = new ArrayList<>();
+    public List<Component> tooltip(ItemStack stack, List<Component> extra) {
+        List<Component> desc = List.of(
+                Component.translatable("desc.capacitor.0").withStyle(ChatFormatting.YELLOW),
+                Component.translatable("desc.capacitor.1").withStyle(ChatFormatting.YELLOW));
+        List<Component> info = persistentInfo(stack);
+        List<Component> list = new ArrayList<>();
         if (capacityFirst) {
             list.addAll(info.subList(0, 3));
             list.addAll(desc);
@@ -156,15 +158,15 @@ public class MachineCapacitor extends CompatBlock implements TickingBlock, ILook
     }
 
     /** The item's persistent lines, as {@code IPersistentInfoProvider.addInformation} wrote them. */
-    public List<net.minecraft.network.chat.Component> persistentInfo(ItemStack stack) {
-        List<net.minecraft.network.chat.Component> list = new ArrayList<>();
+    public List<Component> persistentInfo(ItemStack stack) {
+        List<Component> list = new ArrayList<>();
         list.add(EnergyNetBlockItem.gold("Stores up to " + Library.getShortNumber(power) + "HE"));
         list.add(EnergyNetBlockItem.gold("Charge speed: " + Library.getShortNumber(power / 200) + "HE"));
         list.add(EnergyNetBlockItem.gold("Discharge speed: " + Library.getShortNumber(power / 600) + "HE"));
         Long stored = ModEnergyNetContent.CAPACITOR_POWER.get(stack).orElse(null);
         if (stored != null) {
-            list.add(net.minecraft.network.chat.Component.literal(Library.getShortNumber(stored) + "/"
-                    + Library.getShortNumber(power) + "HE").withStyle(net.minecraft.ChatFormatting.YELLOW));
+            list.add(Component.literal(Library.getShortNumber(stored) + "/"
+                    + Library.getShortNumber(power) + "HE").withStyle(ChatFormatting.YELLOW));
         }
         return list;
     }

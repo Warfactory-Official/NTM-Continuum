@@ -1,5 +1,6 @@
 package com.hbm.items.machine;
 
+import com.hbm.api.data.MachinePartDataMaps;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
@@ -16,14 +17,14 @@ public class ItemDrillbit extends CompatItem {
     public final DrillBitType type;
 
     /** This bit's values: its {@code hbm:drill_bit} entry, else HBM's enum constant. */
-    public com.hbm.api.data.MachinePartDataMaps.DrillBit stats() {
-        com.hbm.api.data.MachinePartDataMaps.DrillBit data = com.hbm.api.data.MachinePartDataMaps.DRILL_BIT.get(this);
+    public MachinePartDataMaps.DrillBit stats() {
+        MachinePartDataMaps.DrillBit data = MachinePartDataMaps.DRILL_BIT.get(this);
         return data != null ? data : codeStats();
     }
 
     /** The code defaults (constructor or enum values) that the data map entry overrides. */
-    public com.hbm.api.data.MachinePartDataMaps.DrillBit codeStats() {
-        return new com.hbm.api.data.MachinePartDataMaps.DrillBit(this.type.speed, this.type.tier, this.type.fortune, this.type.vein, this.type.silk);
+    public MachinePartDataMaps.DrillBit codeStats() {
+        return new MachinePartDataMaps.DrillBit(this.type.speed, this.type.tier, this.type.fortune, this.type.vein, this.type.silk);
     }
 
     public ItemDrillbit(Properties properties, DrillBitType type) {

@@ -3,9 +3,12 @@ package com.hbm.client;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.Constants;
+import com.hbm.gametest.AdvancementCommandGameTests;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
+import dev.golem.core.harness.HarnessQueryRegistry;
+import dev.golem.core.world.Advancements;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
@@ -27,8 +30,8 @@ public final class AdvancementHarnessQueries {
     private AdvancementHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_advancements", (mc, params) -> advancements(mc));
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_suggest", AdvancementHarnessQueries::suggest);
+        HarnessQueryRegistry.register("hbm_advancements", (mc, params) -> advancements(mc));
+        HarnessQueryRegistry.register("hbm_suggest", AdvancementHarnessQueries::suggest);
     }
 
     private static ServerPlayer serverPlayer(Minecraft mc) {
@@ -43,8 +46,8 @@ public final class AdvancementHarnessQueries {
         if (player == null) return json;
         JsonArray done = new JsonArray();
         int loaded = 0;
-        for (String path : com.hbm.gametest.AdvancementCommandGameTests.IDS) {
-            Boolean state = dev.golem.core.world.Advancements.isDone(player, Constants.MOD_ID + ":" + path);
+        for (String path : AdvancementCommandGameTests.IDS) {
+            Boolean state = Advancements.isDone(player, Constants.MOD_ID + ":" + path);
             if (state == null) continue;
             loaded++;
             if (state) done.add(Constants.MOD_ID + ":" + path);

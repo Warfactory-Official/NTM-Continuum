@@ -22,7 +22,7 @@ public class ContainerLaunchTable extends ContainerCustomMissileLauncher {
     /** 1.7 AuxButtonPacket from the three pad-size buttons: the value is the PartSize ordinal. */
     @Override
     public boolean clickMenuButton(Player player, int id) {
-        if (!(getLauncher() instanceof com.hbm.tileentity.bomb.TileEntityLaunchTable table)) return false;
+        if (!(getLauncher() instanceof TileEntityLaunchTable table)) return false;
         table.handleButtonPacket(id, 0);
         return true;
     }

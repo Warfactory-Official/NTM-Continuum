@@ -1,6 +1,7 @@
 package com.hbm.items.weapon.sedna;
 
 import com.hbm.Constants;
+import dev.golem.core.Ids;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -13,7 +14,7 @@ import net.minecraft.resources.Identifier;
  *
  * <p>This replaces upstream's mutable {@code static List<BulletConfig> BulletConfig.configs}, whose
  * <i>list index</i> was written into gun NBT and bullet-entity synched data. That made declaration
- * order save-critical and network-critical at once — inserting a round anywhere but the end silently
+ * order save-critical and network-critical at once; inserting a round anywhere but the end silently
  * reinterpreted every loaded magazine and every bullet in flight. Upstream flags this itself with a
  * {@code //TODO: replace with named tags to avoid ID shifting}; this is that fix.
  *
@@ -31,11 +32,11 @@ public final class BulletConfigs {
     /**
      * Registers {@code config} under {@code hbm:<name>} and returns it for chaining.
      *
-     * @throws IllegalStateException if the name is already taken — a duplicate is always a copy-paste
+     * @throws IllegalStateException if the name is already taken; a duplicate is always a copy-paste
      *         bug in an XFactory, and silently replacing the first one would be far harder to find.
      */
     public static BulletConfig register(String name, BulletConfig config) {
-        return register(dev.golem.core.Ids.of(Constants.MOD_ID, name), config);
+        return register(Ids.of(Constants.MOD_ID, name), config);
     }
 
     /**
@@ -64,13 +65,13 @@ public final class BulletConfigs {
     public static BulletConfig get(String id) {
         if (id == null || id.isEmpty()) return null;
         try {
-            return get(dev.golem.core.Ids.parse(id));
+            return get(Ids.parse(id));
         } catch (Exception e) {
             return null;
         }
     }
 
-    /** The runtime index of {@code config}, or -1. Valid for this session only — never persist it. */
+    /** The runtime index of {@code config}, or -1. Valid for this session only; never persist it. */
     public static int indexOf(BulletConfig config) {
         return BY_INDEX.indexOf(config);
     }

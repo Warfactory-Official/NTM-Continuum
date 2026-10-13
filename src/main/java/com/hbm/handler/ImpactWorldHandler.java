@@ -123,7 +123,7 @@ public final class ImpactWorldHandler {
         }
     }
 
-    // ---- the client's copy, written by the impact sync payload (1.7 PermaSyncHandler) ----
+    // The client's copy, written by the impact sync payload (1.7 PermaSyncHandler)
 
     public static Level lastSyncWorld = null;
     public static float fire = 0F;

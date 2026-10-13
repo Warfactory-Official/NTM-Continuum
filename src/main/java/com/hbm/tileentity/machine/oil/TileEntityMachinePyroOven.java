@@ -4,6 +4,7 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.client.sound.PyroOvenSoundHandler;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerPyroOven;
 import com.hbm.inventory.fluid.FluidType;
@@ -23,6 +24,9 @@ import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.TileEntityMachinePolluting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -44,15 +48,15 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Pyro Oven — 1:1 port of the 1.12.2 {@code TileEntityMachinePyroOven}.
+ * Pyro Oven, 1:1 port of the 1.12.2 {@code TileEntityMachinePyroOven}.
  * 6 slots (0 battery, 1 input item, 2 output item, 3 fluid identifier, 4-5 upgrades). Two 24k tanks
  * (input pipe-fed + type-settable, output sent). maxPower 10M. Progress increment
- * {@code 1/max((dur − speed·dur/4)/(overdrive·2+1),1)}; consumption {@code (10_000·(s+1)²)/(ps+1)} —
- * checked with {@code (speed, powerSaving)} but drained with {@code (speed + overdrive·2, powerSaving)}.
+ * {@code 1/max((dur − speed·dur/4)/(overdrive·2+1),1)}; consumption {@code (10_000·(s+1)²)/(ps+1)}, checked
+ * with {@code (speed, powerSaving)} but drained with {@code (speed + overdrive·2, powerSaving)}.
  * SPEED/POWER/OVERDRIVE ×3.
  *
  * <p>Smoke: every processing tick adds 1.7's {@code SOOT_PER_SECOND} to the 50 mB smoke tank (per tick, not
- * per second -- 1.7 does not gate it), which leaves upward through the vent cell above the flank. What
+ * per second, 1.7 does not gate it), which leaves upward through the vent cell above the flank. What
  * does not fit goes straight into the region and sets {@link #isVenting}, which draws the dark plume.
  */
 public class TileEntityMachinePyroOven extends TileEntityMachinePolluting
@@ -87,7 +91,7 @@ public class TileEntityMachinePyroOven extends TileEntityMachinePolluting
 
         for (DirPos dp : te.getConPos()) {
             te.trySubscribe(level, dp);
-            if (te.tanks[0].getTankType() != com.hbm.inventory.fluid.Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
+            if (te.tanks[0].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
             if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, dp);
         }
 
@@ -125,20 +129,20 @@ public class TileEntityMachinePyroOven extends TileEntityMachinePolluting
         te.prevAnim = te.anim;
         if (te.isProgressing) {
             te.anim++;
-            net.minecraft.client.player.LocalPlayer player = net.minecraft.client.Minecraft.getInstance().player;
+            LocalPlayer player = Minecraft.getInstance().player;
             if (player != null && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 3, pos.getZ() + 0.5) < 2_500D) {
                 ForgeDirection dir = ForgeDirection.getOrientation(MachineCore.facingOrdinal(te.getBlockState(), 2));
                 ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
-                if (level.getRandom().nextInt(20) == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD,
+                if (level.getRandom().nextInt(20) == 0) level.addParticle(ParticleTypes.CLOUD,
                         pos.getX() + 0.5 - rot.offsetX - dir.offsetX * 0.875, pos.getY() + 3,
                         pos.getZ() + 0.5 - rot.offsetZ - dir.offsetZ * 0.875, 0.0, 0.05, 0.0);
-                if (level.getRandom().nextInt(20) == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD,
+                if (level.getRandom().nextInt(20) == 0) level.addParticle(ParticleTypes.CLOUD,
                         pos.getX() + 0.5 - rot.offsetX - dir.offsetX * 2.375, pos.getY() + 3,
                         pos.getZ() + 0.5 - rot.offsetZ - dir.offsetZ * 2.375, 0.0, 0.05, 0.0);
-                if (level.getRandom().nextInt(20) == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD,
+                if (level.getRandom().nextInt(20) == 0) level.addParticle(ParticleTypes.CLOUD,
                         pos.getX() + 0.5 - rot.offsetX + dir.offsetX * 0.875, pos.getY() + 3,
                         pos.getZ() + 0.5 - rot.offsetZ + dir.offsetZ * 0.875, 0.0, 0.05, 0.0);
-                if (level.getRandom().nextInt(20) == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD,
+                if (level.getRandom().nextInt(20) == 0) level.addParticle(ParticleTypes.CLOUD,
                         pos.getX() + 0.5 - rot.offsetX + dir.offsetX * 2.375, pos.getY() + 3,
                         pos.getZ() + 0.5 - rot.offsetZ + dir.offsetZ * 2.375, 0.0, 0.05, 0.0);
             }
@@ -155,7 +159,7 @@ public class TileEntityMachinePyroOven extends TileEntityMachinePolluting
             fx.putInt("color", 0x202020);
             HbmEffectNT.Tower.summonParticle(level, pos.getX() + 0.5 - rot.offsetX, pos.getY() + 3, pos.getZ() + 0.5 - rot.offsetZ, fx);
         }
-        com.hbm.client.sound.PyroOvenSoundHandler.tickLoop(te);
+        PyroOvenSoundHandler.tickLoop(te);
     }
 
     /** 1.7's override: an overflow vents into the region without the hiss and lights the plume instead. */
@@ -187,7 +191,7 @@ public class TileEntityMachinePyroOven extends TileEntityMachinePolluting
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if (level != null && level.isClientSide()) com.hbm.client.sound.PyroOvenSoundHandler.onRemoved(this);
+        if (level != null && level.isClientSide()) PyroOvenSoundHandler.onRemoved(this);
     }
 
     public static int getConsumption(int speed, int powerSaving) {
@@ -270,7 +274,7 @@ public class TileEntityMachinePyroOven extends TileEntityMachinePolluting
                 worldPosition.getZ() - rot.offsetZ, ForgeDirection.UP);
     }
 
-    /** {@link #getSmokePos()} as a port list, for the folded-port parity check. */
+    /** {@link #getSmokePos()} as a port list, for the folded-port check. */
     public DirPos[] getSmokePorts() {
         return new DirPos[]{getSmokePos()};
     }

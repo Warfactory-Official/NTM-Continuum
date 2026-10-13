@@ -8,6 +8,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.HydrotreatingRecipes;
+import com.hbm.items.ModFluidNetItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
@@ -15,6 +16,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,16 +35,16 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Hydrotreater — port of 1.7.10's {@code TileEntityMachineHydrotreater}. 11 slots (0 battery, 1→2 input
- * container load, 3→4 hydrogen container load — deprecated in the 1.7 menu, which hides them because
- * hydrogen needs pressurisation, but still processed by the tile — 5→6/7→8 two output-unload pairs,
+ * Hydrotreater: port of 1.7.10's {@code TileEntityMachineHydrotreater}. 11 slots (0 battery, 1 to 2 input
+ * container load, 3 to 4 hydrogen container load, deprecated in the 1.7 menu, which hides them because
+ * hydrogen needs pressurisation, but still processed by the tile. 5 to 6 and 7 to 8 are two output-unload pairs,
  * 9 fluid identifier, 10 catalyst). Tanks:
- * {@code [0] OIL 64k} + {@code [1] HYDROGEN 64k p1} inputs (both pipe-fed) → {@code [2] OIL_DS 24k} /
+ * {@code [0] OIL 64k} + {@code [1] HYDROGEN 64k p1} inputs (both pipe-fed) to {@code [2] OIL_DS 24k} /
  * {@code [3] SOURGAS 24k}. {@link #reform} runs every 2 ticks: needs {@code power ≥ 20k},
  * {@code tank0 ≥ 100}, enough hydrogen, and a {@code catalytic_converter} in slot 10. maxPower 1M.
  * 1.7 has no automation access (the base tile exposes no sides).
  *
- * <p>Deferred (§20): IPersistentNBT/IFluidCopiable.
+ * <p>Deferred: IPersistentNBT/IFluidCopiable.
  */
 public class TileEntityMachineHydrotreater extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, WorldlyContainer {
@@ -149,10 +151,10 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
         if (in.isEmpty()) return;
         FluidTankNTM tank = tanks[tankIndex];
         // 1.7 FluidTank.loadTank: a pressurised tank only accepts the infinite barrel.
-        if (tank.getPressure() != 0 && !in.is(com.hbm.items.ModFluidNetItems.fluid_barrel_infinite.get())) return;
+        if (tank.getPressure() != 0 && !in.is(ModFluidNetItems.fluid_barrel_infinite.get())) return;
 
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
             setChanged();
             return;
         }

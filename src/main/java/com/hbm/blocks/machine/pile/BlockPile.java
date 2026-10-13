@@ -6,6 +6,9 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.pile.TileEntityPileBaseMK2;
 import com.hbm.tileentity.machine.pile.TileEntityPileCore;
+import dev.golem.core.registry.TickingBlock;
+import dev.golem.core.world.CompatBlock;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,10 +37,10 @@ import java.util.List;
  * validated, and they carry the drilled state of the pile in their {@link #META}: solid, bored through,
  * a channel mouth, or the one cell that holds the simulation.
  *
- * <p>Breaking any cell collapses the whole structure back to loose bricks — the core goes with it, and
+ * <p>Breaking any cell collapses the whole structure back to loose bricks. The core goes with it, and
  * every remaining cell sees its core missing on its next tick and reverts itself.
  */
-public class BlockPile extends dev.golem.core.world.CompatBlock implements dev.golem.core.registry.TickingBlock, IToolable, ILookOverlay {
+public class BlockPile extends CompatBlock implements TickingBlock, IToolable, ILookOverlay {
 
     public static final int META_DUMMY = 0;
     public static final int META_CORE = 1;
@@ -80,13 +83,13 @@ public class BlockPile extends dev.golem.core.world.CompatBlock implements dev.g
      * on its next tick.
      *
      * <p>The core is found through a <i>neighbouring</i> cell rather than this one: 26.1 runs the removal
-     * hook after the block entity is already gone, so the cell that was broken can no longer say where its
+     * hook after the block entity is already gone, so the cell that was broken cannot say where its
      * core was. Any surviving neighbour still can.
      */
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         // Carried by a sub-level system, not broken: the pile moves whole, so it is neither re-bricked nor destroyed.
-        if (level.isClientSide() || TileEntityPileCore.meltingDown || dev.golem.core.world.SubLevels.isMoving(level)) return;
+        if (level.isClientSide() || TileEntityPileCore.meltingDown || SubLevels.isMoving(level)) return;
 
         TileEntityPileCore core = findCore(level, pos);
         level.setBlockAndUpdate(pos, ModPileBlocks.pile_brick.get().defaultBlockState());

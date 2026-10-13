@@ -3,6 +3,8 @@ package com.hbm.gametest;
 import com.hbm.Constants;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModTerrainBlocks;
+import com.hbm.blocks.machine.storage.ModBatteryBlocks;
+import com.hbm.client.SmogFog;
 import com.hbm.config.BombConfig;
 import com.hbm.config.DungeonConfig;
 import com.hbm.config.MobConfig;
@@ -13,8 +15,9 @@ import com.hbm.config.WeaponConfig;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.effect.EntityFalloutRain;
 import com.hbm.entity.mob.EntityDuck;
+import com.hbm.entity.mob.glyphid.EntityGlyphidScout;
 import com.hbm.entity.projectile.EntityBulletBeamBase;
-import com.hbm.foundry.ArcFurnaceRecipes;
+import com.hbm.inventory.recipes.ArcFurnaceRecipes;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.inventory.recipes.FuelPoolRecipes;
@@ -24,8 +27,10 @@ import com.hbm.inventory.recipes.anvil.AnvilSmithingRecipe;
 import com.hbm.items.ModBatterySCItems;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMedicineItems;
+import com.hbm.items.ModRBMKItems;
 import com.hbm.items.ModUpgradeItems;
 import com.hbm.items.machine.ItemBatterySC.EnumBatterySC;
+import com.hbm.items.machine.ItemPWRFuel;
 import com.hbm.items.special.ItemDrop;
 import com.hbm.main.ModEventHandlerHooks;
 import com.hbm.potion.ModEffects;
@@ -35,13 +40,21 @@ import com.hbm.world.gen.ConfigSpreadPlacement;
 import com.hbm.world.gen.NTMStructureDeclarations;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.registry.Entities;
 import dev.golem.core.world.Effects;
 import dev.golem.core.world.ItemUses;
+import dev.golem.core.world.LightLevels;
 import dev.golem.core.world.Sleeps;
+import dev.golem.core.world.Spawns;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -56,13 +69,15 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadType;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 import java.util.Map;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * Wave 2 HOOKS (History §19ek-hooks): the 1.7 behaviours that waited for a new hook, each against its 1.7 value.
+ * The 1.7 behaviours that waited for a new hook, each against its 1.7 value.
  */
 public final class HooksGameTests {
 
@@ -85,7 +100,7 @@ public final class HooksGameTests {
 
     public static void init() {}
 
-    // -------------------------------------------------------------------------------- 1: cyanide
+    // 1: cyanide
 
     private static void cyanide(GameTestHelper helper) {
         AnvilSmithingRecipe cyanide = null;
@@ -106,7 +121,7 @@ public final class HooksGameTests {
                 "red pill -> ntmRedPill");
 
         Player victim = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
-        victim.setPos(helper.absoluteVec(new net.minecraft.world.phys.Vec3(1.5, 2, 1.5)));
+        victim.setPos(helper.absoluteVec(new Vec3(1.5, 2, 1.5)));
         ItemUses.finished(victim, new ItemStack(Items.APPLE)); // plain food: nothing
         helper.assertTrue(victim.getHealth() == victim.getMaxHealth(), "plain food harmless");
         ItemUses.finished(victim, pilled);
@@ -117,7 +132,7 @@ public final class HooksGameTests {
         helper.succeed();
     }
 
-    // -------------------------------------------------------------------------------- 2: rampant
+    // 2: rampant
 
     private static void rampant(GameTestHelper helper) {
         boolean guidance = MobConfig.rampantGlyphidGuidance;
@@ -136,16 +151,16 @@ public final class HooksGameTests {
             PollutionHandler.targetCoords = before;
         }
         // the potential-spawn hook reaches the populator, which keeps 1.7's gate (off by default)
-        int scouts = helper.getLevel().getEntitiesOfClass(com.hbm.entity.mob.glyphid.EntityGlyphidScout.class,
+        int scouts = helper.getLevel().getEntitiesOfClass(EntityGlyphidScout.class,
                 new AABB(helper.absolutePos(BlockPos.ZERO)).inflate(8)).size();
-        dev.golem.core.world.Spawns.potentialSpawns(helper.getLevel(), net.minecraft.world.entity.MobCategory.MONSTER,
+        Spawns.potentialSpawns(helper.getLevel(), MobCategory.MONSTER,
                 helper.absolutePos(new BlockPos(1, 2, 1)));
-        helper.assertTrue(helper.getLevel().getEntitiesOfClass(com.hbm.entity.mob.glyphid.EntityGlyphidScout.class,
+        helper.assertTrue(helper.getLevel().getEntitiesOfClass(EntityGlyphidScout.class,
                 new AABB(helper.absolutePos(BlockPos.ZERO)).inflate(8)).size() == scouts, "natural scout spawn is off by default");
         helper.succeed();
     }
 
-    // -------------------------------------------------------------------------------- 3: village
+    // 3: village
 
     private static void village(GameTestHelper helper) {
         RandomSource rand = RandomSource.create(42);
@@ -177,7 +192,7 @@ public final class HooksGameTests {
         helper.succeed();
     }
 
-    // -------------------------------------------------------------------------------- 4: block break
+    // 4: block break
 
     private static void blockBreak(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -209,31 +224,31 @@ public final class HooksGameTests {
             // coal dust: each air side 1 in 2
             int dust = 0;
             for (int i = 0; i < 6; i++) {
-                for (net.minecraft.core.Direction d : net.minecraft.core.Direction.values()) level.setBlockAndUpdate(pos.relative(d), Blocks.AIR.defaultBlockState());
+                for (Direction d : Direction.values()) level.setBlockAndUpdate(pos.relative(d), Blocks.AIR.defaultBlockState());
                 ModEventHandlerHooks.onBlockBreak(player, level, pos, Blocks.COAL_ORE.defaultBlockState());
-                for (net.minecraft.core.Direction d : net.minecraft.core.Direction.values())
+                for (Direction d : Direction.values())
                     if (level.getBlockState(pos.relative(d)).is(ModTerrainBlocks.gas_coal.get())) dust++;
             }
             helper.assertTrue(dust > 6 && dust < 30, "coal ore: about half of 36 sides get coal dust, got " + dust);
-            for (net.minecraft.core.Direction d : net.minecraft.core.Direction.values()) level.setBlockAndUpdate(pos.relative(d), Blocks.AIR.defaultBlockState());
+            for (Direction d : Direction.values()) level.setBlockAndUpdate(pos.relative(d), Blocks.AIR.defaultBlockState());
         }
         helper.succeed();
     }
 
-    // -------------------------------------------------------------------------------- 5: smog
+    // 5: smog
 
     private static void smog(GameTestHelper helper) {
-        helper.assertTrue(Float.isNaN(com.hbm.client.SmogFog.fogEnd(35F, 192F)), "at the 35 threshold: no smog");
+        helper.assertTrue(Float.isNaN(SmogFog.fogEnd(35F, 192F)), "at the 35 threshold: no smog");
         // 1.7 thickenFog: 192 / (1 + 12 * 5 / 120) = 128
-        helper.assertTrue(Math.abs(com.hbm.client.SmogFog.fogEnd(47F, 192F) - 128F) < 1e-4, "fog end 128");
-        helper.assertTrue(Math.abs(com.hbm.client.SmogFog.tint(95F) - 0.5F) < 1e-6, "tint (95 - 35) / 120 = 0.5");
-        helper.assertTrue(com.hbm.client.SmogFog.tint(500F) == 1F, "tint capped at 1");
-        helper.assertTrue(com.hbm.client.SmogFog.step(0F, 1F) == 0.05F && com.hbm.client.SmogFog.step(1F, 0F) == 0.95F
-                && com.hbm.client.SmogFog.step(0.98F, 1F) == 1F, "renderSoot eases by 0.05 a tick");
+        helper.assertTrue(Math.abs(SmogFog.fogEnd(47F, 192F) - 128F) < 1e-4, "fog end 128");
+        helper.assertTrue(Math.abs(SmogFog.tint(95F) - 0.5F) < 1e-6, "tint (95 - 35) / 120 = 0.5");
+        helper.assertTrue(SmogFog.tint(500F) == 1F, "tint capped at 1");
+        helper.assertTrue(SmogFog.step(0F, 1F) == 0.05F && SmogFog.step(1F, 0F) == 0.95F
+                && SmogFog.step(0.98F, 1F) == 1F, "renderSoot eases by 0.05 a tick");
         helper.succeed();
     }
 
-    // -------------------------------------------------------------------------------- 6: waste earth
+    // 6: waste earth
 
     private static void regrow(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -264,7 +279,7 @@ public final class HooksGameTests {
             TerrainConfig.cleanupDeadDirt = false;
             level.getBlockState(covered).randomTick(level, covered, level.getRandom());
             helper.assertTrue(level.getBlockState(covered).is(Blocks.DIRT), "dark and under an opaque block: back to dirt");
-            int light = dev.golem.core.world.LightLevels.combined(level, open.above());
+            int light = LightLevels.combined(level, open.above());
             level.getBlockState(open).randomTick(level, open, level.getRandom());
             helper.assertTrue(light < 4 || level.getBlockState(open).is(ModFalloutBlocks.waste_earth.get()),
                     "lit and open: stays dead (light " + light + ")");
@@ -284,7 +299,7 @@ public final class HooksGameTests {
         helper.succeed();
     }
 
-    // -------------------------------------------------------------------------------- 7: xen crystal
+    // 7: xen crystal
 
     private static void xen(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -323,7 +338,7 @@ public final class HooksGameTests {
         helper.succeed();
     }
 
-    // -------------------------------------------------------------------------------- 8: fallout delay
+    // 8: fallout delay
 
     private static void falloutDelay(GameTestHelper helper) {
         helper.assertTrue(BombConfig.fDelay == 4, "6.04_falloutDelay default 4");
@@ -340,13 +355,13 @@ public final class HooksGameTests {
         helper.succeed();
     }
 
-    // -------------------------------------------------------------------------------- 9: battery socket
+    // 9: battery socket
 
     private static void socket(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos pos = helper.absolutePos(new BlockPos(2, 2, 2));
         TileEntityBatterySocket socket = new TileEntityBatterySocket(pos,
-                com.hbm.blocks.machine.storage.ModBatteryBlocks.machine_battery_socket.get().defaultBlockState());
+                ModBatteryBlocks.machine_battery_socket.get().defaultBlockState());
         socket.setLevel(level);
         socket.inventory.setStackInSlot(0, new ItemStack(ModBatterySCItems.get(EnumBatterySC.EMPTY)));
         helper.assertTrue(!socket.hasSCLoaded(), "the empty radiovoltaic cell does not count");
@@ -371,23 +386,23 @@ public final class HooksGameTests {
         helper.succeed();
     }
 
-    // -------------------------------------------------------------------------------- 11: duck
+    // 11: duck
 
     private static void duck(GameTestHelper helper) {
-        EntityDuck duck = dev.golem.core.registry.Entities.create(ModNtmEntities.DUCK.get(), helper.getLevel(),
-                net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
-        duck.setPos(helper.absoluteVec(new net.minecraft.world.phys.Vec3(1.5, 2, 1.5)));
-        dev.golem.core.world.Spawns.finalizeTriggered(duck, helper.getLevel());
+        EntityDuck duck = Entities.create(ModNtmEntities.DUCK.get(), helper.getLevel(),
+                EntitySpawnReason.TRIGGERED);
+        duck.setPos(helper.absoluteVec(new Vec3(1.5, 2, 1.5)));
+        Spawns.finalizeTriggered(duck, helper.getLevel());
         helper.assertTrue(duck.compatLaysPlainEgg(), "a duck is the temperate chicken: it lays 1.7's plain egg");
         helper.succeed();
     }
 
-    // -------------------------------------------------------------------------------- 12: JEI pages
+    // 12: JEI pages
 
     private static void jeiPages(GameTestHelper helper) {
         List<FuelPoolRecipes.Entry> pool = FuelPoolRecipes.displayRecipes();
-        int rods = com.hbm.items.ModRBMKItems.PELLETS.size();
-        int pwr = com.hbm.items.machine.ItemPWRFuel.EnumPWRFuel.values().length;
+        int rods = ModRBMKItems.PELLETS.size();
+        int pwr = ItemPWRFuel.EnumPWRFuel.values().length;
         helper.assertTrue(pool.size() == 9 + 7 + pwr + rods, "1.7 FuelPool: 9 ZIRNOX, 7 plates, " + pwr + " PWR, " + rods
                 + " RBMK, got " + pool.size());
         for (int i = 0; i < 16 + pwr; i++) {
@@ -409,13 +424,13 @@ public final class HooksGameTests {
         helper.succeed();
     }
 
-    // -------------------------------------------------------------------------------- 13: structures
+    // 13: structures
 
     private static void structures(GameTestHelper helper) {
         long seed = 4815162342L;
-        ConfigSpreadPlacement ntm = new ConfigSpreadPlacement(net.minecraft.core.Vec3i.ZERO,
-                net.minecraft.world.level.levelgen.structure.placement.StructurePlacement.FrequencyReductionMethod.DEFAULT, 1F,
-                NTMStructureDeclarations.SALT, java.util.Optional.empty(), "ntm");
+        ConfigSpreadPlacement ntm = new ConfigSpreadPlacement(Vec3i.ZERO,
+                StructurePlacement.FrequencyReductionMethod.DEFAULT, 1F,
+                NTMStructureDeclarations.SALT, Optional.empty(), "ntm");
         RandomSpreadStructurePlacement vanilla = new RandomSpreadStructurePlacement(16, 4, RandomSpreadType.LINEAR, NTMStructureDeclarations.SALT);
         int min = StructureConfig.structureMinChunks, max = StructureConfig.structureMaxChunks;
         int antenna = DungeonConfig.antennaStructure;
@@ -431,9 +446,9 @@ public final class HooksGameTests {
             ChunkPos c = ntm.getPotentialStructureChunk(seed, 30, 30);
             helper.assertTrue(Math.floorMod(c.getMinBlockX() >> 4, 24) < 16, "spread below max - min");
 
-            ConfigSpreadPlacement dungeon = new ConfigSpreadPlacement(net.minecraft.core.Vec3i.ZERO,
-                    net.minecraft.world.level.levelgen.structure.placement.StructurePlacement.FrequencyReductionMethod.DEFAULT, 1F,
-                    1_700_001, java.util.Optional.empty(), "dungeon:antenna");
+            ConfigSpreadPlacement dungeon = new ConfigSpreadPlacement(Vec3i.ZERO,
+                    StructurePlacement.FrequencyReductionMethod.DEFAULT, 1F,
+                    1_700_001, Optional.empty(), "dungeon:antenna");
             helper.assertTrue(dungeon.spacing() == 15 && Math.abs(dungeon.keepChance() - 0.9F) < 1e-6, "4.01 250: spacing 15, keep 0.9");
             int sites = 0;
             for (int x = 0; x < 300; x++) for (int z = 0; z < 300; z++) if (dungeon.isCandidate(seed, x, z)) sites++;

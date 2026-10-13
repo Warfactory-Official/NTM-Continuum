@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import com.hbm.items.LegacyMeta;
 import dev.golem.core.dejson.Variants;
 import dev.golem.core.registry.BlockTag;
 import dev.golem.core.registry.Loot;
@@ -14,8 +15,11 @@ import com.hbm.sound.ModSounds;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.CompatBlockItem;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -69,8 +73,8 @@ public final class ModSteelBlocks {
             .tag(BlockTag.PICKAXE);
 
     /**
-     * 1.7 steel_scaffold metadata 0..3 (steel, red, white, yellow), one block item per colour with ntm-next's ids
-     * (History §19es-itemvariant); the metadata-0 item is registered last so it stays the block's own item.
+     * 1.7 steel_scaffold metadata 0..3 (steel, red, white, yellow), one block item per colour with ntm-next's ids.
+     * The metadata-0 item is registered last so it stays the block's own item.
      */
     public static final List<RegistryObject<ScaffoldItem>> SCAFFOLD_ITEMS = scaffoldItems();
 
@@ -92,10 +96,10 @@ public final class ModSteelBlocks {
     }
 
     /** A scaffold colour's block item; places that colour and shows the block's one 1.7 name. */
-    public static final class ScaffoldItem extends dev.golem.core.world.CompatBlockItem implements com.hbm.items.LegacyMeta {
+    public static final class ScaffoldItem extends CompatBlockItem implements LegacyMeta {
         private final int variant;
 
-        public ScaffoldItem(Block block, net.minecraft.world.item.Item.Properties properties, int variant) {
+        public ScaffoldItem(Block block, Item.Properties properties, int variant) {
             super(block, properties);
             this.variant = variant;
         }
@@ -106,8 +110,8 @@ public final class ModSteelBlocks {
         }
 
         @Override
-        public net.minecraft.network.chat.Component getName(ItemStack stack) {
-            return net.minecraft.network.chat.Component.translatable("block.hbm.steel_scaffold");
+        public Component getName(ItemStack stack) {
+            return Component.translatable("block.hbm.steel_scaffold");
         }
     }
 

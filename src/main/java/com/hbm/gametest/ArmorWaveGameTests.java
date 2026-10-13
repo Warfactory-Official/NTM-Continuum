@@ -1,5 +1,6 @@
 package com.hbm.gametest;
 
+import com.hbm.blocks.machine.ModArmorTableBlocks;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.handler.HazmatRegistry;
 import com.hbm.items.ModArmorItems;
@@ -8,6 +9,9 @@ import com.hbm.items.gear.ArmorFSB;
 import com.hbm.inventory.container.ContainerArmorTable;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.DamageResistanceHandler;
+import dev.golem.core.gametest.GameTestHelpers;
+import java.util.HashSet;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -15,8 +19,10 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.AABB;
 
 /** Focused regression coverage for resistance math, module storage, and the armor table lifecycle. */
 public final class ArmorWaveGameTests {
@@ -123,10 +129,10 @@ public final class ArmorWaveGameTests {
 
     public static void tableSlotsAndLifecycle(GameTestHelper helper) {
         // Item dropping is a ServerPlayer operation on vanilla/Fabric, not the helper's bare Player.
-        try (var fixture = dev.golem.core.gametest.GameTestHelpers.mockServerPlayer(helper)) {
+        try (var fixture = GameTestHelpers.mockServerPlayer(helper)) {
         Player player = fixture.player();
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
-        helper.setBlock(new BlockPos(1, 1, 1), com.hbm.blocks.machine.ModArmorTableBlocks.ARMOR_TABLE.get().defaultBlockState());
+        helper.setBlock(new BlockPos(1, 1, 1), ModArmorTableBlocks.ARMOR_TABLE.get().defaultBlockState());
         player.setPos(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
 
         ContainerArmorTable menu = new ContainerArmorTable(0, player.getInventory(), pos);
@@ -148,9 +154,9 @@ public final class ArmorWaveGameTests {
         // legacy framework packs batches tighter than 26.1 does.
         // Only stacks of the two dropped items count, and the count is polled: on 26.1 a plot's entity section
         // can still be hidden from level queries on the test's first tick (a freshly loaded chunk), so the
-        // dropped entities exist but are not returned yet (History section 19es-final).
-        net.minecraft.world.phys.AABB area = player.getBoundingBox().inflate(4D);
-        java.util.Set<Integer> before = new java.util.HashSet<>();
+        // dropped entities exist but are not returned yet.
+        AABB area = player.getBoundingBox().inflate(4D);
+        Set<Integer> before = new HashSet<>();
         for (ItemEntity e : helper.getLevel().getEntitiesOfClass(ItemEntity.class, area)) before.add(e.getId());
         menu.removed(player);
         helper.succeedWhen(() -> {
@@ -163,22 +169,22 @@ public final class ArmorWaveGameTests {
     }
 
     private static Player player(GameTestHelper helper) {
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
         player.setPos(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
         return player;
     }
 
-    private static void wear(Player player, net.minecraft.world.item.Item helmet,
-                             net.minecraft.world.item.Item chest, net.minecraft.world.item.Item legs,
-                             net.minecraft.world.item.Item boots) {
+    private static void wear(Player player, Item helmet,
+                             Item chest, Item legs,
+                             Item boots) {
         player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(helmet));
         player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(chest));
         player.setItemSlot(EquipmentSlot.LEGS, new ItemStack(legs));
         player.setItemSlot(EquipmentSlot.FEET, new ItemStack(boots));
     }
 
-    private static void assertMaxDamage(GameTestHelper helper, net.minecraft.world.item.Item item, int expected) {
+    private static void assertMaxDamage(GameTestHelper helper, Item item, int expected) {
         helper.assertTrue(new ItemStack(item).getMaxDamage() == expected,
                 "wrong armor durability for " + item.getDescriptionId());
     }

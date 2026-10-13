@@ -5,12 +5,10 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
- * Registration declarations for the conventional original-hbm Sedna weapons.
+ * Registration declarations for the conventional 1.7 Sedna weapons.
  *
- * <p>This helper deliberately does not modify {@link WeaponRenderers}. The existing registry is owned
- * by the proving slice; callers can install this batch with {@link #register(BiConsumer)} when the
- * corresponding gun items and item definitions are present. Models and render types are not resolved
- * until a renderer is first used, so the helper is safe to call before resources are ready.
+ * <p>Callers install this batch with {@link #register(BiConsumer)} into {@link WeaponRenderers}. Models and render
+ * types are not resolved until a renderer is first used, so it is safe to call before resources are ready.
  */
 public final class BallisticWeaponRenderers {
     private static final Map<String, WeaponRenderer> DECLARATIONS = createDeclarations();

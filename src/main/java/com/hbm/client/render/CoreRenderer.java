@@ -6,6 +6,7 @@ import com.hbm.tileentity.machine.dfc.TileEntityCore;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderTypes;
@@ -35,8 +36,8 @@ public class CoreRenderer implements CompatBER<TileEntityCore, CoreRenderState> 
     private final WavefrontObj shell;
 
     public CoreRenderer() {
-        this.sphere = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/sphere_uv.obj"));
-        this.shell = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/sphere_ruv.obj"));
+        this.sphere = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/sphere_uv.obj"));
+        this.shell = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/sphere_ruv.obj"));
     }
 
     @Override public CoreRenderState createRenderState() { return new CoreRenderState(); }

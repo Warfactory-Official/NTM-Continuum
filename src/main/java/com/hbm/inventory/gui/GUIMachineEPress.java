@@ -1,5 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineEPress;
 import com.hbm.tileentity.machine.TileEntityMachineEPress;
@@ -15,9 +18,9 @@ import java.util.Optional;
  * ({@code processing/gui_electric_press.png}, 176x186). Reads {@code power}/{@code progress} off the synced
  * client {@link TileEntityMachineEPress} (BufPacket, not ContainerData).
  */
-public class GUIMachineEPress extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineEPress> implements IUpgradeInfoProviderSource {
+public class GUIMachineEPress extends CompatContainerScreen<ContainerMachineEPress> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_electric_press.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_electric_press.png");
 
     public GUIMachineEPress(ContainerMachineEPress menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 186);
@@ -59,7 +62,7 @@ public class GUIMachineEPress extends dev.golem.core.gui.CompatContainerScreen<C
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getPress();
     }
 }

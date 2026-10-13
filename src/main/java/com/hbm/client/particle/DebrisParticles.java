@@ -1,11 +1,16 @@
 package com.hbm.client.particle;
 
+import com.hbm.Constants;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.golem.core.client.ClientResourceReloads;
+import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.Frames;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.Jars;
+import dev.golem.core.render.Particles;
 import dev.golem.core.render.WorldInAJar;
 import dev.golem.core.render.WorldEffects;
+import dev.golem.core.world.Compat;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
@@ -19,16 +24,15 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 
 /**
- * The chunks of ground a large blast throws — real scoops of the terrain, tumbling.
+ * The chunks of ground a large blast throws, real scoops of the terrain, tumbling.
  *
  * <p>Ported from 1.7 {@code ParticleDebris}. Each chunk carries a {@link WorldInAJar} cut from the
  * blast site and draws it as a block model rather than a sprite, so the rubble is the ground it came
  * from: its ores, its grass tint, its slab and stair shapes.
  *
- * <p>These are not vanilla particles. A particle draws one camera-facing quad from an atlas sprite;
- * a chunk of terrain is an arbitrary lump of block models that has to be turned about its own middle,
- * which the particle engine has no way to express. So they live here and submit through
- * {@link WorldEffects} on the client's own tick, exactly as the casings and skeleton pieces do.
+ * <p>These are not vanilla particles: a particle draws one camera-facing quad from an atlas sprite, and a lump of
+ * block models turned about its own middle is outside what the particle engine can express. They submit through
+ * {@link WorldEffects} on the client's own tick, as the casings and skeleton pieces do.
  */
 public final class DebrisParticles {
 
@@ -62,9 +66,9 @@ public final class DebrisParticles {
         if (initialized) return;
         initialized = true;
         WorldEffects.init();
-        dev.golem.core.client.ClientTicks.onEndTick(DebrisParticles::tick);
+        ClientTicks.onEndTick(DebrisParticles::tick);
         WorldEffects.onBegin(DebrisParticles::submit);
-        dev.golem.core.client.ClientResourceReloads.register(com.hbm.Constants.MOD_ID,
+        ClientResourceReloads.register(Constants.MOD_ID,
                 "debris_particles", DebrisParticles::clear);
     }
 
@@ -150,7 +154,7 @@ public final class DebrisParticles {
                 ParticleRocketFlame flame = new ParticleRocketFlame(level, x, y, z);
                 flame.setScale(trailScale);
                 flame.setMaxAge(TRAIL_AGE);
-                dev.golem.core.render.Particles.add(flame);
+                Particles.add(flame);
             }
 
             vy -= GRAVITY;
@@ -159,7 +163,7 @@ public final class DebrisParticles {
             Vec3 to = from.add(vx, vy, vz);
 
             if (age > NO_CLIP_TICKS) {
-                BlockHitResult hit = dev.golem.core.world.Compat.clip(level, from, to,
+                BlockHitResult hit = Compat.clip(level, from, to,
                         ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE);
                 if (hit.getType() != HitResult.Type.MISS) {
                     Vec3 at = hit.getLocation();

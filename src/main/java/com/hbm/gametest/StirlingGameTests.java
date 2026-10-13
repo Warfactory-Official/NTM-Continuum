@@ -7,10 +7,13 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityStirling;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 
 /** Focused contracts for the heat-powered Stirling engine family. */
 public final class StirlingGameTests {
@@ -24,7 +27,7 @@ public final class StirlingGameTests {
         helper.setBlock(core, block.defaultBlockState());
         block.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
 
-        TileEntityStirling stirling = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        TileEntityStirling stirling = GameTestHelpers.blockEntity(
                 helper, core, TileEntityStirling.class);
         helper.assertTrue(stirling != null, "Stirling core BlockEntity was not created");
         FoldedTestSupport.assertPort(helper, core, core.east());
@@ -90,8 +93,8 @@ public final class StirlingGameTests {
         helper.getLevel().setBlock(clicked, block.defaultBlockState(), 3);
         ItemStack stack = new ItemStack(block);
         ModDataComponents.HAS_COG.set(stack, false);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(
-                helper, net.minecraft.world.level.GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(
+                helper, GameType.SURVIVAL);
         player.setYRot(0F);
         block.setPlacedBy(helper.getLevel(), clicked, block.defaultBlockState(), player, stack);
 
@@ -121,7 +124,7 @@ public final class StirlingGameTests {
                         + ", got " + port.getPos() + "/" + port.getDir());
     }
 
-    private static AnvilRecipes.AnvilConstructionRecipe findRecipe(net.minecraft.world.item.Item item) {
+    private static AnvilRecipes.AnvilConstructionRecipe findRecipe(Item item) {
         return AnvilRecipes.getConstruction().stream()
                 .filter(candidate -> candidate.output.get(0).stack.is(item))
                 .findFirst().orElse(null);

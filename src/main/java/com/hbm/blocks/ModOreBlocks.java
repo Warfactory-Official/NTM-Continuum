@@ -27,6 +27,8 @@ import com.hbm.tileentity.BedrockOreBlockEntity;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import java.util.Set;
+import java.util.function.UnaryOperator;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -42,19 +44,18 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * The ore blocks the ore-worldgen wave needed and {@code gen_wave1.py} could not produce: the four
- * rich {@link BlockCluster}s, the depth-rock family ({@link BlockDepth}/{@link BlockDepthOre}), the six
- * flattened {@link BlockResourceStone} variants, the two burning nether blocks, the four cave spikes,
- * and the two drifting gas pockets.
+ * The ore blocks that {@code gen_wave1.py} cannot produce: the four rich {@link BlockCluster}s, the
+ * depth-rock family ({@link BlockDepth}/{@link BlockDepthOre}), the six flattened
+ * {@link BlockResourceStone} variants, the two burning nether blocks, the four cave spikes, and the two
+ * drifting gas pockets.
  *
- * <p>These are hand-registered because each carries real behaviour (custom drop maths, unbreakability,
+ * <p>These are hand-registered because each carries behaviour (custom drop maths, unbreakability,
  * drift/ignition, anchoring) that a generated plain {@code Block} cannot express. Every block here
- * computes its drops in Java (see {@link OreDrops} for why) and therefore declares
- * {@code noLootTable()} — <b>do not add these ids to the generator's loot-table list</b>. The generator
- * still owns their models, blockstates, lang and mineable-tag entries.
+ * computes its drops in Java (see {@link OreDrops}) and therefore declares {@code noLootTable()}:
+ * <b>do not add these ids to the generator's loot-table list</b>. The generator still owns their
+ * models, blockstates, lang and mineable-tag entries.
  *
- * <p>The bedrock-ore block also lives here: its block entity and extraction contract are feature-local,
- * while the full excavator machine remains a separate integration.
+ * <p>The bedrock-ore block also lives here: its block entity and extraction contract are feature-local.
  */
 public final class ModOreBlocks {
 
@@ -69,10 +70,10 @@ public final class ModOreBlocks {
     /** Every block registered here, in registration order. Block items are created from this. */
     private static final Map<String, RegistryObject<? extends Block>> ALL = new LinkedHashMap<>();
 
-    /** Ids that get no block item — a floating gas cell is worldgen-only and drops nothing upstream. */
-    private static final java.util.Set<String> NO_ITEM = java.util.Set.of("gas_flammable", "gas_explosive");
+    /** Ids that get no block item: a floating gas cell is worldgen-only and drops nothing upstream. */
+    private static final Set<String> NO_ITEM = Set.of("gas_flammable", "gas_explosive");
 
-    // ---------------------------------------------------------------- clusters (hardness 5, blast 35)
+    // Clusters (hardness 5, blast 35)
 
     public static final RegistryObject<BlockCluster> cluster_iron =
             cluster("cluster_iron", () -> ModItems.crystal_iron.get())
@@ -91,7 +92,7 @@ public final class ModOreBlocks {
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
 
-    // ---------------------------------------------------------------- depth rock + depth ores
+    // Depth rock + depth ores
 
     /** Overworld depth filler laid down around a depth deposit. */
     public static final RegistryObject<BlockDepth> stone_depth = depth("stone_depth")
@@ -160,7 +161,7 @@ public final class ModOreBlocks {
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
     /**
-     * Not in original-hbm (1.7.10); a 1.12.2 addition kept as it was: exactly one nitan mix, fortune ignored.
+     * Not in 1.7; a 1.12.2 addition kept as it was: exactly one nitan mix, fortune ignored.
      */
     public static final RegistryObject<BlockDepthOre> ore_depth_nether_nitan =
             reg("ore_depth_nether_nitan", p -> new BlockDepthOre(p, 1, 0, Integer.MAX_VALUE, false,
@@ -168,7 +169,7 @@ public final class ModOreBlocks {
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
 
-    // ---------------------------------------------------------------- resource stone (flattened ×6)
+    // Resource stone (flattened ×6)
 
     public static final RegistryObject<BlockResourceStone> stone_resource_sulfur = resourceStone("sulfur");
     public static final RegistryObject<BlockResourceStone> stone_resource_asbestos = resourceStone("asbestos");
@@ -177,9 +178,9 @@ public final class ModOreBlocks {
     public static final RegistryObject<BlockResourceStone> stone_resource_limestone = resourceStone("limestone");
     public static final RegistryObject<BlockResourceStone> stone_resource_bauxite = resourceStone("bauxite");
 
-    // ---------------------------------------------------------------- burning nether blocks
+    // Burning nether blocks
 
-    /** Light 10/15, hardness 0.4 — an outgas block upstream, so mining it in the nether leaves CO. */
+    /** Light 10/15, hardness 0.4. An outgas block upstream, so mining it in the nether leaves CO. */
     public static final RegistryObject<BlockNetherCoal> ore_nether_coal = reg("ore_nether_coal",
             BlockNetherCoal::new, p -> p.strength(0.4F, 10.0F).sound(SoundType.STONE).lightLevel(s -> 10)
                     .requiresCorrectToolForDrops().randomTicks().noLootTable())
@@ -193,7 +194,7 @@ public final class ModOreBlocks {
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
 
-    // ---------------------------------------------------------------- cave spikes
+    // Cave spikes
 
     public static final RegistryObject<BlockStalagmite> stalagmite_sulfur =
             spike("stalagmite_sulfur", Direction.DOWN, () -> ModItems.sulfur.get())
@@ -212,7 +213,7 @@ public final class ModOreBlocks {
             .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cross("hbm:blocks/stalactite.asbestos"))).states(Variants.simple()))
             .transform(Presets.sprite("hbm:blocks/stalactite.asbestos"));
 
-    // ---------------------------------------------------------------- gas pockets
+    // Gas pockets
 
     public static final RegistryObject<BlockGasFlammable> gas_flammable =
             reg("gas_flammable", BlockGasFlammable::new, ModOreBlocks::gasProps)
@@ -221,11 +222,11 @@ public final class ModOreBlocks {
             reg("gas_explosive", BlockGasExplosive::new, ModOreBlocks::gasProps)
             .transform(Presets.rendered(Variants.simple()));
 
-    // ---------------------------------------------------------------- helpers
+    // Helpers
 
     private static <B extends Block> Reg.Handle<B> reg(String id,
                                                            Function<BlockBehaviour.Properties, ? extends B> factory,
-                                                           java.util.function.UnaryOperator<BlockBehaviour.Properties> props) {
+                                                           UnaryOperator<BlockBehaviour.Properties> props) {
         Reg.Handle<B> block = REG.block(id, factory, props);
         ALL.put(id, block);
         return block;
@@ -248,8 +249,8 @@ public final class ModOreBlocks {
     }
 
     /**
-     * Old {@code setBlockUnbreakable()} + {@code setResistance(10)} — a destroy time of −1 means no
-     * tool can ever break it, while the low blast resistance means explosives still can.
+     * 1.7's {@code setBlockUnbreakable()} + {@code setResistance(10)}: a destroy time of -1 means no
+     * tool can break it, while the low blast resistance lets explosives.
      */
     private static BlockBehaviour.Properties depthProps(BlockBehaviour.Properties p) {
         return p.strength(-1.0F, 10.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noLootTable();

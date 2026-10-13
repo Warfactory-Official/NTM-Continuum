@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import com.hbm.Constants;
 import com.hbm.client.render.item.CustomItemRenderer;
 import com.hbm.client.render.item.CustomItemRenderers;
+import dev.golem.core.Ids;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -58,7 +59,7 @@ public final class EntityItemRenderers {
                 .listResources("items", path -> path.getPath().endsWith(".json")).entrySet()) {
             Identifier file = entry.getKey();
             String path = file.getPath();
-            Identifier item = dev.golem.core.Ids.of(file.getNamespace(),
+            Identifier item = Ids.of(file.getNamespace(),
                     path.substring("items/".length(), path.length() - ".json".length()));
             try (Reader reader = entry.getValue().openAsReader()) {
                 JsonElement root = JsonParser.parseReader(reader);

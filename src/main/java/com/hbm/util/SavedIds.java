@@ -2,6 +2,8 @@ package com.hbm.util;
 
 import com.hbm.Constants;
 import com.hbm.world.gen.nbt.LegacyStructurePalette;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.NbtFiles;
@@ -18,7 +20,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Saving identities without numeric ids (user rule 2026-10-03, History section 19ej-ids).
+ * Saving identities without numeric ids.
  *
  * <p>A global block-state id ({@code Block.getId}), a registry raw id or an enum {@code ordinal()} is only meaningful
  * for one game session and one mod set: the next version, a new block or a reordered enum silently turns the saved
@@ -37,17 +39,17 @@ public final class SavedIds {
     private static final Set<String> WARNED = ConcurrentHashMap.newKeySet();
 
     /**
-     * A saved name (enum constant, registry name) as an item-component codec. Decoding is tolerant: an int left by a
-     * pre-2026-10-03 save reads as {@code ""} (the caller's default) with one WARN, so the stack still loads.
+     * A saved name (enum constant, registry name) as an item-component codec. Decoding is tolerant: an int left by an old save
+     * reads as {@code ""} (the caller's default) with one WARN, so the stack still loads.
      */
-    public static final com.mojang.serialization.Codec<String> NAME_CODEC =
-            com.mojang.serialization.Codec.either(com.mojang.serialization.Codec.STRING, com.mojang.serialization.Codec.INT)
+    public static final Codec<String> NAME_CODEC =
+            Codec.either(Codec.STRING, Codec.INT)
                     .xmap(either -> either.map(name -> name, number -> {
                         warnNumeric("ordinal/id", "item component");
                         return "";
-                    }), com.mojang.datafixers.util.Either::left);
+                    }), Either::left);
 
-    /** One WARN per (what, key) per session for an old numeric value where a name is now saved. */
+    /** One WARN per (what, key) per session for an old numeric value where a name is saved. */
     public static void warnNumeric(String what, String key) {
         if (WARNED.add(what + ":" + key)) {
             Constants.LOG.warn("[HBM] Found a numeric {} under '{}' in saved data; numeric ids are no longer read, "
@@ -55,9 +57,7 @@ public final class SavedIds {
         }
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // block states
-    // ---------------------------------------------------------------------------------------------------------------
 
     public static String stateName(BlockState state) {
         return LegacyStructurePalette.stateString(state);
@@ -116,9 +116,7 @@ public final class SavedIds {
         return states;
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // choices from unnamed recipe lists
-    // ---------------------------------------------------------------------------------------------------------------
 
     /**
      * A selection from a list of unnamed recipes, saved as {@code <signature>#<k>}: the recipe's own content signature
@@ -133,7 +131,7 @@ public final class SavedIds {
         return signature + "#" + k;
     }
 
-    /** Inverse of {@link #listKey}; -1 when the key is empty or no longer names a recipe. */
+    /** Inverse of {@link #listKey}; -1 when the key is empty or does not name a recipe. */
     public static int fromListKey(List<String> signatures, String key) {
         int hash = key == null ? -1 : key.lastIndexOf('#');
         if (hash < 0) return -1;
@@ -150,9 +148,7 @@ public final class SavedIds {
         return -1;
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // enums
-    // ---------------------------------------------------------------------------------------------------------------
 
     /** Writes an enum by {@code name()}. */
     public static void putEnum(DataOut out, String key, Enum<?> value) {

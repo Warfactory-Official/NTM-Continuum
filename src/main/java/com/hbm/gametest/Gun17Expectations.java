@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Expected gun, receiver, magazine and bullet values of original-hbm 1.7.10, interpreted from the source's
- * {@code XFactory*} declarations (fix wave phase 5, History section 19ej-5). The data lives in
- * {@code /hbm/gametest/gun17_expectations.txt}; {@link #ACCEPTED} lists the keys where the port deliberately
+ * Expected gun, receiver, magazine and bullet values of 1.7, interpreted from the source's
+ * {@code XFactory*} declarations. The data lives in
+ * {@code /hbm/gametest/gun17_expectations.txt}; {@link #ACCEPTED} lists the keys where the port
  * differs, each with its reason.
  */
 public final class Gun17Expectations {

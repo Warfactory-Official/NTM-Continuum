@@ -4,6 +4,8 @@ import com.hbm.items.ModRtgContent;
 import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.inventory.container.ContainerRadiolysis;
 import com.hbm.tileentity.machine.TileEntityMachineRadiolysis;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -18,9 +20,9 @@ import java.util.List;
 import java.util.Optional;
 
 /** The 230x166 RTG/radiolysis screen: power gauge, three tanks and the three info panels on the left rim. */
-public final class GUIRadiolysis extends dev.golem.core.gui.CompatContainerScreen<ContainerRadiolysis> {
+public final class GUIRadiolysis extends CompatContainerScreen<ContainerRadiolysis> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_radiolysis.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/gui_radiolysis.png");
 
     public GUIRadiolysis(ContainerRadiolysis menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 230, 166);

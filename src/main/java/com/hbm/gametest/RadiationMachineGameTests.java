@@ -2,15 +2,18 @@ package com.hbm.gametest;
 
 import com.hbm.blocks.machine.MachineRadGen;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.container.ContainerMachineRadGen;
 import com.hbm.items.ModItems;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineMiniRTG;
 import com.hbm.tileentity.machine.TileEntityMachineRadGen;
 import com.hbm.tileentity.machine.TileEntityRadSensor;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 
 /** Focused contracts for the RTGs, radiation sensor, and supported RadGen fuels. */
 public final class RadiationMachineGameTests {
@@ -20,7 +23,7 @@ public final class RadiationMachineGameTests {
     public static void miniRtgGeneration(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         helper.setBlock(pos, ModMachineBlocks.machine_minirtg.get().defaultBlockState());
-        TileEntityMachineMiniRTG generator = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
+        TileEntityMachineMiniRTG generator = GameTestHelpers.blockEntity(helper, pos,
                 TileEntityMachineMiniRTG.class);
 
         tick(helper, pos, generator);
@@ -31,7 +34,7 @@ public final class RadiationMachineGameTests {
         helper.assertTrue(generator.power == generator.getMaxPower(), "Mini RTG must clamp at its 10,000 HE buffer");
 
         helper.setBlock(pos, ModMachineBlocks.rtg_polonium.get().defaultBlockState());
-        generator = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityMachineMiniRTG.class);
+        generator = GameTestHelpers.blockEntity(helper, pos, TileEntityMachineMiniRTG.class);
         tick(helper, pos, generator);
         helper.assertTrue(generator.power == 2_500, "Polonium RTG must generate 2,500 HE/t, got " + generator.power);
         helper.succeed();
@@ -40,7 +43,7 @@ public final class RadiationMachineGameTests {
     public static void radSensorLadders(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         helper.setBlock(pos, ModMachineBlocks.radsensor.get().defaultBlockState());
-        TileEntityRadSensor sensor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
+        TileEntityRadSensor sensor = GameTestHelpers.blockEntity(helper, pos,
                 TileEntityRadSensor.class);
 
         sensor.chunkRads = 0.5D;
@@ -58,7 +61,7 @@ public final class RadiationMachineGameTests {
         BlockPos core = new BlockPos(3, 1, 3);
         MachineRadGen block = ModMachineBlocks.machine_radgen.get();
         BlockPos absoluteCore = FoldedTestSupport.assemble(helper, block, core);
-        TileEntityMachineRadGen generator = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
+        TileEntityMachineRadGen generator = GameTestHelpers.blockEntity(helper, core,
                 TileEntityMachineRadGen.class);
 
         FoldedTestSupport.assertPort(helper, core, core.offset(0, 0, 3));
@@ -83,11 +86,11 @@ public final class RadiationMachineGameTests {
     public static void radGenMenu(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         helper.setBlock(pos, ModMachineBlocks.machine_radgen.get().defaultBlockState());
-        TileEntityMachineRadGen generator = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
+        TileEntityMachineRadGen generator = GameTestHelpers.blockEntity(helper, pos,
                 TileEntityMachineRadGen.class);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
-                net.minecraft.world.level.GameType.SURVIVAL);
-        var menu = new com.hbm.inventory.container.ContainerMachineRadGen(0, player.getInventory(), generator);
+        var player = GameTestHelpers.mockPlayer(helper,
+                GameType.SURVIVAL);
+        var menu = new ContainerMachineRadGen(0, player.getInventory(), generator);
         helper.assertTrue(menu.slots.size() == 60, "RadGen menu must have 24 machine slots + 36 player slots");
         helper.assertTrue(menu.slots.get(0).x == 8 && menu.slots.get(0).y == 17,
                 "RadGen first fuel slot is misplaced");

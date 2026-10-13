@@ -3,6 +3,7 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.tileentity.machine.TileEntityMachineRadiolysis;
 import com.hbm.tileentity.MachineCore;
+import dev.golem.core.Ids;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -12,8 +13,8 @@ import net.minecraft.world.phys.Vec3;
 public final class RenderRadiolysis extends MachineObjRenderer<TileEntityMachineRadiolysis> {
 
     public RenderRadiolysis() {
-        super(0F, 1F, new ModelDef(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/radiolysis.obj"),
-                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/radiolysis.png"), true));
+        super(0F, 1F, new ModelDef(Ids.of(Constants.MOD_ID, "models/machines/radiolysis.obj"),
+                Ids.of(Constants.MOD_ID, "textures/models/machines/radiolysis.png"), true));
     }
 
     @Override

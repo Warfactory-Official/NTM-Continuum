@@ -1,6 +1,9 @@
 package com.hbm.items;
 
 import dev.golem.core.dejson.DataMaps;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * NeoForge's {@code neoforge:furnace_fuels} data map for hbm's fuels, declared through Golem Core's
@@ -21,10 +24,10 @@ public final class FuelDataMapDeclarations {
      * start-up through Golem Core's {@code Fuels} ({@code ModFuelItems.BURN_TIMES}). An addon's fuel is a
      * {@code neoforge:furnace_fuels} entry of its own on NeoForge and a {@code Fuels.register} call elsewhere.
      */
-    public static final java.util.Map<String, Integer> BURN_TIMES = burnTimes();
+    public static final Map<String, Integer> BURN_TIMES = burnTimes();
 
-    private static java.util.Map<String, Integer> burnTimes() {
-        java.util.Map<String, Integer> t = new java.util.LinkedHashMap<>();
+    private static Map<String, Integer> burnTimes() {
+        Map<String, Integer> t = new LinkedHashMap<>();
         t.put("hbm:powder_lignite", 1200);
         t.put("hbm:powder_coal", 1600);
         t.put("hbm:powder_fire", 6400);
@@ -63,7 +66,7 @@ public final class FuelDataMapDeclarations {
         t.put("hbm:powder_ash_misc", 100);
         t.put("hbm:powder_ash_fly", 200);
         t.put("hbm:powder_ash_soot", 100);
-        return java.util.Collections.unmodifiableMap(t);
+        return Collections.unmodifiableMap(t);
     }
 
     public static void declare() {

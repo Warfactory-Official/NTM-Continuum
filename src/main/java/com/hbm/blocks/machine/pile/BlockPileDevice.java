@@ -2,6 +2,7 @@ package com.hbm.blocks.machine.pile;
 
 import com.hbm.api.block.IToolable;
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModDataComponents;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.sound.ModSounds;
@@ -10,6 +11,8 @@ import com.hbm.tileentity.machine.pile.TileEntityPileControl;
 import com.hbm.tileentity.machine.pile.TileEntityPileCore;
 import com.hbm.tileentity.machine.pile.TileEntityPileLoader;
 import com.hbm.tileentity.machine.pile.TileEntityPileVent;
+import dev.golem.core.registry.TickingBlock;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
@@ -45,7 +48,7 @@ import java.util.List;
  * them by item damage; the block's {@link #META} packs that choice together with the horizontal side of
  * the pile the device faces.
  */
-public class BlockPileDevice extends dev.golem.core.world.CompatBlock implements dev.golem.core.registry.TickingBlock,
+public class BlockPileDevice extends CompatBlock implements TickingBlock,
         ILookOverlay, IToolable {
 
     public static final int ITEM_META_LOADER = 0;
@@ -104,7 +107,7 @@ public class BlockPileDevice extends dev.golem.core.world.CompatBlock implements
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        int device = itemMetaToBlockMeta(com.hbm.items.LegacyMeta.of(context.getItemInHand()));
+        int device = itemMetaToBlockMeta(LegacyMeta.of(context.getItemInHand()));
         int meta = device + Mth.clamp(context.getClickedFace().get3DDataValue() - 2, 0, 3);
 
         // Upstream re-derives the control rod's facing from the player when the clicked face gave no

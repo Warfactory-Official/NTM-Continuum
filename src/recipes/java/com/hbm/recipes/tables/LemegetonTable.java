@@ -25,7 +25,7 @@ import net.minecraft.world.item.Items;
 public final class LemegetonTable extends RecipeSource<Row> {
 
     /** 1.7 {@code KEY_SAND}, the "sand" ore name: {@code c:sands} (sand and red sand, not suspicious sand). */
-    private static final TagKey<Item> KEY_SAND = TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", "sands"));
+    private static final TagKey<Item> KEY_SAND = TagKey.create(Registries.ITEM, Ids.of("c", "sands"));
 
     private static final NTMMaterial COAL = Mats.MAT_COAL;
     private static final NTMMaterial GRAPHITE = Mats.MAT_GRAPHITE;

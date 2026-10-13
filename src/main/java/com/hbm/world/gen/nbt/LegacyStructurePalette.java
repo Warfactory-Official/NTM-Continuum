@@ -5,9 +5,11 @@ import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
 import dev.golem.core.world.LegacyBlockStates;
+import java.util.Locale;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -84,9 +86,7 @@ public final class LegacyStructurePalette {
     /** A 1.7 block reference after rotation: registry name and metadata. */
     public record Legacy(String name, int meta) {}
 
-    // ---------------------------------------------------------------------------------------------------------------
     // 1.7.10 vanilla numeric block ids (the pre-flattening key BlockStateData is indexed by)
-    // ---------------------------------------------------------------------------------------------------------------
 
     private static final String[] VANILLA_1_7 = {
             "air", "stone", "grass", "dirt", "cobblestone", "planks", "sapling", "bedrock", "flowing_water", "water",
@@ -124,9 +124,7 @@ public final class LegacyStructurePalette {
         }
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // rotation rules (1.7 class -> INBTBlockTransformable helper)
-    // ---------------------------------------------------------------------------------------------------------------
 
     enum Rot { NONE, DECO, DECO_MODEL, DECO_MODEL_SHIFTED, STAIRS, TRAPDOOR, PILLAR, DIRECTIONAL, TORCH, DOOR, LEVER,
         VINE, BOBBLE, CHAIN, DUMMYABLE, FLOODLIGHT, SPOTLIGHT }
@@ -150,9 +148,7 @@ public final class LegacyStructurePalette {
         VANILLA_ROT.put("minecraft:trapdoor", Rot.TRAPDOOR);
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // hbm rules
-    // ---------------------------------------------------------------------------------------------------------------
 
     @FunctionalInterface
     interface Mapper {
@@ -295,9 +291,7 @@ public final class LegacyStructurePalette {
     private static final Map<Long, Resolved> CACHE = new HashMap<>();
     private static final Map<String, Integer> NAME_KEYS = new HashMap<>();
 
-    // ---------------------------------------------------------------------------------------------------------------
     // entry points
-    // ---------------------------------------------------------------------------------------------------------------
 
     /**
      * 1.7's per-block {@code transformMeta}/{@code transformBlock} as {@link NBTStructure#build} applied them: the
@@ -445,9 +439,7 @@ public final class LegacyStructurePalette {
         return name.equals("hbm:tile.wand_jigsaw") || name.equals("hbm:wand_jigsaw");
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // modern (port-saved) palette entries
-    // ---------------------------------------------------------------------------------------------------------------
 
     /** A state as a vanilla structure palette entry: {@code {Name, Properties{...}}}. */
     public static CompoundTag writeState(BlockState state) {
@@ -508,9 +500,7 @@ public final class LegacyStructurePalette {
         return state;
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
     // property helpers
-    // ---------------------------------------------------------------------------------------------------------------
 
     private static @org.jspecify.annotations.Nullable String hbmName(String name) {
         if (name.startsWith("hbm:tile.")) return name.substring("hbm:tile.".length());
@@ -560,8 +550,8 @@ public final class LegacyStructurePalette {
     public static BlockState with(BlockState state, String name, Object value) {
         Property<?> property = state.getBlock().getStateDefinition().getProperty(name);
         if (property == null) return state;
-        String text = value instanceof net.minecraft.util.StringRepresentable rep ? rep.getSerializedName()
-                : String.valueOf(value).toLowerCase(java.util.Locale.ROOT);
+        String text = value instanceof StringRepresentable rep ? rep.getSerializedName()
+                : String.valueOf(value).toLowerCase(Locale.ROOT);
         return set(state, property, text);
     }
 

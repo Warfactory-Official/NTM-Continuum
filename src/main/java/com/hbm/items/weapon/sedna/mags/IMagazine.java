@@ -1,19 +1,21 @@
 package com.hbm.items.weapon.sedna.mags;
 
+import com.hbm.items.armor.ArmorTrenchmaster;
 import com.hbm.items.tool.ItemCasingBag;
 import com.hbm.items.tool.ItemAmmoBag;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 /**
  * Where a {@link com.hbm.items.weapon.sedna.Receiver} gets its ammo from. The receiver does not care
- * whether that is a detachable box, a shotgun tube, a belt or an energy cell — the magazine owns
+ * whether that is a detachable box, a shotgun tube, a belt or an energy cell: the magazine owns
  * capacity, type restrictions and the whole reload sequence.
  *
-     * <p>Ported from 1.12.2 {@code com.hbm.items.weapon.sedna.mags.IMagazine}. The casing bag is an
-     * inventory-side sink, so casing collection remains independent of the projectile renderer.
+ * <p>Ported from 1.12.2 {@code com.hbm.items.weapon.sedna.mags.IMagazine}. The casing bag is an
+ * inventory-side sink, so casing collection is independent of the projectile renderer.
  * {@code Container} stands in for the old {@code IInventory}; a null container means "no inventory to
  * draw from", exactly as upstream, which is how turret and creative magazines work.
  */
@@ -46,7 +48,7 @@ public interface IMagazine<T> {
     /** Removes {@code amount} rounds. */
     void useUpAmmo(ItemStack stack, Container inventory, int amount);
 
-    /** Whether a reload can even start — i.e. there is room and the player has matching rounds. */
+    /** Whether a reload can even start, i.e. there is room and the player has matching rounds. */
     boolean canReload(ItemStack stack, Container inventory);
 
     /** Lets the magazine adopt a new ammo type before the reload animation begins. */
@@ -65,7 +67,7 @@ public interface IMagazine<T> {
     void setAmountBeforeReload(ItemStack stack, int amount);
 
     /**
-     * The load level before the current reload began. Note that the item's synced state usually arrives
+     * The load level before the current reload began. The item's synced state usually arrives
      * after the animation packet, so animations keyed on "was it empty" must use this, not the live count.
      */
     int getAmountBeforeReload(ItemStack stack);
@@ -85,7 +87,7 @@ public interface IMagazine<T> {
 
     /** Adds spent casing progress to the first casing bag in the player's inventory. */
     static void handleAmmoBag(Container inventory, BulletConfig config, int shotsFired) {
-        if (!(inventory instanceof net.minecraft.world.entity.player.Inventory)
+        if (!(inventory instanceof Inventory)
                 || config == null || config.casingStack() == null
                 || config.casingAmount <= 0 || shotsFired <= 0) return;
         for (int i = 0; i < Math.min(36, inventory.getContainerSize()); i++) {
@@ -101,10 +103,10 @@ public interface IMagazine<T> {
      * times in three.
      */
     static boolean shouldUseUpTrenchie(Container inventory) {
-        if (inventory instanceof net.minecraft.world.entity.player.Inventory playerInventory) {
-            net.minecraft.world.entity.player.Player player = playerInventory.player;
-            boolean trenchie = com.hbm.items.armor.ArmorTrenchmaster.isTrenchMaster(player);
-            boolean aos = com.hbm.items.armor.ArmorTrenchmaster.hasAoS(player);
+        if (inventory instanceof Inventory playerInventory) {
+            Player player = playerInventory.player;
+            boolean trenchie = ArmorTrenchmaster.isTrenchMaster(player);
+            boolean aos = ArmorTrenchmaster.hasAoS(player);
             if (trenchie || aos) return player.getRandom().nextInt(3) < 2;
         }
         return true;

@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Fusion collector — a passive dish on the plasma network that raises the torus's output rate
+ * Fusion collector: a passive dish on the plasma network that raises the torus's output rate
  * without consuming any of it. All the behaviour is in {@link TileEntityFusionCollector}.
  */
 public class MachineFusionCollector extends BlockMultiblockMachine {

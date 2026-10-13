@@ -1,8 +1,10 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.ModBlockEntities;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityMachineElectricFurnace;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -29,15 +31,15 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Electric Furnace — a single horizontal-facing, BlockEntity-backed machine. It smelts vanilla furnace
+ * Electric Furnace: a single horizontal-facing, BlockEntity-backed machine. It smelts vanilla furnace
  * recipes using HE drawn from adjacent power networks (its {@link TileEntityMachineElectricFurnace}
  * implements {@code IEnergyReceiverMK2}, which a red cable connects to directly).
  *
  * <p>The 1.12.2 original used two separate blocks ({@code _off}/{@code _on}); here that becomes a single
  * block with a {@link #LIT} property (the TE flips it while smelting), driving the lit front texture in
- * the blockstate. Right-click opens the menu. The lit "flame particle" effect is deferred (§18).
+ * the blockstate. Right-click opens the menu. The lit "flame particle" effect is not ported yet (see IMPLEMENTATION.md §18).
  */
-public class MachineElectricFurnace extends dev.golem.core.world.CompatBlock implements TickingBlock {
+public class MachineElectricFurnace extends CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
@@ -53,7 +55,7 @@ public class MachineElectricFurnace extends dev.golem.core.world.CompatBlock imp
         return new TileEntityMachineElectricFurnace(pos, state);
     }
 
-    /** Smoke + flame puffing from the front face while smelting (LIT) — ported from the 1.12.2
+    /** Smoke + flame puffing from the front face while smelting (LIT), ported from the 1.12.2
      * {@code randomDisplayTick} of the {@code machine_electric_furnace_on} block. */
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
@@ -80,7 +82,7 @@ public class MachineElectricFurnace extends dev.golem.core.world.CompatBlock imp
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }

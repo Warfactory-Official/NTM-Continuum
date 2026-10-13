@@ -1,5 +1,8 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import com.hbm.advancement.DetonationTrigger;
+import com.hbm.advancement.HbmCriteria;
+import com.hbm.sound.ModSounds;
 import dev.golem.core.data.Tags;
 
 import com.hbm.advancement.AwardRegions;
@@ -23,6 +26,7 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import io.netty.buffer.Unpooled;
 import java.util.ArrayDeque;
+import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Collections;
@@ -34,6 +38,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -147,10 +152,10 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
         for (BlockEntityRBMKBase column : columns) if (column instanceof BlockEntityRBMKRod && level.getBlockState(column.worldPosition).is(ModHazardBlocks.block_corium.get())) for (BlockPos p : BlockPos.betweenClosed(column.worldPosition.offset(-1, -1, -1), column.worldPosition.offset(1, 1, 1))) if (level.getRandom().nextInt(3) == 0 && (level.getBlockState(p).is(ModRBMKBlocks.rbmk_debris.get()) || level.getBlockState(p).is(ModRBMKBlocks.rbmk_debris_burning.get()))) level.setBlock(p, hot, 3);
         double x = minX + (maxX - minX) / 2D + .5D, z = minZ + (maxZ - minZ) / 2D + .5D;
         ExplosionCreator.composeEffectRBMKMush(level, x, worldPosition.getY() + 1D, z);
-        level.playSound(null, x, worldPosition.getY() + 1D, z, com.hbm.sound.ModSounds.RBMK_EXPLOSION.get(), SoundSource.BLOCKS, 50F, 1F);
+        level.playSound(null, x, worldPosition.getY() + 1D, z, ModSounds.RBMK_EXPLOSION.get(), SoundSource.BLOCKS, 50F, 1F);
         if (level instanceof ServerLevel server) {
             AwardRegions.within(server, worldPosition.getX() + .5D, worldPosition.getY() + .5D, worldPosition.getZ() + .5D,
-                    50D, player -> com.hbm.advancement.HbmCriteria.detonation(player, com.hbm.advancement.DetonationTrigger.Kind.RBMK));
+                    50D, player -> HbmCriteria.detonation(player, DetonationTrigger.Kind.RBMK));
             if (RBMKDials.getOverpressure(level)) overpressure(server);
         }
         if (digamma) {
@@ -163,14 +168,14 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
     }
     /** Ruptures the duct component touching the melted core and destroys every attached receiver. */
     private void overpressure(ServerLevel server) {
-        Set<Long> pipes = new java.util.HashSet<>();
+        Set<Long> pipes = new HashSet<>();
         Queue<BlockPos> queue = new ArrayDeque<>();
         for (BlockEntityRBMKBase column : columns) for (Direction direction : Direction.values()) {
             BlockPos pipe = column.worldPosition.relative(direction);
             if (server.getBlockState(pipe).getBlock() instanceof BlockFluidDuct && pipes.add(pipe.asLong())) queue.add(pipe);
         }
         if (pipes.isEmpty()) return;
-        Set<BlockPos> receivers = new java.util.HashSet<>();
+        Set<BlockPos> receivers = new HashSet<>();
         for (int safety = 10_000; !queue.isEmpty() && safety-- > 0;) {
             BlockPos pipe = queue.remove();
             for (Direction direction : Direction.values()) {
@@ -192,7 +197,7 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
             else {
                 server.setBlock(receiver, Blocks.AIR.defaultBlockState(), 3);
                 server.explode(null, receiver.getX() + .5D, receiver.getY() + .5D, receiver.getZ() + .5D, 5F,
-                        net.minecraft.world.level.Level.ExplosionInteraction.NONE);
+                        Level.ExplosionInteraction.NONE);
             }
         }
     }

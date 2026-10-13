@@ -3,6 +3,7 @@ package com.hbm.items.special;
 import com.hbm.items.ModRadarUtilityItems;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.machine.TileEntityMachineTeleporter;
+import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
@@ -49,7 +50,7 @@ public class ItemTeleLink extends CompatItem {
             tag.putInt("x", pos.getX());
             tag.putInt("y", pos.getY());
             tag.putInt("z", pos.getZ());
-            tag.putString("dim", dev.golem.core.Ids.keyId(level.dimension()).toString());
+            tag.putString("dim", Ids.keyId(level.dimension()).toString());
             ModRadarUtilityItems.TELE_LINK.set(stack, tag);
             level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BLEEP.get(),
                     SoundSource.PLAYERS, 1.0F, 1.0F);

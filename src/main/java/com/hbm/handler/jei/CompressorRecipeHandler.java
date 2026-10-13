@@ -11,10 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * JEI category for the compressor — the fluids that <b>change type</b> when compressed. The generic
+ * JEI category for the compressor: the fluids that <b>change type</b> when compressed. The generic
  * "same type at pressure+1" path (which is what pressurises OIL for the vacuum refinery and HYDROGEN
- * for the hydrotreater) has no recipe object, so — like the old {@code CompressorRecipes.getRecipes}
- * — it is not listed here; the old skips entries whose input and output icon+pressure match.
+ * for the hydrotreater) has no recipe object and is not listed, as in the old
+ * {@code CompressorRecipes.getRecipes}, which skips entries whose input and output icon+pressure match.
  */
 public class CompressorRecipeHandler extends JEIUniversalHandler<CompressorRecipeHandler.Entry> {
 

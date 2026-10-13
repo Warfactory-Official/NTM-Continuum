@@ -9,10 +9,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-// 26.2: 1.7's ignoreFrustumCheck and full-bright overrides are renderer concerns - RenderFOEQ's job.
+// 26.1: 1.7's ignoreFrustumCheck and full-bright overrides are renderer concerns - RenderFOEQ's job.
 public class EntityBurningFOEQ extends CompatThrowableProjectile {
 
-    // 26.2: Entity.setXRot clamps to +-90; 1.7:64 writes rotationPitch raw and a steep re-entry needs -180..-90.
+    // 26.1: Entity.setXRot clamps to +-90; 1.7:64 writes rotationPitch raw and a steep re-entry needs -180..-90.
     public float renderPitch;
     public float renderPitchO;
 

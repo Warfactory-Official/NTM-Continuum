@@ -1,9 +1,11 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInfo;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
+import com.hbm.blocks.machine.pile.ModPileBlocks;
 import com.hbm.tileentity.machine.TileEntityHeatBoiler;
 import com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial;
 import com.hbm.tileentity.machine.TileEntityHeaterHeatex;
@@ -22,6 +24,8 @@ import com.hbm.tileentity.machine.TileEntityReactorZirnox;
 import com.hbm.tileentity.machine.TileEntityWatz;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionTorus;
+import com.hbm.tileentity.machine.pile.TileEntityPileControl;
+import com.hbm.tileentity.machine.pile.TileEntityPileLoader;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKBoiler;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKControlAuto;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKControlManual;
@@ -42,15 +46,15 @@ import com.hbm.items.ModMachineItems;
 import com.hbm.tileentity.turret.TileEntityTurretArty;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import com.hbm.tileentity.turret.TileEntityTurretSentry;
-import com.hbm.assemblyfactory.AssemblyFactoryRegistrations;
-import com.hbm.chemicalfactory.ChemicalFactoryRegistrations;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 import java.util.Arrays;
+import net.minecraft.world.level.block.state.BlockState;
 
 /** Machine-side Redstone-over-Radio contracts; the parent task wires this suite into the test bootstrap. */
 public final class RadioProviderGameTests {
@@ -72,12 +76,12 @@ public final class RadioProviderGameTests {
         return new BlockPos(2 + index * 2, 1, 2);
     }
 
-    private static net.minecraft.world.level.block.state.BlockState state() {
+    private static BlockState state() {
         return Blocks.STONE.defaultBlockState();
     }
 
-    private static net.minecraft.world.level.block.state.BlockState state(
-            net.minecraft.world.level.block.Block block) {
+    private static BlockState state(
+            Block block) {
         return block.defaultBlockState();
     }
 
@@ -111,11 +115,11 @@ public final class RadioProviderGameTests {
                 "VAL:progress", "VAL:recipe", "VAL:active", "FUN:setrecipe!name");
         assertInfo(helper, new TileEntityMachineAssemblyMachine(pos(4), state(ModMachineBlocks.machine_assembly_machine.get())),
                 "VAL:progress", "VAL:recipe", "VAL:active", "FUN:setrecipe!name");
-        assertInfo(helper, new TileEntityMachineChemicalFactory(pos(5), state(ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY.get())),
+        assertInfo(helper, new TileEntityMachineChemicalFactory(pos(5), state(ModMachineBlocks.machine_chemical_factory.get())),
                 "VAL:progress1", "VAL:progress2", "VAL:progress3", "VAL:progress4",
                 "VAL:recipe1", "VAL:recipe2", "VAL:recipe3", "VAL:recipe4", "VAL:anyactive",
                 "VAL:active1", "VAL:active2", "VAL:active3", "VAL:active4");
-        assertInfo(helper, new TileEntityMachineAssemblyFactory(pos(6), state(AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get())),
+        assertInfo(helper, new TileEntityMachineAssemblyFactory(pos(6), state(ModMachineBlocks.machine_assembly_factory.get())),
                 "VAL:progress1", "VAL:progress2", "VAL:progress3", "VAL:progress4",
                 "VAL:recipe1", "VAL:recipe2", "VAL:recipe3", "VAL:recipe4", "VAL:anyactive",
                 "VAL:active1", "VAL:active2", "VAL:active3", "VAL:active4");
@@ -127,7 +131,7 @@ public final class RadioProviderGameTests {
                 "VAL:temp", "VAL:power", "VAL:fuel", "VAL:lubricant", "VAL:water", "VAL:steam",
                 "FUN:setauto!auto", "FUN:setthrottle!percent", "FUN:setstate!state");
         assertInfo(helper, new TileEntityMachineIndustrialTurbine(pos(9), state(ModMachineBlocks.machine_industrial_turbine.get())), "VAL:output", "VAL:flywheel");
-        assertInfo(helper, new com.hbm.tileentity.machine.pile.TileEntityPileLoader(pos(34), state(com.hbm.blocks.machine.pile.ModPileBlocks.pile_device.get())),
+        assertInfo(helper, new TileEntityPileLoader(pos(34), state(ModPileBlocks.pile_device.get())),
                 "VAL:meta", "VAL:depletion", "VAL:deppercent", "VAL:lifetime", "VAL:temp");
         assertInfo(helper, new TileEntityMachinePUREX(pos(10), state(ModMachineBlocks.machine_purex.get())), "VAL:progress", "VAL:recipe", "VAL:active");
         assertInfo(helper, new TileEntityWatz(pos(11), state(ModMachineBlocks.watz.get())),
@@ -161,7 +165,7 @@ public final class RadioProviderGameTests {
                 "FUN:setActive!active (0 or 1)", "FUN:targetPlayers!enabled (0 or 1)",
                 "FUN:targetAnimals!enabled (0 or 1)", "FUN:targetMobs!enabled (0 or 1)",
                 "FUN:targetMachines!enabled (0 or 1)", "FUN:addWhitelist!name", "FUN:removeWhitelist!name");
-        assertInteractive(helper, new com.hbm.tileentity.machine.pile.TileEntityPileControl(pos(35), state(com.hbm.blocks.machine.pile.ModPileBlocks.pile_device.get())),
+        assertInteractive(helper, new TileEntityPileControl(pos(35), state(ModPileBlocks.pile_device.get())),
                 "FUN:setrods!percent", "FUN:extendrods!percent");
         assertInteractive(helper, new TileEntityTurretArty(pos(26), state(ModTurretBlocks.turret_arty.get())),
                 "FUN:setActive!active (0 or 1)", "FUN:targetPlayers!enabled (0 or 1)",
@@ -184,7 +188,7 @@ public final class RadioProviderGameTests {
         helper.assertTrue("12345".equals(tank.provideRORValue("VAL:fill")), "Fluid tank fill changed");
         helper.assertTrue("4".equals(tank.provideRORValue("VAL:fillpercent")), "Fluid tank percentage changed");
 
-        TileEntityMachineChemicalFactory factory = new TileEntityMachineChemicalFactory(pos(2), state(ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY.get()));
+        TileEntityMachineChemicalFactory factory = new TileEntityMachineChemicalFactory(pos(2), state(ModMachineBlocks.machine_chemical_factory.get()));
         factory.chemplantModule[0].progress = 0.126D;
         factory.chemplantModule[0].recipe = "recipe.zero";
         factory.didProcess[2] = true;
@@ -217,7 +221,7 @@ public final class RadioProviderGameTests {
         battery.runRORFunction("FUN:setredmode", new String[]{"1"});
         battery.runRORFunction("FUN:setpriority", new String[]{"2"});
         helper.assertTrue(battery.redLow == 3 && battery.redHigh == 1
-                        && battery.getPriority() == com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority.HIGH,
+                        && battery.getPriority() == IEnergyReceiverMK2.ConnectionPriority.HIGH,
                 "Battery ROR mode or priority command changed");
 
         TileEntityMachineAssemblyMachine assembly = new TileEntityMachineAssemblyMachine(pos(1), state(ModMachineBlocks.machine_assembly_machine.get()));

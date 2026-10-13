@@ -1,6 +1,7 @@
 package com.hbm.client.particle;
 
 import com.hbm.packet.PlasmaBlastPayload;
+import dev.golem.core.render.Particles;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.Level;
 
@@ -11,7 +12,7 @@ public final class PlasmaBlastClient {
 
     public static void handle(Level level, PlasmaBlastPayload payload) {
         if (!(level instanceof ClientLevel client)) return;
-        dev.golem.core.render.Particles.add(new ParticlePlasmaBlast(client,
+        Particles.add(new ParticlePlasmaBlast(client,
                 payload.x(), payload.y(), payload.z(), payload.r(), payload.g(), payload.b(),
                 payload.pitch(), payload.yaw(), payload.scale()));
     }

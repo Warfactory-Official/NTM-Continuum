@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
  *
  * <p>It must change the distribution: the whole point is that a hundred machines do not all take
  * their turn on the same tick. That is asserted as a share of the work landing on the busiest tick
- * of the period, which is the number the change exists to move — a revert to a bare
+ * of the period, which is the number the change exists to move: a revert to a bare
  * {@code getGameTime() % period} puts the entire share on one tick and fails here loudly.
  *
  * <p>And it must be derived from nothing but the subject and the period, because a block entity

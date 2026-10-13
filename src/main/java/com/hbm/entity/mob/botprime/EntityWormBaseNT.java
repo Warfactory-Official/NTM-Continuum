@@ -5,6 +5,7 @@ import dev.golem.core.data.Tags;
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.CompatPathfinderMob;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.Difficulty;
@@ -57,7 +58,7 @@ public abstract class EntityWormBaseNT extends CompatPathfinderMob {
     private int headID;
     /**
      * The head's UUID: what is saved. 1.7 saved {@code wormID} = the head's runtime entity id, which the next load
-     * hands out to some other entity, so a reloaded worm fell apart (History section 19ej-ids). The int stays as the
+     * hands out to some other entity, so a reloaded worm fell apart. The int stays as the
      * session-only comparison key and is re-resolved from the UUID after a load.
      */
     private java.util.@Nullable UUID headUUID;
@@ -250,13 +251,13 @@ public abstract class EntityWormBaseNT extends CompatPathfinderMob {
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        if (headUUID != null) output.store("worm", net.minecraft.core.UUIDUtil.CODEC, headUUID); // never the entity id
+        if (headUUID != null) output.store("worm", UUIDUtil.CODEC, headUUID); // never the entity id
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        this.headUUID = input.read("worm", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
+        this.headUUID = input.read("worm", UUIDUtil.CODEC).orElse(null);
         this.headID = this.headUUID == null ? 0 : UNRESOLVED;
     }
 

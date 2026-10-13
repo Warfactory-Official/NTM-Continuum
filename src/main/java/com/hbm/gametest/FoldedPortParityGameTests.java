@@ -24,15 +24,13 @@ import java.util.List;
 /**
  * A migrated machine's baked face masks must answer exactly what its own {@code getConPos} answers.
  *
- * <p>Before folding, both {@code canConnect} overloads on a {@code BlockDummyable} ran
- * {@link IEnergyConnectorBlock#isPort} over the core tile's {@code DirPos[]}; after folding the answer
- * comes from the table instead. Those two must agree cell for cell and face for face, or a migration has
- * quietly moved a port — which nothing else would catch, because a machine with a port on the wrong face
- * still runs.
+ * <p>Both {@code canConnect} overloads on a {@code BlockDummyable} answer from the baked table, while
+ * {@link IEnergyConnectorBlock#isPort} works over the core tile's {@code DirPos[]}. They must agree cell for cell
+ * and face for face, or a port has moved, which nothing else would catch because a machine with a port on the
+ * wrong face still runs.
  *
- * <p>No machine is placed. Not one {@code getConPos} implementation in the tree reads the level, so the
- * block entity is built off-world at a fixed position and asked directly; that is what lets this cover
- * every registered machine at every facing rather than the handful a plot has room for.
+ * <p>No machine is placed. No {@code getConPos} implementation reads the level, so the block entity is built
+ * off-world at a fixed position and asked directly, which covers every registered machine at every facing.
  */
 public final class FoldedPortParityGameTests {
 

@@ -27,7 +27,7 @@ import java.util.List;
  *
  * The first row (by {@code order}, then recipe id) whose input matches wins, as 1.7 iterated its list; HBM's rows keep
  * 1.7's order. The centrifuge, the mining laser's centrifuge upgrade and the centrifuge tool ability read it. The rows
- * are generated from {@code CentrifugeTable} (1.7's defaults with the old ore dictionary as {@code c:} tags, and the
+ * are generated from {@code CentrifugeTable} (1.7's defaults with the ore dictionary as {@code c:} tags, and the
  * 102 rows of the bedrock ore grade chain, 1.7 {@code ItemBedrockOreNew}).
  *
  * <p>An output is an item ({@code "id"} or {@code {"id", "count"}}) or the first member of a tag ({@code {"tag",

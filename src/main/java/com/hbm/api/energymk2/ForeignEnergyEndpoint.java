@@ -12,12 +12,12 @@ import java.util.List;
 final class ForeignEnergyEndpoint implements IEnergyHandlerMK2 {
 
     /**
-     * A handler that both accepts and gives is served as a RECEIVER ONLY (Mekanism's push semantics); a support flag may only be believed when it says NO. // 26.2: EnergyHandler has no flags to be tempted by.
+     * A handler that both accepts and gives is served as a RECEIVER ONLY (Mekanism's push semantics); a support flag may only be believed when it says NO. // 26.1: EnergyHandler has no flags to be tempted by.
      */
     static final boolean BIDIRECTIONAL_IS_RECEIVER_ONLY = true;
 
     /**
-     * Foreign receivers sit at LOWEST (deliberately diverging from the fluid net's NORMAL); foreign providers get no tier - debit is untiered, the 1.7 behaviour.
+     * Foreign receivers sit at LOWEST (diverging from the fluid net's NORMAL). Foreign providers get no tier. Debit is untiered, as in 1.7.
      */
     static final IEnergyHandlerMK2.ConnectionPriority FOREIGN_PRIORITY =
             IEnergyHandlerMK2.ConnectionPriority.LOWEST;
@@ -122,7 +122,7 @@ final class ForeignEnergyEndpoint implements IEnergyHandlerMK2 {
     }
 
     /**
-     * Never called, deliberately loud: a no-op here would silently drop energy at whatever new caller reached for it.
+     * Never called; a no-op here would silently drop energy for any new caller.
      */
     @Override
     public void setPower(long power) {

@@ -1,5 +1,6 @@
 package com.hbm.explosion.vanillant.standard;
 
+import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.interfaces.ICustomDamageHandler;
 import com.hbm.explosion.vanillant.interfaces.IEntityProcessor;
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The entity half of a VNT explosion, and — as upstream's own comment puts it — one of the few
+ * The entity half of a VNT explosion, and, as upstream's own comment puts it, one of the few
  * unambiguously good decisions in NTM.
  *
  * <p>Two things separate it from vanilla's version, and both matter for a missile:
@@ -139,7 +141,7 @@ public class EntityProcessorCross implements IEntityProcessor {
             }
 
             if (entity instanceof Player player) {
-                // The packet path deliberately carries the raw value; old-hbm applies blast protection
+                // The packet path carries the raw value; 1.12.2 applies blast protection
                 // only to server motion, while the client receives this unmodified knockback map.
                 affectedPlayers.put(player, new Vec3(deltaX * knockback * knockbackMult,
                         deltaY * knockback * knockbackMult, deltaZ * knockback * knockbackMult));
@@ -168,7 +170,7 @@ public class EntityProcessorCross implements IEntityProcessor {
     }
 
     /**
-     * The fraction of rays from {@code centre} to the entity's box that reach it unobstructed —
+     * The fraction of rays from {@code centre} to the entity's box that reach it unobstructed:
      * 1.12.2's {@code World.getBlockDensity}, which modern Minecraft has as
      * {@code ServerExplosion.getSeenPercent}. That method is on a different class in each era, so the
      * (unchanged) algorithm is spelled out here rather than reached for through a version guard.
@@ -189,9 +191,9 @@ public class EntityProcessorCross implements IEntityProcessor {
             for (double yy = 0.0D; yy <= 1.0D; yy += ys) {
                 for (double zz = 0.0D; zz <= 1.0D; zz += zs) {
                     Vec3 sample = new Vec3(
-                            net.minecraft.util.Mth.lerp(xx, box.minX, box.maxX) + xOffset,
-                            net.minecraft.util.Mth.lerp(yy, box.minY, box.maxY),
-                            net.minecraft.util.Mth.lerp(zz, box.minZ, box.maxZ) + zOffset);
+                            Mth.lerp(xx, box.minX, box.maxX) + xOffset,
+                            Mth.lerp(yy, box.minY, box.maxY),
+                            Mth.lerp(zz, box.minZ, box.maxZ) + zOffset);
                     if (!Raycasts.isObstructed(level, sample, centre, entity)) hits++;
                     count++;
                 }
@@ -207,12 +209,12 @@ public class EntityProcessorCross implements IEntityProcessor {
     /** ntm-next: explosion knockback resistance damping (1.7 had none; the attribute is modern). */
     public static double knockbackDamping(Entity entity) {
         return entity instanceof LivingEntity living
-                ? 1.0D - dev.golem.core.world.Compat.explosionKnockbackResistance(living)
+                ? 1.0D - Compat.explosionKnockbackResistance(living)
                 : 1.0D;
     }
 
     public static boolean shouldDealKnockback(Entity entity) {
-        return !(entity instanceof com.hbm.entity.projectile.EntityBulletBaseMK4);
+        return !(entity instanceof EntityBulletBaseMK4);
     }
 
     public void attackEntity(Entity entity, ExplosionVNT source, float amount) {

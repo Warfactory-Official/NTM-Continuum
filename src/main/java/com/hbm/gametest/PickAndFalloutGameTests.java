@@ -10,8 +10,12 @@ import com.hbm.items.ModConveyorItems;
 import com.hbm.items.block.ItemBlockDecoVariant;
 import com.hbm.tileentity.deco.TileEntityTrinket;
 import dev.golem.core.world.CompatBlock;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -24,11 +28,11 @@ import net.minecraft.world.phys.AABB;
 import java.util.Map;
 
 /**
- * 2026-09-29 playtest fixes: pick-block of a bobblehead / conveyor, and where fallout ash may land.
+ * Pick-block of a bobblehead / conveyor, and where fallout ash may land.
  *
  * <p>The pick tests go through {@link CompatBlock#pickBlockStack}, which is the same {@code onPickBlock} hook
- * Core's {@code @Override} of this era's vanilla {@code getCloneItemStack} calls: before, HBM declared the
- * 1.20.1/1.21.1 spellings only, which on 26.1 (an extra {@code includeData} flag) were plain dead overloads.
+ * Core's {@code @Override} of this era's vanilla {@code getCloneItemStack} calls. A 1.20.1/1.21.1 spelling
+ * alone is a dead overload on 26.1, where the method has an extra {@code includeData} flag.
  */
 public final class PickAndFalloutGameTests {
 
@@ -159,7 +163,7 @@ public final class PickAndFalloutGameTests {
     }
 
     /**
-     * 2026-10-12 playtest: "tall trees do not turn into burnt logs completely". A 30-block spruce-like trunk with leaf
+     * Playtest report: "tall trees do not turn into burnt logs completely". A 30-block spruce-like trunk with leaf
      * rings, and a 2x2 jungle-style trunk, are swept column by column (random rolls, as in the world) inside the
      * wood range; every log must end up a waste log (1.7 logs carry no .sol, so the three-solid depth never stops a column).
      */
@@ -169,8 +173,8 @@ public final class PickAndFalloutGameTests {
         for (int dx = -4; dx < 12; dx++) {
             for (int dz = -4; dz < 12; dz++) level.setBlock(base.offset(dx, -1, dz), Blocks.DIRT.defaultBlockState(), 3);
         }
-        java.util.List<BlockPos> logs = new java.util.ArrayList<>();
-        java.util.List<BlockPos> columns = new java.util.ArrayList<>();
+        List<BlockPos> logs = new ArrayList<>();
+        List<BlockPos> columns = new ArrayList<>();
         // single trunk, 30 tall, leaves from y 10 up, in a plus/ring pattern
         for (int y = 0; y < 30; y++) {
             BlockPos p = base.above(y);
@@ -212,8 +216,8 @@ public final class PickAndFalloutGameTests {
             for (BlockPos log : logs) {
                 level.setBlock(log, (log.getX() - base.getX() >= 5 ? Blocks.JUNGLE_LOG : Blocks.SPRUCE_LOG).defaultBlockState(), 3);
             }
-            Map<BlockPos, BlockState> all = new java.util.HashMap<>();
-            net.minecraft.util.RandomSource rolls = net.minecraft.util.RandomSource.create(1234L);
+            Map<BlockPos, BlockState> all = new HashMap<>();
+            RandomSource rolls = RandomSource.create(1234L);
             for (BlockPos column : columns) all.putAll(EntityFalloutRain.stompColumnForTest(level, column.getX(), column.getZ(), dist, rolls));
             int left = 0;
             StringBuilder where = new StringBuilder();

@@ -5,6 +5,7 @@ import com.hbm.entity.item.EntityMovingPackage;
 import com.hbm.interfaces.IControlReceiver;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import java.util.Collections;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -115,7 +116,7 @@ public class TileEntityCraneBoxer extends TileEntityCraneBase implements IContro
 
     /** 1.7 filled {@code box[pack--]} from the end, so the package carries the slots in reverse order. */
     private void ship(IConveyorBelt belt, List<ItemStack> box) {
-        java.util.Collections.reverse(box);
+        Collections.reverse(box);
         Direction outputSide = getOutputSide();
         BlockPos target = worldPosition.relative(outputSide);
         EntityMovingPackage moving = new EntityMovingPackage(level);

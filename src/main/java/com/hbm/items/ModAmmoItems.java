@@ -3,6 +3,9 @@ package com.hbm.items;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
+import com.hbm.items.tool.ItemDesignatorArtyRange;
+import com.hbm.items.weapon.ItemAmmoArty;
+import com.hbm.items.weapon.ItemAmmoHIMARS;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import dev.golem.core.Ids;
@@ -14,7 +17,7 @@ import java.util.function.Supplier;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 
-/** Every ammunition identity represented by original-hbm's weapon catalogue. */
+/** Every ammunition identity represented by 1.7's weapon catalogue. */
 public final class ModAmmoItems {
 
     private ModAmmoItems() {}
@@ -46,7 +49,7 @@ public final class ModAmmoItems {
         return ammo("ammo_secret_" + enumName.toLowerCase(Locale.ROOT));
     }
 
-    /** GunFactory.ammo_debug; the source item is deliberately separate from EnumAmmo. */
+    /** GunFactory.ammo_debug; the source item is separate from EnumAmmo. */
     public static final RegistryObject<Item> ammo_debug = REG.item("ammo_debug").transform(Presets.sprite());
 
     // GunFactory.EnumAmmo. The field suffix is the lower-case enum constant; the registry id is stable.
@@ -148,7 +151,7 @@ public final class ModAmmoItems {
     public static final RegistryObject<Item> nuke_balefire = REG.item("ammo_standard_nuke_balefire").transform(Presets.sprite());
     public static final RegistryObject<Item> bmg50_sm = REG.item("ammo_standard_bmg50_sm").transform(Presets.sprite());
 
-    // GunFactory.EnumAmmoSecret. These are registered but intentionally not placed in the creative tab.
+    // GunFactory.EnumAmmoSecret. These are registered but not placed in the creative tab.
     public static final RegistryObject<Item> folly_sm = REG.item("ammo_secret_folly_sm").transform(Presets.sprite());
     public static final RegistryObject<Item> folly_nuke = REG.item("ammo_secret_folly_nuke").transform(Presets.sprite());
     public static final RegistryObject<Item> m44_equestrian = REG.item("ammo_secret_m44_equestrian").transform(Presets.sprite());
@@ -158,7 +161,7 @@ public final class ModAmmoItems {
     public static final RegistryObject<Item> bmg50_black = REG.item("ammo_secret_bmg50_black").transform(Presets.sprite());
     public static final RegistryObject<Item> p35_800_bl = REG.item("ammo_secret_p35_800_bl").transform(Presets.sprite());
 
-    // ItemAmmoEnums.AmmoFireExt. The primary enum value keeps original-hbm's ammo_fireext id.
+    // ItemAmmoEnums.AmmoFireExt. The primary enum value keeps 1.7's ammo_fireext id.
     public static final RegistryObject<Item> fext_water = REG.item(
             ItemAmmoEnums.AmmoFireExt.WATER.getInternalName()).transform(Presets.sprite());
     public static final RegistryObject<Item> fext_foam = REG.item(
@@ -183,15 +186,15 @@ public final class ModAmmoItems {
      * ({@code ammo_himars_<name>}; the shells' own names, {@code ammo_arty}, {@code ammo_arty_he}, ...). The rockets'
      * icons are the OBJ declarations in {@link ObjItemDeclarations}; the shells draw their 1.7 sprites.
      */
-    public static final ItemFamily<com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType, com.hbm.items.weapon.ItemAmmoHIMARS> ammo_himars =
-            ItemFamily.of(com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.class,
-                    type -> REG.item("ammo_himars_" + type.name, p -> new com.hbm.items.weapon.ItemAmmoHIMARS(p, type)));
-    public static final ItemFamily<com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType, com.hbm.items.weapon.ItemAmmoArty> ammo_arty =
-            ItemFamily.of(com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType.class,
-                    type -> REG.item(type.name, p -> new com.hbm.items.weapon.ItemAmmoArty(p, type))
+    public static final ItemFamily<ItemAmmoHIMARS.HIMARSRocketType, ItemAmmoHIMARS> ammo_himars =
+            ItemFamily.of(ItemAmmoHIMARS.HIMARSRocketType.class,
+                    type -> REG.item("ammo_himars_" + type.name, p -> new ItemAmmoHIMARS(p, type)));
+    public static final ItemFamily<ItemAmmoArty.ArtilleryShellType, ItemAmmoArty> ammo_arty =
+            ItemFamily.of(ItemAmmoArty.ArtilleryShellType.class,
+                    type -> REG.item(type.name, p -> new ItemAmmoArty(p, type))
                             .transform(Presets.sprite(Constants.MOD_ID + ":items/" + type.name)));
-    public static final RegistryObject<com.hbm.items.tool.ItemDesignatorArtyRange> designator_arty_range =
-            REG.item("designator_arty_range", com.hbm.items.tool.ItemDesignatorArtyRange::new)
+    public static final RegistryObject<ItemDesignatorArtyRange> designator_arty_range =
+            REG.item("designator_arty_range", ItemDesignatorArtyRange::new)
                     .transform(Presets.handheld());
 
     static {

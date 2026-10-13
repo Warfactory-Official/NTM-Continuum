@@ -1,7 +1,9 @@
 package com.hbm.saveddata.satellites;
 
+import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.saveddata.SatelliteSavedData;
 import com.hbm.tileentity.network.RTTYSystem;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -41,7 +43,7 @@ public abstract class Satellite {
      * {@code "ntmspace:orbit"}, set by an {@code XSatelliteRegistry.ORBITED} listener. Mutating it owes
      * {@code SatelliteSavedData.setDirty()}.
      */
-    public net.minecraft.nbt.CompoundTag extra = new net.minecraft.nbt.CompoundTag();
+    public CompoundTag extra = new CompoundTag();
 
     /** 1.7 {@code XSatelliteRegistry.orbit}. */
     public static void orbit(ServerLevel level, ItemStack stack, int freq, double x, double y, double z) {
@@ -112,7 +114,7 @@ public abstract class Satellite {
 
     /** 1.7 {@code IRORInteractive.parseInt(String)}: unbounded. */
     protected static int parse(String value) {
-        return com.hbm.api.redstoneoverradio.IRORInteractive.parseInt(value, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        return IRORInteractive.parseInt(value, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
     public void setTarget(int x, int z) {

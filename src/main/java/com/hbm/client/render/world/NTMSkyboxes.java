@@ -1,5 +1,6 @@
 package com.hbm.client.render.world;
 
+import com.hbm.api.environment.SkyOwnership;
 import com.hbm.blocks.ModGlassBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.handler.ImpactWorldHandler;
@@ -7,6 +8,7 @@ import dev.golem.core.client.ClientTicks;
 import dev.golem.core.render.Sky;
 import dev.golem.core.render.Skyboxes;
 import dev.golem.core.world.Skies;
+import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -23,7 +25,7 @@ import net.minecraft.world.phys.Vec3;
  * through Golem Core's {@link Skyboxes}: {@link RenderNTMSkyboxImpact} replaces vanilla's sun, moon and stars, and
  * {@link RenderNTMSkyboxChainloader} draws after the sky.
  *
- * <p>Two consequences of 1.7's tick logic are deliberately NOT ported (user decision, wave 2, History §19ek-visual):
+ * <p>Two consequences of 1.7's tick logic are NOT ported:
  * <ul>
  *   <li>1.7 alternated the slot every client tick while dust or fire was above 0 (install the impact renderer and
  *       return, then wrap it in a chainloader, then replace that again), so the chainloader's objects flickered on
@@ -59,7 +61,7 @@ public final class NTMSkyboxes implements Skyboxes.Skybox, Skies.Modifier {
 
     /** The slot's state as a word, for the {@code hbm_impact} harness query. */
     public static String state(Level level) {
-        return level != null && level == slotLevel ? slot.name().toLowerCase(java.util.Locale.ROOT) : "none";
+        return level != null && level == slotLevel ? slot.name().toLowerCase(Locale.ROOT) : "none";
     }
 
     private static boolean impactInstalled(Level level) {
@@ -83,7 +85,7 @@ public final class NTMSkyboxes implements Skyboxes.Skybox, Skies.Modifier {
         // world.provider.dimensionId == 0 / WorldProviderSurface: the overworld gets the chainloader, and the impact
         // renderer underneath it while Tom's dust or fire is above 0 (no 1.7 alternation, no 1.7 persistence).
         // An addon that draws the overworld's sky itself (com.hbm.api.environment.SkyOwnership) gets none of HBM's layers.
-        if (world.dimension() == Level.OVERWORLD && !com.hbm.api.environment.SkyOwnership.claimed(world)) {
+        if (world.dimension() == Level.OVERWORLD && !SkyOwnership.claimed(world)) {
             boolean impact = ImpactWorldHandler.getDustForClient(world) > 0 || ImpactWorldHandler.getFireForClient(world) > 0;
             slot = impact ? Slot.CHAINLOADER_IMPACT : Slot.CHAINLOADER;
         } else {
@@ -114,7 +116,7 @@ public final class NTMSkyboxes implements Skyboxes.Skybox, Skies.Modifier {
         }
     }
 
-    // ======================================================================== drawing (Golem Core Skyboxes)
+    // Drawing (Golem Core Skyboxes)
 
     @Override
     public boolean replacesCelestial(ClientLevel level) {
@@ -133,7 +135,7 @@ public final class NTMSkyboxes implements Skyboxes.Skybox, Skies.Modifier {
         }
     }
 
-    // ======================================================================== the impact renderer has no sunrise glow
+    // The impact renderer has no sunrise glow
 
     @Override
     public boolean active(Level level) {

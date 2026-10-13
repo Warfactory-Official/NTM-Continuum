@@ -7,27 +7,36 @@ import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.items.ModArmorModItems;
+import com.hbm.items.armor.ArmorLiquidator;
 import com.hbm.items.armor.ItemArmorMod;
 import com.hbm.items.armor.ItemModRevive;
 import com.hbm.items.armor.ItemModShackles;
 import com.hbm.items.armor.ItemModShield;
 import com.hbm.items.armor.ItemModTwoKick;
+import com.hbm.items.weapon.MobSlicer;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory12ga;
 import com.hbm.particle.helper.ParticleEffects;
 import com.hbm.sound.ModGunSounds;
 import com.hbm.util.InventoryUtil;
+import dev.golem.core.platform.Platform;
 import dev.golem.core.world.ArmorSlot;
+import dev.golem.core.world.Armors;
 import dev.golem.core.world.Attacks;
 import dev.golem.core.world.Attributes;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.DamageEvents;
 import dev.golem.core.world.Deaths;
+import dev.golem.core.world.Durability;
 import dev.golem.core.world.Effects;
+import dev.golem.core.world.Gliders;
 import dev.golem.core.world.ItemStacks;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -73,10 +82,10 @@ public final class ArmorModEvents {
         Deaths.onDeath(ArmorModEvents::onDeath);
         Attacks.onPlayerAttack(ArmorModEvents::onPlayerAttack);
         // port: an elytra installed in a chestplate glides like a worn one (ArmorModHandler.isElytra)
-        dev.golem.core.world.Gliders.register(new dev.golem.core.world.Gliders.Source() {
+        Gliders.register(new Gliders.Source() {
             @Override
             public boolean canGlide(LivingEntity entity) {
-                return dev.golem.core.world.Gliders.hasFlightLeft(
+                return Gliders.hasFlightLeft(
                         ArmorModHandler.installedElytra(entity.getItemBySlot(EquipmentSlot.CHEST)));
             }
 
@@ -85,15 +94,15 @@ public final class ArmorModEvents {
                 ItemStack chest = entity.getItemBySlot(EquipmentSlot.CHEST);
                 ItemStack elytra = ArmorModHandler.installedElytra(chest);
                 if (elytra.isEmpty()) return;
-                dev.golem.core.world.Durability.hurt(elytra, 1, entity, EquipmentSlot.CHEST);
+                Durability.hurt(elytra, 1, entity, EquipmentSlot.CHEST);
                 if (!elytra.isEmpty()) ArmorModHandler.applyMod(chest, elytra);
             }
         });
-        dev.golem.core.world.Gliders.registerWings(chest -> ArmorModHandler.installedElytra(chest));
+        Gliders.registerWings(chest -> ArmorModHandler.installedElytra(chest));
     }
 
 
-    // ------------------------------------------------------------------ living update
+    // Living update
 
     /** 1.7 {@code onLivingUpdate}'s armor-module loop plus the shield regeneration. Both sides. */
     public static void onLivingUpdate(LivingEntity entity) {
@@ -103,7 +112,7 @@ public final class ArmorModEvents {
             // Runs for every living entity every tick on both sides: the lists are only allocated when a
             // modded or self-modifying suit can actually fill them (reconcileModifiers never keeps them).
             List<ItemArmorMod.Modifier> wanted = List.of();
-            ArmorSlot armorSlot = dev.golem.core.world.Armors.slotOf(armor); // 1.7: any ItemArmor
+            ArmorSlot armorSlot = Armors.slotOf(armor); // 1.7: any ItemArmor
 
             if (armorSlot != null && ArmorModHandler.hasMods(armor)) {
                 if (server) wanted = new ArrayList<>();
@@ -120,7 +129,7 @@ public final class ArmorModEvents {
                 reconcileModifiers(entity, "hbm:armor_mod_" + slot.getName() + "_", wanted);
                 // 1.7 kept the suit's own item attributes under separate fixedUUIDs.
                 List<ItemArmorMod.Modifier> own = List.of();
-                if (armor.getItem() instanceof com.hbm.items.armor.ArmorLiquidator liquidator) {
+                if (armor.getItem() instanceof ArmorLiquidator liquidator) {
                     own = new ArrayList<>();
                     liquidator.collectModifiers(own);
                 }
@@ -131,7 +140,7 @@ public final class ArmorModEvents {
     }
 
     /** Modifier ids this handler has put on each entity, so unmodded entities cost no attribute work. */
-    private static final Map<LivingEntity, java.util.Set<String>> APPLIED = new WeakHashMap<>();
+    private static final Map<LivingEntity, Set<String>> APPLIED = new WeakHashMap<>();
 
     /**
      * Keeps exactly the wanted modifiers under one id prefix. 1.7 swapped modifier maps when the worn stack
@@ -139,11 +148,11 @@ public final class ArmorModEvents {
      * leaves an unchanged modifier alone so nothing resyncs. Server thread only.
      */
     private static void reconcileModifiers(LivingEntity entity, String prefix, List<ItemArmorMod.Modifier> wanted) {
-        java.util.Set<String> applied = APPLIED.get(entity);
+        Set<String> applied = APPLIED.get(entity);
         if (wanted.isEmpty() && applied == null) return;
-        if (applied == null) APPLIED.put(entity, applied = new java.util.HashSet<>());
+        if (applied == null) APPLIED.put(entity, applied = new HashSet<>());
 
-        java.util.Set<String> keep = new java.util.HashSet<>();
+        Set<String> keep = new HashSet<>();
         for (ItemArmorMod.Modifier modifier : wanted) {
             AttributeInstance attribute = attribute(entity, modifier.attribute());
             if (attribute == null) continue;
@@ -152,7 +161,7 @@ public final class ArmorModEvents {
             keep.add(id);
             applied.add(id);
         }
-        for (java.util.Iterator<String> it = applied.iterator(); it.hasNext(); ) {
+        for (Iterator<String> it = applied.iterator(); it.hasNext(); ) {
             String id = it.next();
             if (!id.startsWith(prefix) || keep.contains(id)) continue;
             String name = id.substring(prefix.length());
@@ -179,7 +188,7 @@ public final class ArmorModEvents {
         };
     }
 
-    // ------------------------------------------------------------------ shield
+    // Shield
 
     /** 1.7 {@code HbmPlayerProps.getEffectiveMaxShield}: base shield plus a Life Extender insert. */
     public static float effectiveMaxShield(Player player) {
@@ -215,7 +224,7 @@ public final class ArmorModEvents {
         props.lastDamage = player.tickCount;
     }
 
-    // ------------------------------------------------------------------ sounds
+    // Sounds
 
     private static final Map<Player, Long> PLINK = new WeakHashMap<>();
 
@@ -230,15 +239,15 @@ public final class ArmorModEvents {
         }
     }
 
-    // ------------------------------------------------------------------ death
+    // Death
 
     /** 1.7 {@code onEntityDeathFirst} (highest priority): scrumpy/whiskey and shackle revives. */
     private static boolean onAllowDeath(LivingEntity entity, DamageSource source) {
-        // old-hbm: "if a person with shackles is killed by crucible, he will be dead AND alive at the same time"
-        if (com.hbm.items.weapon.MobSlicer.killedByMobSlicer(entity)) return true;
+        // 1.12.2: "if a person with shackles is killed by crucible, he will be dead AND alive at the same time"
+        if (MobSlicer.killedByMobSlicer(entity)) return true;
         for (EquipmentSlot slot : SLOTS) {
             ItemStack stack = entity.getItemBySlot(slot);
-            if (!dev.golem.core.world.Armors.isArmor(stack) || !ArmorModHandler.hasMods(stack)) continue;
+            if (!Armors.isArmor(stack) || !ArmorModHandler.hasMods(stack)) continue;
 
             ItemStack revive = ArmorModHandler.pryMod(stack, ArmorModHandler.extra);
             if (revive.isEmpty()) continue;
@@ -271,7 +280,7 @@ public final class ArmorModEvents {
     private static void onDeath(LivingEntity entity, DamageSource source) {
         if (!(entity.level() instanceof ServerLevel level) || !Compat.mobLoot(level)) return;
         // 1.7 excludes Forge's FakePlayer
-        if (!(source.getEntity() instanceof Player killer) || dev.golem.core.platform.Platform.isFakePlayer(killer)) return;
+        if (!(source.getEntity() instanceof Player killer) || Platform.isFakePlayer(killer)) return;
         RandomSource rng = entity.getRandom();
 
         // 1.7's cave spider extended its spider, so both roll the milk. Compared by entity type because
@@ -289,7 +298,7 @@ public final class ArmorModEvents {
         Compat.spawnAtLocation(entity, level, new ItemStack(item));
     }
 
-    // ------------------------------------------------------------------ ballistic gauntlet
+    // Ballistic gauntlet
 
     /** 1.7 {@code onPlayerPunch}: a bare-handed punch fires the first 12 gauge round found. */
     private static void onPlayerAttack(Player player, Entity target) {

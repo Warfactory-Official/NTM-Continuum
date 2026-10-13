@@ -3,12 +3,15 @@ package com.hbm.items.special;
 import com.hbm.config.WeaponConfig;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.effect.EntityBlackHole;
+import com.hbm.entity.effect.EntityRagingVortex;
+import com.hbm.entity.effect.EntityVortex;
 import com.hbm.items.ModItems;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.CompatItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -46,7 +49,7 @@ public final class ItemSingularity extends CompatItem {
                 || (!entity.onGround() && !entity.isOnFire())
                 || entity.level().isClientSide()) return;
 
-        if (WeaponConfig.dropSing && entity.level() instanceof net.minecraft.server.level.ServerLevel level) {
+        if (WeaponConfig.dropSing && entity.level() instanceof ServerLevel level) {
             EntityBlackHole vortex = singularity.create(level);
             vortex.setPos(entity.getX(), entity.getY(), entity.getZ());
             level.addFreshEntity(vortex);
@@ -58,11 +61,11 @@ public final class ItemSingularity extends CompatItem {
 
     private EntityBlackHole create(Level level) {
         return switch (kind) {
-            case SINGULARITY -> new com.hbm.entity.effect.EntityVortex(ModEntities.VORTEX.get(), level, 1.5F);
+            case SINGULARITY -> new EntityVortex(ModEntities.VORTEX.get(), level, 1.5F);
             case COUNTER_RESONANT, SUPER_HEATED ->
-                    new com.hbm.entity.effect.EntityVortex(ModEntities.VORTEX.get(), level, 2.5F);
+                    new EntityVortex(ModEntities.VORTEX.get(), level, 2.5F);
             case BLACK_HOLE -> new EntityBlackHole(ModEntities.BLACK_HOLE.get(), level, 1.5F);
-            case SPARK -> new com.hbm.entity.effect.EntityRagingVortex(ModEntities.RAGING_VORTEX.get(), level, 3.5F);
+            case SPARK -> new EntityRagingVortex(ModEntities.RAGING_VORTEX.get(), level, 3.5F);
         };
     }
 

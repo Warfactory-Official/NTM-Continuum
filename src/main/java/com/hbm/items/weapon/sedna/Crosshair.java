@@ -5,9 +5,9 @@ package com.hbm.items.weapon.sedna;
  *
  * <p>Ported from the enum nested in 1.12.2's {@code RenderScreenOverlay}. It lives in the common
  * weapon package rather than a client class because a {@link GunConfig} names one, and gun configs are
- * built on the server as well — the drawing itself stays client-side.
+ * built on the server as well: the drawing itself stays client-side.
  *
- * <p>The atlas coordinates are carried verbatim so the original texture lines up unchanged.
+ * <p>The atlas coordinates are copied from 1.7 so the original texture lines up.
  */
 public enum Crosshair {
     NONE(0, 0, 0),

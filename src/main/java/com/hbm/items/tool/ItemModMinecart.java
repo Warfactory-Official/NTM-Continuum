@@ -9,7 +9,9 @@ import com.hbm.entity.cart.EntityMinecartPowder;
 import com.hbm.entity.cart.EntityMinecartSemtex;
 import com.hbm.items.ModDataComponents;
 import com.mojang.serialization.Codec;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
@@ -63,7 +65,7 @@ public class ItemModMinecart extends Item {
             Entity cart = createMinecart(level, pos.getX() + 0.5D,
                     pos.getY() + 0.5D, pos.getZ() + 0.5D, stack);
 
-            net.minecraft.network.chat.Component customName = dev.golem.core.world.ItemStacks.customName(stack);
+            Component customName = ItemStacks.customName(stack);
             if (customName != null) cart.setCustomName(customName);
 
             level.addFreshEntity(cart);

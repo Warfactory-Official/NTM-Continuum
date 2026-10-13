@@ -9,6 +9,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.RefineryRecipes;
+import com.hbm.items.ModFluidNetItems;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
@@ -36,15 +37,15 @@ import com.hbm.sound.ModSounds;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * Vacuum Distiller — 1:1 port of the 1.12.2 {@code TileEntityMachineVacuumDistill}: a 3×3×9 tower that
- * splits OIL/OIL_DS into four vacuum fractions. 12 slots as in 1.7.10 (0 battery, 1→2 input canister
- * load — deprecated in the 1.7 menu because the input tank is pressurised, so loading only accepts the
- * infinite barrel — 3→4/5→6/7→8/9→10 four output-unload pairs, 11 fluid identifier). 1.7 exposes no
+ * Vacuum Distiller, 1:1 port of the 1.12.2 {@code TileEntityMachineVacuumDistill}: a 3×3×9 tower that
+ * splits OIL/OIL_DS into four vacuum fractions. 12 slots as in 1.7.10 (0 battery, 1 and 2 the input canister
+ * load, deprecated in the 1.7 menu because the input tank is pressurised, so loading only accepts the
+ * infinite barrel, 3/4, 5/6, 7/8 and 9/10 four output-unload pairs, 11 fluid identifier). 1.7 exposes no
  * automation sides. Tanks: {@code [0] OIL 64k p2} input (pipe-fed) + 4×24k outputs conformed to
  * {@link RefineryRecipes#getVacuum}. Each op needs {@code power ≥ 10k} and {@code tank0 ≥ 100}, drains
  * 100 mB + 10k HE. maxPower 1M.
  *
- * <p>Deferred (§20): the boiler audio loop, IPersistentNBT/IFluidCopiable.
+ * <p>Not ported: the boiler audio loop, IPersistentNBT/IFluidCopiable.
  */
 public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, WorldlyContainer {
@@ -159,7 +160,7 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
      */
     private void loadInput() {
         ItemStack in = inventory.getStackInSlot(1);
-        if (in.isEmpty() || !in.is(com.hbm.items.ModFluidNetItems.fluid_barrel_infinite.get())) return;
+        if (in.isEmpty() || !in.is(ModFluidNetItems.fluid_barrel_infinite.get())) return;
         if (!(in.getItem() instanceof IFillableItem fillable)) return;
         FluidTankNTM tank = tanks[0];
         FluidType type = tank.getTankType();
@@ -172,7 +173,7 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
         }
     }
 
-    /** Fills a container in {@code loadSlot} FROM {@code tanks[tank]}, result → {@code outSlot}. */
+    /** Fills a container in {@code loadSlot} FROM {@code tanks[tank]}, result to {@code outSlot}. */
     private void unloadTank(int tank, int loadSlot, int outSlot) {
         FluidTankNTM t = tanks[tank];
         FluidType fluid = t.getTankType();

@@ -1,6 +1,8 @@
 package com.hbm.blocks.bomb;
 
 import com.hbm.config.BombConfig;
+import dev.golem.core.gui.Menus;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Mirror;
@@ -41,7 +43,7 @@ import java.util.UUID;
  *
  * <p>{@code FACING} (2–5, the old ForgeDirection horizontal ordinals N/S/W/E) drives the model yaw.
  */
-public class NukeMan extends dev.golem.core.world.CompatBlock implements TickingBlock, IBomb {
+public class NukeMan extends CompatBlock implements TickingBlock, IBomb {
 
     public static final IntegerProperty FACING = IntegerProperty.create("facing", 2, 5);
 
@@ -92,7 +94,7 @@ public class NukeMan extends dev.golem.core.world.CompatBlock implements Ticking
                                                  BlockHitResult hit) {
         if (!level.isClientSide() && !player.isShiftKeyDown() && player instanceof ServerPlayer serverPlayer) {
             if (level.getBlockEntity(pos) instanceof MenuProvider provider) {
-                dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+                Menus.openWithPos(serverPlayer, provider, pos);
             }
         }
         return player.isShiftKeyDown() ? InteractionResult.TRY_WITH_EMPTY_HAND : InteractionResult.SUCCESS;
@@ -100,7 +102,7 @@ public class NukeMan extends dev.golem.core.world.CompatBlock implements Ticking
 
     @Override
     protected void onNeighborChanged(BlockState state, Level level, BlockPos pos,
-                                     net.minecraft.world.level.block.Block block, boolean movedByPiston) {
+                                     Block block, boolean movedByPiston) {
         if (!level.isClientSide() && level.hasNeighborSignal(pos)) {
             explode(level, pos, null);
         }
@@ -148,7 +150,7 @@ public class NukeMan extends dev.golem.core.world.CompatBlock implements Ticking
 
         // The mushroom cloud (which carries the shockwave ring, condensation collar, flare, flash + the
         // client sky flash / detonation sound / HUD white-out + shake). Gated like the original, and it
-        // only affects visuals — the blast/crater above runs regardless.
+        // only affects visuals; the blast and crater above run regardless.
         if (BombConfig.enableNukeClouds) {
             EntityNukeTorex torex = EntityNukeTorex.statFac(level, x, y, z, BombConfig.manRadius);
             if (level.addFreshEntity(torex)) torex.startChunkLoading();

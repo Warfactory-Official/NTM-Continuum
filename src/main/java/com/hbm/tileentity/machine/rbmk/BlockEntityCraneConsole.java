@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.items.machine.ItemRBMKRod;
 import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.machine.rbmk.RBMKBase;
@@ -69,7 +71,7 @@ public class BlockEntityCraneConsole extends TileEntityMachineBase implements IR
 
     @Override
     public void tickClient() {
-        if (com.hbm.blocks.multiblock.BlockMultiblockMachine.removeIfAtCell(this)) return; // stale pre-fix cell desk
+        if (BlockMultiblockMachine.removeIfAtCell(this)) return; // stale pre-fix cell desk
         lastTiltFront = tiltFront;
         lastTiltLeft = tiltLeft;
         lastPosFront = posFront;
@@ -90,7 +92,7 @@ public class BlockEntityCraneConsole extends TileEntityMachineBase implements IR
 
     @Override
     public void tickServer() {
-        if (com.hbm.blocks.multiblock.BlockMultiblockMachine.removeIfAtCell(this)) return; // stale pre-fix cell desk
+        if (BlockMultiblockMachine.removeIfAtCell(this)) return; // stale pre-fix cell desk
         BlockEntityRBMKBase column = getColumnAtPos();
         if (column != null) {
             column.craneIndicator = 10;
@@ -187,9 +189,9 @@ public class BlockEntityCraneConsole extends TileEntityMachineBase implements IR
 
     private void updateLoadedReadout() {
         ItemStack carried = inventory.getStackInSlot(0);
-        if (carried.getItem() instanceof com.hbm.items.machine.ItemRBMKRod) {
-            loadedHeat = com.hbm.items.machine.ItemRBMKRod.getHullHeat(carried);
-            loadedEnrichment = com.hbm.items.machine.ItemRBMKRod.getEnrichment(carried);
+        if (carried.getItem() instanceof ItemRBMKRod) {
+            loadedHeat = ItemRBMKRod.getHullHeat(carried);
+            loadedEnrichment = ItemRBMKRod.getEnrichment(carried);
         } else {
             loadedHeat = 0D;
             loadedEnrichment = 0D;

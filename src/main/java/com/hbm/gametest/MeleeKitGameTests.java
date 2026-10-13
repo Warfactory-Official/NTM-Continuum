@@ -7,11 +7,13 @@ import com.hbm.items.ModMeleeKitItems;
 import com.hbm.items.special.ItemLootCrate;
 import com.hbm.items.special.ItemStarterKit;
 import com.hbm.items.tool.ItemToolBox;
+import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -50,7 +52,7 @@ public final class MeleeKitGameTests {
     }
 
     /** The Little Boy kit: the bomb and its five parts, then a tier-0 hazmat suit; the stealth device gives nothing. */
-    public static void kits(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void kits(GameTestHelper helper) {
         List<ItemStack> boy = ItemStarterKit.contents(ItemStarterKit.Kind.BOY);
         helper.assertTrue(contains(boy, "hbm:nuke_boy", 1) && contains(boy, "hbm:boy_igniter", 1) && boy.size() == 6,
                 "boy kit must give the bomb and its five parts, gave " + boy);
@@ -66,7 +68,7 @@ public final class MeleeKitGameTests {
     }
 
     /** Right-click with a toolbox in slot 0: slots 1..8 go into row 0, a second click brings them back. */
-    public static void toolbox(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void toolbox(GameTestHelper helper) {
         ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ItemStack box = new ItemStack(ModMeleeKitItems.toolbox.get());
         Compat.setSelectedSlot(player, 0);
@@ -91,8 +93,8 @@ public final class MeleeKitGameTests {
     }
 
     /** MagicRecipes compares the compacted grid in order: three diamond gravels then the lead gavel. */
-    public static void book(net.minecraft.gametest.framework.GameTestHelper helper) {
-        ItemStack gravel = new ItemStack(BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.of("hbm", "gravel_diamond")));
+    public static void book(GameTestHelper helper) {
+        ItemStack gravel = new ItemStack(BuiltInRegistries.ITEM.getValue(Ids.of("hbm", "gravel_diamond")));
         ItemStack lead = new ItemStack(ModMeleeKitItems.lead_gavel.get());
         ItemStack out = MagicRecipes.getRecipe(List.of(gravel, gravel, gravel, lead));
         helper.assertTrue(out.is(ModMeleeKitItems.diamond_gavel.get()), "diamond gavel recipe, got " + out);
@@ -104,7 +106,7 @@ public final class MeleeKitGameTests {
     }
 
     /** 1.7 diamond gavel: the hit takes a third of max health on top of the attack. */
-    public static void gavel(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void gavel(GameTestHelper helper) {
         ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
         LivingEntity pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(1, 2, 1));
         float before = pig.getHealth();
@@ -118,7 +120,7 @@ public final class MeleeKitGameTests {
     }
 
     /** Every loot crate pool has parts, and both catalogues have offers. */
-    public static void pools(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void pools(GameTestHelper helper) {
         for (ItemLootCrate.Pool pool : ItemLootCrate.Pool.values()) {
             helper.assertTrue(!ItemLootCrate.pool(pool).isEmpty(), "loot pool " + pool + " must not be empty");
         }

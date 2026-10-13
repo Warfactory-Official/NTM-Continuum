@@ -42,16 +42,16 @@ import com.hbm.tileentity.TileEntitySecurityObj;
  * Barbed wire, port of 1.7.10's {@code BarbedWire}. No collision box; anything inside is held like a
  * cobweb, slowed further, and takes the variant's contact effect every tick:
  * <ul>
- *   <li>plain — 2 cactus damage</li>
- *   <li>fire — 2 cactus damage and set on fire for one second</li>
- *   <li>poison — 2 cactus damage and Poison III for 5 s</li>
- *   <li>acid — 2 cactus damage and one durability off every worn armour piece (players only)</li>
- *   <li>wither — 2 cactus damage and Wither V for 5 s</li>
- *   <li>ultradeath — 5 pink-cloud (absolute, armour-bypassing) damage and Radiation X for 5 s</li>
+ *   <li>plain: 2 cactus damage</li>
+ *   <li>fire: 2 cactus damage and set on fire for one second</li>
+ *   <li>poison: 2 cactus damage and Poison III for 5 s</li>
+ *   <li>acid: 2 cactus damage and one durability off every worn armour piece (players only)</li>
+ *   <li>wither: 2 cactus damage and Wither V for 5 s</li>
+ *   <li>ultradeath: 5 pink-cloud (absolute, armour-bypassing) damage and Radiation X for 5 s</li>
  * </ul>
  * The 1.7.10 block stored the placement yaw in its metadata and drew the OBJ rotated by -90°
  * (east/west) or -180° (north/south); here that is the horizontal {@link #FACING}, read by
- * {@code SecurityObjRenderer}. The block itself is invisible — the wire OBJ is drawn by the BER on
+ * {@code SecurityObjRenderer}. The block itself is invisible; the wire OBJ is drawn by the BER on
  * its {@link TileEntitySecurityObj}, the same invisible-block + renderer route the deco OBJs take.
  * Waterloggable (port addition, see {@link Waterlogging}).
  */
@@ -141,8 +141,8 @@ public class BarbedWire extends CompatBlock implements EntityBlock, SimpleWaterl
     }
 
     /**
-     * 1.7.10 {@code onBlockPlacedBy}: metadata from the placer's yaw (south→5, west→3, north→4,
-     * east→2), which the renderer only ever read as "meta < 4 → -90°, else -180°". Keeping the
+     * 1.7.10 {@code onBlockPlacedBy}: metadata from the placer's yaw (south -> 5, west -> 3, north -> 4,
+     * east -> 2), which the renderer only ever read as "meta < 4 gives -90°, else -180°". Keeping the
      * player's own horizontal direction reproduces both cases exactly.
      */
     @Override

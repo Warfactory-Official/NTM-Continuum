@@ -1,7 +1,9 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerOreSlopper;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.machine.TileEntityMachineOreSlopper;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -14,7 +16,7 @@ import java.util.Optional;
 /** 1.7 {@code GUIOreSlopper}: {@code gui_ore_slopper.png}, 176x204. */
 public final class GUIOreSlopper extends CompatContainerScreen<ContainerOreSlopper> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_ore_slopper.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_ore_slopper.png");
 
     public GUIOreSlopper(ContainerOreSlopper menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 204);
@@ -66,7 +68,7 @@ public final class GUIOreSlopper extends CompatContainerScreen<ContainerOreSlopp
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return menu.getSlopper();
     }
 }

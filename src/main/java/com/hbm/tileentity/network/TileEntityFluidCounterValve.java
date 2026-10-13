@@ -9,6 +9,8 @@ import com.hbm.tileentity.ModFluidNetBlockEntities;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.sound.ModSounds;
 import com.hbm.uninos.graph.NodeNetwork;
+import dev.golem.core.data.DataIn;
+import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
@@ -60,13 +62,13 @@ public class TileEntityFluidCounterValve extends TileEntityFluidSwitch implement
     }
 
     @Override
-    protected void saveData(dev.golem.core.data.DataOut output) {
+    protected void saveData(DataOut output) {
         super.saveData(output);
         output.putLong("counter", counter);
     }
 
     @Override
-    protected void loadData(dev.golem.core.data.DataIn input) {
+    protected void loadData(DataIn input) {
         super.loadData(input);
         this.counter = Math.max(input.getLongOr("counter", 0L), 0);
     }

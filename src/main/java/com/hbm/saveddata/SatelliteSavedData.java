@@ -1,12 +1,17 @@
 package com.hbm.saveddata;
 
+import com.hbm.Constants;
+import com.hbm.api.environment.Environment;
 import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import dev.golem.core.world.CompatSavedData;
+import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -31,23 +36,23 @@ public class SatelliteSavedData extends CompatSavedData<SatelliteSavedData> {
             Codec.INT.optionalFieldOf("targetX").forGetter(e -> base(e, e.sat().targetX)),
             Codec.INT.optionalFieldOf("targetZ").forGetter(e -> base(e, e.sat().targetZ)),
             Codec.STRING.optionalFieldOf("tx").forGetter(e -> base(e, e.sat().tx)),
-            net.minecraft.nbt.CompoundTag.CODEC.optionalFieldOf("extra")
-                    .forGetter(e -> e.sat().extra.isEmpty() ? java.util.Optional.empty() : java.util.Optional.of(e.sat().extra))
+            CompoundTag.CODEC.optionalFieldOf("extra")
+                    .forGetter(e -> e.sat().extra.isEmpty() ? Optional.empty() : Optional.of(e.sat().extra))
     ).apply(i, (freq, sat, targetX, targetZ, tx, extra) -> {
         sat.setTarget(targetX.orElse(0), targetZ.orElse(0));
         sat.tx = tx.orElse("");
-        sat.extra = extra.map(net.minecraft.nbt.CompoundTag::copy).orElseGet(net.minecraft.nbt.CompoundTag::new);
+        sat.extra = extra.map(CompoundTag::copy).orElseGet(CompoundTag::new);
         return new Entry(freq, sat);
     }));
 
-    private static <T> java.util.Optional<T> base(Entry entry, T value) {
-        return entry.sat().savesBaseData() ? java.util.Optional.of(value) : java.util.Optional.empty();
+    private static <T> Optional<T> base(Entry entry, T value) {
+        return entry.sat().savesBaseData() ? Optional.of(value) : Optional.empty();
     }
 
     public static final Codec<SatelliteSavedData> CODEC = RecordCodecBuilder.create(i -> i.group(
             ENTRY_CODEC.listOf().optionalFieldOf("sats", List.of()).forGetter(SatelliteSavedData::toEntries)
     ).apply(i, SatelliteSavedData::fromEntries));
-    private static final String ID = com.hbm.Constants.MOD_ID + ":satellites";
+    private static final String ID = Constants.MOD_ID + ":satellites";
 
     @Override
     protected Codec<SatelliteSavedData> codec() {
@@ -66,7 +71,7 @@ public class SatelliteSavedData extends CompatSavedData<SatelliteSavedData> {
      * Plain HBM: {@link #get(ServerLevel)} of {@code level}.
      */
     public static SatelliteSavedData get(ServerLevel level, BlockPos pos) {
-        return get(com.hbm.api.environment.Environment.satelliteLevel(level, pos, net.minecraft.world.item.ItemStack.EMPTY));
+        return get(Environment.satelliteLevel(level, pos, ItemStack.EMPTY));
     }
 
     private static SatelliteSavedData fromEntries(List<Entry> entries) {

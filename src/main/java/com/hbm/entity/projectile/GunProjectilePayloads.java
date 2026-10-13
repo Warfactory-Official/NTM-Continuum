@@ -5,8 +5,10 @@ import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 /** Original gun payload callbacks that are independent of the gun factory declarations. */
@@ -37,13 +39,13 @@ public final class GunProjectilePayloads {
         BlockPos base = blockHit.getBlockPos();
         for (int x = -1; x <= 1; x++) for (int y = -1; y <= 1; y++) for (int z = -1; z <= 1; z++) {
             BlockPos pos = base.offset(x, y, z);
-            if (level.getBlockState(pos).is(net.minecraft.world.level.block.Blocks.FIRE))
-                level.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+            if (level.getBlockState(pos).is(Blocks.FIRE))
+                level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
         }
         bullet.discard();
     }
 
     public static void extinguishEntity(EntityBulletBaseMK4 bullet, HitResult hit) {
-        if (hit instanceof net.minecraft.world.phys.EntityHitResult entityHit) entityHit.getEntity().clearFire();
+        if (hit instanceof EntityHitResult entityHit) entityHit.getEntity().clearFire();
     }
 }

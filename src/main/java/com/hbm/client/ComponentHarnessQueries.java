@@ -2,12 +2,14 @@ package com.hbm.client;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.hbm.gametest.NTMComponentStructureGameTests;
 import com.hbm.world.gen.component.BunkerComponents;
 import com.hbm.world.gen.component.CivilianFeatures;
 import com.hbm.world.gen.component.Component;
 import com.hbm.world.gen.component.OfficeFeatures;
 import com.hbm.world.gen.component.SiloComponent;
 import com.hbm.world.gen.nbt.NBTStructure;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -44,7 +46,7 @@ public final class ComponentHarnessQueries {
     private ComponentHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_wgc", ComponentHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_wgc", ComponentHarnessQueries::query);
     }
 
     private static final Map<String, Function<RandomSource, Component>> PIECES = new TreeMap<>();
@@ -118,7 +120,7 @@ public final class ComponentHarnessQueries {
             starts.add(describe(level, spawn, start.getPieces()));
         }
         if (starts.isEmpty() && p.has("rebuild")) {
-            List<StructurePiece> pieces = com.hbm.gametest.NTMComponentStructureGameTests.assemble(level, spawn, chunk);
+            List<StructurePiece> pieces = NTMComponentStructureGameTests.assemble(level, spawn, chunk);
             if (!pieces.isEmpty()) {
                 JsonObject s = describe(level, spawn, pieces);
                 s.addProperty("rebuilt", true);

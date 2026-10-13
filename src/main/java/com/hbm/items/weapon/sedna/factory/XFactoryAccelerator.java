@@ -2,6 +2,7 @@ package com.hbm.items.weapon.sedna.factory;
 
 import com.hbm.entity.projectile.EntityBulletBeamBase;
 import com.hbm.entity.projectile.EntityCoin;
+import com.hbm.items.ModAmmoItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
@@ -199,12 +200,12 @@ public final class XFactoryAccelerator {
 
     public static void init() {
         tau_uranium = BulletConfigs.register("tau_uranium", new BulletConfig()
-                .setItem(com.hbm.items.ModAmmoItems.tau_uranium).setCasing(() -> new ItemStack(ModItems.plate_lead.get(), 2), 16)
+                .setItem(ModAmmoItems.tau_uranium).setCasing(() -> new ItemStack(ModItems.plate_lead.get(), 2), 16)
                 .setupDamageClass(DamageClass.SUBATOMIC).setBeam().setLife(5)
                 .setRenderRotations(false).setDoesPenetrate(true).setDamageFalloffByPen(false)
                 .setOnBeamImpact(BulletImpact::standardBeamHit));
         tau_uranium_charge = BulletConfigs.register("tau_uranium_charge", new BulletConfig()
-                .setItem(com.hbm.items.ModAmmoItems.tau_uranium).setCasing(() -> new ItemStack(ModItems.plate_lead.get(), 2), 16)
+                .setItem(ModAmmoItems.tau_uranium).setCasing(() -> new ItemStack(ModItems.plate_lead.get(), 2), 16)
                 .setupDamageClass(DamageClass.SUBATOMIC).setBeam().setLife(5)
                 .setRenderRotations(false).setDoesPenetrate(true).setDamageFalloffByPen(false)
                 .setSpectral(true).setOnBeamImpact(BulletImpact::standardBeamHit));

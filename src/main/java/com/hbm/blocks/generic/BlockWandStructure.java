@@ -3,8 +3,10 @@ package com.hbm.blocks.generic;
 import com.hbm.config.ServerConfig;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModDataComponents;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.SavedIds;
 import com.hbm.world.gen.nbt.LegacyStructurePalette;
 import com.hbm.world.gen.nbt.NBTStructure;
 import dev.golem.core.data.DataIn;
@@ -91,7 +93,7 @@ public class BlockWandStructure extends CompatBlock implements TickingBlock, ILo
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        int variant = com.hbm.items.LegacyMeta.of(context.getItemInHand());
+        int variant = LegacyMeta.of(context.getItemInHand());
         return defaultBlockState().setValue(MODE, variant == 1 ? Mode.LOAD : Mode.SAVE);
     }
 
@@ -290,9 +292,9 @@ public class BlockWandStructure extends CompatBlock implements TickingBlock, ILo
             out.putInt("sizeY", sizeY);
             out.putInt("sizeZ", sizeZ);
 
-            // block-state names, never global state ids (History section 19ej-ids)
+            // block-state names, never global state ids
             DataOut.ChildList blocks = out.childrenList("blacklist");
-            for (BlockState state : blacklist) com.hbm.util.SavedIds.putState(blocks.addChild(), "state", state);
+            for (BlockState state : blacklist) SavedIds.putState(blocks.addChild(), "state", state);
         }
 
         @Override
@@ -305,9 +307,9 @@ public class BlockWandStructure extends CompatBlock implements TickingBlock, ILo
             sizeZ = in.getIntOr("sizeZ", 0);
 
             blacklist = new LinkedHashSet<>();
-            if (in.getIntArray("blocks").isPresent()) com.hbm.util.SavedIds.warnNumeric("block state id array", "blocks");
+            if (in.getIntArray("blocks").isPresent()) SavedIds.warnNumeric("block state id array", "blocks");
             for (DataIn entry : in.childrenListOrEmpty("blacklist")) {
-                BlockState state = com.hbm.util.SavedIds.getState(entry, "state", null);
+                BlockState state = SavedIds.getState(entry, "state", null);
                 if (state != null) blacklist.add(state);
             }
         }

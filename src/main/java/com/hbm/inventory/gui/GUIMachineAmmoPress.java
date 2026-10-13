@@ -6,6 +6,7 @@ import com.hbm.inventory.recipes.AmmoPressRecipes;
 import com.hbm.inventory.recipes.AmmoPressRecipes.AmmoPressRecipe;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.TileEntityMachineAmmoPress;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.KeyInput;
@@ -22,11 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import net.minecraft.world.item.ItemStack;
 
 /** The 176x200 positional recipe browser and inventory screen from the old Ammo Press. */
 public class GUIMachineAmmoPress extends CompatContainerScreen<ContainerMachineAmmoPress> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm",
+    private static final Identifier TEXTURE = Ids.of("hbm",
             "textures/gui/processing/gui_ammo_press.png");
 
     private final List<AmmoPressRecipe> recipes = new ArrayList<>();
@@ -122,7 +124,7 @@ public class GUIMachineAmmoPress extends CompatContainerScreen<ContainerMachineA
         }
     }
 
-    private void drawCount(GuiGraphicsExtractor graphics, net.minecraft.world.item.ItemStack stack, int x, int y) {
+    private void drawCount(GuiGraphicsExtractor graphics, ItemStack stack, int x, int y) {
         if (stack.isEmpty() || stack.getCount() <= 1) return;
         String count = Integer.toString(stack.getCount());
         GuiDraw.pushMatrix(graphics);

@@ -1,14 +1,15 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.smoke.SmokeChainRegistration;
+import com.hbm.config.MobConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.ModBlockEntities;
 
 /** 23-high industrial chimney: fly ash plus soot and 0.1 pollution multiplier when integrated. */
 public class TileEntityChimneyIndustrial extends TileEntityChimneyBase {
 
     public TileEntityChimneyIndustrial(BlockPos pos, BlockState state) {
-        super(SmokeChainRegistration.CHIMNEY_INDUSTRIAL.get(), pos, state);
+        super(ModBlockEntities.CHIMNEY_INDUSTRIAL.get(), pos, state);
     }
 
     @Override
@@ -19,7 +20,7 @@ public class TileEntityChimneyIndustrial extends TileEntityChimneyBase {
     @Override
     public double getPollutionMod() {
         // 1.7: rampant mode swaps in half of 12.R06_rampantSmokeStackOverride
-        return com.hbm.config.MobConfig.rampantMode ? com.hbm.config.MobConfig.rampantSmokeStackOverride / 2 : 0.1D;
+        return MobConfig.rampantMode ? MobConfig.rampantSmokeStackOverride / 2 : 0.1D;
     }
 
     @Override

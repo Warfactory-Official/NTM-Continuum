@@ -11,11 +11,14 @@ import com.hbm.inventory.recipes.ModCraftingRecipes;
 import com.hbm.inventory.recipes.ModShapedRecipes;
 import com.hbm.inventory.recipes.ModShapelessRecipes;
 import com.hbm.inventory.material.Mats;
+import com.hbm.inventory.recipes.gen.CraftingRecipesGenerated;
 import com.hbm.items.ModAutogenItems;
 import com.hbm.items.ModItemModels;
 import com.hbm.items.special.ItemAutogen;
 import com.hbm.lib.ModDamageTypes;
+import com.hbm.registration.Reg;
 import com.hbm.world.gen.ModBiomeModifiers;
+import dev.golem.core.Ids;
 import dev.golem.core.dejson.BlockStates;
 import dev.golem.core.dejson.Data;
 import dev.golem.core.dejson.Dejson;
@@ -37,15 +40,12 @@ import java.util.Set;
  * Holds each code-declared block model against the reality a unit test cannot reach: the registry,
  * the block's own state definition, and the asset files the declaration is meant to replace.
  *
- * <p>A declaration that misses a state is not a crash — it is an untextured cube, in a world,
- * noticed by a player. These tests are what turns that into a build failure, and they were the
- * precondition for deleting the files the declarations replaced.
+ * <p>A declaration that misses a state is not a crash: it is an untextured cube, in a world,
+ * noticed by a player. These tests turn that into a build failure.
  *
- * <p>Those files are now gone, which changes what the parity tests prove rather than retiring them.
- * The JSON they read off the classpath is the JSON {@code dejsonGenerate} wrote, so a match no
- * longer says "the declaration agrees with what a person wrote" — it says the declared file was
- * generated, packed, and is loadable at the path the game will look for it. That is the delivery
- * half of the system, and it is the half a mistake in the build would break silently.
+ * <p>The parity tests read the JSON {@code dejsonGenerate} wrote off the classpath, so a match says the
+ * declared file was generated, packed, and is loadable at the path the game will look for it. That is the
+ * delivery half of the system, and a mistake in the build would break it silently.
  */
 public final class DejsonGameTests {
 
@@ -60,7 +60,7 @@ public final class DejsonGameTests {
         ModShapedRecipes.declare();
         ModShapelessRecipes.declare();
         ModComponentRecipes.declare();
-        com.hbm.inventory.recipes.gen.CraftingRecipesGenerated.declare();
+        CraftingRecipesGenerated.declare();
     }
 
     /**
@@ -69,10 +69,10 @@ public final class DejsonGameTests {
      */
     public static void blockItemTagsResolve(GameTestHelper helper) {
         List<String> missing = new ArrayList<>();
-        java.util.Set<String> members = com.hbm.registration.Reg.blockItemTagMembers();
+        Set<String> members = Reg.blockItemTagMembers();
         for (String member : members) {
             String id = member.substring(0, member.indexOf(' '));
-            if (!BuiltInRegistries.ITEM.containsKey(dev.golem.core.Ids.parse(id))) missing.add(member);
+            if (!BuiltInRegistries.ITEM.containsKey(Ids.parse(id))) missing.add(member);
         }
         Constants.LOG.info("reg_block_item_tags_resolve: {} block-declared item-tag members checked", members.size());
         helper.assertTrue(missing.isEmpty(), missing.size() + " block-declared item-tag members have no item: " + missing);
@@ -112,15 +112,15 @@ public final class DejsonGameTests {
     }
 
     /**
-     * Every material-shape sprite is either computed or authored — nothing is left to a file that was
+     * Every material-shape sprite is either computed or authored: nothing is left to a file that was
      * deleted.
      *
-     * <p>This is the failure the build cannot see. {@code dejsonVerify} holds the declarations against
+     * <p>The build cannot see this failure. {@code dejsonVerify} holds the declarations against
      * the texture tree, but both halves of a material-shape sprite are declarations: the item comes
      * from {@link Mats}, and the remap that draws it comes from the table in {@link ModItemModels}.
      * Add a shape to a material and the item registers, the recipe resolves, and the only symptom is
-     * a black-and-magenta square in a creative tab. So the question is asked of the live registry:
-     * for every {@link ItemAutogen} that actually exists, is there something that draws it?
+     * a black-and-magenta square in a creative tab. So the live registry is asked: for every
+     * {@link ItemAutogen} that exists, is there something that draws it?
      */
     public static void everyAutogenSpriteIsDrawn(GameTestHelper helper) {
         declareAll();
@@ -224,9 +224,9 @@ public final class DejsonGameTests {
     }
 
     /**
-     * A legacy-assets marker: a bare parent at {@code hbm:item/<frame>_legacy}, or (since the 2026-10-01 melee
-     * wave) that parent plus the declared sprite model's own {@code display}, which legacy-assets keeps for a
-     * {@code _sprite_legacy} item so the hand poses survive (the meteorite swords).
+     * A legacy-assets marker: a bare parent at {@code hbm:item/<frame>_legacy}, or that parent plus the declared
+     * sprite model's own {@code display}, which legacy-assets keeps for a {@code _sprite_legacy} item so the hand
+     * poses survive (the meteorite swords).
      */
     private static boolean isLegacyFrameMarker(JsonObject model, JsonObject declared) {
         if (!model.has("parent") || !model.get("parent").isJsonPrimitive()
@@ -282,18 +282,16 @@ public final class DejsonGameTests {
      * declared to say.
      *
      * <p>A missing model is a purple cube and somebody notices. A missing loot table is a block
-     * that drops nothing, and a missing tag is a recipe that refuses a valid ingredient — both look
+     * that drops nothing, and a missing tag is a recipe that refuses a valid ingredient; both look
      * like a balance decision rather than a broken build, which is why this is a test and not an
      * expectation that someone will spot it.
      *
      * <p>The path is checked in both spellings because the build renames the modern singular
-     * registry directories to the pre-1.21 plural ones on the targets that need them, after the
-     * generated and authored files have become the same pile of files.
+     * registry directories to the pre-1.21 plural ones on the targets that need them.
      *
-     * <p>A file under another loader's directory is <em>meant</em> to be missing here: each loader's
-     * {@code processResources} excludes the other two, so the jar carries no inert files. What is
-     * checked there is that the exclusion took the whole directory — a loader tree that is half
-     * packed is a build mistake, and an empty one is not.
+     * <p>A file under another loader's directory is expected to be missing: each loader's
+     * {@code processResources} excludes the other two. What is checked there is that the exclusion
+     * took the whole directory, since a half-packed loader tree is a build mistake.
      */
     public static void matchesShippedData(GameTestHelper helper) {
         declareAll();
@@ -381,10 +379,8 @@ public final class DejsonGameTests {
      * {@code Sprites.Atlas.ITEMS} names the blocks atlas there). The fold only happens when both files
      * were declared: {@code blocks.json} then carries its own sources followed by every items source it
      * did not already list, with its other keys unchanged, and {@code items.json} is deleted (mapped to
-     * {@code null} here, meaning "must not be packed"). On a target that has the items atlas, and when
-     * either file is not declared, nothing is folded and the map is empty, so every atlas is compared
-     * exactly as declared. This is the build's documented conversion stated as an expectation, not an
-     * exemption: blocks.json must still say precisely the folded content.
+     * {@code null} here, meaning "must not be packed"). Otherwise nothing is folded and the map is empty,
+     * so every atlas is compared exactly as declared.
      */
     private static Map<String, JsonObject> foldedAtlases(Map<String, JsonObject> files) {
         Map<String, JsonObject> folded = new LinkedHashMap<>();
@@ -413,12 +409,11 @@ public final class DejsonGameTests {
     /**
      * An ingredient written the way the target spells it, so the two spellings compare equal.
      *
-     * <p>An ingredient is a bare id from 1.21.2 on and a one-key object below it — {@code "hbm:x"}
+     * <p>An ingredient is a bare id from 1.21.2 on and a one-key object below it: {@code "hbm:x"}
      * against {@code {"item": "hbm:x"}}, and {@code "#c:x"} against {@code {"tag": "c:x"}}. The
      * declaration is written in the modern spelling and {@code legacyRecipeCompatibility} rewrites
-     * it for the targets that need the old one, exactly as it does for the recipes that are still
-     * files. That is a real difference in the file and not one the declaration is the authority on,
-     * so it is normalised away here rather than asserted either way.
+     * it for the targets that need the old one. The declaration is not the authority on that
+     * difference, so it is normalised away here.
      */
     /**
      * A packed biome tag less the optional entries its declaration does not have: legacy-biomes.gradle.kts adds the
@@ -510,7 +505,7 @@ public final class DejsonGameTests {
      * here does: below 26.1 {@code legacyItemAssets} appends an {@code overrides} block to the
      * models behind an item-variant {@code select}, which is how an RBMK pellet's ten enrichment
      * skins are drawn on a target with no item-definition layer. The declaration is still the
-     * authority on the parent and the textures; it simply is not the authority on everything in
+     * authority on the parent and the textures; it is not the authority on everything in
      * the file.
      */
     private static boolean contains(JsonObject packed, JsonObject declared) {
@@ -525,11 +520,11 @@ public final class DejsonGameTests {
     /**
      * Every enum-backed family whose constants look different really has a model for each.
      *
-     * <p>The claim used to be a {@code multiTexture} flag that nothing held anyone to: {@code ammo_arty} shipped one
-     * sprite for twelve shells and drew the plain one twelve times, through a green build and a green suite. Since the
-     * families became one item per constant (History §19es-itemvariant) each member needs its own item definition,
-     * and the members of a family must not all resolve to the same one - except the holotapes, which 1.7 drew with one
-     * texture. The definition is read off the classpath because that is the file the client resolves.
+     * <p>A {@code multiTexture} flag is a claim that nothing holds anyone to: {@code ammo_arty} shipped one
+     * sprite for twelve shells and drew the plain one twelve times, through a green build and a green suite.
+     * Families are one item per constant, so each member needs its own item definition, and the members of a
+     * family must not all resolve to the same one, except the holotapes, which 1.7 drew with one texture. The
+     * definition is read off the classpath because that is the file the client resolves.
      */
     public static void variantModelsPerConstant(GameTestHelper helper) {
         List<String> problems = new ArrayList<>();

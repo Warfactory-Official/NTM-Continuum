@@ -1,5 +1,9 @@
 package com.hbm.tileentity.bomb;
 
+import com.hbm.Constants;
+import com.hbm.api.block.IRadarCommandReceiver;
+import com.hbm.api.event.HbmEvents;
+import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -29,9 +33,12 @@ import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.SubLevels;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
@@ -42,20 +49,21 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The shared half of every launch pad — 1.12.2's {@code TileEntityLaunchPadBase}.
+ * The shared half of every launch pad, 1.12.2's {@code TileEntityLaunchPadBase}.
  *
  * <p>A pad is a small machine with one job: hold a missile, two fuels and 75 kHE, and turn a target
  * into a flying entity. Its seven slots are missile (0), designator (1), battery (2), fuel in/out
  * (3/4) and oxidiser in/out (5/6).
  *
  * <p><b>The tanks are not configured by the player.</b> They take their fluid types from whatever
- * missile is in slot 0 — {@link ItemMissileStandard.MissileFuel} names the pair — so swapping a V2 for
- * an Atlas silently re-labels both tanks. That is upstream's design and the reason the GUI shows
+ * missile in slot 0 ({@link ItemMissileStandard.MissileFuel} names the pair), so swapping a V2 for
+ * an Atlas re-labels both tanks. That is upstream's design and the reason the GUI shows
  * fuel/oxidiser rather than named fluids.
  *
  * <p><b>Launching</b> costs 75 kHE and one full {@code fuelCap} of each fluid, and consumes the missile
@@ -67,7 +75,7 @@ import org.jspecify.annotations.Nullable;
  * connection-anchor conveniences.
  */
 public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
-        implements IEnergyReceiverMK2, IFluidStandardReceiverMK2, com.hbm.api.block.IRadarCommandReceiver {
+        implements IEnergyReceiverMK2, IFluidStandardReceiverMK2, IRadarCommandReceiver {
 
     /**
      * Which entity each missile item becomes. Upstream keys this by {@code ComparableStack}; a plain
@@ -75,7 +83,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
      *
      * <p>Every 1.7.10 launchable missile is here (the original's {@code registerLaunchables} table, plus the
      * N2 missile). An item that is missing is not launchable, and {@link #instantiateMissile} returns null
-     * for it — which the pad reports as {@code ERROR_MISSING_COMPONENT}, the same answer it gives for an
+     * for it, which the pad reports as {@code ERROR_MISSING_COMPONENT}, the same answer it gives for an
      * empty slot. The endo/exo/carrier items do not exist: upstream retired them.
      */
     public static final Map<Item, MissileFactory> missiles = new HashMap<>();
@@ -98,8 +106,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
 
     /**
      * HBM's 1.7 table ({@code TileEntityLaunchPadBase.registerLaunchables}). Runs once from {@code HbmEntry.registered}
-     * on both sides; it used to return when the map was non-empty, which dropped every default if anything had
-     * registered first.
+     * on both sides. Entries are added with putIfAbsent, so an earlier registration wins.
      */
     public static synchronized void registerLaunchables() {
         if (launchablesRegistered) return;
@@ -140,9 +147,9 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         missiles.putIfAbsent(ModMissileItems.missile_stealth.get(), EntityMissileStealth::new);
 
         // Logged because the count is the signal: this table decides which missiles a pad will even
-        // accept, and it has to be built on BOTH sides — the client predicts slot placement, so an empty
+        // accept, and it has to be built on BOTH sides because the client predicts slot placement, so an empty
         // table there would refuse every missile in the GUI while the server was perfectly happy.
-        com.hbm.Constants.LOG.info("[HBM] {} launchable missiles registered", missiles.size() + 1);
+        Constants.LOG.info("[HBM] {} launchable missiles registered", missiles.size() + 1);
     }
 
     public long power;
@@ -164,14 +171,14 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
      * Client-side: the missile the pad is holding, for the pad's renderer.
      *
      * <p>It has two sources, and it needs both. The periodic network pack carries it while the pad is
-     * being used, but {@code networkPackNT} only sends when the payload <em>changes</em> — so a player
+     * being used, but {@code networkPackNT} only sends when the payload <em>changes</em>, so a player
      * who logs in next to an idle, fully loaded pad would never receive one, and the pad would render
      * empty forever. {@link #syncFullTagOnChunkLoad()} closes that: the whole block entity (inventory
      * included) travels with the chunk, and {@link #refreshRenderMissile()} derives this from slot 0.
      */
     public @Nullable ItemStack toRender;
 
-    public TileEntityLaunchPadBase(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos,
+    public TileEntityLaunchPadBase(BlockEntityType<?> type, BlockPos pos,
                                    BlockState state, int slots) {
         super(type, pos, state, slots);
         this.tanks = new FluidTankNTM[]{
@@ -185,9 +192,9 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
     }
 
     /**
-     * The pad's renderer draws the loaded missile, which the client cannot otherwise know about — a
-     * block entity's inventory is server-side. Worth the tag: a launch pad is a landmark, and one that
-     * renders empty until something happens to it is a bug report.
+     * The pad's renderer draws the loaded missile, which the client cannot otherwise know about because a
+     * block entity's inventory is server-side. The tag is worth it: a pad that renders empty until
+     * something happens to it looks broken.
      */
     @Override
     protected boolean syncFullTagOnChunkLoad() {
@@ -203,7 +210,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
     /** Where this pad reaches out to for power and fluid. */
     public abstract DirPos[] getConPos();
 
-    /** Any extra condition beyond a valid, fuelled missile — the small pad's reload delay. */
+    /** Any extra condition beyond a valid, fuelled missile, the small pad's reload delay. */
     public abstract boolean isReadyForLaunch();
 
     /** How far above the core the missile spawns. */
@@ -236,7 +243,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         this.networkPackNT();
     }
 
-    /** Drains a fluid container in {@code inSlot} into {@code tank}, emptied container → {@code outSlot}. */
+    /** Drains a fluid container in {@code inSlot} into {@code tank}, emptied container to {@code outSlot}. */
     private void loadTank(FluidTankNTM tank, int inSlot, int outSlot) {
         ItemStack in = inventory.getStackInSlot(inSlot);
         if (in.isEmpty() || tank.getTankType() == Fluids.NONE) return;
@@ -244,7 +251,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         // 1.7 FluidTank.loadTank runs FluidLoaderInfinite first: the infinite barrel (any fluid) and the typed infinite
         // items fill a typed tank and are never consumed. This method's fillable branch reads getFirstFluidType, which
         // is NONE for the untyped barrel, so without this the barrel sat in the pad's fuel slot doing nothing.
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
             setChanged();
             return;
         }
@@ -311,7 +318,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
      * <p>Upstream asks only for {@link ItemMissileStandard#launchable}. The port adds a second half:
      * the missile must also have an <em>entity</em> in {@link #missiles} (the ABM is built directly). Every
      * upstream missile has one, so this is a guard against a missile item that loads happily, reports
-     * {@code STATE_READY} and then does nothing when fired — the rusted doomsday missile is refused by
+     * {@code STATE_READY} and then does nothing when fired. The rusted doomsday missile is refused by
      * {@code launchable}, as upstream.
      */
     public boolean isMissileValid(ItemStack stack) {
@@ -348,7 +355,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
 
         // Where the pad is in the world: on a moving sub-level (Create Aeronautics) its block sits far away, and the
         // missile's whole arc is laid out from its spawn point, so it must start where the pad is seen.
-        Vec3 launch = dev.golem.core.world.SubLevels.toWorld(level, worldPosition.getX() + 0.5D,
+        Vec3 launch = SubLevels.toWorld(level, worldPosition.getX() + 0.5D,
                 worldPosition.getY() + getLaunchOffset(), worldPosition.getZ() + 0.5D);
         Entity missile = createMissileEntity(level, stack.getItem(),
                 (float) launch.x, (float) launch.y, (float) launch.z, targetX, targetZ);
@@ -366,10 +373,10 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
      * Builds the flying entity for a missile item, or null if this build has none for it.
      *
      * <p>Static and item-keyed rather than a method on the pad, because the launch pad's screen needs
-     * the same answer to draw its preview and must not grow a second copy of the table — the ABM's
-     * special case in particular, which is built directly rather than through {@link #missiles}.
+     * the same answer to draw its preview and must not grow a second copy of the table. The ABM is a
+     * special case, built directly rather than through {@link #missiles}.
      */
-    public static @Nullable Entity createMissileEntity(Level level, net.minecraft.world.item.Item item,
+    public static @Nullable Entity createMissileEntity(Level level, Item item,
             float x, float y, float z, int targetX, int targetZ) {
         if (item == ModMissileItems.missile_anti_ballistic.get()) {
             EntityMissileAntiBallistic missile = new EntityMissileAntiBallistic(level);
@@ -393,11 +400,11 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
 
         level.addFreshEntity(missile);
         if (missile instanceof EntityMissileBaseNT ballistic) {
-            com.hbm.api.event.HbmEvents.missileLaunched(level, worldPosition, missile, ballistic.targetX, ballistic.targetZ, detonator);
+            HbmEvents.missileLaunched(level, worldPosition, missile, ballistic.targetX, ballistic.targetZ, detonator);
         } else {
             // an ABM (or an addon's own missile entity) has no target column; an ABM's is the entity it chases
             Entity aim = missile instanceof EntityMissileAntiBallistic abm && abm.tracking != null ? abm.tracking : missile;
-            com.hbm.api.event.HbmEvents.missileLaunched(level, worldPosition, missile,
+            HbmEvents.missileLaunched(level, worldPosition, missile,
                     (int) Math.floor(aim.getX()), (int) Math.floor(aim.getZ()), detonator);
         }
         level.playSound(null, worldPosition.getX() + 0.5, worldPosition.getY(), worldPosition.getZ() + 0.5,
@@ -433,7 +440,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         ItemStack designatorStack = inventory.getStackInSlot(1);
         if (!designatorStack.isEmpty() && designatorStack.getItem() instanceof IDesignatorItem designator) {
             // The designator measures range from the pad as the world sees it.
-            BlockPos padInWorld = dev.golem.core.world.SubLevels.toWorldBlock(level, worldPosition);
+            BlockPos padInWorld = SubLevels.toWorldBlock(level, worldPosition);
             if (!designator.isReady(level, designatorStack, padInWorld) && needsDesignator) {
                 return BombReturnCode.ERROR_MISSING_COMPONENT;
             }
@@ -507,8 +514,8 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         setChanged();
     }
 
-    private final it.unimi.dsi.fastutil.longs.LongOpenHashSet activatedBlocks =
-            new it.unimi.dsi.fastutil.longs.LongOpenHashSet(4);
+    private final LongOpenHashSet activatedBlocks =
+            new LongOpenHashSet(4);
 
     // --- GUI gauges ---
 
@@ -567,7 +574,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         ItemStack missile = inventory.getStackInSlot(0);
         buf.writeBoolean(!missile.isEmpty());
         if (!missile.isEmpty()) {
-            buf.writeVarInt(net.minecraft.core.registries.BuiltInRegistries.ITEM.getId(missile.getItem()));
+            buf.writeVarInt(BuiltInRegistries.ITEM.getId(missile.getItem()));
         }
     }
 
@@ -580,7 +587,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         tanks[1].deserialize(buf);
 
         this.toRender = buf.readBoolean()
-                ? new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(buf.readVarInt()))
+                ? new ItemStack(BuiltInRegistries.ITEM.byId(buf.readVarInt()))
                 : null;
     }
 

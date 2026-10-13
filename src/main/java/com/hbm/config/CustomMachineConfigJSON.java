@@ -9,6 +9,7 @@ import com.hbm.Constants;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.recipes.CustomMachineRecipes;
 import dev.golem.core.Ids;
+import dev.golem.core.platform.ConfigFiles;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -62,7 +63,7 @@ public final class CustomMachineConfigJSON {
 
     /** 1.7 {@code MainRegistry.configHbmDir}: {@code <config>/hbmConfig}, created on demand. */
     public static Path configHbmDir() {
-        Path dir = dev.golem.core.platform.ConfigFiles.configDir().resolve("hbmConfig");
+        Path dir = ConfigFiles.configDir().resolve("hbmConfig");
         try {
             Files.createDirectories(dir);
         } catch (IOException e) {
@@ -302,7 +303,7 @@ public final class CustomMachineConfigJSON {
     /**
      * The configuration a controller item names, or null. 1.7 kept {@code niceList} index + 100 in the item damage; the
      * port saves the configuration's {@code unlocalizedName} ({@code hbm:custom_machine}), which a config edit cannot
-     * shift onto another machine (History §19es-itemvariant).
+     * shift onto another machine.
      */
     public static @Nullable MachineConfiguration byName(@Nullable String unlocalizedName) {
         return unlocalizedName == null ? null : customMachines.get(unlocalizedName);

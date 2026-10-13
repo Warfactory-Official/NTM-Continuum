@@ -1,6 +1,8 @@
 package com.hbm.inventory.recipes.loader;
 
+import com.hbm.blocks.machine.MachineStirling;
 import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.items.ModDataComponents;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
@@ -8,11 +10,18 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.world.ItemStacks;
+import java.util.AbstractList;
+import java.util.AbstractSet;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -37,7 +46,7 @@ public final class TableCodecs {
     private record Cog(Item item, boolean hasCog) {}
 
     private static final MapCodec<Cog> COG = RecordCodecBuilder.mapCodec(i -> i.group(
-            dev.golem.core.world.ItemStacks.itemCodec().fieldOf("item").forGetter(Cog::item),
+            ItemStacks.itemCodec().fieldOf("item").forGetter(Cog::item),
             Codec.BOOL.fieldOf("has_cog").forGetter(Cog::hasCog)
     ).apply(i, Cog::new));
 
@@ -84,19 +93,19 @@ public final class TableCodecs {
         @Override
         public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
             return !stack.isEmpty() && stack.getItem() == item
-                    && com.hbm.blocks.machine.MachineStirling.hasCog(stack) == hasCog
+                    && MachineStirling.hasCog(stack) == hasCog
                     && (ignoreSize || stack.getCount() >= stacksize);
         }
 
         @Override
         public List<ItemStack> getDisplayStacks() {
             ItemStack stack = new ItemStack(item, stacksize);
-            if (!hasCog) com.hbm.items.ModDataComponents.HAS_COG.set(stack, false);
+            if (!hasCog) ModDataComponents.HAS_COG.set(stack, false);
             return List.of(stack);
         }
     }
 
-    // ---- 1.7 config switches ----
+    // 1.7 config switches
 
     /**
      * A row's {@code "requires"}: the 1.7 config branches it sat in ({@link RecipeConditions}: {@code enable_528},
@@ -114,7 +123,7 @@ public final class TableCodecs {
         return requires.isEmpty() || RecipeConditions.holds(requires.toArray(String[]::new), "a table row");
     }
 
-    // ---- order ----
+    // Order
 
     /** The {@code "order"} default: rows without one come after every ordered row, by recipe id. */
     public static final int LAST = Integer.MAX_VALUE;
@@ -129,14 +138,14 @@ public final class TableCodecs {
         return sorted;
     }
 
-    // ---- read-only views ----
+    // Read-only views
 
     /**
      * A read-only list that always shows {@code source}'s current rows: a table's public {@code recipes} list keeps its
      * shape for the machines, GUIs and JEI that read it, while the rows behind it are rebuilt on every reload.
      */
-    public static <T> List<T> view(java.util.function.Supplier<List<T>> source) {
-        return new java.util.AbstractList<>() {
+    public static <T> List<T> view(Supplier<List<T>> source) {
+        return new AbstractList<>() {
             @Override
             public T get(int index) {
                 return source.get().get(index);
@@ -150,11 +159,11 @@ public final class TableCodecs {
     }
 
     /** A read-only set that always shows {@code source}'s current members (see {@link #view(java.util.function.Supplier)}). */
-    public static <T> java.util.Set<T> setView(java.util.function.Supplier<java.util.Set<T>> source) {
-        return new java.util.AbstractSet<>() {
+    public static <T> Set<T> setView(Supplier<Set<T>> source) {
+        return new AbstractSet<>() {
             @Override
-            public java.util.Iterator<T> iterator() {
-                return java.util.Collections.unmodifiableSet(source.get()).iterator();
+            public Iterator<T> iterator() {
+                return Collections.unmodifiableSet(source.get()).iterator();
             }
 
             @Override

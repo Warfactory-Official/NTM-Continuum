@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.machine.storage.TileEntitySoyuzCapsule;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -54,7 +55,7 @@ public class SoyuzCapsule extends CompatBlock implements TickingBlock {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof TileEntitySoyuzCapsule capsule) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, capsule, pos);
+            Menus.openWithPos(serverPlayer, capsule, pos);
         }
         return InteractionResult.SUCCESS;
     }

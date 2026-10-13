@@ -2,6 +2,7 @@ package com.hbm.entity.mob;
 
 import com.hbm.entity.effect.EntityMist;
 import com.hbm.inventory.fluid.Fluids;
+import dev.golem.core.world.Compat;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
@@ -45,7 +46,7 @@ public class EntityCreeperPhosgene extends EntityCreeperBase {
 
         int looting = 0;
         if (source.getEntity() instanceof LivingEntity attacker) {
-            looting = dev.golem.core.world.Compat.lootingLevel(level, attacker);
+            looting = Compat.lootingLevel(level, attacker);
         }
 
         int amount = random.nextInt(3) + (looting > 0 ? random.nextInt(looting + 1) : 0);

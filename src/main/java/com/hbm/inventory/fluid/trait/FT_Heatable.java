@@ -1,6 +1,7 @@
 package com.hbm.inventory.fluid.trait;
 
 import com.hbm.inventory.fluid.FluidType;
+import java.util.Collections;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
@@ -28,10 +29,10 @@ public class FT_Heatable {
     public double getEfficiency(HeatingType type) { return efficiency.getOrDefault(type, 0.0D); }
 
     /** The steps in the order they were added. */
-    public List<HeatingStep> steps() { return java.util.Collections.unmodifiableList(steps); }
+    public List<HeatingStep> steps() { return Collections.unmodifiableList(steps); }
 
     /** Every heating type with its efficiency. */
-    public Map<HeatingType, Double> getEfficiencies() { return java.util.Collections.unmodifiableMap(efficiency); }
+    public Map<HeatingType, Double> getEfficiencies() { return Collections.unmodifiableMap(efficiency); }
     public HeatingStep getFirstStep() { return steps.get(0); }
 
     /**

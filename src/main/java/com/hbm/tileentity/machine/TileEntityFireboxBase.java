@@ -1,11 +1,12 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.environment.Environment;
+import com.hbm.items.ItemEnums;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.modules.ModuleBurnTime;
+import com.hbm.module.ModuleBurnTime;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
@@ -18,6 +19,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
 import dev.golem.core.world.Compat;
 import net.minecraft.world.item.ItemStack;
@@ -135,12 +137,12 @@ public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting i
 
     /** Client: the door swing + flame particles at the fire door while burning (the old client update). */
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFireboxBase te) {
-        // Door swing: eases open while someone has the GUI open, eases shut otherwise (1.12.2 verbatim).
+        // Door swing: eases open while someone has the GUI open, eases shut otherwise (same as 1.12.2).
         te.prevDoorAngle = te.doorAngle;
         float swingSpeed = (te.doorAngle / 10F) + 3F;
         if (te.playersUsing > 0) te.doorAngle += swingSpeed;
         else te.doorAngle -= swingSpeed;
-        te.doorAngle = net.minecraft.util.Mth.clamp(te.doorAngle, 0F, 135F);
+        te.doorAngle = Mth.clamp(te.doorAngle, 0F, 135F);
 
         if (te.wasOn && TickPhase.every(level, pos, 5)) {
             ForgeDirection dir = MachineCore.facing(state);
@@ -155,17 +157,17 @@ public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting i
     }
 
     /** Classifies fuel for the ash stream used by the firebox and brick furnace. */
-    public static com.hbm.items.ItemEnums.EnumAshType getAshFromFuel(ItemStack stack) {
-        if (stack.isEmpty()) return com.hbm.items.ItemEnums.EnumAshType.MISC;
+    public static ItemEnums.EnumAshType getAshFromFuel(ItemStack stack) {
+        if (stack.isEmpty()) return ItemEnums.EnumAshType.MISC;
         String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
         if (stack.is(ItemTags.LOGS) || stack.is(ItemTags.PLANKS) || stack.is(ItemTags.SAPLINGS)
                 || path.contains("wood")) {
-            return com.hbm.items.ItemEnums.EnumAshType.WOOD;
+            return ItemEnums.EnumAshType.WOOD;
         }
         if (path.contains("coal") || path.contains("coke") || path.contains("lignite")) {
-            return com.hbm.items.ItemEnums.EnumAshType.COAL;
+            return ItemEnums.EnumAshType.COAL;
         }
-        return com.hbm.items.ItemEnums.EnumAshType.MISC;
+        return ItemEnums.EnumAshType.MISC;
     }
 
     public abstract ModuleBurnTime getModule();
@@ -208,9 +210,9 @@ public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting i
         this.heatEnergy = Math.max(0, this.heatEnergy - heat);
     }
 
-    // --- sync + persistence (1.12.2 keys) ---
+    // Sync + persistence (1.12.2 keys)
 
-    /** Called from the menu (server side) when a player opens/closes the GUI — drives the door. */
+    /** Called from the menu (server side) when a player opens/closes the GUI, which drives the door. */
     public void setPlayersUsing(int count) {
         this.playersUsing = Math.max(0, count);
     }

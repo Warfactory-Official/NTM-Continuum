@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.hbm.Constants;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.LegacyMetaIds;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModFluidItems;
 import com.hbm.items.ModMachineItems;
@@ -208,7 +209,7 @@ public final class QMAWLoader {
             Identifier id = Ids.parse(element.getAsJsonArray().get(0).getAsString());
             if (!id.getNamespace().equals("hbm")) return List.of();
             List<ItemStack> out = new ArrayList<>();
-            for (String member : com.hbm.items.LegacyMetaIds.members(id.getPath())) {
+            for (String member : LegacyMetaIds.members(id.getPath())) {
                 ItemStack stack = stack(Ids.parse(member), 1);
                 if (stack != null) out.add(stack);
             }
@@ -294,9 +295,9 @@ public final class QMAWLoader {
 
     private static Identifier flattenedId(Identifier oldId, int metadata) {
         String path = oldId.getPath();
-        // the metadata families that are one item per type (History §19es-itemvariant)
-        if (oldId.getNamespace().equals("hbm") && com.hbm.items.LegacyMetaIds.isSplit(path)) {
-            String split = com.hbm.items.LegacyMetaIds.lookup(path, metadata);
+        // the metadata families that are one item per type
+        if (oldId.getNamespace().equals("hbm") && LegacyMetaIds.isSplit(path)) {
+            String split = LegacyMetaIds.lookup(path, metadata);
             return split == null ? null : Ids.parse(split);
         }
         if (oldId.equals(Ids.of("hbm", "ammo_standard"))) {

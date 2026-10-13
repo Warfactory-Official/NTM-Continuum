@@ -15,7 +15,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-/** The small caster block (1.12.2 {@code foundry_mold}) — half-height, takes size-0 molds. */
+/** The small caster block (1.12.2 {@code foundry_mold}), half-height, takes size-0 molds. */
 public class FoundryMold extends FoundryCastingBase {
 
     private static final VoxelShape SHAPE = Shapes.box(0, 0, 0, 1, 0.5D, 1);

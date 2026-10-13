@@ -3,6 +3,7 @@ package com.hbm.entity.explosive;
 import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.registry.DeferredRegister;
+import dev.golem.core.registry.Entities;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -17,8 +18,8 @@ public final class ModExplosiveEntities {
     private static final Reg REG = Reg.of(ENTITY_TYPES);
 
     public static final RegistryObject<EntityType<EntityPrimedExplosive>> PRIMED_EXPLOSIVE =
-            REG.entity("entity_ntm_tnt_primed", key -> dev.golem.core.registry.Entities.build(
-                    dev.golem.core.registry.Entities.trackDeltas(
+            REG.entity("entity_ntm_tnt_primed", key -> Entities.build(
+                    Entities.trackDeltas(
                             EntityType.Builder.<EntityPrimedExplosive>of(EntityPrimedExplosive::new, MobCategory.MISC)
                                     .fireImmune()
                                     .sized(0.98F, 0.98F)

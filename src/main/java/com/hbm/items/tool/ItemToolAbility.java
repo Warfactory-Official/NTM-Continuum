@@ -2,6 +2,7 @@ package com.hbm.items.tool;
 
 import com.hbm.Constants;
 import com.hbm.api.item.IDepthRockTool;
+import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.handler.ability.AvailableAbilities;
 import com.hbm.handler.ability.IBaseAbility;
 import com.hbm.handler.ability.IToolAreaAbility;
@@ -14,6 +15,7 @@ import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.world.CompatToolItem;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.Harvests;
+import dev.golem.core.world.HeldItemState;
 import dev.golem.core.world.ToolTier;
 import dev.golem.core.world.Tools;
 import net.minecraft.ChatFormatting;
@@ -46,8 +48,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * 1.7 {@code ItemToolAbility}: a tool whose selected preset rewrites what mining does — which blocks come
- * with the one being mined (area abilities) and what they turn into (harvest abilities) — plus weapon
+ * 1.7 {@code ItemToolAbility}: a tool whose selected preset rewrites what mining does: which blocks come
+ * with the one being mined (area abilities) and what they turn into (harvest abilities), plus weapon
  * abilities on hit.
  *
  * <p>1.7 took the break over in {@code onBlockStartBreak}; the port uses Core's
@@ -55,7 +57,7 @@ import java.util.List;
  * at the same point of the server's destroy sequence and likewise stops the vanilla break when it answers
  * false. Presets live in the stack under {@link #ABILITY_CONFIG}, in 1.7's NBT layout.
  */
-public class ItemToolAbility extends CompatToolItem implements IDepthRockTool, dev.golem.core.world.HeldItemState {
+public class ItemToolAbility extends CompatToolItem implements IDepthRockTool, HeldItemState {
 
     /** 1.7 stored {@code ability} and {@code abilityPresets} in the stack tag; this compound holds both. */
     public static final GolemComponent<CompoundTag> ABILITY_CONFIG =
@@ -163,8 +165,8 @@ public class ItemToolAbility extends CompatToolItem implements IDepthRockTool, d
 
         // 1.7: keyholes are neither processable nor silk-touchable, so they always take vanilla's own break -
         // breakExtraBlock refuses the Strange Stone, which would otherwise desync the client's removal
-        if (state.is(com.hbm.blocks.ModDungeonBlocks.stone_keyhole.get())
-                || state.is(com.hbm.blocks.ModDungeonBlocks.stone_keyhole_meta.get())) return true;
+        if (state.is(ModDungeonBlocks.stone_keyhole.get())
+                || state.is(ModDungeonBlocks.stone_keyhole_meta.get())) return true;
         if ((canHarvestBlock(state, stack) || canShearBlock(state, stack)) && canOperate(stack)) {
             Configuration config = getConfiguration(stack);
             ToolPreset preset = config.getActivePreset();
@@ -222,7 +224,7 @@ public class ItemToolAbility extends CompatToolItem implements IDepthRockTool, d
     }
 
     /**
-     * 1.7 {@code canShearBlock}: a shears tool claims whatever {@code IShearable} covered — leaves, vines,
+     * 1.7 {@code canShearBlock}: a shears tool claims whatever {@code IShearable} covered: leaves, vines,
      * grass, wool, webs. Vanilla shears' own speed answers the same question on every target.
      */
     public boolean canShearBlock(BlockState state, ItemStack stack) {
@@ -260,7 +262,7 @@ public class ItemToolAbility extends CompatToolItem implements IDepthRockTool, d
 
         if (!(canHarvestBlock(state, stack) || canShearBlock(state, stack))
                 || (state.getDestroySpeed(world, pos) == -1.0F && state.getDestroyProgress(player, world, pos) == 0.0F)
-                || state.is(com.hbm.blocks.ModDungeonBlocks.stone_keyhole.get()))
+                || state.is(ModDungeonBlocks.stone_keyhole.get()))
             return;
 
         BlockState refState = world.getBlockState(ref);

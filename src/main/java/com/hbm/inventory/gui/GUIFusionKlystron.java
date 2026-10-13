@@ -5,7 +5,10 @@ import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionKlystron;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionTorus;
 import com.hbm.util.BobMathUtil;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.KeyInput;
 import dev.golem.core.net.GolemNetwork;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -23,10 +26,10 @@ import java.util.Optional;
  * much per tick, if its power and air can sustain it. Three lights along the bottom say which of those
  * two supplies is the limiting one, and whether the target is actually being met.
  */
-public class GUIFusionKlystron extends dev.golem.core.gui.CompatContainerScreen<ContainerFusionKlystron> {
+public class GUIFusionKlystron extends CompatContainerScreen<ContainerFusionKlystron> {
 
     private static final Identifier TEXTURE =
-            dev.golem.core.Ids.of("hbm", "textures/gui/reactors/gui_fusion_klystron.png");
+            Ids.of("hbm", "textures/gui/reactors/gui_fusion_klystron.png");
 
     private EditBox field;
     /** Guards the responder against the normalisation below re-entering it. */
@@ -130,7 +133,7 @@ public class GUIFusionKlystron extends dev.golem.core.gui.CompatContainerScreen<
     }
 
     @Override
-    protected boolean keyPressed(dev.golem.core.gui.KeyInput event) {
+    protected boolean keyPressed(KeyInput event) {
         // While the field has focus let it consume typing - including the inventory key ('e'), which
         // AbstractContainerScreen would otherwise take as "close the menu" mid-number. Escape still closes.
         if (this.field != null && this.field.isFocused() && event.key() != 256 && event.key() != 258) {

@@ -69,7 +69,7 @@ public final class PollutionHandler {
      */
     public static @Nullable BlockPos targetCoords = null;
 
-    // ------------------------------------------------------------------ utility
+    // Utility
 
     public static void incrementPollution(Level world, BlockPos pos, PollutionType type, float amount) {
         if (!RadiationConfig.enablePollution || pos == null) return;
@@ -113,7 +113,7 @@ public final class PollutionHandler {
         return ppw.pollution.get(PollutionSavedData.region(pos.getX(), pos.getZ()));
     }
 
-    // ------------------------------------------------------------------ the loop
+    // The loop
 
     public static void updateSystem(MinecraftServer server) {
         if (!RadiationConfig.enablePollution) return;
@@ -229,10 +229,10 @@ public final class PollutionHandler {
         }
     }
 
-    // ------------------------------------------------------------------ rampant mode
+    // Rampant mode
 
     // 1.7 drives these from PlayerSleepInBedEvent and WorldEvent.PotentialSpawns; the port from Core Sleeps and
-    // Spawns.onPotentialSpawns (ModEventHandlerHooks, History §19ek-hooks). Both gates default to false (rampant mode).
+    // Spawns.onPotentialSpawns (ModEventHandlerHooks). Both gates default to false (rampant mode).
 
     public static void rampantTargetSetter(BlockPos bedPos) {
         if (MobConfig.rampantGlyphidGuidance) targetCoords = bedPos.immutable();
@@ -264,7 +264,7 @@ public final class PollutionHandler {
                 && !level.containsAnyLiquid(glyphid.getBoundingBox());
     }
 
-    // ------------------------------------------------------------------ mob effects
+    // Mob effects
 
     /**
      * 1.7 {@code decorateMob}: a hostile spawning in soot comes out tougher.

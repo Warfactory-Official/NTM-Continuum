@@ -2,30 +2,64 @@ package com.hbm.world.gen.nbt;
 
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockWand;
+import com.hbm.blocks.generic.BlockWandLogic;
+import com.hbm.blocks.generic.BlockWandLoot;
 import com.hbm.blocks.generic.BlockWandTandem.TileEntityWandTandem;
 import com.hbm.blocks.generic.ModStructureWandBlocks;
+import com.hbm.blocks.generic.Waterlogging;
+import com.hbm.blocks.multiblock.BlockMultiblockCell;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.config.ServerConfig;
+import com.hbm.config.StructureConfig;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.world.gen.LegacyBiomes;
+import com.hbm.world.gen.NTMStructureDeclarations;
+import com.hbm.world.gen.NTMWorldGenerator;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.Ids;
 import dev.golem.core.data.NbtFiles;
 import dev.golem.core.data.Tags;
 import dev.golem.core.platform.ConfigFiles;
 import dev.golem.core.registry.BlockEntities;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.StructureManager;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.FlatLevelSource;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructurePiece;
+import net.minecraft.world.level.levelgen.structure.StructureType;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -59,7 +93,7 @@ import java.util.Set;
  * structure system: a {@code hbm:nbt} structure per registered {@link SpawnCondition}, all in one {@code random_spread}
  * structure set that reproduces 1.7's region pick (see {@link GenStructure}). {@code com.hbm.world.gen.NTMWorldGenerator}
  * registers the spawns; {@code NTMStructureDeclarations} writes the structure, set and biome-tag JSON. Biome block
- * selectors ({@code blockTable}/{@code platform}) are not ported yet (only the meteor dungeon uses them).
+ * selectors ({@code blockTable}/{@code platform}) are not ported (only the meteor dungeon uses them).
  *
  * <p>1.7 oddities kept: a block below y = 1 (world bottom + 1 here) is skipped; the centre offset uses the rotated
  * footprint; {@code wipeExisting} writes air only where the file has no entry. 1.7 tile-entity NBT is carried into the
@@ -138,9 +172,7 @@ public class NBTStructure {
         return name == null ? null : namedMap.get(name);
     }
 
-    // -------------------------------------------------------------------------------------------------------------
     // saving
-    // -------------------------------------------------------------------------------------------------------------
 
     /**
      * Saves a selected area into an NBT structure. {@code exclude} holds states to leave out; a {@link BlockWand}
@@ -234,9 +266,7 @@ public class NBTStructure {
         return list;
     }
 
-    // -------------------------------------------------------------------------------------------------------------
     // loading
-    // -------------------------------------------------------------------------------------------------------------
 
     private void loadStructure(InputStream inputStream) {
         try {
@@ -374,9 +404,7 @@ public class NBTStructure {
         }
     }
 
-    // -------------------------------------------------------------------------------------------------------------
     // building
-    // -------------------------------------------------------------------------------------------------------------
 
     public void build(Level level, int x, int y, int z) {
         build(level, x, y, z, 0, true, false);
@@ -470,7 +498,7 @@ public class NBTStructure {
                 int rx = rotateX(bx, bz, coordBaseMode) + totalBounds.minX();
                 int rz = rotateZ(bx, bz, coordBaseMode) + totalBounds.minZ();
                 // 1.7 getTopSolidOrLiquidBlock, despite its name, skips liquids (water does not block movement) and
-                // leaves; a neighbour's canopy may already overhang this column at placement time (History §19ej-6)
+                // leaves; a neighbour's canopy may already overhang this column at placement time
                 int oy = piece.conformToTerrain
                         ? com.hbm.world.gen.component.Component.topSolid(level, rx, rz) + piece.heightOffset
                         : totalBounds.minY();
@@ -538,12 +566,12 @@ public class NBTStructure {
     }
 
     /** The 1.7 coordBaseMode as a vanilla rotation: 1 turns +X into +Z, i.e. 90 degrees clockwise seen from above. */
-    private static net.minecraft.world.level.block.Rotation rotation(int coordBaseMode) {
+    private static Rotation rotation(int coordBaseMode) {
         return switch (coordBaseMode) {
-            case 1 -> net.minecraft.world.level.block.Rotation.CLOCKWISE_90;
-            case 2 -> net.minecraft.world.level.block.Rotation.CLOCKWISE_180;
-            case 3 -> net.minecraft.world.level.block.Rotation.COUNTERCLOCKWISE_90;
-            default -> net.minecraft.world.level.block.Rotation.NONE;
+            case 1 -> Rotation.CLOCKWISE_90;
+            case 2 -> Rotation.CLOCKWISE_180;
+            case 3 -> Rotation.COUNTERCLOCKWISE_90;
+            default -> Rotation.NONE;
         };
     }
 
@@ -575,7 +603,7 @@ public class NBTStructure {
             if (entry.modern != null) {
                 state = entry.modern.rotate(rotation(coordBaseMode));
                 // a saved multiblock: the core rebuilds its cells (and their index), the saved cells are skipped
-                if (state.getBlock() instanceof com.hbm.blocks.multiblock.BlockMultiblockCell) return;
+                if (state.getBlock() instanceof BlockMultiblockCell) return;
                 if (state.getBlock() instanceof BlockMultiblockCore multiblock) {
                     if (multiblock.isCellState(state)) return;
                     core = true;
@@ -607,7 +635,7 @@ public class NBTStructure {
             // 1.7: with STRUCTURE_DEBUG on, palette air is shown as wand_air
             if (debug && state.isAir()) state = ModStructureWandBlocks.wand_air.get().defaultBlockState();
 
-            level.setBlock(pos, com.hbm.blocks.generic.Waterlogging.inWorld(state, level, pos), Block.UPDATE_CLIENTS);
+            level.setBlock(pos, Waterlogging.inWorld(state, level, pos), Block.UPDATE_CLIENTS);
             placed.add(pos);
             if (core) cores.add(pos);
 
@@ -698,7 +726,7 @@ public class NBTStructure {
         }
 
         static Entry state(BlockState state) {
-            return new Entry(String.valueOf(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock())), 0, state, null);
+            return new Entry(String.valueOf(BuiltInRegistries.BLOCK.getKey(state.getBlock())), 0, state, null);
         }
 
         Entry withNbt(CompoundTag nbt) {
@@ -736,9 +764,7 @@ public class NBTStructure {
         }
     }
 
-    // -------------------------------------------------------------------------------------------------------------
     // world generation (1.7 Component / Start / GenStructure)
-    // -------------------------------------------------------------------------------------------------------------
 
     /**
      * 1.7 {@code Component}: one placed {@link JigsawPiece} of a generated structure, as a vanilla structure piece.
@@ -749,7 +775,7 @@ public class NBTStructure {
      * 1.7 one (not centred, rotated footprint). {@link #postProcess} builds the part inside the chunk being generated,
      * exactly like 1.7's {@code addComponentParts} with the populating box.
      */
-    public static class Component extends net.minecraft.world.level.levelgen.structure.StructurePiece {
+    public static class Component extends StructurePiece {
 
         @Nullable JigsawPiece piece;
 
@@ -769,7 +795,7 @@ public class NBTStructure {
         @Nullable private JigsawConnection connectedFrom;
 
         public Component(SpawnCondition spawn, JigsawPiece piece, int x, int y, int z, int coordBaseMode) {
-            super(com.hbm.world.gen.NTMWorldGenerator.NBT_COMPONENT.get(), 0, box(piece, x, y, z, coordBaseMode));
+            super(NTMWorldGenerator.NBT_COMPONENT.get(), 0, box(piece, x, y, z, coordBaseMode));
             this.piece = piece;
             this.coordBaseMode = coordBaseMode;
             this.minHeight = spawn.minHeight;
@@ -779,15 +805,15 @@ public class NBTStructure {
 
         /** A start that claims its region and places nothing: 1.7's null weights ({@code registerNullWeight}). */
         private Component(String name, BlockPos pos) {
-            super(com.hbm.world.gen.NTMWorldGenerator.NBT_COMPONENT.get(), 0,
+            super(NTMWorldGenerator.NBT_COMPONENT.get(), 0,
                     new BoundingBox(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ()));
             this.piece = null;
             this.structureName = name;
             this.heightUpdated = true;
         }
 
-        public Component(net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext context, CompoundTag tag) {
-            super(com.hbm.world.gen.NTMWorldGenerator.NBT_COMPONENT.get(), tag);
+        public Component(StructurePieceSerializationContext context, CompoundTag tag) {
+            super(NTMWorldGenerator.NBT_COMPONENT.get(), tag);
             piece = JigsawPiece.jigsawMap.get(Tags.getStringOr(tag, "piece", "NULL"));
             minHeight = Tags.getIntOr(tag, "min", 1);
             maxHeight = Tags.getIntOr(tag, "max", 128);
@@ -809,7 +835,7 @@ public class NBTStructure {
         public String getStructureName() { return structureName; }
 
         @Override
-        protected void addAdditionalSaveData(net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext context, CompoundTag tag) {
+        protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
             tag.putString("piece", piece != null ? piece.name : "NULL");
             tag.putInt("min", minHeight);
             tag.putInt("max", maxHeight);
@@ -819,9 +845,9 @@ public class NBTStructure {
         }
 
         @Override
-        public void postProcess(net.minecraft.world.level.WorldGenLevel level, net.minecraft.world.level.StructureManager structureManager,
-                                net.minecraft.world.level.chunk.ChunkGenerator generator, net.minecraft.util.RandomSource random,
-                                BoundingBox chunkBB, net.minecraft.world.level.ChunkPos chunkPos, BlockPos pivot) {
+        public void postProcess(WorldGenLevel level, StructureManager structureManager,
+                                ChunkGenerator generator, RandomSource random,
+                                BoundingBox chunkBB, ChunkPos chunkPos, BlockPos pivot) {
             if (piece == null) return;
             piece.structure.build(level, piece, boundingBox, chunkBB, coordBaseMode, structureName);
         }
@@ -837,12 +863,12 @@ public class NBTStructure {
          * neighbour-shape pass and loot replacement legitimately change states). Returns {matched, total}. A
          * conforming piece has a per-column height, so each column is matched at its best vertical offset.
          */
-        public int[] verify(net.minecraft.world.level.LevelReader level) {
+        public int[] verify(LevelReader level) {
             return verify(level, null);
         }
 
         /** {@link #verify(net.minecraft.world.level.LevelReader)}, counting {@code expected->found} misses (non-conforming pieces). */
-        public int[] verify(net.minecraft.world.level.LevelReader level, @Nullable Map<String, Integer> misses) {
+        public int[] verify(LevelReader level, @Nullable Map<String, Integer> misses) {
             if (piece == null) return new int[] {0, 0};
             NBTStructure s = piece.structure;
             int matched = 0, total = 0;
@@ -866,7 +892,7 @@ public class NBTStructure {
                             block = r.state().getBlock();
                         }
                         if (block.defaultBlockState().isAir() || block instanceof BlockWand || LegacyStructurePalette.isJigsaw(e.name)
-                                || block instanceof com.hbm.blocks.generic.BlockWandLoot || block instanceof com.hbm.blocks.generic.BlockWandLogic) continue;
+                                || block instanceof BlockWandLoot || block instanceof BlockWandLogic) continue;
                         // terrain the structure carries (the lighthouse's rock): later ore/disk features replace it, as 1.7's did
                         if (block == Blocks.STONE || block == Blocks.DIRT || block == Blocks.GRAVEL) continue;
                         // never placed (1.7 skipped y < 1): the superflat rule does not clamp, so a sunk piece reaches the floor
@@ -896,8 +922,8 @@ public class NBTStructure {
                             pos.set(rx, boundingBox.minY() + by, rz);
                             Block found = level.getBlockState(pos).getBlock();
                             if (found != expected[by]) {
-                                misses.merge(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(expected[by]).getPath() + "->"
-                                        + net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(found).getPath(), 1, Integer::sum);
+                                misses.merge(BuiltInRegistries.BLOCK.getKey(expected[by]).getPath() + "->"
+                                        + BuiltInRegistries.BLOCK.getKey(found).getPath(), 1, Integer::sum);
                             }
                         }
                     }
@@ -929,7 +955,7 @@ public class NBTStructure {
             };
         }
 
-        private int getNextCoordBase(JigsawConnection fromConnection, JigsawConnection toConnection, net.minecraft.util.RandomSource rand) {
+        private int getNextCoordBase(JigsawConnection fromConnection, JigsawConnection toConnection, RandomSource rand) {
             if (fromConnection.dir == ForgeDirection.DOWN || fromConnection.dir == ForgeDirection.UP) {
                 if (fromConnection.isRollable) return rand.nextInt(4);
                 return coordBaseMode;
@@ -979,8 +1005,8 @@ public class NBTStructure {
 
         private Start() {}
 
-        public static void assemble(net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder builder,
-                                    net.minecraft.world.level.levelgen.structure.Structure.GenerationContext context, SpawnCondition spawn) {
+        public static void assemble(StructurePiecesBuilder builder,
+                                    Structure.GenerationContext context, SpawnCondition spawn) {
             assemble(builder, context, spawn, context.random());
         }
 
@@ -991,9 +1017,9 @@ public class NBTStructure {
          * the start with the random its region pick had just drawn from; an addon whose structure type repeats that pick
          * (NTM: Space's planet structures) hands that random on, so the pieces, rotations and pools are 1.7's.
          */
-        public static void assemble(net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder builder,
-                                    net.minecraft.world.level.levelgen.structure.Structure.GenerationContext context, SpawnCondition spawn,
-                                    net.minecraft.util.RandomSource rand) {
+        public static void assemble(StructurePiecesBuilder builder,
+                                    Structure.GenerationContext context, SpawnCondition spawn,
+                                    RandomSource rand) {
             int x = context.chunkPos().getMinBlockX();
             int z = context.chunkPos().getMinBlockZ();
 
@@ -1012,12 +1038,12 @@ public class NBTStructure {
         }
 
         /** The marker start of a null weight: valid (so the region is taken), empty. */
-        static void claim(net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder builder, String name, BlockPos pos) {
+        static void claim(StructurePiecesBuilder builder, String name, BlockPos pos) {
             builder.addPiece(new Component(name, pos));
         }
 
-        private static void grow(List<Component> components, Component startComponent, SpawnCondition spawn, net.minecraft.util.RandomSource rand,
-                                 net.minecraft.world.level.ChunkPos origin) {
+        private static void grow(List<Component> components, Component startComponent, SpawnCondition spawn, RandomSource rand,
+                                 ChunkPos origin) {
             List<Component> queuedComponents = new ArrayList<>();
             queuedComponents.add(startComponent);
 
@@ -1041,7 +1067,7 @@ public class NBTStructure {
                 int distance = getDistanceTo(fromComponent.getBoundingBox(), origin);
 
                 // Only generate fallback pieces once we hit our size limit, unless we have a required component
-                // Note that there is a HARD limit of 1024 pieces to prevent infinite generation
+                // There is a HARD limit of 1024 pieces to prevent infinite generation
                 boolean fallbacksOnly = requiredPieces.isEmpty() && (components.size() >= spawn.sizeLimit || distance >= spawn.rangeLimit) || components.size() > 1024;
 
                 for (List<JigsawConnection> unshuffledList : fromComponent.piece.structure.fromConnections) {
@@ -1101,7 +1127,7 @@ public class NBTStructure {
         }
 
         /** {@code Collections.shuffle} (Fisher-Yates from the end) over a world-generation random. */
-        private static <T> void shuffle(List<T> list, net.minecraft.util.RandomSource rand) {
+        private static <T> void shuffle(List<T> list, RandomSource rand) {
             for (int i = list.size(); i > 1; i--) {
                 int j = rand.nextInt(i);
                 T t = list.get(i - 1);
@@ -1142,7 +1168,7 @@ public class NBTStructure {
             return requiredPieces;
         }
 
-        private static @Nullable Component buildNextComponent(List<Component> components, net.minecraft.util.RandomSource rand, SpawnCondition spawn,
+        private static @Nullable Component buildNextComponent(List<Component> components, RandomSource rand, SpawnCondition spawn,
                                                               @Nullable JigsawPool pool, Component fromComponent, JigsawConnection fromConnection) {
             JigsawPiece nextPiece = pool == null ? null : pool.get(rand);
             if (nextPiece == null) {
@@ -1184,7 +1210,7 @@ public class NBTStructure {
             return next;
         }
 
-        private static int getDistanceTo(BoundingBox box, net.minecraft.world.level.ChunkPos origin) {
+        private static int getDistanceTo(BoundingBox box, ChunkPos origin) {
             // 1.7 StructureBoundingBox.getCenterX/Z: min + (max - min + 1) / 2
             int x = box.minX() + (box.maxX() - box.minX() + 1) / 2;
             int z = box.minZ() + (box.maxZ() - box.minZ() + 1) / 2;
@@ -1192,8 +1218,8 @@ public class NBTStructure {
             return Math.max(Math.abs(x - origin.getMinBlockX()), Math.abs(z - origin.getMinBlockZ()));
         }
 
-        private static void setHeights(List<Component> components, net.minecraft.world.level.levelgen.structure.Structure.GenerationContext context) {
-            boolean isFlatWorld = context.chunkGenerator() instanceof net.minecraft.world.level.levelgen.FlatLevelSource;
+        private static void setHeights(List<Component> components, Structure.GenerationContext context) {
+            boolean isFlatWorld = context.chunkGenerator() instanceof FlatLevelSource;
             int x = context.chunkPos().getMinBlockX() + 8;
             int z = context.chunkPos().getMinBlockZ() + 8;
             int chunkAverage = averageHeight(context, x, z, x + 15, z + 15);
@@ -1222,7 +1248,7 @@ public class NBTStructure {
         }
 
         /** 1.7 {@code getAverageHeight}: the mean {@code getTopSolidOrLiquidBlock} over a box, 64 if the box is empty. */
-        static int averageHeight(net.minecraft.world.level.levelgen.structure.Structure.GenerationContext context, int minX, int minZ, int maxX, int maxZ) {
+        static int averageHeight(Structure.GenerationContext context, int minX, int minZ, int maxX, int maxZ) {
             int total = 0;
             int iterations = 0;
 
@@ -1256,11 +1282,11 @@ public class NBTStructure {
      * <p>The biome is sampled where 1.7 read it: the start chunk's centre column, at the surface
      * ({@code WORLD_SURFACE_WG}, so an ocean is sampled at its water, not in a cave biome below it).
      */
-    public static class GenStructure extends net.minecraft.world.level.levelgen.structure.Structure {
+    public static class GenStructure extends Structure {
 
-        public static final com.mojang.serialization.MapCodec<GenStructure> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.mapCodec(i -> i.group(
+        public static final MapCodec<GenStructure> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 settingsCodec(i),
-                com.mojang.serialization.Codec.STRING.fieldOf("spawn").forGetter(GenStructure::spawnName)
+                Codec.STRING.fieldOf("spawn").forGetter(GenStructure::spawnName)
         ).apply(i, GenStructure::new));
 
         private static final Set<String> MISSING = new HashSet<>();
@@ -1277,15 +1303,15 @@ public class NBTStructure {
         }
 
         @Override
-        protected java.util.Optional<GenerationStub> findGenerationPoint(GenerationContext context) {
-            if (com.hbm.config.StructureConfig.enableStructures == 0) return java.util.Optional.empty();
+        protected Optional<GenerationStub> findGenerationPoint(GenerationContext context) {
+            if (StructureConfig.enableStructures == 0) return Optional.empty();
 
             SpawnCondition spawn = getStructure(spawnName);
             if (spawn == null) {
                 synchronized (MISSING) {
                     if (MISSING.add(spawnName)) Constants.LOG.error("[NBTStructure] no structure registered as '{}'", spawnName);
                 }
-                return java.util.Optional.empty();
+                return Optional.empty();
             }
 
             int cx = context.chunkPos().getMiddleBlockX();
@@ -1298,13 +1324,13 @@ public class NBTStructure {
             // through its row, any other through LegacyBiomes.guess. Skipped where the context's own biome rule is off
             // (the /place command generates in any biome): there a biome no tag can hold passes it.
             if (checksBiome(context)) {
-                var biome = com.hbm.world.gen.LegacyBiomes.biomeAt(context.biomeSource(), context.randomState(), cx, surface, cz);
-                if (!com.hbm.world.gen.LegacyBiomes.accepts(spawnName, biome, context)) return java.util.Optional.empty();
+                var biome = LegacyBiomes.biomeAt(context.biomeSource(), context.randomState(), cx, surface, cz);
+                if (!LegacyBiomes.accepts(spawnName, biome, context)) return Optional.empty();
                 // 1.7 picked one spawn per region by the hbm.cfg weights (5.05..5.43); only that one generates here
-                if (!wins(spawnName, biome, context)) return java.util.Optional.empty();
+                if (!wins(spawnName, biome, context)) return Optional.empty();
             }
 
-            return java.util.Optional.of(new GenerationStub(center, builder -> {
+            return Optional.of(new GenerationStub(center, builder -> {
                 if (spawn.start != null) {
                     spawn.start.build(builder, context);
                 } else if (spawn.structure != null || spawn.pools != null) {
@@ -1315,38 +1341,38 @@ public class NBTStructure {
             }));
         }
 
-        private static final java.util.Map<String, net.minecraft.tags.TagKey<net.minecraft.world.level.biome.Biome>> HAS_STRUCTURE =
-                new java.util.concurrent.ConcurrentHashMap<>();
+        private static final Map<String, TagKey<Biome>> HAS_STRUCTURE =
+                new ConcurrentHashMap<>();
 
         /**
          * 1.7 {@code NBTStructure.findSpawn}: one weighted pick, by the live {@code hbm.cfg} weights
          * ({@code NTMStructureDeclarations.runtimeWeight}), among the spawns whose biome rule accepts the region's biome
          * (its {@code has_structure} tag and its 1.7 predicate, as this structure's own check). True when {@code spawn}
          * is the pick. Every structure of the set computes the same pick from the same seed, so exactly one of them
-         * (or a null weight) generates per region, whichever order vanilla tries them in - the data pack's weights no
-         * longer decide anything (History §19ek-hooks). The draw is vanilla's own large-feature seed of the chunk.
+         * (or a null weight) generates per region, whichever order vanilla tries them in. The data pack's weights do not
+         * decide anything. The draw is vanilla's own large-feature seed of the chunk.
          */
-        public static boolean wins(String spawn, net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> biome,
+        public static boolean wins(String spawn, Holder<Biome> biome,
                                    GenerationContext context) {
-            java.util.List<com.hbm.world.gen.NTMStructureDeclarations.Entry> candidates = new java.util.ArrayList<>();
+            List<NTMStructureDeclarations.Entry> candidates = new ArrayList<>();
             int total = 0;
-            for (com.hbm.world.gen.NTMStructureDeclarations.Entry entry : com.hbm.world.gen.NTMStructureDeclarations.entries()) {
-                int weight = com.hbm.world.gen.NTMStructureDeclarations.runtimeWeight(entry.id());
+            for (NTMStructureDeclarations.Entry entry : NTMStructureDeclarations.entries()) {
+                int weight = NTMStructureDeclarations.runtimeWeight(entry.id());
                 if (weight <= 0) continue;
-                net.minecraft.tags.TagKey<net.minecraft.world.level.biome.Biome> tag = HAS_STRUCTURE.computeIfAbsent(entry.id(),
-                        id -> net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BIOME,
-                                dev.golem.core.Ids.of(Constants.MOD_ID, "has_structure/" + id)));
-                if (!biome.is(tag) || !com.hbm.world.gen.LegacyBiomes.accepts(entry.spawn(), biome, context)) continue;
+                TagKey<Biome> tag = HAS_STRUCTURE.computeIfAbsent(entry.id(),
+                        id -> TagKey.create(Registries.BIOME,
+                                Ids.of(Constants.MOD_ID, "has_structure/" + id)));
+                if (!biome.is(tag) || !LegacyBiomes.accepts(entry.spawn(), biome, context)) continue;
                 candidates.add(entry);
                 total += weight;
             }
             if (total <= 0) return false;
-            net.minecraft.world.level.levelgen.WorldgenRandom random =
-                    new net.minecraft.world.level.levelgen.WorldgenRandom(new net.minecraft.world.level.levelgen.LegacyRandomSource(0L));
+            WorldgenRandom random =
+                    new WorldgenRandom(new LegacyRandomSource(0L));
             random.setLargeFeatureSeed(context.seed(), context.chunkPos().getMinBlockX() >> 4, context.chunkPos().getMinBlockZ() >> 4);
             int roll = random.nextInt(total);
-            for (com.hbm.world.gen.NTMStructureDeclarations.Entry entry : candidates) {
-                roll -= com.hbm.world.gen.NTMStructureDeclarations.runtimeWeight(entry.id());
+            for (NTMStructureDeclarations.Entry entry : candidates) {
+                roll -= NTMStructureDeclarations.runtimeWeight(entry.id());
                 if (roll < 0) return entry.spawn().equals(spawn);
             }
             return false;
@@ -1358,7 +1384,7 @@ public class NBTStructure {
          */
         public static boolean checksBiome(GenerationContext context) {
             var any = context.biomeSource().possibleBiomes().stream().findFirst();
-            return any.isEmpty() || !context.validBiome().test(net.minecraft.core.Holder.direct(any.get().value()));
+            return any.isEmpty() || !context.validBiome().test(Holder.direct(any.get().value()));
         }
 
         /**
@@ -1367,8 +1393,8 @@ public class NBTStructure {
          * ({@link Start#assemble} returns empty only for a missing or unloaded start piece, drawn from the context's
          * random, whose seed is the draw's).
          */
-        private boolean generates(GenerationContext context, net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> biome, int chunkX, int chunkZ) {
-            if (com.hbm.config.StructureConfig.enableStructures == 0) return false;
+        private boolean generates(GenerationContext context, Holder<Biome> biome, int chunkX, int chunkZ) {
+            if (StructureConfig.enableStructures == 0) return false;
             SpawnCondition spawn = getStructure(spawnName);
             if (spawn == null) return false;
             if (!biomes().contains(biome)) return false;
@@ -1377,8 +1403,8 @@ public class NBTStructure {
             if (spawn.pools != null) {
                 JigsawPool pool = spawn.pools.get(spawn.startPool);
                 if (pool == null) return false;
-                net.minecraft.world.level.levelgen.WorldgenRandom random =
-                        new net.minecraft.world.level.levelgen.WorldgenRandom(new net.minecraft.world.level.levelgen.LegacyRandomSource(0L));
+                WorldgenRandom random =
+                        new WorldgenRandom(new LegacyRandomSource(0L));
                 random.setLargeFeatureSeed(context.seed(), chunkX, chunkZ);
                 JigsawPiece startPiece = pool.get(random);
                 return startPiece != null && startPiece.structure.isLoaded;
@@ -1387,8 +1413,8 @@ public class NBTStructure {
         }
 
         @Override
-        public net.minecraft.world.level.levelgen.structure.StructureType<?> type() {
-            return com.hbm.world.gen.NTMWorldGenerator.NBT_STRUCTURE.get();
+        public StructureType<?> type() {
+            return NTMWorldGenerator.NBT_STRUCTURE.get();
         }
     }
 }

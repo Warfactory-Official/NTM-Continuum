@@ -150,7 +150,7 @@ public final class Mats {
             .colors(0xECE0E0, 0x221616, 0x958989).setAutogen(NUGGET, BILLET);
 
     // --- batch 3: radioactive isotopes / synthetics (id + colours + autogen ported verbatim from the
-    //     1.12.2 Mats; names verified against old-hbm ModItems) ---
+    //     1.12.2 Mats; names verified against 1.12.2 ModItems) ---
     public static final NTMMaterial MAT_U233           = mat(9233, "u233")
             .colors(0xC1C7BD, 0x2B3227, 0x9AA196).setAutogen(NUGGET, BILLET, DUST, BLOCK);
     public static final NTMMaterial MAT_U235           = mat(9235, "u235")
@@ -189,7 +189,7 @@ public final class Mats {
             .colors(0xF4EFE1, 0x2A3306, 0xC6C6A1).setAutogen(NUGGET, BILLET, BLOCK);
 
     // --- batch 3: base metals / nonmetals / minerals (id + colours + autogen ported verbatim from the
-    //     1.12.2 Mats; names verified against old-hbm ModItems) ---
+    //     1.12.2 Mats; names verified against 1.12.2 ModItems) ---
     public static final NTMMaterial MAT_TANTALIUM      = mat(7300, "tantalium")
             .colors(0xFFFFFF, 0x1D1D36, 0xA89B74).setAutogen(FRAGMENT, NUGGET, DUST, BLOCK);
     public static final NTMMaterial MAT_SILICON        = mat(1400, "silicon")
@@ -227,7 +227,7 @@ public final class Mats {
             .colors(0x363636, 0x030303, 0x404040).conv(MAT_CARBON, 1, 1);
 
     // --- batch 3: alloys (id + colours + autogen ported verbatim from the
-    //     1.12.2 Mats; names verified against old-hbm ModItems) ---
+    //     1.12.2 Mats; names verified against 1.12.2 ModItems) ---
     public static final NTMMaterial MAT_STAR           = mat(35, "starmetal")
             .colors(0xCCCCEA, 0x11111A, 0xA5A5D3).setAutogen(DUST, DENSEWIRE, CASTPLATE, BLOCK);
     public static final NTMMaterial MAT_FERRO          = mat(37, "ferrouranium")
@@ -250,7 +250,7 @@ public final class Mats {
             .colors(0xF1E0BB, 0x6F6256, 0xDECCAD).setAutogen(DUST);
 
     // --- batch 3: polymers / rare earth (id + colours + autogen ported verbatim from the
-    //     1.12.2 Mats; names verified against old-hbm ModItems) ---
+    //     1.12.2 Mats; names verified against 1.12.2 ModItems) ---
     public static final NTMMaterial MAT_POLYMER        = mat(20001, "polymer")
             .colors(0x363636, 0x040404, 0x272727).setAutogen(STOCK, GRIP);
     public static final NTMMaterial MAT_BAKELITE       = mat(20002, "bakelite")

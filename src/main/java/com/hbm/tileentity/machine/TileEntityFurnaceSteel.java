@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.tile.IHeatSource;
@@ -17,9 +18,11 @@ import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.Recipes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -89,22 +92,22 @@ public class TileEntityFurnaceSteel extends TileEntityMachineBase implements Men
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFurnaceSteel furnace) {
         if (!furnace.wasOn) return;
-        com.hbm.lib.ForgeDirection dir = com.hbm.tileentity.MachineCore.facing(state);
-        com.hbm.lib.ForgeDirection rotation = dir.getRotation(com.hbm.lib.ForgeDirection.UP);
-        level.addParticle(net.minecraft.core.particles.ParticleTypes.SMOKE,
+        ForgeDirection dir = MachineCore.facing(state);
+        ForgeDirection rotation = dir.getRotation(ForgeDirection.UP);
+        level.addParticle(ParticleTypes.SMOKE,
                 pos.getX() + 0.5 - dir.offsetX * 1.125 - rotation.offsetX * 0.75,
                 pos.getY() + 2.625,
                 pos.getZ() + 0.5 - dir.offsetZ * 1.125 - rotation.offsetZ * 0.75,
                 0, 0.05, 0);
         if (level.getRandom().nextInt(20) == 0) {
-            level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD,
+            level.addParticle(ParticleTypes.CLOUD,
                     pos.getX() + 0.5 + dir.offsetX * 0.75,
                     pos.getY() + 2,
                     pos.getZ() + 0.5 + dir.offsetZ * 0.75,
                     0, 0.05, 0);
         }
         if (level.getRandom().nextInt(15) == 0) {
-            level.addParticle(net.minecraft.core.particles.ParticleTypes.LAVA,
+            level.addParticle(ParticleTypes.LAVA,
                     pos.getX() + 0.5 + dir.offsetX * 1.5 + rotation.offsetX * (level.getRandom().nextDouble() - 0.5),
                     pos.getY() + 0.75,
                     pos.getZ() + 0.5 + dir.offsetZ * 1.5 + rotation.offsetZ * (level.getRandom().nextDouble() - 0.5),
@@ -125,7 +128,7 @@ public class TileEntityFurnaceSteel extends TileEntityMachineBase implements Men
     protected void addBonus(ItemStack stack, int index) {
         String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
         if (path.startsWith("ore") || path.contains("ore_") || path.endsWith("_ore")) bonus[index] += 25;
-        else if (stack.is(net.minecraft.tags.ItemTags.LOGS) || path.contains("log")) bonus[index] += 50;
+        else if (stack.is(ItemTags.LOGS) || path.contains("log")) bonus[index] += 50;
         else if (path.contains("tar")) bonus[index] += 50;
     }
 

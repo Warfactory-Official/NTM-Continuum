@@ -7,11 +7,13 @@ import com.hbm.blocks.ModTerrainBlocks;
 import com.hbm.blocks.generic.BlockGasBase;
 import com.hbm.items.ModArmorSetBItems;
 import com.hbm.items.tool.ItemDosimeter;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 
@@ -96,14 +98,14 @@ public final class DosimeterGasGameTests {
     /** No glasses: nothing, no draw. Glasses: every display tick (1.7), or 1 in 9 (hbm-space). */
     private static void glassesGate(GameTestHelper helper) {
         int saved = BlockGasBase.ashGlassesParticleChance;
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         try {
             BlockGasBase.ashGlassesParticleChance = 1;
             RandomSource a = RandomSource.create(7L);
             RandomSource b = RandomSource.create(7L);
             helper.assertTrue(!BlockGasBase.revealsGas(null, a), "no viewer, no cloud");
             helper.assertTrue(!BlockGasBase.revealsGas(player, a), "bare head, no cloud");
-            player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(net.minecraft.world.item.Items.IRON_HELMET));
+            player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
             helper.assertTrue(!BlockGasBase.revealsGas(player, a), "an iron helmet shows no gas");
             helper.assertTrue(a.nextLong() == b.nextLong(), "the gate draws nothing without the glasses");
 

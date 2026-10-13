@@ -1,9 +1,12 @@
 package com.hbm.blocks;
 
+import com.hbm.commands.CommandSatellites;
 import com.hbm.entity.ModSatelliteEntities;
 import com.hbm.inventory.ModSatelliteMenus;
 import com.hbm.saveddata.satellites.SatelliteSystems;
 import com.hbm.tileentity.ModSatelliteBlockEntities;
+import dev.golem.core.command.CompatCommands;
+import dev.golem.core.platform.Lifecycle;
 
 /**
  * One bootstrap hook for the satellite family's blocks, block entities, menus, entities and Dejson declarations
@@ -21,7 +24,7 @@ public final class ModSatelliteContent {
         ModSatelliteEntities.init();
         SatelliteDeclarations.declare();
 
-        dev.golem.core.platform.Lifecycle.onServerTick(SatelliteSystems::tickServer);
-        dev.golem.core.command.CompatCommands.server(com.hbm.commands.CommandSatellites::register);
+        Lifecycle.onServerTick(SatelliteSystems::tickServer);
+        CompatCommands.server(CommandSatellites::register);
     }
 }

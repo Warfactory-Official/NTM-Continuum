@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.data.ArmorDataMaps;
 import dev.golem.core.data.Tags;
 
 import com.hbm.items.ModItems;
@@ -10,9 +11,11 @@ import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Inventories;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -57,7 +60,7 @@ public abstract class TileEntityLockableBase extends TileEntityLoadedBase {
      * padlocks and {@code key_kit}); a lockable block lets their own use handler run instead of
      * toggling. Set by whoever ports the padlock items.
      */
-    public static java.util.function.Predicate<ItemStack> LOCK_TOOLS = stack -> false;
+    public static Predicate<ItemStack> LOCK_TOOLS = stack -> false;
 
     protected int lock;
     private boolean isLocked = false;
@@ -150,7 +153,7 @@ public abstract class TileEntityLockableBase extends TileEntityLoadedBase {
         }
     }
 
-    private void playAtPlayer(Player player, net.minecraft.sounds.SoundEvent sound, float volume, float pitch) {
+    private void playAtPlayer(Player player, SoundEvent sound, float volume, float pitch) {
         if (level != null) level.playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.BLOCKS, volume, pitch);
     }
 
@@ -176,7 +179,7 @@ public abstract class TileEntityLockableBase extends TileEntityLoadedBase {
         if (canPick) {
 
             ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
-            if (!chest.isEmpty() && Boolean.TRUE.equals(com.hbm.api.data.ArmorDataMaps.LOCKPICK_JACKET.get(chest.getItem()))) {
+            if (!chest.isEmpty() && Boolean.TRUE.equals(ArmorDataMaps.LOCKPICK_JACKET.get(chest.getItem()))) {
                 chanceOfSuccess *= 100D;
             } else for (Supplier<? extends Item> jacket : LOCKPICK_JACKETS) {
                 if (!chest.isEmpty() && chest.getItem() == jacket.get()) {

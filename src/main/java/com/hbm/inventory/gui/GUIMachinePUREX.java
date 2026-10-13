@@ -1,5 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachinePUREX;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -8,6 +11,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.tileentity.machine.TileEntityMachinePUREX;
+import dev.golem.core.gui.MouseInput;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -19,15 +23,15 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Screen for the PUREX plant — 1.7.10 {@code GUIMachinePUREX} ({@code processing/gui_purex.png}, 176×256). Power bar 16×61 at (152,18) filling upward; progress arrow up to 70×16 at
- * (62,126); two 3×6 status LEDs at (51,121)/(56,121); the recipe-selector button at (7,125) showing the
+ * Screen for the PUREX plant, from 1.7.10 {@code GUIMachinePUREX} ({@code processing/gui_purex.png}, 176×256).
+ * Power bar 16×61 at (152,18) filling upward; progress arrow up to 70×16 at (62,126); two 3×6 status LEDs at (51,121)/(56,121); the recipe-selector button at (7,125) showing the
  * selected recipe's icon or the template-folder fallback; ghost previews of the recipe's inputs in empty
  * input slots; three 16×52 reagent tank bars at x=8/26/44 (top y=18) and the 16×52 product tank at x=116
  * (top y=36).
  */
-public class GUIMachinePUREX extends dev.golem.core.gui.CompatContainerScreen<ContainerMachinePUREX> implements IUpgradeInfoProviderSource {
+public class GUIMachinePUREX extends CompatContainerScreen<ContainerMachinePUREX> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_purex.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_purex.png");
     private static final int BTN_X = 7, BTN_Y = 125, BTN_W = 18, BTN_H = 18;
     private static final int TANK_W = 16, TANK_H = 52;
     private static final int IN_TANK_TOP = 18, OUT_TANK_TOP = 36, OUT_TANK_X = 116;
@@ -84,7 +88,7 @@ public class GUIMachinePUREX extends dev.golem.core.gui.CompatContainerScreen<Co
         }
     }
 
-    /** 1.7 {@code renderTank(guiLeft + x, guiTop + top + 52, ...)} — the 1.7 call passes the bottom edge. */
+    /** 1.7 {@code renderTank(guiLeft + x, guiTop + top + 52, ...)}: the 1.7 call passes the bottom edge. */
     private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int barX, int barTop) {
         GuiUtil.tank(graphics, tank, this.leftPos + barX, this.topPos + barTop + TANK_H, TANK_W, TANK_H);
     }
@@ -125,12 +129,12 @@ public class GUIMachinePUREX extends dev.golem.core.gui.CompatContainerScreen<Co
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getPurex();
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         TileEntityMachinePUREX te = this.menu.getPurex();
         if (te != null && GuiUtil.hover(event.x(), event.y(), this.leftPos + BTN_X, this.topPos + BTN_Y, BTN_W, BTN_H)) {
             GUIScreenRecipeSelector.openSelector(PUREXRecipes.INSTANCE, te.getBlockPos(),

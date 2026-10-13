@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.SlotCraftingOutput;
 import com.hbm.items.machine.ItemBreedingRod;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
@@ -39,7 +40,7 @@ public final class ContainerMachineReactorBreeding extends AbstractContainerMenu
         this.access = access;
 
         addSlot(new Slot(machine, 0, 35, 35));
-        addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 1, 125, 35)); // 1.7 SlotCraftingOutput
+        addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 1, 125, 35)); // 1.7 SlotCraftingOutput
 
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
     }

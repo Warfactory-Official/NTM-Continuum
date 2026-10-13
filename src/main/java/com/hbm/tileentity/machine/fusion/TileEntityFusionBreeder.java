@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.fusion;
 
+import com.hbm.items.ModAbilityToolItems;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
@@ -20,6 +21,7 @@ import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -96,7 +98,7 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase
 
     public boolean canProcessSolid() {
         // 1.7: the irradiated meteorite sword is fused before any outgasser recipe is looked up
-        if (inventory.getStackInSlot(1).is(com.hbm.items.ModAbilityToolItems.meteorite_sword_irradiated.get())
+        if (inventory.getStackInSlot(1).is(ModAbilityToolItems.meteorite_sword_irradiated.get())
                 && inventory.getStackInSlot(2).isEmpty()) return true;
         GenericRecipe recipe = OutgasserRecipes.INSTANCE.getRecipeForFusion(inventory.getStackInSlot(1));
         if (recipe == null) return false;
@@ -128,9 +130,9 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase
     }
 
     private void processSolid() {
-        if (inventory.getStackInSlot(1).is(com.hbm.items.ModAbilityToolItems.meteorite_sword_irradiated.get())) {
+        if (inventory.getStackInSlot(1).is(ModAbilityToolItems.meteorite_sword_irradiated.get())) {
             inventory.extractItem(1, 1, false);
-            inventory.setStackInSlot(2, new ItemStack(com.hbm.items.ModAbilityToolItems.meteorite_sword_fused.get()));
+            inventory.setStackInSlot(2, new ItemStack(ModAbilityToolItems.meteorite_sword_fused.get()));
             this.progress = 0;
             return;
         }
@@ -193,17 +195,17 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase
     }
 
     @Override
-    public int[] getSlotsForFace(net.minecraft.core.Direction side) {
+    public int[] getSlotsForFace(Direction side) {
         return new int[]{1, 2};
     }
 
     @Override
-    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
         return slot == 1 && isItemValidForSlot(slot, stack);
     }
 
     @Override
-    public boolean canTakeItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         return slot == 2;
     }
 

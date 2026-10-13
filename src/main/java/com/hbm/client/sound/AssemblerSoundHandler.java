@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Client-side audio for the assembly machine, ported from the 1.12.2 {@code TileEntityMachineAssemblyMachine}
  * client sound branch: a looping motor hum while processing, plus the strike / ring-start / stop one-shots.
- * Driven from the machine's client ticker. Client-only — never referenced from a server tick path, so the
+ * Driven from the machine's client ticker. Client-only, never referenced from a server tick path, so the
  * dedicated server never loads it (or the {@code net.minecraft.client} types it touches).
  */
 public final class AssemblerSoundHandler {

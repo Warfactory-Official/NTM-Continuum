@@ -2,6 +2,7 @@ package com.hbm.items.weapon.sedna.impl;
 
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.handler.JetpackHandler;
+import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.factory.XFactoryTool;
 import net.minecraft.server.level.ServerLevel;
@@ -15,13 +16,13 @@ public class ItemGunChargeThrower extends ItemGunBaseNT {
     public static final String KEY_LASTHOOK = "lasthook";
 
     public ItemGunChargeThrower(Properties properties, WeaponQuality quality,
-            com.hbm.items.weapon.sedna.GunConfig... configs) {
+            GunConfig... configs) {
         super(properties, quality, configs);
     }
 
     /**
      * The last hook's UUID, or null. 1.7 kept the hook's network entity id; the port keeps its UUID so no numeric
-     * id is persisted in the stack (History section 19ek-small). An old int value reads as no hook.
+     * id is persisted in the stack. An old int value reads as no hook.
      */
     public static java.util.@org.jspecify.annotations.Nullable UUID getLastHook(ItemStack stack) {
         String id = getValueString(stack, KEY_LASTHOOK);

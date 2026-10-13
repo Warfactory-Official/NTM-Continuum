@@ -2,6 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.api.data.HbmDataMaps;
+import com.hbm.items.ModItems;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.Items;
@@ -22,7 +23,7 @@ public final class DataMapGameTests {
         var map = HbmDataMaps.BRICK_FURNACE_SPEED;
         helper.assertTrue(Integer.valueOf(4).equals(map.get(Items.CLAY_BALL)) && Integer.valueOf(4).equals(map.get(Items.NETHERRACK))
                         && Integer.valueOf(2).equals(map.get(Items.COBBLESTONE)) && Integer.valueOf(2).equals(map.get(Items.SAND))
-                        && Integer.valueOf(4).equals(map.get(com.hbm.items.ModItems.ball_fireclay.get())) && map.get(Items.DIRT) == null,
+                        && Integer.valueOf(4).equals(map.get(ModItems.ball_fireclay.get())) && map.get(Items.DIRT) == null,
                 "brick furnace speeds differ from 1.7: " + map.byId());
         helper.succeed();
     }

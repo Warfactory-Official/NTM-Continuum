@@ -2,8 +2,7 @@ package com.hbm.tileentity.network;
 
 import com.hbm.blocks.network.RadioTorchBase;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.radio.ModRadioBlockEntities;
-import com.hbm.radio.RadioLogicMenu;
+import com.hbm.inventory.container.RadioLogicMenu;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -12,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -19,9 +19,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
+import com.hbm.tileentity.ModBlockEntities;
 
 public class TileEntityRadioTorchLogic extends TileEntityLoadedBase
-        implements IControlReceiver, net.minecraft.world.MenuProvider, RadioTorchTicking {
+        implements IControlReceiver, MenuProvider, RadioTorchTicking {
     public static final int MAPPING_SIZE = 16;
     public String channel = "";
     public int lastState;
@@ -32,7 +33,7 @@ public class TileEntityRadioTorchLogic extends TileEntityLoadedBase
     public final int[] conditions = new int[MAPPING_SIZE];
 
     public TileEntityRadioTorchLogic(BlockPos pos, BlockState state) {
-        super(ModRadioBlockEntities.RADIO_TORCH_LOGIC.get(), pos, state);
+        super(ModBlockEntities.RADIO_TORCH_LOGIC.get(), pos, state);
         Arrays.fill(mapping, "");
     }
 

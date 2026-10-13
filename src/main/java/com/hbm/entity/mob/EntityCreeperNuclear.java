@@ -1,5 +1,7 @@
 package com.hbm.entity.mob;
 
+import com.hbm.items.ModAmmoItems;
+import com.hbm.particle.helper.EntityEffects;
 import dev.golem.core.world.Compat;
 import com.hbm.advancement.DetonationTrigger;
 import com.hbm.advancement.HbmCriteria;
@@ -64,7 +66,7 @@ public class EntityCreeperNuclear extends EntityCreeperBase {
 
         int looting = 0;
         if (source.getEntity() instanceof LivingEntity attacker) {
-            looting = dev.golem.core.world.Compat.lootingLevel(level, attacker);
+            looting = Compat.lootingLevel(level, attacker);
         }
 
         int tnt = random.nextInt(3) + (looting > 0 ? random.nextInt(looting + 1) : 0);
@@ -90,7 +92,7 @@ public class EntityCreeperNuclear extends EntityCreeperBase {
         boolean strayArrow = source.getDirectEntity() instanceof Arrow arrow && arrow.getOwner() == null;
 
         if ((shotBySkeleton || strayArrow) && level() instanceof ServerLevel server) {
-            spawnAtLocation(server, new ItemStack(com.hbm.items.ModAmmoItems.nuke_standard.get())); // 1.7: ModItems.ammo_nuke
+            spawnAtLocation(server, new ItemStack(ModAmmoItems.nuke_standard.get())); // 1.7: ModItems.ammo_nuke
         }
     }
 
@@ -117,7 +119,7 @@ public class EntityCreeperNuclear extends EntityCreeperBase {
 
         if (isPowered()) {
             // 1.7 sent no balefire key, which the client read as false
-            com.hbm.particle.helper.EntityEffects.muke(level, getX(), getY() + 0.5D, getZ(), false, false, 250);
+            EntityEffects.muke(level, getX(), getY() + 0.5D, getZ(), false, false, 250);
             level.playSound(null, getX(), getY() + 0.5D, getZ(), ModSounds.MUKE_EXPLOSION.get(),
                     SoundSource.BLOCKS, 15.0F, 1.0F);
 

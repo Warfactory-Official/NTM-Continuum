@@ -20,15 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * JEI category for anvil construction — a faithful port of the 1.12.2 {@code AnvilRecipeHandler}: its own
+ * JEI category for anvil construction, a port of the 1.12.2 {@code AnvilRecipeHandler}: its own
  * {@code gui_nei_anvil.png} background, and a per-{@code OverlayType} layout (SMITHING = 1:1 across the
- * middle, CONSTRUCTION = 6-wide input area → single output, RECYCLING = single input → 6-wide output
+ * middle, CONSTRUCTION = 6-wide input area -> single output, RECYCLING = single input -> 6-wide output
  * area, NONE = 4-wide areas both sides), with the matching texture overlays (input/output area panels +
  * the operation pill) drawn per recipe. The anvil slot cycles every anvil whose tier can run the recipe
  * (the old {@code NTMAnvil.getAnvilsFromTier}); chance outputs get the old red percentage tooltip.
  *
  * <p>(The old handler's {@code case NONE -> {}} left the layout at zeros while its {@code drawInfo} drew
- * the 4-wide-areas art — clearly a dead-{@code default} bug; NONE here uses the default-branch values,
+ * the 4-wide-areas art (a dead {@code default} branch); NONE here uses the default-branch values,
  * which match the art.)
  */
 public class AnvilConstructionRecipeHandler extends HbmRecipeCategory<AnvilConstructionRecipe> {

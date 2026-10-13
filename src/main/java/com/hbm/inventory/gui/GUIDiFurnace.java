@@ -2,9 +2,12 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerDiFurnace;
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -14,9 +17,9 @@ import java.util.List;
 import java.util.Optional;
 
 /** The 176x166 legacy DiFurnace screen, including fuel and side-mode tooltips. */
-public class GUIDiFurnace extends dev.golem.core.gui.CompatContainerScreen<ContainerDiFurnace> {
+public class GUIDiFurnace extends CompatContainerScreen<ContainerDiFurnace> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/guidifurnace.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/guidifurnace.png");
 
     public GUIDiFurnace(ContainerDiFurnace menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 166);
@@ -91,7 +94,7 @@ public class GUIDiFurnace extends dev.golem.core.gui.CompatContainerScreen<Conta
     private static final class DirectionNames {
         private static String name(byte side) {
             int index = Math.max(0, Math.min(5, side));
-            return net.minecraft.core.Direction.values()[index].getSerializedName();
+            return Direction.values()[index].getSerializedName();
         }
     }
 }

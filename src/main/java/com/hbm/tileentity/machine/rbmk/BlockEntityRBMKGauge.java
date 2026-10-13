@@ -13,6 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Four independent RTTY gauges. A non-polling gauge retains its last received value when a signal goes stale. */
@@ -39,7 +40,7 @@ public class BlockEntityRBMKGauge extends TileEntityLoadedBase implements IContr
         public boolean active, polling; public int color; public String label = "", rtty = ""; public long min, max = 100, value; public double renderValue, lastRenderValue;
         GaugeUnit(int index) { color = new int[]{0x800000, 0x804000, 0x808000, 0x000080}[index]; label = "Gauge " + (index + 1); }
         public void updateClient() { lastRenderValue = renderValue; renderValue += (value - renderValue) * .1D; }
-        public void update(net.minecraft.world.level.Level level) {
+        public void update(Level level) {
             if (!active || rtty == null || rtty.isEmpty()) return;
             RTTYChannel channel = RTTYSystem.listen(level, rtty);
             if (channel != null && channel.timeStamp < level.getGameTime() - 1) channel = null;

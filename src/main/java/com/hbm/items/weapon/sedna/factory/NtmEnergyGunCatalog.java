@@ -14,10 +14,13 @@ import com.hbm.items.weapon.sedna.impl.ItemGunNI4NI;
 import com.hbm.items.weapon.sedna.mags.MagazineBelt;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
+import com.hbm.sound.ModGunSounds;
 import dev.golem.core.Ids;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -32,13 +35,13 @@ public final class NtmEnergyGunCatalog {
     public static final DeferredRegister.Items GUNS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(GUNS);
 
-    private static final net.minecraft.resources.Identifier SCOPE_LUNA =
+    private static final Identifier SCOPE_LUNA =
             Ids.of(Constants.MOD_ID, "textures/misc/scope_luna.png");
 
     public static final RegistryObject<ItemGunBaseNT> gun_tesla_cannon = gun("gun_tesla_cannon", WeaponQuality.A_SIDE,
             () -> new GunConfig().dura(1_000).draw(10).inspect(33).crosshair(Crosshair.CIRCLE)
                     .rec(new Receiver(0).dmg(35F).delay(20).spreadHipfire(1.5F).reload(44).jam(19)
-                            .sound(com.hbm.sound.ModGunSounds.FIRE_TESLA::get, 1F, 1F)
+                            .sound(ModGunSounds.FIRE_TESLA::get, 1F, 1F)
                             .mag(new MagazineBelt().addConfigs(XFactoryEnergy.energy_tesla,
                                     XFactoryEnergy.energy_tesla_overcharge, XFactoryEnergy.energy_tesla_ir))
                             .offset(0.75, 0, -0.375).offsetScoped(0.75, 0, -0.25)
@@ -48,7 +51,7 @@ public final class NtmEnergyGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_laser_pistol = gun("gun_laser_pistol", WeaponQuality.A_SIDE,
             () -> new GunConfig().dura(500).draw(10).inspect(26).crosshair(Crosshair.CIRCLE)
                     .rec(new Receiver(0).dmg(25F).delay(5).spread(1F).spreadHipfire(1F).reload(45).jam(37)
-                            .sound(com.hbm.sound.ModGunSounds.FIRE_LASER_PISTOL::get, 1F, 1F)
+                            .sound(ModGunSounds.FIRE_LASER_PISTOL::get, 1F, 1F)
                             .mag(new MagazineFullReload(0, 30).addConfigs(XFactoryEnergy.energy_las,
                                     XFactoryEnergy.energy_las_overcharge, XFactoryEnergy.energy_las_ir))
                             .offset(0.75, -0.0625 * 1.5, -0.1875)
@@ -60,7 +63,7 @@ public final class NtmEnergyGunCatalog {
             () -> new GunConfig().dura(500).draw(10).inspect(26).crosshair(Crosshair.CIRCLE)
                     .rec(new Receiver(0).dmg(30F).rounds(5).delay(10).spread(0.25F).spreadHipfire(1F)
                             .reload(45).jam(37)
-                            .sound(com.hbm.sound.ModGunSounds.FIRE_LASER_PISTOL::get, 1F, 0.8F)
+                            .sound(ModGunSounds.FIRE_LASER_PISTOL::get, 1F, 0.8F)
                             .mag(new MagazineFullReload(0, 10).addConfigs(XFactoryEnergy.energy_las,
                                     XFactoryEnergy.energy_las_overcharge, XFactoryEnergy.energy_las_ir))
                             .offset(0.75, -0.0625 * 1.5, -0.1875)
@@ -71,7 +74,7 @@ public final class NtmEnergyGunCatalog {
             "gun_laser_pistol_morning_glory", WeaponQuality.LEGENDARY,
             () -> new GunConfig().dura(1_500).draw(10).inspect(26).crosshair(Crosshair.CIRCLE)
                     .rec(new Receiver(0).dmg(20F).delay(7).spread(0F).spreadHipfire(0.5F).reload(45).jam(37)
-                            .sound(com.hbm.sound.ModGunSounds.FIRE_LASER_PISTOL::get, 1F, 1.1F)
+                            .sound(ModGunSounds.FIRE_LASER_PISTOL::get, 1F, 1.1F)
                             .mag(new MagazineFullReload(0, 20).addConfigs(XFactoryEnergy.energy_emerald,
                                     XFactoryEnergy.energy_emerald_overcharge, XFactoryEnergy.energy_emerald_ir))
                             .offset(0.75, -0.0625 * 1.5, -0.1875)
@@ -82,7 +85,7 @@ public final class NtmEnergyGunCatalog {
             () -> new GunConfig().dura(2_000).draw(10).inspect(26).crosshair(Crosshair.CIRCLE)
                     .scopeTexture(SCOPE_LUNA)
                     .rec(new Receiver(0).dmg(50F).delay(8).spreadHipfire(1F).reload(44).jam(36)
-                            .sound(com.hbm.sound.ModGunSounds.FIRE_LASER_RIFLE::get, 1F, 1F)
+                            .sound(ModGunSounds.FIRE_LASER_RIFLE::get, 1F, 1F)
                             .mag(new MagazineFullReload(0, 24).addConfigs(XFactoryEnergy.energy_las,
                                     XFactoryEnergy.energy_las_overcharge, XFactoryEnergy.energy_las_ir))
                             .offset(0.75, -0.0625 * 1.5, -0.1875)
@@ -105,7 +108,7 @@ public final class NtmEnergyGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_coilgun = gun("gun_coilgun", WeaponQuality.SPECIAL,
             () -> new GunConfig().dura(400).draw(5).inspect(39).crosshair(Crosshair.L_CIRCUMFLEX)
                     .rec(new Receiver(0).dmg(35F).delay(5).reload(20).jam(33)
-                            .sound(com.hbm.sound.ModGunSounds.FIRE_COIL::get, 1F, 1F)
+                            .sound(ModGunSounds.FIRE_COIL::get, 1F, 1F)
                             .mag(new MagazineSingleReload(0, 1).addConfigs(XFactoryAccelerator.coil_tungsten,
                                     XFactoryAccelerator.coil_ferrouranium))
                             .offset(0.75, -0.0625, -0.1875D)
@@ -135,7 +138,7 @@ public final class NtmEnergyGunCatalog {
                 config.get().orchestra(orchestraFor(id))).setDefaultAmmo(defaultAmmo, amount), p -> p);
     }
 
-    private static java.util.function.BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> orchestraFor(String id) {
+    private static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> orchestraFor(String id) {
         return switch (id) {
             case "gun_tesla_cannon" -> Orchestras.ORCHESTRA_TESLA;
             case "gun_laser_pistol", "gun_laser_pistol_pew_pew", "gun_laser_pistol_morning_glory" ->

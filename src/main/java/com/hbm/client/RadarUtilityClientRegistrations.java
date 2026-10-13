@@ -14,6 +14,7 @@ import com.hbm.inventory.gui.GUIMachineRadarNT;
 import com.hbm.inventory.gui.GUIMachineRadarNTSlots;
 import com.hbm.inventory.gui.GUISoyuzCapsule;
 import com.hbm.tileentity.ModRadarUtilityBlockEntities;
+import net.minecraft.client.Minecraft;
 
 /** Screens and block-entity renderers of the radar and utility machines. */
 public final class RadarUtilityClientRegistrations {
@@ -25,7 +26,7 @@ public final class RadarUtilityClientRegistrations {
         sink.register(ModRadarUtilityMenus.FORCEFIELD.get(), GUIForceField::new);
         sink.register(ModRadarUtilityMenus.SOYUZ_CAPSULE.get(), GUISoyuzCapsule::new);
         // 1.7 GUI id 0: the radar map is a client-only screen with no menu
-        MachineRadar.OPEN_SCREEN = radar -> net.minecraft.client.Minecraft.getInstance().setScreen(new GUIMachineRadarNT(radar));
+        MachineRadar.OPEN_SCREEN = radar -> Minecraft.getInstance().setScreen(new GUIMachineRadarNT(radar));
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink sink) {

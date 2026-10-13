@@ -7,13 +7,13 @@ import java.util.Arrays;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 
 /**
- * old-hbm {@code SkinBoxVoxelizer} (mlbv, "inspired by 3D Skin Layers by tr7zw"): one box of a 64x64 skin turned
+ * 1.12.2 {@code SkinBoxVoxelizer} (mlbv, "inspired by 3D Skin Layers by tr7zw"): one box of a 64x64 skin turned
  * into geometry. Each face's opaque texels are merged into rectangles drawn flush on the face, and every opaque texel
  * on the face's border with a clear neighbour gets the side walls of a one-texel-deep voxel, so an overlay layer
  * reads as solid pixels. Units are texels, the box standing on y = 0 and centred on x and z.
  *
- * <p>old-hbm uploaded the quads into a VBO and drew them with fixed-function client arrays; here the same quads are
- * kept on the CPU (positions, texture coordinates and one normal per quad, in old-hbm's order and winding) and emitted
+ * <p>1.12.2 uploaded the quads into a VBO and drew them with fixed-function client arrays; here the same quads are
+ * kept on the CPU (positions, texture coordinates and one normal per quad, in 1.12.2's order and winding) and emitted
  * through the submit sink each frame.
  */
 public final class SkinBoxVoxelizer {

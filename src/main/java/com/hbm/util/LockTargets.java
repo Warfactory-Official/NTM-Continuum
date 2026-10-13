@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * The old {@code CompatExternal.getCoreFromPos}: the block entity a lock tool should act on when the
- * clicked block is part of something bigger — a folded multiblock cell resolves to its core, a blast
+ * clicked block is part of something bigger: a folded multiblock cell resolves to its core, a blast
  * door dummy to its door, anything else to its own block entity.
  */
 public final class LockTargets {

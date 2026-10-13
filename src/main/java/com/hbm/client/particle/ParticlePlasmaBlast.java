@@ -1,5 +1,6 @@
 package com.hbm.client.particle;
 
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatParticle;
 import dev.golem.core.render.ParticleLayer;
 import dev.golem.core.render.Particles;
@@ -8,7 +9,7 @@ import net.minecraft.resources.Identifier;
 
 /** The source's oriented 20-tick shockwave quad. */
 public final class ParticlePlasmaBlast extends CompatParticle {
-    private static final Identifier SHOCKWAVE = dev.golem.core.Ids.of("hbm", "shockwave");
+    private static final Identifier SHOCKWAVE = Ids.of("hbm", "shockwave");
     private final float red;
     private final float green;
     private final float blue;

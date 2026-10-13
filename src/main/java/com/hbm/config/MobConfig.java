@@ -4,7 +4,7 @@ package com.hbm.config;
  * 1.7 {@code MobConfig}, category {@code 12_mobs} of {@code hbm.cfg}. The field initialisers are 1.7's effective
  * defaults (the {@code createConfig*} defaults in {@code loadFromConfig}, which win over 1.7's own field initialisers:
  * scoutThreshold 1, scoutSwarmSpawnChance 3, largeHiveThreshold 20, pollutionMult 1, ...), so code that runs before
- * the file is read, and the build-time declarations, see the same values. History §19ej-8.
+ * the file is read, and the build-time declarations, see the same values.
  */
 public final class MobConfig {
 

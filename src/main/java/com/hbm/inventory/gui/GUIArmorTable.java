@@ -2,9 +2,13 @@ package com.hbm.inventory.gui;
 
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.inventory.container.ContainerArmorTable;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.world.Armors;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -12,9 +16,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 /** The legacy nine-module armor table layout with safe component-backed storage. */
-public final class GUIArmorTable extends dev.golem.core.gui.CompatContainerScreen<ContainerArmorTable> {
+public final class GUIArmorTable extends CompatContainerScreen<ContainerArmorTable> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm",
+    private static final Identifier TEXTURE = Ids.of("hbm",
             "textures/gui/machine/gui_armor_modifier.png");
     private static final String[] SLOT_KEYS = {
             "armorMod.type.helmet", "armorMod.type.chestplate", "armorMod.type.leggings",
@@ -34,7 +38,7 @@ public final class GUIArmorTable extends dev.golem.core.gui.CompatContainerScree
         ItemStack armor = menu.getSlot(ContainerArmorTable.ARMOR_SLOT).getItem();
         if (!armor.isEmpty()) {
             GuiDraw.blit(graphics, TEXTURE, leftPos + 63, topPos + 60,
-                    176F, dev.golem.core.world.Armors.isArmor(armor) ? 74F : 52F, 22, 22, 256, 256);
+                    176F, Armors.isArmor(armor) ? 74F : 52F, 22, 22, 256, 256);
 
         } else if ((System.currentTimeMillis() / 500L) % 2L == 0L) {
             GuiDraw.blit(graphics, TEXTURE, leftPos + 63, topPos + 60, 176F, 52F, 22, 22, 256, 256);
@@ -73,12 +77,12 @@ public final class GUIArmorTable extends dev.golem.core.gui.CompatContainerScree
     }
 
     private enum ChatFormattingStyle {
-        MODULE(net.minecraft.ChatFormatting.LIGHT_PURPLE),
-        ARMOR(net.minecraft.ChatFormatting.YELLOW);
+        MODULE(ChatFormatting.LIGHT_PURPLE),
+        ARMOR(ChatFormatting.YELLOW);
 
-        private final net.minecraft.ChatFormatting format;
+        private final ChatFormatting format;
 
-        ChatFormattingStyle(net.minecraft.ChatFormatting format) {
+        ChatFormattingStyle(ChatFormatting format) {
             this.format = format;
         }
     }

@@ -3,8 +3,10 @@ package com.hbm.blocks.machine.rbmk;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.Constants;
+import com.hbm.blocks.machine.pile.BlockGraphite;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.blocks.generic.BlockLayering;
+import com.hbm.items.block.RBMKPanelBlockItem;
 import dev.golem.core.registry.BlockTag;
 import dev.golem.core.registry.Loot;
 import dev.golem.core.registry.Preset;
@@ -20,6 +22,8 @@ import dev.golem.core.dejson.Variant;
 import dev.golem.core.dejson.Variants;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.world.Compat;
+import java.util.function.Function;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.material.MapColor;
@@ -161,7 +165,7 @@ public final class ModRBMKBlocks {
     /** Its block model is authored; the item is the 1.7 inventory icon (slab + terminal OBJ). 1.7 RBMKTerminal has no drop override, so it drops itself. */
     public static final RegistryObject<RBMKTerminal> rbmk_terminal = nonColumn("rbmk_terminal", RBMKTerminal::new)
             .transform(Presets.statesOnly(Variants.facing()))
-            // 1.7 RBMKTerminal.renderInventoryBlock: the mini-panel slab plus terminal.obj (icon-P2 2026-10-01)
+            // 1.7 RBMKTerminal.renderInventoryBlock: the mini-panel slab plus terminal.obj
             .transform(panelItem("terminal", "hbm:textures/models/network/terminal.png", "rbmk_terminal"))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -206,27 +210,27 @@ public final class ModRBMKBlocks {
     public static final RegistryObject<RBMKDebrisDigamma> rbmk_debris_digamma = debris("rbmk_debris_digamma", RBMKDebrisDigamma::new)
             .tag(BlockTag.PICKAXE);
     /** Current graphite storage block, required by the moderator and modified-control recipes. */
-    public static final RegistryObject<Block> block_graphite = REG.<Block>block("block_graphite", com.hbm.blocks.machine.pile.BlockGraphite::new,
+    public static final RegistryObject<Block> block_graphite = REG.<Block>block("block_graphite", BlockGraphite::new,
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(5F, 10F).sound(SoundType.STONE).requiresCorrectToolForDrops())
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.selfAlways())
             .tag(BlockTag.PICKAXE);
     /** Hand-written because foam is a machine-safety block, not generated decoration content. */
     public static final RegistryObject<BlockLayering> foam_layer = REG.block("foam_layer",
-            p -> new BlockLayering(p, true), p -> p.strength(0.1F).sound(net.minecraft.world.level.block.SoundType.SNOW).noOcclusion().randomTicks())
+            p -> new BlockLayering(p, true), p -> p.strength(0.1F).sound(SoundType.SNOW).noOcclusion().randomTicks())
             .transform(layers("foam_layer", "hbm:block/block_foam"))
             .icon(d -> d.shares("hbm:item/foam_layer_height2"))
             .loot(Loot.nothing()) // 1.7 BlockLayering drops nothing (BlockLayering.getDrops)
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockLayering> sand_boron_layer = REG.block("sand_boron_layer",
-            BlockLayering::new, p -> p.strength(0.1F).sound(net.minecraft.world.level.block.SoundType.SAND).noOcclusion().randomTicks())
+            BlockLayering::new, p -> p.strength(0.1F).sound(SoundType.SAND).noOcclusion().randomTicks())
             .transform(layers("sand_boron_layer", "hbm:block/sand_boron"))
             .icon(d -> d.shares("hbm:block/sand_boron_layer_height2"));
 
-    private static <B extends Block> Reg.Handle<B> column(String id, java.util.function.Function<BlockBehaviour.Properties, B> factory, boolean fuel) { return REG.block(id, factory, p -> p.strength(3F, 30F).requiresCorrectToolForDrops()); }
-    private static <B extends Block> Reg.Handle<B> peripheral(String id, java.util.function.Function<BlockBehaviour.Properties, B> factory) { return REG.block(id, factory, p -> p.strength(50F, 60F).sound(net.minecraft.world.level.block.SoundType.METAL).requiresCorrectToolForDrops()); }
-    private static <B extends Block> Reg.Handle<B> nonColumn(String id, java.util.function.Function<BlockBehaviour.Properties, B> factory) { return REG.block(id, factory, p -> p.strength(3F, 30F).requiresCorrectToolForDrops().noOcclusion()); }
-    private static <B extends Block> Reg.Handle<B> debris(String id, java.util.function.Function<BlockBehaviour.Properties, B> factory) {
+    private static <B extends Block> Reg.Handle<B> column(String id, Function<BlockBehaviour.Properties, B> factory, boolean fuel) { return REG.block(id, factory, p -> p.strength(3F, 30F).requiresCorrectToolForDrops()); }
+    private static <B extends Block> Reg.Handle<B> peripheral(String id, Function<BlockBehaviour.Properties, B> factory) { return REG.block(id, factory, p -> p.strength(50F, 60F).sound(SoundType.METAL).requiresCorrectToolForDrops()); }
+    private static <B extends Block> Reg.Handle<B> nonColumn(String id, Function<BlockBehaviour.Properties, B> factory) { return REG.block(id, factory, p -> p.strength(3F, 30F).requiresCorrectToolForDrops().noOcclusion()); }
+    private static <B extends Block> Reg.Handle<B> debris(String id, Function<BlockBehaviour.Properties, B> factory) {
         return REG.block(id, factory, p -> p.strength(50F, 600F).requiresCorrectToolForDrops().noOcclusion())
                 .transform(Presets.cubeAll("hbm:blocks/rbmk/" + id).noItem())
                 .loot(Loot.selfAlways());
@@ -255,7 +259,7 @@ public final class ModRBMKBlocks {
             model.addProperty("rawLegacyTransform", true);
             // 1.7 RBMKMiniPanelBase/RBMK<panel>.renderInventoryBlock in the 3D block-item frame. RBMKPanelIcon /
             // RBMKGaugeIcon build the icon about the block corner and turned a half turn from 1.7's
-            // rotate(90) slab / rotate(-90) parts: back to the centre, then the half turn (icon-P2 2026-10-01)
+            // rotate(90) slab / rotate(-90) parts: back to the centre, then the half turn
             model.addProperty("frame", "block");
             model.addProperty("scale", 1.0);
             model.addProperty("yaw", 180.0);
@@ -315,8 +319,8 @@ public final class ModRBMKBlocks {
     @SuppressWarnings("unchecked")
     private static <B extends Block> void panelBlockItem(RegistryObject<B> block) {
         String id = ((Reg.Handle<B>) block).path();
-        REG.<B, com.hbm.items.block.RBMKPanelBlockItem>blockItem(block,
-                        (b, p) -> new com.hbm.items.block.RBMKPanelBlockItem(b, p, id), dev.golem.core.world.Compat::blockDescription)
+        REG.<B, RBMKPanelBlockItem>blockItem(block,
+                        (b, p) -> new RBMKPanelBlockItem(b, p, id), Compat::blockDescription)
                 .tab(HbmTab.MACHINES);
     }
     public static void init() {}

@@ -1,6 +1,7 @@
 package com.hbm.entity.mob;
 
 import com.hbm.entity.ModNtmEntities;
+import com.hbm.particle.helper.HbmEffectNT;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatMob;
 import com.hbm.entity.projectile.EntityBullet;
@@ -14,6 +15,7 @@ import com.hbm.sound.AudioWrapper;
 import com.hbm.sound.ModSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -141,7 +143,7 @@ public class EntityHunterChopper extends CompatMob implements Enemy, IRadiationI
         if (!exotic) amount *= 0.1F;
 
         // 1.7 rejected every EntityDamageSource, which is what made the chopper immune to guns and melee and
-        // killable only by explosives. 26.2 dropped that class; see isEntitySource for the mapping.
+        // killable only by explosives. 26.1 dropped that class; see isEntitySource for the mapping.
         if (isInvulnerableTo(level, source) || isEntitySource(source) || getHealth() <= 0.1F) {
             return false;
         }
@@ -306,11 +308,11 @@ public class EntityHunterChopper extends CompatMob implements Enemy, IRadiationI
         }
 
         // 1.7 "exhaust" / "meteor": ten rocket-flame puffs spread 1 block in every axis, sent 100 blocks
-        net.minecraft.nbt.CompoundTag exhaust = new net.minecraft.nbt.CompoundTag();
+        CompoundTag exhaust = new CompoundTag();
         exhaust.putString("mode", "meteor");
         exhaust.putInt("count", 10);
         exhaust.putDouble("width", 1D);
-        com.hbm.particle.helper.HbmEffectNT.Exhaust.send(level, getX(), getY(), getZ(), exhaust, 100D);
+        HbmEffectNT.Exhaust.send(level, getX(), getY(), getZ(), exhaust, 100D);
 
         setYRot(getYRot() + 20F);
 

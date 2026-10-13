@@ -1,6 +1,7 @@
 package com.hbm.inventory;
 
 import com.hbm.util.AchievementHandler;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
@@ -52,7 +53,7 @@ public class SlotCraftingOutput extends Slot {
     /** 1.7 {@code onCrafting(ItemStack)}. */
     @Override
     protected void checkTakeAchievements(ItemStack stack) {
-        if (this.craftBuffer > 0) dev.golem.core.world.ItemStacks.onCraftedBy(stack, this.player, this.craftBuffer);
+        if (this.craftBuffer > 0) ItemStacks.onCraftedBy(stack, this.player, this.craftBuffer);
         checkAchievements(this.player, stack);
         this.craftBuffer = 0;
     }

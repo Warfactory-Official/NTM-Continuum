@@ -4,6 +4,7 @@ import com.hbm.items.block.ItemBlockDecoVariant;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
 import com.hbm.tileentity.machine.storage.TileEntityCrateBase;
 import com.hbm.tileentity.machine.storage.TileEntityFileCabinet;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -18,7 +19,9 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -98,7 +101,7 @@ public class BlockDecoContainer extends CompatBlock implements TickingBlock {
             if (TileEntityLockableBase.LOCK_TOOLS.test(player.getMainHandItem())) return InteractionResult.TRY_WITH_EMPTY_HAND;
             if (!player.isShiftKeyDown() && ((TileEntityLockableBase) entity).canAccess(player)
                     && entity instanceof TileEntityCrateBase crate && player instanceof ServerPlayer serverPlayer) {
-                dev.golem.core.gui.Menus.openWithPos(serverPlayer, crate, pos);
+                Menus.openWithPos(serverPlayer, crate, pos);
                 return InteractionResult.SUCCESS;
             }
         }
@@ -144,12 +147,12 @@ public class BlockDecoContainer extends CompatBlock implements TickingBlock {
 
     /** Structure rotation and mirroring turn the placed facing, as vanilla's directional blocks do. */
     @Override
-    public BlockState rotate(BlockState state, net.minecraft.world.level.block.Rotation rotation) {
+    public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    public BlockState mirror(BlockState state, net.minecraft.world.level.block.Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 }

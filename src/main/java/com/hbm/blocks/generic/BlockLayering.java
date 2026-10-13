@@ -45,7 +45,7 @@ public class BlockLayering extends SnowLayerBlock {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
-        // original-hbm (1.7.10) BlockLayering.getItemDropped returns null, and renderAsNormalBlock() is false so
+        // 1.7 BlockLayering.getItemDropped returns null, and renderAsNormalBlock() is false so
         // silk touch is impossible too: foam, boron sand, leaf and oil layers drop nothing at all.
         return List.of();
     }

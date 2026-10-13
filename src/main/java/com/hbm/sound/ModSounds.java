@@ -2,6 +2,7 @@ package com.hbm.sound;
 
 import com.hbm.Constants;
 import com.hbm.registration.Reg;
+import dev.golem.core.Ids;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
@@ -9,8 +10,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 
 /**
- * HBM sound events. The registry path is dotted + <b>all-lowercase</b> (e.g. {@code hbm:block.motor})
- * — 26.1 Identifier paths reject the 1.12.2 camelCase names (only {@code [a-z0-9/._-]} allowed), so the
+ * HBM sound events. The registry path is dotted + <b>all-lowercase</b> (e.g. {@code hbm:block.motor}).
+ * 26.1 Identifier paths reject the 1.12.2 camelCase names (only {@code [a-z0-9/._-]} allowed), so the
  * old {@code block.assemblerStrike} becomes {@code block.assembler_strike}. The {@code sounds.json} keys
  * must match these ids; the actual {@code .ogg} mapping lives in {@code assets/hbm/sounds.json}.
  */
@@ -45,7 +46,7 @@ public final class ModSounds {
     /** Machine-upgrade insertion "plug" click (old {@code item.upgradePlug}). */
     public static final RegistryObject<SoundEvent> UPGRADE_PLUG = register("item.upgrade_plug");
 
-    /** Handheld-gadget confirmation bleep (old {@code item.techBleep}) — oil detector etc. */
+    /** Handheld-gadget confirmation bleep (old {@code item.techBleep}), oil detector etc. */
     public static final RegistryObject<SoundEvent> TECH_BLEEP = register("item.tech_bleep");
     /** The detonator's bind confirmation. Old id {@code hbm:item.techBoop}. */
     public static final RegistryObject<SoundEvent> TECH_BOOP = register("item.tech_boop");
@@ -71,7 +72,7 @@ public final class ModSounds {
     /** Looping hum of the current BigInteger FEnSU. */
     public static final RegistryObject<SoundEvent> FENSU_HUM = REG.register(Registries.SOUND_EVENT, "block.fensu_hum",
             () -> SoundEvent.createFixedRangeEvent(
-                    dev.golem.core.Ids.of(Constants.MOD_ID, "block.fensu_hum"), 25F));
+                    Ids.of(Constants.MOD_ID, "block.fensu_hum"), 25F));
 
     /** The Scream upgrade's screaming-scientist sound (old {@code block.screm}). */
     public static final RegistryObject<SoundEvent> SCREM = register("block.screm");
@@ -112,9 +113,9 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> CHUNGUS_LEVER = register("block.chungus_lever");
     public static final RegistryObject<SoundEvent> CHUNGUS_TURBINE = register("block.chungus_turbine");
     public static final RegistryObject<SoundEvent> PYRO_OPERATE = REG.register(Registries.SOUND_EVENT, "block.pyro_operate",
-            () -> SoundEvent.createFixedRangeEvent(dev.golem.core.Ids.of(Constants.MOD_ID, "block.pyro_operate"), 15F));
+            () -> SoundEvent.createFixedRangeEvent(Ids.of(Constants.MOD_ID, "block.pyro_operate"), 15F));
     public static final RegistryObject<SoundEvent> IGENERATOR_OPERATE = REG.register(Registries.SOUND_EVENT, "block.igenerator_operate",
-            () -> SoundEvent.createFixedRangeEvent(dev.golem.core.Ids.of(Constants.MOD_ID, "block.igenerator_operate"), 10F));
+            () -> SoundEvent.createFixedRangeEvent(Ids.of(Constants.MOD_ID, "block.igenerator_operate"), 10F));
 
     /** Weapons. Old ids {@code weapon.fire.pistol}, {@code weapon.reload.dryFireClick} and
      * {@code weapon.revolverReload}, lowercased to satisfy 26.1's id charset. */
@@ -137,7 +138,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> METAL_STEP = register("step.metal");
     /** The four-variant step sound used by the old steel grate's custom SoundType. */
     public static final SoundEvent METAL_BLOCK_EVENT = SoundEvent.createVariableRangeEvent(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "step.metal_block"));
+            Ids.of(Constants.MOD_ID, "step.metal_block"));
     public static final RegistryObject<SoundEvent> METAL_BLOCK = REG.register(Registries.SOUND_EVENT, "step.metal_block",
             () -> METAL_BLOCK_EVENT);
     public static final RegistryObject<SoundEvent> IRON_JUMP = register("step.iron_jump");
@@ -158,7 +159,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent>[] GEIGER_SOUNDS =
             new RegistryObject[] {GEIGER_1, GEIGER_2, GEIGER_3, GEIGER_4, GEIGER_5, GEIGER_6};
 
-    // --- ntm-next entity port (gen_entity_sounds.py) ---
+    // ntm-next entity port (gen_entity_sounds.py)
     public static final RegistryObject<SoundEvent> ALARM_CHIME = register("alarm.chime");
     public static final RegistryObject<SoundEvent> ALARM_GAMBIT = register("alarm.gambit");
     public static final RegistryObject<SoundEvent> ALARM_SOYUZED = register("alarm.soyuzed");
@@ -196,16 +197,16 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> UFO_BLAST = register("ufo_blast");
     public static final RegistryObject<SoundEvent> SQUEAKY_TOY = register("block.squeakytoy");
 
-    // --- ntm-next entity port (gen_entity_sounds.py) ---
+    // ntm-next entity port (gen_entity_sounds.py)
     public static final RegistryObject<SoundEvent> GRENADE_NUKA = register("weapon.reload.grenade_nuka");
     public static final RegistryObject<SoundEvent> GRENADE_TECH = register("weapon.reload.grenade_tech");
 
-    // --- ntm-next entity port (gen_entity_sounds.py) ---
+    // ntm-next entity port (gen_entity_sounds.py)
     public static final RegistryObject<SoundEvent> TESLA_ZAP = register("weapon.tesla");
     /** 1.7 {@code hbm:weapon.teslaShoot} (sounds/weapon/teslaShoot.ogg): the Maskman's lasergun tesla attack. */
     public static final RegistryObject<SoundEvent> WEAPON_TESLA_SHOOT = register("weapon.teslashoot");
 
-    // --- ntm-next entity port (gen_entity_sounds.py) ---
+    // ntm-next entity port (gen_entity_sounds.py)
     public static final RegistryObject<SoundEvent> CRATE_BREAK = register("crate_break");
 
     public static final RegistryObject<SoundEvent> ALARM_SINGER = register("alarm.singer");

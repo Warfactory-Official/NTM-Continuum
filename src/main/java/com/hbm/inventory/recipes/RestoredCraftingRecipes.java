@@ -8,6 +8,8 @@ import com.hbm.lib.VanillaIds;
 import dev.golem.core.dejson.Crafting.Ingredient;
 import dev.golem.core.dejson.Crafting.Key;
 import dev.golem.core.dejson.Crafting.Stack;
+import java.util.Arrays;
+import java.util.Locale;
 
 import static dev.golem.core.dejson.Crafting.anyOf;
 import static dev.golem.core.dejson.Crafting.componentShaped;
@@ -25,12 +27,12 @@ import static dev.golem.core.dejson.Crafting.stack;
 import static dev.golem.core.dejson.Crafting.tag;
 
 /**
- * The original-hbm (1.7.10) crafting-table and furnace recipes the port was missing, restored in fix phase 1B
- * (History §19ej-1b) from the {@code ...Recipes.java} classes in {@code crafting}, {@code main/CraftingManager.java} and
+ * The 1.7 crafting-table and furnace recipes the port was missing, taken
+ * from the {@code ...Recipes.java} classes in {@code crafting}, {@code main/CraftingManager.java} and
  * {@code SmeltingRecipes.java} at default config. Each block names its 1.7 source lines.
  *
  * <p>Spelling conventions are the rest of the port's: a 1.7 ore-dictionary name is its {@code c:} tag, a metadata
- * variant is the flattened id (History §19es-itemvariant), a 1.7 cell is the port's {@code cell} carrying the fluid
+ * variant is the flattened id, a 1.7 cell is the port's {@code cell} carrying the fluid
  * and leaving the empty cell, {@code Items.potionitem} is the water bottle consumed whole. A result that carries
  * components goes through the mod's own component recipe types, which read result components on every target.
  * Recipes 1.7 decided in Java ({@code IRecipe} handlers) and the ones whose result is stack state a declaration
@@ -42,7 +44,7 @@ public final class RestoredCraftingRecipes {
     private static boolean declared;
 
     /** 1.7 fluid ids (declaration order of {@code Fluids}) of the fluids carried by 1.7's cell items. */
-    // registry names, never numeric fluid ids (History section 19ej-ids)
+    // registry names, never numeric fluid ids
     private static final String TRITIUM = "hbm:tritium", UF6 = "hbm:uf6", SAS3 = "hbm:sas3", AMAT = "hbm:amat",
             ASCHRAB = "hbm:aschrab";
 
@@ -75,12 +77,12 @@ public final class RestoredCraftingRecipes {
         handlers();
     }
 
-    // ---- helpers -------------------------------------------------------------------------------------------------
+    // Helpers
 
-    // 1.7's weapon-mod metadata, one item per constant here (ntm-next ids; History §19es-itemvariant)
+    // 1.7's weapon-mod metadata, one item per constant here (ntm-next ids)
     private static String modId(String base, String[] values, String name) {
-        if (!java.util.Arrays.asList(values).contains(name)) throw new IllegalArgumentException(name);
-        return "hbm:" + base + "_" + name.toLowerCase(java.util.Locale.ROOT);
+        if (!Arrays.asList(values).contains(name)) throw new IllegalArgumentException(name);
+        return "hbm:" + base + "_" + name.toLowerCase(Locale.ROOT);
     }
 
     private static Stack specialStack(String name) {
@@ -123,7 +125,7 @@ public final class RestoredCraftingRecipes {
         return idOrTag.startsWith("#") ? tag(idOrTag) : item(idOrTag);
     }
 
-    // ---- ConsumableRecipes ---------------------------------------------------------------------------------------
+    // ConsumableRecipes
 
     private static void consumables() {
         // :33-36 airstrike callers (bomb_caller metadata 0, 1, 2, 4 = carpet, napalm, chlorine, abomb)
@@ -170,7 +172,7 @@ public final class RestoredCraftingRecipes {
         componentShapeless(NS, id, stack(result), item(container), waterBottle(), item(VanillaIds.sugar), i(flavour));
     }
 
-    // ---- CraftingManager -----------------------------------------------------------------------------------------
+    // CraftingManager
 
     private static void crafting() {
         // :103 asbestos cloth (Blocks.wool is any colour: 1.7 recipes read a Block ingredient as wildcard metadata)
@@ -190,7 +192,7 @@ public final class RestoredCraftingRecipes {
         shaped(NS, "blades_titanium_sharpen", ItemIds.blades_titanium, rows("PIP"),
                 "P", TagIds.plates_titanium, "I", ItemIds.blades_titanium);
         // :392-393 any coloured concrete back to smooth concrete
-        // (1.7 wildcard metadata: every colour, one item each here; History §19es-itemvariant)
+        // (1.7 wildcard metadata: every colour, one item each here)
         componentShapeless(NS, "concrete_smooth_from_colored", stack(ItemIds.concrete_smooth), anyOf("hbm:concrete_white", "hbm:concrete_orange", "hbm:concrete_magenta", "hbm:concrete_light_blue", "hbm:concrete_yellow", "hbm:concrete_lime", "hbm:concrete_pink", "hbm:concrete_gray", "hbm:concrete_silver", "hbm:concrete_cyan", "hbm:concrete_purple", "hbm:concrete_blue", "hbm:concrete_brown", "hbm:concrete_green", "hbm:concrete_red", "hbm:concrete_black"));
         componentShapeless(NS, "concrete_smooth_from_colored_ext", stack(ItemIds.concrete_smooth), anyOf("hbm:concrete_ext_machine", "hbm:concrete_ext_machine_stripe", "hbm:concrete_ext_indigo", "hbm:concrete_ext_purple", "hbm:concrete_ext_pink", "hbm:concrete_ext_hazard", "hbm:concrete_ext_sand", "hbm:concrete_ext_bronze"));
         // :429 compound bricks
@@ -254,11 +256,11 @@ public final class RestoredCraftingRecipes {
                 rows("SSS", "SDS", "SSS"), k("S", "#hbm:steel_scaffolds"), k("D", dye));
     }
 
-    // ---- MineralRecipes ------------------------------------------------------------------------------------------
+    // MineralRecipes
 
     private static void minerals() {
         // :95-104 add1To9PairSameMeta for every waste class of the long/short storage-drum waste; each class is an item
-        // of its own ({@code <family>_<class>}, History §19es-itemvariant)
+        // of its own ({@code <family>_<class>})
         // 1.7's metadata order (ItemWasteLong/ItemWasteShort.WasteClass), as ItemWasteStorage's enums
         String[] longClasses = {"uranium235", "uranium233", "neptunium", "thorium", "schrabidium"};
         String[] shortClasses = {"uranium235", "uranium233", "neptunium", "plutonium239", "plutonium240", "plutonium241",
@@ -288,7 +290,7 @@ public final class RestoredCraftingRecipes {
         shaped(NS, b + "_to_" + a + "_" + c, one, rows("###", "###", "###"), "#", nine);
     }
 
-    // ---- PowderRecipes -------------------------------------------------------------------------------------------
+    // PowderRecipes
 
     private static void powders() {
         // :50-51 nitan mix, :56-57 desh mix
@@ -305,7 +307,7 @@ public final class RestoredCraftingRecipes {
                 TagIds.dusts_lithium, TagIds.dusts_neodymium, TagIds.dusts_niobium);
     }
 
-    // ---- WeaponRecipes -------------------------------------------------------------------------------------------
+    // WeaponRecipes
 
     private static void weapons() {
         // :89, :100, :103 the three guns with a scope
@@ -432,16 +434,16 @@ public final class RestoredCraftingRecipes {
         ingredients[0] = i(core);
         for (int n = 1; n <= count; n++) ingredients[n] = i(material);
         ingredients[count + 1] = item(ItemIds.ducttape);
-        componentShapeless(NS, "weapon_mod_generic_" + name.toLowerCase(java.util.Locale.ROOT), generic(name),
+        componentShapeless(NS, "weapon_mod_generic_" + name.toLowerCase(Locale.ROOT), generic(name),
                 ingredients);
     }
 
     private static void specialMod(String name, String[] pattern, Key... keys) {
-        componentShaped(NS, "weapon_mod_special_" + name.toLowerCase(java.util.Locale.ROOT), specialStack(name), pattern,
+        componentShaped(NS, "weapon_mod_special_" + name.toLowerCase(Locale.ROOT), specialStack(name), pattern,
                 keys);
     }
 
-    // ---- ToolRecipes ---------------------------------------------------------------------------------------------
+    // ToolRecipes
 
     private static void tools() {
         // :145 blowtorch (1.7 getEmptyTool: an empty torch, the port's default stack)
@@ -470,7 +472,7 @@ public final class RestoredCraftingRecipes {
         shaped(NS, "cart_crate", "hbm:cart_crate", rows("C", "S"), "C", ItemIds.crate_steel, "S", VanillaIds.minecart);
     }
 
-    // ---- CraftingManager:90-91, the BlockMultiSlab loop: the two slabs the port lacked ----------------------------
+    // CraftingManager:90-91, the BlockMultiSlab loop: the two slabs the port lacked
 
     private static void slabs() {
         componentShaped(NS, "lightstone_tile_slab", stack(ItemIds.lightstone_tile_slab, 6), rows("###"),
@@ -480,7 +482,7 @@ public final class RestoredCraftingRecipes {
         shaped(NS, "brick_ducrete_slab", ItemIds.brick_ducrete_slab, 6, rows("###"), "#", ItemIds.brick_ducrete);
     }
 
-    // ---- SmeltingRecipes -----------------------------------------------------------------------------------------
+    // SmeltingRecipes
 
     private static void smelting() {
         smelt(NS, "glass_uranium", ItemIds.sand_uranium, ItemIds.glass_uranium, 0.25);              // :128
@@ -488,7 +490,7 @@ public final class RestoredCraftingRecipes {
         smelt(NS, "ingot_polymer_from_scrap_plastic", "#hbm:scrap_plastic", ItemIds.ingot_polymer, 0.1); // :173, any meta
     }
 
-    // ---- 1.7 IRecipe handlers, and recipes whose result is stack state -------------------------------------------
+    // 1.7 IRecipe handlers, and recipes whose result is stack state
 
     private static void handlers() {
         special(NS, "grenade_universal", "hbm:grenade_universal");        // GrenadeCraftingHandler

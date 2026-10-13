@@ -6,6 +6,7 @@ import com.hbm.world.gen.NTMWorldGenerator;
 import com.hbm.world.gen.nbt.NBTStructure;
 import com.hbm.world.gen.nbt.SpawnCondition;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
@@ -47,7 +48,7 @@ public final class NTMStructureGameTests {
     }
 
     /** The {@code random_spread} of {@code hbm:ntm_structures} picks exactly the chunk 1.7 picked, for any seed and region. */
-    public static void regionPick(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void regionPick(GameTestHelper helper) {
         RandomSpreadStructurePlacement placement = new RandomSpreadStructurePlacement(16, 4, RandomSpreadType.LINEAR, NTMStructureDeclarations.SALT);
         long[] seeds = {0L, 4815162342L, -1L, 123456789012345L, Long.MIN_VALUE + 7};
         int checked = 0;
@@ -75,7 +76,7 @@ public final class NTMStructureGameTests {
             "tower_base"};
 
     /** Every 1.7 spawn is registered with its piece loaded, the two null weights have none, heights are 1.7's. */
-    public static void spawnsRegistered(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void spawnsRegistered(GameTestHelper helper) {
         NTMWorldGenerator.registerSpawns();
         for (String name : SPAWNS) {
             SpawnCondition spawn = NBTStructure.getStructure(name);
@@ -97,7 +98,7 @@ public final class NTMStructureGameTests {
      * Every palette entry of all 33 structures resolves in all four rotations without throwing (1.21.1 once crashed world
      * generation on the dish: a 1.7 metadata value vanilla's flattening marks "%%FILTER_ME%%").
      */
-    public static void palettesResolve(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void palettesResolve(GameTestHelper helper) {
         NTMWorldGenerator.registerSpawns();
         BlockPos origin = helper.absolutePos(new BlockPos(0, 1, 0));
         for (String name : SPAWNS) {
@@ -120,7 +121,7 @@ public final class NTMStructureGameTests {
      * built again clipped to a box it writes nothing outside that box; it survives a save/load round trip; and its two
      * loot placeholders replace themselves with filled containers once they tick.
      */
-    public static void componentBuild(net.minecraft.gametest.framework.GameTestHelper helper) {
+    public static void componentBuild(GameTestHelper helper) {
         NTMWorldGenerator.registerSpawns();
         ServerLevel level = helper.getLevel();
         SpawnCondition spawn = NBTStructure.getStructure("desert_shack_1");

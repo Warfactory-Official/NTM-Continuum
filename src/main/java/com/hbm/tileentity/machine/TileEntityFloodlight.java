@@ -5,6 +5,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -128,7 +129,7 @@ public class TileEntityFloodlight extends TileEntityLoadedBase implements IEnerg
             if (iX == xCoord && iY == yCoord && iZ == zCoord) continue;
             BlockPos at = new BlockPos(iX, iY, iZ);
             // 1.7: getLightOpacity < 127 passes (glass, air, leaves); a non-solid-rendering block is the same test here
-            if (!dev.golem.core.world.Compat.isSolidRender(level.getBlockState(at), level, at)) continue;
+            if (!Compat.isSolidRender(level.getBlockState(at), level, at)) continue;
             int fX = (int) Math.floor(xCoord + 0.5 + dir.x * (i - 1));
             int fY = (int) Math.floor(yCoord + 0.5 + dir.y * (i - 1));
             int fZ = (int) Math.floor(zCoord + 0.5 + dir.z * (i - 1));

@@ -7,13 +7,14 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import com.hbm.tileentity.ModPowerGenBlockEntities;
 
 /**
- * 1.7 {@code TileEntityMachineIGenerator} — the industrial generator memorial. The whole generation loop is
+ * 1.7 {@code TileEntityMachineIGenerator}, the industrial generator memorial. The whole generation loop is
  * commented out upstream ("o7"), the GUI provider returns null and the block never opens it; what remains is
  * a 21-slot inventory, three tanks and their NBT, kept here so a world carrying one round-trips unchanged.
  * The rotor angle it renders with is never advanced, exactly as upstream.
@@ -63,7 +64,7 @@ public class TileEntityMachineIGenerator extends TileEntityMachineBase {
     /** 1.7: only the four solid-fuel slots take anything, and only burnable items. */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        return slot >= 3 && slot <= 6 && level != null && dev.golem.core.world.Compat.burnDuration(level, stack) > 0;
+        return slot >= 3 && slot <= 6 && level != null && Compat.burnDuration(level, stack) > 0;
     }
 
     @Override

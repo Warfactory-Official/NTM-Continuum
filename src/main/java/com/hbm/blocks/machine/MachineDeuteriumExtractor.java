@@ -10,6 +10,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityDeuteriumExtractor;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -25,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Single-block heavy-water extractor. */
-public class MachineDeuteriumExtractor extends dev.golem.core.world.CompatBlock
+public class MachineDeuteriumExtractor extends CompatBlock
         implements TickingBlock, IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay {
 
     public MachineDeuteriumExtractor(Properties properties) {

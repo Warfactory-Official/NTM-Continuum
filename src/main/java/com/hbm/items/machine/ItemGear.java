@@ -7,7 +7,7 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * One of 1.7's two large gears ({@code gear_large} metadata 0, {@code gear_large_steel} metadata 1): two registered
- * items as in ntm-next (History §19es-itemvariant); the item knows which one it is.
+ * items as in ntm-next; the item knows which one it is.
  */
 public class ItemGear extends CompatItem implements LegacyMeta {
 

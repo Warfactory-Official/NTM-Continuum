@@ -1,29 +1,42 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.api.block.IToolable;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.IBlockExplodedVNT;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
+import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Refinery block — 1:1 port of the 1.12.2 {@code MachineRefinery}: a 3×3×9 the folded core
+ * Refinery block, 1:1 port of the 1.12.2 {@code MachineRefinery}: a 3×3×9 footprint on the folded core
  * (dims {@code {8,0,1,1,1,1}}, offset 1) with the 4 base corners marked as extras (the fluid ports).
  */
 public class MachineRefinery extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder,
-        com.hbm.explosion.vanillant.IBlockExplodedVNT, com.hbm.api.block.IToolable, com.hbm.interfaces.ILookOverlay {
+        IBlockExplodedVNT, IToolable, ILookOverlay {
 
     public MachineRefinery(Properties properties) {
         super(properties);
@@ -72,42 +85,42 @@ public class MachineRefinery extends BlockMultiblockMachine implements IEnergyCo
         }
     }
 
-    // --- 1.7 explosion damage and blowtorch repair (MachineExplosionDamage) ---
+    // 1.7 explosion damage and blowtorch repair (MachineExplosionDamage)
 
     /** 1.7 {@code onBlockExploded}: vanilla explosions. */
     @Override
-    protected boolean onExplosion(BlockState state, net.minecraft.server.level.ServerLevel level, BlockPos pos,
-                                  net.minecraft.world.level.Explosion explosion,
-                                  java.util.function.BiConsumer<net.minecraft.world.item.ItemStack, BlockPos> onHit) {
+    protected boolean onExplosion(BlockState state, ServerLevel level, BlockPos pos,
+                                  Explosion explosion,
+                                  BiConsumer<ItemStack, BlockPos> onHit) {
         return MachineExplosionDamage.hit(level, pos, explosion, explosion.getDirectSourceEntity())
                 || super.onExplosion(state, level, pos, explosion, onHit);
     }
 
     /** 1.7 {@code onBlockExploded}: HBM's own (VNT) explosions. */
     @Override
-    public boolean onVNTExploded(net.minecraft.server.level.ServerLevel level, BlockPos pos, BlockState state,
-                                 com.hbm.explosion.vanillant.ExplosionVNT explosion) {
+    public boolean onVNTExploded(ServerLevel level, BlockPos pos, BlockState state,
+                                 ExplosionVNT explosion) {
         return MachineExplosionDamage.hit(level, pos, explosion, explosion.exploder);
     }
 
     @Override
-    public boolean onScrew(Level level, net.minecraft.world.entity.player.Player player, BlockPos pos, Direction side,
-                           net.minecraft.world.phys.Vec3 hit, net.minecraft.world.InteractionHand hand, ToolType tool) {
+    public boolean onScrew(Level level, Player player, BlockPos pos, Direction side,
+                           Vec3 hit, InteractionHand hand, ToolType tool) {
         if (tool != ToolType.TORCH) return false;
         return MachineExplosionDamage.repair(level, pos, player);
     }
 
     @Override
-    public com.hbm.interfaces.ILookOverlay.@Nullable Data getLookOverlay(Level level, BlockPos pos,
-                                                                        net.minecraft.world.entity.player.Player player) {
+    public ILookOverlay.@Nullable Data getLookOverlay(Level level, BlockPos pos,
+                                                                        Player player) {
         return MachineExplosionDamage.overlay(level, pos, player, getName().getString());
     }
 
     /** 1.7: a blown-open machine opens no GUI. */
     @Override
-    protected net.minecraft.world.InteractionResult useAtCore(BlockState state, Level level, BlockPos core,
-            net.minecraft.world.entity.player.Player player, net.minecraft.world.phys.BlockHitResult hit) {
-        if (MachineExplosionDamage.blownOpen(level, core)) return net.minecraft.world.InteractionResult.TRY_WITH_EMPTY_HAND;
+    protected InteractionResult useAtCore(BlockState state, Level level, BlockPos core,
+            Player player, BlockHitResult hit) {
+        if (MachineExplosionDamage.blownOpen(level, core)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         return super.useAtCore(state, level, core, player, hit);
     }
 }

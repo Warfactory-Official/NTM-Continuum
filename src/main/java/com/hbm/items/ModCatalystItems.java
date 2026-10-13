@@ -26,7 +26,7 @@ public final class ModCatalystItems {
         return item;
     }
 
-    /** The blank catalyst remains the generated {@link ModItems} entry and is intentionally not duplicated. */
+    /** The blank catalyst remains the generated {@link ModItems} entry and is not duplicated. */
     public static final RegistryObject<Item> blank = ModItems.ams_catalyst_blank;
     public static final RegistryObject<ItemCatalyst> iron = catalyst("ams_catalyst_iron", 0xFF7E22, 10, 0.50F, 1.50F, 1.50F)
             .transform(Presets.sprite());

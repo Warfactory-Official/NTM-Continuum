@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.material.FluidState;
 import dev.golem.core.world.BlockTickScheduler;
@@ -25,16 +26,16 @@ import java.util.Map;
 
 /**
  * Decorative building blocks ported from 1.12.2 {@code DecoBlock}: a horizontal-facing, non-occluding block
- * whose <b>visual</b> comes entirely from its (mostly-transparent) JSON model — 26.1 auto-classifies such a
+ * whose <b>visual</b> comes entirely from its (mostly-transparent) JSON model. 26.1 auto-classifies such a
  * model as the cutout render layer from the sprite's transparency, so no render-layer registration is needed.
  *
  * <p>The {@link Shape} fixes the <b>collision/outline</b> box, which for several variants is a thin slice that
- * does not match the full-cube visual (faithful to the original {@code getBoundingBox}/{@code addCollisionBox}
+ * does not match the full-cube visual (as the original {@code getBoundingBox}/{@code addCollisionBox}
  * switch): {@code WALL} = a 2px slab on one side, {@code CORNER} = two such slabs, {@code ROOF} = a 1px floor,
- * {@code BEAM} = a central 2×2 post, {@code FULL} = a normal cube. The old easter-egg statue variants
- * ({@code DecoBlockAlt}) are intentionally not ported here. Waterloggable (port addition, see {@link Waterlogging}).
+ * {@code BEAM} = a central 2×2 post, {@code FULL} = a normal cube. The easter-egg statue variants
+ * ({@code DecoBlockAlt}) are not ported here. Waterloggable (a port addition, see {@link Waterlogging}).
  */
-public class BlockDeco extends dev.golem.core.world.CompatBlock implements SimpleWaterloggedBlock {
+public class BlockDeco extends CompatBlock implements SimpleWaterloggedBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 

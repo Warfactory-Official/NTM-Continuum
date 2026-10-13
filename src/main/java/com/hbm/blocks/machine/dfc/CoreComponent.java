@@ -1,8 +1,12 @@
 package com.hbm.blocks.machine.dfc;
 
+import dev.golem.core.gui.Menus;
+import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
+import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -29,21 +33,21 @@ import org.jspecify.annotations.Nullable;
 import java.util.function.BiFunction;
 
 /**
- * The four aimed parts of a dark fusion core — emitter, receiver, injector, stabiliser. All four share
+ * The four aimed parts of a dark fusion core: emitter, receiver, injector, stabiliser. All four share
  * this block: a full six-way facing set by the face the player points at, a block entity supplied by the
  * factory each registration passes in, and a model drawn entirely by the renderer so the beam can leave
  * the block's own cell.
  */
-public class CoreComponent extends CompatBlock implements dev.golem.core.registry.TickingBlock {
+public class CoreComponent extends CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
     private final BiFunction<BlockPos, BlockState, BlockEntity> factory;
-    private final java.util.function.Supplier<BlockEntityType<?>> type;
+    private final Supplier<BlockEntityType<?>> type;
     private final BlockEntityTicker<BlockEntity> ticker;
 
     public <T extends BlockEntity> CoreComponent(BiFunction<BlockPos, BlockState, T> factory,
-                                                 java.util.function.Supplier<BlockEntityType<?>> type,
+                                                 Supplier<BlockEntityType<?>> type,
                                                  BlockEntityTicker<T> ticker, Properties properties) {
         super(properties);
         this.factory = factory::apply;
@@ -85,9 +89,9 @@ public class CoreComponent extends CompatBlock implements dev.golem.core.registr
                                                  BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
-        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+        if (player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+            Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }

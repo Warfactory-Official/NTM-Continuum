@@ -4,31 +4,80 @@ import com.hbm.Constants;
 import com.hbm.api.data.DepositDataMaps;
 import com.hbm.api.data.ReactorDataMaps;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.ModConveyorBlocks;
+import com.hbm.blocks.ModEnergyNetBlocks;
 import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModOilBlocks;
+import com.hbm.blocks.bomb.ModBombBlocks;
+import com.hbm.blocks.generic.BlockBobble;
+import com.hbm.blocks.generic.BlockGasBase;
+import com.hbm.blocks.machine.DemonLamp;
+import com.hbm.blocks.machine.MachineCapacitor;
+import com.hbm.blocks.machine.MachineElectrolyser;
+import com.hbm.blocks.machine.MachineExplosionDamage;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.entity.effect.EntityNukeTorex;
+import com.hbm.entity.item.EntityTntNtm;
+import com.hbm.entity.logic.EntityBalefire;
+import com.hbm.entity.mob.EntityGhost;
+import com.hbm.explosion.ExplosionBalefire;
+import com.hbm.explosion.ExplosionNukeCustom;
+import com.hbm.handler.ability.IToolAreaAbility;
+import com.hbm.hazard.HazardRegistry;
+import com.hbm.hazard.HazardSystem;
+import com.hbm.hazard.type.HazardTypeRadiation;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.PedestalRecipes.PedestalExtraCondition;
 import com.hbm.inventory.recipes.RTGRecipes;
 import com.hbm.inventory.recipes.SILEXRecipes;
+import com.hbm.items.LegacyMetaIds;
 import com.hbm.items.ModRtgContent;
+import com.hbm.items.ModStorageDrumItems;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
-import com.hbm.tags.HbmBlockTags;
+import com.hbm.items.special.ItemCell;
+import com.hbm.items.special.ItemWasteStorage;
+import com.hbm.items.tool.ItemDosimeter;
+import com.hbm.lib.HbmBlockTags;
+import com.hbm.tileentity.bomb.TileEntityNukeCustom;
+import com.hbm.tileentity.machine.BlockEntityDecon;
+import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import com.hbm.tileentity.machine.TileEntityFEL;
+import com.hbm.tileentity.machine.TileEntityGeiger;
+import com.hbm.tileentity.machine.TileEntityReactorResearch;
+import com.hbm.tileentity.machine.TileEntityStorageDrum;
 import com.hbm.tileentity.machine.oil.TileEntityMachineFrackingTower;
 import com.hbm.tileentity.machine.oil.TileEntityMachineOilWell;
 import com.hbm.tileentity.machine.rbmk.RBMKColumnType;
+import com.hbm.tileentity.machine.storage.TileEntityBarrel;
+import com.hbm.tileentity.network.TileEntityCranePartitioner;
+import com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube;
+import com.hbm.util.ContaminationUtil;
 import com.mojang.serialization.JsonOps;
+import dev.golem.core.Ids;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.hook.Verdict;
+import dev.golem.core.platform.Platform;
 import dev.golem.core.world.BlockPlaces;
 import dev.golem.core.world.Evaporation;
 import com.google.gson.JsonPrimitive;
+import dev.golem.core.world.Recipes;
+import java.util.ArrayList;
+import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.feline.Ocelot;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -36,6 +85,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -93,7 +144,7 @@ public final class AddonEnumGameTests {
 
     public static void init() {}
 
-    // ------------------------------------------------------------------ plain HBM = original-hbm (user rule 2026-10-11)
+    // Plain HBM = 1.7
 
     /**
      * The storage-drum waste classes are in 1.7's {@code ItemWasteLong/ItemWasteShort.WasteClass} order, which is 1.7's
@@ -104,53 +155,53 @@ public final class AddonEnumGameTests {
         String[] longOrder = {"URANIUM235", "URANIUM233", "NEPTUNIUM", "THORIUM", "SCHRABIDIUM"};
         String[] shortOrder = {"URANIUM235", "URANIUM233", "NEPTUNIUM", "PLUTONIUM239", "PLUTONIUM240", "PLUTONIUM241",
                 "AMERICIUM242", "SCHRABIDIUM"};
-        var longValues = com.hbm.items.special.ItemWasteStorage.LongWasteClass.values();
-        var shortValues = com.hbm.items.special.ItemWasteStorage.ShortWasteClass.values();
+        var longValues = ItemWasteStorage.LongWasteClass.values();
+        var shortValues = ItemWasteStorage.ShortWasteClass.values();
         helper.assertTrue(longValues.length == longOrder.length && shortValues.length == shortOrder.length,
                 "1.7 has 5 long and 8 short waste classes");
         for (int i = 0; i < longOrder.length; i++) {
             helper.assertTrue(longValues[i].name().equals(longOrder[i]), "long waste class " + i + " must be 1.7's " + longOrder[i]);
-            String id = longOrder[i].toLowerCase(java.util.Locale.ROOT);
-            helper.assertTrue(("hbm:nuclear_waste_long_tiny_" + id).equals(com.hbm.items.LegacyMetaIds.lookup("nuclear_waste_long_tiny", i)),
+            String id = longOrder[i].toLowerCase(Locale.ROOT);
+            helper.assertTrue(("hbm:nuclear_waste_long_tiny_" + id).equals(LegacyMetaIds.lookup("nuclear_waste_long_tiny", i)),
                     "QMAW hbm:nuclear_waste_long_tiny:" + i + " must be " + id);
-            helper.assertTrue(dev.golem.core.world.Recipes.hasRecipe(helper.getLevel(), "hbm",
+            helper.assertTrue(Recipes.hasRecipe(helper.getLevel(), "hbm",
                             "nuclear_waste_long_to_nuclear_waste_long_tiny_" + i),
                     "missing 1:9 recipe for long class " + i);
         }
         for (int i = 0; i < shortOrder.length; i++) {
             helper.assertTrue(shortValues[i].name().equals(shortOrder[i]), "short waste class " + i + " must be 1.7's " + shortOrder[i]);
-            String id = shortOrder[i].toLowerCase(java.util.Locale.ROOT);
-            helper.assertTrue(("hbm:nuclear_waste_short_" + id).equals(com.hbm.items.LegacyMetaIds.lookup("nuclear_waste_short", i)),
+            String id = shortOrder[i].toLowerCase(Locale.ROOT);
+            helper.assertTrue(("hbm:nuclear_waste_short_" + id).equals(LegacyMetaIds.lookup("nuclear_waste_short", i)),
                     "QMAW hbm:nuclear_waste_short:" + i + " must be " + id);
         }
-        helper.assertTrue(String.valueOf(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(
-                                com.hbm.items.ModStorageDrumItems.nuclear_waste_long.get())).equals("hbm:nuclear_waste_long_uranium235")
-                        && String.valueOf(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(
-                                com.hbm.items.ModStorageDrumItems.nuclear_waste_short.get())).equals("hbm:nuclear_waste_short_uranium235"),
+        helper.assertTrue(String.valueOf(BuiltInRegistries.ITEM.getKey(
+                                ModStorageDrumItems.nuclear_waste_long.get())).equals("hbm:nuclear_waste_long_uranium235")
+                        && String.valueOf(BuiltInRegistries.ITEM.getKey(
+                                ModStorageDrumItems.nuclear_waste_short.get())).equals("hbm:nuclear_waste_short_uranium235"),
                 "each family's class-0 stand-in must be 1.7's meta 0, uranium-235");
         // the recipe named _3 turns 1.7's meta 3 (thorium) into nine tiny thorium
-        ItemStack thorium = new ItemStack(com.hbm.items.ModStorageDrumItems.nuclear_waste_long.get(3));
-        helper.assertTrue(dev.golem.core.world.Recipes.craftingResult(helper.getLevel(), thorium)
-                        .map(out -> out.getCount() == 9 && out.is(com.hbm.items.ModStorageDrumItems.nuclear_waste_long_tiny.get(3)))
+        ItemStack thorium = new ItemStack(ModStorageDrumItems.nuclear_waste_long.get(3));
+        helper.assertTrue(Recipes.craftingResult(helper.getLevel(), thorium)
+                        .map(out -> out.getCount() == 9 && out.is(ModStorageDrumItems.nuclear_waste_long_tiny.get(3)))
                         .orElse(false),
                 "long thorium waste must craft into nine tiny thorium");
         helper.succeed();
     }
 
-    /** Plain HBM's twelve Watz pellets keep original-hbm's 5e8 yield (NTM: Space patches hbm-space's 1e9 in). */
+    /** Plain HBM's twelve Watz pellets keep 1.7's 5e8 yield (NTM: Space patches hbm-space's 1e9 in). */
     private static void watzYield(GameTestHelper helper) {
         int count = 0;
         for (var entry : ReactorDataMaps.WATZ_PELLET.byId().entrySet()) {
             if (!entry.getKey().startsWith("hbm:")) continue;
             count++;
             helper.assertTrue(entry.getValue().yield() == 500_000_000D,
-                    entry.getKey() + " yield " + entry.getValue().yield() + ", original-hbm 5e8");
+                    entry.getKey() + " yield " + entry.getValue().yield() + ", 1.7 5e8");
         }
-        helper.assertTrue(count == 12, "original-hbm has 12 Watz pellets, got " + count);
+        helper.assertTrue(count == 12, "1.7 has 12 Watz pellets, got " + count);
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ E-081: FEL wavelengths
+    // E-081: FEL wavelengths
 
     private static void wavelengths(GameTestHelper helper) {
         String[] names = {"NULL", "IR", "VISIBLE", "UV", "GAMMA", "DRX"};
@@ -166,7 +217,7 @@ public final class AddonEnumGameTests {
             int power = (int) (TileEntityFEL.powerReq * (i == 0 ? 0 : Math.pow(3, i)));
             helper.assertTrue(TileEntityFEL.requiredPower(wavelength) == power,
                     "FEL draw of " + names[i] + " differs from 1.7: " + TileEntityFEL.requiredPower(wavelength));
-            String lower = names[i].toLowerCase(java.util.Locale.ROOT);
+            String lower = names[i].toLowerCase(Locale.ROOT);
             var decoded = SILEXRecipes.WAVELENGTH.parse(JsonOps.INSTANCE, new JsonPrimitive(lower));
             helper.assertTrue(decoded.result().orElse(null) == wavelength
                             && SILEXRecipes.WAVELENGTH.encodeStart(JsonOps.INSTANCE, wavelength).result()
@@ -180,7 +231,7 @@ public final class AddonEnumGameTests {
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ E-055: pedestal conditions
+    // E-055: pedestal conditions
 
     private static void pedestal(GameTestHelper helper) {
         String[] names = {"NONE", "FULL_MOON", "NEW_MOON", "SUN", "GOOD_KARMA", "BAD_KARMA"};
@@ -218,12 +269,12 @@ public final class AddonEnumGameTests {
         helper.succeed();
     }
 
-    private static boolean site(PedestalExtraCondition condition, net.minecraft.server.level.ServerLevel level, BlockPos pos,
+    private static boolean site(PedestalExtraCondition condition, ServerLevel level, BlockPos pos,
                                 float angle, int moon) {
         return condition.holds(new PedestalExtraCondition.Site(level, pos, angle, moon, List.of()));
     }
 
-    // ------------------------------------------------------------------ E-019: RBMK console column types
+    // E-019: RBMK console column types
 
     private static void rbmk(GameTestHelper helper) {
         // 1.7 TileEntityRBMKConsole.ColumnType: name, atlas offset, in order
@@ -240,7 +291,7 @@ public final class AddonEnumGameTests {
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ H-52: water pump ground
+    // H-52: water pump ground
 
     private static void pumpGround(GameTestHelper helper) {
         // 1.7 TileEntityMachinePumpBase.validBlocks
@@ -256,7 +307,7 @@ public final class AddonEnumGameTests {
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ H-23: fluid deposits
+    // H-23: fluid deposits
 
     private static boolean blightArmed;
 
@@ -288,10 +339,10 @@ public final class AddonEnumGameTests {
         helper.assertTrue(DepositDataMaps.emptyState(oil.defaultBlockState(), ModBlocks.ore_oil_empty.get())
                         == ModBlocks.ore_oil_empty.get().defaultBlockState(),
                 "ore_oil must drain into ore_oil_empty's default state");
-        var log = Blocks.OAK_LOG.defaultBlockState().setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS,
-                net.minecraft.core.Direction.Axis.X);
-        helper.assertTrue(DepositDataMaps.emptyState(log, Blocks.BIRCH_LOG).getValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS)
-                        == net.minecraft.core.Direction.Axis.X
+        var log = Blocks.OAK_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,
+                Direction.Axis.X);
+        helper.assertTrue(DepositDataMaps.emptyState(log, Blocks.BIRCH_LOG).getValue(RotatedPillarBlock.AXIS)
+                        == Direction.Axis.X
                         && DepositDataMaps.emptyState(log, Blocks.STONE) == Blocks.STONE.defaultBlockState(),
                 "emptyState must carry shared property values and drop the rest");
         helper.succeed();
@@ -356,7 +407,7 @@ public final class AddonEnumGameTests {
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ R-61: RTG decay pairs
+    // R-61: RTG decay pairs
 
     private static void rtgDecayPairs(GameTestHelper helper) {
         Map<ItemStack, ItemStack> pairs = RTGRecipes.decayPairs();
@@ -373,7 +424,7 @@ public final class AddonEnumGameTests {
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ H-49 / H-50: Golem hooks
+    // H-49 / H-50: Golem hooks
 
     private static volatile BlockPos evaporateAt;
     private static volatile BlockPos placedAt;
@@ -393,7 +444,7 @@ public final class AddonEnumGameTests {
             // the four-argument form is the dispenser's path (H-50); a player's bucket reaches the same query (H-49)
             helper.assertTrue(bucket.emptyContents(null, level, dry, null), "an evaporating bucket still empties");
             helper.assertTrue(level.getBlockState(dry).isAir(), "Evaporation ALLOW must keep the water from being placed");
-            helper.assertTrue(bucket.emptyContents(null, level, wet, null) && level.getFluidState(wet).is(net.minecraft.tags.FluidTags.WATER),
+            helper.assertTrue(bucket.emptyContents(null, level, wet, null) && level.getFluidState(wet).is(FluidTags.WATER),
                     "with no listener deciding, water must be placed as in vanilla");
         } finally {
             evaporateAt = null;
@@ -409,7 +460,7 @@ public final class AddonEnumGameTests {
         level.setBlock(support, Blocks.STONE.defaultBlockState(), 3);
         level.setBlock(support.above(), Blocks.AIR.defaultBlockState(), 3);
         placedAt = null;
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ItemStack stack = new ItemStack(Items.GLOWSTONE);
         player.setItemInHand(InteractionHand.MAIN_HAND, stack);
         BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(support), Direction.UP, support, false);
@@ -424,7 +475,7 @@ public final class AddonEnumGameTests {
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ H-65: balefire crater variant
+    // H-65: balefire crater variant
 
     /**
      * A variant that keeps every block and places no balefire: the column survives, no fire appears, and the floor
@@ -439,23 +490,23 @@ public final class AddonEnumGameTests {
                 level.setBlock(centre.offset(dx, 0, dz), Blocks.STONE.defaultBlockState(), 3);
             }
         }
-        helper.assertTrue(com.hbm.explosion.ExplosionBalefire.variant(null) == null
-                        && com.hbm.explosion.ExplosionBalefire.variant(dev.golem.core.Ids.of("hbm", "no_such_variant")) == null,
+        helper.assertTrue(ExplosionBalefire.variant(null) == null
+                        && ExplosionBalefire.variant(Ids.of("hbm", "no_such_variant")) == null,
                 "an unknown or absent variant must be plain balefire");
-        java.util.List<Integer> layers = new java.util.ArrayList<>();
-        com.hbm.explosion.ExplosionBalefire exp = new com.hbm.explosion.ExplosionBalefire(
+        List<Integer> layers = new ArrayList<>();
+        ExplosionBalefire exp = new ExplosionBalefire(
                 centre.getX(), centre.getY(), centre.getZ(), level, 2);
-        exp.variant = new com.hbm.explosion.ExplosionBalefire.Variant() {
-            @Override public boolean keep(com.hbm.explosion.ExplosionBalefire e, BlockPos pos, net.minecraft.world.level.block.state.BlockState state) { return true; }
+        exp.variant = new ExplosionBalefire.Variant() {
+            @Override public boolean keep(ExplosionBalefire e, BlockPos pos, BlockState state) { return true; }
             @Override public boolean balefire() { return false; }
-            @Override public void floor(com.hbm.explosion.ExplosionBalefire e, int x, int depth, int z, int dist, int layer) { layers.add(depth - layer); }
+            @Override public void floor(ExplosionBalefire e, int x, int depth, int z, int dist, int layer) { layers.add(depth - layer); }
         };
         int guard = 0;
         while (!exp.update() && guard++ < 1000) {}
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
                 helper.assertTrue(level.getBlockState(centre.offset(dx, 0, dz)).is(Blocks.STONE), "a kept block was removed");
-                helper.assertTrue(!level.getBlockState(centre.offset(dx, 1, dz)).is(com.hbm.blocks.bomb.ModBombBlocks.balefire.get()),
+                helper.assertTrue(!level.getBlockState(centre.offset(dx, 1, dz)).is(ModBombBlocks.balefire.get()),
                         "balefire() false must place no balefire");
             }
         }
@@ -466,116 +517,116 @@ public final class AddonEnumGameTests {
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ V-170..V-172, H-66..H-68: antimatter hooks
+    // V-170..V-172, H-66..H-68: antimatter hooks
 
     /** Plain HBM keeps 1.7's numbers and registers no listener on the antimatter hooks; type 2's hue ramp is AWT's. */
     private static void antimatterDefaults(GameTestHelper helper) {
-        helper.assertTrue(com.hbm.tileentity.bomb.TileEntityNukeCustom.amatNukeFloor == 50F, "custom nuke amat floor must be 1.7's 50");
-        helper.assertTrue(com.hbm.items.special.ItemCell.antimatterDropStrength == 3F, "antimatter cell drop must be 1.7's 3");
+        helper.assertTrue(TileEntityNukeCustom.amatNukeFloor == 50F, "custom nuke amat floor must be 1.7's 50");
+        helper.assertTrue(ItemCell.antimatterDropStrength == 3F, "antimatter cell drop must be 1.7's 3");
         // with only HBM loaded no listener exists; an addon (NTM: Space) may have registered one
-        if (!dev.golem.core.platform.Platform.isModLoaded("ntmspace")) {
-            helper.assertTrue(!com.hbm.entity.logic.EntityBalefire.TICK.iterator().hasNext()
-                            && !com.hbm.explosion.ExplosionNukeCustom.ANTIMATTER.iterator().hasNext()
-                            && !com.hbm.tileentity.machine.storage.TileEntityBarrel.ANTIMATTER_BLAST.iterator().hasNext(),
+        if (!Platform.isModLoaded("ntmspace")) {
+            helper.assertTrue(!EntityBalefire.TICK.iterator().hasNext()
+                            && !ExplosionNukeCustom.ANTIMATTER.iterator().hasNext()
+                            && !TileEntityBarrel.ANTIMATTER_BLAST.iterator().hasNext(),
                     "HBM must not listen on its own antimatter hooks");
         }
         int[][] hues = {{0, 0xFFFF0000}, {1, 0xFFFFFF00}, {2, 0xFF00FF00}, {3, 0xFF00FFFF}, {4, 0xFF0000FF}, {5, 0xFFFF00FF}};
         for (int[] h : hues) {
-            int rgb = com.hbm.entity.effect.EntityNukeTorex.hsbToRgb(h[0] / 6F);
+            int rgb = EntityNukeTorex.hsbToRgb(h[0] / 6F);
             helper.assertTrue(rgb == h[1], "hue " + h[0] + "/6 gave " + Integer.toHexString(rgb));
         }
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ V-173: repair overlay rule
+    // V-173: repair overlay rule
 
     /** Plain HBM: the repair list needs a blowtorch in hand (1.7), so without one no overlay is built. */
     private static void repairDefaults(GameTestHelper helper) {
-        if (!dev.golem.core.platform.Platform.isModLoaded("ntmspace")) {
-            helper.assertTrue(!com.hbm.blocks.machine.MachineExplosionDamage.alwaysShowRepair, "1.7 shows the repair list only with a blowtorch");
+        if (!Platform.isModLoaded("ntmspace")) {
+            helper.assertTrue(!MachineExplosionDamage.alwaysShowRepair, "1.7 shows the repair list only with a blowtorch");
         }
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
-        boolean saved = com.hbm.blocks.machine.MachineExplosionDamage.alwaysShowRepair;
-        com.hbm.blocks.machine.MachineExplosionDamage.alwaysShowRepair = false;
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        boolean saved = MachineExplosionDamage.alwaysShowRepair;
+        MachineExplosionDamage.alwaysShowRepair = false;
         try {
-            helper.assertTrue(com.hbm.blocks.machine.MachineExplosionDamage.overlay(helper.getLevel(),
+            helper.assertTrue(MachineExplosionDamage.overlay(helper.getLevel(),
                     helper.absolutePos(new BlockPos(1, 2, 1)), player, "x") == null, "no blowtorch, no overlay");
         } finally {
-            com.hbm.blocks.machine.MachineExplosionDamage.alwaysShowRepair = saved;
+            MachineExplosionDamage.alwaysShowRepair = saved;
         }
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ V-175..V-185, H-76, C-26, E-096
+    // V-175..V-185, H-76, C-26, E-096
 
     /**
-     * The hbm-space small-change tunables and hooks (fork-content triage item 7): plain HBM keeps 1.7 (each flag off, each
-     * hook empty, 1.7's values), and the switched-on forms compute hbm-space's numbers. Every flag a check turns on is
-     * restored before the test ends.
+     * The hbm-space small-change tunables and hooks: plain HBM keeps 1.7 (each flag off, each hook empty, 1.7's
+     * values), and the switched-on forms compute hbm-space's numbers. Every flag a check turns on is restored before
+     * the test ends.
      */
     /**
      * H-77..H-82: the neutron-activation hooks are empty in plain HBM, so a stack's radiation is its entries alone and the
-     * research reactor, demon lamp, decontaminator, storage drum and geiger readout behave as before.
+     * research reactor, demon lamp, decontaminator, storage drum and geiger readout behave as in 1.7.
      */
     private static void neutronDefaults(GameTestHelper helper) {
-        if (!dev.golem.core.platform.Platform.isModLoaded("ntmspace")) {
-            helper.assertTrue(com.hbm.hazard.type.HazardTypeRadiation.STACK_RADIATION.isEmpty()
-                    && com.hbm.tileentity.machine.TileEntityReactorResearch.RADIATING.isEmpty()
-                    && com.hbm.blocks.machine.DemonLamp.TileEntityDemonLamp.IRRADIATED.isEmpty()
-                    && com.hbm.tileentity.machine.BlockEntityDecon.DECONTAMINATED.isEmpty()
-                    && com.hbm.tileentity.machine.TileEntityStorageDrum.SLOT_TICK.isEmpty()
-                    && com.hbm.util.ContaminationUtil.GEIGER_LINES.isEmpty(), "HBM registers no neutron listener");
-            helper.assertTrue(com.hbm.hazard.type.HazardTypeRadiation.stackRadiation(
-                    new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STONE)) == 0D, "no extra stack radiation");
+        if (!Platform.isModLoaded("ntmspace")) {
+            helper.assertTrue(HazardTypeRadiation.STACK_RADIATION.isEmpty()
+                    && TileEntityReactorResearch.RADIATING.isEmpty()
+                    && DemonLamp.TileEntityDemonLamp.IRRADIATED.isEmpty()
+                    && BlockEntityDecon.DECONTAMINATED.isEmpty()
+                    && TileEntityStorageDrum.SLOT_TICK.isEmpty()
+                    && ContaminationUtil.GEIGER_LINES.isEmpty(), "HBM registers no neutron listener");
+            helper.assertTrue(HazardTypeRadiation.stackRadiation(
+                    new ItemStack(Items.STONE)) == 0D, "no extra stack radiation");
         }
         // an unregistered stack carries no radiation entry of its own, with or without listeners
-        helper.assertTrue(com.hbm.hazard.HazardSystem.getHazardLevelFromStack(
-                new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STONE), com.hbm.hazard.HazardRegistry.RADIATION) == 0D,
+        helper.assertTrue(HazardSystem.getHazardLevelFromStack(
+                new ItemStack(Items.STONE), HazardRegistry.RADIATION) == 0D,
                 "plain stone is not radioactive");
         helper.succeed();
     }
 
     private static void forkSmallDefaults(GameTestHelper helper) {
-        if (!dev.golem.core.platform.Platform.isModLoaded("ntmspace")) {
-            helper.assertTrue(!com.hbm.blocks.multiblock.BlockMultiblockCore.wallPlacement
-                    && !com.hbm.blocks.multiblock.BlockMultiblockCore.walkOutAfterPlacing, "1.7 places multiblocks on the floor");
-            helper.assertTrue(com.hbm.tileentity.network.TileEntityCranePartitioner.inputCount == 45
-                    && com.hbm.tileentity.network.TileEntityCranePartitioner.outputCount == 45, "1.7's partitioner has 45 + 45 slots");
-            helper.assertTrue(!com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube.anyGas, "1.7 compressors take air only");
-            helper.assertTrue(!com.hbm.blocks.machine.MachineElectrolyser.sidePorts, "1.7's electrolyser has six ports");
-            helper.assertTrue(com.hbm.interfaces.ILookOverlay.PROVIDERS.isEmpty(), "HBM registers no extra look overlay");
-            helper.assertTrue(!com.hbm.blocks.machine.MachineCapacitor.capacityFirst, "HBM lists the capacitor description first");
-            helper.assertTrue(!com.hbm.entity.item.EntityTntNtm.spin, "1.7 charges do not tumble");
-            helper.assertTrue(!com.hbm.entity.mob.EntityGhost.watchPlayers, "1.7 ghosts do not watch players");
-            helper.assertTrue(!com.hbm.tileentity.machine.TileEntityGeiger.probabilisticClicks, "1.7 geiger clicks every fifth tick");
-            helper.assertTrue(!com.hbm.items.tool.ItemDosimeter.probabilisticClicks, "1.7's dosimeter clicks every fifth tick");
-            helper.assertTrue(com.hbm.blocks.generic.BlockGasBase.ashGlassesParticleChance == 1,
+        if (!Platform.isModLoaded("ntmspace")) {
+            helper.assertTrue(!BlockMultiblockCore.wallPlacement
+                    && !BlockMultiblockCore.walkOutAfterPlacing, "1.7 places multiblocks on the floor");
+            helper.assertTrue(TileEntityCranePartitioner.inputCount == 45
+                    && TileEntityCranePartitioner.outputCount == 45, "1.7's partitioner has 45 + 45 slots");
+            helper.assertTrue(!TileEntityPneumoTube.anyGas, "1.7 compressors take air only");
+            helper.assertTrue(!MachineElectrolyser.sidePorts, "1.7's electrolyser has six ports");
+            helper.assertTrue(ILookOverlay.PROVIDERS.isEmpty(), "HBM registers no extra look overlay");
+            helper.assertTrue(!MachineCapacitor.capacityFirst, "HBM lists the capacitor description first");
+            helper.assertTrue(!EntityTntNtm.spin, "1.7 charges do not tumble");
+            helper.assertTrue(!EntityGhost.watchPlayers, "1.7 ghosts do not watch players");
+            helper.assertTrue(!TileEntityGeiger.probabilisticClicks, "1.7 geiger clicks every fifth tick");
+            helper.assertTrue(!ItemDosimeter.probabilisticClicks, "1.7's dosimeter clicks every fifth tick");
+            helper.assertTrue(BlockGasBase.ashGlassesParticleChance == 1,
                     "1.7's ash glasses show a gas cloud on every display tick");
-            helper.assertTrue(com.hbm.util.ContaminationUtil.RAD_IMMUNE.isEmpty(), "HBM registers no immunity listener");
-            helper.assertTrue(!com.hbm.tileentity.machine.MachineFluidContainerIO.fillArmorMods, "HBM leaves armor modules alone");
-            helper.assertTrue(!com.hbm.handler.ability.IToolAreaAbility.RECURSION_STONE.get().test(Blocks.COBBLESTONE.defaultBlockState()),
+            helper.assertTrue(ContaminationUtil.RAD_IMMUNE.isEmpty(), "HBM registers no immunity listener");
+            helper.assertTrue(!MachineFluidContainerIO.fillArmorMods, "HBM leaves armor modules alone");
+            helper.assertTrue(!IToolAreaAbility.RECURSION_STONE.get().test(Blocks.COBBLESTONE.defaultBlockState()),
                     "1.7's vein miner stops only at plain stone");
             helper.assertTrue("NBT Structures, industrial lighting, animation tools".equals(
-                    com.hbm.blocks.generic.BlockBobble.BobbleType.MELLOW.contribution)
-                    && "CARD_BOARD".equals(com.hbm.blocks.generic.BlockBobble.BobbleType.PEEP.scrap),
+                    BlockBobble.BobbleType.MELLOW.contribution)
+                    && "CARD_BOARD".equals(BlockBobble.BobbleType.PEEP.scrap),
                     "1.7's bobblehead credits");
-            helper.assertTrue(com.hbm.util.ContaminationUtil.isRadImmune(
-                    new net.minecraft.world.entity.animal.feline.Ocelot(net.minecraft.world.entity.EntityType.OCELOT, helper.getLevel())),
+            helper.assertTrue(ContaminationUtil.isRadImmune(
+                    new Ocelot(EntityType.OCELOT, helper.getLevel())),
                     "1.7's ocelot is immune to radiation");
         }
-        helper.assertTrue(com.hbm.handler.ability.IToolAreaAbility.RECURSION_STONE.get().test(Blocks.STONE.defaultBlockState()),
+        helper.assertTrue(IToolAreaAbility.RECURSION_STONE.get().test(Blocks.STONE.defaultBlockState()),
                 "plain stone always stops the vein miner");
 
         // placement: off, the clicked face is ignored (1.7); on, hbm-space's wall and ceiling rules
-        var electrolyser = com.hbm.blocks.machine.ModMachineBlocks.machine_electrolyser.get();
+        var electrolyser = ModMachineBlocks.machine_electrolyser.get();
         BlockPos pos = new BlockPos(100, 64, 100);
-        boolean savedWall = com.hbm.blocks.multiblock.BlockMultiblockCore.wallPlacement;
+        boolean savedWall = BlockMultiblockCore.wallPlacement;
         try {
-            com.hbm.blocks.multiblock.BlockMultiblockCore.wallPlacement = false;
+            BlockMultiblockCore.wallPlacement = false;
             var floor = electrolyser.placement(pos, Direction.NORTH, 0.0F);
             helper.assertTrue(floor.facing() == Direction.NORTH && floor.core().equals(pos.south(5)) && floor.clicked().equals(pos),
                     "1.7 placement: core five back along the yaw, got " + floor);
-            com.hbm.blocks.multiblock.BlockMultiblockCore.wallPlacement = true;
+            BlockMultiblockCore.wallPlacement = true;
             var wall = electrolyser.placement(pos, Direction.NORTH, 90.0F);
             helper.assertTrue(wall.facing() == Direction.NORTH && wall.core().equals(pos.north(5)) && wall.clicked().equals(pos.north(10)),
                     "hbm-space wall placement: faces off the wall, south end on the placed block, got " + wall);
@@ -585,43 +636,43 @@ public final class AddonEnumGameTests {
             var standing = electrolyser.placement(pos, Direction.UP, 0.0F);
             helper.assertTrue(standing.equals(floor), "hbm-space floor placement equals 1.7's, got " + standing);
         } finally {
-            com.hbm.blocks.multiblock.BlockMultiblockCore.wallPlacement = savedWall;
+            BlockMultiblockCore.wallPlacement = savedWall;
         }
 
         // partitioner slot counts are read when one is made
-        int savedIn = com.hbm.tileentity.network.TileEntityCranePartitioner.inputCount;
-        int savedOut = com.hbm.tileentity.network.TileEntityCranePartitioner.outputCount;
+        int savedIn = TileEntityCranePartitioner.inputCount;
+        int savedOut = TileEntityCranePartitioner.outputCount;
         try {
-            com.hbm.tileentity.network.TileEntityCranePartitioner.inputCount = 96;
-            com.hbm.tileentity.network.TileEntityCranePartitioner.outputCount = 8;
-            var partitioner = new com.hbm.tileentity.network.TileEntityCranePartitioner(BlockPos.ZERO,
-                    com.hbm.blocks.ModConveyorBlocks.CRANE_PARTITIONER.get().defaultBlockState());
+            TileEntityCranePartitioner.inputCount = 96;
+            TileEntityCranePartitioner.outputCount = 8;
+            var partitioner = new TileEntityCranePartitioner(BlockPos.ZERO,
+                    ModConveyorBlocks.CRANE_PARTITIONER.get().defaultBlockState());
             helper.assertTrue(partitioner.getContainerSize() == 104 && partitioner.inputCount() == 96
                             && partitioner.canTakeItemThroughFace(96, new ItemStack(Items.STONE), Direction.UP)
                             && !partitioner.canTakeItemThroughFace(95, new ItemStack(Items.STONE), Direction.UP),
                     "hbm-space's 96 queue + 8 declog slots");
         } finally {
-            com.hbm.tileentity.network.TileEntityCranePartitioner.inputCount = savedIn;
-            com.hbm.tileentity.network.TileEntityCranePartitioner.outputCount = savedOut;
+            TileEntityCranePartitioner.inputCount = savedIn;
+            TileEntityCranePartitioner.outputCount = savedOut;
         }
 
         // capacitor tooltip order
-        var capacitor = com.hbm.blocks.ModEnergyNetBlocks.capacitor_tantalium.get();
-        boolean savedOrder = com.hbm.blocks.machine.MachineCapacitor.capacityFirst;
+        var capacitor = ModEnergyNetBlocks.capacitor_tantalium.get();
+        boolean savedOrder = MachineCapacitor.capacityFirst;
         try {
-            com.hbm.blocks.machine.MachineCapacitor.capacityFirst = false;
+            MachineCapacitor.capacityFirst = false;
             var plain = capacitor.tooltip(new ItemStack(capacitor), List.of());
             helper.assertTrue(plain.size() == 5 && plain.get(0).getContents() instanceof
-                    net.minecraft.network.chat.contents.TranslatableContents t && t.getKey().equals("desc.capacitor.0"),
+                    TranslatableContents t && t.getKey().equals("desc.capacitor.0"),
                     "HBM: description first, got " + plain);
-            com.hbm.blocks.machine.MachineCapacitor.capacityFirst = true;
-            var fork = capacitor.tooltip(new ItemStack(capacitor), List.of(net.minecraft.network.chat.Component.literal("lore")));
+            MachineCapacitor.capacityFirst = true;
+            var fork = capacitor.tooltip(new ItemStack(capacitor), List.of(Component.literal("lore")));
             helper.assertTrue(fork.size() == 6 && fork.get(0).getString().startsWith("Stores up to")
-                            && fork.get(3).getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents
+                            && fork.get(3).getContents() instanceof TranslatableContents
                             && fork.get(5).getString().equals("lore"),
                     "hbm-space: capacity, charge, discharge, description, lore; got " + fork);
         } finally {
-            com.hbm.blocks.machine.MachineCapacitor.capacityFirst = savedOrder;
+            MachineCapacitor.capacityFirst = savedOrder;
         }
         helper.succeed();
     }

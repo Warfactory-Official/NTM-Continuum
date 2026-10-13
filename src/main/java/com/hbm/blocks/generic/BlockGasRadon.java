@@ -1,14 +1,17 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ContaminationUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -33,7 +36,7 @@ public class BlockGasRadon extends BlockGasBase {
         super.animateTick(state, level, pos, random);
         // 1.7 BlockGasRadonDense.randomDisplayTick: one town aura every display tick
         if (dense) {
-            level.addParticle(net.minecraft.core.particles.ParticleTypes.MYCELIUM, pos.getX() + random.nextFloat(),
+            level.addParticle(ParticleTypes.MYCELIUM, pos.getX() + random.nextFloat(),
                     pos.getY() + random.nextFloat(), pos.getZ() + random.nextFloat(), 0.0D, 0.0D, 0.0D);
         }
     }
@@ -45,10 +48,10 @@ public class BlockGasRadon extends BlockGasBase {
             return;
         }
         if (dense && random.nextInt(10) == 0 && level.getBlockState(pos.below()).is(Blocks.GRASS_BLOCK)) {
-            level.setBlock(pos.below(), com.hbm.blocks.ModFalloutBlocks.waste_earth.get().defaultBlockState(), 2);
+            level.setBlock(pos.below(), ModFalloutBlocks.waste_earth.get().defaultBlockState(), 2);
         }
         if (random.nextInt(Math.max(1, GeneralConfig.radonDecayChance)) == 0) {
-            BlockState fallout = com.hbm.blocks.ModFalloutBlocks.fallout.get().defaultBlockState();
+            BlockState fallout = ModFalloutBlocks.fallout.get().defaultBlockState();
             if (dense && GeneralConfig.denseRadonFallout && fallout.canSurvive(level, pos)) {
                 level.setBlock(pos, fallout, 2);
             } else {
@@ -63,7 +66,7 @@ public class BlockGasRadon extends BlockGasBase {
     @Override
     protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (!level.isClientSide() && GeneralConfig.enableRadon && entity instanceof LivingEntity living) {
-            boolean protectedByFilter = ArmorRegistry.hasProtection(living, net.minecraft.world.entity.EquipmentSlot.HEAD,
+            boolean protectedByFilter = ArmorRegistry.hasProtection(living, EquipmentSlot.HEAD,
                     ArmorRegistry.HazardClass.PARTICLE_FINE);
             if (protectedByFilter) ArmorUtil.damageGasMaskFilter(living, dense ? 2 : 1);
             ContaminationUtil.contaminate(living, ContaminationUtil.HazardType.RADIATION,

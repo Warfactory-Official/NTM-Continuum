@@ -5,6 +5,8 @@ import com.hbm.items.ItemEnums.EnumCasingType;
 import com.hbm.items.ModCasingItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ModStampItems;
+import dev.golem.core.Ids;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -38,9 +40,9 @@ public final class PressGameTests {
     }
 
     private static void assertId(GameTestHelper helper, Item item, String path) {
-        helper.assertTrue(dev.golem.core.Ids.of("hbm", path)
-                        .equals(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item)),
+        helper.assertTrue(Ids.of("hbm", path)
+                        .equals(BuiltInRegistries.ITEM.getKey(item)),
                 "Expected item id hbm:" + path + ", got "
-                        + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item));
+                        + BuiltInRegistries.ITEM.getKey(item));
     }
 }

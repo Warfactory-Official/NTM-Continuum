@@ -21,6 +21,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.joml.Matrix4f;
 
 /**
  * One renderer for the OBJ-drawn decorations of {@code com.hbm.deco}: the three spotlight fixtures
@@ -31,7 +32,7 @@ import java.util.Map;
  * the right-handed rotation JOML uses about Y, but the <i>inverse</i> one about X and Z (the same
  * asymmetry modern {@code Vec3.xRot/yRot/zRot} still carry), so pitch (Z) and roll (X) are negated here
  * and yaw (Y) is not; the order (roll about X, then pitch about Z, then yaw about Y) is kept.
- * The block-atlas icons the old code mapped the meshes onto are sampled as standalone textures — the
+ * The block-atlas icons the old code mapped the meshes onto are sampled as standalone textures, so the
  * OBJ UVs already span the whole 16x16 icon, which is exactly what {@code getInterpolatedU/V} did.
  */
 public class DecoModelRenderer extends GemBER<TileEntityDecoModel, DecoModelRenderState> {
@@ -97,7 +98,7 @@ public class DecoModelRenderer extends GemBER<TileEntityDecoModel, DecoModelRend
         // RenderLight: translate onto the support face, rotate yaw(Y) · pitch(Z) · roll(X), draw one group.
         Gem.Part<DecoModelRenderState> fixture = declaration.joint()
                 .visibleIf(state -> spotlights.containsKey(state.block))
-                .pose(state -> new org.joml.Matrix4f().translate(state.offX, state.offY, state.offZ)
+                .pose(state -> new Matrix4f().translate(state.offX, state.offY, state.offZ)
                         .rotateY((float) Math.toRadians(state.yaw))
                         .rotateZ((float) Math.toRadians(state.pitch))
                         .rotateX((float) Math.toRadians(state.roll)));
@@ -176,8 +177,8 @@ public class DecoModelRenderer extends GemBER<TileEntityDecoModel, DecoModelRend
             extractSpotlight(spot, bs, blockEntity.getLevel(), blockEntity.getBlockPos(), state);
         } else if (state.block instanceof DecoModelBlock model) {
             Direction look = bs.getValue(DecoModelBlock.FACING);
-            // The quadrant table shared by RenderTapeBlock/RenderToaster/RenderCRT: looking south → 90°, west → 0°,
-            // north → 270°, east → 180° (1.7 meta 2/5/3/4 for the poles, meta%4 = 0/1/2/3 for the toaster/CRT).
+            // The quadrant table shared by RenderTapeBlock/RenderToaster/RenderCRT: looking south gives 90°, west gives 0°,
+            // north gives 270°, east gives 180° (1.7 meta 2/5/3/4 for the poles, meta%4 = 0/1/2/3 for the toaster/CRT).
             float quadrant = switch (look) {
                 case SOUTH -> 90F;
                 case WEST -> 0F;
@@ -195,7 +196,7 @@ public class DecoModelRenderer extends GemBER<TileEntityDecoModel, DecoModelRend
                     case EAST -> 270F;
                     default -> 0F;
                 };
-                // BlockDecoModel rotation code: 0 (look south) → 180°, 1 (look north) → 0°, 2 (look east) → 270°, 3 (look west) → 90°
+                // BlockDecoModel rotation code: 0 (look south) is 180°, 1 (look north) is 0°, 2 (look east) is 270°, 3 (look west) is 90°
                 case COMPUTER -> state.yaw = switch (look) {
                     case SOUTH -> 180F;
                     case EAST -> 270F;

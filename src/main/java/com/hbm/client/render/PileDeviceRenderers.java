@@ -7,6 +7,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.pile.TileEntityPileControl;
 import com.hbm.tileentity.machine.pile.TileEntityPileLoader;
 import com.hbm.tileentity.machine.pile.TileEntityPileVent;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -30,7 +31,7 @@ public final class PileDeviceRenderers {
         protected final Surface surface;
 
         Base(String name) {
-            this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/pile/" + name + ".obj"));
+            this.model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/pile/" + name + ".obj"));
             this.surface = Surface.cutout(Constants.MOD_ID + ":textures/models/pile/" + name + ".png");
         }
 

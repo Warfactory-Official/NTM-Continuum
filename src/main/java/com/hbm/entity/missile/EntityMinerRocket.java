@@ -1,5 +1,8 @@
 package com.hbm.entity.missile;
 
+import com.hbm.blocks.machine.MachineSatDock;
+import com.hbm.client.ClientEffects;
+import com.hbm.particle.helper.EntityEffects;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.ModNtmEntities;
@@ -118,7 +121,7 @@ public class EntityMinerRocket extends CompatEntity {
         }
 
         if(getMode() != 1 && level() instanceof ServerLevel server && this.tickCount % 2 == 0) {
-            com.hbm.particle.helper.EntityEffects.gasFlame(server, getX(), getY() - 0.5, getZ(), 0.0D, -1.0D, 0.0D, com.hbm.client.ClientEffects.GAS_FLAME_DEFAULT_SCALE, 150);
+            EntityEffects.gasFlame(server, getX(), getY() - 0.5, getZ(), 0.0D, -1.0D, 0.0D, ClientEffects.GAS_FLAME_DEFAULT_SCALE, 150);
         }
 
         if(getMode() == 2 && getY() > 300)
@@ -127,7 +130,7 @@ public class EntityMinerRocket extends CompatEntity {
 
     // 1.7 tests the CORE block alone; the 3x3's cells were dummy_plate_cargo and do not stop the descent
     private boolean isSatDock(BlockPos pos) {
-        return com.hbm.blocks.machine.MachineSatDock.isCore(level().getBlockState(pos));
+        return MachineSatDock.isCore(level().getBlockState(pos));
     }
 
     @Override

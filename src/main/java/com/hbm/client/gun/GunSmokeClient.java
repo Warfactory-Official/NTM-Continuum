@@ -1,8 +1,11 @@
 package com.hbm.client.gun;
 
+import com.google.gson.JsonParser;
 import com.hbm.Constants;
 import com.hbm.client.HbmKeybindsClient;
 import com.hbm.client.render.weapon.WeaponRenderers;
+import com.hbm.entity.projectile.EntityBulletBaseMK4;
+import com.hbm.entity.projectile.EntityBulletBeamBase;
 import com.hbm.inventory.ModGunSupportMenus;
 import com.hbm.inventory.container.ContainerWeaponTable;
 import com.hbm.inventory.container.MenuItemBox;
@@ -13,30 +16,39 @@ import com.hbm.items.ModWeaponModItems;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.factory.GunFactory.EnumModTest;
 import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
+import com.hbm.util.GameTime;
 import dev.golem.core.Ids;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.ContainerClicks;
 import dev.golem.core.client.MouseInput;
 import dev.golem.core.data.Inventories;
+import dev.golem.core.platform.Platform;
 import dev.golem.core.world.Compat;
 import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Screenshot;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -103,7 +115,7 @@ public final class GunSmokeClient {
     private GunSmokeClient() {}
 
     public static void register() {
-        if (!ENABLED || !dev.golem.core.platform.Platform.isDevelopment() || registered) return;
+        if (!ENABLED || !Platform.isDevelopment() || registered) return;
         registered = true;
         ClientTicks.onEndTick(GunSmokeClient::tick);
     }
@@ -205,7 +217,7 @@ public final class GunSmokeClient {
                     capture(mc, "rest");
                     stage = Stage.FIRE_PRESS;
                     stageTicks = 0;
-                    observedShot = gun.lastShotByHand[net.minecraft.world.InteractionHand.MAIN_HAND.ordinal()][0];
+                    observedShot = gun.lastShotByHand[InteractionHand.MAIN_HAND.ordinal()][0];
                     observedAmmo = gun.getPrimaryMagazine(stack, 0).getAmount(stack, null);
                     observedProjectileCount = fixtureProjectileUuids.size();
                     press(mc.options.keyAttack);
@@ -216,7 +228,7 @@ public final class GunSmokeClient {
                         : gun.getPrimaryMagazine(stack, 0).getAmount(stack, null);
                 boolean ammoPositive = observedAmmo >= 0 && ammo >= 0 && ammo < observedAmmo;
                 boolean entityPositive = fixtureProjectileUuids.size() > observedProjectileCount;
-                long shot = gun.lastShotByHand[net.minecraft.world.InteractionHand.MAIN_HAND.ordinal()][0];
+                long shot = gun.lastShotByHand[InteractionHand.MAIN_HAND.ordinal()][0];
                 if (shot != observedShot && (ammoPositive || entityPositive)) {
                     observedShot = shot;
                     Constants.LOG.info("[GUN-SMOKE] server fire confirmed case={} item={} shotStamp={} ammo={} evidence={}",
@@ -235,9 +247,9 @@ public final class GunSmokeClient {
             }
             case SMOKE_WAIT -> {
                 if (stageTicks >= 6) {
-                    if (!gun.getConfig(stack, 0).getSmokeNodes(net.minecraft.world.InteractionHand.MAIN_HAND).isEmpty()) {
+                    if (!gun.getConfig(stack, 0).getSmokeNodes(InteractionHand.MAIN_HAND).isEmpty()) {
                         Constants.LOG.info("[GUN-SMOKE] smoke confirmed case={} nodes={}", current().name,
-                                gun.getConfig(stack, 0).getSmokeNodes(net.minecraft.world.InteractionHand.MAIN_HAND).size());
+                                gun.getConfig(stack, 0).getSmokeNodes(InteractionHand.MAIN_HAND).size());
                         capture(mc, "smoke");
                     } else {
                         Constants.LOG.info("[GUN-SMOKE] case={} has no source smoke layer; no smoke capture claimed",
@@ -304,7 +316,7 @@ public final class GunSmokeClient {
             previousZ = actual.getZ();
             previousYaw = actual.getYRot();
             previousPitch = actual.getXRot();
-            net.minecraft.server.level.ServerLevel level = (net.minecraft.server.level.ServerLevel) actual.level();
+            ServerLevel level = (ServerLevel) actual.level();
             tablePos = findTablePosition(level, actual.blockPosition());
             tableOriginalState = tablePos == null ? null : level.getBlockState(tablePos);
             if (tablePos == null || tableOriginalState == null) {
@@ -312,8 +324,8 @@ public final class GunSmokeClient {
             }
             for (Entity entity : level.getAllEntities()) {
                 if (entity == null) continue;
-                if (entity instanceof com.hbm.entity.projectile.EntityBulletBaseMK4
-                        || entity instanceof com.hbm.entity.projectile.EntityBulletBeamBase)
+                if (entity instanceof EntityBulletBaseMK4
+                        || entity instanceof EntityBulletBeamBase)
                     baselineProjectileUuids.add(entity.getUUID());
             }
             Compat.setSelectedSlot(actual, 0);
@@ -337,7 +349,7 @@ public final class GunSmokeClient {
     }
 
     /** Finds an empty block position without replacing a block entity from the user's save. */
-    private static @Nullable BlockPos findTablePosition(net.minecraft.server.level.ServerLevel level, BlockPos origin) {
+    private static @Nullable BlockPos findTablePosition(ServerLevel level, BlockPos origin) {
         for (int radius = 2; radius <= 6; radius++) {
             for (int dx = -radius; dx <= radius; dx++) {
                 for (int dz = -radius; dz <= radius; dz++) {
@@ -379,7 +391,7 @@ public final class GunSmokeClient {
                 if (++stageTicks == 2 && mc.screen != null) mc.player.closeContainer();
                 if (mc.screen == null && !serverMutationPending) {
                     queueServerMutation("place weapon table fixture", actual -> {
-                        net.minecraft.server.level.ServerLevel level = (net.minecraft.server.level.ServerLevel) actual.level();
+                        ServerLevel level = (ServerLevel) actual.level();
                         level.setBlock(tablePos, ModWeaponTableBlocks.MACHINE_WEAPON_TABLE.get().defaultBlockState(), 3);
                         tablePlaced = true;
                         actual.getInventory().setItem(0, ItemStack.EMPTY);
@@ -506,7 +518,7 @@ public final class GunSmokeClient {
                 if (++stageTicks == 2 && mc.screen != null) mc.player.closeContainer();
                 if (mc.screen == null && !serverMutationPending) {
                     queueServerMutation("restore weapon table block", actual -> {
-                        net.minecraft.server.level.ServerLevel level = (net.minecraft.server.level.ServerLevel) actual.level();
+                        ServerLevel level = (ServerLevel) actual.level();
                         if (tablePlaced) {
                             level.setBlock(tablePos, tableOriginalState, 3);
                             tablePlaced = false;
@@ -545,7 +557,7 @@ public final class GunSmokeClient {
         beginRestore();
     }
 
-    private static @Nullable ItemStack findConfiguredGun(net.minecraft.world.entity.player.Player player) {
+    private static @Nullable ItemStack findConfiguredGun(Player player) {
         for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
             ItemStack stack = player.getInventory().getItem(slot);
             if (stack.is(ModGunItems.gun_light_revolver_dani.get())
@@ -554,7 +566,7 @@ public final class GunSmokeClient {
         return null;
     }
 
-    private static void queueServerMutation(String description, java.util.function.Consumer<ServerPlayer> action,
+    private static void queueServerMutation(String description, Consumer<ServerPlayer> action,
                                              UUID playerId) {
         if (server == null || serverMutationPending) return;
         serverMutationPending = true;
@@ -579,7 +591,7 @@ public final class GunSmokeClient {
     }
 
     private static ItemStack fixtureStack(String path, int count) {
-        net.minecraft.world.item.Item item = BuiltInRegistries.ITEM.getValue(Ids.of(Constants.MOD_ID, path));
+        Item item = BuiltInRegistries.ITEM.getValue(Ids.of(Constants.MOD_ID, path));
         if (item == null) throw new IllegalStateException("missing fixture item hbm:" + path);
         return new ItemStack(item, count);
     }
@@ -658,13 +670,13 @@ public final class GunSmokeClient {
             if (!verified) throw new IllegalStateException("inventory component/slot verification failed");
             syncInventory(actual);
             int removed = 0;
-            net.minecraft.server.level.ServerLevel level = (net.minecraft.server.level.ServerLevel) actual.level();
+            ServerLevel level = (ServerLevel) actual.level();
             for (Entity entity : level.getAllEntities()) {
                 if (entity == null) continue;
                 if (fixtureProjectileUuids.contains(entity.getUUID())
-                        || entity instanceof com.hbm.entity.projectile.EntityBulletBaseMK4 bullet
+                        || entity instanceof EntityBulletBaseMK4 bullet
                         && bullet.thrower == actual && !baselineProjectileUuids.contains(entity.getUUID())
-                        || entity instanceof com.hbm.entity.projectile.EntityBulletBeamBase beam
+                        || entity instanceof EntityBulletBeamBase beam
                         && beam.thrower == actual && !baselineProjectileUuids.contains(entity.getUUID())) {
                     entity.discard();
                     removed++;
@@ -703,12 +715,12 @@ public final class GunSmokeClient {
     }
 
     /** Render callback paired with {@link #capture}; unlike a tick callback it sees the current frame. */
-    public static void render(net.minecraft.client.gui.GuiGraphicsExtractor ignored) {
+    public static void render(GuiGraphicsExtractor ignored) {
         if (pendingCapture == null || client == null || client.level == null || restored) return;
         String[] capture = pendingCapture.split("\\|", 2);
         int frame = pendingCaptureIndex++;
         if (--pendingCaptureFrames <= 0) pendingCapture = null;
-        net.minecraft.client.Screenshot.grab(client.gameDirectory, client.getMainRenderTarget(),
+        Screenshot.grab(client.gameDirectory, client.getMainRenderTarget(),
                 message -> Constants.LOG.info("[GUN-SMOKE] capture case={} state={} frame={} path={}",
                         capture[0], capture.length > 1 ? capture[1] : "unknown", frame, message.getString()));
     }
@@ -718,14 +730,14 @@ public final class GunSmokeClient {
         if (!ENABLED || restored || started && (stage != Stage.FIRE_PRESS && stage != Stage.SMOKE_WAIT)) return;
         if (!started || !current().gun.equals(item) || age < 0L || age >= duration) return;
         Constants.LOG.info("[GUN-SMOKE] muzzle submitted case={} item={} now={} shotStamp={} ageMs={} durationMs={}",
-                current().name, item, com.hbm.util.GameTime.now(), shotStamp, age, duration);
+                current().name, item, GameTime.now(), shotStamp, age, duration);
     }
 
     private static void trackFixtureProjectiles(Minecraft mc) {
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (!fixtureEntities.contains(entity.getId())
-                    && (entity instanceof com.hbm.entity.projectile.EntityBulletBaseMK4
-                    || entity instanceof com.hbm.entity.projectile.EntityBulletBeamBase)) {
+                    && (entity instanceof EntityBulletBaseMK4
+                    || entity instanceof EntityBulletBeamBase)) {
                 fixtureProjectileUuids.add(entity.getUUID());
             }
         }
@@ -740,7 +752,7 @@ public final class GunSmokeClient {
     private static boolean logGunResources(Minecraft mc) {
         List<String> guns = new ArrayList<>();
         boolean valid = true;
-        for (net.minecraft.world.item.Item item : BuiltInRegistries.ITEM) {
+        for (Item item : BuiltInRegistries.ITEM) {
             Identifier id = BuiltInRegistries.ITEM.getKey(item);
             if (!Constants.MOD_ID.equals(id.getNamespace()) || !id.getPath().startsWith("gun_")
                     || !(item instanceof ItemGunBaseNT)) continue;
@@ -753,7 +765,7 @@ public final class GunSmokeClient {
                 if (resource != null) {
                     definitionPresent = true;
                     try (BufferedReader reader = resource.openAsReader()) {
-                        var root = com.google.gson.JsonParser.parseReader(reader);
+                        var root = JsonParser.parseReader(reader);
                         var model = root.getAsJsonObject().getAsJsonObject("model");
                         String type = model.get("type").getAsString();
                         if ("hbm:gun".equals(type)) {
@@ -763,7 +775,7 @@ public final class GunSmokeClient {
                             basePresent = mc.getResourceManager().getResource(
                                     Ids.of(base.getNamespace(), "models/" + base.getPath() + ".json")).isPresent();
                         } else if ("minecraft:model".equals(type)) {
-                            // Upstream's PA ranged gun is intentionally a plain sprite, not a weapon renderer.
+                            // Upstream's PA ranged gun is a plain sprite, not a weapon renderer.
                             renderer = "sprite";
                             Identifier modelId = Ids.parse(model.get("model").getAsString());
                             basePresent = mc.getResourceManager().getResource(
@@ -792,7 +804,7 @@ public final class GunSmokeClient {
     }
 
     private static String format(double value) {
-        return String.format(java.util.Locale.ROOT, "%.5f", value);
+        return String.format(Locale.ROOT, "%.5f", value);
     }
 
     private static void press(net.minecraft.client.@Nullable KeyMapping mapping) {

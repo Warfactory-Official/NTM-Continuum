@@ -85,7 +85,7 @@ public final class ContainerOreSlopper extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return com.hbm.inventory.container.Containers.stillValidMultiblock(access, player,
+        return Containers.stillValidMultiblock(access, player,
                 ModProduction2Blocks.MACHINE_ORE_SLOPPER.get());
     }
 

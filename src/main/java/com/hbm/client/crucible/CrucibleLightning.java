@@ -3,6 +3,9 @@ package com.hbm.client.crucible;
 import com.hbm.physics.V3;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.golem.core.Ids;
+import dev.golem.core.render.NoiseDisplacedRenderType;
+import java.io.IOException;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -10,7 +13,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * old-hbm's crucible lightning: {@code LightningGenerator} (subdivided, forked bolt) and {@code TrailRenderer2} (the bolt
+ * 1.12.2's crucible lightning: {@code LightningGenerator} (subdivided, forked bolt) and {@code TrailRenderer2} (the bolt
  * as a camera-facing ribbon of triangles), drawn through the {@code crucible_lightning} shader pair
  * ({@code assets/hbm/shaders/core/crucible_lightning.*}, Golem Core {@code NoiseDisplacedRenderType}).
  *
@@ -60,11 +63,11 @@ public final class CrucibleLightning {
     }
 
     /**
-     * {@code alongChain} (third person only, a port addition: old-hbm drew no third-person lightning): the same seed and
+     * {@code alongChain} (third person only, a port addition: 1.12.2 drew no third-person lightning): the same seed and
      * the same random draws, so the main chain is identical, but each fork leaves inside the cone around the bolt's own
      * direction ({@link #randVecInCone(V3, float, Random, boolean)} with {@code intended}). 1.12's forks leave along the
      * drawing space's {@code -y}, which first person sees head-on but which in the held third-person pose points at the
-     * ground (the bolts hung down from the hilt; user reports 2026-10-02 and 2026-10-03).
+     * ground (the bolts hang down from the hilt).
      */
     static Node generate(long worldTime, V3 from, V3 to, Info info, boolean alongChain) {
         RAND.setSeed(worldTime);
@@ -135,7 +138,7 @@ public final class CrucibleLightning {
      * {@code BobMathUtil.randVecInCone(coneDirection, angle, rand)} ({@code BobMathUtil.java:411-424}) as written, with
      * {@code getEulerAngles} ({@code :275-280}) inlined: that already returns {@code pitch - 90} and the caller subtracts
      * 90 again, so the result leaves along {@code -y} of the drawing space for any horizontal cone axis. Not corrected:
-     * this is what old-hbm draws.
+     * this is what 1.12.2 draws.
      */
     static V3 randVecInCone(V3 coneDirection, float angle, Random rand) {
         return randVecInCone(coneDirection, angle, rand, false);
@@ -156,7 +159,7 @@ public final class CrucibleLightning {
         return rotateYaw(newDirection, (float) Math.toRadians(yaw));
     }
 
-    // ---- 1.12 Vec3d / MathHelper arithmetic: float square roots and the 65,536-entry sine table
+    // 1.12 Vec3d / MathHelper arithmetic: float square roots and the 65,536-entry sine table
 
     private static final float[] SIN_TABLE = new float[65536];
 
@@ -257,20 +260,19 @@ public final class CrucibleLightning {
     /** One triangle as a degenerate quad (QUADS mode): position, {@code (tex, time)}, white. */
     private static void triangle(PoseStack.Pose pose, VertexConsumer buffer, float[] a, float[] b, float[] c, float time,
                                  boolean cpu) {
-        dev.golem.core.render.NoiseDisplacedRenderType.vertex(buffer, pose, a[0], a[1], a[2], a[3], time, 0xFFFFFFFF);
-        dev.golem.core.render.NoiseDisplacedRenderType.vertex(buffer, pose, b[0], b[1], b[2], b[3], time, 0xFFFFFFFF);
-        dev.golem.core.render.NoiseDisplacedRenderType.vertex(buffer, pose, c[0], c[1], c[2], c[3], time, 0xFFFFFFFF);
-        dev.golem.core.render.NoiseDisplacedRenderType.vertex(buffer, pose, c[0], c[1], c[2], c[3], time, 0xFFFFFFFF);
+        NoiseDisplacedRenderType.vertex(buffer, pose, a[0], a[1], a[2], a[3], time, 0xFFFFFFFF);
+        NoiseDisplacedRenderType.vertex(buffer, pose, b[0], b[1], b[2], b[3], time, 0xFFFFFFFF);
+        NoiseDisplacedRenderType.vertex(buffer, pose, c[0], c[1], c[2], c[3], time, 0xFFFFFFFF);
+        NoiseDisplacedRenderType.vertex(buffer, pose, c[0], c[1], c[2], c[3], time, 0xFFFFFFFF);
     }
 
     /**
      * The shader's arithmetic on the CPU, for the harness's pixel comparison only ({@code hbm_crucible
      * lightning_mode=cpu}): {@code pos + (noise_a * noise_b.zxy - 0.5) * 0.1} from {@code noise_2} sampled bilinear
-     * with repeat at level 0 (old-hbm's {@code ResourceManager.init} set its magnification filter to {@code GL_LINEAR},
-     * and an explicit level 0 magnifies), exactly what the vertex stage computes. The displaced ribbon then goes through the same
-     * render type with a flat noise texture (every texel 180: {@code 180/255 squared - 0.5 = -0.0017}, an offset of
-     * -0.00017, well under a pixel), so draw order, blend and depth are identical and only the displacement's origin
-     * differs. Never used in normal play.
+     * with repeat at level 0 (1.12.2 set the magnification filter to {@code GL_LINEAR}), as the vertex stage
+     * computes it. The displaced ribbon goes through the same render type with a flat noise texture (every texel
+     * 180, an offset of -0.00017, well under a pixel), so draw order, blend and depth are identical and only the
+     * displacement's origin differs. Never used in normal play.
      */
     static final class CpuReference {
         private static dev.golem.core.render.@Nullable TexturePixels noise;
@@ -282,8 +284,8 @@ public final class CrucibleLightning {
         static void displace(float[] v, float time) {
             if (noise == null) {
                 try {
-                    noise = dev.golem.core.render.TexturePixels.read(dev.golem.core.Ids.of("hbm", "textures/misc/noise_2.png"));
-                } catch (java.io.IOException e) {
+                    noise = dev.golem.core.render.TexturePixels.read(Ids.of("hbm", "textures/misc/noise_2.png"));
+                } catch (IOException e) {
                     throw new IllegalStateException(e);
                 }
             }

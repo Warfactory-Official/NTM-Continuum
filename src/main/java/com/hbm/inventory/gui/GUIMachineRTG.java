@@ -4,6 +4,8 @@ import com.hbm.inventory.container.ContainerMachineRTG;
 import com.hbm.items.ModRtgContent;
 import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.tileentity.machine.TileEntityMachineRTG;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -20,8 +22,8 @@ import java.util.Optional;
  * The grey RTG, a straight port of 1.7 {@code GUIMachineRTG} ({@code gui_rtg.png}, 176x188): 5x3 pellet slots,
  * heat gauge at (124,10) and power gauge at (146,10), both 16x51, and the pellet info panel off the left edge.
  */
-public final class GUIMachineRTG extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineRTG> {
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_rtg.png");
+public final class GUIMachineRTG extends CompatContainerScreen<ContainerMachineRTG> {
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/gui_rtg.png");
 
     public GUIMachineRTG(ContainerMachineRTG menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 188);

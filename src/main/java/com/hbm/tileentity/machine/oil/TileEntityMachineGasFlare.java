@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine.oil;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
+import com.hbm.api.environment.Environment;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -12,6 +13,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Polluting;
 import com.hbm.inventory.fluid.trait.FluidReleaseType;
+import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
@@ -20,7 +22,10 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import com.hbm.util.TickPhase;
+import dev.golem.core.world.Effects;
+import java.util.HashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -44,15 +49,15 @@ import net.minecraft.world.phys.AABB;
 import java.util.List;
 
 /**
- * Gas Flare (Flare Stack) — 1:1 port of the 1.12.2 {@code TileEntityMachineGasFlare}: a 12-tall 3×3
+ * Gas Flare (Flare Stack), a 1:1 port of the 1.12.2 {@code TileEntityMachineGasFlare}: a 12-tall 3×3
  * chimney that either <b>vents</b> gaseous fluids (no power) or <b>burns</b> flammable fluids for power.
- * 6 slots (0 battery-to-charge, 1→2 fluid container drain, 3 fluid identifier, 4/5 upgrades: SPEED = rate,
+ * 6 slots (0 battery-to-charge, 1 to 2 fluid container drain, 3 fluid identifier, 4/5 upgrades: SPEED = rate,
  * EFFECT = yield). maxPower 100k (1.7.10; 1.12.2 raised it to 1M). {@code isOn}/{@code doesBurn} toggle via GUI buttons.
  *
- * <p>Vent: {@code min(50·(1+speed), fill)} mB, no power. Burn: {@code min(10·(1+speed), fill)} mB →
+ * <p>Vent: {@code min(50·(1+speed), fill)} mB, no power. Burn: {@code min(10·(1+speed), fill)} mB, then
  * {@code power += flammableEnergy·eject/1000/penalty · (1 + yield/3)}, penalty 5 gaseous / 10 liquid.
- * Effects use vanilla particle stand-ins (the old custom gas-tower / flamethrower particles are unported,
- * §20): a smoke column while venting, FLAME + LARGE_SMOKE at the tip while burning; burning also sets
+ * Effects use vanilla particle stand-ins for the custom gas-tower and flamethrower particles:
+ * a smoke column while venting, FLAME + LARGE_SMOKE at the tip while burning; burning also sets
  * fire to entities in the flame AABB. Every fifth tick the vented or burned fluid's {@code FT_Polluting}
  * table is applied to {@code eject * 5} mB, as in 1.7.
  */
@@ -105,9 +110,9 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
 
             // hbm-space: a flame that gets no air vents instead of burning (com.hbm.api.environment.Environment)
             if (!te.doesBurn || !flammable
-                    || !com.hbm.api.environment.Environment.breatheAir(level, pos, Math.min(maxBurn, te.tank.getFill()))) {
+                    || !Environment.breatheAir(level, pos, Math.min(maxBurn, te.tank.getFill()))) {
                 // vent path (gaseous only)
-                if (com.hbm.inventory.fluid.trait.FluidTraitSimple.isGaseousAny(type)) {
+                if (FluidTraitSimple.isGaseousAny(type)) {
                     int eject = Math.min(maxVent, te.tank.getFill());
                     te.tank.setFill(te.tank.getFill() - eject);
 
@@ -120,14 +125,14 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                     }
 
                     // hbm-space CelestialBody.emitGas: the vented gas goes into the planet's air
-                    com.hbm.api.environment.Environment.releaseGas(level, pos, type, eject);
+                    Environment.releaseGas(level, pos, type, eject);
                 }
             } else {
                 // burn path (flammable)
                 int eject = Math.min(maxBurn, te.tank.getFill());
                 te.tank.setFill(te.tank.getFill() - eject);
 
-                int penalty = com.hbm.inventory.fluid.trait.FluidTraitSimple.isGaseousAny(type) ? 5 : 10;
+                int penalty = FluidTraitSimple.isGaseousAny(type) ? 5 : 10;
 
                 long powerProd = FluidCombustion.getFlammableEnergy(type) * eject / 1_000;
                 powerProd /= penalty;
@@ -138,7 +143,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                 AABB flameBox = new AABB(pos.getX() - 1, pos.getY() + 12, pos.getZ() - 2, pos.getX() + 2, pos.getY() + 17, pos.getZ() + 2);
                 List<Entity> list = level.getEntitiesOfClass(Entity.class, flameBox);
                 for (Entity e : list) {
-                    dev.golem.core.world.Effects.ignite(e, 5);
+                    Effects.ignite(e, 5);
                     e.hurt(level.damageSources().onFire(), 5F);
                 }
 
@@ -152,13 +157,13 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         te.networkPackNT();
     }
 
-    /** Client: vanilla-particle stand-ins for the old custom gas-tower / flame particles (§20). */
+    /** Client: vanilla-particle stand-ins for the custom gas-tower / flame particles. */
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineGasFlare te) {
         if (!te.isOn || te.tank.getFill() <= 0) return;
         FluidType type = te.tank.getTankType();
         boolean flammable = FluidCombustion.isFlammable(type);
 
-        if ((!te.doesBurn || !flammable) && com.hbm.inventory.fluid.trait.FluidTraitSimple.isGaseousAny(type)) {
+        if ((!te.doesBurn || !flammable) && FluidTraitSimple.isGaseousAny(type)) {
             level.addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, pos.getX() + 0.5, pos.getY() + 11, pos.getZ() + 0.5,
                     level.getRandom().nextGaussian() * 0.02, 0.05, level.getRandom().nextGaussian() * 0.02);
         } else if (te.doesBurn && flammable) {
@@ -174,7 +179,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         if (in.isEmpty()) return;
 
         // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (com.hbm.tileentity.machine.MachineFluidContainerIO.loadInfinite(tank, in)) {
+        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
             setChanged();
             return;
         }
@@ -240,7 +245,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         if (slot == 0) return Library.isBattery(stack);
         if (slot == 3) return stack.getItem() instanceof IItemFluidId;
         if (slot >= 4 && slot <= 5) return Library.isMachineUpgrade(stack);
-        // Slot 2 (emptied-container out) stays TRUE — the machine fills it via inventory.insertItem,
+        // Slot 2 (emptied-container out) stays TRUE: the machine fills it via inventory.insertItem,
         // which validates against this method; the menu's take-only slot blocks the player.
         return true;
     }
@@ -274,8 +279,8 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
     }
 
     @Override
-    public java.util.HashMap<UpgradeType, Integer> getValidUpgrades() {
-        java.util.HashMap<UpgradeType, Integer> upgrades = new java.util.HashMap<>();
+    public HashMap<UpgradeType, Integer> getValidUpgrades() {
+        HashMap<UpgradeType, Integer> upgrades = new HashMap<>();
         upgrades.put(UpgradeType.SPEED, 3);
         upgrades.put(UpgradeType.EFFECT, 3);
         return upgrades;

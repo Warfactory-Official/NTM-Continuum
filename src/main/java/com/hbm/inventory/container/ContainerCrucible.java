@@ -16,7 +16,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Menu for the crucible: the 3×3 input grid (machine slots 1–9, one item per slot) + the player
- * inventory — the 1.12.2 {@code ContainerCrucible} layout (slot 0 is unused, as in the original).
+ * inventory, the 1.12.2 {@code ContainerCrucible} layout (slot 0 is unused, as in the original).
  * The screen reads the live (client) BlockEntity for the heat/progress bars and the molten stacks.
  */
 public class ContainerCrucible extends AbstractContainerMenu {

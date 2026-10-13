@@ -1,7 +1,16 @@
 package com.hbm.blocks.network;
 
+import com.hbm.api.fluidmk2.DuctData;
+import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.api.fluidmk2.IFluidProviderMK2;
+import com.hbm.api.fluidmk2.IFluidReceiverMK2;
+import com.hbm.blocks.IAnalyzable;
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.tileentity.network.TileEntityFluidDuctVariant;
 import com.hbm.uninos.graph.LevelNodeGraph;
+import com.hbm.uninos.graph.NodeNetwork;
+import com.hbm.util.NetworkDiagnostics;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Mirror;
@@ -60,8 +69,8 @@ import java.util.Map;
  * a {@code fluid_identifier}: the connection flags are then recomputed against that one fluid, so a typed
  * duct only links to neighbours carrying the same fluid.
  */
-public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements TickingBlock, SimpleWaterloggedBlock, ILookOverlay,
-        com.hbm.blocks.IAnalyzable {
+public class BlockFluidDuct extends CompatBlock implements TickingBlock, SimpleWaterloggedBlock, ILookOverlay,
+        IAnalyzable {
 
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
     public static final BooleanProperty UP = BlockStateProperties.UP;
@@ -111,7 +120,7 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
 
     /**
      * Whether the duct at {@code pos} should connect on side {@code dir}: whether the neighbour can connect
-     * with the duct's current fluid type. Reads the duct's type from its BlockEntity — so two untyped
+     * with the duct's current fluid type. Reads the duct's type from its BlockEntity, so two untyped
      * (NONE) ducts still connect to each other (you can lay a line, then type it), a typed duct links only
      * to same-type ducts, and either connects to a machine port (which accepts any type).
      */
@@ -146,13 +155,13 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
 
     /**
      * Retypes the connected old-style pipe network, matching fluid_identifier's sneaking behavior. The whole run is
-     * retyped first and its arms recomputed afterwards, as ntm-next's {@code retypeComponent} does: recomputing
-     * pipe by pipe during the walk left stale arms. An untyped pipe already reaches toward a freshly typed
-     * neighbour, so when its own turn came its state did not change, {@code setBlock} did nothing, and the
-     * neighbour was never told to grow its arm back.
+     * retyped first and its arms recomputed afterwards, as ntm-next's {@code retypeComponent} does. Recomputing
+     * pipe by pipe during the walk leaves stale arms: an untyped pipe already reaches toward a freshly typed
+     * neighbour, so its state does not change, {@code setBlock} does nothing, and the neighbour is never told
+     * to grow its arm back.
      */
     public static void spreadType(Level level, BlockPos pos, FluidType hand, FluidType pipe, int remaining) {
-        java.util.List<BlockPos> retyped = new java.util.ArrayList<>();
+        List<BlockPos> retyped = new ArrayList<>();
         retype(level, pos, hand, pipe, remaining, retyped);
         for (BlockPos p : retyped) {
             BlockState state = level.getBlockState(p);
@@ -164,7 +173,7 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
         }
     }
 
-    private static void retype(Level level, BlockPos pos, FluidType hand, FluidType pipe, int remaining, java.util.List<BlockPos> retyped) {
+    private static void retype(Level level, BlockPos pos, FluidType hand, FluidType pipe, int remaining, List<BlockPos> retyped) {
         if (remaining <= 0) return;
 
         BlockEntity entity = level.getBlockEntity(pos);
@@ -228,8 +237,8 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         // The hitbox must match what NeoDuctRenderer.selectParts DRAWS, not just the raw connection
         // flags: a duct with a single connection on one axis (or none) renders a full straight pipe (both
-        // arms of that axis), so the hitbox has to cover the opposite arm too — otherwise the visible far
-        // arm has no collision ("straight but not connected on one side" click‑through). §20 fix.
+        // arms of that axis), so the hitbox has to cover the opposite arm too, otherwise the visible far
+        // arm has no collision ("straight but not connected on one side" click‑through).
         boolean pX = state.getValue(EAST), nX = state.getValue(WEST);
         boolean pY = state.getValue(UP), nY = state.getValue(DOWN);
         boolean pZ = state.getValue(SOUTH), nZ = state.getValue(NORTH);
@@ -252,7 +261,7 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
         return shape;
     }
 
-    /** Right-click with a fluid identifier → set the duct's fluid type and recompute its connections. */
+    /** Right-click with a fluid identifier -> set the duct's fluid type and recompute its connections. */
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (!(stack.getItem() instanceof IItemFluidId ident)) return InteractionResult.TRY_WITH_EMPTY_HAND;
@@ -281,7 +290,7 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
     @Override
     @Nullable
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new com.hbm.tileentity.network.TileEntityFluidDuctVariant(pos, state);
+        return new TileEntityFluidDuctVariant(pos, state);
     }
 
     /** Look-overlay: the duct's carried fluid type, tinted by its colour. */
@@ -306,17 +315,17 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
 
     /** 1.7 {@code FluidDuctBase.getDebugInfo}: the analysis tool's readout of the duct's fluid net. */
     @Override
-    public java.util.@Nullable List<String> getDebugInfo(net.minecraft.server.level.ServerLevel level, BlockPos pos) {
+    public java.util.@Nullable List<String> getDebugInfo(ServerLevel level, BlockPos pos) {
         if (!(level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT)) return null;
-        com.hbm.uninos.graph.NodeNetwork<com.hbm.api.fluidmk2.DuctData> net =
-                com.hbm.api.fluidmk2.FluidGraph.get(level).networkAt(pos.asLong());
+        NodeNetwork<DuctData> net =
+                FluidGraph.get(level).networkAt(pos.asLong());
         if (net == null) return null;
-        java.util.List<String> debug = new java.util.ArrayList<>();
+        List<String> debug = new ArrayList<>();
         debug.add("Links: " + net.size());
-        debug.add("Subscribers: " + com.hbm.util.NetworkDiagnostics.countEndpoints(level, net,
-                be -> be instanceof com.hbm.api.fluidmk2.IFluidReceiverMK2));
-        debug.add("Providers: " + com.hbm.util.NetworkDiagnostics.countEndpoints(level, net,
-                be -> be instanceof com.hbm.api.fluidmk2.IFluidProviderMK2));
+        debug.add("Subscribers: " + NetworkDiagnostics.countEndpoints(level, net,
+                be -> be instanceof IFluidReceiverMK2));
+        debug.add("Providers: " + NetworkDiagnostics.countEndpoints(level, net,
+                be -> be instanceof IFluidProviderMK2));
         debug.add("Transfer: " + net.tracker);
         return debug;
     }

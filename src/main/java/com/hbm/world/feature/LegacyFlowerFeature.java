@@ -18,7 +18,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfi
  * {@code in_square} + {@code heightmap}.
  *
  * <p>This stays a feature of its own rather than vanilla's patch because 26.1 dissolved {@code random_patch} into
- * placement modifiers (the patch would be spelled differently per version). ({@code plant_reeds} no longer carries
+ * placement modifiers (the patch would be spelled differently per version). ({@code plant_reeds} does not carry
  * its water depth in state: its renderer measures the column, as 1.7's did.)
  *
  * <p>1.7 generated none of these after a Tom impact ({@code TomSaveData.impact}); neither does this.

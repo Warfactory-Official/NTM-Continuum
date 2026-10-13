@@ -1,5 +1,6 @@
 package com.hbm.util;
 
+import com.hbm.config.MachineConfig;
 import com.hbm.inventory.NTMItemHandler;
 import com.hbm.items.machine.ItemRTGPellet;
 import net.minecraft.world.item.ItemStack;
@@ -10,7 +11,7 @@ public final class RTGUtil {
 
     public static short getPower(ItemRTGPellet fuel, ItemStack stack) {
         // 1.7: the output only falls with decay when 9.00_scaleRTGPower (or 528 mode) is on; the default is flat heat
-        return com.hbm.config.MachineConfig.scaleRTGPowerActive() ? ItemRTGPellet.getScaledPower(fuel, stack) : fuel.getHeat();
+        return MachineConfig.scaleRTGPowerActive() ? ItemRTGPellet.getScaledPower(fuel, stack) : fuel.getHeat();
     }
 
     public static boolean hasHeat(NTMItemHandler inventory) {

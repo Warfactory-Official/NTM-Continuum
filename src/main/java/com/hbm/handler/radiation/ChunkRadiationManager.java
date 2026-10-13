@@ -6,7 +6,7 @@ import net.minecraft.world.level.Level;
 
 /**
  * Proxy facade over the chunk radiation system, ported from the fork's {@code ChunkRadiationManager}
- * (which wraps only {@code RadiationSystemNT} — this branch removed the simple handler). Kept so ported
+ * (which wraps only {@code RadiationSystemNT}; the simple handler does not exist here). Kept so ported
  * call sites read unchanged ({@code ChunkRadiationManager.proxy.getRadiation(...)}). Delegates to
  * {@link RadiationSystemNT}; all calls are server-side only.
  */

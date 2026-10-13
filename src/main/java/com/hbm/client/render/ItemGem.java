@@ -17,12 +17,11 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * A declared item body, together with the boxes its icon is framed on. Drawing and framing are the
- * same walk over the same declaration, which is what they had drifted apart from — the jetpack
- * chestplate was framed without the offset it was drawn with.
+ * same walk over the same declaration, so a part cannot be framed without the offset it is drawn with.
  *
- * <p>Not every part carries a box. Where a model makes several draws its framing has always counted as
- * one extent — every socket of a part-textured machine, every material of a multi-texture one — the
- * box is recorded against the first and the rest hold none.
+ * <p>Not every part carries a box. Where a model makes several draws its framing counts as one extent
+ * (every socket of a part-textured machine, every material of a multi-texture one): the box is recorded
+ * against the first and the rest hold none.
  */
 final class ItemGem {
 

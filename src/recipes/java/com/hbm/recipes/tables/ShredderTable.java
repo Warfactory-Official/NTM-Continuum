@@ -21,6 +21,7 @@ import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.BedrockOreType;
 import com.hbm.items.special.ItemBedrockOreGraded.Grade;
+import dev.golem.core.Ids;
 import dev.golem.core.world.RecipeSource;
 import com.mojang.datafixers.util.Either;
 import java.util.HashSet;
@@ -276,7 +277,7 @@ public final class ShredderTable extends RecipeSource<Row> {
 
     /** An HBM item by id, for split 1.7 metadata stacks without a field of their own. */
     private static Item item(String path) {
-        return BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.of("hbm", path))
+        return BuiltInRegistries.ITEM.getOptional(Ids.of("hbm", path))
                 .orElseThrow(() -> new IllegalStateException("no hbm:" + path));
     }
 }

@@ -1,16 +1,17 @@
 package com.hbm.client.particle;
 
+import java.awt.Color;
 import net.minecraft.client.multiplayer.ClientLevel;
 
 /**
- * One tongue of flame from the flamethrower — a fast, rising, spinning blob that swells as it burns
+ * One tongue of flame from the flamethrower: a fast, rising, spinning blob that swells as it burns
  * out.
  *
- * <p>Ported from original-hbm (1.7.10) {@code com.hbm.particle.ParticleFlamethrower}. The fuel types keep their
+ * <p>Ported from 1.7 {@code com.hbm.particle.ParticleFlamethrower}. The fuel types keep their
  * hue bands: normal fire is orange, balefire green-blue, digamma pushed below zero into magenta (a negative hue
  * wraps, which is what upstream relies on). Oxy (meta 3) and black fire (meta 4) start white and are darkened per
  * frame by 1.7's {@code renderParticle} colour ramps; the other metas are brightened by {@code 0.75 - age} and drawn at
- * half alpha. 1.12.2 dropped all of that (white-only fire for black/oxy, no ramp), which the port had copied.
+ * half alpha. (1.12.2 has white-only fire for black/oxy and no ramp; this follows 1.7.)
  * Like 1.7, the colour, alpha and size follow the whole-tick age ({@code particleAge / particleMaxAge}), and the
  * vertex colours are clamped to 0..1 as 1.7's {@code Tessellator.setColorRGBA} clamped them.
  */
@@ -34,7 +35,7 @@ public class ParticleFlamethrower extends ParticleRotating {
         if (type == FlameCreator.META_BALEFIRE) initialColor = 65F + this.random.nextFloat() * 35F;
         if (type == FlameCreator.META_DIGAMMA) initialColor = 0F - this.random.nextFloat() * 15F;
 
-        int rgb = java.awt.Color.HSBtoRGB(initialColor / 255F, 1F, 1F);
+        int rgb = Color.HSBtoRGB(initialColor / 255F, 1F, 1F);
         float red = ((rgb >> 16) & 0xFF) / 255F;
         float green = ((rgb >> 8) & 0xFF) / 255F;
         float blue = (rgb & 0xFF) / 255F;

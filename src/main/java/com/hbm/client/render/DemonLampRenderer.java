@@ -10,6 +10,7 @@ import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.Poses;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.gem.Gem;
@@ -21,7 +22,7 @@ import org.joml.Matrix4f;
 
 /**
  * 1.7 {@code RenderDemonLamp}: the lamp housing (OBJ) turned onto its mounting face, then two rings of
- * sixteen additive blue sheets fanning out from the core to 15 blocks — alpha 0.25 at the core, 0 at
+ * sixteen additive blue sheets fanning out from the core to 15 blocks, alpha 0.25 at the core, 0 at
  * the rim, drawn textureless with additive blending and no depth writes, which is the lightning
  * pipeline here.
  */
@@ -58,7 +59,7 @@ public class DemonLampRenderer extends GemBER<DemonLamp.TileEntityDemonLamp, Dem
     @Override
     protected void submitUndeclared(State state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
         poseStack.pushPose();
-        dev.golem.core.render.Poses.mulPose(poseStack, orient(state.facing));
+        Poses.mulPose(poseStack, orient(state.facing));
         sink.submitCustomGeometry(poseStack, CompatRenderTypes.additive(), (pose, buffer) -> {
             Vec3 vec = new Vec3(1, 0, 0);
             double near = 0.375D;

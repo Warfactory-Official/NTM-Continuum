@@ -16,6 +16,7 @@ import com.hbm.hazard.type.HazardType;
 import com.hbm.hazard.type.HazardTypeContaminating;
 import com.hbm.hazard.type.IHazardType;
 import com.hbm.blocks.generic.BlockSellafieldSlaked;
+import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.player.InventoryScan;
@@ -171,7 +172,7 @@ public final class HazardGameTests {
                 if (result.getBlock() == scorched) scorchedCount++;
             }
             // Upstream subtracts a weight and accepts r <= 0, so configured weights 1:9
-            // deliberately sample as 2:8. Preserve the oddity rather than normalizing it.
+            // sample as 2:8. Preserve the oddity rather than normalizing it.
             helper.assertTrue(schrabidiumCount >= 150 && schrabidiumCount <= 250
                             && scorchedCount >= 750 && scorchedCount <= 850,
                     "uranium fallout must retain the legacy configured-1:9 / sampled-2:8 weighting");
@@ -216,7 +217,7 @@ public final class HazardGameTests {
     /**
      * The delivery the carried-hazard pass is built on, end to end: a real server player, whose menu
      * carries the listener Core's {@code ServerPlayer} mixin installed, and whose slot edit becomes a
-     * delta, then a memo entry, then one application — and only for the item it was resolved for.
+     * delta, then a memo entry, then one application, and only for the item it was resolved for.
      *
      * <p>A mixin applies when its target class loads, so a server that starts is evidence of nothing;
      * a player built through the constructor that calls {@code initMenu} is. The scan is this test's
@@ -279,7 +280,7 @@ public final class HazardGameTests {
             helper.assertTrue(HazardRegistry.getType(BURST.id()) == BURST
                             && BURST.id().equals(HazardRegistry.getTypeId(BURST)),
                     "a named hazard type must round-trip through the name table in both directions");
-            helper.assertTrue(HazardRegistry.getType(dev.golem.core.Ids.of(Constants.MOD_ID, "radiation"))
+            helper.assertTrue(HazardRegistry.getType(Ids.of(Constants.MOD_ID, "radiation"))
                             == HazardRegistry.RADIATION,
                     "the built-in hazards must be reachable by name too, not just by field");
 
@@ -443,7 +444,7 @@ public final class HazardGameTests {
         RadiationConfig.itemHazardDropTickRate = oldRate;
     }
 
-    /** The payload a lambda hazard is registered with — any type the author likes. */
+    /** The payload a lambda hazard is registered with. Any type works. */
     private record Burst(String tag) {}
 
     private static final List<String> HOLDER_LOG = new ArrayList<>();
@@ -453,7 +454,7 @@ public final class HazardGameTests {
     private static ItemStack lastStack = ItemStack.EMPTY;
 
     private static final HazardType<Burst> BURST = HazardType
-            .builder(dev.golem.core.Ids.of("gametest", "burst"), Burst.class)
+            .builder(Ids.of("gametest", "burst"), Burst.class)
             .defaultPayload(new Burst("fallback"))
             .trait(ChatFormatting.LIGHT_PURPLE)
             .onCarried((target, stack, level, payload) -> {
@@ -467,7 +468,7 @@ public final class HazardGameTests {
 
     /** A hazard with no lambdas at all, to pin the generated trait line and the no-op behaviours. */
     private static final HazardType<Void> PLAIN = HazardType
-            .builder(dev.golem.core.Ids.of("gametest", "plain"))
+            .builder(Ids.of("gametest", "plain"))
             .trait(ChatFormatting.AQUA)
             .build();
 

@@ -2,9 +2,14 @@ package com.hbm.items.weapon.sedna.factory;
 
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
+import com.hbm.items.weapon.sedna.GunAnimation;
+import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import java.util.function.BiConsumer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
 
-/** The conventional 10 gauge rounds from original-hbm's XFactory10ga. */
+/** The conventional 10 gauge rounds from 1.7's XFactory10ga. */
 public final class XFactory10ga {
 
     public static BulletConfig g10;
@@ -51,33 +56,33 @@ public final class XFactory10ga {
     }
 
     /** The secondary trigger fires one barrel; primary uses the receiver's two-round cycle. */
-    public static final java.util.function.BiConsumer<net.minecraft.world.item.ItemStack,
-            com.hbm.items.weapon.sedna.ItemGunBaseNT.LambdaContext> LAMBDA_DOUBLE_SECONDARY = (stack, ctx) -> {
+    public static final BiConsumer<ItemStack,
+            ItemGunBaseNT.LambdaContext> LAMBDA_DOUBLE_SECONDARY = (stack, ctx) -> {
         var receiver = ctx.config.getReceivers(stack)[0];
-        var state = com.hbm.items.weapon.sedna.ItemGunBaseNT.getState(stack, ctx.configIndex);
-        if (state == com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState.IDLE) {
+        var state = ItemGunBaseNT.getState(stack, ctx.configIndex);
+        if (state == ItemGunBaseNT.GunState.IDLE) {
             if (receiver.getCanFire(stack).apply(stack, ctx)) {
                 receiver.getOnFire(stack).accept(stack, ctx);
                 if (receiver.getFireSound(stack) != null) {
                     ctx.entity.level().playSound(null, ctx.entity.getX(), ctx.entity.getY(), ctx.entity.getZ(),
-                            receiver.getFireSound(stack), net.minecraft.sounds.SoundSource.PLAYERS,
+                            receiver.getFireSound(stack), SoundSource.PLAYERS,
                             receiver.getFireVolume(stack), receiver.getFirePitch(stack));
                 }
-                com.hbm.items.weapon.sedna.ItemGunBaseNT.setState(stack, ctx.configIndex,
-                        com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState.COOLDOWN);
-                com.hbm.items.weapon.sedna.ItemGunBaseNT.setTimer(stack, ctx.configIndex,
+                ItemGunBaseNT.setState(stack, ctx.configIndex,
+                        ItemGunBaseNT.GunState.COOLDOWN);
+                ItemGunBaseNT.setTimer(stack, ctx.configIndex,
                         receiver.getDelayAfterFire(stack));
             } else if (receiver.getDoesDryFire(stack)) {
-                com.hbm.items.weapon.sedna.ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack,
-                        com.hbm.items.weapon.sedna.GunAnimation.CYCLE_DRY, ctx.configIndex);
-                com.hbm.items.weapon.sedna.ItemGunBaseNT.setState(stack, ctx.configIndex,
-                        com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState.DRAWING);
-                com.hbm.items.weapon.sedna.ItemGunBaseNT.setTimer(stack, ctx.configIndex,
+                ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack,
+                        GunAnimation.CYCLE_DRY, ctx.configIndex);
+                ItemGunBaseNT.setState(stack, ctx.configIndex,
+                        ItemGunBaseNT.GunState.DRAWING);
+                ItemGunBaseNT.setTimer(stack, ctx.configIndex,
                         receiver.getDelayAfterDryFire(stack));
             }
         }
-        if (state == com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState.RELOADING) {
-            com.hbm.items.weapon.sedna.ItemGunBaseNT.setReloadCancel(stack, true);
+        if (state == ItemGunBaseNT.GunState.RELOADING) {
+            ItemGunBaseNT.setReloadCancel(stack, true);
         }
     };
 }

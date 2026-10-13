@@ -2,32 +2,67 @@ package com.hbm.client;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.blocks.generic.BlockPedestal;
+import com.hbm.blocks.generic.BlockSkeletonHolder;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.MobConfig;
 import com.hbm.config.RadiationConfig;
+import com.hbm.config.ServerConfig;
 import com.hbm.entity.EntityHbmProps;
 import com.hbm.entity.ModNtmEntities;
+import com.hbm.entity.missile.EntityBobmazon;
+import com.hbm.entity.mob.EntityFBI;
+import com.hbm.entity.mob.EntityFBIDrone;
+import com.hbm.entity.mob.EntityGhost;
+import com.hbm.entity.mob.EntityMaskMan;
+import com.hbm.entity.mob.EntityRADBeast;
 import com.hbm.entity.projectile.EntityBombletZeta;
 import com.hbm.extprop.HbmPlayerProps;
+import com.hbm.handler.BossSpawnHandler;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.ModItems;
+import com.hbm.items.special.ItemKitNBT;
 import com.hbm.tileentity.bomb.TileEntityLandmine;
 import com.hbm.tileentity.deco.TileEntityBobble;
+import com.hbm.tileentity.deco.TileEntityLanternBehemoth;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
 import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
+import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import com.hbm.tileentity.network.TileEntityPipeAnchor;
 import com.hbm.util.EntityDamageUtil;
+import dev.golem.core.Ids;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import dev.golem.core.registry.Entities;
+import dev.golem.core.world.Advancements;
+import dev.golem.core.world.Chunks;
 import dev.golem.core.world.EnergyCompat;
 import dev.golem.core.world.ItemStacks;
+import dev.golem.core.world.RebornEnergy;
+import java.util.ArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -37,8 +72,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The {@code hbm_gapsb} harness query of gap batch B (§19ed-gaps-b), read by {@code FinalGapsB}. Server-side values by
- * {@code op}: {@code props} (reputation, mask man timer, FBI/rad marks), {@code set} (reputation, digamma, rads, radMark, fbiMark
+ * The {@code hbm_gapsb} harness query, read by {@code FinalGapsB}. Server-side values by {@code op}:
+ * {@code props} (reputation, mask man timer, FBI/rad marks), {@code set} (reputation, digamma, rads, radMark, fbiMark
  * and the {@code MobConfig} timings of the boss spawns), {@code mobs} (FBI/drones/beasts/leaders/ghosts/mask men within
  * {@code r}), {@code machine} (tank/refinery damage state and fills at {@code x,y,z}), {@code bomblet} (a type-{@code t}
  * bomblet at {@code x,y,z}), {@code advancement} ({@code id} done), {@code anchor} (a pipe anchor's links and network),
@@ -56,7 +91,7 @@ public final class GapsBHarnessQueries {
     private static Entity lastGhost;
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_gapsb", GapsBHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_gapsb", GapsBHarnessQueries::query);
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {
@@ -124,11 +159,11 @@ public final class GapsBHarnessQueries {
                 int fbi = 0, drones = 0, beasts = 0, leaders = 0, ghosts = 0, maskmen = 0;
                 for (Entity e : level.getAllEntities()) {
                     if (e.distanceTo(player) > r || !e.isAlive()) continue;
-                    if (e instanceof com.hbm.entity.mob.EntityFBIDrone) drones++;
-                    else if (e instanceof com.hbm.entity.mob.EntityFBI) fbi++;
-                    if (e instanceof com.hbm.entity.mob.EntityRADBeast beast) { beasts++; if (beast.isLeader()) leaders++; }
-                    if (e instanceof com.hbm.entity.mob.EntityGhost) ghosts++;
-                    if (e instanceof com.hbm.entity.mob.EntityMaskMan) maskmen++;
+                    if (e instanceof EntityFBIDrone) drones++;
+                    else if (e instanceof EntityFBI) fbi++;
+                    if (e instanceof EntityRADBeast beast) { beasts++; if (beast.isLeader()) leaders++; }
+                    if (e instanceof EntityGhost) ghosts++;
+                    if (e instanceof EntityMaskMan) maskmen++;
                 }
                 json.addProperty("fbi", fbi);
                 json.addProperty("drones", drones);
@@ -137,17 +172,17 @@ public final class GapsBHarnessQueries {
                 json.addProperty("ghosts", ghosts);
                 json.addProperty("maskmen", maskmen);
                 if (p.has("clear") && p.get("clear").getAsBoolean()) {
-                    java.util.List<Entity> kill = new java.util.ArrayList<>();
+                    List<Entity> kill = new ArrayList<>();
                     for (Entity e : level.getAllEntities()) {
-                        if (e instanceof com.hbm.entity.mob.EntityFBI || e instanceof com.hbm.entity.mob.EntityFBIDrone
-                                || e instanceof com.hbm.entity.mob.EntityRADBeast || e instanceof com.hbm.entity.mob.EntityGhost
-                                || e instanceof com.hbm.entity.mob.EntityMaskMan) kill.add(e);
+                        if (e instanceof EntityFBI || e instanceof EntityFBIDrone
+                                || e instanceof EntityRADBeast || e instanceof EntityGhost
+                                || e instanceof EntityMaskMan) kill.add(e);
                     }
                     kill.forEach(Entity::discard);
                 }
             }
             case "machine" -> {
-                BlockPos core = com.hbm.blocks.multiblock.MultiblockSurface.coreOfAny(level, pos);
+                BlockPos core = MultiblockSurface.coreOfAny(level, pos);
                 BlockEntity be = core == null ? null : level.getBlockEntity(core);
                 json.addProperty("present", be != null);
                 if (be instanceof TileEntityMachineFluidTank tank) {
@@ -157,7 +192,7 @@ public final class GapsBHarnessQueries {
                     json.addProperty("fill", tank.tank.getFill());
                     json.addProperty("fluid", tank.tank.getTankType().getName());
                     if (p.has("fillWith")) {
-                        tank.tank.setTankType(com.hbm.inventory.fluid.Fluids.fromName(p.get("fillWith").getAsString()));
+                        tank.tank.setTankType(Fluids.fromName(p.get("fillWith").getAsString()));
                         tank.tank.setFill(i(p, "amount", 100_000));
                     }
                 } else if (be instanceof TileEntityMachineRefinery refinery) {
@@ -178,7 +213,7 @@ public final class GapsBHarnessQueries {
                 json.addProperty("spawned", level.addFreshEntity(bomblet));
             }
             case "advancement" -> {
-                Boolean done = dev.golem.core.world.Advancements.isDone(player, p.get("id").getAsString());
+                Boolean done = Advancements.isDone(player, p.get("id").getAsString());
                 json.addProperty("done", done != null && done);
             }
             case "anchor" -> {
@@ -187,7 +222,7 @@ public final class GapsBHarnessQueries {
                     for (BlockPos l : anchor.getConnected()) links.add(l.getX() + "," + l.getY() + "," + l.getZ());
                     json.add("links", links);
                     json.addProperty("fluid", anchor.getFluidType().getName());
-                    var graph = com.hbm.api.fluidmk2.FluidGraph.get(level);
+                    var graph = FluidGraph.get(level);
                     var net = graph.networkAt(pos.asLong());
                     json.addProperty("network", net == null ? 0 : System.identityHashCode(net));
                 }
@@ -203,7 +238,7 @@ public final class GapsBHarnessQueries {
                 for (BlockPos q : BlockPos.betweenClosed(new BlockPos(pos.getX() - pr, i(p, "y0", pos.getY() - 20), pos.getZ() - pr),
                         new BlockPos(pos.getX() + pr, i(p, "y1", pos.getY() + 40), pos.getZ() + pr))) {
                     BlockState state = level.getBlockState(q);
-                    if (state.getBlock() instanceof net.minecraft.world.level.block.FlowerPotBlock && state.getBlock() != net.minecraft.world.level.block.Blocks.FLOWER_POT) pots++;
+                    if (state.getBlock() instanceof FlowerPotBlock && state.getBlock() != Blocks.FLOWER_POT) pots++;
                 }
                 // tiles: every block entity of the loaded chunks within r (the start may land away from the /place position)
                 for (int cx = (pos.getX() - r) >> 4; cx <= (pos.getX() + r) >> 4; cx++) {
@@ -217,16 +252,16 @@ public final class GapsBHarnessQueries {
                                 sx += q.getX(); sy += q.getY(); sz += q.getZ(); found++;
                             }
                             if (be instanceof TileEntityBobble bobble) { bobbles++; bobbleTypes.add(bobble.typeOrdinal()); }
-                            if (be instanceof com.hbm.blocks.generic.BlockSkeletonHolder.TileEntitySkeletonHolder holder) {
+                            if (be instanceof BlockSkeletonHolder.TileEntitySkeletonHolder holder) {
                                 skeletons.add(q.getX() + "," + q.getY() + "," + q.getZ() + " "
                                         + BuiltInRegistries.ITEM.getKey(holder.getItem().getItem()));
                                 if (!ItemStacks.writableBookPages(holder.getItem()).isEmpty()) books++;
                                 if (found == 0) { sx = q.getX(); sy = q.getY(); sz = q.getZ(); }
                             }
                             if (be instanceof TileEntityMachineFluidTank tank && tank.hasExploded) exploded++;
-                            if (be instanceof com.hbm.tileentity.machine.storage.TileEntityBarrel barrel) {
+                            if (be instanceof TileEntityBarrel barrel) {
                                 barrels++;
-                                if (barrel.tank.getTankType() != com.hbm.inventory.fluid.Fluids.NONE) typedBarrels++;
+                                if (barrel.tank.getTankType() != Fluids.NONE) typedBarrels++;
                             }
                         }
                     }
@@ -264,14 +299,14 @@ public final class GapsBHarnessQueries {
                     if (compared < 10) {
                         int[] h;
                         try {
-                            h = dev.golem.core.world.Chunks.readSavedHeights(level, x >> 4, z >> 4,
+                            h = Chunks.readSavedHeights(level, x >> 4, z >> 4,
                                     Heightmap.Types.MOTION_BLOCKING).get(1, TimeUnit.SECONDS);
                         } catch (Exception e) {
                             h = null;
                         }
                         if (h != null) {
                             compared++;
-                            if ((byte) net.minecraft.util.Mth.clamp(h[(x & 15) + (z & 15) * 16], 50, 128) == radar.map[index]) matching++;
+                            if ((byte) Mth.clamp(h[(x & 15) + (z & 15) * 16], 50, 128) == radar.map[index]) matching++;
                         }
                     }
                 }
@@ -284,7 +319,7 @@ public final class GapsBHarnessQueries {
                 int cx = i(p, "cx", 0), cz = i(p, "cz", 0);
                 json.addProperty("loaded", level.hasChunk(cx, cz));
                 try {
-                    int[] h = dev.golem.core.world.Chunks.readSavedHeights(level, cx, cz, Heightmap.Types.MOTION_BLOCKING)
+                    int[] h = Chunks.readSavedHeights(level, cx, cz, Heightmap.Types.MOTION_BLOCKING)
                             .get(5, TimeUnit.SECONDS);
                     json.addProperty("saved", h != null);
                     if (h != null) json.addProperty("h0", h[0]);
@@ -293,9 +328,9 @@ public final class GapsBHarnessQueries {
                 }
             }
             case "damage" -> {
-                net.minecraft.world.entity.Mob zombie = null;
-                for (var z : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, player.getBoundingBox().inflate(16))) {
-                    if (z.getType() == net.minecraft.world.entity.EntityType.ZOMBIE) zombie = z;
+                Mob zombie = null;
+                for (var z : level.getEntitiesOfClass(Mob.class, player.getBoundingBox().inflate(16))) {
+                    if (z.getType() == EntityType.ZOMBIE) zombie = z;
                 }
                 if (zombie == null) break;
                 zombie.setDeltaMovement(0, 0, 0);
@@ -308,15 +343,15 @@ public final class GapsBHarnessQueries {
             }
             case "config" -> {
                 json.addProperty("hazardTickRate", RadiationConfig.itemHazardDropTickRate);
-                json.addProperty("taintTrails", com.hbm.config.ServerConfig.TAINT_TRAILS.get());
-                json.addProperty("keepContents", com.hbm.config.ServerConfig.CRATE_KEEP_CONTENTS.get());
-                json.addProperty("openHeld", com.hbm.config.ServerConfig.CRATE_OPEN_HELD.get());
-                json.addProperty("mku", com.hbm.config.ServerConfig.ENABLE_MKU.get());
-                json.addProperty("damageCompat", com.hbm.config.ServerConfig.DAMAGE_COMPATIBILITY_MODE.get());
+                json.addProperty("taintTrails", ServerConfig.TAINT_TRAILS.get());
+                json.addProperty("keepContents", ServerConfig.CRATE_KEEP_CONTENTS.get());
+                json.addProperty("openHeld", ServerConfig.CRATE_OPEN_HELD.get());
+                json.addProperty("mku", ServerConfig.ENABLE_MKU.get());
+                json.addProperty("damageCompat", ServerConfig.DAMAGE_COMPATIBILITY_MODE.get());
             }
             case "energy" -> {
                 json.addProperty("supported", EnergyCompat.supported());
-                json.addProperty("reborn", dev.golem.core.world.RebornEnergy.present());
+                json.addProperty("reborn", RebornEnergy.present());
                 boolean any = false;
                 for (Direction d : Direction.values()) any |= EnergyCompat.find(level, pos, d) != null;
                 json.addProperty("found", any);
@@ -336,19 +371,19 @@ public final class GapsBHarnessQueries {
                 if (player.containerMenu != null) json.addProperty("menu", player.containerMenu.getClass().getSimpleName());
             }
             case "maskman" -> {
-                net.minecraft.world.item.Item acidizer = com.hbm.blocks.machine.ModMachineBlocks.machine_crystallizer.get().asItem();
-                json.addProperty("crafted", player.getStats().getValue(net.minecraft.stats.Stats.ITEM_CRAFTED.get(acidizer)));
-                json.addProperty("used", player.getStats().getValue(net.minecraft.stats.Stats.ITEM_USED.get(acidizer)));
+                Item acidizer = ModMachineBlocks.machine_crystallizer.get().asItem();
+                json.addProperty("crafted", player.getStats().getValue(Stats.ITEM_CRAFTED.get(acidizer)));
+                json.addProperty("used", player.getStats().getValue(Stats.ITEM_USED.get(acidizer)));
                 json.addProperty("rads", HbmLivingProps.getRadiation(player));
                 json.addProperty("height", level.getHeight(Heightmap.Types.MOTION_BLOCKING, player.getBlockX(), player.getBlockZ()));
                 json.addProperty("y", player.getY());
                 json.addProperty("difficulty", level.getDifficulty().toString());
-                json.addProperty("conditions", com.hbm.handler.BossSpawnHandler.maskManConditions(level, player));
+                json.addProperty("conditions", BossSpawnHandler.maskManConditions(level, player));
                 json.addProperty("timer", props.maskManTimer);
             }
             case "lantern" -> {
-                BlockPos core = com.hbm.blocks.multiblock.MultiblockSurface.coreOfAny(level, pos);
-                if (core != null && level.getBlockEntity(core) instanceof com.hbm.tileentity.deco.TileEntityLanternBehemoth lantern) {
+                BlockPos core = MultiblockSurface.coreOfAny(level, pos);
+                if (core != null && level.getBlockEntity(core) instanceof TileEntityLanternBehemoth lantern) {
                     if (p.has("broken")) {
                         lantern.isBroken = p.get("broken").getAsBoolean();
                         lantern.setChanged();
@@ -364,13 +399,13 @@ public final class GapsBHarnessQueries {
                 boolean alexandrite = false, diamonds = false;
                 for (Entity e : level.getAllEntities()) {
                     ItemStack payload = null;
-                    if (e instanceof com.hbm.entity.missile.EntityBobmazon shuttle) { shuttles++; payload = shuttle.payload; }
-                    if (e instanceof net.minecraft.world.entity.item.ItemEntity item) payload = item.getItem();
+                    if (e instanceof EntityBobmazon shuttle) { shuttles++; payload = shuttle.payload; }
+                    if (e instanceof ItemEntity item) payload = item.getItem();
                     if (payload == null || payload.isEmpty()) continue;
-                    if (!(payload.getItem() instanceof com.hbm.items.special.ItemKitNBT)) continue;
-                    for (ItemStack content : com.hbm.items.special.ItemKitNBT.contents(payload)) {
-                        if (content.is(com.hbm.items.ModItems.gem_alexandrite.get())) alexandrite = true;
-                        if (content.is(net.minecraft.world.item.Items.DIAMOND)) diamonds = true;
+                    if (!(payload.getItem() instanceof ItemKitNBT)) continue;
+                    for (ItemStack content : ItemKitNBT.contents(payload)) {
+                        if (content.is(ModItems.gem_alexandrite.get())) alexandrite = true;
+                        if (content.is(Items.DIAMOND)) diamonds = true;
                     }
                 }
                 json.addProperty("shuttles", shuttles);
@@ -381,24 +416,24 @@ public final class GapsBHarnessQueries {
                 // the 1.7 aberrator EOTT ritual (GOOD_KARMA): eight secrets around sixteen saturnite mechanisms
                 int[][] ring = {{-2, -2}, {0, -3}, {2, -2}, {-3, 0}, {3, 0}, {-2, 2}, {0, 3}, {2, 2}};
                 if (p.has("fill") && p.get("fill").getAsBoolean()) {
-                    net.minecraft.world.item.Item secret = BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.of("hbm", "item_secret_aberrator"));
+                    Item secret = BuiltInRegistries.ITEM.getValue(Ids.of("hbm", "item_secret_aberrator"));
                     for (int[] r : ring) {
-                        if (level.getBlockEntity(pos.offset(r[0], 0, r[1])) instanceof com.hbm.blocks.generic.BlockPedestal.TileEntityPedestal ped) {
+                        if (level.getBlockEntity(pos.offset(r[0], 0, r[1])) instanceof BlockPedestal.TileEntityPedestal ped) {
                             ped.setItem(new ItemStack(secret));
                         }
                     }
-                    net.minecraft.tags.TagKey<net.minecraft.world.item.Item> tag = net.minecraft.tags.TagKey.create(
-                            net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "mechanisms/saturnite"));
-                    for (net.minecraft.world.item.Item item : BuiltInRegistries.ITEM) {
+                    TagKey<Item> tag = TagKey.create(
+                            Registries.ITEM, Ids.of("c", "mechanisms/saturnite"));
+                    for (Item item : BuiltInRegistries.ITEM) {
                         if (new ItemStack(item).is(tag)) {
-                            if (level.getBlockEntity(pos) instanceof com.hbm.blocks.generic.BlockPedestal.TileEntityPedestal center) {
+                            if (level.getBlockEntity(pos) instanceof BlockPedestal.TileEntityPedestal center) {
                                 center.setItem(new ItemStack(item, 16));
                             }
                             break;
                         }
                     }
                 }
-                if (level.getBlockEntity(pos) instanceof com.hbm.blocks.generic.BlockPedestal.TileEntityPedestal center) {
+                if (level.getBlockEntity(pos) instanceof BlockPedestal.TileEntityPedestal center) {
                     json.addProperty("center", BuiltInRegistries.ITEM.getKey(center.getItem().getItem()) + " x" + center.getItem().getCount());
                 }
             }
@@ -415,9 +450,9 @@ public final class GapsBHarnessQueries {
                 }
                 json.add("ring", ring);
                 int before = 0, after = 0;
-                for (Entity e : level.getAllEntities()) if (e instanceof com.hbm.entity.mob.EntityGhost) before++;
-                com.hbm.handler.BossSpawnHandler.ghost(level, player);
-                for (Entity e : level.getAllEntities()) if (e instanceof com.hbm.entity.mob.EntityGhost g) { after++; lastGhost = g; }
+                for (Entity e : level.getAllEntities()) if (e instanceof EntityGhost) before++;
+                BossSpawnHandler.ghost(level, player);
+                for (Entity e : level.getAllEntities()) if (e instanceof EntityGhost g) { after++; lastGhost = g; }
                 if (lastGhost != null) json.addProperty("ghostAt", lastGhost.blockPosition().toShortString());
                 json.addProperty("ghostsBefore", before);
                 json.addProperty("ghostsAfter", after);
@@ -431,7 +466,7 @@ public final class GapsBHarnessQueries {
             }
             case "anchorFluid" -> {
                 if (level.getBlockEntity(pos) instanceof TileEntityPipeAnchor anchor) {
-                    anchor.setFluidType(com.hbm.inventory.fluid.Fluids.fromName(p.get("fluid").getAsString()));
+                    anchor.setFluidType(Fluids.fromName(p.get("fluid").getAsString()));
                     json.addProperty("fluid", anchor.getFluidType().getName());
                 }
             }

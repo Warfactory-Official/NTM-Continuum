@@ -11,6 +11,8 @@ import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Geometry;
 import dev.golem.core.render.gem.Surface;
+import java.util.HashMap;
+import java.util.Map;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -28,7 +30,7 @@ public final class SoyuzLauncherRenderer extends GemBER<TileEntitySoyuzLauncher,
     /** The ticks of countdown over which they lean back again before launch. */
     private static final int SWING = 20;
 
-    private static final java.util.Map<String, Geometry> MODELS = new java.util.HashMap<>();
+    private static final Map<String, Geometry> MODELS = new HashMap<>();
 
     @Override
     protected void setup(Gem.Model<State> declaration) {

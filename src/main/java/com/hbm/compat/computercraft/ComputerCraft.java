@@ -5,7 +5,7 @@ import dev.golem.core.gametest.GameTests;
 import java.util.List;
 
 /**
- * 1.7's OpenComputers components, served to CC: Tweaked (History section 19el-computers). OpenComputers has no
+ * 1.7's OpenComputers components, served to CC: Tweaked. OpenComputers has no
  * build on any target; CC: Tweaked is the computer mod every node has, as in ntm-next, which made the same swap.
  *
  * <p>Names no CC: Tweaked type, so it is safe to call without the mod: {@link Peripherals} and every peripheral

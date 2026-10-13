@@ -29,6 +29,7 @@ import com.hbm.items.machine.ItemBreedingRod.RodSize;
 import com.hbm.packet.HbmPackets;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -266,7 +267,7 @@ public final class Bombs2GameTests {
                 "the levitation bomb must lift a nearby block fifty up");
         helper.getLevel().setBlockAndUpdate(helper.absolutePos(lifted).above(50), Blocks.AIR.defaultBlockState());
 
-        // The EMP device is deliberately not detonated here: its faithful 50-block empBlast sphere reaches
+        // The EMP device is not detonated here: its 50-block empBlast sphere reaches
         // into neighbouring test plots of the same batch and zeroes their machines' power (a real
         // cross-test interference), and a 1,000,000-block sweep is not a unit assertion. Its dispatch is
         // the same explode() path as the levitation bomb (BombFloat.emp), checked by hand in a world.
@@ -283,7 +284,7 @@ public final class Bombs2GameTests {
         helper.succeed();
     }
 
-    // ---- helpers ----
+    // Helpers
 
     private static void assertMenuOpens(GameTestHelper helper, BlockPos pos, MenuType<?> type,
                                         Class<? extends AbstractContainerMenu> menuClass) {
@@ -304,7 +305,7 @@ public final class Bombs2GameTests {
         BlockPos absolute = helper.absolutePos(pos);
         BlockState state = helper.getLevel().getBlockState(absolute);
         BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(absolute), Direction.UP, absolute, false);
-        dev.golem.core.world.Compat.useBlockWithoutItem(state, helper.getLevel(), player, hit);
+        Compat.useBlockWithoutItem(state, helper.getLevel(), player, hit);
     }
 
     private static void discardBlast(GameTestHelper helper, BlockPos pos) {

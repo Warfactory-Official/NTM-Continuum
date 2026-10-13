@@ -5,19 +5,20 @@ import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 /**
  * A gun's moving parts: barrel, chamber and magazine. Base damage, spread, fire rate, reload timings
- * and the fire sound all live here, so an underbarrel grenade launcher is simply a second receiver on
+ * and the fire sound all live here, so an underbarrel grenade launcher is a second receiver on
  * the same {@link GunConfig}.
  *
  * <p>Ported from 1.12.2 {@code com.hbm.items.weapon.sedna.Receiver}. Upstream routes every getter
  * through {@code XWeaponModManager.eval(field, stack, KEY, this, index)} so weapon mods can override
  * any stat per stack; every getter here does the same, so installed weapon mods apply (verified by the
- * {@code fix5_weapon_mods_and_names} GameTest, fix wave 5).
+ * {@code fix5_weapon_mods_and_names} GameTest).
  */
 public class Receiver {
 
@@ -83,14 +84,14 @@ public class Receiver {
      * The fire sound, held as a supplier.
      *
      * <p>Lazy for the same reason the ammo item is: receivers are built while the item registry is being
-     * flushed, and the sound registry may not have been flushed yet. NeoForge happens to survive an eager
-     * lookup because its {@code RegisterEvent} fires in vanilla registry order (sounds before items);
-     * Fabric flushes in declaration order and crashed with "Missing key … hbm:weapon.fire.pistol".
+     * flushed, and the sound registry may not have been flushed yet. NeoForge survives an eager lookup
+     * because its {@code RegisterEvent} fires in vanilla registry order (sounds before items); Fabric
+     * flushes in declaration order and fails with "Missing key … hbm:weapon.fire.pistol".
      */
-    protected java.util.function.Supplier<SoundEvent> fireSound_DNA;
+    protected Supplier<SoundEvent> fireSound_DNA;
     protected float fireVolume_DNA = 1.0F;
     protected float firePitch_DNA = 1.0F;
-    /** Raw magazine currency is intentionally heterogeneous: bullets, fluids, and energy all share the receiver slot. */
+    /** Raw magazine currency is heterogeneous: bullets, fluids, and energy all share the receiver slot. */
     protected IMagazine<?> magazine_DNA;
     protected Vec3 projectileOffset_DNA = Vec3.ZERO;
     protected Vec3 projectileOffsetScoped_DNA = Vec3.ZERO;
@@ -152,7 +153,7 @@ public class Receiver {
 
     /**
      * The muzzle position relative to the shooter, as (forward, up, side). Setting the hipfire offset
-     * also sets the scoped one to the same forward/up with no sideways displacement — down the sights,
+     * also sets the scoped one to the same forward/up with no sideways displacement, down the sights,
      * the barrel is centred.
      */
     public Receiver offset(double f, double u, double s) {
@@ -183,7 +184,7 @@ public class Receiver {
     public Receiver fire(BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> lambda) { this.onFire_DNA = lambda; return this; }
     public Receiver recoil(BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> lambda) { this.onRecoil_DNA = lambda; return this; }
 
-    public Receiver sound(java.util.function.Supplier<SoundEvent> sound, float volume, float pitch) {
+    public Receiver sound(Supplier<SoundEvent> sound, float volume, float pitch) {
         this.fireSound_DNA = sound;
         this.fireVolume_DNA = volume;
         this.firePitch_DNA = pitch;

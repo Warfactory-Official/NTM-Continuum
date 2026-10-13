@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.data.ReactorDataMaps;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -15,13 +16,16 @@ import com.hbm.inventory.fluid.trait.FT_PWRModerator;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.items.machine.ItemPWRFuel.EnumPWRFuel;
+import com.hbm.saveddata.satellites.SatelliteRayScan;
 import com.hbm.sound.AudioSystem;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
+import java.util.Locale;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -31,6 +35,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -227,8 +232,8 @@ public class TileEntityPWRController extends TileEntityMachineBase
     /** One fission step; split out of the tick so a test can drive it without the chunk-loading gate. */
     public void runReactor(Level level, BlockPos pos) {
         ItemStack input = inventory.getStackInSlot(0);
-        int inputFuel = input.isEmpty() || com.hbm.items.machine.ItemPWRFuel.stats(input.getItem()) == null ? -1
-                : net.minecraft.core.registries.BuiltInRegistries.ITEM.getId(input.getItem());
+        int inputFuel = input.isEmpty() || ItemPWRFuel.stats(input.getItem()) == null ? -1
+                : BuiltInRegistries.ITEM.getId(input.getItem());
 
         if ((typeLoaded == -1 || amountLoaded <= 0) && inputFuel != -1) {
             typeLoaded = inputFuel;
@@ -252,8 +257,8 @@ public class TileEntityPWRController extends TileEntityMachineBase
 
         int newFlux = this.sourceCount * 20;
 
-        com.hbm.api.data.ReactorDataMaps.PWRFuel fuel = typeLoaded == -1 ? null
-                : com.hbm.items.machine.ItemPWRFuel.stats(net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(typeLoaded));
+        ReactorDataMaps.PWRFuel fuel = typeLoaded == -1 ? null
+                : ItemPWRFuel.stats(BuiltInRegistries.ITEM.byId(typeLoaded));
         if (fuel != null && amountLoaded > 0) {
             double usedRods = getTotalProcessMultiplier();
             double fluxPerRod = this.flux / this.rodCount;
@@ -274,7 +279,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
                 this.progress -= this.processTime;
 
                 ItemStack out = inventory.getStackInSlot(1);
-                net.minecraft.world.item.Item hot = fuel.hotItem();
+                Item hot = fuel.hotItem();
                 if (out.isEmpty()) {
                     inventory.setStackInSlot(1, new ItemStack(hot, 1));
                 } else if (out.getItem() == hot && out.getCount() < out.getMaxStackSize()) {
@@ -287,8 +292,8 @@ public class TileEntityPWRController extends TileEntityMachineBase
             }
             // 1.7: a burning core shows up on the ray-scan satellite every 100 ticks.
             if (level.getGameTime() % 100 == 0) {
-                com.hbm.saveddata.satellites.SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(),
-                        com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent.INFO_NUCLEAR, 200);
+                SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(),
+                        SatelliteRayScan.RayEvent.INFO_NUCLEAR, 200);
             }
         }
 
@@ -529,10 +534,10 @@ public class TileEntityPWRController extends TileEntityMachineBase
         this.rodTarget = input.getDoubleOr("rodTarget", 0);
         // saved by item name; a save from before the fuel data map holds the 1.7 enum name ("MEU")
         String saved = input.getStringOr("typeLoaded", "");
-        if (!saved.isEmpty() && !saved.contains(":")) saved = "hbm:pwr_fuel_" + saved.toLowerCase(java.util.Locale.ROOT);
-        net.minecraft.world.item.Item savedFuel = saved.isEmpty() ? null : com.hbm.api.data.ReactorDataMaps.itemOf(saved);
-        this.typeLoaded = savedFuel == null || com.hbm.items.machine.ItemPWRFuel.stats(savedFuel) == null ? -1
-                : net.minecraft.core.registries.BuiltInRegistries.ITEM.getId(savedFuel);
+        if (!saved.isEmpty() && !saved.contains(":")) saved = "hbm:pwr_fuel_" + saved.toLowerCase(Locale.ROOT);
+        Item savedFuel = saved.isEmpty() ? null : ReactorDataMaps.itemOf(saved);
+        this.typeLoaded = savedFuel == null || ItemPWRFuel.stats(savedFuel) == null ? -1
+                : BuiltInRegistries.ITEM.getId(savedFuel);
         this.amountLoaded = input.getIntOr("amountLoaded", 0);
         this.progress = input.getDoubleOr("progress", 0);
         this.processTime = input.getDoubleOr("processTime", 0);
@@ -575,8 +580,8 @@ public class TileEntityPWRController extends TileEntityMachineBase
         output.putDouble("flux", flux);
         output.putDouble("rodLevel", rodLevel);
         output.putDouble("rodTarget", rodTarget);
-        if (typeLoaded >= 0) output.putString("typeLoaded", net.minecraft.core.registries.BuiltInRegistries.ITEM
-                .getKey(net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(typeLoaded)).toString());
+        if (typeLoaded >= 0) output.putString("typeLoaded", BuiltInRegistries.ITEM
+                .getKey(BuiltInRegistries.ITEM.byId(typeLoaded)).toString());
         output.putInt("amountLoaded", amountLoaded);
         output.putDouble("progress", progress);
         output.putDouble("processTime", processTime);

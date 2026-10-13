@@ -20,8 +20,7 @@ import com.hbm.registration.Reg;
 /**
  * The eight 1.7 storage-drum waste families ({@code nuclear_waste_long/short[_depleted][_tiny]}), whose waste class was
  * the item metadata. One item per class as ntm-next registers them ({@code <base>_<class>}, e.g.
- * {@code nuclear_waste_long_thorium}), each drawn with its family's 1.7 sprite; the class is never stored on the stack
- * (it used to be the int {@code hbm:storage_waste_class}; History §19es-itemvariant).
+ * {@code nuclear_waste_long_thorium}), each drawn with its family's 1.7 sprite; the class is never stored on the stack.
  */
 public final class ModStorageDrumItems {
 

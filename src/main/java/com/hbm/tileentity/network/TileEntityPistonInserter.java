@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -129,7 +130,7 @@ public class TileEntityPistonInserter extends TileEntityLoadedBase {
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         if (level == null || slot.isEmpty()) return;
-        net.minecraft.world.Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), slot);
+        Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), slot);
         slot = ItemStack.EMPTY;
     }
 }

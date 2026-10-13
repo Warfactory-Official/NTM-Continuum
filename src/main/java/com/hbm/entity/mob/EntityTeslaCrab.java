@@ -1,7 +1,9 @@
 package com.hbm.entity.mob;
 
 import com.hbm.items.ModItems;
+import com.hbm.particle.helper.EntityEffects;
 import com.hbm.util.TeslaZap;
+import dev.golem.core.world.Compat;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityDimensions;
@@ -10,6 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
@@ -45,7 +48,7 @@ public class EntityTeslaCrab extends EntityCyberCrab {
             // zap runs every tick; only a changed arc set is worth a packet
             if (!zapped.equals(targets)) {
                 targets = zapped;
-                com.hbm.particle.helper.EntityEffects.teslaArc(this, targets, 64);
+                EntityEffects.teslaArc(this, targets, 64);
             }
         }
 
@@ -60,8 +63,8 @@ public class EntityTeslaCrab extends EntityCyberCrab {
 
         int looting = 0;
         // 1.7 EntityLivingBase.onDeath only read looting off an EntityPlayer killer
-        if (source.getEntity() instanceof net.minecraft.world.entity.player.Player attacker) {
-            looting = dev.golem.core.world.Compat.lootingLevel(level, attacker);
+        if (source.getEntity() instanceof Player attacker) {
+            looting = Compat.lootingLevel(level, attacker);
         }
 
         // 1.7 EntityLivingBase.onDeath: rare drops roll nextInt(200) - looting < 5

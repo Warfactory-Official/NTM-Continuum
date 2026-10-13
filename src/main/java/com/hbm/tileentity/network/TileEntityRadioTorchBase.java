@@ -2,7 +2,7 @@ package com.hbm.tileentity.network;
 
 import com.hbm.blocks.network.RadioTorchBase;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.radio.RadioTorchMenu;
+import com.hbm.inventory.container.RadioTorchMenu;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -12,6 +12,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -21,7 +22,7 @@ import org.jspecify.annotations.Nullable;
 
 /** Shared persisted and synchronized configuration for sender and receiver torches. */
 public abstract class TileEntityRadioTorchBase extends TileEntityLoadedBase
-        implements IControlReceiver, net.minecraft.world.MenuProvider, RadioTorchTicking {
+        implements IControlReceiver, MenuProvider, RadioTorchTicking {
     public static final int MAPPING_SIZE = 16;
 
     public String channel = "";

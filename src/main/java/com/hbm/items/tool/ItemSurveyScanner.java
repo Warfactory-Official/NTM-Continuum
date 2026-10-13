@@ -4,6 +4,9 @@ import com.hbm.blocks.ModOreBlocks;
 import com.hbm.tileentity.BedrockOreBlockEntity;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.Teleports;
+import java.util.Collections;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Predicate;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -39,13 +42,13 @@ public class ItemSurveyScanner extends CompatItem {
     }
 
     /** One line the scanner can report: shown once if any sampled block matches. */
-    public record Finding(java.util.function.Predicate<Block> matches, String message, ChatFormatting colour) {}
+    public record Finding(Predicate<Block> matches, String message, ChatFormatting colour) {}
 
     /**
      * 1.7's checks in its message order (its "wow, this sucks!" if-chain: a block counts for the first check it matches).
      * An addon adds its own deposits with {@link #addFinding}; NTM: Space's natural gas and brine went in after OIL.
      */
-    private static final List<Finding> FINDINGS = new java.util.concurrent.CopyOnWriteArrayList<>(List.of(
+    private static final List<Finding> FINDINGS = new CopyOnWriteArrayList<>(List.of(
             hbm("Found OIL!", ChatFormatting.BLACK, "ore_oil"),
             hbm("Found BEDROCK OIL!", ChatFormatting.BLACK, "ore_bedrock_oil"),
             hbm("Found COLTAN!", ChatFormatting.GOLD, "ore_coltan"),
@@ -65,7 +68,7 @@ public class ItemSurveyScanner extends CompatItem {
 
     /** The findings in report order (read-only). */
     public static List<Finding> findings() {
-        return java.util.Collections.unmodifiableList(FINDINGS);
+        return Collections.unmodifiableList(FINDINGS);
     }
 
     @Override

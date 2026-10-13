@@ -1,7 +1,10 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerNukeMan;
+import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -12,9 +15,9 @@ import net.minecraft.world.entity.player.Inventory;
  * overlays and the ready indicator are drawn from the right-hand side of the schematic texture, gated by the
  * container's arming state (read off the synced BE); the info panel on the left lists the required parts.
  */
-public class GUINukeMan extends dev.golem.core.gui.CompatContainerScreen<ContainerNukeMan> {
+public class GUINukeMan extends CompatContainerScreen<ContainerNukeMan> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/weapon/fatmanschematic.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/weapon/fatmanschematic.png");
 
     public GUINukeMan(ContainerNukeMan menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 166);
@@ -44,7 +47,7 @@ public class GUINukeMan extends dev.golem.core.gui.CompatContainerScreen<Contain
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         // 1.7 drawCustomInfoStat: the text is anchored at (guiLeft - 8, guiTop + 32), not at the mouse.
         if (this.isHovering(-16, 16, 16, 16, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, GUINukeBoy.lines("desc.gui.nukeMan.desc"), java.util.Optional.empty(),
+            GuiDraw.tooltip(graphics, this.font, GUINukeBoy.lines("desc.gui.nukeMan.desc"), Optional.empty(),
                     this.leftPos - 8, this.topPos + 16 + 16);
         }
     }

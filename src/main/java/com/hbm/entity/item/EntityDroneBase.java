@@ -24,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
  * 1.7 {@code entity/item/EntityDroneBase}: the shared base for the delivery network's quadcopters. Flies a
  * straight line to a waypoint, climbing when it bumps a wall, and carries its cargo appearance as synched data.
  *
- * <p>1.7's hand-rolled {@code turnProgress} client lerp is dropped in favour of 26.2's
+ * <p>1.7's hand-rolled {@code turnProgress} client lerp is dropped in favour of 26.1's
  * {@link EntityInterpolation}, which is the same mechanism.
  */
 public abstract class EntityDroneBase extends CompatEntity {

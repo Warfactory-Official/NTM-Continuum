@@ -1,5 +1,6 @@
 package com.hbm.entity.mob;
 
+import com.hbm.api.item.IGasMask;
 import com.hbm.items.ModEntityItems;
 import com.hbm.items.ModGearItems;
 import dev.golem.core.data.CompatMonster;
@@ -118,9 +119,9 @@ public class EntityMaskMan extends CompatMonster implements IRadiationImmune {
 
     /**
      * 1.7 turned the boss from {@code EntityAIMaskmanLasergun}, which wrote {@code rotationYaw = rotationYawHead}
-     * and let {@code EntityLivingBase} drag {@code renderYawOffset} after it. 26.2 renders off {@code yBodyRot},
-     * and {@code BodyRotationControl} only pulls that toward the head while the mob is walking - so a boss standing
-     * still and shooting never faced what it was shooting at. Aiming here rather than in a goal also keeps the idle
+     * and let {@code EntityLivingBase} drag {@code renderYawOffset} after it. 26.x renders off {@code yBodyRot},
+     * and {@code BodyRotationControl} only pulls that toward the head while the mob is walking, so a boss standing
+     * still and shooting would not face its target. Aiming here rather than in a goal also keeps the idle
      * look goals off the head: this runs after the goal selector, and the approach goal drops LOOK whenever it is
      * between paths, which is most of a fight.
      */
@@ -149,7 +150,7 @@ public class EntityMaskMan extends CompatMonster implements IRadiationImmune {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
 
         ItemStack mask = new ItemStack(ModGearItems.gas_mask_m65.get());
-        if (mask.getItem() instanceof com.hbm.api.item.IGasMask gasMask) {
+        if (mask.getItem() instanceof IGasMask gasMask) {
             gasMask.installFilter(mask, new ItemStack(ModGearItems.gas_mask_filter_combo.get()));
         }
 

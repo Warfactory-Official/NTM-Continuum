@@ -1,5 +1,6 @@
 package com.hbm.particle.helper;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 
 /**
@@ -20,13 +21,13 @@ public class FlameCreator {
     private static final double RANGE = 50D;
 
     public static void composeEffect(Level level, double x, double y, double z, int meta) {
-        net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+        CompoundTag data = new CompoundTag();
         data.putInt("meta", meta);
         HbmEffectNT.Flamethrower.send(level, x, y, z, data, RANGE);
     }
 
     public static void composeEffectClient(Level level, double x, double y, double z, int meta) {
-        net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+        CompoundTag data = new CompoundTag();
         data.putInt("meta", meta);
         HbmEffectNT.Flamethrower.summonParticle(level, x, y, z, data);
     }

@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.SlotCraftingOutput;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
@@ -50,7 +51,7 @@ public final class ContainerMachinePrecAss extends AbstractContainerMenu {
         for (int row = 0; row < 3; row++) for (int col = 0; col < 3; col++)
             addSlot(validated(4 + row * 3 + col, 8 + col * 18, 27 + row * 18));
         for (int row = 0; row < 3; row++) for (int col = 0; col < 3; col++)
-            addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 13 + row * 3 + col, 80 + col * 18, 27 + row * 18)); // 1.7 addOutputSlots
+            addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 13 + row * 3 + col, 80 + col * 18, 27 + row * 18)); // 1.7 addOutputSlots
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 174);
     }
 

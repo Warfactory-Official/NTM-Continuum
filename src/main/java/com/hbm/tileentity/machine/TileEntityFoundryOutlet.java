@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Foundry outlet (1.12.2 {@code TileEntityFoundryOutlet}) — a pass-through tap: accepts flow only from
+ * Foundry outlet (1.12.2 {@code TileEntityFoundryOutlet}), a pass-through tap that accepts flow only from
  * the side opposite its facing, then raytraces 4 blocks down and re-pours into whatever acceptor it
  * finds. Filterable to a single material (right-click with scraps) and closed by a redstone signal.
  * Stores nothing (capacity 0).
@@ -49,7 +49,7 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
     }
 
     /** How long the stream lingers after the last flow (ticks); the feeding channel only flows every 5,
-     * so a short window would flicker — the old {@code ParticleFoundry} lived 20 ticks. */
+     * so a short window would flicker. The old {@code ParticleFoundry} lived 20 ticks. */
     private static final int STREAM_LIFETIME = 15;
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFoundryOutlet te) {

@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
@@ -43,7 +44,7 @@ public class ItemMS extends CompatItem {
             RandomSource rand = world.getRandom();
 
             // 1.7 ingot_u238m2 metadata 1..3, the hs_* items here
-            for (net.minecraft.world.item.Item egg : new net.minecraft.world.item.Item[] {ModNuclearMiscItems.HS_ELEMENTS.get(),
+            for (Item egg : new Item[] {ModNuclearMiscItems.HS_ELEMENTS.get(),
                     ModNuclearMiscItems.HS_ARSENIC.get(), ModNuclearMiscItems.HS_VAULT.get()}) {
                 ItemStack sta = new ItemStack(egg);
                 float f = rand.nextFloat() * 0.8F + 0.1F;

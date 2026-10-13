@@ -1,7 +1,9 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.api.environment.Environment;
 import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
+import com.hbm.client.sound.IntakeSoundHandler;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
@@ -61,7 +63,7 @@ public class TileEntityMachineIntake extends TileEntityLoadedBase
         int consumption = compair.getMaxFill() - compair.getFill();
         if (consumption <= 0) return true;
         consumption = Math.max(1, consumption / 100);
-        return com.hbm.api.environment.Environment.compressAir(level, pos, consumption);
+        return Environment.compressAir(level, pos, consumption);
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineIntake intake) {
@@ -73,7 +75,7 @@ public class TileEntityMachineIntake extends TileEntityLoadedBase
                 intake.prevFan -= 360F;
             }
         }
-        com.hbm.client.sound.IntakeSoundHandler.tickLoop(intake);
+        IntakeSoundHandler.tickLoop(intake);
     }
 
     public ForgeDirection getFacing() {

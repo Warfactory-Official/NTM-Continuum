@@ -1,5 +1,7 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
@@ -8,6 +10,8 @@ import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilOutput;
 import com.hbm.packet.AnvilCraftPayload;
+import dev.golem.core.gui.KeyInput;
+import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -32,9 +36,9 @@ import java.util.Locale;
  * the selected recipe's inputs/outputs (drawn at half scale, like the original). The hammer button crafts
  * the selection straight from the player's inventory via a {@link AnvilCraftPayload} (LSHIFT = ×64).
  */
-public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<ContainerAnvil> {
+public class GUIAnvil extends CompatContainerScreen<ContainerAnvil> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_anvil.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_anvil.png");
 
     private final int tier;
     private final List<AnvilConstructionRecipe> originList = new ArrayList<>();
@@ -215,7 +219,7 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         int x = (int) event.x(), y = (int) event.y();
 
         if (isOver(x, y, 7, 71, 9, 36)) { // page left
@@ -249,7 +253,7 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
     }
 
     @Override
-    protected boolean keyPressed(dev.golem.core.gui.KeyInput event) {
+    protected boolean keyPressed(KeyInput event) {
         // While the search box has focus, let it consume typing (incl. the inventory key, e.g. 'e') so the
         // default AbstractContainerScreen behaviour of closing the menu on the inventory key doesn't fire.
         if (this.search != null && this.search.isFocused() && event.key() != 256 && event.key() != 258 /* ESC/TAB pass through */) {

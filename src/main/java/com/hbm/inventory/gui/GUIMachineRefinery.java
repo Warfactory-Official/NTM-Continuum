@@ -1,5 +1,7 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineRefinery;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -16,9 +18,9 @@ import net.minecraft.world.entity.player.Inventory;
  * product pipes along the top (tinted with each fraction's colour, untinted with no recipe) and the four output
  * tanks 16x52 at x=64/82/100/118.
  */
-public class GUIMachineRefinery extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineRefinery> {
+public class GUIMachineRefinery extends CompatContainerScreen<ContainerMachineRefinery> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_refinery.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_refinery.png");
 
     public GUIMachineRefinery(ContainerMachineRefinery menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 182, 240);

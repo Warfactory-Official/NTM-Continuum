@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityMachineMiningLaser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
@@ -15,11 +16,11 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Renderer for the mining laser — a port of the 1.12.2 {@code RenderLaserMiner} TESR. The static
+ * Renderer for the mining laser, a port of the 1.12.2 {@code RenderLaserMiner} TESR. The static
  * {@code Base} hangs from the ceiling; the {@code Pivot} yaws and the {@code Laser} barrel yaws+pitches
  * to track the interpolated mining target; while {@code beam} is set, the layered additive beam
- * ({@link BeamPronter}, white core → dark-red shell) is drawn from the emitter to the target block.
- * All transforms are the old renderer's, verbatim (origin {@code (+0.5, −1, +0.5)}, emitter offset 1.5
+ * ({@link BeamPronter}, white core to dark-red shell) is drawn from the emitter to the target block.
+ * All transforms match the old renderer (origin {@code (+0.5, −1, +0.5)}, emitter offset 1.5
  * along the aim vector, {@code v = target − pos + (0,3,0)}).
  */
 public class MiningLaserRenderer extends GemBER<TileEntityMachineMiningLaser, MiningLaserRenderState> {
@@ -28,7 +29,7 @@ public class MiningLaserRenderer extends GemBER<TileEntityMachineMiningLaser, Mi
     private static final int BEAM_INNER = 0xFFFFFF;
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/mining_laser.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/mining_laser.obj"));
     private final Surface base = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/mining_laser_base.png");
     private final Surface pivot = Surface.cutout(
@@ -38,7 +39,7 @@ public class MiningLaserRenderer extends GemBER<TileEntityMachineMiningLaser, Mi
 
     /**
      * The beam can span hundreds of blocks below the machine, so the model never frustum-culls and keeps
-     * rendering at long range — the old getRenderBoundingBox and 65536-dist-squared overrides.
+     * rendering at long range: the old getRenderBoundingBox and 65536-dist-squared overrides.
      */
     @Override
     protected void setup(Gem.Model<MiningLaserRenderState> declaration) {
@@ -64,7 +65,7 @@ public class MiningLaserRenderer extends GemBER<TileEntityMachineMiningLaser, Mi
         state.beam = be.beam;
 
         // Interpolate the target while beaming (old RenderLaserMiner lines 36-38); parked aim otherwise
-        // (the TE holds targetY = y−2 when off — replaces the old's garbage-input math when idle).
+        // (the TE holds targetY = y−2 when off, which replaces the old's garbage-input math when idle).
         double tx = be.targetX, ty = be.targetY, tz = be.targetZ;
         if (be.beam) {
             tx = (be.targetX - be.lastTargetX) * partialTicks + be.lastTargetX;

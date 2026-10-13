@@ -8,15 +8,16 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Exact Gem port of original-hbm ItemRenderMAS36. The weapon table draws 1.7's renderModTable: Gun, Stock,
+ * Exact Gem port of 1.7 ItemRenderMAS36. The weapon table draws 1.7's renderModTable: Gun, Stock,
  * Bolt, the scope and the bayonet when fitted, all at the origin (renderOther's non-EQUIPPED bayonet offset
  * is not in it).
  */
 public final class Mas36WeaponRenderer extends WeaponRenderer {
-    private static final net.minecraft.resources.Identifier MODEL_ID=Ids.of("hbm","models/weapons/mas36.obj");
+    private static final Identifier MODEL_ID=Ids.of("hbm","models/weapons/mas36.obj");
     private static final Surface BODY=Surface.cutout("hbm:textures/models/weapons/mas36.png");
     private WavefrontObj model;
     private WavefrontObj model(){if(model==null)model=WavefrontObj.load(MODEL_ID);return model;}

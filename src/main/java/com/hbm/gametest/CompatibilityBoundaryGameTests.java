@@ -9,8 +9,12 @@ import com.hbm.items.machine.ItemScraps;
 import com.hbm.tileentity.machine.TileEntityCrucible;
 import com.hbm.tileentity.machine.TileEntityFoundryChannel;
 import dev.golem.core.data.Inventories;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.world.CompatBlockItem;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -40,7 +44,7 @@ public final class CompatibilityBoundaryGameTests {
         channel.type = Mats.MAT_IRON;
         channel.amount = MaterialShapes.INGOT.quantity * 2;
 
-        java.util.Set<Integer> before = itemIds(helper, pos);
+        Set<Integer> before = itemIds(helper, pos);
         helper.getLevel().destroyBlock(pos, false);
         Mats.MaterialStack dropped = onlyScrap(helper, pos, before);
         helper.assertTrue(dropped != null && dropped.material == Mats.MAT_IRON
@@ -60,7 +64,7 @@ public final class CompatibilityBoundaryGameTests {
         crucible.recipeStack.add(new Mats.MaterialStack(Mats.MAT_IRON, MaterialShapes.INGOT.quantity));
         crucible.wasteStack.add(new Mats.MaterialStack(Mats.MAT_COPPER, MaterialShapes.NUGGET.quantity * 3));
 
-        java.util.Set<Integer> before = itemIds(helper, pos);
+        Set<Integer> before = itemIds(helper, pos);
         helper.getLevel().destroyBlock(pos, false);
         List<Mats.MaterialStack> scraps = scraps(helper, pos, before);
         List<ItemEntity> drops = newItems(helper, pos, before);
@@ -96,7 +100,7 @@ public final class CompatibilityBoundaryGameTests {
 
         BlockPos support = helper.absolutePos(new BlockPos(5, 1, 2));
         helper.getLevel().setBlock(support, Blocks.STONE.defaultBlockState(), 3);
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setItemInHand(InteractionHand.MAIN_HAND, carried);
         // 1.7 ItemBlockStorageCrate.onItemUse: with CRATE_OPEN_HELD (default on) a crate is placed only while sneaking
         player.setShiftKeyDown(true);
@@ -112,7 +116,7 @@ public final class CompatibilityBoundaryGameTests {
     }
 
     public static void facadeContracts(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         var main = Inventories.main(player.getInventory());
         helper.assertTrue(main.size() == 36, "main inventory facade must expose exactly 36 slots");
         main.set(0, new ItemStack(Items.DIAMOND));
@@ -127,27 +131,27 @@ public final class CompatibilityBoundaryGameTests {
 
     /** Item entities near the block before it is broken, so only what breaking dropped is counted: the
      *  legacy framework packs plots close enough for a 2-block sphere to reach a neighbour's drops. */
-    private static java.util.Set<Integer> itemIds(GameTestHelper helper, BlockPos pos) {
-        java.util.Set<Integer> ids = new java.util.HashSet<>();
+    private static Set<Integer> itemIds(GameTestHelper helper, BlockPos pos) {
+        Set<Integer> ids = new HashSet<>();
         for (ItemEntity e : helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(2D))) ids.add(e.getId());
         return ids;
     }
 
-    private static List<ItemEntity> newItems(GameTestHelper helper, BlockPos pos, java.util.Set<Integer> before) {
+    private static List<ItemEntity> newItems(GameTestHelper helper, BlockPos pos, Set<Integer> before) {
         return helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(2D)).stream()
                 .filter(e -> !before.contains(e.getId())).toList();
     }
 
-    private static Mats.MaterialStack onlyScrap(GameTestHelper helper, BlockPos pos, java.util.Set<Integer> before) {
+    private static Mats.MaterialStack onlyScrap(GameTestHelper helper, BlockPos pos, Set<Integer> before) {
         List<Mats.MaterialStack> scraps = scraps(helper, pos, before);
         return scraps.size() == 1 ? scraps.get(0) : null;
     }
 
-    private static List<Mats.MaterialStack> scraps(GameTestHelper helper, BlockPos pos, java.util.Set<Integer> before) {
+    private static List<Mats.MaterialStack> scraps(GameTestHelper helper, BlockPos pos, Set<Integer> before) {
         return newItems(helper, pos, before).stream()
                 .map(ItemEntity::getItem)
                 .map(ItemScraps::getMats)
-                .filter(java.util.Objects::nonNull)
+                .filter(Objects::nonNull)
                 .toList();
     }
 }

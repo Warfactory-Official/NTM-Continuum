@@ -4,6 +4,7 @@ import com.hbm.api.block.IToolable.ToolType;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.recipes.loader.DataRecipeTable;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.hbm.items.ModToolItems;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
@@ -20,7 +21,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * The in-world tool conversion table — 1.7's {@code NTMToolHandler}. Each entry says "hitting {@code from} with
+ * The in-world tool conversion table, 1.7's {@code NTMToolHandler}. Each entry says "hitting {@code from} with
  * {@code tool}, while carrying {@code materials}, turns it into {@code to}".
  *
  * <p>The table is the datapack table {@code hbm:tool_conversion}, one file per conversion in
@@ -31,12 +32,12 @@ import java.util.function.Supplier;
  *  "materials": [{"material": "dura_steel", "shape": "bolt", "count": 4}]}
  * </pre>
  *
- * converted once from the former Java table (HBM's four conversions). Datapacks and addons add rows the same way; code
- * may still {@link #register} a row (data rows win for the same tool and block, as a later {@code put} did).
+ * HBM ships four conversions. Datapacks and addons add rows the same way; code may also {@link #register} a row
+ * (data rows win for the same tool and block, as a later {@code put} would).
  *
  * <p>Where the original keyed on {@code (ToolType, MetaBlock)}, this keys on {@code (ToolType, Block)}: the port
  * splits 1.7's meta-variant blocks into separate registered blocks, so the meta half of the key has no counterpart.
- * Upstream also registers stone→cobblestone (boltgun); that joke entry is not here.
+ * Upstream also registers stone to cobblestone (boltgun); that joke entry is not here.
  */
 public final class NTMToolHandler {
 
@@ -102,8 +103,8 @@ public final class NTMToolHandler {
      * registered; the conversions themselves are data.
      */
     public static void register() {
-        // Bind the tool items to their type (by Item, not ItemStack — components aren't bound yet).
-        ToolType.TORCH.register(com.hbm.items.ModToolItems.blowtorch);
-        ToolType.BOLT.register(com.hbm.items.ModToolItems.boltgun);
+        // Bind the tool items to their type (by Item, not ItemStack, since components aren't bound yet).
+        ToolType.TORCH.register(ModToolItems.blowtorch);
+        ToolType.BOLT.register(ModToolItems.boltgun);
     }
 }

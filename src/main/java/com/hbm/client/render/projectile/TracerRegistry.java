@@ -1,23 +1,29 @@
 package com.hbm.client.render.projectile;
 
 import com.hbm.Constants;
+import com.hbm.client.render.BalefireGlint;
 import com.hbm.client.render.BeamPronter;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.entity.projectile.EntityBulletBeamBase;
+import com.hbm.items.weapon.sedna.BulletConfig;
+import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.client.Colors;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
+import dev.golem.core.render.gem.Geometry;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import org.joml.Quaternionf;
@@ -74,7 +80,7 @@ public final class TracerRegistry {
             if (SOURCE_UNRENDERED.contains(id)) {
                 Constants.LOG.warn("No usable {} tracer is available for {} (explicitly unavailable source style)", kind, id);
             } else {
-                Constants.LOG.error("Missing original-hbm {} tracer for {}", kind, id);
+                Constants.LOG.error("Missing 1.7 {} tracer for {}", kind, id);
             }
         }
     }
@@ -183,14 +189,14 @@ public final class TracerRegistry {
         int intentional = 0;
         int foreign = 0;
         List<Identifier> missing = new ArrayList<>();
-        for (com.hbm.items.weapon.sedna.BulletConfig config :
-                com.hbm.items.weapon.sedna.BulletConfigs.all()) {
+        for (BulletConfig config :
+                BulletConfigs.all()) {
             Identifier id = config.id;
             if (id == null) {
                 Constants.LOG.error("Bullet config has no registry id and cannot have a tracer: {}", config);
                 continue;
             }
-            boolean beam = config.pType == com.hbm.items.weapon.sedna.BulletConfig.ProjectileType.BEAM;
+            boolean beam = config.pType == BulletConfig.ProjectileType.BEAM;
             boolean mapped = beam ? BEAMS.containsKey(id) : BULLETS.containsKey(id);
             if (mapped) {
                 rendered++;
@@ -209,7 +215,7 @@ public final class TracerRegistry {
         Constants.LOG.info("Projectile tracer audit: {} mapped, {} source-unrendered, {} addon round(s) not audited",
                 rendered, intentional, foreign);
         if (!missing.isEmpty()) {
-            throw new IllegalStateException("Missing original-hbm projectile tracers: " + missing);
+            throw new IllegalStateException("Missing 1.7 projectile tracers: " + missing);
         }
     }
 
@@ -232,7 +238,7 @@ public final class TracerRegistry {
     }
 
     private static BulletTracer model(String modelId, String textureId, String part, float scale,
-            java.util.function.Consumer<PoseStack> transform) {
+            Consumer<PoseStack> transform) {
         return model(Ids.of("hbm", modelId), Ids.of("hbm", textureId), part, scale, transform);
     }
 
@@ -242,7 +248,7 @@ public final class TracerRegistry {
      * use their own models.
      */
     public static BulletTracer model(Identifier model, Identifier texture, String part, float scale,
-            java.util.function.Consumer<PoseStack> transform) {
+            Consumer<PoseStack> transform) {
         return (state, pose, sink) -> {
             pose.pushPose();
             pose.scale(scale, scale, scale);
@@ -261,21 +267,21 @@ public final class TracerRegistry {
         Identifier modelId = Ids.of("hbm", "models/weapons/fatman.obj");
         Identifier texture = Ids.of("hbm", "textures/models/weapons/fatman_balefire.png");
         return (state, pose, sink) -> {
-            dev.golem.core.render.gem.Geometry nuke = model(modelId).part("MiniNuke");
+            Geometry nuke = model(modelId).part("MiniNuke");
             pose.pushPose();
             pose.scale(0.125F, 0.125F, 0.125F);
             pose.mulPose(Axis.YN.rotationDegrees(90F));
             pose.translate(0F, -1F, 1F);
             sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutout(texture),
                     (p, buffer) -> nuke.draw(p, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY, -1));
-            com.hbm.client.render.BalefireGlint.fatMan(pose, sink.order(1), nuke);
+            BalefireGlint.fatMan(pose, sink.order(1), nuke);
             pose.popPose();
         };
     }
 
     /** The original rocket renderers draw the authored body and the fullbright exhaust ribbon. */
     private static BulletTracer rocketModel(String modelId, String textureId, String part, float scale,
-                                            java.util.function.Consumer<PoseStack> transform) {
+                                            Consumer<PoseStack> transform) {
         BulletTracer body = model(modelId, textureId, part, scale, transform);
         BulletTracer exhaust = ribbon(0x808080, 0xFFF2A7, true);
         return (state, pose, sink) -> {
@@ -309,7 +315,7 @@ public final class TracerRegistry {
         };
     }
 
-    private static void flareQuad(PoseStack.Pose pose, com.mojang.blaze3d.vertex.VertexConsumer buffer,
+    private static void flareQuad(PoseStack.Pose pose, VertexConsumer buffer,
             float size, float red, float green, float blue, float alpha) {
         int color = Colors.colorFromFloat(alpha, red, green, blue);
         Vertexes.vertex(buffer, pose, -size, -size, 0F, color, 1F, 1F, OverlayTexture.NO_OVERLAY, 0xF000F0, 0F, 0F, 1F);
@@ -356,7 +362,7 @@ public final class TracerRegistry {
         };
     }
 
-    private static void ribbonVertex(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
+    private static void ribbonVertex(VertexConsumer buffer, PoseStack.Pose pose,
             float x, float y, float z, float u, float v, int color, int light) {
         Vertexes.vertex(buffer, pose, x, y, z, ((color >> 16) & 255) / 255F,
                 ((color >> 8) & 255) / 255F, (color & 255) / 255F, 1F, u, v,

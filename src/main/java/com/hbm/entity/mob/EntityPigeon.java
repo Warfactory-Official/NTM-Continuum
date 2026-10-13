@@ -1,5 +1,6 @@
 package com.hbm.entity.mob;
 
+import com.hbm.particle.helper.LivingEffects;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatPathfinderMob;
 import com.hbm.util.FertilizerUtil;
@@ -8,6 +9,7 @@ import com.hbm.entity.mob.ai.EntityAIStartFlying;
 import com.hbm.entity.mob.ai.EntityAIStopFlying;
 import com.hbm.entity.mob.ai.EntityAISwimmingConditional;
 import com.hbm.entity.mob.ai.EntityAIWanderConditional;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -122,7 +124,7 @@ public class EntityPigeon extends CompatPathfinderMob implements IFlyingCreature
 
         int looting = 0;
         if (source.getEntity() instanceof LivingEntity attacker) {
-            looting = dev.golem.core.world.Compat.lootingLevel(level, attacker);
+            looting = Compat.lootingLevel(level, attacker);
         }
 
         int feathers = random.nextInt(3) + random.nextInt(1 + looting);
@@ -182,7 +184,7 @@ public class EntityPigeon extends CompatPathfinderMob implements IFlyingCreature
 
             if (isFat() && getRandom().nextInt(50) == 0) {
                 // 1.7 "sweat" with wool (meta 0, white): three 150..199-tick dust particles over the box, 50 blocks
-                com.hbm.particle.helper.LivingEffects.sweat(this, 3, Blocks.WHITE_WOOL, 50D);
+                LivingEffects.sweat(this, 3, Blocks.WHITE_WOOL, 50D);
 
                 // 1.7 walks 25 blocks down for the first fertilizable block and stops there
                 BlockPos below = blockPosition();

@@ -8,6 +8,7 @@ import com.hbm.interfaces.IBomb;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
+import dev.golem.core.world.SubLevels;
 import java.util.List;
 import java.util.function.BiConsumer;
 import net.minecraft.ChatFormatting;
@@ -136,7 +137,7 @@ public abstract class BlockChargeBase extends CompatBlock implements TickingBloc
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         // Carried by a sub-level system (Create Aeronautics), not broken: the charge lives on at its new position.
-        if (!safe && !dev.golem.core.world.SubLevels.isMoving(level)) explode(level, pos, null);
+        if (!safe && !SubLevels.isMoving(level)) explode(level, pos, null);
     }
 
     @Override

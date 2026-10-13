@@ -1,5 +1,6 @@
 package com.hbm.client.render.armor;
 
+import com.hbm.client.jetpack.JetpackClientVisuals;
 import com.hbm.items.gear.ArmorFSB;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.CompatHumanoidLayer;
@@ -13,12 +14,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
- * Draws HBM's modelled armour on anything humanoid — players, mannequins, armour stands, zombies.
+ * Draws HBM's modelled armour on anything humanoid: players, mannequins, armour stands, zombies.
  *
- * <p>This is the whole of the port's worn-armour rendering: one layer, attached by Golem Core to every
- * humanoid renderer, dispatching each occupied slot to the suit's {@link ArmorRenderer}. A suit with no
- * declared model falls through and is drawn by vanilla's ordinary equipment-texture layer instead, which
- * is exactly what the hazmat suits want.
+ * <p>One layer, attached by Golem Core to every humanoid renderer, dispatches each occupied slot to the
+ * suit's {@link ArmorRenderer}. A suit with no declared model falls through to vanilla's equipment-texture
+ * layer, which is what the hazmat suits want.
  */
 public class ArmorRenderLayer extends CompatHumanoidLayer {
 
@@ -35,7 +35,7 @@ public class ArmorRenderLayer extends CompatHumanoidLayer {
         if (parts.invisible) return;
 
         boolean crouching = parts.sneaking
-                && !com.hbm.client.jetpack.JetpackClientVisuals.freezesPlayerPose(parts.player());
+                && !JetpackClientVisuals.freezesPlayerPose(parts.player());
         HumanoidPose armorPose = crouching == parts.sneaking ? parts : new HumanoidPose(parts.model(), false,
                 parts.baby, parts.invisible, parts.player());
         pose.pushPose();

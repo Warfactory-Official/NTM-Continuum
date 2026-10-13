@@ -1,5 +1,6 @@
 package com.hbm.extprop;
 
+import com.hbm.blocks.generic.BlockLanternBehemoth;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.entity.EntityHbmProps;
 import dev.golem.core.platform.Lifecycle;
@@ -29,7 +30,7 @@ public final class HbmPlayerProps {
         HbmLivingProps.init(); // declares the per-entity data before the loaders flush registrations
         Lifecycle.onPlayerCopy((oldPlayer, newPlayer, alive) ->
                 getData(newPlayer).copyPlayerPropsFrom(getData(oldPlayer)));
-        com.hbm.blocks.generic.BlockLanternBehemoth.initReputationHook();
+        BlockLanternBehemoth.initReputationHook();
     }
 
     public static int getReputation(Player player) {

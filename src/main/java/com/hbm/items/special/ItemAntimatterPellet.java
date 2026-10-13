@@ -1,12 +1,14 @@
 package com.hbm.items.special;
 
 import com.hbm.config.WeaponConfig;
+import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.items.ModSingularityItems;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -31,9 +33,9 @@ public final class ItemAntimatterPellet extends CompatItem {
      */
     public static void tickDropped(ItemEntity entity) {
         if (!(entity.getItem().getItem() instanceof ItemAntimatterPellet) || !entity.onGround()
-                || !(entity.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
+                || !(entity.level() instanceof ServerLevel level)) return;
         if (WeaponConfig.dropCell) {
-            new com.hbm.explosion.vanillant.ExplosionVNT(level, entity.getX(), entity.getY(), entity.getZ(), 20F)
+            new ExplosionVNT(level, entity.getX(), entity.getY(), entity.getZ(), 20F)
                     .makeAmat().explode();
         }
         entity.discard();

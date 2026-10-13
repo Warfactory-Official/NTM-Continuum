@@ -1,7 +1,7 @@
 package com.hbm.physics;
 
 /**
- * The subset of {@code javax.vecmath.Matrix3f} old-hbm's physics used, with vecmath's semantics: float elements,
+ * The subset of {@code javax.vecmath.Matrix3f} 1.12.2's physics used, with vecmath's semantics: float elements,
  * {@code mRC} is row R column C, {@link #mul(Mat3)} is {@code this = this * m}. 1.12 shipped vecmath; modern
  * Minecraft does not, and JOML's {@code mXY} is column X row Y, so a literal swap would transpose every product.
  */

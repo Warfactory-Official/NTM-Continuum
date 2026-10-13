@@ -6,6 +6,7 @@ import com.hbm.blocks.ModOilBlocks;
 import com.hbm.blocks.ModTerrainBlocks;
 import com.hbm.blocks.generic.BlockDeadPlant;
 import com.mojang.serialization.Codec;
+import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
@@ -13,6 +14,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 import java.util.Random;
@@ -22,14 +24,14 @@ import java.util.function.Predicate;
  * 1.7 {@code world/gen/terrain/MapGenBubble}: an oblate (3 x 1 x 3) sphere of ore replacing one host block, rolled per
  * origin chunk, plus the blighted surface spot and vent hole above it. Registered twice, as 1.7's {@code HbmWorld} did:
  * <ul>
- *   <li>{@code hbm:oil_bubble} — {@code ore_oil} in stone, one origin in {@code oilSpawn} (100), y 15..39, radius 8..15,
+ *   <li>{@code hbm:oil_bubble}: {@code ore_oil} in stone, one origin in {@code oilSpawn} (100), y 15..39, radius 8..15,
  *       range 3;</li>
- *   <li>{@code hbm:oil_sand_bubble} — {@code ore_oil_sand} in sand, one in 200 where it is hot (>= 1.5) and never
+ *   <li>{@code hbm:oil_sand_bubble}: {@code ore_oil_sand} in sand, one in 200 where it is hot (>= 1.5) and never
  *       storms, y 56..71, radius 16..47, fuzzy edge, range 7.</li>
  * </ul>
  * Where it is hot and dry ({@code temperature >= 2}, {@code rainfall < 0.1}) either rate is divided by three.
  *
- * <p>Verbatim quirks: the roll is {@code rand.nextInt(f) == f - 1}; the bubble centre sits at the origin chunk's corner
+ * <p>1.7 quirks kept: the roll is {@code rand.nextInt(f) == f - 1}; the bubble centre sits at the origin chunk's corner
  * minus {@code rand(16)}; the radius test is against {@code r^2 / 2} (1.7's comment: "the original OilBubble divided the
  * square by 2 for some reason"); a fuzzy edge draws its jitter only for host blocks; {@code rand.nextInt(1) == 0}
  * always adds the surface spot but still consumes a draw.
@@ -46,11 +48,11 @@ public class MapGenBubble extends MapGenFeature {
     private final int rangeY;
     private final boolean fuzzy;
     private final Predicate<BlockState> replace;
-    private final java.util.function.Supplier<BlockState> block;
+    private final Supplier<BlockState> block;
     private final Predicate<Holder<Biome>> canSpawn;
 
     public MapGenBubble(Codec<NoneFeatureConfiguration> codec, int frequency, int minSize, int maxSize, int minY, int rangeY,
-                        boolean fuzzy, Predicate<BlockState> replace, java.util.function.Supplier<BlockState> block,
+                        boolean fuzzy, Predicate<BlockState> replace, Supplier<BlockState> block,
                         Predicate<Holder<Biome>> canSpawn) {
         super(codec, maxSize / 8 + 1); // 1.7 setSize
         this.frequency = frequency;
@@ -78,7 +80,7 @@ public class MapGenBubble extends MapGenFeature {
     }
 
     @Override
-    protected boolean generate(WorldGenLevel level, net.minecraft.world.level.chunk.ChunkGenerator generator, Random rand, long originSeed, int seaLevel,
+    protected boolean generate(WorldGenLevel level, ChunkGenerator generator, Random rand, long originSeed, int seaLevel,
                                int originX, int originZ, int chunkX, int chunkZ, boolean forced) {
         if (frequency <= 0) return false;
         Holder<Biome> biome = null;

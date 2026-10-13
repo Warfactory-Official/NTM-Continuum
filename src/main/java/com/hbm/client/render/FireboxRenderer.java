@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityFireboxBase;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -27,7 +28,7 @@ public class FireboxRenderer<T extends TileEntityFireboxBase> extends GemBER<T, 
     }
 
     public FireboxRenderer(String modelPath, String texturePath, String emptyPart, boolean translateDoor) {
-        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, modelPath));
+        this.model = WavefrontObj.load(Ids.of(Constants.MOD_ID, modelPath));
         this.surface = Surface.cutout(Constants.MOD_ID + ":" + texturePath);
         this.emptyPart = emptyPart;
         this.translateDoor = translateDoor;

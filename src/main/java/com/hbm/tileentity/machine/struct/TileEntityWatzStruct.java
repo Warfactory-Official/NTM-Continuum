@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * {@code TileEntityWatzStruct} scan, coordinate for coordinate: a three-tall cross of reaction
  * chambers and supercoolers wrapped in riveted stability casing.
  *
- * <p>Note the casing must be the <b>riveted</b> variant — upstream checked meta 1, which in this port
+ * <p>The casing must be the <b>riveted</b> variant; upstream checked meta 1, which in this port
  * is {@code watz_casing_tooled}, the output of hitting plain casing with the boltgun.
  */
 public class TileEntityWatzStruct extends TileEntityStructBase {

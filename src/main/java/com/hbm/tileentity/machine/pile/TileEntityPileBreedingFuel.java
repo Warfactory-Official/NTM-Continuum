@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.pile;
 
+import com.hbm.config.GeneralConfig;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.block.IPileNeutronReceiver;
@@ -21,7 +22,7 @@ public class TileEntityPileBreedingFuel extends TileEntityPileBase implements IP
     public int lastNeutrons;
     public int progress;
     /** 1.7 {@code GeneralConfig.enable528 ? 50000 : 30000}, fixed when the class loads, as in 1.7. */
-    public static final int maxProgress = com.hbm.config.GeneralConfig.enable528 ? 50000 : 30000;
+    public static final int maxProgress = GeneralConfig.enable528 ? 50000 : 30000;
 
     public TileEntityPileBreedingFuel(BlockPos pos, BlockState state) {
         super(ModNuclearMiscBlockEntities.PILE_BREEDING_FUEL.get(), pos, state);

@@ -5,6 +5,7 @@ import dev.golem.core.viewer.SlotLayout;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.recipes.StorageDrumRecipes;
 import dev.golem.core.viewer.ViewerType;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -36,7 +37,7 @@ public final class StorageDrumRecipeHandler extends HbmRecipeCategory<StorageDru
     }
 
     @Override
-    public void draw(Entry recipe, net.minecraft.client.gui.GuiGraphicsExtractor graphics,
+    public void draw(Entry recipe, GuiGraphicsExtractor graphics,
                      double mouseX, double mouseY) {
         super.draw(recipe, graphics, mouseX, mouseY);
     }

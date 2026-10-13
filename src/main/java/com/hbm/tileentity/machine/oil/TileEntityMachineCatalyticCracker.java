@@ -18,13 +18,13 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Catalytic Cracker — 1:1 port of the 1.12.2 {@code TileEntityMachineCatalyticCracker}. A large
+ * Catalytic Cracker: 1:1 port of the 1.12.2 {@code TileEntityMachineCatalyticCracker}. A large
  * steam-driven tower (no power, no GUI). 5 tanks: {@code [0] BITUMEN 4k} input (settable via fluid-ID
  * right-click on the block), {@code [1] STEAM 8k}, {@code [2] OIL 4k}, {@code [3] PETROLEUM 4k},
- * {@code [4] SPENTSTEAM 800}. {@link #crack()} runs every 5 ticks in 2 loops: −100 input −200 steam →
- * +left +right +2 spentsteam; sends every 10 ticks.
+ * {@code [4] SPENTSTEAM 800}. {@link #crack()} runs every 5 ticks in 2 loops, each taking 100 input and 200 steam
+ * and giving left, right and 2 spentsteam; it sends every 10 ticks.
  *
- * <p>Deferred (§20): the Forge fluid-capability wrapper ({@code NTMFluidHandlerWrapper}).
+ * <p>Not ported: the Forge fluid-capability wrapper ({@code NTMFluidHandlerWrapper}).
  */
 public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2 {
 

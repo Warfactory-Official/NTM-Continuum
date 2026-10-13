@@ -13,9 +13,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Compressor renderer — port of the 1.12.2 {@code RenderCompressor}. Needs more than the generic
+ * Compressor renderer: port of the 1.12.2 {@code RenderCompressor}. Needs more than the generic
  * machine declaration because two parts move: the {@code Pump} translates by {@code lift·3 − 3} (so it
- * is <b>−3 blocks at rest</b> — a static render would drop it through the floor) and the {@code Fan}
+ * is <b>−3 blocks at rest</b>; a static render would drop it through the floor) and the {@code Fan}
  * spins about the X axis at y=1.5.
  *
  * <p>Old yaw map N90/S270/W180/E0 = the standard facing map (N0/S180/W90/E270) + 90.

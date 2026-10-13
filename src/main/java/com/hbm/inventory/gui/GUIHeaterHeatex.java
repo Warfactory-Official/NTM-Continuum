@@ -4,6 +4,8 @@ import com.hbm.inventory.container.ContainerHeaterHeatex;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.TileEntityHeaterHeatex;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.KeyInput;
 import dev.golem.core.net.GolemNetwork;
@@ -19,10 +21,10 @@ import java.util.List;
 import java.util.Optional;
 
 /** The legacy 176x204 Heatex screen, including live tank fills and the two control fields. */
-public class GUIHeaterHeatex extends dev.golem.core.gui.CompatContainerScreen<ContainerHeaterHeatex> {
+public class GUIHeaterHeatex extends CompatContainerScreen<ContainerHeaterHeatex> {
 
     private static final Identifier TEXTURE =
-            dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_heatex.png");
+            Ids.of("hbm", "textures/gui/machine/gui_heatex.png");
 
     private EditBox fieldCycles;
     private EditBox fieldDelay;

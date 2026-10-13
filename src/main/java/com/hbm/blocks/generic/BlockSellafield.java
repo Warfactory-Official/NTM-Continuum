@@ -15,10 +15,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import com.hbm.blocks.ModTerrainBlocks;
 
 /**
- * 1.7 {@code BlockSellafield} ({@code sellafield}, metas 0..5 — Sellafite, Hot, Boiling, Blazing, Infernal,
+ * 1.7 {@code BlockSellafield} ({@code sellafield}, metas 0..5: Sellafite, Hot, Boiling, Blazing, Infernal,
  * Sellafite-Corium): the still-hot vitrified ground under a fresh crater, flattened to
  * {@code sellafield_<level>}. Each random tick pumps {@code 0.5 * (level + 1)} rads into the chunk and,
- * one time in 25 (level 0) or 15 (otherwise), cools a level — level 0 becomes slaked sellafite. Walking
+ * one time in 25 (level 0) or 15 (otherwise), cools a level; level 0 becomes slaked sellafite. Walking
  * on it gives the radiation effect (amplifier {@code level} below 5, {@code 2 * level} at 5) for 30 s.
  */
 public class BlockSellafield extends CompatBlock {

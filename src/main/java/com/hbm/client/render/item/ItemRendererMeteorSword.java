@@ -3,6 +3,7 @@ package com.hbm.client.render.item;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.ItemSprites;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
 import net.minecraft.resources.Identifier;
@@ -56,7 +57,7 @@ final class ItemRendererMeteorSword implements CustomItemRenderer {
         Identifier sheet = tint(stack);
         if (sheet == null) return;
         // the sword itself, then the glint on it (see Core ItemSprites for why the sprite is drawn here)
-        dev.golem.core.render.ItemSprites.submit(pose, sink, tex("textures/items/meteorite_sword.png"), light, overlay);
+        ItemSprites.submit(pose, sink, tex("textures/items/meteorite_sword.png"), light, overlay);
         long now = System.currentTimeMillis();
         // after the sprite: an EQUAL depth test needs the surface already drawn
         SubmitSink after = sink.order(1);

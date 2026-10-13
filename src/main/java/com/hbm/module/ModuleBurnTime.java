@@ -1,0 +1,137 @@
+package com.hbm.module;
+
+import com.hbm.api.data.MachinePartDataMaps;
+import dev.golem.core.world.Compat;
+import com.hbm.items.ModFuelItems;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+
+/**
+ * Determines the burn time/heat of a fuel stack with per-fuel-class bonuses, as the 1.12.2
+ * {@code ModuleBurnTime} does, in reduced form. Base burn time comes from {@code level.fuelValues()} (the 26.1
+ * replacement for {@code TileEntityFurnace.getItemBurnTime}); classification uses exact HBM fuel items
+ * plus registry-path/tag checks in place of the old ore-dict name scan. The JSON config plumbing
+ * ({@code IConfigurableMachine}) is deferred with that system.
+ */
+public class ModuleBurnTime {
+
+    private static final int modLog = 0;
+    private static final int modWood = 1;
+    private static final int modCoal = 2;
+    private static final int modLignite = 3;
+    private static final int modCoke = 4;
+    private static final int modSolid = 5;
+    private static final int modRocket = 6;
+    private static final int modBalefire = 7;
+
+    private final double[] modTime = new double[8];
+    private final double[] modHeat = new double[8];
+
+    public ModuleBurnTime() {
+        for (int i = 0; i < modTime.length; i++) {
+            modTime[i] = 1.0D;
+            modHeat[i] = 1.0D;
+        }
+    }
+
+    public int getBurnTime(Level level, ItemStack stack) {
+        int fuel = Compat.burnDuration(level, stack);
+        if (fuel == 0) return 0;
+        return (int) (fuel * getMod(stack, modTime));
+    }
+
+    public int getBurnHeat(int base, ItemStack stack) {
+        if (base <= 0) return 0;
+        return (int) (base * getMod(stack, modHeat));
+    }
+
+    /** The heat multiplier a fuel class carries (1.7 {@code getMod(stack, getModHeat())}); 0 for an empty stack. */
+    public double getHeatMod(ItemStack stack) {
+        return getMod(stack, modHeat);
+    }
+
+    private double getMod(ItemStack stack, double[] mod) {
+        if (stack.isEmpty()) return 0;
+
+        // The hbm:fuel_category item data map names a class outright (1.7 listed the solid and rocket fuels by item);
+        // everything it leaves out is classed by the 1.7 ore-dictionary name scan below.
+        String category = MachinePartDataMaps.FUEL_CATEGORY.get(stack.getItem());
+        if (category != null) {
+            int index = Arrays.asList(CATEGORIES).indexOf(category);
+            return index < 0 ? 1D : mod[index];
+        }
+
+        // The old ore-dict name scan ("Coke"/"Coal"/"Lignite"/log*/"Wood"), on registry path + tags.
+        String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
+        if (path.contains("coke")) return mod[modCoke];
+        if (path.contains("lignite")) return mod[modLignite];
+        if (path.contains("coal") && !path.contains("charcoal")) return mod[modCoal];
+        if (stack.is(ItemTags.LOGS)) return mod[modLog];
+        if (path.contains("wood") || stack.is(ItemTags.PLANKS)) return mod[modWood];
+
+        return 1D;
+    }
+
+    public ModuleBurnTime setLogTimeMod(double mod) { this.modTime[modLog] = mod; return this; }
+    public ModuleBurnTime setWoodTimeMod(double mod) { this.modTime[modWood] = mod; return this; }
+    public ModuleBurnTime setCoalTimeMod(double mod) { this.modTime[modCoal] = mod; return this; }
+    public ModuleBurnTime setLigniteTimeMod(double mod) { this.modTime[modLignite] = mod; return this; }
+    public ModuleBurnTime setCokeTimeMod(double mod) { this.modTime[modCoke] = mod; return this; }
+    public ModuleBurnTime setSolidTimeMod(double mod) { this.modTime[modSolid] = mod; return this; }
+    public ModuleBurnTime setRocketTimeMod(double mod) { this.modTime[modRocket] = mod; return this; }
+    public ModuleBurnTime setBalefireTimeMod(double mod) { this.modTime[modBalefire] = mod; return this; }
+
+    public ModuleBurnTime setLogHeatMod(double mod) { this.modHeat[modLog] = mod; return this; }
+    public ModuleBurnTime setWoodHeatMod(double mod) { this.modHeat[modWood] = mod; return this; }
+    public ModuleBurnTime setCoalHeatMod(double mod) { this.modHeat[modCoal] = mod; return this; }
+    public ModuleBurnTime setLigniteHeatMod(double mod) { this.modHeat[modLignite] = mod; return this; }
+    public ModuleBurnTime setCokeHeatMod(double mod) { this.modHeat[modCoke] = mod; return this; }
+    public ModuleBurnTime setSolidHeatMod(double mod) { this.modHeat[modSolid] = mod; return this; }
+    public ModuleBurnTime setRocketHeatMod(double mod) { this.modHeat[modRocket] = mod; return this; }
+    public ModuleBurnTime setBalefireHeatMod(double mod) { this.modHeat[modBalefire] = mod; return this; }
+
+    // --- 1.7 GUI description (the burn-bonus tooltip over an empty fuel slot) ---
+
+    /** The fuel class ids of {@code hbm:fuel_category}, in index order. */
+    public static final String[] CATEGORIES = {"log", "wood", "coal", "lignite", "coke", "solid", "rocket", "balefire"};
+
+    private static final String[] CLASS_NAMES = {"Logs", "Wood", "Coal", "Lignite", "Coke", "Solid Fuel", "Rocket Fuel", "Balefire"};
+
+    public List<String> getDesc() {
+        List<String> desc = new ArrayList<>();
+        desc.addAll(getTimeDesc());
+        desc.addAll(getHeatDesc());
+        return desc;
+    }
+
+    public List<String> getTimeDesc() {
+        List<String> list = new ArrayList<>();
+        list.add("§6Burn time bonuses:");
+        for (int i = 0; i < CLASS_NAMES.length; i++) addIf(list, CLASS_NAMES[i], modTime[i]);
+        if (list.size() == 1) list.clear();
+        return list;
+    }
+
+    public List<String> getHeatDesc() {
+        List<String> list = new ArrayList<>();
+        list.add("§cBurn heat bonuses:");
+        for (int i = 0; i < CLASS_NAMES.length; i++) addIf(list, CLASS_NAMES[i], modHeat[i]);
+        if (list.size() == 1) list.clear();
+        return list;
+    }
+
+    private static void addIf(List<String> list, String name, double mod) {
+        if (mod != 1.0D) list.add("§e- " + name + ": " + getPercent(mod));
+    }
+
+    private static String getPercent(double mod) {
+        mod -= 1D;
+        String num = ((int) (mod * 100)) + "%";
+        return mod < 0 ? "§c" + num : "§a+" + num;
+    }
+}

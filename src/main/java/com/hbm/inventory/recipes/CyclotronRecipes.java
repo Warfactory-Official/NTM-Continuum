@@ -9,6 +9,7 @@ import com.hbm.inventory.recipes.loader.RecipeText;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -36,7 +37,7 @@ public final class CyclotronRecipes {
     public record Row(Item particle, AStack input, ItemOut output, int antimatter, int order) {}
 
     public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            dev.golem.core.world.ItemStacks.itemCodec().fieldOf("particle").forGetter(Row::particle),
+            ItemStacks.itemCodec().fieldOf("particle").forGetter(Row::particle),
             GenericRecipeCodec.STACK.fieldOf("input").forGetter(Row::input),
             GenericRecipeCodec.ITEM_OUT.fieldOf("output").forGetter(Row::output),
             Codec.INT.fieldOf("antimatter").forGetter(Row::antimatter),

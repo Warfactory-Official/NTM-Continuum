@@ -1,7 +1,10 @@
 package com.hbm.blocks.machine.storage;
 
+import com.hbm.blocks.generic.CrateKeepContents;
 import com.hbm.tileentity.machine.storage.CrateType;
 import com.hbm.tileentity.machine.storage.TileEntityCrate;
+import dev.golem.core.gui.Menus;
+import dev.golem.core.world.CarriedBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,9 +32,9 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Contents are kept on the dropped item via the crate's loot table (a {@code copy_components} of the
  * {@code minecraft:container} + {@code custom_name} components from the block entity), so no in-code drop
- * logic is needed — see {@link TileEntityCrate}.
+ * logic is needed, see {@link TileEntityCrate}.
  */
-public class BlockCrate extends dev.golem.core.world.CarriedBlock {
+public class BlockCrate extends CarriedBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -53,7 +56,7 @@ public class BlockCrate extends dev.golem.core.world.CarriedBlock {
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             if (level.getBlockEntity(pos) instanceof MenuProvider provider) {
-                dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+                Menus.openWithPos(serverPlayer, provider, pos);
             }
         }
         return InteractionResult.SUCCESS;
@@ -82,9 +85,9 @@ public class BlockCrate extends dev.golem.core.world.CarriedBlock {
 
     /** 1.7 {@code removedByPlayer} with {@code /ntmserver CRATE_KEEP_CONTENTS} off: see {@link com.hbm.blocks.generic.CrateKeepContents}. */
     @Override
-    protected void onPlayerWillDestroy(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos,
-                                       net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.entity.player.Player player) {
-        com.hbm.blocks.generic.CrateKeepContents.breakLoose(level, pos, state, player);
+    protected void onPlayerWillDestroy(Level level, BlockPos pos,
+                                       BlockState state, Player player) {
+        CrateKeepContents.breakLoose(level, pos, state, player);
         super.onPlayerWillDestroy(level, pos, state, player);
     }
 }

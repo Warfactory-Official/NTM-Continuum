@@ -1,5 +1,9 @@
 package com.hbm.entity.missile;
 
+import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
+import com.hbm.items.ItemEnums;
+import com.hbm.items.ModSatelliteItems;
+import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.ModNtmEntities;
@@ -9,6 +13,8 @@ import dev.golem.core.data.CompatEntity;
 import com.hbm.interfaces.StoredItems;
 import com.hbm.advancement.DetonationTrigger;
 import com.hbm.advancement.HbmCriteria;
+import dev.golem.core.world.Effects;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.server.level.ServerPlayer;
 import com.hbm.sound.ModSounds;
 import net.minecraft.sounds.SoundSource;
@@ -102,7 +108,7 @@ public class EntitySoyuz extends CompatEntity implements StoredItems {
                     getX() + 5, getY(), getZ() + 5));
 
             for (Entity e : list) {
-                dev.golem.core.world.Effects.ignite(e, 15); // 1.7 setFire(15)
+                Effects.ignite(e, 15); // 1.7 setFire(15)
 
                 // 1.7 attackEntityFrom: i-frames throttle the plume to one hit per 20 ticks
                 Compat.hurt(e, server, ModDamageSources.source(level(), ModDamageSources.EXHAUST), 100.0F);
@@ -155,7 +161,7 @@ public class EntitySoyuz extends CompatEntity implements StoredItems {
                 if (load.is(ModItems.flame_pony.get())) {
                     ExplosionLarge.spawnTracers(level(), getX(), getY(), getZ(), 25);
                     // 1.7 achSpace, awarded to every player in the world; the trigger keys on the rocket
-                    ItemStack rocket = com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.missile_soyuz.stack(com.hbm.items.ItemEnums.SoyuzSkinType.NORMAL);
+                    ItemStack rocket = ModSoyuzBlocks.missile_soyuz.stack(ItemEnums.SoyuzSkinType.NORMAL);
                     for (Player p : level().players()) {
                         if (p instanceof ServerPlayer serverPlayer) HbmCriteria.orbit(serverPlayer, rocket);
                     }
@@ -163,7 +169,7 @@ public class EntitySoyuz extends CompatEntity implements StoredItems {
 
                 // 1.7:109-113 achFOEQ for the legacy FOEQ probe. sat_foeq launches no satellite (it was never
                 // registered in XSatelliteRegistry), so this is its only effect.
-                if (load.is(com.hbm.items.ModSatelliteItems.sat_foeq.get())) {
+                if (load.is(ModSatelliteItems.sat_foeq.get())) {
                     for (Player p : level().players()) {
                         if (p instanceof ServerPlayer serverPlayer) HbmCriteria.orbit(serverPlayer, load);
                     }
@@ -253,13 +259,13 @@ public class EntitySoyuz extends CompatEntity implements StoredItems {
 
     @Override
     protected void loadData(DataIn input) {
-        setSkin(com.hbm.util.SavedIds.getEnum(input, "skin", com.hbm.items.ItemEnums.SoyuzSkinType.NORMAL).ordinal());
+        setSkin(SavedIds.getEnum(input, "skin", ItemEnums.SoyuzSkinType.NORMAL).ordinal());
         targetX = input.getIntOr("targetX", targetX);
         targetZ = input.getIntOr("targetZ", targetZ);
         mode = input.getIntOr("mode", mode);
 
         // 1.7 "items" tag list with per-entry "slot" bytes; the codec list preserves slot order instead
-        List<ItemStack> list = input.read("items", dev.golem.core.world.ItemStacks.optionalCodec().listOf()).orElse(List.of());
+        List<ItemStack> list = input.read("items", ItemStacks.optionalCodec().listOf()).orElse(List.of());
         for (int i = 0; i < list.size() && i < payload.length; i++) {
             payload[i] = list.get(i);
         }
@@ -267,12 +273,12 @@ public class EntitySoyuz extends CompatEntity implements StoredItems {
 
     @Override
     protected void saveData(DataOut output) {
-        // by enum name, never the ordinal (History section 19ek-small)
-        com.hbm.util.SavedIds.putEnum(output, "skin", com.hbm.items.ItemEnums.SoyuzSkinType.VALUES[Math.floorMod(getSkin(), com.hbm.items.ItemEnums.SoyuzSkinType.VALUES.length)]);
+        // by enum name, never the ordinal
+        SavedIds.putEnum(output, "skin", ItemEnums.SoyuzSkinType.VALUES[Math.floorMod(getSkin(), ItemEnums.SoyuzSkinType.VALUES.length)]);
         output.putInt("targetX", targetX);
         output.putInt("targetZ", targetZ);
         output.putInt("mode", mode);
 
-        output.store("items", dev.golem.core.world.ItemStacks.optionalCodec().listOf(), List.of(payload));
+        output.store("items", ItemStacks.optionalCodec().listOf(), List.of(payload));
     }
 }

@@ -11,6 +11,7 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityCMPort;
 import com.hbm.tileentity.machine.TileEntityCustomMachine;
+import dev.golem.core.Ids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -91,7 +92,7 @@ public final class CustomMachineGameTests {
         long overshoot = port.transferPower(20_000L, false);
         helper.assertTrue(tile.power == 10_000L && overshoot == 10_000L, "port power " + tile.power + " / " + overshoot);
 
-        tile.inventory.setStackInSlot(4, new ItemStack(BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.of("hbm", "powder_sawdust")), 2));
+        tile.inventory.setStackInSlot(4, new ItemStack(BuiltInRegistries.ITEM.getValue(Ids.of("hbm", "powder_sawdust")), 2));
         for (int i = 0; i < 60; i++) TileEntityCustomMachine.serverTick(helper.getLevel(), core, tile.getBlockState(), tile);
 
         ItemStack out = tile.inventory.getStackInSlot(16);
@@ -104,15 +105,15 @@ public final class CustomMachineGameTests {
 
     /** IPI / PCP / IPI with steel ingots, steel plates and a basic circuit yields the Paper Press controller. */
     public static void controllerRecipe(GameTestHelper helper) {
-        ItemStack i = new ItemStack(BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.of("hbm", "ingot_steel")));
-        ItemStack p = new ItemStack(BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.of("hbm", "plate_steel")));
-        ItemStack c = new ItemStack(BuiltInRegistries.ITEM.getValue(dev.golem.core.Ids.of("hbm", "circuit_basic")));
+        ItemStack i = new ItemStack(BuiltInRegistries.ITEM.getValue(Ids.of("hbm", "ingot_steel")));
+        ItemStack p = new ItemStack(BuiltInRegistries.ITEM.getValue(Ids.of("hbm", "plate_steel")));
+        ItemStack c = new ItemStack(BuiltInRegistries.ITEM.getValue(Ids.of("hbm", "circuit_basic")));
         List<ItemStack> grid = new ArrayList<>(List.of(i, p, i, p, c, p, i, p, i));
         Integer index = CustomMachineCraftingRecipe.find(3, 3, grid);
         helper.assertTrue(index != null && index == 0, "controller recipe did not match: " + index);
         ItemStack result = ModCustomMachineBlocks.custom_machine_item.get().of(index);
-        // 1.7 damage niceList index + 100; the configuration's name here (History §19es-itemvariant)
-        helper.assertTrue(com.hbm.config.CustomMachineConfigJSON.niceList.get(0).unlocalizedName
+        // 1.7 damage niceList index + 100; the configuration's name here
+        helper.assertTrue(CustomMachineConfigJSON.niceList.get(0).unlocalizedName
                         .equals(ModDataComponents.CUSTOM_MACHINE.getOr(result, null)),
                 "controller names " + ModDataComponents.CUSTOM_MACHINE.getOr(result, null));
         helper.assertTrue("Paper Press".equals(result.getHoverName().getString()), "name " + result.getHoverName().getString());

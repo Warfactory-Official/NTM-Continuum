@@ -64,7 +64,7 @@ public class MachineChungus extends BlockMultiblockMachine
     }
 
     /**
-     * 1.7 checks the body, the duct run, the tail and the front connector block — and not the crown. That
+     * 1.7 checks the body, the duct run, the tail and the front connector block, and not the crown. That
      * omission is kept: the crown is stamped over whatever is there, as it always was.
      */
     @Override
@@ -95,7 +95,7 @@ public class MachineChungus extends BlockMultiblockMachine
         visitor.cell(core.relative(rot, -2), MASK_EAST, ROLE_FLUID);
     }
 
-    /** 1.7 stamps {@code TileEntityProxyCombo(false, true, true)} — power and fluid — on all four extras. */
+    /** 1.7 stamps {@code TileEntityProxyCombo(false, true, true)}, power and fluid, on all four extras. */
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         Direction rot = facing.getClockWise();

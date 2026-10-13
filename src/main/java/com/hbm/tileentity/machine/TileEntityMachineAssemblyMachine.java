@@ -1,5 +1,11 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.inventory.recipes.loader.GenericRecipe;
+import com.hbm.items.ModAbilityToolItems;
+import com.hbm.util.BobMathUtil;
 import dev.golem.core.data.Tags;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
@@ -14,10 +20,12 @@ import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
-import com.hbm.modules.machine.ModuleMachineAssembler;
+import com.hbm.module.machine.ModuleMachineAssembler;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import java.util.HashMap;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,7 +46,7 @@ import dev.golem.core.data.DataOut;
 import java.util.Random;
 
 /**
- * Assembly Machine — a functional powered machine. The server tick draws power from adjacent networks,
+ * Assembly Machine: a functional powered machine. The server tick draws power from adjacent networks,
  * auto-selects a recipe from the inserted template (blueprint) + ingredient, and runs it via
  * {@link ModuleMachineAssembler}. Its {@code didProcess} flag is synced to the client where it gates
  * the arm/ring {@link #clientTick animation} (so the machine only moves while actually assembling).
@@ -49,7 +57,7 @@ import java.util.Random;
  * SPEED/POWER/OVERDRIVE) and hopper/pipe access to the 12 inputs and the output.
  */
 public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2,
-        com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2, WorldlyContainer, IControlReceiver, IUpgradeInfoProvider, IRORValueProvider, IRORInteractive {
+        IFluidStandardTransceiverMK2, WorldlyContainer, IControlReceiver, IUpgradeInfoProvider, IRORValueProvider, IRORInteractive {
 
     /** Slots a hopper/pipe may touch: the 12 inputs (insert) + the output (extract). */
     private static final int[] IO_SLOTS = {4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
@@ -57,10 +65,10 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     public long power;
     public long maxPower = 100_000;
     public boolean didProcess = false;
-    public final com.hbm.inventory.fluid.tank.FluidTankNTM inputTank =
-            new com.hbm.inventory.fluid.tank.FluidTankNTM(com.hbm.inventory.fluid.Fluids.NONE, 4_000);
-    public final com.hbm.inventory.fluid.tank.FluidTankNTM outputTank =
-            new com.hbm.inventory.fluid.tank.FluidTankNTM(com.hbm.inventory.fluid.Fluids.NONE, 4_000);
+    public final FluidTankNTM inputTank =
+            new FluidTankNTM(Fluids.NONE, 4_000);
+    public final FluidTankNTM outputTank =
+            new FluidTankNTM(Fluids.NONE, 4_000);
 
     public final ModuleMachineAssembler assemblerModule;
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
@@ -121,14 +129,14 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineAssemblyMachine te) {
         if (te.maxPower <= 0) te.maxPower = 1_000_000;
         // 1.7: the buffer floats to the selected recipe's power x100, never below the stored power or 100k.
-        com.hbm.inventory.recipes.loader.GenericRecipe recipe = te.assemblerModule.getRecipe();
+        GenericRecipe recipe = te.assemblerModule.getRecipe();
         if (recipe != null) te.maxPower = recipe.power * 100;
-        te.maxPower = com.hbm.util.BobMathUtil.max(te.power, te.maxPower, 100_000);
+        te.maxPower = BobMathUtil.max(te.power, te.maxPower, 100_000);
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.maxPower);
 
         for (DirPos dp : te.getConPos()) {
             te.trySubscribe(level, dp);
-            if (te.inputTank.getTankType() != com.hbm.inventory.fluid.Fluids.NONE) te.trySubscribe(te.inputTank.getTankType(), level, dp);
+            if (te.inputTank.getTankType() != Fluids.NONE) te.trySubscribe(te.inputTank.getTankType(), level, dp);
             if (te.outputTank.getFill() > 0) te.tryProvide(te.outputTank, level, dp);
         }
 
@@ -148,8 +156,8 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
         te.assemblerModule.update(speed, pow, true, blueprint);
         te.didProcess = te.assemblerModule.didProcess;
         // 1.7: every working tick turns an alloyed meteorite sword in the battery slot into the machined one
-        if (te.didProcess && te.inventory.getStackInSlot(0).is(com.hbm.items.ModAbilityToolItems.meteorite_sword_alloyed.get())) {
-            te.inventory.setStackInSlot(0, new ItemStack(com.hbm.items.ModAbilityToolItems.meteorite_sword_machined.get()));
+        if (te.didProcess && te.inventory.getStackInSlot(0).is(ModAbilityToolItems.meteorite_sword_alloyed.get())) {
+            te.inventory.setStackInSlot(0, new ItemStack(ModAbilityToolItems.meteorite_sword_machined.get()));
         }
 
         if (te.assemblerModule.markDirty) te.setChanged();
@@ -180,7 +188,7 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     }
 
     @Override
-    public void provideInfo(UpgradeType type, int level, java.util.List<Component> info, boolean extendedInfo) {
+    public void provideInfo(UpgradeType type, int level, List<Component> info, boolean extendedInfo) {
         info.add(IUpgradeInfoProvider.getStandardLabel(ModMachineBlocks.machine_assembly_machine.get()));
         if (type == UpgradeType.SPEED) {
             info.add(Component.translatable(KEY_SPEED, "+" + (level * 100 / 3) + "%").withStyle(ChatFormatting.GREEN));
@@ -195,8 +203,8 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     }
 
     @Override
-    public java.util.HashMap<UpgradeType, Integer> getValidUpgrades() {
-        java.util.HashMap<UpgradeType, Integer> upgrades = new java.util.HashMap<>();
+    public HashMap<UpgradeType, Integer> getValidUpgrades() {
+        HashMap<UpgradeType, Integer> upgrades = new HashMap<>();
         upgrades.put(UpgradeType.SPEED, 3);
         upgrades.put(UpgradeType.POWER, 3);
         upgrades.put(UpgradeType.OVERDRIVE, 3);
@@ -210,9 +218,9 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     @Override public long getMaxPower() { return maxPower; }
     @Override public long getReceiverSpeed() { return maxPower; }
 
-    @Override public com.hbm.inventory.fluid.tank.FluidTankNTM[] getReceivingTanks() { return new com.hbm.inventory.fluid.tank.FluidTankNTM[]{inputTank}; }
-    @Override public com.hbm.inventory.fluid.tank.FluidTankNTM[] getSendingTanks() { return new com.hbm.inventory.fluid.tank.FluidTankNTM[]{outputTank}; }
-    @Override public com.hbm.inventory.fluid.tank.FluidTankNTM[] getAllTanks() { return new com.hbm.inventory.fluid.tank.FluidTankNTM[]{inputTank, outputTank}; }
+    @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{inputTank}; }
+    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{outputTank}; }
+    @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{inputTank, outputTank}; }
 
     // --- MenuProvider ---
 
@@ -329,7 +337,7 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
             arm.updateInterp();
             if (running) arm.updateArm();
             else arm.returnToNullPos();
-            // The striker snaps to -0.75 at full extension — the moment a part is struck.
+            // The striker snaps to -0.75 at full extension. This is the moment a part is struck.
             if (!te.muffled && arm.prevAngles[3] != arm.angles[3] && arm.angles[3] == -0.75) {
                 AssemblerSoundHandler.playStrike(level, pos, te.getVolume(0.5F));
             }
@@ -360,8 +368,8 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     }
 
     /**
-     * One robotic arm of the assembler — a small state machine moving four interpolated angles (pivot,
-     * arm, piston, striker offset). Ported verbatim from the 1.12.2 inner class.
+     * One robotic arm of the assembler: a small state machine moving four interpolated angles (pivot,
+     * arm, piston, striker offset). Ported from the 1.12.2 inner class.
      */
     public static class AssemblerArm {
 

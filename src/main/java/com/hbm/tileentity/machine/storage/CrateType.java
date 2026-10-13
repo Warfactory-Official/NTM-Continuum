@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.storage;
 
+import dev.golem.core.Ids;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
@@ -55,7 +56,7 @@ public enum CrateType {
         this.inventoryLabelX = inventoryLabelX;
         this.titleColor = titleColor;
         this.inventoryLabelColor = inventoryLabelColor;
-        this.texture = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_" + id + ".png");
+        this.texture = Ids.of("hbm", "textures/gui/storage/gui_" + id + ".png");
     }
 
     public void setTypeSupplier(Supplier<BlockEntityType<TileEntityCrate>> typeSupplier) {

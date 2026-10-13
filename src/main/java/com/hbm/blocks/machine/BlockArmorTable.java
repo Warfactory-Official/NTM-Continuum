@@ -10,6 +10,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -33,7 +34,7 @@ public final class BlockArmorTable extends CompatBlock {
                 }
 
                 @Override
-                public net.minecraft.world.inventory.AbstractContainerMenu createMenu(
+                public AbstractContainerMenu createMenu(
                         int containerId, Inventory inventory, Player menuPlayer) {
                     return new ContainerArmorTable(containerId, inventory, pos);
                 }

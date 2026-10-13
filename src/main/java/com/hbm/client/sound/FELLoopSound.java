@@ -13,7 +13,7 @@ import net.minecraft.sounds.SoundSource;
  * 0–60), the loop plays only above 10, and the pitch follows {@code (n − 10)/100 + 0.5}. The result is
  * a laser that winds up and spins down instead of clicking on and off.
  *
- * <p>Client-only — constructed solely from {@link FELSoundHandler}.
+ * <p>Client-only, constructed solely from {@link FELSoundHandler}.
  */
 public class FELLoopSound extends AbstractTickableSoundInstance {
 

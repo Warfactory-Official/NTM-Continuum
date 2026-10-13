@@ -9,6 +9,7 @@ import com.hbm.inventory.ModHeldCrateMenus;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
 import com.hbm.tileentity.machine.storage.CrateType;
+import dev.golem.core.gui.CompatContainerMenu;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.Entities;
 import dev.golem.core.world.Compat;
@@ -17,12 +18,14 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
@@ -148,12 +151,12 @@ public final class CrateHeldOpening {
      * click on it and no number-key swap into it.
      */
     public static boolean blocksClick(AbstractContainerMenu menu, int heldSlot, int slotId, int button,
-                                      dev.golem.core.gui.CompatContainerMenu.ClickAction clickType) {
+                                      CompatContainerMenu.ClickAction clickType) {
         if (heldSlot < 0) return false;
-        if (clickType == dev.golem.core.gui.CompatContainerMenu.ClickAction.SWAP && button == heldSlot) return true;
+        if (clickType == CompatContainerMenu.ClickAction.SWAP && button == heldSlot) return true;
         if (slotId >= 0 && slotId < menu.slots.size()) {
             Slot slot = menu.slots.get(slotId);
-            return slot.container instanceof net.minecraft.world.entity.player.Inventory && slot.getContainerSlot() == heldSlot;
+            return slot.container instanceof Inventory && slot.getContainerSlot() == heldSlot;
         }
         return false;
     }
@@ -197,7 +200,7 @@ public final class CrateHeldOpening {
         }
 
         /** 1.7 {@code ItemInventory.openInventory}/{@code closeInventory}: at the player, pitch 0.8. */
-        private void playSound(net.minecraft.sounds.SoundEvent sound) {
+        private void playSound(SoundEvent sound) {
             if (player.level().isClientSide()) return;
             player.level().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS, 1.0F, 0.8F);
         }

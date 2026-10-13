@@ -1,5 +1,10 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.data.MachineDataMaps;
+import com.hbm.config.MobConfig;
+import com.hbm.extprop.HbmPlayerProps;
+import com.hbm.items.ModAbilityToolItems;
+import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.ModBlocks;
@@ -14,8 +19,10 @@ import com.hbm.items.machine.ItemDepletedFuel;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.hook.Hook;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -29,6 +36,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 
@@ -38,6 +46,7 @@ import com.hbm.blocks.ModNuclearMiscBlocks;
 import com.hbm.inventory.container.ContainerReactorResearch;
 import com.hbm.items.ModNuclearMiscItems;
 import com.hbm.tileentity.ModNuclearMiscBlockEntities;
+import net.minecraft.world.phys.AABB;
 
 /**
  * The legacy research reactor: twelve plate-fuel slots in a hex layout, water cooling through the sides of
@@ -71,7 +80,7 @@ public class TileEntityReactorResearch extends TileEntityMachineBase implements 
      * Called after the chunk radiation of every radiating tick, with that dose ({@code heat / maxHeat * 50}) (H-78).
      * Plain HBM registers none; NTM: Space irradiates the living things around it with neutrons (hbm-space).
      */
-    public static final dev.golem.core.hook.Hook<Radiating> RADIATING = dev.golem.core.hook.Hook.notifying();
+    public static final Hook<Radiating> RADIATING = Hook.notifying();
 
     public TileEntityReactorResearch(BlockPos pos, BlockState state) {
         super(ModNuclearMiscBlockEntities.REACTOR_RESEARCH.get(), pos, state, 12);
@@ -82,9 +91,9 @@ public class TileEntityReactorResearch extends TileEntityMachineBase implements 
      * (MachineDataMaps); null for an item that is no fuel or names an unknown waste.
      */
     public static @org.jspecify.annotations.Nullable ItemStack wasteOf(Item plate) {
-        var waste = com.hbm.api.data.MachineDataMaps.RESEARCH_REACTOR_FUEL.get(plate);
+        var waste = MachineDataMaps.RESEARCH_REACTOR_FUEL.get(plate);
         if (waste == null) return null;
-        Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.parse(waste.output())).orElse(null);
+        Item item = BuiltInRegistries.ITEM.getOptional(Ids.parse(waste.output())).orElse(null);
         if (item == null) return null;
         if (waste.hot()) return ItemDepletedFuel.makeHot(item, 1);
         return new ItemStack(item);
@@ -95,7 +104,7 @@ public class TileEntityReactorResearch extends TileEntityMachineBase implements 
         return "container.reactorResearch";
     }
 
-    /** 1.7: {@code i < 12 && i <= 0} — only slot 0 ever accepts a plate through automation. */
+    /** 1.7: {@code i < 12 && i <= 0}: only slot 0 ever accepts a plate through automation. */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot < 12 && slot <= 0) return stack.getItem().getClass() == ItemPlateFuel.class;
@@ -109,8 +118,8 @@ public class TileEntityReactorResearch extends TileEntityMachineBase implements 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         if (slot < 12 && slot >= 0) {
-            String id = String.valueOf(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()));
-            for (var waste : com.hbm.api.data.MachineDataMaps.RESEARCH_REACTOR_FUEL.byId().values()) {
+            String id = String.valueOf(BuiltInRegistries.ITEM.getKey(stack.getItem()));
+            for (var waste : MachineDataMaps.RESEARCH_REACTOR_FUEL.byId().values()) {
                 if (waste.output().equals(id)) return true;
             }
         }
@@ -242,8 +251,8 @@ public class TileEntityReactorResearch extends TileEntityMachineBase implements 
             }
 
             // 1.7: a bred meteorite sword in any rod slot becomes the irradiated one (whenever the reaction runs)
-            if (stack.is(com.hbm.items.ModAbilityToolItems.meteorite_sword_bred.get())) {
-                inventory.setStackInSlot(i, new ItemStack(com.hbm.items.ModAbilityToolItems.meteorite_sword_irradiated.get()));
+            if (stack.is(ModAbilityToolItems.meteorite_sword_bred.get())) {
+                inventory.setStackInSlot(i, new ItemStack(ModAbilityToolItems.meteorite_sword_irradiated.get()));
             }
             slotFlux[i] = 0;
         }
@@ -257,14 +266,14 @@ public class TileEntityReactorResearch extends TileEntityMachineBase implements 
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
 
         // 1.7 setBlockToAir on the core tears the dummies down with it
-        world.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+        world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
 
-        if (isWater(new BlockPos(x, y + 3, z))) world.setBlock(new BlockPos(x, y + 3, z), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
-        if (isWater(new BlockPos(x, y - 1, z))) world.setBlock(new BlockPos(x, y - 1, z), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+        if (isWater(new BlockPos(x, y + 3, z))) world.setBlock(new BlockPos(x, y + 3, z), Blocks.AIR.defaultBlockState(), 3);
+        if (isWater(new BlockPos(x, y - 1, z))) world.setBlock(new BlockPos(x, y - 1, z), Blocks.AIR.defaultBlockState(), 3);
         for (Direction dir : Direction.Plane.HORIZONTAL) {
             for (int i = 0; i < 3; i++) {
                 BlockPos side = new BlockPos(x + dir.getStepX(), y + i, z + dir.getStepZ());
-                if (isWater(side)) world.setBlock(side, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                if (isWater(side)) world.setBlock(side, Blocks.AIR.defaultBlockState(), 3);
             }
         }
 
@@ -275,11 +284,11 @@ public class TileEntityReactorResearch extends TileEntityMachineBase implements 
 
         ChunkRadiationManager.proxy.incrementRad(world, pos, 50);
         // 1.7: every player within 100 blocks is marked for BossSpawnHandler's radiation beasts
-        if (com.hbm.config.MobConfig.enableElementals) {
-            for (net.minecraft.world.entity.player.Player player : world.getEntitiesOfClass(net.minecraft.world.entity.player.Player.class,
-                    new net.minecraft.world.phys.AABB(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+        if (MobConfig.enableElementals) {
+            for (Player player : world.getEntitiesOfClass(Player.class,
+                    new AABB(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
                             pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5).inflate(100.0D))) {
-                com.hbm.extprop.HbmPlayerProps.getData(player).radMark = true;
+                HbmPlayerProps.getData(player).radMark = true;
             }
         }
     }

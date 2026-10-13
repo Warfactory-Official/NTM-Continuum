@@ -6,6 +6,7 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.blocks.ModCustomMachineBlocks;
 import com.hbm.blocks.ModNuclearMiscBlocks;
+import com.hbm.blocks.machine.BlockCustomMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.config.CustomMachineConfigJSON;
 import com.hbm.config.CustomMachineConfigJSON.MachineConfiguration;
@@ -23,7 +24,7 @@ import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.module.ModulePatternMatcher;
 import com.hbm.tileentity.ModCustomMachineBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -35,6 +36,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -470,8 +472,8 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
 
     public ForgeDirection facing() {
         BlockState state = getBlockState();
-        return state.hasProperty(com.hbm.blocks.machine.BlockCustomMachine.FACING)
-                ? ForgeDirection.getOrientation(state.getValue(com.hbm.blocks.machine.BlockCustomMachine.FACING))
+        return state.hasProperty(BlockCustomMachine.FACING)
+                ? ForgeDirection.getOrientation(state.getValue(BlockCustomMachine.FACING))
                 : ForgeDirection.NORTH;
     }
 
@@ -572,7 +574,7 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
             if (i >= 10 && i <= 15) continue; // do NOT drop the filters
             ItemStack stack = getItem(i);
             if (stack.isEmpty()) continue;
-            net.minecraft.world.Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
+            Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             setItem(i, ItemStack.EMPTY);
         }
     }

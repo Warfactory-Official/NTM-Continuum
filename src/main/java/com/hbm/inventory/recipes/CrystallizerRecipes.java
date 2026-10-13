@@ -46,10 +46,10 @@ import java.util.Optional;
  * {@code order} and the last tag one. The mining laser's crystallizer upgrade, the crane partitioner and the
  * crystallizer tool ability read it too.
  *
- * <p>The rows were converted once from the former Java table (1.7's defaults including mercury, the mustard-willow
- * cadmium leach, the plastic scrap pieces, the meteorite sword etching of the ability tool family, the dyes and the
- * 222 rows of the bedrock ore grade chain) and are the source now. {@code productivity} is carried for parity but
- * unused: the free-item chance came only from EFFECT machine upgrades, never from the recipe field.
+ * <p>The rows hold 1.7's defaults including mercury, the mustard-willow cadmium leach, the plastic scrap pieces, the
+ * meteorite sword etching of the ability tool family, the dyes and the 222 rows of the bedrock ore grade chain.
+ * {@code productivity} is carried but unused: the free-item chance came only from EFFECT machine upgrades, never
+ * from the recipe field.
  */
 public final class CrystallizerRecipes {
 
@@ -133,7 +133,7 @@ public final class CrystallizerRecipes {
         public final FluidType fluid;
         public final int acidAmount;
         public final int duration;
-        public final float productivity; // parity only — the old TE never read it (EFFECT upgrades did)
+        public final float productivity; // Carried only. The old TE never read it (EFFECT upgrades did).
         public final ItemStack output;
 
         CrystallizerRecipe(AStack input, FluidType fluid, int acidAmount, int duration, float productivity, ItemStack output) {

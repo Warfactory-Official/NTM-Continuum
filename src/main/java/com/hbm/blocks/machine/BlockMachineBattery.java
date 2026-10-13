@@ -3,11 +3,15 @@ package com.hbm.blocks.machine;
 import com.hbm.items.block.EnergyNetBlockItem;
 import com.hbm.blocks.ModEnergyNetContent;
 import com.hbm.interfaces.ILookOverlay;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
+import dev.golem.core.world.CompatBlock;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -35,7 +39,7 @@ import java.util.List;
  * the cross-loader platform service. Implements {@link ILookOverlay} to show its charge/throughput when
  * looked at.
  */
-public class BlockMachineBattery extends dev.golem.core.world.CompatBlock implements TickingBlock, ILookOverlay {
+public class BlockMachineBattery extends CompatBlock implements TickingBlock, ILookOverlay {
 
     public BlockMachineBattery(Properties properties) {
         super(properties);
@@ -81,15 +85,15 @@ public class BlockMachineBattery extends dev.golem.core.world.CompatBlock implem
     }
 
     /** 1.7 {@code MachineBattery.addInformation}: three gold lines and the yellow stored/max line. */
-    public List<net.minecraft.network.chat.Component> persistentInfo(ItemStack stack) {
+    public List<Component> persistentInfo(ItemStack stack) {
         long max = maxPower();
-        List<net.minecraft.network.chat.Component> list = new ArrayList<>();
+        List<Component> list = new ArrayList<>();
         list.add(EnergyNetBlockItem.gold("Stores up to " + Library.getShortNumber(max) + "HE"));
         list.add(EnergyNetBlockItem.gold("Charge speed: " + Library.getShortNumber(max / 200) + "HE"));
         list.add(EnergyNetBlockItem.gold("Discharge speed: " + Library.getShortNumber(max / 600) + "HE"));
         long stored = ModEnergyNetContent.BATTERY_POWER.getOr(stack, 0L);
-        list.add(net.minecraft.network.chat.Component.literal(Library.getShortNumber(stored) + "/"
-                + Library.getShortNumber(max) + "HE").withStyle(net.minecraft.ChatFormatting.YELLOW));
+        list.add(Component.literal(Library.getShortNumber(stored) + "/"
+                + Library.getShortNumber(max) + "HE").withStyle(ChatFormatting.YELLOW));
         return list;
     }
 
@@ -97,7 +101,7 @@ public class BlockMachineBattery extends dev.golem.core.world.CompatBlock implem
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             if (level.getBlockEntity(pos) instanceof MenuProvider provider) {
-                dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
+                Menus.openWithPos(serverPlayer, provider, pos);
             }
         }
         return InteractionResult.SUCCESS;

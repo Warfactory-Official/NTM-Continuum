@@ -4,17 +4,22 @@ import com.hbm.tileentity.machine.storage.CrateType;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatBlockItem;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
 
 /**
  * Block item for the storage crates. Adds the "{@code X/Y Slots used (Z%)}" tooltip the 1.12.2
  * {@code BlockStorageCrate.addInformation} showed, reading the stored inventory from the item's
- * {@code minecraft:container} component (which the crate carries its contents in — see
+ * {@code minecraft:container} component (which the crate carries its contents in, see
  * {@link com.hbm.tileentity.machine.storage.TileEntityCrate}). Colour-coded like the original:
  * green &lt;25 %, yellow in the middle, red ≥75 %.
  */
@@ -29,7 +34,7 @@ public class ItemBlockStorageCrate extends CompatBlockItem {
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-                                         java.util.List<Component> lines, TooltipFlag flag) {
+                                         List<Component> lines, TooltipFlag flag) {
 
         int total = crateType.slots;
         int used = contents(stack);
@@ -47,13 +52,13 @@ public class ItemBlockStorageCrate extends CompatBlockItem {
 
     @Override
     protected net.minecraft.world.@org.jspecify.annotations.Nullable InteractionResult compatBeforePlace(
-            net.minecraft.world.item.context.UseOnContext context) {
+            UseOnContext context) {
         return CrateHeldOpening.beforePlace(context);
     }
 
     @Override
-    protected net.minecraft.world.InteractionResult compatUse(net.minecraft.world.level.Level level,
-            net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand) {
+    protected net.minecraft.world.InteractionResult compatUse(Level level,
+            Player player, InteractionHand hand) {
         return CrateHeldOpening.use(level, player, hand);
     }
 

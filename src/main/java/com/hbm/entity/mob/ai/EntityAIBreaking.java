@@ -1,6 +1,7 @@
 package com.hbm.entity.mob.ai;
 
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.Navigations;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -88,7 +89,7 @@ public class EntityAIBreaking extends Goal {
         }
 
         // 1.7 divides by an int-truncated hardness, so anything under hardness 3 yields 0 and
-        // breaks on the first tick. Preserved deliberately.
+        // breaks on the first tick. Kept as 1.7 has it.
         float progress = (digTick * 0.05F) / (float) health;
 
         if (progress >= 1F) {
@@ -100,7 +101,7 @@ public class EntityAIBreaking extends Goal {
             marked = null;
 
             if (target != null) {
-                dev.golem.core.world.Navigations.navigateTo(digger.getNavigation(), digger.getNavigation().createPath(target, 0), 1D);
+                Navigations.navigateTo(digger.getNavigation(), digger.getNavigation().createPath(target, 0), 1D);
             }
         } else if (digTick % 5 == 0) {
             SoundType sound = state.getSoundType();

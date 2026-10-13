@@ -5,6 +5,7 @@ import com.hbm.config.StructureConfig;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
@@ -20,7 +21,7 @@ import java.util.function.Supplier;
 /**
  * {@code hbm:config_spread}: a {@code random_spread} placement whose spacing, separation and keep chance are read from
  * {@code hbm.cfg} when a chunk is asked, not fixed in the data pack - the structure counterpart of the {@code hbm:config}
- * placement modifier (History §19ek-hooks). A subclass of {@link RandomSpreadStructurePlacement}, so {@code /locate}
+ * placement modifier. A subclass of {@link RandomSpreadStructurePlacement}, so {@code /locate}
  * walks it like vanilla's (it reads {@link #spacing()} and {@link #getPotentialStructureChunk}).
  *
  * <p>{@code key}:
@@ -32,7 +33,7 @@ import java.util.function.Supplier;
  *       {@code n <= 0} turns it off.</li>
  * </ul>
  * The keep chance is drawn as vanilla's {@code frequency_reduction_method: default} draws it, so with the default config
- * every candidate is the same as the former fixed data.
+ * every candidate is the same as the fixed data.
  */
 public class ConfigSpreadPlacement extends RandomSpreadStructurePlacement {
 
@@ -45,7 +46,7 @@ public class ConfigSpreadPlacement extends RandomSpreadStructurePlacement {
 
     private final String key;
 
-    public ConfigSpreadPlacement(net.minecraft.core.Vec3i locateOffset, StructurePlacement.FrequencyReductionMethod method,
+    public ConfigSpreadPlacement(Vec3i locateOffset, StructurePlacement.FrequencyReductionMethod method,
                                  float frequency, int salt, Optional<StructurePlacement.ExclusionZone> exclusionZone, String key) {
         super(locateOffset, method, frequency, salt, exclusionZone, 2, 1, RandomSpreadType.LINEAR);
         this.key = key;

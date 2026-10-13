@@ -1,5 +1,7 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerSILEX;
 import com.hbm.inventory.fluid.Fluids;
@@ -7,6 +9,8 @@ import com.hbm.inventory.recipes.SILEXRecipes;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.tileentity.machine.TileEntitySILEX;
+import dev.golem.core.gui.MouseInput;
+import java.awt.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -17,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Client screen for the SILEX. Coordinates are the 1.12.2 {@code GUISILEX} verbatim.
+ * Client screen for the SILEX. Coordinates are the 1.12.2 {@code GUISILEX} exactly.
  *
  * <p>Three gauges plus the signature animated sine trace:
  * <ul>
@@ -33,9 +37,9 @@ import java.util.Optional;
  * <p>The 12×12 hotspot at (10, 92) is the "void contents" button, routed through the vanilla
  * {@code clickMenuButton} path like the battery socket's buttons.
  */
-public class GUISILEX extends dev.golem.core.gui.CompatContainerScreen<ContainerSILEX> {
+public class GUISILEX extends CompatContainerScreen<ContainerSILEX> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_silex.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_silex.png");
 
     private static final int VOID_X = 10, VOID_Y = 92, VOID_W = 12;
     private static final int TANK_X = 8, TANK_Y = 42, TANK_W = 52, TANK_H = 7;
@@ -92,7 +96,7 @@ public class GUISILEX extends dev.golem.core.gui.CompatContainerScreen<Container
      *
      * <p>The original was a {@code GL_LINE_STRIP} of {@code width/resolution} vertices with
      * {@code glLineWidth(3)} and {@code GL_LINE_SMOOTH}. 26.1's GUI layer has no immediate-mode line
-     * primitive, so the curve is drawn as a run of 1×2-pixel quads along the same sample points — the
+     * primitive, so the curve is drawn as a run of 1×2-pixel quads along the same sample points; the
      * same shape at the same amplitude and phase, without the smoothed line caps.
      *
      * <pre>
@@ -118,9 +122,9 @@ public class GUISILEX extends dev.golem.core.gui.CompatContainerScreen<Container
         }
     }
 
-    /** Hue cycling on the world clock — the old {@code Color.HSBtoRGB(time / divisor, 0.5F, b)}. */
+    /** Hue cycling on the world clock, as the old {@code Color.HSBtoRGB(time / divisor, 0.5F, b)}. */
     private static int rainbow(long time, float divisor, float brightness) {
-        return java.awt.Color.HSBtoRGB(time / divisor, 0.5F, brightness) & 0xFFFFFF;
+        return Color.HSBtoRGB(time / divisor, 0.5F, brightness) & 0xFFFFFF;
     }
 
     private long gameTime() {
@@ -165,7 +169,7 @@ public class GUISILEX extends dev.golem.core.gui.CompatContainerScreen<Container
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         if (this.isHovering(VOID_X, VOID_Y, VOID_W, VOID_W, event.x(), event.y())) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.gameMode != null) {

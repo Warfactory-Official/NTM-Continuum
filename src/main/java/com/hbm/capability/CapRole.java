@@ -4,7 +4,7 @@ import com.hbm.blocks.multiblock.BlockMultiblockCore;
 
 /**
  * One commodity direction a folded multiblock's face can be open for. 1.7 states its geometry per CALL
- * SITE — {@code trySubscribe}/{@code tryProvide} against {@code sendFluid} — so a cell may serve one
+ * SITE ({@code trySubscribe}/{@code tryProvide} against {@code sendFluid}), so a cell may serve one
  * commodity and not the other; a role-blind plane would union the two and open each on the other's cells.
  */
 public enum CapRole {

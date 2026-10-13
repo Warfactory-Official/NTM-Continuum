@@ -17,7 +17,7 @@ public final class AssemblyFactorySoundHandler {
 
     private static final Map<BlockPos, AssemblyFactoryLoopSound> LOOPS = new HashMap<>();
 
-    /** Supplied by the central sound handoff; null deliberately means no invented replacement sound. */
+    /** Supplied by the central sound handoff. Null means no invented replacement sound. */
     private static @Nullable SoundEvent assemblerCut;
 
     private AssemblyFactorySoundHandler() {}

@@ -7,7 +7,7 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * A duct carries one fluid, and two ducts are one network only if it is the same fluid.
  *
- * <p>A freshly placed duct carries {@link com.hbm.inventory.fluid.Fluids#NONE} — its type is set
+ * <p>A freshly placed duct carries {@link com.hbm.inventory.fluid.Fluids#NONE}: its type is set
  * afterwards with a fluid identifier and lives in its block entity, not its state, so
  * {@link #createData} can only ever answer for the untyped case. Retyping goes through
  * {@link com.hbm.uninos.graph.LevelNodeGraph#replaceNodeData}, which re-partitions around the cell.
@@ -28,7 +28,7 @@ public final class FluidGraphProvider implements IGraphProvider<DuctData> {
      * three smoke nodespaces, so a smoke duct joined it just as it joins another smoke duct. Not
      * transitive (a {@code SMOKE} duct and a {@code SMOKE_LEADED} duct joined through an exhaust are one
      * net); {@link FluidNetwork} rounds such a net once per smoke and every endpoint still gates the fluid
-     * through its own {@code canConnect}. Every non-smoke pairing is exactly the equality it always was.
+     * through its own {@code canConnect}. Every non-smoke pairing is plain equality.
      */
     @Override
     public boolean dataCompatible(DuctData a, DuctData b) {

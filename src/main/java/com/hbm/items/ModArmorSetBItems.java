@@ -44,7 +44,7 @@ import static com.hbm.util.DamageResistanceHandler.CATEGORY_FIRE;
 import static com.hbm.util.DamageResistanceHandler.CATEGORY_PHYSICAL;
 
 /**
- * The remaining 1.7 {@code ModItemsArmor} ids (final armour wave B): the steam, diesel and environment suits, the
+ * The remaining 1.7 {@code ModItemsArmor} ids: the steam, diesel and environment suits, the
  * two ballistic jackets, the rag masks, the goggles, ash goggles, Fabulous Hat, mining helmet and "Beta Features",
  * plus the three IV bags 1.7 declared in {@code ItemSimpleConsumable.init}.
  *
@@ -59,7 +59,7 @@ public final class ModArmorSetBItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    // ---- materials: 1.7 arrays are {helmet, chest, legs, boots}; 1.7 had no toughness ----
+    // Materials (1.7 arrays are {helmet, chest, legs, boots}; 1.7 had no toughness)
     /**
      * Held apart so only the item factories reach them: the materials are registry-backed, and this class also
      * runs at build time (Dejson) without a game.
@@ -98,7 +98,7 @@ public final class ModArmorSetBItems {
                 3, 8, 6, 3, 10, 0F, 0F, "repairs/hev");
     }
 
-    // ---- ModItemsArmor.java:25-35 ----
+    // Source: ModItemsArmor.java:25-35
     public static final RegistryObject<ArmorModel> goggles = control("goggles",
             p -> new ArmorModel(Materials.GOGGLES, ArmorSlot.HELMET, p, "goggles"));
     public static final RegistryObject<ArmorAshGlasses> ashglasses = control("ashglasses",
@@ -117,7 +117,7 @@ public final class ModArmorSetBItems {
     public static final RegistryObject<ItemDrop> beta = REG.item("beta", ItemDrop::new, p -> p.stacksTo(1))
             .transform(Presets.sprite());
 
-    // ---- ModItemsArmor.java:139-159: ArmorFSBFueled suits. 1.7 setDamage never stored durability. ----
+    // ModItemsArmor.java:139-159: ArmorFSBFueled suits. 1.7 setDamage never stored durability.
     public static final RegistryObject<ArmorDesh> steamsuit_helmet = desh("steamsuit_helmet", ArmorSlot.HELMET);
     public static final RegistryObject<ArmorDesh> steamsuit_plate = desh("steamsuit_plate", ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorDesh> steamsuit_legs = desh("steamsuit_legs", ArmorSlot.LEGGINGS);
@@ -128,19 +128,19 @@ public final class ModArmorSetBItems {
     public static final RegistryObject<ArmorDiesel> dieselsuit_legs = diesel("dieselsuit_legs", ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorDiesel> dieselsuit_boots = diesel("dieselsuit_boots", ArmorSlot.BOOTS);
 
-    // ---- ModItemsArmor.java:244-252: ArmorEnvsuit, 100 kHE, 1 kHE/t charge, 250 HE per point, no idle drain ----
+    // ModItemsArmor.java:244-252: ArmorEnvsuit, 100 kHE, 1 kHE/t charge, 250 HE per point, no idle drain
     public static final RegistryObject<ArmorEnvsuit> envsuit_helmet = env("envsuit_helmet", ArmorSlot.HELMET);
     public static final RegistryObject<ArmorEnvsuit> envsuit_plate = env("envsuit_plate", ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorEnvsuit> envsuit_legs = env("envsuit_legs", ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorEnvsuit> envsuit_boots = env("envsuit_boots", ArmorSlot.BOOTS);
 
-    // ---- ModItemsArmor.java:268-269: plain ModArmor chestplates, no max stack size set (armour stacks to 1) ----
+    // ModItemsArmor.java:268-269: plain ModArmor chestplates, no max stack size set (armour stacks to 1)
     public static final RegistryObject<CompatArmorItem> jackt = control("jackt",
             p -> new CompatArmorItem(Materials.JACKT, ArmorSlot.CHESTPLATE, p));
     public static final RegistryObject<CompatArmorItem> jackt2 = control("jackt2",
             p -> new CompatArmorItem(Materials.JACKT2, ArmorSlot.CHESTPLATE, p));
 
-    // ---- ItemSimpleConsumable.init "BLOOD BAGS" (iv_empty is ModMedicineItems') ----
+    // ItemSimpleConsumable.init "BLOOD BAGS" (iv_empty is ModMedicineItems')
     public static final RegistryObject<ItemSimpleConsumable> iv_blood = bag("iv_blood");
     public static final RegistryObject<ItemSimpleConsumable> iv_xp_empty = bag("iv_xp_empty");
     public static final RegistryObject<ItemSimpleConsumable> iv_xp = bag("iv_xp");

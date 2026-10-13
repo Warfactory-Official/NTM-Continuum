@@ -9,9 +9,9 @@ import net.minecraft.util.Mth;
  * The two screen-space effects of a nearby nuclear detonation, driven by timestamps the
  * {@code TorexRenderer} latches (mirroring 1.12.2's {@code ModEventHandlerClient}):
  * <ul>
- *   <li><b>Flash</b> — a full-screen white-out fading over {@link #FLASH_DURATION} ms, drawn here as a
+ *   <li><b>Flash</b>: a full-screen white-out fading over {@link #FLASH_DURATION} ms, drawn here as a
  *       HUD layer ({@link #render}).</li>
- *   <li><b>Shake</b> — a HUD/camera wobble over {@link #SHAKE_DURATION} ms; the offsets ({@link #shakeOffsetX}/
+ *   <li><b>Shake</b>: a HUD/camera wobble over {@link #SHAKE_DURATION} ms; the offsets ({@link #shakeOffsetX}/
  *       {@link #shakeOffsetY}) are applied by {@code MixinGui} wrapping {@code Gui.render}.</li>
  * </ul>
  * Both are gated by {@link ClientConfig}. Timestamps are epoch-millis so they decay in real time exactly
@@ -29,7 +29,7 @@ public final class NukeScreenEffects {
     /** Set once by the renderer when the shockwave hits; drives the HUD shake. */
     public static long shakeTimestamp;
 
-    // ---- Flash (HUD layer) ----
+    // Flash (HUD layer)
 
     public static void render(GuiGraphicsExtractor graphics) {
         if (!ClientConfig.NUKE_HUD_FLASH) return;
@@ -39,8 +39,7 @@ public final class NukeScreenEffects {
         long remaining = flashTimestamp + FLASH_DURATION - System.currentTimeMillis();
         if (remaining <= 0) return;
 
-        // Plain translucent white fade (user-preferred over the additive/below-HUD variants tried
-        // against the old (SRC_ALPHA, ONE) overlay — the additive versions read worse in playtests).
+        // Plain translucent white fade; an additive (SRC_ALPHA, ONE) overlay reads worse.
         float brightness = remaining / (float) FLASH_DURATION;
         int alpha = (int) (Mth.clamp(brightness, 0F, 1F) * 255F);
         int color = (alpha << 24) | 0xFFFFFF;
@@ -51,7 +50,7 @@ public final class NukeScreenEffects {
         graphics.fill(-200, -200, w + 200, h + 200, color);
     }
 
-    // ---- Shake (applied by MixinGui) ----
+    // Shake (applied by MixinGui)
 
     public static boolean isShakeActive() {
         if (!ClientConfig.NUKE_HUD_SHAKE) return false;

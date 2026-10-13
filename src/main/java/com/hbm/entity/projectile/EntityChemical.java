@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import com.hbm.api.environment.Environment;
 import dev.golem.core.data.Tags;
 
 import com.hbm.capability.HbmLivingProps;
@@ -60,7 +61,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The original chemical gun splash. Fluid effects follow 1.7's {@code affect} order: antimatter / ion gel beams,
@@ -82,7 +85,7 @@ public class EntityChemical extends EntityThrowableNT {
         this(ModEntities.CHEMICAL.get(), level);
         this.thrower = thrower;
         setPos(thrower.getX(), thrower.getEyeY(), thrower.getZ());
-        var offset = new net.minecraft.world.phys.Vec3(sideOffset, heightOffset, frontOffset)
+        var offset = new Vec3(sideOffset, heightOffset, frontOffset)
                 .xRot(-thrower.getXRot() * ((float) Math.PI / 180F))
                 .yRot(-thrower.getYRot() * ((float) Math.PI / 180F));
         setPos(getX() + offset.x, getY() + offset.y, getZ() + offset.z);
@@ -179,7 +182,7 @@ public class EntityChemical extends EntityThrowableNT {
 
     @Override protected void onImpact(HitResult hit) {
         if (level().isClientSide()) return;
-        if (hit.getType() == HitResult.Type.ENTITY && hit instanceof net.minecraft.world.phys.EntityHitResult entityHit) {
+        if (hit.getType() == HitResult.Type.ENTITY && hit instanceof EntityHitResult entityHit) {
             affect(entityHit.getEntity(), 1D - (double) tickCount / getMaxAge());
             // The old chemical entity continues its cloud/spray lifetime after touching an entity;
             // only a block impact consumes the projectile.
@@ -347,7 +350,7 @@ public class EntityChemical extends EntityThrowableNT {
                     ground = true;
                 } else {
                     y--;
-                    pos.move(net.minecraft.core.Direction.DOWN);
+                    pos.move(Direction.DOWN);
                 }
             }
             if (ground) {
@@ -455,7 +458,7 @@ public class EntityChemical extends EntityThrowableNT {
                 // hbm-space: only under an atmosphere grass can live in, turning its CO2 into air
                 // (com.hbm.api.environment.Environment.GROWTH; always on plain HBM)
                 if (LightLevels.combined(level, above) >= 9 && LightLevels.opacity(level, above) <= 2
-                        && com.hbm.api.environment.Environment.canGrow(level, at))
+                        && Environment.canGrow(level, at))
                     level.setBlockAndUpdate(at, Blocks.GRASS_BLOCK.defaultBlockState());
             }
             if (state.is(Blocks.COBBLESTONE)) level.setBlockAndUpdate(at, Blocks.MOSSY_COBBLESTONE.defaultBlockState());

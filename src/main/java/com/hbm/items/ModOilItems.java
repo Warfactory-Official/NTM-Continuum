@@ -19,8 +19,8 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * The oil-chain items (oil wave). The 1.12.2 metadata item {@code ModItems.oil_tar}
- * ({@code ItemEnumMulti<EnumTarType>}, old ModItems L1315) becomes one registered item per variant —
+ * The oil-chain items. The 1.12.2 metadata item {@code ModItems.oil_tar}
+ * ({@code ItemEnumMulti<EnumTarType>}, old ModItems L1315) becomes one registered item per variant.
  * {@code oil_tar_<variant>} in the MATERIALS tab (same split convention as {@link ModIntermediateItems}).
  * Also hosts the {@code oil_detector} prospecting tool (old {@code consumableTab}).
  */
@@ -58,7 +58,7 @@ public final class ModOilItems {
         }
     }
 
-    /** Oil Reservoir Detector — right-click prospecting for {@code ore_oil} deposits. */
+    /** Oil Reservoir Detector, right-click prospecting for {@code ore_oil} deposits. */
     public static final RegistryObject<ItemOilDetector> oil_detector =
             reg("oil_detector", HbmTab.CONSUMABLES);
 

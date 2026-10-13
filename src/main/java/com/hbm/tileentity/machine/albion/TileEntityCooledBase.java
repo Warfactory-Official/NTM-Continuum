@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 
 /**
- * Base for the cryogenically cooled machines — the particle accelerator's magnets and the fusion
+ * Base for the cryogenically cooled machines: the particle accelerator's magnets and the fusion
  * reactor's superconducting solenoids. Each one passively warms every tick and is dragged back down by
  * running perfluoromethyl through it; the machine only operates while {@link #isCool()}.
  *
@@ -51,7 +51,7 @@ public abstract class TileEntityCooledBase extends TileEntityMachineBase
 
     /**
      * Runs the passive heating and the coolant exchange. Subclasses call this from their own tick;
-     * it deliberately does not subscribe to networks, because each machine has its own cadence for that.
+     * it does not subscribe to networks, because each machine has its own cadence for that.
      */
     protected void updateCooling() {
         this.temperature += temp_passive_heating;

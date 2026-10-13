@@ -10,23 +10,31 @@ import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
 import com.hbm.explosion.vanillant.standard.EntityProcessorCrossSmooth;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectWeapon;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
+import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.items.weapon.sedna.Crosshair;
 import com.hbm.items.weapon.sedna.GunConfig;
+import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.lib.ModDamageSources.DamageClass;
 import com.hbm.main.MainRegistry;
 import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.saveddata.satellites.SatelliteDetector;
+import com.hbm.sound.ModGunSounds;
+import com.hbm.sound.ModSounds;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 /** Nuclear and cluster warheads from the original catapult factory. */
 public final class XFactoryCatapult {
@@ -76,12 +84,12 @@ public final class XFactoryCatapult {
     }
 
     /** 1.7 spawnMush: the LOW satellite burst, the mini-nuke report at y + 0.5, and the cloud effect. */
-    private static void spawnMush(EntityBulletBaseMK4 bullet, net.minecraft.world.phys.Vec3 pos, HbmEffectNT effect,
+    private static void spawnMush(EntityBulletBaseMK4 bullet, Vec3 pos, HbmEffectNT effect,
             boolean balefire) {
-        com.hbm.saveddata.satellites.SatelliteDetector.reportEvent(bullet.level(), com.hbm.saveddata.satellites.SatelliteDetector.DURATION_LOW,
-                com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity.LOW, bullet.getX(), bullet.getZ());
-        bullet.level().playSound(null, pos.x, pos.y + 0.5, pos.z, com.hbm.sound.ModSounds.MUKE_EXPLOSION.get(),
-                net.minecraft.sounds.SoundSource.BLOCKS, 15.0F, 1.0F);
+        SatelliteDetector.reportEvent(bullet.level(), SatelliteDetector.DURATION_LOW,
+                SatelliteDetector.BurstIntensity.LOW, bullet.getX(), bullet.getZ());
+        bullet.level().playSound(null, pos.x, pos.y + 0.5, pos.z, ModSounds.MUKE_EXPLOSION.get(),
+                SoundSource.BLOCKS, 15.0F, 1.0F);
         mushroom(bullet.level(), pos, effect, balefire);
     }
 
@@ -120,7 +128,7 @@ public final class XFactoryCatapult {
         }
     }
 
-    private static void mushroom(Level level, net.minecraft.world.phys.Vec3 pos, HbmEffectNT effect,
+    private static void mushroom(Level level, Vec3 pos, HbmEffectNT effect,
             boolean balefire) {
         CompoundTag data = new CompoundTag();
         data.putBoolean("balefire", balefire);
@@ -135,7 +143,7 @@ public final class XFactoryCatapult {
                 .setItem(SpecialGunCatalog.standardAmmo("nuke_demo")).setLife(300).setVel(3F)
                 .setGrav(0.025F).setOnImpact(blast(15F, 1.5F, HbmEffectNT.Muke, 1, Terrain.FIRE)));
         nuke_high = BulletConfigs.register("nuke_high", new BulletConfig()
-                .setItem(com.hbm.items.ModAmmoItems.ammo_standard_nuke_high).setLife(300).setVel(3F)
+                .setItem(ModAmmoItems.ammo_standard_nuke_high).setLife(300).setVel(3F)
                 .setGrav(0.025F).setOnImpact((bullet, hit) -> {
                     if (selfHit(bullet, hit) || bullet.isRemoved()) return;
                     bullet.discard();
@@ -161,16 +169,16 @@ public final class XFactoryCatapult {
                 .setLife(1200).setGrav(0.025F).setOnImpact(smallBlast(7.5F, true, false)));
     }
 
-    /** 1.7 {@code LAMBDA_RECOIL_FATMAN}: deliberately empty in the source. */
-    public static final BiConsumer<net.minecraft.world.item.ItemStack, com.hbm.items.weapon.sedna.ItemGunBaseNT.LambdaContext>
+    /** 1.7 {@code LAMBDA_RECOIL_FATMAN}: empty in the source. */
+    public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext>
             LAMBDA_RECOIL_FATMAN = (stack, ctx) -> { };
 
-    /** 1.7 gun_fatman (fix wave 5: reload changes type, crosshair shown, no hipfire spread, own scoped offset). */
+    /** 1.7 gun_fatman (reload changes type, crosshair shown, no hipfire spread, own scoped offset). */
     public static GunConfig gunConfig() {
         return new GunConfig().dura(300).draw(20).inspect(30).reloadChangeType(true).crosshair(Crosshair.L_CIRCUMFLEX)
                 .hideCrosshair(false)
                 .rec(new Receiver(0).dmg(100F).spreadHipfire(0F).delay(10).reload(57).jam(40)
-                        .sound(com.hbm.sound.ModGunSounds.FIRE_FATMAN::get, 1F, 1F)
+                        .sound(ModGunSounds.FIRE_FATMAN::get, 1F, 1F)
                         .mag(new MagazineSingleReload(0, 1).addConfigs(nuke_standard, nuke_demo, nuke_high,
                                 nuke_tots, nuke_hive, nuke_balefire))
                         .offset(1, -0.0625 * 1.5, -0.1875D).offsetScoped(1, -0.0625 * 1.5, -0.125D)

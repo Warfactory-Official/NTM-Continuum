@@ -6,9 +6,14 @@ import com.hbm.items.machine.ItemMold;
 import com.hbm.items.machine.ItemMold.Mold;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -26,7 +31,7 @@ import java.util.List;
  * {@code mold.getOutput(type)}. The inventory is NOT client-replicated per-tick, so the two slots are
  * synced explicitly on the BufPacket (the renderer draws them).
  */
-public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase implements net.minecraft.world.WorldlyContainer {
+public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase implements WorldlyContainer {
 
     /** 0 = mold input, 1 = item output. */
     public final NTMItemHandler inventory;
@@ -91,7 +96,7 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
 
     /**
      * The mold in slot 0, or null if absent / wrong size for this caster. The BE inventory is NOT
-     * replicated to clients, so the client falls back to the BufPacket-synced {@link #syncMold} —
+     * replicated to clients, so the client falls back to the BufPacket-synced {@link #syncMold}:
      * without this the client-side capacity is 0 and the melt level computes hundreds of blocks up.
      */
     public @Nullable Mold getInstalledMold() {
@@ -110,7 +115,7 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
 
     /**
      * Standard check plus: output slot empty, a mold installed, and the mold has an output for this
-     * material (no match → no pouring).
+     * material (no match means no pouring).
      */
     @Override
     public boolean standardCheck(Level world, BlockPos p, ForgeDirection side, MaterialStack stack) {
@@ -125,22 +130,22 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
     public abstract int getMoldSize();
 
     // Destruction drops: the vanilla preRemoveSideEffects default spills a Container's slots (the BE
-    // now implements WorldlyContainer), and the FoundryBase override adds the molten content as scraps.
+    // implements WorldlyContainer), and the FoundryBase override adds the molten content as scraps.
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
         buf.writeInt(cooloff);
-        dev.golem.core.world.ItemStacks.writeOptional(buf, inventory.getStackInSlot(0));
-        dev.golem.core.world.ItemStacks.writeOptional(buf, inventory.getStackInSlot(1));
+        ItemStacks.writeOptional(buf, inventory.getStackInSlot(0));
+        ItemStacks.writeOptional(buf, inventory.getStackInSlot(1));
     }
 
     @Override
     public void deserialize(RegistryFriendlyByteBuf buf) {
         super.deserialize(buf);
         cooloff = buf.readInt();
-        syncMold = dev.golem.core.world.ItemStacks.readOptional(buf);
-        syncOutput = dev.golem.core.world.ItemStacks.readOptional(buf);
+        syncMold = ItemStacks.readOptional(buf);
+        syncOutput = ItemStacks.readOptional(buf);
     }
 
     @Override
@@ -156,28 +161,28 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
     }
 
     /** Convenience for the block's interactions. */
-    public static void giveOrDrop(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, ItemStack stack) {
+    public static void giveOrDrop(Level level, BlockPos pos, Player player, ItemStack stack) {
         if (!player.getInventory().add(stack)) {
             Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
         }
     }
 
-    // --- WorldlyContainer: hoppers insert molds into slot 0, pull the finished item from slot 1
+    // WorldlyContainer: hoppers insert molds into slot 0, pull the finished item from slot 1
     //     (the old ITEM_HANDLER capability wrapper) ---
 
-    @Override public int[] getSlotsForFace(net.minecraft.core.Direction side) { return new int[]{0, 1}; }
+    @Override public int[] getSlotsForFace(Direction side) { return new int[]{0, 1}; }
 
     @Override
-    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
         return slot == 0 && stack.getItem() instanceof ItemMold;
     }
 
     @Override
-    public boolean canTakeItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         return slot == 1;
     }
 
-    // --- Container (delegates to the handler, like TileEntityInventoryBase) ---
+    // Container (delegates to the handler, like TileEntityInventoryBase)
 
     @Override public int getContainerSize() { return inventory.getSlots(); }
 
@@ -193,14 +198,14 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
 
     @Override
     public ItemStack removeItem(int slot, int amount) {
-        ItemStack result = net.minecraft.world.ContainerHelper.removeItem(inventory.getStacks(), slot, amount);
+        ItemStack result = ContainerHelper.removeItem(inventory.getStacks(), slot, amount);
         if (!result.isEmpty()) setChanged();
         return result;
     }
 
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
-        return net.minecraft.world.ContainerHelper.takeItem(inventory.getStacks(), slot);
+        return ContainerHelper.takeItem(inventory.getStacks(), slot);
     }
 
     @Override public void setItem(int slot, ItemStack stack) { inventory.setStackInSlot(slot, stack); }
@@ -211,7 +216,7 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
     }
 
     @Override
-    public boolean stillValid(net.minecraft.world.entity.player.Player player) {
+    public boolean stillValid(Player player) {
         return level != null && level.getBlockEntity(worldPosition) == this;
     }
 

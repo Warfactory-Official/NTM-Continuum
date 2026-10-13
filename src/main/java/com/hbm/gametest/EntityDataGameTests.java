@@ -102,7 +102,7 @@ public final class EntityDataGameTests {
         helper.succeed();
     }
 
-    // ---- fixtures ----
+    // Fixtures
 
     // Binary-exact values, so equality is exact; every one differs from its default.
     private static void fill(EntityHbmProps p) {
@@ -138,7 +138,7 @@ public final class EntityDataGameTests {
         p.lastDamage = 99;
     }
 
-    /** The same values, spelled as the pre-attachment v1 child tag (EntityHbmProps.save as of 2026-09-29). */
+    /** The same values, spelled as the pre-attachment v1 child tag (the EntityHbmProps.save layout). */
     private static CompoundTag legacyV1Tag() {
         CompoundTag tag = new CompoundTag();
         tag.putString("fmt", "v1");

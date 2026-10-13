@@ -10,7 +10,7 @@ import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 
-/** Entity registrations owned by the RBMK wave. */
+/** Entity registrations for the RBMK reactor. */
 public final class ModRBMKEntities {
 
     private ModRBMKEntities() {}

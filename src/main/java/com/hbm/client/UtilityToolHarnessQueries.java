@@ -3,13 +3,18 @@ package com.hbm.client;
 import com.google.gson.JsonObject;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModUtilityToolItems;
 import com.hbm.items.machine.ItemFluidIDMulti;
 import com.hbm.items.special.ItemBookLore;
+import com.hbm.items.special.ItemClayTablet;
+import com.hbm.items.special.ItemHolotapeImage;
 import com.hbm.items.tool.ItemGuideBook;
 import com.hbm.items.tool.ItemLeadBox;
 import dev.golem.core.data.ItemContents;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.client.Minecraft;
@@ -31,7 +36,7 @@ public final class UtilityToolHarnessQueries {
     private UtilityToolHarnessQueries() {}
 
     public static void register() {
-        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_utility", UtilityToolHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_utility", UtilityToolHarnessQueries::query);
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {
@@ -74,13 +79,13 @@ public final class UtilityToolHarnessQueries {
                 }
                 case "guide" -> ItemGuideBook.of(ItemGuideBook.BookType.getType(Integer.parseInt(give[1])));
                 case "holotape" -> ModUtilityToolItems.holotape_image.stack(
-                        com.hbm.items.special.ItemHolotapeImage.EnumHoloImage.values()[Integer.parseInt(give[1])]);
-                case "tablet" -> com.hbm.items.special.ItemClayTablet.of(Integer.parseInt(give[1]));
+                        ItemHolotapeImage.EnumHoloImage.values()[Integer.parseInt(give[1])]);
+                case "tablet" -> ItemClayTablet.of(Integer.parseInt(give[1]));
                 case "fluid_multi" -> {
                     ItemStack id = new ItemStack(ModUtilityToolItems.fluid_identifier_multi.get());
                     String[] types = give[1].split(",");
-                    ItemFluidIDMulti.setType(id, com.hbm.inventory.fluid.Fluids.fromName(types[0]), true);
-                    ItemFluidIDMulti.setType(id, com.hbm.inventory.fluid.Fluids.fromName(types[1]), false);
+                    ItemFluidIDMulti.setType(id, Fluids.fromName(types[0]), true);
+                    ItemFluidIDMulti.setType(id, Fluids.fromName(types[1]), false);
                     yield id;
                 }
                 default -> ItemStack.EMPTY;
@@ -93,7 +98,7 @@ public final class UtilityToolHarnessQueries {
         ItemStack held = player.getMainHandItem();
         json.addProperty("id", held.isEmpty() ? "" : BuiltInRegistries.ITEM.getKey(held.getItem()).toString());
         json.addProperty("count", held.getCount());
-        json.addProperty("variant", com.hbm.items.LegacyMeta.of(held)); // 1.7 metadata, from the item
+        json.addProperty("variant", LegacyMeta.of(held)); // 1.7 metadata, from the item
         json.addProperty("radiation", HazardSystem.getHazardLevelFromStack(held, HazardRegistry.RADIATION));
         json.addProperty("digamma_hazard", HazardSystem.getHazardLevelFromStack(held, HazardRegistry.DIGAMMA));
         ModUtilityToolItems.PIPETTE.get(held).ifPresent(t -> json.addProperty("pipette", t.toString()));

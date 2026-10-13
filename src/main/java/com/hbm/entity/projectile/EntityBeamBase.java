@@ -55,7 +55,7 @@ public abstract class EntityBeamBase extends CompatEntity {
         this.entityData.set(OWNER_NAME, name);
     }
 
-    // 26.2: 1.7's fullbright getBrightnessForRender/getBrightness have no common-code override left - the beam
+    // 26.1: 1.7's fullbright getBrightnessForRender/getBrightness have no common-code override left - the beam
     // renderer must emit full packed light itself.
 
     @Override

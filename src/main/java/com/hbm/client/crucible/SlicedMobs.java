@@ -3,6 +3,7 @@ package com.hbm.client.crucible;
 import com.hbm.packet.SpecialDeathPayload;
 import com.hbm.physics.Box;
 import com.hbm.physics.CollisionSource;
+import com.hbm.physics.Mat3;
 import com.hbm.physics.V3;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -17,6 +18,7 @@ import dev.golem.core.render.Poses;
 import dev.golem.core.render.Renderers;
 import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.WorldEffects;
+import java.util.Random;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -40,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The client half of old-hbm {@code PacketSpecialDeath} effect 3 and everything it spawns: the victim vanishes and
+ * The client half of 1.12.2 {@code PacketSpecialDeath} effect 3 and everything it spawns: the victim vanishes and
  * its model, cut by the plane, falls apart as rigid bodies ({@code ParticleSlicedMob}) with capped cuts; five blood
  * streaks ({@code ParticleBlood}, which leave {@code blood_dec1} decals where they land) and, for the crucible, eight
  * spark bursts ({@code HbmEffectNT.Spark}, twelve {@code ParticleSpark} each) leave from the cut face.
@@ -82,7 +84,7 @@ public final class SlicedMobs {
         return new int[]{SLICED.size(), BLOOD_STREAKS.size(), SPARKS.size(), DECALS.size()};
     }
 
-    // ------------------------------------------------------------------ the packet
+    // Packet
 
     static void handle(SpecialDeathPayload payload) {
         if (payload.effectId() != SpecialDeathPayload.SLICED || payload.auxData().length < 5) return;
@@ -190,7 +192,7 @@ public final class SlicedMobs {
         };
     }
 
-    // ------------------------------------------------------------------ ticking
+    // Ticking
 
     private static void tick() {
         ClientLevel level = Minecraft.getInstance().level;
@@ -349,7 +351,7 @@ public final class SlicedMobs {
         final float stretch;
         final float scale;
         final float gravity;
-        final java.util.Random rand = new java.util.Random();
+        final Random rand = new Random();
 
         Spark(double x, double y, double z, float stretch, float scale, int lifetime, float gravity) {
             super(x, y, z);
@@ -418,7 +420,7 @@ public final class SlicedMobs {
             double yaw = Math.toDegrees(Math.atan2(normal.x(), normal.z()));
             double pitch = Math.toDegrees(Math.atan2(normal.y(), Math.sqrt(normal.x() * normal.x() + normal.z() * normal.z()))) - 90;
             float roll = level.getRandom().nextFloat() * 2F * (float) Math.PI;
-            com.hbm.physics.Mat3 rot = eulerToMat((float) Math.toRadians(yaw), (float) Math.toRadians(pitch + 90), roll);
+            Mat3 rot = eulerToMat((float) Math.toRadians(yaw), (float) Math.toRadians(pitch + 90), roll);
             V3 c1 = new V3(rot.m00, rot.m01, rot.m02);
             V3 c2 = new V3(rot.m10, rot.m11, rot.m12);
             V3 c3 = new V3(rot.m20, rot.m21, rot.m22);
@@ -515,18 +517,18 @@ public final class SlicedMobs {
         }
 
         /** {@code BakedModelUtil.eulerToMat}: {@code rotZ(roll) * rotX(pitch) * rotY(-yaw)}. */
-        private static com.hbm.physics.Mat3 eulerToMat(float yaw, float pitch, float roll) {
+        private static Mat3 eulerToMat(float yaw, float pitch, float roll) {
             float sy = (float) Math.sin(-yaw), cy = (float) Math.cos(-yaw);
             float sp = (float) Math.sin(pitch), cp = (float) Math.cos(pitch);
             float sr = (float) Math.sin(roll), cr = (float) Math.cos(roll);
-            com.hbm.physics.Mat3 mR = new com.hbm.physics.Mat3(cr, -sr, 0, sr, cr, 0, 0, 0, 1);
-            mR.mul(new com.hbm.physics.Mat3(1, 0, 0, 0, cp, -sp, 0, sp, cp));
-            mR.mul(new com.hbm.physics.Mat3(cy, 0, sy, 0, 1, 0, -sy, 0, cy));
+            Mat3 mR = new Mat3(cr, -sr, 0, sr, cr, 0, 0, 0, 1);
+            mR.mul(new Mat3(1, 0, 0, 0, cp, -sp, 0, sp, cp));
+            mR.mul(new Mat3(cy, 0, sy, 0, 1, 0, -sy, 0, cy));
             return mR;
         }
     }
 
-    // ------------------------------------------------------------------ drawing
+    // Drawing
 
     private static void render(CameraInfo camera) {
         ClientLevel level = Minecraft.getInstance().level;

@@ -1,8 +1,12 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineMiningLaser;
 import com.hbm.packet.ControlEventPayload;
+import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
 import com.hbm.tileentity.machine.TileEntityMachineMiningLaser;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -22,9 +26,9 @@ import java.util.Optional;
  * descending break-progress bar, the oil-tank column and the mining-square width number. The on/off
  * button sends a {@link ControlEventPayload} toggle (the old {@code AuxButtonPacket}).
  */
-public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineMiningLaser> implements IUpgradeInfoProviderSource {
+public class GUIMachineMiningLaser extends CompatContainerScreen<ContainerMachineMiningLaser> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_laser_miner.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/machine/gui_laser_miner.png");
 
     // On/off button hot-zone (GUI-relative), matching the 1.12.2 click region.
     private static final int BTN_X = 61, BTN_Y = 17, BTN_W = 18, BTN_H = 18;
@@ -109,7 +113,7 @@ public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScr
     }
 
     @Override
-    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         TileEntityMachineMiningLaser te = this.menu.getLaser();
         if (te != null && GuiUtil.hover(event.x(), event.y(), this.leftPos + BTN_X, this.topPos + BTN_Y, BTN_W, BTN_H)) {
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
@@ -122,7 +126,7 @@ public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScr
     }
 
     @Override
-    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+    public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getLaser();
     }
 }

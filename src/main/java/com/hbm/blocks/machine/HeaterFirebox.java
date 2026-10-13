@@ -10,6 +10,7 @@ import com.hbm.tileentity.machine.TileEntityFireboxBase;
 import com.hbm.tileentity.machine.TileEntityHeaterFirebox;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -48,7 +49,7 @@ public class HeaterFirebox extends BlockMultiblockMachine implements ILookOverla
     }
 
     @Override
-    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityFireboxBase heater)) return null;
 
         List<String> text = new ArrayList<>();

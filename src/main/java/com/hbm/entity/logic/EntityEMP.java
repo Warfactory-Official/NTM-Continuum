@@ -5,6 +5,7 @@ import com.hbm.entity.ModEntities;
 import dev.golem.core.data.CompatEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.data.SynchedData;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -28,7 +29,7 @@ public class EntityEMP extends CompatEntity implements IChunkLoader {
     public EntityEMP(Level level) { this(ModEntities.ENTITY_EMP.get(), level); }
 
     @Override
-    protected void defineData(dev.golem.core.data.SynchedData data) {}
+    protected void defineData(SynchedData data) {}
 
     @Override
     public void tick() {

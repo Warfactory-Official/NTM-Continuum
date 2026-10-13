@@ -1,9 +1,17 @@
 package com.hbm.handler.jei;
 
+import com.hbm.blocks.ModCustomMachineBlocks;
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModFluidItems;
+import com.hbm.items.ModJetpackDependencyItems;
+import com.hbm.items.ModMachineItems;
+import com.hbm.items.machine.ItemRBMKPellet;
 import dev.golem.core.data.ModelData;
 import dev.golem.core.viewer.Subtypes;
+import java.util.List;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
 
 /**
  * The HBM items whose stacks a recipe viewer must keep apart (JEI subtypes, REI item comparators), declared once for
@@ -21,36 +29,36 @@ public final class HbmViewerSubtypes {
      * single ingredient, which is how the HIMARS pods and the artillery shells went missing.
      */
     public static void register(Subtypes reg) {
-        reg.components(com.hbm.items.ModMachineItems.blueprints.get(),
+        reg.components(ModMachineItems.blueprints.get(),
                 ModDataComponents.BLUEPRINT_POOL);
         reg.components(ModFluidItems.fluid_tank.get(),
                 ModDataComponents.FLUID, ModDataComponents.FLUID_AMOUNT);
         reg.components(ModFluidItems.fluid_barrel.get(),
                 ModDataComponents.FLUID, ModDataComponents.FLUID_AMOUNT);
-        reg.components(com.hbm.items.ModMachineItems.fluid_identifier.get(),
+        reg.components(ModMachineItems.fluid_identifier.get(),
                 ModDataComponents.FLUID);
         reg.components(ModFluidItems.fluid_bucket.get(),
                 ModDataComponents.FLUID);
         reg.components(ModFluidItems.fluid_icon.get(),
                 ModDataComponents.FLUID, ModDataComponents.FLUID_AMOUNT, ModDataComponents.FLUID_PRESSURE);
-        reg.interpreter(com.hbm.items.ModMachineItems.scraps.get(), stack ->
+        reg.interpreter(ModMachineItems.scraps.get(), stack ->
                 ModDataComponents.MATERIAL.get(stack).orElse("") + "|"
                         + ModDataComponents.MAT_AMOUNT.get(stack).map(String::valueOf).orElse("") + "|"
                         + ModelData.flag(stack) + "|" + ModelData.color(stack, -1));
-        // The 1.7 metadata families are one item per type (History §19es-itemvariant); only the items that keep one id
+        // The 1.7 metadata families are one item per type; only the items that keep one id
         // with a typed state still need a subtype interpreter.
-        for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
-            if (item instanceof com.hbm.items.machine.ItemRBMKPellet) {
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (item instanceof ItemRBMKPellet) {
                 reg.components(item, ModDataComponents.RBMK_PELLET);
             }
         }
-        for (var stirling : java.util.List.of(com.hbm.blocks.machine.ModMachineBlocks.machine_stirling,
-                com.hbm.blocks.machine.ModMachineBlocks.machine_stirling_steel,
-                com.hbm.blocks.machine.ModMachineBlocks.machine_stirling_creative)) {
+        for (var stirling : List.of(ModMachineBlocks.machine_stirling,
+                ModMachineBlocks.machine_stirling_steel,
+                ModMachineBlocks.machine_stirling_creative)) {
             reg.components(stirling.get().asItem(), ModDataComponents.HAS_COG);
         }
-        reg.components(com.hbm.blocks.machine.ModMachineBlocks.machine_sawmill.get().asItem(), ModDataComponents.HAS_BLADE);
-        reg.components(com.hbm.items.ModJetpackDependencyItems.ingot_steel_dusted.get(), ModDataComponents.FORGE_COUNT);
-        reg.components(com.hbm.blocks.ModCustomMachineBlocks.custom_machine_item.get(), ModDataComponents.CUSTOM_MACHINE);
+        reg.components(ModMachineBlocks.machine_sawmill.get().asItem(), ModDataComponents.HAS_BLADE);
+        reg.components(ModJetpackDependencyItems.ingot_steel_dusted.get(), ModDataComponents.FORGE_COUNT);
+        reg.components(ModCustomMachineBlocks.custom_machine_item.get(), ModDataComponents.CUSTOM_MACHINE);
     }
 }

@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.Constants;
 
+import dev.golem.core.platform.ConfigFiles;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +29,7 @@ public class RunningConfig {
     public static final Gson gson = new Gson();
 
     public static Path getConfig(String name) {
-        return dev.golem.core.platform.ConfigFiles.configDir().resolve("hbmConfig").resolve(name);
+        return ConfigFiles.configDir().resolve("hbmConfig").resolve(name);
     }
 
     public static void readConfig(Path config, Map<String, ConfigWrapper<?>> configMap) {

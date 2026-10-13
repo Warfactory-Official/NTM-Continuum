@@ -6,6 +6,7 @@ import com.hbm.blocks.generic.BlockGrate;
 import com.hbm.blocks.generic.BlockScaffold;
 import com.hbm.items.ModDataComponents;
 import dev.golem.core.Ids;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,7 +22,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
-/** Placement, shape, and registration contracts for the steel grate/scaffold wave. */
+/** Placement, shape, and registration contracts for the steel grate and scaffold blocks. */
 public final class SteelStructureGameTests {
 
     private SteelStructureGameTests() {}
@@ -55,7 +56,7 @@ public final class SteelStructureGameTests {
                     "grate height " + height + " maxY is " + shape.max(Direction.Axis.Y));
         }
 
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.getValue(Ids.of(Constants.MOD_ID, "steel_grate")));
         helper.assertTrue(grate.getStateForPlacement(context(helper, player, stack, Direction.DOWN, 0.5D)).getValue(BlockGrate.HEIGHT) == 7,
                 "downward grate placement must use height 7");
@@ -68,7 +69,7 @@ public final class SteelStructureGameTests {
 
     public static void scaffoldPlacement(GameTestHelper helper) {
         BlockScaffold scaffold = ModSteelBlocks.steel_scaffold.get();
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.getValue(Ids.of(Constants.MOD_ID, "steel_scaffold_white")));
 
         player.setYRot(0F);

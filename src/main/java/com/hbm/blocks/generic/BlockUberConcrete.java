@@ -18,7 +18,7 @@ import com.hbm.blocks.ModDecoContent;
 
 /**
  * 1.7 {@code BlockUberConcrete}: über concrete rots. Each random tick has a {@code 1/(damage+1)} chance to
- * advance {@link #DAMAGE}; at 15 the block crumbles into "moldy debris" — dropped straight down if the
+ * advance {@link #DAMAGE}; at 15 the block crumbles into "moldy debris", dropped straight down if the
  * block below is air, otherwise toppled as a falling block off a random open side, otherwise left in
  * place. Damage stages 10-11, 12-13, 14 and 15 show progressively mouldier textures.
  */

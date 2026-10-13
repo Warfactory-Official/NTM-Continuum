@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerICFPress;
 import com.hbm.tileentity.machine.TileEntityICFPress;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.ChatFormatting;
@@ -20,7 +21,7 @@ import java.util.Optional;
  */
 public class GUIICFPress extends CompatContainerScreen<ContainerICFPress> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_icf_press.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/processing/gui_icf_press.png");
 
     public GUIICFPress(ContainerICFPress menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 179);

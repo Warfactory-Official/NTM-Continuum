@@ -5,6 +5,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModFluidItems;
 import com.hbm.items.ModFluidNetItems;
+import com.hbm.items.ModSingularityItems;
 import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.sound.ModSounds;
 import com.mojang.logging.LogUtils;
@@ -155,7 +156,7 @@ public class ItemStarterKit extends CompatItem {
                 l.add(hbm("machine_fluidtank", 1));
                 for (int i = 0; i < 3; i++) l.add(hbm("pellet_rtg", 1));
                 for (int i = 0; i < 3; i++) l.add(hbm("pellet_rtg_weak", 1));
-                l.add(new ItemStack(com.hbm.items.ModSingularityItems.cell.get(), 32)); // 1.7 cell_empty: the bare cell
+                l.add(new ItemStack(ModSingularityItems.cell.get(), 32)); // 1.7 cell_empty: the bare cell
                 l.add(hbm("rod_empty", 32));
                 l.add(fluid(ModFluidItems.fluid_barrel.get(), Fluids.COOLANT, 4));
                 l.add(hbm("radaway_strong", 4));

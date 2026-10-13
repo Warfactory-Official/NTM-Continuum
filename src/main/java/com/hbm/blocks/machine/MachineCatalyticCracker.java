@@ -30,8 +30,8 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Catalytic Cracker block — 1:1 port of the 1.12.2 {@code MachineCatalyticCracker}: a large steam
- * tower (dims {@code {0,0,3,3,2,3}}, offset 3; 4 body fills + 8 makeExtra ports). No GUI — fluid-ID
+/** Catalytic Cracker block, 1:1 port of the 1.12.2 {@code MachineCatalyticCracker}: a large steam
+ * tower (dims {@code {0,0,3,3,2,3}}, offset 3; 4 body fills + 8 makeExtra ports). No GUI, fluid-ID
  * right-click retypes the input, empty-hand look-overlay prints the 5 tanks. */
 public class MachineCatalyticCracker extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay {
 
@@ -96,9 +96,9 @@ public class MachineCatalyticCracker extends BlockMultiblockMachine implements I
 
     /**
      * Six of upstream's eight ports. The pair at {@code +dir*2 - rot*4} and {@code -dir*2 + rot*3}
-     * each carries the face of the opposite flank, so each names a cell one step outside the machine
-     * -- 1.7 asks {@code isPort} of a block that is not the cracker and never gets an answer -- so
-     * they connect nothing there either, and the table says what the machine really has.
+     * each carries the face of the opposite flank, so each names a cell one step outside the machine.
+     * 1.7 asks {@code isPort} of a block that is not the cracker and never gets an answer, so they
+     * connect nothing there either, and the table says what the machine really has.
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {

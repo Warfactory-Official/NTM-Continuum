@@ -3,6 +3,7 @@ package com.hbm.handler.neutron;
 import com.hbm.api.block.IPileNeutronReceiver;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModHazardBlocks;
+import com.hbm.blocks.material.MaterialCompletionRegistrations;
 import com.hbm.handler.neutron.NeutronNodeWorld.StreamWorld;
 import com.hbm.blocks.ModNuclearMiscBlocks;
 import com.hbm.blocks.machine.pile.BlockGraphiteDrilledBase;
@@ -63,8 +64,8 @@ public final class PileNeutronHandler {
                     tile = node.tile;
                 } else {
                     tile = level.getBlockEntity(nodePos);
-                    // Odd but load-bearing (1.7 and 1.12 both do it): a cell without a block entity — air,
-                    // plain drilled graphite, concrete — ends the ray outright. The shielding checks below
+                    // Odd but load-bearing (1.7 and 1.12 both do it): a cell without a block entity, such as air,
+                    // plain drilled graphite, concrete, ends the ray outright. The shielding checks below
                     // therefore only ever see blocks that happen to carry a foreign block entity.
                     if (tile == null) return;
                     if (tile instanceof TileEntityPileBase pile) streamWorld.addNode(new PileNeutronNode(pile));
@@ -77,7 +78,7 @@ public final class PileNeutronHandler {
                     if (block == ModHazardBlocks.block_boron.get()) return;
                     else if (block == ModBlocks.concrete.get() || block == ModBlocks.concrete_smooth.get()
                             || block == ModBlocks.concrete_asbestos.get()
-                            || block == com.hbm.blocks.material.MaterialCompletionRegistrations.CONCRETE_COLORED.get()
+                            || block == MaterialCompletionRegistrations.CONCRETE_COLORED.get()
                             || block == ModHazardBlocks.brick_concrete.get())
                         fluxQuantity *= 0.25;
                     if (block == ModNuclearMiscBlocks.BLOCK_GRAPHITE_ROD.get() && !out) return;

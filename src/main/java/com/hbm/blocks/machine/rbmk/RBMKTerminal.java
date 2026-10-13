@@ -2,6 +2,7 @@ package com.hbm.blocks.machine.rbmk;
 
 import com.hbm.tileentity.ModRBMKBlockEntities;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal;
+import dev.golem.core.registry.TickingBlock;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
@@ -16,7 +17,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** RTTY command terminal; its screen is a bare client screen rather than a container menu. */
-public class RBMKTerminal extends RBMKMiniPanelBase implements dev.golem.core.registry.TickingBlock {
+public class RBMKTerminal extends RBMKMiniPanelBase implements TickingBlock {
 
     public static Consumer<BlockEntityRBMKTerminal> OPEN_SCREEN = terminal -> {};
 

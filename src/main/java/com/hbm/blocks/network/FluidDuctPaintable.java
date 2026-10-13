@@ -15,7 +15,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The 1.7 {@code FluidDuctPaintable}: a full-cube coated duct — a steel cube with a fluid-coloured port
+ * The 1.7 {@code FluidDuctPaintable}: a full-cube coated duct, a steel cube with a fluid-coloured port
  * overlay on every face. Networking is the plain duct's (the connection flags only feed the renderer's
  * overlay).
  *
@@ -23,8 +23,8 @@ import org.jspecify.annotations.Nullable;
  * that block's texture), cleared with a screwdriver, with the port overlay toggled by a defuser and
  * copied by the copy tool. Painting is not ported: drawing an arbitrary block's model over a duct has no
  * era-neutral rendering path yet. The duct renders its own coat only. The tooltip lines
- * ({@code block.hbm.fluid_duct_paintable.desc.N}) still advertise painting, faithfully to 1.7's text;
- * the behaviour behind them is what is deferred.
+ * ({@code block.hbm.fluid_duct_paintable.desc.N}) still advertise painting, as in 1.7's text;
+ * the behaviour behind them is what is not ported yet.
  */
 public class FluidDuctPaintable extends BlockFluidDuct {
 

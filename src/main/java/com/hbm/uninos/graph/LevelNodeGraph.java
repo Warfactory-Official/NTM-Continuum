@@ -107,7 +107,7 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
     }
 
     /**
-     * Drop a segment the graph no longer owns; the surviving shell + peel list keep stale index entries resolving, no eager re-point.
+     * Drop a segment the graph does not own; the surviving shell + peel list keep stale index entries resolving, no eager re-point.
      */
     private static <D> void retire(NodeNetwork<D> net, GraphSegment<D> s, @Nullable GraphSegment<D> successor) {
         net.segments.remove(s);
@@ -306,18 +306,17 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
 
     /**
      * Whether a block entity is being removed because its <b>block</b> went, rather than because its
-     * chunk is unloading — the question every conductor has to answer before dropping its cells.
+     * chunk is unloading: the question every conductor has to answer before dropping its cells.
      *
      * <p>Dropping cells on an unload would tear a network in half whenever a player walked away from
      * it; the graph parks unloaded cells and keeps them in the save instead. The block state at the
-     * position is what tells the two apart — a removal has already written the new state by the time
-     * the block entity hears about it, and an unload has written nothing.
+     * position tells the two apart: a removal has already written the new state by the time the block
+     * entity hears about it, and an unload has written nothing.
      *
-     * <p>The state is read from the chunk we are handed rather than through the level, because an
-     * unload runs this from inside the chunk's own teardown: {@code Level.getBlockState} would ask the
-     * chunk source for a chunk that is on its way out, and the server thread would block for it
-     * forever. A chunk that cannot be read without loading is an unload by definition, which is the
-     * case that answers no anyway.
+     * <p>The state is read from the chunk we are handed, not through the level: an unload runs this from
+     * inside the chunk's own teardown, and {@code Level.getBlockState} would ask the chunk source for a
+     * chunk that is on its way out and block the server thread forever. A chunk that cannot be read
+     * without loading is an unload, which answers no anyway.
      */
     public static boolean blockWentWithIt(BlockEntity owner) {
         if (!(owner.getLevel() instanceof ServerLevel server)) return false;
@@ -1301,7 +1300,7 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
     }
 
     /**
-     * The net's throughput cap: min member rate, Long.MAX_VALUE when untiered (1.7 parity); re-derived after any membership/data edit.
+     * The net's throughput cap: min member rate, Long.MAX_VALUE when untiered (as in 1.7); re-derived after any membership/data edit.
      */
     public long throughputCap(NodeNetwork<D> net) {
         if (!provider.hasTieredRates()) return Long.MAX_VALUE;
@@ -1345,7 +1344,7 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
     }
 
     /**
-     * Fold every foldable cell into its run - the batch repair for paths that deliberately churn first-class cells.
+     * Fold every foldable cell into its run: the batch repair for paths that churn first-class cells.
      */
     public void compact() {
         for (GraphNode<D> node : new ArrayList<>(nodesByPos.values())) foldAt(node);

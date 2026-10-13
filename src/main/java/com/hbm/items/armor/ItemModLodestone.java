@@ -1,5 +1,6 @@
 package com.hbm.items.armor;
 
+import com.hbm.extprop.HbmPlayerProps;
 import com.hbm.handler.ArmorModHandler;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
@@ -7,6 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -48,8 +50,8 @@ public class ItemModLodestone extends ItemArmorMod {
     @Override
     public void modUpdate(LivingEntity entity, ItemStack armor) {
         // 1.7: a player who toggled the magnet off (TOGGLE_MAGNET) pulls nothing
-        if (entity instanceof net.minecraft.world.entity.player.Player player
-                && !com.hbm.extprop.HbmPlayerProps.getData(player).enableMagnet) return;
+        if (entity instanceof Player player
+                && !HbmPlayerProps.getData(player).enableMagnet) return;
         List<ItemEntity> items = entity.level().getEntitiesOfClass(ItemEntity.class,
                 entity.getBoundingBox().inflate(range, range, range));
         for (ItemEntity item : items) {

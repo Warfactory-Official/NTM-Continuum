@@ -1,5 +1,6 @@
 package com.hbm.gametest;
 
+import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.machine.MachinePump;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.api.fluidmk2.DuctData;
@@ -135,16 +136,15 @@ public final class PumpGameTests {
     }
 
     /**
-     * A typed duct finds the pump through its multiblock port. Nothing subscribes any more — what used to
-     * be asserted here, that the pump renewed its subscription on a non-20th tick, is a question the graph
-     * cannot ask: a face stays live until something changes beside it. So what is asserted is discovery
-     * itself, and through the one route that has no block entity at the cell it probes.
+     * A typed duct finds the pump through its multiblock port. Nothing subscribes, so a face stays live until
+     * something changes beside it, and the graph cannot ask whether a subscription was renewed on a non-20th tick.
+     * What is asserted is discovery itself, through the one route that has no block entity at the cell it probes.
      */
     public static void steamNetworkReach(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         TileEntityMachinePumpSteam pump = placeSteam(helper, new BlockPos(3, 1, 3));
         BlockPos ductPos = pump.getBlockPos().east(2);
-        level.setBlock(ductPos, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
+        level.setBlock(ductPos, ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
         TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) level.getBlockEntity(ductPos);
         duct.setFluidType(Fluids.STEAM);
 

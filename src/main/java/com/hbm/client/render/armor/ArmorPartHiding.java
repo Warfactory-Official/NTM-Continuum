@@ -12,7 +12,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Hides the wearer's own body parts underneath a modelled suit — 1.12.2's
+ * Hides the wearer's own body parts underneath a modelled suit, from 1.12.2's
  * {@code ModEventHandlerRenderer.onRenderPlayerPre}/{@code Post} pair.
  *
  * <p>Upstream toggled {@code ModelRenderer.isHidden} from {@code RenderPlayerEvent}, restoring it after.
@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
  * keep it off when the helmet comes back off.
  *
  * <p>Driven by {@code MixinHumanoidModel} at the tail of {@code setupAnim}, which is the one point that
- * runs every frame, before any geometry is submitted, with the model in hand — and, for players,
+ * runs every frame, before any geometry is submitted, with the model in hand; and, for players,
  * <em>after</em> {@code PlayerModel.setupAnim} has re-applied the skin-customisation flags.
  */
 public final class ArmorPartHiding {

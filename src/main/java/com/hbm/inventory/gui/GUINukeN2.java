@@ -1,6 +1,8 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerNukeN2;
+import dev.golem.core.Ids;
+import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -8,9 +10,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 /** N² schematic screen, ported from 1.7 {@code GUINukeN2}: twelve slots and the stacked charge-fill indicator. */
-public class GUINukeN2 extends dev.golem.core.gui.CompatContainerScreen<ContainerNukeN2> {
+public class GUINukeN2 extends CompatContainerScreen<ContainerNukeN2> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/weapon/n2schematic.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/weapon/n2schematic.png");
 
     public GUINukeN2(ContainerNukeN2 menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 222);

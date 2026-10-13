@@ -11,13 +11,17 @@ import com.hbm.entity.missile.EntityMissileTier1;
 import com.hbm.entity.missile.ModMissileEntities;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
 import com.hbm.tileentity.machine.TileEntityMachineTeleporter;
+import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -75,7 +79,7 @@ public final class RadarUtilityGameTests {
         helper.succeed();
     }
 
-    private static RadarEntry convert(net.minecraft.world.entity.Entity e, TileEntityMachineRadarNT radar, RadarScanParams params) {
+    private static RadarEntry convert(Entity e, TileEntityMachineRadarNT radar, RadarScanParams params) {
         for (var converter : TileEntityMachineRadarNT.converters) {
             RadarEntry entry = converter.apply(new TileEntityMachineRadarNT.Scan(e, radar, params));
             if (entry != null) return entry;
@@ -95,7 +99,7 @@ public final class RadarUtilityGameTests {
                 if (edge && !(x == 2 && z == 0)) helper.setBlock(new BlockPos(x, 1, z), ModBlocks.seal_frame.get().defaultBlockState());
                 // closeSeal only fills air (as in 1.7), and the 26.1 runner's enclosure of the 1x1x1 test
                 // structure left a barrier at (1, 1, 1) inside this frame; start from a clear interior.
-                else if (!edge) helper.setBlock(new BlockPos(x, 1, z), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+                else if (!edge) helper.setBlock(new BlockPos(x, 1, z), Blocks.AIR.defaultBlockState());
             }
         }
         BlockPos abs = helper.absolutePos(controller);
@@ -125,7 +129,7 @@ public final class RadarUtilityGameTests {
         tele.targetX = exit.getX();
         tele.targetY = exit.getY();
         tele.targetZ = exit.getZ();
-        tele.targetDim = dev.golem.core.Ids.keyId(helper.getLevel().dimension()).toString();
+        tele.targetDim = Ids.keyId(helper.getLevel().dimension()).toString();
         tele.power = TileEntityMachineTeleporter.maxPower;
 
         BlockPos abs = helper.absolutePos(pad);
@@ -146,23 +150,23 @@ public final class RadarUtilityGameTests {
 
     /**
      * The radar map on chunks that were never saved: 1.7 {@code provideChunk} finds nothing and {@code getHeightValue} answers
-     * 0 for an absent chunk, which is stored clamped to 50 - a black cell - on the first visit. The region-file read is
+     * 0 for an absent chunk, which is stored clamped to 50, a black cell, on the first visit. The region-file read is
      * asynchronous here, so a slot visited cold leaves its cells blank until the read lands, while the prefetch that
      * {@code updateServer} runs a few ticks ahead makes the very first visit complete once its reads have landed. The
      * test waits for the IO worker to answer rather than a fixed tick count: under a full GameTest run the region
-     * reads of 800+ parallel plots took longer than 20 ticks (2026-10-01, twice), which says nothing about the radar.
+     * reads of 800+ parallel plots took longer than 20 ticks, which says nothing about the radar.
      */
     public static void radarMapNeverSavedChunks(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         helper.setBlock(pos, ModRadarUtilityBlocks.machine_radar.get().defaultBlockState());
         TileEntityMachineRadarNT radar = GameTestHelpers.blockEntity(helper, pos, TileEntityMachineRadarNT.class);
         helper.assertTrue(radar != null, "no radar block entity");
-        net.minecraft.server.level.ServerLevel level = helper.getLevel();
+        ServerLevel level = helper.getLevel();
         int warmSlot = 7, coldSlot = 300;
         radar.map = new byte[40_000];
 
         // Cells whose chunk another plot keeps loaded are read live, not off the region file, and which those are depends
-        // on the batch layout (1.20.1 Forge, 2026-10-01: 7 of the cold slot's cells). Only the others are the subject.
+        // on the batch layout (1.20.1 Forge: 7 of the cold slot's cells). Only the others are the subject.
         boolean[] warmUnloaded = unloadedCells(radar, level, warmSlot);
         boolean[] coldUnloaded = unloadedCells(radar, level, coldSlot);
         int coldExpected = 0;
@@ -189,7 +193,7 @@ public final class RadarUtilityGameTests {
     }
 
     /** Which of a slot's cells lie in a chunk that is not loaded now (the radar's own cell-to-block mapping). */
-    private static boolean[] unloadedCells(TileEntityMachineRadarNT radar, net.minecraft.server.level.ServerLevel level,
+    private static boolean[] unloadedCells(TileEntityMachineRadarNT radar, ServerLevel level,
             int slot) {
         boolean[] unloaded = new boolean[100];
         int range = radar.getRange();

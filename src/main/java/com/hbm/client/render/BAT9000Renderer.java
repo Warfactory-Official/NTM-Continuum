@@ -1,8 +1,10 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
+import com.hbm.inventory.fluid.FluidHazard;
 import com.hbm.tileentity.machine.TileEntityMachineBAT9000;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderTypes;
@@ -38,7 +40,7 @@ public final class BAT9000Renderer extends GiantTankRenderer<TileEntityMachineBA
 
     @Override
     protected void submitHazards(GiantTankRenderState state, PoseStack poseStack, SubmitSink collector) {
-        com.hbm.inventory.fluid.FluidHazard hazard = hazardFor(state.fluidType);
+        FluidHazard hazard = hazardFor(state.fluidType);
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(45F));
         for (int i = 0; i < 4; i++) {
@@ -70,7 +72,7 @@ public final class BAT9000Renderer extends GiantTankRenderer<TileEntityMachineBA
                 });
     }
 
-    private static void quad(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose, float x1, float y1,
+    private static void quad(VertexConsumer buffer, PoseStack.Pose pose, float x1, float y1,
                              float z1, float x2, float y2, float z2, float x3, float y3, float z3,
                              float x4, float y4, float z4, int color) {
         vertex(buffer, pose, x1, y1, z1, color);
@@ -79,7 +81,7 @@ public final class BAT9000Renderer extends GiantTankRenderer<TileEntityMachineBA
         vertex(buffer, pose, x4, y4, z4, color);
     }
 
-    private static void vertex(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
+    private static void vertex(VertexConsumer buffer, PoseStack.Pose pose,
                                float x, float y, float z, int color) {
         Vertexes.vertex(buffer, pose, x, y, z, color, 0.5F, 0.5F,
                 OverlayTexture.NO_OVERLAY, 0x00F000F0, 0F, 1F, 0F);

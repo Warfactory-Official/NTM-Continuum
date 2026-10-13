@@ -1,5 +1,6 @@
 package com.hbm.gametest;
 
+import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModDecoCrateBlocks;
 import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.entity.projectile.EntityMeteor;
@@ -7,6 +8,10 @@ import com.hbm.handler.ArmorModHandler;
 import com.hbm.handler.BossSpawnHandler;
 import com.hbm.items.ModArmorModItems;
 import com.hbm.world.feature.GlyphidHive;
+import com.hbm.world.gen.ConfigPlacement;
+import com.hbm.world.gen.WorldgenKeys;
+import dev.golem.core.Ids;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -24,9 +29,10 @@ import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * GameTests for the 1.7 world features (§19ec-worldfeatures): what the overworld biome actually carries after the biome
+ * GameTests for the 1.7 world features: what the overworld biome actually carries after the biome
  * modifiers ran, the hive schematic, and the meteor charms.
  */
 public final class WorldFeatureGameTests {
@@ -40,7 +46,7 @@ public final class WorldFeatureGameTests {
         for (HolderSet<PlacedFeature> step : level.getBiome(helper.absolutePos(BlockPos.ZERO)).value().getGenerationSettings().features()) {
             List<String> ids = new ArrayList<>();
             for (Holder<PlacedFeature> holder : step) {
-                holder.unwrapKey().ifPresent(key -> ids.add(dev.golem.core.Ids.keyId(key).toString()));
+                holder.unwrapKey().ifPresent(key -> ids.add(Ids.keyId(key).toString()));
             }
             steps.add(ids);
         }
@@ -65,9 +71,9 @@ public final class WorldFeatureGameTests {
                 "hbm:cluster_copper", "hbm:bedrock_ore", "hbm:coltan_deposit", "hbm:stone_keyhole", "hbm:cluster_depth_iron")) {
             helper.assertTrue(ores.contains(id), "underground_ores lacks " + id + ": " + ores);
         }
-        // listed since §19ej-8 (hbm:config reads hbm.cfg at generation); 1.7's explosive bubble rate 0 places nothing
+        // listed (hbm:config reads hbm.cfg at generation); 1.7's explosive bubble rate 0 places nothing
         helper.assertTrue(ores.contains("hbm:gas_bubble_explosive")
-                && com.hbm.world.gen.ConfigPlacement.value(com.hbm.world.gen.WorldgenKeys.EXPLOSIVE_BUBBLE) == 0,
+                && ConfigPlacement.value(WorldgenKeys.EXPLOSIVE_BUBBLE) == 0,
                 "1.7's explosive bubble rate is 0");
         helper.assertTrue(ores.indexOf("hbm:ore_gneiss_iron") < ores.indexOf("hbm:ore_uranium")
                 && ores.indexOf("hbm:ore_uranium") < ores.indexOf("hbm:limestone"), "1.7 vein order: " + ores);
@@ -75,14 +81,14 @@ public final class WorldFeatureGameTests {
                 && steps.get(9).contains("hbm:glyphid_hive"), "vegetal_decoration: " + steps.get(9));
         helper.assertTrue(steps.get(10).contains("hbm:pink_tree"), "top_layer_modification: " + steps.get(10));
 
-        // rare earths really are the gneiss slot's block now
+        // rare earths are the gneiss slot's block
         for (Holder<PlacedFeature> holder : helper.getLevel().getBiome(helper.absolutePos(BlockPos.ZERO)).value()
                 .getGenerationSettings().features().get(6)) {
-            String id = holder.unwrapKey().map(k -> dev.golem.core.Ids.keyId(k).toString()).orElse("");
+            String id = holder.unwrapKey().map(k -> Ids.keyId(k).toString()).orElse("");
             if (!id.equals("hbm:ore_gneiss_rare")) continue;
             var config = holder.value().feature().value().config();
             helper.assertTrue(config instanceof OreConfiguration ore
-                            && ore.targetStates.get(0).state.getBlock() == com.hbm.blocks.ModBlocks.ore_gneiss_rare.get(),
+                            && ore.targetStates.get(0).state.getBlock() == ModBlocks.ore_gneiss_rare.get(),
                     "hbm:ore_gneiss_rare places " + config);
         }
         helper.succeed();
@@ -111,7 +117,7 @@ public final class WorldFeatureGameTests {
     /** 1.7 {@code BossSpawnHandler}: a Meteor Charm helmet mod stops the strike, a Charm of Protection makes it safe. */
     public static void meteorCharms(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         BlockPos at = helper.absolutePos(new BlockPos(1, 2, 1));
         player.setPos(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
 
@@ -127,7 +133,7 @@ public final class WorldFeatureGameTests {
         helper.assertTrue(safe != null && safe.safe, "a Charm of Protection diverts the meteor (safe) instead of stopping it");
         helper.assertTrue(safe.getY() == 384 && safe.getDeltaMovement().y == -2.5, "meteor spawn " + safe.position() + " " + safe.getDeltaMovement());
         // diverted: it flies away from the player, never towards
-        net.minecraft.world.phys.Vec3 away = new net.minecraft.world.phys.Vec3(safe.getX() - player.getX(), 0, safe.getZ() - player.getZ());
+        Vec3 away = new Vec3(safe.getX() - player.getX(), 0, safe.getZ() - player.getZ());
         helper.assertTrue(away.dot(safe.getDeltaMovement().multiply(1, 0, 1)) >= 0, "a diverted meteor heads away from the player");
         safe.discard();
 

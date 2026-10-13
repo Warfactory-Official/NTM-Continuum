@@ -1,9 +1,12 @@
 package com.hbm.items.special;
 
+import com.hbm.config.WeaponConfig;
+import com.hbm.explosion.ExplosionChaos;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -45,11 +48,11 @@ public class ItemDrop extends CompatItem {
             return;
         }
         if (!entity.onGround()) return;
-        if (com.hbm.config.WeaponConfig.dropCrys && !entity.level().isClientSide()) {
+        if (WeaponConfig.dropCrys && !entity.level().isClientSide()) {
             // 1.7 casts the position with (int): truncation toward zero, not floor
-            net.minecraft.core.BlockPos at = new net.minecraft.core.BlockPos((int) entity.getX(), (int) entity.getY(), (int) entity.getZ());
-            com.hbm.explosion.ExplosionChaos.floater(entity.level(), at, 25, 75);
-            com.hbm.explosion.ExplosionChaos.move(entity.level(), at, 25, 0, 75, 0);
+            BlockPos at = new BlockPos((int) entity.getX(), (int) entity.getY(), (int) entity.getZ());
+            ExplosionChaos.floater(entity.level(), at, 25, 75);
+            ExplosionChaos.move(entity.level(), at, 25, 0, 75, 0);
         }
         entity.discard();
     }

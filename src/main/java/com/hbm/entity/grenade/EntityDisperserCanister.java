@@ -7,6 +7,7 @@ import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.SynchedData;
 import com.hbm.entity.effect.EntityMist;
 import com.hbm.items.weapon.ItemDisperser;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -66,7 +67,7 @@ public class EntityDisperserCanister extends EntityGrenadeBase {
                 : ModEntityItems.disperser_canister.get();
     }
 
-    // 26.2: getType() taken by Entity; renamed
+    // 26.1: getType() taken by Entity; renamed
     public EntityDisperserCanister setDisperserItem(ItemDisperser item) {
         entityData.set(TYPE, new ItemStack(item));
         return this;
@@ -89,13 +90,13 @@ public class EntityDisperserCanister extends EntityGrenadeBase {
     protected void saveData(DataOut output) {
         super.saveData(output);
         Fluids.write(output, "fluid", getFluid()); // registry name; the synched int is session-only
-        output.store("item", dev.golem.core.world.ItemStacks.optionalCodec(), entityData.get(TYPE));
+        output.store("item", ItemStacks.optionalCodec(), entityData.get(TYPE));
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
         setFluid(Fluids.read(input, "fluid"));
-        input.read("item", dev.golem.core.world.ItemStacks.optionalCodec()).ifPresent(stack -> entityData.set(TYPE, stack));
+        input.read("item", ItemStacks.optionalCodec()).ifPresent(stack -> entityData.set(TYPE, stack));
     }
 }

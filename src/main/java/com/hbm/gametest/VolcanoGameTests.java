@@ -54,7 +54,7 @@ public final class VolcanoGameTests {
      */
     private static final float BLAST_SIZE = 6F;
 
-    // ------------------------------------------------------------------ the growing core
+    // The growing core
 
     /**
      * volcano_core_growing_active: shell flooded by the first cycle, core unmoved up to tick 268, core one block
@@ -131,7 +131,7 @@ public final class VolcanoGameTests {
         helper.setBlock(CORE, Blocks.AIR);
     }
 
-    // ------------------------------------------------------------------ the blobs
+    // The blobs
 
     /** 1.7 EntityShrapnel dataWatcher 2: a falling volcano shard pools lava and outgasses; a plain one only fizzes. */
     public static void volcanoShrapnelPoolsLavaAndMonoxide(GameTestHelper helper) {
@@ -219,7 +219,7 @@ public final class VolcanoGameTests {
         return shard;
     }
 
-    // ------------------------------------------------------------------ the blast
+    // The blast
 
     /** 1.7 ExplosionNT LAVA_V: every destroyed normal cube becomes volcanic lava; a non-cube is emptied and left. */
     public static void lavaBlastFillsDestroyedCubesOnly(GameTestHelper helper) {
@@ -246,7 +246,7 @@ public final class VolcanoGameTests {
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ support
+    // Support
 
     private static void poll(GameTestHelper helper, int from, int deadline, BooleanSupplier condition,
                              Supplier<String> stuck, Runnable then) {
@@ -274,10 +274,10 @@ public final class VolcanoGameTests {
 
     /**
      * Puts the eruption out: every volcano core in the column the growing core climbs is removed, and its blobs
-     * with it. A core left behind keeps erupting in the shared GameTest world after its test has finished —
-     * channel blasts every ten ticks, a climb every 288, lava blobs landing on other plots — and on 2026-09-24
-     * that starved the rest of the suite (the server thread sat in its blasts for minutes, and the later
-     * batches never got their chunks ticking).
+     * with it. A core left behind keeps erupting in the shared GameTest world after its test has finished:
+     * channel blasts every ten ticks, a climb every 288, lava blobs landing on other plots, and it can
+     * starve the rest of the suite (the server thread sits in its blasts and later batches never get their
+     * chunks ticking).
      */
     private static void extinguish(GameTestHelper helper, ServerLevel level, BlockPos core) {
         for (int dy = -1; dy <= 8; dy++) {

@@ -6,6 +6,7 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.material.Mats.MaterialStack;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -18,7 +19,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Foundry slagtap (1.12.2 {@code TileEntityFoundrySlagtap}) — an outlet variant that raytraces 15
+ * Foundry slagtap (1.12.2 {@code TileEntityFoundrySlagtap}): an outlet variant that raytraces 15
  * blocks down and dumps the material into the world as {@link BlockDynamicSlag} piles instead of
  * pouring into an acceptor. The waste-disposal drain.
  */
@@ -36,7 +37,7 @@ public class TileEntityFoundrySlagtap extends TileEntityFoundryOutlet {
     private @Nullable BlockHitResult trace(Level world, BlockPos p) {
         Vec3 start = new Vec3(p.getX() + 0.5, p.getY() - 0.125, p.getZ() + 0.5);
         Vec3 end = new Vec3(p.getX() + 0.5, p.getY() + 0.125 - getDropRange(), p.getZ() + 0.5);
-        BlockHitResult mop = dev.golem.core.world.Compat.clip(world, start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY);
+        BlockHitResult mop = Compat.clip(world, start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY);
         return mop.getType() == HitResult.Type.BLOCK ? mop : null;
     }
 

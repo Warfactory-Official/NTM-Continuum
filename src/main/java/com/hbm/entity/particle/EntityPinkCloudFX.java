@@ -4,6 +4,7 @@ import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;
 import com.hbm.explosion.ExplosionChaos;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -17,7 +18,7 @@ import dev.golem.core.data.DataOut;
  *
  * <p>1.7 built this on {@code EntityModFX}, its fake-particle-as-entity base. It stays an entity here
  * because the tick carries server-side gameplay - see {@link EntityOrangeFX}, the same shape. The purely
- * cosmetic members of that 1.7 family are real particles in 26.2 instead.
+ * cosmetic members of that 1.7 family are real particles in 26.1 instead.
  */
 public class EntityPinkCloudFX extends CompatEntity {
 
@@ -102,7 +103,7 @@ public class EntityPinkCloudFX extends CompatEntity {
             setPos(getX() + motionX / 4D, getY() + motionY / 4D, getZ() + motionZ / 4D);
 
             BlockPos pos = new BlockPos((int) getX(), (int) getY(), (int) getZ()); // 1.7: cast truncation
-            if (!dev.golem.core.world.Compat.isSolidRender(level().getBlockState(pos))) continue;
+            if (!Compat.isSolidRender(level().getBlockState(pos))) continue;
 
             if (!level().isClientSide() && random.nextInt(5) != 0) discard();
 

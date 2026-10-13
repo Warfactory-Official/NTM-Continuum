@@ -27,7 +27,7 @@ public final class HbmServerCommands {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        com.hbm.command.HbmCommands.register(dispatcher);
+        HbmCommands.register(dispatcher);
         dispatcher.register(CommandReloadRecipes.build());
         dispatcher.register(CommandDebugChunkLoad.build());
         dispatcher.register(CommandRadiation.build());

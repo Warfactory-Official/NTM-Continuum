@@ -11,7 +11,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import java.util.List;
 
 /**
- * Nether phosphorus ore ({@code ore_nether_fire}) — the original-hbm (1.7.10) {@code BlockOre} case
+ * Nether phosphorus ore ({@code ore_nether_fire}): the 1.7 {@code BlockOre} case
  * {@code rand.nextInt(10) == 0 ? ingot_phosphorus : powder_fire}. 1.7 {@code getDrops} asks
  * {@code getItemDropped} once <i>per item</i>, so with Fortune each of the multiplied items is its own 1-in-10
  * phosphorus roll; a loot table can only pick one item for the whole stack, which is why this is Java.

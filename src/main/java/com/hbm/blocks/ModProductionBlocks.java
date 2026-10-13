@@ -11,6 +11,7 @@ import com.hbm.creativetabs.HbmTab;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.CompatBlock;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -70,7 +71,7 @@ public final class ModProductionBlocks {
             .transform(FOLDED);
     /** 1.7: a plain {@code BlockBase(Material.iron)} whose only job is to be recognised by the burner press. */
     public static final RegistryObject<Block> PRESS_PREHEATER = REG.<Block>block(
-            "press_preheater", dev.golem.core.world.CompatBlock::new,
+            "press_preheater", CompatBlock::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             // 1.7: one animated texture on every face
             .transform(Presets.cubeAll().and(SELF_PICKAXE));

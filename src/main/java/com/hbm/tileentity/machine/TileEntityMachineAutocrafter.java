@@ -5,7 +5,7 @@ import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.lib.Library;
-import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.module.ModulePatternMatcher;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -16,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -296,7 +297,7 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase
         for (int i = 10; i < getContainerSize(); i++) {
             ItemStack stack = getItem(i);
             if (stack.isEmpty()) continue;
-            net.minecraft.world.Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
+            Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             setItem(i, ItemStack.EMPTY);
         }
     }

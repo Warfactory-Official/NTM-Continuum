@@ -2,6 +2,7 @@ package com.hbm.handler.radiation;
 
 import com.hbm.config.RadiationConfig;
 import com.hbm.particle.helper.HbmEffectNT;
+import dev.golem.core.platform.Lifecycle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -28,7 +29,7 @@ public final class RadiationFog {
     public static int sent;
 
     public static void init() {
-        dev.golem.core.platform.Lifecycle.onServerTick(RadiationFog::tick);
+        Lifecycle.onServerTick(RadiationFog::tick);
     }
 
     private static void tick(MinecraftServer server) {

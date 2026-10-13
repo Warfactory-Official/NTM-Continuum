@@ -3,6 +3,7 @@ package com.hbm.gametest;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.pile.ModPileBlocks;
 import com.hbm.inventory.fluid.FluidStack;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.inventory.recipes.CyclotronRecipes;
@@ -16,6 +17,7 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModNuclearMiscItems;
 import com.hbm.items.ModStorageDrumItems;
+import com.hbm.items.ModTerrainItems;
 import com.hbm.items.ModWatzItems;
 import com.hbm.items.machine.EnumWatzType;
 import com.hbm.items.machine.ItemDepletedFuel;
@@ -23,11 +25,14 @@ import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.machine.ItemPileRodMK2;
 import com.hbm.items.machine.ItemPileRodMK2.EnumPileRod;
+import com.hbm.items.machine.ItemRBMKPellet;
 import com.hbm.items.special.ItemWasteStorage;
 import com.hbm.items.special.ItemWasteStorage.LongWasteClass;
 import com.hbm.items.special.ItemWasteStorage.ShortWasteClass;
 import com.hbm.tileentity.machine.TileEntityMachinePUREX;
 import dev.golem.core.Ids;
+import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.Recipes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -41,8 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The 2026-09-30 machine-recipe gap closure, checked against values computed by hand from the 1.7 tables
- * (original-hbm PUREXRecipes, SILEXRecipes, CrystallizerRecipes, CyclotronRecipes, SolidificationRecipes)
+ * Machine recipes, checked against values computed by hand from the 1.7 tables
+ * (1.7 PUREXRecipes, SILEXRecipes, CrystallizerRecipes, CyclotronRecipes, SolidificationRecipes)
  * and the crafting declarations corrected back to 1.7.
  */
 public final class RecipeGapGameTests {
@@ -54,7 +59,7 @@ public final class RecipeGapGameTests {
                 .orElseThrow(() -> new IllegalStateException("missing hbm:" + id));
     }
 
-    // ------------------------------------------------------------------ PUREX
+    // PUREX
 
     /** Recipe data of the new families: pile, plate, Watz, flash billets, schrabidic acid and the naquadria gate. */
     public static void purexTable(GameTestHelper helper) {
@@ -122,7 +127,7 @@ public final class RecipeGapGameTests {
         BlockPos pos = new BlockPos(1, 1, 1);
         helper.setBlock(pos, Blocks.AIR.defaultBlockState());
         helper.setBlock(pos, ModMachineBlocks.machine_purex.get().defaultBlockState());
-        TileEntityMachinePUREX purex = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityMachinePUREX.class);
+        TileEntityMachinePUREX purex = GameTestHelpers.blockEntity(helper, pos, TileEntityMachinePUREX.class);
 
         purex.purexModule.recipe = "purex.platemox";
         tick(helper, pos, purex);
@@ -150,7 +155,7 @@ public final class RecipeGapGameTests {
         TileEntityMachinePUREX.serverTick(helper.getLevel(), helper.absolutePos(pos), purex.getBlockState(), purex);
     }
 
-    // ------------------------------------------------------------------ SILEX
+    // SILEX
 
     public static void silexTable(GameTestHelper helper) {
         SILEXRecipes.register();
@@ -207,7 +212,7 @@ public final class RecipeGapGameTests {
     }
 
     private static ItemStack pellet(String name, int meta) {
-        return ((com.hbm.items.machine.ItemRBMKPellet) item("rbmk_pellet_" + name)).of(meta);
+        return ((ItemRBMKPellet) item("rbmk_pellet_" + name)).of(meta);
     }
 
     private static void assertOutputs(GameTestHelper helper, SILEXRecipe recipe, List<WeightedOutput> expected) {
@@ -216,12 +221,12 @@ public final class RecipeGapGameTests {
         helper.assertTrue(recipe.outputs.size() == expected.size(), "SILEX outputs " + got);
         for (int i = 0; i < expected.size(); i++) {
             WeightedOutput e = expected.get(i), g = recipe.outputs.get(i);
-            helper.assertTrue(dev.golem.core.world.ItemStacks.sameItemAndData(e.stack(), g.stack()) && e.weight() == g.weight(),
+            helper.assertTrue(ItemStacks.sameItemAndData(e.stack(), g.stack()) && e.weight() == g.weight(),
                     "SILEX output " + i + " is " + got.get(i) + ", expected " + e.stack() + "@" + e.weight());
         }
     }
 
-    // ------------------------------------------------------------------ crystallizer / cyclotron / solidifier
+    // Crystallizer / cyclotron / solidifier
 
     public static void mercuryAndCadmium(GameTestHelper helper) {
         CrystallizerRecipes.register();
@@ -232,7 +237,7 @@ public final class RecipeGapGameTests {
         var cinnabar = CrystallizerRecipes.getOutput(new ItemStack(ModItems.cinnabar.get()), Fluids.PEROXIDE);
         helper.assertTrue(cinnabar != null && cinnabar.output.is(ModItems.nugget_mercury.get()) && cinnabar.output.getCount() == 3,
                 "cinnabar -> 3 mercury");
-        var willow = CrystallizerRecipes.getOutput(new ItemStack(com.hbm.items.ModTerrainItems.plant_item_mustardwillow.get(), 10),
+        var willow = CrystallizerRecipes.getOutput(new ItemStack(ModTerrainItems.plant_item_mustardwillow.get(), 10),
                 Fluids.RADIOSOLVENT);
         helper.assertTrue(willow != null && willow.output.is(ModItems.powder_cadmium.get()) && willow.input.stacksize == 10
                         && willow.acidAmount == 250 && willow.duration == 100,
@@ -258,7 +263,7 @@ public final class RecipeGapGameTests {
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ crafting corrected to 1.7
+    // Crafting corrected to 1.7
 
     public static void craftingCorrections(GameTestHelper helper) {
         ItemStack e = ItemStack.EMPTY;
@@ -278,13 +283,13 @@ public final class RecipeGapGameTests {
         return Recipes.craftingResult(helper.getLevel(), w, h, grid).orElse(ItemStack.EMPTY);
     }
 
-    // ------------------------------------------------------------------ helpers
+    // Helpers
 
     private static void assertStack(GameTestHelper helper, ItemStack stack, Item item, int count) {
         helper.assertTrue(stack.is(item) && stack.getCount() == count, "expected " + count + "x " + item + ", got " + stack);
     }
 
-    private static void assertFluid(GameTestHelper helper, FluidStack stack, com.hbm.inventory.fluid.FluidType type, int fill) {
+    private static void assertFluid(GameTestHelper helper, FluidStack stack, FluidType type, int fill) {
         helper.assertTrue(stack != null && stack.type == type && stack.fill == fill,
                 "expected " + fill + " mB " + type.getName() + ", got " + (stack == null ? "null" : stack.fill + " mB " + stack.type.getName()));
     }

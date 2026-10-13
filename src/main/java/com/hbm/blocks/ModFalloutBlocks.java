@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import com.hbm.blocks.generic.BlockWasteLeaves;
 import dev.golem.core.dejson.Slots;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Variants;
@@ -16,6 +17,8 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
@@ -56,7 +59,7 @@ public final class ModFalloutBlocks {
             .loot(Loot.only("hbm:falloutitem"))
             .tag(BlockTag.SHOVEL);
 
-    // ---- waste terrain ----
+    // Waste terrain
     public static final RegistryObject<BlockWasteEarth> waste_earth = block("waste_earth",
             p -> new BlockWasteEarth(p, false),
             // 1.7: Material.ground, soundTypeGrass, setHardness(0.6F) (explosion resistance 0.6 with no setResistance)
@@ -100,14 +103,14 @@ public final class ModFalloutBlocks {
             .loot(Loot.oreOrRare("minecraft:charcoal", 2, 4, "hbm:burnt_bark", 0.001))
             .tag(BlockTag.AXE);
     /** 1.7 {@code WasteLeaves}: decays into falling leaf layers, sheds dead leaves, drops nothing (no silk touch). */
-    public static final RegistryObject<com.hbm.blocks.generic.BlockWasteLeaves> waste_leaves = block("waste_leaves",
-            com.hbm.blocks.generic.BlockWasteLeaves::new,
+    public static final RegistryObject<BlockWasteLeaves> waste_leaves = block("waste_leaves",
+            BlockWasteLeaves::new,
             p -> p.strength(0.3F, 0.3F).sound(SoundType.GRASS).noOcclusion().randomTicks())
             .transform(Presets.shape(Models.renderType("minecraft:cutout_mipped", Models.cubeAll("hbm:blocks/waste_leaves"))).viaItemModel())
             .loot(Loot.nothing())
             .tag(BlockTag.HOE);
 
-    // ---- sellafite (SHADE 0..9, tinted client-side via HbmBlockColors) ----
+    // Sellafite (SHADE 0..9, tinted client-side via HbmBlockColors)
     public static final RegistryObject<BlockSellafieldSlaked> sellafield_slaked = sellafield("sellafield_slaked",
             0, p -> p.strength(5.0F, 6.0F))
             .model(d -> d.models(Models.group().and("_0", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked"))).and("_1", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked_1"))).and("_2", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked_2"))).and("_3", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked_3")))).states(Variants.product(Variants.uniformRange("shade", 0, 9), Variants.pool(4))))
@@ -151,19 +154,19 @@ public final class ModFalloutBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    // ---- helpers ----
+    // Helpers
     private static <B extends Block> Reg.Handle<B> block(String id,
-            java.util.function.Function<BlockBehaviour.Properties, B> factory,
-            java.util.function.UnaryOperator<BlockBehaviour.Properties> props) {
+            Function<BlockBehaviour.Properties, B> factory,
+            UnaryOperator<BlockBehaviour.Properties> props) {
         Reg.Handle<B> block = REG.block(id, factory, props);
         Reg.Handle<BlockItem> item = REG.blockItem(block, p -> Compat.blockDescription(p));
         ModTabs.addTo(HbmTab.BLOCKS, item);
         return block;
     }
 
-    /** {@code xpBase > 0} → old gem-ore XP {@code rand(5) + 3} (3–7). */
+    /** {@code xpBase > 0} gives the old gem-ore XP, {@code rand(5) + 3} (3 to 7). */
     private static Reg.Handle<BlockSellafieldSlaked> sellafield(String id, int xpBase,
-            java.util.function.UnaryOperator<BlockBehaviour.Properties> props) {
+            UnaryOperator<BlockBehaviour.Properties> props) {
         return block(id,
                 p -> new BlockSellafieldSlaked(xpBase > 0 ? UniformInt.of(xpBase, xpBase + 4) : ConstantInt.of(0), p),
                 props);

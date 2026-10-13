@@ -34,7 +34,7 @@ import java.util.List;
 
 /**
  * Dipole magnet: the accelerator's junction. It takes the beam from any of the four horizontal
- * neighbours and sends it out along whichever of three configured directions applies — one below the
+ * neighbours and sends it out along whichever of three configured directions applies: one below the
  * momentum {@link #threshold}, one above it, and one while any of its connection points is powered.
  * Steering the beam resets the straight-line distance the dipole coils care about; passing straight
  * through does not.

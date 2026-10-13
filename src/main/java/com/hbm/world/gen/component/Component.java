@@ -1,6 +1,7 @@
 package com.hbm.world.gen.component;
 
 import com.hbm.blocks.generic.BlockBobble;
+import com.hbm.blocks.generic.Waterlogging;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.config.StructureConfig;
 import com.hbm.itempool.ItemPool;
@@ -11,16 +12,20 @@ import com.hbm.tileentity.machine.TileEntityLockableBase;
 import com.hbm.util.LootGenerator;
 import com.hbm.world.gen.component.LegacyBlocks.Mod;
 import com.hbm.world.gen.component.LegacyBlocks.Vanilla;
+import com.hbm.world.gen.nbt.LegacyStructurePalette;
 import dev.golem.core.data.Tags;
 import dev.golem.core.world.ItemStacks;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
@@ -112,9 +117,7 @@ public abstract class Component extends StructurePiece {
         return genDepth;
     }
 
-    // ------------------------------------------------------------------------------------------------------------
     // height, once per start
-    // ------------------------------------------------------------------------------------------------------------
 
     /**
      * Decides the piece's height when its start is assembled. The default is 1.7's {@link #setAverageHeight}: the mean
@@ -233,7 +236,7 @@ public abstract class Component extends StructurePiece {
      * movement-blocking part, but modern leaves block movement, so a canopy that reached the chunk first (a
      * neighbour's tree) is stepped through here as 1.7 did. Returns -1 like 1.7 when the column is empty.
      */
-    public static int topSolid(net.minecraft.world.level.LevelAccessor world, int x, int z) {
+    public static int topSolid(LevelAccessor world, int x, int z) {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int min = world.getMinY();
         for (int y = world.getHeight(Heightmap.Types.OCEAN_FLOOR, x, z) - 1; y >= min; y--) {
@@ -243,9 +246,7 @@ public abstract class Component extends StructurePiece {
         return -1;
     }
 
-    // ------------------------------------------------------------------------------------------------------------
     // building
-    // ------------------------------------------------------------------------------------------------------------
 
     /** 1.7 {@code addComponentParts}: builds the part of the piece inside {@code box}. */
     public abstract boolean addComponentParts(WorldGenLevel world, RandomSource rand, BoundingBox box);
@@ -301,7 +302,7 @@ public abstract class Component extends StructurePiece {
         if (!writable(x, y, z)) return;
         BlockPos pos = new BlockPos(x, y, z);
         if (world.isOutsideBuildHeight(pos)) return;
-        world.setBlock(pos, com.hbm.blocks.generic.Waterlogging.inWorld(state, world, pos), Block.UPDATE_CLIENTS);
+        world.setBlock(pos, Waterlogging.inWorld(state, world, pos), Block.UPDATE_CLIENTS);
         Build build = BUILD.get();
         if (build != null) build.placed.add(pos);
     }
@@ -321,9 +322,7 @@ public abstract class Component extends StructurePiece {
         return state.canBeReplaced();
     }
 
-    // ------------------------------------------------------------------------------------------------------------
     // 1.7 StructureComponent
-    // ------------------------------------------------------------------------------------------------------------
 
     /** getXWithOffset & getZWithOffset Methods that are actually fixed **/
     //Turns out, this entire time every single minecraft structure is mirrored instead of rotated when facing East and North
@@ -370,7 +369,7 @@ public abstract class Component extends StructurePiece {
         return null;
     }
 
-    /** 1.7 {@code StructureComponent.getMetadataWithOffset}, verbatim (vanilla's rotation table for its own blocks). */
+    /** 1.7 {@code StructureComponent.getMetadataWithOffset}, using vanilla's rotation table for its own blocks. */
     protected int getMetadataWithOffset(LegacyBlock block, int meta) {
         if (block == Vanilla.rail) {
             if (this.coordBaseMode == 1 || this.coordBaseMode == 3) {
@@ -572,8 +571,8 @@ public abstract class Component extends StructurePiece {
     /** A 1.7 door from both halves' metadata (facing/open below, hinge above), as 1.7 kept them. */
     protected static void placeDoorHalves(WorldGenLevel world, int x, int y, int z, LegacyBlock door, int metaBottom, int metaTop) {
         BlockState base = door.state(metaBottom).getBlock().defaultBlockState();
-        setState(world, x, y, z, com.hbm.world.gen.nbt.LegacyStructurePalette.door(base, metaBottom, metaTop));
-        setState(world, x, y + 1, z, com.hbm.world.gen.nbt.LegacyStructurePalette.door(base, metaTop, metaBottom));
+        setState(world, x, y, z, LegacyStructurePalette.door(base, metaBottom, metaTop));
+        setState(world, x, y + 1, z, LegacyStructurePalette.door(base, metaTop, metaBottom));
     }
 
     /** 1.7 {@code Block.isNormalCube}: a full opaque cube that does not conduct... i.e. a redstone conductor. */
@@ -582,9 +581,7 @@ public abstract class Component extends StructurePiece {
         return world.getBlockState(pos).isRedstoneConductor(world, pos);
     }
 
-    // ------------------------------------------------------------------------------------------------------------
     // 1.7 Component: metadata for decoration methods
-    // ------------------------------------------------------------------------------------------------------------
 
     /**
      * Gets metadata for rotatable pillars.
@@ -824,9 +821,7 @@ public abstract class Component extends StructurePiece {
         }
     }
 
-    // ------------------------------------------------------------------------------------------------------------
     // 1.7 Component: loot
-    // ------------------------------------------------------------------------------------------------------------
 
     protected boolean generateInvContents(WorldGenLevel world, BoundingBox box, RandomSource rand, LegacyBlock block, int featureX, int featureY, int featureZ, List<ItemPool.Entry> content, int amount) {
         return generateInvContents(world, box, rand, block, 0, featureX, featureY, featureZ, content, amount);
@@ -975,9 +970,7 @@ public abstract class Component extends StructurePiece {
         if (book != null && writable(x, y, z)) LootGenerator.lootBookLore(world, new BlockPos(x, y, z), book);
     }
 
-    // ------------------------------------------------------------------------------------------------------------
     // 1.7 Component: block placement utilities
-    // ------------------------------------------------------------------------------------------------------------
 
     /**
      * Places blocks underneath location until reaching a solid block; good for foundations
@@ -1359,9 +1352,7 @@ public abstract class Component extends StructurePiece {
      */
     public void makeExtra(WorldGenLevel world, BoundingBox box, LegacyBlock block, int x, int y, int z) {}
 
-    // ------------------------------------------------------------------------------------------------------------
     // Block Selectors
-    // ------------------------------------------------------------------------------------------------------------
 
     /**
      * 1.7 {@code StructureComponent.BlockSelector}: a (block, metadata) pick per position. Selectors are shared (1.7
@@ -1393,8 +1384,8 @@ public abstract class Component extends StructurePiece {
      * 1.7 {@code NBTStructure.transformBlock} for a {@code JigsawPiece.blockTable}: the selector's pick when
      * {@code original} (the piece's own block) has an entry, keyed by the port block's id path; otherwise null.
      */
-    public static @Nullable BlockState blockTablePick(java.util.Map<String, BlockSelector> blockTable, Block original, RandomSource rand) {
-        var id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(original);
+    public static @Nullable BlockState blockTablePick(Map<String, BlockSelector> blockTable, Block original, RandomSource rand) {
+        var id = BuiltInRegistries.BLOCK.getKey(original);
         if (!"hbm".equals(id.getNamespace())) return null;
         BlockSelector selector = blockTable.get(id.getPath());
         return selector == null ? null : selector.pick(rand, 0, 0, 0, false, 0); // fuck the vanilla shit idc

@@ -5,6 +5,7 @@ import dev.golem.core.data.Tags;
 import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -22,7 +23,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 1.7 {@code entity/item/EntityFireworks}: the shell the fireworks box lobs.
  *
- * <p>26.2: 1.7's burst was a hand-rolled {@code ParticleLetter} plus 50 {@code EntityFireworkSparkFX}, sent
+ * <p>26.1: 1.7's burst was a hand-rolled {@code ParticleLetter} plus 50 {@code EntityFireworkSparkFX}, sent
  * over an aux packet. Vanilla now models exactly this - {@code Level.createFireworks} with a coloured
  * {@code FireworkExplosion} - so the burst rides that instead of a bespoke particle and packet pair.
  * The glyph half of 1.7's effect (the box could spell out a character) has no vanilla analogue and is the
@@ -82,7 +83,7 @@ public class EntityFireworks extends CompatEntity {
         level().playSound(null, getX(), getY(), getZ(), SoundEvents.FIREWORK_ROCKET_BLAST,
                 SoundSource.AMBIENT, 20F, 1F + random.nextFloat() * 0.2F);
 
-        dev.golem.core.world.Compat.fireworkBurst(level(), getX(), getY(), getZ(), color);
+        Compat.fireworkBurst(level(), getX(), getY(), getZ(), color);
 
         discard();
     }

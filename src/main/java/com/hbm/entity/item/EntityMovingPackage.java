@@ -116,7 +116,7 @@ public class EntityMovingPackage extends EntityMovingConveyorObject implements I
 
     @Override
     protected void loadData(DataIn input) {
-        // 1.7: kept a slot index per entry so null holes survived; 26.2 has no null stacks, so order is enough
+        // 1.7: kept a slot index per entry so null holes survived; 26.1 has no null stacks, so order is enough
         this.contents = new ArrayList<>(input.read("contents", ItemStack.CODEC.listOf()).orElse(List.of()));
     }
 

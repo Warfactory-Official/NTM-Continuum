@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
  * CLIENT-ONLY: resolves the {@link IUpgradeInfoProvider} of the currently open machine screen, so
  * {@code ItemMachineUpgrade} tooltips can print machine-specific numbers (the 1.12.2
  * {@code addInformation} screen probe). Referenced only from tooltip code paths, which never run on a
- * dedicated server — keeping the {@link Minecraft} touch lazily classloaded.
+ * dedicated server, keeping the {@link Minecraft} touch lazily classloaded.
  */
 public final class UpgradeInfoHelper {
 

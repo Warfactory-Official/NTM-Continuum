@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.items.machine.ItemScraps;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.block.ICrucibleAcceptor;
@@ -18,7 +19,7 @@ import dev.golem.core.data.DataOut;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Base class for all foundry blocks (channels, casters, basins, outlets) — the 1.12.2
+ * Base class for all foundry blocks (channels, casters, basins, outlets), ported from the 1.12.2
  * {@code TileEntityFoundryBase}. Holds exactly ONE molten material at a time ({@link #type} +
  * {@link #amount} quanta) and provides the standard accept/add logic used by pour and flow. The
  * {@link ICrucibleAcceptor} contract lives on the <b>Block</b>, which delegates here.
@@ -62,7 +63,7 @@ public abstract class TileEntityFoundryBase extends TileEntityLoadedBase {
         return stack;
     }
 
-    // --- the ICrucibleAcceptor default behaviour (blocks delegate to these) ---
+    // The ICrucibleAcceptor default behaviour (blocks delegate to these)
 
     /** Standard check with no additional limitations. */
     public boolean canAcceptPartialFlow(Level world, BlockPos p, ForgeDirection side, MaterialStack stack) {
@@ -89,13 +90,13 @@ public abstract class TileEntityFoundryBase extends TileEntityLoadedBase {
         super.preRemoveSideEffects(pos, state);
         if (level == null || level.isClientSide()) return;
         if (amount > 0 && type != null) {
-            com.hbm.items.machine.ItemScraps.spawnMats(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+            ItemScraps.spawnMats(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
                     new MaterialStack(type, amount));
             amount = 0;
         }
     }
 
-    // --- sync (BufPacket) + persistence (1.12.2 keys) ---
+    // Sync (BufPacket) + persistence (1.12.2 keys)
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
@@ -115,7 +116,7 @@ public abstract class TileEntityFoundryBase extends TileEntityLoadedBase {
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        Mats.write(output, "type", this.type); // by name, never the numeric id (History 19ej-ids)
+        Mats.write(output, "type", this.type); // by name, never the numeric id
         output.putInt("amount", this.amount);
     }
 

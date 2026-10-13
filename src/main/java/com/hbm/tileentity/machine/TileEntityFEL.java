@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.client.sound.FELSoundHandler;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -23,16 +24,19 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -41,17 +45,17 @@ import net.minecraft.world.phys.AABB;
 import java.util.List;
 
 /**
- * Free Electron Laser — a straight port of 1.7.10's {@code TileEntityFEL} (original-hbm), the machine that
+ * Free Electron Laser: a straight port of 1.7.10's {@code TileEntityFEL} (1.7), the machine that
  * powers the SILEX.
  *
  * <p>Every tick, while switched on and holding a crystal, it traces a straight line up to <b>24 blocks</b>
  * along its facing at {@code y+1}:
  * <ol>
- *   <li><b>A non-opaque block</b> — the beam passes through and keeps going.</li>
- *   <li><b>A SILEX</b> — if that chamber is aligned on the same axis, sits at least 5 blocks away, and
+ *   <li><b>A non-opaque block</b>: the beam passes through and keeps going.</li>
+ *   <li><b>A SILEX</b>: if that chamber is aligned on the same axis, sits at least 5 blocks away, and
  *       is the first one since the last gap, its {@code mode} is set to this laser's wavelength.
  *       Otherwise the chamber is <b>destroyed</b> and dropped as an item.</li>
- *   <li><b>Anything else opaque</b> (or TNT) — the beam stops there. Liquids are removed; any block with
+ *   <li><b>Anything else opaque</b> (or TNT): the beam stops there. Liquids are removed; any block with
  *       explosion resistance below 75 catches fire 1-in-5 per tick, whatever the wavelength (DRX leaves
  *       {@code fire_digamma}, or {@code digamma_matter} on the polaroid-11 world, with digamma ash below).</li>
  * </ol>
@@ -77,10 +81,10 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
     public boolean isOn;
     /**
      * True until a valid SILEX has ever been hit. <b>Upstream never resets it to true</b>, so once the
-     * laser has found a chamber the GUI's "ERR." indicator stays off for good. Kept verbatim.
+     * laser has found a chamber the GUI's "ERR." indicator stays off for good. This matches upstream.
      */
     public boolean missingValidSilex = true;
-    /** How far the beam reaches this tick — drives the renderer and the client audio gate. */
+    /** How far the beam reaches this tick; drives the renderer and the client audio gate. */
     public int distance;
 
     // client-only
@@ -158,7 +162,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
             // noOcclusion(), so an opacity test would let the beam pass straight through it. Testing
             // for the block explicitly is equivalent for the original and correct for the port.
             if (b.is(ModMachineBlocks.machine_silex.get())) {
-                // Upstream looks up the BE one block FURTHER along the beam and at the FEL's own y —
+                // Upstream looks up the BE one block FURTHER along the beam and at the FEL's own y:
                 // which is exactly where a SILEX core sits, since the beam grazes its y+1 dummy.
                 BlockPos silexPos = new BlockPos(beam.getX() + dir.offsetX, worldPosition.getY(),
                         beam.getZ() + dir.offsetZ);
@@ -173,7 +177,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
                     } else {
                         // Wrong rotation, too close, or a second chamber with no gap: destroy it.
                         level.removeBlock(silexPos, false);
-                        net.minecraft.world.entity.item.ItemEntity drop = new net.minecraft.world.entity.item.ItemEntity(
+                        ItemEntity drop = new ItemEntity(
                                 level, beam.getX() + 0.5, beam.getY() + 0.5, beam.getZ() + 0.5,
                                 new ItemStack(ModMachineBlocks.machine_silex.get()));
                         level.addFreshEntity(drop);
@@ -200,7 +204,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
     /**
      * The 26.1 stand-in for 1.7's {@code Material.isOpaque()}, which was "blocks movement AND is not
      * translucent": a full-cube collision shape that also occludes. Stone qualifies; glass, torches and
-     * air do not — so, exactly as upstream, the beam passes straight through glass and liquids (which
+     * air do not. As upstream does, the beam passes straight through glass and liquids (which
      * makes 1.7's liquid branch in {@link #burn} unreachable; kept for fidelity).
      */
     private static boolean isOpaque(BlockState state, Level level, BlockPos pos) {
@@ -214,7 +218,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
      * <b>explosion resistance</b>, matching the old {@code getExplosionResistance(null)}.
      */
     private void burn(Level level, BlockPos pos, BlockState b) {
-        if (!b.getFluidState().isEmpty() && b.getBlock() instanceof net.minecraft.world.level.block.LiquidBlock) {
+        if (!b.getFluidState().isEmpty() && b.getBlock() instanceof LiquidBlock) {
             lavaHiss(level, pos);
             level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
             return;
@@ -238,7 +242,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
     }
 
     /**
-     * A SILEX only accepts the beam if it lies on the SAME axis — facing either into it or away.
+     * A SILEX only accepts the beam if it lies on the SAME axis, facing either into it or away.
      * Public so {@code FelGameTests} can pin the rule directly.
      */
     public static boolean rotationIsValid(int silexMeta, int felMeta) {
@@ -256,15 +260,13 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
      * rearmost cell (the "extra" dummy {@link com.hbm.blocks.machine.MachineFEL#fillSpace} places at
      * {@code core + facing·−4}).
      *
-     * <p><b>Deliberate deviation.</b> Upstream passed {@code dir} (the facing) as this port's direction,
-     * but a {@code DirPos}'s direction means "the machine's side that faces the connecting cable" —
-     * that is what the graph inverts when it probes a conductor's face, and what
-     * {@code IEnergyConnectorBlock.isPort} matches against. Since the port sits behind the
-     * machine, that direction is {@code facing.getOpposite()}, not {@code facing}; every other ported
-     * machine (assembly, crystallizer, …) already uses the outward convention. With upstream's value a
-     * cable placed at the port <b>fails to connect</b>: {@code isPort} rejects the direction mismatch,
-     * so the cable neither renders as attached nor reports a connection. (In 1.12 the functional half
-     * happened to survive because a plain cable's {@code canConnect} returns true for every side.)
+     * <p><b>Deviation.</b> Upstream passed {@code dir} (the facing) as this port's direction, but a
+     * {@code DirPos}'s direction means "the machine's side that faces the connecting cable": the graph inverts
+     * it when it probes a conductor's face, and {@code IEnergyConnectorBlock.isPort} matches against it. The
+     * port sits behind the machine, so it is {@code facing.getOpposite()}, as in every other ported machine.
+     * With upstream's value a cable at the port <b>fails to connect</b>: {@code isPort} rejects the direction
+     * mismatch, so the cable neither renders as attached nor reports a connection. (In 1.12 a plain cable's
+     * {@code canConnect} returns true for every side, so the functional half survived.)
      */
     public DirPos[] getConPos() {
         ForgeDirection dir = facing();
@@ -274,7 +276,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
 
     /**
      * The audio ramp: it climbs by 2 per tick while firing and falls by 3 when not, clamped 0–60, and
-     * the loop only plays above 10 — so the laser winds up and down instead of clicking on and off.
+     * the loop only plays above 10, so the laser winds up and down instead of clicking on and off.
      * Pitch tracks the ramp ({@code (n − 10)/100 + 0.5}).
      */
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFEL te) {
@@ -283,11 +285,11 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
             level.setBlocksDirty(pos, state, state); // the beam length changed -> re-render
         }
 
-        // NOTE: pow(2), not the server's 3^ordinal — 1.7's inconsistency, preserved.
+        // pow(2), not the server's 3^ordinal: 1.7's inconsistency, preserved.
         boolean firing = te.power > powerReq * Math.pow(2, te.mode.strength())
                 && te.isOn && te.mode != EnumWavelengths.NULL && te.distance - 3 > 0;
-        te.audioDuration = net.minecraft.util.Mth.clamp(te.audioDuration + (firing ? 2 : -3), 0, 60);
-        com.hbm.client.sound.FELSoundHandler.tickLoop(te);
+        te.audioDuration = Mth.clamp(te.audioDuration + (firing ? 2 : -3), 0, 60);
+        FELSoundHandler.tickLoop(te);
     }
 
     public boolean isAudioPlaying() { return audioDuration > 10; }
@@ -334,8 +336,8 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
     @Override public long getMaxPower() { return maxPower; }
 
     /**
-     * NOTE: upstream's {@code serialize} deliberately does <b>not</b> call {@code super.serialize}
-     * (unlike the SILEX's), so the FEL never syncs its inventory over the BufPacket. Preserved — the
+     * Upstream's {@code serialize} does <b>not</b> call {@code super.serialize}
+     * (unlike the SILEX's), so the FEL never syncs its inventory over the BufPacket. This is preserved: the
      * menu handles the slots.
      */
     @Override

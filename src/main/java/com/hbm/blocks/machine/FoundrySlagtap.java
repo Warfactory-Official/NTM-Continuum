@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/** Foundry slagtap (1.12.2 {@code FoundrySlagtap}) — the outlet variant that dumps molten waste into
+/** Foundry slagtap (1.12.2 {@code FoundrySlagtap}), the outlet variant that dumps molten waste into
  * the world as dynamic slag piles (raytraces 15 blocks down). */
 public class FoundrySlagtap extends FoundryOutlet {
 

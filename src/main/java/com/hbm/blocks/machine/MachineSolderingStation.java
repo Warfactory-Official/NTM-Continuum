@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Soldering Station: a small the folded core multiblock (dims {@code {0,0,1,0,1,0}} — core + one
+ * Soldering Station: a small folded-core multiblock (dims {@code {0,0,1,0,1,0}}: core + one
  * cell forward + one left). Implements {@link IEnergyConnectorBlock} (cables) and
  * {@link IFluidConnectorBlockMK2} (ducts), connecting only at the core's real ports ({@code getConPos}),
  * and {@link WorldlyContainerHolder} so hoppers/pipes reach the core inventory. Server-tick only (no

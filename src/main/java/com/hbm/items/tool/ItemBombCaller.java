@@ -6,6 +6,7 @@ import com.hbm.sound.ModSounds;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
+import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
@@ -42,7 +43,7 @@ public class ItemBombCaller extends CompatItem {
 
         /** The {@link BomberPayload} name, the lower-case constant name ({@code "carpet"}). */
         public String payload() {
-            return name().toLowerCase(java.util.Locale.ROOT);
+            return name().toLowerCase(Locale.ROOT);
         }
     }
 

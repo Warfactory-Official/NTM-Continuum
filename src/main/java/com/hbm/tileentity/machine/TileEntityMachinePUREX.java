@@ -16,7 +16,7 @@ import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
-import com.hbm.modules.machine.ModuleMachinePUREX;
+import com.hbm.module.machine.ModuleMachinePUREX;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -42,12 +42,12 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * PUREX reprocessing plant — a 1:1 port of the 1.12.2 {@code TileEntityMachinePUREX}. 13 slots (0 battery,
+ * PUREX reprocessing plant, a 1:1 port of the 1.12.2 {@code TileEntityMachinePUREX}. 13 slots (0 battery,
  * 1 blueprint, 2–3 upgrades, 4–6 item inputs, 7–12 item outputs), three 24,000 mB reagent tanks and one
  * 24,000 mB product tank whose types are set by the selected recipe, and the original's dynamic power
  * ceiling: {@code maxPower = recipe.power * 100}, floored at the current buffer and at 1,000,000.
  *
- * <p>Reagents arrive through the fluid network only — the original has no canister bays. Automation reaches
+ * <p>Reagents arrive through the fluid network only. The original has no canister bays. Automation reaches
  * slots 4–12 through {@link WorldlyContainer}, and an input holding something the current recipe cannot use
  * may be pulled back out ({@code isSlotClogged}) so a wrong item can never deadlock the machine.
  *
@@ -68,7 +68,7 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase
     public long power;
     public long maxPower = BASE_MAX_POWER;
     public boolean didProcess;
-    /** Whether a block sits 5 above the core — the renderer's upper frame section (polled once a second). */
+    /** Whether a block sits 5 above the core: the renderer's upper frame section (polled once a second). */
     public boolean frame;
 
     // --- client-only animation state (advanced while didProcess, like the 1.12.2 anim) ---
@@ -77,7 +77,7 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase
 
     public final ModuleMachinePUREX purexModule;
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
-    /** Cached port ring — queried every tick and again by {@code MachinePUREX.canConnect} during meshing. */
+    /** Cached port ring, queried every tick and again by {@code MachinePUREX.canConnect} during meshing. */
     private DirPos[] conPos;
 
     public TileEntityMachinePUREX(BlockPos pos, BlockState state) {
@@ -93,7 +93,7 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePUREX te) {
         for (DirPos port : te.getConPos()) {
             te.trySubscribe(level, port);
-            for (FluidTankNTM tank : te.inputTanks) if (tank.getTankType() != com.hbm.inventory.fluid.Fluids.NONE) te.trySubscribe(tank.getTankType(), level, port);
+            for (FluidTankNTM tank : te.inputTanks) if (tank.getTankType() != Fluids.NONE) te.trySubscribe(tank.getTankType(), level, port);
             for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, port);
         }
 
@@ -156,7 +156,7 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase
         if (slot == 0) return Library.isBattery(stack);
         if (slot == 1) return stack.getItem() instanceof ItemBlueprints;
         if (slot >= 2 && slot <= 3) return Library.isMachineUpgrade(stack);
-        if (slot >= 7 && slot <= 12) return true; // outputs — the module writes them via setStackInSlot
+        if (slot >= 7 && slot <= 12) return true; // outputs; the module writes them via setStackInSlot
         return purexModule.isItemValidForPool(slot, stack, inventory.getStackInSlot(1)); // inputs 4..6
     }
 
@@ -235,7 +235,7 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase
     }
 
     @Override public boolean hasPermission(Player player) {
-        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMachinePUREX menu
+        return player.containerMenu instanceof ContainerMachinePUREX menu
                 && menu.getPurex() == this && menu.stillValid(player);
     }
 

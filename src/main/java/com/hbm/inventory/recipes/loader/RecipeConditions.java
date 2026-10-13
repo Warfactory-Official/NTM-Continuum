@@ -1,7 +1,9 @@
 package com.hbm.inventory.recipes.loader;
 
+import com.hbm.Constants;
 import com.hbm.config.GeneralConfig;
 import dev.golem.core.Ids;
+import dev.golem.core.world.RecipeTables;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
@@ -62,7 +64,7 @@ public final class RecipeConditions {
     public static synchronized void init() {
         if (registered) return;
         registered = true;
-        FLAGS.forEach(dev.golem.core.world.RecipeTables::flag);
+        FLAGS.forEach(RecipeTables::flag);
     }
 
     /** Whether every literal of {@code requires} holds now (null or empty: always). {@code where} names the row in logs. */
@@ -77,7 +79,7 @@ public final class RecipeConditions {
             } else {
                 BooleanSupplier supplier = FLAGS.get(flag);
                 if (supplier == null) {
-                    com.hbm.Constants.LOG.warn("Recipe {} requires the unknown flag {}; leaving it out", where, literal);
+                    Constants.LOG.warn("Recipe {} requires the unknown flag {}; leaving it out", where, literal);
                     return false;
                 }
                 value = supplier.getAsBoolean();

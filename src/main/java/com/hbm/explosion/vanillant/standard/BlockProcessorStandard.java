@@ -1,6 +1,7 @@
 package com.hbm.explosion.vanillant.standard;
 
 import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.IBlockExplodedVNT;
 import com.hbm.explosion.vanillant.interfaces.IBlockMutator;
 import com.hbm.explosion.vanillant.interfaces.IBlockProcessor;
 import com.hbm.explosion.vanillant.interfaces.IDropChanceMutator;
@@ -9,6 +10,7 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Iterator;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -76,8 +78,8 @@ public class BlockProcessorStandard implements IBlockProcessor {
 
             Block block = state.getBlock();
             // 1.7 onBlockExploded: a block that handles its own blast (the fluid tank, the refinery) keeps its cell
-            if (block instanceof com.hbm.explosion.vanillant.IBlockExplodedVNT hooked
-                    && world instanceof net.minecraft.server.level.ServerLevel server
+            if (block instanceof IBlockExplodedVNT hooked
+                    && world instanceof ServerLevel server
                     && hooked.onVNTExploded(server, pos, state, explosion)) {
                 iterator.remove();
                 continue;
@@ -121,7 +123,7 @@ public class BlockProcessorStandard implements IBlockProcessor {
 
     /**
      * Fortune is carried by an enchanted tool in the modern loot context rather than by an int, and
-     * nothing in the ported missile set asks for it — so the level is recorded and, for now, only read
+     * nothing in the ported missile set asks for it, so the level is recorded and only read
      * back by {@link #withFortune} consumers.
      */
     public BlockProcessorStandard setFortune(int fortune) {

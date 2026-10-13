@@ -1,6 +1,7 @@
 package com.hbm.tileentity.bomb;
 
 import com.hbm.Constants;
+import com.hbm.api.data.MachineDataMaps;
 import com.hbm.explosion.ExplosionNukeCustom;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -156,7 +157,7 @@ public class TileEntityNukeCustom extends TileEntityNukeBomb {
 
     @Override
     public boolean isReady() {
-        // 1.7 had no readiness gate: an empty custom nuke simply does nothing when it "explodes".
+        // 1.7 had no readiness gate: an empty custom nuke does nothing when it "explodes".
         return true;
     }
 
@@ -218,7 +219,7 @@ public class TileEntityNukeCustom extends TileEntityNukeBomb {
         euph = buffer.readFloat();
     }
 
-    // ---- the ingredient table ----
+    // The ingredient table
 
     public enum EnumBombType {
         TNT("TNT"),
@@ -267,13 +268,13 @@ public class TileEntityNukeCustom extends TileEntityNukeBomb {
      * (items) and {@code hbm:fluid/custom_nuke} (a full fluid cell by its fluid; 1.7's metadata cells), MachineDataMaps.
      */
     public static @Nullable CustomNukeEntry entryFor(ItemStack stack) {
-        com.hbm.api.data.MachineDataMaps.NukeEntry entry;
+        MachineDataMaps.NukeEntry entry;
         if (stack.getItem() instanceof ItemCell) {
             FluidType fluid = ItemCell.getFluidType(stack);
             if (fluid == null || !ItemCell.isFullCell(stack, fluid)) return null;
-            entry = com.hbm.api.data.MachineDataMaps.CUSTOM_NUKE_CELL.get(Fluids.toVanilla(fluid));
+            entry = MachineDataMaps.CUSTOM_NUKE_CELL.get(Fluids.toVanilla(fluid));
         } else {
-            entry = com.hbm.api.data.MachineDataMaps.CUSTOM_NUKE.get(stack.getItem());
+            entry = MachineDataMaps.CUSTOM_NUKE.get(stack.getItem());
         }
         return entry == null ? null : new CustomNukeEntry(entry.type(), entry.value(), entry.op());
     }

@@ -29,9 +29,9 @@ import net.minecraft.world.item.ItemStack;
  *   <li>{@code hbm:gas_centrifuge} in {@code data/hbm/recipe/gas_centrifuge/}: what JEI shows,
  *       {@code {"input": {type, amount}, "outputs": [items], "high_speed": bool (optional), "centrifuges": n}}.</li>
  * </ul>
- * The two stay separate on purpose: the machine converts a real UF6/PUF6/WATZ tank into pseudo-fluid and passes the enriched
- * pseudo-fluid on to the next aligned centrifuge; collapsing that into ordinary fluid recipes loses the cascade. Converted
- * once from the Java tables (7 pseudo-fluids, 3 conversions, 4 display rows).
+ * The two stay separate because the machine converts a real UF6/PUF6/WATZ tank into pseudo-fluid and passes the enriched
+ * pseudo-fluid on to the next aligned centrifuge; ordinary fluid recipes would lose the cascade. The default data is
+ * 7 pseudo-fluids, 3 conversions and 4 display rows.
  *
  * <p>Pseudo-fluids are saved by name. 1.7's seven are constants here because the machine names two of them ({@code NUF6} is
  * a new tank's type, {@code LEUF6} the one that is fed onward), and their values come from the files; a file with a new name

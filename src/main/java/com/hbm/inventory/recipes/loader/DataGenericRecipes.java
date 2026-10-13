@@ -1,5 +1,6 @@
 package com.hbm.inventory.recipes.loader;
 
+import com.hbm.api.data.FluidDataMaps;
 import com.hbm.config.GeneralConfig;
 import com.mojang.serialization.MapCodec;
 import dev.golem.core.world.RecipeFields;
@@ -44,7 +45,7 @@ public abstract class DataGenericRecipes<T extends GenericRecipe> extends Generi
         table.changed.register(this::reload);
         // icons and outputs that are filled containers take their tint from this map, which a datapack load (an addon's
         // patch) may apply after the recipes: rebuild the stacks when it changes
-        com.hbm.api.data.FluidDataMaps.FLUID_CONTAINERS.changed.register(() -> {
+        FluidDataMaps.FLUID_CONTAINERS.changed.register(() -> {
             if (!recipeOrderedList.isEmpty()) reload();
         });
     }

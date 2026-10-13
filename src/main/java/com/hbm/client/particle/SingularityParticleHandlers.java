@@ -7,6 +7,9 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
 /** Client handlers for the explosion effects required by the antimatter dependency path. */
@@ -21,7 +24,7 @@ public final class SingularityParticleHandlers {
         HbmEffectNT.Smoke_FoamSplash.setHandler(SingularityParticleHandlers::smokeFoamSplash);
     }
 
-    private static void blockBurst(net.minecraft.world.level.Level level, double x, double y, double z,
+    private static void blockBurst(Level level, double x, double y, double z,
                                    CompoundTag data) {
         if (level instanceof ClientLevel client) {
             BlockPos pos = BlockPos.containing(x, y, z);
@@ -29,12 +32,12 @@ public final class SingularityParticleHandlers {
         }
     }
 
-    private static void smokeCloud(net.minecraft.world.level.Level level, double x, double y, double z,
+    private static void smokeCloud(Level level, double x, double y, double z,
                                    CompoundTag data) {
         if (!(level instanceof ClientLevel client)) return;
         int count = Math.max(1, Tags.getIntOr(data, "count", 0));
         for (int i = 0; i < count; i++) {
-            net.minecraft.util.RandomSource random = client.getRandom();
+            RandomSource random = client.getRandom();
             // 1.7 ClientProxy smoke "cloud": count / 100 and count / 150 are INT divisions
             double motionY = random.nextGaussian() * (1 + (count / 100));
             double motionX = random.nextGaussian() * (1 + (count / 150));
@@ -44,12 +47,12 @@ public final class SingularityParticleHandlers {
         }
     }
 
-    private static void smokeShock(net.minecraft.world.level.Level level, double x, double y, double z,
+    private static void smokeShock(Level level, double x, double y, double z,
                                    CompoundTag data) {
         if (!(level instanceof ClientLevel client)) return;
         int count = Math.max(1, Tags.getIntOr(data, "count", 0));
         double strength = Tags.getDoubleOr(data, "strength", 0D);
-        net.minecraft.util.RandomSource random = client.getRandom();
+        RandomSource random = client.getRandom();
         double angle = random.nextInt(360);
         double vx = strength * Math.cos(angle), vz = -strength * Math.sin(angle);
         for (int i = 0; i < count; i++) {
@@ -63,11 +66,11 @@ public final class SingularityParticleHandlers {
     }
 
     /** 1.7 ClientProxy smoke "radial": every axis on a gaussian scaled by {@code 1 + count / 50} (INT division). */
-    private static void smokeRadial(net.minecraft.world.level.Level level, double x, double y, double z,
+    private static void smokeRadial(Level level, double x, double y, double z,
                                     CompoundTag data) {
         if (!(level instanceof ClientLevel client)) return;
         int count = Math.max(1, Tags.getIntOr(data, "count", 0));
-        net.minecraft.util.RandomSource random = client.getRandom();
+        RandomSource random = client.getRandom();
         for (int i = 0; i < count; i++) {
             double motionY = random.nextGaussian() * (1 + (count / 50));
             double motionX = random.nextGaussian() * (1 + (count / 50));
@@ -80,12 +83,12 @@ public final class SingularityParticleHandlers {
      * 1.7 ClientProxy smoke "foamSplash": {@code count} foam particles on a ring of radius {@code range}
      * (0 when absent, as every 1.7 sender leaves it), each with max age 50 and no initial motion.
      */
-    private static void smokeFoamSplash(net.minecraft.world.level.Level level, double x, double y, double z,
+    private static void smokeFoamSplash(Level level, double x, double y, double z,
                                         CompoundTag data) {
         if (!(level instanceof ClientLevel client)) return;
         int count = Math.max(1, Tags.getIntOr(data, "count", 0));
         double strength = Tags.getDoubleOr(data, "range", 0D);
-        net.minecraft.util.RandomSource random = client.getRandom();
+        RandomSource random = client.getRandom();
         double vx = strength, vz = 0D;
         for (int i = 0; i < count; i++) {
             double[] rotated = rotateY(vx, vz, Math.toRadians(random.nextFloat() * 360F));
@@ -101,8 +104,8 @@ public final class SingularityParticleHandlers {
 
     /** 1.7 Vec3.rotateAroundY with float trig, as MathHelper did. */
     private static double[] rotateY(double x, double z, double angle) {
-        float cos = net.minecraft.util.Mth.cos((float) angle);
-        float sin = net.minecraft.util.Mth.sin((float) angle);
+        float cos = Mth.cos((float) angle);
+        float sin = Mth.sin((float) angle);
         return new double[] {x * cos + z * sin, z * cos - x * sin};
     }
 }

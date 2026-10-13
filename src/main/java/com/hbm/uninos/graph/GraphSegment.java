@@ -53,7 +53,7 @@ public final class GraphSegment<D> {
      */
     @Nullable GraphSegment<D> forwardTo;
     /**
-     * Structural version for the off-thread compiler's validate-at-swap protocol; bit MARKS deliberately do not bump - losing a fresh ABSENT mark only re-probes.
+     * Structural version for the off-thread compiler's validate-at-swap protocol. Bit MARKS do not bump; losing a fresh ABSENT mark only re-probes.
      */
     int structMod;
     int floodStamp;

@@ -5,6 +5,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
+import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -15,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
 public final class TurbofanRenderer extends GemBER<TileEntityMachineTurbofan, TurbofanRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/turbofan.obj"));
+            Ids.of(Constants.MOD_ID, "models/machines/turbofan.obj"));
     // Culled, as 1.7 RenderTurbofan enables GL_CULL_FACE: turbofan.obj's Blades carry 136 back-to-back face pairs on
     // the same vertices (and Body 32), so drawing both sides z-fights them.
     private final Surface body = Surface.cutout(
