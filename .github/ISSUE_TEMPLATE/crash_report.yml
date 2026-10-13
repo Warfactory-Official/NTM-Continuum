@@ -1,0 +1,91 @@
+name: Crash report
+description: The game or server crashed, or failed to start.
+labels: ["bug", "crash"]
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you report
+      options:
+        - label: I searched the existing issues and this crash has not been reported yet.
+          required: true
+        - label: I am using the latest NTM - Continuum and Golem Core versions for my Minecraft version, and the Golem Core jar matches my Minecraft version and loader.
+          required: true
+
+  - type: dropdown
+    id: target
+    attributes:
+      label: Minecraft version and loader
+      options:
+        - 26.1.2 NeoForge
+        - 26.1.2 Fabric
+        - 1.21.1 NeoForge
+        - 1.21.1 Fabric
+        - 1.20.1 Forge
+        - 1.20.1 Fabric
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: NTM - Continuum version
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: golem
+    attributes:
+      label: Golem Core version
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: when
+    attributes:
+      label: When did it crash?
+      options:
+        - While the game was starting
+        - While loading or creating a world / joining a server
+        - During play
+        - On a dedicated server
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What were you doing?
+      description: What you did right before the crash, and whether you can make it happen again.
+    validations:
+      required: true
+
+  - type: input
+    id: crash
+    attributes:
+      label: Crash report
+      description: |
+        Upload the crash report to https://mclo.gs and paste the link. It is in `crash-reports/` in your game
+        folder. On NeoForge/Forge also include any `crash-*-fml.txt` from the same time, it often names the real cause.
+      placeholder: https://mclo.gs/...
+    validations:
+      required: true
+
+  - type: input
+    id: log
+    attributes:
+      label: Full log
+      description: Upload `logs/latest.log` (or `logs/debug.log` if present) to https://mclo.gs and paste the link.
+      placeholder: https://mclo.gs/...
+
+  - type: textarea
+    id: mods
+    attributes:
+      label: Other mods
+      description: |
+        Other mods or the modpack you use (name and version). Does it also crash with only NTM - Continuum,
+        Golem Core (and Fabric API on Fabric) installed?
+      placeholder: "Modpack X 1.2 / Sodium 0.6.0, JEI 19.21 ... Also crashes without them: yes / no / not tested"

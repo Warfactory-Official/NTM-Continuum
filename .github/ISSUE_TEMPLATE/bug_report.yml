@@ -1,0 +1,107 @@
+name: Bug report
+description: Something in NTM - Continuum does not work as it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! If the game **crashed**, use the *Crash report* form instead.
+        If something works but **differs from HBM's Nuclear Tech Mod for 1.7.10**, use the *Differs from 1.7.10* form.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you report
+      options:
+        - label: I searched the existing issues and this has not been reported yet.
+          required: true
+        - label: I am using the latest NTM - Continuum and Golem Core versions for my Minecraft version.
+          required: true
+
+  - type: dropdown
+    id: target
+    attributes:
+      label: Minecraft version and loader
+      options:
+        - 26.1.2 NeoForge
+        - 26.1.2 Fabric
+        - 1.21.1 NeoForge
+        - 1.21.1 Fabric
+        - 1.20.1 Forge
+        - 1.20.1 Fabric
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: NTM - Continuum version
+      description: The version in the jar name or the mod list, e.g. `0.1.0`.
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: golem
+    attributes:
+      label: Golem Core version
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: side
+    attributes:
+      label: Where does it happen?
+      options:
+        - Singleplayer
+        - Multiplayer (dedicated server)
+        - Multiplayer (LAN / open to LAN)
+        - Both singleplayer and multiplayer
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What went wrong, and what did you expect to happen instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The exact steps, starting from a new world if you can. Name the blocks, items and machines involved.
+      placeholder: |
+        1. Place a ...
+        2. Connect it to ...
+        3. Right-click ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: mods
+    attributes:
+      label: Other mods
+      description: |
+        Other mods or the modpack you use (name and version). Performance and shader mods matter too
+        (Sodium, Embeddium, Iris, Oculus, ...). Please say whether the bug also happens with only
+        NTM - Continuum, Golem Core (and Fabric API on Fabric) installed.
+      placeholder: "Modpack X 1.2 / Sodium 0.6.0, JEI 19.21 ... Also happens without them: yes / no / not tested"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log
+      description: |
+        `logs/latest.log` from your game folder. For a long log, upload it to https://mclo.gs and paste the link.
+      render: text
+
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots or video
+      description: Drag images or videos here if they help show the problem.

@@ -1,0 +1,46 @@
+name: Suggestion
+description: An idea for compatibility, quality of life or anything else.
+labels: ["suggestion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        NTM - Continuum's content follows HBM's Nuclear Tech Mod for 1.7.10. Suggestions for compatibility with
+        other mods, configuration options, performance and quality of life are welcome. New content that 1.7.10
+        does not have is usually out of scope.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you suggest
+      options:
+        - label: I searched the existing issues and this has not been suggested yet.
+          required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of suggestion
+      options:
+        - Compatibility with another mod
+        - Configuration option
+        - Performance
+        - Quality of life
+        - Addon API (for addon developers)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What should change, and why would it help?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: Other mods involved (with links), examples, screenshots.

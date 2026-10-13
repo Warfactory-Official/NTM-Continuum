@@ -1,0 +1,83 @@
+name: Differs from 1.7.10
+description: Something works differently than in HBM's Nuclear Tech Mod for Minecraft 1.7.10.
+labels: ["1.7 parity"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        NTM - Continuum aims to match **HBM's Nuclear Tech Mod for 1.7.10** as closely as possible: machines,
+        recipes, numbers, GUIs, models and effects. If something differs from 1.7.10, tell us here.
+
+        Differences from the 1.12.2 version or from other ports are not bugs on their own; 1.7.10 is the reference.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you report
+      options:
+        - label: I searched the existing issues and this difference has not been reported yet.
+          required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Recipe or crafting
+        - Machine behaviour or numbers
+        - GUI / interface
+        - Model, texture or visual effect
+        - Sound
+        - World generation
+        - Weapons, armour or tools
+        - Radiation, hazards or effects
+        - Mobs or entities
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target
+    attributes:
+      label: Minecraft version and loader
+      description: Where you saw the difference.
+      options:
+        - 26.1.2 NeoForge
+        - 26.1.2 Fabric
+        - 1.21.1 NeoForge
+        - 1.21.1 Fabric
+        - 1.20.1 Forge
+        - 1.20.1 Fabric
+        - All of them / not version-specific
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: NTM - Continuum version
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: original
+    attributes:
+      label: How it works in 1.7.10
+      description: The 1.7.10 behaviour. Screenshots, a wiki page or the source code location help a lot.
+    validations:
+      required: true
+
+  - type: textarea
+    id: port
+    attributes:
+      label: How it works in NTM - Continuum
+      description: What happens instead, and how to see it (blocks, items, machines involved).
+    validations:
+      required: true
+
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots
+      description: Side-by-side screenshots of both versions are the clearest evidence.
