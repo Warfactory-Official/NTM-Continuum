@@ -8,12 +8,15 @@ import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.IBlockExplodedVNT;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import java.util.function.BiConsumer;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -157,6 +160,27 @@ public class MachineFluidTank extends BlockMultiblockMachine implements IFluidCo
     }
 
     /** 1.7: a blown-open machine opens no GUI. */
+    /** 1.7 {@code onBlockActivated}: a sneak-click with a fluid identifier sets the tank's type (not on a blown tank). */
+    @Override
+    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
+                                          InteractionHand hand, ItemStack stack, BlockHitResult hit) {
+        if (!player.isShiftKeyDown() || !(stack.getItem() instanceof IItemFluidId identifier)) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineFluidTank tank) || tank.hasExploded) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        if (!level.isClientSide()) {
+            BlockPos core = tank.getBlockPos();
+            FluidType type = identifier.getType(level, core.getX(), core.getY(), core.getZ(), stack);
+            tank.tank.setTankType(type);
+            tank.setChanged();
+            player.sendSystemMessage(Component.literal("Changed type to ")
+                    .withStyle(ChatFormatting.YELLOW).append(type.getDisplayName()).append("!"));
+        }
+        return InteractionResult.SUCCESS;
+    }
+
     @Override
     protected InteractionResult useAtCore(BlockState state, Level level, BlockPos core,
             Player player, BlockHitResult hit) {

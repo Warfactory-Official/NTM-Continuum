@@ -9,7 +9,6 @@ import com.hbm.entity.missile.EntitySoyuz;
 import com.hbm.inventory.container.ContainerSoyuzLauncher;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.inventory.fluid.tank.CanisterBays;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModSatelliteItems;
@@ -23,6 +22,7 @@ import com.hbm.sound.ModPowerGenSounds;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -103,8 +103,8 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
                 this.trySubscribe(tanks[1].getTankType(), level, port);
             }
         }
-        CanisterBays.process(inventory, tanks[0], 4, 5, before -> { });
-        CanisterBays.process(inventory, tanks[1], 6, 7, before -> { });
+        MachineFluidContainerIO.load(tanks[0], inventory, 4, 5);
+        MachineFluidContainerIO.load(tanks[1], inventory, 6, 7);
         power = Library.chargeTEFromItems(inventory, SLOT_BATTERY, power, maxPower);
         rocketType = rocketType();
 

@@ -4,6 +4,8 @@ import com.hbm.inventory.SlotCraftingOutput;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.items.machine.IItemFluidId;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -96,8 +98,14 @@ public class ContainerCrystallizer extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
+            } else if (Library.isBattery(stack)) {
+                if (!this.moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
+            } else if (stack.getItem() instanceof IItemFluidId) {
+                if (!this.moveItemStackTo(stack, 7, 8, false)) return ItemStack.EMPTY;
+            } else if (Library.isMachineUpgrade(stack)) {
+                if (!this.moveItemStackTo(stack, 5, 7, false)) return ItemStack.EMPTY;
             } else {
-                if (!this.moveItemStackTo(stack, 0, MACHINE_SLOTS, false)) return ItemStack.EMPTY;
+                if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();

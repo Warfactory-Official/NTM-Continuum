@@ -7,7 +7,6 @@ import com.hbm.sound.ModSounds;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineTurbofan;
@@ -86,7 +85,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         fan.output = 0;
         fan.consumption = 0;
         fan.updateFuelType();
-        fan.loadTank(level);
+        if (MachineFluidContainerIO.load(fan.tank, fan.inventory, 0, 1)) fan.setChanged();
         fan.blood.setTankType(Fluids.BLOOD);
         fan.wasOn = false;
 
@@ -154,29 +153,6 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         if (!(id.getItem() instanceof IItemFluidId identifier)) return;
         FluidType type = identifier.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         if (type != tank.getTankType()) tank.setTankType(type);
-    }
-
-    private void loadTank(Level level) {
-        ItemStack in = inventory.getStackInSlot(0);
-        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (!in.isEmpty() && MachineFluidContainerIO.loadInfinite(tank, in)) {
-            setChanged();
-            return;
-        }
-        if (in.isEmpty() || !(in.getItem() instanceof IFillableItem fillable)) return;
-        int held = fillable.getFill(in);
-        FluidType heldType = fillable.getFirstFluidType(in);
-        if (held <= 0 || heldType == Fluids.NONE) return;
-        int addable = tank.fill(heldType, held, false);
-        if (addable <= 0) return;
-        ItemStack work = in.copy();
-        work.setCount(1);
-        int taken = fillable.tryEmpty(heldType, addable, work);
-        if (taken <= 0 || !inventory.insertItem(1, work.copy(), true).isEmpty()) return;
-        tank.fill(heldType, taken, true);
-        inventory.extractItem(0, 1, false);
-        inventory.insertItem(1, work, false);
-        setChanged();
     }
 
     private void applyExhaust(Level level, int amountToBurn) {

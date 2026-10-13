@@ -7,7 +7,6 @@ import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.api.item.IDesignatorItem;
 import com.hbm.entity.missile.EntityMissileAntiBallistic;
@@ -20,11 +19,9 @@ import com.hbm.entity.missile.EntityMissileTier2;
 import com.hbm.entity.missile.EntityMissileTier3;
 import com.hbm.entity.missile.EntityMissileTier4;
 import com.hbm.interfaces.IBomb.BombReturnCode;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModMissileItems;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.weapon.ItemMissileStandard;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -47,7 +44,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -233,54 +229,14 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         this.prevRedstonePower = this.redstonePower;
 
         this.power = Library.chargeTEFromItems(inventory, 2, power, maxPower);
-        loadTank(tanks[0], 3, 4);
-        loadTank(tanks[1], 5, 6);
+        MachineFluidContainerIO.load(tanks[0], inventory, 3, 4);
+        MachineFluidContainerIO.load(tanks[1], inventory, 5, 6);
 
         if (this.isMissileValid() && inventory.getStackInSlot(0).getItem() instanceof ItemMissileStandard missile) {
             setFuel(missile);
         }
 
         this.networkPackNT();
-    }
-
-    /** Drains a fluid container in {@code inSlot} into {@code tank}, emptied container to {@code outSlot}. */
-    private void loadTank(FluidTankNTM tank, int inSlot, int outSlot) {
-        ItemStack in = inventory.getStackInSlot(inSlot);
-        if (in.isEmpty() || tank.getTankType() == Fluids.NONE) return;
-
-        // 1.7 FluidTank.loadTank runs FluidLoaderInfinite first: the infinite barrel (any fluid) and the typed infinite
-        // items fill a typed tank and are never consumed. This method's fillable branch reads getFirstFluidType, which
-        // is NONE for the untyped barrel, so without this the barrel sat in the pad's fuel slot doing nothing.
-        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
-            setChanged();
-            return;
-        }
-
-        if (in.getItem() instanceof IFillableItem fillable) {
-            int held = fillable.getFill(in);
-            FluidType heldType = fillable.getFirstFluidType(in);
-            if (held <= 0 || heldType != tank.getTankType()) return;
-            int addable = tank.fill(heldType, held, false);
-            if (addable <= 0) return;
-            ItemStack work = in.copy();
-            work.setCount(1);
-            int taken = fillable.tryEmpty(heldType, addable, work);
-            if (taken <= 0 || !inventory.insertItem(outSlot, work.copy(), true).isEmpty()) return;
-            tank.fill(heldType, taken, true);
-            inventory.extractItem(inSlot, 1, false);
-            inventory.insertItem(outSlot, work, false);
-            setChanged();
-        } else if (in.getItem() instanceof ItemFluidBucket) {
-            FluidType fluid = ItemFluidBucket.getFluid(in);
-            if (fluid != tank.getTankType()) return;
-            if (tank.fill(fluid, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return;
-            ItemStack empty = new ItemStack(Items.BUCKET);
-            if (!inventory.insertItem(outSlot, empty.copy(), true).isEmpty()) return;
-            tank.fill(fluid, ItemFluidBucket.VOLUME, true);
-            inventory.extractItem(inSlot, 1, false);
-            inventory.insertItem(outSlot, empty, false);
-            setChanged();
-        }
     }
 
     /** Conforms both tanks to whichever fuel pair the loaded missile burns. */
@@ -542,10 +498,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        // Slot 0 only, as upstream: a pad accepts a missile from a pipe and nothing else. Slots 4/6
-        // must stay true so loadTank's own inserts are not rejected (the chemplant convention).
-        if (slot == 0) return this.isMissileValid(stack);
-        return slot == 4 || slot == 6;
+        return slot == 0 && this.isMissileValid(stack);
     }
 
     // --- power + fluid ---

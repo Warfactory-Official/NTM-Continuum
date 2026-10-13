@@ -1,6 +1,7 @@
 package com.hbm.api.fluidmk2;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -39,7 +40,7 @@ public interface IFluidReceiverMK2 extends IFluidUserMK2 {
      * each port, as in 1.7; a net reaching the tile through a port it did not subscribe at gives it nothing.
      */
     default void trySubscribe(FluidType type, Level world, int x, int y, int z, ForgeDirection dir) {
-        PortClaims.claim(world, x, y, z, dir, this, type, PortClaims.SUBSCRIBE);
+        if (PortClaims.claim(world, x, y, z, dir, this, type, PortClaims.SUBSCRIBE)) BlockFluidDuct.portClaimed(world, new BlockPos(x, y, z));
     }
 
     /** 1.7 {@code IFluidStandardReceiver.subscribeToAllAround}: {@link #trySubscribe} on all six sides of {@code tile}. */

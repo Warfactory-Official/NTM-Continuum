@@ -6,9 +6,12 @@ import com.hbm.blocks.machine.MachineChemicalFactory;
 import com.hbm.inventory.container.ContainerMachineChemicalFactory;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
+import com.hbm.items.ModFluidNetItems;
+import com.hbm.items.ModItems;
 import com.hbm.items.ModUpgradeItems;
 import com.hbm.items.ModToolItems;
 import com.hbm.items.machine.ItemBlueprints;
+import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.items.tool.ItemBlowtorch;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -37,6 +40,7 @@ public final class ChemicalFactoryGameTests {
         TESTS.function("chemical_factory_coolant_gate", 40, () -> ChemicalFactoryGameTests::coolantGate);
         TESTS.function("chemical_factory_fluid_return", 20, () -> ChemicalFactoryGameTests::sameFluidReturn);
         TESTS.function("chemical_factory_container_io", 20, () -> ChemicalFactoryGameTests::containerIo);
+        TESTS.function("chemical_factory_registry_containers", 20, () -> ChemicalFactoryGameTests::registryContainers);
         TESTS.function("chemical_factory_upgrades_power", 40, () -> ChemicalFactoryGameTests::upgradesAndPower);
         TESTS.function("chemical_factory_menu_sync", 40, () -> ChemicalFactoryGameTests::menuSyncAndTransfer);
     }
@@ -152,11 +156,17 @@ public final class ChemicalFactoryGameTests {
 
     public static void containerIo(GameTestHelper helper) {
         TileEntityMachineChemicalFactory factory = place(helper, new BlockPos(10, 1, 10));
+        factory.inputTanks[0].setTankType(Fluids.WATER);
         factory.setItem(10, new ItemStack(Items.WATER_BUCKET));
+        factory.setItem(11, new ItemStack(Items.WATER_BUCKET));
         tick(helper, factory);
         helper.assertTrue(factory.inputTanks[0].getFill() == 1_000
                         && factory.getItem(10).isEmpty() && factory.getItem(13).is(Items.BUCKET),
                 "Chemical Factory internal 10 -> 13 transfer incorrectly used automation slot validation");
+        // 1.7 FluidTank.loadTank asks for the tank's own type: an untyped tank takes nothing and the bucket stays
+        helper.assertTrue(factory.inputTanks[1].getTankType() == Fluids.NONE && factory.inputTanks[1].getFill() == 0
+                        && factory.getItem(11).is(Items.WATER_BUCKET) && factory.getItem(14).isEmpty(),
+                "An untyped input tank took a container's fluid");
 
         ItemStack torch = new ItemStack(ModToolItems.blowtorch.get());
         ((ItemBlowtorch) torch.getItem()).setFill(torch, 0);
@@ -170,6 +180,37 @@ public final class ChemicalFactoryGameTests {
                         && ((ItemBlowtorch) factory.getItem(16).getItem()).getFill(factory.getItem(16)) == 1_000
                         && factory.getItem(19).is(Items.STONE),
                 "A single fillable container must remain in its input when the preferred output is blocked");
+        helper.succeed();
+    }
+
+    /** 1.7 FluidLoaderStandard: registry containers move whole, and an emptied canister is canister_empty again. */
+    public static void registryContainers(GameTestHelper helper) {
+        TileEntityMachineChemicalFactory factory = place(helper, new BlockPos(10, 1, 10));
+        factory.inputTanks[0].setTankType(Fluids.KEROSENE);
+        factory.setItem(10, ModFluidNetItems.canister_full.get().make(Fluids.KEROSENE, 1_000));
+        factory.inputTanks[1].setTankType(Fluids.KEROSENE);
+        factory.inputTanks[1].setFill(factory.inputTanks[1].getMaxFill() - 500);
+        factory.setItem(11, ModFluidNetItems.canister_full.get().make(Fluids.KEROSENE, 1_000));
+        // diesel: a kerosene output would be handed back to the kerosene input lane
+        factory.outputTanks[0].setTankType(Fluids.DIESEL);
+        factory.outputTanks[0].setFill(1_500);
+        factory.setItem(16, new ItemStack(ModItems.canister_empty.get(), 2));
+        tick(helper, factory);
+        tick(helper, factory);
+        helper.assertTrue(factory.inputTanks[0].getFill() == 1_000 && factory.getItem(10).isEmpty()
+                        && factory.getItem(13).is(ModItems.canister_empty.get()),
+                "A full canister must empty whole into its tank and leave canister_empty: fill="
+                        + factory.inputTanks[0].getFill() + " in=" + factory.getItem(10) + " out=" + factory.getItem(13));
+        helper.assertTrue(factory.inputTanks[1].getFill() == factory.inputTanks[1].getMaxFill() - 500
+                        && factory.getItem(11).is(ModFluidNetItems.canister_full.get()),
+                "A canister that does not fit whole must stay full in its slot");
+        ItemStack filled = factory.getItem(19);
+        helper.assertTrue(factory.outputTanks[0].getFill() == 500 && filled.is(ModFluidNetItems.canister_full.get())
+                        && filled.getCount() == 1 && ItemFluidTank.getType(filled) == Fluids.DIESEL
+                        && ModFluidNetItems.canister_full.get().getFill(filled) == 1_000
+                        && factory.getItem(16).is(ModItems.canister_empty.get()) && factory.getItem(16).getCount() == 1,
+                "An empty canister must fill whole from the tank, and only while a whole canister is left: "
+                        + factory.outputTanks[0].getFill() + " " + filled + " " + factory.getItem(16));
         helper.succeed();
     }
 

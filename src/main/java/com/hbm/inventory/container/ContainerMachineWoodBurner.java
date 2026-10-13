@@ -90,10 +90,10 @@ public class ContainerMachineWoodBurner extends AbstractContainerMenu {
                 if (!moveItemStackTo(stack, 5, 6, false)) return ItemStack.EMPTY;
             } else if (stack.getItem() instanceof IItemFluidId) {
                 if (!moveItemStackTo(stack, 2, 3, false)) return ItemStack.EMPTY;
-            } else if (burner != null && burner.isDrainable(stack)) {
-                if (!moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
-            } else {
+            } else if (machine.canPlaceItem(0, stack)) {
                 if (!moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
+            } else {
+                if (!moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY); else slot.setChanged();
         }

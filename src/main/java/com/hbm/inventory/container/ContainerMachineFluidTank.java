@@ -17,10 +17,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the fluid tank: 6 canister/identifier I/O slots (inert until the fluid-container items are
- * ported) + the player inventory. The screen reads the live (client) BlockEntity for the tank fill +
- * mode bar; the mode button is dispatched through the vanilla {@link #clickMenuButton} path (no custom
- * packet needed).
+ * Menu for the fluid tank: the 1.7 identifier, drain and fill slot pairs + the player inventory. port: 1.7's slots
+ * were plain; here slots 0, 1, 2 and 4 take what the tile's {@code isItemValidForSlot} allows and the outputs are
+ * take-only. The screen reads the live (client) BlockEntity for the tank fill + mode bar; the mode button goes
+ * through {@link #clickMenuButton}.
  */
 public class ContainerMachineFluidTank extends AbstractContainerMenu {
 

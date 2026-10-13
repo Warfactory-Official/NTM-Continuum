@@ -11,21 +11,18 @@ import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType;
 import com.hbm.explosion.ExplosionNukeGeneric;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.container.ContainerReactorZirnox;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModZirnoxItems;
 import com.hbm.items.machine.ItemZirnoxRod;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.machine.ZirnoxFuel;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -34,7 +31,6 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.sound.ModSounds;
 import com.hbm.Constants;
-import dev.golem.core.world.ItemStacks;
 import java.util.List;
 import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
@@ -48,7 +44,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.core.Direction;
@@ -119,14 +114,8 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot < 24) return stack.getItem() instanceof ItemZirnoxRod;
-        if (slot == 24) return providesFluid(stack, Fluids.CARBONDIOXIDE);
-        if (slot == 25) return providesFluid(stack, Fluids.WATER);
-        return false;
-    }
-
-    private static boolean providesFluid(ItemStack stack, FluidType fluid) {
-        return stack.getItem() instanceof IFillableItem fillable && fillable.providesFluid(fluid, stack)
-                || stack.getItem() instanceof ItemFluidBucket && ItemFluidBucket.getFluid(stack) == fluid;
+        // 1.7 ContainerReactorZirnox: the fluid inputs are plain slots
+        return slot == 24 || slot == 25;
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityReactorZirnox te) {
@@ -137,8 +126,8 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
             }
         }
         if (te.redstonePowered) te.isOn = true;
-        te.loadTank(24, 26, te.carbonDioxide, Fluids.CARBONDIOXIDE);
-        te.loadTank(25, 27, te.water, Fluids.WATER);
+        MachineFluidContainerIO.load(te.carbonDioxide, te.inventory, 24, 26);
+        MachineFluidContainerIO.load(te.water, te.inventory, 25, 27);
         if (te.isOn) te.decayRods();
 
         te.pressure = te.carbonDioxide.getFill() * 2
@@ -171,38 +160,6 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
         }
         te.setChanged();
         te.networkPackNT();
-    }
-
-    private void loadTank(int inputSlot, int outputSlot, FluidTankNTM tank, FluidType expected) {
-        ItemStack input = inventory.getStackInSlot(inputSlot);
-        if (input.isEmpty()) return;
-
-        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (MachineFluidContainerIO.loadInfinite(tank, input)) {
-            setChanged();
-            return;
-        }
-        if (input.getItem() instanceof IFillableItem fillable) {
-            int held = fillable.getFill(input);
-            if (held <= 0 || fillable.getFirstFluidType(input) != expected) return;
-            int addable = tank.fill(expected, held, false);
-            if (addable <= 0) return;
-            ItemStack result = ItemStacks.copyWithCount(input, 1);
-            int taken = fillable.tryEmpty(expected, addable, result);
-            if (taken <= 0 || !inventory.insertItem(outputSlot, result.copy(), true).isEmpty()) return;
-            tank.fill(expected, taken, true);
-            inventory.extractItem(inputSlot, 1, false);
-            inventory.insertItem(outputSlot, result, false);
-            setChanged();
-        } else if (input.getItem() instanceof ItemFluidBucket && ItemFluidBucket.getFluid(input) == expected) {
-            if (tank.fill(expected, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return;
-            ItemStack result = new ItemStack(Items.BUCKET);
-            if (!inventory.insertItem(outputSlot, result.copy(), true).isEmpty()) return;
-            tank.fill(expected, ItemFluidBucket.VOLUME, true);
-            inventory.extractItem(inputSlot, 1, false);
-            inventory.insertItem(outputSlot, result, false);
-            setChanged();
-        }
     }
 
     private void decayRods() {

@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.interfaces.IRepairable;
+import com.hbm.inventory.FluidContainerRegistry;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.trait.FT_Corrosive;
@@ -18,7 +19,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple;
-import com.hbm.items.ModFluidNetItems;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
@@ -108,12 +108,6 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         tank.ensureClimbRegistered();
         FluidType type = tank.tank.getTankType();
         if (!tank.hasExploded) {
-            tank.updateTypeFromFluidId();
-            // 1.7 FluidTank.loadTank: a pressurised tank takes nothing but the infinite barrel
-            if (tank.tank.getPressure() == 0 || tank.inventory.getStackInSlot(2).is(ModFluidNetItems.fluid_barrel_infinite.get())) {
-                MachineFluidContainerIO.load(tank.tank, tank.inventory, 2, 3);
-            }
-            type = tank.tank.getTankType();
             if (level instanceof ServerLevel server) tank.updateCells(server, type);
             if (tank.mode != 1) {
                 for (DirPos dp : tank.getConPos()) {
@@ -124,6 +118,9 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
                     else tank.tryUnsubscribe(type, level, at.getX(), at.getY(), at.getZ());
                 }
             }
+            MachineFluidContainerIO.load(tank.tank, tank.inventory, 2, 3);
+            tank.updateTypeFromFluidId();
+            type = tank.tank.getTankType();
         } else if (level instanceof ServerLevel server) {
             tank.cells = FluidGraph.release(server, tank.cells); // 1.7: a torn tank leaves the network
         }
@@ -266,64 +263,46 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         setChanged();
     }
 
-    /**
-     * Slot 0 (in) holds a fluid identifier; adopt its type and move the identifier to slot 1 (out),
-     * mirroring the 1.12.2 {@code tank.setType(0, 1, inventory)}: the identifier passes from the top
-     * slot to the bottom slot once consumed. Only fires when the type actually changes and slot 1 is free.
-     */
+    /** 1.7 {@code tank.setType(0, 1, slots)}: an identifier in slot 0 sets the type and passes to slot 1. */
     private void updateTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(0);
         if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        if (!inventory.getStackInSlot(1).isEmpty()) return; // out slot must be empty to receive it
-
+        if (!inventory.getStackInSlot(1).isEmpty()) return;
         FluidType t = ident.getType(level, getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ(), id);
         if (t == tank.getTankType()) return;
-
         tank.setTankType(t);
-        // pass the identifier from the in-slot (0) to the out-slot (1)
-        inventory.insertItem(1, id.copy(), false);
-        inventory.extractItem(0, 1, false);
+        // 1.7 moves the whole identifier stack: slots[out] = slots[in].copy(); slots[in] = null.
+        inventory.setStackInSlot(1, id.copy());
+        inventory.setStackInSlot(0, ItemStack.EMPTY);
         setChanged();
     }
 
-    /** The full fluid carried by a bucket, or NONE when it is not a fluid source. */
-    private static FluidType bucketFluid(ItemStack stack) {
-        if (stack.getItem() instanceof ItemFluidBucket) return ItemFluidBucket.getFluid(stack);
-        if (stack.is(Items.WATER_BUCKET)) return Fluids.WATER;
-        if (stack.is(Items.LAVA_BUCKET)) return Fluids.LAVA;
-        return Fluids.NONE;
-    }
-
-    /** Slot 2 mirrors the source tank's loadTank path: it accepts only a full, matching fluid source. */
-    private boolean isDrainable(ItemStack stack) {
+    /**
+     * Slot 2 takes what 1.7's {@code loadTank} drains: a full registry container of the tank's fluid, the port's
+     * universal bucket, a fillable item holding fluid, or an infinite source. 1.7's plain slots took any item by hand;
+     * the menus here still refuse items no loader handles. The giant and F6 tanks share it.
+     */
+    public static boolean isDrainable(FluidTankNTM tank, ItemStack stack) {
         if (MachineFluidContainerIO.acceptsInfiniteSource(tank, stack)) return true;
-        if (stack.isEmpty() || tank.getPressure() != 0 || tank.getFill() >= tank.getMaxFill()) return false;
-        FluidType type;
-        int amount;
-        if (stack.getItem() instanceof IFillableItem fillable) {
-            type = fillable.getFirstFluidType(stack);
-            amount = fillable.getFill(stack);
-        } else {
-            type = bucketFluid(stack);
-            amount = ItemFluidBucket.VOLUME;
-        }
-        return type != null && type != Fluids.NONE && amount > 0
-                && (tank.getTankType() == Fluids.NONE || tank.getTankType() == type)
-                && tank.fill(type, amount, false) > 0;
+        FluidType type = tank.getTankType();
+        if (FluidContainerRegistry.INSTANCE.contentOf(stack, type) > 0) return true;
+        if (stack.getItem() instanceof ItemFluidBucket) return type == Fluids.NONE || ItemFluidBucket.getFluid(stack) == type;
+        return stack.getItem() instanceof IFillableItem fillable && fillable.getFill(stack) > 0
+                && (type == Fluids.NONE || fillable.providesFluid(type, stack));
     }
 
     /**
-     * Slot 4 mirrors the source tank's unloadTank path (1.7 {@code FluidLoaderFillableItem.fill}): any
-     * {@link IFillableItem} that accepts the tank's fluid is filled in place, partly filled or not (a half-empty
-     * jetpack refuels here), and an empty bucket. 1.7's GUI slot took any item; an item the tank cannot fill is
-     * still refused so automation does not park it here. port: a stackable canister must come empty (partly filled
-     * canisters are port-only; they belong in slot 2), an unstackable fillable (jetpack, tool, gun) fills in place.
+     * Slot 4 takes what 1.7's {@code unloadTank} fills: an empty registry container (bucket, glass bottle, canister,
+     * steel tank, cell), a fillable item that accepts the tank's fluid, or an infinite drain. port: a stackable
+     * fillable must come empty (partly filled canisters are port-only and belong in slot 2); an unstackable one
+     * (jetpack, tool, gun) is filled in place whatever its fill.
      */
-    private boolean isFillable(ItemStack stack) {
+    public static boolean isFillable(FluidTankNTM tank, ItemStack stack) {
         if (MachineFluidContainerIO.acceptsInfiniteSink(tank, stack)) return true;
-        if (stack.isEmpty() || tank.getTankType() == Fluids.NONE) return false;
-        if (stack.is(Items.BUCKET)) return true;
-        return stack.getItem() instanceof IFillableItem fillable && fillable.acceptsFluid(tank.getTankType(), stack)
+        FluidType type = tank.getTankType();
+        if (stack.isEmpty() || type == Fluids.NONE) return false;
+        if (!FluidContainerRegistry.INSTANCE.fullOf(stack, type).isEmpty() || stack.is(Items.BUCKET)) return true;
+        return stack.getItem() instanceof IFillableItem fillable && fillable.acceptsFluid(type, stack)
                 && (stack.getMaxStackSize() == 1 || fillable.getFill(stack) == 0);
     }
 
@@ -337,8 +316,8 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return switch (slot) {
             case 0, 1 -> stack.getItem() instanceof IItemFluidId;
-            case 2 -> isDrainable(stack);
-            case 4 -> isFillable(stack);
+            case 2 -> isDrainable(tank, stack);
+            case 4 -> isFillable(tank, stack);
             default -> true; // 3 + 5: outputs. The machine inserts results here; player UI is take-only
         };
     }

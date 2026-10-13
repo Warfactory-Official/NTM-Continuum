@@ -2,11 +2,11 @@ package com.hbm.tileentity.machine.storage;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
 import com.hbm.api.fluidmk2.FluidGraph;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.machine.BlockFluidBarrel;
+import com.hbm.inventory.FluidContainerRegistry;
 import com.hbm.inventory.container.ContainerBarrel;
 import com.hbm.tileentity.ModFluidNetBlockEntities;
 import com.hbm.blocks.ModFluidNetBlocks;
@@ -175,44 +175,29 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         }
     }
 
-    private static FluidType bucketFluid(ItemStack stack) {
-        if (stack.getItem() instanceof ItemFluidBucket) return ItemFluidBucket.getFluid(stack);
-        if (stack.is(Items.WATER_BUCKET)) return Fluids.WATER;
-        if (stack.is(Items.LAVA_BUCKET)) return Fluids.LAVA;
-        return Fluids.NONE;
-    }
-
     /**
-     * 1.7 {@code isItemValidForSlot}: slot 2 takes a full container whose content fits the barrel, slot 4
-     * an empty container the barrel's fluid can fill. Slots 0/1 take identifiers (the port's spelling of
-     * the 1.7 {@code tank.setType(0, 1, slots)} slot pair).
+     * 1.7 {@code isItemValidForSlot}: slot 2 takes a full registry container whose content fits the barrel, slot 4 an
+     * empty one the barrel's fluid fills within its capacity. Slots 0/1 take identifiers (the
+     * {@code tank.setType(0, 1, slots)} pair).
      */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (stack.isEmpty()) return false;
         if (slot == 0 || slot == 1) return stack.getItem() instanceof IItemFluidId;
+        FluidType type = tank.getTankType();
         if (slot == 2) {
-            FluidType type;
-            int amount;
-            if (stack.getItem() instanceof IFillableItem fillable) {
-                type = fillable.getFirstFluidType(stack);
-                amount = fillable.getFill(stack);
-            } else {
-                type = bucketFluid(stack);
-                amount = ItemFluidBucket.VOLUME;
-            }
-            return type != null && type != Fluids.NONE && amount > 0 && amount <= tank.getMaxFill()
-                    && (tank.getTankType() == Fluids.NONE || tank.getTankType() == type);
+            int content = FluidContainerRegistry.INSTANCE.contentOf(stack, type);
+            // port: the universal bucket, which 1.7's registry never had
+            if (content <= 0 && stack.getItem() instanceof ItemFluidBucket && ItemFluidBucket.getFluid(stack) == type) content = ItemFluidBucket.VOLUME;
+            return content > 0 && content <= tank.getMaxFill();
         }
         if (slot == 4) {
-            if (tank.getTankType() == Fluids.NONE) return false;
-            if (stack.is(Items.BUCKET)) return ItemFluidBucket.VOLUME <= tank.getMaxFill();
-            // 1.7 FluidLoaderFillableItem fills a fillable in place whatever its fill (a half-empty jetpack refuels)
-            return stack.getItem() instanceof IFillableItem fillable
-                    && fillable.acceptsFluid(tank.getTankType(), stack)
-                    && (stack.getMaxStackSize() == 1 || fillable.getFill(stack) == 0);
+            ItemStack full = FluidContainerRegistry.INSTANCE.fullOf(stack, type);
+            if (!full.isEmpty()) return FluidContainerRegistry.INSTANCE.contentOf(full, type) <= tank.getMaxFill();
+            // port: an empty bucket takes any fluid as the universal bucket
+            return stack.is(Items.BUCKET) && type != Fluids.NONE && ItemFluidBucket.VOLUME <= tank.getMaxFill();
         }
-        return false; // 1.7: the output slots 3 and 5 accept nothing (they are filled internally)
+        return false;
     }
 
     @Override

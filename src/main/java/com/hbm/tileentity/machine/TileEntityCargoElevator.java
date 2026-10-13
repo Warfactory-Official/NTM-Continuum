@@ -104,6 +104,9 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
                 }
             }
         }
+        // 1.7's meta-1 setBlock dropped this tile entity. A state change within one block keeps it, and it would
+        // splice again every tick, growing the lower lift's height without end.
+        level.removeBlockEntity(pos);
         lower.markChanged();
         return true;
     }

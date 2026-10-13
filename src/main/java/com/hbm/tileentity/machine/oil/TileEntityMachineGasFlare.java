@@ -2,7 +2,6 @@ package com.hbm.tileentity.machine.oil;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.environment.Environment;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
@@ -15,7 +14,6 @@ import com.hbm.inventory.fluid.trait.FT_Polluting;
 import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
@@ -39,7 +37,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
@@ -92,7 +89,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         }
 
         te.setTypeFromFluidId();
-        te.loadTank();
+        MachineFluidContainerIO.load(te.tank, te.inventory, 1, 2);
 
         int maxVent = 50;
         int maxBurn = 10;
@@ -171,42 +168,6 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                     level.getRandom().nextGaussian() * 0.05, 0.1, level.getRandom().nextGaussian() * 0.05);
             level.addParticle(ParticleTypes.LARGE_SMOKE, pos.getX() + 0.5, pos.getY() + 12.5, pos.getZ() + 0.5,
                     0, 0.1, 0);
-        }
-    }
-
-    private void loadTank() {
-        ItemStack in = inventory.getStackInSlot(1);
-        if (in.isEmpty()) return;
-
-        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
-            setChanged();
-            return;
-        }
-        if (in.getItem() instanceof IFillableItem fillable) {
-            int held = fillable.getFill(in);
-            FluidType heldType = fillable.getFirstFluidType(in);
-            if (held <= 0 || heldType == Fluids.NONE) return;
-            int addable = tank.fill(heldType, held, false);
-            if (addable <= 0) return;
-            ItemStack work = in.copy();
-            work.setCount(1);
-            int taken = fillable.tryEmpty(heldType, addable, work);
-            if (taken <= 0 || !inventory.insertItem(2, work.copy(), true).isEmpty()) return;
-            tank.fill(heldType, taken, true);
-            inventory.extractItem(1, 1, false);
-            inventory.insertItem(2, work, false);
-            setChanged();
-        } else if (in.getItem() instanceof ItemFluidBucket) {
-            FluidType fluid = ItemFluidBucket.getFluid(in);
-            if (fluid == Fluids.NONE) return;
-            if (tank.fill(fluid, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return;
-            ItemStack empty = new ItemStack(Items.BUCKET);
-            if (!inventory.insertItem(2, empty.copy(), true).isEmpty()) return;
-            tank.fill(fluid, ItemFluidBucket.VOLUME, true);
-            inventory.extractItem(1, 1, false);
-            inventory.insertItem(2, empty, false);
-            setChanged();
         }
     }
 

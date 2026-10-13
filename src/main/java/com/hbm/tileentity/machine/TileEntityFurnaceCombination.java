@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.tileentity.MachineCore;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.inventory.container.ContainerFurnaceCombination;
@@ -11,7 +10,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CombinationRecipes;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -35,7 +33,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -74,7 +71,6 @@ public class TileEntityFurnaceCombination extends TileEntityMachinePolluting imp
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFurnaceCombination furnace) {
-        furnace.unloadTank();
         furnace.tryPullHeat();
 
         if (TickPhase.every(level, pos, 20L)) {
@@ -85,6 +81,7 @@ public class TileEntityFurnaceCombination extends TileEntityMachinePolluting imp
         }
 
         furnace.wasOn = false;
+        if (MachineFluidContainerIO.unload(furnace.tank, furnace.inventory, 2, 3)) furnace.setChanged();
         if (furnace.canSmelt()) {
             int burn = furnace.heat / 100;
             if (burn > 0) {
@@ -166,39 +163,13 @@ public class TileEntityFurnaceCombination extends TileEntityMachinePolluting imp
         heat = Math.max(heat - Math.max(heat / 1000, 1), 0);
     }
 
-    /** Fills slot 3 from the tank using the container in slot 2. */
-    private void unloadTank() {
-        FluidType fluid = tank.getTankType();
-        if (fluid == Fluids.NONE || tank.getFill() <= 0) return;
-        ItemStack input = inventory.getStackInSlot(2);
-        if (input.isEmpty()) return;
-
-        if (input.getItem() instanceof IFillableItem fillable) {
-            if (!fillable.acceptsFluid(fluid, input)) return;
-            ItemStack work = input.copy();
-            work.setCount(1);
-            int remainder = fillable.tryFill(fluid, tank.getFill(), work);
-            int moved = tank.getFill() - remainder;
-            if (moved <= 0 || !inventory.insertItem(3, work.copy(), true).isEmpty()) return;
-            tank.setFill(tank.getFill() - moved);
-            inventory.extractItem(2, 1, false);
-            inventory.insertItem(3, work, false);
-        } else if (input.is(Items.BUCKET) && tank.getFill() >= ItemFluidBucket.VOLUME) {
-            ItemStack full = ItemFluidBucket.make(fluid);
-            if (!inventory.insertItem(3, full.copy(), true).isEmpty()) return;
-            tank.setFill(tank.getFill() - ItemFluidBucket.VOLUME);
-            inventory.extractItem(2, 1, false);
-            inventory.insertItem(3, full, false);
-        }
-    }
-
     public int getProgressScaled(int scale) { return progress * scale / processTime; }
     public int getHeatScaled(int scale) { return heat * scale / maxHeat; }
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return CombinationRecipes.getOutput(stack) != null;
-        if (slot == 2) return stack.getItem() instanceof IFillableItem || stack.is(Items.BUCKET);
+        if (slot == 2) return true; // the 1.7 GUI's plain slot; automation only reaches slot 0
         return false;
     }
 

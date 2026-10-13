@@ -1,6 +1,8 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.FluidContainerRegistry;
 import com.hbm.inventory.SlotCraftingOutput;
+import com.hbm.items.machine.IItemFluidId;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
@@ -113,8 +115,12 @@ public class ContainerSILEX extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
-            } else {
-                if (!this.moveItemStackTo(stack, 0, MACHINE_SLOTS, false)) return ItemStack.EMPTY;
+            } else if (stack.getItem() instanceof IItemFluidId) {
+                if (!this.moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
+            } else if (silex != null && FluidContainerRegistry.INSTANCE.contentOf(stack, silex.tank.getTankType()) > 0) {
+                if (!this.moveItemStackTo(stack, 2, 3, false)) return ItemStack.EMPTY;
+            } else if (!this.moveItemStackTo(stack, 0, 1, false)) {
+                return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();

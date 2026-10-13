@@ -8,9 +8,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CoolingRecipes;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -30,7 +28,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.network.chat.Component;
@@ -73,11 +70,11 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
         }
 
         turbine.updateTypeFromFluidId();
-        turbine.processCanister(turbine.tanks[0], 2, 3);
+        if (MachineFluidContainerIO.load(turbine.tanks[0], turbine.inventory, 2, 3)) turbine.setChanged();
         turbine.power = Library.chargeItemsFromTE(turbine.inventory, 4, turbine.power, MAX_POWER);
         turbine.convert();
         if (turbine.power > MAX_POWER) turbine.power = MAX_POWER;
-        turbine.processCanister(turbine.tanks[1], 5, 6);
+        if (MachineFluidContainerIO.unload(turbine.tanks[1], turbine.inventory, 5, 6)) turbine.setChanged();
         turbine.networkPackNT();
     }
 
@@ -130,96 +127,11 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
         shouldTurn = ops > 0;
     }
 
-    private void processCanister(FluidTankNTM tank, int inSlot, int outSlot) {
-        ItemStack in = inventory.getStackInSlot(inSlot);
-        if (in.isEmpty()) return;
-
-        FluidType tankType = tank.getTankType();
-        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
-            setChanged();
-            return;
-        }
-        if (in.getItem() instanceof IFillableItem fillable) {
-            int held = fillable.getFill(in);
-            FluidType heldType = fillable.getFirstFluidType(in);
-            if (held > 0 && heldType != null && heldType != Fluids.NONE && tankType == heldType) {
-                int addable = tank.fill(heldType, held, false);
-                if (addable > 0) {
-                    ItemStack work = single(in);
-                    int taken = fillable.tryEmpty(heldType, addable, work);
-                    if (taken > 0 && fits(outSlot, work)) {
-                        tank.fill(heldType, taken, true);
-                        moveToOut(inSlot, outSlot, work);
-                        return;
-                    }
-                }
-            }
-            if (tankType != Fluids.NONE && tank.getFill() > 0 && fillable.acceptsFluid(tankType, in)) {
-                ItemStack work = single(in);
-                int remainder = fillable.tryFill(tankType, tank.getFill(), work);
-                int moved = tank.getFill() - remainder;
-                if (moved > 0 && fits(outSlot, work)) {
-                    tank.setFill(tank.getFill() - moved);
-                    moveToOut(inSlot, outSlot, work);
-                }
-            }
-            return;
-        }
-
-        FluidType bucketFluid = bucketFluid(in);
-        if (bucketFluid != Fluids.NONE && tankType == bucketFluid
-                && tank.fill(bucketFluid, ItemFluidBucket.VOLUME, false) >= ItemFluidBucket.VOLUME) {
-            ItemStack empty = new ItemStack(Items.BUCKET);
-            if (fits(outSlot, empty)) {
-                tank.fill(bucketFluid, ItemFluidBucket.VOLUME, true);
-                moveToOut(inSlot, outSlot, empty);
-            }
-        } else if (in.is(Items.BUCKET) && tankType != Fluids.NONE && tank.getFill() >= ItemFluidBucket.VOLUME) {
-            ItemStack filled = tankType == Fluids.WATER ? new ItemStack(Items.WATER_BUCKET)
-                    : tankType == Fluids.LAVA ? new ItemStack(Items.LAVA_BUCKET)
-                    : ItemFluidBucket.make(tankType);
-            if (fits(outSlot, filled)) {
-                tank.setFill(tank.getFill() - ItemFluidBucket.VOLUME);
-                moveToOut(inSlot, outSlot, filled);
-            }
-        }
-    }
-
-    private static FluidType bucketFluid(ItemStack stack) {
-        if (stack.getItem() instanceof ItemFluidBucket) return ItemFluidBucket.getFluid(stack);
-        if (stack.is(Items.WATER_BUCKET)) return Fluids.WATER;
-        if (stack.is(Items.LAVA_BUCKET)) return Fluids.LAVA;
-        return Fluids.NONE;
-    }
-
-    private static ItemStack single(ItemStack stack) {
-        ItemStack copy = stack.copy();
-        copy.setCount(1);
-        return copy;
-    }
-
-    private boolean fits(int slot, ItemStack stack) {
-        return inventory.insertItem(slot, stack.copy(), true).isEmpty();
-    }
-
-    private void moveToOut(int inSlot, int outSlot, ItemStack result) {
-        inventory.extractItem(inSlot, 1, false);
-        inventory.insertItem(outSlot, result, false);
-        setChanged();
-    }
-
-    private static boolean isFluidContainer(ItemStack stack) {
-        return stack.getItem() instanceof IFillableItem
-                || stack.getItem() instanceof ItemFluidBucket
-                || stack.is(Items.BUCKET) || stack.is(Items.WATER_BUCKET) || stack.is(Items.LAVA_BUCKET);
-    }
-
+    /** The container bays 2/5 take anything, as the 1.7 GUI's plain slots did. */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return switch (slot) {
             case 0, 1 -> stack.getItem() instanceof IItemFluidId;
-            case 2, 5 -> isFluidContainer(stack);
             case 4 -> Library.isBattery(stack);
             default -> true;
         };
@@ -247,13 +159,10 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
                 p.getZ() - dir.offsetZ * 4, dir.getOpposite())};
     }
 
-    @Override public int[] getSlotsForFace(Direction side) { return new int[]{0, 2, 4, 5}; }
-    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return isItemValidForSlot(slot, stack);
-    }
-    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return slot == 1 || slot == 3 || slot == 6;
-    }
+    /** 1.7 {@code getAccessibleSlotsFromSide}: no automation reaches the large turbine. */
+    @Override public int[] getSlotsForFace(Direction side) { return new int[]{}; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long value) { power = Math.max(0L, Math.min(MAX_POWER, value)); }

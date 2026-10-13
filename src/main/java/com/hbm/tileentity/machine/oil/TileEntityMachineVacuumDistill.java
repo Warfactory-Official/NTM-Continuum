@@ -1,7 +1,6 @@
 package com.hbm.tileentity.machine.oil;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.container.ContainerMachineVacuumDistill;
 import com.hbm.inventory.fluid.FluidStack;
@@ -9,13 +8,12 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.RefineryRecipes;
-import com.hbm.items.ModFluidNetItems;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -26,7 +24,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
@@ -89,13 +86,13 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
         }
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
-        te.loadInput();
+        MachineFluidContainerIO.load(te.tanks[0], te.inventory, 1, 2);
         te.refine();
 
-        te.unloadTank(1, 3, 4);
-        te.unloadTank(2, 5, 6);
-        te.unloadTank(3, 7, 8);
-        te.unloadTank(4, 9, 10);
+        MachineFluidContainerIO.unload(te.tanks[1], te.inventory, 3, 4);
+        MachineFluidContainerIO.unload(te.tanks[2], te.inventory, 5, 6);
+        MachineFluidContainerIO.unload(te.tanks[3], te.inventory, 7, 8);
+        MachineFluidContainerIO.unload(te.tanks[4], te.inventory, 9, 10);
 
         for (DirPos dp : te.getConPos()) {
             for (int i = 1; i < 5; i++) {
@@ -150,54 +147,6 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
         if (t != tanks[0].getTankType()) {
             tanks[0].setTankType(t);
             tanks[0].setFill(0);
-            setChanged();
-        }
-    }
-
-    /**
-     * 1.7 {@code tanks[0].loadTank(1, 2, slots)}. The input tank is pressurised (2), and 1.7's loadTank
-     * refuses every container on a pressurised tank except the infinite barrel.
-     */
-    private void loadInput() {
-        ItemStack in = inventory.getStackInSlot(1);
-        if (in.isEmpty() || !in.is(ModFluidNetItems.fluid_barrel_infinite.get())) return;
-        if (!(in.getItem() instanceof IFillableItem fillable)) return;
-        FluidTankNTM tank = tanks[0];
-        FluidType type = tank.getTankType();
-        int space = tank.getMaxFill() - tank.getFill();
-        if (type == Fluids.NONE || space <= 0) return;
-        int taken = fillable.tryEmpty(type, space, in);
-        if (taken > 0) {
-            tank.setFill(tank.getFill() + taken);
-            setChanged();
-        }
-    }
-
-    /** Fills a container in {@code loadSlot} FROM {@code tanks[tank]}, result to {@code outSlot}. */
-    private void unloadTank(int tank, int loadSlot, int outSlot) {
-        FluidTankNTM t = tanks[tank];
-        FluidType fluid = t.getTankType();
-        if (fluid == Fluids.NONE || t.getFill() <= 0) return;
-        ItemStack in = inventory.getStackInSlot(loadSlot);
-        if (in.isEmpty()) return;
-
-        if (in.getItem() instanceof IFillableItem fillable) {
-            if (!fillable.acceptsFluid(fluid, in)) return;
-            ItemStack work = in.copy();
-            work.setCount(1);
-            int remainder = fillable.tryFill(fluid, t.getFill(), work);
-            int moved = t.getFill() - remainder;
-            if (moved <= 0 || !inventory.insertItem(outSlot, work.copy(), true).isEmpty()) return;
-            t.setFill(t.getFill() - moved);
-            inventory.extractItem(loadSlot, 1, false);
-            inventory.insertItem(outSlot, work, false);
-            setChanged();
-        } else if (in.is(Items.BUCKET) && t.getFill() >= ItemFluidBucket.VOLUME) {
-            ItemStack full = ItemFluidBucket.make(fluid);
-            if (!inventory.insertItem(outSlot, full.copy(), true).isEmpty()) return;
-            t.setFill(t.getFill() - ItemFluidBucket.VOLUME);
-            inventory.extractItem(loadSlot, 1, false);
-            inventory.insertItem(outSlot, full, false);
             setChanged();
         }
     }

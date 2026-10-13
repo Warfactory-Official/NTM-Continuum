@@ -3,19 +3,18 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.environment.Environment;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.items.ModItems;
 import com.hbm.sound.ModProductionSounds;
 import com.hbm.util.TickPhase;
+import com.hbm.inventory.FluidContainerRegistry;
 import com.hbm.inventory.container.ContainerMachineDiesel;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
@@ -30,7 +29,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
@@ -102,7 +100,7 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
         te.wasOn = false;
 
         te.setTypeFromFluidId();
-        te.loadTank();
+        if (MachineFluidContainerIO.load(te.tank, te.inventory, 0, 1)) te.setChanged();
 
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             te.tryProvide(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
@@ -149,43 +147,6 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
         }
     }
 
-    /** Drains a fluid container in slot 0 into the tank, emptied container to slot 1. */
-    private void loadTank() {
-        ItemStack in = inventory.getStackInSlot(0);
-        if (in.isEmpty()) return;
-
-        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
-            setChanged();
-            return;
-        }
-        if (in.getItem() instanceof IFillableItem fillable) {
-            int held = fillable.getFill(in);
-            FluidType heldType = fillable.getFirstFluidType(in);
-            if (held <= 0 || heldType == Fluids.NONE) return;
-            int addable = tank.fill(heldType, held, false);
-            if (addable <= 0) return;
-            ItemStack work = in.copy();
-            work.setCount(1);
-            int taken = fillable.tryEmpty(heldType, addable, work);
-            if (taken <= 0 || !inventory.insertItem(1, work.copy(), true).isEmpty()) return;
-            tank.fill(heldType, taken, true);
-            inventory.extractItem(0, 1, false);
-            inventory.insertItem(1, work, false);
-            setChanged();
-        } else if (in.getItem() instanceof ItemFluidBucket) {
-            FluidType fluid = ItemFluidBucket.getFluid(in);
-            if (fluid == Fluids.NONE) return;
-            if (tank.fill(fluid, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return;
-            ItemStack empty = new ItemStack(Items.BUCKET);
-            if (!inventory.insertItem(1, empty.copy(), true).isEmpty()) return;
-            tank.fill(fluid, ItemFluidBucket.VOLUME, true);
-            inventory.extractItem(0, 1, false);
-            inventory.insertItem(1, empty, false);
-            setChanged();
-        }
-    }
-
     /** 1.7 {@code tank.setType(3, slots)}: a different identifier switches the type and empties the tank. */
     private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(3);
@@ -207,14 +168,12 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
         }
     }
 
-    /** 1.7 {@code isItemValidForSlot}: 0 fuel containers holding the tank's fluid, 2 batteries. */
+    /** Slot 0 takes anything, as the 1.7 GUI's plain slot did; automation is gated in {@link #canPlaceItemThroughFace}. */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return true;
         if (slot == 2) return Library.isBattery(stack);
         if (slot == 3) return stack.getItem() instanceof IItemFluidId;
-        // Slot 1 (emptied-container out) must stay TRUE: the machine writes it via inventory.insertItem,
-        // which validates against this method; the MENU's take-only slot blocks the player.
         return slot == 1;
     }
 
@@ -225,6 +184,8 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
 
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
+        // 1.7 isItemValidForSlot: slot 0 only a registry container holding the tank's fluid
+        if (slot == 0) return FluidContainerRegistry.INSTANCE.contentOf(stack, tank.getTankType()) > 0;
         return slot != 1 && isItemValidForSlot(slot, stack);
     }
 

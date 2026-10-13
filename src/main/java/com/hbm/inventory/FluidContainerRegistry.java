@@ -7,6 +7,7 @@ import com.hbm.items.ModEntityItems;
 import com.hbm.items.ModFluidItems;
 import com.hbm.items.ModFluidNetItems;
 import com.hbm.items.ModSingularityItems;
+import com.hbm.items.machine.ItemFluidContainerNT;
 import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.items.special.ItemCell;
 import com.hbm.lib.ItemIds;
@@ -198,6 +199,67 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
             fills.add(new ForeignFill(container.getItem(), family, typed::admits));
         }
         return fills;
+    }
+
+    // 1.7 FluidContainerRegistry lookups, as FluidLoaderStandard used them in a machine's container slots
+
+    /** 1.7 {@code getFluidContent}: how much of {@code type} the full container {@code stack} holds, 0 if it is not one. */
+    public int contentOf(ItemStack stack, FluidType type) {
+        if (stack.isEmpty() || type == null || type == Fluids.NONE) return 0;
+        for (Fixed fixed : fixed()) {
+            ItemStack full = item(fixed.full);
+            if (!full.isEmpty() && fixed.fluid.equals(type.getName()) && stack.is(full.getItem())) return fixed.amount;
+        }
+        if (type == Fluids.WATER && stack.is(Items.POTION) && "minecraft:water".equals(Ingredients.potionId(stack))) return 250;
+        if (stack.getItem() instanceof ItemCell) return ItemCell.isFullCell(stack, type) ? ItemCell.CAPACITY : 0;
+        for (Typed typed : typed()) {
+            if (stack.getItem() != typed.item.get() || !(stack.getItem() instanceof ItemFluidTank tank)) continue;
+            if (!admits(typed, tank, type)) return 0;
+            return ItemFluidTank.getType(stack) == type && tank.getFill(stack) == tank.capacity ? tank.capacity : 0;
+        }
+        return 0;
+    }
+
+    /**
+     * 1.7 {@code getFullContainer}: what the empty container {@code stack} becomes when filled with {@code type}, or
+     * {@link ItemStack#EMPTY}. A component container holding nothing counts as its family's empty item.
+     */
+    public ItemStack fullOf(ItemStack stack, FluidType type) {
+        if (stack.isEmpty() || type == null || type == Fluids.NONE) return ItemStack.EMPTY;
+        for (Fixed fixed : fixed()) {
+            ItemStack empty = item(fixed.container);
+            if (!empty.isEmpty() && fixed.fluid.equals(type.getName()) && stack.is(empty.getItem())) return item(fixed.full);
+        }
+        if (type == Fluids.WATER && stack.is(Items.GLASS_BOTTLE)) return Ingredients.potionStack("minecraft:potion", "minecraft:water");
+        if (ItemCell.isEmptyCell(stack)) return ItemCell.getFullCell(type);
+        for (Typed typed : typed()) {
+            if (!(typed.item.get() instanceof ItemFluidTank tank)) continue;
+            ItemStack empty = typed.container.get();
+            boolean emptyItem = !empty.isEmpty() && stack.is(empty.getItem()) && (stack.getItem() != tank || tank.getFill(stack) == 0);
+            boolean drained = stack.getItem() == tank && tank.getFill(stack) == 0;
+            if ((emptyItem || drained) && admits(typed, tank, type)) return tank.make(type, tank.capacity);
+        }
+        return ItemStack.EMPTY;
+    }
+
+    /** 1.7 {@code getEmptyContainer}: what a full container leaves once emptied ({@link ItemStack#EMPTY}: used up). */
+    public ItemStack emptyOf(ItemStack stack) {
+        return emptied(stack);
+    }
+
+    /** Whether {@code stack} is one of the registry's own component containers, which 1.7 never filled or drained in part. */
+    public boolean isRegistryContainer(ItemStack stack) {
+        if (stack.getItem() instanceof ItemCell) return true;
+        for (Typed typed : typed()) {
+            if (stack.getItem() == typed.item.get()) return true;
+        }
+        return false;
+    }
+
+    /** 1.7 registered the canister and gas tank only for fluids with that container data, the rest by its loop's rules. */
+    private static boolean admits(Typed typed, ItemFluidTank tank, FluidType type) {
+        if (!typed.admits(type)) return false;
+        return !(tank instanceof ItemFluidContainerNT container) || container.allows(type);
     }
 
     private static ItemStack item(String id) {

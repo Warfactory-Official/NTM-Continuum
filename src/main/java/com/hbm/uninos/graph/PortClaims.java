@@ -93,12 +93,13 @@ public final class PortClaims {
     /**
      * Records that {@code user} plays {@code role} for {@code type} at the port whose duct stands at {@code x, y, z}
      * on the user's side {@code dir}. A sideless call ({@link ForgeDirection#UNKNOWN}, 1.7's battery in buffer mode
-     * providing to its own node) claims nothing: the cell's own machine is never gated.
+     * providing to its own node) claims nothing: the cell's own machine is never gated. Answers true for a claim that
+     * was not live before (1.7's {@code trySubscribe} joined the net then), so the caller can have the duct look again.
      */
-    public static void claim(Level level, int x, int y, int z, ForgeDirection dir, Object user, Object type, int role) {
-        if (dir == null || dir == ForgeDirection.UNKNOWN || type == null) return;
+    public static boolean claim(Level level, int x, int y, int z, ForgeDirection dir, Object user, Object type, int role) {
+        if (dir == null || dir == ForgeDirection.UNKNOWN || type == null) return false;
         PortClaims claims = of(level, true);
-        if (claims == null) return;
+        if (claims == null) return false;
         long now = System.currentTimeMillis();
         user = owner(user);
         learn(role == PROVIDE ? PROVIDES : SUBSCRIBES, user.getClass(), type);
@@ -109,13 +110,15 @@ public final class PortClaims {
         for (int i = 0, n = list.size(); i < n; i++) {
             Claim c = list.get(i);
             if (c.user == user && c.type == type && c.side == side && c.role == role) {
+                boolean renewed = now - c.time > TIMEOUT_MS;
                 c.time = now;
                 claims.sweep(now);
-                return;
+                return renewed;
             }
         }
         list.add(new Claim(user, type, side, role, now));
         claims.sweep(now);
+        return true;
     }
 
     /**

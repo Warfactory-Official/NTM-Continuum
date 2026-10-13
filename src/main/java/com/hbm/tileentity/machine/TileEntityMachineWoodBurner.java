@@ -8,7 +8,6 @@ import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.util.TickPhase;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.inventory.container.ContainerMachineWoodBurner;
 import com.hbm.inventory.fluid.FluidType;
@@ -17,7 +16,6 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ItemEnums.EnumAshType;
 import com.hbm.items.ModIngredientItems;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -39,7 +37,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -76,7 +73,7 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineWoodBurner te) {
         te.powerGen = 0;
         te.setTypeFromFluidId();
-        te.loadTank();
+        if (MachineFluidContainerIO.load(te.tank, te.inventory, 3, 4)) te.setChanged();
         te.power = Library.chargeItemsFromTE(te.inventory, 5, te.power, maxPower);
 
         for (DirPos connection : te.getConPos()) {
@@ -159,41 +156,6 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
         }
     }
 
-    private void loadTank() {
-        ItemStack in = inventory.getStackInSlot(3);
-        if (in.isEmpty()) return;
-
-        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
-            setChanged();
-            return;
-        }
-        if (in.getItem() instanceof IFillableItem fillable) {
-            FluidType heldType = fillable.getFirstFluidType(in);
-            int held = fillable.getFill(in);
-            if (held <= 0 || heldType == null || heldType == Fluids.NONE) return;
-            int addable = tank.fill(heldType, held, false);
-            if (addable <= 0) return;
-            ItemStack work = in.copy();
-            work.setCount(1);
-            int taken = fillable.tryEmpty(heldType, addable, work);
-            if (taken <= 0 || !inventory.insertItem(4, work.copy(), true).isEmpty()) return;
-            tank.fill(heldType, taken, true);
-            inventory.extractItem(3, 1, false);
-            inventory.insertItem(4, work, false);
-            setChanged();
-        } else if (in.getItem() instanceof ItemFluidBucket) {
-            FluidType type = ItemFluidBucket.getFluid(in);
-            if (type == Fluids.NONE || tank.fill(type, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return;
-            ItemStack empty = new ItemStack(Items.BUCKET);
-            if (!inventory.insertItem(4, empty.copy(), true).isEmpty()) return;
-            tank.fill(type, ItemFluidBucket.VOLUME, true);
-            inventory.extractItem(3, 1, false);
-            inventory.insertItem(4, empty, false);
-            setChanged();
-        }
-    }
-
     public static EnumAshType getAshFromFuel(ItemStack stack) {
         if (stack.isEmpty()) return EnumAshType.MISC;
         String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
@@ -229,19 +191,10 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
 
     @Override public void handleButtonPacket(int value, int meta) { handleButton(value); }
 
-    public boolean isDrainable(ItemStack stack) {
-        if (stack.isEmpty()) return false;
-        if (stack.getItem() instanceof ItemFluidBucket) return ItemFluidBucket.getFluid(stack) != Fluids.NONE;
-        if (!(stack.getItem() instanceof IFillableItem fillable)) return false;
-        FluidType type = fillable.getFirstFluidType(stack);
-        return fillable.getFill(stack) > 0 && type != null && type != Fluids.NONE;
-    }
-
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return level != null && burnModule.getBurnTime(level, stack) > 0;
         if (slot == 2) return stack.getItem() instanceof IItemFluidId;
-        if (slot == 3) return isDrainable(stack);
         if (slot == 5) return Library.isBattery(stack);
         return true;
     }

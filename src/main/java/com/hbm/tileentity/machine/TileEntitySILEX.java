@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
 
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.inventory.container.ContainerSILEX;
@@ -14,7 +13,6 @@ import com.hbm.inventory.recipes.SILEXRecipes;
 import com.hbm.inventory.recipes.SILEXRecipes.SILEXRecipe;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -34,7 +32,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
@@ -93,7 +90,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntitySILEX te) {
         te.updateTankType();
-        te.fillTankFromSlots();
+        if (MachineFluidContainerIO.load(te.tank, te.inventory, 2, 3)) te.setChanged();
         for (DirPos port : te.getConPos()) te.trySubscribe(te.tank.getTankType(), level, port);
 
 
@@ -265,53 +262,6 @@ public class TileEntitySILEX extends TileEntityMachineBase
         }
     }
 
-    /** Drains a full container in slot 2 into the tank; the emptied container goes to slot 3. */
-    private void fillTankFromSlots() {
-        ItemStack in = inventory.getStackInSlot(2);
-        if (in.isEmpty()) return;
-
-        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
-            setChanged();
-            return;
-        }
-        if (in.getItem() instanceof IFillableItem fillable) {
-            int held = fillable.getFill(in);
-            FluidType heldType = fillable.getFirstFluidType(in);
-            if (held <= 0 || heldType == Fluids.NONE) return;
-            int addable = tank.fill(heldType, held, false);
-            if (addable <= 0) return;
-            ItemStack work = ItemStacks.copyWithCount(in, 1);
-            int taken = fillable.tryEmpty(heldType, addable, work);
-            if (taken <= 0 || !fits(3, work)) return;
-            tank.fill(heldType, taken, true);
-            moveResult(work);
-        } else if (in.getItem() instanceof ItemFluidBucket) {
-            FluidType fluid = ItemFluidBucket.getFluid(in);
-            if (fluid == Fluids.NONE) return;
-            if (tank.fill(fluid, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return;
-            ItemStack empty = new ItemStack(Items.BUCKET);
-            if (!fits(3, empty)) return;
-            tank.fill(fluid, ItemFluidBucket.VOLUME, true);
-            moveResult(empty);
-        }
-    }
-
-    private boolean fits(int slot, ItemStack stack) {
-        ItemStack there = inventory.getStackInSlot(slot);
-        if (there.isEmpty()) return true;
-        return ItemStacks.sameItemAndData(there, stack)
-                && there.getCount() + stack.getCount() <= there.getMaxStackSize();
-    }
-
-    private void moveResult(ItemStack result) {
-        ItemStack there = inventory.getStackInSlot(3);
-        if (there.isEmpty()) inventory.setStackInSlot(3, result);
-        else there.grow(result.getCount());
-        inventory.getStackInSlot(2).shrink(1);
-        setChanged();
-    }
-
     /**
      * The two fluid ports: {@code ±2} blocks out along the axis PERPENDICULAR to the machine's facing,
      * at {@code y+1}: the two cells {@code MachineSILEX.visitCells} opens.
@@ -338,8 +288,8 @@ public class TileEntitySILEX extends TileEntityMachineBase
     // Inventory rules
 
     /**
-     * Slot 0 accepts anything a recipe can dissolve, 1 a fluid identifier, 2 a fluid container, 3 the
-     * emptied container (so the machine's own transfer can place it; the player is blocked by the
+     * Slot 0 accepts anything a recipe can dissolve, 1 a fluid identifier, 2 anything (a plain slot in 1.7
+     * {@code ContainerSILEX}), 3 the emptied container (so the machine's own transfer can place it; the player is blocked by the
      * take-only slot in {@link ContainerSILEX}). Slot 4 is the staging output and 5–10 are the queue:
      * both are written by the machine only, never inserted into.
      */
@@ -348,8 +298,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         return switch (slot) {
             case 0 -> SILEXRecipes.getOutput(stack) != null;
             case 1 -> stack.getItem() instanceof IItemFluidId;
-            case 2 -> stack.getItem() instanceof IFillableItem || stack.getItem() instanceof ItemFluidBucket;
-            case 3 -> true;
+            case 2, 3 -> true;
             default -> false;
         };
     }

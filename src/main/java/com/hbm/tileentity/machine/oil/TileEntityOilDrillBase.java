@@ -1,7 +1,6 @@
 package com.hbm.tileentity.machine.oil;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.data.DepositDataMaps;
 import com.hbm.blocks.ModBlocks;
@@ -10,20 +9,19 @@ import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import com.hbm.util.TickPhase;
 import java.util.HashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -78,10 +76,10 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityOilDrillBase te) {
-        te.unloadTank(0, 1, 2);
-        te.unloadTank(1, 3, 4);
-
         te.updateConnections(level);
+
+        MachineFluidContainerIO.unload(te.tanks[0], te.inventory, 1, 2);
+        MachineFluidContainerIO.unload(te.tanks[1], te.inventory, 3, 4);
 
         te.upgradeManager.checkSlots(te.inventory, 5, 7);
         te.speedLevel = Math.min(te.upgradeManager.getLevel(UpgradeType.SPEED), 3);
@@ -127,36 +125,6 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         }
 
         te.networkPackNT();
-    }
-
-    /** Fills a fluid container in {@code loadSlot} FROM {@code tanks[tank]}, result in {@code outSlot}
-     * (the old {@code FluidTankNTM.unloadTank}; same container handling as the chemplant). */
-    protected void unloadTank(int tank, int loadSlot, int outSlot) {
-        FluidTankNTM t = tanks[tank];
-        FluidType fluid = t.getTankType();
-        if (fluid == Fluids.NONE || t.getFill() <= 0) return;
-        ItemStack in = inventory.getStackInSlot(loadSlot);
-        if (in.isEmpty()) return;
-
-        if (in.getItem() instanceof IFillableItem fillable) {
-            if (!fillable.acceptsFluid(fluid, in)) return;
-            ItemStack work = in.copy();
-            work.setCount(1);
-            int remainder = fillable.tryFill(fluid, t.getFill(), work);
-            int moved = t.getFill() - remainder;
-            if (moved <= 0 || !inventory.insertItem(outSlot, work.copy(), true).isEmpty()) return;
-            t.setFill(t.getFill() - moved);
-            inventory.extractItem(loadSlot, 1, false);
-            inventory.insertItem(outSlot, work, false);
-            setChanged();
-        } else if (in.is(Items.BUCKET) && t.getFill() >= ItemFluidBucket.VOLUME) {
-            ItemStack full = ItemFluidBucket.make(fluid);
-            if (!inventory.insertItem(outSlot, full.copy(), true).isEmpty()) return;
-            t.setFill(t.getFill() - ItemFluidBucket.VOLUME);
-            inventory.extractItem(loadSlot, 1, false);
-            inventory.insertItem(outSlot, full, false);
-            setChanged();
-        }
     }
 
     public boolean canPump() {

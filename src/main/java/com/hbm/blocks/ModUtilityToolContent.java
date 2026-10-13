@@ -17,6 +17,7 @@ import com.hbm.handler.ToolKeybinds;
 import com.hbm.inventory.ModUtilityToolMenus;
 import com.hbm.items.ModUtilityToolItems;
 import com.hbm.items.UtilityToolDeclarations;
+import com.hbm.items.machine.ItemFluidIDMulti;
 import com.hbm.items.tool.ItemSettingsTool;
 import com.hbm.packet.ItemControlPayload;
 import com.hbm.packet.ToolKeyPayload;
@@ -76,5 +77,7 @@ public final class ModUtilityToolContent {
         if (!(GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSafeCrates))
             HazardSystem.trafos.add(new HazardTransformerRadiationContainer());
         ItemFirstUse.register(ItemSettingsTool::useFirst);
+        // 1.7 ItemFluidIDMulti.doesSneakBypassUse: a sneak-click retypes the duct line, barrel or tank it hits
+        ItemFirstUse.sneakBypass(stack -> stack.getItem() instanceof ItemFluidIDMulti);
     }
 }

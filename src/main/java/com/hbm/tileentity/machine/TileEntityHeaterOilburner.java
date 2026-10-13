@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.environment.Environment;
 import dev.golem.core.data.Tags;
 
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
@@ -14,7 +13,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
@@ -29,7 +27,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
@@ -64,7 +61,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeaterOilburner te) {
-        te.loadTank();
+        if (MachineFluidContainerIO.load(te.tank, te.inventory, 0, 1)) te.setChanged();
         te.setTypeFromFluidId();
 
         for (DirPos connection : te.getConPos()) {
@@ -101,43 +98,6 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
         }
 
         te.networkPackNT();
-    }
-
-    /** Drains a fluid container in slot 0 INTO the tank, emptied container to slot 1 (old tank.loadTank(0,1)). */
-    private void loadTank() {
-        ItemStack in = inventory.getStackInSlot(0);
-        if (in.isEmpty()) return;
-
-        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
-            setChanged();
-            return;
-        }
-        if (in.getItem() instanceof IFillableItem fillable) {
-            int held = fillable.getFill(in);
-            FluidType heldType = fillable.getFirstFluidType(in);
-            if (held <= 0 || heldType == Fluids.NONE) return;
-            int addable = tank.fill(heldType, held, false);
-            if (addable <= 0) return;
-            ItemStack work = in.copy();
-            work.setCount(1);
-            int taken = fillable.tryEmpty(heldType, addable, work);
-            if (taken <= 0 || !inventory.insertItem(1, work.copy(), true).isEmpty()) return;
-            tank.fill(heldType, taken, true);
-            inventory.extractItem(0, 1, false);
-            inventory.insertItem(1, work, false);
-            setChanged();
-        } else if (in.getItem() instanceof ItemFluidBucket) {
-            FluidType fluid = ItemFluidBucket.getFluid(in);
-            if (fluid == Fluids.NONE) return;
-            if (tank.fill(fluid, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return;
-            ItemStack empty = new ItemStack(Items.BUCKET);
-            if (!inventory.insertItem(1, empty.copy(), true).isEmpty()) return;
-            tank.fill(fluid, ItemFluidBucket.VOLUME, true);
-            inventory.extractItem(0, 1, false);
-            inventory.insertItem(1, empty, false);
-            setChanged();
-        }
     }
 
     /** Slot 2 fluid identifier retypes the tank (old tank.setType(2, inventory)). */
@@ -184,8 +144,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        // Slot 1 (emptied-container out) stays TRUE. The machine fills it via inventory.insertItem,
-        // which validates against this method; the menu's take-only slot blocks the player.
+        // Slot 1 is the emptied-container out; the menu's take-only slot keeps players out.
         if (slot == 2) return stack.getItem() instanceof IItemFluidId;
         return true;
     }

@@ -1,17 +1,14 @@
 package com.hbm.tileentity.machine.oil;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.container.ContainerMachineHydrotreater;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.HydrotreatingRecipes;
-import com.hbm.items.ModFluidNetItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
@@ -28,7 +25,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
@@ -77,13 +73,13 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
         }
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
-        te.loadInput(0, 1, 2);
-        te.loadInput(1, 3, 4);
+        MachineFluidContainerIO.load(te.tanks[0], te.inventory, 1, 2);
+        MachineFluidContainerIO.load(te.tanks[1], te.inventory, 3, 4);
 
         if (TickPhase.every(level, pos, 2)) te.reform();
 
-        te.unloadTank(2, 5, 6);
-        te.unloadTank(3, 7, 8);
+        MachineFluidContainerIO.unload(te.tanks[2], te.inventory, 5, 6);
+        MachineFluidContainerIO.unload(te.tanks[3], te.inventory, 7, 8);
 
         for (DirPos dp : te.getConPos()) {
             for (int i = 2; i < 4; i++) {
@@ -142,73 +138,6 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
         if (t != tanks[0].getTankType()) {
             tanks[0].setTankType(t);
             tanks[0].setFill(0);
-            setChanged();
-        }
-    }
-
-    private void loadInput(int tankIndex, int inSlot, int outSlot) {
-        ItemStack in = inventory.getStackInSlot(inSlot);
-        if (in.isEmpty()) return;
-        FluidTankNTM tank = tanks[tankIndex];
-        // 1.7 FluidTank.loadTank: a pressurised tank only accepts the infinite barrel.
-        if (tank.getPressure() != 0 && !in.is(ModFluidNetItems.fluid_barrel_infinite.get())) return;
-
-        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
-            setChanged();
-            return;
-        }
-        if (in.getItem() instanceof IFillableItem fillable) {
-            int held = fillable.getFill(in);
-            FluidType heldType = fillable.getFirstFluidType(in);
-            if (held <= 0 || heldType == Fluids.NONE) return;
-            int addable = tank.fill(heldType, held, false);
-            if (addable <= 0) return;
-            ItemStack work = in.copy();
-            work.setCount(1);
-            int taken = fillable.tryEmpty(heldType, addable, work);
-            if (taken <= 0 || !inventory.insertItem(outSlot, work.copy(), true).isEmpty()) return;
-            tank.fill(heldType, taken, true);
-            inventory.extractItem(inSlot, 1, false);
-            inventory.insertItem(outSlot, work, false);
-            setChanged();
-        } else if (in.getItem() instanceof ItemFluidBucket) {
-            FluidType fluid = ItemFluidBucket.getFluid(in);
-            if (fluid == Fluids.NONE) return;
-            if (tank.fill(fluid, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return;
-            ItemStack empty = new ItemStack(Items.BUCKET);
-            if (!inventory.insertItem(outSlot, empty.copy(), true).isEmpty()) return;
-            tank.fill(fluid, ItemFluidBucket.VOLUME, true);
-            inventory.extractItem(inSlot, 1, false);
-            inventory.insertItem(outSlot, empty, false);
-            setChanged();
-        }
-    }
-
-    private void unloadTank(int tank, int loadSlot, int outSlot) {
-        FluidTankNTM t = tanks[tank];
-        FluidType fluid = t.getTankType();
-        if (fluid == Fluids.NONE || t.getFill() <= 0) return;
-        ItemStack in = inventory.getStackInSlot(loadSlot);
-        if (in.isEmpty()) return;
-
-        if (in.getItem() instanceof IFillableItem fillable) {
-            if (!fillable.acceptsFluid(fluid, in)) return;
-            ItemStack work = in.copy();
-            work.setCount(1);
-            int remainder = fillable.tryFill(fluid, t.getFill(), work);
-            int moved = t.getFill() - remainder;
-            if (moved <= 0 || !inventory.insertItem(outSlot, work.copy(), true).isEmpty()) return;
-            t.setFill(t.getFill() - moved);
-            inventory.extractItem(loadSlot, 1, false);
-            inventory.insertItem(outSlot, work, false);
-            setChanged();
-        } else if (in.is(Items.BUCKET) && t.getFill() >= ItemFluidBucket.VOLUME) {
-            ItemStack full = ItemFluidBucket.make(fluid);
-            if (!inventory.insertItem(outSlot, full.copy(), true).isEmpty()) return;
-            t.setFill(t.getFill() - ItemFluidBucket.VOLUME);
-            inventory.extractItem(loadSlot, 1, false);
-            inventory.insertItem(outSlot, full, false);
             setChanged();
         }
     }

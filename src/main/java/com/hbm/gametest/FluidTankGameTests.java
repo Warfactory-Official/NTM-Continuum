@@ -23,16 +23,19 @@ public final class FluidTankGameTests {
         Fluids.init();
         TileEntityMachineFluidTank tank = placeTank(helper);
         tank.tank.setTankType(Fluids.GASOLINE);
-        tank.tank.setFill(75);
-        tank.inventory.setStackInSlot(4, new ItemStack(ModFluidItems.fluid_tank.get()));
+        tank.tank.setFill(1_075);
+        tank.inventory.setStackInSlot(4, new ItemStack(ModFluidItems.fluid_tank.get(), 2));
 
+        // 1.7 FluidLoaderStandard.fillItem: an empty tank item fills whole (1,000 mB) or not at all
+        TileEntityMachineFluidTank.serverTick(helper.getLevel(), tank.getBlockPos(), tank.getBlockState(), tank);
         TileEntityMachineFluidTank.serverTick(helper.getLevel(), tank.getBlockPos(), tank.getBlockState(), tank);
         ItemStack output = tank.inventory.getStackInSlot(5);
-        helper.assertTrue(tank.tank.getFill() == 0 && tank.inventory.getStackInSlot(4).isEmpty()
-                        && output.getItem() == ModFluidItems.fluid_tank.get()
-                        && ModFluidItems.fluid_tank.get().getFill(output) == 75
+        helper.assertTrue(tank.tank.getFill() == 75 && tank.inventory.getStackInSlot(4).getCount() == 1
+                        && output.getItem() == ModFluidItems.fluid_tank.get() && output.getCount() == 1
+                        && ModFluidItems.fluid_tank.get().getFill(output) == 1_000
                         && ItemFluidTank.getType(output) == Fluids.GASOLINE,
-                "empty output-bay container did not extract the tank fluid");
+                "empty output-bay container did not extract a whole tank item: fill=" + tank.tank.getFill()
+                        + " in=" + tank.inventory.getStackInSlot(4) + " out=" + output);
         helper.succeed();
     }
 

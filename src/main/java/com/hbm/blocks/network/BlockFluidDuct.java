@@ -145,6 +145,21 @@ public class BlockFluidDuct extends CompatBlock implements TickingBlock, SimpleW
         level.setBlock(pos, recomputeConnections(state, level, pos), 3);
     }
 
+    /**
+     * A machine made a new claim at the port whose duct stands at {@code pos}. In 1.7 that call joined the net on the
+     * next tick and the renderer asked {@code canConnect} every frame, so a barrel typed through its GUI next to a duct
+     * was picked up at once. Here the net probes a face only when told to and the arms are block state, so both look
+     * again now.
+     */
+    public static void portClaimed(Level level, BlockPos pos) {
+        if (!(level instanceof ServerLevel server)) return;
+        LevelNodeGraph.invalidateEndpointsAt(server, pos);
+        BlockState state = level.getBlockState(pos);
+        if (!(state.getBlock() instanceof BlockFluidDuct)) return;
+        BlockState updated = recomputeConnections(state, level, pos);
+        if (updated != state) level.setBlock(pos, updated, 3);
+    }
+
     /** Recomputes all six connection flags from the duct's current type (after the type changes). */
     private static BlockState recomputeConnections(BlockState state, BlockGetter level, BlockPos pos) {
         for (Map.Entry<Direction, BooleanProperty> e : PROPERTY_BY_DIRECTION.entrySet()) {

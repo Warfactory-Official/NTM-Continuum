@@ -1,5 +1,6 @@
 package com.hbm.api.fluidmk2;
 
+import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
@@ -27,7 +28,7 @@ public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
 
     default void tryProvide(FluidType type, int pressure, Level world, int x, int y, int z, ForgeDirection dir) {
 
-        PortClaims.claim(world, x, y, z, dir, this, type, PortClaims.PROVIDE);
+        if (PortClaims.claim(world, x, y, z, dir, this, type, PortClaims.PROVIDE)) BlockFluidDuct.portClaimed(world, new BlockPos(x, y, z));
         BlockEntity te = world.getBlockEntity(new BlockPos(x, y, z));
 
         if (te != this && te instanceof IFluidReceiverMK2 rec) {

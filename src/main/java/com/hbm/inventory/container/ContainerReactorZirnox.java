@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.FluidContainerRegistry;
 import com.hbm.inventory.ModMenus;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.api.fluidmk2.IFillableItem;
@@ -141,7 +142,8 @@ public class ContainerReactorZirnox extends AbstractContainerMenu {
     }
 
     private static boolean provides(ItemStack stack, FluidType fluid) {
-        return stack.getItem() instanceof IFillableItem fillable && fillable.providesFluid(fluid, stack)
+        return FluidContainerRegistry.INSTANCE.contentOf(stack, fluid) > 0
+                || stack.getItem() instanceof IFillableItem fillable && fillable.providesFluid(fluid, stack)
                 || stack.getItem() instanceof ItemFluidBucket && ItemFluidBucket.getFluid(stack) == fluid;
     }
 }

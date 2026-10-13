@@ -1,14 +1,10 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
-import com.hbm.api.fluidmk2.IInfiniteFluidItem;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.container.ContainerMachineF6Tank;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -25,12 +21,14 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Common fixed-fluid tank implementation used by the UF6 and PuF6 variants. */
+/**
+ * Common fixed-fluid tank implementation used by the UF6 and PuF6 variants. port: 1.7's UF6/PuF6 tiles are empty, so
+ * the container slots follow the barrel's {@code loadTank(in, out)} / {@code unloadTank(in, out)} on pairs 0/1 and 2/3.
+ */
 public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
         implements MenuProvider, IFluidStandardTransceiverMK2, WorldlyContainer {
 
@@ -51,8 +49,8 @@ public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
             if (tank.tank.getFill() > 0) tank.tryProvide(tank.tank, level, connection);
         }
 
-        tank.loadTank(0, 1);
-        tank.unloadTank(2, 3);
+        MachineFluidContainerIO.load(tank.tank, tank.inventory, 0, 1);
+        MachineFluidContainerIO.unload(tank.tank, tank.inventory, 2, 3);
 
         byte comparator = tank.tank.getRedstoneComparatorPower();
         if (comparator != tank.lastRedstone) {
@@ -62,82 +60,6 @@ public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
 
         tank.setChanged();
         tank.networkPackNT();
-    }
-
-    private void loadTank(int inSlot, int outSlot) {
-        ItemStack input = inventory.getStackInSlot(inSlot);
-        if (input.isEmpty()) return;
-        if (MachineFluidContainerIO.loadInfinite(tank, input)) return;
-
-        if (input.getItem() instanceof IFillableItem fillable) {
-            FluidType heldType = fillable.getFirstFluidType(input);
-            int held = fillable.getFill(input);
-            if (heldType == null || heldType == Fluids.NONE || held <= 0 || heldType != tank.getTankType()) return;
-
-            int accepted = tank.fill(heldType, held, false);
-            if (accepted <= 0) return;
-            ItemStack result = single(input);
-            int emptied = fillable.tryEmpty(heldType, accepted, result);
-            if (emptied > 0 && fits(outSlot, result)) {
-                tank.fill(heldType, emptied, true);
-                moveResult(inSlot, outSlot, result);
-            }
-            return;
-        }
-
-        FluidType bucketFluid = bucketFluid(input);
-        if (bucketFluid != tank.getTankType()
-                || tank.fill(bucketFluid, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return;
-        ItemStack empty = new ItemStack(Items.BUCKET);
-        if (fits(outSlot, empty)) {
-            tank.fill(bucketFluid, ItemFluidBucket.VOLUME, true);
-            moveResult(inSlot, outSlot, empty);
-        }
-    }
-
-    private void unloadTank(int inSlot, int outSlot) {
-        ItemStack input = inventory.getStackInSlot(inSlot);
-        if (input.isEmpty() || tank.getFill() <= 0) return;
-        if (MachineFluidContainerIO.unloadInfinite(tank, input)) return;
-
-        if (input.getItem() instanceof IFillableItem fillable) {
-            if (!fillable.acceptsFluid(tank.getTankType(), input)) return;
-            ItemStack result = single(input);
-            int remainder = fillable.tryFill(tank.getTankType(), tank.getFill(), result);
-            int moved = tank.getFill() - remainder;
-            if (moved > 0 && fits(outSlot, result)) {
-                tank.setFill(tank.getFill() - moved);
-                moveResult(inSlot, outSlot, result);
-            }
-            return;
-        }
-
-        if (!input.is(Items.BUCKET) || tank.getFill() < ItemFluidBucket.VOLUME) return;
-        ItemStack filled = ItemFluidBucket.make(tank.getTankType());
-        if (fits(outSlot, filled)) {
-            tank.setFill(tank.getFill() - ItemFluidBucket.VOLUME);
-            moveResult(inSlot, outSlot, filled);
-        }
-    }
-
-    private static FluidType bucketFluid(ItemStack stack) {
-        if (stack.getItem() instanceof ItemFluidBucket) return ItemFluidBucket.getFluid(stack);
-        return Fluids.NONE;
-    }
-
-    private static ItemStack single(ItemStack stack) {
-        ItemStack copy = stack.copy();
-        copy.setCount(1);
-        return copy;
-    }
-
-    private boolean fits(int slot, ItemStack stack) {
-        return inventory.insertItem(slot, stack.copy(), true).isEmpty();
-    }
-
-    private void moveResult(int inSlot, int outSlot, ItemStack result) {
-        inventory.extractItem(inSlot, 1, false);
-        inventory.insertItem(outSlot, result, false);
     }
 
     public DirPos[] getConPos() {
@@ -172,16 +94,11 @@ public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
         return new FluidTankNTM[]{tank};
     }
 
+    /** Either input slot takes any container a loader handles, full or empty. */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        return slot == 0 || slot == 2 ? isFluidContainer(stack) : false;
-    }
-
-    private static boolean isFluidContainer(ItemStack stack) {
-        return stack.getItem() instanceof IFillableItem
-                || stack.getItem() instanceof IInfiniteFluidItem
-                || stack.getItem() instanceof ItemFluidBucket
-                || stack.is(Items.BUCKET);
+        return (slot == 0 || slot == 2)
+                && (TileEntityMachineFluidTank.isDrainable(tank, stack) || TileEntityMachineFluidTank.isFillable(tank, stack));
     }
 
     @Override

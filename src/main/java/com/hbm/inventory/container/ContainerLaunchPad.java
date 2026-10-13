@@ -1,7 +1,12 @@
 package com.hbm.inventory.container;
 
 import com.hbm.api.item.IDesignatorItem;
+import com.hbm.inventory.FluidContainerRegistry;
 import com.hbm.inventory.ModMenus;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.items.ModFluidNetItems;
+import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
 import net.minecraft.core.BlockPos;
@@ -98,6 +103,14 @@ public class ContainerLaunchPad extends AbstractContainerMenu {
         return this.machine.stillValid(player);
     }
 
+    /** 1.7 {@code FluidContainerRegistry.getFluidContent(stack, tank type) > 0}. */
+    private static boolean holds(ItemStack stack, FluidTankNTM tank) {
+        if (FluidContainerRegistry.INSTANCE.contentOf(stack, tank.getTankType()) > 0) return true;
+        // port: the universal bucket, which 1.7's registry never had
+        return stack.getItem() instanceof ItemFluidBucket && tank.getTankType() != Fluids.NONE
+                && ItemFluidBucket.getFluid(stack) == tank.getTankType();
+    }
+
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         ItemStack result = ItemStack.EMPTY;
@@ -114,13 +127,16 @@ public class ContainerLaunchPad extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(stack, 2, 3, false)) return ItemStack.EMPTY;
             } else if (pad != null && pad.isMissileValid(stack)) {
                 if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
+            } else if (stack.is(ModFluidNetItems.fluid_barrel_infinite.get())) {
+                if (!this.moveItemStackTo(stack, 3, 4, false) && !this.moveItemStackTo(stack, 5, 6, false)) return ItemStack.EMPTY;
+            } else if (pad != null && holds(stack, pad.tanks[0])) {
+                if (!this.moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
+            } else if (pad != null && holds(stack, pad.tanks[1])) {
+                if (!this.moveItemStackTo(stack, 5, 6, false)) return ItemStack.EMPTY;
             } else if (stack.getItem() instanceof IDesignatorItem) {
                 if (!this.moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
             } else {
-                // Anything else is treated as a fluid container: try the fuel slot, then the oxidiser.
-                if (!this.moveItemStackTo(stack, 3, 4, false) && !this.moveItemStackTo(stack, 5, 6, false)) {
-                    return ItemStack.EMPTY;
-                }
+                return ItemStack.EMPTY;
             }
 
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY); else slot.setChanged();

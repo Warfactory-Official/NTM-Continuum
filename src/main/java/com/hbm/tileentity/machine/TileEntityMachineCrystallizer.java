@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.client.sound.CrystallizerSoundHandler;
@@ -23,7 +22,6 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes.CrystallizerRecipe;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -40,7 +38,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
@@ -102,7 +99,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
 
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.getPower(), te.getMaxPower());
         te.updateTankType();
-        te.fillTankFromSlot();
+        MachineFluidContainerIO.load(te.tank, te.inventory, 3, 4);
         te.upgradeManager.checkSlots(te.inventory, 5, 6);
         te.cycleCount = te.getCycleCount();
 
@@ -216,69 +213,6 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         }
     }
 
-    /** Drains a full container in slot 3 INTO the tank, emptied container to slot 4 (the 1.12.2
-     * {@code loadTank(3, 4)}). Handles the universal tank/barrel ({@link IFillableItem}) and buckets. */
-    private void fillTankFromSlot() {
-        ItemStack in = inventory.getStackInSlot(3);
-        if (in.isEmpty()) return;
-
-        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
-            setChanged();
-            return;
-        }
-        if (in.getItem() instanceof IFillableItem fillable) {
-            int held = fillable.getFill(in);
-            FluidType heldType = fillable.getFirstFluidType(in);
-            if (held <= 0 || heldType == Fluids.NONE) return;
-            int addable = tank.fill(heldType, held, false);
-            if (addable <= 0) return; // tank full or wrong type
-            ItemStack work = single(in);
-            int taken = fillable.tryEmpty(heldType, addable, work);
-            if (taken <= 0 || !fits(4, work)) return;
-            tank.fill(heldType, taken, true);
-            moveResult(3, 4, work);
-        } else {
-            FluidType fluid = bucketFluid(in);
-            if (fluid == Fluids.NONE) return;
-            if (tank.fill(fluid, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return;
-            ItemStack empty = new ItemStack(Items.BUCKET);
-            if (!fits(4, empty)) return;
-            tank.fill(fluid, ItemFluidBucket.VOLUME, true);
-            moveResult(3, 4, empty);
-        }
-    }
-
-    private static FluidType bucketFluid(ItemStack stack) {
-        if (stack.getItem() instanceof ItemFluidBucket) return ItemFluidBucket.getFluid(stack);
-        if (stack.is(Items.WATER_BUCKET)) return Fluids.WATER;
-        if (stack.is(Items.LAVA_BUCKET)) return Fluids.LAVA;
-        return Fluids.NONE;
-    }
-
-    /** Any fluid container the load slot accepts: a tank/barrel, an HBM fluid bucket, or a vanilla bucket. */
-    private static boolean isFluidContainer(ItemStack stack) {
-        return stack.getItem() instanceof IFillableItem
-                || stack.getItem() instanceof ItemFluidBucket
-                || stack.is(Items.BUCKET) || stack.is(Items.WATER_BUCKET) || stack.is(Items.LAVA_BUCKET);
-    }
-
-    private static ItemStack single(ItemStack stack) {
-        ItemStack copy = stack.copy();
-        copy.setCount(1);
-        return copy;
-    }
-
-    private boolean fits(int outSlot, ItemStack stack) {
-        return inventory.insertItem(outSlot, stack.copy(), true).isEmpty();
-    }
-
-    private void moveResult(int inSlot, int outSlot, ItemStack result) {
-        inventory.extractItem(inSlot, 1, false);
-        inventory.insertItem(outSlot, result, false);
-        setChanged();
-    }
-
     /** The 8 network-connection positions on the tower's four sides at ±2 (ported unchanged). */
     public DirPos[] getConPos() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
@@ -291,18 +225,16 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
 
     /**
      * Slot roles: 0 input (any recipe input, regardless of the loaded acid; the player may load the
-     * matching acid after), 1 battery, 3 fluid-container in, 7 identifier. Slot 4 must return true so
-     * the machine's own insertItem can place the emptied container there (player insertion is blocked
-     * by the take-only slot in {@link ContainerCrystallizer}); 2 (output, written via setStackInSlot)
-     * and 5–6 (inert upgrade slots) reject everything.
+     * matching acid after), 1 battery, 3 fluid-container in (any item, a plain slot in the 1.7 menu),
+     * 7 identifier. Player insertion into 4 is blocked by the take-only slot in {@link ContainerCrystallizer};
+     * 2 (output, written via setStackInSlot) rejects everything.
      */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return switch (slot) {
             case 0 -> CrystallizerRecipes.isAnyRecipeInput(stack);
             case 1 -> Library.isBattery(stack);
-            case 3 -> isFluidContainer(stack);
-            case 4 -> true;
+            case 3, 4 -> true;
             case 5, 6 -> Library.isMachineUpgrade(stack); // upgrades (any type, like SlotUpgrade)
             case 7 -> stack.getItem() instanceof IItemFluidId;
             default -> false; // 2 output

@@ -1,14 +1,12 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.FluidGraph;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.container.ContainerMachineGiantTank;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
@@ -27,7 +25,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -56,8 +53,8 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineGiantTank tank) {
         tank.updateTypeFromIdentifier();
-        tank.loadTank(2, 3);
-        tank.unloadTank(4, 5);
+        MachineFluidContainerIO.load(tank.tankNew, tank.inventory, 2, 3);
+        MachineFluidContainerIO.unload(tank.tankNew, tank.inventory, 4, 5);
 
         byte comparator = tank.tankNew.getRedstoneComparatorPower();
         if (comparator != tank.lastRedstone) {
@@ -96,6 +93,7 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
         }
     }
 
+    /** 1.7 {@code tank.setType(0, 1, slots)}: an identifier in slot 0 sets the type and passes to slot 1. */
     private void updateTypeFromIdentifier() {
         ItemStack input = inventory.getStackInSlot(0);
         if (input.isEmpty() || !(input.getItem() instanceof IItemFluidId identifier)
@@ -105,8 +103,9 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
         if (type == tankNew.getTankType()) return;
 
         setTankType(type);
-        inventory.insertItem(1, input.copy(), false);
-        inventory.extractItem(0, 1, false);
+        // 1.7 moves the whole identifier stack: slots[out] = slots[in].copy(); slots[in] = null.
+        inventory.setStackInSlot(1, input.copy());
+        inventory.setStackInSlot(0, ItemStack.EMPTY);
     }
 
     /** Retypes the tank; the next tick retypes the cells a buffer holds with it. */
@@ -117,139 +116,12 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
         setChanged();
     }
 
-    /** The directional input-container bay from {@code TileEntityBarrel.loadTank}. */
-    protected boolean loadTank(int inputSlot, int outputSlot) {
-        // 1.7 FluidTank.loadTank: the infinite items bypass the pressure gate and are never consumed.
-        if (MachineFluidContainerIO.loadInfinite(tankNew, inventory.getStackInSlot(inputSlot))) return true;
-        if (tankNew.getPressure() != 0) return false;
-        ItemStack input = inventory.getStackInSlot(inputSlot);
-        if (input.isEmpty()) return false;
-
-        if (input.getItem() instanceof IFillableItem fillable) {
-            FluidType type = fillable.getFirstFluidType(input);
-            int held = fillable.getFill(input);
-            if (type == null || type == Fluids.NONE || held <= 0) return false;
-
-            ItemStack work = single(input);
-            int moved = fillable.tryEmpty(type, Math.min(held, tankNew.getMaxFill() - tankNew.getFill()), work);
-            if (moved <= 0) return false;
-            boolean wouldEmpty = fillable.getFill(work) <= 0;
-            boolean wouldFillTank = tankNew.getFill() + moved >= tankNew.getMaxFill();
-            boolean preferOutput = input.getCount() > 1 || wouldEmpty || wouldFillTank;
-            boolean toOutput = preferOutput && fits(outputSlot, work);
-            if (input.getCount() > 1 && !toOutput) return false;
-
-            tankNew.fill(type, moved, true);
-            if (toOutput) {
-                inventory.extractItem(inputSlot, 1, false);
-                inventory.insertItem(outputSlot, work, false);
-            } else {
-                inventory.setStackInSlot(inputSlot, work);
-            }
-            setChanged();
-            return true;
-        }
-
-        FluidType type = bucketFluid(input);
-        if (type == Fluids.NONE || tankNew.fill(type, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return false;
-        ItemStack empty = new ItemStack(Items.BUCKET);
-        if (!fits(outputSlot, empty)) return false;
-        tankNew.fill(type, ItemFluidBucket.VOLUME, true);
-        inventory.extractItem(inputSlot, 1, false);
-        inventory.insertItem(outputSlot, empty, false);
-        setChanged();
-        return true;
-    }
-
-    /** The directional output-container bay from {@code TileEntityBarrel.unloadTank}. */
-    protected boolean unloadTank(int inputSlot, int outputSlot) {
-        if (MachineFluidContainerIO.unloadInfinite(tankNew, inventory.getStackInSlot(inputSlot))) return true;
-        if (tankNew.getPressure() != 0 || tankNew.getTankType() == Fluids.NONE || tankNew.getFill() <= 0) return false;
-        ItemStack input = inventory.getStackInSlot(inputSlot);
-        if (input.isEmpty()) return false;
-
-        if (input.getItem() instanceof IFillableItem fillable) {
-            if (!fillable.acceptsFluid(tankNew.getTankType(), input)) return false;
-            ItemStack work = single(input);
-            int remainder = fillable.tryFill(tankNew.getTankType(), tankNew.getFill(), work);
-            int moved = tankNew.getFill() - remainder;
-            if (moved <= 0) return false;
-            boolean full = !fillable.acceptsFluid(tankNew.getTankType(), work);
-            boolean emptyTank = moved >= tankNew.getFill();
-            boolean preferOutput = input.getCount() > 1 || full || emptyTank;
-            boolean toOutput = preferOutput && fits(outputSlot, work);
-            if (input.getCount() > 1 && !toOutput) return false;
-
-            tankNew.setFill(tankNew.getFill() - moved);
-            if (toOutput) {
-                inventory.extractItem(inputSlot, 1, false);
-                inventory.insertItem(outputSlot, work, false);
-            } else {
-                inventory.setStackInSlot(inputSlot, work);
-            }
-            setChanged();
-            return true;
-        }
-
-        if (!input.is(Items.BUCKET) || tankNew.getFill() < ItemFluidBucket.VOLUME) return false;
-        FluidType type = tankNew.getTankType();
-        ItemStack full = type == Fluids.WATER ? new ItemStack(Items.WATER_BUCKET)
-                : type == Fluids.LAVA ? new ItemStack(Items.LAVA_BUCKET) : ItemFluidBucket.make(type);
-        if (!fits(outputSlot, full)) return false;
-        tankNew.setFill(tankNew.getFill() - ItemFluidBucket.VOLUME);
-        inventory.extractItem(inputSlot, 1, false);
-        inventory.insertItem(outputSlot, full, false);
-        setChanged();
-        return true;
-    }
-
-    private boolean fits(int slot, ItemStack stack) {
-        return inventory.insertItem(slot, stack.copy(), true).isEmpty();
-    }
-
-    private static ItemStack single(ItemStack stack) {
-        ItemStack copy = stack.copy();
-        copy.setCount(1);
-        return copy;
-    }
-
-    private static FluidType bucketFluid(ItemStack stack) {
-        if (stack.getItem() instanceof ItemFluidBucket) return ItemFluidBucket.getFluid(stack);
-        if (stack.is(Items.WATER_BUCKET)) return Fluids.WATER;
-        if (stack.is(Items.LAVA_BUCKET)) return Fluids.LAVA;
-        return Fluids.NONE;
-    }
-
-    private boolean isDrainable(ItemStack stack) {
-        if (MachineFluidContainerIO.acceptsInfiniteSource(tankNew, stack)) return true;
-        if (stack.isEmpty() || tankNew.getFill() >= tankNew.getMaxFill()) return false;
-        FluidType type;
-        int amount;
-        if (stack.getItem() instanceof IFillableItem fillable) {
-            type = fillable.getFirstFluidType(stack);
-            amount = fillable.getFill(stack);
-        } else {
-            type = bucketFluid(stack);
-            amount = ItemFluidBucket.VOLUME;
-        }
-        return type != null && type != Fluids.NONE && amount > 0
-                && (tankNew.getTankType() == Fluids.NONE || tankNew.getTankType() == type)
-                && tankNew.fill(type, amount, false) > 0;
-    }
-
-    private boolean isFillable(ItemStack stack) {
-        if (MachineFluidContainerIO.acceptsInfiniteSink(tankNew, stack)) return true;
-        return !stack.isEmpty() && ((stack.getItem() instanceof IFillableItem fillable
-                && fillable.acceptsFluid(tankNew.getTankType(), stack)) || stack.is(Items.BUCKET))
-                && tankNew.getTankType() != Fluids.NONE;
-    }
-
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return switch (slot) {
             case 0, 1 -> stack.getItem() instanceof IItemFluidId;
-            case 2 -> isDrainable(stack);
-            case 4 -> isFillable(stack);
+            case 2 -> TileEntityMachineFluidTank.isDrainable(tankNew, stack);
+            case 4 -> TileEntityMachineFluidTank.isFillable(tankNew, stack);
             default -> true;
         };
     }

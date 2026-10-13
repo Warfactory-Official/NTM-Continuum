@@ -5,7 +5,6 @@ import com.hbm.inventory.material.NTMMaterial;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
@@ -18,7 +17,6 @@ import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.recipes.ElectrolyserFluidRecipes;
 import com.hbm.inventory.recipes.ElectrolyserMetalRecipes;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.machine.ItemFluidId;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.interfaces.IControlReceiver;
@@ -49,7 +47,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -103,6 +100,12 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineElectrolyser te) {
+        te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, MAX_POWER);
+        te.selectInputFluid();
+        MachineFluidContainerIO.load(te.tanks[0], te.inventory, 5, 6);
+        MachineFluidContainerIO.unload(te.tanks[1], te.inventory, 7, 8);
+        MachineFluidContainerIO.unload(te.tanks[2], te.inventory, 9, 10);
+
         for (DirPos connection : te.getConPos()) {
             if (level.getGameTime() % 20 == 0) {
                 te.trySubscribe(level, connection);
@@ -112,12 +115,6 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
             if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, connection);
             if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, connection);
         }
-
-        te.selectInputFluid();
-        te.loadTank(5, 6);
-        te.unloadTank(1, 7, 8);
-        te.unloadTank(2, 9, 10);
-        te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, MAX_POWER);
 
         te.upgradeManager.checkSlots(te.inventory, 1, 2);
         int speedLevel = te.upgradeManager.getLevel(UpgradeType.SPEED);
@@ -163,58 +160,6 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
             FluidType type = ItemFluidId.getFluid(stack);
             if (type != Fluids.NONE && tanks[0].getFill() == 0) tanks[0].setTankType(type);
         }
-    }
-
-    private void loadTank(int inputSlot, int outputSlot) {
-        ItemStack input = inventory.getStackInSlot(inputSlot);
-        if (input.isEmpty()) return;
-        FluidType type;
-        int amount;
-        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (MachineFluidContainerIO.loadInfinite(tanks[0], input)) {
-            setChanged();
-            return;
-        }
-        if (input.getItem() instanceof IFillableItem fillable) {
-            type = fillable.getFirstFluidType(input);
-            amount = fillable.getFill(input);
-            if (type == null || type == Fluids.NONE || amount <= 0 || type != tanks[0].getTankType()) return;
-            amount = tanks[0].fill(type, amount, false);
-            if (amount <= 0) return;
-            ItemStack result = single(input);
-            int moved = fillable.tryEmpty(type, amount, result);
-            if (moved <= 0 || !fits(outputSlot, result)) return;
-            tanks[0].fill(type, moved, true);
-            moveResult(inputSlot, outputSlot, result);
-            return;
-        }
-        type = input.getItem() instanceof ItemFluidBucket ? ItemFluidBucket.getFluid(input) : Fluids.NONE;
-        if (type != tanks[0].getTankType() || tanks[0].fill(type, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return;
-        ItemStack empty = new ItemStack(Items.BUCKET);
-        if (!fits(outputSlot, empty)) return;
-        tanks[0].fill(type, ItemFluidBucket.VOLUME, true);
-        moveResult(inputSlot, outputSlot, empty);
-    }
-
-    private void unloadTank(int tankIndex, int inputSlot, int outputSlot) {
-        FluidTankNTM tank = tanks[tankIndex];
-        ItemStack input = inventory.getStackInSlot(inputSlot);
-        if (input.isEmpty() || tank.getFill() <= 0) return;
-        if (input.getItem() instanceof IFillableItem fillable) {
-            if (!fillable.acceptsFluid(tank.getTankType(), input)) return;
-            ItemStack result = single(input);
-            int remainder = fillable.tryFill(tank.getTankType(), tank.getFill(), result);
-            int moved = tank.getFill() - remainder;
-            if (moved <= 0 || !fits(outputSlot, result)) return;
-            tank.setFill(tank.getFill() - moved);
-            moveResult(inputSlot, outputSlot, result);
-            return;
-        }
-        if (!input.is(Items.BUCKET) || tank.getFill() < ItemFluidBucket.VOLUME) return;
-        ItemStack full = ItemFluidBucket.make(tank.getTankType());
-        if (!fits(outputSlot, full)) return;
-        tank.setFill(tank.getFill() - ItemFluidBucket.VOLUME);
-        moveResult(inputSlot, outputSlot, full);
     }
 
     private boolean canProcessFluid() {
@@ -326,22 +271,6 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
         }
     }
 
-    private static ItemStack single(ItemStack stack) {
-        ItemStack copy = stack.copy();
-        copy.setCount(1);
-        return copy;
-    }
-
-    private boolean fits(int slot, ItemStack stack) {
-        return inventory.insertItem(slot, stack.copy(), true).isEmpty();
-    }
-
-    private void moveResult(int inputSlot, int outputSlot, ItemStack result) {
-        inventory.extractItem(inputSlot, 1, false);
-        inventory.insertItem(outputSlot, result, false);
-        setChanged();
-    }
-
     public DirPos[] getConPos() {
         if (conPos == null) {
             ForgeDirection dir = MachineCore.facing(getBlockState());
@@ -380,13 +309,10 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
         if (slot == 0) return Library.isBattery(stack);
         if (slot == 1 || slot == 2) return Library.isMachineUpgrade(stack);
         if (slot == 3 || slot == 4) return stack.getItem() instanceof ItemFluidId;
-        if (slot == 5 || slot == 6 || slot == 7 || slot == 8 || slot == 9 || slot == 10) return isFluidContainer(stack);
+        // 1.7 ContainerElectrolyser: plain slots, anything a loader might take
+        if (slot >= 5 && slot <= 10) return true;
         if (slot == 14) return ElectrolyserMetalRecipes.getRecipe(stack) != null;
         return slot == 11 || slot == 12 || slot == 13 || slot >= 15;
-    }
-
-    private static boolean isFluidContainer(ItemStack stack) {
-        return stack.getItem() instanceof IFillableItem || stack.getItem() instanceof ItemFluidBucket || stack.is(Items.BUCKET);
     }
 
     @Override public int[] getSlotsForFace(Direction side) { return IO_SLOTS; }

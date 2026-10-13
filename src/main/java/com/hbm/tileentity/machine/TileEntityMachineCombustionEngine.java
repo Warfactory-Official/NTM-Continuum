@@ -5,7 +5,6 @@ import com.hbm.client.sound.CombustionEngineSoundHandler;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.util.TickPhase;
@@ -19,7 +18,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.machine.ItemPistons;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -37,7 +35,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
@@ -80,7 +77,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
     @Override public String getDefaultName() { return "container.combustionEngine"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCombustionEngine te) {
-        te.loadTank();
+        if (MachineFluidContainerIO.load(te.tank, te.inventory, 0, 1)) te.setChanged();
         te.setTypeFromFluidId();
 
         te.wasOn = false;
@@ -160,43 +157,6 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
         };
     }
 
-    /** Drains a fluid container in slot 0 into the tank, emptied container to slot 1. */
-    private void loadTank() {
-        ItemStack in = inventory.getStackInSlot(0);
-        if (in.isEmpty()) return;
-
-        // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-        if (MachineFluidContainerIO.loadInfinite(tank, in)) {
-            setChanged();
-            return;
-        }
-        if (in.getItem() instanceof IFillableItem fillable) {
-            int held = fillable.getFill(in);
-            FluidType heldType = fillable.getFirstFluidType(in);
-            if (held <= 0 || heldType == Fluids.NONE) return;
-            int addable = tank.fill(heldType, held, false);
-            if (addable <= 0) return;
-            ItemStack work = in.copy();
-            work.setCount(1);
-            int taken = fillable.tryEmpty(heldType, addable, work);
-            if (taken <= 0 || !inventory.insertItem(1, work.copy(), true).isEmpty()) return;
-            tank.fill(heldType, taken, true);
-            inventory.extractItem(0, 1, false);
-            inventory.insertItem(1, work, false);
-            setChanged();
-        } else if (in.getItem() instanceof ItemFluidBucket) {
-            FluidType fluid = ItemFluidBucket.getFluid(in);
-            if (fluid == Fluids.NONE) return;
-            if (tank.fill(fluid, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return;
-            ItemStack empty = new ItemStack(Items.BUCKET);
-            if (!inventory.insertItem(1, empty.copy(), true).isEmpty()) return;
-            tank.fill(fluid, ItemFluidBucket.VOLUME, true);
-            inventory.extractItem(0, 1, false);
-            inventory.insertItem(1, empty, false);
-            setChanged();
-        }
-    }
-
     private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(4);
         if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
@@ -222,7 +182,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
         if (slot == 2) return stack.getItem() instanceof ItemPistons;
         if (slot == 3) return Library.isBattery(stack);
         if (slot == 4) return stack.getItem() instanceof IItemFluidId;
-        // slot 1 (emptied container out) stays TRUE, machine writes it via insertItem
+        // 0 takes anything, as the 1.7 GUI's plain slot did; the menu keeps players out of 1
         return true;
     }
 

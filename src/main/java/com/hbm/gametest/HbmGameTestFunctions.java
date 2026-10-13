@@ -1611,8 +1611,12 @@ public final class HbmGameTestFunctions {
                 ModBatteryItems.PACKS.get(ItemBatteryPack.EnumBatteryPack.BATTERY_LEAD).get());
         helper.assertTrue(turbine.isItemValidForSlot(0, identifier) && !turbine.isItemValidForSlot(0, bucket),
                 "Slot 0 must take fluid identifiers only");
-        helper.assertTrue(turbine.isItemValidForSlot(2, bucket) && !turbine.isItemValidForSlot(2, identifier),
-                "Slot 2 must take fluid containers only");
+        helper.assertTrue(turbine.isItemValidForSlot(2, bucket) && turbine.isItemValidForSlot(2, identifier),
+                "Slot 2 is a plain slot in the 1.7 GUI");
+        helper.assertTrue(!turbine.canPlaceItemThroughFace(2, bucket, Direction.UP)
+                        && turbine.canPlaceItemThroughFace(4, battery, Direction.NORTH)
+                        && !turbine.canTakeItemThroughFace(6, bucket, Direction.DOWN),
+                "1.7 automation: only a battery into slot 4, nothing out");
         helper.assertTrue(turbine.isItemValidForSlot(4, battery) && !turbine.isItemValidForSlot(4, bucket),
                 "Slot 4 must take batteries only");
         helper.assertTrue(turbine.isItemValidForSlot(3, bucket) && turbine.isItemValidForSlot(6, bucket),

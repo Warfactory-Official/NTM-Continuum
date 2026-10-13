@@ -69,11 +69,7 @@ public class ContainerMachineTurbine extends AbstractContainerMenu {
     @Override
     public boolean stillValid(Player player) { return this.machine.stillValid(player); }
 
-    /**
-     * The old {@code TransferStrategy}: identifiers to the identifier bay, batteries to the battery slot,
-     * a container already holding the turbine's input fluid to the input bay, anything else to the output
-     * bay (where empty canisters get filled with the spent steam).
-     */
+    /** Identifiers to the identifier slot, batteries to the battery slot, anything else to the input bay, then the output bay (1.7's order). */
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         ItemStack result = ItemStack.EMPTY;
@@ -88,9 +84,7 @@ public class ContainerMachineTurbine extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
             } else if (Library.isBattery(stack)) {
                 if (!this.moveItemStackTo(stack, 4, 5, false)) return ItemStack.EMPTY;
-            } else if (this.machine.canPlaceItem(2, stack)) {
-                if (!this.moveItemStackTo(stack, 2, 3, false) && !this.moveItemStackTo(stack, 5, 6, false)) return ItemStack.EMPTY;
-            } else {
+            } else if (!this.moveItemStackTo(stack, 2, 3, false) && !this.moveItemStackTo(stack, 5, 6, false)) {
                 return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY); else slot.setChanged();

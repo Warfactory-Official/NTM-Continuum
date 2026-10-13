@@ -3,18 +3,22 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IInfiniteFluidItem;
 import com.hbm.handler.ArmorModHandler;
+import com.hbm.inventory.FluidContainerRegistry;
 import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.items.ModFluidNetItems;
 import com.hbm.items.machine.ItemFluidBucket;
+import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.items.machine.ItemInfiniteFluid;
+import com.hbm.items.special.ItemCell;
 import dev.golem.core.world.ItemStacks;
 import java.util.Random;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-/** Shared faithful container-to-tank transfer used by the chemical machines. */
+/** 1.7 {@code FluidTank.loadTank} / {@code unloadTank} and their loading handlers, for every machine with container slots. */
 public final class MachineFluidContainerIO {
 
     private MachineFluidContainerIO() {}
@@ -39,15 +43,15 @@ public final class MachineFluidContainerIO {
         return infinite.infiniteType() == null || infinite.infiniteType() == tank.getTankType();
     }
 
-    /** True when {@code stack} is an infinite item; the tank was filled from it as 1.7 did (never consumed). */
+    /**
+     * True when {@code stack} is an infinite item feeding the tank as 1.7 did (never consumed). 1.7
+     * {@code FluidLoaderInfinite.emptyItem} gives a NONE tank nothing.
+     */
     public static boolean loadInfinite(FluidTankNTM tank, ItemStack stack) {
         if (!(stack.getItem() instanceof IInfiniteFluidItem infinite)) return false;
         // hbm-space FluidLoaderInfinite: a table-bound item that found the wrong water table gives nothing
         if (!ItemInfiniteFluid.canOperate(stack)) return true;
-        if (tank.getTankType() == Fluids.NONE) {
-            if (infinite.infiniteType() == null) return true;
-            tank.setTankType(infinite.infiniteType());
-        }
+        if (tank.getTankType() == Fluids.NONE) return false;
         if (infinite.infiniteType() != null && tank.getTankType() != infinite.infiniteType()) return true;
         if (infinite.infiniteChance() <= 1 || RANDOM.nextInt(infinite.infiniteChance()) == 0) {
             tank.setFill(Math.min(tank.getFill() + infinite.infiniteAmount(), tank.getMaxFill()));
@@ -67,93 +71,123 @@ public final class MachineFluidContainerIO {
         return true;
     }
 
+    /**
+     * 1.7 {@code FluidTank.loadTank(in, out)}: the loading handlers in 1.7's order. A registry container that fits whole
+     * empties into the tank and its empty container goes to {@code out} ({@code FluidLoaderStandard}); a fillable item
+     * is drained where it sits ({@code FluidLoaderFillableItem}); an infinite item feeds the tank and stays
+     * ({@code FluidLoaderInfinite}). Every handler asks for the tank's own type, so a NONE tank takes nothing. Answers
+     * whether anything changed.
+     */
     public static boolean load(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot, int outputSlot) {
         ItemStack input = inventory.getStackInSlot(inputSlot);
         if (input.isEmpty()) return false;
-        // 1.7 FluidLoaderInfinite.emptyItem: the item is never consumed or moved.
-        if (loadInfinite(tank, input)) return true;
-        if (input.getItem() instanceof IFillableItem fillable) {
-            ItemStack result = single(input);
-            FluidType type = tank.getTankType() != Fluids.NONE
-                    ? tank.getTankType() : fillable.getFirstFluidType(result);
-            int space = tank.getMaxFill() - tank.getFill();
-            if (type == Fluids.NONE || space <= 0 || !fillable.providesFluid(type, result)) return false;
-            int transferred = fillable.tryEmpty(type, space, result);
-            if (transferred <= 0) return false;
-            if (input.getCount() > 1) {
-                if (!fitsInternally(inventory, outputSlot, result)) return false;
-                inventory.extractItem(inputSlot, 1, false);
-                if (tank.getTankType() == Fluids.NONE) tank.setTankType(type);
-                tank.setFill(tank.getFill() + transferred);
-                insertInternally(inventory, outputSlot, result);
-                return true;
-            }
-            boolean preferOutput = isEmpty(result) || tank.getFill() + transferred >= tank.getMaxFill();
-            int destination = preferOutput && fitsInternally(inventory, outputSlot, result) ? outputSlot : inputSlot;
-            inventory.extractItem(inputSlot, 1, false);
-            if (tank.getTankType() == Fluids.NONE) tank.setTankType(type);
-            tank.setFill(tank.getFill() + transferred);
-            insertInternally(inventory, destination, result);
-            return true;
+        if (tank.getPressure() != 0 && !input.is(ModFluidNetItems.fluid_barrel_infinite.get())) return false;
+        int before = tank.getFill();
+        if (emptyContainer(tank, inventory, inputSlot, outputSlot)) return tank.getFill() != before;
+        if (emptyFillable(tank, inventory, inputSlot)) return tank.getFill() != before;
+        return loadInfinite(tank, input) && tank.getFill() != before;
+    }
+
+    /**
+     * 1.7 {@code FluidTank.unloadTank(in, out)}: an empty registry container is filled whole from the tank and the full
+     * one goes to {@code out}; a fillable item is filled where it sits; an infinite item is a bottomless drain.
+     */
+    public static boolean unload(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot, int outputSlot) {
+        ItemStack input = inventory.getStackInSlot(inputSlot);
+        if (input.isEmpty()) return false;
+        int before = tank.getFill();
+        if (fillContainer(tank, inventory, inputSlot, outputSlot)) return true;
+        if (fillFillable(tank, inventory, inputSlot)) return tank.getFill() != before;
+        return unloadInfinite(tank, inventory.getStackInSlot(inputSlot)) && tank.getFill() != before;
+    }
+
+    /** 1.7 {@code FluidLoaderStandard.emptyItem}. */
+    private static boolean emptyContainer(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot, int outputSlot) {
+        ItemStack input = inventory.getStackInSlot(inputSlot);
+        FluidType type = tank.getTankType();
+        int amount = FluidContainerRegistry.INSTANCE.contentOf(input, type);
+        ItemStack empty = FluidContainerRegistry.INSTANCE.emptyOf(input);
+        // port: the port-only universal bucket, which 1.7's registry never had
+        if (amount <= 0 && input.getItem() instanceof ItemFluidBucket && ItemFluidBucket.getFluid(input) == type) {
+            amount = ItemFluidBucket.VOLUME;
+            empty = new ItemStack(Items.BUCKET);
         }
-        FluidType type = bucketFluid(input);
-        if (type == Fluids.NONE || tank.fill(type, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) return false;
-        ItemStack result = new ItemStack(Items.BUCKET);
-        ItemStacks.copyCustomName(input, result);
-        if (!fitsInternally(inventory, outputSlot, result)) return false;
-        tank.fill(type, ItemFluidBucket.VOLUME, true);
+        if (amount <= 0 || tank.getFill() + amount > tank.getMaxFill()) return false;
+        if (!empty.isEmpty()) ItemStacks.copyCustomName(input, empty);
+        if (!empty.isEmpty() && !fitsInternally(inventory, outputSlot, empty)) return true;
+        tank.setFill(tank.getFill() + amount);
         inventory.extractItem(inputSlot, 1, false);
-        insertInternally(inventory, outputSlot, result);
+        if (!empty.isEmpty()) insertInternally(inventory, outputSlot, empty);
         return true;
     }
 
-    public static boolean unload(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot, int outputSlot) {
-        FluidType type = tank.getTankType();
+    /** 1.7 {@code FluidLoaderStandard.fillItem}. */
+    private static boolean fillContainer(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot, int outputSlot) {
+        if (tank.getPressure() != 0) return false;
         ItemStack input = inventory.getStackInSlot(inputSlot);
-        if (input.getItem() instanceof IInfiniteFluidItem infinite) {
-            // 1.7 FluidLoaderInfinite.fillItem: an infinite item in the unload slot is a bottomless drain.
-            if (!infinite.allowPressure(tank.getPressure())) return false;
-            if (infinite.infiniteType() != null && type != infinite.infiniteType()) return false;
-            if (infinite.infiniteChance() <= 1 || RANDOM.nextInt(infinite.infiniteChance()) == 0) {
-                tank.setFill(Math.max(tank.getFill() - infinite.infiniteAmount(), 0));
-            }
-            return true;
+        FluidType type = tank.getTankType();
+        ItemStack full = FluidContainerRegistry.INSTANCE.fullOf(input, type);
+        int amount = FluidContainerRegistry.INSTANCE.contentOf(full, type);
+        // port: an empty bucket becomes the port-only universal bucket for fluids 1.7 had no bucket for
+        if (full.isEmpty() && input.is(Items.BUCKET) && type != Fluids.NONE) {
+            full = ItemFluidBucket.make(type);
+            amount = ItemFluidBucket.VOLUME;
         }
-        if (type == Fluids.NONE || tank.getFill() <= 0 || input.isEmpty() || tank.getPressure() != 0) return false;
+        if (full.isEmpty() || amount <= 0 || tank.getFill() < amount) return false;
+        ItemStacks.copyCustomName(input, full);
+        if (!fitsInternally(inventory, outputSlot, full)) return false;
+        tank.setFill(tank.getFill() - amount);
+        inventory.extractItem(inputSlot, 1, false);
+        insertInternally(inventory, outputSlot, full);
+        return true;
+    }
+
+    /**
+     * 1.7 {@code FluidLoaderFillableItem.empty}: the item is drained in its slot. Registry containers were never fillable
+     * items in 1.7; a part-filled one (only the port can make those) is drained here so it is not stuck.
+     */
+    private static boolean emptyFillable(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot) {
+        ItemStack input = inventory.getStackInSlot(inputSlot);
+        if (!(input.getItem() instanceof IFillableItem fillable) || input.getItem() instanceof IInfiniteFluidItem) return false;
+        if (FluidContainerRegistry.INSTANCE.isRegistryContainer(input) && !partFilled(input)) return false;
+        FluidType type = tank.getTankType();
+        if (type == Fluids.NONE || !fillable.providesFluid(type, input)) return false;
+        ItemStack work = input.copy();
+        int taken = fillable.tryEmpty(type, tank.getMaxFill() - tank.getFill(), work);
+        if (taken <= 0) return true;
+        tank.setFill(tank.getFill() + taken);
+        inventory.setStackInSlot(inputSlot, work);
+        return true;
+    }
+
+    /** 1.7 {@code FluidLoaderFillableItem.fill}: the item is filled in its slot. */
+    private static boolean fillFillable(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot) {
+        if (tank.getPressure() != 0) return false;
+        ItemStack input = inventory.getStackInSlot(inputSlot);
+        FluidType type = tank.getTankType();
+        if (type == Fluids.NONE) return false;
+        boolean filled = false;
         if (fillArmorMods && ArmorModHandler.hasMods(input)) {
-            boolean filled = fillMods(tank, type, inventory, inputSlot, input);
-            if (!(input.getItem() instanceof IFillableItem)) return filled;
+            filled = fillMods(tank, type, inventory, inputSlot, input);
             input = inventory.getStackInSlot(inputSlot);
         }
-        if (input.getItem() instanceof IFillableItem fillable) {
-            if (!fillable.acceptsFluid(type, input)) return false;
-            ItemStack result = single(input);
-            int remainder = fillable.tryFill(type, tank.getFill(), result);
-            int transferred = tank.getFill() - remainder;
-            if (transferred <= 0) return false;
-            if (input.getCount() > 1) {
-                if (!fitsInternally(inventory, outputSlot, result)) return false;
-                inventory.extractItem(inputSlot, 1, false);
-                tank.setFill(tank.getFill() - transferred);
-                insertInternally(inventory, outputSlot, result);
-                return true;
-            }
-            boolean preferOutput = isFull(result, type) || tank.getFill() - transferred == 0;
-            int destination = preferOutput && fitsInternally(inventory, outputSlot, result) ? outputSlot : inputSlot;
-            inventory.extractItem(inputSlot, 1, false);
-            tank.setFill(tank.getFill() - transferred);
-            insertInternally(inventory, destination, result);
-            return true;
+        if (!(input.getItem() instanceof IFillableItem fillable) || input.getItem() instanceof IInfiniteFluidItem) return filled;
+        if (FluidContainerRegistry.INSTANCE.isRegistryContainer(input) && !partFilled(input)) return filled;
+        if (!fillable.acceptsFluid(type, input)) return true;
+        ItemStack work = input.copy();
+        int remainder = fillable.tryFill(type, tank.getFill(), work);
+        if (remainder != tank.getFill()) {
+            tank.setFill(remainder);
+            inventory.setStackInSlot(inputSlot, work);
         }
-        if (!input.is(Items.BUCKET) || tank.getFill() < ItemFluidBucket.VOLUME) return false;
-        ItemStack result = type == Fluids.WATER ? new ItemStack(Items.WATER_BUCKET)
-                : type == Fluids.LAVA ? new ItemStack(Items.LAVA_BUCKET) : ItemFluidBucket.make(type);
-        ItemStacks.copyCustomName(input, result);
-        if (!fitsInternally(inventory, outputSlot, result)) return false;
-        tank.setFill(tank.getFill() - ItemFluidBucket.VOLUME);
-        inventory.extractItem(inputSlot, 1, false);
-        insertInternally(inventory, outputSlot, result);
         return true;
+    }
+
+    private static boolean partFilled(ItemStack stack) {
+        IFillableItem fillable = (IFillableItem) stack.getItem();
+        int fill = fillable.getFill(stack);
+        int capacity = stack.getItem() instanceof ItemFluidTank tank ? tank.capacity : ItemCell.CAPACITY;
+        return fill > 0 && fill < capacity;
     }
 
     /**
@@ -178,30 +212,6 @@ public final class MachineFluidContainerIO {
         }
         if (moved) inventory.setStackInSlot(slot, work);
         return moved;
-    }
-
-    private static FluidType bucketFluid(ItemStack stack) {
-        if (stack.getItem() instanceof ItemFluidBucket) return ItemFluidBucket.getFluid(stack);
-        if (stack.is(Items.WATER_BUCKET)) return Fluids.WATER;
-        if (stack.is(Items.LAVA_BUCKET)) return Fluids.LAVA;
-        return Fluids.NONE;
-    }
-
-    private static ItemStack single(ItemStack stack) {
-        ItemStack copy = stack.copy();
-        copy.setCount(1);
-        return copy;
-    }
-
-    private static boolean isFull(ItemStack stack, FluidType type) {
-        if (!(stack.getItem() instanceof IFillableItem fillable) || !fillable.acceptsFluid(type, stack)) return true;
-        return fillable.tryFill(type, 1, stack.copy()) >= 1;
-    }
-
-    private static boolean isEmpty(ItemStack stack) {
-        if (!(stack.getItem() instanceof IFillableItem fillable)) return true;
-        FluidType type = fillable.getFirstFluidType(stack);
-        return type == null || type == Fluids.NONE || fillable.tryEmpty(type, 1, stack.copy()) <= 0;
     }
 
     /** Internal machine movement mirrors the old raw ItemStackHandler, not sided automation validation. */

@@ -5,7 +5,6 @@ import com.hbm.items.ModAbilityToolItems;
 import com.hbm.util.BobMathUtil;
 import dev.golem.core.data.Tags;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -19,11 +18,9 @@ import com.hbm.tileentity.IUpgradeInfoProvider;
 import java.util.HashMap;
 import java.util.List;
 import net.minecraft.ChatFormatting;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemBlueprints;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.module.machine.ModuleMachineChemplant;
@@ -41,7 +38,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
@@ -57,7 +53,7 @@ import dev.golem.core.data.DataOut;
  * back out.
  *
  * <p>As 1.7.10: a battery in slot 0 charges the machine and the buffer is {@code max(power, recipe.power ×
- * 100, 100,000)}. Container I/O covers HBM/vanilla buckets and {@code IFillableItem} tanks. Upgrades
+ * 100, 100,000)}. Container I/O is 1.7's {@code loadTank} / {@code unloadTank} ({@code MachineFluidContainerIO}). Upgrades
  * (slots 2–3: SPEED/POWER/OVERDRIVE) use the 1.7 formulas.
  */
 public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
@@ -115,8 +111,12 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
             for (FluidTankNTM tank : te.inputTanks) if (tank.getTankType() != Fluids.NONE) te.trySubscribe(tank.getTankType(), level, dp);
             for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, dp);
         }
-        te.fillInputTanks();
-        te.unloadOutputTanks();
+        boolean containerChanged = false;
+        for (int i = 0; i < 3; i++) {
+            containerChanged |= MachineFluidContainerIO.load(te.inputTanks[i], te.inventory, 10 + i, 13 + i);
+            containerChanged |= MachineFluidContainerIO.unload(te.outputTanks[i], te.inventory, 16 + i, 19 + i);
+        }
+        if (containerChanged) te.setChanged();
 
         // Upgrades (1.12.2 formulas, identical to the assembly machine).
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
@@ -147,101 +147,6 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         if (te.didProcess) te.anim++;
     }
 
-    /** Drains a full container in each fluid-in load slot (10..12) INTO that input tank, emptied container
-     * to out slot (13..15). Handles HBM/vanilla buckets and the universal tank/barrel ({@link IFillableItem}). */
-    private void fillInputTanks() {
-        for (int i = 0; i < 3; i++) {
-            ItemStack in = inventory.getStackInSlot(10 + i);
-            if (in.isEmpty()) continue;
-            FluidTankNTM tank = inputTanks[i];
-
-            // 1.7 FluidLoaderInfinite.emptyItem: an infinite item feeds the tank from its slot and is never moved or consumed
-            if (MachineFluidContainerIO.loadInfinite(tank, in)) {
-                setChanged();
-                continue;
-            }
-            if (in.getItem() instanceof IFillableItem fillable) {
-                int held = fillable.getFill(in);
-                FluidType heldType = fillable.getFirstFluidType(in);
-                if (held <= 0 || heldType == Fluids.NONE) continue;
-                int addable = tank.fill(heldType, held, false);
-                if (addable <= 0) continue; // tank full or wrong type
-                ItemStack work = single(in);
-                int taken = fillable.tryEmpty(heldType, addable, work);
-                if (taken <= 0 || !fits(13 + i, work)) continue;
-                tank.fill(heldType, taken, true);
-                moveResult(10 + i, 13 + i, work);
-            } else {
-                FluidType fluid = bucketFluid(in);
-                if (fluid == Fluids.NONE) continue;
-                if (tank.fill(fluid, ItemFluidBucket.VOLUME, false) < ItemFluidBucket.VOLUME) continue;
-                ItemStack empty = new ItemStack(Items.BUCKET);
-                if (!fits(13 + i, empty)) continue;
-                tank.fill(fluid, ItemFluidBucket.VOLUME, true);
-                moveResult(10 + i, 13 + i, empty);
-            }
-        }
-    }
-
-    /** Fills an empty container in each fluid-out load slot (16..18) FROM that output tank, filled container
-     * to out slot (19..21). Handles the universal tank/barrel ({@link IFillableItem}) and empty buckets. */
-    private void unloadOutputTanks() {
-        for (int i = 0; i < 3; i++) {
-            FluidTankNTM tank = outputTanks[i];
-            FluidType fluid = tank.getTankType();
-            if (fluid == Fluids.NONE || tank.getFill() <= 0) continue;
-            ItemStack in = inventory.getStackInSlot(16 + i);
-            if (in.isEmpty()) continue;
-
-            if (in.getItem() instanceof IFillableItem fillable) {
-                if (!fillable.acceptsFluid(fluid, in)) continue;
-                ItemStack work = single(in);
-                int remainder = fillable.tryFill(fluid, tank.getFill(), work);
-                int moved = tank.getFill() - remainder;
-                if (moved <= 0 || !fits(19 + i, work)) continue;
-                tank.setFill(tank.getFill() - moved);
-                moveResult(16 + i, 19 + i, work);
-            } else if (in.is(Items.BUCKET) && tank.getFill() >= ItemFluidBucket.VOLUME) {
-                ItemStack full = fluid == Fluids.WATER ? new ItemStack(Items.WATER_BUCKET)
-                        : fluid == Fluids.LAVA ? new ItemStack(Items.LAVA_BUCKET)
-                        : ItemFluidBucket.make(fluid);
-                if (!fits(19 + i, full)) continue;
-                tank.setFill(tank.getFill() - ItemFluidBucket.VOLUME);
-                moveResult(16 + i, 19 + i, full);
-            }
-        }
-    }
-
-    private static FluidType bucketFluid(ItemStack stack) {
-        if (stack.getItem() instanceof ItemFluidBucket) return ItemFluidBucket.getFluid(stack);
-        if (stack.is(Items.WATER_BUCKET)) return Fluids.WATER;
-        if (stack.is(Items.LAVA_BUCKET)) return Fluids.LAVA;
-        return Fluids.NONE;
-    }
-
-    /** Any fluid container the load slots accept: a tank/barrel, an HBM fluid bucket, or a vanilla bucket. */
-    private static boolean isFluidContainer(ItemStack stack) {
-        return stack.getItem() instanceof IFillableItem
-                || stack.getItem() instanceof ItemFluidBucket
-                || stack.is(Items.BUCKET) || stack.is(Items.WATER_BUCKET) || stack.is(Items.LAVA_BUCKET);
-    }
-
-    private static ItemStack single(ItemStack stack) {
-        ItemStack copy = stack.copy();
-        copy.setCount(1);
-        return copy;
-    }
-
-    private boolean fits(int outSlot, ItemStack stack) {
-        return inventory.insertItem(outSlot, stack.copy(), true).isEmpty();
-    }
-
-    private void moveResult(int inSlot, int outSlot, ItemStack result) {
-        inventory.extractItem(inSlot, 1, false);
-        inventory.insertItem(outSlot, result, false);
-        setChanged();
-    }
-
     /** Power connection points around the 3×3 footprint (one block out from each edge cell). Same as assembly. */
     public DirPos[] getConPos() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
@@ -259,9 +164,9 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         if (slot == 1) return stack.getItem() instanceof ItemBlueprints;  // template
         if (slot >= 2 && slot <= 3) return Library.isMachineUpgrade(stack); // upgrades (any type, like SlotUpgrade)
         if (slot >= 7 && slot <= 9) return false;                         // item outputs (module writes via setStackInSlot)
-        if (slot >= 10 && slot <= 12) return isFluidContainer(stack);     // fluid-in load (bucket / tank / barrel)
+        if (slot >= 10 && slot <= 12) return true;                        // fluid-in load (1.7 accepts anything)
         if (slot >= 13 && slot <= 15) return true;                        // emptied-container out (machine-insert)
-        if (slot >= 16 && slot <= 18) return isFluidContainer(stack);     // fluid-out load (empty bucket / tank / barrel)
+        if (slot >= 16 && slot <= 18) return true;                        // fluid-out load (1.7 accepts anything)
         if (slot >= 19 && slot <= 21) return true;                        // filled-container out (machine-insert)
         return chemplantModule.isItemValidForPool(slot, stack, inventory.getStackInSlot(1)); // item inputs 4..6
     }
