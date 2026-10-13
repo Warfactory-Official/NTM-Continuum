@@ -25,6 +25,8 @@ sourceSets["main"].java {
 // The NeoForge this build runs on: deps.neoforge, or deps.neoforge_kubejs in a -Pkubejs.run=true dev run (KubeJS may need
 // an older build; see versions/*/gradle.properties). Release jars always use deps.neoforge.
 val neoforgeVersion = propOrNull("deps.neoforge_kubejs")?.takeIf { propOrNull("kubejs.run") == "true" } ?: prop("deps.neoforge")
+// The oldest NeoForge the jar accepts (neoforge.mods.toml): deps.neoforge_floor where a node sets one, else the build's.
+val neoforgeFloor = propOrNull("deps.neoforge_floor") ?: neoforgeVersion
 
 neoForge {
     version = neoforgeVersion
@@ -323,7 +325,7 @@ val resourceProps = mapOf(
     "mod_credits" to prop("mod.credits"),
     "mod_description" to prop("mod.description"),
     "minecraft_range" to prop("deps.minecraft_range"),
-    "neoforge_version" to neoforgeVersion,
+    "neoforge_version" to neoforgeFloor,
     "neoforge_loader_range" to prop("deps.neoforge_loader_range"),
     "java_version" to javaVersion.toString(),
     "mixin_compatibility" to if (javaVersion <= 17) "JAVA_17" else "JAVA_21",
