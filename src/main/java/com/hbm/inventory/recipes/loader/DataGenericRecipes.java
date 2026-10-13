@@ -2,6 +2,7 @@ package com.hbm.inventory.recipes.loader;
 
 import com.hbm.config.GeneralConfig;
 import com.mojang.serialization.MapCodec;
+import dev.golem.core.world.RecipeFields;
 import dev.golem.core.world.RecipeTables;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -27,8 +28,19 @@ public abstract class DataGenericRecipes<T extends GenericRecipe> extends Generi
     /** {@link RecipeConditions#fingerprint} of the last build; null before the first. */
     private volatile String builtFlags;
 
+    /**
+     * A table of {@code codec}'s rows; its script fields ({@link RecipeTables.Table#fields}) are the generic schema's
+     * ({@link GenericRecipeCodec#FIELDS}), so every generic table, an addon's too, is writable from scripts with typed
+     * arguments. A subclass's own keys are offered as raw JSON; state them with the overload taking extra fields.
+     */
     protected DataGenericRecipes(String namespace, String name, Supplier<MapCodec<T>> codec) {
+        this(namespace, name, codec, RecipeFields.of());
+    }
+
+    /** As {@link #DataGenericRecipes(String, String, Supplier)}, with {@code extras} (the subclass's keys) after the generic fields. */
+    protected DataGenericRecipes(String namespace, String name, Supplier<MapCodec<T>> codec, RecipeFields extras) {
         this.table = RecipeTables.table(namespace, name, codec);
+        table.fields(GenericRecipeCodec.FIELDS.addAll(extras));
         table.changed.register(this::reload);
         // icons and outputs that are filled containers take their tint from this map, which a datapack load (an addon's
         // patch) may apply after the recipes: rebuild the stacks when it changes

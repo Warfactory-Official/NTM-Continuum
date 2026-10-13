@@ -105,7 +105,7 @@ public class ItemDetonator extends CompatItem {
         level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BLEEP.get(),
                 SoundSource.AMBIENT, 1.0F, 1.0F);
         PendingDetonations.handoff(server, bound);
-        BombReturnCode result = bomb.explode(level, bound, player);
+        BombReturnCode result = com.hbm.api.event.HbmEvents.detonate(bomb, level, bound, player);
         // Upstream always reports "detonated"; the return code carries the real answer (a pad with no
         // designator, no fuel or an unlaunchable missile says so), so it is what gets printed.
         Component message = result.getUnlocalizedMessage().isEmpty()

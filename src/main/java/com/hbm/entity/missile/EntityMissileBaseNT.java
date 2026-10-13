@@ -309,6 +309,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
 
         if (hit.getType() != HitResult.Type.MISS) {
+            com.hbm.api.event.HbmEvents.missileImpact(this, hit.getBlockPos(), targetX, targetZ, thrower);
             this.onMissileImpact(hit);
             discard();
             return;

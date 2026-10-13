@@ -3,15 +3,19 @@ package com.hbm.modules.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
+import com.hbm.api.event.HbmEvents;
 import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.inventory.recipes.loader.DataGenericRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.machine.ItemBlueprints;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jspecify.annotations.Nullable;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
@@ -53,6 +57,34 @@ public abstract class ModuleMachineBase {
         this.index = index;
         this.battery = battery;
         this.inventory = inventory;
+    }
+
+    /**
+     * The machine this module works in, for {@link com.hbm.api.event.HbmEvents#MACHINE_RECIPE_COMPLETED} (level and
+     * position). Every HBM machine passes itself as the module's battery, which is the default; a machine whose battery
+     * is another object sets itself here.
+     */
+    private @Nullable BlockEntity owner;
+
+    /** Sets the machine this module works in (only needed when the battery is not the machine itself). */
+    public ModuleMachineBase owner(BlockEntity owner) {
+        this.owner = owner;
+        return this;
+    }
+
+    /** The machine this module works in, or null if it cannot tell. */
+    public @Nullable BlockEntity owner() {
+        if (owner != null) return owner;
+        return battery instanceof BlockEntity machine ? machine : null;
+    }
+
+    /** Tells {@link com.hbm.api.event.HbmEvents#MACHINE_RECIPE_COMPLETED} that one operation of {@code recipe} finished. */
+    protected void completed(GenericRecipe recipe) {
+        if (!HbmEvents.machineRecipeObserved()) return;
+        GenericRecipes set = getRecipeSet();
+        String table = set instanceof DataGenericRecipes<?> data
+                ? data.table.id() : set.getClass().getName();
+        HbmEvents.machineRecipeCompleted(owner(), table, recipe.getInternalName());
     }
 
     public abstract GenericRecipes getRecipeSet();
@@ -208,6 +240,7 @@ public abstract class ModuleMachineBase {
         if (assigned == null || !hasInputFluid(recipe) || !canFitOutput(recipe, outputs)) return false;
         consumeInput(recipe, assigned);
         produceItem(recipe, outputs);
+        completed(recipe);
         return true;
     }
 

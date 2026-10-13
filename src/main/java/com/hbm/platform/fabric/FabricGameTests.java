@@ -66,6 +66,7 @@ public final class FabricGameTests {
         com.hbm.gametest.DataMapGameTests.init();
         com.hbm.gametest.AddonEnumGameTests.init();
         com.hbm.gametest.EnvironmentGameTests.init();
+        com.hbm.gametest.ScriptHookGameTests.init();
         com.hbm.gametest.AddonContentGameTests.init();
         com.hbm.gametest.GenericRecipeTableGameTests.init();
         com.hbm.gametest.ItemProcessingTableGameTests.init();
@@ -155,6 +156,7 @@ public final class FabricGameTests {
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.DataMapGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.AddonEnumGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.EnvironmentGameTests.TESTS);
+        dev.golem.core.gametest.GameTests.register(com.hbm.gametest.ScriptHookGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.AddonContentGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.GenericRecipeTableGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.ItemProcessingTableGameTests.TESTS);

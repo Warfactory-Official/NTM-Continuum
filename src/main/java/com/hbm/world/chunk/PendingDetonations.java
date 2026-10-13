@@ -138,7 +138,7 @@ public final class PendingDetonations extends CompatSavedData<PendingDetonations
                 continue;
             }
 
-            IBomb.BombReturnCode result = bomb.explode(level, pos, player, entry.detonator());
+            IBomb.BombReturnCode result = com.hbm.api.event.HbmEvents.detonate(bomb, level, pos, player, entry.detonator());
             if (player != null) {
                 Component message = result.getUnlocalizedMessage().isEmpty()
                         ? Component.translatable("chat.detonated")

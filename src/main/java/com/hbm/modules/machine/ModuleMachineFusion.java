@@ -99,6 +99,7 @@ public class ModuleMachineFusion extends ModuleMachineBase {
 
         if (this.progress >= 1D) {
             produceItem(recipe);
+            completed(recipe);
             if (canProcess(recipe, speed, power)) this.progress -= 1D;
             else this.progress = 0D;
         }

@@ -106,6 +106,11 @@ repositories {
         forRepository { maven("https://api.modrinth.com/maven") { name = "Modrinth" } }
         filter { includeGroup("maven.modrinth") }
     }
+    // KubeJS and Rhino (the optional `kubejs` peer, dev runs only with -Pkubejs.run=true; see deps.kubejs).
+    exclusiveContent {
+        forRepository { maven("https://maven.latvian.dev/releases") { name = "LatvianDev" } }
+        filter { includeGroup("dev.latvian.mods") }
+    }
     // REI and its Cloth Config / Architectury dependencies (the optional `rei` peer, see deps.rei).
     exclusiveContent {
         forRepository { maven("https://maven.shedaniel.me") { name = "Shedaniel" } }
@@ -176,6 +181,20 @@ dependencies {
     // so the production jar is remapped for this node's dev mappings; nothing compiles against it.
     propOrNull("deps.pipez")?.let { modRuntimeOnly("maven.modrinth:pipez:$it") }
 
+    // KubeJS is an optional peer served entirely by Golem Core's dev.golem.core.kubejs adapter (HBM has no KubeJS code).
+    // Never compiled against, shipped or required. `-Pkubejs.run=true` puts KubeJS 6, Rhino and Architectury in the dev
+    // runs (SRG jars, remapped by `modRuntimeOnly`) and copies harness/kubejs into each run's kubejs folder; off by
+    // default so the baselines stay KubeJS-free. With -Prei.run too, Gradle keeps the newer of the two Architectury pins.
+    propOrNull("deps.kubejs")?.let { kubejs ->
+        if (propOrNull("kubejs.run") == "true") {
+            for (mod in listOfNotNull(
+                "dev.latvian.mods:kubejs-forge:$kubejs",
+                "dev.latvian.mods:rhino-forge:${prop("deps.kubejs_rhino")}",
+                propOrNull("deps.kubejs_architectury")?.let { "dev.architectury:architectury-forge:$it" },
+            )) modRuntimeOnly(mod) { isTransitive = false }
+        }
+    }
+
     // CC: Tweaked is an optional peer: HBM's 1.7 OpenComputers components are served to it as peripherals
     // (com.hbm.compat.computercraft, guarded by the `computercraft` constant). Compiled against on every node,
     // never shipped or required. `-Pcomputercraft.run=true` puts the mod in the dev runs as well; it is off by
@@ -245,6 +264,8 @@ apply(from = rootProject.file("../Golem-Core/gradle/mod/run-toolchain.gradle.kts
 apply(from = rootProject.file("../Golem-Core/gradle/harness-spec.gradle.kts"))
 apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-recipes.gradle.kts"))
 extra["loader"] = "forge"
+// Orders the mod before KubeJS (optional dependency) so its script groups and bindings reach the startup scripts.
+apply(from = rootProject.file("../Golem-Core/gradle/mod/kubejs-order.gradle.kts"))
 // Neutral "golem:conditions" in data JSON, rewritten to this loader's spelling; see the script.
 apply(from = rootProject.file("../Golem-Core/gradle/mod/recipe-conditions.gradle.kts"))
 apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-biomes.gradle.kts"))
@@ -265,3 +286,16 @@ dependencies { compileOnly("org.jspecify:jspecify:1.0.0") }
 // `runGenerateIds` and committed, because the plain-JVM build step the declarations run in cannot
 // load half the registry classes; see com.hbm.lib.IdConstants.
 sourceSets["main"].java.srcDir(rootProject.file("src/generated/java"))
+
+// KubeJS dev scripts (`-Pkubejs.run=true`): harness/kubejs (startup_scripts, server_scripts, client_scripts) is copied
+// into each run's kubejs folder (runs/harness too: the harness clients' game folder). A copy, not a sync: KubeJS writes its own config and exports beside the scripts.
+if (propOrNull("kubejs.run") == "true" && propOrNull("deps.kubejs") != null) {
+    for ((run, tasksOfRun) in listOf("client" to listOf("runClient", "prepareClientRun"), "harness" to listOf("runClient", "prepareClientRun"), "server" to listOf("runServer", "prepareServerRun"), "gametest" to listOf("runGameTestServer", "prepareGameTestServerRun"))) {
+        val copy = tasks.register<Copy>("copyKubeJsScripts${run.replaceFirstChar { it.uppercase() }}") {
+            description = "Copies harness/kubejs into the $run run's kubejs folder (-Pkubejs.run)."
+            from(rootProject.file("harness/kubejs")) { exclude("README.md") }
+            into(layout.projectDirectory.dir("runs/$run/kubejs"))
+        }
+        tasks.matching { it.name in tasksOfRun }.configureEach { dependsOn(copy) }
+    }
+}

@@ -3,7 +3,9 @@ package com.hbm.util;
 import dev.golem.core.world.Compat;
 import java.util.List;
 
+import com.hbm.api.event.HbmEvents;
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.config.RadiationConfig;
 import com.hbm.entity.EntityHbmProps;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.handler.ArmorUtil;
@@ -527,21 +529,29 @@ public class ContaminationUtil {
             return false;
         }
 
+        double dose = 0D; // the radiation given, for HbmEvents.ENTITY_IRRADIATED (observe only)
         switch (hazard) {
             case MONOXIDE -> {
                 if (entity.level() instanceof ServerLevel serverLevel)
                     Compat.hurt(entity, serverLevel, ModDamageSources.monoxide(serverLevel), (float) amount);
             }
-            case RADIATION ->
-                    HbmLivingProps.incrementRadiation(entity, amount * (cont == ContaminationType.RAD_BYPASS ? 1D : calculateRadiationMod(entity)));
+            case RADIATION -> {
+                dose = amount * (cont == ContaminationType.RAD_BYPASS ? 1D : calculateRadiationMod(entity));
+                HbmLivingProps.incrementRadiation(entity, dose);
+            }
             case NEUTRON -> {
-                HbmLivingProps.incrementRadiation(entity, amount * (cont == ContaminationType.RAD_BYPASS ? 1D : calculateRadiationMod(entity)));
+                dose = amount * (cont == ContaminationType.RAD_BYPASS ? 1D : calculateRadiationMod(entity));
+                HbmLivingProps.incrementRadiation(entity, dose);
                 HbmLivingProps.setNeutron(entity, amount);
             }
             // 1.7 contaminate: straight to incrementDigamma; the gates above are the contamination type's
             case DIGAMMA -> HbmLivingProps.incrementDigamma(entity, amount);
         }
 
+        if (dose > 0D && HbmEvents.irradiationObserved()
+                && RadiationConfig.enableContamination) {
+            HbmEvents.entityIrradiated(entity, hazard.name(), cont.name(), amount, dose);
+        }
         return true;
     }
 }

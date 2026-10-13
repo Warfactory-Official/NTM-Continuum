@@ -392,6 +392,14 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         if (missile instanceof EntityMissileAntiBallistic abm) abm.setThrower(detonator);
 
         level.addFreshEntity(missile);
+        if (missile instanceof EntityMissileBaseNT ballistic) {
+            com.hbm.api.event.HbmEvents.missileLaunched(level, worldPosition, missile, ballistic.targetX, ballistic.targetZ, detonator);
+        } else {
+            // an ABM (or an addon's own missile entity) has no target column; an ABM's is the entity it chases
+            Entity aim = missile instanceof EntityMissileAntiBallistic abm && abm.tracking != null ? abm.tracking : missile;
+            com.hbm.api.event.HbmEvents.missileLaunched(level, worldPosition, missile,
+                    (int) Math.floor(aim.getX()), (int) Math.floor(aim.getZ()), detonator);
+        }
         level.playSound(null, worldPosition.getX() + 0.5, worldPosition.getY(), worldPosition.getZ() + 0.5,
                 ModSounds.MISSILE_TAKEOFF.get(), SoundSource.BLOCKS, 2.0F, 1.0F);
 

@@ -159,6 +159,11 @@ repositories {
             includeGroup("dev.ryanhcode.sable-companion")
         }
     }
+    // KubeJS and Rhino (the optional `kubejs` peer, dev runs only with -Pkubejs.run=true; see deps.kubejs).
+    exclusiveContent {
+        forRepository { maven("https://maven.latvian.dev/releases") { name = "LatvianDev" } }
+        filter { includeGroup("dev.latvian.mods") }
+    }
     // REI and its Cloth Config / Architectury dependencies (the optional `rei` peer, see deps.rei).
     exclusiveContent {
         forRepository { maven("https://maven.shedaniel.me") { name = "Shedaniel" } }
@@ -435,6 +440,20 @@ dependencies {
     // out, as most players run: a game without it once crashed at init (Core's RebornEnergy, History §19eq).
     if (propOrNull("tr_energy.run") != "false") propOrNull("deps.tr_energy")?.let { devRuntime("teamreborn:energy:$it") }
 
+    // KubeJS is an optional peer served entirely by Golem Core's dev.golem.core.kubejs adapter (HBM has no KubeJS code).
+    // Never compiled against, shipped or required. `-Pkubejs.run=true` puts KubeJS 6, Rhino and Architectury in the dev
+    // runs (intermediary jars below 26.1) and copies harness/kubejs into each run's kubejs folder; off by default so
+    // the baselines stay KubeJS-free. The node declares its own Fabric Loader / Fabric API, as for JEI.
+    propOrNull("deps.kubejs")?.let { kubejs ->
+        if (propOrNull("kubejs.run") == "true") {
+            for (mod in listOfNotNull(
+                "dev.latvian.mods:kubejs-fabric:$kubejs",
+                "dev.latvian.mods:rhino-fabric:${prop("deps.kubejs_rhino")}",
+                propOrNull("deps.kubejs_architectury")?.let { "dev.architectury:architectury-fabric:$it" },
+            )) devRuntime(mod) { isTransitive = false }
+        }
+    }
+
     // CC: Tweaked is an optional peer: HBM's 1.7 OpenComputers components are served to it as peripherals
     // (com.hbm.compat.computercraft, guarded by the `computercraft` constant). Compiled against on every node,
     // never shipped or required. `-Pcomputercraft.run=true` puts the mod in the dev runs as well; it is off by
@@ -605,3 +624,16 @@ dependencies {
 // `runGenerateIds` and committed, because the plain-JVM build step the declarations run in cannot
 // load half the registry classes; see com.hbm.lib.IdConstants.
 sourceSets["main"].java.srcDir(rootProject.file("src/generated/java"))
+
+// KubeJS dev scripts (`-Pkubejs.run=true`): harness/kubejs (startup_scripts, server_scripts, client_scripts) is copied
+// into each run's kubejs folder (runs/harness too: the harness clients' game folder). A copy, not a sync: KubeJS writes its own config and exports beside the scripts.
+if (propOrNull("kubejs.run") == "true" && propOrNull("deps.kubejs") != null) {
+    for ((run, tasksOfRun) in listOf("client" to listOf("runClient"), "harness" to listOf("runClient"), "server" to listOf("runServer"), "gametest" to listOf("runGametest"))) {
+        val copy = tasks.register<Copy>("copyKubeJsScripts${run.replaceFirstChar { it.uppercase() }}") {
+            description = "Copies harness/kubejs into the $run run's kubejs folder (-Pkubejs.run)."
+            from(rootProject.file("harness/kubejs")) { exclude("README.md") }
+            into(layout.projectDirectory.dir("runs/$run/kubejs"))
+        }
+        tasks.matching { it.name in tasksOfRun }.configureEach { dependsOn(copy) }
+    }
+}

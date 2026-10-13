@@ -87,6 +87,7 @@ public final class ForgeInit {
         com.hbm.gametest.DataMapGameTests.init();
         com.hbm.gametest.AddonEnumGameTests.init();
         com.hbm.gametest.EnvironmentGameTests.init();
+        com.hbm.gametest.ScriptHookGameTests.init();
         com.hbm.gametest.AddonContentGameTests.init();
         com.hbm.gametest.GenericRecipeTableGameTests.init();
         com.hbm.gametest.ItemProcessingTableGameTests.init();
@@ -215,6 +216,8 @@ public final class ForgeInit {
                 com.hbm.gametest.AddonEnumGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.EnvironmentGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ScriptHookGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.AddonContentGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,

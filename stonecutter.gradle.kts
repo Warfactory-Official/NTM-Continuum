@@ -36,6 +36,8 @@ stonecutter parameters {
     constants["rei"] = !(node.project.findProperty("deps.rei") as String?).isNullOrBlank()
     // True only where the node declares CC: Tweaked coordinates (an optional peer, like JEI).
     constants["computercraft"] = !(node.project.findProperty("deps.cc") as String?).isNullOrBlank()
+    // True only where the node declares KubeJS coordinates (an optional peer; dev.golem.core.kubejs in Golem Core).
+    constants["kubejs"] = !(node.project.findProperty("deps.kubejs") as String?).isNullOrBlank()
 
     // Same shape for Flywheel, and false on both 26.1 nodes because the engine publishes no 26.1
     // build. That is not the same as having no engine there: Golem Core vendors a port of it for

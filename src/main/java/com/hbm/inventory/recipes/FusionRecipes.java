@@ -35,7 +35,13 @@ public final class FusionRecipes extends DataGenericRecipes<FusionRecipe> {
     public static final double BREEDER_CAPACITY = 10_000D;
 
     private FusionRecipes() {
-        super(Constants.MOD_ID, "fusion", FusionRecipe::codec);
+        super(Constants.MOD_ID, "fusion", FusionRecipe::codec, dev.golem.core.world.RecipeFields.of()
+                .add(dev.golem.core.world.RecipeFields.field("ignition_temp", dev.golem.core.world.RecipeFields.Kind.LONG).optional().alias("ignitionTemp"))
+                .add(dev.golem.core.world.RecipeFields.field("output_temp", dev.golem.core.world.RecipeFields.Kind.LONG).optional().alias("outputTemp"))
+                .add(dev.golem.core.world.RecipeFields.field("neutron_flux", dev.golem.core.world.RecipeFields.Kind.DOUBLE).optional().alias("neutronFlux"))
+                .add(dev.golem.core.world.RecipeFields.field("red", dev.golem.core.world.RecipeFields.Kind.DOUBLE).optional())
+                .add(dev.golem.core.world.RecipeFields.field("green", dev.golem.core.world.RecipeFields.Kind.DOUBLE).optional())
+                .add(dev.golem.core.world.RecipeFields.field("blue", dev.golem.core.world.RecipeFields.Kind.DOUBLE).optional()));
     }
 
     /** Declares the table at mod construction (its recipe type and serializer register with HBM's content). */

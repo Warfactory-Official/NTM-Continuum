@@ -81,7 +81,7 @@ public class ItemDropDetonator extends CompatItem {
         if (item.kind == Kind.DEADMAN) {
             BlockPos pos = ModDataComponents.DETONATOR_TARGET.get(stack).orElse(null);
             if (pos != null && level.getBlockState(pos).getBlock() instanceof IBomb bomb) {
-                bomb.explode(level, pos, entity);
+                com.hbm.api.event.HbmEvents.detonate(bomb, level, pos, entity);
                 if (GeneralConfig.enableExtendedLogging) {
                     Constants.LOG.info("[DET] Tried to detonate block at {} / {} / {} by dead man's switch!",
                             pos.getX(), pos.getY(), pos.getZ());

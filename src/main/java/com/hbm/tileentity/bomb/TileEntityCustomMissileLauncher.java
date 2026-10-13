@@ -202,6 +202,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
                 stack(parts == null ? null : parts.warhead()), stack(parts == null ? null : parts.fuselage()),
                 stack(parts == null ? null : parts.stability()), stack(parts == null ? null : parts.thruster()));
         level.addFreshEntity(missile);
+        com.hbm.api.event.HbmEvents.missileLaunched(level, worldPosition, missile, missile.targetX, missile.targetZ, null);
 
         subtractFuel();
 

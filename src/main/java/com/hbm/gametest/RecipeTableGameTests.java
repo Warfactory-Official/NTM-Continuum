@@ -25,7 +25,9 @@ public final class RecipeTableGameTests {
     public static final GameTests.Function FRACTION =
             TESTS.function("recipe_table_fraction", 20, () -> RecipeTableGameTests::fraction);
 
-    public static void init() {}
+    public static void init() {
+        ScriptFieldsGameTests.init();
+    }
 
     /** The fraction tower table from data/hbm/recipe/fraction equals 1.7's 19 rows (input: left amount, right amount). */
     public static void fraction(GameTestHelper helper) {

@@ -1,6 +1,7 @@
 package com.hbm.explosion;
 
 import com.hbm.entity.projectile.EntityShrapnel;
+import com.hbm.api.event.HbmEvents;
 import com.hbm.particle.helper.ExplosionCreator;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -263,6 +264,7 @@ public final class ExplosionLarge {
         if (cloud) spawnParticles(level, x, y, z, cloudFunction((int) strength));
         if (rubble) spawnRubble(level, x, y, z, rubbleFunction((int) strength));
         if (shrapnel) spawnShrapnels(level, x, y, z, shrapnelFunction((int) strength));
+        HbmEvents.explosion(level, x, y, z, strength, detonator, "large");
     }
 
     public static void spawnBurst(Level level, double x, double y, double z, int count, double strength) {

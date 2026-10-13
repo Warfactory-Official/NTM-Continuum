@@ -80,6 +80,7 @@ public class NeoForgeInit {
         com.hbm.gametest.DataMapGameTests.init();
         com.hbm.gametest.AddonEnumGameTests.init();
         com.hbm.gametest.EnvironmentGameTests.init();
+        com.hbm.gametest.ScriptHookGameTests.init();
         com.hbm.gametest.AddonContentGameTests.init();
         com.hbm.gametest.GenericRecipeTableGameTests.init();
         com.hbm.gametest.ItemProcessingTableGameTests.init();
@@ -212,6 +213,8 @@ public class NeoForgeInit {
                 com.hbm.gametest.AddonEnumGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.EnvironmentGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ScriptHookGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.AddonContentGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,

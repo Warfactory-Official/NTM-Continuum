@@ -14,7 +14,8 @@ public final class PlasmaForgeRecipes extends DataGenericRecipes<PlasmaForgeReci
     public static final PlasmaForgeRecipes INSTANCE = new PlasmaForgeRecipes();
 
     private PlasmaForgeRecipes() {
-        super(Constants.MOD_ID, "plasma_forge", PlasmaForgeRecipe::codec);
+        super(Constants.MOD_ID, "plasma_forge", PlasmaForgeRecipe::codec, dev.golem.core.world.RecipeFields.of()
+                .add(dev.golem.core.world.RecipeFields.field("ignition_temp", dev.golem.core.world.RecipeFields.Kind.LONG).optional().alias("ignitionTemp")));
     }
 
     /** Declares the table at mod construction (its recipe type and serializer register with HBM's content). */

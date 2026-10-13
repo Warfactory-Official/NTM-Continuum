@@ -1,6 +1,7 @@
 package com.hbm.explosion.vanillant;
 
 import com.hbm.explosion.vanillant.interfaces.IBlockAllocator;
+import com.hbm.api.event.HbmEvents;
 import com.hbm.explosion.vanillant.interfaces.IBlockProcessor;
 import com.hbm.explosion.vanillant.interfaces.IEntityProcessor;
 import com.hbm.explosion.vanillant.interfaces.IExplosionSFX;
@@ -108,6 +109,8 @@ public class ExplosionVNT {
                 fx.doEffect(this, world, posX, posY, posZ, size);
             }
         }
+
+        HbmEvents.explosion(world, posX, posY, posZ, size, exploder, "vnt");
     }
 
     public ExplosionVNT setBlockAllocator(IBlockAllocator blockAllocator) {

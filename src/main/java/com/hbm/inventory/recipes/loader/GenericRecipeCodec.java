@@ -1,5 +1,7 @@
 package com.hbm.inventory.recipes.loader;
 
+import static dev.golem.core.world.RecipeFields.field;
+
 import com.hbm.inventory.FluidContainerStack;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
@@ -16,6 +18,9 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.world.ItemStacks;
+import dev.golem.core.world.RecipeFields;
+import dev.golem.core.world.RecipeFields.Kind;
+import dev.golem.core.world.RecipeFields.Role;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -499,6 +504,38 @@ public final class GenericRecipeCodec {
             return recipe;
         }));
     }
+
+    // ------------------------------------------------------------------ script fields
+
+    /**
+     * This schema's fields for scripts ({@link RecipeFields}; Golem Core's KubeJS adapter makes
+     * {@code event.recipes.<ns>.<table>(name, outputItems, inputItems, outputFluids, inputFluids, duration, power)} of
+     * them, every other key a builder method). {@code name} is required, as in a datapack file: it is the row's internal
+     * name, which machines save and recipe selectors show, so a script states it ({@code 'chem.my_gas'}). Every
+     * {@link DataGenericRecipes} table states these automatically; a subclass's own keys (fusion temperatures, ...) come
+     * on top ({@link DataGenericRecipes#DataGenericRecipes(String, String, java.util.function.Supplier, RecipeFields)}),
+     * or are offered as raw JSON when not stated. Shapes: {@link RecipeShapes}.
+     */
+    public static final RecipeFields FIELDS = RecipeFields.of()
+            .add(field("name", Kind.STRING))
+            .add(field("output_items", Kind.ITEM_OUT).list().optional().shape(RecipeShapes.OUTPUT).alias("outputItems"))
+            .add(field("input_items", Kind.ITEM_IN).list().optional().shape(RecipeShapes.INGREDIENT).alias("inputItems"))
+            .add(field("output_fluids", Kind.FLUID_OUT).list().optional().shape(RecipeShapes.FLUID_STACK).alias("outputFluids"))
+            .add(field("input_fluids", Kind.FLUID_IN).list().optional().shape(RecipeShapes.FLUID_STACK).alias("inputFluids"))
+            .add(field("duration", Kind.INT).optional())
+            .add(field("power", Kind.LONG).optional())
+            .add(field("icon", Kind.ITEM_OUT).role(Role.OTHER).optional().shape(RecipeShapes.STACK_OUT_OBJECT))
+            .add(field("custom_localization", Kind.BOOLEAN).optional().alias("customLocalization"))
+            .add(field("name_wrapper", Kind.STRING).optional().alias("nameWrapper"))
+            .add(field("blueprint_pools", Kind.STRING).list().optional().alias("blueprintPools"))
+            .add(field("auto_switch_group", Kind.STRING).optional().alias("autoSwitchGroup"))
+            .add(field("order", Kind.INT).optional())
+            .add(field("input_items_expensive", Kind.ITEM_IN).list().optional().shape(RecipeShapes.INGREDIENT)
+                    .alias("inputItemsExpensive"))
+            .add(field("input_fluids_expensive", Kind.FLUID_IN).list().optional().shape(RecipeShapes.FLUID_STACK)
+                    .alias("inputFluidsExpensive"))
+            .add(field("blueprint_pools_528", Kind.STRING).list().optional().alias("blueprintPools528"))
+            .add(field("requires", Kind.STRING).list().optional());
 
     /** The row codec of a {@link GenericRecipe} table. */
     public static MapCodec<GenericRecipe> codec() {

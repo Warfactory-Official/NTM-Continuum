@@ -22,8 +22,12 @@ sourceSets["main"].java {
     exclude("com/hbm/platform/fabric/**", "com/hbm/platform/forge/**")
 }
 
+// The NeoForge this build runs on: deps.neoforge, or deps.neoforge_kubejs in a -Pkubejs.run=true dev run (KubeJS may need
+// an older build; see versions/*/gradle.properties). Release jars always use deps.neoforge.
+val neoforgeVersion = propOrNull("deps.neoforge_kubejs")?.takeIf { propOrNull("kubejs.run") == "true" } ?: prop("deps.neoforge")
+
 neoForge {
-    version = prop("deps.neoforge")
+    version = neoforgeVersion
 
     val at = rootProject.file("src/main/resources/META-INF/accesstransformer.cfg")
     if (at.exists()) accessTransformers.from(at)
@@ -108,6 +112,11 @@ repositories {
             includeGroup("dev.ryanhcode.sable-companion")
         }
     }
+    // KubeJS and Rhino (the optional `kubejs` peer, dev runs only with -Pkubejs.run=true; see deps.kubejs).
+    exclusiveContent {
+        forRepository { maven("https://maven.latvian.dev/releases") { name = "LatvianDev" } }
+        filter { includeGroup("dev.latvian.mods") }
+    }
     // REI and its Cloth Config / Architectury dependencies (the optional `rei` peer, see deps.rei).
     exclusiveContent {
         forRepository { maven("https://maven.shedaniel.me") { name = "Shedaniel" } }
@@ -157,16 +166,18 @@ tasks.matching { it.name == "runClient" || it.name == "prepareClientRun" }.confi
 // flagged run's jars in place and run with them (seen with Sable, 2026-10-05).
 val ccServerMod: Configuration by configurations.creating
 val sableServerMod: Configuration by configurations.creating
+val kubejsServerMod: Configuration by configurations.creating
 for ((run, task) in listOf("server" to "runServer", "gametest" to "runGameTestServer")) {
     val modsDir = layout.projectDirectory.dir("runs/$run/mods")
     val sync = tasks.register("syncComputerCraft${run.replaceFirstChar { it.uppercase() }}") {
-        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Psable.run)."
-        inputs.files(ccServerMod, sableServerMod)
+        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Psable.run, -Pkubejs.run)."
+        inputs.files(ccServerMod, sableServerMod, kubejsServerMod)
         outputs.dir(modsDir)
         doLast {
             project.sync {
                 from(ccServerMod)
                 from(sableServerMod)
+                from(kubejsServerMod)
                 into(modsDir)
             }
         }
@@ -236,6 +247,19 @@ dependencies {
     // Nothing compiles against it — the tests that drive it reach its one public setter reflectively.
     propOrNull("deps.pipez")?.let { localRuntime("maven.modrinth:pipez:$it") }
 
+    // KubeJS is an optional peer served entirely by Golem Core's dev.golem.core.kubejs adapter (HBM has no KubeJS code:
+    // its recipe tables, script bindings and events reach KubeJS through Core). Never compiled against, shipped or
+    // required. `-Pkubejs.run=true` puts KubeJS and Rhino in the dev runs (mod files: both carry mixins or mod
+    // metadata) and copies harness/kubejs into each run's kubejs folder; off by default so the baselines stay KubeJS-free.
+    propOrNull("deps.kubejs")?.let { kubejs ->
+        if (propOrNull("kubejs.run") == "true") {
+            for (mod in listOfNotNull(propOrNull("deps.kubejs_bat")?.let { "dev.latvian.mods:better-advanced-tooltips:$it" }, "dev.latvian.mods:kubejs-neoforge:$kubejs", "dev.latvian.mods:rhino:${prop("deps.kubejs_rhino")}")) {
+                devModJar(mod) { isTransitive = false }
+                kubejsServerMod(mod) { isTransitive = false }
+            }
+        }
+    }
+
     // CC: Tweaked is an optional peer: HBM's 1.7 OpenComputers components are served to it as peripherals
     // (com.hbm.compat.computercraft, guarded by the `computercraft` constant). Compiled against on every node,
     // never shipped or required. `-Pcomputercraft.run=true` puts the mod in the dev runs as well; it is off by
@@ -299,7 +323,7 @@ val resourceProps = mapOf(
     "mod_credits" to prop("mod.credits"),
     "mod_description" to prop("mod.description"),
     "minecraft_range" to prop("deps.minecraft_range"),
-    "neoforge_version" to prop("deps.neoforge"),
+    "neoforge_version" to neoforgeVersion,
     "neoforge_loader_range" to prop("deps.neoforge_loader_range"),
     "java_version" to javaVersion.toString(),
     "mixin_compatibility" to if (javaVersion <= 17) "JAVA_17" else "JAVA_21",
@@ -346,6 +370,8 @@ apply(from = rootProject.file("../Golem-Core/gradle/mod/run-toolchain.gradle.kts
 apply(from = rootProject.file("../Golem-Core/gradle/harness-spec.gradle.kts"))
 apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-recipes.gradle.kts"))
 extra["loader"] = "neoforge"
+// Orders the mod before KubeJS (optional dependency) so its script groups and bindings reach the startup scripts.
+apply(from = rootProject.file("../Golem-Core/gradle/mod/kubejs-order.gradle.kts"))
 // Neutral "golem:conditions" in data JSON, rewritten to this loader's spelling; see the script.
 apply(from = rootProject.file("../Golem-Core/gradle/mod/recipe-conditions.gradle.kts"))
 apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-biomes.gradle.kts"))
@@ -456,5 +482,19 @@ if (project.name == "26.1-neoforge") {
                 "$path wrote no ${manifest.get().asFile.name}: the generator never finished. Read the run's output above."
             }
         }
+    }
+}
+
+// KubeJS dev scripts (`-Pkubejs.run=true`): harness/kubejs (startup_scripts, server_scripts, client_scripts) is copied
+// into each run's kubejs folder (runs/harness too: the harness clients' game folder). A copy, not a sync: KubeJS writes its own config and exports beside the scripts.
+if (propOrNull("kubejs.run") == "true" && propOrNull("deps.kubejs") != null) {
+    for ((run, task) in listOf("client" to "runClient", "harness" to "runClient", "server" to "runServer", "gametest" to "runGameTestServer")) {
+        val copy = tasks.register<Copy>("copyKubeJsScripts${run.replaceFirstChar { it.uppercase() }}") {
+            description = "Copies harness/kubejs into the $run run's kubejs folder (-Pkubejs.run)."
+            from(rootProject.file("harness/kubejs")) { exclude("README.md") }
+            into(layout.projectDirectory.dir("runs/$run/kubejs"))
+        }
+        val prepare = "prepare${task.removePrefix("run")}Run"
+        tasks.matching { it.name == task || it.name == prepare }.configureEach { dependsOn(copy) }
     }
 }

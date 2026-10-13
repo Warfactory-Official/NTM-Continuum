@@ -82,6 +82,7 @@ public class TileEntityLaunchPadRusted extends TileEntityMachineBase implements 
                             level, (float) launch.x, (float) launch.y, (float) launch.z,
                             targetX, targetZ);
                     level.addFreshEntity(missile);
+                    com.hbm.api.event.HbmEvents.missileLaunched(level, worldPosition, missile, targetX, targetZ, null);
                     level.playSound(null, worldPosition.getX() + 0.5, worldPosition.getY(), worldPosition.getZ() + 0.5,
                             ModSounds.MISSILE_TAKEOFF.get(), SoundSource.BLOCKS, 2.0F, 1.0F);
                     this.missileLoaded = false;

@@ -27,6 +27,7 @@ public class HbmEntry implements ModEntry {
         com.hbm.api.data.HbmDataMaps.declare();
         com.hbm.itempool.ItemPool.declare();
         com.hbm.inventory.fluid.FluidProperties.declare(); // fluid_property + fluid_property_patch
+        com.hbm.api.script.HbmScripts.declare(); // the HBM script global and HBMEvents (inert without KubeJS)
     }
 
     @Override
@@ -35,5 +36,7 @@ public class HbmEntry implements ModEntry {
         Hazards.init();
         // the missile item -> entity table, its own start-up step (it used to hide inside Hazards.init)
         com.hbm.tileentity.bomb.TileEntityLaunchPadBase.registerLaunchables();
+        // materials requested by startup scripts (HBMEvents.registry), once every register is filled
+        com.hbm.api.script.HbmScripts.registered();
     }
 }
