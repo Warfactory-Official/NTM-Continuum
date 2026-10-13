@@ -1,5 +1,5 @@
-# Builds every node (chiseledBuild) against Golem Core's main branch and publishes HBM's release jars as a
-# GitHub pre-release. Golem Core's jars come from Golem Core's own pre-release, not from here.
+# Builds every node (chiseledBuild) against Golem Core's main branch and publishes the release jars,
+# HBM's and the matching Golem Core jars it was built against, as a GitHub pre-release.
 # Runs on pushes to main that change a build input (see paths below) and on demand.
 name: Pre-release
 
@@ -86,7 +86,9 @@ jobs:
         run: |
           mkdir -p dist
           # build/libs holds the release jar per node (remapJar/reobfJar/jar); devlibs is not shipped.
-          find new-hbm/versions/*/build/libs -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' -exec cp {} dist/ \;
+          for repo in new-hbm Golem-Core; do
+            find $repo/versions/*/build/libs -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' -exec cp {} dist/ \;
+          done
           ls -l dist
           ls dist | grep -q '^hbm-' || { echo "No HBM jars produced"; exit 1; }
           version=$(grep -E '^mod.version=' new-hbm/gradle.properties | cut -d= -f2 | tr -d '[:space:]')
@@ -106,8 +108,8 @@ jobs:
           body: |
             Automated pre-release build. Not for general use.
 
-            Each `hbm-<loader>-<mc>` jar needs the matching `golemcore-<loader>-<mc>` jar, from Golem Core's
-            pre-release (this build was made against Golem Core commit `${{ steps.jars.outputs.golem }}`).
+            Each `hbm-<loader>-<mc>` jar needs the matching `golemcore-<loader>-<mc>` jar (included,
+            built from Golem Core `${{ steps.jars.outputs.golem }}`).
           files: dist/*.jar
 
       # Keep only the newest automated build: delete every older pre-release this workflow made (its tags
