@@ -56,7 +56,7 @@ public final class AutogenSprites {
             Sprites.Remap remap = Sprites.remap(Sprites.Atlas.ITEMS).texture(Constants.MOD_ID + ":items/" + art);
             for (NTMMaterial material : Mats.orderedList) {
                 String sprite = art + "_" + material.name;
-                if (!material.autogen.contains(shape) || AUTHORED.contains(sprite) || !DECLARED.add(sprite)) {
+                if (!material.autogen.contains(shape) || AUTHORED.contains(sprite) || ModAutogenItems.authored(sprite) || !DECLARED.add(sprite)) {
                     continue;
                 }
                 if (material.solidColorLight == material.solidColorDark) {

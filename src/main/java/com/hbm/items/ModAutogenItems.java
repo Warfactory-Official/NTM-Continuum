@@ -66,8 +66,7 @@ public final class ModAutogenItems {
                 "iron", "titanium", "aluminium", "steel", "copper", "combine_steel", "tungsten",
                 "zirconium", "osmiridium", "tcalloy", "cdalloy"});
         REMAPPED_SHAPES.put("wire_fine", new String[] {
-                "gold", "aluminium", "steel", "lead", "copper", "schrabidium", "red_copper",
-                "magnetized_tungsten", "tungsten", "zirconium", "carbon"});
+                "steel", "lead", "zirconium"});
         REMAPPED_SHAPES.put("wire_dense", new String[] {
                 "gold", "titanium", "copper", "schrabidium", "red_copper", "magnetized_tungsten",
                 "tungsten", "niobium", "neodymium", "schrabidate", "starmetal", "bscco", "dineutronium"});
@@ -105,6 +104,22 @@ public final class ModAutogenItems {
         // the computed sprites themselves: one greyscale plate per shape, recoloured per material at stitch time
         REMAPPED_SHAPES.forEach((art, materials) ->
                 Dejson.generatedSprites(Constants.MOD_ID + ":items/" + art, "_", List.of(materials)));
+    }
+
+    /** 1.7 {@code ItemAutogen.aot} on {@code wire_fine}: authored art drawn instead of the computed sprite (item id to sprite). */
+    private static final Map<String, String> AUTHORED = Map.of(
+            "wire_fine_aluminium", "wire_aluminium",
+            "wire_fine_copper", "wire_copper",
+            "wire_fine_red_copper", "wire_red_copper",
+            "wire_fine_gold", "wire_gold",
+            "wire_fine_tungsten", "wire_tungsten",
+            "wire_fine_carbon", "wire_carbon",
+            "wire_fine_schrabidium", "wire_schrabidium",
+            "wire_fine_magnetized_tungsten", "wire_magnetized_tungsten");
+
+    /** Whether this material-shape sprite is replaced by authored art, so no remap is declared for it. */
+    public static boolean authored(String sprite) {
+        return AUTHORED.containsKey(sprite);
     }
 
     /** Whether this material-shape item's sprite is a computed remap (its model is then the plain sprite). */
@@ -152,7 +167,9 @@ public final class ModAutogenItems {
                 Reg.Handle<ItemAutogen> item = REG.item(base + "_" + mat.name,
                         p -> new ItemAutogen(p, shape, mat), p -> p.stacksTo(64));
                 // The model is the plain one-sprite case like any other; only the texture behind it is generated.
-                if (remapped(base, mat.name)) item.transform(Presets.sprite());
+                String authored = AUTHORED.get(base + "_" + mat.name);
+                if (authored != null) item.transform(Presets.sprite(Constants.MOD_ID + ":items/" + authored));
+                else if (remapped(base, mat.name)) item.transform(Presets.sprite());
                 BY_KEY.put(key(shape, mat.name), item);
                 ModTabs.addTo(HbmTab.MATERIALS, item);
             }
