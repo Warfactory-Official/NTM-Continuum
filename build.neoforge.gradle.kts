@@ -343,6 +343,8 @@ val resourceProps = mapOf(
 fun ProcessResources.expandModResources() {
     inputs.properties(resourceProps)
     filesMatching(listOf("META-INF/neoforge.mods.toml", "pack.mcmeta", "*.mixins.json")) { expand(resourceProps) }
+    // Only Forge generates a refmap; naming an absent one leaves the jar pointing at a file it lacks.
+    filesMatching("*.mixins.json") { filter { if (it.trimStart().startsWith("\"refmap\"")) null else it } }
     // NeoForge reads only neoforge.mods.toml; the Forge template would ship unexpanded.
     exclude("fabric.mod.json", "$modId.fabric.mixins.json", "data/$modId/forge/**", "META-INF/mods.toml")
 }

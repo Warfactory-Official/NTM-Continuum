@@ -539,6 +539,8 @@ tasks.processResources {
     )
     inputs.properties(props)
     filesMatching(listOf("fabric.mod.json", "pack.mcmeta", "*.mixins.json")) { expand(props) }
+    // Only Forge generates a refmap; naming an absent one leaves the jar pointing at a file it lacks.
+    filesMatching("*.mixins.json") { filter { if (it.trimStart().startsWith("\"refmap\"")) null else it } }
     // The Sable integration's entry points, only on nodes that declare Sable. Appended by line rather than templated,
     // so the source fabric.mod.json stays valid JSON (Loom parses it at configuration).
     if (hasSable) {

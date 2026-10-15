@@ -8,6 +8,7 @@
         "${mod_author}"
     ],
     "license": "${mod_license}",
+    "icon": "assets/${mod_id}/icon.png",
     "environment": "*",
     "entrypoints": {
         "golemcore:entry": [
