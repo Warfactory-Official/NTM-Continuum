@@ -156,7 +156,7 @@ public final class MobSlicer {
      * {@code sendToAllTracking(victim)} plus the victim itself if it is a player: every player within the victim type's
      * tracking range ({@code GolemNetwork.sendToPlayer} skips a connection that never negotiated the channel).
      */
-    static void sendToTrackers(ServerLevel level, LivingEntity victim, SpecialDeathPayload payload) {
+    public static void sendToTrackers(ServerLevel level, LivingEntity victim, SpecialDeathPayload payload) {
         double range = victim.getType().clientTrackingRange() * 16D;
         for (ServerPlayer player : level.players()) {
             if (player != victim && player.distanceToSqr(victim) > range * range) continue;

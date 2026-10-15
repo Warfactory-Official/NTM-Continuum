@@ -11,6 +11,9 @@ import com.hbm.client.jetpack.JetpackClientBridge;
 import com.hbm.client.jetpack.JetpackClientVisuals;
 import com.hbm.client.jetpack.JetpackHudOverlay;
 import com.hbm.client.jetpack.JetpackRenderLayer;
+import com.hbm.client.gun.GluonGunClient;
+import com.hbm.client.gun.JadeShotgunClient;
+import com.hbm.client.render.EgonBackpackRenderLayer;
 import com.hbm.client.jetpack.JetpackSmokeClient;
 import com.hbm.client.particle.CasingParticles;
 import com.hbm.client.particle.DebrisParticles;
@@ -519,6 +522,9 @@ public final class HbmClientRegistrations {
         ScreenEffects.init();
         // 1.12.2 crucible/sword cutters: first-person Collada scene, slicing input, cut mobs
         CrucibleClient.register();
+        // 1.12.2 gluon gun (beam, flare, burn trail, disintegration, sounds) and jade shotgun (recoil, smoke)
+        GluonGunClient.register();
+        JadeShotgunClient.register();
         JetpackClientVisuals.init();
          JetpackSmokeClient.register();
          EntityRenderSmokeClient.register();
@@ -550,6 +556,7 @@ public final class HbmClientRegistrations {
                 JetpackRenderLayer::new);
         HumanoidLayers.register(ArmorModRenderLayer::new);
         HumanoidLayers.register(WornModelRenderLayer::new); // final armor B: goggles, glasses, hat, no9
+        HumanoidLayers.register(EgonBackpackRenderLayer::new);
         // 1.7 RenderAccessoryUtility: special players' wings, axe pack and tail, and the HBM capes
         HumanoidLayers.register(SpecialPlayerRenderLayer::new);
         Capes.register(RenderAccessoryUtility::getCloakFromPlayer);
@@ -559,6 +566,7 @@ public final class HbmClientRegistrations {
         StructureHarnessQueries.register(); // harness query hbm_structure: NBT structure starts, placement score, loot state
         WorldFeatureHarnessQueries.register(); // harness query hbm_worldgen: block counts/finds, biome, meteor scheduler
         SmallHarnessQueries.register(); // hbm_small: boss bar, rad fog, impact spawn refusals, sulfur columns
+        ReloadedGunHarnessQueries.register(); // hbm_reloaded_guns: gluon gun and jade shotgun client state
         ComponentHarnessQueries.register(); // harness query hbm_wgc: features/bunker/meteor_dungeon starts, hardcoded piece builds
         LegacyDungeonHarnessQueries.register(); // harness query hbm_wgd: legacy dungeon starts, placement score, loot/spawners
         GapsAHarnessQueries.register(); // harness query hbm_gapsa: held stack/attack damage/cells, hurt jolt, amat flashes

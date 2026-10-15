@@ -1788,6 +1788,7 @@ public final class ItemIds {
     public static final String gun_double_barrel = "hbm:gun_double_barrel";
     public static final String gun_double_barrel_sacred_dragon = "hbm:gun_double_barrel_sacred_dragon";
     public static final String gun_drill = "hbm:gun_drill";
+    public static final String gun_egon = "hbm:gun_egon";
     public static final String gun_fatman = "hbm:gun_fatman";
     public static final String gun_fireext = "hbm:gun_fireext";
     public static final String gun_flamer = "hbm:gun_flamer";
@@ -1804,6 +1805,7 @@ public final class ItemIds {
     public static final String gun_heavy_revolver_protege = "hbm:gun_heavy_revolver_protege";
     public static final String gun_henry = "hbm:gun_henry";
     public static final String gun_henry_lincoln = "hbm:gun_henry_lincoln";
+    public static final String gun_jshotgun = "hbm:gun_jshotgun";
     public static final String gun_kit_1 = "hbm:gun_kit_1";
     public static final String gun_kit_2 = "hbm:gun_kit_2";
     public static final String gun_lag = "hbm:gun_lag";

@@ -59,5 +59,7 @@ public final class BulletProjectileRenderer extends GemEntityRenderer<EntityBull
         public boolean wire;
         public double wireX, wireY, wireZ;
         public int[] wireLight;
+        /** The tracer streak's half-width across the view and its length along the flight, both world axes. */
+        public float sideX, sideY, sideZ, alongX, alongY, alongZ;
     }
 }

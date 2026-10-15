@@ -45,6 +45,7 @@ import com.hbm.gametest.ForeignEnergyGameTests;
 import com.hbm.gametest.ForeignFluidGameTests;
 import com.hbm.gametest.GeigerCounterGameTests;
 import com.hbm.gametest.Gen3SednaGameTests;
+import com.hbm.gametest.ReloadedGunGameTests;
 import com.hbm.gametest.GenericRecipeTableGameTests;
 import com.hbm.gametest.GunSupportGameTests;
 import com.hbm.gametest.HazardGameTests;
@@ -166,6 +167,7 @@ public final class FabricGameTests {
         Bombs2GameTests.init();
         NtmEntityPortGameTests.init();
         Gen3SednaGameTests.init();
+        ReloadedGunGameTests.init();
         RadioGameTests.init();
         CounterControllerGameTests.init();
         TelexGameTests.init();
@@ -256,6 +258,7 @@ public final class FabricGameTests {
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Bombs2GameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.NtmEntityPortGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Gen3SednaGameTests.TESTS);
+        dev.golem.core.gametest.GameTests.register(com.hbm.gametest.ReloadedGunGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.RadioGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.CounterControllerGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.TelexGameTests.TESTS);

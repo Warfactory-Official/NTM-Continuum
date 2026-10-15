@@ -10,6 +10,8 @@ import com.hbm.client.PowerGenClientRegistrations;
 import com.hbm.client.RenderInputClientRegistrations;
 import com.hbm.client.SmogFog;
 import com.hbm.client.anim.GunAnimationHandler;
+import com.hbm.client.crucible.SlicedMobs;
+import com.hbm.client.particle.GluonParticles;
 import com.hbm.client.particle.PlasmaBlastClient;
 import com.hbm.config.ClientConfig;
 import com.hbm.extprop.HbmPlayerProps;
@@ -215,6 +217,11 @@ public final class HbmPackets {
                 (payload, context) -> JetpackHandler.dispatchClientExhaust(context.level(), payload));
         GolemNetwork.registerPlayToClient(ProjectileStatePayload.CODEC,
                 (payload, context) -> payload.apply(context.level()));
+        // 1.12 PacketSpecialDeath: one packet, the effect id picks the client effect
+        GolemNetwork.registerPlayToClient(SpecialDeathPayload.CODEC, (payload, context) -> {
+            if (payload.effectId() == SpecialDeathPayload.SLICED) SlicedMobs.handle(payload);
+            else GluonParticles.handle(payload);
+        });
         GolemNetwork.registerPlayToClient(FallingMultiblockPayload.CODEC,
                 (payload, context) -> FallingMultiblockPayload.handleClient(context.level(), payload));
         PneumaticClientRegistrations.registerPacketHandlers();

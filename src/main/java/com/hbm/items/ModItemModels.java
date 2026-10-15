@@ -503,6 +503,7 @@ public final class ModItemModels {
         handheldFull3D();
         gunFrame();
         teisrFrame();
+        teisrBareFrame();
     }
 
     /**
@@ -532,6 +533,37 @@ public final class ModItemModels {
                 .models(Models.guiLight("front", Models.display(frame,
                         Models.parented("minecraft:builtin/entity", Slots.EMPTY))))
                 .register();
+    }
+
+    /**
+     * The {@code teisr_bare} frame: a 1.12.2 {@code TEISRBase} item without a model file, which Forge drew with its
+     * {@code FancyMissingModel} perspective matrices (gluon gun, jade shotgun).
+     * <p>port: the left hand reuses the right hand's matrix; 1.12 mirrored it, which a {@code display{}} cannot state.
+     */
+    private static void teisrBareFrame() {
+        // (1, 1, 1, 1): x -> y, y -> z, z -> x; (-1, -1, 1, 1): x -> y, y -> -z, z -> -x
+        Matrix4f turn = new Matrix4f(0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1);
+        Matrix4f fixed = new Matrix4f(0, 1, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, 0, 0, 1);
+        Matrix4f firstPerson = new Matrix4f().translate(-0.5F, 0.5F, -0.5F).mul(turn);
+        Map<DisplaySlot, Matrix4f> frame = new EnumMap<>(DisplaySlot.class);
+        for (DisplaySlot slot : DisplaySlot.values()) frame.put(slot, new Matrix4f());
+        frame.put(DisplaySlot.FIRST_PERSON_RIGHT_HAND, aboutCentre(firstPerson));
+        frame.put(DisplaySlot.FIRST_PERSON_LEFT_HAND, aboutCentre(firstPerson));
+        frame.put(DisplaySlot.GUI, aboutCentre(turn));
+        frame.put(DisplaySlot.FIXED, aboutCentre(fixed));
+        Dejson.item(NS, "teisr_bare_obj_context_base")
+                .models(Models.guiLight("front", Models.display(frame,
+                        Models.parented("minecraft:block/block", Slots.of("particle", "hbm:blocks/block_steel")))))
+                .register();
+        Dejson.item(NS, "teisr_bare_obj_context_legacy")
+                .models(Models.guiLight("front", Models.display(frame,
+                        Models.parented("minecraft:builtin/entity", Slots.EMPTY))))
+                .register();
+    }
+
+    /** A 1.12 camera transform as a frame: frames are in block space with the corner at the origin. */
+    private static Matrix4f aboutCentre(Matrix4f transform) {
+        return new Matrix4f().translate(0.5F, 0.5F, 0.5F).mul(transform).translate(-0.5F, -0.5F, -0.5F);
     }
 
     /**

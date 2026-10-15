@@ -796,9 +796,10 @@ public final class WeaponTableGameTests {
 
     /**
      * Sedna guns 1.7 gave no {@code ItemRenderWeaponBase} (its {@code GUIWeaponTable} then drew no gun): the fire
-     * extinguisher ({@code ItemRenderFireExt}) and the power-armour ranged arm (sprite only).
+     * extinguisher ({@code ItemRenderFireExt}) and the power-armour ranged arm (sprite only). The port-only 1.12.2 gluon
+     * and occult guns had no weapon table either.
      */
-    private static final Set<String> NO_TABLE_PREVIEW = Set.of("gun_fireext", "gun_pa_ranged");
+    private static final Set<String> NO_TABLE_PREVIEW = Set.of("gun_fireext", "gun_pa_ranged", "gun_egon", "gun_jshotgun");
 
     private static void assertFrame(GameTestHelper helper, String item, double scale, double yaw,
             double x, double y, double z) {

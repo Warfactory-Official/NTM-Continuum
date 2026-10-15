@@ -86,7 +86,7 @@ public final class SlicedMobs {
 
     // Packet
 
-    static void handle(SpecialDeathPayload payload) {
+    public static void handle(SpecialDeathPayload payload) {
         if (payload.effectId() != SpecialDeathPayload.SLICED || payload.auxData().length < 5) return;
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;

@@ -7,12 +7,15 @@ import dev.golem.core.net.GolemPayload;
 import net.minecraft.resources.Identifier;
 
 /**
- * S2C: 1.12.2 {@code PacketSpecialDeath}: an entity id, an effect id and a float array. Effect 3 is the cut mob
- * ({@code nx, ny, nz, d, Float.intBitsToFloat(tex)}: the plane in the victim's space and the cap texture); effect 4
- * (bullet gibs, with an extra hit list) belongs to the guns and is not sent by anything ported.
+ * S2C: 1.12.2 {@code PacketSpecialDeath}: an entity id, an effect id and a float array. Effect 0 is the gluon gun's
+ * kill (the victim falls apart into its model's cubes), effect 1 a gluon hit (hurt flash and hurt sound), effect 3 the
+ * cut mob ({@code nx, ny, nz, d, Float.intBitsToFloat(tex)}: the plane in the victim's space and the cap texture);
+ * effect 4 (bullet gibs, with an extra hit list) is not sent by anything ported.
  */
 public record SpecialDeathPayload(int entityId, int effectId, float[] auxData) implements GolemPayload {
 
+    public static final int GLUON = 0;
+    public static final int GLUON_HIT = 1;
     public static final int SLICED = 3;
 
     public static final GolemCodec<SpecialDeathPayload> CODEC = GolemCodec.of(SpecialDeathPayload.class,

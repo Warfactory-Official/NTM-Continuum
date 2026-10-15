@@ -340,6 +340,9 @@ public final class BallisticGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_double_barrel_sacred_dragon = gun(
             "gun_double_barrel_sacred_dragon", WeaponQuality.B_SIDE, ModAmmoItems.g10_du, 6,
             () -> doubleBarrel(6_000F, 45F, 0.9F, XFactory10ga.all(), 1.35F));
+    /** 1.12.2's occult (jade) shotgun, {@link XFactory10ga#jadeConfig}. */
+    public static final RegistryObject<ItemGunBaseNT> gun_jshotgun = gun("gun_jshotgun", WeaponQuality.A_SIDE,
+            XFactory10ga::jadeConfig);
     public static final RegistryObject<ItemGunBaseNT> gun_autoshotgun_heretic = gun(
             "gun_autoshotgun_heretic", WeaponQuality.DEBUG, ModAmmoItems.g10, 50,
             () -> new GunConfig().draw(20).inspect(65).inspectCancel(false).reloadSequential(true)
@@ -380,7 +383,8 @@ public final class BallisticGunCatalog {
                 gun_maresleg, gun_maresleg_akimbo,
                 gun_maresleg_broken, gun_liberator, gun_spas12, gun_autoshotgun, gun_autoshotgun_shredder, gun_autoshotgun_sexy,
                 gun_flaregun, gun_congolake, gun_mk108, gun_amat, gun_amat_subtlety, gun_amat_penance,
-                gun_bolter, gun_double_barrel, gun_double_barrel_sacred_dragon, gun_autoshotgun_heretic}) {
+                gun_bolter, gun_double_barrel, gun_double_barrel_sacred_dragon, gun_autoshotgun_heretic,
+                gun_jshotgun}) {
             ModTabs.addTo(HbmTab.WEAPONS, gun);
         }
     }

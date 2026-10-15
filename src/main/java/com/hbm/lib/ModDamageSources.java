@@ -84,6 +84,8 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> CRUCIBLE = key("crucible");
     /** 1.12.2 {@code ModDamageSource.slicer}: a plain cutter's cut. Absolute, ignores armour. */
     public static final ResourceKey<DamageType> SLICER = key("slicer");
+    /** 1.12.2 {@code ModDamageSource.gluon}: the gluon gun's beam. Absolute, ignores armour, hits creative players. */
+    public static final ResourceKey<DamageType> GLUON = key("gluon");
 
     // ntm-next entity port (gen_entity_damage_types.py)
     /** ntm-next cloud: bypasses_armor, bypasses_effects. */

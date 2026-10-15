@@ -10,7 +10,6 @@ import com.hbm.lib.ModDamageSources;
 import com.hbm.packet.CrucibleAnimPayload;
 import com.hbm.packet.CrucibleClickPayload;
 import com.hbm.packet.MobSlicerPayload;
-import com.hbm.packet.SpecialDeathPayload;
 import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.physics.V3;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -328,7 +327,6 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
 
     public static void registerPacketHandlers() {
         GolemNetwork.registerPlayToClient(CrucibleAnimPayload.CODEC, (payload, context) -> animation(payload.mode()));
-        GolemNetwork.registerPlayToClient(SpecialDeathPayload.CODEC, (payload, context) -> SlicedMobs.handle(payload));
     }
 
     // Animations

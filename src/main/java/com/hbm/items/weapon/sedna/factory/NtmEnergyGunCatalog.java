@@ -10,6 +10,7 @@ import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT.WeaponQuality;
 import com.hbm.items.weapon.sedna.Receiver;
+import com.hbm.items.weapon.sedna.impl.ItemGunEgon;
 import com.hbm.items.weapon.sedna.impl.ItemGunNI4NI;
 import com.hbm.items.weapon.sedna.mags.MagazineBelt;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
@@ -123,6 +124,15 @@ public final class NtmEnergyGunCatalog {
             props -> new ItemGunBaseNT(props, WeaponQuality.SECRET,
                     XFactoryFolly.gunConfig().orchestra(Orchestras.ORCHESTRA_FOLLY)), p -> p);
 
+    /**
+     * 1.12.2 {@code GunEnergyFactory.getEgonConfig}: the gluon gun, belt-fed from the uranium the tau cannon takes
+     * (1.12's xvl1456 ammo). Its receiver never fires; {@link ItemGunEgon} runs the beam.
+     */
+    public static final RegistryObject<ItemGunBaseNT> gun_egon = REG.item("gun_egon",
+            props -> new ItemGunEgon(props, WeaponQuality.A_SIDE, new GunConfig().dura(10_000)
+                    .rec(new Receiver(0).mag(new MagazineBelt().addConfigs(XFactoryAccelerator.tau_uranium)))
+                    .decider(GunStateDecider.LAMBDA_STANDARD_DECIDER)), p -> p);
+
     private static boolean initialized;
 
     private NtmEnergyGunCatalog() {}
@@ -164,5 +174,6 @@ public final class NtmEnergyGunCatalog {
         ModTabs.addTo(HbmTab.WEAPONS, gun_coilgun);
         ModTabs.addTo(HbmTab.WEAPONS, gun_n_i_4_n_i);
         ModTabs.addTo(HbmTab.WEAPONS, gun_folly);
+        ModTabs.addTo(HbmTab.WEAPONS, gun_egon);
     }
 }

@@ -59,6 +59,8 @@ public class EntityBulletBaseMK4 extends CompatEntity {
     public BulletConfig config;
     public LivingEntity thrower;
     public float damage;
+    /** A per-round life shorter than the config's, 1.12.2 {@code EntityBulletBase.overrideMaxAge}; -1 for none. */
+    public int expiresOverride = -1;
     public int ricochets = 0;
     /** Rendering aids: the distance actually covered last tick. */
     public double velocity;
@@ -307,7 +309,7 @@ public class EntityBulletBaseMK4 extends CompatEntity {
         if (config.gravity != 0F) {
             setDeltaMovement(getDeltaMovement().subtract(0D, config.gravity, 0D));
         }
-        if (!level().isClientSide() && tickCount > config.expires) {
+        if (!level().isClientSide() && (tickCount > config.expires || expiresOverride >= 0 && tickCount > expiresOverride)) {
             discard();
             return;
         }

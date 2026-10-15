@@ -1,5 +1,6 @@
 package com.hbm.client.anim;
 
+import com.hbm.client.gun.JadeShotgunClient;
 import com.hbm.items.ModGunItems;
 import com.hbm.items.weapon.sedna.GunAnimation;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
@@ -138,6 +139,7 @@ public final class GunAnimations {
         registerById("gun_charge_thrower", GunAnimations::chargeThrower);
         registerById("gun_drill", GunAnimations::drill);
         registerById("gun_aberrator", GunAnimations::aberrator);
+        registerById("gun_jshotgun", (stack, cue, rail) -> JadeShotgunClient.animation(stack, cue));
         registerById("gun_aberrator_eott", GunAnimations::aberrator);
     }
 

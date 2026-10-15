@@ -13,6 +13,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.client.Colors;
+import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
@@ -26,12 +27,14 @@ import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 
 /** Client-owned source {@code GunFactoryClient} tracer and beam lookup tables. */
 public final class TracerRegistry {
     private static final Identifier WHITE = Ids.of("hbm", "textures/models/misc/white.png");
     private static final Identifier FLARE = Ids.of("hbm", "textures/particle/flare.png");
+    private static final Identifier FRESNEL = Ids.of("hbm", "textures/models/bfg/fresnel_ms.png");
     private static final Map<Identifier, BulletTracer> BULLETS = new HashMap<>();
     private static final Map<Identifier, BeamTracer> BEAMS = new HashMap<>();
     private static final Map<Identifier, WavefrontObj> MODELS = new HashMap<>();
@@ -118,6 +121,7 @@ public final class TracerRegistry {
         register(express, "m357_express", "m44_express", "g12_explosive", "g12_sub_explosive", "b75_exp");
         register(du, "p45_du", "r762_du", "bmg50_du");
         register(he, "g10_explosive", "bmg50_he", "r762_he");
+        register(streak(), "g10_jade");
         register(smoke, "bmg50_sm");
         register(black, "bmg50_black");
         register(legendary, "m44_equestrian_pip", "m44_equestrian_mn7", "g12_equestrian_bj", "g12_equestrian_tkr",
@@ -322,6 +326,43 @@ public final class TracerRegistry {
         Vertexes.vertex(buffer, pose, -size, size, 0F, color, 1F, 0F, OverlayTexture.NO_OVERLAY, 0xF000F0, 0F, 0F, 1F);
         Vertexes.vertex(buffer, pose, size, size, 0F, color, 0F, 0F, OverlayTexture.NO_OVERLAY, 0xF000F0, 0F, 0F, 1F);
         Vertexes.vertex(buffer, pose, size, -size, 0F, color, 0F, 1F, OverlayTexture.NO_OVERLAY, 0xF000F0, 0F, 0F, 1F);
+    }
+
+    /**
+     * 1.12.2 {@code RenderBulletMk2.renderTracer} ({@code STYLE_TRACER}): a 10-block streak of {@code fresnel_ms} ahead
+     * of the round along its flight, 0.1 wide across the line from the eye, tinted (1, 0.7, 0.5), full-bright and
+     * added twice. Drawn unturned, in world axes, from the entity's origin.
+     */
+    public static BulletTracer streak() {
+        return new BulletTracer() {
+            @Override
+            public void extract(EntityBulletBaseMK4 bullet, BulletProjectileRenderer.State state, float partialTicks) {
+                Vec3 direction = bullet.getDeltaMovement().normalize();
+                Vec3 side = CameraInfo.current().pos.subtract(bullet.getEyePosition(partialTicks)).cross(direction)
+                        .normalize().scale(0.05);
+                state.sideX = (float) side.x;
+                state.sideY = (float) side.y;
+                state.sideZ = (float) side.z;
+                state.alongX = (float) direction.x * 10F;
+                state.alongY = (float) direction.y * 10F;
+                state.alongZ = (float) direction.z * 10F;
+            }
+
+            @Override
+            public void draw(BulletProjectileRenderer.State state, PoseStack pose, SubmitSink sink) {
+                int color = Colors.colorFromFloat(1F, 1F, 0.7F, 0.5F);
+                float sx = state.sideX, sy = state.sideY, sz = state.sideZ;
+                float ax = state.alongX, ay = state.alongY, az = state.alongZ;
+                sink.submitCustomGeometry(pose, CompatRenderTypes.plasmaGlow(FRESNEL), (p, buffer) -> {
+                    for (int i = 0; i < 2; i++) {
+                        Vertexes.vertex(buffer, p, sx, sy, sz, color, 1F, 1F, OverlayTexture.NO_OVERLAY, 0xF000F0, 0F, 1F, 0F);
+                        Vertexes.vertex(buffer, p, sx + ax, sy + ay, sz + az, color, 1F, 0F, OverlayTexture.NO_OVERLAY, 0xF000F0, 0F, 1F, 0F);
+                        Vertexes.vertex(buffer, p, -sx + ax, -sy + ay, -sz + az, color, 0F, 0F, OverlayTexture.NO_OVERLAY, 0xF000F0, 0F, 1F, 0F);
+                        Vertexes.vertex(buffer, p, -sx, -sy, -sz, color, 0F, 1F, OverlayTexture.NO_OVERLAY, 0xF000F0, 0F, 1F, 0F);
+                    }
+                });
+            }
+        };
     }
 
     public static BulletTracer ribbon(int dark, int light, boolean fullbright) {

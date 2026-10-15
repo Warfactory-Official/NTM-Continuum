@@ -1,9 +1,13 @@
 package com.hbm.client;
 
 import com.hbm.Constants;
+import com.hbm.client.gun.GluonGunClient;
+import com.hbm.client.gun.JadeShotgunClient;
+import com.hbm.items.ModGunItems;
 import com.hbm.items.weapon.sedna.Crosshair;
 import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.impl.ItemGunEgon;
 import com.hbm.items.weapon.sedna.impl.ItemGunStinger;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
@@ -30,6 +34,14 @@ public final class GunCrosshairOverlay {
         if (!(stack.getItem() instanceof ItemGunBaseNT gun)) return false;
 
         GunConfig config = gun.getConfig(stack, 0);
+        if (gun instanceof ItemGunEgon) {
+            GluonGunClient.renderCrosshair(graphics);
+            return true;
+        }
+        if (gun == ModGunItems.gun_jshotgun.get()) {
+            JadeShotgunClient.renderCrosshair(graphics);
+            return true;
+        }
         if (gun instanceof ItemGunStinger) {
             if (ItemGunBaseNT.aimingProgress < 1F) return true;
             renderCrosshair(graphics, config.getCrosshair(stack));

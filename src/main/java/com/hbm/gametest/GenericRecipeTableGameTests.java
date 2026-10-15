@@ -105,10 +105,10 @@ public final class GenericRecipeTableGameTests {
     static final Map<String, Integer> EXPECTED_COUNTS = new HashMap<>();
 
     static {
-        EXPECTED_COUNTS.put("assembly_machine.noex_no528", 615);
-        EXPECTED_COUNTS.put("assembly_machine.ex_no528", 615);
-        EXPECTED_COUNTS.put("assembly_machine.noex_528", 605);
-        EXPECTED_COUNTS.put("assembly_machine.ex_528", 605);
+        EXPECTED_COUNTS.put("assembly_machine.noex_no528", 616);
+        EXPECTED_COUNTS.put("assembly_machine.ex_no528", 616);
+        EXPECTED_COUNTS.put("assembly_machine.noex_528", 606);
+        EXPECTED_COUNTS.put("assembly_machine.ex_528", 606);
         EXPECTED_COUNTS.put("blast_furnace.noex_no528", 15);
         EXPECTED_COUNTS.put("blast_furnace.ex_no528", 15);
         EXPECTED_COUNTS.put("blast_furnace.noex_528", 15);

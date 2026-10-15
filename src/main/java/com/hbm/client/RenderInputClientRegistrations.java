@@ -51,7 +51,7 @@ public final class RenderInputClientRegistrations {
     public static void registerPacketHandlers() {
         GolemNetwork.registerPlayToClient(ToolAnimationPayload.CODEC,
                 (payload, context) -> ToolAnimations.handle(payload));
-        CrucibleClient.registerPacketHandlers(); // 1.12.2 crucible anims and cut mobs
+        CrucibleClient.registerPacketHandlers(); // 1.12.2 crucible anims
     }
 
     /** Called from {@code HbmClientRegistrations.installKeybinds}. */

@@ -1,11 +1,16 @@
 package com.hbm.items;
 
+import com.hbm.lib.ItemIds;
+import com.hbm.lib.TagIds;
 import dev.golem.core.dejson.Dejson;
 import dev.golem.core.dejson.ItemModels;
 
+import static dev.golem.core.dejson.Crafting.rows;
+import static dev.golem.core.dejson.Crafting.shaped;
+
 /**
  * Item definitions of the Sedna guns: {@code hbm:gun} nodes naming the shared base model and the
- * weapon renderer, some behind a {@code select} on display context.
+ * weapon renderer, some behind a {@code select} on display context; the two 1.12.2 guns are {@code hbm:custom_item}s.
  *
  * <p>Touches no Minecraft class: Dejson runs {@link #declare()} in a plain JVM at build time.
  */
@@ -165,6 +170,14 @@ public final class GunItemDeclarations {
                 .definition(gun("hbm:item/gun_obj_base", "stg77")).oversizedInGui().register();
         Dejson.item(NS, "gun_stinger")
                 .definition(gun("hbm:item/gun_obj_base", "stinger")).oversizedInGui().register();
+        // 1.12.2 TEISR guns: their own renderers in the bare frame, not the Sedna weapon renderer
+        ItemRendererDeclarations.model("gun_egon", "egon", "teisr_bare");
+        ItemRendererDeclarations.model("gun_jshotgun", "jshotgun", "teisr_bare");
+        // port: 1.12.2 CraftingManager's jade shotgun, a gun 1.7 does not have. Its two Uboiniks are 1.7's double-barrel
+        // shotgun and its spinning light is the halogen floodlight.
+        shaped(NS, "gun_jshotgun", "hbm:gun_jshotgun", rows("LPP", "SSW", "PPD"),
+                "L", ItemIds.spotlight_halogen, "P", TagIds.plates_steel, "S", ItemIds.gun_double_barrel,
+                "W", ItemIds.mechanism_rifle_2, "D", TagIds.dyes_green);
         Dejson.item(NS, "gun_tau")
                 .definition(gun("hbm:item/gun_obj_base", "tau")).oversizedInGui().register();
         Dejson.item(NS, "gun_tesla_cannon")

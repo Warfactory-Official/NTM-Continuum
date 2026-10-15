@@ -83,6 +83,9 @@ public final class GunFactoryClient {
         hud(ModGunItems.gun_double_barrel_sacred_dragon, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
         hud(ModGunItems.gun_fireext, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
         hud(ModGunItems.gun_charge_thrower, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
+        // 1.12.2 ItemGunBase.renderHUD: ammo and wear for every gun
+        hud(ModGunItems.gun_egon, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
+        hud(ModGunItems.gun_jshotgun, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
 
         hud(ModGunItems.gun_light_revolver_dani, 0, HUD_COMPONENT_DURABILITY_MIRROR, HUD_COMPONENT_AMMO_MIRROR);
         hud(ModGunItems.gun_light_revolver_dani, 1, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);

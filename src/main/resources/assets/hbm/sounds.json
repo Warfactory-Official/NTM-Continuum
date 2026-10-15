@@ -4544,5 +4544,69 @@
         "stream": false
       }
     ]
+  },
+  "weapon.gluonstart": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/gluon/start",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.gluonloop": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/gluon/loop",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.gluonend": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/gluon/end",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.gluonhit": {
+    "category": "player",
+    "sounds": [
+      "hbm:weapon/gluon/hit1",
+      "hbm:weapon/gluon/hit2",
+      "hbm:weapon/gluon/hit3",
+      "hbm:weapon/gluon/hit4",
+      "hbm:weapon/gluon/hit5"
+    ]
+  },
+  "weapon.jsg_reload0": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/jsg_reload0",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.jsg_reload1": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/jsg_reload1",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.shottyshoot": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/shottyshoot",
+        "stream": false
+      }
+    ]
   }
 }

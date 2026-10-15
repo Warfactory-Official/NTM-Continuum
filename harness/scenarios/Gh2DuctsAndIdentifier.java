@@ -9,16 +9,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * GitHub issue 2, built by hand on the platform.
- * <ol>
- *   <li>A water source barrel (identifier + infinite barrel clicked in, mode clicked to output) feeds two water ducts.
- *       A second barrel is placed at the end of the line untyped, then typed water through its GUI's identifier slot.
- *       1.7's {@code trySubscribe} joined the net on the next tick: the barrel must fill and the duct must grow its
- *       arm toward it, without retyping the duct.</li>
- *   <li>A sneak-click with the multi identifier (primary: oil) on a duct retypes the whole line (1.7
- *       {@code doesSneakBypassUse} + {@code changeTypeRecursively}); on a barrel and on a fluid tank it sets their
- *       type.</li>
- * </ol>
+ * GitHub issue 2. A barrel typed through its GUI after the duct line exists must join the net on the next tick, as
+ * 1.7's {@code trySubscribe} did: it fills and the duct grows an arm to it. A sneak-click with the multi identifier
+ * retypes a whole duct line (1.7 {@code changeTypeRecursively}) and sets a barrel's or tank's type.
  */
 public final class Gh2DuctsAndIdentifier implements Scenario {
 

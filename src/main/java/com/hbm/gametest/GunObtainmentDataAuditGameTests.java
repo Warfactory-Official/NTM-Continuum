@@ -49,11 +49,12 @@ public final class GunObtainmentDataAuditGameTests {
     /**
      * The guns 1.7 fires without a report of their own: the two flamethrowers and the
      * chemthrower run a looping client sound instead, the Tau charges, and the tools and the B92 have
-     * no {@code .sound(...)} on any receiver upstream either.
+     * no {@code .sound(...)} on any receiver upstream either. 1.12.2's gluon gun never fires a round: its beam
+     * plays its own start, loop and end sounds.
      */
     private static final Set<String> ORIGINAL_SILENT_GUNS = Set.of(
             "gun_flamer", "gun_flamer_topaz", "gun_chemthrower", "gun_tau", "gun_drill",
-            "gun_pa_melee", "gun_pa_ranged", "gun_b92", "gun_b92_ammo");
+            "gun_pa_melee", "gun_pa_ranged", "gun_b92", "gun_b92_ammo", "gun_egon");
 
     private GunObtainmentDataAuditGameTests() {}
 

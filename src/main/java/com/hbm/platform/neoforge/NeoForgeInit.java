@@ -94,6 +94,7 @@ public class NeoForgeInit {
         com.hbm.gametest.Bombs2GameTests.init();
         com.hbm.gametest.NtmEntityPortGameTests.init();
          com.hbm.gametest.Gen3SednaGameTests.init();
+         com.hbm.gametest.ReloadedGunGameTests.init();
          com.hbm.gametest.RadioGameTests.init();
          com.hbm.gametest.CounterControllerGameTests.init();
          com.hbm.gametest.TelexGameTests.init();
@@ -241,6 +242,8 @@ public class NeoForgeInit {
                 com.hbm.gametest.NtmEntityPortGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.Gen3SednaGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ReloadedGunGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.RadioGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,

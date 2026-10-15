@@ -138,7 +138,7 @@ public final class DejsonGameTests {
             String sprite = Constants.MOD_ID + ":items/" + id;
             boolean isComputed = generated.containsKey(sprite);
             boolean hasFile = DejsonGameTests.class.getResource(
-                    "/assets/" + Constants.MOD_ID + "/textures/items/" + id + ".png") != null;
+                    "/assets/" + Constants.MOD_ID + "/textures/items/" + ModAutogenItems.spriteOf(id) + ".png") != null;
 
             if (isComputed && hasFile) {
                 // Harmless but worth saying: the file is what the atlas ends up using, and the

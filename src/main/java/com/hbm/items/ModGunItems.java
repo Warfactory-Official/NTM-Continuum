@@ -236,6 +236,8 @@ public final class ModGunItems {
     public static final RegistryObject<ItemGunBaseNT> gun_laser_pistol_morning_glory = NtmEnergyGunCatalog.gun_laser_pistol_morning_glory;
     public static final RegistryObject<ItemGunBaseNT> gun_lasrifle = NtmEnergyGunCatalog.gun_lasrifle;
     public static final RegistryObject<ItemGunBaseNT> gun_tau = NtmEnergyGunCatalog.gun_tau;
+    public static final RegistryObject<ItemGunBaseNT> gun_egon = NtmEnergyGunCatalog.gun_egon;
+    public static final RegistryObject<ItemGunBaseNT> gun_jshotgun = BallisticGunCatalog.gun_jshotgun;
     public static final RegistryObject<ItemGunBaseNT> gun_coilgun = NtmEnergyGunCatalog.gun_coilgun;
     public static final RegistryObject<ItemGunBaseNT> gun_n_i_4_n_i = NtmEnergyGunCatalog.gun_n_i_4_n_i;
     public static final RegistryObject<ItemGunBaseNT> gun_folly = NtmEnergyGunCatalog.gun_folly;

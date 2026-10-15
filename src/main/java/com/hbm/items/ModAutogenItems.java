@@ -122,6 +122,11 @@ public final class ModAutogenItems {
         return AUTHORED.containsKey(sprite);
     }
 
+    /** The texture under {@code textures/items} that draws this material-shape item: its own name, or 1.7's art. */
+    public static String spriteOf(String id) {
+        return AUTHORED.getOrDefault(id, id);
+    }
+
     /** Whether this material-shape item's sprite is a computed remap (its model is then the plain sprite). */
     private static boolean remapped(String base, String material) {
         String[] materials = REMAPPED_SHAPES.get(base);

@@ -55,6 +55,8 @@ public final class ModDamageTypes {
                 // 1.12.2 ModDamageSource crucible/slicer: setDamageIsAbsolute().setDamageBypassesArmor()
                 type("crucible").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("slicer").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                // 1.12.2 ModDamageSource gluon: absolute, bypasses armour, allowed in creative
+                type("gluon").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS, BYPASSES_INVULNERABILITY),
                 type("broadcast").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("boil").tags(IS_FIRE),
                 type("digamma").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS, BYPASSES_INVULNERABILITY),

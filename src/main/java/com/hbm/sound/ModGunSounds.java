@@ -97,6 +97,15 @@ public final class ModGunSounds {
     public static final RegistryObject<SoundEvent> PLAYER_GULP = register("player.gulp");
     public static final RegistryObject<SoundEvent> PLAYER_GROAN = register("player.groan");
 
+    // 1.12.2 HBMSoundHandler: the gluon gun and the jade shotgun
+    public static final RegistryObject<SoundEvent> GLUON_START = register("weapon.gluonstart");
+    public static final RegistryObject<SoundEvent> GLUON_LOOP = register("weapon.gluonloop");
+    public static final RegistryObject<SoundEvent> GLUON_END = register("weapon.gluonend");
+    public static final RegistryObject<SoundEvent> GLUON_HIT = register("weapon.gluonhit");
+    public static final RegistryObject<SoundEvent> JSG_RELOAD_0 = register("weapon.jsg_reload0");
+    public static final RegistryObject<SoundEvent> JSG_RELOAD_1 = register("weapon.jsg_reload1");
+    public static final RegistryObject<SoundEvent> FIRE_SHOTTY = register("weapon.shottyshoot");
+
     private static RegistryObject<SoundEvent> register(String name) {
         return REG.sound(name);
     }

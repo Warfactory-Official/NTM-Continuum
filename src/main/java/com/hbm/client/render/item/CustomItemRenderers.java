@@ -36,6 +36,8 @@ public final class CustomItemRenderers {
             Map.entry("redstone_sword", ItemRenderRedstoneSword::new),
             Map.entry("chainsaw", ItemRenderChainsaw::new),
             Map.entry("crucible", ItemRenderCrucible::new),
+            Map.entry("egon", ItemRenderGunEgon::new),
+            Map.entry("jshotgun", ItemRenderJShotgun::new),
             Map.entry("boltgun", ItemRenderBoltgun::new), // G-C: 1.7 ItemRenderBoltgun (RECOIL bus)
             Map.entry("missile_custom", ItemRenderMissile::new),
             Map.entry("detonator_laser", ItemRenderDetonatorLaser::new),

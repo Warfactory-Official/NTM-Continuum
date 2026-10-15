@@ -9,6 +9,7 @@ import com.hbm.blocks.ModCustomMissileBlocks;
 import com.hbm.blocks.ModDecoBlocks;
 import com.hbm.blocks.ModDecoCrateBlocks;
 import com.hbm.blocks.ModDoorBlocks;
+import com.hbm.blocks.ModEnergyNetBlocks;
 import com.hbm.blocks.ModExplosivesBlocks;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.ModGlassBlocks;
@@ -41,6 +42,7 @@ import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipe.OutputChoice;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
+import com.hbm.items.ModGunItems;
 import com.hbm.items.ItemEnums.EnumCasingType;
 import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ItemEnums.EnumExpensiveType;
@@ -1140,6 +1142,16 @@ public final class AssemblyMachineTable extends GenericTableSource<GenericRecipe
         // "alloyUltimate" and HBM parts) is not a row: the port has no Mekanism integration and no enableMekanismChanges
         // key; Mekanism exists only on the NeoForge/Forge nodes, and the row would need a mod-loaded load condition so its
         // mekanism:digital_miner output decodes, plus Mekanism's ultimate-alloy tag as the ingredient
+
+        // port: 1.12.2 AssemblerRecipes' gluon gun (256 ticks), a gun 1.7 does not have. Its tier 6 targeting circuits,
+        // advanced ring coils and copper wire item are 1.7's bismoid circuit, golden ring coil and copper wire.
+        this.register(new GenericRecipe("ass.gunegon").setup(256, 100).outputItems(new ItemStack(ModGunItems.gun_egon.get(), 1))
+                .inputItems(new ComparableStack(ModItems.mechanism_special.get(), 4), STEEL.plate().count(16), PB.plate().count(24),
+                        new ComparableStack(ModItems.coil_gold_torus.get(), 32),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BISMOID), 4),
+                        new ComparableStack(ModItems.plate_polymer.get(), 8),
+                        new ComparableStack(ModEnergyNetBlocks.machine_lithium_battery.get().asItem(), 2),
+                        new ComparableStack(ModMachineBlocks.machine_waste_drum.get().asItem(), 1), CU.wire().count(8)));
     }
 
     /** A row registered inside a 1.7 config branch carries the branch. */

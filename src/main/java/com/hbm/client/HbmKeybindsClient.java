@@ -221,6 +221,11 @@ public final class HbmKeybindsClient {
         ItemGunBaseNT.aimingProgress = Math.max(0F, Math.min(1F, ItemGunBaseNT.aimingProgress));
     }
 
+    /** The state last reported to the server for {@code keybind}: what the client holds right now. */
+    public static boolean isHeld(EnumKeybind keybind) {
+        return LAST_STATE[keybind.ordinal()];
+    }
+
     private static void report(EnumKeybind keybind, boolean state) {
         if (LAST_STATE[keybind.ordinal()] == state) return;
         LAST_STATE[keybind.ordinal()] = state;

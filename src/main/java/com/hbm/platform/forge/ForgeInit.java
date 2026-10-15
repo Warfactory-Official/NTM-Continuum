@@ -101,6 +101,7 @@ public final class ForgeInit {
         com.hbm.gametest.Bombs2GameTests.init();
         com.hbm.gametest.NtmEntityPortGameTests.init();
         com.hbm.gametest.Gen3SednaGameTests.init();
+        com.hbm.gametest.ReloadedGunGameTests.init();
         com.hbm.gametest.RadioGameTests.init();
         com.hbm.gametest.CounterControllerGameTests.init();
         com.hbm.gametest.TelexGameTests.init();
@@ -244,6 +245,8 @@ public final class ForgeInit {
                 com.hbm.gametest.NtmEntityPortGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.Gen3SednaGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ReloadedGunGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.RadioGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,

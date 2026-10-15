@@ -654,7 +654,7 @@ public class ItemGunBaseNT extends CompatItem implements IKeybindReceiver {
     private static boolean isPersistent(String key) {
         return key.startsWith(KEY_WEAR) || key.startsWith(KEY_MODE) || key.startsWith("mag")
                 || key.startsWith("KEY_MOD_LIST_") || key.startsWith("KEY_MOD_NAMES_") || key.equals("coincount") || key.equals("coincharge")
-                || key.equals("colors");
+                || key.equals("colors") || key.equals("flashlight");
     }
 
     private static CompoundTag read(ItemStack stack, String key) {

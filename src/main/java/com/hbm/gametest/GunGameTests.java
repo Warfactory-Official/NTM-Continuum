@@ -14,6 +14,7 @@ import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.impl.ItemGunEgon;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.factory.GunStateDecider;
 import com.hbm.items.weapon.sedna.factory.Lego;
@@ -183,6 +184,8 @@ public final class GunGameTests {
             if (!"hbm".equals(id.getNamespace()) || !id.getPath().startsWith("gun_")
                     || !(item instanceof ItemGunBaseNT gun)) continue;
             gunCount++;
+            // the gluon gun fires from serverTick while the trigger is held, as 1.12's ItemGunEgon did
+            if (item instanceof ItemGunEgon) continue;
             ItemStack stack = new ItemStack(item);
             if (gun.defaultAmmo != null) {
                 helper.assertTrue(gun.defaultAmmo.get() != null && gun.defaultAmmoAmount > 0,
@@ -213,7 +216,7 @@ public final class GunGameTests {
                 }
             }
         }
-        helper.assertTrue(gunCount == 70, "source gun registry must expose 70 guns, found " + gunCount);
+        helper.assertTrue(gunCount == 72, "source gun registry must expose 72 guns, found " + gunCount);
         helper.succeed();
     }
 

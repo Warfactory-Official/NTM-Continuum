@@ -1,6 +1,7 @@
 package com.hbm.items.tool;
 
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.items.weapon.sedna.impl.ItemGunEgon;
 import com.hbm.sound.ModSounds;
 import com.hbm.util.ContaminationUtil;
 import dev.golem.core.world.CompatItem;
@@ -49,6 +50,8 @@ public class ItemGeigerCounter extends CompatItem {
                                        @Nullable EquipmentSlot slot, boolean held) {
         if (!(owner instanceof LivingEntity living)) return;
         float x = (float) HbmLivingProps.getRadBuf(living);
+        // 1.12.2 ItemGeigerCounter.check: a firing gluon gun in the carrier's main hand reads 100 RAD/s more
+        if (owner instanceof Player player && ItemGunEgon.isFiring(player)) x += 100;
         // 1.7: world.getTotalWorldTime() % 5, the same tick for every carrier
         if (level.getGameTime() % 5 == 0) {
             int r = click(x, level.getRandom(), level.getRandom());
