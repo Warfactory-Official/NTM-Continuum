@@ -6,7 +6,7 @@ import com.hbm.Constants;
 /**
  * 1.7 {@code GeneralConfig} ({@code hbm.cfg} categories {@code 01_general}, {@code 528}, {@code LESS BULLSHIT MODE}),
  * read by {@link #loadFromConfig}. The field initialisers are 1.7's effective defaults. Fields with no 1.7 key (the
- * 1.12.2-only crucible charges, asbestos dust, carbon monoxide and gas switches, radon, the HE:FE ratio, enableRads,
+ * 1.12.2-only crucible charges, asbestos dust, carbon monoxide and gas switches, radon, enableRads,
  * advancedRadiation) are port-side constants that are not in {@code hbm.cfg}.
  */
 public final class GeneralConfig {
@@ -57,6 +57,8 @@ public final class GeneralConfig {
      * The HE side of the HE:FE exchange ratio. With {@link #energyRatioFe} it says {@code energyRatioHe}
      * HE is worth exactly {@code energyRatioFe} FE, in both directions. The default is 1.7's own
      * HE&rarr;RF converter rate: {@code TileEntityConverterHeRf.heInput} is 5 against an RF output of 1.
+     * Port-only {@code hbm.cfg} key {@code 9.50_energyRatioHE}, read by {@link MachineConfig#loadFromConfig}; the FE
+     * side and {@link #foreignExportReserve} are {@code 9.51} and {@code 9.52}.
      */
     public static int energyRatioHe = 5;
 

@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.hbm.Constants;
+import com.hbm.api.energymk2.EnergyConversion;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.config.Configuration;
 import com.hbm.config.DungeonConfig;
@@ -55,6 +56,13 @@ public final class ConfigGameTests {
     public static final GameTests.Function PLACEMENT = TESTS.function(
             "fix8_config_placement_reads_cfg", 20, () -> ConfigGameTests::placement);
 
+    /** Port-only keys: category, key, default. Cables exchange HE with other mods' FE, which 1.7 cables never did. */
+    private static final String[][] PORT_KEYS = {
+            {"09_machines", "9.50_energyRatioHE", "5"},
+            {"09_machines", "9.51_energyRatioFE", "1"},
+            {"09_machines", "9.52_foreignExportReserve", "0.0"},
+    };
+
     public static void init() {}
 
     /** Writes a fresh {@code hbm.cfg} (every loader, 1.7 order) into a temp file and reads it back. */
@@ -93,10 +101,16 @@ public final class ConfigGameTests {
                 helper.assertTrue(k.def().equals(value), k.key() + " default must be 1.7's " + k.def() + ", got " + value);
                 written++;
             }
-            // nothing beyond the 1.7 keys
+            for (String[] k : PORT_KEYS) {
+                Configuration.Property p = cfg.peek(k[0], k[1]);
+                helper.assertTrue(p != null, "port key " + k[0] + "/" + k[1] + " missing from hbm.cfg");
+                helper.assertTrue(k[2].equals(p.getString()), k[1] + " default must be " + k[2] + ", got " + p.getString());
+                expected.add(k[0] + "/" + k[1]);
+            }
+            // nothing beyond the 1.7 keys and PORT_KEYS
             for (String category : cfg.categoryNames()) {
                 for (String key : cfg.properties(category).keySet()) {
-                    helper.assertTrue(expected.contains(category + "/" + key), "hbm.cfg holds a key 1.7 did not have: " + category + "/" + key);
+                    helper.assertTrue(expected.contains(category + "/" + key), "hbm.cfg holds an unlisted key: " + category + "/" + key);
                 }
             }
             // 248 + 57 hook keys (6.04, 10.04, RADWORLD_03, POL_01/03/06/07, 5.01/5.02/5.05-5.43, 9 dungeon
@@ -168,7 +182,10 @@ public final class ConfigGameTests {
                     .replace("S:8.S0_potionSickness=OFF", "S:8.S0_potionSickness=TERRARIA")
                     .replace("B:enableLessBullshitMode=false", "B:enableLessBullshitMode=true")
                     .replace("I:LBSM_schrabOreRate=20", "I:LBSM_schrabOreRate=33")
-                    .replace("B:9.00_scaleRTGPower=false", "B:9.00_scaleRTGPower=true");
+                    .replace("B:9.00_scaleRTGPower=false", "B:9.00_scaleRTGPower=true")
+                    .replace("I:9.50_energyRatioHE=5", "I:9.50_energyRatioHE=4")
+                    .replace("I:9.51_energyRatioFE=1", "I:9.51_energyRatioFE=3")
+                    .replace("D:9.52_foreignExportReserve=0.0", "D:9.52_foreignExportReserve=7.0");
             Files.writeString(file, text);
             MainRegistry.loadConfig(new Configuration(file));
 
@@ -188,6 +205,9 @@ public final class ConfigGameTests {
             helper.assertTrue(StorageDrumRecipes.longDecayChance() == 15 * 60 * 20,
                     "LBSM_shortDecay: long decay 15 minutes");
             helper.assertTrue(MachineConfig.scaleRTGPowerActive(), "9.00_scaleRTGPower read");
+            helper.assertTrue(EnergyConversion.feFromHe(40) == 30 && EnergyConversion.heFromFe(30) == 40,
+                    "9.50/9.51: 4 HE = 3 FE at the cable boundary");
+            helper.assertTrue(GeneralConfig.foreignExportReserve == 1D, "9.52_foreignExportReserve clamped to 1");
             // 528 is off: its sub-switches stay forced off whatever the file says (1.7 loadFromConfig)
             helper.assertTrue(!GeneralConfig.enable528NetherBurn && !GeneralConfig.enable528ReasimBoilers
                     && !DungeonConfig.enable528BosniaSimulator, "X528 switches forced off without 528 mode");
