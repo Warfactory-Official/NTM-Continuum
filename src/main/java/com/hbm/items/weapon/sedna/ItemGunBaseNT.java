@@ -403,9 +403,10 @@ public class ItemGunBaseNT extends CompatItem implements IKeybindReceiver {
             int index) {
         if (player instanceof ServerPlayer serverPlayer) {
             HbmPackets.sendGunAnimation(serverPlayer, stack, type, hand, 0, index);
-            setLastAnim(stack, index, type);
-            setAnimTimer(stack, index, 0);
         }
+        // a mob shooter has no player; its orchestra still plays from these
+        setLastAnim(stack, index, type);
+        setAnimTimer(stack, index, 0);
     }
 
     /** Adds one upstream recoil impulse; the client tick consumes the accumulated values. */
@@ -636,13 +637,9 @@ public class ItemGunBaseNT extends CompatItem implements IKeybindReceiver {
     public static void setIsEquipped(ItemStack stack, boolean value) { setValueBool(stack, KEY_EQUIPPED, value); }
 
     /** Identity, rather than item type, distinguishes two identical akimbo stacks. */
-    private static InteractionHand handOf(Player player, ItemStack stack) {
-        return player.getItemInHand(InteractionHand.OFF_HAND) == stack
-                ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
-    }
-
     private static InteractionHand handOf(Entity entity, ItemStack stack) {
-        return entity instanceof Player player ? handOf(player, stack) : InteractionHand.MAIN_HAND;
+        return entity instanceof Player player && player.getItemInHand(InteractionHand.OFF_HAND) == stack
+                ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
     }
 
     /* THE CHOKE POINT */

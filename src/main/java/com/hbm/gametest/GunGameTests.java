@@ -29,14 +29,18 @@ import com.hbm.items.weapon.sedna.mags.MagazineSingleTypeBase;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.render.anim.BusAnimationKeyframe;
 import dev.golem.core.render.anim.BusAnimationSequence;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -217,6 +221,46 @@ public final class GunGameTests {
             }
         }
         helper.assertTrue(gunCount == 72, "source gun registry must expose 72 guns, found " + gunCount);
+        helper.succeed();
+    }
+
+    /** A mob holding any gun presses and releases every key with no player or inventory, as EntityAIFireGun does. */
+    public static void gunMobHeldKeybinds(GameTestHelper helper) {
+        inPlot(helper, () -> gunMobHeldKeybindsNow(helper));
+    }
+
+    private static void gunMobHeldKeybindsNow(GameTestHelper helper) {
+        Mob skeleton = helper.spawn(EntityType.SKELETON, new BlockPos(1, 2, 1));
+        skeleton.setXRot(-90F);
+        ServerLevel level = helper.getLevel();
+        EnumKeybind[] keys = {EnumKeybind.RELOAD, EnumKeybind.GUN_PRIMARY, EnumKeybind.GUN_SECONDARY,
+                EnumKeybind.GUN_TERTIARY};
+        List<String> failures = new ArrayList<>();
+        int animated = 0;
+        for (Item item : BuiltInRegistries.ITEM) {
+            var id = BuiltInRegistries.ITEM.getKey(item);
+            if (!"hbm".equals(id.getNamespace()) || !(item instanceof ItemGunBaseNT gun)) continue;
+            ItemStack stack = new ItemStack(item);
+            skeleton.setItemSlot(EquipmentSlot.MAINHAND, stack);
+            try {
+                for (int i = 0; i < 40; i++) gun.serverTick(stack, level, skeleton, true);
+                for (EnumKeybind key : keys) {
+                    gun.handleKeybind(skeleton, null, stack, key, true);
+                    for (int i = 0; i < 20; i++) gun.serverTick(stack, level, skeleton, true);
+                    gun.handleKeybind(skeleton, null, stack, key, false);
+                    for (int i = 0; i < 100; i++) gun.serverTick(stack, level, skeleton, true);
+                }
+            } catch (RuntimeException e) {
+                failures.add(id.getPath() + ": " + e + " at " + e.getStackTrace()[0]);
+            }
+            if (!ItemGunBaseNT.getValueString(stack, ItemGunBaseNT.KEY_LASTANIM + 0).isEmpty()) animated++;
+        }
+        for (Entity e : level.getEntities(skeleton, skeleton.getBoundingBox().inflate(256D))) {
+            if (!(e instanceof Player)) e.discard();
+        }
+        helper.assertTrue(failures.isEmpty(), "mob-held guns failed: " + failures);
+        // 1.7 records the animation on the stack for every shooter; the orchestras play a mob's sounds from it
+        helper.assertTrue(animated > 0, "no mob-held gun recorded an animation");
         helper.succeed();
     }
 

@@ -926,6 +926,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("gun_fire", 200, () -> GunGameTests::gunFire);
     public static final GameTests.Function GUN_FIRING_ROUTES =
             TESTS.function("gun_firing_routes", 20, () -> GunGameTests::gunFiringRoutes);
+    public static final GameTests.Function GUN_MOB_HELD_KEYBINDS =
+            TESTS.function("gun_mob_held_keybinds", 100, () -> GunGameTests::gunMobHeldKeybinds);
     public static final GameTests.Function GUN_DEBUG_SECONDARY_FIRE =
             TESTS.function("gun_debug_secondary_fire", 200, () -> GunGameTests::gunDebugSecondaryFire);
     public static final GameTests.Function GUN_MINIGUN_FIRING_ROUTES =
