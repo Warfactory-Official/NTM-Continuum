@@ -1,22 +1,40 @@
 # NTM - Continuum
 
-## Testing in game (harness)
+## Setting up the project
 
-The in-game test harness lives in Golem Core: see
-[`../Golem-Core/harness/README.md`](../Golem-Core/harness/README.md) for setup and usage. This repository holds
-HBM's part of it:
+1. **Clone this repository and Golem Core next to each other.** The build includes Golem Core from `../Golem-Core`, so
+   the folder must have that name:
 
-- `harness.json` — the node table, listener ports and paths.
-- `harness/scenarios/*.java` — the scenarios (`Final*.java` cover every ported family; run them on all six nodes).
-- `harness/checks/*.java` — client smoke checks. `harness/fixtures/*.nbt` — structure templates.
-- `harness/run-suite.ps1`, `run-client-matrix.ps1`, `run-gametest-matrix.ps1` — batch runners.
+   ```bash
+   git clone https://github.com/Warfactory-Official/Golem-Core.git
+   git clone https://github.com/Warfactory-Official/NTM-Continuum.git
+   ```
 
-With `Golem-Core` checked out next to this repository:
+2. **Java.** Any JDK 17 or newer runs Gradle. The JDKs each Minecraft version needs (25 for 26.1, 21 for 1.21.1, 17 for
+   1.20.1) are downloaded by Gradle on first use.
+
+3. **Build Golem Core, then the mod**, on every version:
+
+   ```bash
+   cd Golem-Core && ./gradlew chiseledBuild
+   cd ../NTM-Continuum && ./gradlew chiseledBuild
+   ```
+
+   Rebuild Golem Core this way whenever you change it or its version.
+
+4. **Open `NTM-Continuum` in IntelliJ IDEA** and import it as a Gradle project. Golem Core comes in with it.
+
+## Running
+
+The source tree is shared by six versions (Stonecutter); `26.1-neoforge` is the active one by default.
 
 ```bash
-./gradlew chiseledBuild                                    # once, so every node has its dependencies
-../Golem-Core/harness/harness up --nodes 26.1-neoforge,26.1-fabric
-../Golem-Core/harness/harness run BarrelVsChest.java       # report in harness/out/runs/
-../Golem-Core/harness/harness down
+./gradlew :26.1-neoforge:runClient            # a client
+./gradlew :26.1-neoforge:runGameTestServer    # the GameTests, headless
+./gradlew :1.20.1-forge:runClient             # any other version: 26.1-fabric, 1.21.1-neoforge, 1.21.1-fabric, 1.20.1-fabric
 ```
 
+To edit against another version, run the Stonecutter task `Set active project to <version>` from the Gradle panel, and
+`Reset active project` before committing.
+
+The in-game test harness is documented in [`../Golem-Core/harness/README.md`](../Golem-Core/harness/README.md).
