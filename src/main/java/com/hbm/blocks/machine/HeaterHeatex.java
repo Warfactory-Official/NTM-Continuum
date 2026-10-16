@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -30,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The 3x3 legacy heat-exchanger multiblock. */
-public class HeaterHeatex extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay {
+public class HeaterHeatex extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay, ITooltipProvider {
 
     public HeaterHeatex(Properties properties) {
         super(properties);

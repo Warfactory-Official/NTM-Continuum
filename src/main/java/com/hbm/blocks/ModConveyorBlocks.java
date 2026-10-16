@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import dev.golem.core.world.CompatBlockItem;
 import dev.golem.core.registry.BlockTag;
 import dev.golem.core.registry.Loot;
 import dev.golem.core.registry.Preset;
@@ -40,7 +41,6 @@ import com.hbm.blocks.network.CranePartitioner;
 import com.hbm.blocks.network.CraneRouter;
 import com.hbm.blocks.network.CraneSplitter;
 import com.hbm.blocks.network.CraneUnboxer;
-import com.hbm.items.block.ConveyorBlockItem;
 
 /**
  * Feature-local block and block-item registry for the conveyor belt and crane family (1.7 {@code ModBlocks} L1894-1909),
@@ -155,7 +155,7 @@ public final class ModConveyorBlocks {
 
     // 1.7 machineTab for the cranes; belts and the piston inserter had no tab
     private static Reg.Handle<BlockItem> item(String name, RegistryObject<? extends Block> block) {
-        return REG.<BlockItem>item(name, (Item.Properties properties) -> new ConveyorBlockItem(block.get(),
+        return REG.<BlockItem>item(name, (Item.Properties properties) -> new CompatBlockItem(block.get(),
                 Compat.blockDescription(properties)));
     }
 

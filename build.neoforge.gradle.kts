@@ -226,6 +226,10 @@ dependencies {
         if (propOrNull("rei.run") == "true") devModJar("me.shedaniel:RoughlyEnoughItems-neoforge:$rei")
     }
 
+    // Jade, dev runs only (`-Pjade.run=true`): HBM's overlay declarations (com.hbm.compat.HbmBlockInfo) reach it
+    // through Golem Core's dev.golem.core.jade, so HBM has no Jade dependency. Jade carries mixins, hence `devModJar`.
+    if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { devModJar("maven.modrinth:jade:$it") }
+
     // Published Flywheel supplies 1.21.1; the 26.1 node leaves this blank and starts Core's vendored
     // engine instead (switched off with config/golemcore-flywheel.json or `/flywheel backend off`).
     // `-Pflywheel.run=false` leaves the engine jar out of the dev run (compile stays), so the dev client

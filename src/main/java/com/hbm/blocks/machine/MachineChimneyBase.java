@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.inventory.fluid.FluidType;
@@ -11,7 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Shared multiblock and port behavior for the two smoke stacks. */
-public abstract class MachineChimneyBase extends BlockMultiblockMachine implements IFluidConnectorBlockMK2 {
+public abstract class MachineChimneyBase extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ITooltipProvider {
 
     protected MachineChimneyBase(Properties properties) {
         super(properties);

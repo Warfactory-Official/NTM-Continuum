@@ -25,18 +25,30 @@
           "texture": "#straight"
         },
         "west": {
+          "uv": [
+            3,
+            0,
+            13,
+            16
+          ],
+          "rotation": 90,
           "texture": "#straight"
         },
         "east": {
+          "uv": [
+            13,
+            0,
+            3,
+            16
+          ],
+          "rotation": 90,
           "texture": "#straight"
         },
         "north": {
-          "texture": "#end",
-          "rotation": 90
+          "texture": "#end"
         },
         "south": {
-          "texture": "#end",
-          "rotation": 270
+          "texture": "#end"
         }
       }
     }

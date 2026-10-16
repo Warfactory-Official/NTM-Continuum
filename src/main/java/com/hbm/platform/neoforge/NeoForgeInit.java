@@ -9,6 +9,7 @@ import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.registry.RegistryObject;
 
 import com.hbm.hazard.HazardSystem;
+import com.hbm.util.TooltipColours;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
@@ -333,8 +334,10 @@ public class NeoForgeInit {
         });
 
         // Hazard tooltips (radioactive/hot/etc. traits on items).
-        NeoForge.EVENT_BUS.addListener((ItemTooltipEvent event) ->
-                HazardSystem.addHazardInfo(event.getItemStack(), event.getEntity(), event.getToolTip()));
+        NeoForge.EVENT_BUS.addListener((ItemTooltipEvent event) -> {
+            TooltipColours.apply(event.getItemStack(), event.getToolTip());
+            HazardSystem.addHazardInfo(event.getItemStack(), event.getEntity(), event.getToolTip());
+        });
         NeoForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) -> {
             com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(event.getEntity());
             com.hbm.handler.pollution.PollutionHandler.decorateMob(event.getEntity());

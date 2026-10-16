@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -22,7 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The original five-by-five PUREX plant footprint, with edge power and fluid ports. */
-public final class MachinePUREX extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
+public final class MachinePUREX extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder, ITooltipProvider {
     public MachinePUREX(Properties properties) { super(properties); }
     @Override protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) { return new TileEntityMachinePUREX(pos, state); }
     @Override public int[] getDimensions() { return new int[]{4, 0, 2, 2, 2, 2}; }

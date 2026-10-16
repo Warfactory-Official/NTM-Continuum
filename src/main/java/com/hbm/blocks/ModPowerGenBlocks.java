@@ -18,7 +18,6 @@ import com.hbm.blocks.machine.MachineHephaestus;
 import com.hbm.blocks.machine.MachineIGenerator;
 import com.hbm.blocks.machine.MachineLPW2;
 import com.hbm.blocks.machine.MachineSiren;
-import com.hbm.items.block.PowerGenBlockItem;
 
 /**
  * Feature-local block and block-item registry for the large power-generation machines, with each block's
@@ -72,11 +71,8 @@ public final class ModPowerGenBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** 1.7 {@code ITooltipProvider.addStandardInfo}: {@code tile.machine_chungus.desc} = "Efficiency: 85%". */
-    // The type witness keeps the field's declared RegistryObject<BlockItem>: a chained call cannot infer the
-    // item type from the field, so without it the handle would be typed by the factory (PowerGenBlockItem).
-    public static final RegistryObject<BlockItem> MACHINE_CHUNGUS_ITEM = REG.<MachineChungus, BlockItem>blockItem(
-            MACHINE_CHUNGUS, (block, p) -> new PowerGenBlockItem(block, p, 1), Compat::blockDescription)
+    public static final RegistryObject<BlockItem> MACHINE_CHUNGUS_ITEM = REG.blockItem(
+            MACHINE_CHUNGUS, Compat::blockDescription)
             .tab(HbmTab.MACHINES);
     /** 1.7 ModBlocks: the LPW-2 has no item renderer; its item is the flat block_steel sprite. */
     public static final RegistryObject<BlockItem> MACHINE_LPW2_ITEM = REG.blockItem(

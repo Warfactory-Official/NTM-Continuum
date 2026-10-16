@@ -4,6 +4,7 @@ package com.hbm.platform.forge;
 
 /*import com.hbm.creativetabs.ModTabs;
 import com.hbm.hazard.HazardSystem;
+import com.hbm.util.TooltipColours;
 import com.hbm.packet.AnvilCraftPayload;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.handler.radiation.RadiationSystemNT;
@@ -339,8 +340,10 @@ public final class ForgeInit {
                 RadiationSystemNT.onChunkUnloaded(level, chunk);
             }
         });
-        MinecraftForge.EVENT_BUS.addListener((ItemTooltipEvent event) ->
-                HazardSystem.addHazardInfo(event.getItemStack(), event.getEntity(), event.getToolTip()));
+        MinecraftForge.EVENT_BUS.addListener((ItemTooltipEvent event) -> {
+            TooltipColours.apply(event.getItemStack(), event.getToolTip());
+            HazardSystem.addHazardInfo(event.getItemStack(), event.getEntity(), event.getToolTip());
+        });
         MinecraftForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) -> {
             com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(event.getEntity());
             com.hbm.handler.pollution.PollutionHandler.decorateMob(event.getEntity());

@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine.pile;
 
+import com.hbm.blocks.ITooltipProvider;
+import com.hbm.blocks.StandardInfo;
 import com.hbm.api.block.IToolable;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.LegacyMeta;
@@ -20,7 +22,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -49,7 +53,7 @@ import java.util.List;
  * the pile the device faces.
  */
 public class BlockPileDevice extends CompatBlock implements TickingBlock,
-        ILookOverlay, IToolable {
+        ILookOverlay, IToolable, ITooltipProvider {
 
     public static final int ITEM_META_LOADER = 0;
     public static final int ITEM_META_VENT = 1;
@@ -218,4 +222,10 @@ public class BlockPileDevice extends CompatBlock implements TickingBlock,
                 0xffff00, 0x404000, text);
     }
 
+    /** 1.7 keys the text by item damage and its lang has none, so Shift shows the bare key. */
+    @Override
+    public void appendBlockTooltip(ItemStack stack, List<Component> tooltip, TooltipFlag flag) {
+        int variant = stack.getItem() instanceof ModPileBlocks.PileDeviceItem item ? item.variant() : 0;
+        StandardInfo.add(tooltip, "block.hbm.pile_device_" + variant + ".desc");
+    }
 }

@@ -47,6 +47,7 @@ import com.hbm.commands.HbmClientCommands;
 import com.hbm.handler.JetpackHandler;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.blocks.StandardInfo;
 import com.hbm.inventory.gui.GUIAnvil;
 import com.hbm.inventory.gui.GUIArmorTable;
 import com.hbm.inventory.gui.GUIAshpit;
@@ -174,7 +175,6 @@ import dev.golem.core.client.Crosshairs;
 import dev.golem.core.client.DebugLines;
 import dev.golem.core.client.Fov;
 import dev.golem.core.client.ItemModelProperties;
-import dev.golem.core.client.KeyMappings;
 import dev.golem.core.client.PlayerRenderHooks;
 import dev.golem.core.client.Tints;
 import dev.golem.core.fluid.TokenFluids;
@@ -611,9 +611,7 @@ public final class HbmClientRegistrations {
         QMAWClient.register();
         CanneryClient.register(); // 1.7 WIAJ presentations: Left Shift + QMAW key on a hovered item
         ArmorModTooltips.register();
-        // 1.7 FluidType.addInfo polls physical left Shift for the hidden trait lines (FT_Polluting et al.).
-        FluidType.setShiftHeldPoll(() -> KeyMappings.isHeld(
-                Minecraft.getInstance().options.keyShift));
+        StandardInfo.setShiftHeldPoll(CanneryClient::shiftHeld);
         GunRecoil.register();
         GrenadeUniversalClient.register(); // 1.7 ItemGrenadeUniversal.onUpdate's client half (arm swing)
         CraneKeybindHandler.register();

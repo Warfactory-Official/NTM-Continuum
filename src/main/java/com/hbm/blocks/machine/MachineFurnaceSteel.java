@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
@@ -16,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The 1x2x2 steel furnace multiblock shell and its core. */
-public class MachineFurnaceSteel extends BlockMultiblockMachine implements WorldlyContainerHolder {
+public class MachineFurnaceSteel extends BlockMultiblockMachine implements WorldlyContainerHolder, ITooltipProvider {
     public MachineFurnaceSteel(Properties properties) { super(properties); }
     @Override protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) { return new TileEntityFurnaceSteel(pos, state); }
     @Override public int[] getDimensions() { return new int[]{1, 0, 1, 1, 1, 1}; }

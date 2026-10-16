@@ -57,11 +57,11 @@ public class ItemPACoil extends CompatItem {
         var type = stats(stack);
         if (type == null) return;
         tooltip.add(Component.literal("Quadrupole operational range: ").withStyle(ChatFormatting.BLUE)
-                .append(Component.literal(range(type.quadMin(), type.quadMax())).withStyle(ChatFormatting.RESET)));
+                .append(Component.literal(range(type.quadMin(), type.quadMax())).withStyle(ChatFormatting.WHITE)));
         tooltip.add(Component.literal("Dipole operational range: ").withStyle(ChatFormatting.BLUE)
-                .append(Component.literal(range(type.diMin(), type.diMax())).withStyle(ChatFormatting.RESET)));
+                .append(Component.literal(range(type.diMin(), type.diMax())).withStyle(ChatFormatting.WHITE)));
         tooltip.add(Component.literal("Dipole minimum side length: ").withStyle(ChatFormatting.BLUE)
-                .append(Component.literal("" + type.diDistMin()).withStyle(ChatFormatting.RESET)));
+                .append(Component.literal("" + type.diDistMin()).withStyle(ChatFormatting.WHITE)));
         tooltip.add(Component.literal("Minimums not met result in a power draw penalty!").withStyle(ChatFormatting.RED));
         tooltip.add(Component.literal("Maximums exceeded result in the particle crashing!").withStyle(ChatFormatting.RED));
         tooltip.add(Component.literal("Particles will crash in dipoles if both penalties take effect!").withStyle(ChatFormatting.RED));

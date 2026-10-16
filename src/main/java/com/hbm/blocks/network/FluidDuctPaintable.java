@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.tileentity.network.TileEntityFluidDuctVariant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -26,7 +27,7 @@ import org.jspecify.annotations.Nullable;
  * ({@code block.hbm.fluid_duct_paintable.desc.N}) still advertise painting, as in 1.7's text;
  * the behaviour behind them is what is not ported yet.
  */
-public class FluidDuctPaintable extends BlockFluidDuct {
+public class FluidDuctPaintable extends BlockFluidDuct implements ITooltipProvider {
 
     public FluidDuctPaintable(Properties properties) {
         super(properties);

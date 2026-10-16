@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.albion;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -23,7 +24,7 @@ import org.jspecify.annotations.Nullable;
 
 /** The detector: the 5x5x5 collision chamber that ends the beamline and holds the products. */
 public class BlockPADetector extends BlockMultiblockMachine
-        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
+        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder, ITooltipProvider {
 
     public BlockPADetector(Properties properties) {
         super(properties);

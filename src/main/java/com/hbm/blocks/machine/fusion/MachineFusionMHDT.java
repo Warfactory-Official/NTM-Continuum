@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.fusion;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -26,7 +27,7 @@ import org.jspecify.annotations.Nullable;
  * Magnetohydrodynamic turbine - the fusion chain's electrical output, the longest machine in the set
  * at fourteen blocks along its axis. Behaviour lives in {@link TileEntityFusionMHDT}.
  */
-public class MachineFusionMHDT extends BlockMultiblockMachine implements ILookOverlay, IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class MachineFusionMHDT extends BlockMultiblockMachine implements ILookOverlay, IEnergyConnectorBlock, IFluidConnectorBlockMK2, ITooltipProvider {
 
     public MachineFusionMHDT(Properties properties) {
         super(properties);

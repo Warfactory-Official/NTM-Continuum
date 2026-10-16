@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
@@ -20,7 +21,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** Single-block steam turbine; its input tank type (set with a fluid identifier) selects the steam stage. */
-public class MachineTurbine extends CompatBlock implements TickingBlock {
+public class MachineTurbine extends CompatBlock implements TickingBlock, ITooltipProvider {
     public MachineTurbine(Properties properties) { super(properties); }
 
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new TileEntityMachineTurbine(pos, state); }

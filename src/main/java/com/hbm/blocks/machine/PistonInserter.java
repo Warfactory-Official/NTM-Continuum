@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -29,7 +30,7 @@ import com.hbm.tileentity.network.TileEntityPistonInserter;
  * into an {@link com.hbm.api.block.IInsertable} two blocks ahead. {@link #FACING} is the 1.7 metadata: the
  * side the piston extends towards, which is the face the placer looked at it from.
  */
-public class PistonInserter extends CompatBlock implements TickingBlock {
+public class PistonInserter extends CompatBlock implements TickingBlock, ITooltipProvider {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 

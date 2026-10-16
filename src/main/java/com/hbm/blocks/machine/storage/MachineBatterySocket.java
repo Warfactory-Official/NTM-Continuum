@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.storage;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -25,7 +26,7 @@ import java.util.List;
  * {@code BatterySocketRenderer}. Its core is {@link TileEntityBatterySocket}, which exposes the inserted
  * battery item's charge to the power grid.
  */
-public class MachineBatterySocket extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay {
+public class MachineBatterySocket extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay, ITooltipProvider {
 
     public MachineBatterySocket(Properties properties) {
         super(properties);

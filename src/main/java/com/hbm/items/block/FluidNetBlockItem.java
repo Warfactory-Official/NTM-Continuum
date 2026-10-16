@@ -7,7 +7,6 @@ import dev.golem.core.world.CompatBlockItem;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.ItemStacks;
 import net.minecraft.ChatFormatting;
-import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -17,10 +16,8 @@ import java.util.List;
 import com.hbm.blocks.ModFluidNetBlocks;
 
 /**
- * Block item for the fluid-network blocks: the 1.7 {@code ITooltipProvider.addStandardInfo} lines
- * ({@code block.hbm.<id>.desc.N} from the lang file), the fluid barrels' hard-coded capacity/material
- * lines, and, for a barrel picked up with fluid in it, the 1.7 {@code IPersistentInfoProvider} line
- * showing what it holds.
+ * Block item for the fluid-network blocks: the fluid barrels' hard-coded capacity/material lines and, for a barrel
+ * picked up with fluid in it, the 1.7 {@code IPersistentInfoProvider} line showing what it holds.
  */
 public final class FluidNetBlockItem extends CompatBlockItem {
 
@@ -30,10 +27,6 @@ public final class FluidNetBlockItem extends CompatBlockItem {
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        String prefix = getDescriptionId() + ".desc.";
-        Language language = Language.getInstance();
-        for (int i = 0; language.has(prefix + i); i++) tooltip.add(Component.translatable(prefix + i).withStyle(ChatFormatting.YELLOW)); // 1.7 addStandardInfo: yellow
-
         if (getBlock() instanceof BlockFluidBarrel barrel) {
             int fill = ItemStacks.carriedInt(stack, "fill");
             if (fill > 0) {

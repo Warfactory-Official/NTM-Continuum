@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.lib.ForgeDirection;
 import dev.golem.core.world.CompatBlock;
@@ -20,7 +21,7 @@ import org.jspecify.annotations.Nullable;
  * {@code capacitor_bus}: the capacitor's output block. Not a conductor -- a capacitor walks a straight
  * run of these and pushes into whatever ends it; the cable only draws its arm on the bus's output face.
  */
-public class MachineCapacitorBus extends CompatBlock implements IEnergyConnectorBlock {
+public class MachineCapacitorBus extends CompatBlock implements IEnergyConnectorBlock, ITooltipProvider {
 
     /** 1.7's piston metadata: the output face, turned towards the placer. */
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;

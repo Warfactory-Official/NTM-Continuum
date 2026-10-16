@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -37,7 +38,7 @@ import com.hbm.tileentity.machine.TileEntityChungus;
  * core − 10·dir, and two side connectors at core ± side·2.
  */
 public class MachineChungus extends BlockMultiblockMachine
-        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay {
+        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay, ITooltipProvider {
 
     /** 1.7 {@code getAllDimensions()[1..3]}. */
     private static final int[] CROWN = {4, -4, 0, 3, 1, 1};

@@ -64,19 +64,15 @@ public class HazardTypeRadiation implements IHazardType {
 
         level = IHazardModifier.evalAllModifiers(stack, player, level, modifiers);
         level += stackRadiation(stack);
-        if (level == 0) return;
+        if (level < 1e-5) return;
         list.add(Component.literal("[").append(Component.translatable("trait.radioactive")).append(Component.literal("]")).withStyle(ChatFormatting.GREEN));
-        list.add(Component.literal(" " + round3(getNewValue(level))).append(suffix(level)).append(Component.literal(" ")).append(Component.translatable("desc.rads")).withStyle(ChatFormatting.YELLOW));
+        // 1.7 builds the text from a float level, floored to three places, with no space before the unit
+        float rad = (float) level;
+        list.add(Component.literal(Math.floor(rad * 1000) / 1000 + "RAD/s").withStyle(ChatFormatting.YELLOW));
 
         if (stack.getCount() > 1) {
-            double stackRad = level * stack.getCount();
-            list.add(Component.literal(" ").append(Component.translatable("desc.stack")).append(Component.literal(" " + round3(getNewValue(stackRad))))
-                    .append(suffix(stackRad)).append(Component.literal(" ")).append(Component.translatable("desc.rads")).withStyle(ChatFormatting.YELLOW));
+            list.add(Component.literal("Stack: " + Math.floor(rad * 1000 * stack.getCount()) / 1000 + "RAD/s").withStyle(ChatFormatting.YELLOW));
         }
-    }
-
-    private static String round3(double v) {
-        return String.valueOf(Math.round(v * 1000D) / 1000D);
     }
 
     public static double getNewValue(double radiation) {
@@ -86,16 +82,6 @@ public class HazardTypeRadiation implements IHazardType {
             return radiation * 0.000001D;
         } else {
             return radiation * 0.000000001D;
-        }
-    }
-
-    private static Component suffix(double radiation) {
-        if (radiation < 1000000) {
-            return Component.empty();
-        } else if (radiation < 1000000000) {
-            return Component.translatable("desc.mil");
-        } else {
-            return Component.translatable("desc.bil");
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.fusion;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -24,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  * Fusion boiler - a plasma-fired drum that turns water straight into superheated steam. Behaviour
  * lives in {@link TileEntityFusionBoiler}.
  */
-public class MachineFusionBoiler extends BlockMultiblockMachine implements ILookOverlay, IFluidConnectorBlockMK2 {
+public class MachineFusionBoiler extends BlockMultiblockMachine implements ILookOverlay, IFluidConnectorBlockMK2, ITooltipProvider {
 
     public MachineFusionBoiler(Properties properties) {
         super(properties);

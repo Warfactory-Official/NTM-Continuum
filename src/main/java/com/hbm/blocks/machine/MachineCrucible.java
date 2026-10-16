@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -34,7 +35,7 @@ import java.util.List;
  * scraps instead. The block face is an {@link ICrucibleAcceptor} so channels/outlets can pour into the
  * basin from above (delegating to the core BlockEntity).
  */
-public class MachineCrucible extends BlockMultiblockMachine implements ICrucibleAcceptor {
+public class MachineCrucible extends BlockMultiblockMachine implements ICrucibleAcceptor, ITooltipProvider {
 
     public MachineCrucible(Properties properties) {
         super(properties);

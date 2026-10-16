@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -39,7 +40,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** The 3x3 sawmill multiblock and its core interaction rules. */
-public class MachineSawmill extends BlockMultiblockMachine implements WorldlyContainerHolder, ILookOverlay, ModelState {
+public class MachineSawmill extends BlockMultiblockMachine implements WorldlyContainerHolder, ILookOverlay, ModelState, ITooltipProvider {
 
     public MachineSawmill(Properties properties) {
         super(properties);

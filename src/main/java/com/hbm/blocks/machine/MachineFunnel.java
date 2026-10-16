@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.tileentity.machine.TileEntityMachineFunnel;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
@@ -18,7 +19,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The old combinator funnel: a three-part OBJ machine with a position-bound menu. */
-public final class MachineFunnel extends CompatBlock implements TickingBlock {
+public final class MachineFunnel extends CompatBlock implements TickingBlock, ITooltipProvider {
 
     public MachineFunnel(Properties properties) { super(properties); }
 

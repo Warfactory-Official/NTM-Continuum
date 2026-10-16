@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.fusion;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -20,7 +21,7 @@ import org.jspecify.annotations.Nullable;
  * the two side ports; the beam leaves from the muzzle port at +2. Behaviour lives in
  * {@link TileEntityFusionKlystron}.
  */
-public class MachineFusionKlystron extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class MachineFusionKlystron extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ITooltipProvider {
 
     public MachineFusionKlystron(Properties properties) {
         super(properties);

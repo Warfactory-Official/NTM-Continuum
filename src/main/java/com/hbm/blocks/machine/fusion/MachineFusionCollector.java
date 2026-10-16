@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.fusion;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionCollector;
@@ -15,7 +16,7 @@ import org.jspecify.annotations.Nullable;
  * Fusion collector: a passive dish on the plasma network that raises the torus's output rate
  * without consuming any of it. All the behaviour is in {@link TileEntityFusionCollector}.
  */
-public class MachineFusionCollector extends BlockMultiblockMachine {
+public class MachineFusionCollector extends BlockMultiblockMachine implements ITooltipProvider {
 
     public MachineFusionCollector(Properties properties) {
         super(properties);

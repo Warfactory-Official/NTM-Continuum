@@ -56,7 +56,7 @@ public final class CanneryClient {
         }
         if (cannery == null || HbmKeybindsClient.qmawKey == null) return;
         Component keys = Component.empty()
-                .append(Component.translatable("key.keyboard.left.shift"))
+                .append("LSHIFT") // 1.7 Keyboard.getKeyName(KEY_LSHIFT)
                 .append(" + ")
                 .append(HbmKeybindsClient.qmawKey.getTranslatedKeyMessage());
         lines.add(Component.translatable("cannery.f1", keys).withStyle(ChatFormatting.GREEN));

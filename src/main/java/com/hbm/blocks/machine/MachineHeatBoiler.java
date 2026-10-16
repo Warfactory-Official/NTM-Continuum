@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -39,7 +40,7 @@ import java.util.List;
  * the top port marked as extras. Right-click with a fluid identifier types the input tank; the look
  * overlay prints heat + both tanks (the boiler has no GUI).
  */
-public class MachineHeatBoiler extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay {
+public class MachineHeatBoiler extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay, ITooltipProvider {
 
     public MachineHeatBoiler(Properties properties) {
         super(properties);

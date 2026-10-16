@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
@@ -20,7 +21,7 @@ import org.jspecify.annotations.Nullable;
 
 /** Coker block, a 1:1 port of the 1.12.2 {@code MachineCoker}: a 3×3×23 heat tower (dims
  * {@code {22,0,1,1,1,1}}, offset 1; a y+1 ring, 4 corner pillars, 4 makeExtra fluid ports). */
-public class MachineCoker extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
+public class MachineCoker extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, WorldlyContainerHolder, ITooltipProvider {
 
     public MachineCoker(Properties properties) {
         super(properties);

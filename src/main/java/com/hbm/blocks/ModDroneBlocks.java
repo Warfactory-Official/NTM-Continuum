@@ -73,17 +73,17 @@ public final class ModDroneBlocks {
             .transform(CRATE); // 1.7 Material.iron
 
     static {
-        descItem("drone_waypoint", DRONE_WAYPOINT, 5).transform(Presets.sprite("hbm:blocks/drone_waypoint"));
-        descItem("drone_crate", DRONE_CRATE, 3);
+        descItem("drone_waypoint", DRONE_WAYPOINT).transform(Presets.sprite("hbm:blocks/drone_waypoint"));
+        descItem("drone_crate", DRONE_CRATE);
         tabItem("drone_waypoint_request", DRONE_WAYPOINT_REQUEST).transform(Presets.sprite("hbm:blocks/drone_waypoint_request"));
-        descItem("drone_dock", DRONE_DOCK, 3);
-        descItem("drone_crate_provider", DRONE_CRATE_PROVIDER, 2);
-        descItem("drone_crate_requester", DRONE_CRATE_REQUESTER, 2);
+        descItem("drone_dock", DRONE_DOCK);
+        descItem("drone_crate_provider", DRONE_CRATE_PROVIDER);
+        descItem("drone_crate_requester", DRONE_CRATE_REQUESTER);
     }
 
-    /** 1.7 ITooltipProvider blocks: a block item carrying the description lines. */
-    private static Reg.Handle<DescBlockItem> descItem(String name, RegistryObject<? extends Block> block, int lines) {
-        return REG.item(name, p -> new DescBlockItem(block.get(), p, name, lines), Compat::blockDescription)
+    /** 1.7 ITooltipProvider blocks: the item shows {@code addStandardInfo}. */
+    private static Reg.Handle<DescBlockItem> descItem(String name, RegistryObject<? extends Block> block) {
+        return REG.item(name, p -> new DescBlockItem(block.get(), p), Compat::blockDescription)
                 .tab(HbmTab.MACHINES);
     }
 

@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.block.IToolable;
 import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
@@ -37,7 +38,7 @@ import com.hbm.tileentity.machine.TileEntityConveyorPress;
  * A stamp is installed by right-clicking with it and removed with a screwdriver.
  */
 public final class MachineConveyorPress extends BlockMultiblockMachine
-        implements IConveyorBelt, IEnergyConnectorBlock, ILookOverlay, IToolable {
+        implements IConveyorBelt, IEnergyConnectorBlock, ILookOverlay, IToolable, ITooltipProvider {
 
     private static final int[] DIMENSIONS = {2, 0, 0, 0, 0, 0};
 

@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.api.conveyor.IConveyorItem;
 import com.hbm.api.conveyor.IConveyorPackage;
@@ -36,7 +37,7 @@ import com.hbm.tileentity.network.TileEntityCranePartitioner;
  * acidizer inputs and releases them again in recipe-sized stacks. {@link #FACING} keeps the 1.7 metadata
  * meaning, the side items arrive from (the placer's facing pointed back at them).
  */
-public class CranePartitioner extends CompatBlock implements TickingBlock, IConveyorBelt, IEnterableBlock {
+public class CranePartitioner extends CompatBlock implements TickingBlock, IConveyorBelt, IEnterableBlock, ITooltipProvider {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     private static final VoxelShape SHAPE = Shapes.box(0D, 0D, 0D, 1D, 0.75D, 1D);

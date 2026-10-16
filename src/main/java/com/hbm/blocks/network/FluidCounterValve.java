@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.tileentity.network.TileEntityFluidCounterValve;
 import com.hbm.interfaces.ILookOverlay;
 import net.minecraft.core.BlockPos;
@@ -18,7 +19,7 @@ import java.util.List;
  * The 1.7 {@code FluidCounterValve}: a hand valve that counts what flows through its net while open
  * (see {@link TileEntityFluidCounterValve}). The look overlay adds the count.
  */
-public class FluidCounterValve extends FluidValve {
+public class FluidCounterValve extends FluidValve implements ITooltipProvider {
 
     public FluidCounterValve(Properties properties) {
         super(properties);

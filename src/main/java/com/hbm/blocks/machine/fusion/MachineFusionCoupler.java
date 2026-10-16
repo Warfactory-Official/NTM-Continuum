@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.fusion;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionCoupler;
@@ -15,7 +16,7 @@ import org.jspecify.annotations.Nullable;
  * Fusion coupler: the bridge between a torus's plasma output and another torus's klystron input,
  * letting reactors be chained. All the behaviour is in {@link TileEntityFusionCoupler}.
  */
-public class MachineFusionCoupler extends BlockMultiblockMachine {
+public class MachineFusionCoupler extends BlockMultiblockMachine implements ITooltipProvider {
 
     public MachineFusionCoupler(Properties properties) {
         super(properties);

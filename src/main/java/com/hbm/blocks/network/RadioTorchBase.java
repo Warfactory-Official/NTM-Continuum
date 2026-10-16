@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.interfaces.ILookOverlay;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.network.RadioTorchTicking;
@@ -40,7 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Six-direction, non-colliding radio torch base with the legacy attachment dimensions. */
-public abstract class RadioTorchBase extends CompatBlock implements TickingBlock, ILookOverlay {
+public abstract class RadioTorchBase extends CompatBlock implements TickingBlock, ILookOverlay, ITooltipProvider {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 

@@ -4,6 +4,7 @@ import com.hbm.handler.ArmorModHandler;
 import com.hbm.inventory.gui.GUIArmorTable;
 import com.hbm.items.armor.ItemArmorMod;
 import com.hbm.items.armor.JetpackBase;
+import com.hbm.util.TooltipColours;
 import dev.golem.core.client.Tooltips;
 import dev.golem.core.client.KeyMappings;
 import dev.golem.core.world.Armors;
@@ -34,6 +35,7 @@ public final class ArmorModTooltips {
                             .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)));
             return;
         }
+        int first = lines.size();
         lines.add(Component.translatable("desc.mods").withStyle(ChatFormatting.YELLOW));
         ItemStack[] mods = ArmorModHandler.pryMods(armor);
         // The 1.12 client listed slots 0..7 only; its battery slot was omitted.
@@ -45,5 +47,6 @@ public final class ArmorModTooltips {
             // ItemArmorMod.addDesc line: the stack's display name.
             else if (ArmorModHandler.isElytra(mod)) lines.add(mod.getHoverName());
         }
+        TooltipColours.grayFrom(lines, first);
     }
 }

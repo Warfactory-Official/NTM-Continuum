@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.entity.item.EntityMovingItem;
 import com.hbm.items.ModConveyorItems;
@@ -33,7 +34,7 @@ import org.jspecify.annotations.Nullable;
  * here is the direction items TRAVEL, its opposite, so the blockstate turns the model the way vanilla turns a
  * furnace and the wand/placement code reads the way the player looks.
  */
-public abstract class BlockConveyorBase extends CompatBlock implements IConveyorBelt {
+public abstract class BlockConveyorBase extends CompatBlock implements IConveyorBelt, ITooltipProvider {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 

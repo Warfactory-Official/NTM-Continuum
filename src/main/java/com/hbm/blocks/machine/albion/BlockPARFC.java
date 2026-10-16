@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.albion;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -19,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The RF cavity: nine blocks of beamline that add momentum, with power and coolant ports above and below. */
-public class BlockPARFC extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class BlockPARFC extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ITooltipProvider {
 
     public BlockPARFC(Properties properties) {
         super(properties);

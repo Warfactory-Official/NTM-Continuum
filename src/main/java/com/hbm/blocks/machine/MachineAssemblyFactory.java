@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.inventory.fluid.Fluids;
@@ -31,7 +32,7 @@ import java.util.List;
 
 /** The legacy 5x3 Assembly Factory: four independent Assembly Machine lanes. */
 public final class MachineAssemblyFactory extends BlockMultiblockMachine
-        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder, ILookOverlay {
+        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder, ILookOverlay, ITooltipProvider {
 
     public MachineAssemblyFactory(Properties properties) {
         super(properties);

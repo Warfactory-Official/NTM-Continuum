@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -27,7 +28,7 @@ import java.util.List;
  * overlay shows setting, tank and stored heat. IToolable (screwdriver setting) is replaced by GUI
  * buttons. This is a documented deviation.
  */
-public class HeaterOilburner extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay {
+public class HeaterOilburner extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay, ITooltipProvider {
 
     public HeaterOilburner(Properties properties) {
         super(properties);

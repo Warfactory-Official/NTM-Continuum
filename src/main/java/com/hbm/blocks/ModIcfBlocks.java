@@ -18,7 +18,6 @@ import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Dejson;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Variants;
-import com.hbm.items.block.DescBlockItem;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.Compat;
@@ -107,9 +106,7 @@ public final class ModIcfBlocks {
 
     static {
         item("struct_icf_core", struct_icf_core);
-        // 1.7 ITooltipProvider: the three "$"-separated lines of tile.machine_icf_press.desc
-        REG.<MachineICFPress, DescBlockItem>blockItem(machine_icf_press,
-                (b, p) -> new DescBlockItem(b, p, "machine_icf_press", 3), Compat::blockDescription).tab(HbmTab.MACHINES);
+        REG.blockItem(machine_icf_press, Compat::blockDescription).tab(HbmTab.MACHINES);
         item("icf", icf);
         item("icf_component", icf_component);
         item("icf_component_vessel", icf_component_vessel);

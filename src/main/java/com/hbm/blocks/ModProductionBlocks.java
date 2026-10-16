@@ -21,7 +21,6 @@ import com.hbm.blocks.machine.MachineMicrowave;
 import com.hbm.blocks.machine.MachineRotaryFurnace;
 import com.hbm.blocks.machine.MachineThresher;
 import com.hbm.blocks.machine.MachineFunnel;
-import com.hbm.items.block.ItemBlockProductionDesc;
 
 /**
  * Feature-local block and block-item registry for the production machines (group A), with each block's model,
@@ -84,8 +83,8 @@ public final class ModProductionBlocks {
     public static final RegistryObject<BlockItem> MACHINE_ROTARY_FURNACE_ITEM = REG.blockItem(
             MACHINE_ROTARY_FURNACE, Compat::blockDescription)
             .tab(HbmTab.MACHINES);
-    public static final RegistryObject<BlockItem> MACHINE_THRESHER_ITEM = REG.<MachineThresher, BlockItem>blockItem(
-            MACHINE_THRESHER, (block, p) -> new ItemBlockProductionDesc(block, p, 7), Compat::blockDescription)
+    public static final RegistryObject<BlockItem> MACHINE_THRESHER_ITEM = REG.blockItem(
+            MACHINE_THRESHER, Compat::blockDescription)
             .tab(HbmTab.MACHINES);
     public static final RegistryObject<BlockItem> MACHINE_MICROWAVE_ITEM = REG.blockItem(
             MACHINE_MICROWAVE, Compat::blockDescription)
@@ -93,8 +92,8 @@ public final class ModProductionBlocks {
     public static final RegistryObject<BlockItem> MACHINE_AUTOCRAFTER_ITEM = REG.<MachineAutocrafter, BlockItem>blockItem(
             MACHINE_AUTOCRAFTER, BlockItem::new, Compat::blockDescription)
             .tab(HbmTab.MACHINES);
-    public static final RegistryObject<BlockItem> MACHINE_CONVEYOR_PRESS_ITEM = REG.<MachineConveyorPress, BlockItem>blockItem(
-            MACHINE_CONVEYOR_PRESS, (block, p) -> new ItemBlockProductionDesc(block, p, 3), Compat::blockDescription)
+    public static final RegistryObject<BlockItem> MACHINE_CONVEYOR_PRESS_ITEM = REG.blockItem(
+            MACHINE_CONVEYOR_PRESS, Compat::blockDescription)
             .tab(HbmTab.MACHINES);
     public static final RegistryObject<BlockItem> PRESS_PREHEATER_ITEM = REG.<Block, BlockItem>blockItem(
             PRESS_PREHEATER, BlockItem::new, Compat::blockDescription)

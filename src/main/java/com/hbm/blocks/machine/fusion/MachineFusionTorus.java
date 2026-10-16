@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.fusion;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -32,7 +33,7 @@ import org.jspecify.annotations.Nullable;
  * tab), and breaking it drops the block itself, as 1.7's {@code BlockDummyable} harvest does.
  */
 public class MachineFusionTorus extends BlockMultiblockMachine
-        implements IFluidConnectorBlockMK2, IEnergyConnectorBlock, WorldlyContainerHolder {
+        implements IFluidConnectorBlockMK2, IEnergyConnectorBlock, WorldlyContainerHolder, ITooltipProvider {
 
     /**
      * The reactor's plan, bottom-up. Layer 0 is the floor ring, 1 the mid ring, 2 the equator; layers 3

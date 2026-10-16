@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -19,7 +20,7 @@ import org.jspecify.annotations.Nullable;
  * (dims {@code {3,0,1,1,1,1}}, offset 1) with the top-centre + the 4 mid-side cells marked extras
  * (the fluid/power ports on {@code getConPos}).
  */
-public class MachineSolidifier extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class MachineSolidifier extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ITooltipProvider {
 
     public MachineSolidifier(Properties properties) {
         super(properties);

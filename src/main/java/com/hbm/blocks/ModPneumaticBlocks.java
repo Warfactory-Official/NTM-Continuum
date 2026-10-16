@@ -89,8 +89,8 @@ public final class ModPneumaticBlocks {
 
     static {
         // hand-built element geometry: the model is authored (assets/hbm/models/item/pneumatic_tube.json)
-        descItem("pneumatic_tube", PNEUMATIC_TUBE, 5).transform(Presets.shares("hbm:item/pneumatic_tube"));
-        descItem("pneumatic_tube_paintable", PNEUMATIC_TUBE_PAINTABLE, 4).icon(d -> d.models(
+        descItem("pneumatic_tube", PNEUMATIC_TUBE).transform(Presets.shares("hbm:item/pneumatic_tube"));
+        descItem("pneumatic_tube_paintable", PNEUMATIC_TUBE_PAINTABLE).icon(d -> d.models(
                 Models.parented("minecraft:block/cube_all", Slots.of("all", "hbm:blocks/pneumatic_tube_paintable"))));
         tabItem("pneumatic_storage_access", PNEUMATIC_STORAGE_ACCESS);
         tabItem("pneumatic_storage_clutter", PNEUMATIC_STORAGE_CLUTTER);
@@ -99,9 +99,9 @@ public final class ModPneumaticBlocks {
         tabItem("pneumatic_storage_exporter", PNEUMATIC_STORAGE_EXPORTER);
     }
 
-    /** 1.7 ITooltipProvider blocks: a block item carrying the description lines. */
-    private static Reg.Handle<DescBlockItem> descItem(String name, RegistryObject<? extends Block> block, int lines) {
-        return REG.item(name, p -> new DescBlockItem(block.get(), p, name, lines), Compat::blockDescription)
+    /** 1.7 ITooltipProvider blocks: the item shows {@code addStandardInfo}. */
+    private static Reg.Handle<DescBlockItem> descItem(String name, RegistryObject<? extends Block> block) {
+        return REG.item(name, p -> new DescBlockItem(block.get(), p), Compat::blockDescription)
                 .tab(HbmTab.MACHINES);
     }
 

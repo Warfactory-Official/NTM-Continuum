@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.lib.Library;
 import com.hbm.uninos.graph.LevelNodeGraph;
@@ -26,7 +27,7 @@ import java.util.List;
 import com.hbm.tileentity.network.TileEntityCableGauge;
 
 /** {@code red_cable_gauge}: a full-block cable with a throughput dial on the face turned to the placer. */
-public class BlockCableGauge extends CompatBlock implements TickingBlock, ILookOverlay {
+public class BlockCableGauge extends CompatBlock implements TickingBlock, ILookOverlay, ITooltipProvider {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 

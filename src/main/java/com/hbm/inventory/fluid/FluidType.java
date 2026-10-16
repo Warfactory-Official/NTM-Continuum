@@ -2,6 +2,7 @@ package com.hbm.inventory.fluid;
 
 import com.hbm.Constants;
 import com.hbm.api.fluid.TooltipTrait;
+import com.hbm.blocks.StandardInfo;
 import com.hbm.inventory.fluid.trait.FT_Coolable;
 import com.hbm.inventory.fluid.trait.FT_Corrosive;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
@@ -17,7 +18,6 @@ import dev.golem.core.Ids;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -266,20 +266,9 @@ public class FluidType {
 
     public <T> T getTrait(Class<T> trait) { return trait.cast(traits.get(trait)); }
 
-    /**
-     * Whether the tooltip's hidden trait lines are shown: 1.7 polls physical left Shift. Common code cannot
-     * reach the keyboard, so the client installs the real poll at startup; a server-side call sees false.
-     */
-    private static volatile BooleanSupplier shiftHeld = () -> false;
-
-    /** Installs the client's physical-Shift poll; called once from client registration. */
-    public static void setShiftHeldPoll(BooleanSupplier poll) {
-        shiftHeld = Objects.requireNonNull(poll);
-    }
-
     /** Adds the fluid facts currently represented by the port's fluid model to a tooltip. */
     public void addInfo(List<Component> info) {
-        addInfo(info, shiftHeld.getAsBoolean());
+        addInfo(info, StandardInfo.shiftHeld());
     }
 
     /**
@@ -377,10 +366,7 @@ public class FluidType {
         }
 
         if (!hidden.isEmpty() && !shiftHeld) {
-            info.add(Component.literal("Hold <").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)
-                    .append(Component.literal("LSHIFT").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC))
-                    .append(Component.literal("> to display more info")
-                            .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)));
+            info.add(StandardInfo.holdShift());
         }
     }
 

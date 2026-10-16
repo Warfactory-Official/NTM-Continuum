@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.block.IToolable;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -35,7 +36,7 @@ import java.util.List;
 
 /** The single-block autosaw and its legacy fluid-typing, suspension, and look-overlay hooks. */
 public class MachineAutosaw extends CompatBlock
-        implements TickingBlock, IFluidConnectorBlockMK2, IToolable, ILookOverlay {
+        implements TickingBlock, IFluidConnectorBlockMK2, IToolable, ILookOverlay, ITooltipProvider {
 
     public MachineAutosaw(Properties properties) {
         super(properties);

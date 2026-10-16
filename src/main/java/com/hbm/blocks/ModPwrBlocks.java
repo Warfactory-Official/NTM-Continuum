@@ -66,16 +66,16 @@ public final class ModPwrBlocks {
             .tag(BlockTag.PICKAXE);
 
     static {
-        descItem(PWR_FUEL, 2);
-        descItem(PWR_CONTROL, 2);
-        descItem(PWR_CHANNEL, 2);
-        descItem(PWR_HEATEX, 2);
-        descItem(PWR_HEATSINK, 3);
-        descItem(PWR_NEUTRON_SOURCE, 3);
-        descItem(PWR_REFLECTOR, 3);
-        descItem(PWR_CASING, 2);
-        descItem(PWR_PORT, 2);
-        descItem(PWR_CONTROLLER, 3);
+        descItem(PWR_FUEL);
+        descItem(PWR_CONTROL);
+        descItem(PWR_CHANNEL);
+        descItem(PWR_HEATEX);
+        descItem(PWR_HEATSINK);
+        descItem(PWR_NEUTRON_SOURCE);
+        descItem(PWR_REFLECTOR);
+        descItem(PWR_CASING);
+        descItem(PWR_PORT);
+        descItem(PWR_CONTROLLER);
     }
 
     private static Reg.Handle<Block> part(String name) {
@@ -83,10 +83,9 @@ public final class ModPwrBlocks {
                 (BlockBehaviour.Properties p) -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
     }
 
-    /** 1.7 ITooltipProvider blocks: a block item carrying the {@code block.hbm.<id>.desc.N} lines. */
-    private static <B extends Block> void descItem(RegistryObject<B> block, int lines) {
-        String name = ((Reg.Handle<B>) block).path();
-        REG.<B, DescBlockItem>blockItem(block, (b, p) -> new DescBlockItem(b, p, name, lines), Compat::blockDescription)
+    /** 1.7 ITooltipProvider blocks: the item shows {@code addStandardInfo}. */
+    private static <B extends Block> void descItem(RegistryObject<B> block) {
+        REG.<B, DescBlockItem>blockItem(block, DescBlockItem::new, Compat::blockDescription)
                 .tab(HbmTab.MACHINES);
     }
 

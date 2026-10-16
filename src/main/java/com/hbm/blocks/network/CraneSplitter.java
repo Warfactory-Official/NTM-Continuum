@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.block.IToolable;
 import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.api.conveyor.IConveyorItem;
@@ -29,7 +30,7 @@ import com.hbm.tileentity.network.TileEntityCraneSplitter;
  * them. A {@code BlockDummyable} of dimensions {0,0,0,0,0,1}: the core is the LEFT lane and its one cell the
  * right. {@link #FACING} keeps the 1.7 metadata meaning, the side items arrive from.
  */
-public class CraneSplitter extends BlockMultiblockMachine implements IConveyorBelt, IEnterableBlock, IToolable, ILookOverlay {
+public class CraneSplitter extends BlockMultiblockMachine implements IConveyorBelt, IEnterableBlock, IToolable, ILookOverlay, ITooltipProvider {
 
     private static final int[] DIMENSIONS = {0, 0, 0, 0, 0, 1};
 

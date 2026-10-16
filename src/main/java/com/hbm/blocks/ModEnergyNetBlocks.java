@@ -205,44 +205,44 @@ public final class ModEnergyNetBlocks {
 
     static {
         // 1.7 addInformation lines, verbatim.
-        item(HbmTab.MACHINES, "red_pylon", red_pylon, 0, () -> EnergyNetBlockItem.pylon("Single", "25m"));
-        item(HbmTab.MACHINES, "red_pylon_steel", red_pylon_steel, 0, () -> EnergyNetBlockItem.pylon("Single", "25m"));
-        item(HbmTab.MACHINES, "red_pylon_medium_wood", red_pylon_medium_wood, 0, () -> EnergyNetBlockItem.pylon("Triple", "45m"));
-        item(HbmTab.MACHINES, "red_pylon_medium_wood_transformer", red_pylon_medium_wood_transformer, 0, () -> EnergyNetBlockItem.pylon("Triple", "45m"));
-        item(HbmTab.MACHINES, "red_pylon_medium_steel", red_pylon_medium_steel, 0, () -> EnergyNetBlockItem.pylon("Triple", "45m"));
-        item(HbmTab.MACHINES, "red_pylon_medium_steel_transformer", red_pylon_medium_steel_transformer, 0, () -> EnergyNetBlockItem.pylon("Triple", "45m"));
-        item(HbmTab.MACHINES, "red_pylon_large", red_pylon_large, 0, () -> stack -> List.of(
+        item(HbmTab.MACHINES, "red_pylon", red_pylon, () -> EnergyNetBlockItem.pylon("Single", "25m"));
+        item(HbmTab.MACHINES, "red_pylon_steel", red_pylon_steel, () -> EnergyNetBlockItem.pylon("Single", "25m"));
+        item(HbmTab.MACHINES, "red_pylon_medium_wood", red_pylon_medium_wood, () -> EnergyNetBlockItem.pylon("Triple", "45m"));
+        item(HbmTab.MACHINES, "red_pylon_medium_wood_transformer", red_pylon_medium_wood_transformer, () -> EnergyNetBlockItem.pylon("Triple", "45m"));
+        item(HbmTab.MACHINES, "red_pylon_medium_steel", red_pylon_medium_steel, () -> EnergyNetBlockItem.pylon("Triple", "45m"));
+        item(HbmTab.MACHINES, "red_pylon_medium_steel_transformer", red_pylon_medium_steel_transformer, () -> EnergyNetBlockItem.pylon("Triple", "45m"));
+        item(HbmTab.MACHINES, "red_pylon_large", red_pylon_large, () -> stack -> List.of(
                 EnergyNetBlockItem.pair("Connection Type: ", "Quadruple"),
                 EnergyNetBlockItem.pair("Connection Range: ", "100m"),
                 EnergyNetBlockItem.gold("This pylon requires a substation!")));
-        item(HbmTab.MACHINES, "substation", substation, 0, () -> EnergyNetBlockItem.pylon("Quadruple", "20m"));
-        item(HbmTab.MACHINES, "red_connector", red_connector, 0, () -> EnergyNetBlockItem.pylon("Single", "10m"));
-        item(HbmTab.MACHINES, "red_connector_super", red_connector_super, 0, () -> EnergyNetBlockItem.pylon("Single", "100m"));
+        item(HbmTab.MACHINES, "substation", substation, () -> EnergyNetBlockItem.pylon("Quadruple", "20m"));
+        item(HbmTab.MACHINES, "red_connector", red_connector, () -> EnergyNetBlockItem.pylon("Single", "10m"));
+        item(HbmTab.MACHINES, "red_connector_super", red_connector_super, () -> EnergyNetBlockItem.pylon("Single", "100m"));
 
-        item(HbmTab.MACHINES, "red_cable_classic", red_cable_classic, 0);
-        item(HbmTab.MACHINES, "red_cable_gauge", red_cable_gauge, 4);
-        item(HbmTab.MACHINES, "red_cable_paintable", red_cable_paintable, 4);
-        item(HbmTab.MACHINES, "cable_switch", cable_switch, 0);
-        item(HbmTab.MACHINES, "cable_detector", cable_detector, 0);
-        item(HbmTab.MACHINES, "cable_diode", cable_diode, 0,
+        item(HbmTab.MACHINES, "red_cable_classic", red_cable_classic);
+        item(HbmTab.MACHINES, "red_cable_gauge", red_cable_gauge);
+        item(HbmTab.MACHINES, "red_cable_paintable", red_cable_paintable);
+        item(HbmTab.MACHINES, "cable_switch", cable_switch);
+        item(HbmTab.MACHINES, "cable_detector", cable_detector);
+        item(HbmTab.MACHINES, "cable_diode", cable_diode,
                 () -> stack -> List.of(EnergyNetBlockItem.gold("Limits throughput and restricts flow direction")));
-        item(HbmTab.MACHINES, "machine_detector", machine_detector, 0);
+        item(HbmTab.MACHINES, "machine_detector", machine_detector);
 
         // 1.7 registered the legacy storage tiers with no creative tab; they stay reachable by id and pick-block.
-        item(null, "capacitor_bus", capacitor_bus, 2);
-        item(HbmTab.MACHINES, "machine_capacitor_copper", machine_capacitor_copper, 0, () -> capacitorInfo(machine_capacitor_copper));
-        item(null, "machine_capacitor_gold", machine_capacitor_gold, 0, () -> capacitorInfo(machine_capacitor_gold));
-        item(null, "machine_capacitor_niobium", machine_capacitor_niobium, 0, () -> capacitorInfo(machine_capacitor_niobium));
-        item(null, "capacitor_tantalium", capacitor_tantalium, 0, () -> capacitorInfo(capacitor_tantalium));
-        item(null, "capacitor_schrabidate", capacitor_schrabidate, 0, () -> capacitorInfo(capacitor_schrabidate));
-        item(null, "machine_battery_potato", machine_battery_potato, 0, () -> batteryInfo(machine_battery_potato));
-        item(null, "machine_lithium_battery", machine_lithium_battery, 0, () -> batteryInfo(machine_lithium_battery));
-        item(null, "machine_schrabidium_battery", machine_schrabidium_battery, 0, () -> batteryInfo(machine_schrabidium_battery));
-        item(null, "machine_dineutronium_battery", machine_dineutronium_battery, 0, () -> batteryInfo(machine_dineutronium_battery));
+        item(null, "capacitor_bus", capacitor_bus);
+        item(HbmTab.MACHINES, "machine_capacitor_copper", machine_capacitor_copper, () -> capacitorInfo(machine_capacitor_copper));
+        item(null, "machine_capacitor_gold", machine_capacitor_gold, () -> capacitorInfo(machine_capacitor_gold));
+        item(null, "machine_capacitor_niobium", machine_capacitor_niobium, () -> capacitorInfo(machine_capacitor_niobium));
+        item(null, "capacitor_tantalium", capacitor_tantalium, () -> capacitorInfo(capacitor_tantalium));
+        item(null, "capacitor_schrabidate", capacitor_schrabidate, () -> capacitorInfo(capacitor_schrabidate));
+        item(null, "machine_battery_potato", machine_battery_potato, () -> batteryInfo(machine_battery_potato));
+        item(null, "machine_lithium_battery", machine_lithium_battery, () -> batteryInfo(machine_lithium_battery));
+        item(null, "machine_schrabidium_battery", machine_schrabidium_battery, () -> batteryInfo(machine_schrabidium_battery));
+        item(null, "machine_dineutronium_battery", machine_dineutronium_battery, () -> batteryInfo(machine_dineutronium_battery));
         // The item id is hev_battery_block: hbm:hev_battery is the 1.7 ModItems.hev_battery suit-battery item (ItemFusionCore),
         // and 1.7 kept the two apart as item. and tile.
-        item(HbmTab.MACHINES, "hev_battery_block", hev_battery, 0);
-        item(HbmTab.BLOCKS, "tesla", tesla, 0);
+        item(HbmTab.MACHINES, "hev_battery_block", hev_battery);
+        item(HbmTab.BLOCKS, "tesla", tesla);
 
         ModTabs.addTo(HbmTab.MATERIALS, wiring_red_copper);
     }
@@ -280,15 +280,15 @@ public final class ModEnergyNetBlocks {
         return stack -> block.get().persistentInfo(stack);
     }
 
-    private static void item(HbmTab tab, String name, RegistryObject<? extends Block> block, int descLines) {
-        item(tab, name, block, descLines, () -> stack -> List.of());
+    private static void item(HbmTab tab, String name, RegistryObject<? extends Block> block) {
+        item(tab, name, block, () -> stack -> List.of());
     }
 
     /** The tooltip lines are made with the item: EnergyNetBlockItem cannot load before the game does. */
-    private static void item(HbmTab tab, String name, RegistryObject<? extends Block> block, int descLines,
+    private static void item(HbmTab tab, String name, RegistryObject<? extends Block> block,
                              Supplier<Function<ItemStack, List<Component>>> lines) {
         Reg.Handle<BlockItem> item = REG.<BlockItem>item(name,
-                p -> new EnergyNetBlockItem(block.get(), p, descLines, lines.get()), Compat::blockDescription);
+                p -> new EnergyNetBlockItem(block.get(), p, lines.get()), Compat::blockDescription);
         if (tab != null) item.tab(tab);
     }
 

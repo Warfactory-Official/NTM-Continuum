@@ -310,9 +310,8 @@ public class HazardSystem {
 
     /** Adds hazard tooltip info; wired from each loader's item-tooltip event. */
     public static void addHazardInfo(ItemStack stack, Player player, List<Component> list) {
-        // Radiation-resistance line for hazmat/armor (mirrors the 1.12.2 client tooltip handler).
         double rad = HazmatRegistry.getResistance(stack);
-        rad = ((int) (rad * 100)) / 100D;
+        rad = ((int) (rad * 1000)) / 1000D;
         if (rad > 0) {
             list.add(Component.translatable("trait.radResistance", rad)
                     .withStyle(ChatFormatting.YELLOW));

@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.block.IBlowable;
 import com.hbm.api.environment.Environment;
 import dev.golem.core.registry.TickingBlock;
@@ -42,7 +43,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.function.Supplier;
 
 /** The six-way redstone fan with the legacy obstruction, force, particle, and tool-mode behavior. */
-public class MachineFan extends CompatBlock implements TickingBlock, IToolable {
+public class MachineFan extends CompatBlock implements TickingBlock, IToolable, ITooltipProvider {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 

@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -19,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 
 /** The combination furnace: a 2x2x2 dummyable heat furnace with fluid output ports. */
 public class MachineFurnaceCombination extends BlockMultiblockMachine
-        implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
+        implements IFluidConnectorBlockMK2, WorldlyContainerHolder, ITooltipProvider {
 
     public MachineFurnaceCombination(Properties properties) {
         super(properties);

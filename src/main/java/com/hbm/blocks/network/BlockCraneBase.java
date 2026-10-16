@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.block.IToolable;
 import com.hbm.items.tool.ItemTooling;
 import dev.golem.core.gui.Menus;
@@ -34,7 +35,7 @@ import com.hbm.tileentity.network.TileEntityCraneBase;
  * "opposite the input". Both sides are blockstate here (which is also what selects the per-face textures the
  * old {@code getIcon} computed), and "overridden" is the surviving test {@code OUTPUT != INPUT.getOpposite()}.
  */
-public abstract class BlockCraneBase extends CompatBlock implements TickingBlock, IToolable {
+public abstract class BlockCraneBase extends CompatBlock implements TickingBlock, IToolable, ITooltipProvider {
 
     public static final EnumProperty<Direction> INPUT = EnumProperty.create("input", Direction.class);
     public static final EnumProperty<Direction> OUTPUT = EnumProperty.create("output", Direction.class);

@@ -22,11 +22,13 @@ import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -63,7 +65,8 @@ import net.minecraft.sounds.SoundSource;
  * accelerator's structural-stress system, which no ported machine has yet), and the looping reactor
  * hum (no positional looped-audio facade).
  */
-public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuProvider, IControlReceiver, IRORValueProvider {
+public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuProvider, IControlReceiver, IRORValueProvider,
+        WorldlyContainer {
 
     public static final int SLOTS = 3;
     /** Slot 0 battery, slot 1 blueprint, slot 2 product. */
@@ -318,6 +321,21 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
         if (slot == SLOT_BATTERY) return Library.isBattery(stack);
         if (slot == SLOT_BLUEPRINT) return true;
         return false;
+    }
+
+    @Override
+    public int[] getSlotsForFace(Direction side) {
+        return new int[]{SLOT_OUTPUT};
+    }
+
+    @Override
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
+        return isItemValidForSlot(slot, stack);
+    }
+
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
+        return slot == SLOT_OUTPUT;
     }
 
     @Override

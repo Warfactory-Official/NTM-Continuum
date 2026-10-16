@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.machine.TileEntityAshpit;
@@ -19,7 +20,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The 3x3 ashpit shell; all cells expose the core's output inventory to hoppers. */
-public final class MachineAshpit extends BlockMultiblockMachine implements WorldlyContainerHolder {
+public final class MachineAshpit extends BlockMultiblockMachine implements WorldlyContainerHolder, ITooltipProvider {
 
     public MachineAshpit(Properties properties) {
         super(properties);

@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -29,7 +30,7 @@ import java.util.List;
  * old screwdriver/hand-drill tools aren't ported), and the look-overlay shows heat/consumption/output.
  * Cables connect at the single rear power port.
  */
-public class HeaterElectric extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay {
+public class HeaterElectric extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay, ITooltipProvider {
 
     public HeaterElectric(Properties properties) {
         super(properties);

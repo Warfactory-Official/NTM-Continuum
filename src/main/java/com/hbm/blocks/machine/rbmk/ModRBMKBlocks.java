@@ -6,7 +6,6 @@ import com.hbm.Constants;
 import com.hbm.blocks.machine.pile.BlockGraphite;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.blocks.generic.BlockLayering;
-import com.hbm.items.block.RBMKPanelBlockItem;
 import dev.golem.core.registry.BlockTag;
 import dev.golem.core.registry.Loot;
 import dev.golem.core.registry.Preset;
@@ -307,21 +306,13 @@ public final class ModRBMKBlocks {
         for (RegistryObject<? extends Block> block : List.of(rbmk_fuel_rod, rbmk_control, rbmk_control_mod, rbmk_control_auto, rbmk_control_reasim, rbmk_control_reasim_auto, rbmk_boiler, rbmk_moderator, rbmk_reflector, rbmk_absorber, rbmk_blank, rbmk_fuel_rod_moderated, rbmk_fuel_rod_reasim, rbmk_fuel_rod_reasim_moderated, rbmk_cooler, rbmk_storage, rbmk_heater, rbmk_outgasser, rbmk_steam_inlet, rbmk_steam_outlet, rbmk_console, rbmk_crane_console, rbmk_autoloader, rbmk_debris, rbmk_debris_burning, rbmk_debris_radiating, rbmk_debris_digamma, foam_layer)) {
             REG.blockItem(block).tab(HbmTab.MACHINES);
         }
-        // The ROR peripherals, gauge, terminal and steam connector carry their 1.7 "$"-split descriptions.
         for (RegistryObject<? extends Block> block : List.of(rbmk_display_blank, rbmk_display, rbmk_key_pad, rbmk_lever,
                 rbmk_gauge, rbmk_indicator, rbmk_numitron, rbmk_graph, rbmk_terminal, rbmk_loader)) {
-            panelBlockItem(block);
+            REG.blockItem(block).tab(HbmTab.MACHINES);
         }
         REG.blockItem(block_graphite).tab(HbmTab.RESOURCES);
         REG.blockItem(sand_boron_layer).tab(HbmTab.BLOCKS);
     }
 
-    @SuppressWarnings("unchecked")
-    private static <B extends Block> void panelBlockItem(RegistryObject<B> block) {
-        String id = ((Reg.Handle<B>) block).path();
-        REG.<B, RBMKPanelBlockItem>blockItem(block,
-                        (b, p) -> new RBMKPanelBlockItem(b, p, id), Compat::blockDescription)
-                .tab(HbmTab.MACHINES);
-    }
     public static void init() {}
 }

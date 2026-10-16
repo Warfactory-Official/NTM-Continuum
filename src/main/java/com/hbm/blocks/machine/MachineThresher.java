@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.block.IToolable;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.interfaces.ILookOverlay;
@@ -46,7 +47,7 @@ import com.hbm.tileentity.machine.TileEntityMachineThresher;
  * own horizontal look direction; the tile then works with its opposite.
  */
 public class MachineThresher extends CompatBlock
-        implements TickingBlock, IFluidConnectorBlockMK2, IToolable, ILookOverlay {
+        implements TickingBlock, IFluidConnectorBlockMK2, IToolable, ILookOverlay, ITooltipProvider {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 

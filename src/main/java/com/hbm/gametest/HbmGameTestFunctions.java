@@ -343,6 +343,10 @@ public final class HbmGameTestFunctions {
             TESTS.function("gas_turbine_menu_recipe", 40, () -> GasTurbineGameTests::menuAndRecipe);
     public static final GameTests.Function GAS_TURBINE_GUI_TOOLTIPS =
             TESTS.function("gas_turbine_gui_tooltips", 20, () -> GasTurbineGameTests::guiTooltips);
+    public static final GameTests.Function STANDARD_INFO_SHIFT_GATE =
+            TESTS.function("standard_info_shift_gate", 20, () -> StandardInfoGameTests::tooltipShiftGate);
+    public static final GameTests.Function STANDARD_INFO_EVERY_BLOCK =
+            TESTS.function("standard_info_every_block", 20, () -> StandardInfoGameTests::everyBlockHasItsLines);
     public static final GameTests.Function TURBOFAN_LAYOUT =
             TESTS.function("turbofan_layout", 100, 8, () -> TurbofanGameTests::layout);
     public static final GameTests.Function TURBOFAN_PORTS_BURN =
@@ -1488,6 +1492,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("fluid_trait_simple_counts", 20, () -> FluidTraitGameTests::simpleTraitCounts);
     public static final GameTests.Function FLUID_TRAIT_TOOLTIP_ORDER =
             TESTS.function("fluid_trait_tooltip_order", 20, () -> FluidTraitGameTests::tooltipOrder);
+    public static final GameTests.Function TOOLTIP_COLOURS =
+            TESTS.function("tooltip_colours", 20, () -> TooltipColourGameTests::colours);
 
     // --- 1.7 chemical spray / mist: temperature, flamethrower, XP and ender juice, isDispersable (ChemicalSprayGameTests) ---
     public static final GameTests.Function CHEMICAL_SPRAY_TEMPERATURE =

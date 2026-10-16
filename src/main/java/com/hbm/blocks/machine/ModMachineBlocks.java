@@ -58,8 +58,6 @@ import com.hbm.blocks.network.RadioTorchLogic;
 import com.hbm.blocks.network.RadioTorchReader;
 import com.hbm.blocks.network.RadioTorchReceiver;
 import com.hbm.blocks.network.RadioTorchSender;
-import com.hbm.items.block.ItemBlockAutosaw;
-import com.hbm.items.block.RadioBlockItem;
 import dev.golem.core.dejson.Shape;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -1221,7 +1219,7 @@ public final class ModMachineBlocks {
     static {
         // 1.7 MachineBattery.addInformation: capacity, charge/discharge speed and the item's persistent charge.
         REG.<BlockMachineBattery, BlockItem>blockItem(machine_battery,
-                        (block, p) -> new EnergyNetBlockItem(block, p, 0,
+                        (block, p) -> new EnergyNetBlockItem(block, p,
                                 stack -> machine_battery.get().persistentInfo(stack)),
                         p -> Compat.blockDescription(p))
                 .tab(HbmTab.MACHINES);
@@ -1316,8 +1314,7 @@ public final class ModMachineBlocks {
         tabItem(machine_coker);
         tabItem(machine_furnace_combination);
         tabItem(machine_pyrooven);
-        REG.<MachineAutosaw, ItemBlockAutosaw>blockItem(machine_autosaw, ItemBlockAutosaw::new, Compat::blockDescription)
-                .tab(HbmTab.MACHINES);
+        tabItem(machine_autosaw);
         tabItem(machine_combustion_engine);
         tabItem(refueler);
          tabItem(machine_compressor);
@@ -1440,10 +1437,10 @@ public final class ModMachineBlocks {
         radioItem("radio_autocal", radio_autocal, null);
     }
 
-    /** A radio block's item: the old dollar-separated info text as lines; a torch's item is its flat sprite. */
+    /** A radio block's item; a torch's item is its flat sprite. */
     private static void radioItem(String name, RegistryObject<? extends Block> block, String sprite) {
-        Reg.Handle<RadioBlockItem> item = REG.item(name,
-                (Item.Properties properties) -> new RadioBlockItem(block.get(), Compat.blockDescription(properties)));
+        Reg.Handle<CompatBlockItem> item = REG.item(name,
+                (Item.Properties properties) -> new CompatBlockItem(block.get(), Compat.blockDescription(properties)));
         if (sprite != null) item.transform(Presets.sprite("hbm:blocks/" + sprite));
         item.tab(HbmTab.MACHINES);
     }

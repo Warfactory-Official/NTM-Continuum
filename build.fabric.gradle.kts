@@ -410,6 +410,9 @@ dependencies {
     }
 
     // Sodium declares `environment: client`, so Fabric loads it only during the client run.
+    // Jade, dev runs only (`-Pjade.run=true`): HBM's overlay declarations (com.hbm.compat.HbmBlockInfo) reach it
+    // through Golem Core's dev.golem.core.jade, so HBM has no Jade dependency.
+    if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { devRuntime("maven.modrinth:jade:$it") }
     propOrNull("deps.sodium_fabric")?.let { devRuntime("maven.modrinth:sodium:$it") }
     // Iris (Oculus on Forge 1.20.1) for testing under shader packs: `-Pshaders.run=true` puts it in the client run.
     // Client-side, dev runtime only, never compiled against or published; off by default so the standard runs

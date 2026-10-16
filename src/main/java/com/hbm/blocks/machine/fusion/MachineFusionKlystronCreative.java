@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.fusion;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.tileentity.ModBlockEntities;
@@ -17,7 +18,7 @@ import org.jspecify.annotations.Nullable;
  * Creative klystron - same shell as the real one, but it needs no power, no air and no ports, so it
  * has none. Behaviour lives in {@link TileEntityFusionKlystronCreative}.
  */
-public class MachineFusionKlystronCreative extends BlockMultiblockMachine {
+public class MachineFusionKlystronCreative extends BlockMultiblockMachine implements ITooltipProvider {
 
     public MachineFusionKlystronCreative(Properties properties) {
         super(properties);

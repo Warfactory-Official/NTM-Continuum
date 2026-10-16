@@ -8,6 +8,7 @@ import com.hbm.packet.EntityPropsSyncPayload;
 import com.hbm.packet.HbmPackets;
 import dev.golem.core.net.GolemNetwork;
 import com.hbm.hazard.HazardSystem;
+import com.hbm.util.TooltipColours;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
@@ -94,8 +95,10 @@ public class FabricClientInit implements ClientModInitializer {
         ^///?}
 
         // Hazard tooltips (radioactive/hot/etc. traits on items).
-        dev.golem.core.client.Tooltips.onItemTooltip((stack, lines) ->
-                HazardSystem.addHazardInfo(stack, net.minecraft.client.Minecraft.getInstance().player, lines));
+        dev.golem.core.client.Tooltips.onItemTooltip((stack, lines) -> {
+            TooltipColours.apply(stack, lines);
+            HazardSystem.addHazardInfo(stack, net.minecraft.client.Minecraft.getInstance().player, lines);
+        });
     }
 }
 *///?}

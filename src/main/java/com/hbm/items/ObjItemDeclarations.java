@@ -885,11 +885,15 @@ public final class ObjItemDeclarations {
                         .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.5).rawLegacyTransform().exclude("Flag")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -4.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_hephaestus")
+                // 1.7 RenderHephaestus item: the one-sided Rotor drawn three times, 120 degrees apart
                 .definition(MachineObjModel.of("hbm:models/machines/hephaestus.obj", "hbm:textures/models/machines/hephaestus.png")
                         .scale(0.5).ty(0.0).yaw(0.0).guiScale(2.25).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -4.5, 0.0).overlayParts("Core")
-                        .overlayTexture("hbm:textures/models/machines/cobblestone.png")).oversizedInGui().register();
+                        .overlayTexture("hbm:textures/models/machines/cobblestone.png")
+                        .passes(MachineObjModel.pass("hbm:textures/models/machines/hephaestus.png").parts("Rotor").rotateStep(0.0, 120.0, 0.0),
+                                MachineObjModel.pass("hbm:textures/models/machines/hephaestus.png").parts("Rotor").rotateStep(0.0, 240.0, 0.0)))
+                .oversizedInGui().register();
         Dejson.item(NS, "machine_hydrotreater")
                 .definition(MachineObjModel.of("hbm:models/machines/hydrotreater.obj", "hbm:textures/models/machines/hydrotreater.png")
                         .scale(0.5).ty(0.0).yaw(0.0).guiScale(4.0).rawLegacyTransform()

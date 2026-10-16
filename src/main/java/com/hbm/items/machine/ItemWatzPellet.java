@@ -135,9 +135,9 @@ public class ItemWatzPellet extends CompatItem {
         if (type.absorb().isPresent()) tooltip.add(gold("Flux capture: ", type.absorb().get().getLabelForFuel()));
     }
 
-    /** A gold label followed by an unstyled value, the 1.12.2 {@code GOLD + label + RESET + value}. */
+    /** A gold label and a white value: 1.7's {@code GOLD + label + RESET + value}, where RESET means white in a tooltip. */
     private static Component gold(String label, String value) {
         return Component.literal(label).withStyle(ChatFormatting.GOLD)
-                .append(Component.literal(value).withStyle(ChatFormatting.RESET));
+                .append(Component.literal(value).withStyle(ChatFormatting.WHITE));
     }
 }

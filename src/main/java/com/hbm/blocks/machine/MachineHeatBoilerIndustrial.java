@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -29,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Industrial boiler: a five-port, four-block-tall fluid heater. */
-public class MachineHeatBoilerIndustrial extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay {
+public class MachineHeatBoilerIndustrial extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay, ITooltipProvider {
     public MachineHeatBoilerIndustrial(Properties properties) { super(properties); }
 
     @Override

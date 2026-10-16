@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.api.conveyor.IConveyorItem;
 import com.hbm.api.conveyor.IConveyorPackage;
@@ -36,7 +37,7 @@ import com.hbm.tileentity.network.TileEntityCraneRouter;
  * 1.7 {@code blocks/network/CraneRouter} ("Conveyor Sorter"): sends whatever enters out of the side whose filter
  * matches. 1.7's six-pass render trick (one tint per side) is a model with six tint indices here.
  */
-public class CraneRouter extends CompatBlock implements TickingBlock, IEnterableBlock {
+public class CraneRouter extends CompatBlock implements TickingBlock, IEnterableBlock, ITooltipProvider {
 
     /** The 1.7 {@code colorMultiplier} per pass: down, up, north, south, west, east. */
     public static final int[] SIDE_COLORS = {0xff0000, 0xff8000, 0xffff00, 0x00ff00, 0x0080ff, 0x8000ff};

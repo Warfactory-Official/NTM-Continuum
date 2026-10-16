@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -34,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The legacy one-core Stirling engine family. */
-public class MachineStirling extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay, ModelState {
+public class MachineStirling extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay, ModelState, ITooltipProvider {
 
     public MachineStirling(Properties properties) {
         super(properties);

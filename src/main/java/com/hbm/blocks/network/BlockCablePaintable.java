@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.block.IToolable;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.energymk2.PowerGraph;
@@ -35,7 +36,7 @@ import com.hbm.tileentity.network.TileEntityCablePaintable;
  * right-clicking with it. The screwdriver strips the paint; the defuser hides the cable overlay (1.7's
  * metadata 1). {@link #PAINTED} hands the drawing to the renderer, which draws the paint block itself.
  */
-public class BlockCablePaintable extends CompatBlock implements TickingBlock, IToolable, IEnergyConnectorBlock {
+public class BlockCablePaintable extends CompatBlock implements TickingBlock, IToolable, IEnergyConnectorBlock, ITooltipProvider {
 
     /** The red-cable stripes over the paint; 1.7's metadata 0. */
     public static final BooleanProperty OVERLAY = BooleanProperty.create("overlay");

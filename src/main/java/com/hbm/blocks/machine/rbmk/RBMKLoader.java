@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.rbmk;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -19,7 +20,7 @@ import net.minecraft.world.level.Level;
  * output attach below the reactor. It connects heatable fluids from above and coolable fluids (or
  * perfluoromethyl) on every other face; the column itself pushes into the ducts around it.
  */
-public class RBMKLoader extends CompatBlock implements IFluidConnectorBlockMK2 {
+public class RBMKLoader extends CompatBlock implements IFluidConnectorBlockMK2, ITooltipProvider {
 
     public RBMKLoader(Properties properties) { super(properties); }
 

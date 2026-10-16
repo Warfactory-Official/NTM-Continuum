@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.albion;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -24,7 +25,7 @@ import org.jspecify.annotations.Nullable;
 
 /** The particle source: the accelerator's injector, and the machine that owns the running beam. */
 public class BlockPASource extends BlockMultiblockMachine
-        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
+        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder, ITooltipProvider {
 
     public BlockPASource(Properties properties) {
         super(properties);

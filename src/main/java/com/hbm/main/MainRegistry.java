@@ -56,6 +56,7 @@ import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.blocks.material.MaterialCompletionRegistrations;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.capability.ForeignFluids;
+import com.hbm.compat.HbmBlockInfo;
 import com.hbm.compat.computercraft.ComputerCraft;
 import com.hbm.config.BombConfig;
 import com.hbm.config.Configuration;
@@ -400,5 +401,7 @@ public final class MainRegistry {
         ForeignFluids.register();
         // 1.7's OpenComputers components as CC: Tweaked peripherals, when CC is loaded
         ComputerCraft.init();
+        // Buffers, tanks and multiblock cores in a block-info overlay (Jade), when one is loaded
+        HbmBlockInfo.init();
     }
 }

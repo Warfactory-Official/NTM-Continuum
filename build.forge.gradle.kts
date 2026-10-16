@@ -171,6 +171,9 @@ dependencies {
 
     // Embeddium is the Forge port of Sodium — Sodium itself ships no Forge build, so this is the
     // equivalent dev renderer for this node. Client-side only, dev runtime only, never published.
+    // Jade, dev runs only (`-Pjade.run=true`): HBM's overlay declarations (com.hbm.compat.HbmBlockInfo) reach it
+    // through Golem Core's dev.golem.core.jade, so HBM has no Jade dependency.
+    if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { modRuntimeOnly("maven.modrinth:jade:$it") }
     propOrNull("deps.embeddium")?.let { modRuntimeOnly("maven.modrinth:embeddium:$it") }
     // Iris (Oculus on Forge 1.20.1) for testing under shader packs: `-Pshaders.run=true` puts it in the client run.
     // Client-side, dev runtime only, never compiled against or published; off by default so the standard runs

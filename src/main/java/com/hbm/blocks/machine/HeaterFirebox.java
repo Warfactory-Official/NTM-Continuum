@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockMaskTable;
@@ -27,7 +28,7 @@ import java.util.List;
  * GUI; the look-overlay shows the stored TU + the current burn rate. The ring cells are its smoke vents:
  * a duct against any of their outward faces draws the firebox's smoke tanks (1.7 {@code sendSmoke}).
  */
-public class HeaterFirebox extends BlockMultiblockMachine implements ILookOverlay, IFluidConnectorBlockMK2 {
+public class HeaterFirebox extends BlockMultiblockMachine implements ILookOverlay, IFluidConnectorBlockMK2, ITooltipProvider {
 
     public HeaterFirebox(Properties properties) {
         super(properties);

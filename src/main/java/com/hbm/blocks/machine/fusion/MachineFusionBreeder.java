@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.fusion;
 
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -24,7 +25,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** The fusion breeder's 5 x 3 x 5 dummyable footprint. */
-public class MachineFusionBreeder extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, WorldlyContainerHolder, ILookOverlay {
+public class MachineFusionBreeder extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, WorldlyContainerHolder, ILookOverlay, ITooltipProvider {
 
     public MachineFusionBreeder(Properties properties) {
         super(properties);
